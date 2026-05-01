@@ -1,0 +1,2 @@
+"""Werewolf game agent package."""
+
