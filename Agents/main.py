@@ -3,8 +3,17 @@ from dotenv import load_dotenv
 from Agents.graphs.parent import parent_graph_compiled
 
 
+INITIAL_STATE = {
+    "day_channel": [],
+    "wolf_channel": [],
+    "investigator_results": [],
+    "day_votes": [],
+}
+
+
 def run_game(config: dict | None = None):
-    return parent_graph_compiled.invoke({}, config=config)
+    return parent_graph_compiled.invoke(INITIAL_STATE, config=config)
+
 
 
 def main():
@@ -22,4 +31,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
