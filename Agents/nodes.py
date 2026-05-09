@@ -1,20 +1,33 @@
 import random
 from collections import Counter
 from typing import Literal
+from datetime import datetime
 
 from langgraph.graph import END
+from langgraph.config import get_store
 from langgraph.types import Send
 
 from Agents.state import (
     DayChannel,
     DayGraphState,
+    DaySummary,
     InvestigatorResult,
     OrchestratorGraph,
     WolfNightGraph,
 )
 
+from Agents.prompts import DAY_SUMMARY_PROMPT
+from Agents.schemas import DaySummaryOutput
+from Agents.extraction import extract_postgame
+from Agents.memory import store_observation, store_strategy, store_strategy_points
+from Agents.memory_persistence import dump_memory_to_json_files
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 def initialize_game(state: OrchestratorGraph):
+    # Initialize roles and players
     roles = [
         "villager",
         "villager",
@@ -36,9 +49,9 @@ def initialize_game(state: OrchestratorGraph):
     investigator_player = [
         player for player, role in assigned_roles.items() if role == "investigator"
     ][0]
-
     return {
         "day_channel": [],
+        "day_summaries": [],
         "wolf_channel": [],
         "roles": assigned_roles,
         "surviving_wolves": [
@@ -58,28 +71,50 @@ def initialize_game(state: OrchestratorGraph):
 
 
 def prepare_round(state: DayGraphState):
-    return {}
-
+    return {"current_round": state.get("current_round", 0) + 1}
 
 def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
     concurrent_nodes = []
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    strategies = state.get("agent_strategies", {})
+    
     for player in surviving_players:
         role = state["roles"][player]
         is_human = player == state["human_player"]
 
-        if role in ("villager", "healer"):
+        if role == "villager":
             concurrent_nodes.append(
                 Send(
                     f"villager_{phase}",
                     {
                         "human_player": is_human,
                         "day_channel": state["day_channel"],
+                        "day_summaries": state.get("day_summaries", []),
                         "surviving_players": surviving_players,
                         "player_id": player,
                         "player_role": role,
                         "current_round": state["current_round"],
                         "current_day": state["current_day"],
+                        "previous_strategy": strategies.get(player, ""),
+                        "strategy_points": "",
+                    },
+                )
+            )
+        elif role == "healer":
+            concurrent_nodes.append(
+                Send(
+                    f"healer_{phase}",
+                    {
+                        "human_player": is_human,
+                        "day_channel": state["day_channel"],
+                        "day_summaries": state.get("day_summaries", []),
+                        "surviving_players": surviving_players,
+                        "player_id": player,
+                        "player_role": role,
+                        "current_round": state["current_round"],
+                        "current_day": state["current_day"],
+                        "previous_strategy": strategies.get(player, ""),
+                        "strategy_points": "",
                     },
                 )
             )
@@ -90,12 +125,16 @@ def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
                     {
                         "human_player": is_human,
                         "day_channel": state["day_channel"],
+                        "day_summaries": state.get("day_summaries", []),
+                        "surviving_players": surviving_players,
                         "surviving_wolves": state["surviving_wolves"],
                         "surviving_villagers": state["surviving_villagers"],
                         "player_id": player,
                         "player_role": role,
                         "current_round": state["current_round"],
                         "current_day": state["current_day"],
+                        "previous_strategy": strategies.get(player, ""),
+                        "strategy_points": "",
                     },
                 )
             )
@@ -106,18 +145,20 @@ def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
                     {
                         "human_player": is_human,
                         "day_channel": state["day_channel"],
+                        "day_summaries": state.get("day_summaries", []),
                         "surviving_players": surviving_players,
                         "investigator_results": state["investigator_results"],
                         "player_id": player,
                         "player_role": role,
                         "current_round": state["current_round"],
                         "current_day": state["current_day"],
-                    },
+                        "previous_strategy": strategies.get(player, ""),
+                        "strategy_points": "",
+                    },  
                 )
             )
 
     return concurrent_nodes
-
 
 def fan_out_discuss(state: DayGraphState):
     return fan_out_day(state, "discuss")
@@ -128,16 +169,56 @@ def fan_out_vote(state: DayGraphState):
 
 
 def collect_discussion(state: DayGraphState):
-    return {"current_round": state["current_round"] + 1}
+    return {}
 
 
-def check_round(
-    state: DayGraphState,
-) -> Literal["PREPARE_ROUND", "START_VOTING", "__end__"]:
+def check_round(state: DayGraphState) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY_DISCUSSION"]:
+    if state["current_day"] == 1:
+        return "SUMMARIZE_DAY_DISCUSSION"
+    
+    # Check if anyone spoke this round
+    current_round_messages = [
+        m for m in state["day_channel"]
+        if m.day == state["current_day"] and m.round == state["current_round"]
+    ]
+    if not current_round_messages:
+        return "SUMMARIZE_DAY_DISCUSSION"
+    
+    if state["current_round"] > 5:
+        return "SUMMARIZE_DAY_DISCUSSION"
+    
+    return "PREPARE_ROUND"
+
+
+def summarize_day_discussion(state: DayGraphState):
+    current_day = state.get("current_day", 1)
+    current_day_messages = [
+        message for message in state.get("day_channel", [])
+        if message.day == current_day and message.player != "game_master"
+    ]
+    if not current_day_messages:
+        return {}
+
+    from Agents.agents import get_llm
+    from Agents.formatters import format_day_channel
+
+    prompt = DAY_SUMMARY_PROMPT.format(
+        current_day=current_day,
+        day_channel=format_day_channel(current_day_messages),
+    )
+    try:
+        result = get_llm().with_structured_output(DaySummaryOutput).invoke(prompt)
+        summary = result.summary.strip()
+    except Exception as exc:
+        logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
+        summary = format_day_channel(current_day_messages)
+
+    return {"day_summaries": [DaySummary(day=current_day, summary=summary)]}
+
+
+def route_after_day_summary(state: DayGraphState) -> Literal["START_VOTING", "__end__"]:
     if state["current_day"] == 1:
         return END
-    if state["current_round"] <= 3:
-        return "PREPARE_ROUND"
     return "START_VOTING"
 
 
@@ -158,6 +239,7 @@ def prepare_wolf_night(state: WolfNightGraph):
 
 def wolf_fan_out(state: WolfNightGraph):
     concurrent_nodes = []
+    strategies = state.get("agent_strategies", {})
 
     for wolf in state["surviving_wolves"]:
         is_human = wolf == state["human_player"]
@@ -166,6 +248,7 @@ def wolf_fan_out(state: WolfNightGraph):
                 "WOLF_NIGHT_DISCUSS",
                 {
                     "day_channel": state["day_channel"],
+                    "day_summaries": state.get("day_summaries", []),
                     "wolf_channel": state["wolf_channel"],
                     "surviving_villagers": state["surviving_villagers"],
                     "surviving_wolves": state["surviving_wolves"],
@@ -174,6 +257,8 @@ def wolf_fan_out(state: WolfNightGraph):
                     "human_player": is_human,
                     "current_day": state["current_day"],
                     "current_round": state["current_round"],
+                    "previous_strategy": strategies.get(wolf, ""),
+                    "strategy_points": "",
                 },
             )
         )
@@ -204,15 +289,19 @@ def day_resolution(state: OrchestratorGraph):
     day_votes = state.get("day_votes", [])
 
     if not day_votes:
+        message = f"Day {state.get('current_day', 1)}: No vote was held today."
         return {
             "day_channel": [
                 DayChannel(
                     day=state.get("current_day", 1),
                     round=0,
                     player="game_master",
-                    message=f"Day {state.get('current_day', 1)}: No vote was held today.",
+                    message=message,
                 )
-            ]
+            ],
+            "day_summaries": [
+                DaySummary(day=state.get("current_day", 1), summary=message)
+            ],
         }
 
     vote_summary = "\n".join(f"  {v.voter} voted for {v.votee}" for v in day_votes)
@@ -228,6 +317,11 @@ def day_resolution(state: OrchestratorGraph):
             p for p in state["surviving_villagers"] if p != voted_player
         ]
 
+        message = f"""
+Here's the vote result for day {state.get('current_day', 1)}:
+{vote_summary}
+Player {voted_player} has been voted out and was a {state['roles'][voted_player]}.
+"""
         state_update = {
             "voted_player": voted_player,
             "surviving_wolves": surviving_wolves,
@@ -237,12 +331,11 @@ def day_resolution(state: OrchestratorGraph):
                     day=state.get("current_day", 1),
                     round=state.get("current_round", 1),
                     player="game_master",
-                    message=f"""
-Here's the vote result for day {state.get('current_day', 1)}:
-{vote_summary}
-Player {voted_player} has been voted out and was a {state['roles'][voted_player]}.
-""",
+                    message=message,
                 )
+            ],
+            "day_summaries": [
+                DaySummary(day=state.get("current_day", 1), summary=message)
             ],
         }
 
@@ -253,17 +346,21 @@ Player {voted_player} has been voted out and was a {state['roles'][voted_player]
 
         return state_update
 
+    message = f"""
+Here's the vote result for day {state.get('current_day', 1)}:
+{vote_summary}
+It's a tie between players {candidates}. No one is voted out this day."""
     return {
         "day_channel": [
             DayChannel(
                 day=state.get("current_day", 1),
                 round=state.get("current_round", 0),
                 player="game_master",
-                message=f"""
-Here's the vote result for day {state.get('current_day', 1)}:
-{vote_summary}
-It's a tie between players {candidates}. No one is voted out this day.""",
+                message=message,
             )
+        ],
+        "day_summaries": [
+            DaySummary(day=state.get("current_day", 1), summary=message)
         ],
     }
 
@@ -291,6 +388,10 @@ def night_resolution(state: OrchestratorGraph):
         surviving_villagers = [
             player for player in state["surviving_villagers"] if player != wolves_target
         ]
+        message = (
+            f"{wolves_target} was killed by the wolves last night. "
+            f"They were a {state['roles'][wolves_target]}."
+        )
 
         state_update = {
             "surviving_villagers": surviving_villagers,
@@ -300,11 +401,11 @@ def night_resolution(state: OrchestratorGraph):
                     day=current_day,
                     round=state.get("current_round", 0),
                     player="game_master",
-                    message=(
-                        f"{wolves_target} was killed by the wolves last night. "
-                        f"They were a {state['roles'][wolves_target]}."
-                    ),
+                    message=message,
                 )
+            ],
+            "day_summaries": [
+                DaySummary(day=current_day, summary=message)
             ],
         }
 
@@ -316,6 +417,10 @@ def night_resolution(state: OrchestratorGraph):
         return state_update
 
     if wolves_target and wolves_target == healer_target:
+        message = (
+            f"{wolves_target} was targeted by the wolves last night, "
+            "but was saved by the healer!"
+        )
         return {
             "investigator_results": investigator_update,
             "day_channel": [
@@ -323,11 +428,11 @@ def night_resolution(state: OrchestratorGraph):
                     day=current_day,
                     round=state.get("current_round", 0),
                     player="game_master",
-                    message=(
-                        f"{wolves_target} was targeted by the wolves last night, "
-                        "but was saved by the healer!"
-                    ),
+                    message=message,
                 )
+            ],
+            "day_summaries": [
+                DaySummary(day=current_day, summary=message)
             ],
         }
 
@@ -397,3 +502,30 @@ def check_game_end_night(
     if len(state["surviving_wolves"]) >= len(state["surviving_villagers"]):
         return "END_GAME"
     return "ONE_MORE_DAY"
+
+def post_game_analysis(state: OrchestratorGraph):
+    store = get_store()
+    uuid_key = datetime.now().strftime("%Y%m%d_%H%M%S")
+    game_id = f"game_{uuid_key}"
+
+    # Analyse game and extract observations
+    extracted_observations = extract_postgame(state)
+    if not extracted_observations:
+        logger.warning("No observations extracted from post-game analysis.")
+        return
+        
+    # Store observations and strategies in memory
+    store_observation(store, extracted_observations.observations, game_id)
+    store_strategy_points(store, extracted_observations.strategy_points, game_id)
+    
+    strategies_dict = {
+        'wolf': extracted_observations.wolf_strategy,
+        'villager': extracted_observations.villager_strategy,
+        'healer': extracted_observations.healer_strategy,
+        'investigator': extracted_observations.investigator_strategy,
+    }
+    store_strategy(store, strategies_dict, game_id)
+    # Temporary dev-phase persistence until memory storage is refactored for production.
+    dump_memory_to_json_files(target_store=store)
+    
+    logger.info(f"Post-game analysis completed and stored for game_id: {game_id}")
