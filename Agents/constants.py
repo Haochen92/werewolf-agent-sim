@@ -1,0 +1,1 @@
+roles = ["villager", "wolf", "investigator", "healer"]

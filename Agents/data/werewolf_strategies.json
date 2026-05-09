@@ -1,0 +1,1178 @@
+{
+  "description": "Temporary strategy-memory snapshot. Seed through store_strategy so latest and historical keys are rebuilt by the active memory.py implementation.",
+  "games": [
+    {
+      "game_id": "1",
+      "strategies": {
+        "healer": "Protecting a player on the first night can immediately confirm a villager if they are targeted, creating a powerful information advantage. If your role is revealed by a confirmed Investigator, it is often best to confirm it yourself to solidify a \"confirmed innocent\" bloc for the village. This alliance is your best protection, as it unites the majority of villagers. Once public, your voice carries significant weight; use it to analyze voting patterns and guide the discussion toward logical suspects. Your survival becomes paramount, but sacrificing secrecy for a confirmed village majority can be a game-winning move.",
+        "investigator": "Revealing your findings is powerful, but timing and method are critical. Revealing another player's special role outs them as a target; it is often safer to first establish your own credibility by revealing yourself as the Investigator. Avoid giving vague justifications for your knowledge, such as \"intuition,\" as this creates unnecessary suspicion and wastes valuable time. Once you have proven your credibility (e.g., by correctly identifying the healer), your subsequent investigations will carry immense weight and can serve as the definitive evidence the village needs to eliminate wolves. Your role is to provide undeniable facts that unite the village against a common target.",
+        "villager": "The most effective path to victory is establishing a \"confirmed innocent\" bloc as early as possible. Actively seek to identify and verify the Investigator and Healer. Once these key roles are confirmed, trust their information and protect them. Pay close attention to voting records; a player voting against the majority, especially in alignment with a known wolf, is highly suspicious. Do not let players deflect from important questions. Pointing out suspicious diversions can reveal a wolf trying to escape scrutiny and provide crucial evidence for later votes.",
+        "wolf": "When voting, try to blend in with the majority, especially if the village has a strong, unified target. Voting together with your wolf partner against the village consensus creates a permanent record that can be used to identify you after your partner is eliminated. A key defensive strategy is to identify the most observant villagers and target them for elimination at night. If the Investigator is gaining credibility, your primary goal must be to sow discord and cast doubt on their findings, framing them as either mistaken or a manipulator."
+      }
+    },
+    {
+      "game_id": "2",
+      "strategies": {
+        "healer": "Your protection is one of the most powerful tools for confirming allies. After a wolf is successfully voted out, the villager who led the accusation becomes the most likely target for wolf retaliation. Protecting that player is a high-impact move that not only saves a life but also publicly confirms a villager, helping to focus the town's efforts. Pay close attention to who is making logical arguments and driving the conversation forward, as these are the players the wolves will want to silence. Your goal is not just to prevent deaths, but to strategically create confirmed villagers.",
+        "investigator": "Your primary challenge is surviving to share your information. Proactive or highly analytical comments on Day 1 can draw the wolves' attention before you have a chance to act or speak. After you identify a wolf, consider how to subtly guide the village without making yourself the immediate next target. You can ask pointed questions to your target to expose their lies or build a case indirectly. A direct, unsupported accusation may lead to you being eliminated before the village trusts you, losing your valuable information forever.",
+        "villager": "When discussions stagnate, move beyond demanding 'suspicions' and analyze behavior. Scrutinize players who only echo the group's sentiment without contributing new ideas or observations. This \"meta-analysis\" can effectively uncover wolves who are hiding by agreeing with the majority. Voting records are critical; a single vote that deviates from the consensus, especially when a wolf is successfully eliminated, is a major red flag. Once a player is confirmed innocent by a healer's save, trust their judgment and aggressively pursue the leads they provide. Relentlessly question suspicious players and do not let them change the subject until you get a satisfactory answer.",
+        "wolf": "Targeting information roles like the Investigator on the first night is a powerful strategy to keep the village blind. When your wolf partner is discovered and a consensus forms against them, casting a lone protest vote for a random villager is a fatal mistake. This paints a massive, indefensible target on your back for the next day. It is often safer to join the majority vote against your partner to maintain your cover. If you are caught in a suspicious action, attempting to shut down discussion by saying \"we need to move on\" will be seen as an admission of guilt. Instead, invent a plausible, even if complex, justification for your actions to create doubt."
+      }
+    },
+    {
+      "game_id": "3",
+      "strategies": {
+        "healer": "Your protection is a powerful tool for confirming innocent players. After a wolf is successfully voted out, identify the villager who was most instrumental in their elimination, as they are the most likely next target for the wolves. Protecting that player is a high-priority, game-winning move that both saves a key ally and publicly confirms their innocence. Revealing your role at a critical moment, such as after a successful save on an investigator, can solidify the village's trust and provide the final evidence needed to eliminate the remaining wolves. Pay close attention to who drives logical arguments, as these are the players wolves will want to silence.",
+        "investigator": "Your primary goal is to survive long enough to share information. On Day 2, after finding a wolf, avoid a direct, unsupported accusation which could get you eliminated before you are trusted. Instead, use pointed Socratic questioning to guide the village to discover the wolf's evasiveness on their own; this builds consensus without exposing you prematurely. Once your identity is confirmed by a healer save or another event, state your findings clearly and confidently. Help the village dismantle a cornered wolf's attempts to create doubt by consistently referring back to the confirmed facts and evidence.",
+        "villager": "Scrutinize players who consistently deflect direct questions or attempt to redirect the conversation without contributing their own specific observations, as this is a major red flag. Voting records are critical; always check who voted with an eliminated wolf, especially if the target was a key villager. When special roles like the Investigator and Healer are confirmed, trust their information completely, especially when it corroborates suspicious behavior. Do not be swayed by a cornered wolf's emotional pleas when faced with overwhelming, confirmed evidence. A unified front based on concrete facts prevents wolves from creating chaos.",
+        "wolf": "When pressured for suspicions, do not just deflect questions back to the group; this pattern of evasion is easily identified as guilt. Instead, invent a plausible, even if false, suspicion against another player to redirect pressure. When your wolf partner is caught and a consensus has formed, it is almost always safer to vote with the majority to preserve your cover. A dissenting vote against a key villager becomes indefensible evidence if that villager is later confirmed innocent. Your goal is to blend in, and voting against a doomed partner is the ultimate camouflage."
+      }
+    },
+    {
+      "game_id": "4",
+      "strategies": {
+        "healer": "Your protection is a powerful tool for confirming allies. On Night 1, protecting a player who is proactively leading the discussion can be a game-winning move, as it may save a key role and publicly confirms their innocence, creating a trusted leader for the village. After a wolf is voted out, identify the villager most instrumental in their elimination, as they are the most likely next target for the wolves. Revealing your role after a critical save can solidify the village's trust and provide the evidence needed to eliminate the remaining wolves.",
+        "investigator": "Your primary goal is survival. Avoid revealing your role until you have a confirmed wolf and your own credibility is established, for instance, by a Healer's save. When you reveal, present your finding as a confirmed fact, not a suspicion. Strengthen your accusation by connecting it to suspicious behavioral evidence, such as the wolf's voting record, to create an undeniable case. Be prepared to dismantle a cornered wolf's attempts to create doubt by clearly explaining the game's timeline and the strategic reasons for your actions.",
+        "villager": "Scrutinize players who consistently deflect questions or try to redirect the conversation without contributing specific observations. If discussion stalls, break the loop by directly questioning passive players to share their concrete suspicions. Voting records are critical; a player who votes differently from the majority against a confirmed wolf is highly suspicious. When an Investigator is confirmed, trust their information completely and do not be swayed by a cornered wolf's desperate attempts to create chaos.",
+        "wolf": "To blend in, you must contribute plausible, even if false, suspicions against other players; being passive or only asking questions makes you a target. When your wolf partner is caught and a consensus has formed, always vote with the majority to preserve your cover. A dissenting vote against a doomed partner is indefensible evidence that will be used against you on the next day. If a credible Investigator identifies you, attempting to question their timing is a weak defense that often backfires and confirms your guilt."
+      }
+    },
+    {
+      "game_id": "game_20260507_121715",
+      "strategies": {
+        "healer": "Your protection is a powerful tool, but your vote is just as critical. Do not be swayed by the loudest voices or the earliest accusations, as wolves use this to create misdirection. Instead, independently analyze voting records over multiple days. A player who consistently votes for others who are revealed to be villagers is highly suspicious. Misjudging and voting for a villager not only wastes a day but also casts suspicion on you, making it harder to lead the village. On Night 1, consider protecting a player who is proactively leading discussion, as wolves may target them to silence a key voice.",
+        "investigator": "Your primary goal is survival, so avoid revealing your role until you have a confirmed wolf and the numbers are small enough that your vote is decisive. Present your finding as an undeniable fact, not a mere suspicion. Strengthen your accusation by connecting your investigation result to the wolf's suspicious voting record and deceptive behavior throughout the game. If you make an incorrect vote early on, acknowledge it but demonstrate your value by correctly identifying suspicious patterns later. This builds credibility and makes your eventual reveal more impactful and harder for a cornered wolf to discredit.",
+        "villager": "Do not let the discussion stall in loops of \"we need more information.\" If no one offers a lead, be the one to break the cycle by questioning passive players. However, be wary of the first \"concrete\" accusation, as it is often a wolf's attempt to seize control of the narrative. The most reliable evidence in the game is voting patterns over time; a player who repeatedly votes for those who turn out to be innocent is a prime suspect. When a credible Investigator reveals themselves, trust their information, especially if it aligns with the behavioral and voting evidence you have observed.",
+        "wolf": "To blend in, you must create plausible, specific, and seemingly helpful suspicions against others; pure silence or deflection is an easy tell. An effective strategy is to seize on a minor detail\u2014like a player's specific phrasing\u2014and build a narrative around it to create a target. If a villager is eliminated, weaponize their final vote to create your next misdirection. Be cautious of creating a clear pattern; if you and your partner consistently vote for players who are revealed to be villagers, you will be caught. When your partner is caught, voting with the majority against them is often the only way to preserve your own cover."
+      }
+    },
+    {
+      "game_id": "game_20260507_125924",
+      "strategies": {
+        "healer": "Your survival is paramount, as the village's chances decrease dramatically without you. On Day 1, be mindful that wolves are hunting for special roles; a discussion style that seems too eager or directive can draw unwanted attention. A more moderate, observant stance can be a better survival tactic. While protecting proactive players is a strong strategy, remember that these are the very players wolves are most likely to target, making them essential candidates for your protection, especially after a contentious day. Your vote is powerful, so prioritize identifying suspicious behavior, like consistent deflection, over superficial details.",
+        "investigator": "Your primary goal is survival, so avoid revealing your role until absolutely necessary. When you identify a wolf early, you can guide the village by leading the questioning and highlighting their suspicious behavior without revealing your power. This maintains your cover but be warned: successfully leading the charge against a wolf will make you the next likely target for their partner. Therefore, your subsequent investigation should prioritize the player who most actively defended the exposed wolf or tried to create misdirection during the debate.",
+        "villager": "Pay close attention to how players react under pressure, as sustained behavioral patterns are more revealing than superficial details. Wolves often create diversions by focusing on small inconsistencies; learn to identify and ignore these while focusing on more significant tells, like a player who consistently deflects questions or tries to broaden suspicion away from themselves. If you make an error in judgment, own it, explain your reasoning, and align with players who have been proven correct. Finally, if a suspect's evasive tactics perfectly mirror those of a previously exposed wolf, it is a very strong sign that you have found their partner.",
+        "wolf": "Targeting a key role like the Healer on Night 1 can be a game-winning move. To blend in, create specific, plausible suspicions against others. Seizing on a minor detail to build a narrative can be an effective misdirection, but be careful\u2014if you target a power role, it will backfire when their role is revealed. When your partner is caught, voting with the majority against them is often necessary for survival. Crucially, avoid using the same deflection tactics as your eliminated partner; observant villagers will spot the identical pattern of behavior and identify you."
+      }
+    },
+    {
+      "game_id": "game_20260507_131600",
+      "strategies": {
+        "healer": "Your survival is the village's top priority. On Day 1, the wolves are hunting for power roles, so avoid any language that makes you stand out; even slightly more direct or action-oriented statements can draw fatal attention. A moderate, observant stance that blends in with other villagers is the best early-game survival tactic. As the game progresses, protect the most proactive and logical players, as they are the ones who will both draw the wolves' attention and are most essential for the village's victory. Your protection is a powerful tool to shield the village's strongest assets.",
+        "investigator": "Your primary goal is survival, so avoid revealing your role until absolutely necessary. When you identify a wolf early, use this knowledge to guide the village by asking pointed questions and highlighting the wolf's evasive behavior, turning the discussion against them without exposing your power. Successfully leading the charge against a wolf will almost certainly make you the next target, so be prepared for this outcome. Therefore, use your subsequent investigation on the player who most actively defended the exposed wolf, as this will leave the village with the strongest possible lead after your likely elimination.",
+        "villager": "Pay close attention to how players react under pressure, particularly in pairs. When one player is accused and another immediately rushes to their defense, treat them as a single suspicious unit. Analyze voting records after a wolf is revealed; a player who voted against someone who was correctly identifying that wolf is highly suspect. Trust sustained behavioral patterns over sudden, flimsy accusations, as wolves will create diversions when cornered. If a suspect's evasive tactics and defensive patterns mirror those of a previously exposed wolf, it's a very strong sign you have found their partner.",
+        "wolf": "Targeting a power role like the Healer on Night 1 is a powerful move that can cripple the village. However, if your partner is put under pressure, an immediate and aggressive defense will make you both look guilty; a better tactic is to create a diversion by casting suspicion on a third party. When your partner is caught, always vote with the majority against them to preserve your own credibility. Voting against a villager who correctly identified your partner is a fatal error that will be exposed in the next day's vote analysis. Avoid using the same deflection patterns as your partner, as observant villagers will spot the coordinated behavior."
+      }
+    },
+    {
+      "game_id": "game_20260507_133131",
+      "strategies": {
+        "healer": "Your survival is the village's top priority. On Day 1, the wolves are hunting for power roles, so avoid any language that makes you stand out. However, being too quiet or passive can also draw fatal attention, as wolves may interpret it as a sign of a special role hiding. Aim to blend in by participating in discussions with neutral, question-oriented statements, similar to a typical villager trying to gather information. As the game progresses, protect the most proactive and logical players, as they are the ones who will both draw the wolves' attention and are most essential for the village's victory.",
+        "investigator": "Your primary goal is survival, and controlling information is key. Publicly 'clearing' a villager early is extremely high-risk and can be misinterpreted as a suspicious defense, leading to your own elimination. It is often better to keep the knowledge of a confirmed villager private to help narrow down your own suspect list. When you identify a wolf, guide the village by asking pointed questions that highlight the wolf's evasive behavior, turning the discussion against them without having to reveal your role. If you must reveal, do so with a clear accusation against a confirmed wolf to give the village a strong lead.",
+        "villager": "Pay close attention to behavioral patterns, but be wary of groupthink. A player's 'evasion' or cautious language may be a sign of a wolf, but it can also be a special role trying to protect their identity. When a special role like the Investigator is revealed, re-evaluate their previous statements as potential clues, not mistakes. Trusting confirmed information, even posthumously, is critical. If the Investigator tried to clear someone, that player is more likely to be a villager; focusing on them as a suspect compounds the initial error of eliminating the Investigator.",
+        "wolf": "Targeting a power role like the Healer on Night 1 is a powerful move that can cripple the village. During the day, your best strategy is often to identify existing village suspicion and amplify it rather than creating accusations from scratch. If villagers misinterpret a clue and target one of their own, join the chorus to secure the mislynch while preserving your credibility. After a successful mislynch, target the most active and competent remaining villager at night to keep the village leaderless and confused. Always vote with the majority against a caught partner to maintain your cover."
+      }
+    },
+    {
+      "game_id": "game_20260507_140259",
+      "strategies": {
+        "healer": "Your survival is the village's top priority, but a purely passive communication style can be as dangerous as being too aggressive. While asking questions can help you gather information without revealing much, relying on it exclusively makes you an easy target for wolves, who can frame it as suspicious evasion. You must contribute some concrete observations or theories to the discussion to appear engaged. If you are targeted by a coordinated narrative, you must defend yourself earlier and more forcefully. On night one, protecting one of the more proactive speakers is a solid opening move, as it saved a villager in this game and confirmed your presence to the village.",
+        "investigator": "Managing the flow of information is your most powerful weapon. While keeping your role secret is important for survival, there are moments where a strategic reveal is necessary to win. If you are under suspicion, revealing your role and clearing known villagers can be a powerful way to establish your credibility. Once trusted, your accusation against a wolf becomes undeniable. Consider a staggered information reveal: build trust by confirming villagers first, then use that trust to lead the charge against a wolf you have identified. This methodical approach can turn the tide of the game.",
+        "villager": "Be extremely wary of groupthink, especially when the suspicion is based on a player's communication style rather than hard evidence. A coordinated, multi-player push against someone for being 'too quiet' or 'too evasive' can be a wolf-led tactic to eliminate a key village role. Trust confirmed information above all else. When a special role like the Investigator is credibly revealed, you must re-evaluate their past actions as potential role protection, not as suspicious behavior. Following the lead of a confirmed role is your clearest path to victory, even if you previously held suspicions about them.",
+        "wolf": "You don't need to wait for suspicion to arise; you can create it. A highly effective strategy is to single out a player with a neutral or passive communication style and frame it as suspicious evasion. By repeating this accusation, you can build a narrative that villagers will latch onto, leading to a mislynch of a key role. After a successful mislynch, cripple the village further by targeting the most strategically competent remaining player at night. If your partner is caught by an investigator, joining the vote against them is crucial for maintaining your own cover."
+      }
+    },
+    {
+      "game_id": "game_20260507_143433",
+      "strategies": {
+        "healer": "A purely passive, observational style makes you an easy target for wolves to frame as suspicious. You must contribute concrete observations or theories to appear engaged and helpful to the village. If you become the target of a coordinated accusation, defending yourself by simply calling it a \"narrative\" may backfire and be labeled as deflection. Instead, directly answer questions with your strategic reasoning and pivot by offering a plausible alternative suspect, forcing the accusers to defend their own positions rather than just attack yours.",
+        "investigator": "The risk of being eliminated early is extremely high, as wolves will prioritize silencing you. Therefore, you must establish a subtle \"tell\" or pre-arranged signal with at least one player you trust on Day 1, without explicitly revealing your role. While investigating potential wolves early is a high-risk, high-reward play, surviving to share information is paramount. Consider investigating a player who seems like a strong, trustworthy villager first; confirming an ally can be just as valuable as finding a wolf, as it helps build a trusted coalition for when you do reveal critical information.",
+        "villager": "Be extremely wary of coordinated, aggressive accusations based on communication style rather than on evidence. If multiple players suddenly push the same narrative against one person, it is very likely a wolf pack tactic. After a mislynch, do not get distracted by a fellow villager's single mistake or bad vote. Your absolute top priority must be to re-examine who originally and most forcefully orchestrated the narrative that led to the mislynch. The architects of a successful deception are your most likely suspects.",
+        "wolf": "Proactively create suspicion by coordinating with your partner to target a player with a neutral communication style, framing their passivity as evasion and their defense as deflection. If a villager vocally defends your target, eliminate that defender during the night to remove a critical thinker and sow confusion. After a successful mislynch, skillfully pivot by joining any new line of suspicion that emerges against a villager, effectively using the village's own confusion to cover your tracks."
+      }
+    },
+    {
+      "game_id": "game_20260507_151446",
+      "strategies": {
+        "healer": "Contribute concrete observations to appear engaged, but prioritize protecting the most vocal and effective villagers who are driving accusations. This not only keeps key assets in the game but also helps confirm their roles when saves are announced, providing the village with certified allies. When accused, don't just deny; calmly deconstruct the accuser's motive, pointing out if their accusation is a desperate deflection after they've been cornered. A purely passive style makes you an easy target, so blend active discussion with strategic, high-impact saves.",
+        "investigator": "Your highest priority is survival to ensure your information can be used. Simply repeating questions without offering direction can be perceived as unhelpful and make you a target. To avoid this, subtly guide the conversation by proposing hypothetical scenarios. If you investigate and confirm a villager, find a discreet way to build an alliance with them. This creates a defender who can vouch for you if you come under fire, buying you the time needed to investigate a wolf and share your findings decisively.",
+        "villager": "After a mislynch, your absolute priority is to re-examine who originally and most forcefully orchestrated the narrative that led to the mistake. Be very wary of voting someone out based purely on their communication style, as wolves will exploit frustration to eliminate key roles who are being deliberately cautious. Pay close attention to players who engage in \"mirrored\" or mutual deflection; this is often a sign of a wolf pair coordinating. Trust the evidence from Healer saves\u2014when a player's role is confirmed, any votes against them become the most reliable indicator of a wolf.",
+        "wolf": "Coordinating to frame a player based on their communication style can be a powerful opening move to eliminate a special role. However, if you and your partner come under suspicion, avoid overt mutual defense, as this makes your alliance obvious. A better approach is for one wolf to lay low while the other creates a new, unrelated line of suspicion. If you must both offer a defense for a shared action, ensure your stories are consistent, as contradictory explanations are a fatal giveaway. Never vote for the same villager you intend to attack at night; if a Healer save occurs, the linked actions provide undeniable proof of your identity."
+      }
+    },
+    {
+      "game_id": "game_20260508_102118",
+      "strategies": {
+        "healer": "Your primary goal is to keep key villagers alive. On the first night, with no information, protecting the most proactive player is a strong opening move, as wolves often target potential leaders. If you successfully save someone, they become a confirmed villager and a valuable asset; consider protecting them again if they continue to draw attention, but remain adaptable. Pay close attention to who is leading discussions and making sharp observations, as they will become wolf targets. Your protection choices are your main way of influencing the game, so make them based on who is most valuable or most threatened.",
+        "investigator": "Your information is the village's most powerful weapon, but it is useless if you are eliminated before sharing it. Never lie or misrepresent facts to justify your actions; your credibility is your only defense. If you are caught in an inconsistency, you will be seen as a wolf. If you are under serious threat of being voted out, you must reveal your role and your findings to the town, as losing that information is worse than revealing your identity. Avoid casting lone, unexplained votes, as this immediately draws suspicion. Your goal is to find wolves and share that information effectively before you become a target.",
+        "villager": "Your strength is in numbers and logic. Wolves win by creating chaos and turning villagers against each other, often by making accusations based on vague feelings or \"communication style\". Do not get drawn into these distractions. Instead, focus on the facts: voting records, verifiable claims, and inconsistencies in players' stories. When a player makes a claim about a past event, fact-check it. A player saved by the healer is a confirmed ally; use them as a trusted source. Exposing a single lie is the most effective way to unify the village and correctly identify a threat.",
+        "wolf": "Your primary weapon is deception. In the absence of early-game evidence, create your own by coordinating an attack on a villager's communication style\u2014accuse them of being defensive or evasive to sow seeds of doubt. This can successfully lead to a mislynch and create discord. Target observant villagers at night who ask sharp questions or demonstrate strong reasoning, as they are the biggest threat to your success. As the game nears its end, prioritize eliminating the most strategically dangerous player to secure a win, even if it means leaving a power role like the healer alive. Always maintain alignment in public discussions and votes to avoid raising suspicion."
+      }
+    },
+    {
+      "game_id": "game_20260508_110628",
+      "strategies": {
+        "healer": "As the Healer, your survival is critical, but passive play can make you an easy target. Actively participate in discussions by offering unique, albeit small, observations to establish your credibility as a proactive villager. This avoids the appearance of simply agreeing with the majority, which can be framed as suspicious by a wolf looking for a target to deflect pressure onto. Be mindful that wolves may target players central to the day's conflict, even if they are not the primary accuser. Your goal is to blend in as a useful villager, making yourself a less appealing or obvious target for both accusations and night kills.",
+        "investigator": "Your primary role is to gather information, but your strategic value extends to guiding the village's focus. When you have confirmed villagers but haven't found a wolf, leverage your position to inject key behavioral observations into the discussion. Pointing out suspicious, coordinated patterns, such as multiple players deflecting or deferring to others, can steer the village toward wolves without revealing your identity. This preserves your anonymity and safety while allowing you to act on your unique game-wide perspective. Only reveal your role as a last resort; subtle guidance is often more powerful and safer.",
+        "villager": "Success as a villager hinges on identifying and exposing behavioral patterns that span multiple rounds. Wolves often betray themselves not through a single slip-up, but through consistent strategies of evasion. Focus on how suspects respond to pressure; do they offer concrete explanations or resort to vague, emotional excuses? A unified front that relentlessly questions suspicious voting records and deflections is your strongest weapon. Do not allow a suspect to pivot the conversation away from their past actions until they have provided a satisfactory, logical explanation, as this is a common wolf tactic to run out the clock. Ultimately, a wolf's silence under direct, sustained questioning can be more damning than any lie they might tell.",
+        "wolf": "Your primary goal is to blend in, and that means avoiding actions that create an easily traceable record. Never cast a lone dissenting vote for your wolf partner when they are being eliminated; it's better to vote with the majority and live to fight another day. When defending past actions, such as a suspicious vote, always invent a concrete, logical reason rather than a vague, emotional excuse like 'clouded judgment,' which villagers will correctly interpret as evasion. On Day 1, use subtle phrasing differences to identify and eliminate potentially proactive villagers. If you need to deflect suspicion, accuse players who seem passive or merely agreeable, as this is a more believable accusation than targeting a village leader."
+      }
+    },
+    {
+      "game_id": "game_20260508_112947",
+      "strategies": {
+        "healer": "As a Healer, your primary goal is to survive while protecting the most valuable village assets. In the early game, when information is scarce, focus on identifying villagers who are driving logical, evidence-based discussions and protect them from wolf attacks. If an Investigator is revealed or lynched, pay extremely close attention to their final vote and protect anyone who champions that lead. In the endgame, be wary of wolf-created logic traps that rely on speculating about night-kill choices. Instead, prioritize a player's documented day-time actions and voting history, especially any alignment with a confirmed wolf, as this is concrete evidence that cannot be manipulated. Your vote is often decisive, so base it on verifiable facts over speculative narratives.",
+        "investigator": "As the Investigator, your survival depends on managing how the village perceives you. In the early game, avoid making redundant or overly emotional statements that can be twisted by wolves as 'over-performing'. If you are targeted with accusations based on your communication style, provide a direct, concise explanation and immediately pivot to your own suspicions. Do not get bogged down in defending your phrasing, and avoid questioning the validity of the village's line of inquiry, as this will be perceived as defensive and evasive. Your goal is to appear calm and analytical. If you are certain you will be eliminated, use your final vote on your strongest wolf suspect to guide the village from beyond the grave.",
+        "villager": "As a villager, your strength lies in collective memory and logical deduction based on verifiable facts. In the early game, be wary of players who create strong accusations from minor, subjective details like word choice, as this is a common wolf tactic to manipulate an information-starved village. If an information role is eliminated, their final vote should be treated as their most important discovery; pursue that lead relentlessly and be skeptical of any attempts by the target to deflect or dismiss it. In the endgame, distrust any argument that relies on interpreting the 'logic' of a wolf's secret night kills, as this is a narrative the wolf controls. Instead, base your decisions on the hard evidence of voting records and past alignments.",
+        "wolf": "As a wolf, your primary objective is to control the narrative. In the early game when information is scarce, do not be passive. Seize the initiative by creating a plausible, detailed accusation from a minor observation, such as a player's phrasing. This establishes you as a helpful villager and can successfully frame an information role. If your partner is caught, vote with the majority to eliminate them to preserve your own credibility. In the endgame, manufacture doubt by creating logic puzzles based on your night-kill choices, forcing villagers to defend situations they cannot explain and deflecting from your own voting history. Always have a target in mind and a narrative to support your actions."
+      }
+    },
+    {
+      "game_id": "game_20260508_122149",
+      "strategies": {
+        "healer": "In the early game, prioritize protecting vocal players who are actively trying to solve the puzzle, as wolves will target them to stifle leadership. If you find yourself under suspicion, especially from a mislynched villager's final vote, avoid speculating on their mindset. Instead, provide a clear, confident defense of your own actions and immediately pivot to pointing out more concrete, evidence-based threats, such as a suspect's voting alignment with a confirmed wolf. Using hard evidence to redirect suspicion is more effective than a convoluted self-defense.",
+        "investigator": "Your role is to find wolves, but aggressive, high-profile questioning in the early game will paint a target on your back. Balance driving the discussion with self-preservation. If you uncover a wolf, consider how you can subtly guide the village without outing yourself immediately. However, if the village is about to mislynch or you are under heavy suspicion, revealing your role and findings is better than being eliminated with crucial information that could have saved the village.",
+        "villager": "Be wary of early, aggressive accusations based on subjective communication styles, especially when multiple players coordinate the attack. Instead of piling on, scrutinize the accusers' motives and past actions. When a mislynch occurs, the most valuable clue is often not the victim's final vote, but the behavior of the person who led the charge. Watch for suspects who constantly deflect or try to shift focus away from their own actions. Prioritize concrete evidence like voting records\u2014a suspect voting in tandem with a confirmed wolf is far stronger evidence than lingering suspicions or another villager's potentially mistaken final vote.",
+        "wolf": "Focus on creating a unified, believable narrative against a single target based on subjective traits like communication style, as information-starved villagers are susceptible to the first concrete-sounding story. If you lead a mislynch, don't deflect when questioned; instead, own the mistake and frame it as a learning experience to rebuild credibility. Crucially, avoid creating traceable links to your wolf partner; never vote for the same minority target, as this alignment becomes damning evidence once one of you is exposed."
+      }
+    },
+    {
+      "game_id": "game_20260508_124551",
+      "strategies": {
+        "healer": "As the Healer, your primary goal is to survive while protecting key villagers. Early in the game, saving a player who is targeted by wolves provides the village with a confirmed non-wolf, a powerful source of trust. However, be mindful of your own actions in discussions; avoid passively agreeing with popular but unsubstantiated accusations, as this can create a perceived alignment with a wolf and make you a target for the remaining wolf if their partner is eliminated. Your protection choices should prioritize players who are leading successful eliminations or those who are being aggressively and baselessly targeted by potential wolves.",
+        "investigator": "Your strength lies in gathering definitive information, but your survival depends on using it wisely. In the early game, if you identify a wolf and the village discussion organically starts moving against them, it is often best to vote with the majority without revealing your role. This protects your identity for future nights. Revealing should be reserved for critical moments, such as preventing a village mislynch, correcting a dangerously wrong consensus, or when you are about to be eliminated yourself. Your silence is a shield; use it to observe and guide subtly until a dramatic intervention is required.",
+        "villager": "Your greatest strength is collective reasoning. Pay close attention to who is agreeing with whom, especially when accusations are based on subjective criteria like communication style rather than hard evidence. A coordinated attack on a player from multiple sources with the same flimsy reasoning is a major wolf signal. Once a wolf is exposed, immediately analyze the voting records and discussion history to see who was aligned with them; this is the most reliable way to find their partner. Do not let a cornered wolf change the subject\u2014persistent, focused questioning based on evidence is your path to victory.",
+        "wolf": "Coordination is your key advantage, but it must be subtle. When framing a villager, avoid having both wolves push the exact same narrative aggressively, as this makes your partnership obvious. Instead, have one wolf lead the charge while the other feigns deliberation or guides suspicion through questions. If your partner is eliminated, you must sever the connection convincingly. Do not just deflect; create a credible, new accusation against another player. A lone protest vote for your partner is a death sentence\u2014it is better to join the majority to sacrifice your partner and live to kill another night."
+      }
+    },
+    {
+      "game_id": "game_20260508_130942",
+      "strategies": {
+        "healer": "In the early game, when information is scarce, protecting the player who initiates conversation can be a high-value move, as they often become a prime target for wolves. A successful save not only keeps a valuable player in the game but also provides the village with a nearly-confirmed trusted ally. As the game progresses, pay close attention to voting records and discussion dynamics to identify villagers who are effectively driving wolf discovery, and prioritize protecting them. Your goal is to shield the village's most effective players from elimination.",
+        "investigator": "You can effectively guide the village without revealing your role. After identifying a wolf, instead of a public reveal, use targeted questions to expose their evasive behavior and guide the village to a consensus. This preserves your anonymity, protecting you from wolf attacks while still leveraging your nightly findings. Let the village build the case based on the behavioral evidence you elicit, making the elimination a collective decision rather than one based on your sole authority.",
+        "villager": "Your greatest tools are coordinated questioning and analyzing voting records. If a player seems evasive, deflects questions, or refuses to offer a specific opinion, multiple villagers should press them for a direct answer. This collective pressure often forces a wolf's hand and exposes their deception. After a wolf is voted out, immediately scrutinize the vote history. Any player who cast a dissenting vote is a prime suspect, as they were likely trying to protect their wolf partner. Calling attention to this evidence is the fastest way to identify remaining threats.",
+        "wolf": "Your survival depends on blending in through both communication and voting. When questioned, avoid deflection and evasiveness at all costs; it is better to offer a plausible, generic theory than to turn questions back on your accusers. This pattern of behavior is a massive red flag for villagers. Crucially, if your wolf partner is about to be voted out by a strong majority, vote with the village to eliminate them. Casting a lone dissenting vote creates an undeniable link on the public record, making you the next logical target. Sacrificing your partner is often the correct move to ensure your own survival."
+      }
+    }
+  ],
+  "namespaces": {
+    "strategy/healer": [
+      {
+        "created_at": "2026-05-08T05:02:49.409377+00:00",
+        "key": "game_1",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:02:49.409395+00:00",
+        "value": {
+          "content": "Protecting a player on the first night can immediately confirm a villager if they are targeted, creating a powerful information advantage. If your role is revealed by a confirmed Investigator, it is often best to confirm it yourself to solidify a \"confirmed innocent\" bloc for the village. This alliance is your best protection, as it unites the majority of villagers. Once public, your voice carries significant weight; use it to analyze voting patterns and guide the discussion toward logical suspects. Your survival becomes paramount, but sacrificing secrecy for a confirmed village majority can be a game-winning move.",
+          "created_at": "2026-05-08T13:02:48.914902",
+          "game_id": "1"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:13.143534+00:00",
+        "key": "latest",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:11:13.143540+00:00",
+        "value": {
+          "content": "In the early game, when information is scarce, protecting the player who initiates conversation can be a high-value move, as they often become a prime target for wolves. A successful save not only keeps a valuable player in the game but also provides the village with a nearly-confirmed trusted ally. As the game progresses, pay close attention to voting records and discussion dynamics to identify villagers who are effectively driving wolf discovery, and prioritize protecting them. Your goal is to shield the village's most effective players from elimination.",
+          "created_at": "2026-05-08T13:11:12.266457",
+          "game_id": "game_20260508_130942"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:53.417621+00:00",
+        "key": "game_2",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:02:53.417893+00:00",
+        "value": {
+          "content": "Your protection is one of the most powerful tools for confirming allies. After a wolf is successfully voted out, the villager who led the accusation becomes the most likely target for wolf retaliation. Protecting that player is a high-impact move that not only saves a life but also publicly confirms a villager, helping to focus the town's efforts. Pay close attention to who is making logical arguments and driving the conversation forward, as these are the players the wolves will want to silence. Your goal is not just to prevent deaths, but to strategically create confirmed villagers.",
+          "created_at": "2026-05-08T13:02:52.808093",
+          "game_id": "2"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:57.413443+00:00",
+        "key": "game_3",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:02:57.413480+00:00",
+        "value": {
+          "content": "Your protection is a powerful tool for confirming innocent players. After a wolf is successfully voted out, identify the villager who was most instrumental in their elimination, as they are the most likely next target for the wolves. Protecting that player is a high-priority, game-winning move that both saves a key ally and publicly confirms their innocence. Revealing your role at a critical moment, such as after a successful save on an investigator, can solidify the village's trust and provide the final evidence needed to eliminate the remaining wolves. Pay close attention to who drives logical arguments, as these are the players wolves will want to silence.",
+          "created_at": "2026-05-08T13:02:57.021789",
+          "game_id": "3"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:01.485277+00:00",
+        "key": "game_4",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:01.485287+00:00",
+        "value": {
+          "content": "Your protection is a powerful tool for confirming allies. On Night 1, protecting a player who is proactively leading the discussion can be a game-winning move, as it may save a key role and publicly confirms their innocence, creating a trusted leader for the village. After a wolf is voted out, identify the villager most instrumental in their elimination, as they are the most likely next target for the wolves. Revealing your role after a critical save can solidify the village's trust and provide the evidence needed to eliminate the remaining wolves.",
+          "created_at": "2026-05-08T13:03:01.029827",
+          "game_id": "4"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:05.502220+00:00",
+        "key": "game_game_20260507_121715",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:05.502244+00:00",
+        "value": {
+          "content": "Your protection is a powerful tool, but your vote is just as critical. Do not be swayed by the loudest voices or the earliest accusations, as wolves use this to create misdirection. Instead, independently analyze voting records over multiple days. A player who consistently votes for others who are revealed to be villagers is highly suspicious. Misjudging and voting for a villager not only wastes a day but also casts suspicion on you, making it harder to lead the village. On Night 1, consider protecting a player who is proactively leading discussion, as wolves may target them to silence a key voice.",
+          "created_at": "2026-05-08T13:03:05.096958",
+          "game_id": "game_20260507_121715"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:09.295026+00:00",
+        "key": "game_game_20260507_125924",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:09.295041+00:00",
+        "value": {
+          "content": "Your survival is paramount, as the village's chances decrease dramatically without you. On Day 1, be mindful that wolves are hunting for special roles; a discussion style that seems too eager or directive can draw unwanted attention. A more moderate, observant stance can be a better survival tactic. While protecting proactive players is a strong strategy, remember that these are the very players wolves are most likely to target, making them essential candidates for your protection, especially after a contentious day. Your vote is powerful, so prioritize identifying suspicious behavior, like consistent deflection, over superficial details.",
+          "created_at": "2026-05-08T13:03:08.893027",
+          "game_id": "game_20260507_125924"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:12.815500+00:00",
+        "key": "game_game_20260507_131600",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:12.815517+00:00",
+        "value": {
+          "content": "Your survival is the village's top priority. On Day 1, the wolves are hunting for power roles, so avoid any language that makes you stand out; even slightly more direct or action-oriented statements can draw fatal attention. A moderate, observant stance that blends in with other villagers is the best early-game survival tactic. As the game progresses, protect the most proactive and logical players, as they are the ones who will both draw the wolves' attention and are most essential for the village's victory. Your protection is a powerful tool to shield the village's strongest assets.",
+          "created_at": "2026-05-08T13:03:12.123216",
+          "game_id": "game_20260507_131600"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:17.188369+00:00",
+        "key": "game_game_20260507_133131",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:17.188378+00:00",
+        "value": {
+          "content": "Your survival is the village's top priority. On Day 1, the wolves are hunting for power roles, so avoid any language that makes you stand out. However, being too quiet or passive can also draw fatal attention, as wolves may interpret it as a sign of a special role hiding. Aim to blend in by participating in discussions with neutral, question-oriented statements, similar to a typical villager trying to gather information. As the game progresses, protect the most proactive and logical players, as they are the ones who will both draw the wolves' attention and are most essential for the village's victory.",
+          "created_at": "2026-05-08T13:03:16.777603",
+          "game_id": "game_20260507_133131"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:20.789692+00:00",
+        "key": "game_game_20260507_140259",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:20.789709+00:00",
+        "value": {
+          "content": "Your survival is the village's top priority, but a purely passive communication style can be as dangerous as being too aggressive. While asking questions can help you gather information without revealing much, relying on it exclusively makes you an easy target for wolves, who can frame it as suspicious evasion. You must contribute some concrete observations or theories to the discussion to appear engaged. If you are targeted by a coordinated narrative, you must defend yourself earlier and more forcefully. On night one, protecting one of the more proactive speakers is a solid opening move, as it saved a villager in this game and confirmed your presence to the village.",
+          "created_at": "2026-05-08T13:03:20.410019",
+          "game_id": "game_20260507_140259"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:24.616648+00:00",
+        "key": "game_game_20260507_143433",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:24.616673+00:00",
+        "value": {
+          "content": "A purely passive, observational style makes you an easy target for wolves to frame as suspicious. You must contribute concrete observations or theories to appear engaged and helpful to the village. If you become the target of a coordinated accusation, defending yourself by simply calling it a \"narrative\" may backfire and be labeled as deflection. Instead, directly answer questions with your strategic reasoning and pivot by offering a plausible alternative suspect, forcing the accusers to defend their own positions rather than just attack yours.",
+          "created_at": "2026-05-08T13:03:24.145438",
+          "game_id": "game_20260507_143433"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:27.829318+00:00",
+        "key": "game_game_20260507_151446",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:27.829336+00:00",
+        "value": {
+          "content": "Contribute concrete observations to appear engaged, but prioritize protecting the most vocal and effective villagers who are driving accusations. This not only keeps key assets in the game but also helps confirm their roles when saves are announced, providing the village with certified allies. When accused, don't just deny; calmly deconstruct the accuser's motive, pointing out if their accusation is a desperate deflection after they've been cornered. A purely passive style makes you an easy target, so blend active discussion with strategic, high-impact saves.",
+          "created_at": "2026-05-08T13:03:27.450699",
+          "game_id": "game_20260507_151446"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:31.411336+00:00",
+        "key": "game_game_20260508_102118",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:31.411364+00:00",
+        "value": {
+          "content": "Your primary goal is to keep key villagers alive. On the first night, with no information, protecting the most proactive player is a strong opening move, as wolves often target potential leaders. If you successfully save someone, they become a confirmed villager and a valuable asset; consider protecting them again if they continue to draw attention, but remain adaptable. Pay close attention to who is leading discussions and making sharp observations, as they will become wolf targets. Your protection choices are your main way of influencing the game, so make them based on who is most valuable or most threatened.",
+          "created_at": "2026-05-08T13:03:30.946766",
+          "game_id": "game_20260508_102118"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:34.696643+00:00",
+        "key": "game_game_20260508_110628",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:34.696660+00:00",
+        "value": {
+          "content": "As the Healer, your survival is critical, but passive play can make you an easy target. Actively participate in discussions by offering unique, albeit small, observations to establish your credibility as a proactive villager. This avoids the appearance of simply agreeing with the majority, which can be framed as suspicious by a wolf looking for a target to deflect pressure onto. Be mindful that wolves may target players central to the day's conflict, even if they are not the primary accuser. Your goal is to blend in as a useful villager, making yourself a less appealing or obvious target for both accusations and night kills.",
+          "created_at": "2026-05-08T13:03:34.285637",
+          "game_id": "game_20260508_110628"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:38.177508+00:00",
+        "key": "game_game_20260508_112947",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:38.177534+00:00",
+        "value": {
+          "content": "As a Healer, your primary goal is to survive while protecting the most valuable village assets. In the early game, when information is scarce, focus on identifying villagers who are driving logical, evidence-based discussions and protect them from wolf attacks. If an Investigator is revealed or lynched, pay extremely close attention to their final vote and protect anyone who champions that lead. In the endgame, be wary of wolf-created logic traps that rely on speculating about night-kill choices. Instead, prioritize a player's documented day-time actions and voting history, especially any alignment with a confirmed wolf, as this is concrete evidence that cannot be manipulated. Your vote is often decisive, so base it on verifiable facts over speculative narratives.",
+          "created_at": "2026-05-08T13:03:37.726518",
+          "game_id": "game_20260508_112947"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:41.560343+00:00",
+        "key": "game_game_20260508_122149",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:41.560352+00:00",
+        "value": {
+          "content": "In the early game, prioritize protecting vocal players who are actively trying to solve the puzzle, as wolves will target them to stifle leadership. If you find yourself under suspicion, especially from a mislynched villager's final vote, avoid speculating on their mindset. Instead, provide a clear, confident defense of your own actions and immediately pivot to pointing out more concrete, evidence-based threats, such as a suspect's voting alignment with a confirmed wolf. Using hard evidence to redirect suspicion is more effective than a convoluted self-defense.",
+          "created_at": "2026-05-08T13:03:41.191694",
+          "game_id": "game_20260508_122149"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:45.412240+00:00",
+        "key": "game_game_20260508_124551",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:03:45.412261+00:00",
+        "value": {
+          "content": "As the Healer, your primary goal is to survive while protecting key villagers. Early in the game, saving a player who is targeted by wolves provides the village with a confirmed non-wolf, a powerful source of trust. However, be mindful of your own actions in discussions; avoid passively agreeing with popular but unsubstantiated accusations, as this can create a perceived alignment with a wolf and make you a target for the remaining wolf if their partner is eliminated. Your protection choices should prioritize players who are leading successful eliminations or those who are being aggressively and baselessly targeted by potential wolves.",
+          "created_at": "2026-05-08T13:03:44.935464",
+          "game_id": "game_20260508_124551"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:12.661965+00:00",
+        "key": "game_game_20260508_130942",
+        "namespace": [
+          "strategy",
+          "healer"
+        ],
+        "updated_at": "2026-05-08T05:11:12.661974+00:00",
+        "value": {
+          "content": "In the early game, when information is scarce, protecting the player who initiates conversation can be a high-value move, as they often become a prime target for wolves. A successful save not only keeps a valuable player in the game but also provides the village with a nearly-confirmed trusted ally. As the game progresses, pay close attention to voting records and discussion dynamics to identify villagers who are effectively driving wolf discovery, and prioritize protecting them. Your goal is to shield the village's most effective players from elimination.",
+          "created_at": "2026-05-08T13:11:12.266457",
+          "game_id": "game_20260508_130942"
+        }
+      }
+    ],
+    "strategy/investigator": [
+      {
+        "created_at": "2026-05-08T05:02:50.359154+00:00",
+        "key": "game_1",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:02:50.359167+00:00",
+        "value": {
+          "content": "Revealing your findings is powerful, but timing and method are critical. Revealing another player's special role outs them as a target; it is often safer to first establish your own credibility by revealing yourself as the Investigator. Avoid giving vague justifications for your knowledge, such as \"intuition,\" as this creates unnecessary suspicion and wastes valuable time. Once you have proven your credibility (e.g., by correctly identifying the healer), your subsequent investigations will carry immense weight and can serve as the definitive evidence the village needs to eliminate wolves. Your role is to provide undeniable facts that unite the village against a common target.",
+          "created_at": "2026-05-08T13:02:49.941916",
+          "game_id": "1"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:13.979428+00:00",
+        "key": "latest",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:11:13.979440+00:00",
+        "value": {
+          "content": "You can effectively guide the village without revealing your role. After identifying a wolf, instead of a public reveal, use targeted questions to expose their evasive behavior and guide the village to a consensus. This preserves your anonymity, protecting you from wolf attacks while still leveraging your nightly findings. Let the village build the case based on the behavioral evidence you elicit, making the elimination a collective decision rather than one based on your sole authority.",
+          "created_at": "2026-05-08T13:11:13.143563",
+          "game_id": "game_20260508_130942"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:54.550869+00:00",
+        "key": "game_2",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:02:54.550888+00:00",
+        "value": {
+          "content": "Your primary challenge is surviving to share your information. Proactive or highly analytical comments on Day 1 can draw the wolves' attention before you have a chance to act or speak. After you identify a wolf, consider how to subtly guide the village without making yourself the immediate next target. You can ask pointed questions to your target to expose their lies or build a case indirectly. A direct, unsupported accusation may lead to you being eliminated before the village trusts you, losing your valuable information forever.",
+          "created_at": "2026-05-08T13:02:54.041471",
+          "game_id": "2"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:58.441730+00:00",
+        "key": "game_3",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:02:58.441743+00:00",
+        "value": {
+          "content": "Your primary goal is to survive long enough to share information. On Day 2, after finding a wolf, avoid a direct, unsupported accusation which could get you eliminated before you are trusted. Instead, use pointed Socratic questioning to guide the village to discover the wolf's evasiveness on their own; this builds consensus without exposing you prematurely. Once your identity is confirmed by a healer save or another event, state your findings clearly and confidently. Help the village dismantle a cornered wolf's attempts to create doubt by consistently referring back to the confirmed facts and evidence.",
+          "created_at": "2026-05-08T13:02:57.931263",
+          "game_id": "3"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:02.747051+00:00",
+        "key": "game_4",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:02.747071+00:00",
+        "value": {
+          "content": "Your primary goal is survival. Avoid revealing your role until you have a confirmed wolf and your own credibility is established, for instance, by a Healer's save. When you reveal, present your finding as a confirmed fact, not a suspicion. Strengthen your accusation by connecting it to suspicious behavioral evidence, such as the wolf's voting record, to create an undeniable case. Be prepared to dismantle a cornered wolf's attempts to create doubt by clearly explaining the game's timeline and the strategic reasons for your actions.",
+          "created_at": "2026-05-08T13:03:02.150344",
+          "game_id": "4"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:06.326073+00:00",
+        "key": "game_game_20260507_121715",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:06.326096+00:00",
+        "value": {
+          "content": "Your primary goal is survival, so avoid revealing your role until you have a confirmed wolf and the numbers are small enough that your vote is decisive. Present your finding as an undeniable fact, not a mere suspicion. Strengthen your accusation by connecting your investigation result to the wolf's suspicious voting record and deceptive behavior throughout the game. If you make an incorrect vote early on, acknowledge it but demonstrate your value by correctly identifying suspicious patterns later. This builds credibility and makes your eventual reveal more impactful and harder for a cornered wolf to discredit.",
+          "created_at": "2026-05-08T13:03:05.868064",
+          "game_id": "game_20260507_121715"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:10.050097+00:00",
+        "key": "game_game_20260507_125924",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:10.050118+00:00",
+        "value": {
+          "content": "Your primary goal is survival, so avoid revealing your role until absolutely necessary. When you identify a wolf early, you can guide the village by leading the questioning and highlighting their suspicious behavior without revealing your power. This maintains your cover but be warned: successfully leading the charge against a wolf will make you the next likely target for their partner. Therefore, your subsequent investigation should prioritize the player who most actively defended the exposed wolf or tried to create misdirection during the debate.",
+          "created_at": "2026-05-08T13:03:09.672688",
+          "game_id": "game_20260507_125924"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:14.380366+00:00",
+        "key": "game_game_20260507_131600",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:14.380392+00:00",
+        "value": {
+          "content": "Your primary goal is survival, so avoid revealing your role until absolutely necessary. When you identify a wolf early, use this knowledge to guide the village by asking pointed questions and highlighting the wolf's evasive behavior, turning the discussion against them without exposing your power. Successfully leading the charge against a wolf will almost certainly make you the next target, so be prepared for this outcome. Therefore, use your subsequent investigation on the player who most actively defended the exposed wolf, as this will leave the village with the strongest possible lead after your likely elimination.",
+          "created_at": "2026-05-08T13:03:13.391228",
+          "game_id": "game_20260507_131600"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:18.101159+00:00",
+        "key": "game_game_20260507_133131",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:18.101180+00:00",
+        "value": {
+          "content": "Your primary goal is survival, and controlling information is key. Publicly 'clearing' a villager early is extremely high-risk and can be misinterpreted as a suspicious defense, leading to your own elimination. It is often better to keep the knowledge of a confirmed villager private to help narrow down your own suspect list. When you identify a wolf, guide the village by asking pointed questions that highlight the wolf's evasive behavior, turning the discussion against them without having to reveal your role. If you must reveal, do so with a clear accusation against a confirmed wolf to give the village a strong lead.",
+          "created_at": "2026-05-08T13:03:17.614291",
+          "game_id": "game_20260507_133131"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:21.768956+00:00",
+        "key": "game_game_20260507_140259",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:21.768979+00:00",
+        "value": {
+          "content": "Managing the flow of information is your most powerful weapon. While keeping your role secret is important for survival, there are moments where a strategic reveal is necessary to win. If you are under suspicion, revealing your role and clearing known villagers can be a powerful way to establish your credibility. Once trusted, your accusation against a wolf becomes undeniable. Consider a staggered information reveal: build trust by confirming villagers first, then use that trust to lead the charge against a wolf you have identified. This methodical approach can turn the tide of the game.",
+          "created_at": "2026-05-08T13:03:21.281286",
+          "game_id": "game_20260507_140259"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:25.449052+00:00",
+        "key": "game_game_20260507_143433",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:25.449065+00:00",
+        "value": {
+          "content": "The risk of being eliminated early is extremely high, as wolves will prioritize silencing you. Therefore, you must establish a subtle \"tell\" or pre-arranged signal with at least one player you trust on Day 1, without explicitly revealing your role. While investigating potential wolves early is a high-risk, high-reward play, surviving to share information is paramount. Consider investigating a player who seems like a strong, trustworthy villager first; confirming an ally can be just as valuable as finding a wolf, as it helps build a trusted coalition for when you do reveal critical information.",
+          "created_at": "2026-05-08T13:03:25.068032",
+          "game_id": "game_20260507_143433"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:28.650043+00:00",
+        "key": "game_game_20260507_151446",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:28.650054+00:00",
+        "value": {
+          "content": "Your highest priority is survival to ensure your information can be used. Simply repeating questions without offering direction can be perceived as unhelpful and make you a target. To avoid this, subtly guide the conversation by proposing hypothetical scenarios. If you investigate and confirm a villager, find a discreet way to build an alliance with them. This creates a defender who can vouch for you if you come under fire, buying you the time needed to investigate a wolf and share your findings decisively.",
+          "created_at": "2026-05-08T13:03:28.181709",
+          "game_id": "game_20260507_151446"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:32.308986+00:00",
+        "key": "game_game_20260508_102118",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:32.309003+00:00",
+        "value": {
+          "content": "Your information is the village's most powerful weapon, but it is useless if you are eliminated before sharing it. Never lie or misrepresent facts to justify your actions; your credibility is your only defense. If you are caught in an inconsistency, you will be seen as a wolf. If you are under serious threat of being voted out, you must reveal your role and your findings to the town, as losing that information is worse than revealing your identity. Avoid casting lone, unexplained votes, as this immediately draws suspicion. Your goal is to find wolves and share that information effectively before you become a target.",
+          "created_at": "2026-05-08T13:03:31.928486",
+          "game_id": "game_20260508_102118"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:35.539848+00:00",
+        "key": "game_game_20260508_110628",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:35.539858+00:00",
+        "value": {
+          "content": "Your primary role is to gather information, but your strategic value extends to guiding the village's focus. When you have confirmed villagers but haven't found a wolf, leverage your position to inject key behavioral observations into the discussion. Pointing out suspicious, coordinated patterns, such as multiple players deflecting or deferring to others, can steer the village toward wolves without revealing your identity. This preserves your anonymity and safety while allowing you to act on your unique game-wide perspective. Only reveal your role as a last resort; subtle guidance is often more powerful and safer.",
+          "created_at": "2026-05-08T13:03:35.132128",
+          "game_id": "game_20260508_110628"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:39.092402+00:00",
+        "key": "game_game_20260508_112947",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:39.092421+00:00",
+        "value": {
+          "content": "As the Investigator, your survival depends on managing how the village perceives you. In the early game, avoid making redundant or overly emotional statements that can be twisted by wolves as 'over-performing'. If you are targeted with accusations based on your communication style, provide a direct, concise explanation and immediately pivot to your own suspicions. Do not get bogged down in defending your phrasing, and avoid questioning the validity of the village's line of inquiry, as this will be perceived as defensive and evasive. Your goal is to appear calm and analytical. If you are certain you will be eliminated, use your final vote on your strongest wolf suspect to guide the village from beyond the grave.",
+          "created_at": "2026-05-08T13:03:38.584479",
+          "game_id": "game_20260508_112947"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:42.574348+00:00",
+        "key": "game_game_20260508_122149",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:42.574357+00:00",
+        "value": {
+          "content": "Your role is to find wolves, but aggressive, high-profile questioning in the early game will paint a target on your back. Balance driving the discussion with self-preservation. If you uncover a wolf, consider how you can subtly guide the village without outing yourself immediately. However, if the village is about to mislynch or you are under heavy suspicion, revealing your role and findings is better than being eliminated with crucial information that could have saved the village.",
+          "created_at": "2026-05-08T13:03:42.065226",
+          "game_id": "game_20260508_122149"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:46.163604+00:00",
+        "key": "game_game_20260508_124551",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:03:46.163680+00:00",
+        "value": {
+          "content": "Your strength lies in gathering definitive information, but your survival depends on using it wisely. In the early game, if you identify a wolf and the village discussion organically starts moving against them, it is often best to vote with the majority without revealing your role. This protects your identity for future nights. Revealing should be reserved for critical moments, such as preventing a village mislynch, correcting a dangerously wrong consensus, or when you are about to be eliminated yourself. Your silence is a shield; use it to observe and guide subtly until a dramatic intervention is required.",
+          "created_at": "2026-05-08T13:03:45.789505",
+          "game_id": "game_20260508_124551"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:13.521768+00:00",
+        "key": "game_game_20260508_130942",
+        "namespace": [
+          "strategy",
+          "investigator"
+        ],
+        "updated_at": "2026-05-08T05:11:13.521773+00:00",
+        "value": {
+          "content": "You can effectively guide the village without revealing your role. After identifying a wolf, instead of a public reveal, use targeted questions to expose their evasive behavior and guide the village to a consensus. This preserves your anonymity, protecting you from wolf attacks while still leveraging your nightly findings. Let the village build the case based on the behavioral evidence you elicit, making the elimination a collective decision rather than one based on your sole authority.",
+          "created_at": "2026-05-08T13:11:13.143563",
+          "game_id": "game_20260508_130942"
+        }
+      }
+    ],
+    "strategy/villager": [
+      {
+        "created_at": "2026-05-08T05:02:51.280114+00:00",
+        "key": "game_1",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:02:51.280137+00:00",
+        "value": {
+          "content": "The most effective path to victory is establishing a \"confirmed innocent\" bloc as early as possible. Actively seek to identify and verify the Investigator and Healer. Once these key roles are confirmed, trust their information and protect them. Pay close attention to voting records; a player voting against the majority, especially in alignment with a known wolf, is highly suspicious. Do not let players deflect from important questions. Pointing out suspicious diversions can reveal a wolf trying to escape scrutiny and provide crucial evidence for later votes.",
+          "created_at": "2026-05-08T13:02:50.869920",
+          "game_id": "1"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:12.266444+00:00",
+        "key": "latest",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:11:12.266449+00:00",
+        "value": {
+          "content": "Your greatest tools are coordinated questioning and analyzing voting records. If a player seems evasive, deflects questions, or refuses to offer a specific opinion, multiple villagers should press them for a direct answer. This collective pressure often forces a wolf's hand and exposes their deception. After a wolf is voted out, immediately scrutinize the vote history. Any player who cast a dissenting vote is a prime suspect, as they were likely trying to protect their wolf partner. Calling attention to this evidence is the fastest way to identify remaining threats.",
+          "created_at": "2026-05-08T13:11:11.407914",
+          "game_id": "game_20260508_130942"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:55.438898+00:00",
+        "key": "game_2",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:02:55.438923+00:00",
+        "value": {
+          "content": "When discussions stagnate, move beyond demanding 'suspicions' and analyze behavior. Scrutinize players who only echo the group's sentiment without contributing new ideas or observations. This \"meta-analysis\" can effectively uncover wolves who are hiding by agreeing with the majority. Voting records are critical; a single vote that deviates from the consensus, especially when a wolf is successfully eliminated, is a major red flag. Once a player is confirmed innocent by a healer's save, trust their judgment and aggressively pursue the leads they provide. Relentlessly question suspicious players and do not let them change the subject until you get a satisfactory answer.",
+          "created_at": "2026-05-08T13:02:54.961205",
+          "game_id": "2"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:59.369750+00:00",
+        "key": "game_3",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:02:59.369799+00:00",
+        "value": {
+          "content": "Scrutinize players who consistently deflect direct questions or attempt to redirect the conversation without contributing their own specific observations, as this is a major red flag. Voting records are critical; always check who voted with an eliminated wolf, especially if the target was a key villager. When special roles like the Investigator and Healer are confirmed, trust their information completely, especially when it corroborates suspicious behavior. Do not be swayed by a cornered wolf's emotional pleas when faced with overwhelming, confirmed evidence. A unified front based on concrete facts prevents wolves from creating chaos.",
+          "created_at": "2026-05-08T13:02:58.935297",
+          "game_id": "3"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:03.650904+00:00",
+        "key": "game_4",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:03.650919+00:00",
+        "value": {
+          "content": "Scrutinize players who consistently deflect questions or try to redirect the conversation without contributing specific observations. If discussion stalls, break the loop by directly questioning passive players to share their concrete suspicions. Voting records are critical; a player who votes differently from the majority against a confirmed wolf is highly suspicious. When an Investigator is confirmed, trust their information completely and do not be swayed by a cornered wolf's desperate attempts to create chaos.",
+          "created_at": "2026-05-08T13:03:03.155391",
+          "game_id": "4"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:07.407562+00:00",
+        "key": "game_game_20260507_121715",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:07.407580+00:00",
+        "value": {
+          "content": "Do not let the discussion stall in loops of \"we need more information.\" If no one offers a lead, be the one to break the cycle by questioning passive players. However, be wary of the first \"concrete\" accusation, as it is often a wolf's attempt to seize control of the narrative. The most reliable evidence in the game is voting patterns over time; a player who repeatedly votes for those who turn out to be innocent is a prime suspect. When a credible Investigator reveals themselves, trust their information, especially if it aligns with the behavioral and voting evidence you have observed.",
+          "created_at": "2026-05-08T13:03:06.841348",
+          "game_id": "game_20260507_121715"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:10.911848+00:00",
+        "key": "game_game_20260507_125924",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:10.911879+00:00",
+        "value": {
+          "content": "Pay close attention to how players react under pressure, as sustained behavioral patterns are more revealing than superficial details. Wolves often create diversions by focusing on small inconsistencies; learn to identify and ignore these while focusing on more significant tells, like a player who consistently deflects questions or tries to broaden suspicion away from themselves. If you make an error in judgment, own it, explain your reasoning, and align with players who have been proven correct. Finally, if a suspect's evasive tactics perfectly mirror those of a previously exposed wolf, it is a very strong sign that you have found their partner.",
+          "created_at": "2026-05-08T13:03:10.529424",
+          "game_id": "game_20260507_125924"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:15.407142+00:00",
+        "key": "game_game_20260507_131600",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:15.407161+00:00",
+        "value": {
+          "content": "Pay close attention to how players react under pressure, particularly in pairs. When one player is accused and another immediately rushes to their defense, treat them as a single suspicious unit. Analyze voting records after a wolf is revealed; a player who voted against someone who was correctly identifying that wolf is highly suspect. Trust sustained behavioral patterns over sudden, flimsy accusations, as wolves will create diversions when cornered. If a suspect's evasive tactics and defensive patterns mirror those of a previously exposed wolf, it's a very strong sign you have found their partner.",
+          "created_at": "2026-05-08T13:03:14.824606",
+          "game_id": "game_20260507_131600"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:18.921607+00:00",
+        "key": "game_game_20260507_133131",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:18.921629+00:00",
+        "value": {
+          "content": "Pay close attention to behavioral patterns, but be wary of groupthink. A player's 'evasion' or cautious language may be a sign of a wolf, but it can also be a special role trying to protect their identity. When a special role like the Investigator is revealed, re-evaluate their previous statements as potential clues, not mistakes. Trusting confirmed information, even posthumously, is critical. If the Investigator tried to clear someone, that player is more likely to be a villager; focusing on them as a suspect compounds the initial error of eliminating the Investigator.",
+          "created_at": "2026-05-08T13:03:18.461485",
+          "game_id": "game_20260507_133131"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:22.813233+00:00",
+        "key": "game_game_20260507_140259",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:22.813251+00:00",
+        "value": {
+          "content": "Be extremely wary of groupthink, especially when the suspicion is based on a player's communication style rather than hard evidence. A coordinated, multi-player push against someone for being 'too quiet' or 'too evasive' can be a wolf-led tactic to eliminate a key village role. Trust confirmed information above all else. When a special role like the Investigator is credibly revealed, you must re-evaluate their past actions as potential role protection, not as suspicious behavior. Following the lead of a confirmed role is your clearest path to victory, even if you previously held suspicions about them.",
+          "created_at": "2026-05-08T13:03:22.402438",
+          "game_id": "game_20260507_140259"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:26.227268+00:00",
+        "key": "game_game_20260507_143433",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:26.227281+00:00",
+        "value": {
+          "content": "Be extremely wary of coordinated, aggressive accusations based on communication style rather than on evidence. If multiple players suddenly push the same narrative against one person, it is very likely a wolf pack tactic. After a mislynch, do not get distracted by a fellow villager's single mistake or bad vote. Your absolute top priority must be to re-examine who originally and most forcefully orchestrated the narrative that led to the mislynch. The architects of a successful deception are your most likely suspects.",
+          "created_at": "2026-05-08T13:03:25.888077",
+          "game_id": "game_20260507_143433"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:29.741300+00:00",
+        "key": "game_game_20260507_151446",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:29.741314+00:00",
+        "value": {
+          "content": "After a mislynch, your absolute priority is to re-examine who originally and most forcefully orchestrated the narrative that led to the mistake. Be very wary of voting someone out based purely on their communication style, as wolves will exploit frustration to eliminate key roles who are being deliberately cautious. Pay close attention to players who engage in \"mirrored\" or mutual deflection; this is often a sign of a wolf pair coordinating. Trust the evidence from Healer saves\u2014when a player's role is confirmed, any votes against them become the most reliable indicator of a wolf.",
+          "created_at": "2026-05-08T13:03:29.274334",
+          "game_id": "game_20260507_151446"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:33.165238+00:00",
+        "key": "game_game_20260508_102118",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:33.165297+00:00",
+        "value": {
+          "content": "Your strength is in numbers and logic. Wolves win by creating chaos and turning villagers against each other, often by making accusations based on vague feelings or \"communication style\". Do not get drawn into these distractions. Instead, focus on the facts: voting records, verifiable claims, and inconsistencies in players' stories. When a player makes a claim about a past event, fact-check it. A player saved by the healer is a confirmed ally; use them as a trusted source. Exposing a single lie is the most effective way to unify the village and correctly identify a threat.",
+          "created_at": "2026-05-08T13:03:32.714573",
+          "game_id": "game_20260508_102118"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:36.542537+00:00",
+        "key": "game_game_20260508_110628",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:36.542548+00:00",
+        "value": {
+          "content": "Success as a villager hinges on identifying and exposing behavioral patterns that span multiple rounds. Wolves often betray themselves not through a single slip-up, but through consistent strategies of evasion. Focus on how suspects respond to pressure; do they offer concrete explanations or resort to vague, emotional excuses? A unified front that relentlessly questions suspicious voting records and deflections is your strongest weapon. Do not allow a suspect to pivot the conversation away from their past actions until they have provided a satisfactory, logical explanation, as this is a common wolf tactic to run out the clock. Ultimately, a wolf's silence under direct, sustained questioning can be more damning than any lie they might tell.",
+          "created_at": "2026-05-08T13:03:36.031466",
+          "game_id": "game_20260508_110628"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:39.847178+00:00",
+        "key": "game_game_20260508_112947",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:39.847190+00:00",
+        "value": {
+          "content": "As a villager, your strength lies in collective memory and logical deduction based on verifiable facts. In the early game, be wary of players who create strong accusations from minor, subjective details like word choice, as this is a common wolf tactic to manipulate an information-starved village. If an information role is eliminated, their final vote should be treated as their most important discovery; pursue that lead relentlessly and be skeptical of any attempts by the target to deflect or dismiss it. In the endgame, distrust any argument that relies on interpreting the 'logic' of a wolf's secret night kills, as this is a narrative the wolf controls. Instead, base your decisions on the hard evidence of voting records and past alignments.",
+          "created_at": "2026-05-08T13:03:39.477497",
+          "game_id": "game_20260508_112947"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:43.412895+00:00",
+        "key": "game_game_20260508_122149",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:43.412908+00:00",
+        "value": {
+          "content": "Be wary of early, aggressive accusations based on subjective communication styles, especially when multiple players coordinate the attack. Instead of piling on, scrutinize the accusers' motives and past actions. When a mislynch occurs, the most valuable clue is often not the victim's final vote, but the behavior of the person who led the charge. Watch for suspects who constantly deflect or try to shift focus away from their own actions. Prioritize concrete evidence like voting records\u2014a suspect voting in tandem with a confirmed wolf is far stronger evidence than lingering suspicions or another villager's potentially mistaken final vote.",
+          "created_at": "2026-05-08T13:03:42.985545",
+          "game_id": "game_20260508_122149"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:46.980041+00:00",
+        "key": "game_game_20260508_124551",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:03:46.980064+00:00",
+        "value": {
+          "content": "Your greatest strength is collective reasoning. Pay close attention to who is agreeing with whom, especially when accusations are based on subjective criteria like communication style rather than hard evidence. A coordinated attack on a player from multiple sources with the same flimsy reasoning is a major wolf signal. Once a wolf is exposed, immediately analyze the voting records and discussion history to see who was aligned with them; this is the most reliable way to find their partner. Do not let a cornered wolf change the subject\u2014persistent, focused questioning based on evidence is your path to victory.",
+          "created_at": "2026-05-08T13:03:46.574000",
+          "game_id": "game_20260508_124551"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:11.841772+00:00",
+        "key": "game_game_20260508_130942",
+        "namespace": [
+          "strategy",
+          "villager"
+        ],
+        "updated_at": "2026-05-08T05:11:11.841778+00:00",
+        "value": {
+          "content": "Your greatest tools are coordinated questioning and analyzing voting records. If a player seems evasive, deflects questions, or refuses to offer a specific opinion, multiple villagers should press them for a direct answer. This collective pressure often forces a wolf's hand and exposes their deception. After a wolf is voted out, immediately scrutinize the vote history. Any player who cast a dissenting vote is a prime suspect, as they were likely trying to protect their wolf partner. Calling attention to this evidence is the fastest way to identify remaining threats.",
+          "created_at": "2026-05-08T13:11:11.407914",
+          "game_id": "game_20260508_130942"
+        }
+      }
+    ],
+    "strategy/wolf": [
+      {
+        "created_at": "2026-05-08T05:02:52.243026+00:00",
+        "key": "game_1",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:02:52.243035+00:00",
+        "value": {
+          "content": "When voting, try to blend in with the majority, especially if the village has a strong, unified target. Voting together with your wolf partner against the village consensus creates a permanent record that can be used to identify you after your partner is eliminated. A key defensive strategy is to identify the most observant villagers and target them for elimination at night. If the Investigator is gaining credibility, your primary goal must be to sow discord and cast doubt on their findings, framing them as either mistaken or a manipulator.",
+          "created_at": "2026-05-08T13:02:51.672341",
+          "game_id": "1"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:11.407890+00:00",
+        "key": "latest",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:11:11.407896+00:00",
+        "value": {
+          "content": "Your survival depends on blending in through both communication and voting. When questioned, avoid deflection and evasiveness at all costs; it is better to offer a plausible, generic theory than to turn questions back on your accusers. This pattern of behavior is a massive red flag for villagers. Crucially, if your wolf partner is about to be voted out by a strong majority, vote with the village to eliminate them. Casting a lone dissenting vote creates an undeniable link on the public record, making you the next logical target. Sacrificing your partner is often the correct move to ensure your own survival.",
+          "created_at": "2026-05-08T13:11:10.566625",
+          "game_id": "game_20260508_130942"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:02:56.494342+00:00",
+        "key": "game_2",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:02:56.494354+00:00",
+        "value": {
+          "content": "Targeting information roles like the Investigator on the first night is a powerful strategy to keep the village blind. When your wolf partner is discovered and a consensus forms against them, casting a lone protest vote for a random villager is a fatal mistake. This paints a massive, indefensible target on your back for the next day. It is often safer to join the majority vote against your partner to maintain your cover. If you are caught in a suspicious action, attempting to shut down discussion by saying \"we need to move on\" will be seen as an admission of guilt. Instead, invent a plausible, even if complex, justification for your actions to create doubt.",
+          "created_at": "2026-05-08T13:02:55.878449",
+          "game_id": "2"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:00.586232+00:00",
+        "key": "game_3",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:00.586238+00:00",
+        "value": {
+          "content": "When pressured for suspicions, do not just deflect questions back to the group; this pattern of evasion is easily identified as guilt. Instead, invent a plausible, even if false, suspicion against another player to redirect pressure. When your wolf partner is caught and a consensus has formed, it is almost always safer to vote with the majority to preserve your cover. A dissenting vote against a key villager becomes indefensible evidence if that villager is later confirmed innocent. Your goal is to blend in, and voting against a doomed partner is the ultimate camouflage.",
+          "created_at": "2026-05-08T13:03:00.114252",
+          "game_id": "3"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:04.594617+00:00",
+        "key": "game_4",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:04.594638+00:00",
+        "value": {
+          "content": "To blend in, you must contribute plausible, even if false, suspicions against other players; being passive or only asking questions makes you a target. When your wolf partner is caught and a consensus has formed, always vote with the majority to preserve your cover. A dissenting vote against a doomed partner is indefensible evidence that will be used against you on the next day. If a credible Investigator identifies you, attempting to question their timing is a weak defense that often backfires and confirms your guilt.",
+          "created_at": "2026-05-08T13:03:04.078307",
+          "game_id": "4"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:08.380708+00:00",
+        "key": "game_game_20260507_121715",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:08.380721+00:00",
+        "value": {
+          "content": "To blend in, you must create plausible, specific, and seemingly helpful suspicions against others; pure silence or deflection is an easy tell. An effective strategy is to seize on a minor detail\u2014like a player's specific phrasing\u2014and build a narrative around it to create a target. If a villager is eliminated, weaponize their final vote to create your next misdirection. Be cautious of creating a clear pattern; if you and your partner consistently vote for players who are revealed to be villagers, you will be caught. When your partner is caught, voting with the majority against them is often the only way to preserve your own cover.",
+          "created_at": "2026-05-08T13:03:07.821688",
+          "game_id": "game_20260507_121715"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:11.705453+00:00",
+        "key": "game_game_20260507_125924",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:11.705467+00:00",
+        "value": {
+          "content": "Targeting a key role like the Healer on Night 1 can be a game-winning move. To blend in, create specific, plausible suspicions against others. Seizing on a minor detail to build a narrative can be an effective misdirection, but be careful\u2014if you target a power role, it will backfire when their role is revealed. When your partner is caught, voting with the majority against them is often necessary for survival. Crucially, avoid using the same deflection tactics as your eliminated partner; observant villagers will spot the identical pattern of behavior and identify you.",
+          "created_at": "2026-05-08T13:03:11.322775",
+          "game_id": "game_20260507_125924"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:16.362339+00:00",
+        "key": "game_game_20260507_131600",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:16.362358+00:00",
+        "value": {
+          "content": "Targeting a power role like the Healer on Night 1 is a powerful move that can cripple the village. However, if your partner is put under pressure, an immediate and aggressive defense will make you both look guilty; a better tactic is to create a diversion by casting suspicion on a third party. When your partner is caught, always vote with the majority against them to preserve your own credibility. Voting against a villager who correctly identified your partner is a fatal error that will be exposed in the next day's vote analysis. Avoid using the same deflection patterns as your partner, as observant villagers will spot the coordinated behavior.",
+          "created_at": "2026-05-08T13:03:15.953549",
+          "game_id": "game_20260507_131600"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:19.945699+00:00",
+        "key": "game_game_20260507_133131",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:19.945723+00:00",
+        "value": {
+          "content": "Targeting a power role like the Healer on Night 1 is a powerful move that can cripple the village. During the day, your best strategy is often to identify existing village suspicion and amplify it rather than creating accusations from scratch. If villagers misinterpret a clue and target one of their own, join the chorus to secure the mislynch while preserving your credibility. After a successful mislynch, target the most active and competent remaining villager at night to keep the village leaderless and confused. Always vote with the majority against a caught partner to maintain your cover.",
+          "created_at": "2026-05-08T13:03:19.444228",
+          "game_id": "game_20260507_133131"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:23.619721+00:00",
+        "key": "game_game_20260507_140259",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:23.619748+00:00",
+        "value": {
+          "content": "You don't need to wait for suspicion to arise; you can create it. A highly effective strategy is to single out a player with a neutral or passive communication style and frame it as suspicious evasion. By repeating this accusation, you can build a narrative that villagers will latch onto, leading to a mislynch of a key role. After a successful mislynch, cripple the village further by targeting the most strategically competent remaining player at night. If your partner is caught by an investigator, joining the vote against them is crucial for maintaining your own cover.",
+          "created_at": "2026-05-08T13:03:23.224850",
+          "game_id": "game_20260507_140259"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:27.066300+00:00",
+        "key": "game_game_20260507_143433",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:27.066324+00:00",
+        "value": {
+          "content": "Proactively create suspicion by coordinating with your partner to target a player with a neutral communication style, framing their passivity as evasion and their defense as deflection. If a villager vocally defends your target, eliminate that defender during the night to remove a critical thinker and sow confusion. After a successful mislynch, skillfully pivot by joining any new line of suspicion that emerges against a villager, effectively using the village's own confusion to cover your tracks.",
+          "created_at": "2026-05-08T13:03:26.707977",
+          "game_id": "game_20260507_143433"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:30.570181+00:00",
+        "key": "game_game_20260507_151446",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:30.570191+00:00",
+        "value": {
+          "content": "Coordinating to frame a player based on their communication style can be a powerful opening move to eliminate a special role. However, if you and your partner come under suspicion, avoid overt mutual defense, as this makes your alliance obvious. A better approach is for one wolf to lay low while the other creates a new, unrelated line of suspicion. If you must both offer a defense for a shared action, ensure your stories are consistent, as contradictory explanations are a fatal giveaway. Never vote for the same villager you intend to attack at night; if a Healer save occurs, the linked actions provide undeniable proof of your identity.",
+          "created_at": "2026-05-08T13:03:30.187975",
+          "game_id": "game_20260507_151446"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:33.905215+00:00",
+        "key": "game_game_20260508_102118",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:33.905227+00:00",
+        "value": {
+          "content": "Your primary weapon is deception. In the absence of early-game evidence, create your own by coordinating an attack on a villager's communication style\u2014accuse them of being defensive or evasive to sow seeds of doubt. This can successfully lead to a mislynch and create discord. Target observant villagers at night who ask sharp questions or demonstrate strong reasoning, as they are the biggest threat to your success. As the game nears its end, prioritize eliminating the most strategically dangerous player to secure a win, even if it means leaving a power role like the healer alive. Always maintain alignment in public discussions and votes to avoid raising suspicion.",
+          "created_at": "2026-05-08T13:03:33.525818",
+          "game_id": "game_20260508_102118"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:37.355231+00:00",
+        "key": "game_game_20260508_110628",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:37.355240+00:00",
+        "value": {
+          "content": "Your primary goal is to blend in, and that means avoiding actions that create an easily traceable record. Never cast a lone dissenting vote for your wolf partner when they are being eliminated; it's better to vote with the majority and live to fight another day. When defending past actions, such as a suspicious vote, always invent a concrete, logical reason rather than a vague, emotional excuse like 'clouded judgment,' which villagers will correctly interpret as evasion. On Day 1, use subtle phrasing differences to identify and eliminate potentially proactive villagers. If you need to deflect suspicion, accuse players who seem passive or merely agreeable, as this is a more believable accusation than targeting a village leader.",
+          "created_at": "2026-05-08T13:03:36.902919",
+          "game_id": "game_20260508_110628"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:40.806144+00:00",
+        "key": "game_game_20260508_112947",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:40.806154+00:00",
+        "value": {
+          "content": "As a wolf, your primary objective is to control the narrative. In the early game when information is scarce, do not be passive. Seize the initiative by creating a plausible, detailed accusation from a minor observation, such as a player's phrasing. This establishes you as a helpful villager and can successfully frame an information role. If your partner is caught, vote with the majority to eliminate them to preserve your own credibility. In the endgame, manufacture doubt by creating logic puzzles based on your night-kill choices, forcing villagers to defend situations they cannot explain and deflecting from your own voting history. Always have a target in mind and a narrative to support your actions.",
+          "created_at": "2026-05-08T13:03:40.320377",
+          "game_id": "game_20260508_112947"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:44.424581+00:00",
+        "key": "game_game_20260508_122149",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:44.424605+00:00",
+        "value": {
+          "content": "Focus on creating a unified, believable narrative against a single target based on subjective traits like communication style, as information-starved villagers are susceptible to the first concrete-sounding story. If you lead a mislynch, don't deflect when questioned; instead, own the mistake and frame it as a learning experience to rebuild credibility. Crucially, avoid creating traceable links to your wolf partner; never vote for the same minority target, as this alignment becomes damning evidence once one of you is exposed.",
+          "created_at": "2026-05-08T13:03:43.907851",
+          "game_id": "game_20260508_122149"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:03:47.903069+00:00",
+        "key": "game_game_20260508_124551",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:03:47.903099+00:00",
+        "value": {
+          "content": "Coordination is your key advantage, but it must be subtle. When framing a villager, avoid having both wolves push the exact same narrative aggressively, as this makes your partnership obvious. Instead, have one wolf lead the charge while the other feigns deliberation or guides suspicion through questions. If your partner is eliminated, you must sever the connection convincingly. Do not just deflect; create a credible, new accusation against another player. A lone protest vote for your partner is a death sentence\u2014it is better to join the majority to sacrifice your partner and live to kill another night.",
+          "created_at": "2026-05-08T13:03:47.408299",
+          "game_id": "game_20260508_124551"
+        }
+      },
+      {
+        "created_at": "2026-05-08T05:11:10.973643+00:00",
+        "key": "game_game_20260508_130942",
+        "namespace": [
+          "strategy",
+          "wolf"
+        ],
+        "updated_at": "2026-05-08T05:11:10.973657+00:00",
+        "value": {
+          "content": "Your survival depends on blending in through both communication and voting. When questioned, avoid deflection and evasiveness at all costs; it is better to offer a plausible, generic theory than to turn questions back on your accusers. This pattern of behavior is a massive red flag for villagers. Crucially, if your wolf partner is about to be voted out by a strong majority, vote with the village to eliminate them. Casting a lone dissenting vote creates an undeniable link on the public record, making you the next logical target. Sacrificing your partner is often the correct move to ensure your own survival.",
+          "created_at": "2026-05-08T13:11:10.566625",
+          "game_id": "game_20260508_130942"
+        }
+      }
+    ]
+  },
+  "schema_version": "werewolf_strategies.v1",
+  "updated_at": "2026-05-08T13:11:13.980483"
+}
