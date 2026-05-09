@@ -77,7 +77,7 @@ def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
     concurrent_nodes = []
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
     strategies = state.get("agent_strategies", {})
-    
+
     for player in surviving_players:
         role = state["roles"][player]
         is_human = player == state["human_player"]
@@ -154,7 +154,7 @@ def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
                         "current_day": state["current_day"],
                         "previous_strategy": strategies.get(player, ""),
                         "strategy_points": "",
-                    },  
+                    },
                 )
             )
 
@@ -175,7 +175,7 @@ def collect_discussion(state: DayGraphState):
 def check_round(state: DayGraphState) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY_DISCUSSION"]:
     if state["current_day"] == 1:
         return "SUMMARIZE_DAY_DISCUSSION"
-    
+
     # Check if anyone spoke this round
     current_round_messages = [
         m for m in state["day_channel"]
@@ -183,10 +183,10 @@ def check_round(state: DayGraphState) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY
     ]
     if not current_round_messages:
         return "SUMMARIZE_DAY_DISCUSSION"
-    
+
     if state["current_round"] > 5:
         return "SUMMARIZE_DAY_DISCUSSION"
-    
+
     return "PREPARE_ROUND"
 
 
@@ -513,11 +513,11 @@ def post_game_analysis(state: OrchestratorGraph):
     if not extracted_observations:
         logger.warning("No observations extracted from post-game analysis.")
         return
-        
+
     # Store observations and strategies in memory
     store_observation(store, extracted_observations.observations, game_id)
     store_strategy_points(store, extracted_observations.strategy_points, game_id)
-    
+
     strategies_dict = {
         'wolf': extracted_observations.wolf_strategy,
         'villager': extracted_observations.villager_strategy,
@@ -527,5 +527,5 @@ def post_game_analysis(state: OrchestratorGraph):
     store_strategy(store, strategies_dict, game_id)
     # Temporary dev-phase persistence until memory storage is refactored for production.
     dump_memory_to_json_files(target_store=store)
-    
+
     logger.info(f"Post-game analysis completed and stored for game_id: {game_id}")

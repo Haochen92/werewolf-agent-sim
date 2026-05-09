@@ -22,7 +22,7 @@ def store_observation(store: InMemoryStore, extracted_observations: list[Observa
     for obs in extracted_observations:
         perspective = obs.perspective
         content = obs.content
-        
+
         items = store.search(("observations", perspective), query=content, limit=1)
         if items:
             item = items[0]
@@ -33,7 +33,7 @@ def store_observation(store: InMemoryStore, extracted_observations: list[Observa
                 observation.last_observed = datetime.now()
                 store.put(("observations",perspective), item.key, observation.model_dump())
                 continue
-        
+
         new_observation = StoredObservation(
             observation_count=1,
             last_observed=datetime.now(),

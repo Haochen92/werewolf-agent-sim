@@ -71,7 +71,7 @@ Win conditions:
 - Wolves win when they equal or outnumber villagers.
 
 Game flow:
-- Day: all players discuss up to 6 rounds. The day's discussion ends when 6 rounds are completed, 
+- Day: all players discuss up to 6 rounds. The day's discussion ends when 6 rounds are completed,
     or no players speak for a round, whichever comes first. After discussion, players
     then vote to eliminate one player. Ties result in no elimination.
 - Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
@@ -186,7 +186,7 @@ Your current strategy note:
 
 Role-specific lens: {role_lens}
 
-Extract exactly between 1-3 situations, where each involves a different player or group of players. 
+Extract exactly between 1-3 situations, where each involves a different player or group of players.
 Do not describe the same conflict from multiple angles.
 
 Focus on:
@@ -525,8 +525,8 @@ You may only vote for surviving villagers, not yourself or your allies.
 
 You must respond with a valid JSON:
 {{
-    "message": "your discussion message", 
-    "vote_target": "Player_X", 
+    "message": "your discussion message",
+    "vote_target": "Player_X",
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 """,
@@ -690,7 +690,7 @@ Do these:
    "The village mislynched a villager after wolves coordinated a communication-style attack
    with no voting evidence to support it. On the following day, the village had the voting
    record from the mislynch available but no investigation results."
-   
+
    BAD scenario specificity (too generic, will match everything):
    "After a mislynch, the village needed to identify the wolves."
 

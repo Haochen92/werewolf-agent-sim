@@ -20,7 +20,7 @@ def extract_postgame(state: OrchestratorGraph, max_retries: int = 2 ) -> GameStr
     """
     # Format all inputs
     formatted_roles = format_roles(state.get("roles", {}))
- 
+
     formatted_discussions = (
         "=== Day Discussions ===\n"
         + format_day_channel_postgame(state.get("day_channel", []), state.get("roles", {}))
@@ -29,14 +29,14 @@ def extract_postgame(state: OrchestratorGraph, max_retries: int = 2 ) -> GameStr
         + "\n\n=== Investigator Results ===\n"
         + format_investigator_results(state.get("investigator_results", []))
     )
- 
+
     formatted_strategy_notes = format_strategy_notes_postgame(
         state.get("agent_strategies", {}), state.get("roles", {})
     )
     formatted_previous_strategies = "No previous role strategy summaries were injected into this game."
- 
+
     game_outcome = state.get("winner", "unknown")
- 
+
     # Build the prompt
     prompt = POSTGAME_EXTRACTION_PROMPT.format(
         formatted_roles=formatted_roles,
@@ -45,7 +45,7 @@ def extract_postgame(state: OrchestratorGraph, max_retries: int = 2 ) -> GameStr
         formatted_previous_strategies=formatted_previous_strategies,
         game_outcome=game_outcome,
     )
- 
+
     # Call Pro model with structured output
     llm_pro = get_llm_pro()
     for attempt in range(max_retries + 1):

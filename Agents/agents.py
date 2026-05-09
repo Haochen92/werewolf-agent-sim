@@ -126,7 +126,7 @@ def _run_agent(
             "retrieved_observations", "No past observations available."
         ),
     }
-    
+
     player_id = payload.get("player_id", "")
     prompt_log.append(
         {
@@ -138,19 +138,19 @@ def _run_agent(
             "prompt_input": prompt_input.copy(),
         }
     )
-    
+
     for attempt in range(max_retries + 1):
-        try: 
+        try:
             result = chain.invoke(prompt_input)
         except Exception as e:
             logger.warning(f"LLM call failed for {player_id}: {e}")
             if attempt < max_retries:
                 continue
             break
-    
+
         # Extract strategy if present on the result
         strategy_update = getattr(result, "updated_strategy", None)
-    
+
         if output_key == "day_channel":
             message = result.message.strip() if result.message else None
             if not message or message.lower() == "null":
@@ -183,7 +183,7 @@ def _run_agent(
                 return {"day_votes": [DayVote(voter=player_id, votee=validated)]}
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
-        
+
         if output_key == "wolf_channel":
             validated = _validate_target(
                 result.vote_target,
@@ -207,7 +207,7 @@ def _run_agent(
                 return output
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
-        
+
         if output_key == "healer_target":
             validated = _validate_target(
                 result.healer_target,

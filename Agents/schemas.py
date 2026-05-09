@@ -102,13 +102,13 @@ class GameStrategyOutput(BaseModel):
     healer_strategy: str = Field(
         description="Updated strategy playbook for the healer role. 3-8 sentences of actionable principles."
     )
-    
+
 
 class StoredStrategy(BaseModel):
     game_id: Optional[str] = ""
     content: str
     created_at: datetime
-    
+
 class StoredObservation(BaseModel):
     observation_count: int # Keep track how many time this observation has been observed
     last_observed: datetime

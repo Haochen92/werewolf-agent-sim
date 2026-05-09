@@ -35,7 +35,7 @@ def build_game_config(
 
 def flush():
     langfuse.flush()
-    
-    
+
+
 def compute_and_push_scores(result: dict, trace_id: str):
     pass

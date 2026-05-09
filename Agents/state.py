@@ -165,7 +165,7 @@ class WolfNightState(TypedDict):
     surviving_wolves: list[str]
     previous_strategy: str
     strategy_points: str
-    
+
     player_id: str
     player_role: str
     human_player: bool

@@ -49,8 +49,8 @@ def format_day_channel_postgame(messages: list[DayChannel], roles: dict[str, str
         f"[Day {m.day}, Round {m.round}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
         for m in messages
     )
-    
- 
+
+
 def format_strategy_notes_postgame(
     agent_strategies: dict[str, str], roles: dict[str, str]
 ) -> str:
@@ -60,8 +60,8 @@ def format_strategy_notes_postgame(
         f"{player} ({roles.get(player, 'unknown')}): {strategy}"
         for player, strategy in agent_strategies.items()
     )
- 
- 
+
+
 def format_roles(roles: dict[str, str]) -> str:
     return "\n".join(f"{player}: {role}" for player, role in roles.items())
 
