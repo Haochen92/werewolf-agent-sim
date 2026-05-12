@@ -1,9 +1,14 @@
 from dotenv import load_dotenv
-from langfuse.langchain import CallbackHandler
 
 from Agents.agents import prompt_log
+from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
 from Agents.graphs.parent import parent_graph_compiled
-from Agents.tracing import langfuse, build_game_config, flush, compute_and_push_scores
+from Agents.tracing import (
+    Metrics,
+    build_game_config,
+    flush,
+    langfuse,
+)
 
 
 INITIAL_STATE = {
@@ -20,24 +25,53 @@ INITIAL_STATE = {
 def run_game(memory_config: dict | None = None, session_id: str | None = None):
     config = build_game_config(memory_config, session_id)
     game_id = config["configurable"]["game_id"]
+    metrics = Metrics()
+    initial_state = {key: value.copy() for key, value in INITIAL_STATE.items()}
 
     prompt_log.clear()
 
     with langfuse.start_as_current_observation(
-        as_type="span", name="werewolf-game"
+        as_type="span",
+        name="werewolf-game",
+        input=initial_state,
     ) as root:
         root.update_trace(
+            name="werewolf_game",
             session_id=session_id,
+            input=initial_state,
+            output={"status": "running"},
             metadata={
                 "game_id": game_id,
                 "memory_config": config["configurable"]["memory_config"],
             },
         )
+        flush()
 
-        result = parent_graph_compiled.invoke(INITIAL_STATE, config=config)
+        try:
+            result = parent_graph_compiled.invoke(
+                initial_state,
+                config=config,
+                context={"metrics": metrics},
+            )
+        except Exception as exc:
+            error_output = {
+                "status": "error",
+                "error": repr(exc),
+            }
+            root.update(output=error_output, level="ERROR", status_message=str(exc))
+            root.update_trace(output=error_output)
+            flush()
+            raise
 
-        # store trace_id for potential post-game score pushing
-        compute_and_push_scores(result, root.trace_id)
+        final_output = {
+            "status": "success",
+            "result": result,
+        }
+        root.update(output=final_output)
+        root.update_trace(output=final_output)
+
+        game_metrics = compute_game_metrics(result, metrics)
+        push_scores_to_langfuse(game_metrics, root.trace_id)
 
     flush()
     return result

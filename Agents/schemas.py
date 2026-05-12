@@ -122,3 +122,17 @@ class StoredStrategyPoint(BaseModel):
     game_id: Optional[str] = ""
     content: str  # Situation text used by the store's embedding index.
     action: str = ""  # Recommended action stored alongside, but not embedded.
+
+
+class RetrievedObservation(BaseModel):
+    key: str
+    observation: StoredObservation
+    matched_situation: str
+    score: float | None = None
+
+
+class RetrievedStrategyPoint(BaseModel):
+    key: str
+    strategy_point: StoredStrategyPoint
+    matched_situation: str
+    score: float | None = None

@@ -1,6 +1,9 @@
 import uuid
+from typing import TypedDict
+
 from langfuse import get_client
 from langfuse.langchain import CallbackHandler
+from pydantic import BaseModel, Field
 
 
 langfuse = get_client()
@@ -39,3 +42,33 @@ def flush():
 
 def compute_and_push_scores(result: dict, trace_id: str):
     pass
+
+
+class DayResolutionMetric(BaseModel):
+    day: int
+    votes: list[dict[str, str]]
+    voted_player: str | None
+    voted_player_role: str | None
+    vote_counts: dict[str, int]
+    tied_players: list[str]
+    no_vote: bool
+
+
+class NightResolutionMetric(BaseModel):
+    day: int
+    wolves_target: str | None
+    wolf_target_role: str | None
+    healer_target: str | None
+    investigator_target: str | None
+    investigator_target_role: str | None
+    kill_successful: bool
+    healer_saved: bool
+
+
+class Metrics(BaseModel):
+    day_resolutions: list[DayResolutionMetric] = Field(default_factory=list)
+    night_resolutions: list[NightResolutionMetric] = Field(default_factory=list)
+
+
+class GraphContext(TypedDict):
+    metrics: Metrics

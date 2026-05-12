@@ -1,3 +1,4 @@
+from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.state import DayChannel, DaySummary, InvestigatorResult, WolfChannel
 
 
@@ -75,13 +76,22 @@ def format_initial_strategies(initial_strategies: dict[str, str]) -> str:
     )
 
 
-def format_retrieved_observations(observations: list[str]) -> str:
+def format_retrieved_observations(observations: list[RetrievedObservation]) -> str:
     if not observations:
         return "No past observations available."
-    return "\n".join(f"- {observation}" for observation in observations)
+    return "\n".join(f"- {item.observation.content}" for item in observations)
 
 
-def format_strategy_points(strategy_points: list[str]) -> str:
+def format_strategy_points(strategy_points: list[RetrievedStrategyPoint]) -> str:
     if not strategy_points:
         return "No dynamic strategy points available."
-    return "\n".join(f"- {strategy_point}" for strategy_point in strategy_points)
+    formatted_points = []
+    for item in strategy_points:
+        stored_point = item.strategy_point
+        if stored_point.action:
+            formatted_points.append(f"{stored_point.content} -> {stored_point.action}")
+        elif stored_point.content:
+            formatted_points.append(stored_point.content)
+    if not formatted_points:
+        return "No dynamic strategy points available."
+    return "\n".join(f"- {strategy_point}" for strategy_point in formatted_points)

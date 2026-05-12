@@ -1,4 +1,6 @@
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
+from langgraph.runtime import Runtime
 
 from Agents.graphs.day import day_graph_compiled
 from Agents.graphs.healer import healer_graph_compiled
@@ -19,13 +21,24 @@ from Agents.nodes import (
 from Agents.state import OrchestratorGraph
 from Agents.memory import store
 from Agents.memory_persistence import seed_memory_from_json_files_once
+from Agents.tracing import GraphContext
 
 
 # Temporary dev-phase persistence until memory storage is refactored for production.
 seed_memory_from_json_files_once(target_store=store)
 
 
-def day_phase(state: OrchestratorGraph):
+def _child_config(config: RunnableConfig) -> RunnableConfig:
+    child_config = dict(config) if config else {}
+    child_config.setdefault("recursion_limit", 100)
+    return child_config
+
+
+def day_phase(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
     result = day_graph_compiled.invoke(
         {
             "agent_strategies": state.get("agent_strategies", {}),
@@ -41,7 +54,8 @@ def day_phase(state: OrchestratorGraph):
             "current_round": 0,
             "day_votes": [],
         },
-        config={"recursion_limit": 100},
+        config=_child_config(config),
+        context=runtime.context,
     )
 
     return {
@@ -52,7 +66,11 @@ def day_phase(state: OrchestratorGraph):
     }
 
 
-def wolf_night_phase(state: OrchestratorGraph):
+def wolf_night_phase(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
     result = wolf_night_graph_compiled.invoke(
         {
             "agent_strategies": state.get("agent_strategies", {}),
@@ -64,7 +82,8 @@ def wolf_night_phase(state: OrchestratorGraph):
             "human_player": state["human_player"],
             "current_day": state["current_day"],
         },
-        config={"recursion_limit": 100},
+        config=_child_config(config),
+        context=runtime.context,
     )
 
     return {
@@ -74,7 +93,11 @@ def wolf_night_phase(state: OrchestratorGraph):
     }
 
 
-def healer_night_phase(state: OrchestratorGraph):
+def healer_night_phase(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
     result = healer_graph_compiled.invoke(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["healer_player"], ""),
@@ -89,7 +112,9 @@ def healer_night_phase(state: OrchestratorGraph):
             "player_id": state["healer_player"],
             "player_role": "healer",
             "human_player": state["healer_player"] == state["human_player"],
-        }
+        },
+        config=_child_config(config),
+        context=runtime.context,
     )
     updates = {"healer_target": result.get("healer_target")}
     if result.get("updated_strategy"):
@@ -100,7 +125,11 @@ def healer_night_phase(state: OrchestratorGraph):
     return updates
 
 
-def investigator_night_phase(state: OrchestratorGraph):
+def investigator_night_phase(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
     result = investigator_graph_compiled.invoke(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["investigator_player"], ""),
@@ -116,7 +145,9 @@ def investigator_night_phase(state: OrchestratorGraph):
             "player_id": state["investigator_player"],
             "player_role": "investigator",
             "human_player": state["investigator_player"] == state["human_player"],
-        }
+        },
+        config=_child_config(config),
+        context=runtime.context,
     )
 
     updates = {"investigator_target": result.get("investigator_target")}
@@ -129,7 +160,7 @@ def investigator_night_phase(state: OrchestratorGraph):
 
 
 def build_parent_graph():
-    parent_graph = StateGraph(OrchestratorGraph)
+    parent_graph = StateGraph(OrchestratorGraph, context_schema=GraphContext)
 
     parent_graph.add_node("INITIALIZE_GAME", initialize_game)
     parent_graph.add_node("DAY_PHASE", day_phase)

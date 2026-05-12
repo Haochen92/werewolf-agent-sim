@@ -6,7 +6,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from langgraph.store.memory import InMemoryStore
+from langgraph.store.base import BaseStore
 from pydantic import BaseModel
 
 from Agents.constants import roles
@@ -55,7 +55,7 @@ def _namespace_key(namespace: tuple[str, str]) -> str:
 
 
 def _all_namespace_items(
-    target_store: InMemoryStore,
+    target_store: BaseStore,
     namespace: tuple[str, str],
 ) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
@@ -96,7 +96,7 @@ def seed_memory_from_json_files(
     observations_path: str | Path = OBSERVATIONS_JSON_PATH,
     strategies_path: str | Path = STRATEGIES_JSON_PATH,
     strategy_points_path: str | Path = STRATEGY_POINTS_JSON_PATH,
-    target_store: InMemoryStore = store,
+    target_store: BaseStore = store,
 ) -> dict[str, int]:
     """Seed the active memory store from JSON snapshots using current memory helpers."""
     observations_payload = _read_json(observations_path)
@@ -168,7 +168,7 @@ def seed_memory_from_json_files_once(
     observations_path: str | Path = OBSERVATIONS_JSON_PATH,
     strategies_path: str | Path = STRATEGIES_JSON_PATH,
     strategy_points_path: str | Path = STRATEGY_POINTS_JSON_PATH,
-    target_store: InMemoryStore = store,
+    target_store: BaseStore = store,
 ) -> dict[str, int | bool]:
     store_id = id(target_store)
     if store_id in _SEEDED_STORE_IDS:
@@ -225,7 +225,7 @@ def dump_memory_to_json_files(
     observations_path: str | Path = OBSERVATIONS_JSON_PATH,
     strategies_path: str | Path = STRATEGIES_JSON_PATH,
     strategy_points_path: str | Path = STRATEGY_POINTS_JSON_PATH,
-    target_store: InMemoryStore = store,
+    target_store: BaseStore = store,
 ) -> dict[str, int]:
     """Dump all role-scoped memory namespaces to JSON snapshots."""
     observation_namespaces = {

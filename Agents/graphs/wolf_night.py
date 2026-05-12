@@ -1,6 +1,7 @@
 from langgraph.graph import START, StateGraph
 
 from Agents.agents import wolf_night_discuss
+from Agents.memory import store
 from Agents.nodes import (
     check_night_end,
     collect_wolf_night_discussion,
@@ -8,10 +9,11 @@ from Agents.nodes import (
     wolf_fan_out,
 )
 from Agents.state import WolfNightGraph
+from Agents.tracing import GraphContext
 
 
 def build_wolf_night_graph():
-    wolf_night_graph = StateGraph(WolfNightGraph)
+    wolf_night_graph = StateGraph(WolfNightGraph, context_schema=GraphContext)
 
     wolf_night_graph.add_node("PREPARE_WOLF_NIGHT", prepare_wolf_night)
     wolf_night_graph.add_node("WOLF_NIGHT_DISCUSS", wolf_night_discuss)
@@ -32,5 +34,4 @@ def build_wolf_night_graph():
 
 
 wolf_night_graph = build_wolf_night_graph()
-wolf_night_graph_compiled = wolf_night_graph.compile()
-
+wolf_night_graph_compiled = wolf_night_graph.compile(store=store)

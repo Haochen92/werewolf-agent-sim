@@ -2,12 +2,14 @@ from datetime import datetime
 import uuid
 
 from dotenv import load_dotenv
+from langgraph.store.base import BaseStore
 from langgraph.store.memory import InMemoryStore
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from Agents.schemas import (
     Observation,
-    SituationSummary,
+    RetrievedObservation,
+    RetrievedStrategyPoint,
     StoredObservation,
     StoredStrategy,
     StoredStrategyPoint,
@@ -18,7 +20,7 @@ load_dotenv()
 
 DEDUP_THRESHOLD = 0.90
 
-def store_observation(store: InMemoryStore, extracted_observations: list[Observation], game_id: str=""):
+def store_observation(store: BaseStore, extracted_observations: list[Observation], game_id: str=""):
     for obs in extracted_observations:
         perspective = obs.perspective
         content = obs.content
@@ -42,7 +44,7 @@ def store_observation(store: InMemoryStore, extracted_observations: list[Observa
         )
         store.put(("observations",perspective), str(uuid.uuid4()),new_observation.model_dump())
 
-def store_strategy(store: InMemoryStore, new_strategies: dict[str, str], game_id: str=""):
+def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: str=""):
     for role, strategy in new_strategies.items():
         stored = StoredStrategy(
             game_id=game_id,
@@ -54,7 +56,7 @@ def store_strategy(store: InMemoryStore, new_strategies: dict[str, str], game_id
 
 
 def store_strategy_points(
-    store: InMemoryStore,
+    store: BaseStore,
     extracted_strategy_points: list[StrategyPoint],
     game_id: str = "",
 ):
@@ -85,68 +87,40 @@ def store_strategy_points(
 
 
 def retrieve_observations_for_agent(
-    store: InMemoryStore,
+    store: BaseStore,
     role: str,
-    day_channel,
-    current_day: int,
-    current_round: int,
-    previous_strategy: str,
+    situations: list[str],
     top_k: int = 3,
-) -> dict[str, list[str]]:
-    from Agents.agents import get_llm
-    from Agents.formatters import format_day_channel
-    from Agents.prompts import SITUATION_ROLE_LENS, SITUATION_SUMMARY_PROMPT
-
-    recent_messages = [message for message in day_channel if message.day == current_day]
-    recent_events = (
-        format_day_channel(recent_messages)
-        if recent_messages
-        else "No events yet today."
-    )
-
-    role_lens = SITUATION_ROLE_LENS.get(role, "")
-
-    prompt = SITUATION_SUMMARY_PROMPT.format(
-        player_role=role,
-        current_day=current_day,
-        current_round=current_round,
-        recent_events=recent_events,
-        previous_strategy=previous_strategy or "No strategy yet.",
-        role_lens=role_lens,
-    )
-
-    try:
-        result = get_llm().with_structured_output(SituationSummary).invoke(prompt)
-        situations = result.situations
-    except Exception:
-        situations = [f"Day {current_day} as {role}, round {current_round}"]
-
-    seen_keys: set[str] = set()
-    retrieved_observations: list[str] = []
+) -> list[RetrievedObservation]:
+    retrieved_by_key: dict[str, RetrievedObservation] = {}
     for situation in situations:
         try:
             items = store.search(("observations", role), query=situation, limit=top_k)
             for item in items:
-                if item.key not in seen_keys:
-                    seen_keys.add(item.key)
-                    retrieved_observations.append(item.value["content"])
+                retrieved_observation = RetrievedObservation(
+                    key=item.key,
+                    observation=StoredObservation.model_validate(item.value),
+                    matched_situation=situation,
+                    score=item.score,
+                )
+                existing = retrieved_by_key.get(item.key)
+                if existing is None or (retrieved_observation.score or 0.0) > (
+                    existing.score or 0.0
+                ):
+                    retrieved_by_key[item.key] = retrieved_observation
         except Exception:
             continue
 
-    return {
-        "situations": situations,
-        "retrieved_observations": retrieved_observations,
-    }
+    return list(retrieved_by_key.values())
 
 
 def retrieve_strategy_points_for_agent(
-    store: InMemoryStore,
+    store: BaseStore,
     role: str,
     situations: list[str],
     top_k: int = 5,
-) -> list[str]:
-    seen_keys: set[str] = set()
-    results: list[str] = []
+) -> list[RetrievedStrategyPoint]:
+    retrieved_by_key: dict[str, RetrievedStrategyPoint] = {}
 
     for situation in situations:
         try:
@@ -156,20 +130,21 @@ def retrieve_strategy_points_for_agent(
                 limit=top_k,
             )
             for item in items:
-                if item.key in seen_keys:
-                    continue
-                seen_keys.add(item.key)
-
-                stored_situation = item.value.get("content", "")
-                stored_action = item.value.get("action", "")
-                if stored_action:
-                    results.append(f"{stored_situation} -> {stored_action}")
-                elif stored_situation:
-                    results.append(stored_situation)
+                retrieved_strategy_point = RetrievedStrategyPoint(
+                    key=item.key,
+                    strategy_point=StoredStrategyPoint.model_validate(item.value),
+                    matched_situation=situation,
+                    score=item.score,
+                )
+                existing = retrieved_by_key.get(item.key)
+                if existing is None or (retrieved_strategy_point.score or 0.0) > (
+                    existing.score or 0.0
+                ):
+                    retrieved_by_key[item.key] = retrieved_strategy_point
         except Exception:
             continue
 
-    return results
+    return list(retrieved_by_key.values())
 
 
 embeddings = GoogleGenerativeAIEmbeddings(

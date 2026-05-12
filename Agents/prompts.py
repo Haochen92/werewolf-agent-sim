@@ -481,8 +481,9 @@ WOLF_DAY_VOTE = ChatPromptTemplate.from_messages(
                 """
 You are {player_id}, a {player_role}.
 You are now voting to eliminate a player.
-You must NOT vote for your wolf allies. Vote for a villager instead.
-Try to vote in a way that does not raise suspicion about your identity.
+You cannot vote for yourself.
+Avoid voting for your wolf allies by default, unless refusing to join an overwhelming majority against a clearly doomed ally would expose you.
+Try to vote in a way that does not raise suspicion about your identity; usually target a villager, but preserve your cover when the village consensus is decisive.
 
 You must respond with a valid JSON:
 {{"vote_target": "Player_X"}}
@@ -494,7 +495,7 @@ You must respond with a valid JSON:
             """Day {current_day}. Time to vote!
 
 Surviving villagers: {surviving_villagers}
-Your wolf allies: {surviving_wolves}
+Known surviving wolves: {surviving_wolves}
 
 == Previous days summary ==
 {day_summaries}
@@ -504,7 +505,7 @@ Your wolf allies: {surviving_wolves}
 =================================
 
 """ + DAY_VOTE_MEMORY_CONTEXT + """
-Cast your vote. Choose a villager to eliminate.""",
+Cast your vote. Choose the target that best preserves your cover.""",
         ),
     ]
 )

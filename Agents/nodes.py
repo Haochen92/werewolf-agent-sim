@@ -3,8 +3,9 @@ from collections import Counter
 from typing import Literal
 from datetime import datetime
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
-from langgraph.config import get_store
+from langgraph.runtime import Runtime
 from langgraph.types import Send
 
 from Agents.state import (
@@ -21,6 +22,12 @@ from Agents.schemas import DaySummaryOutput
 from Agents.extraction import extract_postgame
 from Agents.memory import store_observation, store_strategy, store_strategy_points
 from Agents.memory_persistence import dump_memory_to_json_files
+from Agents.tracing import (
+    DayResolutionMetric,
+    GraphContext,
+    NightResolutionMetric,
+    langfuse,
+)
 
 from logging import getLogger
 
@@ -285,91 +292,134 @@ def check_night_end(state: WolfNightGraph) -> Literal["PREPARE_WOLF_NIGHT", "__e
     return "PREPARE_WOLF_NIGHT"
 
 
-def day_resolution(state: OrchestratorGraph):
+def _nullify_special_roles(
+    state_update: dict,
+    player: str,
+    state: OrchestratorGraph,
+) -> None:
+    if player == state["healer_player"]:
+        state_update["healer_player"] = None
+    if player == state["investigator_player"]:
+        state_update["investigator_player"] = None
+
+
+def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
+    current_day = state.get("current_day", 1)
     day_votes = state.get("day_votes", [])
+    vote_counts = Counter(vote.votee for vote in day_votes)
+    max_votes = max(vote_counts.values(), default=0)
+    candidates = [player for player, votes in vote_counts.items() if votes == max_votes]
+    voted_player = candidates[0] if len(candidates) == 1 else None
+
+    metric = DayResolutionMetric(
+        day=current_day,
+        votes=[vote.model_dump() for vote in day_votes],
+        voted_player=voted_player,
+        voted_player_role=state["roles"].get(voted_player) if voted_player else None,
+        vote_counts=dict(vote_counts),
+        tied_players=candidates if len(candidates) > 1 else [],
+        no_vote=not bool(day_votes),
+    )
+    runtime.context["metrics"].day_resolutions.append(metric)
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=f"day_resolution_day_{current_day}",
+    ) as span:
+        span.update(metadata=metric.model_dump())
 
     if not day_votes:
-        message = f"Day {state.get('current_day', 1)}: No vote was held today."
+        message = f"Day {current_day}: No vote was held today."
         return {
             "day_channel": [
                 DayChannel(
-                    day=state.get("current_day", 1),
+                    day=current_day,
                     round=0,
                     player="game_master",
                     message=message,
                 )
             ],
             "day_summaries": [
-                DaySummary(day=state.get("current_day", 1), summary=message)
+                DaySummary(day=current_day, summary=message)
             ],
         }
 
     vote_summary = "\n".join(f"  {v.voter} voted for {v.votee}" for v in day_votes)
-    vote_counts = Counter(vote.votee for vote in day_votes)
 
-    max_votes = max(vote_counts.values(), default=0)
-    candidates = [player for player, votes in vote_counts.items() if votes == max_votes]
-
-    if len(candidates) == 1:
-        voted_player = candidates[0]
-        surviving_wolves = [p for p in state["surviving_wolves"] if p != voted_player]
-        surviving_villagers = [
-            p for p in state["surviving_villagers"] if p != voted_player
-        ]
-
+    if voted_player:
         message = f"""
-Here's the vote result for day {state.get('current_day', 1)}:
+Here's the vote result for day {current_day}:
 {vote_summary}
 Player {voted_player} has been voted out and was a {state['roles'][voted_player]}.
 """
         state_update = {
             "voted_player": voted_player,
-            "surviving_wolves": surviving_wolves,
-            "surviving_villagers": surviving_villagers,
+            "surviving_wolves": [
+                p for p in state["surviving_wolves"] if p != voted_player
+            ],
+            "surviving_villagers": [
+                p for p in state["surviving_villagers"] if p != voted_player
+            ],
             "day_channel": [
                 DayChannel(
-                    day=state.get("current_day", 1),
+                    day=current_day,
                     round=state.get("current_round", 1),
                     player="game_master",
                     message=message,
                 )
             ],
             "day_summaries": [
-                DaySummary(day=state.get("current_day", 1), summary=message)
+                DaySummary(day=current_day, summary=message)
             ],
         }
 
-        if voted_player == state["healer_player"]:
-            state_update["healer_player"] = None
-        if voted_player == state["investigator_player"]:
-            state_update["investigator_player"] = None
-
+        _nullify_special_roles(state_update, voted_player, state)
         return state_update
 
     message = f"""
-Here's the vote result for day {state.get('current_day', 1)}:
+Here's the vote result for day {current_day}:
 {vote_summary}
 It's a tie between players {candidates}. No one is voted out this day."""
     return {
         "day_channel": [
             DayChannel(
-                day=state.get("current_day", 1),
+                day=current_day,
                 round=state.get("current_round", 0),
                 player="game_master",
                 message=message,
             )
         ],
         "day_summaries": [
-            DaySummary(day=state.get("current_day", 1), summary=message)
+            DaySummary(day=current_day, summary=message)
         ],
     }
 
 
-def night_resolution(state: OrchestratorGraph):
-    wolves_target = state.get("wolves_kill_target", "")
-    healer_target = state.get("healer_target", "")
+def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
+    wolves_target = state.get("wolves_kill_target")
+    healer_target = state.get("healer_target")
     current_day = state.get("current_day", 1)
-    investigator_target = state.get("investigator_target", "")
+    investigator_target = state.get("investigator_target")
+    kill_successful = bool(wolves_target and wolves_target != healer_target)
+    healer_saved = bool(wolves_target and wolves_target == healer_target)
+
+    metric = NightResolutionMetric(
+        day=current_day,
+        wolves_target=wolves_target,
+        wolf_target_role=state["roles"].get(wolves_target) if wolves_target else None,
+        healer_target=healer_target,
+        investigator_target=investigator_target,
+        investigator_target_role=(
+            state["roles"].get(investigator_target) if investigator_target else None
+        ),
+        kill_successful=kill_successful,
+        healer_saved=healer_saved,
+    )
+    runtime.context["metrics"].night_resolutions.append(metric)
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=f"night_resolution_day_{current_day}",
+    ) as span:
+        span.update(metadata=metric.model_dump())
 
     investigated_role = state["roles"].get(investigator_target, "unknown")
     investigator_update = (
@@ -384,7 +434,7 @@ def night_resolution(state: OrchestratorGraph):
         else []
     )
 
-    if wolves_target and wolves_target != healer_target:
+    if kill_successful:
         surviving_villagers = [
             player for player in state["surviving_villagers"] if player != wolves_target
         ]
@@ -409,14 +459,11 @@ def night_resolution(state: OrchestratorGraph):
             ],
         }
 
-        if wolves_target == state["healer_player"]:
-            state_update["healer_player"] = None
-        if wolves_target == state["investigator_player"]:
-            state_update["investigator_player"] = None
+        _nullify_special_roles(state_update, wolves_target, state)
 
         return state_update
 
-    if wolves_target and wolves_target == healer_target:
+    if healer_saved:
         message = (
             f"{wolves_target} was targeted by the wolves last night, "
             "but was saved by the healer!"
@@ -503,16 +550,26 @@ def check_game_end_night(
         return "END_GAME"
     return "ONE_MORE_DAY"
 
-def post_game_analysis(state: OrchestratorGraph):
-    store = get_store()
-    uuid_key = datetime.now().strftime("%Y%m%d_%H%M%S")
-    game_id = f"game_{uuid_key}"
+def post_game_analysis(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    store = runtime.store
+    if store is None:
+        raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
+
+    configurable = config.get("configurable", {}) if config else {}
+    game_id = str(
+        configurable.get("game_id")
+        or f"game_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    )
 
     # Analyse game and extract observations
     extracted_observations = extract_postgame(state)
     if not extracted_observations:
         logger.warning("No observations extracted from post-game analysis.")
-        return
+        return {}
 
     # Store observations and strategies in memory
     store_observation(store, extracted_observations.observations, game_id)

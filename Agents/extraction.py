@@ -50,7 +50,10 @@ def extract_postgame(state: OrchestratorGraph, max_retries: int = 2 ) -> GameStr
     llm_pro = get_llm_pro()
     for attempt in range(max_retries + 1):
         try:
-            result = llm_pro.with_structured_output(GameStrategyOutput).invoke(prompt)
+            result = llm_pro.with_structured_output(GameStrategyOutput).invoke(
+                prompt,
+                config={"run_name": "postgame_extraction"},
+            )
             if isinstance(result, GameStrategyOutput):
                 return result
 

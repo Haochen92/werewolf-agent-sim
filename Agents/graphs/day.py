@@ -1,5 +1,6 @@
 from langgraph.graph import END, START, StateGraph
 
+from Agents.memory import store
 from Agents.agents import (
     healer_discuss,
     healer_vote,
@@ -22,10 +23,11 @@ from Agents.nodes import (
     summarize_day_discussion,
 )
 from Agents.state import DayGraphState
+from Agents.tracing import GraphContext
 
 
 def build_day_graph():
-    day_graph = StateGraph(DayGraphState)
+    day_graph = StateGraph(DayGraphState, context_schema=GraphContext)
 
     day_graph.add_node("PREPARE_ROUND", prepare_round)
     day_graph.add_node("COLLECT_DISCUSSION", collect_discussion)
@@ -71,4 +73,4 @@ def build_day_graph():
 
 
 day_graph = build_day_graph()
-day_graph_compiled = day_graph.compile()
+day_graph_compiled = day_graph.compile(store=store)
