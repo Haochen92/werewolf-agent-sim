@@ -1,0 +1,217 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import traceback
+from datetime import date, datetime
+from pathlib import Path
+from time import perf_counter
+from typing import Any
+
+from dotenv import load_dotenv
+from pydantic import BaseModel
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+load_dotenv(REPO_ROOT / ".env")
+
+
+ROLES = ("wolf", "villager", "healer", "investigator")
+
+
+def role_config(*enabled_roles: str) -> dict[str, bool]:
+    enabled = set(enabled_roles)
+    return {role: role in enabled for role in ROLES}
+
+
+MEMORY_CONFIGS = {
+    "all_disabled": role_config(),
+    "all_enabled": role_config(*ROLES),
+    "wolf_only": role_config("wolf"),
+    "villager_only": role_config("villager"),
+    "healer_only": role_config("healer"),
+    "investigator_only": role_config("investigator"),
+    "town_only": role_config("villager", "healer", "investigator"),
+    "specials_only": role_config("healer", "investigator"),
+}
+
+DEFAULT_CONFIG_NAMES = ("all_disabled", "all_enabled", "wolf_only")
+
+
+def json_safe(value: Any) -> Any:
+    if isinstance(value, BaseModel):
+        return json_safe(value.model_dump())
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [json_safe(item) for item in value]
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    return value
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run Werewolf games across memory configurations."
+    )
+    parser.add_argument(
+        "--configs",
+        nargs="+",
+        default=list(DEFAULT_CONFIG_NAMES),
+        help=(
+            "Memory configs to run. Use 'all' for every built-in config. "
+            f"Available: {', '.join(MEMORY_CONFIGS)}"
+        ),
+    )
+    parser.add_argument(
+        "--runs-per-config",
+        type=int,
+        default=1,
+        help="Number of games to run for each selected memory config.",
+    )
+    parser.add_argument(
+        "--session-prefix",
+        default=None,
+        help="Prefix for Langfuse session IDs. Defaults to batch timestamp.",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="JSONL output path. Defaults to batch_results/<session-prefix>.jsonl.",
+    )
+    parser.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help="Stop the batch after the first failed run.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the planned runs without invoking games.",
+    )
+    return parser.parse_args()
+
+
+def selected_config_names(raw_names: list[str]) -> list[str]:
+    if "all" in raw_names:
+        return list(MEMORY_CONFIGS)
+
+    unknown = [name for name in raw_names if name not in MEMORY_CONFIGS]
+    if unknown:
+        valid = ", ".join(["all", *MEMORY_CONFIGS])
+        raise ValueError(f"Unknown config(s): {', '.join(unknown)}. Valid: {valid}")
+
+    return raw_names
+
+
+def output_path(session_prefix: str, requested_path: Path | None) -> Path:
+    if requested_path is not None:
+        return requested_path
+    return REPO_ROOT / "batch_results" / f"{session_prefix}.jsonl"
+
+
+def write_record(path: Path, record: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as file:
+        file.write(json.dumps(json_safe(record), sort_keys=True) + "\n")
+
+
+def run_batch(args: argparse.Namespace) -> int:
+    config_names = selected_config_names(args.configs)
+    session_prefix = args.session_prefix or datetime.now().strftime(
+        "batch_%Y%m%d_%H%M%S"
+    )
+    results_path = output_path(session_prefix, args.output)
+
+    planned_runs = [
+        (config_name, run_index)
+        for config_name in config_names
+        for run_index in range(1, args.runs_per_config + 1)
+    ]
+
+    print(f"Planned runs: {len(planned_runs)}")
+    for config_name, run_index in planned_runs:
+        session_id = f"{session_prefix}_{config_name}_{run_index:03d}"
+        print(f"- {session_id}: {MEMORY_CONFIGS[config_name]}")
+
+    if args.dry_run:
+        return 0
+
+    from Agents.main import run_game
+
+    print(f"Writing JSONL results to: {results_path}")
+    failures = 0
+
+    for config_name, run_index in planned_runs:
+        memory_config = MEMORY_CONFIGS[config_name]
+        session_id = f"{session_prefix}_{config_name}_{run_index:03d}"
+        started_at = datetime.now()
+        started_timer = perf_counter()
+        print(f"Running {session_id}")
+
+        try:
+            result = run_game(memory_config=memory_config, session_id=session_id)
+            duration_seconds = perf_counter() - started_timer
+            record = {
+                "status": "success",
+                "config_name": config_name,
+                "memory_config": memory_config,
+                "run_index": run_index,
+                "session_id": session_id,
+                "started_at": started_at,
+                "ended_at": datetime.now(),
+                "duration_seconds": round(duration_seconds, 3),
+                "winner": result.get("winner"),
+                "current_day": result.get("current_day"),
+                "surviving_wolves": result.get("surviving_wolves"),
+                "surviving_villagers": result.get("surviving_villagers"),
+                "result": result,
+            }
+            write_record(results_path, record)
+            print(
+                f"Completed {session_id}: winner={record['winner']} "
+                f"day={record['current_day']}"
+            )
+        except Exception as exc:
+            failures += 1
+            duration_seconds = perf_counter() - started_timer
+            record = {
+                "status": "error",
+                "config_name": config_name,
+                "memory_config": memory_config,
+                "run_index": run_index,
+                "session_id": session_id,
+                "started_at": started_at,
+                "ended_at": datetime.now(),
+                "duration_seconds": round(duration_seconds, 3),
+                "error": repr(exc),
+                "traceback": traceback.format_exc(),
+            }
+            write_record(results_path, record)
+            print(f"Failed {session_id}: {exc}", file=sys.stderr)
+            if args.fail_fast:
+                break
+
+    print(f"Batch complete: {len(planned_runs) - failures} succeeded, {failures} failed")
+    return 1 if failures else 0
+
+
+def main() -> None:
+    try:
+        args = parse_args()
+        exit_code = run_batch(args)
+    except Exception as exc:
+        print(f"Batch setup failed: {exc}", file=sys.stderr)
+        exit_code = 2
+    raise SystemExit(exit_code)
+
+
+if __name__ == "__main__":
+    main()
