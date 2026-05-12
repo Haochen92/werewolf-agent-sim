@@ -81,6 +81,16 @@ def parse_args() -> argparse.Namespace:
         help="Prefix for Langfuse session IDs. Defaults to batch timestamp.",
     )
     parser.add_argument(
+        "--session-scope",
+        choices=("run", "config", "batch"),
+        default="config",
+        help=(
+            "How to group Langfuse sessions: 'run' creates one session per game "
+            "run, 'config' creates one session per memory config (default), "
+            "and 'batch' puts all runs in one session."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=None,
@@ -123,6 +133,23 @@ def write_record(path: Path, record: dict[str, Any]) -> None:
         file.write(json.dumps(json_safe(record), sort_keys=True) + "\n")
 
 
+def run_id(session_prefix: str, config_name: str, run_index: int) -> str:
+    return f"{session_prefix}_{config_name}_{run_index:03d}"
+
+
+def langfuse_session_id(
+    session_prefix: str,
+    config_name: str,
+    run_index: int,
+    session_scope: str,
+) -> str:
+    if session_scope == "batch":
+        return session_prefix
+    if session_scope == "config":
+        return f"{session_prefix}_{config_name}"
+    return run_id(session_prefix, config_name, run_index)
+
+
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     session_prefix = args.session_prefix or datetime.now().strftime(
@@ -138,8 +165,17 @@ def run_batch(args: argparse.Namespace) -> int:
 
     print(f"Planned runs: {len(planned_runs)}")
     for config_name, run_index in planned_runs:
-        session_id = f"{session_prefix}_{config_name}_{run_index:03d}"
-        print(f"- {session_id}: {MEMORY_CONFIGS[config_name]}")
+        current_run_id = run_id(session_prefix, config_name, run_index)
+        session_id = langfuse_session_id(
+            session_prefix,
+            config_name,
+            run_index,
+            args.session_scope,
+        )
+        print(
+            f"- {current_run_id}: session={session_id} "
+            f"{MEMORY_CONFIGS[config_name]}"
+        )
 
     if args.dry_run:
         return 0
@@ -151,10 +187,16 @@ def run_batch(args: argparse.Namespace) -> int:
 
     for config_name, run_index in planned_runs:
         memory_config = MEMORY_CONFIGS[config_name]
-        session_id = f"{session_prefix}_{config_name}_{run_index:03d}"
+        current_run_id = run_id(session_prefix, config_name, run_index)
+        session_id = langfuse_session_id(
+            session_prefix,
+            config_name,
+            run_index,
+            args.session_scope,
+        )
         started_at = datetime.now()
         started_timer = perf_counter()
-        print(f"Running {session_id}")
+        print(f"Running {current_run_id} in session {session_id}")
 
         try:
             result = run_game(memory_config=memory_config, session_id=session_id)
@@ -164,6 +206,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "run_index": run_index,
+                "run_id": current_run_id,
                 "session_id": session_id,
                 "started_at": started_at,
                 "ended_at": datetime.now(),
@@ -176,7 +219,7 @@ def run_batch(args: argparse.Namespace) -> int:
             }
             write_record(results_path, record)
             print(
-                f"Completed {session_id}: winner={record['winner']} "
+                f"Completed {current_run_id}: winner={record['winner']} "
                 f"day={record['current_day']}"
             )
         except Exception as exc:
@@ -187,6 +230,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "run_index": run_index,
+                "run_id": current_run_id,
                 "session_id": session_id,
                 "started_at": started_at,
                 "ended_at": datetime.now(),
@@ -195,7 +239,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "traceback": traceback.format_exc(),
             }
             write_record(results_path, record)
-            print(f"Failed {session_id}: {exc}", file=sys.stderr)
+            print(f"Failed {current_run_id}: {exc}", file=sys.stderr)
             if args.fail_fast:
                 break
 
