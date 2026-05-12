@@ -15,6 +15,9 @@ venv/
 env/
 ENV/
 
+# one-off scripts
+scripts/migrate_langfuse_traces.py
+
 # Environment and secrets
 .env
 .env.*
