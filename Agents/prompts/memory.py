@@ -78,9 +78,16 @@ GAME PHASE DYNAMICS
   a surprising vote?
 
 FORMAT: Write each situation as a 2-3 sentence description of a game dynamic
-you are facing. Do NOT name specific players; describe their behavior and
-role in the dynamic (e.g., "one player is leading an accusation based on
-communication style" not "Player 3 accused Player 5").
+you are facing.
+
+Refer to players by their publicly known role status:
+- System-confirmed roles: "the confirmed wolf," "the eliminated villager"
+- Claimed with strong evidence: "the player who claimed investigator and correctly identified a wolf"
+- Unverified claims: "a player claiming healer"
+- Unknown roles: behavioral descriptors, e.g. "the accuser," "the leading voice,"
+  "one quiet player"
+
+Do not use player IDs.
 
 Do NOT include plans, recommendations, or what you should do. Only describe
 what is happening.
