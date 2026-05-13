@@ -7,7 +7,7 @@ from Agents.formatters import (
 )
 from Agents.state import OrchestratorGraph
 from Agents.schemas import GameStrategyOutput
-from Agents.prompts import POSTGAME_EXTRACTION_PROMPT
+from Agents.prompts import POSTGAME_EXTRACTION_PROMPT, SITUATION_STANDARDS
 from Agents.agents import get_llm_pro
 from logging import getLogger
 
@@ -44,6 +44,7 @@ def extract_postgame(state: OrchestratorGraph, max_retries: int = 2 ) -> GameStr
         formatted_strategy_notes=formatted_strategy_notes,
         formatted_previous_strategies=formatted_previous_strategies,
         game_outcome=game_outcome,
+        situation_standards=SITUATION_STANDARDS,
     )
 
     # Call Pro model with structured output

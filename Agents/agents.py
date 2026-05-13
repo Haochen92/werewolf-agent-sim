@@ -33,6 +33,7 @@ from Agents.prompts import (
     INVESTIGATOR_DAY_DISCUSS,
     INVESTIGATOR_DAY_VOTE,
     INVESTIGATOR_NIGHT,
+    SITUATION_STANDARDS,
     SITUATION_ROLE_LENS,
     SITUATION_SUMMARY_PROMPT,
     VILLAGER_DAY_DISCUSS,
@@ -289,6 +290,7 @@ def _generate_situations_for_agent(
         current_round=current_round,
         recent_events=recent_events,
         previous_strategy=payload.get("previous_strategy", "") or "No strategy yet.",
+        situation_standards=SITUATION_STANDARDS,
         role_lens=SITUATION_ROLE_LENS.get(role, ""),
     )
 

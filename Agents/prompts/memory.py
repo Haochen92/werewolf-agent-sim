@@ -44,6 +44,8 @@ Recent game events and discussion:
 Your current strategy note:
 {previous_strategy}
 
+{situation_standards}
+
 Your role-specific lens:
 {role_lens}
 
@@ -53,41 +55,8 @@ describe the GAME DYNAMICS, not just who said what.
 
 Do not describe the same conflict from multiple angles.
 
-For each situation, capture whichever of these dimensions are relevant:
-
-INFORMATION LANDSCAPE
-- Is the village information-rich (confirmed roles, voting evidence, caught
-  lies) or information-starved (no leads, grasping at vibes)?
-- What type of evidence is driving current suspicions: voting records,
-  communication style, behavioral reads, or concrete claims?
-
-CONSENSUS TEXTURE
-- Is there a strong consensus forming, a fragile one, or no consensus at all?
-- Is the push driven by one vocal player or a genuine multi-player convergence?
-- Are people citing specific evidence or just echoing each other?
-
-SOCIAL PRESSURE
-- Who is under pressure and why? Is it evidence-based or vibes-based?
-- Is anyone deflecting, over-defending, or conspicuously silent?
-- Are accusations coordinated (possible wolf play) or organic?
-
-GAME PHASE DYNAMICS
-- What phase is the game in: early (no eliminations, no data), mid (some
-  data, roles emerging), or endgame (few players, high stakes per vote)?
-- What changed most recently: an elimination, a failed heal, a role reveal,
-  a surprising vote?
-
 FORMAT: Write each situation as a 2-3 sentence description of a game dynamic
 you are facing.
-
-Refer to players by their publicly known role status:
-- System-confirmed roles: "the confirmed wolf," "the eliminated villager"
-- Claimed with strong evidence: "the player who claimed investigator and correctly identified a wolf"
-- Unverified claims: "a player claiming healer"
-- Unknown roles: behavioral descriptors, e.g. "the accuser," "the leading voice,"
-  "one quiet player"
-
-Do not use player IDs.
 
 Do NOT include plans, recommendations, or what you should do. Only describe
 what is happening.

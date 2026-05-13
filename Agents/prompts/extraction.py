@@ -37,73 +37,7 @@ GAME RULES:
 - Eliminated players' roles are revealed.
 - The Game Master only announces eliminations from voting, wolf kills, and healer saves — NOT investigation results.
 
----
-
-SHARED QUALITY STANDARDS
-
-These standards apply to ALL outputs below — observations and strategy points alike.
-
-DESCRIBING SITUATIONS — THE DIMENSIONAL FRAMEWORK:
-When describing a game situation (whether as an observation scenario or a strategy
-point situation), ground it in these dimensions as relevant:
-
-- Information landscape: Is the village information-rich (confirmed roles, voting
-  evidence, caught lies) or information-starved (no leads, speculative reads)?
-  What TYPE of evidence is driving suspicion — voting records, communication style,
-  behavioral patterns, or concrete claims?
-- Consensus texture: Is there a strong consensus, a fragile one, or none? Is the
-  push driven by one vocal player or a genuine multi-player convergence? Are people
-  citing specific evidence or echoing each other?
-- Social pressure: Who is under pressure and why? Is it evidence-based or
-  vibes-based? Are accusations coordinated (possible wolf play) or organic?
-- Game phase: Early (no eliminations, no data), mid (some data, roles emerging),
-  or endgame (few players, high stakes per vote)? What changed most recently —
-  an elimination, a failed heal, a role reveal, a surprising vote?
-
-Not every dimension applies to every situation. Use the ones that make the
-situation recognizable and distinguishable.
-
-FIELD-SPECIFIC PERSPECTIVE RULE:
-- Situation fields (both in observations and strategy points): describe each
-  player according to their publicly known role status at that moment:
-  - System-confirmed roles (post-elimination reveals, announced saves): use the
-    role directly, e.g. "the confirmed wolf," "the eliminated villager."
-  - Claimed roles with strong evidence: describe the claim and evidence, e.g.
-    "a player who claimed investigator and correctly identified a confirmed wolf."
-  - Unverified claims: describe them as claims, e.g. "a player claiming healer."
-  - Unknown roles: use behavioral descriptors, e.g. "the accuser," "the target,"
-    "one quiet player."
-  This is what the in-game agent could see and describe. Do not use player IDs
-  or hidden role knowledge.
-- Approach and outcome fields (in observations only): use actual roles freely —
-  "the wolf voted with the majority," "the target was actually the healer."
-  This is the factual record for learning, not the search surface.
-- Action fields (in strategy points): use the role the point is assigned to
-  since the agent reading it knows their own role.
-
-SPECIFICITY TEST:
-Before finalizing any situation description, check: if this were used as a
-search query, would it match ONLY games with similar dynamics, or would it
-match any game where something vaguely similar happened? If the latter, add
-qualifying detail from the dimensional framework above.
-
-GOOD example:
-  Situation: "The village is in the early game with no eliminations yet and no
-  concrete evidence. One player is pushing an accusation based entirely on
-  another player's phrasing and tone, and two others are echoing the suspicion
-  without adding independent reasoning."
-  Why good: specifies game phase (early, no data), evidence type (phrasing-based),
-  consensus texture (one driver + echoes, no independent reasoning).
-
-BAD example:
-  Situation: "After a mislynch, the village needed to identify the wolves."
-  Why bad: matches every post-mislynch state in every game. No distinguishing
-  dynamics.
-
-DO NOT USE PLAYER IDS:
-Never use player IDs. For situation/search-surface text, use only role status
-that was publicly knowable at the time. For factual observation approach/outcome
-text and strategy actions, use actual roles where the field-specific rule allows it.
+{situation_standards}
 
 ---
 
@@ -134,8 +68,9 @@ retrieved via semantic search in future games.
 
 Format each observation as a single paragraph with three parts:
 - Scenario: The game situation as it appeared at the time (using the dimensional
-  framework and perspective rule above).
+  framework and epistemic status rule from the situation standards above).
 - Approach: What the agent(s) did in that situation.
+  You may use actual roles here since this is part of the factual record.
 - Outcome: What resulted — how others responded and the downstream consequences.
   You may reveal actual roles here since this is the factual record.
 
@@ -166,7 +101,8 @@ own game state during play. This field is what semantic search matches against.
 
 **action**: The concrete recommended action, including WHY it works in this
 specific context. The action should capture a learned nuance, not restate
-common-sense fundamentals.
+common-sense fundamentals. This field may refer to the assigned role, since
+the agent reading it knows their own role.
 
 Assign each principle to the role that should use it.
 
