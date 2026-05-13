@@ -102,8 +102,28 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
                 mislynch_days_steered += 1
         else:
             # Wolf eliminated — did surviving wolves blend or dissent?
+            surviving_wolf_votes = [
+                v for v in day.votes
+                if roles.get(v["voter"]) == "wolf"
+                and v["voter"] != day.voted_player
+            ]
+
+            if not surviving_wolf_votes:
+                continue
+
+            surviving_wolves_voted_for_eliminated_wolf = sum(
+                1 for v in surviving_wolf_votes
+                if v["votee"] == day.voted_player
+            )
+
+            majority_of_surviving_wolves_aligned = (
+                surviving_wolves_voted_for_eliminated_wolf
+                > len(surviving_wolf_votes) / 2
+            )
+
             wolf_elim_days_total += 1
-            if majority_of_wolves_aligned:
+
+            if majority_of_surviving_wolves_aligned:
                 wolf_elim_days_blended += 1
             else:
                 wolf_elim_days_dissented += 1
