@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 
 from Agents.agents import prompt_log
 from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
+from Agents.game_config import GameConfig
 from Agents.graphs.parent import parent_graph_compiled
 from Agents.tracing import (
     Metrics,
@@ -22,9 +23,14 @@ INITIAL_STATE = {
 
 
 
-def run_game(memory_config: dict | None = None, session_id: str | None = None):
-    config = build_game_config(memory_config, session_id)
+def run_game(
+    memory_config: dict | None = None,
+    session_id: str | None = None,
+    game_config: GameConfig | dict | None = None,
+):
+    config = build_game_config(memory_config, session_id, game_config)
     game_id = config["configurable"]["game_id"]
+    normalized_game_config = config["configurable"]["game_config"]
     metrics = Metrics()
     initial_state = {key: value.copy() for key, value in INITIAL_STATE.items()}
 
@@ -43,6 +49,7 @@ def run_game(memory_config: dict | None = None, session_id: str | None = None):
             metadata={
                 "game_id": game_id,
                 "memory_config": config["configurable"]["memory_config"],
+                "game_config": normalized_game_config,
             },
         )
         flush()
@@ -66,6 +73,7 @@ def run_game(memory_config: dict | None = None, session_id: str | None = None):
         final_output = {
             "status": "success",
             "result": result,
+            "raw_metrics": metrics.model_dump(mode="json")
         }
         root.update(output=final_output)
         root.update_trace(output=final_output)

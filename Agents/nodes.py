@@ -8,6 +8,7 @@ from langgraph.graph import END
 from langgraph.runtime import Runtime
 from langgraph.types import Send
 
+from Agents.game_config import game_config_from_runnable
 from Agents.state import (
     DayChannel,
     DayGraphState,
@@ -33,19 +34,13 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-def initialize_game(state: OrchestratorGraph):
+def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
+    game_config = game_config_from_runnable(config)
     # Initialize roles and players
-    roles = [
-        "villager",
-        "villager",
-        "villager",
-        "villager",
-        "wolf",
-        "wolf",
-        "healer",
-        "investigator",
+    roles = game_config.initial_roles.copy()
+    characters = [
+        f"{game_config.player_id_prefix}_{i}" for i in range(1, len(roles) + 1)
     ]
-    characters = [f"player_{i}" for i in range(1, 9)]
     human_player = random.choice(characters)
 
     random.shuffle(roles)
@@ -67,7 +62,7 @@ def initialize_game(state: OrchestratorGraph):
         "surviving_villagers": [
             player for player, role in assigned_roles.items() if role != "wolf"
         ],
-        "current_day": 1,
+        "current_day": game_config.starting_day,
         "human_player": human_player,
         "healer_player": healer_player,
         "investigator_player": investigator_player,
@@ -179,8 +174,12 @@ def collect_discussion(state: DayGraphState):
     return {}
 
 
-def check_round(state: DayGraphState) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY_DISCUSSION"]:
-    if state["current_day"] == 1:
+def check_round(
+    state: DayGraphState,
+    config: RunnableConfig,
+) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY_DISCUSSION"]:
+    game_config = game_config_from_runnable(config)
+    if state["current_day"] < game_config.first_voting_day:
         return "SUMMARIZE_DAY_DISCUSSION"
 
     # Check if anyone spoke this round
@@ -191,7 +190,7 @@ def check_round(state: DayGraphState) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY
     if not current_round_messages:
         return "SUMMARIZE_DAY_DISCUSSION"
 
-    if state["current_round"] > 5:
+    if state["current_round"] > game_config.max_discussion_rounds_per_day:
         return "SUMMARIZE_DAY_DISCUSSION"
 
     return "PREPARE_ROUND"
@@ -223,8 +222,12 @@ def summarize_day_discussion(state: DayGraphState):
     return {"day_summaries": [DaySummary(day=current_day, summary=summary)]}
 
 
-def route_after_day_summary(state: DayGraphState) -> Literal["START_VOTING", "__end__"]:
-    if state["current_day"] == 1:
+def route_after_day_summary(
+    state: DayGraphState,
+    config: RunnableConfig,
+) -> Literal["START_VOTING", "__end__"]:
+    game_config = game_config_from_runnable(config)
+    if state["current_day"] < game_config.first_voting_day:
         return END
     return "START_VOTING"
 

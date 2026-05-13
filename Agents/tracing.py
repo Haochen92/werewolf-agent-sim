@@ -1,9 +1,11 @@
 import uuid
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from langfuse import get_client
 from langfuse.langchain import CallbackHandler
 from pydantic import BaseModel, Field
+
+from Agents.game_config import game_config_dict
 
 
 langfuse = get_client()
@@ -19,8 +21,10 @@ DEFAULT_MEMORY_CONFIG = {
 def build_game_config(
     memory_config: dict | None = None,
     session_id: str | None = None,
+    game_config: Any = None,
 ) -> dict:
     memory_config = memory_config or DEFAULT_MEMORY_CONFIG
+    normalized_game_config = game_config_dict(game_config)
     game_id = str(uuid.uuid4())
 
     handler = CallbackHandler()
@@ -31,6 +35,7 @@ def build_game_config(
         "configurable": {
             "game_id": game_id,
             "memory_config": memory_config,
+            "game_config": normalized_game_config,
             "session_id": session_id,
         },
     }
