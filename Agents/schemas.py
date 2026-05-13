@@ -50,7 +50,12 @@ class Observation(BaseModel):
         description="The role this observation is most useful for: wolf, villager, healer, or investigator"
     )
     content: str = Field(
-        description="A single observation in Scenario → Approach → Outcome format, using roles instead of player IDs. 2-4 sentences."
+        description=(
+            "A single observation in Scenario -> Approach -> Outcome format. "
+            "Scenario describes players by publicly known role status at the "
+            "time; Approach and Outcome may use actual roles. No player IDs. "
+            "2-4 sentences."
+        )
     )
 
     @field_validator("perspective")
@@ -68,11 +73,15 @@ class StrategyPoint(BaseModel):
         description=(
             "The situational trigger for this principle. Start with 'When...' or "
             "'If...'. Must be specific enough for semantic search to match similar "
-            "future game states."
+            "future game states, and describe players by publicly known role "
+            "status at the time rather than hidden roles or player IDs."
         )
     )
     action: str = Field(
-        description="The recommended action to take in the described situation. Concrete and prescriptive."
+        description=(
+            "The recommended action to take in the described situation. Concrete "
+            "and prescriptive; may refer to the role this point is assigned to."
+        )
     )
 
     @field_validator("perspective")
@@ -88,18 +97,6 @@ class GameStrategyOutput(BaseModel):
     )
     strategy_points: list[StrategyPoint] = Field(
         description="Tactical strategy principles extracted from the full game, each with a situational trigger and recommended action"
-    )
-    wolf_strategy: str = Field(
-        description="Updated strategy playbook for the wolf role. 3-8 sentences of actionable principles."
-    )
-    villager_strategy: str = Field(
-        description="Updated strategy playbook for the villager role. 3-8 sentences of actionable principles."
-    )
-    investigator_strategy: str = Field(
-        description="Updated strategy playbook for the investigator role. 3-8 sentences of actionable principles."
-    )
-    healer_strategy: str = Field(
-        description="Updated strategy playbook for the healer role. 3-8 sentences of actionable principles."
     )
 
 

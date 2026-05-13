@@ -20,7 +20,7 @@ from Agents.state import (
 from Agents.prompts import DAY_SUMMARY_PROMPT
 from Agents.schemas import DaySummaryOutput
 from Agents.extraction import extract_postgame
-from Agents.memory import store_observation, store_strategy, store_strategy_points
+from Agents.memory import store_observation, store_strategy_points
 from Agents.memory_persistence import dump_memory_to_json_files
 from Agents.tracing import (
     DayResolutionMetric,
@@ -575,13 +575,6 @@ def post_game_analysis(
     store_observation(store, extracted_observations.observations, game_id)
     store_strategy_points(store, extracted_observations.strategy_points, game_id)
 
-    strategies_dict = {
-        'wolf': extracted_observations.wolf_strategy,
-        'villager': extracted_observations.villager_strategy,
-        'healer': extracted_observations.healer_strategy,
-        'investigator': extracted_observations.investigator_strategy,
-    }
-    store_strategy(store, strategies_dict, game_id)
     # Temporary dev-phase persistence until memory storage is refactored for production.
     dump_memory_to_json_files(target_store=store)
 

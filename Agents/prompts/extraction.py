@@ -23,8 +23,191 @@ Rules:
 - Keep the total summary under 300 words.
 """
 
-
 POSTGAME_EXTRACTION_PROMPT = """
+You are an expert strategic analyst for a game of Werewolf.
+
+GAME RULES:
+- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
+- Wolves know each other and secretly eliminate one villager per night
+- Healer can protect one player from elimination each night (cannot protect themselves)
+- Investigator can reveal one player's role each night, results are private
+- Day: all players discuss (up to 6 rounds), then vote to eliminate one player. Ties result in no elimination.
+- Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
+- Villagers win when all wolves are eliminated. Wolves win when they equal or outnumber villagers.
+- Eliminated players' roles are revealed.
+- The Game Master only announces eliminations from voting, wolf kills, and healer saves — NOT investigation results.
+
+---
+
+SHARED QUALITY STANDARDS
+
+These standards apply to ALL outputs below — observations and strategy points alike.
+
+DESCRIBING SITUATIONS — THE DIMENSIONAL FRAMEWORK:
+When describing a game situation (whether as an observation scenario or a strategy
+point situation), ground it in these dimensions as relevant:
+
+- Information landscape: Is the village information-rich (confirmed roles, voting
+  evidence, caught lies) or information-starved (no leads, speculative reads)?
+  What TYPE of evidence is driving suspicion — voting records, communication style,
+  behavioral patterns, or concrete claims?
+- Consensus texture: Is there a strong consensus, a fragile one, or none? Is the
+  push driven by one vocal player or a genuine multi-player convergence? Are people
+  citing specific evidence or echoing each other?
+- Social pressure: Who is under pressure and why? Is it evidence-based or
+  vibes-based? Are accusations coordinated (possible wolf play) or organic?
+- Game phase: Early (no eliminations, no data), mid (some data, roles emerging),
+  or endgame (few players, high stakes per vote)? What changed most recently —
+  an elimination, a failed heal, a role reveal, a surprising vote?
+
+Not every dimension applies to every situation. Use the ones that make the
+situation recognizable and distinguishable.
+
+FIELD-SPECIFIC PERSPECTIVE RULE:
+- Situation fields (both in observations and strategy points): describe each
+  player according to their publicly known role status at that moment:
+  - System-confirmed roles (post-elimination reveals, announced saves): use the
+    role directly, e.g. "the confirmed wolf," "the eliminated villager."
+  - Claimed roles with strong evidence: describe the claim and evidence, e.g.
+    "a player who claimed investigator and correctly identified a confirmed wolf."
+  - Unverified claims: describe them as claims, e.g. "a player claiming healer."
+  - Unknown roles: use behavioral descriptors, e.g. "the accuser," "the target,"
+    "one quiet player."
+  This is what the in-game agent could see and describe. Do not use player IDs
+  or hidden role knowledge.
+- Approach and outcome fields (in observations only): use actual roles freely —
+  "the wolf voted with the majority," "the target was actually the healer."
+  This is the factual record for learning, not the search surface.
+- Action fields (in strategy points): use the role the point is assigned to
+  since the agent reading it knows their own role.
+
+SPECIFICITY TEST:
+Before finalizing any situation description, check: if this were used as a
+search query, would it match ONLY games with similar dynamics, or would it
+match any game where something vaguely similar happened? If the latter, add
+qualifying detail from the dimensional framework above.
+
+GOOD example:
+  Situation: "The village is in the early game with no eliminations yet and no
+  concrete evidence. One player is pushing an accusation based entirely on
+  another player's phrasing and tone, and two others are echoing the suspicion
+  without adding independent reasoning."
+  Why good: specifies game phase (early, no data), evidence type (phrasing-based),
+  consensus texture (one driver + echoes, no independent reasoning).
+
+BAD example:
+  Situation: "After a mislynch, the village needed to identify the wolves."
+  Why bad: matches every post-mislynch state in every game. No distinguishing
+  dynamics.
+
+DO NOT USE PLAYER IDS:
+Never use player IDs. For situation/search-surface text, use only role status
+that was publicly knowable at the time. For factual observation approach/outcome
+text and strategy actions, use actual roles where the field-specific rule allows it.
+
+---
+
+GAME DATA:
+
+PLAYERS AND ROLES:
+{formatted_roles}
+
+FULL GAME DISCUSSIONS:
+{formatted_discussions}
+
+FINAL STRATEGY NOTES:
+{formatted_strategy_notes}
+
+PREVIOUS ROLE STRATEGIES:
+{formatted_previous_strategies}
+
+GAME OUTCOME: {game_outcome}
+
+---
+
+TASK 1: OBSERVATION EXTRACTION
+
+Analyze the full game and extract key observations — patterns, mistakes, and
+pivotal moments that would help agents play better in future games. These
+observations are FACTS about what happened. They serve as episodic memory
+retrieved via semantic search in future games.
+
+Format each observation as a single paragraph with three parts:
+- Scenario: The game situation as it appeared at the time (using the dimensional
+  framework and perspective rule above).
+- Approach: What the agent(s) did in that situation.
+- Outcome: What resulted — how others responded and the downstream consequences.
+  You may reveal actual roles here since this is the factual record.
+
+Guidelines:
+- 2-4 sentences per observation.
+- Assign each observation a perspective — the role that would find it most useful.
+  The same event can produce separate observations for different roles if the
+  lesson differs.
+- Look for multi-day patterns — causal chains and strategic sequences, not just
+  single-day events.
+- Extract 8-15 observations that cover the game's key dynamics.
+
+---
+
+TASK 2: STRATEGY POINT EXTRACTION
+
+Derive tactical hypotheses from the observations you extracted in Task 1. Each
+strategy point is a PROPOSED principle — it may or may not hold in future games.
+Your job is to distill the observation into a reusable hypothesis that preserves
+the situational specificity.
+
+For each principle:
+
+**situation**: A "When..." or "If..." clause describing the game dynamic this
+principle applies to. Use the same dimensional framework as your observations
+so that the situation description aligns with how agents will describe their
+own game state during play. This field is what semantic search matches against.
+
+**action**: The concrete recommended action, including WHY it works in this
+specific context. The action should capture a learned nuance, not restate
+common-sense fundamentals.
+
+Assign each principle to the role that should use it.
+
+DERIVATION RULE: Each strategy point should trace to one or more of your Task 1
+observations. If you find yourself writing a strategy point that doesn't connect
+to an observation, either you missed an observation in Task 1 or the point is
+too generic.
+
+QUALITY BAR — what to include vs. exclude:
+- EXCLUDE common-sense fundamentals the base strategy already covers (e.g.,
+  "eliminate active players," "protect important players," "vote with the
+  majority"). Only extract principles that add learned nuance beyond obvious play.
+- EXCLUDE vague situations without specific game dynamics.
+- EXCLUDE actions without reasoning for why they work in that context.
+- INCLUDE principles that capture non-obvious mechanisms — why a tactic works
+  given specific information availability, consensus texture, or social dynamics.
+- INCLUDE principles that refine previous strategies with new nuance.
+
+Example principles:
+- wolf situation: "When your wolf partner is under heavy suspicion and a
+  multi-player voting consensus is forming against them with concrete evidence,
+  leaving no realistic way to save them."
+  wolf action: "Vote with the majority to eliminate your partner rather than
+  casting a dissenting vote — a lone protest vote creates a permanent record
+  that links you to the eliminated wolf when roles are revealed."
+
+- villager situation: "When multiple players suddenly coordinate an aggressive
+  accusation against one player based on communication style rather than voting
+  evidence, and the target has no prior suspicious voting record."
+  villager action: "Treat the coordinated push itself as a potential wolf
+  signal — wolves amplify existing village paranoia rather than creating new
+  accusations, so scrutinize the accusers' voting records across previous days."
+
+Extract 4-8 principles per role. Focus on:
+- What the winning side did right that should be repeated
+- What the losing side did wrong that should be avoided
+- Novel situations that produced a clear lesson
+"""
+
+
+ARCHIVED_POSTGAME_EXTRACTION_PROMPT = """
 You are an expert strategic analyst for a game of Werewolf.
 
 GAME RULES:
