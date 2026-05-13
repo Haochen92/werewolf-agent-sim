@@ -37,9 +37,8 @@ class InvestigatorOutput(BaseModel):
 class SituationSummary(BaseModel):
     situations: list[str] = Field(
         description=(
-            "1-3 discrete situations the player currently faces, each as a single "
-            "sentence describing a specific tension, threat, or decision point in "
-            "the game."
+            "1-3 discrete situations the player currently faces, each as a 2-3 "
+            "sentence description of a game dynamic suitable for semantic search."
         ),
         min_length=1,
         max_length=3,
