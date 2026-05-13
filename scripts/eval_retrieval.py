@@ -6,6 +6,7 @@ import random
 import sys
 import time
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,8 @@ from langfuse import get_client  # noqa: E402
 langfuse = get_client()
 
 EVAL_VERSION = "retrieval_judge_v1"
+DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
+SUPPORTED_ACTION_TYPES = {"discussion", "vote"}
 
 
 class JudgeScores(BaseModel):
@@ -99,6 +102,10 @@ situation
    4 = most retrieved items are relevant, with minor mismatches
    5 = retrieved items directly address the situation the agent faces, with \
 actionable guidance
+   IMPORTANT: Penalize redundancy. If multiple retrieved items convey \
+essentially the same strategic advice in different words, score as if only \
+the unique items were retrieved. Three items that all say "protect the most \
+vocal player" count as one useful retrieval, not three.
 
 3. STRATEGY APPLICATION: Does the agent's response, vote, and any updated \
 strategy note show evidence of incorporating the retrieved guidance? Note: \
@@ -110,6 +117,10 @@ obedience.
    3 = agent's behavior loosely aligns but could be coincidental
    4 = agent clearly references or adapts reasoning based on retrieved strategies
    5 = agent demonstrably integrates retrieved guidance into the action it takes
+   IMPORTANT: If the retrieved items are irrelevant to the current situation \
+(retrieval_relevance <= 2), score strategy_application as 3 (neutral). The \
+agent cannot reasonably apply guidance that does not apply. Do not \
+double-penalize a retrieval system failure.
 
 Respond ONLY with valid JSON, no markdown fences:
 {{"summary_quality": N, "retrieval_relevance": N, "strategy_application": N, \
@@ -475,11 +486,15 @@ def sample_spans(
     game_lengths: dict[str, int],
     games_to_sample: list[str] | None = None,
     per_role_per_phase: int = 1,
+    max_samples: int | None = None,
+    seed: int = 0,
 ) -> list[dict[str, Any]]:
     """
     Stratified sampling per game, role, game phase, and action type.
 
     Discussion retrievals and vote retrievals are represented separately.
+    If max_samples is set, cap via round-robin over buckets to keep as much
+    diversity as possible. Selection is deterministic for a given seed.
     """
     buckets: dict[tuple[str, str, str, str], list[dict[str, Any]]] = {}
 
@@ -496,16 +511,34 @@ def sample_spans(
 
         phase = classify_game_phase(day, game_lengths.get(trace_id, 3))
         action_type = meta.get("action_type") or "unknown"
+        if action_type not in SUPPORTED_ACTION_TYPES:
+            continue
         buckets.setdefault((trace_id, role, phase, action_type), []).append(span)
 
+    rng = random.Random(seed)
+    samples_by_bucket: list[list[dict[str, Any]]] = []
+    for key in sorted(buckets):
+        spans = buckets[key].copy()
+        rng.shuffle(spans)
+        samples_by_bucket.append(spans[: min(per_role_per_phase, len(spans))])
+
+    total_samples = sum(len(spans) for spans in samples_by_bucket)
+    if max_samples is None or total_samples <= max_samples:
+        return [span for spans in samples_by_bucket for span in spans]
+
     sampled: list[dict[str, Any]] = []
-    for spans in buckets.values():
-        sampled.extend(random.sample(spans, min(per_role_per_phase, len(spans))))
+    while len(sampled) < max_samples and any(samples_by_bucket):
+        for spans in samples_by_bucket:
+            if not spans:
+                continue
+            sampled.append(spans.pop(0))
+            if len(sampled) >= max_samples:
+                break
     return sampled
 
 
-def get_judge_llm() -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.0)
+def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL) -> ChatGoogleGenerativeAI:
+    return ChatGoogleGenerativeAI(model=model, temperature=0.0)
 
 
 def _strip_json_fences(text: str) -> str:
@@ -574,8 +607,9 @@ def run_judge(
     num_strategy_points: int,
     agent_decision: str,
     agent_updated_strategy: str,
+    model: str = DEFAULT_JUDGE_MODEL,
 ) -> dict[str, Any] | None:
-    llm = get_judge_llm()
+    llm = get_judge_llm(model=model)
     prompt = JUDGE_USER_PROMPT.format(
         player_role=player_role,
         day=day,
@@ -663,12 +697,19 @@ def extract_judge_inputs(
     )
 
     day_channel_excerpt = ""
+    has_situation_summary = False
     if siblings.get("situation_summary"):
+        has_situation_summary = True
         ss_input = siblings["situation_summary"].get("input", {})
         if isinstance(ss_input, dict):
             day_channel_excerpt = ss_input.get("recent_events", "")
         elif isinstance(ss_input, str):
             day_channel_excerpt = ss_input
+    if not has_situation_summary:
+        print(
+            "  Warning: no situation_summary sibling found - "
+            "summary_quality score will be unreliable."
+        )
 
     action_type = (
         meta.get("action_type")
@@ -699,7 +740,13 @@ def extract_judge_inputs(
     }
 
 
-def push_judge_scores(trace_id: str, observation_id: str, scores: dict[str, Any]) -> None:
+def push_judge_scores(
+    trace_id: str,
+    observation_id: str,
+    scores: dict[str, Any],
+    model: str,
+    model_type: str,
+) -> None:
     score_names = ["summary_quality", "retrieval_relevance", "strategy_application"]
     for name in score_names:
         value = scores.get(name)
@@ -707,7 +754,10 @@ def push_judge_scores(trace_id: str, observation_id: str, scores: dict[str, Any]
             score_id = str(
                 uuid.uuid5(
                     uuid.NAMESPACE_URL,
-                    f"{EVAL_VERSION}:{trace_id}:{observation_id}:{name}",
+                    (
+                        f"{EVAL_VERSION}:{model_type}:{model}:"
+                        f"{trace_id}:{observation_id}:{name}"
+                    ),
                 )
             )
             langfuse.create_score(
@@ -718,8 +768,19 @@ def push_judge_scores(trace_id: str, observation_id: str, scores: dict[str, Any]
                 value=float(value),
                 data_type="NUMERIC",
                 comment=scores.get("brief_reasoning", ""),
-                metadata={"eval_version": EVAL_VERSION},
+                metadata={
+                    "eval_version": EVAL_VERSION,
+                    "judge_model": model,
+                    "model_type": model_type,
+                },
             )
+
+
+def write_result_record(path: Path, record: dict[str, Any]) -> None:
+    """Append a single evaluation result as JSONL."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as file:
+        file.write(json.dumps(record, default=str, sort_keys=True) + "\n")
 
 
 def parse_args() -> argparse.Namespace:
@@ -759,6 +820,41 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--max-samples",
+        type=int,
+        default=30,
+        help=(
+            "Hard cap on total judge calls. The cap is applied round-robin "
+            "across stratified buckets to preserve diversity. Use 0 for no "
+            "cap (default: 30)."
+        ),
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Seed for deterministic sampling within strata (default: 0).",
+    )
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_JUDGE_MODEL,
+        help=f"Judge model name (default: {DEFAULT_JUDGE_MODEL}).",
+    )
+    parser.add_argument(
+        "--model-type",
+        default=None,
+        help="Metadata label for the judge model family/type. Defaults to --model.",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help=(
+            "JSONL output path for per-sample results. "
+            "Defaults to eval_results/<timestamp>.jsonl."
+        ),
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be evaluated without calling the judge. This is the default.",
@@ -771,7 +867,18 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.dry_run and args.write:
         parser.error("--dry-run and --write are mutually exclusive")
+    if args.per_role_per_phase < 1:
+        parser.error("--per-role-per-phase must be at least 1")
+    if args.max_samples < 0:
+        parser.error("--max-samples must be 0 or greater")
     return args
+
+
+def results_output_path(requested: Path | None) -> Path:
+    if requested:
+        return requested
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return REPO_ROOT / "eval_results" / f"eval_{timestamp}.jsonl"
 
 
 def main() -> None:
@@ -812,6 +919,8 @@ def main() -> None:
         game_lengths,
         games_to_sample=games_to_sample,
         per_role_per_phase=args.per_role_per_phase,
+        max_samples=args.max_samples or None,
+        seed=args.seed,
     )
     print(f"Sampled {len(sampled)} spans for evaluation.")
 
@@ -820,6 +929,13 @@ def main() -> None:
         if not args.write:
             print("\nDry run only. Pass --write to call the judge and push scores.")
         return
+
+    model_type = args.model_type or args.model
+    out_path = results_output_path(args.output)
+    print(f"Judge model: {args.model}")
+    print(f"Judge model type: {model_type}")
+    print(f"Sampling seed: {args.seed}")
+    print(f"Writing per-sample results to: {out_path}")
 
     results: list[dict[str, Any]] = []
     for i, span in enumerate(sampled):
@@ -840,7 +956,7 @@ def main() -> None:
             print("  Skipping - could not assemble judge inputs.")
             continue
 
-        scores = run_judge(**judge_inputs)
+        scores = run_judge(**judge_inputs, model=args.model)
         if not scores:
             print("  Skipping - judge call failed.")
             continue
@@ -852,17 +968,23 @@ def main() -> None:
         )
         print(f"  Reasoning: {scores.get('brief_reasoning', '')}")
 
-        push_judge_scores(span["trace_id"], span["id"], scores)
-        results.append(
-            {
-                "span_name": span["name"],
-                "trace_id": span["trace_id"],
-                "role": meta.get("player_role"),
-                "day": meta.get("day"),
-                "action_type": judge_inputs.get("action_type"),
-                "scores": scores,
-            }
-        )
+        push_judge_scores(span["trace_id"], span["id"], scores, args.model, model_type)
+        result_record = {
+            "span_name": span["name"],
+            "trace_id": span["trace_id"],
+            "observation_id": span["id"],
+            "role": meta.get("player_role"),
+            "day": meta.get("day"),
+            "round": meta.get("round"),
+            "action_type": judge_inputs.get("action_type"),
+            "model": args.model,
+            "model_type": model_type,
+            "eval_version": EVAL_VERSION,
+            "sampling_seed": args.seed,
+            "scores": scores,
+        }
+        results.append(result_record)
+        write_result_record(out_path, result_record)
         time.sleep(1)
 
     langfuse.flush()
@@ -872,7 +994,7 @@ def main() -> None:
         return
 
     print(f"\n{'=' * 60}")
-    print(f"EVALUATION SUMMARY ({len(results)} samples)")
+    print(f"EVALUATION SUMMARY ({len(results)} samples, model={args.model})")
     print(f"{'=' * 60}")
 
     dimensions = ["summary_quality", "retrieval_relevance", "strategy_application"]
@@ -914,6 +1036,8 @@ def main() -> None:
                         f"  {action_type} - {dimension}: "
                         f"avg={avg:.2f} (n={len(values)})"
                     )
+
+    print(f"\nResults saved to: {out_path}")
 
 
 if __name__ == "__main__":
