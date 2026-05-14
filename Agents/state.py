@@ -1,40 +1,16 @@
 from operator import add
 from typing import Annotated, TypedDict
 
-from pydantic import BaseModel
+from Agents.schemas.game_events import (
+    DayChannel,
+    DaySummary,
+    DayVote,
+    InvestigatorResult,
+    WolfChannel,
+)
 
 def merge_strategies(existing: dict[str, str], new: dict[str, str]) -> dict[str, str]:
     return dict(existing, **new)
-
-class DayChannel(BaseModel):
-    day: int
-    round: int
-    player: str
-    message: str
-
-
-class DaySummary(BaseModel):
-    day: int
-    summary: str
-
-
-class WolfChannel(BaseModel):
-    day: int
-    round: int
-    wolf: str
-    message: str
-    vote: str
-
-
-class InvestigatorResult(BaseModel):
-    day: int
-    player_investigated: str
-    role_revealed: str
-
-
-class DayVote(BaseModel):
-    voter: str
-    votee: str
 
 
 class OrchestratorGraph(TypedDict, total=False):

@@ -1,53 +1,19 @@
+from __future__ import annotations
+
 from datetime import datetime
-
-from pydantic import BaseModel, field_validator, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field, field_validator
+
 from Agents.constants import roles
-
-
-class WolfNightDiscussOutput(BaseModel):
-    updated_strategy: str
-    message: str
-    vote_target: str
-
-
-class DayDiscussOutput(BaseModel):
-    updated_strategy: str
-    message: str | None
-
-
-class DayVoteOutput(BaseModel):
-    vote_target: str
-
-
-class DaySummaryOutput(BaseModel):
-    summary: str
-
-
-class HealerOutput(BaseModel):
-    updated_strategy: str
-    healer_target: str
-
-
-class InvestigatorOutput(BaseModel):
-    updated_strategy: str
-    investigator_target: str
-
-
-class SituationSummary(BaseModel):
-    situations: list[str] = Field(
-        description=(
-            "1-3 discrete situations the player currently faces, each as a 2-3 "
-            "sentence description of a game dynamic suitable for semantic search."
-        ),
-        min_length=1,
-        max_length=3,
-    )
 
 
 class Observation(BaseModel):
     perspective: str = Field(
-        description="The role this observation is most useful for: wolf, villager, healer, or investigator"
+        description=(
+            "The role this observation is most useful for: wolf, villager, "
+            "healer, or investigator"
+        )
     )
     content: str = Field(
         description=(
@@ -59,15 +25,20 @@ class Observation(BaseModel):
     )
 
     @field_validator("perspective")
-    def validate_perspective(cls, v):
-        if v not in roles:
-            raise ValueError(f"{v} is not a valid role. Perspective must be one of {roles}")
-        return v
+    def validate_perspective(cls, value: str) -> str:
+        if value not in roles:
+            raise ValueError(
+                f"{value} is not a valid role. Perspective must be one of {roles}"
+            )
+        return value
 
 
 class StrategyPoint(BaseModel):
     perspective: str = Field(
-        description="The role this strategy point is most useful for: wolf, villager, healer, or investigator"
+        description=(
+            "The role this strategy point is most useful for: wolf, villager, "
+            "healer, or investigator"
+        )
     )
     situation: str = Field(
         description=(
@@ -85,10 +56,12 @@ class StrategyPoint(BaseModel):
     )
 
     @field_validator("perspective")
-    def validate_perspective(cls, v):
-        if v not in roles:
-            raise ValueError(f"{v} is not a valid role. Perspective must be one of {roles}")
-        return v
+    def validate_perspective(cls, value: str) -> str:
+        if value not in roles:
+            raise ValueError(
+                f"{value} is not a valid role. Perspective must be one of {roles}"
+            )
+        return value
 
 
 class GameStrategyOutput(BaseModel):
@@ -96,7 +69,10 @@ class GameStrategyOutput(BaseModel):
         description="Key strategic observations extracted from the full game"
     )
     strategy_points: list[StrategyPoint] = Field(
-        description="Tactical strategy principles extracted from the full game, each with a situational trigger and recommended action"
+        description=(
+            "Tactical strategy principles extracted from the full game, each with "
+            "a situational trigger and recommended action"
+        )
     )
 
 
@@ -105,8 +81,9 @@ class StoredStrategy(BaseModel):
     content: str
     created_at: datetime
 
+
 class StoredObservation(BaseModel):
-    observation_count: int # Keep track how many time this observation has been observed
+    observation_count: int
     last_observed: datetime
     game_id: Optional[str] = ""
     content: str
@@ -116,8 +93,8 @@ class StoredStrategyPoint(BaseModel):
     observation_count: int
     last_observed: datetime
     game_id: Optional[str] = ""
-    content: str  # Situation text used by the store's embedding index.
-    action: str = ""  # Recommended action stored alongside, but not embedded.
+    content: str
+    action: str = ""
 
 
 class RetrievedObservation(BaseModel):

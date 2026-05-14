@@ -9,11 +9,9 @@ from langgraph.runtime import Runtime
 from langgraph.types import Send
 
 from Agents.game_config import game_config_from_runnable
+from Agents.schemas.game_events import DayChannel, DaySummary, InvestigatorResult
 from Agents.state import (
-    DayChannel,
     DayGraphState,
-    DaySummary,
-    InvestigatorResult,
     OrchestratorGraph,
     WolfNightGraph,
 )

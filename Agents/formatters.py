@@ -1,5 +1,11 @@
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
-from Agents.state import DayChannel, DaySummary, InvestigatorResult, WolfChannel
+from Agents.schemas.game_events import (
+    DayChannel,
+    DaySummary,
+    DayVote,
+    InvestigatorResult,
+    WolfChannel,
+)
 
 
 def format_day_channel(messages: list[DayChannel]) -> str:
@@ -95,3 +101,13 @@ def format_strategy_points(strategy_points: list[RetrievedStrategyPoint]) -> str
     if not formatted_points:
         return "No dynamic strategy points available."
     return "\n".join(f"- {strategy_point}" for strategy_point in formatted_points)
+
+
+def format_agent_action(
+    action_type: str,
+    message: DayChannel | None = None,
+    vote: DayVote | None = None,
+) -> str:
+    if action_type == "vote":
+        return f"Vote target: {vote.votee if vote else '(not captured)'}"
+    return f"Message: {message.message if message else '(silent)'}"
