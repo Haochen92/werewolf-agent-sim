@@ -20,9 +20,11 @@ dependencies = [
 
 [project.scripts]
 werewolf-game = "Agents.main:main"
+eval-retrieval = "evaluation.retrieval:main"
+eval-retrieval-redundancy = "evaluation.redundancy:main"
 
 [tool.poetry]
-packages = [{ include = "Agents" }]
+packages = [{ include = "Agents" }, { include = "evaluation" }]
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"

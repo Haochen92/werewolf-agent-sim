@@ -30,14 +30,17 @@ from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
     HEALER_NIGHT,
+    HEALER_SITUATION_SUMMARY,
     INVESTIGATOR_DAY_DISCUSS,
     INVESTIGATOR_DAY_VOTE,
     INVESTIGATOR_NIGHT,
+    INVESTIGATOR_SITUATION_SUMMARY,
     SITUATION_STANDARDS,
     SITUATION_ROLE_LENS,
-    SITUATION_SUMMARY_PROMPT,
+    VILLAGER_SITUATION_SUMMARY,
     VILLAGER_DAY_DISCUSS,
     VILLAGER_DAY_VOTE,
+    WOLF_SITUATION_SUMMARY,
     WOLF_DAY_DISCUSS,
     WOLF_DAY_VOTE,
     WOLF_NIGHT_DISCUSS,
@@ -45,20 +48,24 @@ from Agents.prompts import (
 from Agents.schemas import (
     DayDiscussOutput,
     DayVoteOutput,
+    EvalCase,
+    EvalPrivateContext,
     HealerOutput,
     InvestigatorOutput,
     SituationSummary,
     WolfNightDiscussOutput,
 )
-from Agents.state import (
+from Agents.schemas.game_events import (
     DayChannel,
     DayVote,
+    WolfChannel,
+)
+from Agents.state import (
     HealerDayState,
     HealerNightGraph,
     InvestigatorDayState,
     InvestigatorNightGraph,
     VillagerDayState,
-    WolfChannel,
     WolfDayState,
     WolfNightState,
 )
@@ -97,18 +104,11 @@ def _validate_target(target: str, valid_targets: list[str], player_id: str) -> s
     return None
 
 
-def _run_agent(
-    payload: dict[str, Any],
-    prompt_template: ChatPromptTemplate,
-    output_schema: type[BaseModel],
-    output_key: str,
-    max_retries: int = 1
-) -> dict[str, Any] | None:
-    chain = prompt_template | get_llm().with_structured_output(output_schema)
-
-    prompt_input = {
+def _build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
+    role = payload.get("player_role", "")
+    return {
         "player_id": payload.get("player_id", ""),
-        "player_role": payload.get("player_role", ""),
+        "player_role": role,
         "current_day": payload.get("current_day", 1),
         "current_round": payload.get("current_round", 1),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
@@ -133,7 +133,20 @@ def _run_agent(
         "retrieved_observations": payload.get(
             "retrieved_observations", "No past observations available."
         ),
+        "situation_standards": SITUATION_STANDARDS,
+        "role_lens": SITUATION_ROLE_LENS.get(role, ""),
     }
+
+
+def _run_agent(
+    payload: dict[str, Any],
+    prompt_template: ChatPromptTemplate,
+    output_schema: type[BaseModel],
+    output_key: str,
+    max_retries: int = 1
+) -> dict[str, Any] | None:
+    chain = prompt_template | get_llm().with_structured_output(output_schema)
+    prompt_input = _build_agent_prompt_input(payload)
 
     player_id = payload.get("player_id", "")
     prompt_log.append(
@@ -274,29 +287,17 @@ def _generate_situations_for_agent(
     role = payload["player_role"]
     current_day = payload["current_day"]
     current_round = payload["current_round"]
-
-    recent_messages = [
-        message for message in payload["day_channel"] if message.day == current_day
-    ]
-    recent_events = (
-        format_day_channel(recent_messages)
-        if recent_messages
-        else "No events yet today."
-    )
-
-    prompt = SITUATION_SUMMARY_PROMPT.format(
-        player_role=role,
-        current_day=current_day,
-        current_round=current_round,
-        recent_events=recent_events,
-        previous_strategy=payload.get("previous_strategy", "") or "No strategy yet.",
-        situation_standards=SITUATION_STANDARDS,
-        role_lens=SITUATION_ROLE_LENS.get(role, ""),
-    )
+    prompt_template = {
+        "villager": VILLAGER_SITUATION_SUMMARY,
+        "healer": HEALER_SITUATION_SUMMARY,
+        "investigator": INVESTIGATOR_SITUATION_SUMMARY,
+        "wolf": WOLF_SITUATION_SUMMARY,
+    }.get(role, VILLAGER_SITUATION_SUMMARY)
+    chain = prompt_template | get_llm().with_structured_output(SituationSummary)
 
     try:
-        result = get_llm().with_structured_output(SituationSummary).invoke(
-            prompt,
+        result = chain.invoke(
+            _build_agent_prompt_input(payload),
             config={
                 "run_name": (
                     f"situation_summary_{role}_day_{current_day}_round_{current_round}"
@@ -321,21 +322,34 @@ def _enrich_payload_with_memory(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     action_type: str,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     enriched_payload = dict(payload)
 
     active_store = runtime.store
-    if (
-        payload["current_day"] == 1
-        or active_store is None
-        or not _memory_enabled_for_role(config, payload["player_role"])
-    ):
+    skip_reason = None
+    if payload["current_day"] == 1:
+        skip_reason = "day_1"
+    elif active_store is None:
+        skip_reason = "no_store"
+    elif not _memory_enabled_for_role(config, payload["player_role"]):
+        skip_reason = "memory_disabled_for_role"
+
+    if skip_reason:
         enriched_payload["retrieved_observations"] = "No past observations available."
         enriched_payload["strategy_points"] = payload.get(
             "strategy_points",
             "No dynamic strategy points available.",
         )
-        return enriched_payload
+        return enriched_payload, {
+            "memory_enabled": False,
+            "retrieval_skipped_reason": skip_reason,
+            "situations": [],
+            "retrieved_observations": [],
+            "retrieved_strategy_points": [],
+            "num_situations": 0,
+            "num_observations": 0,
+            "num_strategy_points": 0,
+        }
 
     situations = _generate_situations_for_agent(payload)
     with langfuse.start_as_current_observation(
@@ -363,14 +377,16 @@ def _enrich_payload_with_memory(
             role=payload["player_role"],
             situations=situations,
         )
+        retrieved_observations_json = [
+            item.model_dump(mode="json") for item in retrieved_observations
+        ]
+        retrieved_strategy_points_json = [
+            item.model_dump(mode="json") for item in retrieved_strategy_points
+        ]
         span.update(
             output={
-                "retrieved_observations": [
-                    item.model_dump(mode="json") for item in retrieved_observations
-                ],
-                "retrieved_strategy_points": [
-                    item.model_dump(mode="json") for item in retrieved_strategy_points
-                ],
+                "retrieved_observations": retrieved_observations_json,
+                "retrieved_strategy_points": retrieved_strategy_points_json,
             },
             metadata={
                 "num_situations": len(situations),
@@ -387,7 +403,173 @@ def _enrich_payload_with_memory(
     enriched_payload["strategy_points"] = format_strategy_points(
         retrieved_strategy_points
     )
-    return enriched_payload
+    return enriched_payload, {
+        "memory_enabled": True,
+        "retrieval_skipped_reason": None,
+        "situations": situations,
+        "retrieved_observations": retrieved_observations_json,
+        "retrieved_strategy_points": retrieved_strategy_points_json,
+        "num_situations": len(situations),
+        "num_observations": len(retrieved_observations),
+        "num_strategy_points": len(retrieved_strategy_points),
+    }
+
+
+def _run_memory_informed_action(
+    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    action_type: str,
+    prompt_template: ChatPromptTemplate,
+    output_schema: type[BaseModel],
+    output_key: str,
+) -> dict[str, Any] | None:
+    player_id = payload["player_id"]
+    role = payload["player_role"]
+    day = payload["current_day"]
+    round_num = payload["current_round"]
+
+    recent_messages = [message for message in payload["day_channel"] if message.day == day]
+    visible_discussion = (
+        format_day_channel(recent_messages)
+        if recent_messages
+        else "No events yet today."
+    )
+
+    span_name = (
+        f"agent_action_eval_{player_id}"
+        f"_day_{day}_round_{round_num}_{action_type}"
+    )
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={
+            "player_id": player_id,
+            "player_role": role,
+            "day": day,
+            "round": round_num,
+            "action_type": action_type,
+            "visible_discussion": visible_discussion,
+            "previous_strategy": payload.get("previous_strategy", "") or "",
+            "day_summaries": format_day_summaries(
+                payload.get("day_summaries", []),
+                before_day=day,
+            ),
+            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+            "investigator_results": format_investigator_results(
+                payload.get("investigator_results", [])
+            ),
+            "surviving_players": payload.get("surviving_players", []),
+            "surviving_wolves": payload.get("surviving_wolves", []),
+            "surviving_villagers": payload.get("surviving_villagers", []),
+        },
+        metadata={
+            "eval_schema": "retrieval_action_v1",
+            "retrieval_top_k": 3,
+        },
+    ) as eval_span:
+        enriched_payload, retrieval_meta = _enrich_payload_with_memory(
+            payload,
+            config,
+            runtime,
+            action_type,
+        )
+        result = _run_agent(
+            enriched_payload,
+            prompt_template,
+            output_schema,
+            output_key,
+        )
+
+        applied_output = None
+        applied_game_update: dict[str, Any] | None = None
+        agent_message: DayChannel | None = None
+        agent_vote: DayVote | None = None
+        updated_strategy = ""
+        if result:
+            applied_game_update = {}
+            if output_key == "day_channel":
+                messages = result.get("day_channel", [])
+                if messages:
+                    agent_message = messages[0]
+                applied_output = [
+                    message.model_dump(mode="json")
+                    if hasattr(message, "model_dump")
+                    else message
+                    for message in messages
+                ]
+                if applied_output:
+                    applied_game_update["day_channel"] = applied_output
+                strategies = result.get("agent_strategies", {})
+                if isinstance(strategies, dict):
+                    updated_strategy = strategies.get(player_id, "") or ""
+                if updated_strategy:
+                    applied_game_update["agent_strategies"] = {
+                        player_id: updated_strategy
+                    }
+            elif output_key == "day_votes":
+                votes = result.get("day_votes", [])
+                if votes:
+                    agent_vote = votes[0]
+                applied_output = [
+                    vote.model_dump(mode="json")
+                    if hasattr(vote, "model_dump")
+                    else vote
+                    for vote in votes
+                ]
+                if applied_output:
+                    applied_game_update["day_votes"] = applied_output
+
+        eval_case = EvalCase(
+            span_name=span_name,
+            player_id=player_id,
+            player_role=role,
+            day=day,
+            round=round_num,
+            action_type=action_type,
+            visible_discussion=recent_messages,
+            private_context=EvalPrivateContext(
+                previous_strategy=payload.get("previous_strategy", "") or "",
+                day_summaries=[
+                    summary
+                    for summary in payload.get("day_summaries", [])
+                    if summary.day < day
+                ],
+                wolf_channel=payload.get("wolf_channel", []),
+                investigator_results=payload.get("investigator_results", []),
+                surviving_players=payload.get("surviving_players", []),
+                surviving_wolves=payload.get("surviving_wolves", []),
+                surviving_villagers=payload.get("surviving_villagers", []),
+            ),
+            memory_enabled=retrieval_meta["memory_enabled"],
+            retrieval_skipped_reason=retrieval_meta["retrieval_skipped_reason"],
+            situations=retrieval_meta["situations"],
+            retrieved_observations=retrieval_meta["retrieved_observations"],
+            retrieved_strategy_points=retrieval_meta["retrieved_strategy_points"],
+            agent_message=agent_message,
+            agent_vote=agent_vote,
+            updated_strategy=updated_strategy,
+        )
+
+        eval_span.update(
+            output={
+                "eval_case": eval_case.model_dump(mode="json"),
+                "applied_game_update": applied_game_update,
+            },
+            metadata={
+                "eval_schema": eval_case.schema_version,
+                "retrieval_top_k": 3,
+                "memory_enabled": eval_case.memory_enabled,
+                "retrieval_skipped_reason": eval_case.retrieval_skipped_reason,
+                "action_type": eval_case.action_type,
+                "player_id": eval_case.player_id,
+                "player_role": eval_case.player_role,
+                "day": eval_case.day,
+                "round": eval_case.round,
+            },
+        )
+
+    return result
 
 
 def villager_discuss(
@@ -395,8 +577,15 @@ def villager_discuss(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "discussion")
-    return _run_agent(payload, VILLAGER_DAY_DISCUSS, DayDiscussOutput, "day_channel")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "discussion",
+        VILLAGER_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
 
 
 def healer_discuss(
@@ -404,8 +593,15 @@ def healer_discuss(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "discussion")
-    return _run_agent(payload, HEALER_DAY_DISCUSS, DayDiscussOutput, "day_channel")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "discussion",
+        HEALER_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
 
 
 def wolf_discuss(
@@ -413,8 +609,15 @@ def wolf_discuss(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "discussion")
-    return _run_agent(payload, WOLF_DAY_DISCUSS, DayDiscussOutput, "day_channel")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "discussion",
+        WOLF_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
 
 
 def investigator_discuss(
@@ -422,9 +625,14 @@ def investigator_discuss(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "discussion")
-    return _run_agent(
-        payload, INVESTIGATOR_DAY_DISCUSS, DayDiscussOutput, "day_channel"
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "discussion",
+        INVESTIGATOR_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
     )
 
 
@@ -433,8 +641,15 @@ def villager_vote(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "vote")
-    return _run_agent(payload, VILLAGER_DAY_VOTE, DayVoteOutput, "day_votes")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "vote",
+        VILLAGER_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
 
 
 def healer_vote(
@@ -442,8 +657,15 @@ def healer_vote(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "vote")
-    return _run_agent(payload, HEALER_DAY_VOTE, DayVoteOutput, "day_votes")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "vote",
+        HEALER_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
 
 
 def wolf_vote(
@@ -451,8 +673,15 @@ def wolf_vote(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "vote")
-    return _run_agent(payload, WOLF_DAY_VOTE, DayVoteOutput, "day_votes")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "vote",
+        WOLF_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
 
 
 def investigator_vote(
@@ -460,8 +689,15 @@ def investigator_vote(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
-    payload = _enrich_payload_with_memory(payload, config, runtime, "vote")
-    return _run_agent(payload, INVESTIGATOR_DAY_VOTE, DayVoteOutput, "day_votes")
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "vote",
+        INVESTIGATOR_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
 
 
 def wolf_night_discuss(payload: WolfNightState):
