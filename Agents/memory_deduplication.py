@@ -40,7 +40,7 @@ DEDUP_MODEL = "gemini-2.5-flash"
 
 
 class Discard(BaseModel):
-    decision: Literal["A"]
+    decision: Literal["A", "DISCARD"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -50,7 +50,7 @@ class Discard(BaseModel):
 
 
 class Replace(BaseModel):
-    decision: Literal["B"]
+    decision: Literal["B", "REPLACE"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -66,7 +66,7 @@ class Replace(BaseModel):
 
 
 class Differentiate(BaseModel):
-    decision: Literal["C"]
+    decision: Literal["C", "DIFFERENTIATE"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -96,7 +96,7 @@ class Differentiate(BaseModel):
 
 
 class Keep(BaseModel):
-    decision: Literal["D"]
+    decision: Literal["D", "KEEP"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -156,6 +156,8 @@ it against the most similar existing entries and decide how to integrate it.
 {situation_standards}
 
 All situation fields you write or rewrite must conform to the standards above.
+For the structured output field named "decision", use exactly the letter tag
+"A", "B", "C", or "D"; do not use DISCARD, REPLACE, DIFFERENTIATE, or KEEP.
 
 ---
 
@@ -538,6 +540,4 @@ def run_downstream_dedup(
         f"{stats.auto_discarded} auto-discarded"
     )
     return stats
-
-
 

@@ -81,7 +81,7 @@ Guidelines:
   lesson differs.
 - Look for multi-day patterns — causal chains and strategic sequences, not just
   single-day events.
-- Extract 8-15 observations that cover the game's key dynamics.
+- For each role, extract 8-15 observations that cover the game's key dynamics.
 
 ---
 
@@ -142,6 +142,8 @@ Extract 4-8 principles per role. Focus on:
 - Novel situations that produced a clear lesson
 """
 
+
+# Archived version
 
 ARCHIVED_POSTGAME_EXTRACTION_PROMPT = """
 You are an expert strategic analyst for a game of Werewolf.

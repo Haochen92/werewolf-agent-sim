@@ -44,16 +44,6 @@ def store_observation(store: BaseStore, extracted_observations: list[Observation
         )
         store.put(("observations",perspective), str(uuid.uuid4()),new_observation.model_dump())
 
-def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: str=""):
-    for role, strategy in new_strategies.items():
-        stored = StoredStrategy(
-            game_id=game_id,
-            content=strategy,
-            created_at=datetime.now()
-        )
-        store.put(("strategy", role), f"game_{game_id}", stored.model_dump())
-        store.put(("strategy", role), "latest", stored.model_dump())
-
 
 def store_strategy_points(
     store: BaseStore,
@@ -118,7 +108,7 @@ def retrieve_strategy_points_for_agent(
     store: BaseStore,
     role: str,
     situations: list[str],
-    top_k: int = 5,
+    top_k: int = 3,
 ) -> list[RetrievedStrategyPoint]:
     retrieved_by_key: dict[str, RetrievedStrategyPoint] = {}
 
@@ -146,6 +136,18 @@ def retrieve_strategy_points_for_agent(
 
     return list(retrieved_by_key.values())
 
+
+
+def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: str=""):
+    # legacy code for storing a monolithic strategy string per role. 
+    for role, strategy in new_strategies.items():
+        stored = StoredStrategy(
+            game_id=game_id,
+            content=strategy,
+            created_at=datetime.now()
+        )
+        store.put(("strategy", role), f"game_{game_id}", stored.model_dump())
+        store.put(("strategy", role), "latest", stored.model_dump())
 
 embeddings = GoogleGenerativeAIEmbeddings(
     model="gemini-embedding-2-preview",

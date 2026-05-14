@@ -6,6 +6,8 @@ it against the most similar existing entries and decide how to integrate it.
 {situation_standards}
 
 All situation fields you write or rewrite must conform to the standards above.
+For the structured output field named "decision", use exactly the letter tag
+"A", "B", "C", or "D"; do not use DISCARD, REPLACE, DIFFERENTIATE, or KEEP.
 
 ---
 

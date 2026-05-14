@@ -10,7 +10,7 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel
 
 from Agents.constants import roles
-from Agents.memory import store, store_observation, store_strategy, store_strategy_points
+from Agents.memory import store, store_observation, store_strategy_points
 from Agents.schemas import Observation, StrategyPoint
 
 MEMORY_DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -100,7 +100,6 @@ def seed_memory_from_json_files(
 ) -> dict[str, int]:
     """Seed the active memory store from JSON snapshots using current memory helpers."""
     observations_payload = _read_json(observations_path)
-    strategies_payload = _read_json(strategies_path)
     strategy_points_payload = _read_json(strategy_points_path)
 
     observation_count = 0
@@ -123,21 +122,9 @@ def seed_memory_from_json_files(
             store_observation(target_store, observations, game_id=game_id)
             observation_count += len(observations)
 
+    # Strategy records are historical monolithic notes, not retrieval memories.
+    # Skip them during import-time seeding to avoid hundreds of indexed writes.
     strategy_count = 0
-    strategy_games = strategies_payload.get("games", [])
-    if not strategy_games:
-        strategy_games = _strategy_games_from_namespaces(strategies_payload)
-
-    for game in strategy_games:
-        game_id = str(game.get("game_id", ""))
-        strategies = {
-            role: strategy
-            for role, strategy in game.get("strategies", {}).items()
-            if role in roles and strategy
-        }
-        if strategies:
-            store_strategy(target_store, strategies, game_id=game_id)
-            strategy_count += len(strategies)
 
     strategy_point_count = 0
     for role in roles:

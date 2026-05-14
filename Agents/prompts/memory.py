@@ -1,3 +1,6 @@
+from langchain_core.prompts import ChatPromptTemplate
+
+
 DAY_DISCUSSION_MEMORY_CONTEXT = """
 Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
 {retrieved_observations}
@@ -61,3 +64,120 @@ you are facing.
 Do NOT include plans, recommendations, or what you should do. Only describe
 what is happening.
 """
+
+
+SITUATION_SUMMARY_SUFFIX = """
+Your current strategy note:
+{previous_strategy}
+
+{situation_standards}
+
+Your role-specific lens:
+{role_lens}
+
+Describe 1-3 distinct situations you are currently facing. Each situation will
+be used as a semantic search query to retrieve relevant strategy advice, so
+describe the GAME DYNAMICS, not just who said what.
+
+Do not describe the same conflict from multiple angles.
+
+FORMAT: Write each situation as a 2-3 sentence description of a game dynamic
+you are facing.
+
+Do NOT include plans, recommendations, or what you should do. Only describe
+what is happening.
+"""
+
+
+VILLAGER_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving players: {surviving_players}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
+"""
+            + SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)
+
+
+HEALER_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving players: {surviving_players}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
+"""
+            + SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)
+
+
+INVESTIGATOR_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving players: {surviving_players}
+Your private investigation results:
+{investigator_results}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
+"""
+            + SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)
+
+
+WOLF_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving villagers: {surviving_villagers}
+Known surviving wolf allies: {surviving_wolves}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
+
+Wolf night chat visible to you:
+{wolf_channel}
+"""
+            + SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)
