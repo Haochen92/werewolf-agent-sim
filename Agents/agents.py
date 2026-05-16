@@ -15,11 +15,8 @@ from Agents.tracing import GraphContext, langfuse
 
 from Agents.formatters import (
     format_day_channel,
-    format_day_channel_for_day,
     format_day_summaries,
     format_investigator_results,
-    format_retrieved_observations,
-    format_strategy_points,
     format_wolf_channel,
 )
 from Agents.memory import (
@@ -35,8 +32,6 @@ from Agents.prompts import (
     INVESTIGATOR_DAY_VOTE,
     INVESTIGATOR_NIGHT,
     INVESTIGATOR_SITUATION_SUMMARY,
-    SITUATION_STANDARDS,
-    SITUATION_ROLE_LENS,
     VILLAGER_SITUATION_SUMMARY,
     VILLAGER_DAY_DISCUSS,
     VILLAGER_DAY_VOTE,
@@ -45,6 +40,7 @@ from Agents.prompts import (
     WOLF_DAY_VOTE,
     WOLF_NIGHT_DISCUSS,
 )
+from Agents.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
 from Agents.schemas import (
     DayDiscussOutput,
     DayVoteOutput,
@@ -102,41 +98,6 @@ def _validate_target(target: str, valid_targets: list[str], player_id: str) -> s
     if target in valid_targets and target != player_id:
         return target
     return None
-
-
-def _build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
-    role = payload.get("player_role", "")
-    return {
-        "player_id": payload.get("player_id", ""),
-        "player_role": role,
-        "current_day": payload.get("current_day", 1),
-        "current_round": payload.get("current_round", 1),
-        "surviving_players": ", ".join(payload.get("surviving_players", [])),
-        "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
-        "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),
-        "day_channel": format_day_channel_for_day(
-            payload.get("day_channel", []),
-            payload.get("current_day", 1),
-        ),
-        "day_summaries": format_day_summaries(
-            payload.get("day_summaries", []),
-            before_day=payload.get("current_day", 1),
-        ),
-        "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
-        "investigator_results": format_investigator_results(
-            payload.get("investigator_results", [])
-        ),
-        "previous_strategy": payload.get("previous_strategy", ""),
-        "strategy_points": payload.get(
-            "strategy_points", "No dynamic strategy points available."
-        ),
-        "retrieved_observations": payload.get(
-            "retrieved_observations", "No past observations available."
-        ),
-        "situation_standards": SITUATION_STANDARDS,
-        "role_lens": SITUATION_ROLE_LENS.get(role, ""),
-    }
-
 
 def _run_agent(
     payload: dict[str, Any],
@@ -335,10 +296,10 @@ def _enrich_payload_with_memory(
         skip_reason = "memory_disabled_for_role"
 
     if skip_reason:
-        enriched_payload["retrieved_observations"] = "No past observations available."
+        enriched_payload["retrieved_observations"] = []
         enriched_payload["strategy_points"] = payload.get(
             "strategy_points",
-            "No dynamic strategy points available.",
+            [],
         )
         return enriched_payload, {
             "memory_enabled": False,
@@ -397,12 +358,8 @@ def _enrich_payload_with_memory(
             }
         )
 
-    enriched_payload["retrieved_observations"] = format_retrieved_observations(
-        retrieved_observations
-    )
-    enriched_payload["strategy_points"] = format_strategy_points(
-        retrieved_strategy_points
-    )
+    enriched_payload["retrieved_observations"] = retrieved_observations
+    enriched_payload["strategy_points"] = retrieved_strategy_points
     return enriched_payload, {
         "memory_enabled": True,
         "retrieval_skipped_reason": None,
