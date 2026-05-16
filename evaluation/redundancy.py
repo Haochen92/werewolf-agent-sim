@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -26,12 +27,11 @@ from evaluation.formatters import (  # noqa: E402
     format_eval_retrieved_observations,
     format_eval_retrieved_strategy_points,
 )
-from evaluation.langfuse_client import fetch_eval_cases  # noqa: E402
+from evaluation.datasets import read_eval_dataset  # noqa: E402
 from evaluation.prompts import (  # noqa: E402
     REDUNDANCY_SYSTEM_PROMPT,
     REDUNDANCY_USER_PROMPT,
 )
-from Agents.schemas.evaluation import EvalCase  # noqa: E402
 from evaluation.schemas import RedundancyScores  # noqa: E402
 
 
@@ -120,41 +120,6 @@ def build_store_from_snapshots(
     return target_store
 
 
-def read_eval_contexts(path: Path, max_samples: int | None) -> list[dict[str, Any]]:
-    contexts: list[dict[str, Any]] = []
-    seen: set[tuple[str, str]] = set()
-    with path.open(encoding="utf-8") as file:
-        for line_number, line in enumerate(file, 1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            record = json.loads(stripped)
-            trace_id = record.get("trace_id")
-            observation_id = record.get("observation_id")
-            if not trace_id or not observation_id:
-                raise ValueError(
-                    f"Missing trace_id or observation_id on line {line_number} of {path}"
-                )
-            key = (trace_id, observation_id)
-            if key in seen:
-                continue
-            seen.add(key)
-            contexts.append(record)
-            if max_samples is not None and len(contexts) >= max_samples:
-                break
-    return contexts
-
-
-def fetch_matching_eval_case(
-    trace_id: str,
-    observation_id: str,
-) -> EvalCase | None:
-    for case in fetch_eval_cases(trace_id):
-        if case.observation_id == observation_id:
-            return case
-    return None
-
-
 def minimal_redundancy_scores(item_count: int) -> RedundancyScores:
     return RedundancyScores(
         redundancy_score=1,
@@ -200,6 +165,18 @@ def run_redundancy_judge(
         return None
 
 
+def keep_top_scored_items(items: list[Any], max_items: int | None) -> list[Any]:
+    if not max_items or len(items) <= max_items:
+        return items
+    return sorted(items, key=lambda item: item.score or 0.0, reverse=True)[:max_items]
+
+
+def redundancy_ratio(item_count: int, scores: RedundancyScores | None) -> float | None:
+    if item_count <= 0 or scores is None:
+        return None
+    return max(0.0, 1 - (scores.unique_idea_count / item_count))
+
+
 def parse_snapshot(raw: list[str]) -> tuple[str, Path, Path]:
     if len(raw) != 3:
         raise argparse.ArgumentTypeError(
@@ -212,15 +189,15 @@ def parse_snapshot(raw: list[str]) -> tuple[str, Path, Path]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Replay retrieval queries from Langfuse spans against memory snapshots "
-            "and optionally judge qualitative redundancy."
+            "Replay fixed EvalCase retrieval queries against memory snapshots "
+            "and optionally judge qualitative redundancy of retrieved items."
         )
     )
     parser.add_argument(
-        "--eval-results",
+        "--dataset",
         type=Path,
         required=True,
-        help="JSONL eval output containing trace_id and observation_id fields.",
+        help="Local EvalCase dataset JSONL created by evaluation.datasets.",
     )
     parser.add_argument(
         "--snapshot",
@@ -232,6 +209,24 @@ def parse_args() -> argparse.Namespace:
             "Memory snapshot to test. Can be passed multiple times, for example: "
             "--snapshot pre Agents/data/werewolf_observations_pre_dedup.json "
             "Agents/data/werewolf_strategy_points_pre_dedup.json"
+        ),
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=3,
+        help=(
+            "Per-situation retrieval limit passed to the production retrieval "
+            "helpers (default: 3)."
+        ),
+    )
+    parser.add_argument(
+        "--max-retrieved-items",
+        type=int,
+        default=0,
+        help=(
+            "Optional final cap on retrieved items judged per item type, after "
+            "deduping by memory key and sorting by score. Use 0 for no cap."
         ),
     )
     parser.add_argument(
@@ -265,6 +260,10 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.max_samples < 0:
         parser.error("--max-samples must be 0 or greater")
+    if args.top_k < 1:
+        parser.error("--top-k must be at least 1")
+    if args.max_retrieved_items < 0:
+        parser.error("--max-retrieved-items must be 0 or greater")
     return args
 
 
@@ -275,17 +274,66 @@ def output_path(requested: Path | None) -> Path:
     return REPO_ROOT / "eval_results" / f"retrieval_redundancy_{timestamp}.jsonl"
 
 
+def summarize_records(records: list[dict[str, Any]]) -> None:
+    if not records:
+        return
+
+    buckets: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        buckets[(record["snapshot"], record["item_type"])].append(record)
+
+    print("\nREDUNDANCY SUMMARY", flush=True)
+    for (snapshot, item_type), rows in sorted(buckets.items()):
+        judged = [row for row in rows if row.get("redundancy") is not None]
+        retrieved_counts = [row["retrieved_count"] for row in rows]
+        ratios = [
+            row["redundancy_ratio"]
+            for row in rows
+            if row.get("redundancy_ratio") is not None
+        ]
+        high_redundancy = [
+            row
+            for row in judged
+            if row["redundancy"].get("redundancy_score", 0) >= 4
+        ]
+        avg_retrieved = sum(retrieved_counts) / len(retrieved_counts)
+        print(
+            f"  {snapshot} / {item_type}: "
+            f"n={len(rows)} avg_retrieved={avg_retrieved:.2f}",
+            flush=True,
+        )
+        if judged:
+            avg_score = sum(
+                row["redundancy"]["redundancy_score"] for row in judged
+            ) / len(judged)
+            avg_unique = sum(
+                row["redundancy"]["unique_idea_count"] for row in judged
+            ) / len(judged)
+            avg_ratio = sum(ratios) / len(ratios) if ratios else 0.0
+            print(
+                f"    judged={len(judged)} avg_score={avg_score:.2f} "
+                f"avg_unique={avg_unique:.2f} avg_redundancy_ratio={avg_ratio:.1%} "
+                f"high_redundancy={len(high_redundancy)}",
+                flush=True,
+            )
+
+
 def main() -> None:
     args = parse_args()
-    contexts = read_eval_contexts(
-        args.eval_results,
-        max_samples=args.max_samples or None,
-    )
+    dataset_records = read_eval_dataset(args.dataset)
+    if args.max_samples:
+        dataset_records = dataset_records[: args.max_samples]
     snapshots = [parse_snapshot(raw) for raw in args.snapshot]
     out_path = output_path(args.output)
+    max_retrieved_items = args.max_retrieved_items or None
 
-    print(f"Loaded {len(contexts)} eval contexts from {args.eval_results}", flush=True)
+    print(f"Loaded {len(dataset_records)} EvalCase records from {args.dataset}", flush=True)
     print(f"Testing {len(snapshots)} memory snapshot(s)", flush=True)
+    print(
+        f"Retrieval top_k={args.top_k}; "
+        f"max_retrieved_items={max_retrieved_items or 'all'}",
+        flush=True,
+    )
     print(f"Writing replay results to {out_path}", flush=True)
 
     stores: dict[str, InMemoryStore] = {}
@@ -296,120 +344,108 @@ def main() -> None:
             strategy_points_path,
         )
 
-    case_cache: dict[tuple[str, str], EvalCase | None] = {}
     written = 0
-    for context_index, context in enumerate(contexts, 1):
-        trace_id = context["trace_id"]
-        observation_id = context["observation_id"]
-        cache_key = (trace_id, observation_id)
-        case = case_cache.get(cache_key)
-        if cache_key not in case_cache:
-            case = fetch_matching_eval_case(trace_id, observation_id)
-            case_cache[cache_key] = case
-
-        if not case:
-            print(
-                f"[{context_index}/{len(contexts)}] Missing eval case "
-                f"{trace_id}:{observation_id}; skipping",
-                flush=True,
-            )
-            continue
-
+    output_records: list[dict[str, Any]] = []
+    for record_index, dataset_record in enumerate(dataset_records, 1):
+        case = dataset_record.eval_case
         role = case.player_role
         situations = case.situations
         if not role or not situations:
             print(
-                f"[{context_index}/{len(contexts)}] Missing role or situations "
-                f"for {trace_id}:{observation_id}; skipping",
+                f"[{record_index}/{len(dataset_records)}] Missing role or situations "
+                f"for {dataset_record.case_id}; skipping",
                 flush=True,
             )
             continue
 
         print(
-            f"[{context_index}/{len(contexts)}] {case.span_name} "
+            f"[{record_index}/{len(dataset_records)}] {case.span_name} "
             f"role={role} situations={len(situations)}",
             flush=True,
         )
 
         for label, store in stores.items():
-            observations = retrieve_observations_for_agent(store, role, situations)
-            strategy_points = retrieve_strategy_points_for_agent(store, role, situations)
-
-            observation_scores = None
-            strategy_point_scores = None
-            if args.judge:
-                observation_scores = run_redundancy_judge(
-                    item_type="observations",
-                    situations=situations,
-                    items_formatted=format_eval_retrieved_observations(observations),
-                    item_count=len(observations),
-                    model=args.model,
-                )
-                time.sleep(args.sleep_seconds)
-                strategy_point_scores = run_redundancy_judge(
-                    item_type="strategy points",
-                    situations=situations,
-                    items_formatted=format_eval_retrieved_strategy_points(strategy_points),
-                    item_count=len(strategy_points),
-                    model=args.model,
-                )
-                time.sleep(args.sleep_seconds)
-
-            record = {
-                "snapshot": label,
-                "source_eval_results": str(args.eval_results),
-                "trace_id": trace_id,
-                "observation_id": observation_id,
-                "span_name": case.span_name,
-                "role": role,
-                "day": case.day,
-                "round": case.round,
-                "action_type": case.action_type,
-                "situations": situations,
-                "retrieved_observations": [
-                    item.model_dump(mode="json") for item in observations
-                ],
-                "retrieved_strategy_points": [
-                    item.model_dump(mode="json") for item in strategy_points
-                ],
-                "observation_redundancy": (
-                    observation_scores.model_dump(mode="json")
-                    if observation_scores
-                    else None
+            observations = keep_top_scored_items(
+                retrieve_observations_for_agent(
+                    store,
+                    role,
+                    situations,
+                    top_k=args.top_k,
                 ),
-                "strategy_point_redundancy": (
-                    strategy_point_scores.model_dump(mode="json")
-                    if strategy_point_scores
-                    else None
+                max_retrieved_items,
+            )
+            strategy_points = keep_top_scored_items(
+                retrieve_strategy_points_for_agent(
+                    store,
+                    role,
+                    situations,
+                    top_k=args.top_k,
                 ),
-                "judge_model": args.model if args.judge else None,
-            }
-            _write_jsonl(out_path, record)
-            written += 1
+                max_retrieved_items,
+            )
 
-            if args.judge:
-                obs_score = (
-                    observation_scores.redundancy_score
-                    if observation_scores
-                    else None
-                )
-                sp_score = (
-                    strategy_point_scores.redundancy_score
-                    if strategy_point_scores
-                    else None
-                )
+            item_groups = [
+                (
+                    "observations",
+                    observations,
+                    format_eval_retrieved_observations(observations),
+                ),
+                (
+                    "strategy_points",
+                    strategy_points,
+                    format_eval_retrieved_strategy_points(strategy_points),
+                ),
+            ]
+
+            for item_type, items, formatted_items in item_groups:
+                scores = None
+                if args.judge:
+                    scores = run_redundancy_judge(
+                        item_type=item_type,
+                        situations=situations,
+                        items_formatted=formatted_items,
+                        item_count=len(items),
+                        model=args.model,
+                    )
+                    time.sleep(args.sleep_seconds)
+
+                replay_record = {
+                    "eval_set_id": dataset_record.eval_set_id,
+                    "case_id": dataset_record.case_id,
+                    "snapshot": label,
+                    "source_dataset": str(args.dataset),
+                    "trace_id": dataset_record.trace_id,
+                    "observation_id": dataset_record.observation_id,
+                    "span_name": case.span_name,
+                    "role": role,
+                    "day": case.day,
+                    "round": case.round,
+                    "action_type": case.action_type,
+                    "situations": situations,
+                    "top_k": args.top_k,
+                    "max_retrieved_items": max_retrieved_items,
+                    "item_type": item_type,
+                    "retrieved_count": len(items),
+                    "retrieved_items": [
+                        item.model_dump(mode="json") for item in items
+                    ],
+                    "redundancy": (
+                        scores.model_dump(mode="json") if scores else None
+                    ),
+                    "redundancy_ratio": redundancy_ratio(len(items), scores),
+                    "judge_model": args.model if args.judge else None,
+                }
+                _write_jsonl(out_path, replay_record)
+                output_records.append(replay_record)
+                written += 1
+
                 print(
-                    f"  {label}: obs={len(observations)} red={obs_score}; "
-                    f"strategy={len(strategy_points)} red={sp_score}",
+                    f"  {label}/{item_type}: retrieved={len(items)} "
+                    f"red={scores.redundancy_score if scores else None}",
                     flush=True,
                 )
-            else:
-                print(
-                    f"  {label}: obs={len(observations)} "
-                    f"strategy={len(strategy_points)}",
-                    flush=True,
-                )
 
+    summarize_records(output_records)
     print(f"Done. Wrote {written} records to {out_path}", flush=True)
 
 
