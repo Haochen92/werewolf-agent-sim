@@ -22,6 +22,8 @@ dependencies = [
 werewolf-game = "Agents.main:main"
 eval-retrieval = "evaluation.retrieval:main"
 eval-retrieval-redundancy = "evaluation.redundancy:main"
+eval-build-dataset = "evaluation.datasets:main"
+eval-pairwise = "evaluation.pairwise:main"
 
 [tool.poetry]
 packages = [{ include = "Agents" }, { include = "evaluation" }]
