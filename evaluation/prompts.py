@@ -122,6 +122,12 @@ Decision rule:
 - The test is: would a player in this situation do anything meaningfully
   different after reading item A versus item B? If no, those items are
   redundant.
+- Use the same action-spectrum standard as strategy memory deduplication:
+  similar situation patterns are NOT redundant only when information landscape,
+  consensus texture, social pressure dynamics, or game phase would lead a
+  player to make a meaningfully different decision.
+- If two items differ in wording or examples but recommend the same practical
+  response for the same situational trigger, mark them redundant.
 - Do not mark items redundant merely because they are semantically close or
   share the same broad theme. Preserve differences in information landscape,
   consensus texture, social pressure dynamics, game phase, and recommended
@@ -138,5 +144,62 @@ Respond ONLY with valid JSON:
     {{"item_numbers": [1, 2], "reason": "short reason"}}
   ],
   "brief_reasoning": "1-2 sentences"
+}}
+"""
+
+
+PAIRWISE_SUMMARY_SYSTEM_PROMPT = """\
+You are comparing two situation-summary outputs for an AI agent playing \
+Werewolf. The summaries will be used as semantic-search queries for retrieving \
+relevant observations and strategy points.
+
+Judge which output is more useful for retrieval and downstream strategic \
+decision-making. Do not prefer a summary just because it is longer. Prefer the \
+summary that is more faithful to the visible/private context, more specific \
+about the current social deduction dynamics, and less redundant.
+"""
+
+
+PAIRWISE_SUMMARY_USER_PROMPT = """\
+AGENT CONTEXT:
+- Player: {player_id}
+- Role: {player_role}
+- Day {day}, Round {round}
+- Action type: {action_type}
+
+TODAY'S DISCUSSION AVAILABLE TO THE AGENT:
+{day_channel_excerpt}
+
+PRIVATE CONTEXT AVAILABLE TO THE AGENT:
+{private_context}
+
+---
+
+OUTPUT A ({output_a_label}):
+{output_a}
+
+---
+
+OUTPUT B ({output_b_label}):
+{output_b}
+
+---
+
+Choose the better output for this component.
+
+Evaluation criteria:
+1. Faithfulness: Does it avoid fabricating claims, roles, motives, or pressure?
+2. Situational specificity: Does it capture the current decision-relevant \
+game dynamics rather than generic facts?
+3. Retrieval usefulness: Would it retrieve strategy/observation memories that \
+match the agent's current role, pressure, and phase?
+4. Non-redundancy: Does each listed situation add a distinct retrieval angle?
+5. Role perspective: Does it preserve what this role privately knows and needs?
+
+Return ONLY valid JSON:
+{{
+  "winner": "a" | "b" | "tie",
+  "confidence": N,
+  "brief_reasoning": "1-2 sentences explaining the comparison"
 }}
 """
