@@ -3,2205 +3,2253 @@
   "namespaces": {
     "strategy_points/healer": [
       {
-        "created_at": "2026-05-12T04:13:28.078008+00:00",
-        "key": "f4906bdf-4931-4b93-95e5-4acc572a6179",
+        "created_at": "2026-05-14T06:11:46.415244+00:00",
+        "key": "f0c73ec0-8437-4f4b-b270-9aa522488f2f",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:33:43.439848+00:00",
+        "updated_at": "2026-05-14T06:11:46.415260+00:00",
         "value": {
           "action": "Ensure you offer unique, small observations or specific questions about player behavior. Remaining completely silent makes you an easy, low-risk scapegoat for wolves looking to orchestrate a \"quiet player\" mislynch.",
           "content": "When it is the first day and discussions are generic, making it tempting to stay completely quiet to avoid drawing the wolves' attention.",
           "game_id": "game_20260508_110628",
-          "last_observed": "2026-05-12T12:33:43.016672",
-          "observation_count": 4
+          "last_observed": "2026-05-14T14:11:46.039804",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:28.786549+00:00",
-        "key": "9660b064-1a7d-41b1-8416-931435f1fe1f",
+        "created_at": "2026-05-14T06:11:47.162000+00:00",
+        "key": "72e2841e-859a-40fd-a8de-51ee744d895e",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:28.786558+00:00",
+        "updated_at": "2026-05-14T06:11:47.162016+00:00",
         "value": {
           "action": "In an endgame scenario, prioritize observable evidence (like a player's documented alignment with a confirmed wolf during a previous day's vote) over speculative narratives (like trying to interpret the 'logic' of a wolf's night kill). A wolf controls their kill choice and can use it to frame innocents, but they cannot erase their voting record.",
           "content": "When you are the deciding vote in a late-game situation and must choose between a player with a suspicious voting history and a player who is pushing a narrative based on the wolves' kill selection.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T12:13:28.429725",
+          "last_observed": "2026-05-14T14:11:46.811522",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:29.710348+00:00",
-        "key": "04f4c390-b756-4c87-a274-bcd427b1c12c",
+        "created_at": "2026-05-14T06:11:47.944844+00:00",
+        "key": "256bcfdd-baf2-4bad-b802-d733576a4cff",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T05:53:42.651990+00:00",
+        "updated_at": "2026-05-14T06:11:47.944849+00:00",
         "value": {
           "action": "Protect them on the following night. Wolves will always prioritize removing whoever is successfully organizing the village's votes and exposing their members; losing a proven wolf-finder cascades into misdirected suspicion and breaks town momentum.",
           "content": "When a specific villager (or revealed Investigator) has successfully spearheaded an evidence-based case that eliminated a wolf, or is currently the most effective voice consolidating village consensus.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T13:53:42.244720",
-          "observation_count": 14
+          "last_observed": "2026-05-14T14:11:47.575885",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:30.506297+00:00",
-        "key": "06e7ab8f-0308-4e9b-a088-2efdcbcada24",
+        "created_at": "2026-05-14T06:11:48.771196+00:00",
+        "key": "cc94d8ea-1705-4615-8a0d-b5618cc26c7b",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:48:43.146681+00:00",
+        "updated_at": "2026-05-14T06:11:48.771205+00:00",
         "value": {
-          "action": "Protect the villager who asked the most pointed questions or took the strongest leadership role during Day 1. Wolves naturally prioritize eliminating early organizational capacity.",
-          "content": "On Night 1 when you have no concrete information, and you assess the wolves are likely playing straightforwardly to disrupt town momentum.",
-          "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T12:48:42.697286",
-          "observation_count": 3
+          "action": "Protect the player who was most vocally active, asked pointed questions, or took a strong leadership role during Day 1. Wolves frequently target such players, viewing them as potential special roles or key organizers who need to be removed early to disrupt town's ability to coordinate.",
+          "content": "On Night 1, in the early game with no eliminations and no concrete information, the village is information-starved. You assess the wolves are likely playing straightforwardly to disrupt town momentum by eliminating key town players.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:11:48.395020",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:31.316178+00:00",
-        "key": "09346d16-5637-4676-b697-fd7d755804a1",
+        "created_at": "2026-05-14T06:11:49.623405+00:00",
+        "key": "26618537-0db2-4e4d-94b3-748c704a822b",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:31.316190+00:00",
+        "updated_at": "2026-05-14T06:11:49.623416+00:00",
+        "value": {
+          "action": "Contribute to the discussion as a normal villager to help solidify the consensus. Pointing out the suspect's logical fallacies or suspicious behavior helps guide the vote correctly without exposing yourself as a high-priority target.",
+          "content": "The village is in the mid-game, and a strong, logical consensus is forming around a likely wolf suspect. Your identity as a Healer is still secret, and you are not under direct suspicion.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:11:49.216942",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:11:50.442555+00:00",
+        "key": "fc4beafd-a5a2-4b7d-8b12-c9cec10bfbbf",
+        "namespace": [
+          "strategy_points",
+          "healer"
+        ],
+        "updated_at": "2026-05-14T06:11:50.442564+00:00",
         "value": {
           "action": "State your actions and your intent confidently, then immediately pivot to attacking a different suspect using hard evidence. For example, say \"My goal was to push for leads. But more importantly, look at this voting record over here\u2014player X voted directly with a confirmed wolf. That is a fact, not a feeling.\"",
           "content": "When you are under suspicion because a mislynched villager voted for you.",
           "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T12:13:30.933275",
+          "last_observed": "2026-05-14T14:11:50.039061",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:32.141709+00:00",
-        "key": "43324d87-3000-4514-9b04-d409c4a825c1",
+        "created_at": "2026-05-14T06:11:51.329152+00:00",
+        "key": "8c88cb78-a3cf-419d-8617-ab61c60800f3",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:47.486975+00:00",
+        "updated_at": "2026-05-14T06:11:51.329161+00:00",
         "value": {
           "action": "Protect the targeted player that night. Wolves frequently orchestrate daytime pushes against key town roles to hide their true night-kill intentions; protecting their scapegoat thwarts their manipulation and preserves a player who is now increasingly confirmed as a villager in the eyes of the town.",
           "content": "When a specific villager is the primary target of a coordinated, baseless accusation pushed by confirmed or suspected wolves, or has just survived a wolf-led mislynch attempt.",
           "game_id": "game_20260508_124551",
-          "last_observed": "2026-05-12T12:13:47.098020",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:50.920229",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T06:19:06.121597+00:00",
-        "key": "bf9837a9-274f-4b19-90a6-721e1f79cef4",
+        "created_at": "2026-05-14T06:11:52.134925+00:00",
+        "key": "1e47eb9c-2a0c-456b-9aa9-cb94019375ae",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T06:19:06.121602+00:00",
+        "updated_at": "2026-05-14T06:11:52.134934+00:00",
         "value": {
           "action": "Protect a moderately active player who contributed useful observations but did not dominate the conversation. Wolves trying to bypass a predictable Healer save will typically target this \"second tier\" of proactive villagers.",
           "content": "On Night 1 when playing against highly experienced wolves who are likely to anticipate that the Healer will automatically protect the most vocal Day 1 leader.",
           "game_id": "game_20260508_130942",
-          "last_observed": "2026-05-12T14:19:05.703932",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:11:51.781930",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:33.719790+00:00",
-        "key": "88736e31-d905-4688-a78c-2e09cbf45b6e",
+        "created_at": "2026-05-14T06:11:52.931487+00:00",
+        "key": "80aa24f4-ca55-4a02-8589-e5c8045a8caf",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:33.719800+00:00",
+        "updated_at": "2026-05-14T06:11:52.931498+00:00",
         "value": {
           "action": "Avoid asking open-ended, speculative questions about wolf motives (e.g., 'Why do you think they killed X?'). This can be perceived as evasive when you can't answer it yourself; instead, state a direct observation about a living player.",
           "content": "When trying to generate discussion in the early game.",
           "game_id": "e2748587-ff34-4268-897f-ea3284d5189c",
-          "last_observed": "2026-05-12T12:13:33.339592",
+          "last_observed": "2026-05-14T14:11:52.584845",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:35.287917+00:00",
-        "key": "7dfcc977-d6ae-4bfe-9121-0305b6c31508",
+        "created_at": "2026-05-14T06:11:53.720436+00:00",
+        "key": "4dbc4803-af97-4d67-89c1-a66f0b068ef2",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:35.287924+00:00",
+        "updated_at": "2026-05-14T06:11:53.720440+00:00",
         "value": {
           "action": "Publicly question not only the obvious wolf-aligned votes but also any outlier or unexplained votes, even those against yourself. This demonstrates comprehensive and impartial analysis, building your credibility as a villager while ensuring no suspicious behavior is overlooked.",
           "content": "When analyzing a previous day's voting record to find leads.",
           "game_id": "afdc13eb-3cfe-4af4-8719-3c5a7ac756fb",
-          "last_observed": "2026-05-12T12:13:34.904166",
+          "last_observed": "2026-05-14T14:11:53.313377",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:36.949436+00:00",
-        "key": "996e831d-cf68-4a94-adf9-49638a38f635",
+        "created_at": "2026-05-14T06:11:54.517367+00:00",
+        "key": "01a236cb-bad6-404b-a631-6f2ff90bd102",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:36.949450+00:00",
+        "updated_at": "2026-05-14T06:11:54.517376+00:00",
         "value": {
           "action": "Disengage from the direct conflict and redirect the conversation. Ask quieter players for their opinions on the argument to break the deadlock and prevent wolves from using your tunnel vision as a smokescreen.",
           "content": "When you find yourself in a prolonged, one-on-one argument with a player you suspect, and the discussion is going in circles.",
           "game_id": "4dd84758-4422-4a3a-8e3c-9794fb6d8db1",
-          "last_observed": "2026-05-12T12:13:36.441542",
+          "last_observed": "2026-05-14T14:11:54.138217",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:37.722166+00:00",
-        "key": "c46f5809-4919-402c-944a-d8938c1e70d5",
+        "created_at": "2026-05-14T06:11:55.459569+00:00",
+        "key": "6381b5bb-9c72-4423-a1a0-3cd762ce9de8",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T05:36:32.170701+00:00",
+        "updated_at": "2026-05-14T06:11:55.459578+00:00",
         "value": {
           "action": "Do not defensively explain your silence, and avoid the reflexive trap of attacking your accuser's motives (which information-starved villages interpret as wolf panic). Instead, immediately provide a concrete alternative suspicion against another player based on voting records or specific phrasing. You must demonstrate proactive villager thinking to break the bandwagon.",
           "content": "When you are targeted with early-game accusations of being \"too quiet,\" \"passive,\" or \"evasive\" while trying to gather information without drawing attention.",
           "game_id": "7f1fe6c6-c329-482c-bb22-0883c62cdfc4",
-          "last_observed": "2026-05-12T13:36:31.751156",
-          "observation_count": 6
+          "last_observed": "2026-05-14T14:11:54.930195",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:40.126086+00:00",
-        "key": "ed69f64e-b516-484b-981a-de50792a913e",
+        "created_at": "2026-05-14T06:28:13.291958+00:00",
+        "key": "96ec8bf3-cee3-4037-831b-d5134ce990e4",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:41.780924+00:00",
+        "updated_at": "2026-05-14T06:28:13.291974+00:00",
         "value": {
-          "action": "Publicly highlight the successful save to cement that player's innocence with the town, and immediately scrutinize the voting records of anyone who aggressively pushed a narrative against them the previous day. Wolves routinely attempt to eliminate their failed night kills via the daytime vote.",
+          "action": "On Night 2, consider protecting a different player who has been vocal, analytical, or drawn attention. Wolves often predict that you will re-protect the confirmed innocent, leaving other valuable village members vulnerable.",
           "content": "When day breaks after you successfully save a player from a night attack, officially confirming them as an innocent villager.",
           "game_id": "3082de71-cfb6-4824-94b0-02c5d680956a",
-          "last_observed": "2026-05-12T12:13:41.432566",
+          "last_observed": "2026-05-14T14:28:12.922776",
           "observation_count": 2
         }
       },
       {
-        "created_at": "2026-05-12T04:13:41.048438+00:00",
-        "key": "fb7ca1ba-2892-4eec-976a-a561d39b05d2",
+        "created_at": "2026-05-14T06:11:56.963775+00:00",
+        "key": "1817388a-71d9-4d95-a260-9cdc2ae1cfef",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:51.557777+00:00",
+        "updated_at": "2026-05-14T06:11:56.963798+00:00",
         "value": {
           "action": "Continue to protect them on subsequent nights. Wolves often re-target a proven village leader assuming you won't protect the same person twice, and keeping a confirmed-innocent leader alive maximizes your impact.",
           "content": "When the player you successfully saved on a previous night is an active, vocal leader driving the village's wolf hunt.",
           "game_id": "a8d7cd5e-ae16-44e6-bcc2-25b62fe36edf",
-          "last_observed": "2026-05-12T12:13:51.195766",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:11:56.591491",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:43.345636+00:00",
-        "key": "ddd3a559-f518-4aa0-8537-b8b78b5a2f2e",
+        "created_at": "2026-05-14T06:11:57.793425+00:00",
+        "key": "562cc5e0-054b-4dea-a42c-327028b6666e",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:43.345647+00:00",
+        "updated_at": "2026-05-14T06:11:57.793433+00:00",
         "value": {
-          "action": "Clearly and concisely summarize the voting history and key evidence against the suspect for the remaining villagers. This helps lock in the consensus and prevents the wolf from creating chaos with last-minute deflections.",
-          "content": "When you are in the endgame (3 or 4 players left) and the evidence points strongly to one player being the last wolf.",
+          "action": "Proactively claim your role as Healer and reference a past verifiable event (e.g., \"I saved player X on Night 2\"). This forces the final wolf into a difficult counter-claim and gives the remaining villagers a hard logical puzzle to solve rather than relying on communication tells.",
+          "content": "The village is in the endgame (3 or 4 players left), and the information landscape provides strong evidence pointing to one player being the last wolf.",
           "game_id": "5a37713b-3e67-4d39-81bc-26b2e9a15b27",
-          "last_observed": "2026-05-12T12:13:42.993811",
+          "last_observed": "2026-05-14T14:11:57.407642",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:45.861847+00:00",
-        "key": "e2a8bb3d-8147-4f0e-934a-e6d099e9583c",
+        "created_at": "2026-05-14T06:28:27.517395+00:00",
+        "key": "4162614d-744d-48b0-bb88-fe69b099ddcc",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:45.861859+00:00",
+        "updated_at": "2026-05-14T06:28:27.517408+00:00",
         "value": {
-          "action": "Deny being a special role and immediately pivot to offering a concrete suspicion against another player. Claiming Healer early gets you killed at night; you must feign being a vanilla villager hunting for wolves.",
-          "content": "When you are under pressure during the early or mid-game and are being asked point-blank questions that would force you to reveal your Healer role.",
+          "action": "Deny being a special role and immediately pivot to offering a concrete suspicion against another player, demonstrating proactive villager thinking. Claiming Healer early or mid-game often leads to being killed at night; you must feign being a vanilla villager actively hunting for wolves to survive and continue protecting the village.",
+          "content": "As a Healer, the game is in an early or mid-phase, and you are under direct social pressure, being asked point-blank questions that would force you to reveal your special role. The information landscape is still developing, and revealing your role prematurely would make you a prime target for wolves at night, risking an early loss of a critical protective role.",
           "game_id": "27a31135-31cf-4919-bb02-7fc99abdd39c",
-          "last_observed": "2026-05-12T12:13:45.474860",
+          "last_observed": "2026-05-14T14:11:58.180352",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:46.659698+00:00",
-        "key": "fb8ec976-a54b-42c1-9605-aa75b98192c7",
+        "created_at": "2026-05-14T06:11:59.246290+00:00",
+        "key": "7a0b1bab-d585-4e94-be64-68bf7eb9074f",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:23:44.185371+00:00",
+        "updated_at": "2026-05-14T06:11:59.246299+00:00",
         "value": {
           "action": "Ensure your final vote is cast squarely on your top overall suspect\u2014not necessarily just the person pushing your elimination, as wolves often let misguided villagers lead the charge. Once your Healer role is revealed upon death, your final vote serves as a highly credible posthumous clue that can direct the surviving village.",
           "content": "When you are the target of a coordinated pile-on and are about to be eliminated by a village vote, but hold strong suspicions about who the wolves are.",
           "game_id": "26b1b237-6a61-47ff-93bc-f3339f2b1196",
-          "last_observed": "2026-05-12T12:23:43.780034",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:58.891958",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:49.903294+00:00",
-        "key": "4d25492d-3a59-4713-b3a0-14f9c23b11d0",
+        "created_at": "2026-05-14T06:12:00.169915+00:00",
+        "key": "b7d2f9c1-e1b2-423e-9458-c30185838d12",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:49.903310+00:00",
+        "updated_at": "2026-05-14T06:12:00.169922+00:00",
         "value": {
           "action": "Consider that this player may be a quiet but non-threatening villager that wolves are using as a convenient scapegoat. While not a priority for protection over a vocal leader, be wary of voting them out based solely on accusations from confirmed or suspected wolves.",
           "content": "When a player is repeatedly targeted with accusations by suspected wolves as a deflection.",
           "game_id": "323edcf9-4a5d-4576-a5ab-0a2adebb777e",
-          "last_observed": "2026-05-12T12:13:49.514770",
+          "last_observed": "2026-05-14T14:11:59.679861",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:50.774703+00:00",
-        "key": "21178444-7468-44e1-bf9b-d53efa81acdf",
+        "created_at": "2026-05-14T06:12:00.956330+00:00",
+        "key": "8108d14a-f838-4d51-9364-e28f0ef5ce9c",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:56.416675+00:00",
+        "updated_at": "2026-05-14T06:12:00.956340+00:00",
         "value": {
           "action": "Pivot your protection to the most vocal and influential villager from the Day 2 discussion. Wolves often use Night 1 for a random low-profile kill, but will reliably pivot on Night 2 to eliminate whoever is actively organizing the village against them.",
           "content": "When the player you successfully saved on Night 1 was a quiet, low-profile target who is not driving village consensus.",
           "game_id": "de6432b4-b639-46ef-9e94-fc8a0f02a27f",
-          "last_observed": "2026-05-12T12:13:55.964063",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:12:00.579674",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:52.352794+00:00",
-        "key": "cbba2001-3a1a-4b12-81f6-a3ac3f47a755",
+        "created_at": "2026-05-14T06:12:01.742286+00:00",
+        "key": "a506b69a-60ca-4674-8073-d06dea3b165e",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:52.352799+00:00",
+        "updated_at": "2026-05-14T06:12:01.742292+00:00",
         "value": {
           "action": "Use neutral language and avoid highly proactive, role-suggestive rallying cries (e.g., \"let's organize and lead the hunt\"). Acting as the primary village organizer marks you as a high-priority Night 1 wolf kill before you can utilize your saves.",
           "content": "When contributing to early-game discussions where the village lacks clear leads.",
           "game_id": "daddb2c0-dcac-40a8-a6e6-02ee1dc8670e",
-          "last_observed": "2026-05-12T12:13:52.002789",
+          "last_observed": "2026-05-14T14:12:01.321812",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:53.777318+00:00",
-        "key": "deb65741-28ad-4c70-9052-6b8e47038b79",
+        "created_at": "2026-05-14T06:12:02.469676+00:00",
+        "key": "869c5742-b1af-49ea-a947-cfb298ac74a5",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:53.777332+00:00",
+        "updated_at": "2026-05-14T06:12:02.469685+00:00",
         "value": {
           "action": "Avoid protecting this player. Their chaotic behavior makes them a target for both the village vote and the wolves, making your save a high-risk, low-reward play. Prioritize protecting players who are building consensus or are confirmed innocents.",
           "content": "If a villager is acting overly aggressive, causing chaos, and drawing suspicion from many players, even if their intentions seem good.",
           "game_id": "2cc0c5e5-8c4f-4db0-a3d3-fb5a17c3f560",
-          "last_observed": "2026-05-12T12:13:53.416033",
+          "last_observed": "2026-05-14T14:12:02.102133",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:54.585991+00:00",
-        "key": "ce6f591b-e495-4952-8866-51e9ca7b3069",
+        "created_at": "2026-05-14T06:12:03.280169+00:00",
+        "key": "28ae2b4a-deb7-43ec-8661-0d9b33e08ab8",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:54.586001+00:00",
+        "updated_at": "2026-05-14T06:12:03.280180+00:00",
         "value": {
           "action": "Briefly express concern over the risk of being exposed to maintain your credibility as a prudent player. Then, fall silent on the matter and let the village use the confirmed information to hunt the wolves, avoiding drawing further attention to yourself.",
           "content": "If the Investigator publicly reveals your role to the village to clear your name from a suspicious vote.",
           "game_id": "2cc0c5e5-8c4f-4db0-a3d3-fb5a17c3f560",
-          "last_observed": "2026-05-12T12:13:54.150677",
+          "last_observed": "2026-05-14T14:12:02.901942",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:58.146858+00:00",
-        "key": "1d7b94b8-70b9-4872-8017-842d511854bb",
+        "created_at": "2026-05-14T06:12:04.087657+00:00",
+        "key": "fc5c9d63-3f95-48f0-aaf6-8a3159ae5e83",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T04:13:58.146865+00:00",
+        "updated_at": "2026-05-14T06:12:04.087665+00:00",
         "value": {
           "action": "Acknowledge the mistake once, correct it, and firmly pivot the conversation back to the primary evidence against the wolf. Refuse to be drawn into a circular argument about your past error, as this is a deliberate distraction tactic.",
           "content": "In the late game with few players left, if a wolf is trying to sow doubt by repeatedly attacking a minor logical mistake you made earlier.",
           "game_id": "879df7ef-1886-4014-bc08-4bba8784f0c3",
-          "last_observed": "2026-05-12T12:13:57.733176",
+          "last_observed": "2026-05-14T14:12:03.618221",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:05:14.292850+00:00",
-        "key": "966ba807-56de-44d2-a76e-8c067256b2ed",
+        "created_at": "2026-05-14T06:12:04.814371+00:00",
+        "key": "a0c67af2-d9d0-4c69-8006-8b619b39aba2",
         "namespace": [
           "strategy_points",
           "healer"
         ],
-        "updated_at": "2026-05-12T05:05:14.292861+00:00",
-        "value": {
-          "action": "Proactively claim your role as Healer and reference a past verifiable event (e.g., \"I saved player X on Night 2\"). This forces the final wolf into a difficult counter-claim and gives the remaining villagers a hard logical puzzle to solve rather than relying on communication tells.",
-          "content": "When you are in a late-game scenario (e.g., 3 or 4 players left) and you are one of the last unconfirmed roles alongside the final suspected wolf.",
-          "game_id": "0408029a-56b7-481a-ade2-949147ae9124",
-          "last_observed": "2026-05-12T13:05:13.806508",
-          "observation_count": 1
-        }
-      },
-      {
-        "created_at": "2026-05-12T05:29:36.710982+00:00",
-        "key": "a2cb1724-1b2c-47c0-aa31-9ac353e724d4",
-        "namespace": [
-          "strategy_points",
-          "healer"
-        ],
-        "updated_at": "2026-05-12T05:29:36.710993+00:00",
+        "updated_at": "2026-05-14T06:12:04.814385+00:00",
         "value": {
           "action": "Advise against it. Publicly revealing roles gives the wolves a clear list of high-value targets, while the village gains little actionable intelligence in return. Push to focus on behavioral tells instead.",
           "content": "When villagers call for role claims early in the game before any concrete evidence has emerged.",
           "game_id": "0240f2f8-e32c-44e2-b54d-33e4321551ef",
-          "last_observed": "2026-05-12T13:29:36.332229",
+          "last_observed": "2026-05-14T14:12:04.480888",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:28:27.929279+00:00",
+        "key": "2559320c-837f-4185-868f-3a44a34d6f02",
+        "namespace": [
+          "strategy_points",
+          "healer"
+        ],
+        "updated_at": "2026-05-14T06:28:27.929289+00:00",
+        "value": {
+          "action": "Publicly claim your Healer role and provide specific details of a past, announced save. This action forces the saved player to confirm your identity, solidifying your public role and dramatically narrowing the pool of remaining suspects for the critical final vote by eliminating a known good player.",
+          "content": "As a Healer, the game is in a late phase with 4 or fewer players remaining, and your identity is still unknown. The information landscape is highly constrained, and every vote carries immense weight, making a confirmed role crucial for the village to make an informed final decision.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:28:27.517475",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:28:37.537960+00:00",
+        "key": "54bcb848-753f-46ca-b662-77f34bdbca45",
+        "namespace": [
+          "strategy_points",
+          "healer"
+        ],
+        "updated_at": "2026-05-14T06:28:37.537969+00:00",
+        "value": {
+          "action": "Immediately point out the suspicious synchronized pivot itself as wolf behavior. This deflection tactic is a strong tell, and framing it as such can cut through the 'he said, she said' confusion they are trying to create.",
+          "content": "In the endgame, if two remaining suspects both challenge your confirmed role and then pivot to accuse each other simultaneously.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:28:37.144019",
           "observation_count": 1
         }
       }
     ],
     "strategy_points/investigator": [
       {
-        "created_at": "2026-05-12T04:12:54.019484+00:00",
-        "key": "9f5bc29a-47ee-4e78-8c7f-de7747575224",
+        "created_at": "2026-05-14T06:11:24.884861+00:00",
+        "key": "d514b309-719f-4ca3-bb02-5b71ce49a02c",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:15.394514+00:00",
+        "updated_at": "2026-05-14T06:11:24.884868+00:00",
         "value": {
           "action": "Cast your final vote decisively on your strongest confirmed or suspected wolf, rather than voting for self-preservation or retaliating against your accusers. Because your investigator role will be publicly revealed upon your death, this isolated final vote serves as a permanent, highly credible posthumous message that anchors the village's leads the following day.",
           "content": "When you believe your elimination is imminent, either due to an unstoppable voting bandwagon against you or because your behavior has drawn obvious wolf attention for a night kill.",
           "game_id": "game_20260508_110628",
-          "last_observed": "2026-05-12T12:13:15.040591",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:11:24.537252",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:54.862488+00:00",
-        "key": "e7d30f7f-f3c4-4d83-a7eb-a67851673c2c",
+        "created_at": "2026-05-14T06:11:25.661036+00:00",
+        "key": "e1310cea-ff33-475c-8429-aac6fa1213c8",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T05:53:38.965475+00:00",
+        "updated_at": "2026-05-14T06:11:25.661047+00:00",
         "value": {
           "action": "Provide a calm, direct explanation for your behavior, such as saying you were observing a specific player, and immediately pivot by offering a concrete suspicion of your own. Do not deflect by aggressively questioning your accuser's motives; in an information-starved village, pure deflection provides zero new analytical material, which matches the profile of a cornered wolf and will rapidly accelerate your elimination.",
           "content": "When you are targeted in the early game by accusations based purely on your communication style, such as being too quiet, vague, or asking too many questions.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T13:53:38.541343",
-          "observation_count": 5
+          "last_observed": "2026-05-14T14:11:25.240216",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:56.354093+00:00",
-        "key": "b253317e-00b1-4d05-b5f5-f8209147c003",
+        "created_at": "2026-05-14T06:11:26.514120+00:00",
+        "key": "4ad98eda-2766-4b55-a89b-ae7211f2965a",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:17.681237+00:00",
+        "updated_at": "2026-05-14T06:11:26.514129+00:00",
         "value": {
           "action": "Temper your participation by deliberately mixing your pointed questions with more casual, instinct-based villager statements. Consistently acting as the sole, methodical leader signals to wolves that you hold an information-gathering role, making you the primary target for the night kill before you can fully utilize your findings.",
           "content": "When you are actively trying to drive discussion and build cases against suspects by acting as the primary interrogator and constantly demanding specific evidence.",
           "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T12:13:17.320218",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:11:26.074112",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:57.119081+00:00",
-        "key": "b29067bf-8a98-4cd5-9584-95744bed5492",
+        "created_at": "2026-05-14T06:11:27.312927+00:00",
+        "key": "86cfd2d3-cbee-42fa-8590-b3c4644b189e",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:11.398669+00:00",
+        "updated_at": "2026-05-14T06:11:27.312939+00:00",
         "value": {
-          "action": "Remain silent, do not reveal your findings, and simply vote with the majority. Intervening with probing questions when the village is already succeeding does not change the day's positive outcome; it only serves to permanently flag you as an information role to the remaining wolves.",
+          "action": "Remain silent, do not reveal your role, and vote with the majority. Preserving your anonymity is more valuable than speaking up without definitive proof, especially when the village is already on the right track.",
           "content": "When the village has independently formed a strong, locked-in consensus and is actively organizing an elimination vote against a wolf you have already confirmed via investigation.",
           "game_id": "game_20260508_124551",
-          "last_observed": "2026-05-12T12:13:11.050398",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:11:26.888729",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:57.937618+00:00",
-        "key": "a4e3f42d-cf8e-4c08-9962-6b8ae5b340cd",
+        "created_at": "2026-05-14T06:11:28.221000+00:00",
+        "key": "a767d28f-e927-456a-880a-5384c3dc4874",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:12:57.937634+00:00",
+        "updated_at": "2026-05-14T06:11:28.221012+00:00",
         "value": {
           "action": "Lead the questioning of a suspicious player without revealing your role. Use your confirmed-innocent status to repeatedly press them for specifics, which will expose their evasive tactics for the rest of the village to see.",
           "content": "When you have been saved by the healer and have also identified a wolf through your investigation.",
           "game_id": "game_20260508_130942",
-          "last_observed": "2026-05-12T12:12:57.505939",
+          "last_observed": "2026-05-14T14:11:27.813255",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:39:46.027410+00:00",
-        "key": "8c69a504-7c2b-4c81-b56b-1fc6621d7d4a",
+        "created_at": "2026-05-14T06:11:29.140788+00:00",
+        "key": "a55c8e4a-8c14-4db9-8949-4393894081b0",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T05:29:35.097616+00:00",
+        "updated_at": "2026-05-14T06:11:29.140801+00:00",
         "value": {
-          "action": "Initiate a push using a minor but concrete behavioral observation from the previous day, such as a specific deflection, then follow up with targeted questions. It is critical to anchor your push in a specific stance: acting purely as a non-committal Socratic questioner who only asks questions without offering suspicions is a well-known power-role tell that wolves actively hunt. By offering a concrete, mildly flawed suspicion, you disguise yourself as a standard, proactive villager while still guiding the vote.",
+          "action": "Escalate by forcefully stating your case, and if the consensus still does not shift, fully reveal your role and your findings before the vote locks. A dead Investigator who has exposed a wolf is far more useful than a live one who allowed the village to squander a critical day on a mislynch.",
           "content": "When you have investigated and confirmed a wolf early in the game, but the village has no organic leads and a direct role reveal would result in your immediate elimination by the remaining wolves.",
           "game_id": "game_20260508_130942",
-          "last_observed": "2026-05-12T13:29:34.596902",
-          "observation_count": 10
+          "last_observed": "2026-05-14T14:11:28.701699",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:00.105673+00:00",
-        "key": "d6685fc1-6e10-4fe9-a751-65d1632283b9",
+        "created_at": "2026-05-14T06:11:30.000873+00:00",
+        "key": "13664014-4380-4490-b9e0-14e010a542bd",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:00.105678+00:00",
+        "updated_at": "2026-05-14T06:11:30.000886+00:00",
         "value": {
           "action": "Do not let them change the subject. Re-state your original question clearly and point out their attempt to pivot, as this forces them to address the issue and makes their evasiveness more apparent to the rest of the village.",
           "content": "When you notice a player is consistently deflecting direct questions by pivoting to accuse someone else.",
           "game_id": "95a87577-7f91-4e83-95d5-1ec95dbb0425",
-          "last_observed": "2026-05-12T12:12:59.754685",
+          "last_observed": "2026-05-14T14:11:29.570339",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:01.769096+00:00",
-        "key": "a0b331e5-b03b-47da-9eb5-10f97362bfef",
+        "created_at": "2026-05-14T06:11:31.060113+00:00",
+        "key": "236baa84-844c-4268-8ad1-59b3c49a9968",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:01.769118+00:00",
-        "value": {
-          "action": "Remain silent, do not reveal your role, and vote with the majority. Preserving your anonymity is more valuable than speaking up without definitive proof, especially when the village is already on the right track.",
-          "content": "When the village has independently formed a strong, evidence-based consensus against a player you have not yet investigated.",
-          "game_id": "afdc13eb-3cfe-4af4-8719-3c5a7ac756fb",
-          "last_observed": "2026-05-12T12:13:01.394251",
-          "observation_count": 1
-        }
-      },
-      {
-        "created_at": "2026-05-12T04:13:03.339770+00:00",
-        "key": "b2f07dc3-7c82-4caa-afe6-7004ffe8822d",
-        "namespace": [
-          "strategy_points",
-          "investigator"
-        ],
-        "updated_at": "2026-05-12T04:54:50.052328+00:00",
+        "updated_at": "2026-05-14T06:11:31.060127+00:00",
         "value": {
           "action": "Blend in by making generic, open-ended statements after others have spoken, and deliberately avoid asking highly analytical or probing questions. Wolves specifically scan the first day's discussion for methodical, information-gathering players to eliminate at night, so mimicking a low-information villager is crucial for surviving to use your ability.",
-          "content": "When making your initial statements on Day 1, before any concrete information or suspicious behavior has emerged.",
+          "content": "In the early game, particularly on Day 1, when the information landscape is barren and you aim to minimize your visibility as a potential information-gathering role to survive the first night.",
           "game_id": "4dd84758-4422-4a3a-8e3c-9794fb6d8db1",
-          "last_observed": "2026-05-12T12:54:49.650360",
-          "observation_count": 5
+          "last_observed": "2026-05-14T14:11:30.474206",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:23:43.384884+00:00",
-        "key": "1d7bbcc0-fb6f-4153-97a2-a37b8e345dde",
+        "created_at": "2026-05-14T06:11:32.963246+00:00",
+        "key": "d192afd9-6225-445f-8d2f-714e8a91c619",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T05:22:30.708644+00:00",
+        "updated_at": "2026-05-14T06:11:32.963261+00:00",
         "value": {
           "action": "Claim your role and present all of your investigation results simultaneously in a single, confident, chronological data dump. Do not hold back details or reveal information piecemeal, as any hesitation or gaps will be aggressively exploited by cornered wolves to cast doubt and destroy your credibility.",
           "content": "When you are executing a full role reveal, either in the endgame or when you have mathematically confirmed the remaining wolves through process of elimination.",
           "game_id": "7f1fe6c6-c329-482c-bb22-0883c62cdfc4",
-          "last_observed": "2026-05-12T13:22:30.299936",
-          "observation_count": 6
+          "last_observed": "2026-05-14T14:11:31.591977",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:06.545339+00:00",
-        "key": "23cbfe72-b6db-4eb4-ad06-83941201ac61",
+        "created_at": "2026-05-14T06:11:33.869078+00:00",
+        "key": "2fd4e1b9-5b30-49e8-92a8-3a6e84471e23",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:06.545352+00:00",
+        "updated_at": "2026-05-14T06:11:33.869084+00:00",
         "value": {
           "action": "Keep this information entirely to yourself and do not attempt to publicly clear them. Revealing the Healer's identity makes them the wolves' top priority, immediately removing the village's primary source of protection.",
           "content": "When you investigate a player and discover they are the Healer, and they are not currently under heavy suspicion from the village.",
           "game_id": "00ceab43-a937-4479-a6f7-c4c3b756afeb",
-          "last_observed": "2026-05-12T12:13:06.132116",
+          "last_observed": "2026-05-14T14:11:33.344093",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:07.353733+00:00",
-        "key": "2252ff99-303b-4d62-8520-e99b6466d266",
+        "created_at": "2026-05-14T06:11:34.881814+00:00",
+        "key": "55b5f7d9-0cc0-4667-8793-b155cba2740e",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T05:05:13.439097+00:00",
+        "updated_at": "2026-05-14T06:11:34.881823+00:00",
         "value": {
           "action": "Execute a late-day soft reveal by using your confirmed knowledge to ask highly targeted, probing questions. Timing this push for when the wolf is already under pressure ensures the fragile consensus solidifies into an elimination, while disguising your intervention as natural momentum rather than a power-role reveal.",
           "content": "When the village begins to organically suspect a wolf you have confirmed, but the consensus remains fragile, wavering, or is facing active pushback from other players.",
           "game_id": "3082de71-cfb6-4824-94b0-02c5d680956a",
-          "last_observed": "2026-05-12T13:05:13.077156",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:34.370886",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:08.919775+00:00",
-        "key": "12f5758f-1d8f-4a8a-aa1e-e6a85c6c29b2",
+        "created_at": "2026-05-14T06:11:35.702813+00:00",
+        "key": "2e79950c-7a9f-45b4-8d79-4f507135863e",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:19.335792+00:00",
+        "updated_at": "2026-05-14T06:11:35.702826+00:00",
         "value": {
           "action": "Immediately hard claim your role and present all of your accumulated investigation results in a clear timeline. Dying silently while trying to preserve anonymity guarantees a setback for the village and completely wastes the information advantage your role is meant to provide.",
           "content": "When you become the primary target of a sudden, strong voting bandwagon and are facing imminent elimination.",
           "game_id": "a8d7cd5e-ae16-44e6-bcc2-25b62fe36edf",
-          "last_observed": "2026-05-12T12:13:18.877002",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:35.290403",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:12.272494+00:00",
-        "key": "990ad823-2750-44e0-a1a9-4a4864e91982",
+        "created_at": "2026-05-14T06:11:36.926050+00:00",
+        "key": "105b4602-36bf-459c-93d1-ffe095eadd95",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:12.272499+00:00",
+        "updated_at": "2026-05-14T06:11:36.926060+00:00",
         "value": {
           "action": "Investigate players who ask leading questions or attempt to subtly direct the flow of conversation. This can help you identify special roles (like the Healer) or other wolves early, providing a crucial strategic map.",
           "content": "When it is early in the game and you have no strong suspicions.",
           "game_id": "8076b4ec-4b42-4f88-bc39-7a66c44589d6",
-          "last_observed": "2026-05-12T12:13:11.864525",
+          "last_observed": "2026-05-14T14:11:36.517741",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T06:19:05.289888+00:00",
-        "key": "7047fc69-c6c5-44c8-be08-898c717d5281",
+        "created_at": "2026-05-14T06:11:37.744195+00:00",
+        "key": "a034abd8-5171-4ebe-ab08-7c0142d5ccef",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T06:19:05.289894+00:00",
-        "value": {
-          "action": "Escalate by forcefully stating your case, and if the consensus still does not shift, fully reveal your role and your findings before the vote locks. A dead Investigator who has exposed a wolf is far more useful than a live one who allowed the village to squander a critical day on a mislynch.",
-          "content": "When you hold confirmed investigation results and the village is ignoring your subtle guidance, unifying instead around a plausible mislynch of an un-investigated player.",
-          "game_id": "5a37713b-3e67-4d39-81bc-26b2e9a15b27",
-          "last_observed": "2026-05-12T14:19:04.885378",
-          "observation_count": 4
-        }
-      },
-      {
-        "created_at": "2026-05-12T04:13:14.701718+00:00",
-        "key": "445fd780-2c10-40d9-862b-710577848e83",
-        "namespace": [
-          "strategy_points",
-          "investigator"
-        ],
-        "updated_at": "2026-05-12T04:13:14.701742+00:00",
+        "updated_at": "2026-05-14T06:11:37.744200+00:00",
         "value": {
           "action": "Avoid making a weak, retaliatory accusation against the person pressuring you. Instead, propose a neutral, process-oriented action, such as having everyone state their top two suspects, to demonstrate engagement and buy yourself another night.",
           "content": "If you are being pressured to provide leads early in the game but your investigation yielded no actionable intelligence (e.g., you checked a player who was killed).",
           "game_id": "68db08e8-7a3d-4e15-b5cc-3f9224fe483f",
-          "last_observed": "2026-05-12T12:13:14.319630",
+          "last_observed": "2026-05-14T14:11:37.356224",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:16.879113+00:00",
-        "key": "4e481998-07cd-4b03-ad94-178d9faa160a",
+        "created_at": "2026-05-14T06:29:18.583156+00:00",
+        "key": "317681b1-b742-4940-828c-337d4b4de90b",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:16.879121+00:00",
+        "updated_at": "2026-05-14T06:29:18.583170+00:00",
         "value": {
           "action": "This is a post-game meta-strategy point. Your death confirms the value of your role. Players should understand that wolves will almost always target the investigator early, so the village must protect anyone who plays the role of a methodical questioner, as that behavior mimics a good investigator.",
-          "content": "When you have identified a wolf on Night 1 but are killed before the Day 2 discussion begins.",
+          "content": "In the early game, a player who has been acting as a methodical questioner or has made a strong, evidence-based identification of a wolf is killed by wolves at night. The village's strategic focus is on identifying and protecting players who exhibit similar valuable investigative behaviors.",
           "game_id": "9ac6ec20-5811-4c6f-a51f-375352c40111",
-          "last_observed": "2026-05-12T12:13:16.483213",
+          "last_observed": "2026-05-14T14:11:38.107303",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:20.050304+00:00",
-        "key": "32aa9388-3217-409b-bf45-c9ebd555f1b7",
+        "created_at": "2026-05-14T06:11:39.385374+00:00",
+        "key": "68a630fa-2974-4934-b9e6-54515464c060",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:20.050309+00:00",
+        "updated_at": "2026-05-14T06:11:39.385415+00:00",
         "value": {
           "action": "Do not just dismiss the evidence as a 'mistake.' Instead, actively propose an alternative theory or point out the logical fallacies in the accusation, and then pivot to your own primary suspect with clear reasoning to shift the town's focus.",
           "content": "When defending against an accusation based on weak or circumstantial evidence, such as another player's 'gut feeling' or a misdirected vote.",
           "game_id": "1d9364c1-88ca-4a42-8480-0e92014262aa",
-          "last_observed": "2026-05-12T12:13:19.706721",
+          "last_observed": "2026-05-14T14:11:38.914266",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:24.134952+00:00",
-        "key": "18291a58-e11c-4923-a0c3-ffa3a3420589",
+        "created_at": "2026-05-14T06:11:40.200649+00:00",
+        "key": "9d2a4e0f-5341-4260-8b0a-6561dbff4052",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:24.134960+00:00",
+        "updated_at": "2026-05-14T06:11:40.200664+00:00",
         "value": {
           "action": "Publicly reveal your role and their identity to clear their name. While this sacrifices both of your anonymities, losing a protective power role to a mislynch is devastating, and this double-reveal instantly establishes a trusted, confirmed voting bloc to lead the endgame.",
           "content": "When you have confirmed the Healer's identity, but their past behavior has made them the primary suspect for the day's elimination vote.",
           "game_id": "2cc0c5e5-8c4f-4db0-a3d3-fb5a17c3f560",
-          "last_observed": "2026-05-12T12:13:23.765359",
+          "last_observed": "2026-05-14T14:11:39.810073",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:24.964413+00:00",
-        "key": "2aab7259-6216-43f5-a883-b032c7f777be",
+        "created_at": "2026-05-14T06:11:40.930833+00:00",
+        "key": "946f8da4-b8dc-456d-9187-9d3cbe4b3694",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:24.964418+00:00",
+        "updated_at": "2026-05-14T06:11:40.930843+00:00",
         "value": {
           "action": "Explicitly label their critique as a deflection tactic. State that while the methods may be risky, they were necessary to expose the hard evidence against the wolf, thereby reframing their argument as a sign of guilt.",
           "content": "If a wolf is trying to deflect suspicion from themselves by attacking your information-sharing methods as 'reckless' or 'dangerous'.",
           "game_id": "2cc0c5e5-8c4f-4db0-a3d3-fb5a17c3f560",
-          "last_observed": "2026-05-12T12:13:24.561182",
+          "last_observed": "2026-05-14T14:11:40.575436",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:13:27.322865+00:00",
-        "key": "bac4ea96-e65e-4c0f-8b0a-792413814616",
+        "created_at": "2026-05-14T06:11:41.838329+00:00",
+        "key": "796ff3aa-3436-4192-93eb-0d146cfa8174",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:13:27.322878+00:00",
+        "updated_at": "2026-05-14T06:11:41.838336+00:00",
         "value": {
           "action": "Avoid using vague justifications like 'a gut feeling.' This creates suspicion. Instead, subtly steer conversation away from them or use publicly available information to defend their actions, which is a more believable villager behavior.",
           "content": "If you have investigated a villager and want to publicly clear them without revealing your role.",
           "game_id": "b99ae0ff-b251-4a0e-a1fa-bfa2590aba22",
-          "last_observed": "2026-05-12T12:13:26.918127",
+          "last_observed": "2026-05-14T14:11:41.328070",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:33:44.183506+00:00",
-        "key": "dc7c3b3e-8786-4c55-8908-937ac73fa6b9",
+        "created_at": "2026-05-14T06:11:42.640351+00:00",
+        "key": "710c9fc4-2d3e-47b4-b7f7-a0e64fa6e84c",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:33:44.183515+00:00",
+        "updated_at": "2026-05-14T06:11:42.640361+00:00",
         "value": {
           "action": "Pay close attention, as this is a common wolf tactic to isolate a target. Consider investigating the quiet player, as they may be a power role trying to fly under the radar, or one of the accusers to check for a wolf setting a trap.",
           "content": "When a player is being accused of being too quiet or passive.",
           "game_id": "6f8318ee-fe43-4de5-8d5b-736c98ab31f0",
-          "last_observed": "2026-05-12T12:33:43.811495",
+          "last_observed": "2026-05-14T14:11:42.161017",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:39:46.849525+00:00",
-        "key": "183bfa0e-cd40-47b2-8b1f-553784f594df",
+        "created_at": "2026-05-14T06:11:43.479843+00:00",
+        "key": "92107ff5-c10b-4fd1-97d5-2e9fdae0d4b8",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T04:39:46.849538+00:00",
+        "updated_at": "2026-05-14T06:11:43.479854+00:00",
         "value": {
           "action": "Assume you are now the wolves' number one target for the following night. Use your remaining time to plant seeds of suspicion against another player to give the village a lead to follow after you are gone.",
           "content": "After you have successfully guided the village to eliminate a wolf you investigated.",
           "game_id": "7fe6bd0a-d19f-43ca-85df-e1f51de9ad1b",
-          "last_observed": "2026-05-12T12:39:46.417102",
+          "last_observed": "2026-05-14T14:11:43.072474",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:36:31.355980+00:00",
-        "key": "a634cf2c-7bf7-4e12-bebe-57ef60f1dd31",
+        "created_at": "2026-05-14T06:28:57.934484+00:00",
+        "key": "d40fed87-f590-4ded-8b00-c8a4a29cdaa6",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T05:36:31.355989+00:00",
+        "updated_at": "2026-05-14T06:28:57.934489+00:00",
         "value": {
           "action": "Use pointed, logical questions to deconstruct the accusation in public. Ask the first accuser *why* they chose their target over others with similar behaviors to expose the weakness of their case without revealing your role.",
-          "content": "When you observe a potential wolf pack dynamic, such as one player accusing and a second player immediately agreeing without substance.",
+          "content": "The village is in the early to mid-game, and you observe a specific, coordinated accusation where one player makes a claim and another immediately echoes it without independent reasoning, suggesting a wolf pack dynamic. Your goal is to dismantle this specific play without revealing your role.",
           "game_id": "8c9cae3b-a6c7-4591-aaea-cad1ad9466d7",
-          "last_observed": "2026-05-12T13:36:30.961109",
+          "last_observed": "2026-05-14T14:11:43.887617",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T06:19:07.744338+00:00",
-        "key": "5a9a4ecf-ac6f-4fd0-b700-f4e0cf65d086",
+        "created_at": "2026-05-14T06:11:44.946092+00:00",
+        "key": "f0230acd-78b5-412c-be6a-b2c42d926aed",
         "namespace": [
           "strategy_points",
           "investigator"
         ],
-        "updated_at": "2026-05-12T06:19:07.744343+00:00",
+        "updated_at": "2026-05-14T06:11:44.946120+00:00",
         "value": {
           "action": "Publicly frame this as confirmation of your accusation. Announce, 'I became a target only after I started voting for this player. This is a classic wolf tactic to eliminate the Investigator who has found them.' Use their reaction as evidence.",
           "content": "When you begin voting for a player you've identified as a wolf, and that player and another immediately start voting for you in subsequent rounds.",
           "game_id": "a277582a-e6a5-4c72-a05c-ee4d7592ee38",
-          "last_observed": "2026-05-12T14:19:07.344377",
+          "last_observed": "2026-05-14T14:11:44.594047",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:11:45.634375+00:00",
+        "key": "93fe0895-1ea5-41f5-a6e7-e6034926d859",
+        "namespace": [
+          "strategy_points",
+          "investigator"
+        ],
+        "updated_at": "2026-05-14T06:11:45.634382+00:00",
+        "value": {
+          "action": "Recognize that this active, analytical behavior, while beneficial for the village, makes you a prime wolf target. Assume you may be eliminated and proactively consider ways to leave critical information behind, such as building trust with one other player or making your suspicions public, even if your proof is not yet absolute.",
+          "content": "In the early to mid-game, when you are playing as an active, analytical villager (e.g., an Investigator) and choose to openly pursue information, accepting the high risk of becoming a wolf target.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:11:45.276843",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:28:58.327167+00:00",
+        "key": "10b6b42b-f27d-46fa-95f7-abf773f4eb81",
+        "namespace": [
+          "strategy_points",
+          "investigator"
+        ],
+        "updated_at": "2026-05-14T06:28:58.327172+00:00",
+        "value": {
+          "action": "Publicly announce your social read and explain your reasoning, even if you haven't investigated them yet. This creates a public record of suspicion that outlives you if you are targeted that night.",
+          "content": "The village is in the early to mid-game, and you observe general suspicious coordination or manipulative questioning between players that doesn't necessarily involve a direct accusation, but raises your social suspicion. As an investigator, you want to establish a public record of this suspicion.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:28:57.934516",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:29:18.998132+00:00",
+        "key": "32bd8a1c-934f-4e87-9d62-ee9922ff2d60",
+        "namespace": [
+          "strategy_points",
+          "investigator"
+        ],
+        "updated_at": "2026-05-14T06:29:18.998141+00:00",
+        "value": {
+          "action": "This is a post-game meta-strategy: recognize that being targeted after an accusation is strong validation of that accusation. In future games, advise villagers to heavily suspect anyone who becomes the target of a sharp player who is then immediately killed.",
+          "content": "In the early game, a sharp player makes a strong social read or accusation against another player, and is subsequently killed by wolves at night. The village's strategic focus is on validating the specific accusation made by the killed player.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:29:18.583237",
           "observation_count": 1
         }
       }
     ],
     "strategy_points/villager": [
       {
-        "created_at": "2026-05-12T04:10:15.632167+00:00",
-        "key": "2088deb8-b586-4129-a1bc-287306923744",
+        "created_at": "2026-05-14T06:10:15.927071+00:00",
+        "key": "20850ae0-b42b-43f1-a6cf-95cb673d369f",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:53:43.467484+00:00",
+        "updated_at": "2026-05-14T06:10:15.927079+00:00",
         "value": {
           "action": "Treat the second player's lack of independent thought as a primary wolf signal. Wolves often hide by mimicking consensus and supporting existing suspicion trains rather than taking the risk of generating original accusations. Coordinate questioning to press the second player for unique logic.",
           "content": "When one player makes an accusation, and another previously quiet player immediately and forcefully agrees with it, offering no independent reasoning of their own.",
           "game_id": "game_20260508_110628",
-          "last_observed": "2026-05-12T13:53:43.070909",
-          "observation_count": 5
+          "last_observed": "2026-05-14T14:10:15.410516",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:17.258278+00:00",
-        "key": "1afaa888-7b56-48ec-834d-17bb7cd17eb0",
+        "created_at": "2026-05-14T06:10:16.745238+00:00",
+        "key": "bcc4678f-e74b-450d-9207-399e919108bf",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:17.258289+00:00",
+        "updated_at": "2026-05-14T06:10:16.745255+00:00",
         "value": {
           "action": "Treat prolonged silence under direct questioning as a stronger sign of guilt than a weak or clumsy defense. A villager, even a flustered one, will likely try to defend themselves, whereas a cornered wolf may stay silent to avoid further incriminating themselves.",
           "content": "When a player who has been accused of suspicious behavior completely stops participating in the discussion for multiple rounds.",
           "game_id": "game_20260508_110628",
-          "last_observed": "2026-05-12T12:10:16.822871",
+          "last_observed": "2026-05-14T14:10:16.335303",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:18.208359+00:00",
-        "key": "89c4ecfd-5dcd-44e1-b713-2e0005927b92",
+        "created_at": "2026-05-14T06:10:27.716339+00:00",
+        "key": "6a163cd2-23ae-4c69-a426-d0ec12916d55",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:23:40.732273+00:00",
+        "updated_at": "2026-05-14T06:10:27.716344+00:00",
         "value": {
-          "action": "Treat their final vote as a confirmed, posthumous investigation result. Relentlessly pursue the player they voted for as the primary wolf suspect, completely rejecting any complex 'frame-up' theories the suspect invents, as info roles consistently use their last action to signal threats they couldn't safely reveal.",
-          "content": "When an information role (e.g., Investigator, Healer) is eliminated, and their final public vote from the previous day targeted a specific living player.",
+          "action": "Treat this targeted vote as a critical posthumous lead. Press the suspect to provide a convincing explanation for why the confirmed villager would target them, as an inability to do so strongly suggests guilt. Do not allow them to dismiss it as a simple misread or a random vote.",
+          "content": "The village is in a mid-game phase where an information role (e.g., Investigator, Seer, Healer) has been eliminated. Their final public vote from the previous day was a targeted vote against a specific living player, providing a highly reliable posthumous signal based on their role's unique information.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T12:23:40.357169",
-          "observation_count": 9
+          "last_observed": "2026-05-14T14:10:27.332542",
+          "observation_count": 2
         }
       },
       {
-        "created_at": "2026-05-12T04:10:19.079687+00:00",
-        "key": "e5ba0da7-5187-4e6f-a428-d11d8173bce4",
+        "created_at": "2026-05-14T06:10:18.401425+00:00",
+        "key": "c470f29c-bbfa-40b2-b566-2ece062adad5",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:18.679854+00:00",
+        "updated_at": "2026-05-14T06:10:18.401431+00:00",
         "value": {
           "action": "Treat this complex speculation as a deliberate distraction tactic. Refuse to engage with the hypothetical puzzle and repeatedly refocus the village's attention back to the simple, concrete voting record. Wolves use convoluted logic to confuse the village out of a sure elimination.",
           "content": "When a suspect facing strong, observable voting evidence (e.g., an Investigator's final vote, voting alignment with a confirmed wolf) attempts to defend themselves by introducing complex, speculative logic puzzles about the wolves' secret night-kill choices or convoluted 'frame-up' theories.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T12:11:18.325579",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:10:17.994405",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:19.839756+00:00",
-        "key": "55fe3566-ea1b-41bb-9b4b-21f6806c0516",
+        "created_at": "2026-05-14T06:10:19.199404+00:00",
+        "key": "abc7a61b-5b86-46ce-bf1f-63409704771e",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:36:29.507640+00:00",
+        "updated_at": "2026-05-14T06:10:19.199409+00:00",
         "value": {
           "action": "Make the previous day's voting record the central point of discussion. Any player who voted against the village majority to protect the wolf\u2014or cast a dissenting, outlier vote against an innocent player\u2014should become a primary suspect. Force them to explicitly justify their anomalous vote to detect fabricated excuses.",
           "content": "Immediately following the successful elimination of a confirmed wolf.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T13:36:29.031064",
-          "observation_count": 11
+          "last_observed": "2026-05-14T14:10:18.751166",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:05:12.634141+00:00",
-        "key": "6e92961f-2621-4130-b159-b8d94bffdf2f",
+        "created_at": "2026-05-14T06:27:42.276642+00:00",
+        "key": "0edaba10-cb4e-4ace-8b72-4689ada9f9aa",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:36:30.439347+00:00",
+        "updated_at": "2026-05-14T06:27:42.276652+00:00",
         "value": {
-          "action": "Treat the push itself as a major wolf signal. Wolves manufacture these accusations to secure low-risk mislynches when the village is starved for info. Defend the target and redirect intense scrutiny onto the accusers, demanding they provide distinct, concrete logic.",
-          "content": "When one or more players aggressively push an accusation against a target based entirely on subjective communication style (e.g., 'they are too quiet,' 'they sound vague') or minor phrasing differences, rather than concrete voting evidence.",
-          "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T13:36:29.897030",
-          "observation_count": 14
+          "action": "Treat the accusers as the primary suspects, not the target. This behavior is a common wolf tactic to create misdirection, frame an innocent villager as disruptive, and secure an easy, evidence-free elimination by pushing a 'meta' narrative. Scrutinize the accusers and anyone who eagerly supports them.",
+          "content": "In an information-poor early game with no eliminations and no concrete evidence, one or more players aggressively push an accusation against a target, especially a confirmed innocent, based entirely on subjective communication style (e.g., 'too quiet,' 'vague,' 'lack of reads') or minor phrasing differences, rather than concrete voting evidence.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:27:41.753058",
+          "observation_count": 2
         }
       },
       {
-        "created_at": "2026-05-12T04:10:21.466360+00:00",
-        "key": "bb0aceed-a6c9-43b2-8c06-e3da8c59581c",
+        "created_at": "2026-05-14T06:10:20.774422+00:00",
+        "key": "b83e0cb7-90ad-43e2-b79d-819bc316edd2",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:22:29.069105+00:00",
+        "updated_at": "2026-05-14T06:10:20.774434+00:00",
         "value": {
           "action": "Re-evaluate the players who most aggressively and consistently pushed the false narrative. Focus intensely on their behavior after the role reveal\u2014a wolf who led a mislynch will often immediately try to deflect and avoid accountability, which is a more reliable tell than their initially convincing accusation.",
           "content": "In the immediate aftermath of mislynching a key villager (e.g., Healer or Investigator).",
           "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T13:22:28.575800",
-          "observation_count": 4
+          "last_observed": "2026-05-14T14:10:20.429487",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:22.299346+00:00",
-        "key": "5940aecd-5f40-495b-b879-6b243eca08c5",
+        "created_at": "2026-05-14T06:10:21.555699+00:00",
+        "key": "994606db-8410-4333-b394-01b9b291c28c",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:41.764241+00:00",
+        "updated_at": "2026-05-14T06:10:21.555709+00:00",
         "value": {
           "action": "Prioritize the concrete evidence of recent voting alignments. A dead regular villager's suspicion can easily be mistaken, whereas direct voting alignment with a confirmed wolf is a tangible action that wolves often try to obscure by reviving old, ambiguous leads as a distraction.",
           "content": "When evaluating evidence in the late game and you must choose between a recent voting alignment with a confirmed wolf, and an old 'ghost lead' (e.g., ambiguous past behavior, or a single past vote cast by a regular villager who was mislynched).",
           "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T12:11:41.403658",
-          "observation_count": 4
+          "last_observed": "2026-05-14T14:10:21.131777",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:23.120611+00:00",
-        "key": "f303fa05-31e5-4336-800a-bb1b7a8c2663",
+        "created_at": "2026-05-14T06:10:22.270272+00:00",
+        "key": "be65e7a4-cecf-4c86-8338-bd75252fc090",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:53:40.774491+00:00",
+        "updated_at": "2026-05-14T06:10:22.270278+00:00",
         "value": {
           "action": "Treat this identical voting alignment as the strongest possible evidence of a wolf partnership. Focus all discussion on this shared action and aggressively cut off any attempts by the suspect to change the subject to new, unrelated suspicions.",
           "content": "After a wolf has been exposed, and the public voting record reveals an unconfirmed player had the exact same voting pattern and line of reasoning as the exposed wolf against a confirmed villager.",
           "game_id": "game_20260508_124551",
-          "last_observed": "2026-05-12T13:53:40.411556",
-          "observation_count": 4
+          "last_observed": "2026-05-14T14:10:21.924385",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:25.160289+00:00",
-        "key": "2cb485c8-e63c-481a-aa97-e6cbb793283a",
+        "created_at": "2026-05-14T06:10:22.976824+00:00",
+        "key": "d9482452-477e-447b-a128-7ea81541b731",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:29:34.015978+00:00",
+        "updated_at": "2026-05-14T06:10:22.976847+00:00",
         "value": {
           "action": "Focus the group's attention on the pattern of evasion itself. Coordinate with other villagers to amplify the original question and demand a direct answer, completely ignoring the suspect's counter-questions and theories until they comply.",
           "content": "When a suspect consistently responds to direct requests for their reasoning by being evasive, making vague statements, or deflecting with counter-questions to the group.",
           "game_id": "game_20260508_130942",
-          "last_observed": "2026-05-12T13:29:33.669043",
-          "observation_count": 5
+          "last_observed": "2026-05-14T14:10:22.599700",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:25.884307+00:00",
-        "key": "c1cf5fc2-4edc-440d-b2de-80af8feb3478",
+        "created_at": "2026-05-14T06:10:23.808782+00:00",
+        "key": "d7338f3c-ea49-40b2-b52d-a529b6a16e61",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T06:19:06.928028+00:00",
+        "updated_at": "2026-05-14T06:10:23.808792+00:00",
         "value": {
           "action": "Force a consensus on a single target, even if it feels like a 50/50 risk. A tied vote resulting in no elimination is a massive mathematical advantage for the wolves. Scrutinize the voting records to identify players who consistently cast dissenting votes that create ties rather than consolidating with the town.",
           "content": "When the village is struggling to eliminate players due to tied votes, especially in the late game or when split between two strong targets.",
           "game_id": "95a87577-7f91-4e83-95d5-1ec95dbb0425",
-          "last_observed": "2026-05-12T14:19:06.514262",
-          "observation_count": 4
+          "last_observed": "2026-05-14T14:10:23.401203",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:28.347032+00:00",
-        "key": "8cf7e457-add7-4298-877d-94e3025c90c9",
+        "created_at": "2026-05-14T06:10:24.523811+00:00",
+        "key": "8fad4ad9-aac2-4d35-b1f9-0c418b0be73d",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:28.347036+00:00",
+        "updated_at": "2026-05-14T06:10:24.523820+00:00",
         "value": {
           "action": "Check if their vote was cast *after* definitive proof (like an Investigator's reveal) was presented. Voting out a partner who is already caught is a self-preservation move for any role, not a suspicious act unique to wolves.",
           "content": "If a player is accused of 'bus-driving' a wolf who was voted out.",
           "game_id": "e2748587-ff34-4268-897f-ea3284d5189c",
-          "last_observed": "2026-05-12T12:10:27.862784",
+          "last_observed": "2026-05-14T14:10:24.186822",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:33.357589+00:00",
-        "key": "13489760-9b86-4cdc-ad3d-c4f77e0e83f1",
+        "created_at": "2026-05-14T06:10:25.244289+00:00",
+        "key": "f9e7ff6b-28c8-4f9c-91aa-a21291034827",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:33.357601+00:00",
+        "updated_at": "2026-05-14T06:10:25.244299+00:00",
         "value": {
           "action": "Treat the Day 2 vote as the first and most critical information-generating event of the game. Analyze the voting patterns intensely, as this is the first time players must commit to an action and potentially reveal their alignments.",
           "content": "When Day 1 discussions have been generic and yielded no behavioral clues.",
           "game_id": "afdc13eb-3cfe-4af4-8719-3c5a7ac756fb",
-          "last_observed": "2026-05-12T12:10:32.960765",
+          "last_observed": "2026-05-14T14:10:24.840128",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:40.940471+00:00",
-        "key": "920b136f-a882-43be-a585-adcbb38e6956",
+        "created_at": "2026-05-14T06:10:26.061256+00:00",
+        "key": "624a369c-11ad-4797-a0bd-f126cc95c86e",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:39.190624+00:00",
+        "updated_at": "2026-05-14T06:10:26.061265+00:00",
         "value": {
           "action": "Acknowledge the mistake or silence clearly and directly, without offering a long-winded, defensive excuse. Then, immediately pivot the conversation back to the most recent, concrete evidence against the main wolf suspect. Refusing to answer or deflecting with counter-questions mimics classic wolf behavior and gives them easy ammunition to mislynch you.",
           "content": "When you (an innocent villager) are under heavy suspicion or being aggressively questioned for a past mistake, a period of silence, or a single anomalous vote.",
           "game_id": "4dd84758-4422-4a3a-8e3c-9794fb6d8db1",
-          "last_observed": "2026-05-12T12:11:38.825232",
-          "observation_count": 8
+          "last_observed": "2026-05-14T14:10:25.656894",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:41.922825+00:00",
-        "key": "83c31efe-3a92-4294-aae7-b9f764c9e31e",
+        "created_at": "2026-05-14T06:10:26.986840+00:00",
+        "key": "db6efe93-316b-4caa-927b-97b2c9dec870",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:44.922787+00:00",
+        "updated_at": "2026-05-14T06:10:26.986847+00:00",
         "value": {
-          "action": "Publicly label this pattern as a strong indicator of a wolf protecting their partner. Mark the defender as the most likely teammate, as wolves will try to create conversational chaos and shield their partner without having to directly contradict hard evidence.",
-          "content": "When a primary wolf suspect or weak claim is under heavy scrutiny, and another player persistently defends them by attacking the accusers, warning about 'tunnel vision,' or aggressively redirecting the discussion to a new target.",
-          "game_id": "7f1fe6c6-c329-482c-bb22-0883c62cdfc4",
-          "last_observed": "2026-05-12T12:11:44.525637",
-          "observation_count": 4
+          "action": "Immediately view this defender with high suspicion and publicly label this pattern as a strong indicator of a wolf protecting their partner. Villagers are generally more likely to question a suspect, making such consistent, unprompted defense from an otherwise unsuspicious player a strong tell of a wolf partner trying to provide cover. Mark the defender as the most likely teammate.",
+          "content": "The village is in a phase where a primary wolf suspect or weak claim is under heavy scrutiny. A player who is not currently under suspicion consistently offers innocent explanations for the suspect's behavior, or persistently defends them by attacking accusers, warning about 'tunnel vision,' or aggressively redirecting the discussion to a new target.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:10:26.573350",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:42.988649+00:00",
-        "key": "ebadccae-ef19-4b85-bd99-18d3bb071356",
+        "created_at": "2026-05-14T06:10:28.504519+00:00",
+        "key": "b7e7ef03-7129-4322-962c-56765fe59645",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:42.988655+00:00",
+        "updated_at": "2026-05-14T06:10:28.504525+00:00",
+        "value": {
+          "action": "Critically evaluate this dying vote in the context of prior events. If the player targeted by the wolf's final vote had previously defended the confirmed wolf, interpret this as a failed 'bus attempt' by the wolf to frame an ally, thereby strengthening suspicion on the targeted player.",
+          "content": "In the mid-game, after a confirmed wolf has been eliminated, and their final vote is cast against another unconfirmed player.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:10:28.125735",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:10:29.236186+00:00",
+        "key": "7e8a001f-e070-4deb-a6a1-14b4d50ce23d",
+        "namespace": [
+          "strategy_points",
+          "villager"
+        ],
+        "updated_at": "2026-05-14T06:10:29.236195+00:00",
         "value": {
           "action": "Avoid a broad accusation against the whole group. Instead, focus the village's attention and questioning on one specific individual from that group to force a unique defense that can be scrutinized for inconsistencies.",
           "content": "When you suspect a group of players are acting in concert due to shared silence or overly similar generic statements, but have no hard evidence.",
           "game_id": "7f1fe6c6-c329-482c-bb22-0883c62cdfc4",
-          "last_observed": "2026-05-12T12:10:42.373317",
+          "last_observed": "2026-05-14T14:10:28.838301",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:43.766833+00:00",
-        "key": "24571b79-86a7-4179-896a-384cf12642ea",
+        "created_at": "2026-05-14T06:10:29.952390+00:00",
+        "key": "75bc985f-76e1-4dff-86e4-877fdecbd25c",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:43.766837+00:00",
+        "updated_at": "2026-05-14T06:10:29.952397+00:00",
         "value": {
           "action": "Immediately review the complete voting record from that elimination. Focus on any players who voted against the majority, as their anomalous vote is a high-signal lead for identifying a wolf trying to build credibility.",
           "content": "If a villager has just been eliminated in a majority vote.",
           "game_id": "5ec9f3fd-1edf-4164-95ef-c7fc13cf3e25",
-          "last_observed": "2026-05-12T12:10:43.357782",
+          "last_observed": "2026-05-14T14:10:29.625323",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:47.056161+00:00",
-        "key": "cae2ddb8-8501-42d1-8cb1-171207b6b356",
+        "created_at": "2026-05-14T06:10:30.744848+00:00",
+        "key": "776b692f-a398-44af-bfab-73a991d36c35",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:47.056174+00:00",
+        "updated_at": "2026-05-14T06:10:30.744860+00:00",
         "value": {
-          "action": "Strongly advocate for a no-vote day. A random lynch based on no evidence is statistically more likely to eliminate a key villager role than a wolf, which is an unearned gift to the wolf team.",
+          "action": "Do not advocate for lynching based solely on silence, as it creates an easy mislynch for wolves. Instead, explicitly demand concrete reads and apply light, probing questions to quiet players to force a reaction, generating much-needed behavioral data.",
           "content": "When it is early in the game, there are no concrete leads or investigation results, and discussion is stagnant.",
           "game_id": "00ceab43-a937-4479-a6f7-c4c3b756afeb",
-          "last_observed": "2026-05-12T12:10:46.699391",
+          "last_observed": "2026-05-14T14:10:30.363414",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:49.323665+00:00",
-        "key": "91207e65-233d-4106-bb0a-1c8a3fb88dcb",
+        "created_at": "2026-05-14T06:10:31.555812+00:00",
+        "key": "1eeaf668-302a-4088-b6d0-f89ddd7a4b3d",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:49.323675+00:00",
+        "updated_at": "2026-05-14T06:10:31.555819+00:00",
         "value": {
           "action": "Systematically question every player who cast a vote for that role. Pay close attention to who deflects versus who offers an explanation, as deflection under pressure is a strong indicator of a wolf.",
           "content": "When analyzing the voting record after a key power role was mislynched.",
           "game_id": "d5b8728e-d0e2-4450-a54c-41ecd908067d",
-          "last_observed": "2026-05-12T12:10:48.925896",
+          "last_observed": "2026-05-14T14:10:31.184072",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:50.161544+00:00",
-        "key": "3a8d42f6-5ed9-43fd-81ae-7ee96b8e4cb7",
+        "created_at": "2026-05-14T06:10:32.337200+00:00",
+        "key": "8a746eef-5eec-42dd-b1d6-7510da5a6465",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:57.838637+00:00",
+        "updated_at": "2026-05-14T06:10:32.337206+00:00",
         "value": {
           "action": "Identify this synchronized storytelling as strong evidence of a wolf pack coordinating their defense. Call it out explicitly to unify the village against the players pushing the identical narrative.",
           "content": "When multiple players under suspicion offer nearly identical excuses or complex theories to justify a past suspicious action (e.g., voting for a mislynched player, dismissing an Investigator's final vote).",
           "game_id": "d5b8728e-d0e2-4450-a54c-41ecd908067d",
-          "last_observed": "2026-05-12T12:10:57.465109",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:10:31.966603",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:53.099774+00:00",
-        "key": "934a8561-cfbd-4f46-bf13-827d34a6384c",
+        "created_at": "2026-05-14T06:10:33.109048+00:00",
+        "key": "7a1b1ccf-109e-4888-a602-9ef9c16d6f2a",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:10:53.099787+00:00",
+        "updated_at": "2026-05-14T06:10:33.109063+00:00",
         "value": {
           "action": "Address the accusation directly by offering a plausible, even if speculative, theory for the Investigator's vote. Repeatedly deflecting by questioning the village's overall decisions will be interpreted as guilt and will likely lead to your elimination.",
           "content": "If an eliminated Investigator's final vote was cast against you, and the village demands an explanation.",
           "game_id": "a8d7cd5e-ae16-44e6-bcc2-25b62fe36edf",
-          "last_observed": "2026-05-12T12:10:52.733919",
+          "last_observed": "2026-05-14T14:10:32.743297",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:10:57.107559+00:00",
-        "key": "f1b3e8af-271a-4536-a10b-e9365e376d72",
+        "created_at": "2026-05-14T06:10:33.936822+00:00",
+        "key": "90f50df2-2733-4f18-8e24-a199694e63c8",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:48:43.994067+00:00",
+        "updated_at": "2026-05-14T06:10:33.936830+00:00",
         "value": {
           "action": "Treat that player as a highly trusted anchor for the village and weigh their subsequent accusations heavily. Immediately re-examine the previous day's voting records\u2014anyone who aggressively pushed to eliminate this now-confirmed villager becomes a prime wolf suspect.",
           "content": "When a player's innocence is publicly proven by a successful Healer save.",
           "game_id": "8076b4ec-4b42-4f88-bc39-7a66c44589d6",
-          "last_observed": "2026-05-12T12:48:43.522380",
-          "observation_count": 4
+          "last_observed": "2026-05-14T14:10:33.541892",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:02.957149+00:00",
-        "key": "f40bee04-52a5-4043-9a57-757e067f2e8e",
+        "created_at": "2026-05-14T06:10:34.644355+00:00",
+        "key": "4cd352b5-d840-4bcf-8a30-8bd0ec731045",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:02.957161+00:00",
+        "updated_at": "2026-05-14T06:10:34.644363+00:00",
         "value": {
           "action": "Carefully evaluate if this pressure is constructive or if it's being used to create a scapegoat. Do not rush to lynch someone for a 'bad' communication style, as they could be a struggling information role under pressure.",
           "content": "When the village is frustrated by a lack of leads and a player begins aggressively pressuring others for being quiet or unhelpful.",
           "game_id": "68db08e8-7a3d-4e15-b5cc-3f9224fe483f",
-          "last_observed": "2026-05-12T12:11:02.446708",
+          "last_observed": "2026-05-14T14:10:34.300442",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:06.237569+00:00",
-        "key": "4cd1cb91-6de5-422d-b451-3f12a1e75ca2",
+        "created_at": "2026-05-14T06:10:35.360696+00:00",
+        "key": "09997346-4c6b-44dc-ab8b-e89225d5bbc1",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:06.237578+00:00",
+        "updated_at": "2026-05-14T06:10:35.360704+00:00",
         "value": {
           "action": "Call out this specific behavioral contradiction as a major red flag. This hypocrisy is a strong signal of a wolf trying to appear agreeable while covertly pushing an agenda.",
           "content": "If a player agrees with a point made by the village (e.g., that a certain line of questioning is unproductive) but then immediately resumes that exact line of questioning.",
           "game_id": "9eff0da7-e502-461f-87d2-1fdb128ae736",
-          "last_observed": "2026-05-12T12:11:05.831912",
+          "last_observed": "2026-05-14T14:10:34.994984",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:07.005712+00:00",
-        "key": "bf34b8d0-2977-424a-876b-468266afe56b",
+        "created_at": "2026-05-14T06:10:36.307925+00:00",
+        "key": "12132b18-f51a-4e94-bec2-632e27a133ba",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:32.647894+00:00",
+        "updated_at": "2026-05-14T06:10:36.307940+00:00",
         "value": {
           "action": "Do not let them change the subject. The 'apologize and pivot' is a common deflection tactic. Relentlessly press them for the specific, logical reasons behind their original 'mistake,' as a fabricated defense often falls apart under scrutiny.",
           "content": "When a player is questioned about a highly suspicious action (e.g., defending or voting with a confirmed wolf) and quickly admits it was a 'mistake' or blames 'tunnel vision' before immediately trying to shift focus to a new suspect.",
           "game_id": "9ac6ec20-5811-4c6f-a51f-375352c40111",
-          "last_observed": "2026-05-12T12:11:32.232909",
-          "observation_count": 5
+          "last_observed": "2026-05-14T14:10:35.798129",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:10.839085+00:00",
-        "key": "3a627a5f-56d8-4f80-bbf5-ba07fdf352a6",
+        "created_at": "2026-05-14T06:10:37.085739+00:00",
+        "key": "1485dd71-765f-4b1a-85eb-0e459605722a",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:10.839093+00:00",
+        "updated_at": "2026-05-14T06:10:37.085747+00:00",
         "value": {
           "action": "Immediately and repeatedly state that the wolves must be in that voting bloc. Methodically go down the list of voters and force each one to explain their logic, treating any deflection or weak reasoning as a primary wolf signal.",
           "content": "After a power role is mislynched and the voting record reveals a specific bloc of players who voted for them.",
           "game_id": "27a31135-31cf-4919-bb02-7fc99abdd39c",
-          "last_observed": "2026-05-12T12:11:10.415082",
+          "last_observed": "2026-05-14T14:10:36.723371",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:11.873975+00:00",
-        "key": "3330b071-2824-40b9-825c-fb5a67baa431",
+        "created_at": "2026-05-14T06:10:37.940105+00:00",
+        "key": "1c7dcd37-34c9-47f3-b3f9-2e8775efc509",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:11.873980+00:00",
+        "updated_at": "2026-05-14T06:10:37.940114+00:00",
         "value": {
           "action": "On the next day, immediately state your reasoning for your unique vote and use the mislynch as proof of your correct read. This establishes you as a trustworthy voice and focuses suspicion on the players you correctly identified.",
           "content": "If you were the only player to vote differently from a majority that resulted in a mislynch.",
           "game_id": "27a31135-31cf-4919-bb02-7fc99abdd39c",
-          "last_observed": "2026-05-12T12:11:11.235294",
+          "last_observed": "2026-05-14T14:10:37.536210",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:14.930021+00:00",
-        "key": "a17582d1-83c5-4e47-89cf-877caeee8900",
+        "created_at": "2026-05-14T06:10:38.755990+00:00",
+        "key": "a69c7222-0691-49cd-bb85-113785ba0f2d",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:14.930030+00:00",
+        "updated_at": "2026-05-14T06:10:38.755995+00:00",
         "value": {
-          "action": "Scrutinize those voters heavily. Placing a 'safe' vote on a villager they intend to kill that night is a common wolf tactic used to manufacture a false track record of voting alongside the town or to create a smokescreen.",
+          "action": "Treat the night kill as a strong validation of their suspicion (a 'revenge kill' or 'dying declaration'). Make their target the primary suspect, as wolves often prioritize eliminating villagers who have correctly identified them.",
           "content": "When a villager is killed by wolves at night, and the previous day's voting record shows unconfirmed players casting votes against that exact victim.",
           "game_id": "26b1b237-6a61-47ff-93bc-f3339f2b1196",
-          "last_observed": "2026-05-12T12:11:14.430744",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:10:38.355142",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:17.904876+00:00",
-        "key": "bcf739e9-03ef-4ba5-9ab9-fc93d2acdae6",
+        "created_at": "2026-05-14T06:27:59.264943+00:00",
+        "key": "ee6e6bfb-1601-451f-bb42-4b2a6fb42073",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:29.449279+00:00",
+        "updated_at": "2026-05-14T06:27:59.264958+00:00",
         "value": {
-          "action": "Treat this convergence as conclusive, game-theoretic proof of a wolf. It represents two independent, informed players reaching the exact same conclusion, and supersedes any verbal defense.",
-          "content": "When the voting records of multiple eliminated information roles (e.g., Healer, Investigator) reveal they both converged on and voted for the exact same suspect.",
-          "game_id": "7a727bd1-6f14-43df-9311-cbd1c3f552e9",
-          "last_observed": "2026-05-12T12:11:29.079948",
+          "action": "Treat this convergence of evidence as a top-priority lead and one of the strongest forms of evidence in the game. This represents multiple independent, village-aligned sources reaching the same conclusion, providing near-conclusive proof of a wolf and superseding most verbal defenses.",
+          "content": "The village has confirmed at least two players as non-wolves (e.g., through elimination or role reveal). These confirmed non-wolves have, either through their actions while alive or via their voting records, independently accused or voted for the same living player.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:27:58.804384",
           "observation_count": 2
         }
       },
       {
-        "created_at": "2026-05-12T04:11:20.352145+00:00",
-        "key": "a155ae10-9147-4f1f-b86b-e2b5fd459c1c",
+        "created_at": "2026-05-14T06:28:12.570432+00:00",
+        "key": "0414f550-30bb-4586-b4bb-2bf6a02666eb",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:12:03.882379+00:00",
+        "updated_at": "2026-05-14T06:28:12.570441+00:00",
         "value": {
-          "action": "Identify this 'defensive projection' as a strong signal of a cornered wolf. Point out the deflection to the village to build consensus, as innocent players typically deny accusations with logic first, whereas wolves attempt to undermine the accuser to muddy the waters.",
-          "content": "When a player under pressure for a specific suspicious behavior (e.g., being evasive, pushing a weak case) immediately responds by accusing their questioners of that exact same behavior or questioning their motives, rather than directly denying the charge.",
-          "game_id": "983c1408-513e-4631-a730-240fa058682c",
-          "last_observed": "2026-05-12T13:12:03.516000",
-          "observation_count": 4
+          "action": "Immediately call out this mirrored accusation and its suspicious timing. Frame it to the village as a desperate 'No, you!' deflection by a cornered wolf, emphasizing that innocent players typically deny accusations with logic first, rather than getting caught up in defending the original accusation.",
+          "content": "In a late-game scenario with few players remaining (e.g., 4 players left) where you and another player are the final suspects, and that player, under pressure for a specific suspicious behavior or tactic, immediately responds by accusing you of the exact same deceptive tactic or behavior they just used.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:28:12.067983",
+          "observation_count": 2
         }
       },
       {
-        "created_at": "2026-05-12T04:11:22.819806+00:00",
-        "key": "f645abfe-49b6-4c0f-b690-a44e73212b47",
+        "created_at": "2026-05-14T06:10:41.118806+00:00",
+        "key": "71fe1e82-c68f-43b2-b463-4786e402fb02",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:22.819817+00:00",
+        "updated_at": "2026-05-14T06:10:41.118822+00:00",
         "value": {
           "action": "Prioritize the substance of the claim over the style of delivery. The cost of voting out a real Investigator is almost always game-ending, so treat their information as the most likely truth unless there is overwhelming evidence to the contrary.",
           "content": "If an Investigator makes a claim but their delivery is poor or they seem hesitant, especially after a recent mislynch.",
           "game_id": "de6432b4-b639-46ef-9e94-fc8a0f02a27f",
-          "last_observed": "2026-05-12T12:11:22.427403",
+          "last_observed": "2026-05-14T14:10:40.745964",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:23.637824+00:00",
-        "key": "fd4072c1-fb63-4a06-a50f-54056e0d596e",
+        "created_at": "2026-05-14T06:10:41.961842+00:00",
+        "key": "99ad8c2d-fa38-4f5c-bb84-be4c6de5691f",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:33:46.162506+00:00",
-        "value": {
-          "action": "Treat the night kill as a strong validation of their suspicion (a 'revenge kill' or 'dying declaration'). Make their target the primary suspect, as wolves often prioritize eliminating villagers who have correctly identified them.",
-          "content": "When a villager who consistently accused or voted for a specific suspect is killed by the wolves at night.",
-          "game_id": "de6432b4-b639-46ef-9e94-fc8a0f02a27f",
-          "last_observed": "2026-05-12T12:33:45.769634",
-          "observation_count": 6
-        }
-      },
-      {
-        "created_at": "2026-05-12T04:11:25.271472+00:00",
-        "key": "0aeab75a-5f6f-4208-949b-5fc35c596bb2",
-        "namespace": [
-          "strategy_points",
-          "villager"
-        ],
-        "updated_at": "2026-05-12T04:11:25.271483+00:00",
+        "updated_at": "2026-05-14T06:10:41.961851+00:00",
         "value": {
           "action": "Prioritize this lead over complex social reads or accusations revived from dead players. A confirmed innocent player's analysis of hard evidence is the most reliable information available, especially after the investigator is gone.",
           "content": "If a confirmed innocent player makes a strong accusation based on a pattern in the voting record (e.g., someone voting for multiple villagers).",
           "game_id": "9eec8705-8ed0-4eaa-8450-e1d860e8a75e",
-          "last_observed": "2026-05-12T12:11:24.872492",
+          "last_observed": "2026-05-14T14:10:41.534815",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:26.091358+00:00",
-        "key": "f50c74a1-04ba-48ac-be3c-140eedc3d246",
+        "created_at": "2026-05-14T06:10:42.721719+00:00",
+        "key": "0111de2d-f6bd-4967-b9d5-a73aae507869",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:26.091374+00:00",
+        "updated_at": "2026-05-14T06:10:42.721736+00:00",
         "value": {
           "action": "Weigh the vote more heavily than the earlier statement. A vote is a costly, permanent action, while early-game talk is cheap. Wolves often use early, resolved missteps as a way to misdirect the village away from current threats.",
           "content": "If a player made a suspicious statement early in the game (e.g., defending a wolf) but later cast a correct, decisive vote against that same wolf.",
           "game_id": "9eec8705-8ed0-4eaa-8450-e1d860e8a75e",
-          "last_observed": "2026-05-12T12:11:25.676475",
+          "last_observed": "2026-05-14T14:10:42.353760",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:27.112880+00:00",
-        "key": "3bcde73d-8cae-421f-b5f1-fafb8cbeb919",
+        "created_at": "2026-05-14T06:10:43.674838+00:00",
+        "key": "c7b193a0-c8f6-4190-97c8-dd2dd2a9e4a4",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:27.112890+00:00",
+        "updated_at": "2026-05-14T06:10:43.674853+00:00",
         "value": {
           "action": "View this as a positive sign of adaptability, not as 'flip-flopping'. Wolves benefit from chaos and punishing villagers for re-evaluating their positions; good villagers should be willing to change their minds when presented with better logic.",
           "content": "If another villager changes their mind and switches their vote based on a compelling argument from a trusted player.",
           "game_id": "9eec8705-8ed0-4eaa-8450-e1d860e8a75e",
-          "last_observed": "2026-05-12T12:11:26.612739",
+          "last_observed": "2026-05-14T14:10:43.274133",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:27.929293+00:00",
-        "key": "4ec2ed75-6d3f-49b7-81bc-e0b83bd648ef",
+        "created_at": "2026-05-14T06:10:44.430598+00:00",
+        "key": "2cc60fcb-b11a-4e97-84ed-8b12a1b01b5b",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:27.929301+00:00",
+        "updated_at": "2026-05-14T06:10:44.430611+00:00",
         "value": {
           "action": "Abstain from the vote or vote for a silent player rather than voting to eliminate the accuser. Voting against a player who turns out to be an info role creates a permanent mark of suspicion against you that wolves will exploit for the entire game.",
           "content": "When you disagree with an accusation because it feels vague or lacks evidence.",
           "game_id": "daddb2c0-dcac-40a8-a6e6-02ee1dc8670e",
-          "last_observed": "2026-05-12T12:11:27.496253",
+          "last_observed": "2026-05-14T14:10:44.097716",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:35.207096+00:00",
-        "key": "e77c3c49-2aaa-418f-8f8a-22ea73d6d0f6",
+        "created_at": "2026-05-14T06:10:45.145060+00:00",
+        "key": "bfd57d56-fb14-40c4-8d0b-d6801886484c",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:35.207106+00:00",
+        "updated_at": "2026-05-14T06:10:45.145068+00:00",
         "value": {
           "action": "Step back and evaluate if the accusation is a tactic to distract from the evidence. A wolf's best endgame strategy is often to attack the *style* of an opponent's defense rather than the *substance* of the case against themselves.",
           "content": "When one player is aggressively accusing another of 'deflecting' or 'being evasive' during a high-stakes, late-game discussion.",
           "game_id": "6f013621-3eb7-4bc2-9ffd-888e591a6e73",
-          "last_observed": "2026-05-12T12:11:34.717106",
+          "last_observed": "2026-05-14T14:10:44.756159",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:36.838369+00:00",
-        "key": "d1967b83-f29a-452d-927b-5752e5c40150",
+        "created_at": "2026-05-14T06:10:46.036567+00:00",
+        "key": "3ee7f574-daf8-48c4-b7e6-b9e868d3b031",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:36.838378+00:00",
+        "updated_at": "2026-05-14T06:10:46.036582+00:00",
         "value": {
           "action": "Trust the direct evidence from the investigator over the target's sudden and convenient counter-accusation. Publicly label the target's behavior as classic deflection to help the village maintain focus.",
           "content": "When an investigator makes a clear role claim and accusation, and the target immediately attempts to deflect by creating a new, convoluted suspicion against someone else.",
           "game_id": "879df7ef-1886-4014-bc08-4bba8784f0c3",
-          "last_observed": "2026-05-12T12:11:36.430401",
+          "last_observed": "2026-05-14T14:10:45.579220",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:37.663358+00:00",
-        "key": "5733e237-061d-49b5-8e58-b70e0a523e86",
+        "created_at": "2026-05-14T06:10:46.801983+00:00",
+        "key": "ac40ce30-e0ac-4553-a295-e9faf5fd5a14",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:37.663363+00:00",
+        "updated_at": "2026-05-14T06:10:46.801990+00:00",
         "value": {
           "action": "Actively fact-check their claims against the discussion history. Wolves under pressure often misrepresent events to create suspicion, and publicly debunking their false narrative is one of the fastest ways to expose them.",
           "content": "When a suspected wolf is trying to build a case against someone based on the exact timing or wording of past statements.",
           "game_id": "879df7ef-1886-4014-bc08-4bba8784f0c3",
-          "last_observed": "2026-05-12T12:11:37.270420",
+          "last_observed": "2026-05-14T14:10:46.447192",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:40.012796+00:00",
-        "key": "08c777b2-53f6-449e-abdc-13d657bfaea0",
+        "created_at": "2026-05-14T06:10:47.638166+00:00",
+        "key": "4dc96d84-0902-4c5f-a975-cb89cee92e44",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:40.012801+00:00",
+        "updated_at": "2026-05-14T06:10:47.638183+00:00",
         "value": {
           "action": "Frame your argument as a hypothetical (e.g., 'If we assume I'm a villager, what does that imply about players X and Y?'). Stating your role as a fact without proof will be seen as a deflection tactic, causing others to attack your claim rather than engage with your logic.",
           "content": "When you want to present a deduction that relies on your own unproven role.",
           "game_id": "90dd0366-e5ea-4677-9637-094b42397d42",
-          "last_observed": "2026-05-12T12:11:39.558303",
+          "last_observed": "2026-05-14T14:10:47.236130",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:40.837025+00:00",
-        "key": "46b69141-049a-48e7-adcd-d41e0b1c14aa",
+        "created_at": "2026-05-14T06:10:48.488826+00:00",
+        "key": "67d9ca0a-176e-474c-a55d-6ac80f0d104b",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:11:40.837041+00:00",
+        "updated_at": "2026-05-14T06:10:48.488837+00:00",
         "value": {
           "action": "Treat the coordinated pivot itself as the primary evidence of a wolf partnership. Announce that you are observing this 'defend-by-attacking-together' tactic, as it is a strong indicator of wolf teamwork designed to control the narrative.",
           "content": "When two players simultaneously deflect personal accusations by coordinating a new attack on the same third player.",
           "game_id": "e973ae6d-ff7e-4519-9789-0c3e9f126337",
-          "last_observed": "2026-05-12T12:11:40.380752",
+          "last_observed": "2026-05-14T14:10:48.085404",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:33:42.609585+00:00",
-        "key": "5033addf-c4ff-4c65-b07a-af70261a5507",
+        "created_at": "2026-05-14T06:10:49.207021+00:00",
+        "key": "5eea3884-8235-4c8e-a6c7-1659dbd8f922",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:33:42.609597+00:00",
+        "updated_at": "2026-05-14T06:10:49.207033+00:00",
         "value": {
           "action": "Lock your suspicion onto that pair and do not let them deflect. This pattern is one of the strongest indicators of a wolf team coordinating to remove threats; treat it as hard evidence.",
           "content": "When a pair of players leads the charge to eliminate two other players, and both are revealed to be key village roles (like Healer and Investigator).",
           "game_id": "6f8318ee-fe43-4de5-8d5b-736c98ab31f0",
-          "last_observed": "2026-05-12T12:33:42.117009",
+          "last_observed": "2026-05-14T14:10:48.809726",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:39:43.463782+00:00",
-        "key": "9d371d6f-8974-4d5b-ba80-a35d306f0e2f",
+        "created_at": "2026-05-14T06:10:50.023365+00:00",
+        "key": "40f5b2f7-0a84-4ad9-9f6e-82f717d4abe2",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T04:39:43.463796+00:00",
+        "updated_at": "2026-05-14T06:10:50.023375+00:00",
         "value": {
           "action": "Immediately quote their exact words and demand an explanation. Do not allow them to pivot or change the subject, as the pressure of explaining the slip often reveals their guilt.",
           "content": "If a player makes a verbal slip that implies they have knowledge exclusive to the wolf team, such as referring to 'two wolves' or 'we' when discussing a wolf action.",
           "game_id": "7fe6bd0a-d19f-43ca-85df-e1f51de9ad1b",
-          "last_observed": "2026-05-12T12:39:43.075305",
+          "last_observed": "2026-05-14T14:10:49.627029",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:05:11.752400+00:00",
-        "key": "2bcb47d7-c86e-4edd-8722-37bf9f721a6c",
+        "created_at": "2026-05-14T06:10:50.807895+00:00",
+        "key": "25ee0a6d-c40c-4010-91c5-f9d95a1a008f",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:05:11.752407+00:00",
+        "updated_at": "2026-05-14T06:10:50.807906+00:00",
         "value": {
           "action": "Do not simply defend by stating that others are also being passive. Instead, pivot to offense by offering a specific, reasoned suspicion against another player, preferably one of your accusers, to demonstrate proactive engagement and shift the town's focus.",
           "content": "If you are accused of being passive or not providing leads when many other players are exhibiting the same behavior.",
           "game_id": "0408029a-56b7-481a-ade2-949147ae9124",
-          "last_observed": "2026-05-12T13:05:11.397673",
+          "last_observed": "2026-05-14T14:10:50.444224",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:12:04.911181+00:00",
-        "key": "aeabc1d0-923e-42ec-bcf5-1a1b7004f1f2",
+        "created_at": "2026-05-14T06:27:43.083402+00:00",
+        "key": "7f148b3c-c72f-4bb4-89ce-79f6737d6ac4",
         "namespace": [
           "strategy_points",
           "villager"
         ],
-        "updated_at": "2026-05-12T05:12:04.911192+00:00",
+        "updated_at": "2026-05-14T06:27:43.083411+00:00",
         "value": {
-          "action": "Do not advocate for lynching based solely on silence, as it creates an easy mislynch for wolves. Instead, explicitly demand concrete reads and apply light, probing questions to quiet players to force a reaction, generating much-needed behavioral data.",
-          "content": "When the village has no concrete leads early in the game, discussion is stalled, and players are remaining silent.",
-          "game_id": "3df27e37-3442-4e6a-94af-4c36730c19d2",
-          "last_observed": "2026-05-12T13:12:04.347176",
-          "observation_count": 3
-        }
-      },
-      {
-        "created_at": "2026-05-12T05:22:29.856323+00:00",
-        "key": "853367f8-7d43-40b1-ad9b-20c735f851d1",
-        "namespace": [
-          "strategy_points",
-          "villager"
-        ],
-        "updated_at": "2026-05-12T05:22:29.856328+00:00",
-        "value": {
-          "action": "Trust the claim, especially if it clears another player you believe to be a villager. Wolves' late-game lies often create logical inconsistencies, while a true special role's claim will neatly resolve the puzzle.",
+          "action": "Accept the claim as confirmed unless there is concrete counter-evidence. A villager who tries to poke holes in this logical connection is either confused or a wolf attempting to prevent the village from solidifying its key assets.",
           "content": "When a player makes a late-game role claim (e.g., Investigator) that logically explains all known information and provides a clear path to victory.",
           "game_id": "e787a98f-3466-4ee7-b12b-8ecdfa4bcb5d",
-          "last_observed": "2026-05-12T13:22:29.487461",
-          "observation_count": 1
+          "last_observed": "2026-05-14T14:27:42.659175",
+          "observation_count": 2
         }
       }
     ],
     "strategy_points/wolf": [
       {
-        "created_at": "2026-05-12T05:29:32.431327+00:00",
-        "key": "31b0deb5-fbc2-4bb2-9f5f-3a9f3aabff5a",
+        "created_at": "2026-05-14T06:10:52.485656+00:00",
+        "key": "f429790c-5417-4d98-8d79-80e10a2e7389",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:36:26.847706+00:00",
+        "updated_at": "2026-05-14T06:10:52.485665+00:00",
         "value": {
-          "action": "Acknowledge the mistake to build villager credibility, provide a simple, static reason for your vote based on the public information available at that time, and immediately pivot to a new concrete suspicion. Deflecting or providing shifting, complex excuses is a strong signal of guilt.",
+          "action": "Coordinate a distraction narrative by finding a single, unexplained move by a third party. Aggressively pivot the entire conversation to demand an explanation for that action to fracture the consensus and split the village's focus away from your pairing.",
           "content": "When your past voting record clearly links you to a now-revealed wolf, or you are aggressively questioned for casting a dissenting vote during a mislynch.",
           "game_id": "game_20260508_110628",
-          "last_observed": "2026-05-12T13:36:26.396769",
-          "observation_count": 17
+          "last_observed": "2026-05-14T14:10:52.071735",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:48.023845+00:00",
-        "key": "08440e80-5337-4e8d-a1b0-bec6a8181d28",
+        "created_at": "2026-05-14T06:10:53.306056+00:00",
+        "key": "74b30355-6b0f-4b62-9c45-7b98828c732f",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T06:19:02.784790+00:00",
+        "updated_at": "2026-05-14T06:10:53.306068+00:00",
         "value": {
           "action": "Target the player whose language is slightly more analytical, proactive, or organizational than the others (e.g., asking 'who are we looking at?'). These conversational behaviors have a higher probability of belonging to an Investigator trying to gather data or a highly capable villager trying to establish a baseline.",
           "content": "On Night 1, when there is no voting data and only generic opening statements available to inform your kill decision.",
           "game_id": "game_20260508_110628",
-          "last_observed": "2026-05-12T14:19:02.432742",
-          "observation_count": 6
+          "last_observed": "2026-05-14T14:10:52.869842",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:53:39.895977+00:00",
-        "key": "6be637d4-7f33-48e2-9666-b56e77afb49c",
+        "created_at": "2026-05-14T06:10:54.059316+00:00",
+        "key": "3e2d6d47-3661-4236-8309-90f91daed1fc",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:53:39.895982+00:00",
+        "updated_at": "2026-05-14T06:10:54.059329+00:00",
         "value": {
-          "action": "Manufacture a concrete narrative by initiating a coordinated attack on a quiet player's communication style. Have one wolf make the initial accusation of evasiveness, and the other support it slightly later with a complementary but distinct angle (e.g., one attacks their silence, the other points out a specific vague answer). Information-starved villages desperately seek direction and will reliably latch onto a confident, multi-faceted lead.",
+          "action": "Manufacture suspicion by creating a narrative around a player's communication style. Accuse a quiet or passive player of being evasive to unify the village against an easy, non-threatening target for a mislynch.",
           "content": "When the village is in the early game with no solid leads or voting records, and discussion is stagnant or passive.",
           "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T13:53:39.492196",
-          "observation_count": 13
+          "last_observed": "2026-05-14T14:10:53.710177",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:50.472998+00:00",
-        "key": "63677cd3-892d-4d24-a424-f74d25a22e61",
+        "created_at": "2026-05-14T06:10:54.827356+00:00",
+        "key": "f4d470fa-8207-4800-bfe6-c0d9fc2a1701",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:05:10.108395+00:00",
+        "updated_at": "2026-05-14T06:10:54.827365+00:00",
         "value": {
-          "action": "Ignore the historical evidence and relentlessly attack your opposing suspect's real-time communication. Frame any hesitation or frustration as evasiveness, forcing the final, high-pressure vote to be decided on present-moment emotional reactions rather than undeniable past logic.",
-          "content": "When you are the last wolf in a final endgame (e.g., 1v1 or 1v2), and the surviving villagers have solid historical voting evidence against you.",
-          "game_id": "game_20260508_112947",
-          "last_observed": "2026-05-12T13:05:09.746235",
-          "observation_count": 4
-        }
-      },
-      {
-        "created_at": "2026-05-12T05:29:31.614390+00:00",
-        "key": "2890b066-a573-4873-9168-dc085b4049f7",
-        "namespace": [
-          "strategy_points",
-          "wolf"
-        ],
-        "updated_at": "2026-05-12T05:29:31.614395+00:00",
-        "value": {
-          "action": "Do not immediately join your partner's attack on that new target. Instead, create a different line of suspicion or feign confusion. Piling on creates a strong public link between you and your partner, which will be used to identify you if they are eliminated.",
-          "content": "When your wolf partner is under heavy suspicion, but there are other active discussions and potential targets available.",
+          "action": "Vote with the village majority to eliminate your partner. This 'bus' vote prevents you from being linked to them by a failed defense or dissenting vote, thereby preserving your credibility and allowing you to continue operating.",
+          "content": "In the mid-game, when your wolf partner is under heavy suspicion and the village is moving to eliminate them, and there is no strong public association or voting record linking you directly to your partner.",
           "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T13:29:31.189211",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:10:54.429006",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:53.176648+00:00",
-        "key": "c7431359-f976-4bcf-b55f-5d5966eddb8a",
+        "created_at": "2026-05-14T06:10:55.656886+00:00",
+        "key": "ed9f91bf-322c-4809-a93c-b16d82c4116b",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:53:44.246640+00:00",
+        "updated_at": "2026-05-14T06:10:55.656898+00:00",
         "value": {
           "action": "Prioritize killing the analytical 'prosecutor' who successfully organized the village, rather than an exposed but quiet special role whose info is already spent. Removing the player who synthesizes evidence and unites the village breaks their ability to coordinate a unified vote the next day.",
           "content": "When choosing a night kill after a contentious day of discussion where specific villagers accurately analyzed information, drove consensus against a wolf, or asked sharp logical questions.",
           "game_id": "game_20260508_122149",
-          "last_observed": "2026-05-12T13:53:43.889157",
-          "observation_count": 13
+          "last_observed": "2026-05-14T14:10:55.258238",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:54.139294+00:00",
-        "key": "5b5575c0-b5c3-4673-96ef-0c28fe0a7cb3",
+        "created_at": "2026-05-14T06:10:56.410920+00:00",
+        "key": "b36de7e7-2605-48ce-b522-d2855db7340c",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:54:47.479446+00:00",
+        "updated_at": "2026-05-14T06:10:56.410930+00:00",
         "value": {
           "action": "Avoid 'echoing'\u2014having both wolves aggressively push the exact same reasoning back-to-back. Instead, have one wolf lead the accusation while the second provides delayed, nuanced support using a complementary but distinct line of attack, making the accusations seem like independent thoughts converging organically.",
           "content": "When you and your wolf partner want to coordinate a daytime accusation against a villager based on subjective measures like communication style.",
           "game_id": "game_20260508_124551",
-          "last_observed": "2026-05-12T12:54:47.091747",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:10:56.068075",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:54.927836+00:00",
-        "key": "5e9ca733-9d9d-4058-9c2f-13bf90645e2f",
+        "created_at": "2026-05-14T06:10:57.123281+00:00",
+        "key": "ce317d0f-62da-46f1-a5c7-b7880cb39823",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:11:54.927841+00:00",
+        "updated_at": "2026-05-14T06:10:57.123294+00:00",
         "value": {
           "action": "Avoid deflecting when asked for your opinion. Provide a plausible, concrete-sounding (even if fabricated) theory. Repeatedly answering questions with more questions or criticizing others will draw coordinated village suspicion.",
           "content": "When you are being directly questioned by multiple villagers about your lack of contribution or specific suspicions.",
           "game_id": "game_20260508_130942",
-          "last_observed": "2026-05-12T12:11:54.556949",
+          "last_observed": "2026-05-14T14:10:56.780585",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:11:59.261669+00:00",
-        "key": "68664bf0-7e94-4728-ac93-deeee27cd4e9",
+        "created_at": "2026-05-14T06:10:58.107282+00:00",
+        "key": "a697d65a-0ccc-4e1d-b3fc-3bc8a5f7d517",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:11:59.261681+00:00",
+        "updated_at": "2026-05-14T06:10:58.107289+00:00",
         "value": {
           "action": "Abandon the coordinated attack immediately. Pivot to different, individual suspicions rather than agreeing on a new shared target, as doubling down on coordination is easily identified as a pack dynamic.",
           "content": "If you and your partner are coordinating a pressure campaign based on a weak premise, and the village begins to question your coordination.",
           "game_id": "1313a3e3-200a-4eec-a6e8-006c532261cd",
-          "last_observed": "2026-05-12T12:11:58.844412",
+          "last_observed": "2026-05-14T14:10:57.491468",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:00.091739+00:00",
-        "key": "9019d12b-294b-47d2-a758-9dd18e33c5cd",
+        "created_at": "2026-05-14T06:10:58.822426+00:00",
+        "key": "bec7de5b-11a2-4820-899a-5e84205f7e91",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:00.091744+00:00",
+        "updated_at": "2026-05-14T06:10:58.822434+00:00",
         "value": {
           "action": "Target a suspected power role, like the Healer. Removing a key protective or informative role early creates chaos and puts immediate pressure on the villagers, giving you an advantage before any concrete suspicions can form.",
           "content": "When Day 1 discussion is entirely generic and provides no behavioral tells to exploit.",
           "game_id": "1313a3e3-200a-4eec-a6e8-006c532261cd",
-          "last_observed": "2026-05-12T12:11:59.619889",
+          "last_observed": "2026-05-14T14:10:58.481653",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:00.898335+00:00",
-        "key": "8cd0c551-bf16-41bf-822e-5897e5f51e51",
+        "created_at": "2026-05-14T06:10:59.652497+00:00",
+        "key": "df6d6ece-5940-4ca7-b751-a11aafaf4bc8",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:12:01.329395+00:00",
+        "updated_at": "2026-05-14T06:10:59.652504+00:00",
         "value": {
           "action": "Do not respond defensively with generic excuses ('I'm just observing') or 'OMGUS' attacks accusing your accusers of the exact same behavior. Instead, demonstrate proactive villager engagement by presenting a concrete, novel suspicion against a third party based on fresh reasoning.",
           "content": "When you are under sustained pressure from multiple villagers for negative behavioral tells, such as being too quiet, passive, or evasive.",
           "game_id": "1995f8c9-b73d-4dd8-9276-024409e9b9ba",
-          "last_observed": "2026-05-12T13:12:00.726123",
-          "observation_count": 6
-        }
-      },
-      {
-        "created_at": "2026-05-12T04:12:01.660828+00:00",
-        "key": "35eb2fb7-f47d-46bb-8f93-ba037ba36433",
-        "namespace": [
-          "strategy_points",
-          "wolf"
-        ],
-        "updated_at": "2026-05-12T04:12:01.660833+00:00",
-        "value": {
-          "action": "Immediately support the accusation with your vote and light commentary. This allows you to eliminate a player, potentially a power role, without initiating suspicion yourself, framing you as a cooperative villager.",
-          "content": "If a villager initiates a weak, unsubstantiated accusation against another villager in the early game.",
-          "game_id": "2b340071-660c-4ef0-841c-23f0b23577fb",
-          "last_observed": "2026-05-12T12:12:01.274721",
+          "last_observed": "2026-05-14T14:10:59.174138",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:02.653297+00:00",
-        "key": "bdd1935f-f11c-4492-a041-ab73b338086c",
+        "created_at": "2026-05-14T06:26:54.655150+00:00",
+        "key": "18e7d531-84a8-4938-939f-a1e01479c5c5",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:02.653312+00:00",
+        "updated_at": "2026-05-14T06:26:54.655164+00:00",
+        "value": {
+          "action": "Immediately support the weak accusation with your vote and light commentary, such as 'good point' or 'worth considering.' This allows you to eliminate a player, potentially a power role, without initiating suspicion yourself, while framing you as a cooperative and engaged villager.",
+          "content": "In the early game, with an information-starved landscape, a villager initiates a weak, unsubstantiated accusation against another unconfirmed villager. The accusation lacks specific evidence and is not yet widely supported.",
+          "game_id": "2b340071-660c-4ef0-841c-23f0b23577fb",
+          "last_observed": "2026-05-14T14:11:00.166964",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:11:01.391856+00:00",
+        "key": "8ce9a1a0-c703-4224-9ba5-33f5eab93175",
+        "namespace": [
+          "strategy_points",
+          "wolf"
+        ],
+        "updated_at": "2026-05-14T06:11:01.391865+00:00",
         "value": {
           "action": "Do not target that villager for elimination. Killing your direct accuser is the strongest possible signal of guilt and will almost certainly lead to your elimination the next day; target a different, less-connected threat instead.",
           "content": "If a specific villager has just publicly accused you and your partner of being wolves, and night begins.",
           "game_id": "2b340071-660c-4ef0-841c-23f0b23577fb",
-          "last_observed": "2026-05-12T12:12:02.137112",
+          "last_observed": "2026-05-14T14:11:00.907129",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:03.444579+00:00",
-        "key": "b3782d29-26f2-4ff2-a0ac-5229a4331d04",
+        "created_at": "2026-05-14T06:11:02.140053+00:00",
+        "key": "f5158f9c-e4ad-478f-989c-3238262dad2e",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:03.444594+00:00",
+        "updated_at": "2026-05-14T06:11:02.140067+00:00",
         "value": {
           "action": "Aggressively join and amplify that suspicion. Frame the target's behavior as actively harming the village's information-gathering process. This solidifies your cover as a proactive villager while guiding the town toward a likely mislynch.",
           "content": "If the village has no solid leads and begins to form a consensus to lynch a player for being too quiet.",
           "game_id": "f648a80f-0071-4105-94d6-d98c414f5d34",
-          "last_observed": "2026-05-12T12:12:03.055529",
+          "last_observed": "2026-05-14T14:11:01.798778",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:05.100856+00:00",
-        "key": "64ebb7e2-9402-497c-a3af-2c690442d0d6",
+        "created_at": "2026-05-14T06:11:02.823724+00:00",
+        "key": "e5d2b9c9-3af1-406d-bb00-80d8983a6beb",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:05.100931+00:00",
+        "updated_at": "2026-05-14T06:11:02.823738+00:00",
         "value": {
           "action": "Use process of elimination to identify the healer (the player who isn't you, isn't the confirmed villager, and wasn't attacked). Target them for the kill, as they cannot protect themselves and their elimination will secure the win.",
           "content": "When a healer save confirms a player is innocent, thereby also confirming they are *not* the healer.",
           "game_id": "f648a80f-0071-4105-94d6-d98c414f5d34",
-          "last_observed": "2026-05-12T12:12:04.664464",
+          "last_observed": "2026-05-14T14:11:02.480631",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:05.914059+00:00",
-        "key": "c7130d11-95c1-4cb1-a805-bfbfb2603b9d",
+        "created_at": "2026-05-14T06:11:03.645104+00:00",
+        "key": "e0f627f3-1c01-4150-8c94-4548e9475cdf",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:05.914067+00:00",
+        "updated_at": "2026-05-14T06:11:03.645112+00:00",
         "value": {
           "action": "Immediately and calmly correct their error. Frame their mistake as a deliberate attempt to confuse the group, which paints them as deceptive and deflects suspicion from your wolf pack.",
           "content": "If a villager under pressure makes a factual error or misrepresents what another player said.",
           "game_id": "4dd84758-4422-4a3a-8e3c-9794fb6d8db1",
-          "last_observed": "2026-05-12T12:12:05.464091",
+          "last_observed": "2026-05-14T14:11:03.241979",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:06.668475+00:00",
-        "key": "ca43727f-e0ed-4359-9bf1-4e3485db024c",
+        "created_at": "2026-05-14T06:11:04.464968+00:00",
+        "key": "caf999aa-7a9f-405b-85aa-38d2a53cccf3",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:06.668492+00:00",
+        "updated_at": "2026-05-14T06:11:04.464976+00:00",
         "value": {
           "action": "As a wolf pack, systematically and repeatedly ask for more specific details. This sustained, unified questioning makes the target seem evasive and defensive, even if they are just a flustered villager.",
           "content": "When a villager offers a vague or weak explanation for a suspicious vote, such as 'to apply pressure'.",
           "game_id": "4dd84758-4422-4a3a-8e3c-9794fb6d8db1",
-          "last_observed": "2026-05-12T12:12:06.336444",
+          "last_observed": "2026-05-14T14:11:04.057027",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:08.269977+00:00",
-        "key": "41585d67-f6c8-4e09-9c35-c1c7cca50289",
+        "created_at": "2026-05-14T06:11:05.282967+00:00",
+        "key": "71c55062-45a7-4326-8da5-e71f5c8f044a",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:08.269988+00:00",
+        "updated_at": "2026-05-14T06:11:05.282981+00:00",
         "value": {
           "action": "Split your votes. Have one wolf vote with the largest group to help ensure the mislynch succeeds and to blend in. The other wolf should vote for a different, somewhat active villager to create a 'logical' target for the next night's kill and sow more confusion.",
           "content": "When the village vote is scattered and a mislynch is likely, but there's no single strong consensus.",
           "game_id": "4dd84758-4422-4a3a-8e3c-9794fb6d8db1",
-          "last_observed": "2026-05-12T12:12:07.820541",
+          "last_observed": "2026-05-14T14:11:04.834321",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:09.200309+00:00",
-        "key": "d1ba8b8e-14c8-4750-ab9a-4efe4215347b",
+        "created_at": "2026-05-14T06:26:56.078630+00:00",
+        "key": "a91fc769-c27f-4008-b35d-67aeecd72761",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:51.697043+00:00",
+        "updated_at": "2026-05-14T06:26:56.078638+00:00",
         "value": {
-          "action": "Do not aggressively defend them, agree with force, or try to shut down the conversation, as this creates a highly visible associative link. Instead, distance yourself by calmly correcting their error if necessary, and subtly pivot the conversation by offering a plausible alternative suspect. This redirects the pressure without making you look like an obvious defender.",
+          "action": "Vote with the village to eliminate your partner. A token defense may be useful, but casting a futile, dissenting vote creates a permanent record that will be used against you once roles are revealed. Voting with the majority preserves your credibility.",
           "content": "When your wolf partner is under mounting suspicion during an interrogation, or makes a weak accusation/factual error while under pressure.",
           "game_id": "7f1fe6c6-c329-482c-bb22-0883c62cdfc4",
-          "last_observed": "2026-05-12T12:12:51.308166",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:26:55.569632",
+          "observation_count": 2
         }
       },
       {
-        "created_at": "2026-05-12T04:12:13.288825+00:00",
-        "key": "3e8bbbee-2380-493b-9d89-bc94c27c4d35",
+        "created_at": "2026-05-14T06:11:06.883046+00:00",
+        "key": "14cab9cf-d624-49e0-bfed-981dcab2443b",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:20.156403+00:00",
+        "updated_at": "2026-05-14T06:11:06.883061+00:00",
         "value": {
           "action": "Coordinate to vote for different plausible targets rather than dog-piling on the same player. This prevents the creation of a permanent, public voting record that directly links you together if one of you is later eliminated and roles are revealed.",
           "content": "When casting daytime votes in early rounds or during a scattered villager mislynch where your pack does not control the majority.",
           "game_id": "6c4018d5-2d38-47bb-acbb-c775fa456a41",
-          "last_observed": "2026-05-12T12:12:19.796094",
-          "observation_count": 3
+          "last_observed": "2026-05-14T14:11:06.516554",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:15.676301+00:00",
-        "key": "111ae3cb-ab35-4502-95e8-cb58c239d6c2",
+        "created_at": "2026-05-14T06:11:07.744048+00:00",
+        "key": "537d4060-72e8-4035-82c8-cde8518ff1d9",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:28.928782+00:00",
-        "value": {
-          "action": "Coordinate a distraction narrative by finding a single, unexplained move by a third party. Aggressively pivot the entire conversation to demand an explanation for that action to fracture the consensus and split the village's focus away from your pairing.",
-          "content": "When a perceptive villager correctly identifies a small group containing both wolves, or you and your partner are suspected together for a shared voting pattern.",
-          "game_id": "d5b8728e-d0e2-4450-a54c-41ecd908067d",
-          "last_observed": "2026-05-12T12:12:28.576988",
-          "observation_count": 4
-        }
-      },
-      {
-        "created_at": "2026-05-12T04:12:17.112198+00:00",
-        "key": "e0321e39-51e8-4235-9bee-8cf19418edfa",
-        "namespace": [
-          "strategy_points",
-          "wolf"
-        ],
-        "updated_at": "2026-05-12T04:12:17.112206+00:00",
+        "updated_at": "2026-05-14T06:11:07.744057+00:00",
         "value": {
           "action": "Make that villager your top priority for the nightly kill. This removes a key piece of voting evidence that directly links you to your eliminated partner and can turn the next day's discussion into a confusing 50/50 blame game.",
           "content": "If your wolf partner has just been voted out, and the voting record shows you both voted for a villager who wasn't eliminated.",
           "game_id": "3082de71-cfb6-4824-94b0-02c5d680956a",
-          "last_observed": "2026-05-12T12:12:16.746857",
+          "last_observed": "2026-05-14T14:11:07.335278",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:17.894388+00:00",
-        "key": "f06ee17a-00c7-4b86-8883-9f9946fffb2d",
+        "created_at": "2026-05-14T06:11:08.617095+00:00",
+        "key": "f34b4bca-8a99-4e7c-ab36-132c61c51d86",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:23:45.008970+00:00",
+        "updated_at": "2026-05-14T06:11:08.617106+00:00",
         "value": {
-          "action": "Do not dismiss their suspicion as a 'random guess' or attack the confirmed role's integrity. Instead, construct a plausible narrative that they logically misread your pro-village actions (e.g., mistaking your aggressive questioning for wolfish pressure), which frames their accusation as a rational but incorrect error.",
-          "content": "When you are heavily suspected because an eliminated power role (like an Investigator) targeted you or left a final vote against you.",
-          "game_id": "3082de71-cfb6-4824-94b0-02c5d680956a",
-          "last_observed": "2026-05-12T12:23:44.608739",
-          "observation_count": 5
+          "action": "Do not dismiss their suspicion as a 'random guess' or simply deflect. Instead, acknowledge the significance of their final vote and construct a plausible, alternative narrative explaining why they might have logically misread your pro-village actions (e.g., mistaking your aggressive questioning for wolfish pressure), framing their accusation as a rational but incorrect error that still maintains your innocence.",
+          "content": "The village is in a mid-game or late-game phase, and you are heavily suspected because an eliminated, confirmed villager (potentially a power role) left their final vote against you. This public information has made you the primary target for the next elimination.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:11:08.253589",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:19.423081+00:00",
-        "key": "8c7889e2-f8a3-4f0c-aa26-2eb23597e03d",
+        "created_at": "2026-05-14T06:11:09.440649+00:00",
+        "key": "92da6b9e-0a8d-4a7b-9eb7-c5fe5d87a3f0",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:50.873424+00:00",
+        "updated_at": "2026-05-14T06:11:09.440659+00:00",
+        "value": {
+          "action": "Abandon this plan. The village will perceive this bus vote as a transparent and desperate tactic, which will not only fail to save your partner but will likely confirm their wolf alignment and seal their fate.",
+          "content": "In the mid-game, when you are the target of elimination and are considering voting for your wolf partner (bussing them) to build their credibility, but your partner has already been publicly associated with you, for example, by having defended you or shared suspicious voting patterns.",
+          "game_id": "1d394f78-b503-41bf-b431-870345ff8cab",
+          "last_observed": "2026-05-14T14:11:09.079044",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:11:10.302796+00:00",
+        "key": "4b4de911-3995-4562-be48-82f1edc43ff9",
+        "namespace": [
+          "strategy_points",
+          "wolf"
+        ],
+        "updated_at": "2026-05-14T06:11:10.302802+00:00",
         "value": {
           "action": "Weaponize this 'ghost lead' by building a strong, unified narrative framing it as the good role's dying message. Repeatedly demand the target explain the dead player's motivations\u2014an impossible task that makes the target appear evasive and deflects from actual voting records.",
           "content": "When a mislynched good role leaves behind a single, unexplained past vote against a surviving villager.",
           "game_id": "a8d7cd5e-ae16-44e6-bcc2-25b62fe36edf",
-          "last_observed": "2026-05-12T12:12:50.477157",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:09.812732",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:36:26.027474+00:00",
-        "key": "e115bf2c-2a51-4942-94cc-abf75d04a0d8",
+        "created_at": "2026-05-14T06:11:11.124941+00:00",
+        "key": "901cac39-6130-4bb9-9bc8-fc240ca9aa0d",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:36:26.027478+00:00",
+        "updated_at": "2026-05-14T06:11:11.124951+00:00",
         "value": {
           "action": "Instead of simply agreeing, add a new, independent piece of (fabricated) evidence or reasoning. Simply echoing your partner makes the coordination look obvious and draws suspicion to you for lacking original thought.",
           "content": "When the wolves kill a villager who just voted for you or your partner, and the village accuses you of a 'retaliatory kill'.",
           "game_id": "5a37713b-3e67-4d39-81bc-26b2e9a15b27",
-          "last_observed": "2026-05-12T13:36:25.532113",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:10.694284",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:25.783085+00:00",
-        "key": "6b5f0fd1-3421-4654-a9ff-3cadd7e9eb8c",
+        "created_at": "2026-05-14T06:11:11.943227+00:00",
+        "key": "3aae0e55-82bf-4978-a1cf-db4bd624b8f1",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:25.783096+00:00",
+        "updated_at": "2026-05-14T06:11:11.943232+00:00",
         "value": {
           "action": "Seize the narrative by acting as a proactive villager. Aggressively demand that others provide concrete suspicions to get the discussion moving, which establishes your credibility and allows you to pressure and expose hidden information roles.",
           "content": "If the game begins with no discussion or vote, leaving the village information-starved and directionless.",
           "game_id": "68db08e8-7a3d-4e15-b5cc-3f9224fe483f",
-          "last_observed": "2026-05-12T12:12:25.358878",
+          "last_observed": "2026-05-14T14:11:11.449547",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:26.690347+00:00",
-        "key": "a817a51a-3258-4956-b24a-d6b84ee1d900",
+        "created_at": "2026-05-14T06:11:12.747680+00:00",
+        "key": "717f6c1b-cc79-4949-a492-44758e13de09",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:26.690360+00:00",
+        "updated_at": "2026-05-14T06:11:12.747696+00:00",
         "value": {
           "action": "Acknowledge the 'mistake' concisely, but frame it as a misguided attempt to avoid a mislynch. Then, immediately pivot to a concrete-sounding new lead based on the last revealed wolf's actions, such as their final vote. Forcing the village to choose between your past mistake and a fresh lead is your best chance to create division.",
           "content": "If you are caught defending your wolf partner and the village consensus turns against you.",
           "game_id": "68db08e8-7a3d-4e15-b5cc-3f9224fe483f",
-          "last_observed": "2026-05-12T12:12:26.315387",
+          "last_observed": "2026-05-14T14:11:12.351036",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:29.722184+00:00",
-        "key": "db28d8e0-cf9f-4842-8a46-8b3c03b23b6e",
+        "created_at": "2026-05-14T06:11:13.610640+00:00",
+        "key": "d9cc644f-eedd-42f1-be5a-4983e6d66638",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:29.722196+00:00",
+        "updated_at": "2026-05-14T06:11:13.610652+00:00",
         "value": {
           "action": "Frame their inability to explain as more suspicious than any other evidence on the table. Repeat that their silence or deflection is a sign of guilt to rally other villagers who are frustrated by the lack of clarity.",
           "content": "When a villager fails to adequately explain a past mistake and becomes defensive or evasive.",
           "game_id": "26b1b237-6a61-47ff-93bc-f3339f2b1196",
-          "last_observed": "2026-05-12T12:12:29.341912",
+          "last_observed": "2026-05-14T14:11:13.193039",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:30.593428+00:00",
-        "key": "7bb7a91f-0ede-4895-a6b5-dfd1d74c20b3",
+        "created_at": "2026-05-14T06:11:14.496810+00:00",
+        "key": "4bcd3e5f-3f16-41ef-940b-219651a63a25",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:30.593447+00:00",
+        "updated_at": "2026-05-14T06:11:14.496818+00:00",
         "value": {
           "action": "Aggressively amplify this suspicion. Join the chorus of accusers to build an overwhelming consensus, which makes the vote feel like a safe, village-driven decision and conceals your wolfish coordination.",
           "content": "When a villager becomes a target of organic village suspicion due to their communication style, such as being too quiet or evasive.",
           "game_id": "1d9364c1-88ca-4a42-8480-0e92014262aa",
-          "last_observed": "2026-05-12T12:12:30.193729",
+          "last_observed": "2026-05-14T14:11:14.098076",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:35.479043+00:00",
-        "key": "0f7ea8d1-f767-47a6-b819-a6bdf3a39b09",
+        "created_at": "2026-05-14T06:11:15.224944+00:00",
+        "key": "94dbb809-33b1-4f15-96fd-1cba48e9b93a",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T06:19:03.653416+00:00",
-        "value": {
-          "action": "Vote with the village majority to eliminate your partner rather than casting a dissenting protest vote or trying to split the vote. A lone or failed rescue attempt creates an undeniable public voting record that will directly link you to the eliminated wolf on the following day.",
-          "content": "When your wolf partner is under heavy suspicion, a strong village consensus has formed against them, and their elimination is practically guaranteed.",
-          "game_id": "323edcf9-4a5d-4576-a5ab-0a2adebb777e",
-          "last_observed": "2026-05-12T14:19:03.180563",
-          "observation_count": 4
-        }
-      },
-      {
-        "created_at": "2026-05-12T04:12:36.325072+00:00",
-        "key": "77df0f5f-6bf8-4cf4-b11b-dedee04a22c7",
-        "namespace": [
-          "strategy_points",
-          "wolf"
-        ],
-        "updated_at": "2026-05-12T04:12:36.325080+00:00",
+        "updated_at": "2026-05-14T06:11:15.224959+00:00",
         "value": {
           "action": "Immediately attack the delivery and credibility of the accuser. Frame their hesitation as a sign of deception, shifting the village's focus from your guilt to their untrustworthiness.",
           "content": "When the investigator identifies you as a wolf but delivers the information hesitantly or without immediately claiming their role.",
           "game_id": "de6432b4-b639-46ef-9e94-fc8a0f02a27f",
-          "last_observed": "2026-05-12T12:12:35.923159",
+          "last_observed": "2026-05-14T14:11:14.875817",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:37.337348+00:00",
-        "key": "4cfe233f-ba4b-4fc1-8188-81ac59658d55",
+        "created_at": "2026-05-14T06:11:16.166912+00:00",
+        "key": "064f7afc-bdd0-4d35-8416-1b398d2baf3a",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:37.337361+00:00",
+        "updated_at": "2026-05-14T06:11:16.166918+00:00",
         "value": {
           "action": "Actively agree with other villagers who join the accusation to amplify the consensus. This reinforces your position as a helpful villager and makes the groupthink harder to break.",
           "content": "When you have successfully framed a villager and a consensus is building against them.",
           "game_id": "de6432b4-b639-46ef-9e94-fc8a0f02a27f",
-          "last_observed": "2026-05-12T12:12:36.868311",
+          "last_observed": "2026-05-14T14:11:15.754004",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:38.410773+00:00",
-        "key": "8a95dcf0-cbfa-4501-836f-50fac0449490",
+        "created_at": "2026-05-14T06:11:17.021874+00:00",
+        "key": "1f524f6c-024b-4653-8347-76ee373d5fdd",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:38.410788+00:00",
+        "updated_at": "2026-05-14T06:11:17.021883+00:00",
         "value": {
           "action": "Publicly agree with the confirmed innocent's suspicions to build trust, even if it leads to the elimination of an innocent special role. Then, eliminate the confirmed innocent player at night to remove the village's primary voice of reason and leave them disorganized for the final vote.",
           "content": "When you are the last wolf and a confirmed innocent player is leading the village's discussion and analysis.",
           "game_id": "9eec8705-8ed0-4eaa-8450-e1d860e8a75e",
-          "last_observed": "2026-05-12T12:12:37.974122",
+          "last_observed": "2026-05-14T14:11:16.654105",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:36:27.768734+00:00",
-        "key": "80d262b4-e966-435c-9ed9-278a8a5d0a29",
+        "created_at": "2026-05-14T06:27:14.304184+00:00",
+        "key": "fd9f7d74-818e-431f-b1da-a41020fdd644",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:36:27.768739+00:00",
+        "updated_at": "2026-05-14T06:27:14.304189+00:00",
         "value": {
           "action": "Target the most articulate and logical villager who is driving the case against you. Removing the 'prosecutor' can disrupt the village's consensus and might create enough chaos for you to survive another day.",
-          "content": "As a lone wolf, when the village has a strong logical lead that could expose you.",
+          "content": "As a lone wolf, the village has developed a strong logical lead, driven by an articulate villager, that directly threatens to expose your identity. The information landscape is becoming critical, with a clear path to your unmasking.",
           "game_id": "f932aecd-014e-4c05-af6b-01be0f414cfd",
-          "last_observed": "2026-05-12T13:36:27.269990",
-          "observation_count": 2
+          "last_observed": "2026-05-14T14:11:17.446791",
+          "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:46.545019+00:00",
-        "key": "fe3b97fa-4297-41cc-8ce0-86e0484dc46a",
+        "created_at": "2026-05-14T06:11:18.544302+00:00",
+        "key": "25a4d59d-b436-4cc6-81b3-efed6d372e0c",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:46.545041+00:00",
+        "updated_at": "2026-05-14T06:11:18.544314+00:00",
         "value": {
           "action": "Avoid complex deflections or fabricating timelines, which can be easily disproven. Instead, appeal to the village's general paranoia by reminding them of past mislynches and questioning the risk of trusting a single source of information, aiming to split the vote rather than prove your own innocence.",
           "content": "When you have been publicly identified by a confirmed investigator.",
           "game_id": "879df7ef-1886-4014-bc08-4bba8784f0c3",
-          "last_observed": "2026-05-12T12:12:46.166514",
+          "last_observed": "2026-05-14T14:11:18.188229",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:48.357571+00:00",
-        "key": "d6c019c4-a072-4a57-bca1-bdd0655ff9be",
+        "created_at": "2026-05-14T06:11:19.253503+00:00",
+        "key": "fb07402d-4fcc-46f5-b07b-6ea36d00772e",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:48.357576+00:00",
+        "updated_at": "2026-05-14T06:11:19.253515+00:00",
         "value": {
           "action": "Check the voting record of the eliminated townie and target the player they voted for. This provides a highly plausible, non-suspicious justification for your kill, making it seem like you're acting on a lead from an innocent player.",
           "content": "If you have successfully engineered the elimination of a town power role, such as the Healer.",
           "game_id": "74df1773-749a-4e4f-a955-c8555af5809f",
-          "last_observed": "2026-05-12T12:12:48.008573",
+          "last_observed": "2026-05-14T14:11:18.928433",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:49.154338+00:00",
-        "key": "91bcda6d-37a3-46f4-9f22-59fc84e36f1d",
+        "created_at": "2026-05-14T06:11:20.139421+00:00",
+        "key": "efbed381-f22f-4088-9be0-0b02e6279c18",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:49.154349+00:00",
+        "updated_at": "2026-05-14T06:11:20.139436+00:00",
         "value": {
           "action": "Create a counter-narrative by finding a minor inconsistency in a vocal villager's past statements or votes. Aggressively frame this inconsistency as a major deception to distract the village and split their votes.",
           "content": "If you and your partner are correctly suspected as a pair because you share a pattern of accusing townies.",
           "game_id": "74df1773-749a-4e4f-a955-c8555af5809f",
-          "last_observed": "2026-05-12T12:12:48.760885",
+          "last_observed": "2026-05-14T14:11:19.727492",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:12:52.463418+00:00",
-        "key": "8c73f81e-8037-42f1-b905-0aae77fa7edb",
+        "created_at": "2026-05-14T06:11:20.882895+00:00",
+        "key": "e958ee23-29f4-43dd-903e-7833d94ad16a",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:12:52.463428+00:00",
+        "updated_at": "2026-05-14T06:11:20.882910+00:00",
         "value": {
           "action": "Join the villagers in demanding concrete reasoning. This aligns you with village skepticism, makes you look like a discerning player, and helps amplify chaos that can lead to a mislynch.",
           "content": "When a villager with a special role (like an Investigator) makes a claim based on weak or vague evidence that other villagers are questioning.",
           "game_id": "b99ae0ff-b251-4a0e-a1fa-bfa2590aba22",
-          "last_observed": "2026-05-12T12:12:52.092592",
+          "last_observed": "2026-05-14T14:11:20.529669",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:39:44.362303+00:00",
-        "key": "07fc3a83-52e6-4041-b8d9-92c1742549e7",
+        "created_at": "2026-05-14T06:11:21.669172+00:00",
+        "key": "e540eef0-f7a2-4d89-88f0-dfa2fab74c7a",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:39:44.362308+00:00",
+        "updated_at": "2026-05-14T06:11:21.669180+00:00",
         "value": {
           "action": "Be extremely careful with your phrasing to avoid any language that implies insider knowledge. Frame all statements from a purely villager perspective and focus on public information, never hinting at wolf team coordination or numbers.",
           "content": "When trying to defend a past action or vote while under suspicion.",
           "game_id": "7fe6bd0a-d19f-43ca-85df-e1f51de9ad1b",
-          "last_observed": "2026-05-12T12:39:43.895029",
+          "last_observed": "2026-05-14T14:11:21.265850",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T04:48:41.370746+00:00",
-        "key": "5dad87ec-db21-4c91-a9df-f8d1f95d0ffe",
+        "created_at": "2026-05-14T06:11:22.483978+00:00",
+        "key": "145919d3-92ed-42ae-8aea-de43662a3d1c",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T04:48:41.370765+00:00",
+        "updated_at": "2026-05-14T06:11:22.483988+00:00",
         "value": {
           "action": "Immediately and forcefully deny the accusation. Do not waste time questioning the accuser's process or asking for evidence, as this hesitation will be read as guilt. Your only chance is to create a counternarrative, not to poke holes in a claim the village already believes.",
           "content": "If you and your partner are accused by a player who has just been publicly confirmed as innocent by a Healer save.",
           "game_id": "474e8a81-e699-4ab3-89c7-83d51fc6ec7f",
-          "last_observed": "2026-05-12T12:48:40.888758",
+          "last_observed": "2026-05-14T14:11:22.011980",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:05:11.009065+00:00",
-        "key": "5c80f447-32a5-4a93-a8f1-2c4036300f4d",
+        "created_at": "2026-05-14T06:11:23.304560+00:00",
+        "key": "52d4b3bf-fcdb-4126-a5b1-ee044805a094",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:05:11.009070+00:00",
+        "updated_at": "2026-05-14T06:11:23.304571+00:00",
         "value": {
           "action": "Assume the Healer will protect the Investigator. Target another active villager instead to guarantee a kill and avoid wasting your night action on a protected player.",
           "content": "If the Investigator has been confirmed and you are the last wolf.",
           "game_id": "0408029a-56b7-481a-ade2-949147ae9124",
-          "last_observed": "2026-05-12T13:05:10.522404",
+          "last_observed": "2026-05-14T14:11:22.844979",
           "observation_count": 1
         }
       },
       {
-        "created_at": "2026-05-12T05:12:03.118588+00:00",
-        "key": "49ad7ae5-bab5-40e7-8ef9-51113dbe81b3",
+        "created_at": "2026-05-14T06:11:24.126396+00:00",
+        "key": "2dbbfd85-41db-43c0-b9b7-a0cf5c6788db",
         "namespace": [
           "strategy_points",
           "wolf"
         ],
-        "updated_at": "2026-05-12T05:12:03.118597+00:00",
+        "updated_at": "2026-05-14T06:11:24.126403+00:00",
         "value": {
           "action": "Do not repeat the same behavioral mistake on the next day. The village will be primed to recognize the pattern. If they were caught for being defensive, you must adopt a more open and collaborative posture.",
           "content": "If your wolf partner was just eliminated for a specific suspicious behavior, such as defensive deflection.",
           "game_id": "3df27e37-3442-4e6a-94af-4c36730c19d2",
-          "last_observed": "2026-05-12T13:12:02.741900",
+          "last_observed": "2026-05-14T14:11:23.724814",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:26:55.158422+00:00",
+        "key": "742b4895-997e-4787-be3f-33c5f837e80e",
+        "namespace": [
+          "strategy_points",
+          "wolf"
+        ],
+        "updated_at": "2026-05-14T06:26:55.158431+00:00",
+        "value": {
+          "action": "Amplify the conflict by subtly agreeing that the confirmed innocent's lack of strong reads or participation is 'odd,' while simultaneously criticizing the accuser for being overly aggressive and disruptive. This strategy creates maximum chaos and allows you to lead the vote against the aggressive villager, framing them as a detrimental influence to village cohesion.",
+          "content": "In the early game, with an information-starved landscape, a villager aggressively questions a player who is publicly confirmed innocent. The questioning lacks concrete evidence and creates social tension.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:26:54.655234",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:27:14.737930+00:00",
+        "key": "fe4276cb-a2be-48da-a937-93fdc2bc3fb3",
+        "namespace": [
+          "strategy_points",
+          "wolf"
+        ],
+        "updated_at": "2026-05-14T06:27:14.737942+00:00",
+        "value": {
+          "action": "Make that player your priority night kill. Eliminating the village's sharpest minds is more valuable than removing a random villager, as it denies them leadership and cripples their ability to coordinate.",
+          "content": "As a wolf (or part of a wolf team), a villager with strong analytical skills or a suspected power role is actively identifying wolf tactics, exposing patterns, or successfully pressuring your wolf partner. This player is becoming a central figure in the village's information landscape, threatening the overall wolf strategy and coordination.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:27:14.304216",
+          "observation_count": 1
+        }
+      },
+      {
+        "created_at": "2026-05-14T06:27:26.087780+00:00",
+        "key": "87ea19a1-4676-4905-9571-e98f65e4eb66",
+        "namespace": [
+          "strategy_points",
+          "wolf"
+        ],
+        "updated_at": "2026-05-14T06:27:26.087793+00:00",
+        "value": {
+          "action": "Dispute the certainty of the Healer's confirmation by arguing that the saved player can only confirm they were protected, not definitively identify their protector. Once doubt is cast, pivot to accuse another remaining villager of 'derailing the confirmation' to frame them.",
+          "content": "In the endgame, the village is on the verge of confirming the Healer's identity, as a player who was saved is about to reveal their protector.",
+          "game_id": "d7fe00a8-b2a3-43b8-93cf-8eee3d68f84b",
+          "last_observed": "2026-05-14T14:27:25.643080",
           "observation_count": 1
         }
       }
     ]
   },
   "schema_version": "werewolf_strategy_points.v2",
-  "updated_at": "2026-05-12T14:19:11.333076"
+  "updated_at": "2026-05-14T14:29:19.001996"
 }
