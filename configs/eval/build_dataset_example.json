@@ -1,0 +1,11 @@
+{
+  "eval_set_id": "memory_eval_001",
+  "batch_results": "batch_results/memory_eval_001.jsonl",
+  "created_from": "memory_eval_001",
+  "max_games": 5,
+  "per_role_per_phase": 1,
+  "max_samples": 40,
+  "seed": 0,
+  "output": "eval_sets/memory_eval_001.jsonl",
+  "overwrite": false
+}

@@ -1,0 +1,21 @@
+{
+  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "snapshots": [
+    {
+      "label": "v1_post_dedup",
+      "observations_path": "Agents/memory_stores/v1_post_dedup/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v1_post_dedup/strategy_points.json"
+    },
+    {
+      "label": "v1_pre_dedup",
+      "observations_path": "Agents/memory_stores/v1_pre_dedup/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v1_pre_dedup/strategy_points.json"
+    }
+  ],
+  "top_k": 3,
+  "max_retrieved_items": 0,
+  "max_samples": 20,
+  "judge": true,
+  "judge_model": "gemini-2.5-pro",
+  "sleep_seconds": 1.0
+}

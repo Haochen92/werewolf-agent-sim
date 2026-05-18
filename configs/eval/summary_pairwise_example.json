@@ -1,0 +1,26 @@
+{
+  "experiment_id": "summary_flash_vs_lite_example",
+  "component": "situation_summary",
+  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "alternate_order": true,
+  "baseline": {
+    "label": "flash_current",
+    "model": "gemini-2.5-flash",
+    "prompt_id": "current",
+    "temperature": 0.0
+  },
+  "candidate": {
+    "label": "flash_lite_current",
+    "model": "gemini-2.5-flash-lite",
+    "prompt_id": "current",
+    "temperature": 0.0,
+    "thinking_budget": 0
+  },
+  "judge": {
+    "model": "gemini-2.5-pro",
+    "prompt_id": "pairwise_summary_v1",
+    "temperature": 0.0
+  },
+  "max_cases": 20,
+  "sleep_seconds": 0.5
+}
