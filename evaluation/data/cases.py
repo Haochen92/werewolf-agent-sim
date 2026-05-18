@@ -10,7 +10,7 @@ from Agents.formatters import (
 )
 from Agents.schemas.evaluation import EvalCase
 from evaluation.archive.legacy_cases import legacy_case_from_span
-from evaluation.formatters import (
+from evaluation.core.formatters import (
     format_eval_private_context,
     format_eval_retrieved_observations,
     format_eval_retrieved_strategy_points,

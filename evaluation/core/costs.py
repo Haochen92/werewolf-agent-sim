@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from evaluation.schemas import CostEstimate
+from evaluation.core.schemas import CostEstimate
 
 
 PRICING_VERSION = "google_genai_standard_2026_05_14"

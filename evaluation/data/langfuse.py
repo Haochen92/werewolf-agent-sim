@@ -21,14 +21,14 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from evaluation.settings import load_project_env
+from evaluation.core.settings import load_project_env
 
 load_project_env()
 
 from langfuse import get_client  # noqa: E402
 
 from Agents.schemas.evaluation import EvalCase  # noqa: E402
-from evaluation.cases import eval_case_from_span  # noqa: E402
+from evaluation.data.cases import eval_case_from_span  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants

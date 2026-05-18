@@ -18,8 +18,8 @@ from Agents.prompts import (
 )
 from Agents.schemas.evaluation import EvalCase
 from Agents.schemas.output import SituationSummary
-from evaluation.costs import estimate_cost_from_usage_metadata
-from evaluation.schemas import CostEstimate, VariantConfig
+from evaluation.core.costs import estimate_cost_from_usage_metadata
+from evaluation.core.schemas import CostEstimate, VariantConfig
 
 
 SITUATION_SUMMARY_PROMPTS: dict[str, ChatPromptTemplate] = {

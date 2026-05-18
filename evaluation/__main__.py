@@ -1,4 +1,4 @@
-from evaluation.retrieval import main
+from evaluation.experiments.e2e import main
 
 
 if __name__ == "__main__":

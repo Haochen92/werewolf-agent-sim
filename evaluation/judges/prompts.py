@@ -92,15 +92,15 @@ Respond ONLY with valid JSON, no markdown fences:
 """
 
 
-REDUNDANCY_SYSTEM_PROMPT = """\
+RETRIEVAL_SYSTEM_PROMPT = """\
 You are evaluating retrieved memory items for an AI Werewolf agent.
-Your job is to judge qualitative redundancy, not topical similarity.
+Judge both relevance to the current situation and qualitative redundancy.
 """
 
 
-REDUNDANCY_USER_PROMPT = """\
-You are checking whether retrieved {item_type} contain meaningfully distinct
-guidance or evidence for the current Werewolf situation.
+RETRIEVAL_USER_PROMPT = """\
+You are checking whether retrieved {item_type} are useful for the current
+Werewolf situation.
 
 {situation_standards}
 
@@ -110,6 +110,13 @@ CURRENT RETRIEVAL QUERY SITUATIONS:
 RETRIEVED ITEMS:
 {items}
 
+Score relevance from 1 to 5:
+1 = unrelated to the current situation
+2 = shares surface keywords but addresses different dynamics
+3 = broadly topical but not very actionable
+4 = mostly relevant, with minor mismatches
+5 = directly relevant and actionable for this role and decision
+
 Score redundancy from 1 to 5:
 1 = no meaningful overlap; every item adds a distinct tactical idea
 2 = related theme, but each item has a distinct use
@@ -117,32 +124,88 @@ Score redundancy from 1 to 5:
 4 = mostly redundant; minor nuance only
 5 = duplicate advice/evidence; same decision impact in different words
 
-Decision rule:
+Decision rules:
+- Relevant means useful for this role's current decision, not merely similar
+  wording.
 - "Same idea, different words" is redundant.
-- The test is: would a player in this situation do anything meaningfully
-  different after reading item A versus item B? If no, those items are
-  redundant.
-- Use the same action-spectrum standard as strategy memory deduplication:
-  similar situation patterns are NOT redundant only when information landscape,
-  consensus texture, social pressure dynamics, or game phase would lead a
-  player to make a meaningfully different decision.
-- If two items differ in wording or examples but recommend the same practical
-  response for the same situational trigger, mark them redundant.
-- Do not mark items redundant merely because they are semantically close or
-  share the same broad theme. Preserve differences in information landscape,
-  consensus texture, social pressure dynamics, game phase, and recommended
-  action.
+- The test for redundancy is: would a player in this situation do anything
+  meaningfully different after reading item A versus item B? If no, those
+  items are redundant.
 - For strategy points, compare both situation and action.
 - For observations, compare whether the player learns a distinct strategic
   lesson or only the same lesson from another example.
 
 Respond ONLY with valid JSON:
 {{
+  "relevance_score": N,
   "redundancy_score": N,
   "unique_idea_count": N,
   "redundant_pairs": [
     {{"item_numbers": [1, 2], "reason": "short reason"}}
   ],
+  "brief_reasoning": "1-2 sentences"
+}}
+"""
+
+
+APPLICATION_SYSTEM_PROMPT = """\
+You are evaluating an AI Werewolf agent's action after it was given retrieved
+episodic memories. Focus only on whether the final action and private strategy
+update use the provided memory appropriately for the current game state.
+"""
+
+
+APPLICATION_USER_PROMPT = """\
+AGENT CONTEXT:
+- Role: {player_role}
+- Day {day}, Round {round}
+- Action type: {action_type}
+
+TODAY'S DISCUSSION AVAILABLE TO THE AGENT:
+{day_channel_excerpt}
+
+PRIVATE CONTEXT AVAILABLE TO THE AGENT:
+{private_context}
+
+SITUATION SUMMARY USED FOR RETRIEVAL:
+{situations}
+
+RETRIEVED OBSERVATIONS:
+{observations_formatted}
+
+RETRIEVED STRATEGY POINTS:
+{strategy_points_formatted}
+
+AGENT'S RESPONSE OR DECISION:
+{agent_decision}
+Updated Strategy Note: {agent_updated_strategy}
+
+Score from 1 to 5:
+
+1. ACTION QUALITY: Is the action itself strategically appropriate for this
+role and game state?
+   1 = actively harmful or incoherent
+   2 = weak or poorly justified
+   3 = plausible but generic
+   4 = strong and context-aware
+   5 = excellent, specific, and well adapted to the current pressure
+
+2. STRATEGY APPLICATION: Does the action or updated strategy use the retrieved
+observations and strategy points discriminantly?
+   1 = ignores useful retrieved guidance
+   2 = weak connection to retrieved guidance
+   3 = loosely aligned but could be coincidental
+   4 = clearly adapts useful retrieved guidance
+   5 = selectively applies the most relevant guidance while ignoring bad fits
+
+If the retrieved memories are mostly irrelevant, do not reward blind use of
+them. A good agent should ignore irrelevant memories and still take a sound
+action.
+
+Respond ONLY with valid JSON:
+{{
+  "action_quality": N,
+  "strategy_application": N,
   "brief_reasoning": "1-2 sentences"
 }}
 """

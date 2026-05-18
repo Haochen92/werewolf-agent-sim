@@ -34,10 +34,17 @@ class RedundantPair(BaseModel):
     reason: str
 
 
-class RedundancyScores(BaseModel):
+class RetrievalScores(BaseModel):
+    relevance_score: int = Field(ge=1, le=5)
     redundancy_score: int = Field(ge=1, le=5)
     unique_idea_count: int = Field(ge=0)
     redundant_pairs: list[RedundantPair] = Field(default_factory=list)
+    brief_reasoning: str = ""
+
+
+class ApplicationScores(BaseModel):
+    action_quality: int = Field(ge=1, le=5)
+    strategy_application: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
 
 

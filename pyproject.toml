@@ -20,10 +20,11 @@ dependencies = [
 
 [project.scripts]
 werewolf-game = "Agents.main:main"
-eval-retrieval = "evaluation.retrieval:main"
-eval-retrieval-redundancy = "evaluation.redundancy:main"
-eval-build-dataset = "evaluation.datasets:main"
-eval-pairwise = "evaluation.pairwise:main"
+eval-build-dataset = "evaluation.experiments.dataset_builder:main"
+eval-summary = "evaluation.experiments.summary:main"
+eval-retrieval = "evaluation.experiments.retrieval:main"
+eval-application = "evaluation.experiments.application:main"
+eval-e2e = "evaluation.experiments.e2e:main"
 
 [tool.poetry]
 packages = [{ include = "Agents" }, { include = "evaluation" }]
