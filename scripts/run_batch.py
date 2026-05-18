@@ -106,6 +106,36 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print the planned runs without invoking games.",
     )
+    parser.add_argument(
+        "--memory-store-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Use one versioned memory store directory for both seeding and dumping."
+        ),
+    )
+    parser.add_argument(
+        "--seed-store-dir",
+        type=Path,
+        default=None,
+        help="Memory store directory used to seed the run.",
+    )
+    parser.add_argument(
+        "--dump-store-dir",
+        type=Path,
+        default=None,
+        help="Memory store directory where postgame extraction dumps memory.",
+    )
+    parser.add_argument(
+        "--no-memory-seed",
+        action="store_true",
+        help="Start the process without seeding memory from JSON snapshots.",
+    )
+    parser.add_argument(
+        "--no-memory-dump",
+        action="store_true",
+        help="Disable postgame memory snapshot dumps.",
+    )
     return parser.parse_args()
 
 
@@ -150,8 +180,35 @@ def langfuse_session_id(
     return run_id(session_prefix, config_name, run_index)
 
 
+def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, Any] | None:
+    """Return optional memory store override config for experiment batches."""
+    if not any(
+        (
+            args.memory_store_dir,
+            args.seed_store_dir,
+            args.dump_store_dir,
+            args.no_memory_seed,
+            args.no_memory_dump,
+        )
+    ):
+        return None
+
+    seed_store_dir = args.seed_store_dir or args.memory_store_dir
+    dump_store_dir = args.dump_store_dir or args.memory_store_dir
+    config: dict[str, Any] = {
+        "seed_enabled": not args.no_memory_seed,
+        "dump_enabled": not args.no_memory_dump,
+    }
+    if seed_store_dir:
+        config["seed_store_dir"] = str(seed_store_dir)
+    if dump_store_dir:
+        config["dump_store_dir"] = str(dump_store_dir)
+    return config
+
+
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
+    memory_persistence_config = memory_persistence_config_from_args(args)
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
     )
@@ -176,6 +233,8 @@ def run_batch(args: argparse.Namespace) -> int:
             f"- {current_run_id}: session={session_id} "
             f"{MEMORY_CONFIGS[config_name]}"
         )
+    if memory_persistence_config:
+        print(f"Memory persistence override: {memory_persistence_config}")
 
     if args.dry_run:
         return 0
@@ -199,7 +258,11 @@ def run_batch(args: argparse.Namespace) -> int:
         print(f"Running {current_run_id} in session {session_id}")
 
         try:
-            result = run_game(memory_config=memory_config, session_id=session_id)
+            result = run_game(
+                memory_config=memory_config,
+                session_id=session_id,
+                memory_persistence_config=memory_persistence_config,
+            )
             duration_seconds = perf_counter() - started_timer
             record = {
                 "status": "success",
@@ -208,6 +271,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,
+                "memory_persistence_config": memory_persistence_config,
                 "started_at": started_at,
                 "ended_at": datetime.now(),
                 "duration_seconds": round(duration_seconds, 3),
@@ -232,6 +296,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,
+                "memory_persistence_config": memory_persistence_config,
                 "started_at": started_at,
                 "ended_at": datetime.now(),
                 "duration_seconds": round(duration_seconds, 3),

@@ -13,11 +13,54 @@ from Agents.constants import roles
 from Agents.memory import store, store_observation, store_strategy_points
 from Agents.schemas import Observation, StrategyPoint
 
-MEMORY_DATA_DIR = Path(__file__).resolve().parent / "data"
-OBSERVATIONS_JSON_PATH = MEMORY_DATA_DIR / "werewolf_observations.json"
-STRATEGIES_JSON_PATH = MEMORY_DATA_DIR / "werewolf_strategies.json"
-STRATEGY_POINTS_JSON_PATH = MEMORY_DATA_DIR / "werewolf_strategy_points.json"
+MEMORY_STORES_DIR = Path(__file__).resolve().parent / "memory_stores"
+DEFAULT_MEMORY_STORE_DIR = MEMORY_STORES_DIR / "v1_post_dedup"
+OBSERVATIONS_FILE_NAME = "observations.json"
+STRATEGY_POINTS_FILE_NAME = "strategy_points.json"
 _SEEDED_STORE_IDS: set[int] = set()
+
+
+class MemoryPersistenceConfig(BaseModel):
+    """Seed/dump settings for the process-global LangGraph memory store.
+
+    Normal graph runs use the v1 post-dedup store. Batch experiments can point
+    seed and dump directories at another versioned store without changing code.
+    """
+
+    seed_enabled: bool = True
+    dump_enabled: bool = True
+    seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
+    dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
+
+
+def normalize_memory_persistence_config(
+    config: MemoryPersistenceConfig | dict[str, Any] | None,
+) -> MemoryPersistenceConfig:
+    """Return a concrete memory persistence config with project defaults."""
+    if config is None:
+        return MemoryPersistenceConfig()
+    if isinstance(config, MemoryPersistenceConfig):
+        return config
+    return MemoryPersistenceConfig.model_validate(config)
+
+
+def memory_persistence_config_from_runnable(
+    config: dict[str, Any] | None,
+) -> MemoryPersistenceConfig:
+    """Read memory persistence settings from LangGraph runnable config."""
+    configurable = config.get("configurable", {}) if config else {}
+    return normalize_memory_persistence_config(
+        configurable.get("memory_persistence_config")
+    )
+
+
+def memory_store_paths(store_dir: str | Path) -> tuple[Path, Path]:
+    """Return observation and strategy-point paths for an episodic store dir."""
+    store_dir = Path(store_dir)
+    return (
+        store_dir / OBSERVATIONS_FILE_NAME,
+        store_dir / STRATEGY_POINTS_FILE_NAME,
+    )
 
 
 def _json_safe(value: Any) -> Any:
@@ -93,12 +136,16 @@ def _strategy_point_from_snapshot(role: str, value: dict[str, Any]) -> StrategyP
 
 
 def seed_memory_from_json_files(
-    observations_path: str | Path = OBSERVATIONS_JSON_PATH,
-    strategies_path: str | Path = STRATEGIES_JSON_PATH,
-    strategy_points_path: str | Path = STRATEGY_POINTS_JSON_PATH,
+    observations_path: str | Path | None = None,
+    strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
 ) -> dict[str, int]:
     """Seed the active memory store from JSON snapshots using current memory helpers."""
+    default_observations, default_strategy_points = memory_store_paths(
+        DEFAULT_MEMORY_STORE_DIR
+    )
+    observations_path = observations_path or default_observations
+    strategy_points_path = strategy_points_path or default_strategy_points
     observations_payload = _read_json(observations_path)
     strategy_points_payload = _read_json(strategy_points_path)
 
@@ -123,7 +170,7 @@ def seed_memory_from_json_files(
             observation_count += len(observations)
 
     # Strategy records are historical monolithic notes, not retrieval memories.
-    # Skip them during import-time seeding to avoid hundreds of indexed writes.
+    # Skip them during seeding to avoid hundreds of indexed writes.
     strategy_count = 0
 
     strategy_point_count = 0
@@ -152,9 +199,8 @@ def seed_memory_from_json_files(
 
 
 def seed_memory_from_json_files_once(
-    observations_path: str | Path = OBSERVATIONS_JSON_PATH,
-    strategies_path: str | Path = STRATEGIES_JSON_PATH,
-    strategy_points_path: str | Path = STRATEGY_POINTS_JSON_PATH,
+    observations_path: str | Path | None = None,
+    strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
 ) -> dict[str, int | bool]:
     store_id = id(target_store)
@@ -168,7 +214,6 @@ def seed_memory_from_json_files_once(
 
     counts = seed_memory_from_json_files(
         observations_path=observations_path,
-        strategies_path=strategies_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
@@ -179,51 +224,44 @@ def seed_memory_from_json_files_once(
     }
 
 
-def _strategy_games_from_namespaces(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    grouped: dict[str, dict[str, str]] = defaultdict(dict)
-    sort_keys: dict[str, str] = {}
-    for role in roles:
-        namespace_items = payload.get("namespaces", {}).get(
-            _namespace_key(("strategy", role)),
-            [],
-        )
-        for item in namespace_items:
-            if item.get("key") == "latest":
-                continue
-            value = item.get("value", {})
-            content = value.get("content")
-            game_id = str(value.get("game_id") or item.get("key", "").removeprefix("game_"))
-            if content and game_id:
-                grouped[game_id][role] = content
-                sort_keys.setdefault(
-                    game_id,
-                    str(value.get("created_at") or item.get("created_at") or game_id),
-                )
-
-    return [
-        {"game_id": game_id, "strategies": strategies}
-        for game_id, strategies in sorted(
-            grouped.items(), key=lambda game: (sort_keys.get(game[0], ""), game[0])
-        )
-    ]
+def seed_memory_from_config(
+    config: MemoryPersistenceConfig | dict[str, Any] | None = None,
+    target_store: BaseStore = store,
+) -> dict[str, int | bool]:
+    """Seed the memory store once using a memory persistence config."""
+    memory_config = normalize_memory_persistence_config(config)
+    if not memory_config.seed_enabled:
+        return {
+            "observations": 0,
+            "strategies": 0,
+            "strategy_points": 0,
+            "skipped": True,
+        }
+    observations_path, strategy_points_path = memory_store_paths(
+        memory_config.seed_store_dir
+    )
+    return seed_memory_from_json_files_once(
+        observations_path=observations_path,
+        strategy_points_path=strategy_points_path,
+        target_store=target_store,
+    )
 
 
 def dump_memory_to_json_files(
-    observations_path: str | Path = OBSERVATIONS_JSON_PATH,
-    strategies_path: str | Path = STRATEGIES_JSON_PATH,
-    strategy_points_path: str | Path = STRATEGY_POINTS_JSON_PATH,
+    observations_path: str | Path | None = None,
+    strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
 ) -> dict[str, int]:
     """Dump all role-scoped memory namespaces to JSON snapshots."""
+    default_observations, default_strategy_points = memory_store_paths(
+        DEFAULT_MEMORY_STORE_DIR
+    )
+    observations_path = observations_path or default_observations
+    strategy_points_path = strategy_points_path or default_strategy_points
+
     observation_namespaces = {
         _namespace_key(("observations", role)): _all_namespace_items(
             target_store, ("observations", role)
-        )
-        for role in roles
-    }
-    strategy_namespaces = {
-        _namespace_key(("strategy", role)): _all_namespace_items(
-            target_store, ("strategy", role)
         )
         for role in roles
     }
@@ -240,13 +278,6 @@ def dump_memory_to_json_files(
         "updated_at": datetime.now().isoformat(),
         "namespaces": observation_namespaces,
     }
-    strategies_payload = {
-        "schema_version": "werewolf_strategies.v1",
-        "description": "Temporary strategy-memory snapshot. Seed through store_strategy so latest and historical keys are rebuilt by the active memory.py implementation.",
-        "updated_at": datetime.now().isoformat(),
-        "namespaces": strategy_namespaces,
-        "games": _strategy_games_from_namespaces({"namespaces": strategy_namespaces}),
-    }
     strategy_points_payload = {
         "schema_version": "werewolf_strategy_points.v2",
         "description": "Temporary strategy-point memory snapshot. Content stores situation text for embeddings; action stores the recommended move.",
@@ -255,11 +286,32 @@ def dump_memory_to_json_files(
     }
 
     _write_json(observations_path, observations_payload)
-    _write_json(strategies_path, strategies_payload)
     _write_json(strategy_points_path, strategy_points_payload)
 
     return {
         "observations": sum(len(items) for items in observation_namespaces.values()),
-        "strategies": sum(len(items) for items in strategy_namespaces.values()),
+        "strategies": 0,
         "strategy_points": sum(len(items) for items in strategy_point_namespaces.values()),
     }
+
+
+def dump_memory_to_json_files_from_config(
+    config: MemoryPersistenceConfig | dict[str, Any] | None = None,
+    target_store: BaseStore = store,
+) -> dict[str, int]:
+    """Dump memory to the directory configured for the current run."""
+    memory_config = normalize_memory_persistence_config(config)
+    if not memory_config.dump_enabled:
+        return {
+            "observations": 0,
+            "strategies": 0,
+            "strategy_points": 0,
+        }
+    observations_path, strategy_points_path = memory_store_paths(
+        memory_config.dump_store_dir
+    )
+    return dump_memory_to_json_files(
+        observations_path=observations_path,
+        strategy_points_path=strategy_points_path,
+        target_store=target_store,
+    )

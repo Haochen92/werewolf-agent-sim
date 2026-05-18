@@ -21,7 +21,10 @@ from Agents.schemas import DaySummaryOutput
 from Agents.extraction import extract_postgame
 from Agents.memory import store_observation
 from Agents.memory_deduplication import run_downstream_dedup
-from Agents.memory_persistence import dump_memory_to_json_files
+from Agents.memory_persistence import (
+    dump_memory_to_json_files_from_config,
+    memory_persistence_config_from_runnable,
+)
 from Agents.tracing import (
     DayResolutionMetric,
     GraphContext,
@@ -588,7 +591,10 @@ def post_game_analysis(
         f"{dedup_stats.auto_discarded} auto-discarded"
     )
 
-    # Temporary dev-phase persistence until memory storage is refactored for production.
-    dump_memory_to_json_files(target_store=store)
+    memory_persistence_config = memory_persistence_config_from_runnable(config)
+    dump_memory_to_json_files_from_config(
+        memory_persistence_config,
+        target_store=store,
+    )
 
     logger.info(f"Post-game analysis completed and stored for game_id: {game_id}")

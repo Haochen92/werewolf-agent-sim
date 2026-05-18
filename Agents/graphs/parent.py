@@ -20,12 +20,7 @@ from Agents.nodes import (
 )
 from Agents.state import OrchestratorGraph
 from Agents.memory import store
-from Agents.memory_persistence import seed_memory_from_json_files_once
 from Agents.tracing import GraphContext
-
-
-# Temporary dev-phase persistence until memory storage is refactored for production.
-seed_memory_from_json_files_once(target_store=store)
 
 
 def _child_config(config: RunnableConfig) -> RunnableConfig:

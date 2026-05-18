@@ -6,6 +6,7 @@ from langfuse.langchain import CallbackHandler
 from pydantic import BaseModel, Field
 
 from Agents.game_config import game_config_dict
+from Agents.memory_persistence import normalize_memory_persistence_config
 
 
 langfuse = get_client()
@@ -22,9 +23,13 @@ def build_game_config(
     memory_config: dict | None = None,
     session_id: str | None = None,
     game_config: Any = None,
+    memory_persistence_config: Any = None,
 ) -> dict:
     memory_config = memory_config or DEFAULT_MEMORY_CONFIG
     normalized_game_config = game_config_dict(game_config)
+    normalized_memory_persistence_config = normalize_memory_persistence_config(
+        memory_persistence_config
+    ).model_dump(mode="json")
     game_id = str(uuid.uuid4())
 
     handler = CallbackHandler()
@@ -36,6 +41,7 @@ def build_game_config(
             "game_id": game_id,
             "memory_config": memory_config,
             "game_config": normalized_game_config,
+            "memory_persistence_config": normalized_memory_persistence_config,
             "session_id": session_id,
         },
     }
