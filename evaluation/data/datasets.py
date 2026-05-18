@@ -1,3 +1,5 @@
+"""Read and write local frozen evaluation datasets as JSONL."""
+
 from __future__ import annotations
 
 from pathlib import Path

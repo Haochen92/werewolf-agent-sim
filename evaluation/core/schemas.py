@@ -1,3 +1,5 @@
+"""Pydantic models for evaluation datasets, judge scores, and result records."""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -57,30 +59,6 @@ class CostEstimate(BaseModel):
     estimated_cost_usd: float | None = None
     pricing_version: str
     token_estimation_method: str
-
-
-class VariantConfig(BaseModel):
-    label: str
-    model: str
-    prompt_id: str = "current"
-    temperature: float = 0.0
-    thinking_budget: int | None = None
-    thinking_level: Literal["minimal", "low", "medium", "high"] | None = None
-
-
-class JudgeConfig(BaseModel):
-    model: str = "gemini-2.5-pro"
-    prompt_id: str = "pairwise_summary_v1"
-    temperature: float = 0.0
-
-
-class PairwiseExperimentConfig(BaseModel):
-    experiment_id: str
-    component: Literal["situation_summary"]
-    baseline: VariantConfig
-    candidate: VariantConfig
-    judge: JudgeConfig = Field(default_factory=JudgeConfig)
-    alternate_order: bool = True
 
 
 class PairwiseJudgeScores(BaseModel):

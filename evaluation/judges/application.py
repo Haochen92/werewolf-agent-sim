@@ -1,3 +1,5 @@
+"""LLM judge for the final discussion or vote action."""
+
 from __future__ import annotations
 
 import json

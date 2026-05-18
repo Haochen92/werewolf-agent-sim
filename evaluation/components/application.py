@@ -1,3 +1,5 @@
+"""Replay the production discussion/vote action prompt for one frozen turn."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

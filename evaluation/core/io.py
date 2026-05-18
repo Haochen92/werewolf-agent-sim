@@ -1,3 +1,5 @@
+"""Small IO helpers used by the evaluation command-line tools."""
+
 from __future__ import annotations
 
 import json

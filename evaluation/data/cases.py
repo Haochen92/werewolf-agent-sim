@@ -1,3 +1,10 @@
+"""Convert Langfuse evaluation spans into the frozen ``EvalCase`` format.
+
+Live evaluation now expects modern spans whose output contains an ``eval_case``
+payload. Older span formats remain in ``evaluation/archive`` for audit history
+but are no longer accepted by the active dataset builder.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -9,7 +16,6 @@ from Agents.formatters import (
     format_day_channel,
 )
 from Agents.schemas.evaluation import EvalCase
-from evaluation.archive.legacy_cases import legacy_case_from_span
 from evaluation.core.formatters import (
     format_eval_private_context,
     format_eval_retrieved_observations,
@@ -19,13 +25,15 @@ from evaluation.core.formatters import (
 
 
 def eval_case_from_span(span: dict[str, Any]) -> EvalCase | None:
+    """Return an ``EvalCase`` from a modern Langfuse span, or ``None``."""
     output = span.get("output") if isinstance(span.get("output"), dict) else {}
     if isinstance(output.get("eval_case"), dict):
         return _case_from_payload(output["eval_case"], span)
-    return legacy_case_from_span(span)
+    return None
 
 
 def eval_case_to_judge_inputs(case: EvalCase) -> dict[str, Any]:
+    """Format one frozen case into the shared prompt inputs used by judges."""
     return {
         "player_role": case.player_role,
         "day": case.day,
@@ -52,6 +60,7 @@ def eval_case_to_judge_inputs(case: EvalCase) -> dict[str, Any]:
 
 
 def _case_from_payload(payload: dict[str, Any], span: dict[str, Any]) -> EvalCase | None:
+    """Validate an embedded ``eval_case`` payload and fill span IDs if needed."""
     enriched = {
         **payload,
         "trace_id": payload.get("trace_id") or span.get("trace_id") or "",

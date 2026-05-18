@@ -1,3 +1,5 @@
+"""Token and cost estimates for model calls made during evaluation."""
+
 from __future__ import annotations
 
 from typing import Any

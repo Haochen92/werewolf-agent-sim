@@ -1,3 +1,5 @@
+"""Deterministic sampling helpers for building compact eval datasets."""
+
 from __future__ import annotations
 
 import random

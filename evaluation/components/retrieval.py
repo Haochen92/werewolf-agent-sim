@@ -1,6 +1,7 @@
+"""Memory-store reconstruction and retrieval helpers for replay experiments."""
+
 from __future__ import annotations
 
-import argparse
 import json
 from pathlib import Path
 from typing import Any
@@ -71,11 +72,3 @@ def redundancy_ratio(item_count: int, scores: RetrievalScores | None) -> float |
         return None
     return max(0.0, 1 - (scores.unique_idea_count / item_count))
 
-
-def parse_snapshot(raw: list[str]) -> tuple[str, Path, Path]:
-    if len(raw) != 3:
-        raise argparse.ArgumentTypeError(
-            "--snapshot requires: LABEL OBSERVATIONS_JSON STRATEGY_POINTS_JSON"
-        )
-    label, observations_path, strategy_points_path = raw
-    return label, Path(observations_path), Path(strategy_points_path)

@@ -1,3 +1,5 @@
+"""Judge the full turn-level memory pipeline from summary through action."""
+
 from __future__ import annotations
 
 import json

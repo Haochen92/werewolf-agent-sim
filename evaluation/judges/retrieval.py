@@ -1,3 +1,5 @@
+"""LLM judge for retrieved memory relevance and redundancy."""
+
 from __future__ import annotations
 
 import json

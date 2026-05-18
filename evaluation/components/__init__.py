@@ -9,7 +9,6 @@ from evaluation.components.application import (
 from evaluation.components.retrieval import (
     build_store_from_snapshots,
     keep_top_scored_items,
-    parse_snapshot,
     redundancy_ratio,
 )
 from evaluation.components.situation_summary import (
@@ -30,7 +29,6 @@ __all__ = [
     "keep_top_scored_items",
     "make_google_llm",
     "message_content_text",
-    "parse_snapshot",
     "redundancy_ratio",
     "rendered_prompt_text",
     "run_application_action",

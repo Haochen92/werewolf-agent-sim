@@ -1,3 +1,5 @@
+"""LLM judge for pairwise situation-summary comparisons."""
+
 from __future__ import annotations
 
 import json
@@ -7,11 +9,12 @@ from typing import Any
 from Agents.formatters import format_day_channel
 from evaluation.components.situation_summary import make_google_llm
 from evaluation.core.costs import estimate_cost_from_usage_metadata
+from evaluation.core.config_schema import JudgeConfig
 from evaluation.core.formatters import (
     format_eval_private_context,
     format_eval_situations,
 )
-from evaluation.core.schemas import JudgeConfig, PairwiseJudgeScores
+from evaluation.core.schemas import PairwiseJudgeScores
 from evaluation.data.datasets import EvalDatasetRecord
 from evaluation.judges.prompts import (
     PAIRWISE_SUMMARY_SYSTEM_PROMPT,

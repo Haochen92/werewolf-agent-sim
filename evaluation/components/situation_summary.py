@@ -1,3 +1,5 @@
+"""Replay the production situation-summary call on frozen ``EvalCase`` rows."""
+
 from __future__ import annotations
 
 import json
@@ -18,8 +20,9 @@ from Agents.prompts import (
 )
 from Agents.schemas.evaluation import EvalCase
 from Agents.schemas.output import SituationSummary
+from evaluation.core.config_schema import VariantConfig
 from evaluation.core.costs import estimate_cost_from_usage_metadata
-from evaluation.core.schemas import CostEstimate, VariantConfig
+from evaluation.core.schemas import CostEstimate
 
 
 SITUATION_SUMMARY_PROMPTS: dict[str, ChatPromptTemplate] = {

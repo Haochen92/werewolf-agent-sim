@@ -1,3 +1,10 @@
+"""Replay the final action stage from frozen ``EvalCase`` records.
+
+This experiment keeps the turn context fixed and changes the memory inputs
+used by the discussion/vote prompt. It is useful for checking whether captured
+memories improve the final action compared with no memory.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -12,21 +19,18 @@ from evaluation.components.application import (
     application_case_for_judge,
     run_application_action,
 )
+from evaluation.core.config_schema import ApplicationExperimentConfig
 from evaluation.core.io import write_jsonl
 from evaluation.core.settings import REPO_ROOT, load_project_env
 from evaluation.data.datasets import read_eval_dataset
-from evaluation.judges.application import (
-    DEFAULT_APPLICATION_JUDGE_MODEL,
-    run_application_judge,
-)
+from evaluation.judges.application import run_application_judge
 
 
 load_project_env()
 
-DEFAULT_JUDGE_MODEL = DEFAULT_APPLICATION_JUDGE_MODEL
-
 
 def output_path(requested: Path | None) -> Path:
+    """Return the requested output path or a timestamped default."""
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -34,6 +38,7 @@ def output_path(requested: Path | None) -> Path:
 
 
 def memory_inputs_for_mode(case: EvalCase, mode: str) -> tuple[list[Any], list[Any]]:
+    """Choose which memory inputs should be supplied to the replayed action."""
     if mode == "captured":
         return case.retrieved_observations, case.retrieved_strategy_points
     if mode == "none":
@@ -45,33 +50,27 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Replay the action/application stage from frozen EvalCase rows."
     )
-    parser.add_argument("--dataset", type=Path, required=True)
-    parser.add_argument(
-        "--memory-mode",
-        choices=("captured", "none"),
-        default="captured",
-        help="Use captured retrieved memories or clear memory inputs.",
+    parser.add_argument("--config", type=Path, required=True)
+    return parser.parse_args()
+
+
+def read_config(path: Path) -> ApplicationExperimentConfig:
+    """Load the application experiment JSON config."""
+    return ApplicationExperimentConfig.model_validate_json(
+        path.read_text(encoding="utf-8")
     )
-    parser.add_argument("--output", type=Path, default=None)
-    parser.add_argument("--max-samples", type=int, default=0)
-    parser.add_argument("--judge", action="store_true")
-    parser.add_argument("--model", default=DEFAULT_JUDGE_MODEL)
-    parser.add_argument("--sleep-seconds", type=float, default=1.0)
-    args = parser.parse_args()
-    if args.max_samples < 0:
-        parser.error("--max-samples must be 0 or greater")
-    return args
 
 
 def main() -> None:
     args = parse_args()
-    records = read_eval_dataset(args.dataset)
-    if args.max_samples:
-        records = records[: args.max_samples]
-    out_path = output_path(args.output)
+    config = read_config(args.config)
+    records = read_eval_dataset(config.dataset)
+    if config.max_samples:
+        records = records[: config.max_samples]
+    out_path = output_path(config.output)
 
-    print(f"Loaded {len(records)} EvalCase records from {args.dataset}", flush=True)
-    print(f"Application memory mode={args.memory_mode}", flush=True)
+    print(f"Loaded {len(records)} EvalCase records from {config.dataset}", flush=True)
+    print(f"Application memory mode={config.memory_mode}", flush=True)
     print(f"Writing replay results to {out_path}", flush=True)
 
     written = 0
@@ -79,7 +78,7 @@ def main() -> None:
         case = record.eval_case
         retrieved_observations, strategy_points = memory_inputs_for_mode(
             case,
-            args.memory_mode,
+            config.memory_mode,
         )
         print(
             f"[{index}/{len(records)}] {record.case_id} "
@@ -106,7 +105,11 @@ def main() -> None:
             }
             print(f"  Error: {exc}", flush=True)
         else:
-            scores = run_application_judge(judged_case, model=args.model) if args.judge else None
+            scores = (
+                run_application_judge(judged_case, model=config.judge_model)
+                if config.judge
+                else None
+            )
             replay_record = {
                 "eval_set_id": record.eval_set_id,
                 "case_id": record.case_id,
@@ -117,7 +120,7 @@ def main() -> None:
                 "day": case.day,
                 "round": case.round,
                 "action_type": case.action_type,
-                "memory_mode": args.memory_mode,
+                "memory_mode": config.memory_mode,
                 "retrieved_observation_count": len(retrieved_observations),
                 "retrieved_strategy_point_count": len(strategy_points),
                 "action_result": result,
@@ -130,7 +133,7 @@ def main() -> None:
                 "application_scores": (
                     scores.model_dump(mode="json") if scores else None
                 ),
-                "judge_model": args.model if args.judge else None,
+                "judge_model": config.judge_model if config.judge else None,
             }
             if scores:
                 print(
@@ -138,8 +141,8 @@ def main() -> None:
                     f"application={scores.strategy_application}",
                     flush=True,
                 )
-            if args.judge:
-                time.sleep(args.sleep_seconds)
+            if config.judge:
+                time.sleep(config.sleep_seconds)
 
         write_jsonl(out_path, replay_record)
         written += 1

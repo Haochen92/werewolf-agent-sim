@@ -1,12 +1,14 @@
+"""Build a local frozen eval dataset from Langfuse game traces."""
+
 from __future__ import annotations
 
 import argparse
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from Agents.schemas.evaluation import EvalCase
+from evaluation.core.config_schema import DatasetBuildConfig
 from evaluation.core.settings import REPO_ROOT, load_project_env
 from evaluation.data.datasets import EvalDatasetRecord, record_from_case, write_eval_dataset
 from evaluation.data.langfuse import (
@@ -22,28 +24,30 @@ from evaluation.data.sampling import sample_cases
 load_project_env()
 
 
-def resolve_trace_ids(args: argparse.Namespace) -> list[str]:
-    if args.trace_ids:
-        return args.trace_ids
-    if args.session_id:
-        print(f"Fetching traces for session ID: {args.session_id}")
-        return fetch_trace_ids_for_session_id(args.session_id)
-    if args.session_ids:
-        print(f"Fetching traces for {len(args.session_ids)} exact session IDs.")
-        return fetch_trace_ids_for_session_ids(args.session_ids)
-    if args.batch_results:
-        session_ids = read_session_ids_from_batch_results(args.batch_results)
+def resolve_trace_ids(config: DatasetBuildConfig) -> list[str]:
+    """Resolve the configured Langfuse source into concrete trace IDs."""
+    if config.trace_ids:
+        return config.trace_ids
+    if config.session_id:
+        print(f"Fetching traces for session ID: {config.session_id}")
+        return fetch_trace_ids_for_session_id(config.session_id)
+    if config.session_ids:
+        print(f"Fetching traces for {len(config.session_ids)} exact session IDs.")
+        return fetch_trace_ids_for_session_ids(config.session_ids)
+    if config.batch_results:
+        session_ids = read_session_ids_from_batch_results(config.batch_results)
         print(
             f"Fetching traces for {len(session_ids)} session IDs from "
-            f"{args.batch_results}"
+            f"{config.batch_results}"
         )
         return fetch_trace_ids_for_session_ids(session_ids)
 
-    print(f"Fetching traces for session prefix: {args.session_prefix}")
-    return fetch_trace_ids_for_session_prefix(args.session_prefix)
+    print(f"Fetching traces for session prefix: {config.session_prefix}")
+    return fetch_trace_ids_for_session_prefix(config.session_prefix or "")
 
 
 def select_games(trace_ids: list[str], max_games: int) -> list[str]:
+    """Choose evenly spaced games when a max-game cap is configured."""
     if max_games <= 0 or len(trace_ids) <= max_games:
         return trace_ids
     step = len(trace_ids) / max_games
@@ -53,6 +57,7 @@ def select_games(trace_ids: list[str], max_games: int) -> list[str]:
 def fetch_cases_for_games(
     trace_ids: list[str],
 ) -> tuple[list[EvalCase], dict[str, int]]:
+    """Fetch eval cases and per-game lengths for the selected traces."""
     cases: list[EvalCase] = []
     game_lengths: dict[str, int] = {}
     for trace_id in trace_ids:
@@ -62,13 +67,13 @@ def fetch_cases_for_games(
     return cases, game_lengths
 
 
-def build_dataset_records(args: argparse.Namespace) -> list[EvalDatasetRecord]:
+def build_dataset_records(config: DatasetBuildConfig) -> list[EvalDatasetRecord]:
     """Fetch Langfuse traces once and freeze sampled EvalCase payloads locally."""
-    trace_ids = resolve_trace_ids(args)
+    trace_ids = resolve_trace_ids(config)
     if not trace_ids:
         return []
 
-    games_to_sample = select_games(trace_ids, args.max_games)
+    games_to_sample = select_games(trace_ids, config.max_games)
     print(f"Found {len(trace_ids)} traces; sampling from {len(games_to_sample)} games.")
 
     cases, game_lengths = fetch_cases_for_games(games_to_sample)
@@ -78,23 +83,24 @@ def build_dataset_records(args: argparse.Namespace) -> list[EvalDatasetRecord]:
         cases,
         game_lengths,
         games_to_sample=games_to_sample,
-        per_role_per_phase=args.per_role_per_phase,
-        max_samples=args.max_samples or None,
-        seed=args.seed,
+        per_role_per_phase=config.per_role_per_phase,
+        max_samples=config.max_samples or None,
+        seed=config.seed,
     )
     print(f"Sampled {len(sampled)} cases for local dataset.")
 
     return [
         record_from_case(
             case,
-            eval_set_id=args.eval_set_id,
-            created_from=args.created_from,
+            eval_set_id=config.eval_set_id,
+            created_from=config.created_from,
         )
         for case in sampled
     ]
 
 
 def default_output_path(eval_set_id: str) -> Path:
+    """Return the default JSONL dataset path for an eval set ID."""
     return REPO_ROOT / "eval_sets" / f"{eval_set_id}.jsonl"
 
 
@@ -102,47 +108,31 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Build a local frozen EvalCase dataset from Langfuse traces."
     )
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--session-prefix")
-    group.add_argument("--session-id")
-    group.add_argument("--session-ids", nargs="+")
-    group.add_argument("--batch-results", type=Path)
-    group.add_argument("--trace-ids", nargs="+")
-    parser.add_argument("--eval-set-id", required=True)
-    parser.add_argument(
-        "--created-from",
-        default=None,
-        help="Human label for the source run/batch used to create this dataset.",
-    )
-    parser.add_argument("--max-games", type=int, default=5)
-    parser.add_argument("--per-role-per-phase", type=int, default=1)
-    parser.add_argument("--max-samples", type=int, default=40)
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--output", type=Path, default=None)
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Allow replacing an existing dataset file.",
-    )
-    args = parser.parse_args()
-    if args.per_role_per_phase < 1:
-        parser.error("--per-role-per-phase must be at least 1")
-    if args.max_samples < 0:
-        parser.error("--max-samples must be 0 or greater")
-    return args
+    parser.add_argument("--config", type=Path, required=True)
+    return parser.parse_args()
 
 
-def write_manifest(path: Path, records: list[EvalDatasetRecord], args: Any) -> None:
+def read_config(path: Path) -> DatasetBuildConfig:
+    """Load the dataset-builder JSON config."""
+    return DatasetBuildConfig.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def write_manifest(
+    path: Path,
+    records: list[EvalDatasetRecord],
+    config: DatasetBuildConfig,
+) -> None:
+    """Write a small sidecar file describing how the dataset was sampled."""
     manifest = {
-        "eval_set_id": args.eval_set_id,
+        "eval_set_id": config.eval_set_id,
         "created_at": datetime.now().isoformat(),
-        "created_from": args.created_from,
+        "created_from": config.created_from,
         "dataset_path": str(path),
         "case_count": len(records),
-        "seed": args.seed,
-        "max_games": args.max_games,
-        "per_role_per_phase": args.per_role_per_phase,
-        "max_samples": args.max_samples,
+        "seed": config.seed,
+        "max_games": config.max_games,
+        "per_role_per_phase": config.per_role_per_phase,
+        "max_samples": config.max_samples,
     }
     manifest_path = path.with_suffix(".manifest.json")
     manifest_path.write_text(
@@ -153,19 +143,21 @@ def write_manifest(path: Path, records: list[EvalDatasetRecord], args: Any) -> N
 
 def main() -> None:
     args = parse_args()
-    out_path = args.output or default_output_path(args.eval_set_id)
-    if out_path.exists() and not args.overwrite:
+    config = read_config(args.config)
+    out_path = config.output or default_output_path(config.eval_set_id)
+    if out_path.exists() and not config.overwrite:
         raise FileExistsError(
-            f"Dataset already exists: {out_path}. Pass --overwrite to replace it."
+            f"Dataset already exists: {out_path}. Set overwrite=true in the config "
+            "to replace it."
         )
 
-    records = build_dataset_records(args)
+    records = build_dataset_records(config)
     if not records:
         print("No records written.")
         return
 
     write_eval_dataset(out_path, records)
-    write_manifest(out_path, records, args)
+    write_manifest(out_path, records, config)
     print(f"Wrote {len(records)} EvalCase records to {out_path}")
 
 

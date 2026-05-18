@@ -1,3 +1,5 @@
+"""Formatting helpers shared by judge prompts and result records."""
+
 from __future__ import annotations
 
 from typing import Any

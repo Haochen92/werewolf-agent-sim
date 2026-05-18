@@ -1,3 +1,10 @@
+"""Pairwise comparison of situation-summary variants.
+
+For each frozen ``EvalCase``, this experiment runs a baseline and candidate
+summary model/prompt, asks a judge to choose the better retrieval query, and
+records quality and cost deltas.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -11,16 +18,9 @@ from pydantic import ValidationError
 from evaluation.components import (
     run_situation_summary_variant,
 )
+from evaluation.core.config_schema import PairwiseExperimentConfig
 from evaluation.core.io import write_jsonl
 from evaluation.data.datasets import EvalDatasetRecord, read_eval_dataset
-from evaluation.analysis.pairwise import (
-    cost_savings_pct,
-    map_judge_winner,
-    ordered_outputs,
-    quality_delta,
-    summarize_pairwise_results,
-)
-from evaluation.core.schemas import PairwiseExperimentConfig
 from evaluation.core.settings import REPO_ROOT, load_project_env
 from evaluation.judges.pairwise_summary import run_pairwise_summary_judge
 
@@ -29,6 +29,7 @@ load_project_env()
 
 
 def read_experiment_config(path: Path) -> PairwiseExperimentConfig:
+    """Load the pairwise summary experiment JSON config."""
     try:
         return PairwiseExperimentConfig.model_validate_json(
             path.read_text(encoding="utf-8")
@@ -38,10 +39,58 @@ def read_experiment_config(path: Path) -> PairwiseExperimentConfig:
 
 
 def result_output_path(requested: Path | None, experiment_id: str) -> Path:
+    """Return the requested output path or a timestamped default."""
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return REPO_ROOT / "eval_results" / f"{experiment_id}_{timestamp}.jsonl"
+
+
+def ordered_outputs(
+    *,
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+    index: int,
+    alternate_order: bool,
+) -> tuple[bool, str, dict[str, Any], str, dict[str, Any]]:
+    """Return A/B presentation order, alternating to reduce position bias."""
+    swapped = bool(alternate_order and index % 2 == 1)
+    if swapped:
+        return swapped, "candidate", candidate, "baseline", baseline
+    return swapped, "baseline", baseline, "candidate", candidate
+
+
+def map_judge_winner(
+    winner: str,
+    *,
+    output_a_name: str,
+    output_b_name: str,
+) -> str:
+    """Map the judge's A/B/tie answer back to baseline/candidate/tie."""
+    if winner == "tie":
+        return "tie"
+    return output_a_name if winner == "a" else output_b_name
+
+
+def quality_delta(winner: str) -> int:
+    """Represent candidate quality as +1, baseline quality as -1, tie as 0."""
+    if winner == "candidate":
+        return 1
+    if winner == "baseline":
+        return -1
+    return 0
+
+
+def cost_savings_pct(
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+) -> float | None:
+    """Return candidate cost savings relative to baseline, when cost is known."""
+    baseline_cost = baseline.get("cost", {}).get("estimated_cost_usd")
+    candidate_cost = candidate.get("cost", {}).get("estimated_cost_usd")
+    if baseline_cost in (None, 0) or candidate_cost is None:
+        return None
+    return 1 - (candidate_cost / baseline_cost)
 
 
 def run_pairwise_case(
@@ -110,15 +159,45 @@ def run_pairwise_case(
 
 
 def summarize_results(results: list[dict[str, Any]]) -> None:
-    summarize_pairwise_results(results, title="SUMMARY PAIRWISE")
+    """Print a compact pairwise summary for completed comparisons."""
+    completed = [result for result in results if "judge" in result]
+    if not completed:
+        print("No completed pairwise comparisons.")
+        return
+
+    winner_counts = {"baseline": 0, "candidate": 0, "tie": 0}
+    savings: list[float] = []
+    for result in completed:
+        winner = result["judge"]["winner"]
+        winner_counts[winner] = winner_counts.get(winner, 0) + 1
+        savings_pct = result.get("deltas", {}).get("cost_savings_pct")
+        if savings_pct is not None:
+            savings.append(savings_pct)
+
+    print("\nSUMMARY PAIRWISE")
+    print(f"  Completed: {len(completed)}")
+    print(
+        "  Winners: "
+        f"baseline={winner_counts['baseline']}, "
+        f"candidate={winner_counts['candidate']}, "
+        f"tie={winner_counts['tie']}"
+    )
+    if savings:
+        avg = sum(savings) / len(savings)
+        print(f"  Avg candidate cost savings: {avg:.1%}")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run config-driven pairwise component comparisons."
     )
-    parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument(
+        "--dataset",
+        type=Path,
+        default=None,
+        help="Override dataset path from config.",
+    )
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--max-cases", type=int, default=0)
     parser.add_argument(
@@ -133,12 +212,19 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     config = read_experiment_config(args.config)
-    records = read_eval_dataset(args.dataset)
-    if args.max_cases:
-        records = records[: args.max_cases]
-    out_path = result_output_path(args.output, config.experiment_id)
+    dataset_path = args.dataset or config.dataset
+    if dataset_path is None:
+        raise ValueError("Dataset path is required in config or via --dataset.")
+    max_cases = args.max_cases or config.max_cases
+    sleep_seconds = args.sleep_seconds or config.sleep_seconds
+    output = args.output or config.output
 
-    print(f"Loaded {len(records)} records from {args.dataset}")
+    records = read_eval_dataset(dataset_path)
+    if max_cases:
+        records = records[:max_cases]
+    out_path = result_output_path(output, config.experiment_id)
+
+    print(f"Loaded {len(records)} records from {dataset_path}")
     print(f"Experiment: {config.experiment_id} ({config.component})")
     print(f"Writing results to {out_path}")
 
@@ -171,8 +257,8 @@ def main() -> None:
             )
         write_jsonl(out_path, result)
         results.append(result)
-        if args.sleep_seconds:
-            time.sleep(args.sleep_seconds)
+        if sleep_seconds:
+            time.sleep(sleep_seconds)
 
     summarize_results(results)
 

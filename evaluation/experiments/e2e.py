@@ -1,3 +1,10 @@
+"""Turn-level replay of the episodic memory path.
+
+For each frozen ``EvalCase`` this experiment regenerates the situation summary,
+retrieves memories from a configured snapshot, reruns the final action prompt,
+and optionally judges the combined result.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -13,14 +20,13 @@ from evaluation.components.application import (
 from evaluation.components.retrieval import (
     build_store_from_snapshots,
     keep_top_scored_items,
-    parse_snapshot,
 )
 from evaluation.components.situation_summary import run_situation_summary_variant
+from evaluation.core.config_schema import E2EExperimentConfig, VariantConfig
 from evaluation.core.io import write_jsonl
-from evaluation.core.schemas import VariantConfig
 from evaluation.core.settings import REPO_ROOT, load_project_env
 from evaluation.data.datasets import read_eval_dataset
-from evaluation.judges.pipeline import DEFAULT_JUDGE_MODEL, run_judge
+from evaluation.judges.pipeline import run_judge
 
 from Agents.memory import (
     retrieve_observations_for_agent,
@@ -33,24 +39,15 @@ load_project_env()
 
 
 def output_path(requested: Path | None) -> Path:
+    """Return the requested output path or a timestamped default."""
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return REPO_ROOT / "eval_results" / f"e2e_eval_{timestamp}.jsonl"
 
 
-def summary_variant_from_args(args: argparse.Namespace) -> VariantConfig:
-    return VariantConfig(
-        label=args.summary_label,
-        model=args.summary_model,
-        prompt_id=args.summary_prompt_id,
-        temperature=args.summary_temperature,
-        thinking_budget=args.summary_thinking_budget,
-        thinking_level=args.summary_thinking_level,
-    )
-
-
 def case_without_memory(case: EvalCase) -> EvalCase:
+    """Clear memory-derived fields before regenerating the situation summary."""
     return case.model_copy(
         update={
             "retrieved_observations": [],
@@ -71,6 +68,7 @@ def run_e2e_case(
     judge: bool,
     judge_model: str,
 ) -> dict[str, Any]:
+    """Replay one frozen turn through summary, retrieval, action, and judge."""
     summary = run_situation_summary_variant(
         case_without_memory(case),
         summary_config,
@@ -142,56 +140,36 @@ def parse_args() -> argparse.Namespace:
             "Replay the dataset E2E memory path: summary -> retrieval -> action."
         )
     )
-    parser.add_argument("--dataset", type=Path, required=True)
-    parser.add_argument(
-        "--snapshot",
-        nargs=3,
-        action="append",
-        metavar=("LABEL", "OBSERVATIONS_JSON", "STRATEGY_POINTS_JSON"),
-        required=True,
+    parser.add_argument("--config", type=Path, required=True)
+    return parser.parse_args()
+
+
+def read_config(path: Path) -> E2EExperimentConfig:
+    """Load the E2E experiment JSON config."""
+    return E2EExperimentConfig.model_validate_json(
+        path.read_text(encoding="utf-8")
     )
-    parser.add_argument("--summary-label", default="summary_current")
-    parser.add_argument("--summary-model", default="gemini-2.5-flash")
-    parser.add_argument("--summary-prompt-id", default="current")
-    parser.add_argument("--summary-temperature", type=float, default=0.0)
-    parser.add_argument("--summary-thinking-budget", type=int, default=None)
-    parser.add_argument(
-        "--summary-thinking-level",
-        choices=("minimal", "low", "medium", "high"),
-        default=None,
-    )
-    parser.add_argument("--top-k", type=int, default=3)
-    parser.add_argument("--max-retrieved-items", type=int, default=0)
-    parser.add_argument("--output", type=Path, default=None)
-    parser.add_argument("--max-samples", type=int, default=0)
-    parser.add_argument("--judge", action="store_true")
-    parser.add_argument("--judge-model", default=DEFAULT_JUDGE_MODEL)
-    parser.add_argument("--sleep-seconds", type=float, default=1.0)
-    args = parser.parse_args()
-    if args.max_samples < 0:
-        parser.error("--max-samples must be 0 or greater")
-    if args.top_k < 1:
-        parser.error("--top-k must be at least 1")
-    if args.max_retrieved_items < 0:
-        parser.error("--max-retrieved-items must be 0 or greater")
-    return args
 
 
 def main() -> None:
     args = parse_args()
-    records = read_eval_dataset(args.dataset)
-    if args.max_samples:
-        records = records[: args.max_samples]
-    snapshots = [parse_snapshot(raw) for raw in args.snapshot]
+    config = read_config(args.config)
+    records = read_eval_dataset(config.dataset)
+    if config.max_samples:
+        records = records[: config.max_samples]
+    snapshots = [
+        (snapshot.label, snapshot.observations_path, snapshot.strategy_points_path)
+        for snapshot in config.snapshots
+    ]
     stores = {
         label: build_store_from_snapshots(observations_path, strategy_points_path)
         for label, observations_path, strategy_points_path in snapshots
     }
-    summary_config = summary_variant_from_args(args)
-    max_retrieved_items = args.max_retrieved_items or None
-    out_path = output_path(args.output)
+    summary_config = config.summary
+    max_retrieved_items = config.max_retrieved_items or None
+    out_path = output_path(config.output)
 
-    print(f"Loaded {len(records)} EvalCase records from {args.dataset}", flush=True)
+    print(f"Loaded {len(records)} EvalCase records from {config.dataset}", flush=True)
     print(f"Testing {len(stores)} snapshot(s)", flush=True)
     print(f"Summary model={summary_config.model}", flush=True)
     print(f"Writing E2E replay results to {out_path}", flush=True)
@@ -211,10 +189,10 @@ def main() -> None:
                     store=store,
                     snapshot_label=snapshot_label,
                     summary_config=summary_config,
-                    top_k=args.top_k,
+                    top_k=config.top_k,
                     max_retrieved_items=max_retrieved_items,
-                    judge=args.judge,
-                    judge_model=args.judge_model,
+                    judge=config.judge,
+                    judge_model=config.judge_model,
                 )
             except Exception as exc:
                 result = {
@@ -238,8 +216,8 @@ def main() -> None:
                         f"strategy={result['retrieved_strategy_point_count']}",
                         flush=True,
                     )
-                if args.judge:
-                    time.sleep(args.sleep_seconds)
+                if config.judge:
+                    time.sleep(config.sleep_seconds)
 
             write_jsonl(
                 out_path,
@@ -253,7 +231,7 @@ def main() -> None:
                     "day": case.day,
                     "round": case.round,
                     "action_type": case.action_type,
-                    "top_k": args.top_k,
+                    "top_k": config.top_k,
                     "max_retrieved_items": max_retrieved_items,
                     **result,
                 },

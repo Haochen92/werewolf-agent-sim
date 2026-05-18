@@ -1,3 +1,5 @@
+"""Prompt text used by the evaluation judges."""
+
 JUDGE_SYSTEM_PROMPT = """\
 You are evaluating the memory retrieval pipeline of an AI agent playing \
 a social deduction game (Werewolf). You will be given:
