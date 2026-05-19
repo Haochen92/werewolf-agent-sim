@@ -44,8 +44,9 @@ class Discard(BaseModel):
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
-    duplicate_of_key: str = Field(
-        description="The key of the existing entry this duplicates",
+    duplicate_of_candidate: int = Field(
+        ge=1,
+        description="The 1-based candidate number of the existing entry this duplicates",
     )
 
 
@@ -54,8 +55,9 @@ class Replace(BaseModel):
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
-    replace_key: str = Field(
-        description="The key of the existing entry to replace",
+    replace_candidate: int = Field(
+        ge=1,
+        description="The 1-based candidate number of the existing entry to replace",
     )
     merged_situation: str = Field(
         description="The merged situation text, keeping the best elements of both",
@@ -76,8 +78,9 @@ class Differentiate(BaseModel):
             "(e.g., consensus strength, game phase)"
         ),
     )
-    existing_key: str = Field(
-        description="The key of the existing entry to rewrite",
+    existing_candidate: int = Field(
+        ge=1,
+        description="The 1-based candidate number of the existing entry to rewrite",
     )
     existing_rewritten_situation: str = Field(
         description="Rewritten situation for the existing entry",
@@ -176,12 +179,13 @@ Decide ONE of the following outcomes:
 
 (A) DISCARD — The new point is a duplicate of an existing entry. Both the
     situation and action express the same idea, even if worded differently.
-    Output: the key of the entry it duplicates.
+    Output: the candidate number of the entry it duplicates.
 
 (B) REPLACE — The new point covers the same situation and action as an
     existing entry, but is more specific, better reasoned, or captures a
-    nuance the existing entry misses. Output: the key to replace, and the
-    final merged situation + action (keeping the best elements of both).
+    nuance the existing entry misses. Output: the candidate number to
+    replace, and the final merged situation + action (keeping the best
+    elements of both).
 
 (C) DIFFERENTIATE — The new point describes a similar situation but
     recommends a meaningfully different action. This is an action-spectrum
@@ -208,6 +212,8 @@ DECISION RULES:
   situation standards above: the situation must describe a recognizable game
   dynamic using the dimensional framework and epistemic status rule. The
   action must explain a non-obvious mechanism, not restate common-sense play.
+- When an output field asks for a candidate number, use only the bracketed
+  candidate number shown in SIMILAR EXISTING ENTRIES. Do not output UUID keys.
 """
 
 
@@ -223,7 +229,7 @@ def _format_existing_entries(items: list) -> str:
     for i, item in enumerate(items, 1):
         value = item.value
         lines.append(
-            f"[{i}] Key: {item.key} "
+            f"[{i}] Candidate: {i}; Key: {item.key} "
             f"(similarity={item.score:.3f}, observed={value.get('observation_count', 1)}x)\n"
             f"    Situation: {value.get('content', '')}\n"
             f"    Action: {value.get('action', '')}"
@@ -326,10 +332,20 @@ def _call_dedup_llm(
             )
 
             if isinstance(result, DedupDecisionOutput):
-                return result.result
-            if isinstance(result, dict):
-                return DedupDecisionOutput.model_validate(result).result
-            raise TypeError(f"Unexpected dedup LLM result type: {type(result)!r}")
+                decision = result.result
+            elif isinstance(result, dict):
+                decision = DedupDecisionOutput.model_validate(result).result
+            else:
+                raise TypeError(f"Unexpected dedup LLM result type: {type(result)!r}")
+
+            candidate_error = _candidate_validation_error(
+                decision,
+                len(similar_items),
+            )
+            if candidate_error:
+                last_error = candidate_error
+                continue
+            return decision
 
         except Exception as e:
             last_error = str(e)
@@ -338,6 +354,35 @@ def _call_dedup_llm(
             )
 
     logger.error("Dedup LLM call failed after all retries")
+    return None
+
+
+def _candidate_validation_error(
+    decision: Discard | Replace | Differentiate | Keep,
+    candidate_count: int,
+) -> str | None:
+    candidate: int | None = None
+    if isinstance(decision, Discard):
+        candidate = decision.duplicate_of_candidate
+    elif isinstance(decision, Replace):
+        candidate = decision.replace_candidate
+    elif isinstance(decision, Differentiate):
+        candidate = decision.existing_candidate
+
+    if candidate is None:
+        return None
+    if 1 <= candidate <= candidate_count:
+        return None
+    return (
+        f"candidate number {candidate} is invalid; choose an integer from 1 "
+        f"to {candidate_count}, matching the bracketed candidate numbers."
+    )
+
+
+def _item_for_candidate(similar_items: list, candidate: int):
+    index = candidate - 1
+    if 0 <= index < len(similar_items):
+        return similar_items[index]
     return None
 
 
@@ -351,23 +396,25 @@ def _apply_decision(
 ) -> DedupAction:
     """Apply the LLM's dedup decision to the store."""
 
-    similar_by_key = {item.key: item for item in similar_items}
-
     match decision:
-        case Discard(duplicate_of_key=key):
-            if key in similar_by_key:
-                _bump_observation_count(store, namespace, key, similar_by_key[key])
+        case Discard(duplicate_of_candidate=candidate):
+            item = _item_for_candidate(similar_items, candidate)
+            if item is not None:
+                _bump_observation_count(store, namespace, item.key, item)
             else:
-                logger.warning(f"DISCARD referenced unknown key {key}; storing as new")
+                logger.warning(
+                    f"DISCARD referenced invalid candidate {candidate}; storing as new"
+                )
                 _store_new_point(store, namespace, point, game_id)
             return DedupAction.DISCARD
 
-        case Replace(replace_key=key, merged_situation=sit, merged_action=act):
-            if key in similar_by_key:
-                existing_value = similar_by_key[key].value
+        case Replace(replace_candidate=candidate, merged_situation=sit, merged_action=act):
+            item = _item_for_candidate(similar_items, candidate)
+            if item is not None:
+                existing_value = item.value
                 store.put(
                     namespace,
-                    key,
+                    item.key,
                     {
                         "content": sit,
                         "action": act,
@@ -377,22 +424,25 @@ def _apply_decision(
                     },
                 )
             else:
-                logger.warning(f"REPLACE referenced unknown key {key}; storing as new")
+                logger.warning(
+                    f"REPLACE referenced invalid candidate {candidate}; storing as new"
+                )
                 _store_new_point(store, namespace, point, game_id)
             return DedupAction.REPLACE
 
         case Differentiate(
-            existing_key=key,
+            existing_candidate=candidate,
             existing_rewritten_situation=ex_sit,
             existing_rewritten_action=ex_act,
             new_rewritten_situation=new_sit,
             new_rewritten_action=new_act,
         ):
-            if key in similar_by_key:
-                existing_value = similar_by_key[key].value
+            item = _item_for_candidate(similar_items, candidate)
+            if item is not None:
+                existing_value = item.value
                 store.put(
                     namespace,
-                    key,
+                    item.key,
                     {
                         "content": ex_sit,
                         "action": ex_act or existing_value.get("action", ""),
@@ -415,7 +465,9 @@ def _apply_decision(
                     },
                 )
             else:
-                logger.warning(f"DIFFERENTIATE referenced unknown key {key}; storing as new")
+                logger.warning(
+                    f"DIFFERENTIATE referenced invalid candidate {candidate}; storing as new"
+                )
                 _store_new_point(store, namespace, point, game_id)
             return DedupAction.DIFFERENTIATE
 
@@ -540,4 +592,3 @@ def run_downstream_dedup(
         f"{stats.auto_discarded} auto-discarded"
     )
     return stats
-

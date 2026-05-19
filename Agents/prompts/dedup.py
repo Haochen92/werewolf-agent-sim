@@ -26,12 +26,13 @@ Decide ONE of the following outcomes:
 
 (A) DISCARD — The new point is a duplicate of an existing entry. Both the
     situation and action express the same idea, even if worded differently.
-    Output: the key of the entry it duplicates.
+    Output: the candidate number of the entry it duplicates.
 
 (B) REPLACE — The new point covers the same situation and action as an
     existing entry, but is more specific, better reasoned, or captures a
-    nuance the existing entry misses. Output: the key to replace, and the
-    final merged situation + action (keeping the best elements of both).
+    nuance the existing entry misses. Output: the candidate number to
+    replace, and the final merged situation + action (keeping the best
+    elements of both).
 
 (C) DIFFERENTIATE — The new point describes a similar situation but
     recommends a meaningfully different action. This is an action-spectrum
@@ -58,6 +59,8 @@ DECISION RULES:
   situation standards above: the situation must describe a recognizable game
   dynamic using the dimensional framework and epistemic status rule. The
   action must explain a non-obvious mechanism, not restate common-sense play.
+- When an output field asks for a candidate number, use only the bracketed
+  candidate number shown in SIMILAR EXISTING ENTRIES. Do not output UUID keys.
 
 Output format:
 DECISION: [A / B / C / D]
