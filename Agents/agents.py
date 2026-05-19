@@ -244,7 +244,9 @@ def _run_agent(
 
 def _generate_situations_for_agent(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
+    max_retries: int = 1,
 ) -> list[str]:
+    player_id = payload["player_id"]
     role = payload["player_role"]
     current_day = payload["current_day"]
     current_round = payload["current_round"]
@@ -256,18 +258,25 @@ def _generate_situations_for_agent(
     }.get(role, VILLAGER_SITUATION_SUMMARY)
     chain = prompt_template | get_llm().with_structured_output(SituationSummary)
 
-    try:
-        result = chain.invoke(
-            _build_agent_prompt_input(payload),
-            config={
-                "run_name": (
-                    f"situation_summary_{role}_day_{current_day}_round_{current_round}"
-                )
-            },
-        )
-        return result.situations
-    except Exception:
-        return [f"Day {current_day} as {role}, round {current_round}"]
+    for attempt in range(max_retries + 1):
+        try:
+            result = chain.invoke(
+                _build_agent_prompt_input(payload),
+                config={
+                    "run_name": (
+                        f"situation_summary_{role}_day_{current_day}_round_{current_round}"
+                    )
+                },
+            )
+            return result.situations
+        except Exception as e:
+            logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")
+            if attempt < max_retries:
+                continue
+            break
+
+    logger.error(f"{player_id} situation summary failed all retries, using fallback")
+    return [f"Day {current_day} as {role}, round {current_round}"]
 
 
 def _memory_enabled_for_role(config: RunnableConfig, role: str) -> bool:
