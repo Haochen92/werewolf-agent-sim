@@ -12,6 +12,7 @@ class JudgeScores(BaseModel):
     summary_quality: int = Field(ge=1, le=5)
     retrieval_relevance: int = Field(ge=1, le=5)
     strategy_application: int = Field(ge=1, le=5)
+    grounding: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
 
 
@@ -47,6 +48,8 @@ class RetrievalScores(BaseModel):
 class ApplicationScores(BaseModel):
     action_quality: int = Field(ge=1, le=5)
     strategy_application: int = Field(ge=1, le=5)
+    grounding: int = Field(ge=1, le=5)
+    fabricated_claims: list[str] = Field(default_factory=list)
     brief_reasoning: str = ""
 
 

@@ -206,7 +206,8 @@ def main() -> None:
                     print(
                         f"  {snapshot_label}: summary={scores['summary_quality']} "
                         f"relevance={scores['retrieval_relevance']} "
-                        f"application={scores['strategy_application']}",
+                        f"application={scores['strategy_application']} "
+                        f"grounding={scores['grounding']}",
                         flush=True,
                     )
                 else:

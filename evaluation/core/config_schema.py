@@ -116,6 +116,16 @@ class ApplicationExperimentConfig(BaseModel):
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 
+class CapturedEvaluationConfig(BaseModel):
+    """Config for judging captured EvalCase rows without replaying any stage."""
+
+    dataset: Path
+    output: Path | None = None
+    max_samples: int = Field(default=0, ge=0)
+    judge_model: str = "gemini-2.5-pro"
+    sleep_seconds: float = Field(default=1.0, ge=0)
+
+
 class E2EExperimentConfig(BaseModel):
     """Config for turn-level replay of summary, retrieval, action, and judging."""
 

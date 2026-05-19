@@ -11,7 +11,7 @@ summary was generated).
 their similarity scores.
 4. The agent's actual response or vote decision.
 
-Your job is to score three dimensions of the pipeline's quality.\
+Your job is to score four dimensions of the pipeline's quality.\
 """
 
 JUDGE_USER_PROMPT = """\
@@ -47,7 +47,7 @@ Updated Strategy Note: {agent_updated_strategy}
 
 ---
 
-Score the following three dimensions from 1 to 5:
+Score the following four dimensions from 1 to 5:
 
 1. SUMMARY QUALITY: Does the situation summary accurately capture the key \
 tensions, threats, and decisions facing this {player_role} RIGHT NOW based \
@@ -88,9 +88,18 @@ obedience.
 agent cannot reasonably apply guidance that does not apply. Do not \
 double-penalize a retrieval system failure.
 
+4. GROUNDING: Does the agent's response and updated strategy note contain
+any claims about game events, player behavior, or social dynamics that
+cannot be traced to the discussion, private context, or retrieved memories?
+   1 = major fabrications that drive the decision
+   2 = at least one fabricated claim with strategic impact
+   3 = minor unsupported inferences but nothing fabricated
+   4 = well grounded with reasonable inferences clearly marked
+   5 = every factual claim is traceable to provided context
+
 Respond ONLY with valid JSON, no markdown fences:
 {{"summary_quality": N, "retrieval_relevance": N, "strategy_application": N, \
-"brief_reasoning": "1-2 sentences explaining your scores"}}
+"grounding": N, "brief_reasoning": "1-2 sentences explaining your scores"}}
 """
 
 
@@ -200,14 +209,30 @@ observations and strategy points discriminantly?
    4 = clearly adapts useful retrieved guidance
    5 = selectively applies the most relevant guidance while ignoring bad fits
 
+3. GROUNDING: Does the agent's response and updated strategy note only
+reference events, statements, accusations, and alliances that appear in
+the discussion excerpt, private context, or retrieved memories?
+   1 = multiple fabricated claims (invented votes, fake accusations, or
+       events that never happened)
+   2 = one clear fabrication that influences the decision
+   3 = minor embellishment but core reasoning is grounded
+   4 = fully grounded with at most trivial paraphrasing liberties
+   5 = every claim traces directly to provided context
+
+For Grounding, Look specifically for:
+- Player statements or accusations not in the discussion
+- Alliances or suspicions attributed to players without evidence
+- References to events from previous days not in retrieved memories
+- Invented vote counts or consensus that doesn't exist
+
 If the retrieved memories are mostly irrelevant, do not reward blind use of
 them. A good agent should ignore irrelevant memories and still take a sound
 action.
 
 Respond ONLY with valid JSON:
 {{
-  "action_quality": N,
-  "strategy_application": N,
+  "action_quality": N, "strategy_application": N,
+  "grounding": N, "fabricated_claims": ["list any specific fabrications found, or empty"],
   "brief_reasoning": "1-2 sentences"
 }}
 """

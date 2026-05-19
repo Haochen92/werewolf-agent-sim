@@ -174,6 +174,7 @@ build_dataset_session_id_example.json
 build_dataset_session_ids_example.json
 build_dataset_session_prefix_example.json
 build_dataset_trace_ids_example.json
+captured_example.json
 e2e_example.json
 retrieval_example.json
 summary_flash_vs_lite.json
@@ -323,6 +324,31 @@ Template: `configs/eval/template/application_example.json`.
 
 This reruns the production discussion/vote prompt and optionally judges action
 quality and strategy application.
+
+### Captured Case Scoring
+
+Use this to judge exactly what was captured in the frozen dataset. This mode
+does not regenerate situation summaries, rerun retrieval, rebuild memory
+indexes, or rerun the final action prompt.
+
+Example config:
+
+```json
+{
+  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "max_samples": 20,
+  "judge_model": "gemini-2.5-pro",
+  "sleep_seconds": 1.0
+}
+```
+
+Run:
+
+```bash
+poetry run python -m evaluation.experiments.captured --config configs/eval/captured_v2_memory.json
+```
+
+Template: `configs/eval/template/captured_example.json`.
 
 ### E2E Turn Replay
 

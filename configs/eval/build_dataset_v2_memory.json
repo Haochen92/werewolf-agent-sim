@@ -1,0 +1,11 @@
+{
+  "eval_set_id": "v2_memory_wolfs_only_all_enabled_all_enabled",
+  "session_id": "v2_memory_wolfs_only_all_enabled_all_enabled",
+  "created_from": "v2_memory_wolfs_only_all_enabled_all_enabled",
+  "max_games": 0,
+  "per_role_per_phase": 1,
+  "max_samples": 40,
+  "seed": 0,
+  "output": "eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl",
+  "overwrite": false
+}

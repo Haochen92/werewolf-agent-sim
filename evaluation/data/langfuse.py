@@ -37,14 +37,19 @@ from evaluation.data.cases import eval_case_from_span  # noqa: E402
 # Version tag attached to every score pushed by this module.  Bump this when
 # the judge prompt or scoring rubric changes so that old and new scores can
 # be distinguished in Langfuse dashboards.
-EVAL_VERSION = "retrieval_judge_v1"
+EVAL_VERSION = "retrieval_judge_v2"
 
 # Observation names that start with this prefix are treated as evaluation
 # spans (i.e. they contain the input/output data a judge should score).
 ACTION_EVAL_SPAN_PREFIX = "agent_action_eval_"
 
-# The three score dimensions the judge produces for each eval span.
-SCORE_NAMES = ["summary_quality", "retrieval_relevance", "strategy_application"]
+# The four score dimensions the judge produces for each eval span.
+SCORE_NAMES = [
+    "summary_quality",
+    "retrieval_relevance",
+    "strategy_application",
+    "grounding",
+]
 
 # ---------------------------------------------------------------------------
 # Langfuse client

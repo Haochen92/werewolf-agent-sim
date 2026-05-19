@@ -1,0 +1,22 @@
+{
+  "dataset": "eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl",
+  "snapshots": [
+    {
+      "label": "v2",
+      "observations_path": "Agents/memory_stores/v2/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v2/strategy_points.json"
+    }
+  ],
+  "summary": {
+    "label": "summary_current",
+    "model": "gemini-2.5-flash",
+    "prompt_id": "current",
+    "temperature": 0.0
+  },
+  "top_k": 3,
+  "max_retrieved_items": 0,
+  "max_samples": 20,
+  "judge": true,
+  "judge_model": "gemini-2.5-pro",
+  "sleep_seconds": 1.0
+}

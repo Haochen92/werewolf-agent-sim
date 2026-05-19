@@ -138,7 +138,8 @@ def main() -> None:
             if scores:
                 print(
                     f"  Scores: action={scores.action_quality} "
-                    f"application={scores.strategy_application}",
+                    f"application={scores.strategy_application} "
+                    f"grounding={scores.grounding}",
                     flush=True,
                 )
             if config.judge:
