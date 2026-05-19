@@ -1,0 +1,11 @@
+{
+  "eval_set_id": "memory_eval_from_session_prefix_001",
+  "session_prefix": "replace_with_langfuse_session_prefix",
+  "created_from": "replace_with_langfuse_session_prefix",
+  "max_games": 10,
+  "per_role_per_phase": 1,
+  "max_samples": 80,
+  "seed": 0,
+  "output": "eval_sets/memory_eval_from_session_prefix_001.jsonl",
+  "overwrite": false
+}

@@ -130,19 +130,23 @@ The actual turn-level eval payloads are captured in Langfuse spans named
 
 ## Step 2: Build A Frozen Dataset
 
-Build a local eval set from the Langfuse sessions/traces:
+Build a local eval set from Langfuse sessions/traces. The builder always writes
+a frozen local JSONL dataset for reproducible replay, but the source can be a
+Langfuse session ID, session list, session prefix, trace list, or batch-results
+JSONL.
 
-Example config:
+Example config using one exact Langfuse session ID:
 
 ```json
 {
-  "eval_set_id": "memory_eval_001",
-  "batch_results": "batch_results/memory_eval_001.jsonl",
-  "created_from": "memory_eval_001",
+  "eval_set_id": "memory_eval_from_session_001",
+  "session_id": "replace_with_langfuse_session_id",
+  "created_from": "replace_with_langfuse_session_id",
   "max_games": 5,
   "per_role_per_phase": 1,
   "max_samples": 40,
   "seed": 0,
+  "output": "eval_sets/memory_eval_from_session_001.jsonl",
   "overwrite": false
 }
 ```
@@ -150,35 +154,51 @@ Example config:
 Save it as:
 
 ```text
-configs/eval/build_memory_eval_001.json
+configs/eval/build_from_session.json
 ```
 
 Exactly one source must be set:
 
-- `batch_results`
-- `session_prefix`
-- `session_id`
-- `session_ids`
-- `trace_ids`
+- `session_id`: fetch traces for one exact Langfuse session ID.
+- `session_ids`: fetch traces for multiple exact Langfuse session IDs.
+- `session_prefix`: scan Langfuse sessions, then fetch traces for sessions whose ID starts with this prefix.
+- `trace_ids`: use exact Langfuse trace IDs directly.
+- `batch_results`: read session IDs from a local `run_batch` JSONL output file, then fetch traces from Langfuse.
+
+Template configs are available in `configs/eval/template/`:
+
+```text
+application_example.json
+build_dataset_example.json
+build_dataset_session_id_example.json
+build_dataset_session_ids_example.json
+build_dataset_session_prefix_example.json
+build_dataset_trace_ids_example.json
+e2e_example.json
+retrieval_example.json
+summary_flash_vs_lite.json
+summary_pairwise_example.json
+```
 
 Run:
 
 ```bash
-poetry run eval-build-dataset --config configs/eval/build_memory_eval_001.json
+poetry run eval-build-dataset --config configs/eval/build_from_session.json
 ```
 
 This writes:
 
 ```text
-eval_sets/memory_eval_001.jsonl
-eval_sets/memory_eval_001.manifest.json
+eval_sets/memory_eval_from_session_001.jsonl
+eval_sets/memory_eval_from_session_001.manifest.json
 ```
 
 The JSONL dataset is the stable input for all replay experiments.
 
 ## Config Files
 
-Experiments are config-first. Put configs under `configs/eval/`.
+Experiments are config-first. Put runnable configs under `configs/eval/`.
+Starter templates live under `configs/eval/template/`.
 
 Paths are resolved relative to the current working directory, so run commands
 from the repository root.
@@ -227,6 +247,8 @@ Run:
 poetry run eval-summary --config configs/eval/summary_flash_vs_lite.json
 ```
 
+Template: `configs/eval/template/summary_flash_vs_lite.json`.
+
 Output includes the baseline and candidate summaries, judge winner, confidence,
 brief reasoning, cost estimates, and candidate cost savings.
 
@@ -262,6 +284,8 @@ Run:
 poetry run eval-retrieval --config configs/eval/retrieval_memory_snapshot.json
 ```
 
+Template: `configs/eval/template/retrieval_example.json`.
+
 This replays retrieval for both observations and strategy points. If `judge` is
 true, the LLM judge scores relevance, redundancy, unique idea count, and
 redundant pairs.
@@ -294,6 +318,8 @@ Run:
 ```bash
 poetry run eval-application --config configs/eval/application_captured.json
 ```
+
+Template: `configs/eval/template/application_example.json`.
 
 This reruns the production discussion/vote prompt and optionally judges action
 quality and strategy application.
@@ -338,6 +364,8 @@ Run:
 ```bash
 poetry run eval-e2e --config configs/eval/e2e_memory_snapshot.json
 ```
+
+Template: `configs/eval/template/e2e_example.json`.
 
 This is the closest eval to the full episodic memory system, but still at the
 single-turn replay level rather than full-game replay.

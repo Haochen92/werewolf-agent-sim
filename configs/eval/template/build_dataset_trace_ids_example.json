@@ -1,0 +1,14 @@
+{
+  "eval_set_id": "memory_eval_from_traces_001",
+  "trace_ids": [
+    "replace_with_langfuse_trace_id_1",
+    "replace_with_langfuse_trace_id_2"
+  ],
+  "created_from": "manual_trace_list",
+  "max_games": 10,
+  "per_role_per_phase": 1,
+  "max_samples": 80,
+  "seed": 0,
+  "output": "eval_sets/memory_eval_from_traces_001.jsonl",
+  "overwrite": false
+}
