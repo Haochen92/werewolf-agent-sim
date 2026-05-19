@@ -190,6 +190,10 @@ def is_non_recoverable_batch_error(exc: Exception) -> bool:
     return is_quota_exhaustion_error(exc) or (
         "Number of embeddings" in error_text
         and "does not match number of indices" in error_text
+    ) or (
+        "NOT_FOUND" in error_text
+        and "is not found" in error_text
+        and "embedContent" in error_text
     )
 
 
