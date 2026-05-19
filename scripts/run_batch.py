@@ -176,6 +176,14 @@ def is_quota_exhaustion_error(exc: Exception) -> bool:
     return "RESOURCE_EXHAUSTED" in error_text or "Quota exceeded" in error_text
 
 
+def is_non_recoverable_batch_error(exc: Exception) -> bool:
+    error_text = repr(exc)
+    return is_quota_exhaustion_error(exc) or (
+        "Number of embeddings" in error_text
+        and "does not match number of indices" in error_text
+    )
+
+
 def run_id(session_prefix: str, config_name: str, run_index: int) -> str:
     return f"{session_prefix}_{config_name}_{run_index:03d}"
 
@@ -322,10 +330,10 @@ def run_batch(args: argparse.Namespace) -> int:
             print(f"Failed {current_run_id}: {exc}", file=sys.stderr)
             if args.fail_fast:
                 break
-            if is_quota_exhaustion_error(exc) and not args.continue_on_quota_error:
+            if is_non_recoverable_batch_error(exc) and not args.continue_on_quota_error:
                 remaining_runs = len(planned_runs) - (planned_run_index + 1)
                 print(
-                    "Stopping batch after provider quota exhaustion; "
+                    "Stopping batch after a non-recoverable batch error; "
                     f"{remaining_runs} planned run(s) were not started. "
                     "Use --continue-on-quota-error to keep running anyway.",
                     file=sys.stderr,

@@ -126,7 +126,7 @@ def seed_memory_from_json_files(
     observations_path: str | Path | None = None,
     strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
-    batch_size: int = 100,
+    batch_size: int = 1,
 ) -> dict[str, int]:
     """Seed the active memory store from JSON snapshots.
 
