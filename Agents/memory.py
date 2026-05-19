@@ -150,7 +150,8 @@ def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: st
         store.put(("strategy", role), "latest", stored.model_dump())
 
 embeddings = GoogleGenerativeAIEmbeddings(
-    model="gemini-embedding-2-preview",
+    model="gemini-embedding-2",
+    output_dimensionality=1536,
 )
 
 store = InMemoryStore(

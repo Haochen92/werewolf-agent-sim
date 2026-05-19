@@ -102,6 +102,14 @@ def parse_args() -> argparse.Namespace:
         help="Stop the batch after the first failed run.",
     )
     parser.add_argument(
+        "--continue-on-quota-error",
+        action="store_true",
+        help=(
+            "Keep running after provider quota exhaustion errors. By default, "
+            "quota exhaustion stops the batch because later runs are likely to fail."
+        ),
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print the planned runs without invoking games.",
@@ -161,6 +169,11 @@ def write_record(path: Path, record: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as file:
         file.write(json.dumps(json_safe(record), sort_keys=True) + "\n")
+
+
+def is_quota_exhaustion_error(exc: Exception) -> bool:
+    error_text = repr(exc)
+    return "RESOURCE_EXHAUSTED" in error_text or "Quota exceeded" in error_text
 
 
 def run_id(session_prefix: str, config_name: str, run_index: int) -> str:
@@ -243,8 +256,10 @@ def run_batch(args: argparse.Namespace) -> int:
 
     print(f"Writing JSONL results to: {results_path}")
     failures = 0
+    started_runs = 0
 
-    for config_name, run_index in planned_runs:
+    for planned_run_index, (config_name, run_index) in enumerate(planned_runs):
+        started_runs += 1
         memory_config = MEMORY_CONFIGS[config_name]
         current_run_id = run_id(session_prefix, config_name, run_index)
         session_id = langfuse_session_id(
@@ -307,8 +322,22 @@ def run_batch(args: argparse.Namespace) -> int:
             print(f"Failed {current_run_id}: {exc}", file=sys.stderr)
             if args.fail_fast:
                 break
+            if is_quota_exhaustion_error(exc) and not args.continue_on_quota_error:
+                remaining_runs = len(planned_runs) - (planned_run_index + 1)
+                print(
+                    "Stopping batch after provider quota exhaustion; "
+                    f"{remaining_runs} planned run(s) were not started. "
+                    "Use --continue-on-quota-error to keep running anyway.",
+                    file=sys.stderr,
+                )
+                break
 
-    print(f"Batch complete: {len(planned_runs) - failures} succeeded, {failures} failed")
+    successes = started_runs - failures
+    not_started = len(planned_runs) - started_runs
+    summary = f"Batch complete: {successes} succeeded, {failures} failed"
+    if not_started:
+        summary += f", {not_started} not started"
+    print(summary)
     return 1 if failures else 0
 
 

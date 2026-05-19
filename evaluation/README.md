@@ -68,15 +68,15 @@ Agents/memory_stores/
 
 Normal runs default to `v1_post_dedup`. Use `v2` for fresh-store experiments.
 
-To populate the fresh `v2` store without seeding from an older store:
+To populate or continue the `v2` store while seeding and dumping from the same
+versioned directory:
 
 ```bash
 poetry run python scripts/run_batch.py \
   --configs all_disabled wolf_only all_enabled \
   --runs-per-config 15 \
   --session-prefix v2_fresh_memory_001 \
-  --dump-store-dir Agents/memory_stores/v2 \
-  --no-memory-seed
+  --memory-store-dir Agents/memory_stores/v2
 ```
 
 For a batch that should continue learning from an existing store, use

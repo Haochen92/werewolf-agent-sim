@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from langgraph.store.base import BaseStore
+from langgraph.store.base import BaseStore, PutOp
 from pydantic import BaseModel
 
 from Agents.constants import roles
-from Agents.memory import store, store_observation, store_strategy_points
-from Agents.schemas import Observation, StrategyPoint
+from Agents.memory import store
 
 MEMORY_STORES_DIR = Path(__file__).resolve().parent / "memory_stores"
 DEFAULT_MEMORY_STORE_DIR = MEMORY_STORES_DIR / "v1_post_dedup"
@@ -124,78 +122,53 @@ def _all_namespace_items(
     return items
 
 
-def _strategy_point_from_snapshot(role: str, value: dict[str, Any]) -> StrategyPoint | None:
-    situation = value.get("situation") or value.get("content")
-    if not situation:
-        return None
-    return StrategyPoint(
-        perspective=value.get("perspective", role),
-        situation=situation,
-        action=value.get("action", ""),
-    )
-
-
 def seed_memory_from_json_files(
     observations_path: str | Path | None = None,
     strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
+    batch_size: int = 100,
 ) -> dict[str, int]:
-    """Seed the active memory store from JSON snapshots using current memory helpers."""
+    """Seed the active memory store from JSON snapshots.
+
+    Snapshot entries are already deduped. Load them directly to preserve keys,
+    counts, and text while indexing them in batches.
+    """
     default_observations, default_strategy_points = memory_store_paths(
         DEFAULT_MEMORY_STORE_DIR
     )
     observations_path = observations_path or default_observations
     strategy_points_path = strategy_points_path or default_strategy_points
-    observations_payload = _read_json(observations_path)
-    strategy_points_payload = _read_json(strategy_points_path)
 
-    observation_count = 0
-    for role in roles:
-        namespace_items = observations_payload.get("namespaces", {}).get(
-            _namespace_key(("observations", role)),
-            [],
-        )
-        by_game_id: dict[str, list[Observation]] = defaultdict(list)
-        for item in namespace_items:
-            value = item.get("value", item)
-            content = value.get("content")
-            if not content:
-                continue
-            game_id = str(value.get("game_id") or item.get("game_id") or "")
-            by_game_id[game_id].append(
-                Observation(perspective=value.get("perspective", role), content=content)
-            )
-        for game_id, observations in by_game_id.items():
-            store_observation(target_store, observations, game_id=game_id)
-            observation_count += len(observations)
-
-    # Strategy records are historical monolithic notes, not retrieval memories.
-    # Skip them during seeding to avoid hundreds of indexed writes.
-    strategy_count = 0
-
-    strategy_point_count = 0
-    for role in roles:
-        namespace_items = strategy_points_payload.get("namespaces", {}).get(
-            _namespace_key(("strategy_points", role)),
-            [],
-        )
-        by_game_id: dict[str, list[StrategyPoint]] = defaultdict(list)
-        for item in namespace_items:
-            value = item.get("value", item)
-            strategy_point = _strategy_point_from_snapshot(role, value)
-            if strategy_point is None:
-                continue
-            game_id = str(value.get("game_id") or item.get("game_id") or "")
-            by_game_id[game_id].append(strategy_point)
-        for game_id, strategy_points in by_game_id.items():
-            store_strategy_points(target_store, strategy_points, game_id=game_id)
-            strategy_point_count += len(strategy_points)
-
-    return {
-        "observations": observation_count,
-        "strategies": strategy_count,
-        "strategy_points": strategy_point_count,
+    put_ops: list[PutOp] = []
+    counts = {
+        "observations": 0,
+        "strategies": 0,
+        "strategy_points": 0,
     }
+    for path in (observations_path, strategy_points_path):
+        payload = _read_json(path)
+        for namespace_key, namespace_items in payload.get("namespaces", {}).items():
+            namespace = tuple(namespace_key.split("/"))
+            if len(namespace) != 2:
+                continue
+            if namespace[0] == "observations":
+                count_key = "observations"
+            elif namespace[0] == "strategy_points":
+                count_key = "strategy_points"
+            else:
+                continue
+            for item in namespace_items:
+                key = item.get("key")
+                value = item.get("value", item)
+                if not key or not value.get("content"):
+                    continue
+                put_ops.append(PutOp(namespace, key, value))
+                counts[count_key] += 1
+
+    for start in range(0, len(put_ops), batch_size):
+        target_store.batch(put_ops[start : start + batch_size])
+
+    return counts
 
 
 def seed_memory_from_json_files_once(
