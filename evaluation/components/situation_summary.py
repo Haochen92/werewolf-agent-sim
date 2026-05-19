@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import time
+from logging import getLogger
 from typing import Any
 
 from langchain_core.messages import BaseMessage
@@ -23,6 +24,8 @@ from Agents.schemas.output import SituationSummary
 from evaluation.core.config_schema import VariantConfig
 from evaluation.core.costs import estimate_cost_from_usage_metadata
 from evaluation.core.schemas import CostEstimate
+
+logger = getLogger(__name__)
 
 
 SITUATION_SUMMARY_PROMPTS: dict[str, ChatPromptTemplate] = {
@@ -108,6 +111,7 @@ def situation_prompt_for_role(role: str, prompt_id: str) -> ChatPromptTemplate:
 def run_situation_summary_variant(
     case: EvalCase,
     config: VariantConfig,
+    max_retries: int = 1,
 ) -> dict[str, Any]:
     """Run the situation-summary component on one frozen EvalCase."""
     payload = eval_case_to_agent_payload(case)
@@ -120,21 +124,29 @@ def run_situation_summary_variant(
     )
 
     started = time.perf_counter()
-    result_bundle = chain.invoke(
-        prompt_input,
-        config={
-            "run_name": (
-                f"eval_pairwise_situation_summary_{config.label}_"
-                f"{case.player_role}_day_{case.day}_round_{case.round}"
+    for attempt in range(max_retries + 1):
+        try:
+            result_bundle = chain.invoke(
+                prompt_input,
+                config={
+                    "run_name": (
+                        f"eval_pairwise_situation_summary_{config.label}_"
+                        f"{case.player_role}_day_{case.day}_round_{case.round}"
+                    )
+                },
             )
-        },
-    )
+            if result_bundle.get("parsing_error"):
+                raise ValueError(
+                    f"Structured situation summary parsing failed: "
+                    f"{result_bundle['parsing_error']}"
+                )
+            break
+        except Exception as exc:
+            logger.warning(f"Situation summary eval LLM call failed: {exc}")
+            if attempt < max_retries:
+                continue
+            raise
     latency_ms = round((time.perf_counter() - started) * 1000)
-    if result_bundle.get("parsing_error"):
-        raise ValueError(
-            f"Structured situation summary parsing failed: "
-            f"{result_bundle['parsing_error']}"
-        )
     result = result_bundle["parsed"]
     raw_message = result_bundle.get("raw")
     situations = list(result.situations)

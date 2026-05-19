@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import time
+from logging import getLogger
 from typing import Any
 
 from Agents.formatters import format_day_channel
@@ -20,6 +21,8 @@ from evaluation.judges.prompts import (
     PAIRWISE_SUMMARY_SYSTEM_PROMPT,
     PAIRWISE_SUMMARY_USER_PROMPT,
 )
+
+logger = getLogger(__name__)
 
 
 def judge_input_for_summary(
@@ -48,6 +51,7 @@ def run_pairwise_summary_judge(
     output_a: dict[str, Any],
     output_b: dict[str, Any],
     judge_config: JudgeConfig,
+    max_retries: int = 1,
 ) -> tuple[PairwiseJudgeScores, dict[str, Any]]:
     """Compare two situation-summary outputs and return judge score plus cost."""
     prompt_input = judge_input_for_summary(record, output_a, output_b)
@@ -56,18 +60,26 @@ def run_pairwise_summary_judge(
     chain = llm.with_structured_output(PairwiseJudgeScores, include_raw=True)
 
     started = time.perf_counter()
-    result_bundle = chain.invoke(
-        [
-            {"role": "system", "content": PAIRWISE_SUMMARY_SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ]
-    )
+    for attempt in range(max_retries + 1):
+        try:
+            result_bundle = chain.invoke(
+                [
+                    {"role": "system", "content": PAIRWISE_SUMMARY_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ]
+            )
+            if result_bundle.get("parsing_error"):
+                raise ValueError(
+                    f"Structured pairwise judge parsing failed: "
+                    f"{result_bundle['parsing_error']}"
+                )
+            break
+        except Exception as exc:
+            logger.warning(f"Pairwise summary judge LLM call failed: {exc}")
+            if attempt < max_retries:
+                continue
+            raise
     latency_ms = round((time.perf_counter() - started) * 1000)
-    if result_bundle.get("parsing_error"):
-        raise ValueError(
-            f"Structured pairwise judge parsing failed: "
-            f"{result_bundle['parsing_error']}"
-        )
     result = result_bundle["parsed"]
     raw_message = result_bundle.get("raw")
 

@@ -198,7 +198,7 @@ def check_round(
     return "PREPARE_ROUND"
 
 
-def summarize_day_discussion(state: DayGraphState):
+def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     current_day = state.get("current_day", 1)
     current_day_messages = [
         message for message in state.get("day_channel", [])
@@ -214,12 +214,20 @@ def summarize_day_discussion(state: DayGraphState):
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
     )
-    try:
-        result = get_llm().with_structured_output(DaySummaryOutput).invoke(prompt)
-        summary = result.summary.strip()
-    except Exception as exc:
-        logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
-        summary = format_day_channel(current_day_messages)
+    for attempt in range(max_retries + 1):
+        try:
+            result = get_llm().with_structured_output(DaySummaryOutput).invoke(prompt)
+            summary = result.summary.strip()
+            break
+        except Exception as exc:
+            logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
+            if attempt < max_retries:
+                continue
+            logger.error(
+                f"Day discussion summary failed all retries for day {current_day}, "
+                "using fallback"
+            )
+            summary = format_day_channel(current_day_messages)
 
     return {"day_summaries": [DaySummary(day=current_day, summary=summary)]}
 

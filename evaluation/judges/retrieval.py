@@ -42,6 +42,7 @@ def run_retrieval_judge(
     items_formatted: str,
     item_count: int,
     model: str,
+    max_retries: int = 1,
 ) -> RetrievalScores | None:
     if item_count < 2:
         return minimal_retrieval_scores(item_count)
@@ -53,17 +54,22 @@ def run_retrieval_judge(
         items=items_formatted,
     )
     llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
-    try:
-        response = llm.invoke(
-            [
-                {"role": "system", "content": RETRIEVAL_SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ]
-        )
-        return parse_retrieval_scores(message_content_text(response.content))
-    except (json.JSONDecodeError, ValidationError) as exc:
-        print(f"  Retrieval judge returned invalid output: {exc}", flush=True)
-        return None
-    except Exception as exc:
-        print(f"  Retrieval judge failed: {exc}", flush=True)
-        return None
+    for attempt in range(max_retries + 1):
+        try:
+            response = llm.invoke(
+                [
+                    {"role": "system", "content": RETRIEVAL_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ]
+            )
+            return parse_retrieval_scores(message_content_text(response.content))
+        except (json.JSONDecodeError, ValidationError) as exc:
+            print(f"  Retrieval judge returned invalid output: {exc}", flush=True)
+            if attempt < max_retries:
+                continue
+            return None
+        except Exception as exc:
+            print(f"  Retrieval judge failed: {exc}", flush=True)
+            if attempt < max_retries:
+                continue
+            return None

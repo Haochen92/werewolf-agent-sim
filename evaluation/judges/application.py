@@ -27,6 +27,7 @@ def run_application_judge(
     case: EvalCase,
     *,
     model: str,
+    max_retries: int = 1,
 ) -> ApplicationScores | None:
     inputs = eval_case_to_judge_inputs(case)
     prompt = APPLICATION_USER_PROMPT.format(
@@ -47,17 +48,22 @@ def run_application_judge(
         agent_updated_strategy=case.updated_strategy,
     )
     llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
-    try:
-        response = llm.invoke(
-            [
-                {"role": "system", "content": APPLICATION_SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ]
-        )
-        return parse_application_scores(message_content_text(response.content))
-    except (json.JSONDecodeError, ValidationError) as exc:
-        print(f"  Application judge returned invalid output: {exc}", flush=True)
-        return None
-    except Exception as exc:
-        print(f"  Application judge failed: {exc}", flush=True)
-        return None
+    for attempt in range(max_retries + 1):
+        try:
+            response = llm.invoke(
+                [
+                    {"role": "system", "content": APPLICATION_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ]
+            )
+            return parse_application_scores(message_content_text(response.content))
+        except (json.JSONDecodeError, ValidationError) as exc:
+            print(f"  Application judge returned invalid output: {exc}", flush=True)
+            if attempt < max_retries:
+                continue
+            return None
+        except Exception as exc:
+            print(f"  Application judge failed: {exc}", flush=True)
+            if attempt < max_retries:
+                continue
+            return None

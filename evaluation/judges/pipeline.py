@@ -29,22 +29,28 @@ def _parse_judge_scores(text: str) -> JudgeScores:
 def run_judge(
     case: EvalCase,
     model: str = DEFAULT_JUDGE_MODEL,
+    max_retries: int = 1,
 ) -> JudgeScores | None:
     llm = get_judge_llm(model=model)
     inputs = eval_case_to_judge_inputs(case)
     prompt = JUDGE_USER_PROMPT.format(**inputs)
 
-    try:
-        response = llm.invoke(
-            [
-                {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ]
-        )
-        return _parse_judge_scores(message_content_text(response.content))
-    except (json.JSONDecodeError, ValidationError) as exc:
-        print(f"  Judge returned invalid scores: {exc}")
-        return None
-    except Exception as exc:
-        print(f"  Judge call failed: {exc}")
-        return None
+    for attempt in range(max_retries + 1):
+        try:
+            response = llm.invoke(
+                [
+                    {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ]
+            )
+            return _parse_judge_scores(message_content_text(response.content))
+        except (json.JSONDecodeError, ValidationError) as exc:
+            print(f"  Judge returned invalid scores: {exc}")
+            if attempt < max_retries:
+                continue
+            return None
+        except Exception as exc:
+            print(f"  Judge call failed: {exc}")
+            if attempt < max_retries:
+                continue
+            return None
