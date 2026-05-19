@@ -22,7 +22,7 @@ class GameConfig(BaseModel):
     player_id_prefix: str = Field(default="player", min_length=1)
     starting_day: int = Field(default=1, ge=1)
     first_voting_day: int = Field(default=2, ge=1)
-    max_discussion_rounds_per_day: int = Field(default=5, ge=1)
+    max_discussion_rounds_per_day: int = Field(default=6, ge=1)
 
     @model_validator(mode="after")
     def validate_day_order(self) -> "GameConfig":

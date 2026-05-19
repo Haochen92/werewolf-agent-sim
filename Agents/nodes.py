@@ -192,7 +192,7 @@ def check_round(
     if not current_round_messages:
         return "SUMMARIZE_DAY_DISCUSSION"
 
-    if state["current_round"] > game_config.max_discussion_rounds_per_day:
+    if state["current_round"] >= game_config.max_discussion_rounds_per_day:
         return "SUMMARIZE_DAY_DISCUSSION"
 
     return "PREPARE_ROUND"

@@ -76,6 +76,15 @@ def parse_args() -> argparse.Namespace:
         help="Number of games to run for each selected memory config.",
     )
     parser.add_argument(
+        "--max-discussion-rounds-per-day",
+        type=int,
+        default=None,
+        help=(
+            "Maximum public discussion rounds before each day vote. "
+            "Defaults to the game config value."
+        ),
+    )
+    parser.add_argument(
         "--session-prefix",
         default=None,
         help="Prefix for Langfuse session IDs. Defaults to batch timestamp.",
@@ -227,9 +236,18 @@ def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, A
     return config
 
 
+def game_config_from_args(args: argparse.Namespace) -> dict[str, Any] | None:
+    if args.max_discussion_rounds_per_day is None:
+        return None
+    return {
+        "max_discussion_rounds_per_day": args.max_discussion_rounds_per_day,
+    }
+
+
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
+    game_config = game_config_from_args(args)
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
     )
@@ -256,6 +274,8 @@ def run_batch(args: argparse.Namespace) -> int:
         )
     if memory_persistence_config:
         print(f"Memory persistence override: {memory_persistence_config}")
+    if game_config:
+        print(f"Game config override: {game_config}")
 
     if args.dry_run:
         return 0
@@ -284,6 +304,7 @@ def run_batch(args: argparse.Namespace) -> int:
             result = run_game(
                 memory_config=memory_config,
                 session_id=session_id,
+                game_config=game_config,
                 memory_persistence_config=memory_persistence_config,
             )
             duration_seconds = perf_counter() - started_timer
@@ -291,6 +312,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "status": "success",
                 "config_name": config_name,
                 "memory_config": memory_config,
+                "game_config": game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,
@@ -316,6 +338,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "status": "error",
                 "config_name": config_name,
                 "memory_config": memory_config,
+                "game_config": game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
                 "session_id": session_id,
