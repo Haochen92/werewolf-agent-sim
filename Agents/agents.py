@@ -70,14 +70,41 @@ load_dotenv()
 logger = getLogger(__name__)
 prompt_log: list[dict] = []
 
+DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_GAME_THINKING_LEVEL = "minimal"
+VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
+
+
+def _thinking_level_from_env(
+    env_var: str,
+    default: str | None = None,
+) -> str | None:
+    value = os.getenv(env_var, default)
+    if value is None:
+        return None
+
+    normalized = value.strip().lower()
+    if normalized in {"", "none", "default"}:
+        return None
+    if normalized not in VALID_THINKING_LEVELS:
+        valid = ", ".join(sorted(VALID_THINKING_LEVELS))
+        raise ValueError(f"{env_var} must be one of: {valid}")
+    return normalized
+
 
 @lru_cache(maxsize=1)
 def get_llm():
     google_api_key = os.getenv("GOOGLE_API_KEY")
     kwargs: dict[str, Any] = {
-        "model": os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.5-flash"),
+        "model": os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
         "temperature": float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
     }
+    thinking_level = _thinking_level_from_env(
+        "GOOGLE_GENAI_THINKING_LEVEL",
+        DEFAULT_GAME_THINKING_LEVEL,
+    )
+    if thinking_level:
+        kwargs["thinking_level"] = thinking_level
     if google_api_key:
         kwargs["google_api_key"] = google_api_key
     return ChatGoogleGenerativeAI(**kwargs)
