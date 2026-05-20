@@ -7,13 +7,21 @@ from typing import Any
 from evaluation.core.schemas import CostEstimate
 
 
-PRICING_VERSION = "google_genai_standard_2026_05_14"
+PRICING_VERSION = "google_genai_standard_2026_05_20"
 TOKEN_ESTIMATION_METHOD = "chars_per_token_4"
 USAGE_METADATA_METHOD = "langchain_usage_metadata"
 
 # Standard paid-tier text rates from the Gemini Developer API pricing page.
 # Values are USD per 1M tokens. Output pricing includes thinking tokens.
 DEFAULT_PRICING_PER_1M_USD: dict[str, tuple[float, float]] = {
+    # Gemini 3.1 Pro has separate rates above 200k prompt tokens.  This
+    # estimator uses the standard <=200k text rate, which is the expected range
+    # for these eval/game calls.
+    "gemini-3.1-pro": (2.00, 12.00),
+    "gemini-3.1-pro-preview": (2.00, 12.00),
+    "gemini-3.1-pro-preview-customtools": (2.00, 12.00),
+    "gemini-3.1-flash-lite": (0.25, 1.50),
+    "gemini-3.1-flash-lite-preview": (0.25, 1.50),
     "gemini-2.5-flash": (0.30, 2.50),
     "gemini-2.5-flash-preview": (0.30, 2.50),
     "gemini-2.5-flash-lite": (0.10, 0.40),
