@@ -328,6 +328,7 @@ def push_judge_scores(
     scores: dict[str, Any],
     model: str,
     model_type: str,
+    session_id: str | None = None,
 ) -> None:
     """Write judge scores for one observation back to Langfuse.
 
@@ -368,6 +369,29 @@ def push_judge_scores(
                 "model_type": model_type,
             },
         )
+        if session_id:
+            session_score_id = str(
+                uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"{EVAL_VERSION}:{model_type}:{model}:"
+                    f"{session_id}:{trace_id}:{observation_id}:{name}",
+                )
+            )
+            langfuse.create_score(
+                session_id=session_id,
+                score_id=session_score_id,
+                name=f"judge_{name}",
+                value=float(value),
+                data_type="NUMERIC",
+                comment=scores.get("brief_reasoning", ""),
+                metadata={
+                    "eval_version": EVAL_VERSION,
+                    "judge_model": model,
+                    "model_type": model_type,
+                    "trace_id": trace_id,
+                    "observation_id": observation_id,
+                },
+            )
 
 
 # ---------------------------------------------------------------------------

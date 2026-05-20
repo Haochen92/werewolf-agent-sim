@@ -95,7 +95,7 @@ def run_game(
         root.update_trace(output=final_output)
 
         game_metrics = compute_game_metrics(result, metrics)
-        push_scores_to_langfuse(game_metrics, root.trace_id)
+        push_scores_to_langfuse(game_metrics, root.trace_id, session_id)
 
     flush()
     return result

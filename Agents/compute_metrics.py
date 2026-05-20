@@ -1,6 +1,13 @@
+import hashlib
+
 from Agents.tracing import Metrics
 from Agents.tracing import langfuse
 from pydantic import BaseModel
+
+
+def _score_id(*parts: str) -> str:
+    return hashlib.sha256(":".join(parts).encode("utf-8")).hexdigest()[:16]
+
 
 class ComputedGameMetrics(BaseModel):
     # Always present
@@ -173,15 +180,35 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
     )
 
 
-def push_scores_to_langfuse(game_metrics: ComputedGameMetrics, trace_id: str):
+def push_scores_to_langfuse(
+    game_metrics: ComputedGameMetrics,
+    trace_id: str,
+    session_id: str | None = None,
+):
     for field_name, value in game_metrics.model_dump().items():
         if value is None:
             continue
 
         data_type = "CATEGORICAL" if isinstance(value, str) else "NUMERIC"
         langfuse.create_score(
+            score_id=_score_id("game_metric", "trace", trace_id, field_name),
             trace_id=trace_id,
             name=field_name,
             value=value,
             data_type=data_type,
         )
+        if session_id:
+            langfuse.create_score(
+                score_id=_score_id(
+                    "game_metric",
+                    "session",
+                    session_id,
+                    trace_id,
+                    field_name,
+                ),
+                session_id=session_id,
+                name=field_name,
+                value=value,
+                data_type=data_type,
+                metadata={"trace_id": trace_id},
+            )
