@@ -19,8 +19,10 @@ from Agents.state import (
 from Agents.prompts import DAY_SUMMARY_PROMPT
 from Agents.schemas import DaySummaryOutput
 from Agents.extraction import extract_postgame
-from Agents.memory import store_observation
-from Agents.memory_deduplication import run_downstream_dedup
+from Agents.memory_deduplication import (
+    run_downstream_dedup,
+    run_observation_downstream_dedup,
+)
 from Agents.memory_persistence import (
     dump_memory_to_json_files_from_config,
     memory_persistence_config_from_runnable,
@@ -584,19 +586,34 @@ def post_game_analysis(
         logger.warning("No observations extracted from post-game analysis.")
         return {}
 
-    # Store observations and strategies in memory
-    store_observation(store, extracted_observations.observations, game_id)
-    dedup_stats = run_downstream_dedup(
+    # Store observations and strategies in memory with downstream dedup.
+    observation_dedup_stats = run_observation_downstream_dedup(
+        store,
+        extracted_observations.observations,
+        game_id,
+    )
+    strategy_dedup_stats = run_downstream_dedup(
         store,
         extracted_observations.strategy_points,
         game_id,
     )
     logger.info(
-        f"Strategy dedup stats: {dedup_stats.kept} kept, "
-        f"{dedup_stats.discarded} discarded, {dedup_stats.replaced} replaced, "
-        f"{dedup_stats.differentiated} differentiated, {dedup_stats.failed} failed, "
-        f"{dedup_stats.auto_kept} auto-kept, "
-        f"{dedup_stats.auto_discarded} auto-discarded"
+        f"Observation dedup stats: {observation_dedup_stats.kept} kept, "
+        f"{observation_dedup_stats.discarded} discarded, "
+        f"{observation_dedup_stats.replaced} replaced, "
+        f"{observation_dedup_stats.differentiated} differentiated, "
+        f"{observation_dedup_stats.failed} failed, "
+        f"{observation_dedup_stats.auto_kept} auto-kept, "
+        f"{observation_dedup_stats.auto_discarded} auto-discarded"
+    )
+    logger.info(
+        f"Strategy dedup stats: {strategy_dedup_stats.kept} kept, "
+        f"{strategy_dedup_stats.discarded} discarded, "
+        f"{strategy_dedup_stats.replaced} replaced, "
+        f"{strategy_dedup_stats.differentiated} differentiated, "
+        f"{strategy_dedup_stats.failed} failed, "
+        f"{strategy_dedup_stats.auto_kept} auto-kept, "
+        f"{strategy_dedup_stats.auto_discarded} auto-discarded"
     )
 
     memory_persistence_config = memory_persistence_config_from_runnable(config)
