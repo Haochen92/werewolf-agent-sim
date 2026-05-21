@@ -18,11 +18,21 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
     role = payload.get("player_role", "")
     retrieved_observations = payload.get("retrieved_observations", [])
     strategy_points = payload.get("strategy_points", [])
+    current_round = payload.get("current_round", 1)
+    max_discussion_rounds = payload.get("max_discussion_rounds_per_day", 4)
+    final_discussion_round_notice = (
+        "This is the final discussion round before voting. "
+        "After this round, you will cast your vote."
+        if current_round >= max_discussion_rounds
+        else ""
+    )
     return {
         "player_id": payload.get("player_id", ""),
         "player_role": role,
         "current_day": payload.get("current_day", 1),
-        "current_round": payload.get("current_round", 1),
+        "current_round": current_round,
+        "max_discussion_rounds_per_day": max_discussion_rounds,
+        "final_discussion_round_notice": final_discussion_round_notice,
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),

@@ -20,7 +20,7 @@ Win conditions:
 - Wolves win when they equal or outnumber villagers.
 
 Game flow:
-- Day: all players discuss up to 6 rounds. The day's discussion ends when 6 rounds are completed,
+- Day: all players discuss up to {max_discussion_rounds_per_day} rounds. The day's discussion ends when {max_discussion_rounds_per_day} rounds are completed,
     or no players speak for a round, whichever comes first. After discussion, players
     then vote to eliminate one player. Ties result in no elimination.
 - Night: wolves choose a target, healer may protect someone, investigator may investigate someone.

@@ -12,6 +12,7 @@ from langgraph.runtime import Runtime
 from pydantic import BaseModel, create_model
 
 from Agents.tracing import GraphContext, langfuse
+from Agents.game_config import game_config_from_runnable
 
 from Agents.formatters import (
     format_day_channel,
@@ -488,6 +489,11 @@ def _run_memory_informed_action(
     role = payload["player_role"]
     day = payload["current_day"]
     round_num = payload["current_round"]
+    game_config = game_config_from_runnable(config)
+    prompt_payload = dict(payload)
+    prompt_payload["max_discussion_rounds_per_day"] = (
+        game_config.max_discussion_rounds_per_day
+    )
 
     recent_messages = [message for message in payload["day_channel"] if message.day == day]
     visible_discussion = (
@@ -529,7 +535,7 @@ def _run_memory_informed_action(
         },
     ) as eval_span:
         enriched_payload, retrieval_meta = _enrich_payload_with_memory(
-            payload,
+            prompt_payload,
             config,
             runtime,
             action_type,
