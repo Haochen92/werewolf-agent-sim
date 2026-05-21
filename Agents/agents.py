@@ -1,7 +1,7 @@
 import os
 from functools import lru_cache
 from logging import getLogger
-from typing import Any
+from typing import Any, Literal
 import random
 
 from dotenv import load_dotenv
@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.runtime import Runtime
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 
 from Agents.tracing import GraphContext, langfuse
 
@@ -145,6 +145,48 @@ def _validate_target(target: str, valid_targets: list[str], player_id: str) -> s
         return target
     return None
 
+
+def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[str]:
+    player_id = payload.get("player_id", "")
+    if output_key == "wolf_channel":
+        targets = payload.get("surviving_villagers", [])
+    elif output_key in {"day_votes", "healer_target", "investigator_target"}:
+        targets = payload.get("surviving_players", [])
+    else:
+        return []
+    return [target for target in targets if target != player_id]
+
+
+def _target_field_for_output_key(output_key: str) -> str | None:
+    if output_key in {"day_votes", "wolf_channel"}:
+        return "vote_target"
+    if output_key in {"healer_target", "investigator_target"}:
+        return output_key
+    return None
+
+
+def _with_dynamic_target_enum(
+    output_schema: type[BaseModel],
+    output_key: str,
+    valid_targets: list[str],
+) -> type[BaseModel]:
+    target_field = _target_field_for_output_key(output_key)
+    if not target_field or not valid_targets:
+        return output_schema
+
+    target_literal = Literal[tuple(valid_targets)]
+    fields: dict[str, tuple[Any, Any]] = {}
+    for field_name, field in output_schema.model_fields.items():
+        annotation = target_literal if field_name == target_field else field.annotation
+        default = ... if field.is_required() else field.default
+        fields[field_name] = (annotation, default)
+
+    return create_model(
+        f"{output_schema.__name__}_{output_key}_TargetEnum",
+        **fields,
+    )
+
+
 def _run_agent(
     payload: dict[str, Any],
     prompt_template: ChatPromptTemplate,
@@ -152,7 +194,13 @@ def _run_agent(
     output_key: str,
     max_retries: int = 1
 ) -> dict[str, Any] | None:
-    chain = prompt_template | get_llm().with_structured_output(output_schema)
+    valid_targets = _valid_targets_for_action(payload, output_key)
+    effective_output_schema = _with_dynamic_target_enum(
+        output_schema,
+        output_key,
+        valid_targets,
+    )
+    chain = prompt_template | get_llm().with_structured_output(effective_output_schema)
     prompt_input = _build_agent_prompt_input(payload)
 
     player_id = payload.get("player_id", "")
@@ -207,7 +255,7 @@ def _run_agent(
         if output_key == "day_votes":
             validated = _validate_target(
                 result.vote_target,
-                payload.get("surviving_players", []),
+                valid_targets,
                 player_id,
             )
             if validated:
@@ -218,7 +266,7 @@ def _run_agent(
         if output_key == "wolf_channel":
             validated = _validate_target(
                 result.vote_target,
-                payload.get("surviving_villagers", []),
+                valid_targets,
                 player_id,
             )
             if validated:
@@ -242,7 +290,7 @@ def _run_agent(
         if output_key == "healer_target":
             validated = _validate_target(
                 result.healer_target,
-                payload.get("surviving_players", []),
+                valid_targets,
                 player_id,
             )
             if validated:
@@ -256,7 +304,7 @@ def _run_agent(
         if output_key == "investigator_target":
             validated = _validate_target(
                 result.investigator_target,
-                payload.get("surviving_players", []),
+                valid_targets,
                 player_id,
             )
             if validated:
@@ -270,13 +318,13 @@ def _run_agent(
     # All retries exhausted — random fallback
     logger.error(f"{player_id} failed all retries, using random fallback")
     if output_key == "day_votes":
-        fallback = random.choice([t for t in payload.get("surviving_players", []) if t != player_id])
+        fallback = random.choice(valid_targets)
         return {"day_votes": [DayVote(voter=player_id, votee=fallback)]}
     if output_key in ("healer_target", "investigator_target"):
-        fallback = random.choice([t for t in payload.get("surviving_players", []) if t != player_id])
+        fallback = random.choice(valid_targets)
         return {output_key: fallback}
     if output_key == "wolf_channel":
-        fallback = random.choice([t for t in payload.get("surviving_villagers", []) if t != player_id])
+        fallback = random.choice(valid_targets)
         return {"wolf_channel": [WolfChannel(
             day=payload.get("current_day", 1),
             round=payload.get("current_round", 1),

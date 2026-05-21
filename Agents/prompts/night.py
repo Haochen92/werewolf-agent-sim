@@ -25,7 +25,7 @@ You may only vote for surviving villagers, not yourself or your allies.
 You must respond with a valid JSON:
 {{
     "message": "your discussion message",
-    "vote_target": "Player_X",
+    "vote_target": "exact player_id from the surviving villagers list",
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 """,
@@ -68,7 +68,7 @@ You cannot protect yourself.
 Choose wisely based on who you think the wolves might target.
 
 You must respond with a valid JSON:
-{{"healer_target": "Player_X", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
             ),
         ),
@@ -105,7 +105,7 @@ Use your past results and day discussions to choose your target wisely.
 The result will be revealed to you at the start of the next day.
 
 You must respond with a valid JSON:
-{{"investigator_target": "Player_X", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"investigator_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
             ),
         ),

@@ -175,7 +175,7 @@ You must vote from one of the surviving players.
 You cannot vote for yourself.
 
 You must respond with a valid JSON:
-{{"vote_target": "Player_X"}}
+{{"vote_target": "exact player_id from the surviving players list"}}
 """
 
 
@@ -289,7 +289,7 @@ Try to vote in a way that does not raise suspicion about your identity;
 usually target a villager, but preserve your cover by voting for a wolf ally when the village consensus is decisive to vote out that exposed wolf ally.
 
 You must respond with a valid JSON:
-{{"vote_target": "Player_X"}}
+{{"vote_target": "exact player_id from the surviving players list"}}
 """,
             ),
         ),
