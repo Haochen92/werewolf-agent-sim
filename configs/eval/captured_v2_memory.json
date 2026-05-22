@@ -1,6 +1,6 @@
 {
   "dataset": "eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl",
-  "max_samples": 20,
+  "max_samples": 40,
   "judge_model": "gemini-2.5-pro",
   "sleep_seconds": 1.0
 }

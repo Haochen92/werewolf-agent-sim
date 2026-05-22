@@ -39,6 +39,11 @@ MEMORY_CONFIGS = {
     "specials_only": role_config("healer", "investigator"),
 }
 
+RERANKING_CONFIGS = {
+    "rerank_disabled": role_config(),
+    "rerank_enabled": role_config(*ROLES),
+}
+
 DEFAULT_CONFIG_NAMES = ("all_disabled", "all_enabled", "wolf_only")
 
 
@@ -142,6 +147,15 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help="Memory store directory where postgame extraction dumps memory.",
+    )
+    parser.add_argument(
+        "--reranking",
+        choices=list(RERANKING_CONFIGS),
+        default="rerank_disabled",
+        help=(
+            "Reranking config for memory retrieval. "
+            f"Available: {', '.join(RERANKING_CONFIGS)}"
+        ),
     )
     parser.add_argument(
         "--no-memory-seed",
@@ -251,6 +265,7 @@ def game_config_from_args(args: argparse.Namespace) -> dict[str, Any] | None:
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
+    reranking_config = RERANKING_CONFIGS[args.reranking]
     game_config = game_config_from_args(args)
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
@@ -276,6 +291,8 @@ def run_batch(args: argparse.Namespace) -> int:
             f"- {current_run_id}: session={session_id} "
             f"{MEMORY_CONFIGS[config_name]}"
         )
+    if any(reranking_config.values()):
+        print(f"Reranking config: {reranking_config}")
     if memory_persistence_config:
         print(f"Memory persistence override: {memory_persistence_config}")
     if game_config:
@@ -305,17 +322,20 @@ def run_batch(args: argparse.Namespace) -> int:
         print(f"Running {current_run_id} in session {session_id}")
 
         try:
-            result = run_game(
+            outcome = run_game(
                 memory_config=memory_config,
                 session_id=session_id,
                 game_config=game_config,
                 memory_persistence_config=memory_persistence_config,
+                reranking_config=reranking_config,
             )
+            result = outcome.result
             duration_seconds = perf_counter() - started_timer
             record = {
                 "status": "success",
                 "config_name": config_name,
                 "memory_config": memory_config,
+                "reranking_config": reranking_config,
                 "game_config": game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
@@ -328,7 +348,9 @@ def run_batch(args: argparse.Namespace) -> int:
                 "current_day": result.get("current_day"),
                 "surviving_wolves": result.get("surviving_wolves"),
                 "surviving_villagers": result.get("surviving_villagers"),
-                "result": result,
+                "roles": result.get("roles"),
+                "investigator_results": result.get("investigator_results"),
+                "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
             }
             write_record(results_path, record)
             print(
@@ -342,6 +364,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "status": "error",
                 "config_name": config_name,
                 "memory_config": memory_config,
+                "reranking_config": reranking_config,
                 "game_config": game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,

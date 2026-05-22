@@ -16,16 +16,24 @@ dependencies = [
     "pytoml==0.1.21",
     "trustcall==0.0.39",
     "numpy==2.4.4",
+    "scipy>=1.16.0",
+    "pandas (>=3.0.3,<4.0.0)",
+    "matplotlib (>=3.10.9,<4.0.0)",
 ]
 
 [project.scripts]
 werewolf-game = "Agents.main:main"
+memory-batch-dedup = "Agents.memory_batch_deduplication:main"
 eval-build-dataset = "evaluation.experiments.dataset_builder:main"
 eval-summary = "evaluation.experiments.summary:main"
 eval-retrieval = "evaluation.experiments.retrieval:main"
 eval-application = "evaluation.experiments.application:main"
 eval-captured = "evaluation.experiments.captured:main"
 eval-e2e = "evaluation.experiments.e2e:main"
+eval-build-extraction-dataset = "evaluation.experiments.extraction_builder:main"
+eval-build-dedup-dataset = "evaluation.experiments.dedup_builder:main"
+eval-extraction = "evaluation.experiments.extraction_eval:main"
+eval-dedup = "evaluation.experiments.dedup_eval:main"
 
 [tool.poetry]
 packages = [{ include = "Agents" }, { include = "evaluation" }]
