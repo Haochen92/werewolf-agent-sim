@@ -1,0 +1,1361 @@
+{
+  "description": "Episodic-memory snapshot with action-phase namespaces. Situation field is used for semantic search; approach and outcome are payload.",
+  "namespaces": {
+    "observations/healer/day_discussion": [
+      {
+        "created_at": "2026-05-22T13:24:17.798978+00:00",
+        "key": "ce570d93-205a-47e6-8aeb-8aa27971552d",
+        "namespace": [
+          "observations",
+          "healer",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:24:17.798983+00:00",
+        "value": {
+          "approach": "The Healer (Player 8) immediately and firmly corrected the factual error by referencing the public vote log, shutting down the incorrect line of suspicion.",
+          "game_id": "a42a38e6-608d-4d87-9cec-4a17a737a0ff",
+          "last_observed": "2026-05-22T13:24:17.473628",
+          "observation_count": 1,
+          "outcome": "The accuser apologized, the false narrative was stopped before it could gain traction, and the Healer maintained their credibility within the village.",
+          "situation": "A villager mistakenly accused the Healer of a suspicious vote, but the Healer had actually voted correctly with the majority. Information landscape: The information landscape was rich with public voting records that could be checked for accuracy. Game phase: Mid-game, where establishing trust is critical. Social pressure: Momentary, vibes-based pressure was put on the Healer due to another player's error."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:35:24.401547+00:00",
+        "key": "a302bd79-6e33-4801-9430-9bcf69c3571f",
+        "namespace": [
+          "observations",
+          "healer",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:35:24.401552+00:00",
+        "value": {
+          "approach": "The Healer (player_4) and villagers (player_2, player_7, player_8) immediately trusted the dead Investigator's information. They used the accusers' own voting records and aggressive arguments against the Investigator as corroborating evidence of their guilt.",
+          "game_id": "d2c35cc5-5473-4816-9754-75f19855f49c",
+          "last_observed": "2026-05-22T13:35:24.026115",
+          "observation_count": 1,
+          "outcome": "This unified front, based on the Investigator's information, allowed the village to systematically eliminate both wolves over the next two days and win the game.",
+          "situation": "After the Investigator was voted out, confirming their role, the remaining villagers and the Healer had to decide how to use their final accusation against players 1 and 5. Information landscape: The game state became information-rich, as the posthumous reveal of the Investigator's role lent massive credibility to their final claim. Game phase: Endgame, where a single correct vote could break the wolves' power. The Investigator's death provided the crucial clue. Consensus texture: A strong consensus formed quickly among the non-wolf players, uniting them against the two players the Investigator had accused."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:45:02.883397+00:00",
+        "key": "434ca33b-17d3-4e24-8aef-f395a35b512a",
+        "namespace": [
+          "observations",
+          "healer",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:45:02.883401+00:00",
+        "value": {
+          "approach": "The Healer (player_8) did not claim their role to try and prevent their elimination. Instead, they cast a single, unexplained vote against a wolf (player_3).",
+          "game_id": "d48aeafe-d89b-40f0-bed5-0e11f0c3964a",
+          "last_observed": "2026-05-22T13:45:02.476369",
+          "observation_count": 1,
+          "outcome": "The Healer was eliminated, dealing a devastating blow to the village's chances of winning. Their failure to claim under duress cost the town its only means of nightly protection.",
+          "situation": "The Healer was facing a near-unanimous vote for elimination on Day 2. Information landscape: There was no evidence presented against the Healer; the vote was based on unsubstantiated and uncoordinated suspicion. Game phase: Mid-game, after one night. The Healer's successful save had just been announced. Social pressure: Overwhelming, organic pressure from most of the village converged on the Healer without a clear source."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:03:11.131921+00:00",
+        "key": "a786957c-bc1c-416a-aff2-0075203e49ee",
+        "namespace": [
+          "observations",
+          "healer",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:03:11.131925+00:00",
+        "value": {
+          "approach": "The Healer acted as a facilitator, asking questions and prompting others to share their initial hunches in an attempt to get the town working together.",
+          "game_id": "f75ede14-2eda-4d05-b479-4f39638a6e1e",
+          "last_observed": "2026-05-22T14:03:10.793853",
+          "observation_count": 1,
+          "outcome": "This proactive behavior made the Healer stand out as a potential leader, causing the wolves to identify them as a high-priority target. They were killed on the first night.",
+          "situation": "On Day 1, the Healer (Player 1) took an active role in trying to start conversations and organize the group's thoughts. Information landscape: It was the start of the game, so the information landscape was completely blank. Game phase: Early-game, with all players still alive."
+        }
+      }
+    ],
+    "observations/healer/day_vote": [
+      {
+        "created_at": "2026-05-22T13:29:07.947772+00:00",
+        "key": "c401cec5-32cf-416d-991b-09e6b6b221a7",
+        "namespace": [
+          "observations",
+          "healer",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:29:07.947776+00:00",
+        "value": {
+          "approach": "The Healer, player_6, voiced their concern that the villagers might be being led into a trap, but ultimately voted with the majority based on the strength of the evidence.",
+          "game_id": "9ebbb46b-fe6b-45a6-a422-0057278f6257",
+          "last_observed": "2026-05-22T13:29:07.385548",
+          "observation_count": 1,
+          "outcome": "By voting with the consensus, the Healer helped secure the elimination of the final wolf. This avoided a split vote which could have resulted in no elimination and given the wolf another night.",
+          "situation": "A strong, evidence-based consensus formed against player_7, but the Healer harbored minor doubts about whether it could be a misdirection. Information landscape: The consensus was information-rich, based entirely on player_7's suspicious vote from the previous day. Game phase: Endgame, during the vote for the likely final wolf. Consensus texture: A strong consensus driven by multiple villagers citing the same piece of voting evidence."
+        }
+      }
+    ],
+    "observations/healer/night_action": [
+      {
+        "created_at": "2026-05-22T13:24:09.369571+00:00",
+        "key": "d95f88bf-45e4-4245-b461-f51449404f51",
+        "namespace": [
+          "observations",
+          "healer",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:24:09.369575+00:00",
+        "value": {
+          "approach": "The Healer chose to protect a player whose proactive accusations made them a likely target for the wolves.",
+          "game_id": "d78303ca-2e6f-4ca7-a17f-a6f27774bab6",
+          "last_observed": "2026-05-22T13:19:17.973681",
+          "observation_count": 1,
+          "outcome": "The Healer protected a wolf. The wolves killed the Investigator, resulting in a wasted protection and the loss of a key villager.",
+          "situation": "On Night 1, the Healer had to choose who to protect based on minimal information, relying on the tone and content of opening statements. Game phase: Early game, before any roles were confirmed."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:33:11.063328+00:00",
+        "key": "0077c13d-2436-4267-8d86-3298fffee57e",
+        "namespace": [
+          "observations",
+          "healer",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:33:11.063332+00:00",
+        "value": {
+          "approach": "The Healer chose to protect a proactive and vocal player, anticipating they would be a target for the wolves.",
+          "game_id": "d48aeafe-d89b-40f0-bed5-0e11f0c3964a",
+          "last_observed": "2026-05-22T14:33:10.702233",
+          "observation_count": 4,
+          "outcome": "The save was successful, confirming the target as a villager and providing the village with a trusted voice for Day 2. However, the Healer was voted out the very next day.",
+          "situation": "On Night 1, the Healer had to choose who to protect based on minimal information, specifically targeting a player who was vocally active in the day's discussion. The decision was made in an information-starved environment, based solely on the brief Day 1 introductions. Game phase: Early game, before any eliminations or role reveals."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:28.737774+00:00",
+        "key": "19aeae7c-554c-4789-92e4-6fc5562af352",
+        "namespace": [
+          "observations",
+          "healer",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:29:28.737778+00:00",
+        "value": {
+          "approach": "The Healer consistently protects the identified high-value villager, anticipating that wolves will target them for revenge or to silence their influence. This involves analyzing recent game events, such as who was instrumental in a wolf's elimination, to predict the next target.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:28.351015",
+          "observation_count": 4,
+          "outcome": "Successful protection keeps key villagers in the game, allowing them to survive, continue identifying wolves, and lead the village to victory. This creates a pattern of saves that validates the villager's role and demonstrates the high value of protecting the player driving correct eliminations.",
+          "situation": "The wolves often target vocal, influential villagers (like Investigators or those who successfully outed wolves) during the mid-game and endgame. The Healer must assess the information landscape\u2014such as voting data or recent eliminations\u2014to identify these high-value targets who are persistent threats to the wolves."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:57:21.394066+00:00",
+        "key": "3cfe1939-5854-4c49-b676-45d0e0ffd5a1",
+        "namespace": [
+          "observations",
+          "healer",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:57:21.394070+00:00",
+        "value": {
+          "approach": "The Healer (player_1) identified player_7 as an active, analytical player who was likely to be targeted by wolves. The Healer protected player_7 on Night 1 and, correctly anticipating a repeat attempt, protected them again on Night 2.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:57:21.051649",
+          "observation_count": 1,
+          "outcome": "Both wolf attacks failed, wasting two wolf night actions and repeatedly confirming player_7's non-wolf status to the village. This severely hampered the wolves' early momentum.",
+          "situation": "The Healer successfully predicted and blocked the wolves' Night 1 and Night 2 targets. Information landscape: The game was information-starved, with protection choices based on which player seemed most valuable or most likely to be a wolf target. Game phase: Early-game, spanning the first two nights before any wolf kills were successful."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:08:13.034020+00:00",
+        "key": "f95a8c8c-f09c-4f48-80d8-25bd3195dfcb",
+        "namespace": [
+          "observations",
+          "healer",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:08:13.034025+00:00",
+        "value": {
+          "approach": "The Healer (player_1) was the most vocal player on Day 1, attempting to guide the village strategy. The wolves identified this proactive behavior as a threat.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:08:12.720357",
+          "observation_count": 1,
+          "outcome": "The wolves targeted and killed the Healer. This shows that being the most vocal strategist early on makes you a prime target for wolves.",
+          "situation": "On Night 1, the wolves selected their first target. Information landscape: The game had just begun, so there was no information available to any player about roles or behaviors. Game phase: Early game, before any eliminations. The first night's kill is often aimed at high-value or disruptive targets."
+        }
+      }
+    ],
+    "observations/investigator/day_discussion": [
+      {
+        "created_at": "2026-05-22T14:02:54.771984+00:00",
+        "key": "47d5f740-5db7-4dde-88a3-ced07aa082f0",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:02:54.771988+00:00",
+        "value": {
+          "approach": "The Investigator made a desperate, last-minute accusation against the two wolves he had identified, hoping to sway the vote away from himself.",
+          "game_id": "d2c35cc5-5473-4816-9754-75f19855f49c",
+          "last_observed": "2026-05-22T13:34:59.629214",
+          "observation_count": 1,
+          "outcome": "The village dismissed his claim as a self-preservation tactic and voted him out. His role was revealed upon elimination, which confirmed his accusation but came too late to save him.",
+          "situation": "The Investigator, player_6, was trapped in a two-day voting deadlock and waited until the final round of Day 4, when his elimination was imminent, to reveal his findings that player_1 and player_5 were wolves. Information landscape: The village was information-starved, and the Investigator's claim was the first piece of hard information presented, but its timing made it suspect. Game phase: Mid-game, with the village frustrated after two days of no eliminations due to ties. Social pressure: Intense pressure was on player_6, who was one of two players in a long-standing deadlock. His accusation was perceived by many as a last-ditch effort to deflect blame."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:44:59.457187+00:00",
+        "key": "7b502041-b81c-42b4-b484-474f6d843aef",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:44:59.457206+00:00",
+        "value": {
+          "approach": "The Investigator (player_6) remained passive, asking general questions but not defending their known villager allies (player_2) or using their knowledge to cast suspicion on others. They voted with the majority to eliminate the Healer on Day 2 and a Villager on Day 3.",
+          "game_id": "d48aeafe-d89b-40f0-bed5-0e11f0c3964a",
+          "last_observed": "2026-05-22T13:44:59.079745",
+          "observation_count": 1,
+          "outcome": "The Investigator's inaction allowed the village to mislynch two innocent players (the Healer and a Villager). By the time the Investigator found a wolf on Night 3, the game was already lost.",
+          "situation": "An Investigator had privately confirmed two players as villagers but failed to leverage this information to guide the town. Information landscape: The Investigator possessed high-value private information (two cleared villagers), while the public landscape was chaotic and driven by speculation. Game phase: Mid-game, Day 3. The village was down to 6 players and desperately needed guidance. Social pressure: Pressure was scattered, eventually coalescing on player_4 based on a disagreement with player_2."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:57:57.586642+00:00",
+        "key": "36ca2df7-8a8e-4487-b15c-d985eb6c8458",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:57:57.586646+00:00",
+        "value": {
+          "approach": "The Investigator makes a clear, persistent, and evidence-based accusation against the identified wolf, using specific observations (like voting records or defensive behavior) to build a public case that guides the village consensus.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:57:57.175179",
+          "observation_count": 2,
+          "outcome": "The village follows the Investigator's lead, successfully voting out the wolf. This pivotal move shifts the game's momentum back in the villagers' favor and often establishes the Investigator as a trustworthy leader.",
+          "situation": "An Investigator, having privately confirmed a wolf's identity, needs to lead the village to a correct elimination without necessarily revealing their role. This is particularly effective in mid-game scenarios where the village is either information-starved, demoralized by previous mislynches, or trapped in deadlock. The Investigator leverages specific evidence\u2014such as voting records or observable evasive behavior\u2014to build a public case."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:16:38.897251+00:00",
+        "key": "fd88ea00-70bb-4add-aea7-5b518e571917",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:16:38.897256+00:00",
+        "value": {
+          "approach": "The Investigator stated their finding but struggled to justify why they had withheld this information on the previous day, which had resulted in the mistaken elimination of a villager (Player 8).",
+          "game_id": "f75ede14-2eda-4d05-b479-4f39638a6e1e",
+          "last_observed": "2026-05-22T14:02:54.772004",
+          "observation_count": 1,
+          "outcome": "The villager found the timing of the reveal highly suspicious and sided with the wolf's argument that it was a desperate bluff, leading to the Investigator's elimination and a wolf victory.",
+          "situation": "In the final three, the Investigator (Player 7) revealed their role and their finding that Player 3 was the last wolf. Information landscape: The investigator possessed definitive proof, but this information was private and presented to a villager (Player 6) who was skeptical after a recent mislynch. Game phase: Endgame, with the vote of a single villager deciding the game's outcome. Consensus texture: There was no consensus; the villager was a swing vote between two competing claims."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:07:50.729829+00:00",
+        "key": "04dbed73-a684-4e7d-897d-6cae2803c3e4",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:07:50.729833+00:00",
+        "value": {
+          "approach": "The Investigator defended a quiet wolf (player_8) and targeted an aggressive villager (player_6), framing their pushiness as a sign of being a wolf. They cast the first vote, cementing the bandwagon.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:07:50.367165",
+          "observation_count": 1,
+          "outcome": "The village mislynched a villager. The wolves then correctly identified the influential Investigator as the biggest threat and killed them the following night, before they could reveal that they had found a wolf (player_4).",
+          "situation": "The Investigator (player_2) used their social influence to lead the charge against a player (player_6) based on a behavioral read. Information landscape: The accusation was based on speculative reads of aggression, not on investigation results or voting patterns. Game phase: Mid-game, with the village on edge after losing the Healer. The Investigator had not yet revealed any findings. Consensus texture: The Investigator's accusation created a strong consensus, as other players followed their lead to vote out player_6."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:12:13.553477+00:00",
+        "key": "ac1495d3-8b66-4930-8424-16751b2e95ce",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:12:13.553481+00:00",
+        "value": {
+          "approach": "The Investigator repeatedly accused the wolf, focusing on their 'aggression' but failing to reveal the concrete evidence (their investigation result) that would differentiate their claim from the previous day's mistake.",
+          "game_id": "bed231cb-eef2-41c5-9753-9abad79c73d1",
+          "last_observed": "2026-05-22T14:12:13.162789",
+          "observation_count": 1,
+          "outcome": "The village, along with the wolves, voted out the Investigator, believing they were a manipulative player. This cost the village its only source of verified information and led to the wolves winning.",
+          "situation": "An Investigator correctly identified a wolf but failed to convince the village because their aggressive, evidence-poor accusation was made the day after a villager was mislynched due to a similarly aggressive push. Information landscape: The Investigator had information-rich private knowledge (a wolf find), but the public landscape was defined by the trauma of a recent, poorly-evidenced misvote. Game phase: Mid-game, after one villager and the healer had been eliminated, making the next vote critical. Consensus texture: A strong consensus formed against the Investigator, driven by multiple villagers and wolves who all converged on the idea that the Investigator's aggressive style was suspicious. Social pressure: The Investigator was under immense pressure to justify their accusation, while the village felt pressure not to repeat its recent mistake."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:16:39.240118+00:00",
+        "key": "443bf51b-b86e-4927-8f52-d2683770ee34",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:16:39.240123+00:00",
+        "value": {
+          "approach": "The Investigator (player_1) chose to reveal their role and their finding that player_4 was a wolf to break the stalemate.",
+          "game_id": "ec5ce6c7-2635-4a51-b6fd-878973bc3cb0",
+          "last_observed": "2026-05-22T14:16:38.897273",
+          "observation_count": 1,
+          "outcome": "The reveal was successful; key villagers (player_3, player_5, player_7) trusted the claim, leading to the wolf's elimination, though the Investigator was killed by the remaining wolf the following night.",
+          "situation": "An Investigator was in a voting deadlock with a Wolf they had identified. Information landscape: The game was information-rich for the investigator, but the village was split, relying on conflicting claims. Game phase: Endgame, with few players left and a tie vote on the previous day creating high stakes. Consensus texture: There was no consensus, but a firm deadlock between two factions, one led by the Investigator and one by the Wolves. Social pressure: The Investigator and a Wolf were under intense, equal pressure, each leading a voting bloc against the other."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:05.287487+00:00",
+        "key": "aaa08a1d-619d-4c9d-8d35-2ea43852c26e",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:29:05.287491+00:00",
+        "value": {
+          "approach": "The Investigator relentlessly accused the wolf (player_1) without providing concrete proof or revealing their role, framing the wolf's deflections as evidence of guilt.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:04.929387",
+          "observation_count": 1,
+          "outcome": "The village, seeing two aggressive players, voted out the Investigator, believing them to be the bigger disruption. This removed the only player with concrete information from the game.",
+          "situation": "An Investigator found a wolf on Night 1 and tried to lead the village to vote them out on Day 2. Information landscape: The game was information-starved, with only the Investigator's private knowledge as a lead. Game phase: Early game (Day 2), with no prior eliminations and a failed wolf attack on Night 1. Social pressure: The Investigator applied intense, direct pressure on the wolf, who deflected by accusing the Investigator of creating chaos."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:33:17.749138+00:00",
+        "key": "1ab6cc11-4973-405a-ac1b-a58e366b809a",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:33:17.749142+00:00",
+        "value": {
+          "approach": "The Investigator waited until the Day 4 discussion to make a clear, public claim against the wolf. They presented the information as a definitive fact and resisted getting drawn into a debate about the timing of the reveal.",
+          "game_id": "de6f43ac-7d8b-4854-a4e0-b0f8e7be3c8b",
+          "last_observed": "2026-05-22T14:33:17.391490",
+          "observation_count": 1,
+          "outcome": "The clear, confident claim rallied the remaining villagers, creating an immediate and unbreakable consensus. The wolf was eliminated, and the town won.",
+          "situation": "Having identified the final wolf on Night 3, the Investigator had to decide when and how to reveal this critical information. Information landscape: The investigator possessed perfect, private information in a public landscape that was otherwise based on speculation. Game phase: Endgame, with only four players remaining (Investigator, two Villagers, one Wolf)."
+        }
+      }
+    ],
+    "observations/investigator/day_vote": [
+      {
+        "created_at": "2026-05-22T13:23:54.261985+00:00",
+        "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:23:54.261988+00:00",
+        "value": {
+          "approach": "The Investigator voted against the correct wolf target (Player 7) and for the Healer (Player 8). The next day, they defended this as a valid read but ultimately realigned with the village to vote out the remaining wolf (Player 1).",
+          "game_id": "a42a38e6-608d-4d87-9cec-4a17a737a0ff",
+          "last_observed": "2026-05-22T13:23:53.903541",
+          "observation_count": 1,
+          "outcome": "The initial vote severely damaged the Investigator's credibility. However, their willingness to pivot and vote with the village on the final day allowed them to repair some trust and contribute to the win.",
+          "situation": "The Investigator (Player 4) voted based on a private, behavioral read that contradicted the growing village consensus, placing them in a voting bloc with a wolf. Information landscape: The investigator had private information (Player 2 was a villager) but acted on a speculative read about another player. Game phase: Mid-game, during the first elimination vote where town consensus was critical. Social pressure: The vote placed the Investigator under immense, evidence-based social pressure the following day, as they had to defend voting with a now-revealed wolf."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:29:04.805464+00:00",
+        "key": "7c0a6e6d-2bee-4bed-8d66-139122985095",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:29:04.805469+00:00",
+        "value": {
+          "approach": "The Investigator, player_2, took the lead and cast the first vote against their suspect, player_8. This decisive action signaled confidence and rallied the other villagers to follow.",
+          "game_id": "9ebbb46b-fe6b-45a6-a422-0057278f6257",
+          "last_observed": "2026-05-22T13:29:04.233224",
+          "observation_count": 1,
+          "outcome": "The village successfully eliminated a wolf. However, this act of leadership made player_2 the clear target for the remaining wolf and they were killed the next night.",
+          "situation": "The Investigator had a strong suspicion about a player but no definitive proof from their night action. Information landscape: Publicly, the game was information-starved, relying on gut reads. Game phase: Mid-game, during the very first elimination vote."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:51:29.438241+00:00",
+        "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+        "namespace": [
+          "observations",
+          "investigator",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:51:29.438245+00:00",
+        "value": {
+          "approach": "The investigator (player_1) broke the stalemate by accusing and voting for a player (player_5) who seemed to be deflecting by 'mirroring others' questions', hoping to force a reaction.",
+          "game_id": "a7c4af3e-4159-4a6d-a6ba-aba130dbe1c3",
+          "last_observed": "2026-05-22T13:51:29.112981",
+          "observation_count": 1,
+          "outcome": "The village followed the investigator's lead and eliminated a villager. This demonstrated that even a well-intentioned power role can cause significant harm by acting on poor-quality information.",
+          "situation": "Feeling pressure to act in an information-starved village, the investigator initiated a vote based on a weak behavioral read. Information landscape: There was no hard evidence, only speculative reads on communication style. The investigator's private check on player_2 had revealed a villager, narrowing the suspect pool only slightly. Game phase: Mid-game, after the first night kill. The village was directionless."
+        }
+      }
+    ],
+    "observations/investigator/night_action": [
+      {
+        "created_at": "2026-05-22T13:19:17.624440+00:00",
+        "key": "5f9c0b30-5905-4ddb-9971-57313ac0b2bb",
+        "namespace": [
+          "observations",
+          "investigator",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:19:17.624444+00:00",
+        "value": {
+          "approach": "The Investigator chose to investigate player_5, a player who made an early and specific accusation against two other players, a high-risk/high-visibility play.",
+          "game_id": "d78303ca-2e6f-4ca7-a17f-a6f27774bab6",
+          "last_observed": "2026-05-22T13:19:17.258244",
+          "observation_count": 1,
+          "outcome": "The Investigator correctly identified a wolf but was killed that same night before they could share the information, highlighting the danger of being perceived as a village leader.",
+          "situation": "On Night 1, the Investigator had to choose a target with no prior information. Information landscape: The game was information-starved, with decisions based only on initial discussion patterns. Game phase: Early game, before any votes or eliminations."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:58:12.561804+00:00",
+        "key": "c9fe0972-01e6-4201-88a1-ed0d2e635d63",
+        "namespace": [
+          "observations",
+          "investigator",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:58:12.561808+00:00",
+        "value": {
+          "approach": "The Investigator (player_3) used social dynamics to guide their choices. They first investigated player_1 (finding the Healer) to secure knowledge of village assets, then investigated player_6, who was a key voice in the flawed vote against player_7, which revealed a wolf.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:58:12.206028",
+          "observation_count": 1,
+          "outcome": "This systematic approach of confirming assets and then investigating key drivers of suspicious votes allowed the Investigator to find both the Healer and a Wolf, providing the crucial information needed to win the game.",
+          "situation": "The Investigator needed to choose targets in a chaotic mid-game where the village was making poor decisions. Information landscape: The public information was misleading, as the village had just voted out its most confirmed non-wolf player. Game phase: Mid-game, after a series of confusing votes and failed wolf attacks."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:08:15.865923+00:00",
+        "key": "2177e047-285c-45d6-90b6-6386bf7120ac",
+        "namespace": [
+          "observations",
+          "investigator",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:08:15.865928+00:00",
+        "value": {
+          "approach": "The wolves identified the Investigator (player_2) as the most influential player who had orchestrated the previous day's elimination. They targeted player_2 for removal.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:08:15.542080",
+          "observation_count": 1,
+          "outcome": "The Investigator was eliminated, and their valuable information was lost to the village. The village lost its only remaining power role and was left directionless.",
+          "situation": "The Investigator was killed on Night 2, immediately after they had successfully identified a wolf. Information landscape: The Investigator had privately confirmed a wolf's identity, but this information was unknown to the village. Game phase: Mid-game, after leading a successful (but incorrect) vote on Day 2. Their high influence was now public knowledge."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:16:41.340207+00:00",
+        "key": "d9c6d542-6c1d-4026-8cda-c1998d87c4d3",
+        "namespace": [
+          "observations",
+          "investigator",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:16:41.340211+00:00",
+        "value": {
+          "approach": "The Investigator (player_1) chose to investigate moderately active players (player_2, player_3) on the first two nights, confirming them as villagers.",
+          "game_id": "ec5ce6c7-2635-4a51-b6fd-878973bc3cb0",
+          "last_observed": "2026-05-22T14:16:40.960498",
+          "observation_count": 1,
+          "outcome": "This approach didn't find a wolf immediately, but it provided the Investigator with a list of confirmed allies, which became crucial for building a voting bloc in the endgame.",
+          "situation": "The Investigator systematically investigated players who were not immediately suspicious. Information landscape: The game was information-starved in the early stages, with no leads. Game phase: Early game, before any roles or voting patterns had been established."
+        }
+      }
+    ],
+    "observations/villager/day_discussion": [
+      {
+        "created_at": "2026-05-22T13:58:10.357213+00:00",
+        "key": "f5d20870-504d-4e74-baa1-6ae28af75bae",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:58:10.357217+00:00",
+        "value": {
+          "approach": "Villagers focused on the voting record, identifying that the suspects had cast votes against confirmed roles or to protect each other. They ignored or rejected the wolf's attempts to sow discord or discredit the evidence, using the wolf's own aggressive voting record as proof of their guilt.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:58:09.976407",
+          "observation_count": 7,
+          "outcome": "The villagers successfully identified the wolf's narrative as a lie, held firm against social pressure, and voted out the wolf to secure the win.",
+          "situation": "In an information-rich 2v1 endgame, the village needed to identify the final wolf. The wolf's primary tactic was to sow discord by accusing the remaining villagers of being suspiciously coordinated or conspiring, often attempting to discredit previous evidence. Information landscape: The landscape was rich with evidence, including confirmed wolf roles and voting records. Game phase: Endgame. Consensus texture: A strong consensus formed among the villagers, driven by the evidence and the wolf's inability to counter the voting record."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:15.360945+00:00",
+        "key": "7462c1ff-3b61-441e-a4c3-46edf8ffb32f",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:29:15.360949+00:00",
+        "value": {
+          "approach": "The villagers systematically interrogated player_5, focusing on the discrepancy between their accusation and the victim's true role. They refused to let player_5 change the subject or deflect blame.",
+          "game_id": "d78303ca-2e6f-4ca7-a17f-a6f27774bab6",
+          "last_observed": "2026-05-22T13:19:16.525101",
+          "observation_count": 1,
+          "outcome": "Player_5's inability to defend their prior statements under pressure solidified suspicion and led to their elimination, successfully removing the first wolf.",
+          "situation": "On Day 2, the village learned the Investigator had been killed overnight. Information landscape: The only piece of concrete information was the revealed role of the night's victim, which could be cross-referenced with Day 1 statements. Game phase: Early mid-game, immediately following the loss of the primary information-gathering role. Social pressure: Multiple villagers immediately put coordinated, evidence-based pressure on player_5, who had accused the Investigator on Day 1."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:45:06.457305+00:00",
+        "key": "af34af12-bb72-4b4f-b3c0-bc1e42880b73",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:45:06.457309+00:00",
+        "value": {
+          "approach": "Player_2 relentlessly asked for the 'catalyst' of the previous vote but did not offer their own suspect, appearing accusatory without taking a firm stand.",
+          "game_id": "d48aeafe-d89b-40f0-bed5-0e11f0c3964a",
+          "last_observed": "2026-05-22T13:45:06.157102",
+          "observation_count": 1,
+          "outcome": "This tactic led to villager infighting, resulted in the elimination of another villager (player_4), and painted player_2 as the village's main analyst, making them the wolves' priority target that night.",
+          "situation": "A vocal villager's aggressive attempt to analyze a past mistake created suspicion against them. Information landscape: The discussion was information-starved regarding current suspects, focusing instead on deconstructing the previous day's failed vote. Game phase: Mid-game on Day 3, after the village had already made a major error by voting out the Healer. Social pressure: The villager (player_2) put the entire group on the defensive by repeatedly asking who started the vote against the healer, which led another villager (player_4) to accuse them of deflecting."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:16:55.083899+00:00",
+        "key": "20fc1938-e543-4fce-9115-e3827a947e9c",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:16:55.083903+00:00",
+        "value": {
+          "approach": "Multiple villagers (player_1, player_2, player_6) used the Day 3 voting record to pressure the remaining wolf suspect (player_4), demanding an explanation for why they voted against eliminating a now-confirmed wolf.",
+          "game_id": "a7c4af3e-4159-4a6d-a6ba-aba130dbe1c3",
+          "last_observed": "2026-05-22T14:16:54.692749",
+          "observation_count": 2,
+          "outcome": "The suspect's defense was weak and easily dismantled, leading to a unanimous vote for their elimination and a win for the villagers.",
+          "situation": "After a wolf was eliminated, suspicion immediately fell upon the player who had voted to protect them. Information landscape: The information landscape became extremely rich. The voting record from the previous day provided clear, undeniable evidence of a potential alliance. Game phase: Endgame, with only one wolf remaining. The previous day's elimination provided the final clue needed. Consensus texture: An immediate and powerful consensus formed against the remaining wolf suspect (player_4), driven by multiple villagers citing the same voting evidence."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:02:38.447161+00:00",
+        "key": "9db72477-d523-41dd-8660-414129435a93",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:02:38.447166+00:00",
+        "value": {
+          "approach": "Player 8 questioned the successful elimination of Player 5, calling it a potential 'setup', and continued to attack the players who had correctly identified the wolf.",
+          "game_id": "f75ede14-2eda-4d05-b479-4f39638a6e1e",
+          "last_observed": "2026-05-22T14:02:38.144762",
+          "observation_count": 1,
+          "outcome": "Player 8's line of reasoning was perceived as an attempt to sow discord and discredit correct deductions, leading the majority to vote them out. Their elimination as a villager was a major setback for the town.",
+          "situation": "A villager, Player 8, became fixated on their suspicion of another villager, Player 6, even after the group successfully eliminated a wolf, Player 5. Information landscape: The information landscape had become richer with the confirmation of Player 5 as a wolf. Game phase: Mid-game, with five players remaining and one wolf confirmed."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:07:48.388514+00:00",
+        "key": "e4b85ce5-5de7-4c47-81a1-301918c01d9f",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:07:48.388518+00:00",
+        "value": {
+          "approach": "Player_6 aggressively pushed player_8 for a concrete opinion. The Investigator (player_2) defended the wolf, arguing that player_6's aggression was a diversion tactic.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:07:48.037348",
+          "observation_count": 1,
+          "outcome": "A majority of the village, including the other villagers and wolves, sided with the Investigator and voted out the aggressive villager (player_6). This resulted in a mislynch that cost the village an active member.",
+          "situation": "A villager (player_6) correctly identified a wolf's (player_8) passive and non-committal communication style as suspicious. Information landscape: The landscape was information-starved, with suspicions based entirely on communication style rather than votes or claims. Game phase: Mid-game, following the Healer's elimination. The village was anxious to find a lead. Social pressure: Player_6's aggressive questioning put player_8 under pressure, but the Investigator (player_2) reframed the aggression itself as the most suspicious behavior."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:08:05.973903+00:00",
+        "key": "59219b13-9219-4d18-b690-281e8f4791be",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:08:05.973907+00:00",
+        "value": {
+          "approach": "The villagers (player_3, player_5, player_7) engaged in a circular argument about who was responsible for the Day 2 vote. This consumed the entire discussion period.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:08:05.634119",
+          "observation_count": 1,
+          "outcome": "The villagers voted out another one of their own (player_5), unable to break the stalemate. This handed the wolves the win as they achieved numerical parity.",
+          "situation": "In the endgame, after a second villager was mislynched, the remaining villagers became fixated on blaming each other for the previous day's mistake. Information landscape: The information landscape was rich with voting data from the previous day, but the villagers used it for recrimination rather than re-evaluation. Game phase: Endgame, with only five players left (3 villagers, 2 wolves) and no special roles remaining. Social pressure: Player_3 put heavy, evidence-based pressure on player_5 for their role in the Day 2 mislynch. Player_5 attempted to deflect by focusing on procedural details."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:15.711401+00:00",
+        "key": "634161d7-26fe-4ebc-8dcf-f01f80979510",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:29:15.711406+00:00",
+        "value": {
+          "approach": "The villagers focused on the Investigator's now-validated suspicion, questioning why player_1 was trying to discredit a confirmed information role. They ignored player_1's attempts to deflect blame onto other villagers.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:15.360966",
+          "observation_count": 1,
+          "outcome": "The focused interrogation based on the Investigator's legacy led to the successful elimination of a wolf (player_1).",
+          "situation": "After the Investigator was eliminated, the village had to decide how to use the information that the Investigator had been targeting a specific player (player_1). Information landscape: The landscape became information-rich with the posthumous knowledge of the Investigator's target. Game phase: Mid-game (Day 3), following the loss of the Investigator and a villager. Social pressure: Villagers, led by player_4, applied evidence-based pressure on the Investigator's suspect, player_1."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:33:05.926207+00:00",
+        "key": "13870e0b-4267-44c7-b90b-75da7b90cd99",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:33:05.926211+00:00",
+        "value": {
+          "approach": "The villagers meticulously fact-checked player_7's claim that the vote was a 'collective mistake' that everyone agreed to. They used the public voting record to prove this was a lie and build a case.",
+          "game_id": "de6f43ac-7d8b-4854-a4e0-b0f8e7be3c8b",
+          "last_observed": "2026-05-22T14:33:05.520278",
+          "observation_count": 1,
+          "outcome": "This evidence-based approach successfully identified and eliminated a wolf, demonstrating the power of using verifiable game history over subjective behavioral reads.",
+          "situation": "On Day 3, villagers analyzed the previous day's voting record that eliminated the Healer and noticed a wolf (player_7) was trying to misrepresent the facts. Information landscape: The voting record from Day 2 provided information-rich, concrete evidence to analyze. Game phase: Mid-game, with the town reeling from the loss of the Healer and now hunting for culprits. Consensus texture: A strong consensus formed around player_7, driven by multiple players independently verifying that player_7 was lying about the vote being unanimous."
+        }
+      }
+    ],
+    "observations/villager/day_vote": [
+      {
+        "created_at": "2026-05-22T13:35:11.724278+00:00",
+        "key": "c6bbd95c-e268-4c29-b856-01f61b140fe8",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:35:11.724282+00:00",
+        "value": {
+          "approach": "The villagers failed to analyze who was benefiting from the deadlock. Instead of investigating the voting patterns creating the tie, they continued to focus on the two deadlocked players.",
+          "game_id": "d2c35cc5-5473-4816-9754-75f19855f49c",
+          "last_observed": "2026-05-22T13:35:11.355956",
+          "observation_count": 1,
+          "outcome": "This paralysis led to the loss of a villager at night and the eventual mislynching of the Investigator, which was a direct result of the chaos and pressure created by the wolves' strategy.",
+          "situation": "The village was caught in a multi-day voting tie between two players, one of whom was the Investigator and the other a villager. Information landscape: The game was information-starved, forcing votes based on pure speculation and allowing wolf manipulation to thrive. Game phase: Mid-game. The lack of eliminations prevented the village from gaining information while the wolves continued to kill at night. Consensus texture: A manufactured tie was created by the wolves, preventing any real consensus from forming and fostering frustration."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:57:45.638897+00:00",
+        "key": "3ebecdce-6fc8-4e17-b5d0-55a2725aa92e",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:57:45.638901+00:00",
+        "value": {
+          "approach": "Seven out of eight players, including all villagers, the investigator, and both wolves, voted to eliminate the Healer (player_8).",
+          "game_id": "d48aeafe-d89b-40f0-bed5-0e11f0c3964a",
+          "last_observed": "2026-05-22T13:44:49.558354",
+          "observation_count": 1,
+          "outcome": "The village eliminated its only protective role, leaving them vulnerable to wolf attacks for the rest of the game. This mistake directly enabled the wolves' subsequent kills and eventual victory.",
+          "situation": "A massive, unexplained voting consensus formed against one player on Day 2. Information landscape: The landscape was information-starved; the only hard fact was that player_8 (the Healer) had been saved by the healer. No evidence was presented against the target. Game phase: Mid-game, following the first night's action. Consensus texture: A strong, near-unanimous consensus formed against the Healer (player_8) without a clear public catalyst or compelling argument."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:16:48.247778+00:00",
+        "key": "3e54af6d-ef3d-4b1c-a64e-39649b2b5594",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:16:48.247782+00:00",
+        "value": {
+          "approach": "A majority of the village, including the wolves, voted to eliminate a villager. The wolves joined this consensus to secure a mislynch, build credibility, and hide their tracks.",
+          "game_id": "bed231cb-eef2-41c5-9753-9abad79c73d1",
+          "last_observed": "2026-05-22T14:16:47.917327",
+          "observation_count": 3,
+          "outcome": "A villager was eliminated, which reduced the villagers' numbers and created the paranoia and distrust that the wolves exploited on subsequent days to manipulate the village into further mislynches, such as the Investigator.",
+          "situation": "In an information-starved environment on Day 2, following a night with no kills, a fragile consensus formed to eliminate a villager based on weak, behavioral evidence or speculative reads. The village was desperate for a lead, and suspicion was based on vibes rather than concrete evidence."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:57:45.986060+00:00",
+        "key": "a2b72438-8108-4088-909a-e2d2b5e195f5",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:57:45.986065+00:00",
+        "value": {
+          "approach": "The majority of the village, including the wolves, Investigator, and Healer, voted to eliminate player_8, who had been quiet. The wolves (player_5, player_6) joined this consensus to hide.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:57:45.638917",
+          "observation_count": 1,
+          "outcome": "A villager was eliminated, wasting the information advantage gained from the healer's save. The wolves successfully eliminated a villager without drawing any suspicion to themselves.",
+          "situation": "A massive voting bandwagon formed against a quiet villager (player_8) on Day 2, despite the village having confirmed information that player_7 was saved by the Healer. Information landscape: The key piece of information was the Healer's save, yet the vote was driven by speculation and pressure against a quiet player. Game phase: Mid-game, after the first night action revealed a failed wolf attack. Consensus texture: A strong, multi-player consensus formed rapidly against player_8, with six of the eight players voting together."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:03:08.967667+00:00",
+        "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:03:08.967672+00:00",
+        "value": {
+          "approach": "Player 4 and Player 7 noticed that Player 5 was talking about 'voting patterns' when no vote had occurred. They used this concrete logical error to build a strong case and pivot the vote onto Player 5.",
+          "game_id": "f75ede14-2eda-4d05-b479-4f39638a6e1e",
+          "last_observed": "2026-05-22T14:03:08.539126",
+          "observation_count": 1,
+          "outcome": "The majority of villagers were persuaded by this evidence-based argument and voted out Player 5, who was revealed to be a wolf. This demonstrated the power of logical deduction over vague suspicion.",
+          "situation": "In an information-starved environment, villagers were discussing who to vote for, with some vague accusations being thrown around based on who was 'too quiet'. Information landscape: The landscape was information-starved, with only Day 1's limited conversation as evidence. Game phase: Mid-game, after the healer was eliminated and the pressure to find a wolf was high. Consensus texture: A fragile consensus was forming around general suspicions until a specific piece of evidence was introduced."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:12:18.181606+00:00",
+        "key": "2e8d0911-8e93-4170-844d-b9024324befe",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:12:18.181610+00:00",
+        "value": {
+          "approach": "The villagers overcorrected from their previous error. They focused entirely on the aggressive style of the Investigator's accusation, dismissing its potential substance because it felt too similar to the prior day's failed vote.",
+          "game_id": "bed231cb-eef2-41c5-9753-9abad79c73d1",
+          "last_observed": "2026-05-22T14:12:17.810412",
+          "observation_count": 1,
+          "outcome": "The villagers voted out their only informed player, the Investigator. This left them blind and leaderless, allowing the wolves to easily win the game.",
+          "situation": "The village was manipulated into eliminating the Investigator, who had correctly identified a wolf. Information landscape: The village was information-starved and acting on the memory of a recent mislynch, which made them distrust the Investigator's communication style. Game phase: Mid-game, with the healer gone and villager numbers dwindling, trust in aggressive claims was at an all-time low. Social pressure: The villagers felt intense pressure to avoid repeating their Day 2 mistake of following an aggressive, poorly-evidenced accusation."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:11.426529+00:00",
+        "key": "5208560e-43e5-4565-bebf-ddb62f91577c",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:29:11.426533+00:00",
+        "value": {
+          "approach": "The villagers voted overwhelmingly to eliminate the player they perceived as the most disruptive (player_7), who was making unsubstantiated accusations.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:11.075964",
+          "observation_count": 1,
+          "outcome": "The eliminated player was revealed to be the Investigator, a major loss for the village that was orchestrated by the wolf they had been targeting.",
+          "situation": "On Day 2, two players were locked in an aggressive back-and-forth with no hard evidence presented by either side. Information landscape: The village was information-starved, with the only data point being a saved player from Night 1. Game phase: Early game (Day 2), where establishing behavioral baselines is key. Consensus texture: A strong, rapid consensus formed against the more aggressive accuser (player_7), driven by a desire to quell the conflict."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:33:08.215486+00:00",
+        "key": "44d270ed-7d15-4e3a-813a-a124473a56c7",
+        "namespace": [
+          "observations",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:33:08.215490+00:00",
+        "value": {
+          "approach": "The villagers assessed the risk and decided to trust the player claiming Investigator, as the wolf's defense was weak and offered no alternative path or counter-claim.",
+          "game_id": "de6f43ac-7d8b-4854-a4e0-b0f8e7be3c8b",
+          "last_observed": "2026-05-22T14:33:07.887231",
+          "observation_count": 1,
+          "outcome": "By trusting the Investigator's claim, the villagers correctly identified and eliminated the final wolf, winning the game.",
+          "situation": "In the final day with four players, the Investigator claimed to have identified the last wolf. Information landscape: An unverified but powerful claim from the Investigator provided the only clear lead in an otherwise uncertain endgame. Game phase: Endgame, where a single vote would decide the winner. Consensus texture: A strong and immediate consensus formed to trust the Investigator, as it was the clearest path to victory."
+        }
+      }
+    ],
+    "observations/wolf/day_discussion": [
+      {
+        "created_at": "2026-05-22T13:24:36.162246+00:00",
+        "key": "dc5981ec-0483-4648-b7a2-d11fdee48829",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:24:36.162251+00:00",
+        "value": {
+          "approach": "On Day 2, after the Investigator was killed by wolves and their role revealed, the villagers questioned the wolf about their accusation. The wolf was evasive, deflected, and attempted to counter-accuse others.",
+          "game_id": "d78303ca-2e6f-4ca7-a17f-a6f27774bab6",
+          "last_observed": "2026-05-22T13:19:12.124630",
+          "observation_count": 1,
+          "outcome": "The wolf's refusal to provide a coherent explanation for their initial accusation created a strong, evidence-based consensus, leading to them being voted out.",
+          "situation": "Early game, information-starved. A wolf made a specific, unsupported accusation against two players on Day 1, one of whom was the Investigator. Social pressure was mild."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:17:10.970630+00:00",
+        "key": "8a6a021d-13e7-4002-b3b4-27eb9392627f",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:17:10.970635+00:00",
+        "value": {
+          "approach": "The wolf attempted to distance themself from their eliminated partner by feigning betrayal and pointing suspicion at a survivor, while also attempting to defend their previous vote as a simple misread.",
+          "game_id": "d2c35cc5-5473-4816-9754-75f19855f49c",
+          "last_observed": "2026-05-22T13:35:10.616915",
+          "observation_count": 2,
+          "outcome": "The village identified the feigned betrayal as a common wolf tactic to feign innocence after their partner's elimination became inevitable. They disregarded the claim and voted out the final wolf based on the clear, game-long evidence of their partnership.",
+          "situation": "Endgame, information-rich. The last wolf remaining was put on the defensive after their vote from the previous day aligned with an eliminated wolf partner. Social pressure was high, with coordinated, evidence-based pressure from the village and a strong consensus already formed against the wolf."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:44:52.444957+00:00",
+        "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:44:52.444961+00:00",
+        "value": {
+          "approach": "The wolves (player_3 and player_5) remained quiet during the initial argument, then joined the emerging vote against Villager player_4 once several villagers had already committed to it.",
+          "game_id": "d48aeafe-d89b-40f0-bed5-0e11f0c3964a",
+          "last_observed": "2026-05-22T13:44:52.058896",
+          "observation_count": 1,
+          "outcome": "Another villager was eliminated, villager infighting intensified, and the wolves avoided all suspicion by appearing to be part of a village-led decision.",
+          "situation": "Villagers began to argue amongst themselves about who was responsible for the previous day's mistaken vote to eliminate the Healer. Information landscape: Information was based on analyzing the previous day's catastrophic vote, leading to recriminations and suspicion among villagers. Game phase: Mid-game, with the village reeling from losing their Healer and another Villager. Consensus texture: A fragile consensus against Villager player_4 was driven by Villager player_2's aggressive questioning and player_4's defensive reaction. Social pressure: Pressure was initiated by Villager player_2, who was trying to find the 'catalyst' for the bad vote. This was turned against player_4, who accused player_2 of deflecting."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:51:01.973830+00:00",
+        "key": "ddc8ea7e-6593-4b95-b856-861aed34367a",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:51:01.973834+00:00",
+        "value": {
+          "approach": "The wolf (player_3) attempted to deflect suspicion by framing the accuser's survival as a suspicious event and questioning why they were leading the vote so aggressively. They tried to create an alliance with a skeptical villager (player_6).",
+          "game_id": "a7c4af3e-4159-4a6d-a6ba-aba130dbe1c3",
+          "last_observed": "2026-05-22T13:51:01.627335",
+          "observation_count": 1,
+          "outcome": "The deflection failed. Villagers saw this as an obvious attempt to evade accountability for their own voting record, which solidified the consensus against the wolf, leading to their elimination.",
+          "situation": "A wolf was accused by an influential player who had just been saved by the healer. Information landscape: The accuser had high credibility due to surviving the night, but the accusation was based on behavior, not a role claim, giving the wolf an opportunity for defense. Game phase: Mid-game, after a successful mislynch on Day 2. The power dynamic shifted dramatically with the announced save. Social pressure: The wolf (player_3) was under intense, targeted pressure from the investigator (player_1) and other villagers who began to question their logic."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:57:48.374163+00:00",
+        "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T13:57:48.374168+00:00",
+        "value": {
+          "approach": "The wolves (player_5 and player_6) exploited the village's frustration with player_7's aggressive accusations. They framed player_7 as being disruptive and joined the vote against them.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:57:48.058273",
+          "observation_count": 1,
+          "outcome": "The village voted out their most confirmed non-wolf player. This was a massive victory for the wolves, as they manipulated the village into eliminating its own strongest asset.",
+          "situation": "The village had a twice-confirmed non-wolf (player_7) who became aggressive in trying to hunt wolves after a prior mislynch. Information landscape: Information was rich regarding player_7's status, but the discussion was dominated by arguments over the previous day's voting record. Game phase: Mid-game, after the village had mistakenly eliminated a villager (player_8). Social pressure: Player_7 was putting pressure on the players who voted for player_8, while player_4 was pressuring player_7 for their 'outlier' vote, creating village infighting."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:02:33.779878+00:00",
+        "key": "cc10c6bf-be83-4fd6-b59d-14cc3e499f1a",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:02:33.779883+00:00",
+        "value": {
+          "approach": "Player 5 continued to pivot to generalities like 'silence' instead of addressing the specific criticism, which only increased suspicion.",
+          "game_id": "f75ede14-2eda-4d05-b479-4f39638a6e1e",
+          "last_observed": "2026-05-22T14:02:33.461679",
+          "observation_count": 1,
+          "outcome": "A consensus formed against Player 5, leading to their elimination and confirmation as a wolf. This mistake cost the wolf team a member early on.",
+          "situation": "During Day 2 discussions, Wolf Player 5 attempted to sound like a helpful villager by suggesting the group analyze voting patterns. Information landscape: The game was information-starved, as no vote had occurred on Day 1, meaning there were no voting patterns to analyze. Game phase: Mid-game, following the first night's elimination of the Healer. Social pressure: Multiple villagers (Player 4, Player 7) immediately identified the logical flaw in Player 5's argument, putting them under evidence-based pressure."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:32:59.536293+00:00",
+        "key": "981148d1-f8c7-45a6-8cdb-28c4d0eeff16",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:32:59.536298+00:00",
+        "value": {
+          "approach": "Instead of simply denying the accusation, the wolf attacked the credibility of the Investigator's claim by focusing on its suspicious timing. The wolf argued that a real Investigator would have revealed their information earlier to save a villager who was mislynched the previous day.",
+          "game_id": "f75ede14-2eda-4d05-b479-4f39638a6e1e",
+          "last_observed": "2026-05-22T14:02:57.777744",
+          "observation_count": 1,
+          "outcome": "This line of reasoning successfully swayed the deciding villager (Player 6), who voted out the Investigator. The wolf's tactic secured the win.",
+          "situation": "In the final three, the last wolf (Player 3) was publicly accused by the Investigator (Player 7). Information landscape: The game was reduced to one player's word against another's, with no external evidence to verify the Investigator's claim. Game phase: Endgame, with victory depending on swaying a single villager's vote."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:08:10.311760+00:00",
+        "key": "675c0947-8b72-47fe-8c2e-00e5b9edba3c",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:08:10.311765+00:00",
+        "value": {
+          "approach": "The wolves (player_4 and player_8) remained almost entirely silent, allowing the villagers' infighting to dominate the conversation and drive the vote.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:08:09.954586",
+          "observation_count": 1,
+          "outcome": "The villagers failed to unite and voted out another villager. The wolves won the game without having to deflect any accusations or coordinate a deceptive push.",
+          "situation": "In the endgame, the remaining villagers began to turn on each other, arguing about a past mislynch. Information landscape: The villagers were focused on the Day 2 voting record, creating a stalemate between two of them. Game phase: Endgame, with 5 players left (3 villagers, 2 wolves). A single elimination could decide the game. Consensus texture: There was no consensus, only a bitter dispute between two villagers (player_3 and player_5), which fractured the village."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:08.462940+00:00",
+        "key": "d72f9bd4-53b1-4fe6-8611-1e3c545b5667",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:29:08.462945+00:00",
+        "value": {
+          "approach": "Instead of a direct defense, the wolves attacked the Investigator's tactics. They framed the accusation as a manipulative attempt to railroad the village again, weaponizing the village's recent trauma against the Investigator.",
+          "game_id": "bed231cb-eef2-41c5-9753-9abad79c73d1",
+          "last_observed": "2026-05-22T14:12:27.077231",
+          "observation_count": 1,
+          "outcome": "The village turned on the Investigator and voted them out. The wolves successfully eliminated their biggest threat and solidified their path to victory.",
+          "situation": "Mid-game, where a single misvote could swing the game. The village was wary of aggressive accusations following a recent mislynch, creating an environment of high distrust. The Investigator correctly accused a wolf, but the wolves successfully framed the Investigator as a repeat of the previous day's problem."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:17:11.334650+00:00",
+        "key": "d9834d81-6ecf-4bf1-b582-41de8643f94d",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:17:11.334655+00:00",
+        "value": {
+          "approach": "The wolf attempted to deflect by accusing the remaining villagers of a 'coordinated attack' and 'groupthink', framing the evidence-based consensus as a conspiracy.",
+          "game_id": "ec5ce6c7-2635-4a51-b6fd-878973bc3cb0",
+          "last_observed": "2026-05-22T14:17:10.970650",
+          "observation_count": 1,
+          "outcome": "The deflection tactic failed because the evidence from the voting record was too strong. The villagers saw through the attempt to sow discord and eliminated the final wolf.",
+          "situation": "Endgame, information-rich. The last wolf remaining was put on the defensive after their vote from the previous day aligned with an eliminated wolf partner. Social pressure was high, with coordinated, evidence-based pressure from the village and a strong consensus already formed against the wolf."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:08.833182+00:00",
+        "key": "ae44a55d-063d-40af-852a-befc7660d5ee",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:29:08.833186+00:00",
+        "value": {
+          "approach": "The wolf did not directly deny the accusations but instead reframed the Investigator's aggression as 'stirring up drama' and 'creating diversions,' questioning their motives rather than engaging with the substance of the accusation.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:08.462960",
+          "observation_count": 1,
+          "outcome": "The wolf successfully turned the village against the Investigator, leading to the Investigator's elimination and preserving the wolf's cover.",
+          "situation": "Early game (Day 2), information-starved with no eliminations or established trust circles. A wolf was under direct, sustained pressure from an Investigator who had correctly identified them. The conflict was based on one player's word against another's."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:34.071269+00:00",
+        "key": "1d503741-b0bf-4041-80a6-a182d155c5c0",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:29:34.071273+00:00",
+        "value": {
+          "approach": "The wolf attempted to justify their vote as 'healthy skepticism' and a 'test of collective scrutiny,' while trying to deflect suspicion onto other quiet players.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:33.759512",
+          "observation_count": 1,
+          "outcome": "The villagers saw this as a flimsy, transparent excuse for protecting a wolf. The deflection failed, and the wolf was unanimously voted out, losing the game.",
+          "situation": "In the endgame, the last wolf was confronted about their previous day's vote, where they voted against a vocal villager instead of their confirmed wolf partner. Information landscape: The information was rich and consisted of a damning voting record. Game phase: Endgame (Day 4), with only five players left and high stakes. Social pressure: The entire village applied coordinated, evidence-based pressure on the wolf (player_8)."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:32:52.821591+00:00",
+        "key": "084c2417-f2de-4ad2-b020-de0a40da0109",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:32:52.821596+00:00",
+        "value": {
+          "approach": "The wolf attempted to deflect scrutiny by misrepresenting the public voting record to normalize a suspicious outcome. They tried to create a false narrative of group responsibility.",
+          "game_id": "de6f43ac-7d8b-4854-a4e0-b0f8e7be3c8b",
+          "last_observed": "2026-05-22T14:32:52.434254",
+          "observation_count": 1,
+          "outcome": "Multiple villagers fact-checked and exposed the lie, which destroyed the wolf's credibility and led to a strong, evidence-based consensus to vote them out.",
+          "situation": "A wolf (player_7) was caught in a lie while trying to downplay the suspicious vote against the Healer. Information landscape: The information landscape was information-rich regarding voting records, which players used to fact-check the wolf's claim. Game phase: Mid-game, following the controversial elimination of the Healer. Social pressure: The wolf came under evidence-based pressure after falsely claiming the previous vote was a unanimous 'collective mistake' when the voting record proved otherwise."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:32:59.894945+00:00",
+        "key": "c806de89-613c-4472-a982-4b2a904e4687",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_discussion"
+        ],
+        "updated_at": "2026-05-22T14:32:59.894949+00:00",
+        "value": {
+          "approach": "The wolf's only defense was to attack the timing of the Investigator's reveal, arguing it was a desperate, last-minute fabrication rather than a genuine finding.",
+          "game_id": "de6f43ac-7d8b-4854-a4e0-b0f8e7be3c8b",
+          "last_observed": "2026-05-22T14:32:59.536313",
+          "observation_count": 1,
+          "outcome": "The villagers found the Investigator's claim more credible than the wolf's deflection. The wolf was unable to create sufficient doubt and was unanimously voted out, losing the game.",
+          "situation": "In the endgame, the Investigator (player_6) made a direct claim identifying the final wolf (player_3). Information landscape: The game shifted from information-starved to information-rich with the Investigator's definitive claim. Game phase: Endgame, with only four players remaining and high stakes on the final vote. Social pressure: Intense, evidence-based pressure was placed on the wolf, who was now the sole suspect."
+        }
+      }
+    ],
+    "observations/wolf/day_vote": [
+      {
+        "created_at": "2026-05-22T14:29:22.216958+00:00",
+        "key": "dcc907c8-b2b2-4efe-8c9e-ad12e9191b67",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:29:22.216962+00:00",
+        "value": {
+          "approach": "The remaining wolf cast a lone dissenting vote for another villager instead of voting with the majority against their exposed partner.",
+          "game_id": "d78303ca-2e6f-4ca7-a17f-a6f27774bab6",
+          "last_observed": "2026-05-22T14:29:21.810101",
+          "observation_count": 3,
+          "outcome": "This lone dissenting vote became the primary piece of evidence against the wolf on the following day, leading to a focused interrogation and their subsequent elimination.",
+          "situation": "A wolf's partner was being eliminated by a nearly unanimous village vote. Information landscape: The information landscape was rich regarding the targeted wolf, whose evasiveness had convinced the village of their guilt. Game phase: Mid-game, following the elimination of the Investigator. Consensus texture: A strong, multi-player consensus driven by vocal villagers had formed against the first wolf."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:23:53.531672+00:00",
+        "key": "9f6eddc0-10dd-40f5-a91f-4526314c5b71",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:23:53.531677+00:00",
+        "value": {
+          "approach": "The two wolves attempted to split the vote and frame the Healer. This failed as the village majority successfully eliminated Player 7.",
+          "game_id": "a42a38e6-608d-4d87-9cec-4a17a737a0ff",
+          "last_observed": "2026-05-22T13:23:53.182966",
+          "observation_count": 1,
+          "outcome": "This created a permanent, suspicious link. The next day, the village used this voting record to immediately identify Player 1 as the prime suspect, leading to their elimination.",
+          "situation": "A wolf (Player 7) and their partner (Player 1) both voted for a third party (Player 8, the Healer) while the rest of the village was consolidating votes on the first wolf. Information landscape: The information was speculative during the vote, but became concrete when the voting records were analyzed the next day. Game phase: Mid-game, during the first elimination vote of the game. Consensus texture: A fragile consensus was forming against Player 7, which the wolves tried to disrupt with a coordinated counter-vote."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:03:16.548344+00:00",
+        "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:03:16.548348+00:00",
+        "value": {
+          "approach": "Both wolves, player_7 and player_8, cast their votes against player_2 instead of attempting to blend in with the majority or split their votes on different targets.",
+          "game_id": "9ebbb46b-fe6b-45a6-a422-0057278f6257",
+          "last_observed": "2026-05-22T14:03:16.171411",
+          "observation_count": 2,
+          "outcome": "This created a public voting record that explicitly linked player_7 to the eliminated wolf player_8. This link became the primary evidence used to convict player_7 on the following day.",
+          "situation": "A strong consensus formed against wolf player_8 during the first vote of the game. Information landscape: The evidence was speculative, but the village was rapidly converging on a single target. Game phase: Mid-game, after one villager had been eliminated by wolves. Consensus texture: A strong and unified consensus of all five non-wolf players formed against player_8."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:34:59.255106+00:00",
+        "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T13:34:59.255111+00:00",
+        "value": {
+          "approach": "The two wolves (player_1 and player_5) split their votes each day between the two main targets (player_6 and player_8), ensuring no majority could be reached and no one would be eliminated.",
+          "game_id": "d2c35cc5-5473-4816-9754-75f19855f49c",
+          "last_observed": "2026-05-22T13:34:58.891344",
+          "observation_count": 1,
+          "outcome": "The village failed to eliminate anyone for two days, giving the wolves a free kill and allowing them to eliminate the Investigator after he became a target of the deadlock they created.",
+          "situation": "The wolves, player_1 and player_5, successfully engineered a voting deadlock between two villagers for two consecutive days. Information landscape: The village was information-starved, relying on behavioral reads and speculative accusations with no confirmed roles. Game phase: Mid-game, after one villager elimination. The wolves created a stalemate that prevented any further information from being revealed via voting. Consensus texture: There was no consensus, but rather a fragile, engineered 4-4 split in the vote on Day 2, followed by a 3-3 split on Day 3, with the wolves' votes being the deciding factor in maintaining the tie. Social pressure: Social pressure was concentrated on the two deadlocked players (player_6 and player_8), deflecting all suspicion from the wolves who were orchestrating the chaos."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:08:01.417698+00:00",
+        "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:08:01.417702+00:00",
+        "value": {
+          "approach": "The wolves (player_4 and player_8) saw the villagers turning on one of their own and joined the majority vote against player_6.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:08:01.059045",
+          "observation_count": 1,
+          "outcome": "The villager was eliminated with a near-unanimous vote. By voting with the majority, the wolves successfully blended in and avoided any suspicion, while also removing an active villager.",
+          "situation": "A strong consensus formed to eliminate a villager (player_6) who was being aggressively inquisitive. Information landscape: The vote was driven by social dynamics and accusations about communication style, not hard evidence. Game phase: Mid-game, during the first vote of the game. The village was desperate for a lead. Consensus texture: A strong bandwagon formed against player_6, initiated by the Investigator (player_2) and another villager (player_5)."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:17:15.963773+00:00",
+        "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:17:15.963777+00:00",
+        "value": {
+          "approach": "The wolves (player_4, player_6) voted as a bloc for the Investigator (player_1), while their target (player_4) also defended themselves. The other wolf (player_6) explicitly supported voting for the Investigator.",
+          "game_id": "ec5ce6c7-2635-4a51-b6fd-878973bc3cb0",
+          "last_observed": "2026-05-22T14:17:15.593803",
+          "observation_count": 1,
+          "outcome": "This led to a tie vote, buying the wolves another night. However, player_6's vote against the Investigator created a strong piece of evidence that was used against them after player_4 was confirmed to be a wolf.",
+          "situation": "A wolf's partner was under heavy suspicion from the Investigator, leading to a split village and a tie vote. Information landscape: The information was polarized, with the Investigator making a strong accusation against one wolf (player_4), splitting the village. Game phase: Mid-game, with the village deadlocked between two primary suspects."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:32:45.907459+00:00",
+        "key": "c7e4022b-a98e-4a65-ba7d-e3918791f45f",
+        "namespace": [
+          "observations",
+          "wolf",
+          "day_vote"
+        ],
+        "updated_at": "2026-05-22T14:32:45.907464+00:00",
+        "value": {
+          "approach": "The wolves joined an emerging, unfocused vote against the Healer, successfully turning a minor suspicion into a majority elimination of a high-value town role.",
+          "game_id": "de6f43ac-7d8b-4854-a4e0-b0f8e7be3c8b",
+          "last_observed": "2026-05-22T14:32:45.560662",
+          "observation_count": 1,
+          "outcome": "The Healer was eliminated, removing the village's protection and giving the wolves a significant advantage for the rest of the game.",
+          "situation": "A rapid, multi-voter bandwagon formed against the Healer (player_1) on Day 2, leading to their elimination. Information landscape: The vote was based on speculative reads, as there was no hard evidence against the Healer. Game phase: Mid-game, after one night action but no eliminations. The elimination of the Healer was a pivotal change. Consensus texture: A fragile consensus formed quickly, driven by a few initial votes that the two wolves (player_3 and player_7) amplified by joining in."
+        }
+      }
+    ],
+    "observations/wolf/night_action": [
+      {
+        "created_at": "2026-05-22T13:19:13.891207+00:00",
+        "key": "ac7776b5-45ac-4f25-b4c8-139e9ee67144",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:19:13.891211+00:00",
+        "value": {
+          "approach": "The wolves identified player_2, the Investigator, as a player trying to take a leadership role and organize the discussion. They chose to eliminate them to sow confusion and remove a potential threat.",
+          "game_id": "d78303ca-2e6f-4ca7-a17f-a6f27774bab6",
+          "last_observed": "2026-05-22T13:19:13.524474",
+          "observation_count": 1,
+          "outcome": "The wolves successfully eliminated the Investigator, a major blow to the village. However, this action also validated the investigator's private finding that one of the wolves was suspicious, though this information was lost.",
+          "situation": "On Night 1, the wolves needed to select a target to destabilize the village. Information landscape: The game was information-starved, with only Day 1 introductions as a basis for decisions. Game phase: Early game, before any eliminations had occurred."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:29:39.471506+00:00",
+        "key": "8906270f-3ce9-425d-9bf0-ac05bd6ccf23",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:29:39.471511+00:00",
+        "value": {
+          "approach": "The wolves chose to persist and target the same player (player_2) again on the following night, betting that the Healer would not protect them twice, correctly identifying that their trusted status made them the biggest remaining threat to coordinate the village.",
+          "game_id": "4a55cc88-3450-4c93-ae2c-78214d422d5c",
+          "last_observed": "2026-05-22T14:29:39.110527",
+          "observation_count": 2,
+          "outcome": "The kill succeeded, removing a now-confirmed villager from the game. This prevented that player from using their newfound credibility to lead the village against the wolves and sowed further confusion.",
+          "situation": "After failing to kill a vocal villager (player_2) on Night 1 due to a Healer save, the wolves had to decide on their Night 2 target. Information landscape: The healer save created new information, turning a previously unknown player into a publicly trusted figure. Game phase: Mid-game, after the village had mistakenly eliminated the Investigator."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:02:31.418920+00:00",
+        "key": "4371209b-3bf7-46d9-a871-d39e2b6f4f05",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:02:31.418924+00:00",
+        "value": {
+          "approach": "The wolves identified a player who was proactive in analyzing behavior and trying to push the conversation 'too quickly' and targeted them for elimination to neutralize an analytical threat before they could gain influence.",
+          "game_id": "a7c4af3e-4159-4a6d-a6ba-aba130dbe1c3",
+          "last_observed": "2026-05-22T14:02:30.967459",
+          "observation_count": 4,
+          "outcome": "The analytical player was removed, which created confusion and left the village discussion unfocused and repetitive on Day 2, allowing the wolves to exploit the lack of direction.",
+          "situation": "During the first night, the wolves needed to select a target with no information available. Information landscape: The game was information-starved, with suspicion based entirely on initial communication patterns. Game phase: Early game, before any votes or eliminations."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:29:07.046646+00:00",
+        "key": "7a6dab48-1acf-4ed1-8b07-5e594f1b4576",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:29:07.046650+00:00",
+        "value": {
+          "approach": "The wolf, player_7, correctly identified the village's de facto leader, player_2 (the Investigator), as the greatest threat and targeted them for elimination.",
+          "game_id": "9ebbb46b-fe6b-45a6-a422-0057278f6257",
+          "last_observed": "2026-05-22T13:29:06.706753",
+          "observation_count": 1,
+          "outcome": "The Investigator was eliminated, severely hampering the village's ability to gather new information and evening the playing field.",
+          "situation": "As the lone wolf, player_7's partner had just been eliminated due to a successful village vote led by player_2. Information landscape: The information landscape was rich for the village, who now had momentum and a confirmed leader. Game phase: Mid-game, transitioning to endgame with one wolf remaining."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:35:21.567942+00:00",
+        "key": "9aeb00e1-096c-41a9-bf30-96983468a66d",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:35:21.567946+00:00",
+        "value": {
+          "approach": "The wolves chose to pivot and switch targets to a different villager (player_3) who was emerging as a logical voice, rather than re-targeting the saved player.",
+          "game_id": "d2c35cc5-5473-4816-9754-75f19855f49c",
+          "last_observed": "2026-05-22T13:35:21.166931",
+          "observation_count": 1,
+          "outcome": "The switch was successful, resulting in the elimination of a villager (player_3). This avoided a potential second wasted night on a protected target and removed another organizing influence from the village.",
+          "situation": "On Night 2, after their first target was saved by the Healer, the wolves had to decide whether to re-target the saved player or switch to a new one. Information landscape: The wolves knew a Healer was in play and that their first target, player_2, was now a confirmed villager in the Healer's eyes. Game phase: Early game, after the first night's action."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:32:40.994567+00:00",
+        "key": "32324b84-0a1b-4618-9078-f5411efb8e3d",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:32:40.994572+00:00",
+        "value": {
+          "approach": "The wolves, player_5 and player_6, chose to target player_7 because they were actively analyzing player behavior, marking them as a potential threat.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T14:32:40.677347",
+          "observation_count": 2,
+          "outcome": "The Healer also identified player_7 as a key player and protected them. This successful save revealed the Healer's presence, gave the village a confirmed non-wolf on Day 2, and wasted the wolves' first attack.",
+          "situation": "Wolves targeted an observant and analytical player on the first night. Information landscape: The game was information-starved, with decisions based on initial communication patterns. Game phase: Early-game, prior to any eliminations or role revelations."
+        }
+      },
+      {
+        "created_at": "2026-05-22T13:58:00.950411+00:00",
+        "key": "42dae544-417f-4975-bbbb-a144baf98324",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T13:58:00.950416+00:00",
+        "value": {
+          "approach": "Having failed to kill player_7 twice, the wolves changed targets on Night 3 to player_2, who had become a vocal and influential voice in the discussions.",
+          "game_id": "ddd050a3-3b62-4ce0-9f39-a4afc58a3ad2",
+          "last_observed": "2026-05-22T13:58:00.639885",
+          "observation_count": 1,
+          "outcome": "The kill on player_2 was successful. This eliminated another active villager and prevented the Healer from performing a third consecutive save, demonstrating the importance of target flexibility.",
+          "situation": "After repeatedly failing to kill a specific villager (player_7), the wolves shifted their strategy. Information landscape: The wolves knew their primary target was being protected by a Healer, making further attempts futile. Game phase: Mid-game, after two failed night attacks on the same target."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:07:34.228778+00:00",
+        "key": "30c3a34b-18fb-4a34-aa9f-5389c59e8a3e",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:07:34.228782+00:00",
+        "value": {
+          "approach": "The wolves (player_4 and player_8) chose to eliminate player_1, who was the most vocal about establishing a strategy, identifying them as a potential organizer for the village.",
+          "game_id": "ccd836de-4400-4570-a6d8-25d9a67d9126",
+          "last_observed": "2026-05-22T14:07:33.870689",
+          "observation_count": 1,
+          "outcome": "The target, player_1, was the Healer. Their elimination immediately removed the village's only protective role and created disorganization on Day 2, achieving the wolves' strategic goal.",
+          "situation": "On Night 1, the wolves needed to select a target to destabilize the village. Information landscape: The landscape was information-starved as it was the first night with no data on player behaviors or roles. Game phase: Early game, before any eliminations had occurred, making the first kill impactful for setting the game's tone."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:12:29.792299+00:00",
+        "key": "b8eca99b-afd7-40eb-92ed-78601e2b8ca7",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:12:29.792303+00:00",
+        "value": {
+          "approach": "The wolves followed a clear threat-prioritization model. They first targeted a vocal player (Player 2), then the coordinating Healer (Player 3), and finally the most logical remaining villager (Player 6) after the Investigator was eliminated.",
+          "game_id": "bed231cb-eef2-41c5-9753-9abad79c73d1",
+          "last_observed": "2026-05-22T14:12:29.410378",
+          "observation_count": 1,
+          "outcome": "This systematic elimination of leadership, special roles, and logical thinkers left the remaining villagers confused and unable to mount an effective defense, directly leading to a wolf victory.",
+          "situation": "The wolves had to select targets throughout the game to maximize their chances of winning. Information landscape: The wolves possessed perfect information about their own team and had to deduce the roles of others based on daytime behavior. Game phase: This occurred across all game phases, from an early-game vocal target to a mid-game coordinator (the Healer) and a late-game logical threat."
+        }
+      },
+      {
+        "created_at": "2026-05-22T14:17:03.831489+00:00",
+        "key": "0921bd05-019f-4088-b774-9e3af67b7f1a",
+        "namespace": [
+          "observations",
+          "wolf",
+          "night_action"
+        ],
+        "updated_at": "2026-05-22T14:17:03.831493+00:00",
+        "value": {
+          "approach": "The wolves (player_4, player_6) targeted the Investigator (player_1) on Night 1 and again on Night 3.",
+          "game_id": "ec5ce6c7-2635-4a51-b6fd-878973bc3cb0",
+          "last_observed": "2026-05-22T14:17:03.454301",
+          "observation_count": 1,
+          "outcome": "The repeated failed attempts to kill the Investigator made them appear highly credible and 'confirmed good' to the village, ultimately strengthening the Investigator's position and justifying the Healer's protection strategy.",
+          "situation": "The wolf pack targeted the same player on two different nights, and the target was saved by the Healer both times. Information landscape: The wolves knew they were targeting a high-value player but had no information about the Healer's strategy. Game phase: Mid-game, where eliminating a power role was a high priority for the wolves."
+        }
+      }
+    ]
+  },
+  "schema_version": "werewolf_observations.v2",
+  "updated_at": "2026-05-22T14:34:01.634165"
+}

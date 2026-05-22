@@ -1,0 +1,11 @@
+{
+  "case_count": 40,
+  "created_at": "2026-05-19T11:12:44.108517",
+  "created_from": "v2_memory_wolfs_only_all_enabled_all_enabled",
+  "dataset_path": "eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl",
+  "eval_set_id": "v2_memory_wolfs_only_all_enabled_all_enabled",
+  "max_games": 0,
+  "max_samples": 40,
+  "per_role_per_phase": 1,
+  "seed": 0
+}
