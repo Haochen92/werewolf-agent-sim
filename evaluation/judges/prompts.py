@@ -18,7 +18,7 @@ JUDGE_USER_PROMPT = """\
 AGENT CONTEXT:
 - Role: {player_role}
 - Day {day}, Round {round}
-- Action type: {action_type}
+- Action phase: {action_phase}
 
 TODAY'S DISCUSSION SO FAR (what the agent saw when generating the summary):
 {day_channel_excerpt}
@@ -170,7 +170,7 @@ APPLICATION_USER_PROMPT = """\
 AGENT CONTEXT:
 - Role: {player_role}
 - Day {day}, Round {round}
-- Action type: {action_type}
+- Action phase: {action_phase}
 
 TODAY'S DISCUSSION AVAILABLE TO THE AGENT:
 {day_channel_excerpt}
@@ -255,7 +255,7 @@ AGENT CONTEXT:
 - Player: {player_id}
 - Role: {player_role}
 - Day {day}, Round {round}
-- Action type: {action_type}
+- Action phase: {action_phase}
 
 TODAY'S DISCUSSION AVAILABLE TO THE AGENT:
 {day_channel_excerpt}
@@ -292,4 +292,171 @@ Return ONLY valid JSON:
   "confidence": N,
   "brief_reasoning": "1-2 sentences explaining the comparison"
 }}
+"""
+
+
+# ---------------------------------------------------------------------------
+# Extraction judge
+# ---------------------------------------------------------------------------
+
+EXTRACTION_SYSTEM_PROMPT = """\
+You are evaluating the quality of observations and strategy points extracted \
+from a completed Werewolf game. The extraction model was given the full game \
+transcript and asked to produce episodic memories (observations) and tactical \
+principles (strategy points) that will be stored for future games.
+
+Your job is to score the extraction output on five dimensions. You will be \
+given the game context, the game transcript, and the full set of extracted \
+items.
+"""
+
+
+EXTRACTION_USER_PROMPT = """\
+GAME CONTEXT:
+- Roles: {roles}
+- Outcome: {game_outcome}
+
+GAME TRANSCRIPT:
+{formatted_discussions}
+
+AGENT STRATEGY NOTES DURING GAME:
+{formatted_strategy_notes}
+
+{situation_standards}
+
+{epistemic_status_rule}
+
+---
+
+EXTRACTED OBSERVATIONS ({num_observations} items):
+{observations_formatted}
+
+EXTRACTED STRATEGY POINTS ({num_strategy_points} items):
+{strategy_points_formatted}
+
+---
+
+Score the following five dimensions from 1 to 5:
+
+1. SPECIFICITY: Do the situation descriptions use qualifying detail from the \
+dimensional framework (information landscape, consensus texture, social \
+pressure, game phase) to make them distinctive for semantic search?
+   1 = vague enough to match any game
+   2 = mentions topic but lacks situational detail
+   3 = some dimensional grounding but could be more precise
+   4 = well-grounded with most relevant dimensions specified
+   5 = precisely scoped to specific dynamics, would match only similar situations
+
+2. EPISTEMIC COMPLIANCE: Do entries respect the assigned role's knowledge \
+level? Own findings and system-confirmed roles are valid; hidden ground truth \
+or omniscient narrator perspective is a violation.
+   1 = pervasive violations — uses hidden roles and omniscient perspective
+   2 = several entries use ground truth not available to the role
+   3 = mostly compliant with isolated lapses
+   4 = strong compliance, roles described at correct certainty level
+   5 = every claim at the correct certainty level for the role
+
+3. GROUNDING: Is every claim traceable to the game transcript?
+   1 = major fabricated events or dynamics
+   2 = some invented context not in the transcript
+   3 = minor embellishments but core facts are grounded
+   4 = well grounded with trivial paraphrasing
+   5 = every detail traceable to the source transcript
+
+4. COVERAGE: Do the extracted items collectively cover the key strategic \
+moments and learnings from this game for each role?
+   1 = misses the most important dynamics
+   2 = captures some events but misses key turning points
+   3 = covers the main events but misses subtler dynamics
+   4 = good coverage of major and some minor decision points
+   5 = captures all major strategic moments across roles
+
+5. DIVERSITY: Are the extracted items distinct from each other?
+   1 = mostly duplicate advice in different words
+   2 = significant overlap between items
+   3 = some redundancy but enough distinct ideas
+   4 = mostly distinct with minor thematic overlap
+   5 = every item adds a distinct strategic idea
+
+Respond ONLY with valid JSON, no markdown fences:
+{{"specificity": N, "epistemic_compliance": N, "grounding": N, \
+"coverage": N, "diversity": N, \
+"brief_reasoning": "2-3 sentences explaining your scores"}}
+"""
+
+
+# ---------------------------------------------------------------------------
+# Dedup judge
+# ---------------------------------------------------------------------------
+
+DEDUP_SYSTEM_PROMPT = """\
+You are evaluating a dedup decision made by an AI system that maintains a \
+strategy database for a Werewolf agent. The system compared a newly extracted \
+entry against similar existing entries and chose one of four actions:
+
+A = DISCARD (duplicate)
+B = REPLACE (merge, keeping best elements)
+C = DIFFERENTIATE (both kept, rewritten to clarify distinction)
+D = KEEP (novel, stored as-is)
+
+Your job is to judge whether the decision was correct and, for REPLACE or \
+DIFFERENTIATE, whether the rewritten text is high quality.
+"""
+
+
+DEDUP_USER_PROMPT = """\
+ITEM TYPE: {item_type}
+PERSPECTIVE: {perspective}
+ACTION PHASE: {action_phase}
+
+NEW ENTRY:
+{new_entry_formatted}
+
+SIMILAR EXISTING ENTRIES ({candidate_count} candidates):
+{candidates_formatted}
+
+DECISION MADE: {decision}
+REASONING: {decision_reasoning}
+{decision_output}
+
+---
+
+Score the following dimensions:
+
+1. DECISION CORRECTNESS (1-5): Was the correct action chosen?
+   The key test: would a player do anything meaningfully different after \
+reading one entry vs the other? If no, the entries are duplicates (A), not \
+differentiations (C).
+   1 = clearly wrong decision (e.g., discarded a novel entry, or kept a \
+clear duplicate)
+   2 = questionable decision with a better alternative
+   3 = defensible but debatable
+   4 = correct decision with minor quibbles
+   5 = unambiguously correct
+
+2. MERGE QUALITY (1-5): For REPLACE (B) or DIFFERENTIATE (C) only — is the \
+rewritten text well-formed, standards-compliant, and an improvement?
+   For KEEP (D) or DISCARD (A): score 5 (not applicable).
+   1 = rewrite is worse than the originals
+   2 = rewrite loses important detail or adds vagueness
+   3 = adequate but could be improved
+   4 = good rewrite that captures the key elements
+   5 = excellent rewrite, clear and precise
+
+3. INFORMATION PRESERVATION (1-5): Were important nuances preserved?
+   For KEEP (D) or DISCARD (A): score 5 (not applicable).
+   1 = critical distinctions lost
+   2 = meaningful detail dropped
+   3 = some loss but core ideas retained
+   4 = minor nuances lost at most
+   5 = all meaningful detail retained
+
+4. FABRICATION DETECTED (true/false): Did the rewrite introduce game phase, \
+information landscape, consensus texture, social pressure, or any other \
+context NOT explicitly present in the input entries being compared?
+
+Respond ONLY with valid JSON, no markdown fences:
+{{"decision_correctness": N, "merge_quality": N, \
+"information_preservation": N, "fabrication_detected": true_or_false, \
+"brief_reasoning": "2-3 sentences explaining your scores"}}
 """

@@ -9,6 +9,7 @@ from typing import Any
 from langgraph.store.base import PutOp
 from langgraph.store.memory import InMemoryStore
 
+from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE
 from Agents.memory import embeddings
 from evaluation.core.schemas import RetrievalScores
 
@@ -18,6 +19,25 @@ DEFAULT_STORE_LOAD_BATCH_SIZE = 1
 
 def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _snapshot_namespaces(namespace: tuple[str, ...]) -> list[tuple[str, ...]]:
+    if len(namespace) == 3:
+        return [namespace]
+    if len(namespace) != 2:
+        return []
+    memory_kind, role = namespace
+    if memory_kind not in {"observations", "strategy_points"}:
+        return [namespace]
+    phases = VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
+    return [(memory_kind, role, phase) for phase in phases]
+
+
+def _snapshot_value(value: dict[str, Any]) -> dict[str, Any] | None:
+    situation = value.get("situation") or value.get("content")
+    if not situation:
+        return None
+    return {**value, "situation": situation}
 
 
 def build_store_from_snapshots(
@@ -30,7 +50,7 @@ def build_store_from_snapshots(
         index={
             "dims": 1536,
             "embed": embeddings,
-            "fields": ["content"],
+            "fields": ["situation"],
         }
     )
 
@@ -38,14 +58,16 @@ def build_store_from_snapshots(
     for path in (observations_path, strategy_points_path):
         payload = _read_json(path)
         for namespace_key, items in payload.get("namespaces", {}).items():
-            namespace = tuple(namespace_key.split("/"))
-            if len(namespace) != 2:
+            namespaces = _snapshot_namespaces(tuple(namespace_key.split("/")))
+            if not namespaces:
                 continue
             for item in items:
                 key = item.get("key")
-                value = item.get("value", item)
-                if key and value.get("content"):
-                    put_ops.append(PutOp(namespace, key, value))
+                value = _snapshot_value(item.get("value", item))
+                if key and value:
+                    put_ops.extend(
+                        PutOp(namespace, key, value) for namespace in namespaces
+                    )
 
     print(
         f"  Indexing {len(put_ops)} memory items from "
@@ -71,4 +93,3 @@ def redundancy_ratio(item_count: int, scores: RetrievalScores | None) -> float |
     if item_count <= 0 or scores is None:
         return None
     return max(0.0, 1 - (scores.unique_idea_count / item_count))
-

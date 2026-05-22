@@ -144,3 +144,97 @@ class E2EExperimentConfig(BaseModel):
     judge: bool = False
     judge_model: str = "gemini-2.5-pro"
     sleep_seconds: float = Field(default=1.0, ge=0)
+
+
+# ---------------------------------------------------------------------------
+# Extraction & dedup dataset builders
+# ---------------------------------------------------------------------------
+
+
+def _require_one_langfuse_source(model: BaseModel) -> None:
+    sources = [
+        getattr(model, "session_prefix", None),
+        getattr(model, "session_id", None),
+        getattr(model, "session_ids", None),
+        getattr(model, "batch_results", None),
+        getattr(model, "trace_ids", None),
+    ]
+    provided_count = sum(source not in (None, "", []) for source in sources)
+    if provided_count != 1:
+        raise ValueError(
+            "Exactly one of session_prefix, session_id, session_ids, "
+            "batch_results, or trace_ids must be set."
+        )
+
+
+class ExtractionDatasetBuildConfig(BaseModel):
+    """Config for freezing extraction spans into a local eval dataset."""
+
+    eval_set_id: str
+    session_prefix: str | None = None
+    session_id: str | None = None
+    session_ids: list[str] | None = None
+    batch_results: Path | None = None
+    trace_ids: list[str] | None = None
+    created_from: str | None = None
+    max_games: int = Field(default=5, ge=0)
+    max_samples: int = Field(default=40, ge=0)
+    seed: int = 0
+    output: Path | None = None
+    overwrite: bool = False
+
+    @model_validator(mode="after")
+    def require_one_source(self) -> "ExtractionDatasetBuildConfig":
+        _require_one_langfuse_source(self)
+        return self
+
+
+class DedupDatasetBuildConfig(BaseModel):
+    """Config for freezing dedup decision spans into a local eval dataset."""
+
+    eval_set_id: str
+    session_prefix: str | None = None
+    session_id: str | None = None
+    session_ids: list[str] | None = None
+    batch_results: Path | None = None
+    trace_ids: list[str] | None = None
+    created_from: str | None = None
+    max_games: int = Field(default=5, ge=0)
+    max_samples: int = Field(default=40, ge=0)
+    filter_auto: bool = False
+    seed: int = 0
+    output: Path | None = None
+    overwrite: bool = False
+
+    @model_validator(mode="after")
+    def require_one_source(self) -> "DedupDatasetBuildConfig":
+        _require_one_langfuse_source(self)
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Extraction & dedup experiment configs
+# ---------------------------------------------------------------------------
+
+
+class ExtractionExperimentConfig(BaseModel):
+    """Config for judging captured extraction cases."""
+
+    dataset: Path
+    output: Path | None = None
+    max_samples: int = Field(default=0, ge=0)
+    judge: bool = True
+    judge_model: str = "gemini-2.5-pro"
+    sleep_seconds: float = Field(default=1.0, ge=0)
+
+
+class DedupExperimentConfig(BaseModel):
+    """Config for judging captured dedup decision cases."""
+
+    dataset: Path
+    output: Path | None = None
+    max_samples: int = Field(default=0, ge=0)
+    judge: bool = True
+    judge_model: str = "gemini-2.5-pro"
+    filter_auto: bool = False
+    sleep_seconds: float = Field(default=1.0, ge=0)

@@ -19,8 +19,11 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field
 
 from Agents.memory import DEDUP_THRESHOLD
-from Agents.prompts.standards import SITUATION_STANDARDS
+from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, PER_EXTRACTION_DEDUP_PROMPT
+from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas import Observation, StoredObservation, StrategyPoint, StoredStrategyPoint
+from Agents.schemas.evaluation import DedupCase, DedupCandidate
+from Agents.tracing import langfuse
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +34,12 @@ logger = logging.getLogger(__name__)
 DEDUP_SIMILARITY_THRESHOLD = 0.55  # Lower than rule-based to cast a wider net
 DEDUP_TOP_N = 5
 DEDUP_MAX_RETRIES = 2
-DEDUP_MODEL = "gemini-2.5-flash"
+DEDUP_MODEL = "gemini-3.1-flash-lite"
+DEDUP_THINKING_LEVEL = "low"
 
 
 # ---------------------------------------------------------------------------
-# Schemas
+# Schemas — strategy point dedup (unchanged structure)
 # ---------------------------------------------------------------------------
 
 
@@ -103,20 +107,17 @@ class Keep(BaseModel):
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
-    new_rewritten_situation: Optional[str] = Field(
-        default=None,
-        description="Rewritten situation for the new entry, if minor wording improvements are suggested",
-    )
-    new_rewritten_action: Optional[str] = Field(
-        default=None,
-        description="Rewritten action for the new entry, if minor wording improvements are suggested",
-    )
 
 class DedupDecisionOutput(BaseModel):
     result: Annotated[
         Discard | Replace | Differentiate | Keep,
         Field(discriminator="decision"),
     ]
+
+
+# ---------------------------------------------------------------------------
+# Schemas — observation dedup (structured situation/approach/outcome)
+# ---------------------------------------------------------------------------
 
 
 class ObservationDiscard(BaseModel):
@@ -139,11 +140,14 @@ class ObservationReplace(BaseModel):
         ge=1,
         description="The 1-based candidate number of the existing observation to replace",
     )
-    merged_observation: str = Field(
-        description=(
-            "The merged observation in Scenario -> Approach -> Outcome format, "
-            "keeping the best specificity from both observations"
-        ),
+    merged_situation: str = Field(
+        description="The merged situation text, keeping the best specificity from both",
+    )
+    merged_approach: str = Field(
+        description="The merged approach text",
+    )
+    merged_outcome: str = Field(
+        description="The merged outcome text",
     )
 
 
@@ -162,11 +166,23 @@ class ObservationDifferentiate(BaseModel):
         ge=1,
         description="The 1-based candidate number of the existing observation to rewrite",
     )
-    existing_rewritten_observation: str = Field(
-        description="Rewritten content for the existing observation",
+    existing_rewritten_situation: str = Field(
+        description="Rewritten situation for the existing observation",
     )
-    new_rewritten_observation: str = Field(
-        description="Rewritten content for the new observation",
+    existing_rewritten_approach: str = Field(
+        description="Rewritten approach for the existing observation",
+    )
+    existing_rewritten_outcome: str = Field(
+        description="Rewritten outcome for the existing observation",
+    )
+    new_rewritten_situation: str = Field(
+        description="Rewritten situation for the new observation",
+    )
+    new_rewritten_approach: str = Field(
+        description="Rewritten approach for the new observation",
+    )
+    new_rewritten_outcome: str = Field(
+        description="Rewritten outcome for the new observation",
     )
 
 
@@ -174,10 +190,6 @@ class ObservationKeep(BaseModel):
     decision: Literal["D", "KEEP"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
-    )
-    new_rewritten_observation: Optional[str] = Field(
-        default=None,
-        description="Rewritten observation, if minor wording improvements are suggested",
     )
 
 
@@ -189,6 +201,11 @@ class ObservationDedupDecisionOutput(BaseModel):
         | ObservationKeep,
         Field(discriminator="decision"),
     ]
+
+
+# ---------------------------------------------------------------------------
+# Common schemas
+# ---------------------------------------------------------------------------
 
 
 class DedupAction(str, Enum):
@@ -205,6 +222,8 @@ class DedupResult(BaseModel):
 
     action: DedupAction
     auto: bool = False
+    candidates: list[dict] = Field(default_factory=list)
+    decision_detail: dict | None = None
 
 
 class DedupStats(BaseModel):
@@ -220,144 +239,30 @@ class DedupStats(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Prompt
-# ---------------------------------------------------------------------------
-
-PER_EXTRACTION_DEDUP_PROMPT = """
-You are maintaining a strategy database for an AI Werewolf agent. A new
-strategy point has just been extracted from a game. Your job is to compare
-it against the most similar existing entries and decide how to integrate it.
-
-{situation_standards}
-
-All situation fields you write or rewrite must conform to the standards above.
-For the structured output field named "decision", use exactly the letter tag
-"A", "B", "C", or "D"; do not use DISCARD, REPLACE, DIFFERENTIATE, or KEEP.
-
----
-
-NEW EXTRACTION:
-Role: {new_role}
-Situation: {new_content}
-Action: {new_action}
-
-SIMILAR EXISTING ENTRIES ({total_similar_count} entries above similarity
-threshold; top {top_n} shown):
-{existing_entries}
-
----
-
-Decide ONE of the following outcomes:
-
-(A) DISCARD — The new point is a duplicate of an existing entry. Both the
-    situation and action express the same idea, even if worded differently.
-    Output: the candidate number of the entry it duplicates.
-
-(B) REPLACE — The new point covers the same situation and action as an
-    existing entry, but is more specific, better reasoned, or captures a
-    nuance the existing entry misses. Output: the candidate number to
-    replace, and the final merged situation + action (keeping the best
-    elements of both).
-
-(C) DIFFERENTIATE — The new point describes a similar situation but
-    recommends a meaningfully different action. This is an action-spectrum
-    case: both actions may be correct under slightly different conditions.
-    Output: identify the situational variable that distinguishes them —
-    typically one of: information landscape (what evidence exists), consensus
-    texture (how strong or fragile agreement is), social pressure dynamics
-    (who is driving accusations and how), or game phase (early/mid/endgame).
-    Then rewrite BOTH situations to make the distinguishing variable explicit
-    in the text. Do not split into more than 3 entries along any single
-    variable.
-
-(D) KEEP — The new point is genuinely novel. No existing entry covers this
-    situation or this action. Output: confirm it should be added as-is, or
-    suggest minor wording improvements.
-
-DECISION RULES:
-- If the new point would be the 4th+ entry on the same spectrum, prefer
-  merging it into the closest existing entry over creating another split.
-- "Same idea, different words" is a duplicate, not a differentiation. The
-  test: would a player in that situation do anything differently based on
-  reading one entry vs. the other? If no, it is a duplicate.
-- For REPLACE and DIFFERENTIATE, the output must meet the quality bar in the
-  situation standards above: the situation must describe a recognizable game
-  dynamic using the dimensional framework and epistemic status rule. The
-  action must explain a non-obvious mechanism, not restate common-sense play.
-- When an output field asks for a candidate number, use only the bracketed
-  candidate number shown in SIMILAR EXISTING ENTRIES. Do not output UUID keys.
-"""
-
-
-OBSERVATION_DEDUP_PROMPT = """
-You are maintaining an episodic observation database for an AI Werewolf agent.
-A new observation has just been extracted from a game. Your job is to compare
-it against the most similar existing observations and decide how to integrate
-it.
-
-Observations are FACTS about what happened in a game. They must use
-Scenario -> Approach -> Outcome format in a single concise paragraph:
-- Scenario: the specific game conditions that created the situation, including
-  what triggered it, what public information existed, and what pressure existed.
-- Approach: how the relevant role acted or reacted.
-- Outcome: how others responded and what downstream consequences followed.
-
-Use agent roles, never player IDs. Keep observations specific enough for
-semantic retrieval; do not write generic categories like "after a mislynch"
-without the conditions that made that mislynch distinctive.
-
-For the structured output field named "decision", use exactly the letter tag
-"A", "B", "C", or "D"; do not use DISCARD, REPLACE, DIFFERENTIATE, or KEEP.
-
----
-
-NEW OBSERVATION:
-Role: {new_role}
-Observation: {new_content}
-
-SIMILAR EXISTING OBSERVATIONS ({total_similar_count} entries above similarity
-threshold; top {top_n} shown):
-{existing_entries}
-
----
-
-Decide ONE of the following outcomes:
-
-(A) DISCARD — The new observation is a duplicate of an existing observation.
-    They describe the same scenario, approach, and outcome, even if worded
-    differently. Output the candidate number of the entry it duplicates.
-
-(B) REPLACE — The new observation covers the same underlying event/dynamic as
-    an existing observation, but is more specific, better causal, or captures
-    important detail the existing entry misses. Output the candidate number to
-    replace and the final merged observation.
-
-(C) DIFFERENTIATE — The new observation is similar to an existing observation
-    but records a meaningfully different scenario, approach, or outcome. Output
-    the distinguishing variable, then rewrite BOTH observations so each one
-    clearly states the condition that makes it distinct.
-
-(D) KEEP — The new observation is genuinely novel. No existing entry covers
-    this scenario, approach, and outcome. Output that it should be added as-is,
-    or suggest a minor wording improvement.
-
-DECISION RULES:
-- "Same event, same lesson, different words" is a duplicate.
-- Prefer REPLACE over KEEP when the new observation mainly improves specificity
-  for an existing memory.
-- Use DIFFERENTIATE only when both observations should be retained because they
-  would be retrieved for meaningfully different future game states.
-- Rewritten or merged observations must remain factual and must preserve
-  Scenario -> Approach -> Outcome.
-- When an output field asks for a candidate number, use only the bracketed
-  candidate number shown in SIMILAR EXISTING OBSERVATIONS. Do not output UUID
-  keys.
-"""
-
-
-# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _serialize_candidates(items: list) -> list[dict]:
+    """Serialize store search results into plain dicts for tracing."""
+    result = []
+    for i, item in enumerate(items, 1):
+        value = item.value
+        candidate: dict = {
+            "candidate_number": i,
+            "key": item.key,
+            "similarity": round(item.score or 0.0, 4),
+            "observation_count": value.get("observation_count", 1),
+            "situation": value.get("situation", ""),
+        }
+        if "action" in value:
+            candidate["action"] = value["action"]
+        if "approach" in value:
+            candidate["approach"] = value["approach"]
+        if "outcome" in value:
+            candidate["outcome"] = value["outcome"]
+        result.append(candidate)
+    return result
 
 
 def _format_existing_entries(items: list) -> str:
@@ -369,7 +274,7 @@ def _format_existing_entries(items: list) -> str:
         lines.append(
             f"[{i}] Candidate: {i}; Key: {item.key} "
             f"(similarity={item.score:.3f}, observed={value.get('observation_count', 1)}x)\n"
-            f"    Situation: {value.get('content', '')}\n"
+            f"    Situation: {value.get('situation', '')}\n"
             f"    Action: {value.get('action', '')}"
         )
     return "\n\n".join(lines)
@@ -384,13 +289,19 @@ def _format_existing_observations(items: list) -> str:
         lines.append(
             f"[{i}] Candidate: {i}; Key: {item.key} "
             f"(similarity={item.score:.3f}, observed={value.get('observation_count', 1)}x)\n"
-            f"    Observation: {value.get('content', '')}"
+            f"    Situation: {value.get('situation', '')}\n"
+            f"    Approach: {value.get('approach', '')}\n"
+            f"    Outcome: {value.get('outcome', '')}"
         )
     return "\n\n".join(lines)
 
 
 def _get_dedup_llm() -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(model=DEDUP_MODEL, temperature=0.0)
+    return ChatGoogleGenerativeAI(
+        model=DEDUP_MODEL,
+        temperature=0.0,
+        thinking_level=DEDUP_THINKING_LEVEL,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -409,20 +320,24 @@ def dedup_single_observation(
 
     Returns the decision taken, or None if dedup failed (observation stored raw).
     """
-    namespace = ("observations", observation.perspective)
+    namespace = ("observations", observation.perspective, observation.action_phase)
 
     all_similar = store.search(
         namespace,
-        query=observation.content,
+        query=observation.composed_situation,
         limit=DEDUP_TOP_N,
     )
+
+    candidates = _serialize_candidates(all_similar) if all_similar else []
 
     if all_similar:
         top_item = all_similar[0]
         top_score = top_item.score or 0.0
         if top_score >= DEDUP_THRESHOLD:
             _update_auto_observation_duplicate(store, namespace, top_item.key, top_item)
-            return DedupResult(action=DedupAction.DISCARD, auto=True)
+            return DedupResult(
+                action=DedupAction.DISCARD, auto=True, candidates=candidates,
+            )
 
     similar = [
         item
@@ -432,7 +347,9 @@ def dedup_single_observation(
 
     if not similar:
         _store_new_observation(store, namespace, observation, game_id)
-        return DedupResult(action=DedupAction.KEEP, auto=True)
+        return DedupResult(
+            action=DedupAction.KEEP, auto=True, candidates=candidates,
+        )
 
     decision = _call_observation_dedup_llm(observation, similar)
     if decision is None:
@@ -446,7 +363,11 @@ def dedup_single_observation(
         decision,
         game_id,
     )
-    return DedupResult(action=action)
+    return DedupResult(
+        action=action,
+        candidates=_serialize_candidates(similar),
+        decision_detail=decision.model_dump(mode="json"),
+    )
 
 
 def _call_observation_dedup_llm(
@@ -456,7 +377,9 @@ def _call_observation_dedup_llm(
     """Call the LLM to decide how to integrate the new observation."""
     prompt = OBSERVATION_DEDUP_PROMPT.format(
         new_role=observation.perspective,
-        new_content=observation.content,
+        new_situation=observation.composed_situation,
+        new_approach=observation.approach,
+        new_outcome=observation.outcome,
         total_similar_count=len(similar_items),
         top_n=len(similar_items),
         existing_entries=_format_existing_observations(similar_items),
@@ -529,21 +452,24 @@ def dedup_single_strategy_point(
 
     Returns the decision taken, or None if dedup failed (point stored raw).
     """
-    namespace = ("strategy_points", point.perspective)
+    namespace = ("strategy_points", point.perspective, point.action_phase)
 
-    # Search for similar existing entries
     all_similar = store.search(
         namespace,
-        query=point.situation,
+        query=point.composed_situation,
         limit=DEDUP_TOP_N,
     )
+
+    candidates = _serialize_candidates(all_similar) if all_similar else []
 
     if all_similar:
         top_item = all_similar[0]
         top_score = top_item.score or 0.0
         if top_score >= DEDUP_THRESHOLD:
             _update_auto_duplicate(store, namespace, top_item.key, top_item, point)
-            return DedupResult(action=DedupAction.DISCARD, auto=True)
+            return DedupResult(
+                action=DedupAction.DISCARD, auto=True, candidates=candidates,
+            )
 
     similar = [
         item
@@ -551,19 +477,22 @@ def dedup_single_strategy_point(
         if item.score and item.score >= DEDUP_SIMILARITY_THRESHOLD
     ]
 
-    # No similar entries — store directly as novel
     if not similar:
         _store_new_point(store, namespace, point, game_id)
-        return DedupResult(action=DedupAction.KEEP, auto=True)
+        return DedupResult(
+            action=DedupAction.KEEP, auto=True, candidates=candidates,
+        )
 
-    # Build prompt and call LLM
     decision = _call_dedup_llm(point, similar)
     if decision is None:
         return None
 
-    # Apply decision to store
     action = _apply_decision(store, namespace, point, similar, decision, game_id)
-    return DedupResult(action=action)
+    return DedupResult(
+        action=action,
+        candidates=_serialize_candidates(similar),
+        decision_detail=decision.model_dump(mode="json"),
+    )
 
 
 def _call_dedup_llm(
@@ -573,8 +502,9 @@ def _call_dedup_llm(
     """Call the LLM to decide how to integrate the new point."""
     prompt = PER_EXTRACTION_DEDUP_PROMPT.format(
         situation_standards=SITUATION_STANDARDS,
+        epistemic_status_rule=EPISTEMIC_STATUS_RULE,
         new_role=point.perspective,
-        new_content=point.situation,
+        new_situation=point.composed_situation,
         new_action=point.action,
         total_similar_count=len(similar_items),
         top_n=len(similar_items),
@@ -660,7 +590,7 @@ def _item_for_candidate(similar_items: list, candidate: int):
 
 def _apply_decision(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     point: StrategyPoint,
     similar_items: list,
     decision: Discard | Replace | Differentiate | Keep,
@@ -688,7 +618,7 @@ def _apply_decision(
                     namespace,
                     item.key,
                     {
-                        "content": sit,
+                        "situation": sit,
                         "action": act,
                         "observation_count": existing_value.get("observation_count", 1) + 1,
                         "last_observed": datetime.now().isoformat(),
@@ -716,7 +646,7 @@ def _apply_decision(
                     namespace,
                     item.key,
                     {
-                        "content": ex_sit,
+                        "situation": ex_sit,
                         "action": ex_act or existing_value.get("action", ""),
                         "observation_count": existing_value.get("observation_count", 1),
                         "last_observed": existing_value.get(
@@ -729,7 +659,7 @@ def _apply_decision(
                     namespace,
                     str(uuid.uuid4()),
                     {
-                        "content": new_sit,
+                        "situation": new_sit,
                         "action": new_act or point.action,
                         "observation_count": 1,
                         "last_observed": datetime.now().isoformat(),
@@ -743,13 +673,13 @@ def _apply_decision(
                 _store_new_point(store, namespace, point, game_id)
             return DedupAction.DIFFERENTIATE
 
-        case Keep(new_rewritten_situation=sit, new_rewritten_action=act):
+        case Keep():
             store.put(
                 namespace,
                 str(uuid.uuid4()),
                 {
-                    "content": sit or point.situation,
-                    "action": act or point.action,
+                    "situation": point.composed_situation,
+                    "action": point.action,
                     "observation_count": 1,
                     "last_observed": datetime.now().isoformat(),
                     "game_id": game_id,
@@ -760,7 +690,7 @@ def _apply_decision(
 
 def _apply_observation_decision(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     observation: Observation,
     similar_items: list,
     decision: ObservationDiscard
@@ -783,7 +713,12 @@ def _apply_observation_decision(
                 _store_new_observation(store, namespace, observation, game_id)
             return DedupAction.DISCARD
 
-        case ObservationReplace(replace_candidate=candidate, merged_observation=content):
+        case ObservationReplace(
+            replace_candidate=candidate,
+            merged_situation=situation,
+            merged_approach=approach,
+            merged_outcome=outcome,
+        ):
             item = _item_for_candidate(similar_items, candidate)
             if item is not None:
                 existing_value = item.value
@@ -791,7 +726,9 @@ def _apply_observation_decision(
                     namespace,
                     item.key,
                     {
-                        "content": content,
+                        "situation": situation,
+                        "approach": approach,
+                        "outcome": outcome,
                         "observation_count": existing_value.get("observation_count", 1)
                         + 1,
                         "last_observed": datetime.now().isoformat(),
@@ -807,8 +744,12 @@ def _apply_observation_decision(
 
         case ObservationDifferentiate(
             existing_candidate=candidate,
-            existing_rewritten_observation=existing_content,
-            new_rewritten_observation=new_content,
+            existing_rewritten_situation=ex_sit,
+            existing_rewritten_approach=ex_app,
+            existing_rewritten_outcome=ex_out,
+            new_rewritten_situation=new_sit,
+            new_rewritten_approach=new_app,
+            new_rewritten_outcome=new_out,
         ):
             item = _item_for_candidate(similar_items, candidate)
             if item is not None:
@@ -817,7 +758,9 @@ def _apply_observation_decision(
                     namespace,
                     item.key,
                     {
-                        "content": existing_content,
+                        "situation": ex_sit,
+                        "approach": ex_app,
+                        "outcome": ex_out,
                         "observation_count": existing_value.get("observation_count", 1),
                         "last_observed": existing_value.get(
                             "last_observed", datetime.now().isoformat()
@@ -830,7 +773,9 @@ def _apply_observation_decision(
                     namespace,
                     observation,
                     game_id,
-                    content=new_content,
+                    situation=new_sit,
+                    approach=new_app,
+                    outcome=new_out,
                 )
             else:
                 logger.warning(
@@ -839,26 +784,25 @@ def _apply_observation_decision(
                 _store_new_observation(store, namespace, observation, game_id)
             return DedupAction.DIFFERENTIATE
 
-        case ObservationKeep(new_rewritten_observation=content):
+        case ObservationKeep():
             _store_new_observation(
                 store,
                 namespace,
                 observation,
                 game_id,
-                content=content or observation.content,
             )
             return DedupAction.KEEP
 
 
 def _store_new_point(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     point: StrategyPoint,
     game_id: str,
 ) -> None:
     """Store a strategy point as-is with no dedup modifications."""
     stored = {
-        "content": point.situation,
+        "situation": point.composed_situation,
         "action": point.action,
         "observation_count": 1,
         "last_observed": datetime.now().isoformat(),
@@ -869,14 +813,18 @@ def _store_new_point(
 
 def _store_new_observation(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     observation: Observation,
     game_id: str,
-    content: str | None = None,
+    situation: str | None = None,
+    approach: str | None = None,
+    outcome: str | None = None,
 ) -> None:
     """Store an observation as-is with no dedup modifications."""
     stored = {
-        "content": content or observation.content,
+        "situation": situation or observation.composed_situation,
+        "approach": approach or observation.approach,
+        "outcome": outcome or observation.outcome,
         "observation_count": 1,
         "last_observed": datetime.now().isoformat(),
         "game_id": game_id,
@@ -886,7 +834,7 @@ def _store_new_observation(
 
 def _bump_observation_count(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     key: str,
     item,
 ) -> None:
@@ -899,11 +847,11 @@ def _bump_observation_count(
 
 def _update_auto_observation_duplicate(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     key: str,
     item,
 ) -> None:
-    """Apply the old high-confidence observation dedup behavior."""
+    """Apply the high-confidence observation dedup behavior."""
     stored_observation = StoredObservation.model_validate(item.value)
     stored_observation.observation_count += 1
     stored_observation.last_observed = datetime.now()
@@ -912,17 +860,68 @@ def _update_auto_observation_duplicate(
 
 def _update_auto_duplicate(
     store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     key: str,
     item,
     point: StrategyPoint,
 ) -> None:
-    """Apply the old high-confidence strategy-point dedup behavior."""
+    """Apply the high-confidence strategy-point dedup behavior."""
     stored_point = StoredStrategyPoint.model_validate(item.value)
     stored_point.observation_count += 1
     stored_point.last_observed = datetime.now()
     stored_point.action = point.action
     store.put(namespace, key, stored_point.model_dump())
+
+
+# ---------------------------------------------------------------------------
+# Trace helpers
+# ---------------------------------------------------------------------------
+
+
+def _emit_dedup_span(
+    item_type: str,
+    perspective: str,
+    action_phase: str,
+    index: int,
+    game_id: str,
+    new_entry: dict,
+    result: DedupResult | None,
+) -> None:
+    """Emit a Langfuse span capturing one dedup decision for later eval."""
+    span_name = f"dedup_{item_type}_{perspective}_{action_phase}_{index}"
+    decision = result.action.value if result else "failed"
+    auto = result.auto if result else False
+
+    dedup_case = DedupCase(
+        span_name=span_name,
+        game_id=game_id,
+        item_type=item_type,
+        perspective=perspective,
+        action_phase=action_phase,
+        new_entry=new_entry,
+        candidates=[
+            DedupCandidate.model_validate(c) for c in (result.candidates if result else [])
+        ],
+        decision=decision,
+        decision_detail=result.decision_detail if result else None,
+        auto=auto,
+    )
+
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={"new_entry": new_entry, "item_type": item_type},
+        metadata={
+            "eval_schema": "dedup_case_v1",
+            "item_type": item_type,
+            "perspective": perspective,
+            "action_phase": action_phase,
+            "decision": decision,
+            "auto": auto,
+            "candidate_count": len(dedup_case.candidates),
+        },
+    ) as span:
+        span.update(output={"dedup_case": dedup_case.model_dump(mode="json")})
 
 
 # ---------------------------------------------------------------------------
@@ -951,16 +950,32 @@ def run_observation_downstream_dedup(
     for i, observation in enumerate(observations, 1):
         logger.info(
             f"Observation dedup [{i}/{len(observations)}] "
-            f"role={observation.perspective} content={observation.content[:80]}..."
+            f"role={observation.perspective} "
+            f"phase={observation.action_phase} "
+            f"situation={observation.situation[:80]}..."
         )
 
         result = dedup_single_observation(store, observation, game_id)
+
+        _emit_dedup_span(
+            item_type="observation",
+            perspective=observation.perspective,
+            action_phase=observation.action_phase,
+            index=i,
+            game_id=game_id,
+            new_entry={
+                "situation": observation.composed_situation,
+                "approach": observation.approach,
+                "outcome": observation.outcome,
+            },
+            result=result,
+        )
 
         if result is None:
             logger.warning(f"Observation dedup failed for item {i}; storing raw")
             _store_new_observation(
                 store,
-                ("observations", observation.perspective),
+                ("observations", observation.perspective, observation.action_phase),
                 observation,
                 game_id,
             )
@@ -1008,17 +1023,30 @@ def run_downstream_dedup(
     for i, point in enumerate(strategy_points, 1):
         logger.info(
             f"Dedup [{i}/{len(strategy_points)}] role={point.perspective} "
+            f"phase={point.action_phase} "
             f"situation={point.situation[:80]}..."
         )
 
         result = dedup_single_strategy_point(store, point, game_id)
 
+        _emit_dedup_span(
+            item_type="strategy_point",
+            perspective=point.perspective,
+            action_phase=point.action_phase,
+            index=i,
+            game_id=game_id,
+            new_entry={
+                "situation": point.composed_situation,
+                "action": point.action,
+            },
+            result=result,
+        )
+
         if result is None:
-            # LLM failed — store raw as fallback
             logger.warning(f"Dedup failed for point {i}; storing raw")
             _store_new_point(
                 store,
-                ("strategy_points", point.perspective),
+                ("strategy_points", point.perspective, point.action_phase),
                 point,
                 game_id,
             )

@@ -16,7 +16,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field
 
-from Agents.constants import roles
+from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
 from Agents.memory import store
 from Agents.memory_persistence import (
     DEFAULT_MEMORY_STORE_DIR,
@@ -29,7 +29,7 @@ from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
     BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
 )
-from Agents.prompts.standards import SITUATION_STANDARDS
+from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -54,13 +54,15 @@ DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
 
 class StrategyRewriteEntry(BaseModel):
     key: str
-    content: str = Field(description="Rewritten situation/content text")
+    situation: str = Field(description="Rewritten situation text")
     action: str = Field(description="Rewritten recommended action")
 
 
 class ObservationRewriteEntry(BaseModel):
     key: str
-    content: str = Field(description="Rewritten observation text")
+    situation: str = Field(description="Rewritten situation text")
+    approach: str = Field(description="Rewritten approach text")
+    outcome: str = Field(description="Rewritten outcome text")
 
 
 class StrategyBatchOperation(BaseModel):
@@ -74,9 +76,9 @@ class StrategyBatchOperation(BaseModel):
         default=None,
         description="Existing key to preserve for DISCARD or REPLACE",
     )
-    merged_content: str | None = Field(
+    merged_situation: str | None = Field(
         default=None,
-        description="Merged situation/content for REPLACE",
+        description="Merged situation for REPLACE",
     )
     merged_action: str | None = Field(
         default=None,
@@ -99,9 +101,17 @@ class ObservationBatchOperation(BaseModel):
         default=None,
         description="Existing key to preserve for DISCARD or REPLACE",
     )
-    merged_content: str | None = Field(
+    merged_situation: str | None = Field(
         default=None,
-        description="Merged observation text for REPLACE",
+        description="Merged situation text for REPLACE",
+    )
+    merged_approach: str | None = Field(
+        default=None,
+        description="Merged approach text for REPLACE",
+    )
+    merged_outcome: str | None = Field(
+        default=None,
+        description="Merged outcome text for REPLACE",
     )
     rewritten_entries: list[ObservationRewriteEntry] = Field(
         default_factory=list,
@@ -195,13 +205,13 @@ def _cluster_items(
     valid_keys = set(items_by_key)
 
     for key, item in items_by_key.items():
-        content = item.value.get("content", "")
-        if not content:
+        situation = item.value.get("situation", "")
+        if not situation:
             continue
         similar_items = _search_memory_with_retries(
             target_store,
             namespace,
-            query=content,
+            query=situation,
             limit=search_limit,
         )
         for similar in similar_items:
@@ -291,15 +301,15 @@ def _bounded_seed_clusters(
             continue
 
         seed_item = items_by_key[seed_key]
-        content = seed_item.value.get("content", "")
-        if not content:
+        situation = seed_item.value.get("situation", "")
+        if not situation:
             unprocessed.remove(seed_key)
             continue
 
         neighbors = _search_memory_with_retries(
             target_store,
             namespace,
-            query=content,
+            query=situation,
             limit=search_limit,
         )
         candidates = [
@@ -376,12 +386,12 @@ def _agglomerative_clusters(
     keys = [
         key
         for key in sorted(items_by_key, key=lambda item_key: _seed_sort_key(item_key, items_by_key))
-        if items_by_key[key].value.get("content")
+        if items_by_key[key].value.get("situation")
     ]
     if len(keys) < 2:
         return []
 
-    texts = [items_by_key[key].value.get("content", "") for key in keys]
+    texts = [items_by_key[key].value.get("situation", "") for key in keys]
     matrix = _normalized_embedding_matrix(texts, embedding_model, embedding_dims)
     similarity_matrix = matrix @ matrix.T
     distance_matrix = 1.0 - similarity_matrix
@@ -469,9 +479,12 @@ def _format_cluster_entries(
         lines.append(f"KEY: {key}")
         lines.append(f"observation_count: {value.get('observation_count', 1)}")
         lines.append(f"last_observed: {_format_datetime(value.get('last_observed'))}")
-        lines.append(f"content: {value.get('content', '')}")
+        lines.append(f"situation: {value.get('situation', '')}")
         if memory_kind == "strategy_points":
             lines.append(f"action: {value.get('action', '')}")
+        else:
+            lines.append(f"approach: {value.get('approach', '')}")
+            lines.append(f"outcome: {value.get('outcome', '')}")
         lines.append("")
     return "\n".join(lines).strip()
 
@@ -486,9 +499,9 @@ def _cluster_preview(
     previews: list[str] = []
     for key in cluster_keys:
         value = items_by_key[key].value
-        content = value.get("content", "")
-        preview = content[:preview_chars]
-        if len(content) > preview_chars:
+        situation = value.get("situation", "")
+        preview = situation[:preview_chars]
+        if len(situation) > preview_chars:
             preview += "..."
         previews.append(preview)
     return ClusterPreview(
@@ -605,7 +618,7 @@ def _search_memory_with_retries(
 
 def _apply_strategy_operation(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     operation: StrategyBatchOperation,
     cluster_key_set: set[str],
     items_by_key: dict[str, Any],
@@ -628,13 +641,13 @@ def _apply_strategy_operation(
             return "failed", 0
         survivor_value = dict(items_by_key[survivor_key].value)
         metadata = _merged_metadata(source_keys, items_by_key, survivor_key)
-        content = survivor_value.get("content", "")
+        situation = survivor_value.get("situation", "")
         action = survivor_value.get("action", "")
         if operation.action == "REPLACE":
-            content = operation.merged_content or content
+            situation = operation.merged_situation or situation
             action = operation.merged_action or action
         value = {
-            "content": content,
+            "situation": situation,
             "action": action,
             **metadata,
         }
@@ -663,7 +676,7 @@ def _apply_strategy_operation(
             if entry.key not in rewritten_keys:
                 continue
             value = dict(items_by_key[entry.key].value)
-            value["content"] = entry.content
+            value["situation"] = entry.situation
             value["action"] = entry.action
             if apply:
                 _put_memory_with_retries(target_store, namespace, entry.key, value)
@@ -683,7 +696,7 @@ def _apply_strategy_operation(
 
 def _apply_observation_operation(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
     operation: ObservationBatchOperation,
     cluster_key_set: set[str],
     items_by_key: dict[str, Any],
@@ -706,11 +719,17 @@ def _apply_observation_operation(
             return "failed", 0
         survivor_value = dict(items_by_key[survivor_key].value)
         metadata = _merged_metadata(source_keys, items_by_key, survivor_key)
-        content = survivor_value.get("content", "")
+        situation = survivor_value.get("situation", "")
+        approach = survivor_value.get("approach", "")
+        outcome = survivor_value.get("outcome", "")
         if operation.action == "REPLACE":
-            content = operation.merged_content or content
+            situation = operation.merged_situation or situation
+            approach = operation.merged_approach or approach
+            outcome = operation.merged_outcome or outcome
         value = {
-            "content": content,
+            "situation": situation,
+            "approach": approach,
+            "outcome": outcome,
             **metadata,
         }
         if apply:
@@ -738,7 +757,9 @@ def _apply_observation_operation(
             if entry.key not in rewritten_keys:
                 continue
             value = dict(items_by_key[entry.key].value)
-            value["content"] = entry.content
+            value["situation"] = entry.situation
+            value["approach"] = entry.approach
+            value["outcome"] = entry.outcome
             if apply:
                 _put_memory_with_retries(target_store, namespace, entry.key, value)
                 _cache_item_value(items_by_key, entry.key, value)
@@ -768,6 +789,7 @@ def _call_cluster_llm(
             role=role,
             entries=entries,
             situation_standards=SITUATION_STANDARDS,
+            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
         )
         output_schema = StrategyBatchDedupOutput
         run_name = "batch_dedup_strategy_points"
@@ -795,6 +817,7 @@ def dedup_namespace(
     target_store: BaseStore,
     memory_kind: MemoryKind,
     role: str,
+    action_phase: str,
     *,
     apply: bool,
     similarity_threshold: float,
@@ -808,7 +831,7 @@ def dedup_namespace(
     embedding_dims: int,
     max_clusters: int | None = None,
 ) -> NamespaceStats:
-    namespace = (memory_kind, role)
+    namespace = (memory_kind, role, action_phase)
     items_by_key = _fetch_namespace_items(target_store, namespace)
     clusters = _build_clusters(
         target_store,
@@ -921,6 +944,7 @@ def inspect_namespace_clusters(
     target_store: BaseStore,
     memory_kind: MemoryKind,
     role: str,
+    action_phase: str,
     *,
     similarity_threshold: float,
     search_limit: int,
@@ -932,7 +956,7 @@ def inspect_namespace_clusters(
     max_clusters: int | None = None,
     preview_chars: int = 160,
 ) -> tuple[NamespaceStats, list[ClusterPreview]]:
-    namespace = (memory_kind, role)
+    namespace = (memory_kind, role, action_phase)
     items_by_key = _fetch_namespace_items(target_store, namespace)
     clusters = _build_clusters(
         target_store,
@@ -1008,12 +1032,51 @@ def run_batch_memory_dedup(
 
     for memory_kind in memory_kinds:
         for role in selected_roles:
-            if cluster_report_only:
+            role_phases = VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
+            for action_phase in role_phases:
+                if cluster_report_only:
+                    try:
+                        stats, cluster_previews = inspect_namespace_clusters(
+                            target_store,
+                            memory_kind,
+                            role,
+                            action_phase,
+                            similarity_threshold=similarity_threshold,
+                            search_limit=search_limit,
+                            cluster_mode=cluster_mode,
+                            max_cluster_size=max_cluster_size,
+                            linkage_method=linkage_method,
+                            embedding_model=embedding_model,
+                            embedding_dims=embedding_dims,
+                            max_clusters=max_clusters,
+                            preview_chars=preview_chars,
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "Batch dedup inspection failed for namespace=%s role=%s phase=%s: %s",
+                            memory_kind,
+                            role,
+                            action_phase,
+                            exc,
+                        )
+                        stats = NamespaceStats(
+                            memory_kind=memory_kind,
+                            role=role,
+                            failed=1,
+                            dry_run=True,
+                        )
+                        cluster_previews = []
+                    report.stats.append(stats)
+                    report.clusters.extend(cluster_previews)
+                    continue
+
                 try:
-                    stats, cluster_previews = inspect_namespace_clusters(
+                    stats = dedup_namespace(
                         target_store,
                         memory_kind,
                         role,
+                        action_phase,
+                        apply=apply,
                         similarity_threshold=similarity_threshold,
                         search_limit=search_limit,
                         cluster_mode=cluster_mode,
@@ -1021,58 +1084,25 @@ def run_batch_memory_dedup(
                         linkage_method=linkage_method,
                         embedding_model=embedding_model,
                         embedding_dims=embedding_dims,
+                        model=model,
+                        thinking_level=thinking_level,
                         max_clusters=max_clusters,
-                        preview_chars=preview_chars,
                     )
                 except Exception as exc:
                     logger.warning(
-                        "Batch dedup inspection failed for namespace=%s role=%s: %s",
+                        "Batch dedup namespace failed for namespace=%s role=%s phase=%s: %s",
                         memory_kind,
                         role,
+                        action_phase,
                         exc,
                     )
                     stats = NamespaceStats(
                         memory_kind=memory_kind,
                         role=role,
                         failed=1,
-                        dry_run=True,
+                        dry_run=not apply,
                     )
-                    cluster_previews = []
                 report.stats.append(stats)
-                report.clusters.extend(cluster_previews)
-                continue
-
-            try:
-                stats = dedup_namespace(
-                    target_store,
-                    memory_kind,
-                    role,
-                    apply=apply,
-                    similarity_threshold=similarity_threshold,
-                    search_limit=search_limit,
-                    cluster_mode=cluster_mode,
-                    max_cluster_size=max_cluster_size,
-                    linkage_method=linkage_method,
-                    embedding_model=embedding_model,
-                    embedding_dims=embedding_dims,
-                    model=model,
-                    thinking_level=thinking_level,
-                    max_clusters=max_clusters,
-                )
-            except Exception as exc:
-                logger.warning(
-                    "Batch dedup namespace failed for namespace=%s role=%s: %s",
-                    memory_kind,
-                    role,
-                    exc,
-                )
-                stats = NamespaceStats(
-                    memory_kind=memory_kind,
-                    role=role,
-                    failed=1,
-                    dry_run=not apply,
-                )
-            report.stats.append(stats)
 
     if apply:
         observations_dump_path, strategy_points_dump_path = memory_store_paths(

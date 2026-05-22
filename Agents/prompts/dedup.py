@@ -5,7 +5,10 @@ it against the most similar existing entries and decide how to integrate it.
 
 {situation_standards}
 
-All situation fields you write or rewrite must conform to the standards above.
+{epistemic_status_rule}
+
+All situation fields you write or rewrite must conform to the standards and
+epistemic status rule above.
 For the structured output field named "decision", use exactly the letter tag
 "A", "B", "C", or "D"; do not use DISCARD, REPLACE, DIFFERENTIATE, or KEEP.
 
@@ -13,7 +16,7 @@ For the structured output field named "decision", use exactly the letter tag
 
 NEW EXTRACTION:
 Role: {new_role}
-Situation: {new_content}
+Situation: {new_situation}
 Action: {new_action}
 
 SIMILAR EXISTING ENTRIES ({total_similar_count} entries above similarity
@@ -46,8 +49,8 @@ Decide ONE of the following outcomes:
     variable.
 
 (D) KEEP — The new point is genuinely novel. No existing entry covers this
-    situation or this action. Output: confirm it should be added as-is, or
-    suggest minor wording improvements.
+    situation or this action. The new entry is stored exactly as extracted
+    with no rewrites.
 
 DECISION RULES:
 - If the new point would be the 4th+ entry on the same spectrum, prefer
@@ -55,10 +58,12 @@ DECISION RULES:
 - "Same idea, different words" is a duplicate, not a differentiation. The
   test: would a player in that situation do anything differently based on
   reading one entry vs. the other? If no, it is a duplicate.
-- For REPLACE and DIFFERENTIATE, the output must meet the quality bar in the
-  situation standards above: the situation must describe a recognizable game
-  dynamic using the dimensional framework and epistemic status rule. The
-  action must explain a non-obvious mechanism, not restate common-sense play.
+- For REPLACE and DIFFERENTIATE, rewrites must only use details present in
+  the entries being compared. Do not infer or invent game phase, information
+  landscape, consensus texture, social pressure, or any other context not
+  explicitly stated in the input entries. If insufficient detail exists to
+  write a fully standards-compliant situation, preserve the original text
+  rather than embellishing it.
 - When an output field asks for a candidate number, use only the bracketed
   candidate number shown in SIMILAR EXISTING ENTRIES. Do not output UUID keys.
 
@@ -69,67 +74,155 @@ REASONING: [2-3 sentences explaining why]
 """
 
 
-BATCH_DEDUP_PROMPT = """
-You are cleaning a strategy database for an AI Werewolf agent. Below are all
-stored strategy points for the role of {role}. Each entry has a unique key,
-a "content" field (the situation — this is what semantic search matches
-against), and an "action" field (the recommended action).
+OBSERVATION_DEDUP_PROMPT = """
+You are maintaining an episodic observation database for an AI Werewolf agent.
+A new observation has just been extracted from a game. Your job is to compare
+it against the most similar existing observations and decide how to integrate
+it.
+
+Observations have three structured fields:
+- situation: The game conditions (used for semantic search matching)
+- approach: What the agent did
+- outcome: What resulted
+
+For the structured output field named "decision", use exactly the letter tag
+"A", "B", "C", or "D"; do not use DISCARD, REPLACE, DIFFERENTIATE, or KEEP.
+
+---
+
+NEW OBSERVATION:
+Role: {new_role}
+Situation: {new_situation}
+Approach: {new_approach}
+Outcome: {new_outcome}
+
+SIMILAR EXISTING OBSERVATIONS ({total_similar_count} entries above similarity
+threshold; top {top_n} shown):
+{existing_entries}
+
+---
+
+Decide ONE of the following outcomes:
+
+(A) DISCARD — The new observation is a duplicate of an existing observation.
+    They describe the same situation, approach, and outcome, even if worded
+    differently. Output the candidate number of the entry it duplicates.
+
+(B) REPLACE — The new observation covers the same underlying event/dynamic as
+    an existing observation, but is more specific, better causal, or captures
+    important detail the existing entry misses. Output the candidate number to
+    replace and the final merged observation fields (situation, approach,
+    outcome).
+
+(C) DIFFERENTIATE — The new observation is similar to an existing observation
+    but records a meaningfully different situation, approach, or outcome. Output
+    the distinguishing variable, then rewrite BOTH observations so each one
+    clearly states the condition that makes it distinct.
+
+(D) KEEP — The new observation is genuinely novel. No existing entry covers
+    this situation, approach, and outcome. The new entry is stored exactly as
+    extracted with no rewrites.
+
+DECISION RULES:
+- "Same event, same lesson, different words" is a duplicate.
+- Prefer REPLACE over KEEP when the new observation mainly improves specificity
+  for an existing memory.
+- Use DIFFERENTIATE only when both observations should be retained because they
+  would be retrieved for meaningfully different future game states.
+- Rewritten or merged observations must keep each field (situation, approach,
+  outcome) as separate coherent text.
+- For REPLACE and DIFFERENTIATE, rewrites must only use details present in
+  the entries being compared. Do not infer or invent game phase, information
+  landscape, consensus texture, social pressure, or any other context not
+  explicitly stated in the input entries. If insufficient detail exists to
+  write a fully standards-compliant situation, preserve the original text
+  rather than embellishing it.
+- When an output field asks for a candidate number, use only the bracketed
+  candidate number shown in SIMILAR EXISTING OBSERVATIONS. Do not output UUID
+  keys.
+"""
+
+
+BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT = """
+You are cleaning a strategy-point memory database for an AI Werewolf agent.
+The entries below are a candidate similarity cluster from one role namespace.
+
+Each entry has:
+- key: stable store key
+- situation: the situation text used for semantic retrieval
+- action: the recommended action
+- observation_count: how often this memory has been observed
 
 {situation_standards}
 
-All situation fields you write or rewrite must conform to the standards above.
+{epistemic_status_rule}
 
----
+All situation fields you write or rewrite must conform to the standards and
+epistemic status rule above.
 
-ENTRIES:
+Resolve this cluster using one or more operations. Every operation must use one
+of these action values: DISCARD, REPLACE, DIFFERENTIATE, KEEP.
+
+Rules:
+- DISCARD means entries are duplicate strategy points. Choose one survivor_key;
+  the apply step will preserve that key, sum counts, and delete absorbed keys.
+- REPLACE means entries cover the same underlying situation/action and should
+  become one better entry. Choose one survivor_key and provide merged_situation
+  and merged_action.
+- DIFFERENTIATE means similar entries should remain distinct, but their
+  situations need rewriting to clarify the variable that separates them. Provide
+  rewritten_entries using existing keys only. If you collapse many entries into
+  fewer differentiated entries, source_keys should include all absorbed keys and
+  rewritten_entries should include only the final survivor keys.
+- KEEP means no change is needed for the listed source_keys.
+- Use only keys shown in the cluster. Do not invent new keys.
+- Prefer the fewest entries that preserve meaning. Avoid keeping 4+ entries on
+  one spectrum when 2-3 differentiated entries would cover it.
+
+Role: {role}
+
+Cluster entries:
 {entries}
+"""
 
----
 
-YOUR TASK: Identify clusters of entries that describe overlapping situations.
+BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT = """
+You are cleaning an episodic observation memory database for an AI Werewolf
+agent. The entries below are a candidate similarity cluster from one role
+namespace.
 
-CLUSTER TYPES:
+Observations have three structured fields:
+- situation: The game conditions (used for semantic search matching). Should use
+  agent roles, never player IDs, and be specific enough for retrieval.
+- approach: What the agent did in that situation.
+- outcome: What resulted — how others responded and the downstream consequences.
 
-1. DUPLICATE — Multiple entries describe the same situation AND recommend
-   the same action (even if worded differently). Test: would a player do
-   anything differently after reading entry A vs. entry B? If no, they are
-   duplicates.
-   → Merge into a single entry. Produce one situation + action that keeps
-   the best specificity from all entries in the cluster.
+{situation_standards}
 
-2. CONTRADICTION — Multiple entries describe the same situation but recommend
-   actions that genuinely conflict (not just differ in degree). One says do
-   X, another says the opposite of X.
-   → First, check whether a genuine difference along one of the dimensional
-   axes (information landscape, consensus texture, social pressure, game
-   phase) justifies both actions. If yes, rewrite each entry's situation to
-   make that difference explicit, and reclassify as an action-spectrum group.
-   → If no genuine situational difference exists, flag as a true
-   contradiction. Recommend which action to keep, with reasoning based on
-   game-theoretic soundness.
+When you rewrite observations, keep each field (situation, approach, outcome)
+as separate coherent text. Use the situation standards above to keep the
+situation field specific enough for retrieval.
 
-3. ACTION-SPECTRUM — Multiple entries describe similar situations but
-   recommend actions that vary by degree along a situational variable.
-   → Identify the underlying variable — typically one of: information
-   landscape, consensus texture, social pressure dynamics, or game phase.
-   Collapse the spectrum into 2-3 entries maximum, each with a situation
-   that explicitly encodes where on the variable it applies. Do not preserve
-   more than 3 entries per spectrum.
+Resolve this cluster using one or more operations. Every operation must use one
+of these action values: DISCARD, REPLACE, DIFFERENTIATE, KEEP.
 
----
+Rules:
+- DISCARD means entries are duplicate observations. Choose one survivor_key; the
+  apply step will preserve that key, sum counts, and delete absorbed keys.
+- REPLACE means entries describe the same underlying event/dynamic and should
+  become one better observation. Choose one survivor_key and provide
+  merged_situation, merged_approach, and merged_outcome.
+- DIFFERENTIATE means similar observations should remain distinct, but their
+  text needs rewriting to clarify the condition that separates them. Provide
+  rewritten_entries using existing keys only. If you collapse many entries into
+  fewer differentiated entries, source_keys should include all absorbed keys and
+  rewritten_entries should include only the final survivor keys.
+- KEEP means no change is needed for the listed source_keys.
+- Use only keys shown in the cluster. Do not invent new keys.
+- Prefer merging near-duplicates over preserving repeated memories.
 
-For each cluster, output:
+Role: {role}
 
-CLUSTER: [short descriptive label]
-TYPE: [DUPLICATE / CONTRADICTION / ACTION-SPECTRUM]
-KEYS: [list of entry keys]
-REASONING: [why these belong together, and for contradictions/spectrums,
-which dimensional variable distinguishes them]
-PROPOSED RESOLUTION:
-  [For duplicates: one merged situation + action]
-  [For action-spectrums: 2-3 entries with distinct situations + actions]
-  [For true contradictions: which to keep and why]
-
-After listing all clusters, list any entries that do NOT belong to any
-cluster (singletons). These require no action but confirm coverage.
+Cluster entries:
+{entries}
 """

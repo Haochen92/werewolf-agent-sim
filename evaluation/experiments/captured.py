@@ -63,7 +63,7 @@ def main() -> None:
         case = record.eval_case
         print(
             f"[{index}/{len(records)}] {record.case_id} "
-            f"role={case.player_role} action={case.action_type}",
+            f"role={case.player_role} action={case.action_phase}",
             flush=True,
         )
 
@@ -77,13 +77,13 @@ def main() -> None:
             "role": case.player_role,
             "day": case.day,
             "round": case.round,
-            "action_type": case.action_type,
+            "action_phase": case.action_phase,
             "source_dataset": str(config.dataset),
             "situations": case.situations,
             "retrieved_observation_count": len(case.retrieved_observations),
             "retrieved_strategy_point_count": len(case.retrieved_strategy_points),
             "agent_decision": format_agent_action(
-                case.action_type,
+                case.action_phase,
                 message=case.agent_message,
                 vote=case.agent_vote,
             ),

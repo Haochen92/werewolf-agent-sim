@@ -27,8 +27,10 @@ load_project_env()
 
 from langfuse import get_client  # noqa: E402
 
-from Agents.schemas.evaluation import EvalCase  # noqa: E402
+from Agents.schemas.evaluation import DedupCase, EvalCase, ExtractionCase  # noqa: E402
 from evaluation.data.cases import eval_case_from_span  # noqa: E402
+from evaluation.data.dedup_cases import dedup_case_from_span  # noqa: E402
+from evaluation.data.extraction_cases import extraction_case_from_span  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -42,6 +44,8 @@ EVAL_VERSION = "retrieval_judge_v2"
 # Observation names that start with this prefix are treated as evaluation
 # spans (i.e. they contain the input/output data a judge should score).
 ACTION_EVAL_SPAN_PREFIX = "agent_action_eval_"
+EXTRACTION_SPAN_PREFIX = "postgame_extraction_"
+DEDUP_SPAN_PREFIX = "dedup_"
 
 # The four score dimensions the judge produces for each eval span.
 SCORE_NAMES = [
@@ -310,6 +314,65 @@ def fetch_observations_and_build_eval_cases(trace_id: str) -> list[EvalCase]:
 def fetch_eval_cases(trace_id: str) -> list[EvalCase]:
     """Build EvalCase objects from every eval span in a trace."""
     return fetch_observations_and_build_eval_cases(trace_id)
+
+
+# ---------------------------------------------------------------------------
+# Layer 3b — Extraction and dedup span extraction
+# ---------------------------------------------------------------------------
+
+
+def _filter_spans_by_prefix(
+    observations: list[Any],
+    trace_id: str,
+    prefix: str,
+    kind: str,
+) -> list[dict[str, Any]]:
+    """Keep only observations whose name starts with *prefix*."""
+    spans: list[dict[str, Any]] = []
+    for obs in observations:
+        name = _field(obs, "name")
+        if name and name.startswith(prefix):
+            spans.append(
+                {
+                    "kind": kind,
+                    "id": _field(obs, "id"),
+                    "name": name,
+                    "trace_id": trace_id,
+                    "parent_observation_id": _field(obs, "parent_observation_id"),
+                    "metadata": _field(obs, "metadata") or {},
+                    "input": _field(obs, "input"),
+                    "output": _field(obs, "output"),
+                }
+            )
+    return spans
+
+
+def fetch_extraction_cases(trace_id: str) -> list[ExtractionCase]:
+    """Build ExtractionCase objects from extraction spans in a trace."""
+    observations = _fetch_all_observations(trace_id)
+    spans = _filter_spans_by_prefix(
+        observations, trace_id, EXTRACTION_SPAN_PREFIX, "postgame_extraction"
+    )
+    cases: list[ExtractionCase] = []
+    for span in spans:
+        case = extraction_case_from_span(span)
+        if case:
+            cases.append(case)
+    return cases
+
+
+def fetch_dedup_cases(trace_id: str) -> list[DedupCase]:
+    """Build DedupCase objects from dedup spans in a trace."""
+    observations = _fetch_all_observations(trace_id)
+    spans = _filter_spans_by_prefix(
+        observations, trace_id, DEDUP_SPAN_PREFIX, "dedup"
+    )
+    cases: list[DedupCase] = []
+    for span in spans:
+        case = dedup_case_from_span(span)
+        if case:
+            cases.append(case)
+    return cases
 
 
 # ---------------------------------------------------------------------------

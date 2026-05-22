@@ -82,7 +82,7 @@ def main() -> None:
         )
         print(
             f"[{index}/{len(records)}] {record.case_id} "
-            f"role={case.player_role} action={case.action_type}",
+            f"role={case.player_role} action={case.action_phase}",
             flush=True,
         )
         try:
@@ -119,13 +119,13 @@ def main() -> None:
                 "role": case.player_role,
                 "day": case.day,
                 "round": case.round,
-                "action_type": case.action_type,
+                "action_phase": case.action_phase,
                 "memory_mode": config.memory_mode,
                 "retrieved_observation_count": len(retrieved_observations),
                 "retrieved_strategy_point_count": len(strategy_points),
                 "action_result": result,
                 "agent_decision": format_agent_action(
-                    case.action_type,
+                    case.action_phase,
                     message=agent_message,
                     vote=agent_vote,
                 ),

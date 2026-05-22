@@ -1,0 +1,10 @@
+{
+  "eval_set_id": "extraction_eval_001",
+  "session_prefix": "replace_with_session_prefix",
+  "created_from": "replace_with_source_description",
+  "max_games": 5,
+  "max_samples": 20,
+  "seed": 0,
+  "output": "eval_sets/extraction_eval_001.jsonl",
+  "overwrite": false
+}

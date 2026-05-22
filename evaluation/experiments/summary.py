@@ -136,7 +136,7 @@ def run_pairwise_case(
         "player_role": record.player_role,
         "day": record.day,
         "round": record.round,
-        "action_type": record.action_type,
+        "action_phase": record.action_phase,
         "baseline": baseline,
         "candidate": candidate,
         "judge": {
@@ -232,7 +232,7 @@ def main() -> None:
     for index, record in enumerate(records):
         print(
             f"[{index + 1}/{len(records)}] {record.case_id} "
-            f"role={record.player_role} action={record.action_type}",
+            f"role={record.player_role} action={record.action_phase}",
             flush=True,
         )
         try:

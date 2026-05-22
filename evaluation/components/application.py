@@ -31,39 +31,39 @@ class ActionSpec:
 
 
 ACTION_SPECS: dict[tuple[str, str], ActionSpec] = {
-    ("villager", "discussion"): ActionSpec(
+    ("villager", "day_discussion"): ActionSpec(
         VILLAGER_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
     ),
-    ("healer", "discussion"): ActionSpec(
+    ("healer", "day_discussion"): ActionSpec(
         HEALER_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
     ),
-    ("investigator", "discussion"): ActionSpec(
+    ("investigator", "day_discussion"): ActionSpec(
         INVESTIGATOR_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
     ),
-    ("wolf", "discussion"): ActionSpec(
+    ("wolf", "day_discussion"): ActionSpec(
         WOLF_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
     ),
-    ("villager", "vote"): ActionSpec(VILLAGER_DAY_VOTE, DayVoteOutput, "day_votes"),
-    ("healer", "vote"): ActionSpec(HEALER_DAY_VOTE, DayVoteOutput, "day_votes"),
-    ("investigator", "vote"): ActionSpec(
+    ("villager", "day_vote"): ActionSpec(VILLAGER_DAY_VOTE, DayVoteOutput, "day_votes"),
+    ("healer", "day_vote"): ActionSpec(HEALER_DAY_VOTE, DayVoteOutput, "day_votes"),
+    ("investigator", "day_vote"): ActionSpec(
         INVESTIGATOR_DAY_VOTE,
         DayVoteOutput,
         "day_votes",
     ),
-    ("wolf", "vote"): ActionSpec(WOLF_DAY_VOTE, DayVoteOutput, "day_votes"),
+    ("wolf", "day_vote"): ActionSpec(WOLF_DAY_VOTE, DayVoteOutput, "day_votes"),
 }
 
 
 def action_spec_for(case: EvalCase) -> ActionSpec:
-    key = (case.player_role, case.action_type)
+    key = (case.player_role, case.action_phase)
     try:
         return ACTION_SPECS[key]
     except KeyError as exc:

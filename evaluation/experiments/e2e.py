@@ -78,6 +78,7 @@ def run_e2e_case(
         retrieve_observations_for_agent(
             store,
             case.player_role,
+            case.action_phase,
             situations,
             top_k=top_k,
         ),
@@ -87,6 +88,7 @@ def run_e2e_case(
         retrieve_strategy_points_for_agent(
             store,
             case.player_role,
+            case.action_phase,
             situations,
             top_k=top_k,
         ),
@@ -179,7 +181,7 @@ def main() -> None:
         case = record.eval_case
         print(
             f"[{index}/{len(records)}] {record.case_id} "
-            f"role={case.player_role} action={case.action_type}",
+            f"role={case.player_role} action={case.action_phase}",
             flush=True,
         )
         for snapshot_label, store in stores.items():
@@ -231,7 +233,7 @@ def main() -> None:
                     "role": case.player_role,
                     "day": case.day,
                     "round": case.round,
-                    "action_type": case.action_type,
+                    "action_phase": case.action_phase,
                     "top_k": config.top_k,
                     "max_retrieved_items": max_retrieved_items,
                     **result,

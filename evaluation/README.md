@@ -174,8 +174,12 @@ build_dataset_session_id_example.json
 build_dataset_session_ids_example.json
 build_dataset_session_prefix_example.json
 build_dataset_trace_ids_example.json
+build_dedup_dataset_example.json
+build_extraction_dataset_example.json
 captured_example.json
+dedup_example.json
 e2e_example.json
+extraction_example.json
 retrieval_example.json
 summary_flash_vs_lite.json
 summary_pairwise_example.json

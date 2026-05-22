@@ -1,0 +1,11 @@
+{
+  "eval_set_id": "dedup_eval_001",
+  "session_prefix": "replace_with_session_prefix",
+  "created_from": "replace_with_source_description",
+  "max_games": 5,
+  "max_samples": 40,
+  "filter_auto": false,
+  "seed": 0,
+  "output": "eval_sets/dedup_eval_001.jsonl",
+  "overwrite": false
+}

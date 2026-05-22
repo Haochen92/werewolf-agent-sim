@@ -169,6 +169,7 @@ def main() -> None:
                 retrieve_observations_for_agent(
                     store,
                     role,
+                    case.action_phase,
                     situations,
                     top_k=config.top_k,
                 ),
@@ -178,6 +179,7 @@ def main() -> None:
                 retrieve_strategy_points_for_agent(
                     store,
                     role,
+                    case.action_phase,
                     situations,
                     top_k=config.top_k,
                 ),
@@ -220,7 +222,7 @@ def main() -> None:
                     "role": role,
                     "day": case.day,
                     "round": case.round,
-                    "action_type": case.action_type,
+                    "action_phase": case.action_phase,
                     "situations": situations,
                     "top_k": config.top_k,
                     "max_retrieved_items": max_retrieved_items,

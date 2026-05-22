@@ -1,0 +1,8 @@
+{
+  "dataset": "eval_sets/dedup_eval_001.jsonl",
+  "max_samples": 20,
+  "judge": true,
+  "judge_model": "gemini-2.5-pro",
+  "filter_auto": false,
+  "sleep_seconds": 1.0
+}

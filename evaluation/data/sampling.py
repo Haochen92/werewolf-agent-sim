@@ -7,7 +7,7 @@ import random
 from Agents.schemas.evaluation import EvalCase
 
 
-SUPPORTED_ACTION_TYPES = {"discussion", "vote"}
+SUPPORTED_ACTION_PHASES = {"day_discussion", "day_vote"}
 
 
 def classify_game_phase(day: int, game_length: int) -> str:
@@ -44,10 +44,10 @@ def sample_cases(
             continue
 
         phase = classify_game_phase(case.day, game_lengths.get(case.trace_id, 3))
-        if case.action_type not in SUPPORTED_ACTION_TYPES:
+        if case.action_phase not in SUPPORTED_ACTION_PHASES:
             continue
         buckets.setdefault(
-            (case.trace_id, case.player_role, phase, case.action_type),
+            (case.trace_id, case.player_role, phase, case.action_phase),
             [],
         ).append(case)
 
@@ -82,6 +82,6 @@ def print_sample_plan(
         print(
             f"  {case.span_name} | role={case.player_role} | "
             f"day={case.day} | phase={phase} | "
-            f"action={case.action_type} | "
+            f"action={case.action_phase} | "
             f"trace={case.trace_id[:8]}..."
         )

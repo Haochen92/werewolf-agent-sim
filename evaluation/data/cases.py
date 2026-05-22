@@ -38,7 +38,7 @@ def eval_case_to_judge_inputs(case: EvalCase) -> dict[str, Any]:
         "player_role": case.player_role,
         "day": case.day,
         "round": case.round,
-        "action_type": case.action_type,
+        "action_phase": case.action_phase,
         "day_channel_excerpt": format_day_channel(case.visible_discussion),
         "private_context": format_eval_private_context(case.private_context),
         "situations": format_eval_situations(case.situations),
@@ -51,7 +51,7 @@ def eval_case_to_judge_inputs(case: EvalCase) -> dict[str, Any]:
         "num_observations": len(case.retrieved_observations),
         "num_strategy_points": len(case.retrieved_strategy_points),
         "agent_decision": format_agent_action(
-            case.action_type,
+            case.action_phase,
             message=case.agent_message,
             vote=case.agent_vote,
         ),
