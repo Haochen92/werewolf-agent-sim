@@ -10,7 +10,7 @@ from typing import Any, Callable
 from langgraph.store.base import BaseStore, PutOp
 from pydantic import BaseModel
 
-from Agents.constants import roles
+from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
 from Agents.memory import store
 
 logger = logging.getLogger(__name__)
@@ -113,8 +113,29 @@ def _write_json(path: str | Path, payload: dict[str, Any]) -> None:
     )
 
 
-def _namespace_key(namespace: tuple[str, str]) -> str:
+def _namespace_key(namespace: tuple[str, ...]) -> str:
     return "/".join(namespace)
+
+
+def _snapshot_namespaces(namespace: tuple[str, ...]) -> list[tuple[str, ...]]:
+    """Map legacy role-only memory namespaces to current action-phase namespaces."""
+    if len(namespace) == 3:
+        return [namespace]
+    if len(namespace) != 2:
+        return []
+    memory_kind, role = namespace
+    if memory_kind not in {"observations", "strategy_points"}:
+        return [namespace]
+    phases = VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
+    return [(memory_kind, role, phase) for phase in phases]
+
+
+def _snapshot_value(value: dict[str, Any]) -> dict[str, Any] | None:
+    """Normalize legacy snapshot payloads to the current store index field."""
+    situation = value.get("situation") or value.get("content")
+    if not situation:
+        return None
+    return {**value, "situation": situation}
 
 
 def _exception_chain(exc: BaseException) -> list[BaseException]:
@@ -201,7 +222,7 @@ def _batch_with_retries(
 
 def _all_namespace_items(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, ...],
 ) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     offset = 0
@@ -255,22 +276,24 @@ def seed_memory_from_json_files(
     for path in (observations_path, strategy_points_path):
         payload = _read_json(path)
         for namespace_key, namespace_items in payload.get("namespaces", {}).items():
-            namespace = tuple(namespace_key.split("/"))
-            if len(namespace) != 2:
+            raw_namespace = tuple(namespace_key.split("/"))
+            namespaces = _snapshot_namespaces(raw_namespace)
+            if not namespaces:
                 continue
-            if namespace[0] == "observations":
+            if raw_namespace[0] == "observations":
                 count_key = "observations"
-            elif namespace[0] == "strategy_points":
+            elif raw_namespace[0] == "strategy_points":
                 count_key = "strategy_points"
             else:
                 continue
             for item in namespace_items:
                 key = item.get("key")
-                value = item.get("value", item)
-                if not key or not value.get("content"):
+                value = _snapshot_value(item.get("value", item))
+                if not key or value is None:
                     continue
-                put_ops.append(PutOp(namespace, key, value))
-                counts[count_key] += 1
+                for namespace in namespaces:
+                    put_ops.append(PutOp(namespace, key, value))
+                    counts[count_key] += 1
 
     for start in range(0, len(put_ops), batch_size):
         _batch_with_retries(
@@ -346,27 +369,29 @@ def dump_memory_to_json_files(
     strategy_points_path = strategy_points_path or default_strategy_points
 
     observation_namespaces = {
-        _namespace_key(("observations", role)): _all_namespace_items(
-            target_store, ("observations", role)
+        _namespace_key(("observations", role, phase)): _all_namespace_items(
+            target_store, ("observations", role, phase)
         )
         for role in roles
+        for phase in VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
     }
     strategy_point_namespaces = {
-        _namespace_key(("strategy_points", role)): _all_namespace_items(
-            target_store, ("strategy_points", role)
+        _namespace_key(("strategy_points", role, phase)): _all_namespace_items(
+            target_store, ("strategy_points", role, phase)
         )
         for role in roles
+        for phase in VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
     }
 
     observations_payload = {
-        "schema_version": "werewolf_observations.v1",
-        "description": "Temporary episodic-memory snapshot. Seed through store_observation so embeddings and dedup use the active memory.py store configuration.",
+        "schema_version": "werewolf_observations.v2",
+        "description": "Episodic-memory snapshot with action-phase namespaces. Situation field is used for semantic search; approach and outcome are payload.",
         "updated_at": datetime.now().isoformat(),
         "namespaces": observation_namespaces,
     }
     strategy_points_payload = {
-        "schema_version": "werewolf_strategy_points.v2",
-        "description": "Temporary strategy-point memory snapshot. Content stores situation text for embeddings; action stores the recommended move.",
+        "schema_version": "werewolf_strategy_points.v3",
+        "description": "Strategy-point memory snapshot with action-phase namespaces. Situation field is used for semantic search; action stores the recommended move.",
         "updated_at": datetime.now().isoformat(),
         "namespaces": strategy_point_namespaces,
     }

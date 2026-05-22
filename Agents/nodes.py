@@ -18,7 +18,12 @@ from Agents.state import (
 
 from Agents.prompts import DAY_SUMMARY_PROMPT
 from Agents.schemas import DaySummaryOutput
-from Agents.extraction import extract_postgame
+from Agents.extraction import (
+    build_extraction_prompt,
+    extract_postgame,
+    format_extraction_inputs,
+)
+from Agents.schemas.evaluation import ExtractionCase
 from Agents.memory_deduplication import (
     run_downstream_dedup,
     run_observation_downstream_dedup,
@@ -580,11 +585,64 @@ def post_game_analysis(
         or f"game_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     )
 
-    # Analyse game and extract observations
-    extracted_observations = extract_postgame(state)
-    if not extracted_observations:
+    # Format once, use for both the LLM prompt and the trace span.
+    extraction_inputs = format_extraction_inputs(state)
+    prompt = build_extraction_prompt(extraction_inputs)
+
+    span_name = f"postgame_extraction_{game_id}"
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={
+            "roles": state.get("roles", {}),
+            "game_outcome": extraction_inputs["game_outcome"],
+            "formatted_discussions": extraction_inputs["formatted_discussions"],
+            "formatted_strategy_notes": extraction_inputs["formatted_strategy_notes"],
+        },
+        metadata={"eval_schema": "extraction_case_v1"},
+    ) as extraction_span:
+        result = extract_postgame(prompt)
+
+        if result:
+            extracted_observations_output = result.output
+            extraction_case = ExtractionCase(
+                span_name=span_name,
+                game_id=game_id,
+                game_outcome=extraction_inputs["game_outcome"],
+                roles=state.get("roles", {}),
+                formatted_discussions=extraction_inputs["formatted_discussions"],
+                formatted_strategy_notes=extraction_inputs["formatted_strategy_notes"],
+                observations=[
+                    o.model_dump(mode="json")
+                    for o in extracted_observations_output.observations
+                ],
+                strategy_points=[
+                    s.model_dump(mode="json")
+                    for s in extracted_observations_output.strategy_points
+                ],
+                model_used=result.model_used,
+            )
+            extraction_span.update(
+                output={
+                    "extraction_case": extraction_case.model_dump(mode="json"),
+                },
+                metadata={
+                    "eval_schema": extraction_case.schema_version,
+                    "model_used": result.model_used,
+                    "observation_count": len(
+                        extracted_observations_output.observations
+                    ),
+                    "strategy_point_count": len(
+                        extracted_observations_output.strategy_points
+                    ),
+                },
+            )
+
+    if not result:
         logger.warning("No observations extracted from post-game analysis.")
         return {}
+
+    extracted_observations = result.output
 
     # Store observations and strategies in memory with downstream dedup.
     observation_dedup_stats = run_observation_downstream_dedup(

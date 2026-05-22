@@ -85,7 +85,16 @@ def format_initial_strategies(initial_strategies: dict[str, str]) -> str:
 def format_retrieved_observations(observations: list[RetrievedObservation]) -> str:
     if not observations:
         return "No past observations available."
-    return "\n".join(f"- {item.observation.content}" for item in observations)
+    lines = []
+    for item in observations:
+        obs = item.observation
+        parts = [f"Situation: {obs.situation}"]
+        if obs.approach:
+            parts.append(f"Approach: {obs.approach}")
+        if obs.outcome:
+            parts.append(f"Outcome: {obs.outcome}")
+        lines.append("- " + " | ".join(parts))
+    return "\n".join(lines)
 
 
 def format_strategy_points(strategy_points: list[RetrievedStrategyPoint]) -> str:
@@ -95,19 +104,19 @@ def format_strategy_points(strategy_points: list[RetrievedStrategyPoint]) -> str
     for item in strategy_points:
         stored_point = item.strategy_point
         if stored_point.action:
-            formatted_points.append(f"{stored_point.content} -> {stored_point.action}")
-        elif stored_point.content:
-            formatted_points.append(stored_point.content)
+            formatted_points.append(f"{stored_point.situation} -> {stored_point.action}")
+        elif stored_point.situation:
+            formatted_points.append(stored_point.situation)
     if not formatted_points:
         return "No dynamic strategy points available."
     return "\n".join(f"- {strategy_point}" for strategy_point in formatted_points)
 
 
 def format_agent_action(
-    action_type: str,
+    action_phase: str,
     message: DayChannel | None = None,
     vote: DayVote | None = None,
 ) -> str:
-    if action_type == "vote":
+    if action_phase == "day_vote":
         return f"Vote target: {vote.votee if vote else '(not captured)'}"
     return f"Message: {message.message if message else '(silent)'}"

@@ -24,6 +24,11 @@ from Agents.memory import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
+from Agents.reranker import (
+    RERANK_TOP_K,
+    rerank_observations,
+    rerank_strategy_points,
+)
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
@@ -73,7 +78,7 @@ prompt_log: list[dict] = []
 
 DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
-DEFAULT_PRO_BACKUP_MODEL = "gemini-3.1-pro"
+DEFAULT_PRO_BACKUP_MODEL = "gemini-pro-latest"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
 
 
@@ -382,11 +387,19 @@ def _memory_enabled_for_role(config: RunnableConfig, role: str) -> bool:
     return bool(memory_config.get(role, False))
 
 
+def _reranking_enabled_for_role(config: RunnableConfig, role: str) -> bool:
+    configurable = config.get("configurable", {}) if config else {}
+    reranking_config = configurable.get("reranking_config")
+    if not isinstance(reranking_config, dict):
+        return False
+    return bool(reranking_config.get(role, False))
+
+
 def _enrich_payload_with_memory(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
-    action_type: str,
+    action_phase: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     enriched_payload = dict(payload)
 
@@ -417,6 +430,9 @@ def _enrich_payload_with_memory(
         }
 
     situations = _generate_situations_for_agent(payload)
+    reranking = _reranking_enabled_for_role(config, payload["player_role"])
+    retrieval_top_k = RERANK_TOP_K if reranking else 3
+
     with langfuse.start_as_current_observation(
         as_type="retriever",
         name=(
@@ -429,19 +445,40 @@ def _enrich_payload_with_memory(
             "player_role": payload["player_role"],
             "current_day": payload["current_day"],
             "current_round": payload["current_round"],
-            "action_type": action_type,
+            "action_phase": action_phase,
+            "reranking_enabled": reranking,
+            "retrieval_top_k": retrieval_top_k,
         },
     ) as span:
         retrieved_observations = retrieve_observations_for_agent(
             store=active_store,
             role=payload["player_role"],
+            action_phase=action_phase,
             situations=situations,
+            top_k=retrieval_top_k,
         )
         retrieved_strategy_points = retrieve_strategy_points_for_agent(
             store=active_store,
             role=payload["player_role"],
+            action_phase=action_phase,
             situations=situations,
+            top_k=retrieval_top_k,
         )
+
+        pre_rerank_counts = {
+            "observations": len(retrieved_observations),
+            "strategy_points": len(retrieved_strategy_points),
+        }
+
+        if reranking:
+            llm = get_llm()
+            retrieved_observations = rerank_observations(
+                llm, situations, retrieved_observations,
+            )
+            retrieved_strategy_points = rerank_strategy_points(
+                llm, situations, retrieved_strategy_points,
+            )
+
         retrieved_observations_json = [
             item.model_dump(mode="json") for item in retrieved_observations
         ]
@@ -459,6 +496,8 @@ def _enrich_payload_with_memory(
                 "num_strategy_points": len(retrieved_strategy_points),
                 "observation_scores": [item.score for item in retrieved_observations],
                 "strategy_point_scores": [item.score for item in retrieved_strategy_points],
+                "reranking_enabled": reranking,
+                "pre_rerank_candidates": pre_rerank_counts,
             }
         )
 
@@ -467,6 +506,7 @@ def _enrich_payload_with_memory(
     return enriched_payload, {
         "memory_enabled": True,
         "retrieval_skipped_reason": None,
+        "reranking_enabled": reranking,
         "situations": situations,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,
@@ -480,7 +520,7 @@ def _run_memory_informed_action(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
-    action_type: str,
+    action_phase: str,
     prompt_template: ChatPromptTemplate,
     output_schema: type[BaseModel],
     output_key: str,
@@ -504,7 +544,7 @@ def _run_memory_informed_action(
 
     span_name = (
         f"agent_action_eval_{player_id}"
-        f"_day_{day}_round_{round_num}_{action_type}"
+        f"_day_{day}_round_{round_num}_{action_phase}"
     )
     with langfuse.start_as_current_observation(
         as_type="span",
@@ -514,7 +554,7 @@ def _run_memory_informed_action(
             "player_role": role,
             "day": day,
             "round": round_num,
-            "action_type": action_type,
+            "action_phase": action_phase,
             "visible_discussion": visible_discussion,
             "previous_strategy": payload.get("previous_strategy", "") or "",
             "day_summaries": format_day_summaries(
@@ -538,7 +578,7 @@ def _run_memory_informed_action(
             prompt_payload,
             config,
             runtime,
-            action_type,
+            action_phase,
         )
         result = _run_agent(
             enriched_payload,
@@ -592,7 +632,7 @@ def _run_memory_informed_action(
             player_role=role,
             day=day,
             round=round_num,
-            action_type=action_type,
+            action_phase=action_phase,
             visible_discussion=recent_messages,
             private_context=EvalPrivateContext(
                 previous_strategy=payload.get("previous_strategy", "") or "",
@@ -627,7 +667,7 @@ def _run_memory_informed_action(
                 "retrieval_top_k": 3,
                 "memory_enabled": eval_case.memory_enabled,
                 "retrieval_skipped_reason": eval_case.retrieval_skipped_reason,
-                "action_type": eval_case.action_type,
+                "action_phase": eval_case.action_phase,
                 "player_id": eval_case.player_id,
                 "player_role": eval_case.player_role,
                 "day": eval_case.day,
@@ -647,7 +687,7 @@ def villager_discuss(
         payload,
         config,
         runtime,
-        "discussion",
+        "day_discussion",
         VILLAGER_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
@@ -663,7 +703,7 @@ def healer_discuss(
         payload,
         config,
         runtime,
-        "discussion",
+        "day_discussion",
         HEALER_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
@@ -679,7 +719,7 @@ def wolf_discuss(
         payload,
         config,
         runtime,
-        "discussion",
+        "day_discussion",
         WOLF_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
@@ -695,7 +735,7 @@ def investigator_discuss(
         payload,
         config,
         runtime,
-        "discussion",
+        "day_discussion",
         INVESTIGATOR_DAY_DISCUSS,
         DayDiscussOutput,
         "day_channel",
@@ -711,7 +751,7 @@ def villager_vote(
         payload,
         config,
         runtime,
-        "vote",
+        "day_vote",
         VILLAGER_DAY_VOTE,
         DayVoteOutput,
         "day_votes",
@@ -727,7 +767,7 @@ def healer_vote(
         payload,
         config,
         runtime,
-        "vote",
+        "day_vote",
         HEALER_DAY_VOTE,
         DayVoteOutput,
         "day_votes",
@@ -743,7 +783,7 @@ def wolf_vote(
         payload,
         config,
         runtime,
-        "vote",
+        "day_vote",
         WOLF_DAY_VOTE,
         DayVoteOutput,
         "day_votes",
@@ -759,7 +799,7 @@ def investigator_vote(
         payload,
         config,
         runtime,
-        "vote",
+        "day_vote",
         INVESTIGATOR_DAY_VOTE,
         DayVoteOutput,
         "day_votes",

@@ -31,13 +31,31 @@ GAME RULES:
 - Wolves know each other and secretly eliminate one villager per night
 - Healer can protect one player from elimination each night (cannot protect themselves)
 - Investigator can reveal one player's role each night, results are private
-- Day: all players discuss (up to 6 rounds), then vote to eliminate one player. Ties result in no elimination.
+- Day: all players discuss (up to 4 rounds), then vote to eliminate one player. Ties result in no elimination.
 - Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
 - Villagers win when all wolves are eliminated. Wolves win when they equal or outnumber villagers.
 - Eliminated players' roles are revealed.
 - The Game Master only announces eliminations from voting, wolf kills, and healer saves — NOT investigation results.
 
 {situation_standards}
+
+ACTION PHASES:
+Each observation and strategy point must be tagged with the game phase it
+applies to:
+- day_discussion: Lessons about what to say, how to argue, when to stay
+  silent, how to read others, and how to manage suspicion during public
+  discussion rounds.
+- day_vote: Lessons about vote target selection, vote timing, voting to
+  preserve cover, and reading voting patterns.
+- night_action: Lessons about night target selection — who wolves should
+  kill, who the healer should protect, who the investigator should
+  investigate. Villagers have no night action — do not assign night_action
+  to the villager perspective.
+
+Tag based on WHEN THE LESSON APPLIES, not when the event occurred. A night
+kill that teaches wolves whom to target is night_action. A night kill that
+teaches villagers how to read the kill pattern the next morning is
+day_discussion.
 
 ---
 
@@ -66,22 +84,39 @@ pivotal moments that would help agents play better in future games. These
 observations are FACTS about what happened. They serve as episodic memory
 retrieved via semantic search in future games.
 
-Format each observation as a single paragraph with three parts:
-- Scenario: The game situation as it appeared at the time (using the dimensional
-  framework and epistemic status rule from the situation standards above).
-- Approach: What the agent(s) did in that situation.
-  You may use actual roles here since this is part of the factual record.
-- Outcome: What resulted — how others responded and the downstream consequences.
-  You may reveal actual roles here since this is the factual record.
+Each observation has structured fields:
+
+- situation: The core game dynamic — what triggered the situation. Do not
+  embed dimensional context here; use the dedicated dimensional fields below.
+  You may use actual roles here since observations are factual post-game
+  records. 1-2 sentences.
+- information_landscape (required): What evidence exists and what type —
+  information-rich (confirmed roles, voting records, caught lies) or
+  information-starved (no leads, speculative reads). 1 sentence.
+- game_phase (required): Early (no eliminations), mid (some data, roles
+  emerging), or endgame (few players, high stakes). Note what changed most
+  recently. 1 sentence.
+- consensus_texture (optional): Consensus strength and who is driving it.
+  Only include if relevant to the situation.
+- social_pressure (optional): Who is under pressure, why, and whether it
+  appears coordinated. Only include if relevant to the situation.
+- approach: What the agent(s) did in that situation. You may use actual roles
+  here since this is part of the factual record. 1-2 sentences.
+- outcome: What resulted — how others responded and the downstream
+  consequences. You may reveal actual roles here since this is the factual
+  record. 1-2 sentences.
 
 Guidelines:
-- 2-4 sentences per observation.
-- Assign each observation a perspective — the role that would find it most useful.
-  The same event can produce separate observations for different roles if the
-  lesson differs.
-- Look for multi-day patterns — causal chains and strategic sequences, not just
-  single-day events.
-- For each role, extract 8-15 observations that cover the game's key dynamics.
+- Each field should be 1-2 sentences. Keep the total observation concise.
+- Assign each observation a perspective — the role that would find it most
+  useful. The same event can produce separate observations for different
+  roles if the lesson differs.
+- Assign each observation an action_phase — the phase where this lesson
+  would be applied.
+- Look for multi-day patterns — causal chains and strategic sequences, not
+  just single-day events.
+- For each role, extract 4-8 observations that cover the game's key dynamics
+  across the relevant action phases.
 
 ---
 
@@ -94,15 +129,37 @@ the situational specificity.
 
 For each principle:
 
-**situation**: A "When..." or "If..." clause describing the game dynamic this
-principle applies to. Use the same dimensional framework as your observations
-so that the situation description aligns with how agents will describe their
-own game state during play. This field is what semantic search matches against.
+{epistemic_status_rule}
+
+**situation**: A "When..." or "If..." clause describing the core game dynamic
+this principle applies to. Do not embed dimensional context here; use the
+dedicated dimensional fields below. Do not include recommended actions,
+conditional strategy, or advice — those belong in the action field.
+Strategy points are retrieved during gameplay — the situation must be
+recognizable from the assigned role's perspective when other players' true
+roles are unknown. Strictly follow the epistemic status rule above.
+
+**information_landscape** (required): What evidence exists and what type —
+information-rich (confirmed roles, voting records, caught lies) or
+information-starved (no leads, speculative reads). 1 sentence.
+
+**game_phase** (required): Early (no eliminations), mid (some data, roles
+emerging), or endgame (few players, high stakes). Note what changed most
+recently. 1 sentence.
+
+**consensus_texture** (optional): Consensus strength and who is driving it.
+Only include if relevant to the situation.
+
+**social_pressure** (optional): Who is under pressure, why, and whether it
+appears coordinated. Only include if relevant to the situation.
 
 **action**: The concrete recommended action, including WHY it works in this
 specific context. The action should capture a learned nuance, not restate
 common-sense fundamentals. This field may refer to the assigned role, since
-the agent reading it knows their own role.
+the agent reading it knows their own role. Include conditional branches here
+if the situation implies different responses for different findings.
+
+**action_phase**: The game phase where this principle would be applied.
 
 Assign each principle to the role that should use it.
 
@@ -122,19 +179,29 @@ QUALITY BAR — what to include vs. exclude:
 - INCLUDE principles that refine previous strategies with new nuance.
 
 Example principles:
-- wolf situation: "When your wolf partner is under heavy suspicion and a
-  multi-player voting consensus is forming against them with concrete evidence,
-  leaving no realistic way to save them."
-  wolf action: "Vote with the majority to eliminate your partner rather than
-  casting a dissenting vote — a lone protest vote creates a permanent record
-  that links you to the eliminated wolf when roles are revealed."
+- wolf, day_vote:
+  situation: "When your wolf partner is under heavy suspicion and a multi-player
+  voting consensus is forming against them, leaving no realistic way to save them."
+  information_landscape: "Concrete evidence (voting records or caught lies)
+  supports the case against your partner."
+  game_phase: "Mid-game, at least one elimination has occurred."
+  consensus_texture: "Strong multi-player convergence with specific evidence cited."
+  action: "Vote with the majority to eliminate your partner rather than casting
+  a dissenting vote — a lone protest vote creates a permanent record that links
+  you to the eliminated wolf when roles are revealed."
 
-- villager situation: "When multiple players suddenly coordinate an aggressive
-  accusation against one player based on communication style rather than voting
-  evidence, and the target has no prior suspicious voting record."
-  villager action: "Treat the coordinated push itself as a potential wolf
-  signal — wolves amplify existing village paranoia rather than creating new
-  accusations, so scrutinize the accusers' voting records across previous days."
+- villager, day_discussion:
+  situation: "When multiple players suddenly coordinate an aggressive accusation
+  against one player based on communication style rather than voting evidence,
+  and the target has no prior suspicious voting record."
+  information_landscape: "Suspicion is driven by tone and phrasing reads, not
+  voting records or concrete claims."
+  game_phase: "Early to mid-game, before strong evidence has emerged."
+  social_pressure: "Coordinated pressure from multiple players against one
+  target, possibly wolf-driven amplification of village paranoia."
+  action: "Treat the coordinated push itself as a potential wolf signal — wolves
+  amplify existing village paranoia rather than creating new accusations, so
+  scrutinize the accusers' voting records across previous days."
 
 Extract 4-8 principles per role. Focus on:
 - What the winning side did right that should be repeated
@@ -153,7 +220,7 @@ GAME RULES:
 - Wolves know each other and secretly eliminate one villager per night
 - Healer can protect one player from elimination each night (cannot protect themselves)
 - Investigator can reveal one player's role each night, results are private
-- Day: all players discuss (up to 6 rounds), then vote to eliminate one player. Ties result in no elimination.
+- Day: all players discuss (up to 4 rounds), then vote to eliminate one player. Ties result in no elimination.
 - Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
 - Villagers win when all wolves are eliminated. Wolves win when they equal or outnumber villagers.
 - Eliminated players' roles are revealed.

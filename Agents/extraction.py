@@ -1,3 +1,9 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from logging import getLogger
+
+from Agents.agents import get_llm_pro, get_llm_pro_backup
 from Agents.formatters import (
     format_day_channel_postgame,
     format_investigator_results,
@@ -5,13 +11,17 @@ from Agents.formatters import (
     format_strategy_notes_postgame,
     format_wolf_channel,
 )
-from Agents.state import OrchestratorGraph
+from Agents.prompts import EPISTEMIC_STATUS_RULE, POSTGAME_EXTRACTION_PROMPT, SITUATION_STANDARDS
 from Agents.schemas import GameStrategyOutput
-from Agents.prompts import POSTGAME_EXTRACTION_PROMPT, SITUATION_STANDARDS
-from Agents.agents import get_llm_pro, get_llm_pro_backup
-from logging import getLogger
+from Agents.state import OrchestratorGraph
 
 logger = getLogger(__name__)
+
+
+@dataclass
+class ExtractionResult:
+    output: GameStrategyOutput
+    model_used: str
 
 
 def _invoke_extraction_model(llm, prompt: str, run_name: str) -> GameStrategyOutput:
@@ -32,21 +42,19 @@ def _invoke_extraction_model(llm, prompt: str, run_name: str) -> GameStrategyOut
     raise TypeError(f"Unexpected post-game extraction result type: {type(result)!r}")
 
 
-def extract_postgame(
-    state: OrchestratorGraph,
-    max_retries: int = 2,
-    backup_max_retries: int = 2,
-) -> GameStrategyOutput | None:
+def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
+    """Format game state into the strings needed for the extraction prompt.
+
+    Returns a dict with keys: formatted_roles, formatted_discussions,
+    formatted_strategy_notes, formatted_previous_strategies, game_outcome.
     """
-    Post-game extraction: calls the Pro model with the full game transcript
-    to extract observations and generate updated strategies per role.
-    """
-    # Format all inputs
     formatted_roles = format_roles(state.get("roles", {}))
 
     formatted_discussions = (
         "=== Day Discussions ===\n"
-        + format_day_channel_postgame(state.get("day_channel", []), state.get("roles", {}))
+        + format_day_channel_postgame(
+            state.get("day_channel", []), state.get("roles", {})
+        )
         + "\n\n=== Wolf Night Discussions ===\n"
         + format_wolf_channel(state.get("wolf_channel", []))
         + "\n\n=== Investigator Results ===\n"
@@ -56,20 +64,37 @@ def extract_postgame(
     formatted_strategy_notes = format_strategy_notes_postgame(
         state.get("agent_strategies", {}), state.get("roles", {})
     )
-    formatted_previous_strategies = "No previous role strategy summaries were injected into this game."
 
-    game_outcome = state.get("winner", "unknown")
+    return {
+        "formatted_roles": formatted_roles,
+        "formatted_discussions": formatted_discussions,
+        "formatted_strategy_notes": formatted_strategy_notes,
+        "formatted_previous_strategies": (
+            "No previous role strategy summaries were injected into this game."
+        ),
+        "game_outcome": state.get("winner", "unknown"),
+    }
 
-    # Build the prompt
-    prompt = POSTGAME_EXTRACTION_PROMPT.format(
-        formatted_roles=formatted_roles,
-        formatted_discussions=formatted_discussions,
-        formatted_strategy_notes=formatted_strategy_notes,
-        formatted_previous_strategies=formatted_previous_strategies,
-        game_outcome=game_outcome,
+
+def build_extraction_prompt(inputs: dict[str, str]) -> str:
+    """Build the full extraction prompt from pre-formatted inputs."""
+    return POSTGAME_EXTRACTION_PROMPT.format(
         situation_standards=SITUATION_STANDARDS,
+        epistemic_status_rule=EPISTEMIC_STATUS_RULE,
+        **inputs,
     )
 
+
+def extract_postgame(
+    prompt: str,
+    max_retries: int = 2,
+    backup_max_retries: int = 2,
+) -> ExtractionResult | None:
+    """Call the extraction LLM with a pre-built prompt.
+
+    Returns an ExtractionResult with the output and model label, or None if
+    all attempts fail.
+    """
     models = (
         ("primary", get_llm_pro(), max_retries),
         ("backup", get_llm_pro_backup(), backup_max_retries),
@@ -77,11 +102,12 @@ def extract_postgame(
     for label, llm, retries in models:
         for attempt in range(retries + 1):
             try:
-                return _invoke_extraction_model(
+                output = _invoke_extraction_model(
                     llm,
                     prompt,
                     f"postgame_extraction_{label}",
                 )
+                return ExtractionResult(output=output, model_used=label)
             except Exception as e:
                 logger.warning(
                     "Post-game extraction failed with %s model on attempt %s: %s",

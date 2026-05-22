@@ -120,10 +120,10 @@ class MemoryPersistenceTests(unittest.TestCase):
             )
 
         self.assertEqual(
-            {"observations": 1, "strategies": 0, "strategy_points": 1},
+            {"observations": 2, "strategies": 0, "strategy_points": 2},
             counts,
         )
-        self.assertEqual(3, len(store.batch_calls))
+        self.assertEqual(5, len(store.batch_calls))
 
     def test_put_memory_with_retries_retries_transient_embedding_errors(self) -> None:
         store = FailingPutStore([TransientEmbeddingError("502 Bad Gateway")])

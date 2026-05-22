@@ -9,6 +9,7 @@ from Agents.memory_persistence import (
     MemoryPersistenceConfig,
     seed_memory_from_config,
 )
+from Agents.schemas.metrics import GameOutcome
 from Agents.tracing import (
     Metrics,
     build_game_config,
@@ -33,6 +34,7 @@ def run_game(
     session_id: str | None = None,
     game_config: GameConfig | dict | None = None,
     memory_persistence_config: MemoryPersistenceConfig | dict | None = None,
+    reranking_config: dict | None = None,
 ):
     seed_memory_from_config(memory_persistence_config, target_store=store)
     config = build_game_config(
@@ -40,6 +42,7 @@ def run_game(
         session_id,
         game_config,
         memory_persistence_config,
+        reranking_config,
     )
     game_id = config["configurable"]["game_id"]
     normalized_game_config = config["configurable"]["game_config"]
@@ -64,6 +67,7 @@ def run_game(
             metadata={
                 "game_id": game_id,
                 "memory_config": config["configurable"]["memory_config"],
+                "reranking_config": config["configurable"]["reranking_config"],
                 "game_config": normalized_game_config,
                 "memory_persistence_config": normalized_memory_persistence_config,
             },
@@ -98,11 +102,12 @@ def run_game(
         push_scores_to_langfuse(game_metrics, root.trace_id, session_id)
 
     flush()
-    return result
+    return GameOutcome(result=result, game_metrics=game_metrics)
 
 def main():
     load_dotenv()
-    result = run_game()
+    outcome = run_game()
+    result = outcome.result
 
     print(f"Winner: {result['winner']}")
     print(f"Game lasted {result['current_day']} days")

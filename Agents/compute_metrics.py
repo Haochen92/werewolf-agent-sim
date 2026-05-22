@@ -1,34 +1,28 @@
 import hashlib
 
-from Agents.tracing import Metrics
+from Agents.schemas.metrics import (
+    BaseGameMetrics,
+    ComputedGameMetrics,
+    DerivedGameMetrics,
+    Metrics,
+)
 from Agents.tracing import langfuse
-from pydantic import BaseModel
 
 
 def _score_id(*parts: str) -> str:
     return hashlib.sha256(":".join(parts).encode("utf-8")).hexdigest()[:16]
 
 
-class ComputedGameMetrics(BaseModel):
-    # Always present
-    winner: str
-    game_length: int
-    mislynches: int
-    healer_save_count: int
-    healer_exit_method: str
-    investigator_exit_method: str
-
-    # Nullable
-    correct_elimination_rate: float | None = None
-    investigator_found_wolf_day: int | None = None
-    wolf_killed_healer_day: int | None = None
-    wolf_killed_investigator_day: int | None = None
-    wolf_steering_rate: float | None = None
-    wolf_blending_rate: float | None = None
-    wolf_dissent_rate: float | None = None
+def _safe_div(numerator: int, denominator: int) -> float | None:
+    return numerator / denominator if denominator > 0 else None
 
 
-def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
+# ---------------------------------------------------------------------------
+# Computation pipeline
+# ---------------------------------------------------------------------------
+
+
+def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
     roles = result["roles"]
     survivors = result["surviving_wolves"] + result["surviving_villagers"]
 
@@ -39,7 +33,7 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
     winner = result["winner"]
     game_length = result["current_day"]
 
-    # --- Tier 2: single pass over accumulators ---
+    # --- Tier 2: single pass over day resolutions ---
 
     mislynches = 0
     total_eliminations = 0
@@ -53,20 +47,33 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
             else:
                 wolf_eliminations += 1
 
-    correct_elimination_rate = (
-        wolf_eliminations / total_eliminations
-        if total_eliminations > 0
-        else None
-    )
+    tie_count = sum(1 for d in metrics.day_resolutions if d.tied_players)
+    no_vote_count = sum(1 for d in metrics.day_resolutions if d.no_vote)
+
+    # --- Tier 3: single pass over night resolutions ---
 
     healer_save_count = sum(
         1 for n in metrics.night_resolutions if n.healer_saved
+    )
+
+    healer_nights_alive = sum(
+        1 for n in metrics.night_resolutions if n.healer_target is not None
     )
 
     investigator_found_wolf_day = next(
         (n.day for n in metrics.night_resolutions
          if n.investigator_target_role == "wolf"),
         None,
+    )
+
+    investigator_wolves_found = sum(
+        1 for n in metrics.night_resolutions
+        if n.investigator_target_role == "wolf"
+    )
+
+    investigator_investigations_total = sum(
+        1 for n in metrics.night_resolutions
+        if n.investigator_target is not None
     )
 
     wolf_killed_healer_day = next(
@@ -81,7 +88,20 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         None,
     )
 
-    # --- Tier 3: wolf voting behavior ---
+    power_roles_killed_by_wolves = sum(
+        1 for n in metrics.night_resolutions
+        if n.kill_successful
+        and n.wolf_target_role in ("healer", "investigator")
+    )
+
+    wolf_power_role_target_nights = sum(
+        1 for n in metrics.night_resolutions
+        if n.wolves_target in (healer_id, investigator_id)
+    )
+
+    wolf_kill_nights_total = len(metrics.night_resolutions)
+
+    # --- Tier 4: wolf voting behavior ---
 
     mislynch_days_steered = 0
     mislynch_days_total = 0
@@ -103,12 +123,10 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         majority_of_wolves_aligned = wolves_voted_with_majority > len(wolf_votes) / 2
 
         if day.voted_player_role != "wolf":
-            # Mislynch day — did wolves steer?
             mislynch_days_total += 1
             if majority_of_wolves_aligned:
                 mislynch_days_steered += 1
         else:
-            # Wolf eliminated — did surviving wolves blend or dissent?
             surviving_wolf_votes = [
                 v for v in day.votes
                 if roles.get(v["voter"]) == "wolf"
@@ -135,25 +153,7 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
             else:
                 wolf_elim_days_dissented += 1
 
-    wolf_steering_rate = (
-        mislynch_days_steered / mislynch_days_total
-        if mislynch_days_total > 0
-        else None
-    )
-
-    wolf_blending_rate = (
-        wolf_elim_days_blended / wolf_elim_days_total
-        if wolf_elim_days_total > 0
-        else None
-    )
-
-    wolf_dissent_rate = (
-        wolf_elim_days_dissented / wolf_elim_days_total
-        if wolf_elim_days_total > 0
-        else None
-    )
-
-    # --- Power role exit methods ---
+    # --- Tier 5: power role exit methods ---
 
     def _exit_method(player_id: str) -> str:
         if player_id in survivors:
@@ -163,21 +163,71 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
                 return "voted_out"
         return "killed_by_wolves"
 
-    return ComputedGameMetrics(
+    return BaseGameMetrics(
         winner=winner,
         game_length=game_length,
         mislynches=mislynches,
-        correct_elimination_rate=correct_elimination_rate,
+        total_eliminations=total_eliminations,
+        wolf_eliminations=wolf_eliminations,
+        tie_count=tie_count,
+        no_vote_count=no_vote_count,
         healer_save_count=healer_save_count,
+        healer_nights_alive=healer_nights_alive,
+        healer_exit_method=_exit_method(healer_id),
         investigator_found_wolf_day=investigator_found_wolf_day,
+        investigator_wolves_found=investigator_wolves_found,
+        investigator_investigations_total=investigator_investigations_total,
+        investigator_exit_method=_exit_method(investigator_id),
         wolf_killed_healer_day=wolf_killed_healer_day,
         wolf_killed_investigator_day=wolf_killed_investigator_day,
-        wolf_steering_rate=wolf_steering_rate,
-        wolf_blending_rate=wolf_blending_rate,
-        wolf_dissent_rate=wolf_dissent_rate,
-        healer_exit_method=_exit_method(healer_id),
-        investigator_exit_method=_exit_method(investigator_id),
+        power_roles_killed_by_wolves=power_roles_killed_by_wolves,
+        wolf_power_role_target_nights=wolf_power_role_target_nights,
+        wolf_kill_nights_total=wolf_kill_nights_total,
+        mislynch_days_total=mislynch_days_total,
+        mislynch_days_steered=mislynch_days_steered,
+        wolf_elim_days_total=wolf_elim_days_total,
+        wolf_elim_days_blended=wolf_elim_days_blended,
+        wolf_elim_days_dissented=wolf_elim_days_dissented,
     )
+
+
+def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
+    return DerivedGameMetrics(
+        correct_elimination_rate=_safe_div(base.wolf_eliminations, base.total_eliminations),
+        healer_save_rate=_safe_div(base.healer_save_count, base.healer_nights_alive),
+        investigator_accuracy=_safe_div(base.investigator_wolves_found, base.investigator_investigations_total),
+        wolf_steering_rate=_safe_div(base.mislynch_days_steered, base.mislynch_days_total),
+        wolf_blending_rate=_safe_div(base.wolf_elim_days_blended, base.wolf_elim_days_total),
+        wolf_dissent_rate=_safe_div(base.wolf_elim_days_dissented, base.wolf_elim_days_total),
+        wolf_power_role_targeting_rate=_safe_div(base.wolf_power_role_target_nights, base.wolf_kill_nights_total),
+    )
+
+
+def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
+    base = _compute_base_metrics(result, metrics)
+    derived = _compute_derived_metrics(base)
+
+    return ComputedGameMetrics(
+        **derived.model_dump(),
+        winner=base.winner,
+        game_length=base.game_length,
+        mislynches=base.mislynches,
+        healer_save_count=base.healer_save_count,
+        healer_exit_method=base.healer_exit_method,
+        investigator_exit_method=base.investigator_exit_method,
+        investigator_wolves_found=base.investigator_wolves_found,
+        power_roles_killed_by_wolves=base.power_roles_killed_by_wolves,
+        tie_count=base.tie_count,
+        no_vote_count=base.no_vote_count,
+        investigator_found_wolf_day=base.investigator_found_wolf_day,
+        wolf_killed_healer_day=base.wolf_killed_healer_day,
+        wolf_killed_investigator_day=base.wolf_killed_investigator_day,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Langfuse push
+# ---------------------------------------------------------------------------
 
 
 def push_scores_to_langfuse(
