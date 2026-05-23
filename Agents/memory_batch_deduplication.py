@@ -46,7 +46,7 @@ DEFAULT_BATCH_EMBEDDING_MODEL = os.getenv(
 )
 DEFAULT_BATCH_EMBEDDING_DIMS = int(os.getenv("MEMORY_BATCH_EMBEDDING_DIMS", "1536"))
 DEFAULT_BATCH_SIMILARITY_THRESHOLD = 0.70
-DEFAULT_MAX_CLUSTER_SIZE = 8
+DEFAULT_MAX_CLUSTER_SIZE = 25
 DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS = 5
 DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY = 1.0
 DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
@@ -145,6 +145,11 @@ class BatchDedupReport(BaseModel):
     dump_store_dir: str
     stats: list[NamespaceStats] = Field(default_factory=list)
     clusters: list[ClusterPreview] = Field(default_factory=list)
+
+
+def _langfuse_handler():
+    from langfuse.langchain import CallbackHandler
+    return CallbackHandler()
 
 
 def _get_batch_llm(model: str, thinking_level: str | None) -> ChatGoogleGenerativeAI:
@@ -737,7 +742,7 @@ def _call_cluster_llm(
 
     result = llm.with_structured_output(output_schema).invoke(
         [{"role": "user", "content": prompt}],
-        config={"run_name": run_name},
+        config={"run_name": run_name, "callbacks": [_langfuse_handler()]},
     )
     if isinstance(result, output_schema):
         return result
@@ -780,6 +785,13 @@ def dedup_namespace(
     )
     if max_clusters is not None:
         clusters = clusters[:max_clusters]
+
+    if clusters:
+        sizes = [len(c) for c in clusters]
+        logger.info(
+            "Clusters for %s/%s: %d clusters, sizes=%s",
+            memory_kind, role, len(clusters), sorted(sizes, reverse=True),
+        )
 
     stats = NamespaceStats(
         memory_kind=memory_kind,
@@ -903,6 +915,13 @@ def inspect_namespace_clusters(
     )
     if max_clusters is not None:
         clusters = clusters[:max_clusters]
+
+    if clusters:
+        sizes = [len(c) for c in clusters]
+        logger.info(
+            "Clusters for %s/%s: %d clusters, sizes=%s",
+            memory_kind, role, len(clusters), sorted(sizes, reverse=True),
+        )
 
     stats = NamespaceStats(
         memory_kind=memory_kind,
