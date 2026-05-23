@@ -12,17 +12,17 @@ Ground situation descriptions in these dimensions as relevant:
   voting evidence, caught lies) or information-starved (no leads, speculative
   reads)? What TYPE of evidence is driving suspicion: voting records,
   communication style, behavioral patterns, or concrete claims?
-- Consensus texture: Is there a strong consensus, a fragile one, or none?
-  Is the push driven by one vocal player or a genuine multi-player
-  convergence? Are people citing specific evidence or echoing each other?
-- Social pressure: Who is under pressure and why? Is it evidence-based or
-  vibes-based? Are accusations coordinated (possible wolf play) or organic?
+- Consensus texture: How aligned is the village? Unified, fragile, split,
+  or no consensus? Is it driven by evidence or social momentum? (Do not
+  describe who is under pressure — that belongs in agent exposure.)
+- Agent exposure: What is the agent's position — driving the push, aligned
+  with consensus, under indirect scrutiny, or the primary target? What is
+  the basis — specific evidence, behavioral reads, association with another
+  player, or nothing concrete?
 - Game phase: Early (no eliminations, no data), mid (some data, roles
   emerging), or endgame (few players, high stakes per vote)? What changed
   most recently?
 
-Not every dimension applies to every situation. Use the ones that make the
-situation recognizable and distinguishable.
 
 SPECIFICITY TEST:
 Before finalizing any situation description, check: if this were used as a

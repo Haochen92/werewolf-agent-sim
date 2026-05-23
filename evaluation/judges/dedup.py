@@ -14,7 +14,16 @@ from evaluation.judges.prompts import DEDUP_SYSTEM_PROMPT, DEDUP_USER_PROMPT
 
 DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
 
-DECISION_LABELS = {"A": "DISCARD", "B": "REPLACE", "C": "DIFFERENTIATE", "D": "KEEP"}
+DECISION_LABELS = {
+    # Current per-extraction decisions
+    "D": "DISCARD",
+    "M": "MERGE",
+    "K": "KEEP",
+    # Legacy decisions (for evaluating older spans)
+    "A": "DISCARD",
+    "B": "REPLACE",
+    "C": "DIFFERENTIATE",
+}
 
 
 def _format_new_entry(entry: dict, item_type: str) -> str:
@@ -63,6 +72,9 @@ def _format_decision_output(case: DedupCase) -> str:
         "merged_action",
         "merged_approach",
         "merged_outcome",
+        "improved_situation",
+        "improved_action",
+        # Legacy fields (for evaluating older spans)
         "distinguishing_variable",
         "existing_rewritten_situation",
         "existing_rewritten_action",

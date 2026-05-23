@@ -96,10 +96,12 @@ Each observation has structured fields:
 - game_phase (required): Early (no eliminations), mid (some data, roles
   emerging), or endgame (few players, high stakes). Note what changed most
   recently. 1 sentence.
-- consensus_texture (optional): Consensus strength and who is driving it.
-  Only include if relevant to the situation.
-- social_pressure (optional): Who is under pressure, why, and whether it
-  appears coordinated. Only include if relevant to the situation.
+- consensus_texture (optional): Village alignment — unified, fragile, split,
+  or none. Driven by evidence or social momentum. Do not describe who is
+  under pressure here. Only include if relevant to the situation.
+- agent_exposure (optional): The agent's position — driving the push, aligned
+  with consensus, under indirect scrutiny, or primary target. What is the
+  basis. Only include if relevant to the situation.
 - approach: What the agent(s) did in that situation. You may use actual roles
   here since this is part of the factual record. 1-2 sentences.
 - outcome: What resulted — how others responded and the downstream
@@ -147,11 +149,13 @@ information-starved (no leads, speculative reads). 1 sentence.
 emerging), or endgame (few players, high stakes). Note what changed most
 recently. 1 sentence.
 
-**consensus_texture** (optional): Consensus strength and who is driving it.
-Only include if relevant to the situation.
+**consensus_texture** (optional): Village alignment — unified, fragile, split,
+or none. Driven by evidence or social momentum. Do not describe who is under
+pressure here. Only include if relevant to the situation.
 
-**social_pressure** (optional): Who is under pressure, why, and whether it
-appears coordinated. Only include if relevant to the situation.
+**agent_exposure** (optional): The agent's position — driving the push,
+aligned with consensus, under indirect scrutiny, or primary target. What is
+the basis. Only include if relevant to the situation.
 
 **action**: The concrete recommended action, including WHY it works in this
 specific context. The action should capture a learned nuance, not restate
@@ -175,7 +179,7 @@ QUALITY BAR — what to include vs. exclude:
 - EXCLUDE vague situations without specific game dynamics.
 - EXCLUDE actions without reasoning for why they work in that context.
 - INCLUDE principles that capture non-obvious mechanisms — why a tactic works
-  given specific information availability, consensus texture, or social dynamics.
+  given specific information availability, consensus texture, or agent exposure.
 - INCLUDE principles that refine previous strategies with new nuance.
 
 Example principles:
@@ -185,7 +189,8 @@ Example principles:
   information_landscape: "Concrete evidence (voting records or caught lies)
   supports the case against your partner."
   game_phase: "Mid-game, at least one elimination has occurred."
-  consensus_texture: "Strong multi-player convergence with specific evidence cited."
+  consensus_texture: "Strong multi-player convergence driven by specific evidence."
+  agent_exposure: "The agent's wolf partner is the primary target; the agent is not yet under scrutiny."
   action: "Vote with the majority to eliminate your partner rather than casting
   a dissenting vote — a lone protest vote creates a permanent record that links
   you to the eliminated wolf when roles are revealed."
@@ -197,8 +202,8 @@ Example principles:
   information_landscape: "Suspicion is driven by tone and phrasing reads, not
   voting records or concrete claims."
   game_phase: "Early to mid-game, before strong evidence has emerged."
-  social_pressure: "Coordinated pressure from multiple players against one
-  target, possibly wolf-driven amplification of village paranoia."
+  agent_exposure: "The agent is not the target but is observing coordinated
+  pressure against another player, possibly wolf-driven amplification."
   action: "Treat the coordinated push itself as a potential wolf signal — wolves
   amplify existing village paranoia rather than creating new accusations, so
   scrutinize the accusers' voting records across previous days."

@@ -52,21 +52,8 @@ DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY = 1.0
 DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
 
 
-class StrategyRewriteEntry(BaseModel):
-    key: str
-    situation: str = Field(description="Rewritten situation text")
-    action: str = Field(description="Rewritten recommended action")
-
-
-class ObservationRewriteEntry(BaseModel):
-    key: str
-    situation: str = Field(description="Rewritten situation text")
-    approach: str = Field(description="Rewritten approach text")
-    outcome: str = Field(description="Rewritten outcome text")
-
-
 class StrategyBatchOperation(BaseModel):
-    action: Literal["DISCARD", "REPLACE", "DIFFERENTIATE", "KEEP"]
+    action: Literal["DISCARD", "KEEP"]
     reasoning: str
     source_keys: list[str] = Field(
         description="Keys in this cluster that the operation applies to",
@@ -74,24 +61,26 @@ class StrategyBatchOperation(BaseModel):
     )
     survivor_key: str | None = Field(
         default=None,
-        description="Existing key to preserve for DISCARD or REPLACE",
+        description="Existing key to preserve for DISCARD",
     )
     merged_situation: str | None = Field(
         default=None,
-        description="Merged situation for REPLACE",
+        description=(
+            "Optional improved situation text for the survivor. "
+            "Use only when combining elements from multiple entries."
+        ),
     )
     merged_action: str | None = Field(
         default=None,
-        description="Merged action for REPLACE",
-    )
-    rewritten_entries: list[StrategyRewriteEntry] = Field(
-        default_factory=list,
-        description="Final rewritten entries for DIFFERENTIATE",
+        description=(
+            "Optional improved action text for the survivor. "
+            "Use only when combining elements from multiple entries."
+        ),
     )
 
 
 class ObservationBatchOperation(BaseModel):
-    action: Literal["DISCARD", "REPLACE", "DIFFERENTIATE", "KEEP"]
+    action: Literal["DISCARD", "MERGE", "KEEP"]
     reasoning: str
     source_keys: list[str] = Field(
         description="Keys in this cluster that the operation applies to",
@@ -99,23 +88,21 @@ class ObservationBatchOperation(BaseModel):
     )
     survivor_key: str | None = Field(
         default=None,
-        description="Existing key to preserve for DISCARD or REPLACE",
+        description="Existing key to preserve for DISCARD or MERGE",
     )
     merged_situation: str | None = Field(
         default=None,
-        description="Merged situation text for REPLACE",
+        description="Merged situation text for MERGE",
     )
     merged_approach: str | None = Field(
         default=None,
-        description="Merged approach text for REPLACE",
+        description=(
+            "Merged approach listing all distinct tactics with counts for MERGE"
+        ),
     )
     merged_outcome: str | None = Field(
         default=None,
-        description="Merged outcome text for REPLACE",
-    )
-    rewritten_entries: list[ObservationRewriteEntry] = Field(
-        default_factory=list,
-        description="Final rewritten entries for DIFFERENTIATE",
+        description="Merged outcome summarizing the shared lesson for MERGE",
     )
 
 
@@ -138,6 +125,7 @@ class NamespaceStats(BaseModel):
     discarded: int = 0
     replaced: int = 0
     differentiated: int = 0
+    merged: int = 0
     kept: int = 0
     failed: int = 0
     dry_run: bool = True
@@ -635,17 +623,14 @@ def _apply_strategy_operation(
     if operation.action == "KEEP":
         return "kept", 0
 
-    if operation.action in {"DISCARD", "REPLACE"}:
+    if operation.action == "DISCARD":
         survivor_key = operation.survivor_key or source_keys[0]
         if survivor_key not in source_keys or survivor_key not in items_by_key:
             return "failed", 0
         survivor_value = dict(items_by_key[survivor_key].value)
         metadata = _merged_metadata(source_keys, items_by_key, survivor_key)
-        situation = survivor_value.get("situation", "")
-        action = survivor_value.get("action", "")
-        if operation.action == "REPLACE":
-            situation = operation.merged_situation or situation
-            action = operation.merged_action or action
+        situation = operation.merged_situation or survivor_value.get("situation", "")
+        action = operation.merged_action or survivor_value.get("action", "")
         value = {
             "situation": situation,
             "action": action,
@@ -662,34 +647,7 @@ def _apply_strategy_operation(
             items_by_key,
             apply,
         )
-        return ("discarded" if operation.action == "DISCARD" else "replaced", deleted)
-
-    if operation.action == "DIFFERENTIATE":
-        rewritten_keys = {
-            entry.key
-            for entry in operation.rewritten_entries
-            if entry.key in source_keys and entry.key in items_by_key
-        }
-        if not rewritten_keys:
-            return "failed", 0
-        for entry in operation.rewritten_entries:
-            if entry.key not in rewritten_keys:
-                continue
-            value = dict(items_by_key[entry.key].value)
-            value["situation"] = entry.situation
-            value["action"] = entry.action
-            if apply:
-                _put_memory_with_retries(target_store, namespace, entry.key, value)
-                _cache_item_value(items_by_key, entry.key, value)
-        deleted = _delete_absorbed_keys(
-            target_store,
-            namespace,
-            source_keys,
-            rewritten_keys,
-            items_by_key,
-            apply,
-        )
-        return "differentiated", deleted
+        return "discarded", deleted
 
     return "failed", 0
 
@@ -713,7 +671,7 @@ def _apply_observation_operation(
     if operation.action == "KEEP":
         return "kept", 0
 
-    if operation.action in {"DISCARD", "REPLACE"}:
+    if operation.action in {"DISCARD", "MERGE"}:
         survivor_key = operation.survivor_key or source_keys[0]
         if survivor_key not in source_keys or survivor_key not in items_by_key:
             return "failed", 0
@@ -722,7 +680,7 @@ def _apply_observation_operation(
         situation = survivor_value.get("situation", "")
         approach = survivor_value.get("approach", "")
         outcome = survivor_value.get("outcome", "")
-        if operation.action == "REPLACE":
+        if operation.action == "MERGE":
             situation = operation.merged_situation or situation
             approach = operation.merged_approach or approach
             outcome = operation.merged_outcome or outcome
@@ -743,35 +701,7 @@ def _apply_observation_operation(
             items_by_key,
             apply,
         )
-        return ("discarded" if operation.action == "DISCARD" else "replaced", deleted)
-
-    if operation.action == "DIFFERENTIATE":
-        rewritten_keys = {
-            entry.key
-            for entry in operation.rewritten_entries
-            if entry.key in source_keys and entry.key in items_by_key
-        }
-        if not rewritten_keys:
-            return "failed", 0
-        for entry in operation.rewritten_entries:
-            if entry.key not in rewritten_keys:
-                continue
-            value = dict(items_by_key[entry.key].value)
-            value["situation"] = entry.situation
-            value["approach"] = entry.approach
-            value["outcome"] = entry.outcome
-            if apply:
-                _put_memory_with_retries(target_store, namespace, entry.key, value)
-                _cache_item_value(items_by_key, entry.key, value)
-        deleted = _delete_absorbed_keys(
-            target_store,
-            namespace,
-            source_keys,
-            rewritten_keys,
-            items_by_key,
-            apply,
-        )
-        return "differentiated", deleted
+        return ("discarded" if operation.action == "DISCARD" else "merged", deleted)
 
     return "failed", 0
 
@@ -779,6 +709,7 @@ def _apply_observation_operation(
 def _call_cluster_llm(
     memory_kind: MemoryKind,
     role: str,
+    action_phase: str,
     entries: str,
     model: str,
     thinking_level: str | None,
@@ -787,6 +718,7 @@ def _call_cluster_llm(
     if memory_kind == "strategy_points":
         prompt = BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT.format(
             role=role,
+            action_phase=action_phase,
             entries=entries,
             situation_standards=SITUATION_STANDARDS,
             epistemic_status_rule=EPISTEMIC_STATUS_RULE,
@@ -796,6 +728,7 @@ def _call_cluster_llm(
     else:
         prompt = BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT.format(
             role=role,
+            action_phase=action_phase,
             entries=entries,
             situation_standards=SITUATION_STANDARDS,
         )
@@ -867,6 +800,7 @@ def dedup_namespace(
             result = _call_cluster_llm(
                 memory_kind,
                 role,
+                action_phase,
                 entries,
                 model,
                 thinking_level,
@@ -916,13 +850,10 @@ def dedup_namespace(
                 )
                 status, deleted = "failed", 0
             operation_results[status] += 1
-            if status in {"discarded", "replaced", "differentiated"}:
+            if status in {"discarded", "merged"}:
                 stats.operations += 1
                 stats.discarded += deleted if status == "discarded" else 0
-                stats.replaced += deleted if status == "replaced" else 0
-                stats.differentiated += (
-                    deleted if status == "differentiated" else 0
-                )
+                stats.merged += deleted if status == "merged" else 0
             elif status == "kept":
                 stats.kept += 1
             else:

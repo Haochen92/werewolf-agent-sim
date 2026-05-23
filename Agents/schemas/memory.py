@@ -13,15 +13,15 @@ def _compose_situation(
     information_landscape: str,
     game_phase: str,
     consensus_texture: str | None,
-    social_pressure: str | None,
+    agent_exposure: str | None,
 ) -> str:
     parts = [situation]
     parts.append(f"Information landscape: {information_landscape}")
     parts.append(f"Game phase: {game_phase}")
     if consensus_texture:
         parts.append(f"Consensus texture: {consensus_texture}")
-    if social_pressure:
-        parts.append(f"Social pressure: {social_pressure}")
+    if agent_exposure:
+        parts.append(f"Agent exposure: {agent_exposure}")
     return " ".join(parts)
 
 
@@ -63,16 +63,17 @@ class Observation(BaseModel):
     consensus_texture: str | None = Field(
         default=None,
         description=(
-            "Is there a strong consensus, fragile one, or none? Driven by "
-            "one vocal player or genuine multi-player convergence? Only "
-            "include if relevant to the situation."
+            "How aligned is the village? Unified, fragile, split, or no "
+            "consensus? Driven by evidence or social momentum? Do not "
+            "describe who is under pressure here. Only include if relevant."
         ),
     )
-    social_pressure: str | None = Field(
+    agent_exposure: str | None = Field(
         default=None,
         description=(
-            "Who is under pressure and why? Evidence-based or vibes-based? "
-            "Coordinated (possible wolf play) or organic? Only include if "
+            "The agent's position: driving the push, aligned with consensus, "
+            "under indirect scrutiny, or primary target? Based on specific "
+            "evidence, behavioral reads, or association? Only include if "
             "relevant to the situation."
         ),
     )
@@ -96,7 +97,7 @@ class Observation(BaseModel):
             self.information_landscape,
             self.game_phase,
             self.consensus_texture,
-            self.social_pressure,
+            self.agent_exposure,
         )
 
     @field_validator("perspective")
@@ -159,16 +160,17 @@ class StrategyPoint(BaseModel):
     consensus_texture: str | None = Field(
         default=None,
         description=(
-            "Is there a strong consensus, fragile one, or none? Driven by "
-            "one vocal player or genuine multi-player convergence? Only "
-            "include if relevant to the situation."
+            "How aligned is the village? Unified, fragile, split, or no "
+            "consensus? Driven by evidence or social momentum? Do not "
+            "describe who is under pressure here. Only include if relevant."
         ),
     )
-    social_pressure: str | None = Field(
+    agent_exposure: str | None = Field(
         default=None,
         description=(
-            "Who is under pressure and why? Evidence-based or vibes-based? "
-            "Coordinated (possible wolf play) or organic? Only include if "
+            "The agent's position: driving the push, aligned with consensus, "
+            "under indirect scrutiny, or primary target? Based on specific "
+            "evidence, behavioral reads, or association? Only include if "
             "relevant to the situation."
         ),
     )
@@ -188,7 +190,7 @@ class StrategyPoint(BaseModel):
             self.information_landscape,
             self.game_phase,
             self.consensus_texture,
-            self.social_pressure,
+            self.agent_exposure,
         )
 
     @field_validator("perspective")

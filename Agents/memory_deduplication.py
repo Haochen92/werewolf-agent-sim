@@ -19,7 +19,7 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field
 
 from Agents.memory import DEDUP_THRESHOLD
-from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, PER_EXTRACTION_DEDUP_PROMPT
+from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, STRATEGY_DEDUP_PROMPT
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas import Observation, StoredObservation, StrategyPoint, StoredStrategyPoint
 from Agents.schemas.evaluation import DedupCase, DedupCandidate
@@ -43,8 +43,8 @@ DEDUP_THINKING_LEVEL = "low"
 # ---------------------------------------------------------------------------
 
 
-class Discard(BaseModel):
-    decision: Literal["A", "DISCARD"]
+class StrategyDiscard(BaseModel):
+    decision: Literal["D", "DISCARD"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -52,65 +52,32 @@ class Discard(BaseModel):
         ge=1,
         description="The 1-based candidate number of the existing entry this duplicates",
     )
-
-
-class Replace(BaseModel):
-    decision: Literal["B", "REPLACE"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-    replace_candidate: int = Field(
-        ge=1,
-        description="The 1-based candidate number of the existing entry to replace",
-    )
-    merged_situation: str = Field(
-        description="The merged situation text, keeping the best elements of both",
-    )
-    merged_action: str = Field(
-        description="The merged action text, keeping the best elements of both",
-    )
-
-
-class Differentiate(BaseModel):
-    decision: Literal["C", "DIFFERENTIATE"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-    distinguishing_variable: str = Field(
+    improved_situation: Optional[str] = Field(
+        default=None,
         description=(
-            "The situational variable that distinguishes the two entries "
-            "(e.g., consensus strength, game phase)"
+            "If the new entry is better written, the improved situation text "
+            "to overwrite the existing entry. Omit if the existing is equal or better."
         ),
     )
-    existing_candidate: int = Field(
-        ge=1,
-        description="The 1-based candidate number of the existing entry to rewrite",
-    )
-    existing_rewritten_situation: str = Field(
-        description="Rewritten situation for the existing entry",
-    )
-    existing_rewritten_action: Optional[str] = Field(
+    improved_action: Optional[str] = Field(
         default=None,
-        description="Rewritten action for the existing entry (if changed)",
-    )
-    new_rewritten_situation: str = Field(
-        description="Rewritten situation for the new entry",
-    )
-    new_rewritten_action: Optional[str] = Field(
-        default=None,
-        description="Rewritten action for the new entry (if changed)",
+        description=(
+            "If the new entry is better written, the improved action text "
+            "to overwrite the existing entry. Omit if the existing is equal or better."
+        ),
     )
 
 
-class Keep(BaseModel):
-    decision: Literal["D", "KEEP"]
+class StrategyKeep(BaseModel):
+    decision: Literal["K", "KEEP"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
 
-class DedupDecisionOutput(BaseModel):
+
+class StrategyDedupDecisionOutput(BaseModel):
     result: Annotated[
-        Discard | Replace | Differentiate | Keep,
+        StrategyDiscard | StrategyKeep,
         Field(discriminator="decision"),
     ]
 
@@ -121,7 +88,7 @@ class DedupDecisionOutput(BaseModel):
 
 
 class ObservationDiscard(BaseModel):
-    decision: Literal["A", "DISCARD"]
+    decision: Literal["D", "DISCARD"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -131,63 +98,30 @@ class ObservationDiscard(BaseModel):
     )
 
 
-class ObservationReplace(BaseModel):
-    decision: Literal["B", "REPLACE"]
+class ObservationMerge(BaseModel):
+    decision: Literal["M", "MERGE"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
-    replace_candidate: int = Field(
+    merge_candidate: int = Field(
         ge=1,
-        description="The 1-based candidate number of the existing observation to replace",
+        description="The 1-based candidate number of the existing observation to merge with",
     )
     merged_situation: str = Field(
         description="The merged situation text, keeping the best specificity from both",
     )
     merged_approach: str = Field(
-        description="The merged approach text",
-    )
-    merged_outcome: str = Field(
-        description="The merged outcome text",
-    )
-
-
-class ObservationDifferentiate(BaseModel):
-    decision: Literal["C", "DIFFERENTIATE"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-    distinguishing_variable: str = Field(
         description=(
-            "The situational variable that distinguishes the two observations "
-            "(e.g., available evidence, pressure source, game phase)"
+            "The merged approach text listing ALL distinct tactics from both entries"
         ),
     )
-    existing_candidate: int = Field(
-        ge=1,
-        description="The 1-based candidate number of the existing observation to rewrite",
-    )
-    existing_rewritten_situation: str = Field(
-        description="Rewritten situation for the existing observation",
-    )
-    existing_rewritten_approach: str = Field(
-        description="Rewritten approach for the existing observation",
-    )
-    existing_rewritten_outcome: str = Field(
-        description="Rewritten outcome for the existing observation",
-    )
-    new_rewritten_situation: str = Field(
-        description="Rewritten situation for the new observation",
-    )
-    new_rewritten_approach: str = Field(
-        description="Rewritten approach for the new observation",
-    )
-    new_rewritten_outcome: str = Field(
-        description="Rewritten outcome for the new observation",
+    merged_outcome: str = Field(
+        description="The merged outcome summarizing the shared lesson",
     )
 
 
 class ObservationKeep(BaseModel):
-    decision: Literal["D", "KEEP"]
+    decision: Literal["K", "KEEP"]
     reasoning: str = Field(
         description="2-3 sentences explaining the decision",
     )
@@ -196,8 +130,7 @@ class ObservationKeep(BaseModel):
 class ObservationDedupDecisionOutput(BaseModel):
     result: Annotated[
         ObservationDiscard
-        | ObservationReplace
-        | ObservationDifferentiate
+        | ObservationMerge
         | ObservationKeep,
         Field(discriminator="decision"),
     ]
@@ -215,6 +148,7 @@ class DedupAction(str, Enum):
     REPLACE = "B"
     DIFFERENTIATE = "C"
     KEEP = "D"
+    MERGE = "M"
 
 
 class DedupResult(BaseModel):
@@ -233,6 +167,7 @@ class DedupStats(BaseModel):
     discarded: int = 0
     replaced: int = 0
     differentiated: int = 0
+    merged: int = 0
     failed: int = 0  # Fell back to raw storage
     auto_kept: int = 0
     auto_discarded: int = 0
@@ -373,7 +308,7 @@ def dedup_single_observation(
 def _call_observation_dedup_llm(
     observation: Observation,
     similar_items: list,
-) -> ObservationDiscard | ObservationReplace | ObservationDifferentiate | ObservationKeep | None:
+) -> ObservationDiscard | ObservationMerge | ObservationKeep | None:
     """Call the LLM to decide how to integrate the new observation."""
     prompt = OBSERVATION_DEDUP_PROMPT.format(
         new_role=observation.perspective,
@@ -498,9 +433,9 @@ def dedup_single_strategy_point(
 def _call_dedup_llm(
     point: StrategyPoint,
     similar_items: list,
-) -> Discard | Replace | Differentiate | Keep | None:
+) -> StrategyDiscard | StrategyKeep | None:
     """Call the LLM to decide how to integrate the new point."""
-    prompt = PER_EXTRACTION_DEDUP_PROMPT.format(
+    prompt = STRATEGY_DEDUP_PROMPT.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
         new_role=point.perspective,
@@ -528,15 +463,15 @@ def _call_dedup_llm(
                     }
                 )
 
-            result = llm.with_structured_output(DedupDecisionOutput).invoke(
+            result = llm.with_structured_output(StrategyDedupDecisionOutput).invoke(
                 messages,
                 config={"run_name": "dedup_strategy_point"},
             )
 
-            if isinstance(result, DedupDecisionOutput):
+            if isinstance(result, StrategyDedupDecisionOutput):
                 decision = result.result
             elif isinstance(result, dict):
-                decision = DedupDecisionOutput.model_validate(result).result
+                decision = StrategyDedupDecisionOutput.model_validate(result).result
             else:
                 raise TypeError(f"Unexpected dedup LLM result type: {type(result)!r}")
 
@@ -563,8 +498,7 @@ def _candidate_validation_error(decision: BaseModel, candidate_count: int) -> st
     candidate: int | None = None
     for field_name in (
         "duplicate_of_candidate",
-        "replace_candidate",
-        "existing_candidate",
+        "merge_candidate",
     ):
         value = getattr(decision, field_name, None)
         if value is not None:
@@ -593,33 +527,28 @@ def _apply_decision(
     namespace: tuple[str, ...],
     point: StrategyPoint,
     similar_items: list,
-    decision: Discard | Replace | Differentiate | Keep,
+    decision: StrategyDiscard | StrategyKeep,
     game_id: str,
 ) -> DedupAction:
     """Apply the LLM's dedup decision to the store."""
 
     match decision:
-        case Discard(duplicate_of_candidate=candidate):
-            item = _item_for_candidate(similar_items, candidate)
-            if item is not None:
-                _bump_observation_count(store, namespace, item.key, item)
-            else:
-                logger.warning(
-                    f"DISCARD referenced invalid candidate {candidate}; storing as new"
-                )
-                _store_new_point(store, namespace, point, game_id)
-            return DedupAction.DISCARD
-
-        case Replace(replace_candidate=candidate, merged_situation=sit, merged_action=act):
+        case StrategyDiscard(
+            duplicate_of_candidate=candidate,
+            improved_situation=improved_sit,
+            improved_action=improved_act,
+        ):
             item = _item_for_candidate(similar_items, candidate)
             if item is not None:
                 existing_value = item.value
+                situation = improved_sit or existing_value.get("situation", "")
+                action = improved_act or existing_value.get("action", "")
                 store.put(
                     namespace,
                     item.key,
                     {
-                        "situation": sit,
-                        "action": act,
+                        "situation": situation,
+                        "action": action,
                         "observation_count": existing_value.get("observation_count", 1) + 1,
                         "last_observed": datetime.now().isoformat(),
                         "game_id": game_id,
@@ -627,53 +556,12 @@ def _apply_decision(
                 )
             else:
                 logger.warning(
-                    f"REPLACE referenced invalid candidate {candidate}; storing as new"
+                    f"DISCARD referenced invalid candidate {candidate}; storing as new"
                 )
                 _store_new_point(store, namespace, point, game_id)
-            return DedupAction.REPLACE
+            return DedupAction.DISCARD
 
-        case Differentiate(
-            existing_candidate=candidate,
-            existing_rewritten_situation=ex_sit,
-            existing_rewritten_action=ex_act,
-            new_rewritten_situation=new_sit,
-            new_rewritten_action=new_act,
-        ):
-            item = _item_for_candidate(similar_items, candidate)
-            if item is not None:
-                existing_value = item.value
-                store.put(
-                    namespace,
-                    item.key,
-                    {
-                        "situation": ex_sit,
-                        "action": ex_act or existing_value.get("action", ""),
-                        "observation_count": existing_value.get("observation_count", 1),
-                        "last_observed": existing_value.get(
-                            "last_observed", datetime.now().isoformat()
-                        ),
-                        "game_id": existing_value.get("game_id", ""),
-                    },
-                )
-                store.put(
-                    namespace,
-                    str(uuid.uuid4()),
-                    {
-                        "situation": new_sit,
-                        "action": new_act or point.action,
-                        "observation_count": 1,
-                        "last_observed": datetime.now().isoformat(),
-                        "game_id": game_id,
-                    },
-                )
-            else:
-                logger.warning(
-                    f"DIFFERENTIATE referenced invalid candidate {candidate}; storing as new"
-                )
-                _store_new_point(store, namespace, point, game_id)
-            return DedupAction.DIFFERENTIATE
-
-        case Keep():
+        case StrategyKeep():
             store.put(
                 namespace,
                 str(uuid.uuid4()),
@@ -693,10 +581,7 @@ def _apply_observation_decision(
     namespace: tuple[str, ...],
     observation: Observation,
     similar_items: list,
-    decision: ObservationDiscard
-    | ObservationReplace
-    | ObservationDifferentiate
-    | ObservationKeep,
+    decision: ObservationDiscard | ObservationMerge | ObservationKeep,
     game_id: str,
 ) -> DedupAction:
     """Apply the LLM's observation dedup decision to the store."""
@@ -713,8 +598,8 @@ def _apply_observation_decision(
                 _store_new_observation(store, namespace, observation, game_id)
             return DedupAction.DISCARD
 
-        case ObservationReplace(
-            replace_candidate=candidate,
+        case ObservationMerge(
+            merge_candidate=candidate,
             merged_situation=situation,
             merged_approach=approach,
             merged_outcome=outcome,
@@ -737,52 +622,10 @@ def _apply_observation_decision(
                 )
             else:
                 logger.warning(
-                    f"REPLACE referenced invalid candidate {candidate}; storing as new"
+                    f"MERGE referenced invalid candidate {candidate}; storing as new"
                 )
                 _store_new_observation(store, namespace, observation, game_id)
-            return DedupAction.REPLACE
-
-        case ObservationDifferentiate(
-            existing_candidate=candidate,
-            existing_rewritten_situation=ex_sit,
-            existing_rewritten_approach=ex_app,
-            existing_rewritten_outcome=ex_out,
-            new_rewritten_situation=new_sit,
-            new_rewritten_approach=new_app,
-            new_rewritten_outcome=new_out,
-        ):
-            item = _item_for_candidate(similar_items, candidate)
-            if item is not None:
-                existing_value = item.value
-                store.put(
-                    namespace,
-                    item.key,
-                    {
-                        "situation": ex_sit,
-                        "approach": ex_app,
-                        "outcome": ex_out,
-                        "observation_count": existing_value.get("observation_count", 1),
-                        "last_observed": existing_value.get(
-                            "last_observed", datetime.now().isoformat()
-                        ),
-                        "game_id": existing_value.get("game_id", ""),
-                    },
-                )
-                _store_new_observation(
-                    store,
-                    namespace,
-                    observation,
-                    game_id,
-                    situation=new_sit,
-                    approach=new_app,
-                    outcome=new_out,
-                )
-            else:
-                logger.warning(
-                    f"DIFFERENTIATE referenced invalid candidate {candidate}; storing as new"
-                )
-                _store_new_observation(store, namespace, observation, game_id)
-            return DedupAction.DIFFERENTIATE
+            return DedupAction.MERGE
 
         case ObservationKeep():
             _store_new_observation(
@@ -988,15 +831,13 @@ def run_observation_downstream_dedup(
             stats.discarded += 1
             if result.auto:
                 stats.auto_discarded += 1
-        elif result.action == DedupAction.REPLACE:
-            stats.replaced += 1
-        elif result.action == DedupAction.DIFFERENTIATE:
-            stats.differentiated += 1
+        elif result.action == DedupAction.MERGE:
+            stats.merged += 1
 
     logger.info(
         f"Observation dedup complete: {stats.kept} kept, "
-        f"{stats.discarded} discarded, {stats.replaced} replaced, "
-        f"{stats.differentiated} differentiated, {stats.failed} failed, "
+        f"{stats.discarded} discarded, {stats.merged} merged, "
+        f"{stats.failed} failed, "
         f"{stats.auto_kept} auto-kept, {stats.auto_discarded} auto-discarded"
     )
     return stats
@@ -1059,14 +900,9 @@ def run_downstream_dedup(
             stats.discarded += 1
             if result.auto:
                 stats.auto_discarded += 1
-        elif result.action == DedupAction.REPLACE:
-            stats.replaced += 1
-        elif result.action == DedupAction.DIFFERENTIATE:
-            stats.differentiated += 1
 
     logger.info(
         f"Dedup complete: {stats.kept} kept, {stats.discarded} discarded, "
-        f"{stats.replaced} replaced, {stats.differentiated} differentiated, "
         f"{stats.failed} failed, {stats.auto_kept} auto-kept, "
         f"{stats.auto_discarded} auto-discarded"
     )

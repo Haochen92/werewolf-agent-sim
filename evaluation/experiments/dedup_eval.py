@@ -16,7 +16,16 @@ from evaluation.judges.dedup import run_dedup_judge
 
 load_project_env()
 
-DECISION_LABELS = {"A": "DISCARD", "B": "REPLACE", "C": "DIFFERENTIATE", "D": "KEEP"}
+DECISION_LABELS = {
+    # Current per-extraction decisions
+    "D": "DISCARD",
+    "M": "MERGE",
+    "K": "KEEP",
+    # Legacy decisions (for evaluating older spans)
+    "A": "DISCARD",
+    "B": "REPLACE",
+    "C": "DIFFERENTIATE",
+}
 
 
 def output_path(requested: Path | None) -> Path:
