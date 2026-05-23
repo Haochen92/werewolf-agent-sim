@@ -32,16 +32,17 @@ class EvalResult(BaseModel):
     scores: JudgeScores
 
 
-class RedundantPair(BaseModel):
-    item_numbers: list[int] = Field(min_length=2, max_length=2)
-    reason: str
+class LessonCluster(BaseModel):
+    lesson: str
+    items: list[int] = Field(min_length=1)
+    relevant: bool = True
 
 
 class RetrievalScores(BaseModel):
-    relevance_score: int = Field(ge=1, le=5)
-    redundancy_score: int = Field(ge=1, le=5)
-    unique_idea_count: int = Field(ge=0)
-    redundant_pairs: list[RedundantPair] = Field(default_factory=list)
+    clusters: list[LessonCluster] = Field(default_factory=list)
+    relevance: int = Field(ge=1, le=5)
+    unique_lessons: int = Field(ge=0)
+    efficiency: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
 
 
@@ -76,7 +77,7 @@ class ExtractionScores(BaseModel):
         le=5,
         description=(
             "Do situation descriptions use qualifying detail from the dimensional "
-            "framework (information landscape, consensus texture, social pressure, "
+            "framework (information landscape, consensus texture, agent exposure, "
             "game phase) to make them distinctive for semantic search? "
             "1=vague enough to match any game; 5=precisely scoped to specific dynamics"
         ),
@@ -127,9 +128,9 @@ class DedupScores(BaseModel):
         ge=1,
         le=5,
         description=(
-            "Was the correct action (DISCARD/REPLACE/DIFFERENTIATE/KEEP) chosen? "
+            "Was the correct action chosen? "
             "The test: would a player do anything meaningfully different reading "
-            "one entry vs the other? If no, it should be DISCARD not DIFFERENTIATE. "
+            "one entry vs the other? If no, it should be DISCARD/MERGE not KEEP. "
             "1=clearly wrong decision; 5=unambiguously correct"
         ),
     )
@@ -137,9 +138,9 @@ class DedupScores(BaseModel):
         ge=1,
         le=5,
         description=(
-            "For REPLACE/DIFFERENTIATE: is the rewritten text well-formed, "
-            "standards-compliant, and an improvement over the originals? "
-            "For KEEP/DISCARD: score 5 (not applicable). "
+            "For DISCARD with rewrite or MERGE: is the rewritten text "
+            "well-formed, standards-compliant, and an improvement? "
+            "For KEEP or DISCARD without rewrite: score 5 (not applicable). "
             "1=rewrite is worse than originals; 5=rewrite is clear and precise"
         ),
     )
@@ -148,7 +149,7 @@ class DedupScores(BaseModel):
         le=5,
         description=(
             "Were important nuances from the original entries preserved in the "
-            "merge/rewrite? For KEEP/DISCARD: score 5 (not applicable). "
+            "merge/rewrite? For KEEP or DISCARD without rewrite: score 5. "
             "1=critical distinctions lost; 5=all meaningful detail retained"
         ),
     )
@@ -156,7 +157,7 @@ class DedupScores(BaseModel):
         default=False,
         description=(
             "Did the rewrite introduce game phase, information landscape, "
-            "consensus texture, social pressure, or any other context not "
+            "consensus texture, agent exposure, or any other context not "
             "explicitly present in the input entries being compared?"
         ),
     )

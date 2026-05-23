@@ -121,39 +121,55 @@ CURRENT RETRIEVAL QUERY SITUATIONS:
 RETRIEVED ITEMS:
 {items}
 
-Score relevance from 1 to 5:
+STEP 1 — CLUSTER BY LESSON
+Group the items by the strategic lesson they teach. Two items belong in the
+same cluster if a player in this situation would not make a meaningfully
+different decision after reading both versus reading just one.
+
+For observations: the lesson is the tactical takeaway, NOT the specific
+game anecdote. "Healer stayed quiet and survived" and "Healer stayed quiet
+and the village won" teach the same lesson (low profile preserves the
+Healer) even though the details differ. They belong in one cluster.
+
+For strategy points: the lesson is the recommended action in context.
+"Vote with consensus when under suspicion" and "Align with the majority
+to reduce heat" are the same lesson. "Voice doubt but still vote with
+consensus" is a different lesson.
+
+If two items would cause the same behavioral change in the player, they
+MUST share a cluster regardless of surface differences.
+
+STEP 2 — SCORE
+
+RELEVANCE (1-5): How useful is this set for the agent's current decision?
 1 = unrelated to the current situation
-2 = shares surface keywords but addresses different dynamics
-3 = broadly topical but not very actionable
-4 = mostly relevant, with minor mismatches
+2 = surface keyword match but different dynamics
+3 = broadly topical but not actionable here
+4 = mostly relevant, minor mismatches
 5 = directly relevant and actionable for this role and decision
 
-Score redundancy from 1 to 5:
-1 = no meaningful overlap; every item adds a distinct tactical idea
-2 = related theme, but each item has a distinct use
-3 = some overlap, but enough situational/action nuance remains useful
-4 = mostly redundant; minor nuance only
-5 = duplicate advice/evidence; same decision impact in different words
+UNIQUE_LESSONS: The number of clusters from Step 1 that are relevant to
+the current situation. Irrelevant clusters do not count.
 
-Decision rules:
-- Relevant means useful for this role's current decision, not merely similar
-  wording.
-- "Same idea, different words" is redundant.
-- The test for redundancy is: would a player in this situation do anything
-  meaningfully different after reading item A versus item B? If no, those
-  items are redundant.
-- For strategy points, compare both situation and action.
-- For observations, compare whether the player learns a distinct strategic
-  lesson or only the same lesson from another example.
+EFFICIENCY (1-5): How much of the retrieved set carries unique value?
+1 = nearly every item duplicates another; massive waste
+2 = most items repeat a lesson already covered
+3 = about half the items add a new lesson
+4 = most items contribute a distinct lesson
+5 = every item is the sole member of its cluster (zero waste)
 
-Respond ONLY with valid JSON:
+Respond ONLY with valid JSON, no markdown fences:
 {{
-  "relevance_score": N,
-  "redundancy_score": N,
-  "unique_idea_count": N,
-  "redundant_pairs": [
-    {{"item_numbers": [1, 2], "reason": "short reason"}}
+  "clusters": [
+    {{
+      "lesson": "5-10 word summary of the strategic takeaway",
+      "items": [1, 4],
+      "relevant": true
+    }}
   ],
+  "relevance": N,
+  "unique_lessons": N,
+  "efficiency": N,
   "brief_reasoning": "1-2 sentences"
 }}
 """
@@ -339,8 +355,8 @@ EXTRACTED STRATEGY POINTS ({num_strategy_points} items):
 Score the following five dimensions from 1 to 5:
 
 1. SPECIFICITY: Do the situation descriptions use qualifying detail from the \
-dimensional framework (information landscape, consensus texture, social \
-pressure, game phase) to make them distinctive for semantic search?
+dimensional framework (information landscape, consensus texture, agent \
+exposure, game phase) to make them distinctive for semantic search?
    1 = vague enough to match any game
    2 = mentions topic but lacks situational detail
    3 = some dimensional grounding but could be more precise
@@ -391,16 +407,16 @@ Respond ONLY with valid JSON, no markdown fences:
 
 DEDUP_SYSTEM_PROMPT = """\
 You are evaluating a dedup decision made by an AI system that maintains a \
-strategy database for a Werewolf agent. The system compared a newly extracted \
-entry against similar existing entries and chose one of four actions:
+memory database for a Werewolf agent. The system compared a newly extracted \
+entry against similar existing entries and chose an action:
 
-A = DISCARD (duplicate)
-B = REPLACE (merge, keeping best elements)
-C = DIFFERENTIATE (both kept, rewritten to clarify distinction)
-D = KEEP (novel, stored as-is)
+Strategy points use: D = DISCARD (duplicate, optionally with improved text), \
+K = KEEP (novel).
+Observations use: D = DISCARD (duplicate), M = MERGE (same situation/outcome, \
+different approach tactics combined), K = KEEP (novel).
 
-Your job is to judge whether the decision was correct and, for REPLACE or \
-DIFFERENTIATE, whether the rewritten text is high quality.
+Your job is to judge whether the decision was correct and, for DISCARD with \
+rewrite or MERGE, whether the rewritten text is high quality.
 """
 
 
@@ -425,8 +441,8 @@ Score the following dimensions:
 
 1. DECISION CORRECTNESS (1-5): Was the correct action chosen?
    The key test: would a player do anything meaningfully different after \
-reading one entry vs the other? If no, the entries are duplicates (A), not \
-differentiations (C).
+reading one entry vs the other? If no, the entries should be DISCARD or \
+MERGE, not KEEP.
    1 = clearly wrong decision (e.g., discarded a novel entry, or kept a \
 clear duplicate)
    2 = questionable decision with a better alternative
@@ -434,9 +450,9 @@ clear duplicate)
    4 = correct decision with minor quibbles
    5 = unambiguously correct
 
-2. MERGE QUALITY (1-5): For REPLACE (B) or DIFFERENTIATE (C) only — is the \
+2. MERGE QUALITY (1-5): For DISCARD with rewrite or MERGE — is the \
 rewritten text well-formed, standards-compliant, and an improvement?
-   For KEEP (D) or DISCARD (A): score 5 (not applicable).
+   For KEEP or DISCARD without rewrite: score 5 (not applicable).
    1 = rewrite is worse than the originals
    2 = rewrite loses important detail or adds vagueness
    3 = adequate but could be improved
@@ -444,7 +460,7 @@ rewritten text well-formed, standards-compliant, and an improvement?
    5 = excellent rewrite, clear and precise
 
 3. INFORMATION PRESERVATION (1-5): Were important nuances preserved?
-   For KEEP (D) or DISCARD (A): score 5 (not applicable).
+   For KEEP or DISCARD without rewrite: score 5 (not applicable).
    1 = critical distinctions lost
    2 = meaningful detail dropped
    3 = some loss but core ideas retained
@@ -452,7 +468,7 @@ rewritten text well-formed, standards-compliant, and an improvement?
    5 = all meaningful detail retained
 
 4. FABRICATION DETECTED (true/false): Did the rewrite introduce game phase, \
-information landscape, consensus texture, social pressure, or any other \
+information landscape, consensus texture, agent exposure, or any other \
 context NOT explicitly present in the input entries being compared?
 
 Respond ONLY with valid JSON, no markdown fences:

@@ -18,14 +18,14 @@ DEFAULT_RETRIEVAL_JUDGE_MODEL = "gemini-2.5-pro"
 
 def minimal_retrieval_scores(item_count: int) -> RetrievalScores:
     return RetrievalScores(
-        relevance_score=1,
-        redundancy_score=1,
-        unique_idea_count=item_count,
-        redundant_pairs=[],
+        clusters=[],
+        relevance=1,
+        unique_lessons=item_count,
+        efficiency=5,
         brief_reasoning=(
-            "No retrieved item was available to judge for relevance or redundancy."
+            "No retrieved item was available to judge."
             if item_count == 0
-            else "Only one item was retrieved, so redundancy is not present."
+            else "Only one item was retrieved, so efficiency is maximal."
         ),
     )
 
@@ -42,6 +42,7 @@ def run_retrieval_judge(
     items_formatted: str,
     item_count: int,
     model: str,
+    thinking_level: str | None = None,
     max_retries: int = 1,
 ) -> RetrievalScores | None:
     if item_count < 2:
@@ -53,7 +54,10 @@ def run_retrieval_judge(
         situations="\n".join(f"- {situation}" for situation in situations),
         items=items_formatted,
     )
-    llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
+    llm_kwargs: dict = {"model": model, "temperature": 0.0}
+    if thinking_level:
+        llm_kwargs["thinking_level"] = thinking_level
+    llm = ChatGoogleGenerativeAI(**llm_kwargs)
     for attempt in range(max_retries + 1):
         try:
             response = llm.invoke(
