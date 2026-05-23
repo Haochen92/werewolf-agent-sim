@@ -44,6 +44,11 @@ RERANKING_CONFIGS = {
     "rerank_enabled": role_config(*ROLES),
 }
 
+FILTERING_CONFIGS = {
+    "filter_disabled": role_config(),
+    "filter_enabled": role_config(*ROLES),
+}
+
 DEFAULT_CONFIG_NAMES = ("all_disabled", "all_enabled", "wolf_only")
 
 
@@ -158,6 +163,15 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--filtering",
+        choices=list(FILTERING_CONFIGS),
+        default="filter_disabled",
+        help=(
+            "Retrieval filtering config (MMR for strategy points, dedup gate "
+            f"for observations). Available: {', '.join(FILTERING_CONFIGS)}"
+        ),
+    )
+    parser.add_argument(
         "--no-memory-seed",
         action="store_true",
         help="Start the process without seeding memory from JSON snapshots.",
@@ -266,6 +280,7 @@ def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
     reranking_config = RERANKING_CONFIGS[args.reranking]
+    filtering_config = FILTERING_CONFIGS[args.filtering]
     game_config = game_config_from_args(args)
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
@@ -293,6 +308,8 @@ def run_batch(args: argparse.Namespace) -> int:
         )
     if any(reranking_config.values()):
         print(f"Reranking config: {reranking_config}")
+    if any(filtering_config.values()):
+        print(f"Filtering config: {filtering_config}")
     if memory_persistence_config:
         print(f"Memory persistence override: {memory_persistence_config}")
     if game_config:
@@ -328,6 +345,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 game_config=game_config,
                 memory_persistence_config=memory_persistence_config,
                 reranking_config=reranking_config,
+                filtering_config=filtering_config,
             )
             result = outcome.result
             duration_seconds = perf_counter() - started_timer
@@ -336,6 +354,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "reranking_config": reranking_config,
+                "filtering_config": filtering_config,
                 "game_config": game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,
@@ -365,6 +384,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "reranking_config": reranking_config,
+                "filtering_config": filtering_config,
                 "game_config": game_config,
                 "run_index": run_index,
                 "run_id": current_run_id,

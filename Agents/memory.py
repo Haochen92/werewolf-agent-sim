@@ -24,6 +24,7 @@ logger = getLogger(__name__)
 DEDUP_THRESHOLD = 0.90
 RERANK_TOP_K = 10
 RERANK_KEEP = 3
+RETRIEVAL_KEEP_PER_SITUATION = 3
 
 
 def retrieve_observations_for_agent(

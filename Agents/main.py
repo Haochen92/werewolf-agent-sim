@@ -35,6 +35,7 @@ def run_game(
     game_config: GameConfig | dict | None = None,
     memory_persistence_config: MemoryPersistenceConfig | dict | None = None,
     reranking_config: dict | None = None,
+    filtering_config: dict | None = None,
 ):
     seed_memory_from_config(memory_persistence_config, target_store=store)
     config = build_game_config(
@@ -43,6 +44,7 @@ def run_game(
         game_config,
         memory_persistence_config,
         reranking_config,
+        filtering_config,
     )
     game_id = config["configurable"]["game_id"]
     normalized_game_config = config["configurable"]["game_config"]
@@ -68,6 +70,7 @@ def run_game(
                 "game_id": game_id,
                 "memory_config": config["configurable"]["memory_config"],
                 "reranking_config": config["configurable"]["reranking_config"],
+                "filtering_config": config["configurable"]["filtering_config"],
                 "game_config": normalized_game_config,
                 "memory_persistence_config": normalized_memory_persistence_config,
             },

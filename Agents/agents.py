@@ -21,6 +21,8 @@ from Agents.formatters import (
     format_wolf_channel,
 )
 from Agents.memory import (
+    RETRIEVAL_KEEP_PER_SITUATION,
+    embeddings as memory_embeddings,
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
@@ -29,6 +31,7 @@ from Agents.reranker import (
     rerank_observations,
     rerank_strategy_points,
 )
+from Agents.retrieval_filters import cap_per_situation, dedup_gate, embed_texts, mmr_filter
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
@@ -395,6 +398,14 @@ def _reranking_enabled_for_role(config: RunnableConfig, role: str) -> bool:
     return bool(reranking_config.get(role, False))
 
 
+def _filtering_enabled_for_role(config: RunnableConfig, role: str) -> bool:
+    configurable = config.get("configurable", {}) if config else {}
+    filtering_config = configurable.get("filtering_config")
+    if not isinstance(filtering_config, dict):
+        return False
+    return bool(filtering_config.get(role, False))
+
+
 def _enrich_payload_with_memory(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
@@ -431,7 +442,9 @@ def _enrich_payload_with_memory(
 
     situations = _generate_situations_for_agent(payload)
     reranking = _reranking_enabled_for_role(config, payload["player_role"])
-    retrieval_top_k = RERANK_TOP_K if reranking else 3
+    filtering = _filtering_enabled_for_role(config, payload["player_role"])
+    needs_wide_retrieval = reranking or filtering
+    retrieval_top_k = RERANK_TOP_K if needs_wide_retrieval else 3
 
     with langfuse.start_as_current_observation(
         as_type="retriever",
@@ -447,6 +460,7 @@ def _enrich_payload_with_memory(
             "current_round": payload["current_round"],
             "action_phase": action_phase,
             "reranking_enabled": reranking,
+            "filtering_enabled": filtering,
             "retrieval_top_k": retrieval_top_k,
         },
     ) as span:
@@ -465,7 +479,48 @@ def _enrich_payload_with_memory(
             top_k=retrieval_top_k,
         )
 
-        pre_rerank_counts = {
+        pre_filter_counts = {
+            "observations": len(retrieved_observations),
+            "strategy_points": len(retrieved_strategy_points),
+        }
+
+        if filtering:
+            retrieved_observations = sorted(
+                retrieved_observations,
+                key=lambda o: o.score or 0.0,
+                reverse=True,
+            )
+            retrieved_strategy_points = sorted(
+                retrieved_strategy_points,
+                key=lambda sp: sp.score or 0.0,
+                reverse=True,
+            )
+
+            if len(retrieved_observations) > 1:
+                obs_texts = [
+                    o.observation.situation for o in retrieved_observations
+                ]
+                obs_embeddings = embed_texts(obs_texts, memory_embeddings)
+                retrieved_observations = dedup_gate(
+                    retrieved_observations, obs_embeddings,
+                )
+
+            if len(retrieved_strategy_points) > 1:
+                sp_texts = [
+                    sp.strategy_point.situation
+                    for sp in retrieved_strategy_points
+                ]
+                sp_embeddings = embed_texts(sp_texts, memory_embeddings)
+                sp_scores = [
+                    sp.score or 0.0 for sp in retrieved_strategy_points
+                ]
+                retrieved_strategy_points = mmr_filter(
+                    retrieved_strategy_points,
+                    sp_embeddings,
+                    sp_scores,
+                )
+
+        post_filter_counts = {
             "observations": len(retrieved_observations),
             "strategy_points": len(retrieved_strategy_points),
         }
@@ -478,6 +533,19 @@ def _enrich_payload_with_memory(
             retrieved_strategy_points = rerank_strategy_points(
                 llm, situations, retrieved_strategy_points,
             )
+
+        retrieved_observations = cap_per_situation(
+            retrieved_observations,
+            get_situation=lambda o: o.matched_situation,
+            get_score=lambda o: o.score or 0.0,
+            keep=RETRIEVAL_KEEP_PER_SITUATION,
+        )
+        retrieved_strategy_points = cap_per_situation(
+            retrieved_strategy_points,
+            get_situation=lambda sp: sp.matched_situation,
+            get_score=lambda sp: sp.score or 0.0,
+            keep=RETRIEVAL_KEEP_PER_SITUATION,
+        )
 
         retrieved_observations_json = [
             item.model_dump(mode="json") for item in retrieved_observations
@@ -497,7 +565,9 @@ def _enrich_payload_with_memory(
                 "observation_scores": [item.score for item in retrieved_observations],
                 "strategy_point_scores": [item.score for item in retrieved_strategy_points],
                 "reranking_enabled": reranking,
-                "pre_rerank_candidates": pre_rerank_counts,
+                "filtering_enabled": filtering,
+                "pre_filter_candidates": pre_filter_counts,
+                "post_filter_candidates": post_filter_counts,
             }
         )
 
@@ -507,6 +577,7 @@ def _enrich_payload_with_memory(
         "memory_enabled": True,
         "retrieval_skipped_reason": None,
         "reranking_enabled": reranking,
+        "filtering_enabled": filtering,
         "situations": situations,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,

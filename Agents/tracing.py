@@ -30,6 +30,13 @@ DEFAULT_RERANKING_CONFIG = {
     "investigator": False,
 }
 
+DEFAULT_FILTERING_CONFIG = {
+    "wolf": False,
+    "villager": False,
+    "healer": False,
+    "investigator": False,
+}
+
 
 def build_game_config(
     memory_config: dict | None = None,
@@ -37,9 +44,11 @@ def build_game_config(
     game_config: Any = None,
     memory_persistence_config: Any = None,
     reranking_config: dict | None = None,
+    filtering_config: dict | None = None,
 ) -> dict:
     memory_config = memory_config or DEFAULT_MEMORY_CONFIG
     reranking_config = reranking_config or DEFAULT_RERANKING_CONFIG
+    filtering_config = filtering_config or DEFAULT_FILTERING_CONFIG
     normalized_game_config = game_config_dict(game_config)
     normalized_memory_persistence_config = normalize_memory_persistence_config(
         memory_persistence_config
@@ -55,6 +64,7 @@ def build_game_config(
             "game_id": game_id,
             "memory_config": memory_config,
             "reranking_config": reranking_config,
+            "filtering_config": filtering_config,
             "game_config": normalized_game_config,
             "memory_persistence_config": normalized_memory_persistence_config,
             "session_id": session_id,
