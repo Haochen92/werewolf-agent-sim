@@ -1,0 +1,18 @@
+{
+  "dataset": "eval_sets/v4_filtering_eval.jsonl",
+  "snapshots": [
+    {
+      "label": "v4",
+      "observations_path": "Agents/memory_stores/v4/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v4/strategy_points.json"
+    }
+  ],
+  "pipelines": [
+    {"label": "filter_lambda_08", "filtering": true, "mmr_lambda": 0.8}
+  ],
+  "top_k": 3,
+  "max_samples": 5,
+  "judge": true,
+  "judge_model": "gemini-2.5-flash",
+  "sleep_seconds": 1.0
+}

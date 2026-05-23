@@ -1,0 +1,9 @@
+{
+  "eval_set_id": "v4_filtering_eval",
+  "session_id": "v4_action_phase_v2_all_enabled_remainder_all_enabled",
+  "created_from": "v4_action_phase_v2_all_enabled_remainder_all_enabled",
+  "max_games": 5,
+  "per_role_per_phase": 1,
+  "max_samples": 40,
+  "seed": 42
+}

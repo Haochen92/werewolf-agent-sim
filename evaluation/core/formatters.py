@@ -44,7 +44,13 @@ def format_eval_retrieved_observations(items: list[Any]) -> str:
     lines = []
     for index, item in enumerate(items, 1):
         score = f"{item.score:.3f}" if item.score is not None else "N/A"
-        lines.append(f"[{index}] (score: {score})\n{item.observation.content}")
+        obs = item.observation
+        parts = [f"Situation: {obs.situation}"]
+        if obs.approach:
+            parts.append(f"Approach: {obs.approach}")
+        if obs.outcome:
+            parts.append(f"Outcome: {obs.outcome}")
+        lines.append(f"[{index}] (score: {score})\n" + " | ".join(parts))
     return "\n\n".join(lines)
 
 
@@ -54,10 +60,10 @@ def format_eval_retrieved_strategy_points(items: list[Any]) -> str:
     lines = []
     for index, item in enumerate(items, 1):
         score = f"{item.score:.3f}" if item.score is not None else "N/A"
-        strategy_point = item.strategy_point
+        sp = item.strategy_point
         lines.append(
             f"[{index}] (score: {score})\n"
-            f"Situation: {strategy_point.content}\n"
-            f"Action: {strategy_point.action}"
+            f"Situation: {sp.situation}\n"
+            f"Action: {sp.action}"
         )
     return "\n\n".join(lines)

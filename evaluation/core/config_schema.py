@@ -90,17 +90,35 @@ class MemorySnapshotConfig(BaseModel):
     strategy_points_path: Path
 
 
+class RetrievalPipelineConfig(BaseModel):
+    """Describes which retrieval post-processing steps to apply."""
+
+    label: str
+    filtering: bool = False
+    reranking: bool = False
+    dedup_threshold: float = Field(default=0.92, ge=0.0, le=1.0)
+    mmr_lambda: float = Field(default=0.8, ge=0.0, le=1.0)
+    mmr_top_k: int = Field(default=5, ge=1)
+
+
+DEFAULT_RETRIEVAL_PIPELINE = RetrievalPipelineConfig(label="baseline")
+
+
 class RetrievalExperimentConfig(BaseModel):
     """Config for replaying captured situation queries against memory snapshots."""
 
     dataset: Path
     snapshots: list[MemorySnapshotConfig] = Field(min_length=1)
+    pipelines: list[RetrievalPipelineConfig] = Field(
+        default_factory=lambda: [DEFAULT_RETRIEVAL_PIPELINE],
+    )
     top_k: int = Field(default=3, ge=1)
     max_retrieved_items: int = Field(default=0, ge=0)
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: bool = False
-    judge_model: str = "gemini-2.5-pro"
+    judge_model: str = "gemini-2.5-flash"
+    judge_thinking_level: str | None = None
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 

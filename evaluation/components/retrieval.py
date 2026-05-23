@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import time
+from logging import getLogger
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +16,11 @@ from Agents.memory import embeddings
 from evaluation.core.schemas import RetrievalScores
 
 
+logger = getLogger(__name__)
+
 DEFAULT_STORE_LOAD_BATCH_SIZE = 1
+RETRY_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 5
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -75,7 +81,19 @@ def build_store_from_snapshots(
         flush=True,
     )
     for start in range(0, len(put_ops), batch_size):
-        target_store.batch(put_ops[start : start + batch_size])
+        batch = put_ops[start : start + batch_size]
+        for attempt in range(1, RETRY_ATTEMPTS + 1):
+            try:
+                target_store.batch(batch)
+                break
+            except Exception as exc:
+                if attempt == RETRY_ATTEMPTS:
+                    raise
+                logger.warning(
+                    "Embedding batch failed (attempt %d/%d): %s — retrying in %ds",
+                    attempt, RETRY_ATTEMPTS, exc, RETRY_DELAY_SECONDS,
+                )
+                time.sleep(RETRY_DELAY_SECONDS)
         indexed_count = min(start + batch_size, len(put_ops))
         if indexed_count == len(put_ops) or indexed_count % 25 == 0:
             print(f"    indexed {indexed_count}/{len(put_ops)} items", flush=True)
@@ -92,4 +110,4 @@ def keep_top_scored_items(items: list[Any], max_items: int | None) -> list[Any]:
 def redundancy_ratio(item_count: int, scores: RetrievalScores | None) -> float | None:
     if item_count <= 0 or scores is None:
         return None
-    return max(0.0, 1 - (scores.unique_idea_count / item_count))
+    return max(0.0, 1 - (scores.unique_lessons / item_count))
