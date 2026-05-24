@@ -1,0 +1,24 @@
+=== EXTRACTION RESULT ===
+Observations: 8, Strategy points: 8
+
+=== SUMMARY ===
+Observations with player_IDs: 0/8
+Strategy points with player_IDs: 0/8
+SUCCESS: No player_IDs found in any extraction.
+
+=== SAMPLE OBSERVATIONS ===
+[1] perspective=wolf, phase=night_action
+    situation: Wolves chose to target the most vocal and proactive player on the first night.
+    approach: The two wolves coordinated to eliminate the player who was taking a leadership role, aiming to disrupt village organization before it could form.
+    outcome: The healer also identified this player as a key target and successfully protected them, which negated the kill and publicly confirmed the saved player as town-aligned, creating a powerful village leader.
+
+[2] perspective=villager, phase=day_discussion
+    situation: After a player was saved by the healer, the village had a confirmed town-aligned leader to rally around.
+    approach: The saved villager and others leveraged this confirmed status to aggressively question players who advocated for passivity and caution, demanding they name specific suspects.
+    outcome: This direct pressure forced the two wolves to offer weak deflections, which exposed their alignment and unified the village against one of them, leading to a correct elimination.
+
+[3] perspective=wolf, phase=day_discussion
+    situation: Two wolves were pressured by an increasingly unified village to provide suspects after a player was saved by the healer.
+    approach: Both wolves adopted a strategy of advocating for caution and observation. When pressed, they deflected by making weak, unsupported accusations against other villagers.
+    outcome: Their coordinated passivity and subsequent clumsy deflections made them the primary targets, leading to a near-unanimous vote against one wolf.
+

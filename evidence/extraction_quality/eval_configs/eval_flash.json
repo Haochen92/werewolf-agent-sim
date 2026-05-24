@@ -1,0 +1,6 @@
+{
+  "dataset": "eval_sets/extraction_v1.jsonl",
+  "judge": true,
+  "judge_model": "gemini-3.5-flash",
+  "sleep_seconds": 1.0
+}

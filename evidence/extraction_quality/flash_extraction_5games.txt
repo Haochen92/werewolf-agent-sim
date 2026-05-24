@@ -1,0 +1,36 @@
+[1/5] OK - obs=11 sp=11
+[2/5] OK - obs=5 sp=4
+[3/5] OK - obs=6 sp=7
+[4/5] OK - obs=4 sp=5
+[5/5] OK - obs=5 sp=5
+
+=== SUMMARY (gemini-3.5-flash extraction) ===
+Total observations: 31, Strategy points: 32
+Observations with player_IDs: 0/31 (0.0%)
+Strategy points with player_IDs: 0/32 (0.0%)
+
+=== SAMPLE OBSERVATIONS (gemini-3.5-flash) ===
+[1] perspective=wolf, phase=night_action
+    situation: The wolves targeted a highly active player on Night 1, but the healer successfully protected them.
+    approach: The wolves chose to eliminate the most vocal player to disrupt early organization and prevent a leader from emerging.
+    outcome: The healer saved the target, giving the village a confirmed town-aligned leader who immediately drove the discussion against passive players.
+
+[2] perspective=wolf, phase=day_discussion
+    situation: After a healer save, the wolves advocated for caution and observation rather than actively hunting.
+    approach: The wolves tried to slow down the game by advising the village to wait for more data before voting.
+    outcome: The village interpreted this passivity as a wolf tactic to stall, leading to the immediate scrutiny and elimination of one of the wolves.
+
+[3] perspective=wolf, phase=day_vote
+    situation: A wolf voted for their partner at the last minute to blend in with the village consensus.
+    approach: The surviving wolf voted for their partner to establish cover but failed to provide a credible narrative transition during the discussion.
+    outcome: The village recognized the vote as a desperate 'bussing' attempt rather than genuine scum-hunting, leading to the surviving wolf's elimination.
+
+=== SAMPLE STRATEGY POINTS (gemini-3.5-flash) ===
+[1] perspective=wolf, phase=night_action
+    situation: When choosing a Night 1 target in an information-starved environment.
+    action: Avoid targeting the most obvious, highly vocal leader if there is a high probability the healer will protect them; instead, target a moderately active player who is unlikely to receive protection but still contributes to village discussion.
+
+[2] perspective=wolf, phase=day_discussion
+    situation: When a player has been publicly saved by the healer and the village is looking for leads.
+    action: Do not advocate for passive 'observation' or 'caution' as this directly conflicts with the village's need for active discussion; instead, proactively propose a neutral or slightly suspicious target to avoid appearing obstructionist.
+
