@@ -102,7 +102,10 @@ def _run_and_judge_case(
             strategy_points=strategy_points,
         )
         judged_case = application_case_for_judge(
-            case,
+            case.model_copy(update={
+                "retrieved_observations": retrieved_observations,
+                "retrieved_strategy_points": strategy_points,
+            }),
             agent_message=agent_message,
             agent_vote=agent_vote,
             updated_strategy=updated_strategy,
