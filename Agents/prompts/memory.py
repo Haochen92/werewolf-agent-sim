@@ -22,11 +22,9 @@ Score every candidate from 1 (irrelevant) to 5 (highly relevant). A candidate is
 
 
 ADOPTION_INSTRUCTION = """\
-In adopted_strategy_keys (e.g. [1, 3]), report which strategy points you followed.
-DO: list a point if you took its recommended action (the text after "Action:").
-DON'T: list a point you read but acted against.
-DON'T: list a point if your action was shaped by observations, not strategy points.
-An empty list is fine if none of the points match your action."""
+In adopted_strategy_keys, list only strategy points whose advice your action \
+follows (e.g. [1, 3]). Do not list points you read but acted against. An \
+empty list is fine if none of the points match your action."""
 
 
 DAY_DISCUSSION_MEMORY_CONTEXT = """
