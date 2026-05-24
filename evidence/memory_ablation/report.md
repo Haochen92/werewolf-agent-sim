@@ -23,31 +23,12 @@ An LLM judge (`gemini-2.5-flash`) evaluated each replayed turn on four dimension
 1. **Action Quality** (1-5): Is the action strategically appropriate for this role and game state?
 2. **Strategy Application** (1-5): Does the action use retrieved guidance discriminantly? (This evaluates use of *any* retrieved memory, not just strategy points — the name is a holdover.)
 3. **Grounding** (1-5): Are all claims traceable to provided context?
-4. **Adoption Accuracy** (1-5): Does the self-reported adoption list match observable behavior?
 
-Adoption accuracy is only meaningful for conditions that include strategy points. For observations-only, the agent should report an empty adoption list and the score becomes trivially high or reflects noise.
+**Judge context fix.** The initial n=30 run revealed a bug: `application_case_for_judge` was passing the original frozen case's memories to the judge rather than the re-retrieved memories the agent actually received. For the observations-only condition, this meant the judge saw strategy points the agent never had. We fixed this by updating the judged case's `retrieved_observations` and `retrieved_strategy_points` to match the actual inputs, then reran all three conditions.
 
-**Judge context fix.** The initial n=30 run revealed a bug: `application_case_for_judge` was passing the original frozen case's memories to the judge rather than the re-retrieved memories the agent actually received. For the observations-only condition, this meant the judge saw strategy points the agent never had. We fixed this by updating the judged case's `retrieved_observations` and `retrieved_strategy_points` to match the actual inputs, then reran all three conditions. The n=30 results reported below are from the corrected run.
-
-Dataset: 230 frozen cases from 3 games (v2 adoption eval set), sampled at n=30 and n=120. All cases use the v2 adoption prompt and prospective schema ordering.
+Dataset: 230 frozen cases from 3 games (v2 adoption eval set), sampled at n=120. All cases use the v2 adoption prompt and prospective schema ordering. Initial n=30 results showed all conditions near 4.8; n=120 revealed this reflected easy-case bias in the small sample.
 
 ## Results
-
-### n=30 (initial signal)
-
-At small sample size, observations-only matched or slightly beat both other conditions.
-
-| Metric | Both | Obs Only | SP Only |
-|--------|------|----------|---------|
-| action_quality | 4.80 | 4.80 | 4.77 |
-| strategy_application | 4.80 | 4.73 | 4.60 |
-| grounding | 5.00 | 4.87 | 4.90 |
-
-All three conditions produced high action quality (~4.8), with differences too small to be meaningful at this sample size. The n=30 signal was consistent with the hypothesis that observations carry most of the value, but the margins were narrow enough to warrant a larger sample.
-
-### n=120 (confirmatory)
-
-At n=120, the picture shifted — all three conditions converged further, with no condition clearly dominating.
 
 | Metric | Both | Obs Only | SP Only |
 |--------|------|----------|---------|
@@ -58,16 +39,6 @@ At n=120, the picture shifted — all three conditions converged further, with n
 The overall scores dropped from n=30 (~4.8) to n=120 (~4.4-4.5), which is expected — larger samples include harder cases (ambiguous game states, weaker role-phase combinations) that weren't represented in the initial 30.
 
 **The headline finding is that no condition meaningfully outperforms the others.** The largest gap is 0.17 (action quality: both 4.46 vs obs-only 4.33), which at n=120 is within noise. Strategy-points-only has a slight edge on all three metrics, which contradicts the initial hypothesis that observations would be the stronger standalone contributor — but the margins are too small to draw that conclusion confidently.
-
-### Attribution Direction (n=120)
-
-| Direction | Both | Obs Only | SP Only |
-|-----------|------|----------|---------|
-| Accurate | 28% | **37%** | 28% |
-| Over | 43% | 37% | 41% |
-| Under | 29% | 27% | 31% |
-
-Observations-only has the highest accuracy rate (37% vs 28%) and lowest over-attribution. This makes sense: with no strategy points to adopt, the adoption self-report is simpler and more likely to be correct. The high over-attribution in all conditions (37-43%) reflects the judge now evaluating against actual memory context rather than the original frozen context — a stricter test than the adoption experiment's captured evaluations.
 
 ## Decision and Tradeoffs
 
