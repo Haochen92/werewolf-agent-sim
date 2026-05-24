@@ -1,0 +1,10 @@
+{
+  "eval_set_id": "phase1_adoption_v3",
+  "batch_results": "batch_results/strategy_points_attribution_phase_1_v3.jsonl",
+  "max_games": 3,
+  "per_role_per_phase": 99,
+  "max_samples": 0,
+  "seed": 42,
+  "created_from": "phase1_adoption_experiment_v3",
+  "overwrite": true
+}

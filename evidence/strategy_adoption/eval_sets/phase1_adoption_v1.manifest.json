@@ -1,0 +1,11 @@
+{
+  "case_count": 269,
+  "created_at": "2026-05-23T17:33:31.577405",
+  "created_from": "phase1_adoption_experiment",
+  "dataset_path": "/home/ubuntu/projects/werewolf-agent-sim/eval_sets/phase1_adoption_v1.jsonl",
+  "eval_set_id": "phase1_adoption_v1",
+  "max_games": 3,
+  "max_samples": 0,
+  "per_role_per_phase": 99,
+  "seed": 42
+}

@@ -1,0 +1,7 @@
+{
+  "dataset": "eval_sets/phase1_adoption_v1.jsonl",
+  "judge_model": "gemini-2.5-flash",
+  "judge_type": "application",
+  "max_samples": 30,
+  "sleep_seconds": 1.0
+}
