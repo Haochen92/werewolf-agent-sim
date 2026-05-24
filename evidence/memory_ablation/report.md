@@ -68,11 +68,11 @@ The snapshot re-retrieval mode, built during the adoption experiment for a diffe
 
 ### Judge context must match agent context in replay experiments
 
-The initial run produced artificially similar scores across conditions because the judge was evaluating all three against the same memory context (the original frozen case). This is a subtle bug — the agent's action quality can still vary by condition even with a mismatched judge, but the judge's *interpretation* of that action is anchored to the wrong context. For any replay experiment that modifies inputs, the judge must see exactly what the agent saw.
+The agent saw the correct data in each condition — observations-only agents received only observations, strategy-points-only agents received only strategy points. But the judge always saw both memory types from the original frozen case. When evaluating "did this agent use its retrieved guidance well?", the judge was grading against memories the agent may never have received.
 
-### Equal performance between components doesn't mean either is redundant
+This didn't produce obvious errors — scores looked plausible. The primary impact was on adoption_accuracy (~1.5 point drop when fixed), while action quality and strategy application scores were less affected. In this case, the core null result held after the fix — but we wouldn't have known that without fixing it first.
 
-The natural instinct when two components perform equally in isolation is to drop one for simplicity. But equal *isolated* performance doesn't rule out complementary effects that only matter in richer contexts (multi-game learning, novel situations, role-specific scenarios). The ablation tells us "neither is clearly better in single-turn replay" — it doesn't tell us "one is sufficient for the full system."
+The lesson: when an experiment modifies the agent's inputs, verify that every downstream evaluator sees the same modified inputs, not a stale copy from the original case. The failure mode is silent — plausible scores with a subtly wrong reference context.
 
 ## What's Next
 
