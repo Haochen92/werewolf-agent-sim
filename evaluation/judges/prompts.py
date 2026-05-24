@@ -376,20 +376,25 @@ EXTRACTED STRATEGY POINTS ({num_strategy_points} items):
 
 Score the following five dimensions from 1 to 5:
 
-1. SPECIFICITY: Do the situation descriptions use qualifying detail from the \
-dimensional framework (information landscape, consensus texture, agent \
-exposure, game phase) to make them distinctive for semantic search?
-   1 = vague enough to match any game
-   2 = mentions topic but lacks situational detail
+1. SPECIFICITY: Evaluate the situation field TOGETHER with its dimensional \
+fields (information landscape, game phase, consensus texture, agent exposure) \
+as a single composed search query. Does the combined text make it distinctive \
+enough for semantic search to match only similar game dynamics?
+   1 = vague enough to match any game even with dimensional fields
+   2 = dimensional fields present but generic (e.g. "mid-game" without what changed)
    3 = some dimensional grounding but could be more precise
-   4 = well-grounded with most relevant dimensions specified
-   5 = precisely scoped to specific dynamics, would match only similar situations
+   4 = well-grounded with most relevant dimensions qualified with specific detail
+   5 = precisely scoped — would match only situations with similar dynamics
 
-2. EPISTEMIC COMPLIANCE: Do entries respect the assigned role's knowledge \
-level? Own findings and system-confirmed roles are valid; hidden ground truth \
-or omniscient narrator perspective is a violation.
+2. EPISTEMIC COMPLIANCE (strategy points ONLY — ignore observations for this \
+dimension): Do strategy points respect the assigned role's knowledge level? \
+Observations are factual post-game records and may use omniscient knowledge. \
+Strategy points are reusable advice served to agents during gameplay, so they \
+must describe roles at the correct certainty level for the perspective role. \
+Own findings and system-confirmed roles are valid; hidden ground truth or \
+omniscient narrator perspective is a violation.
    1 = pervasive violations — uses hidden roles and omniscient perspective
-   2 = several entries use ground truth not available to the role
+   2 = several strategy points use ground truth not available to the role
    3 = mostly compliant with isolated lapses
    4 = strong compliance, roles described at correct certainty level
    5 = every claim at the correct certainty level for the role

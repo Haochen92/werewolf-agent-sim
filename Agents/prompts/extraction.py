@@ -81,15 +81,25 @@ TASK 1: OBSERVATION EXTRACTION
 
 Analyze the full game and extract key observations — patterns, mistakes, and
 pivotal moments that would help agents play better in future games. These
-observations are FACTS about what happened. They serve as episodic memory
-retrieved via semantic search in future games.
+observations are FACTS about what happened, written from a post-game
+omniscient perspective. You know all roles, all private actions, and all
+outcomes. They serve as episodic memory retrieved via semantic search in
+future games.
+
+NAMING RULE: Never use player IDs (player_1, player_2, etc.). Always refer to
+players by their role (the wolf, the investigator, a villager, the healer).
+When disambiguating multiple players of the same role, use behavioral
+descriptors.
+
+Good: "the wolf who led the early accusation", "the quiet villager",
+      "the surviving wolf", "the eliminated villager"
+Bad:  "player_2", "player_5 and player_8", "a villager (player_3)"
 
 Each observation has structured fields:
 
 - situation: The core game dynamic — what triggered the situation. Do not
   embed dimensional context here; use the dedicated dimensional fields below.
-  You may use actual roles here since observations are factual post-game
-  records. 1-2 sentences.
+  1-2 sentences.
 - information_landscape (required): What evidence exists and what type —
   information-rich (confirmed roles, voting records, caught lies) or
   information-starved (no leads, speculative reads). 1 sentence.
@@ -102,11 +112,9 @@ Each observation has structured fields:
 - agent_exposure (optional): The agent's position — driving the push, aligned
   with consensus, under indirect scrutiny, or primary target. What is the
   basis. Only include if relevant to the situation.
-- approach: What the agent(s) did in that situation. You may use actual roles
-  here since this is part of the factual record. 1-2 sentences.
+- approach: What the agent(s) did in that situation. 1-2 sentences.
 - outcome: What resulted — how others responded and the downstream
-  consequences. You may reveal actual roles here since this is the factual
-  record. 1-2 sentences.
+  consequences. 1-2 sentences.
 
 Guidelines:
 - Each field should be 1-2 sentences. Keep the total observation concise.

@@ -19,18 +19,33 @@ from evaluation.judges.prompts import (
 DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
 
 
+def _format_dimensional_fields(item: dict) -> str:
+    parts = []
+    if item.get("information_landscape"):
+        parts.append(f"    Information landscape: {item['information_landscape']}")
+    if item.get("game_phase"):
+        parts.append(f"    Game phase: {item['game_phase']}")
+    if item.get("consensus_texture"):
+        parts.append(f"    Consensus texture: {item['consensus_texture']}")
+    if item.get("agent_exposure"):
+        parts.append(f"    Agent exposure: {item['agent_exposure']}")
+    return "\n".join(parts)
+
+
 def _format_observations(observations: list[dict]) -> str:
     if not observations:
         return "(none)"
     lines = []
     for i, obs in enumerate(observations, 1):
-        lines.append(
+        entry = (
             f"[{i}] perspective={obs.get('perspective', '?')} "
             f"phase={obs.get('action_phase', '?')}\n"
             f"    Situation: {obs.get('situation', '')}\n"
+            f"{_format_dimensional_fields(obs)}\n"
             f"    Approach: {obs.get('approach', '')}\n"
             f"    Outcome: {obs.get('outcome', '')}"
         )
+        lines.append(entry)
     return "\n\n".join(lines)
 
 
@@ -39,12 +54,14 @@ def _format_strategy_points(points: list[dict]) -> str:
         return "(none)"
     lines = []
     for i, sp in enumerate(points, 1):
-        lines.append(
+        entry = (
             f"[{i}] perspective={sp.get('perspective', '?')} "
             f"phase={sp.get('action_phase', '?')}\n"
             f"    Situation: {sp.get('situation', '')}\n"
+            f"{_format_dimensional_fields(sp)}\n"
             f"    Action: {sp.get('action', '')}"
         )
+        lines.append(entry)
     return "\n\n".join(lines)
 
 
