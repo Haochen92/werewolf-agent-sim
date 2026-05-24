@@ -53,12 +53,14 @@ You must respond with a valid JSON.
 
 When speaking:
 {{
+    "adopted_strategy_keys": [1, 3],
     "message": "your discussion message",
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 
 When staying silent:
 {{
+    "adopted_strategy_keys": [],
     "message": null,
     "updated_strategy": "your updated private strategy note for future turns"
 }}

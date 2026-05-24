@@ -24,10 +24,18 @@ DEFAULT_MEMORY_CONFIG = {
 }
 
 DEFAULT_RERANKING_CONFIG = {
-    "wolf": False,
-    "villager": False,
-    "healer": False,
-    "investigator": False,
+    "observations": {
+        "wolf": False,
+        "villager": False,
+        "healer": False,
+        "investigator": False,
+    },
+    "strategy_points": {
+        "wolf": False,
+        "villager": False,
+        "healer": False,
+        "investigator": False,
+    },
 }
 
 DEFAULT_FILTERING_CONFIG = {

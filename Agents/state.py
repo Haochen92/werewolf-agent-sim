@@ -8,6 +8,7 @@ from Agents.schemas.game_events import (
     InvestigatorResult,
     WolfChannel,
 )
+from Agents.schemas.memory import StrategyAdoption
 
 def merge_strategies(existing: dict[str, str], new: dict[str, str]) -> dict[str, str]:
     return dict(existing, **new)
@@ -17,6 +18,7 @@ class OrchestratorGraph(TypedDict, total=False):
     day_channel: Annotated[list[DayChannel], add]
     day_summaries: Annotated[list[DaySummary], add]
     wolf_channel: Annotated[list[WolfChannel], add]
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
 
     agent_strategies: dict[str, str]
     roles: dict[str, str]
@@ -45,6 +47,7 @@ class DayGraphState(TypedDict, total=False):
     day_channel: Annotated[list[DayChannel], add]
     day_summaries: Annotated[list[DaySummary], add]
     day_votes: Annotated[list[DayVote], add]
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
 
     agent_strategies: Annotated[dict[str, str], merge_strategies]
     roles: dict[str, str]

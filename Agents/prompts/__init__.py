@@ -24,6 +24,7 @@ from Agents.prompts.dedup import (
 )
 from Agents.prompts.extraction import DAY_SUMMARY_PROMPT, POSTGAME_EXTRACTION_PROMPT
 from Agents.prompts.memory import (
+    ADOPTION_INSTRUCTION,
     DAY_DISCUSSION_MEMORY_CONTEXT,
     DAY_VOTE_MEMORY_CONTEXT,
     HEALER_SITUATION_SUMMARY,
@@ -46,6 +47,7 @@ from Agents.prompts.roles import (
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 __all__ = [
+    "ADOPTION_INSTRUCTION",
     "BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT",
     "BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT",
     "DAY_DISCUSS_RESPONSE_FORMAT",

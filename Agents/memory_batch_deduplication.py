@@ -528,6 +528,21 @@ def _merged_metadata(
             [value.get("last_observed") for value in source_values]
         ),
         "game_id": survivor_value.get("game_id", ""),
+        "retrieved_count": sum(
+            int(value.get("retrieved_count", 0)) for value in source_values
+        ),
+        "used_count": sum(
+            int(value.get("used_count", 0)) for value in source_values
+        ),
+        "positive_count": sum(
+            int(value.get("positive_count", 0)) for value in source_values
+        ),
+        "neutral_count": sum(
+            int(value.get("neutral_count", 0)) for value in source_values
+        ),
+        "negative_count": sum(
+            int(value.get("negative_count", 0)) for value in source_values
+        ),
     }
 
 

@@ -45,6 +45,8 @@ class EvalCase(BaseModel):
     agent_message: DayChannel | None = None
     agent_vote: DayVote | None = None
     updated_strategy: str = ""
+    adopted_strategy_keys: list[int] = Field(default_factory=list)
+    adopted_strategy_store_keys: list[str] = Field(default_factory=list)
 
     @property
     def game_phase_key(self) -> tuple[str, str, int, ActionPhase]:

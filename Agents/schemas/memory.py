@@ -244,7 +244,21 @@ class StoredStrategyPoint(BaseModel):
     last_observed: datetime
     game_id: Optional[str] = ""
     situation: str
-    action: str = ""
+    action: str
+    retrieved_count: int = 0
+    used_count: int = 0
+    positive_count: int = 0
+    neutral_count: int = 0
+    negative_count: int = 0
+
+
+class StrategyAdoption(BaseModel):
+    strategy_key: str
+    player_id: str
+    role: str
+    day: int
+    round: int
+    action_phase: str
 
 
 class RetrievedObservation(BaseModel):

@@ -58,6 +58,7 @@ def day_phase(
         "day_summaries": result.get("day_summaries", [])[len(state.get("day_summaries", [])):],
         "day_votes": result.get("day_votes", []),
         "agent_strategies": result.get("agent_strategies", {}),
+        "strategy_adoptions": result.get("strategy_adoptions", []),
     }
 
 

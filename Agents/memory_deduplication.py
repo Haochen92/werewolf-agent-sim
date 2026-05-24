@@ -552,6 +552,11 @@ def _apply_decision(
                         "observation_count": existing_value.get("observation_count", 1) + 1,
                         "last_observed": datetime.now().isoformat(),
                         "game_id": game_id,
+                        "retrieved_count": existing_value.get("retrieved_count", 0),
+                        "used_count": existing_value.get("used_count", 0),
+                        "positive_count": existing_value.get("positive_count", 0),
+                        "neutral_count": existing_value.get("neutral_count", 0),
+                        "negative_count": existing_value.get("negative_count", 0),
                     },
                 )
             else:
@@ -571,6 +576,11 @@ def _apply_decision(
                     "observation_count": 1,
                     "last_observed": datetime.now().isoformat(),
                     "game_id": game_id,
+                    "retrieved_count": 0,
+                    "used_count": 0,
+                    "positive_count": 0,
+                    "neutral_count": 0,
+                    "negative_count": 0,
                 },
             )
             return DedupAction.KEEP
@@ -650,6 +660,11 @@ def _store_new_point(
         "observation_count": 1,
         "last_observed": datetime.now().isoformat(),
         "game_id": game_id,
+        "retrieved_count": 0,
+        "used_count": 0,
+        "positive_count": 0,
+        "neutral_count": 0,
+        "negative_count": 0,
     }
     store.put(namespace, str(uuid.uuid4()), stored)
 

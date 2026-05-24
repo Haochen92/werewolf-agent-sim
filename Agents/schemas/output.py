@@ -4,18 +4,31 @@ from pydantic import BaseModel, Field
 
 
 class WolfNightDiscussOutput(BaseModel):
-    updated_strategy: str
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
     message: str
     vote_target: str
+    updated_strategy: str
 
 
 class DayDiscussOutput(BaseModel):
-    updated_strategy: str
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
     message: str | None
+    updated_strategy: str
 
 
 class DayVoteOutput(BaseModel):
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
     vote_target: str
+    updated_strategy: str
 
 
 class DaySummaryOutput(BaseModel):
@@ -23,13 +36,21 @@ class DaySummaryOutput(BaseModel):
 
 
 class HealerOutput(BaseModel):
-    updated_strategy: str
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
     healer_target: str
+    updated_strategy: str
 
 
 class InvestigatorOutput(BaseModel):
-    updated_strategy: str
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
     investigator_target: str
+    updated_strategy: str
 
 
 class SituationSummary(BaseModel):

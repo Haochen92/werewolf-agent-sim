@@ -10,7 +10,7 @@ from Agents.formatters import (
     format_strategy_points,
     format_wolf_channel,
 )
-from Agents.prompts import SITUATION_ROLE_LENS, SITUATION_STANDARDS
+from Agents.prompts import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS, SITUATION_STANDARDS
 
 
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
@@ -61,4 +61,5 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         ),
         "situation_standards": SITUATION_STANDARDS,
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
+        "adoption_instruction": ADOPTION_INSTRUCTION,
     }

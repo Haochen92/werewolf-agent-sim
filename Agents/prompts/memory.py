@@ -21,12 +21,22 @@ Score every candidate from 1 (irrelevant) to 5 (highly relevant). A candidate is
 )
 
 
+ADOPTION_INSTRUCTION = """\
+In adopted_strategy_keys (e.g. [1, 3]), report which strategy points you followed.
+DO: list a point if you took its recommended action (the text after "Action:").
+DON'T: list a point you read but acted against.
+DON'T: list a point if your action was shaped by observations, not strategy points.
+An empty list is fine if none of the points match your action."""
+
+
 DAY_DISCUSSION_MEMORY_CONTEXT = """
 Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
 {retrieved_observations}
 
 Dynamic strategy points (strategies from past games relevant to your current situation):
 {strategy_points}
+
+{adoption_instruction}
 
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns:
@@ -46,6 +56,8 @@ Relevant observations: (These are specific, detailed observations from past game
 
 Dynamic strategy points (strategies from past games relevant to your current situation):
 {strategy_points}
+
+{adoption_instruction}
 """
 
 

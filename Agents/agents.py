@@ -65,6 +65,7 @@ from Agents.schemas.game_events import (
     DayVote,
     WolfChannel,
 )
+from Agents.schemas.memory import StrategyAdoption
 from Agents.state import (
     HealerDayState,
     HealerNightGraph,
@@ -236,16 +237,18 @@ def _run_agent(
                 continue
             break
 
-        # Extract strategy if present on the result
+        # Extract strategy and adoption data if present on the result
         strategy_update = getattr(result, "updated_strategy", None)
+        adopted_indices = getattr(result, "adopted_strategy_keys", []) or []
 
         if output_key == "day_channel":
             message = result.message.strip() if result.message else None
             if not message or message.lower() == "null":
-                # Agent chose silence — still update strategy, no public message
                 output = {}
                 if strategy_update:
                     output["agent_strategies"] = {player_id: strategy_update}
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
                 return output if output else None
             output = {
                 "day_channel": [
@@ -259,6 +262,8 @@ def _run_agent(
             }
             if strategy_update:
                 output["agent_strategies"] = {player_id: strategy_update}
+            if adopted_indices:
+                output["_adopted_strategy_keys"] = adopted_indices
             return output
 
         if output_key == "day_votes":
@@ -268,7 +273,12 @@ def _run_agent(
                 player_id,
             )
             if validated:
-                return {"day_votes": [DayVote(voter=player_id, votee=validated)]}
+                output = {"day_votes": [DayVote(voter=player_id, votee=validated)]}
+                if strategy_update:
+                    output["agent_strategies"] = {player_id: strategy_update}
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
+                return output
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
 
@@ -292,6 +302,8 @@ def _run_agent(
                 }
                 if strategy_update:
                     output["agent_strategies"] = {player_id: strategy_update}
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
                 return output
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
@@ -306,6 +318,8 @@ def _run_agent(
                 output = {"healer_target": validated}
                 if strategy_update:
                     output["updated_strategy"] = strategy_update
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
                 return output
             logger.warning(f"Healer targeted invalid player: {result.healer_target}")
             continue
@@ -320,6 +334,8 @@ def _run_agent(
                 output = {"investigator_target": validated}
                 if strategy_update:
                     output["updated_strategy"] = strategy_update
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
                 return output
             logger.warning(f"Investigator targeted invalid player: {result.investigator_target}")
             continue
@@ -390,12 +406,18 @@ def _memory_enabled_for_role(config: RunnableConfig, role: str) -> bool:
     return bool(memory_config.get(role, False))
 
 
-def _reranking_enabled_for_role(config: RunnableConfig, role: str) -> bool:
+def _reranking_enabled_for_memory_kind(
+    config: RunnableConfig,
+    role: str,
+    memory_kind: str,
+) -> bool:
     configurable = config.get("configurable", {}) if config else {}
     reranking_config = configurable.get("reranking_config")
     if not isinstance(reranking_config, dict):
         return False
-    return bool(reranking_config.get(role, False))
+    if isinstance(reranking_config.get(memory_kind), dict):
+        return bool(reranking_config[memory_kind].get(role, False))
+    return False
 
 
 def _filtering_enabled_for_role(config: RunnableConfig, role: str) -> bool:
@@ -441,7 +463,17 @@ def _enrich_payload_with_memory(
         }
 
     situations = _generate_situations_for_agent(payload)
-    reranking = _reranking_enabled_for_role(config, payload["player_role"])
+    observation_reranking = _reranking_enabled_for_memory_kind(
+        config,
+        payload["player_role"],
+        "observations",
+    )
+    strategy_point_reranking = _reranking_enabled_for_memory_kind(
+        config,
+        payload["player_role"],
+        "strategy_points",
+    )
+    reranking = observation_reranking or strategy_point_reranking
     filtering = _filtering_enabled_for_role(config, payload["player_role"])
     needs_wide_retrieval = reranking or filtering
     retrieval_top_k = RERANK_TOP_K if needs_wide_retrieval else 3
@@ -460,6 +492,8 @@ def _enrich_payload_with_memory(
             "current_round": payload["current_round"],
             "action_phase": action_phase,
             "reranking_enabled": reranking,
+            "observation_reranking_enabled": observation_reranking,
+            "strategy_point_reranking_enabled": strategy_point_reranking,
             "filtering_enabled": filtering,
             "retrieval_top_k": retrieval_top_k,
         },
@@ -525,11 +559,13 @@ def _enrich_payload_with_memory(
             "strategy_points": len(retrieved_strategy_points),
         }
 
-        if reranking:
+        if observation_reranking or strategy_point_reranking:
             llm = get_llm()
+        if observation_reranking:
             retrieved_observations = rerank_observations(
                 llm, situations, retrieved_observations,
             )
+        if strategy_point_reranking:
             retrieved_strategy_points = rerank_strategy_points(
                 llm, situations, retrieved_strategy_points,
             )
@@ -565,6 +601,8 @@ def _enrich_payload_with_memory(
                 "observation_scores": [item.score for item in retrieved_observations],
                 "strategy_point_scores": [item.score for item in retrieved_strategy_points],
                 "reranking_enabled": reranking,
+                "observation_reranking_enabled": observation_reranking,
+                "strategy_point_reranking_enabled": strategy_point_reranking,
                 "filtering_enabled": filtering,
                 "pre_filter_candidates": pre_filter_counts,
                 "post_filter_candidates": post_filter_counts,
@@ -573,14 +611,21 @@ def _enrich_payload_with_memory(
 
     enriched_payload["retrieved_observations"] = retrieved_observations
     enriched_payload["strategy_points"] = retrieved_strategy_points
+    strategy_point_index_map = {
+        i + 1: sp.key for i, sp in enumerate(retrieved_strategy_points)
+    }
+    enriched_payload["strategy_point_index_map"] = strategy_point_index_map
     return enriched_payload, {
         "memory_enabled": True,
         "retrieval_skipped_reason": None,
         "reranking_enabled": reranking,
+        "observation_reranking_enabled": observation_reranking,
+        "strategy_point_reranking_enabled": strategy_point_reranking,
         "filtering_enabled": filtering,
         "situations": situations,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,
+        "strategy_point_index_map": strategy_point_index_map,
         "num_situations": len(situations),
         "num_observations": len(retrieved_observations),
         "num_strategy_points": len(retrieved_strategy_points),
@@ -658,6 +703,54 @@ def _run_memory_informed_action(
             output_key,
         )
 
+        # --- Adoption processing ---
+        index_map = enriched_payload.get("strategy_point_index_map", {})
+        raw_adopted_indices = []
+        adopted_store_keys: list[str] = []
+        strategy_adoptions: list[StrategyAdoption] = []
+
+        if result and index_map:
+            raw_adopted_indices = result.pop("_adopted_strategy_keys", [])
+            sp_namespace = ("strategy_points", role, action_phase)
+            active_store = runtime.store
+
+            if active_store is not None:
+                for key in index_map.values():
+                    item = active_store.get(sp_namespace, key)
+                    if item is not None:
+                        value = dict(item.value)
+                        value["retrieved_count"] = value.get("retrieved_count", 0) + 1
+                        active_store.put(sp_namespace, key, value, index=False)
+
+                for idx in raw_adopted_indices:
+                    key = index_map.get(idx)
+                    if key is None:
+                        logger.warning(
+                            f"Hallucinated adoption index {idx} from {player_id} "
+                            f"(day={day}, round={round_num}, phase={action_phase}, "
+                            f"valid=[1..{len(index_map)}]), skipping"
+                        )
+                        continue
+                    adopted_store_keys.append(key)
+                    item = active_store.get(sp_namespace, key)
+                    if item is not None:
+                        value = dict(item.value)
+                        value["used_count"] = value.get("used_count", 0) + 1
+                        active_store.put(sp_namespace, key, value, index=False)
+
+                strategy_adoptions = [
+                    StrategyAdoption(
+                        strategy_key=key,
+                        player_id=player_id,
+                        role=role,
+                        day=day,
+                        round=round_num,
+                        action_phase=action_phase,
+                    )
+                    for key in adopted_store_keys
+                ]
+
+        # --- Process output for graph state ---
         applied_output = None
         applied_game_update: dict[str, Any] | None = None
         agent_message: DayChannel | None = None
@@ -696,6 +789,16 @@ def _run_memory_informed_action(
                 ]
                 if applied_output:
                     applied_game_update["day_votes"] = applied_output
+                strategies = result.get("agent_strategies", {})
+                if isinstance(strategies, dict):
+                    updated_strategy = strategies.get(player_id, "") or ""
+                if updated_strategy:
+                    applied_game_update["agent_strategies"] = {
+                        player_id: updated_strategy
+                    }
+
+            if strategy_adoptions:
+                result["strategy_adoptions"] = strategy_adoptions
 
         eval_case = EvalCase(
             span_name=span_name,
@@ -726,6 +829,8 @@ def _run_memory_informed_action(
             agent_message=agent_message,
             agent_vote=agent_vote,
             updated_strategy=updated_strategy,
+            adopted_strategy_keys=raw_adopted_indices,
+            adopted_strategy_store_keys=adopted_store_keys,
         )
 
         eval_span.update(
@@ -743,6 +848,7 @@ def _run_memory_informed_action(
                 "player_role": eval_case.player_role,
                 "day": eval_case.day,
                 "round": eval_case.round,
+                "adopted_count": len(adopted_store_keys),
             },
         )
 

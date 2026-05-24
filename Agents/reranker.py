@@ -23,8 +23,6 @@ def _format_observation_candidate(obs: RetrievedObservation) -> str:
 
 
 def _format_strategy_point_candidate(sp: RetrievedStrategyPoint) -> str:
-    if sp.strategy_point.action:
-        return f"{sp.strategy_point.situation} -> {sp.strategy_point.action}"
     return sp.strategy_point.situation
 
 

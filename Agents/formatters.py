@@ -100,16 +100,11 @@ def format_retrieved_observations(observations: list[RetrievedObservation]) -> s
 def format_strategy_points(strategy_points: list[RetrievedStrategyPoint]) -> str:
     if not strategy_points:
         return "No dynamic strategy points available."
-    formatted_points = []
-    for item in strategy_points:
-        stored_point = item.strategy_point
-        if stored_point.action:
-            formatted_points.append(f"{stored_point.situation} -> {stored_point.action}")
-        elif stored_point.situation:
-            formatted_points.append(stored_point.situation)
-    if not formatted_points:
-        return "No dynamic strategy points available."
-    return "\n".join(f"- {strategy_point}" for strategy_point in formatted_points)
+    formatted = []
+    for idx, item in enumerate(strategy_points, 1):
+        sp = item.strategy_point
+        formatted.append(f"[{idx}] {sp.situation} → Action: {sp.action}")
+    return "\n".join(formatted)
 
 
 def format_agent_action(

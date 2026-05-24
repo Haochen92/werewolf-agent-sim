@@ -28,6 +28,17 @@ def role_config(*enabled_roles: str) -> dict[str, bool]:
     return {role: role in enabled for role in ROLES}
 
 
+def reranking_config(
+    *,
+    observation_roles: tuple[str, ...] = (),
+    strategy_point_roles: tuple[str, ...] = (),
+) -> dict[str, dict[str, bool]]:
+    return {
+        "observations": role_config(*observation_roles),
+        "strategy_points": role_config(*strategy_point_roles),
+    }
+
+
 MEMORY_CONFIGS = {
     "all_disabled": role_config(),
     "all_enabled": role_config(*ROLES),
@@ -40,8 +51,13 @@ MEMORY_CONFIGS = {
 }
 
 RERANKING_CONFIGS = {
-    "rerank_disabled": role_config(),
-    "rerank_enabled": role_config(*ROLES),
+    "rerank_disabled": reranking_config(),
+    "rerank_enabled": reranking_config(
+        observation_roles=ROLES,
+        strategy_point_roles=ROLES,
+    ),
+    "strategy_points": reranking_config(strategy_point_roles=ROLES),
+    "observations": reranking_config(observation_roles=ROLES),
 }
 
 FILTERING_CONFIGS = {
