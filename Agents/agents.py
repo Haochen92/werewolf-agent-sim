@@ -428,6 +428,14 @@ def _filtering_enabled_for_role(config: RunnableConfig, role: str) -> bool:
     return bool(filtering_config.get(role, False))
 
 
+def _retrieval_type_enabled(config: RunnableConfig, memory_kind: str) -> bool:
+    configurable = config.get("configurable", {}) if config else {}
+    retrieval_types_config = configurable.get("retrieval_types_config")
+    if not isinstance(retrieval_types_config, dict):
+        return True
+    return bool(retrieval_types_config.get(memory_kind, True))
+
+
 def _enrich_payload_with_memory(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
@@ -463,6 +471,8 @@ def _enrich_payload_with_memory(
         }
 
     situations = _generate_situations_for_agent(payload)
+    retrieve_observations = _retrieval_type_enabled(config, "observations")
+    retrieve_strategy = _retrieval_type_enabled(config, "strategy_points")
     observation_reranking = _reranking_enabled_for_memory_kind(
         config,
         payload["player_role"],
@@ -491,6 +501,8 @@ def _enrich_payload_with_memory(
             "current_day": payload["current_day"],
             "current_round": payload["current_round"],
             "action_phase": action_phase,
+            "retrieve_observations": retrieve_observations,
+            "retrieve_strategy_points": retrieve_strategy,
             "reranking_enabled": reranking,
             "observation_reranking_enabled": observation_reranking,
             "strategy_point_reranking_enabled": strategy_point_reranking,
@@ -498,19 +510,27 @@ def _enrich_payload_with_memory(
             "retrieval_top_k": retrieval_top_k,
         },
     ) as span:
-        retrieved_observations = retrieve_observations_for_agent(
-            store=active_store,
-            role=payload["player_role"],
-            action_phase=action_phase,
-            situations=situations,
-            top_k=retrieval_top_k,
+        retrieved_observations = (
+            retrieve_observations_for_agent(
+                store=active_store,
+                role=payload["player_role"],
+                action_phase=action_phase,
+                situations=situations,
+                top_k=retrieval_top_k,
+            )
+            if retrieve_observations
+            else []
         )
-        retrieved_strategy_points = retrieve_strategy_points_for_agent(
-            store=active_store,
-            role=payload["player_role"],
-            action_phase=action_phase,
-            situations=situations,
-            top_k=retrieval_top_k,
+        retrieved_strategy_points = (
+            retrieve_strategy_points_for_agent(
+                store=active_store,
+                role=payload["player_role"],
+                action_phase=action_phase,
+                situations=situations,
+                top_k=retrieval_top_k,
+            )
+            if retrieve_strategy
+            else []
         )
 
         pre_filter_counts = {
