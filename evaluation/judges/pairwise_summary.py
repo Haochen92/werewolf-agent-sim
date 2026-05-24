@@ -20,6 +20,7 @@ from evaluation.data.datasets import EvalDatasetRecord
 from evaluation.judges.prompts import (
     PAIRWISE_SUMMARY_SYSTEM_PROMPT,
     PAIRWISE_SUMMARY_USER_PROMPT,
+    SUMMARY_RUBRIC,
 )
 
 logger = getLogger(__name__)
@@ -43,6 +44,7 @@ def judge_input_for_summary(
         "output_b_label": output_b["label"],
         "output_a": format_eval_situations(output_a["situations"]),
         "output_b": format_eval_situations(output_b["situations"]),
+        "summary_rubric": SUMMARY_RUBRIC,
     }
 
 

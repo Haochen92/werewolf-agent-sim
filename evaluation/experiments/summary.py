@@ -124,6 +124,13 @@ def run_pairwise_case(
         output_b_name=output_b_name,
     )
 
+    if swapped:
+        baseline_scores = judge_scores.output_b.model_dump(mode="json")
+        candidate_scores = judge_scores.output_a.model_dump(mode="json")
+    else:
+        baseline_scores = judge_scores.output_a.model_dump(mode="json")
+        candidate_scores = judge_scores.output_b.model_dump(mode="json")
+
     return {
         "experiment_id": config.experiment_id,
         "component": config.component,
@@ -145,6 +152,8 @@ def run_pairwise_case(
             "winner": winner,
             "confidence": judge_scores.confidence,
             "brief_reasoning": judge_scores.brief_reasoning,
+            "baseline_scores": baseline_scores,
+            "candidate_scores": candidate_scores,
             "presentation": {
                 "swapped": swapped,
                 "output_a": output_a_name,

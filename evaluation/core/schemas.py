@@ -85,7 +85,17 @@ class CostEstimate(BaseModel):
     token_estimation_method: str
 
 
+class SummaryDimensionScores(BaseModel):
+    faithfulness: int = Field(ge=1, le=5)
+    specificity: int = Field(ge=1, le=5)
+    retrieval_usefulness: int = Field(ge=1, le=5)
+    non_redundancy: int = Field(ge=1, le=5)
+    role_perspective: int = Field(ge=1, le=5)
+
+
 class PairwiseJudgeScores(BaseModel):
+    output_a: SummaryDimensionScores
+    output_b: SummaryDimensionScores
     winner: Literal["a", "b", "tie"]
     confidence: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
@@ -138,6 +148,56 @@ class ExtractionScores(BaseModel):
             "redundancy within the set? Same lesson from different examples counts "
             "as redundant. "
             "1=mostly duplicate advice in different words; 5=every item adds a distinct idea"
+        ),
+    )
+    brief_reasoning: str = ""
+
+
+class SituationSummaryScores(BaseModel):
+    faithfulness: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary avoid fabricating claims, roles, motives, or pressure "
+            "not present in the visible discussion and private context? "
+            "1=major fabrications; 5=every claim traceable to context"
+        ),
+    )
+    specificity: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary capture the current decision-relevant game dynamics "
+            "rather than generic facts that could apply to any game state? "
+            "1=vague platitudes; 5=precisely scoped to this moment's dynamics"
+        ),
+    )
+    retrieval_usefulness: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Would these situation descriptions retrieve strategy/observation "
+            "memories that match the agent's current role, pressure, and phase? "
+            "1=would match irrelevant memories; 5=would retrieve highly targeted advice"
+        ),
+    )
+    non_redundancy: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does each listed situation add a distinct retrieval angle, or do "
+            "multiple situations describe the same dynamic in different words? "
+            "1=mostly redundant; 5=every situation adds a unique angle"
+        ),
+    )
+    role_perspective: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary preserve what this role privately knows and needs, "
+            "framing situations from the agent's perspective rather than an "
+            "omniscient narrator? "
+            "1=ignores role-specific knowledge; 5=fully grounded in role perspective"
         ),
     )
     brief_reasoning: str = ""

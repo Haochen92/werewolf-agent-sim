@@ -145,6 +145,29 @@ class ApplicationExperimentConfig(BaseModel):
         return self
 
 
+class SummaryExperimentConfig(BaseModel):
+    """Config for evaluating situation summaries with a rubric-based judge.
+
+    mode="captured" judges the frozen situations from the EvalCase.
+    mode="replay" regenerates situations with the specified variant first.
+    """
+
+    dataset: Path
+    mode: Literal["captured", "replay"] = "captured"
+    variant: VariantConfig | None = None
+    output: Path | None = None
+    max_samples: int = Field(default=0, ge=0)
+    judge: bool = True
+    judge_model: str = "gemini-3.1-pro-preview"
+    sleep_seconds: float = Field(default=1.0, ge=0)
+
+    @model_validator(mode="after")
+    def require_variant_for_replay(self) -> "SummaryExperimentConfig":
+        if self.mode == "replay" and not self.variant:
+            raise ValueError("variant must be provided when mode is 'replay'.")
+        return self
+
+
 class CapturedEvaluationConfig(BaseModel):
     """Config for judging captured EvalCase rows without replaying any stage."""
 
