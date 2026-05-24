@@ -1,0 +1,9 @@
+{
+  "eval_set_id": "dedup_v1",
+  "batch_results": "batch_results/strategy_points_attribution_phase_1_v3.jsonl",
+  "max_games": 3,
+  "max_samples": 30,
+  "filter_auto": false,
+  "seed": 42,
+  "created_from": "strategy_points_attribution_phase_1_v3, 3 games, 30 samples"
+}

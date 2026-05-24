@@ -1,0 +1,11 @@
+{
+  "eval_set_id": "extraction_v1",
+  "session_ids": [
+    "v4_action_phase_v2_all_enabled_remainder_all_enabled",
+    "v4_action_phase_v2_wolf_only"
+  ],
+  "created_from": "v4_action_phase_v2 sessions (all_enabled + wolf_only)",
+  "max_games": 0,
+  "max_samples": 0,
+  "overwrite": true
+}

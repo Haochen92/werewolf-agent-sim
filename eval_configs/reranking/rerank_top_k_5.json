@@ -1,0 +1,19 @@
+{
+  "dataset": "eval_sets/v4_filtering_eval.jsonl",
+  "snapshots": [
+    {
+      "label": "v4_deduped",
+      "observations_path": "Agents/memory_stores/v4_deduped/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v4_deduped/strategy_points.json"
+    }
+  ],
+  "pipelines": [
+    {"label": "baseline", "filtering": false, "reranking": false},
+    {"label": "rerank_only_top5", "filtering": false, "reranking": true}
+  ],
+  "top_k": 3,
+  "max_samples": 5,
+  "judge": true,
+  "judge_model": "gemini-2.5-flash",
+  "sleep_seconds": 1.0
+}
