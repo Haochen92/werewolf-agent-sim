@@ -1,0 +1,16 @@
+{
+  "dataset": "evidence/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl",
+  "memory_mode": "snapshot",
+  "snapshots": [
+    {
+      "label": "obs_cap_7",
+      "observations_path": "Agents/memory_stores/v4_deduped/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v4_deduped/empty.json"
+    }
+  ],
+  "top_k": 7,
+  "max_samples": 120,
+  "judge": true,
+  "judge_model": "gemini-2.5-flash",
+  "sleep_seconds": 1.0
+}
