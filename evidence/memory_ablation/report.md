@@ -46,7 +46,7 @@ Strategy-points-only has the highest number on all three metrics, but the margin
 
 ## Decision and Tradeoffs
 
-**No architectural decision is made in this experiment.** The data shows that either memory type alone matches the combined system, but it doesn't tell us which to keep. That is an infrastructure and design question, not a performance one.
+The performance data doesn't pick a winner — but the infrastructure cost does. Either memory type alone matches the combined system, making this a design decision rather than a performance one.
 
 The strongest case for dropping strategy points is operational: they require the adoption tracking pipeline and a planned Phase 2 effectiveness scoring system, while observations achieve equivalent performance with simpler infrastructure (`observation_count` as a built-in quality signal, self-correcting extraction).
 
