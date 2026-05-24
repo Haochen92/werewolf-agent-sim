@@ -16,7 +16,7 @@ Track which strategy points agents claim to follow during gameplay. Two counters
 - `retrieved_count` — how many times agents were shown this strategy
 - `used_count` — how many times agents reported it as influential
 
-Derived metric: `adoption_rate = used_count / retrieved_count`. This surfaces deprecation candidates (high retrieval, near-zero adoption), popular strategies (high used_count), and stale strategies (zero retrieval).
+Derived metric: `adoption_rate = used_count / retrieved_count`. These counters could eventually surface deprecation candidates (high retrieval, near-zero adoption), popular strategies (high used_count), and stale strategies (zero retrieval) — but no deprecation logic is implemented in Phase 1. The counters are captured; acting on them is future work.
 
 ### Phase 2 — Postgame Effectiveness Scoring (deferred)
 
@@ -83,7 +83,7 @@ DON'T: list a point if your action was shaped by observations, not strategy poin
 An empty list is fine if none of the points match your action.
 ```
 
-**What happened:** This failed to improve over v2. At n=120, v3's scores were statistically equivalent to v2 after accounting for one outlier game (see Results). The DO/DON'T format was a poor fit for this model at minimal thinking budget — a lesson that generalizes beyond this feature.
+**What happened:** This failed to improve over v2. At n=120, v3's scores were statistically equivalent to v2 after accounting for one outlier game (see Results). The additional precision in the prompt didn't translate to additional precision in the output for this model at minimal thinking budget.
 
 ## Results
 
@@ -109,9 +109,11 @@ The adoption rate stayed stable across versions — the prompt changes affected 
 | v2 | 3.0 | 1.5 | 49.2% | 0 (0.0%) |
 | v3 | 3.0 | 1.5 | 51.9% | 3 (1.2%) |
 
-The 0% empty list rate in v2 was a soft signal of over-attribution — every single case claimed at least one strategy point. v3's 1.2% is more realistic.
+The 0% empty list rate in v2 is notable — every single case claimed at least one strategy point. This looks like a signal of over-attribution, but the attribution direction data (below) shows v2 has the *lowest* over-attribution rate (8%). The reconciliation: 0% empty lists means agents always found at least one matching strategy point, but it doesn't mean the claimed points were wrong. An agent can correctly adopt 1-2 of 3 retrieved points every turn while the judge still finds most attributions accurate. The 0% is a necessary-but-not-sufficient condition for over-attribution — suspicious in isolation, but not contradicted by the judge scores.
 
 ### Large-Sample Evaluation (n=120)
+
+Note: v1 was evaluated at n=30 only (the attribution direction diagnostic was added after v1, so rerunning v1 at n=120 with the updated judge was not prioritized). The sample size difference means v1 scores have wider confidence intervals — treat them as directional, not directly comparable to v2/v3.
 
 | Metric | v1 (n=30) | v2 (n=120) | v3 (n=120) | v3 excl outlier (n=70) |
 |--------|-----------|------------|------------|------------------------|
@@ -136,28 +138,31 @@ v2 and v3 achieve the same accuracy rate (~72-73%). The difference is in failure
 
 ### What We Got Wrong: The Attribution Direction Assumption
 
-We initially assumed over-attribution was the primary problem — the memory file for this project described agents "claiming adoption but acting contrary to strategy points" as the root cause. We designed the experiment to measure and reduce it.
+The experiment's measurement approach evolved mid-flight. The initial application judge measured only `adoption_accuracy` — a single 1-5 score for how well the self-reported adoption list matched observable behavior. This told us *how wrong* the attributions were, but not *in which direction*.
 
-At n=120, the data told a different story. Both directions are present in roughly equal measure (8-19% each), and the v1→v2 improvement came from reducing *both types simultaneously* via the schema reorder — not from targeting one direction. This reframed our understanding: the problem wasn't that agents were biased toward over-claiming, but that retrospective reporting is inherently unreliable in both directions. The schema reorder fixed the root cause (retrospective rationalization) rather than a symptom (over-attribution specifically).
+At n=30, we inspected low-scoring cases manually. The pattern that jumped out was over-attribution: agents claiming strategy points that loosely aligned with their action but didn't demonstrably drive it. This matched our prior assumption — the project memory file described agents "claiming adoption but acting contrary to strategy points" as the primary problem. We designed v2 and v3 with over-attribution reduction as the explicit goal.
 
-If we had continued optimizing solely for over-attribution reduction, we would have missed that under-attribution is equally prevalent and arguably more dangerous — it makes useful strategies look unused, potentially leading to their deprecation.
+After v2 showed strong improvement at n=30, we added `attribution_direction` as a diagnostic field on the judge to get systematic data rather than relying on case-level impressions. At n=120 with this new field, the picture shifted: v2's error distribution leaned toward *under*-attribution (19%) more than over-attribution (8%). The manual impressions at n=30 had been misleading — either because the small sample over-represented over-attribution cases, because human reviewers are better at spotting false claims than missing ones, or both.
 
-### The v2 Under-Attribution Tradeoff
+This reframed the problem. The v1→v2 improvement didn't come from targeting over-attribution specifically — the schema reorder reduced both error types simultaneously by fixing the root cause (retrospective rationalization) rather than a symptom. Retrospective reporting is unreliable in both directions: the model sometimes claims strategies it didn't follow, and sometimes fails to report strategies it clearly did.
 
-v2 has the highest under-attribution rate (19% vs v3's 13%). Earlier analysis established that under-attribution is the more dangerous failure mode — it could lead to deprecating effective strategies, a permanent loss of signal.
+### The v2 Selection Tension
 
-v2 is still the right choice despite this tension, for three reasons:
-1. The schema reorder already substantially reduced both error types from v1's baseline. The remaining 19% under-attribution is the residual after the biggest available fix.
-2. 72% accuracy is sufficient for Phase 1's purpose — surfacing broad adoption patterns and identifying clear deprecation candidates, not precise per-strategy metrics. A strategy that's genuinely popular will still show high `used_count` even with some under-reporting.
-3. Over-attribution (v3's weakness at 14%) is harder to correct downstream than under-attribution. Over-counted strategies look artificially important and resist deprecation; under-counted strategies can be rescued by cross-referencing with retrieval frequency.
+The attribution direction data creates an awkward situation for the v2 decision. We argued earlier that under-attribution is the more dangerous failure mode — it makes effective strategies look unused, which would produce false deprecation signals if the counters are ever used for curation. But v2 has the *highest* under-attribution rate (19% vs v3's 13%).
 
-### Prompt Consistency Matters More Than Prompt Precision
+Meanwhile, v3 — which was designed to reduce over-attribution — actually made over-attribution *worse* (14% vs v2's 8%) while inadvertently improving under-attribution (13% vs v2's 19%). The DO/DON'T rules pushed agents to be more explicit about their claims, which reduced omissions but introduced more false claims. Neither version optimized the metric we said mattered most.
 
-The v3 DO/DON'T finding generalizes beyond this feature: for weak models, prompt *consistency* with the rest of the system matters more than prompt *precision* in isolation.
+v2 is still the right choice, but not because of any single metric. The case rests on the full picture: highest overall adoption accuracy (4.38 vs 4.26), highest action quality (4.47 vs 3.99/4.41), and the simpler prompt being a better fit for flash-lite at minimal thinking. The 19% under-attribution is the accepted cost — a strategy that's genuinely popular will still accumulate high `used_count` even with some under-reporting, making the counters useful for broad pattern detection if not precise per-strategy measurement.
 
-Every other prompt in the system — situation summary, day discussion, voting, tone instruction — uses natural, conversational language. The v3 DO/DON'T format broke that consistency. The dedup prompt also uses structured rules, but it runs at `thinking_level="low"` rather than minimal, which may account for why that style works there.
+### Judge Model Limitation
 
-The lesson: when working with a weak model at minimal thinking budget, match the instruction style to what the model already handles well in the same context. A "better" prompt by human standards can be a worse prompt for the model if it breaks the stylistic contract.
+All attribution direction data comes from `gemini-2.5-flash`. Independent spot-checks with Claude Opus were directionally consistent — Opus agreed with flash's accuracy assessments on the cases reviewed — but no systematic pro-model evaluation was run. Whether the under/over-attribution distribution holds under a stronger judge is an open question. This is acceptable for Phase 1, where the counters are informational. If Phase 2 effectiveness scoring is implemented and the direction data feeds into retrieval ranking, validating with a pro-model judge becomes a prerequisite.
+
+### Prompt Precision Doesn't Guarantee Model Precision
+
+Adding structured DO/DON'T rules and explicit anchoring on the `Action:` field didn't improve attribution accuracy over v2's simpler natural language. After excluding the outlier game, v3 was statistically equivalent to v2 on most metrics. The data supports "v3 didn't improve over v2" but not a stronger causal claim about *why* — we didn't test a conversational-style version of v3's content, so we can't distinguish whether the structured format or the added complexity caused the non-improvement.
+
+The simpler explanation is sufficient: for flash-lite at minimal thinking budget, the simpler instruction was enough — additional precision in the prompt didn't translate to additional precision in the output. Whether this reflects a general property of weak models at low thinking budgets or is specific to this task is an open question.
 
 ### Schema Field Order as a Prompt Engineering Lever
 
@@ -209,15 +214,19 @@ We considered bumping `thinking_level` from minimal to low for the agent calls, 
 
 ## What's Next
 
-### The Attribution Ambiguity Problem
+### The Attribution Ambiguity Is Structural, Not Prompt-Solvable
 
-This experiment surfaced a deeper question about the memory architecture itself. Agents receive two types of retrieved memory — observations (factual accounts of past game events) and strategy points (prescriptive advice) — and must attribute their actions to strategy points specifically. In practice, agents struggled to distinguish the source of their reasoning. The v3 prompt explicitly tried to address this with the rule "DON'T list a point if your action was shaped by observations, not strategy points." That rule didn't help — agents still misattributed, and the rule itself may have added confusion.
+This experiment surfaced a limitation that no prompt iteration could fix. Agents receive two types of retrieved memory in the same context: observations (factual accounts like "healer stayed quiet and survived") and strategy points (prescriptive advice like "maintain a low profile as healer"). Both can teach the same lesson from different angles. When the agent acts on that lesson, attributing the action to one source over the other requires a causal distinction the model may not be capable of making — especially at minimal thinking budget.
 
-The two memory types often overlap in content. An observation like "healer stayed quiet and survived" and a strategy point like "maintain a low profile as healer" teach the same lesson from different angles. When both appear in the same prompt, the agent has to determine which one "influenced" it — a distinction that may not be meaningful for a weak model at minimal thinking budget. This attribution ambiguity contributes to both over- and under-attribution, and no prompt change can fully resolve it because the ambiguity is structural.
+The v3 prompt tried to address this directly with the rule "DON'T list a point if your action was shaped by observations, not strategy points." It didn't help. The rule asks the agent to introspect on whether its reasoning came from a descriptive or prescriptive input, which is a harder cognitive operation than the attribution task itself. This likely contributed to both directions of error: agents sometimes claimed a strategy point when the observation was the real driver (over-attribution), and sometimes failed to claim a strategy point because the overlapping observation felt like the "real" source (under-attribution).
 
-This observation motivates the next experiment:
+The implication is that the ~72% accuracy ceiling may not be a prompt engineering problem at all. It may reflect a structural ambiguity in presenting two overlapping memory types in the same context and asking a weak model to distinguish their influence. Improving beyond 72% likely requires either a stronger model, a separated presentation, or removing the overlap entirely.
 
-- **Observations-only ablation:** Test whether strategy points add value beyond what observations already provide, using the new snapshot-based application experiment. Observations are self-correcting — postgame extraction naturally captures "tried X, it worked" vs "tried X, got caught" — and `observation_count` is a direct signal of pattern frequency without needing an adoption tracking pipeline. If action quality holds without strategy points, the adoption pipeline and Phase 2 can be dropped entirely, significantly simplifying the memory system.
+### Next Experiments
+
+This finding motivates the next experiment directly:
+
+- **Observations-only ablation:** If observations and strategy points overlap enough to create attribution ambiguity, the question becomes whether strategy points add value beyond what observations already provide. Observations are self-correcting — postgame extraction naturally captures "tried X, it worked" vs "tried X, got caught" — and `observation_count` is a direct signal of pattern frequency without needing an adoption tracking pipeline. If action quality holds without strategy points, the memory system simplifies significantly: one memory type, no adoption tracking, no Phase 2 effectiveness scoring.
 - **Phase 2 effectiveness scoring:** Deferred pending the ablation result. If strategy points are retained, Phase 2 would add postgame effectiveness scoring to close the loop on strategy quality.
 
 ## Artifacts
