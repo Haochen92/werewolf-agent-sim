@@ -74,6 +74,10 @@ This didn't produce obvious errors — scores looked plausible. The primary impa
 
 The lesson: when an experiment modifies the agent's inputs, verify that every downstream evaluator sees the same modified inputs, not a stale copy from the original case. The failure mode is silent — plausible scores with a subtly wrong reference context.
 
+### Null results reframe the question, not the answer
+
+When an A/B test shows no performance difference, the finding isn't "inconclusive" — it's "the differentiator is somewhere else." We expected this ablation to answer "which memory type produces better actions?" Instead it answered "both are equivalent, so the question is which one is cheaper to maintain." The reframing from a performance question to an infrastructure question was the actual value of running the experiment.
+
 ## What's Next
 
 These findings feed into a broader architecture decision about the memory system's final shape. That decision requires:
