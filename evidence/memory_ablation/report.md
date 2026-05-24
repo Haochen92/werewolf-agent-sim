@@ -14,6 +14,8 @@ We designed a three-condition ablation using the snapshot re-retrieval mode buil
 
 The hypothesis was that observations would carry most of the value, based on two structural arguments: observations are self-correcting (postgame extraction captures both success and failure), and `observation_count` is a natural quality signal without needing an adoption tracking layer. We expected the "both" condition to moderately outperform either alone, and strategy-points-only to underperform observations-only.
 
+**Why snapshot replay, not full games.** The alternative — running complete games with only observations or only strategy points — would produce cascading differences. Every agent decision affects subsequent game state: different accusations lead to different votes, different eliminations, different pressure dynamics. By turn 3, the three conditions would be playing entirely different games, and any performance difference could be attributed to the divergent trajectory rather than the memory type. Holding the game state constant and swapping only the memory input isolates exactly what we want to measure: given the same situation, does the memory type affect decision quality? The frozen game states were produced by agents running with both memory types, which gives realistic situations to evaluate against rather than artificial ones.
+
 The snapshot mode works by pointing `build_store_from_snapshots` at different file combinations. An empty store JSON (`{"namespaces": {}}`) produces zero items for the omitted memory type. No code changes were needed beyond creating the empty file and three config files — the existing pipeline handled the ablation by design.
 
 ## Evaluation Setup
