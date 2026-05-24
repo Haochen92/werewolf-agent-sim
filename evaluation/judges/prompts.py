@@ -206,6 +206,7 @@ RETRIEVED STRATEGY POINTS:
 AGENT'S RESPONSE OR DECISION:
 {agent_decision}
 Updated Strategy Note: {agent_updated_strategy}
+Adoption Self-Report: {agent_adoption_report}
 
 Score from 1 to 5:
 
@@ -241,6 +242,25 @@ For Grounding, Look specifically for:
 - References to events from previous days not in retrieved memories
 - Invented vote counts or consensus that doesn't exist
 
+4. ADOPTION ACCURACY: Does the agent's self-reported adoption list match its
+observable behavior? Compare the strategy points the agent claimed to use
+against what its action and reasoning actually reflect.
+   1 = adoption list is clearly fabricated (claims points it visibly ignored,
+       or omits points it clearly used)
+   2 = significant mismatch between claims and observable behavior
+   3 = partially accurate — some claimed points are reflected, others are not
+   4 = mostly accurate with minor over- or under-attribution
+   5 = adoption list precisely matches observable strategy use
+   If the adoption self-report says "(not captured)", output null for this
+   dimension and for attribution_direction — do not guess or infer.
+
+5. ATTRIBUTION DIRECTION: Based on your adoption accuracy analysis, classify
+the direction of mismatch:
+   "over" = agent claims strategy points it did not observably follow
+   "under" = agent omits strategy points it clearly used
+   "accurate" = self-report matches observable behavior
+   If adoption self-report says "(not captured)", output null.
+
 If the retrieved memories are mostly irrelevant, do not reward blind use of
 them. A good agent should ignore irrelevant memories and still take a sound
 action.
@@ -248,7 +268,9 @@ action.
 Respond ONLY with valid JSON:
 {{
   "action_quality": N, "strategy_application": N,
-  "grounding": N, "fabricated_claims": ["list any specific fabrications found, or empty"],
+  "grounding": N, "adoption_accuracy": N_or_null,
+  "attribution_direction": "over"|"under"|"accurate"|null,
+  "fabricated_claims": ["list any specific fabrications found, or empty"],
   "brief_reasoning": "1-2 sentences"
 }}
 """

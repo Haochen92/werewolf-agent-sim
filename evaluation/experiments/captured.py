@@ -17,6 +17,7 @@ from evaluation.core.config_schema import CapturedEvaluationConfig
 from evaluation.core.io import write_jsonl
 from evaluation.core.settings import REPO_ROOT, load_project_env
 from evaluation.data.datasets import read_eval_dataset
+from evaluation.judges.application import run_application_judge
 from evaluation.judges.pipeline import run_judge
 
 
@@ -55,7 +56,10 @@ def main() -> None:
     out_path = output_path(config.output)
 
     print(f"Loaded {len(records)} EvalCase records from {config.dataset}", flush=True)
-    print(f"Judge model={config.judge_model}", flush=True)
+    print(
+        f"Judge model={config.judge_model}, type={config.judge_type}",
+        flush=True,
+    )
     print(f"Writing captured evaluation results to {out_path}", flush=True)
 
     written = 0
@@ -67,7 +71,11 @@ def main() -> None:
             flush=True,
         )
 
-        scores = run_judge(case, model=config.judge_model)
+        if config.judge_type == "application":
+            scores = run_application_judge(case, model=config.judge_model)
+        else:
+            scores = run_judge(case, model=config.judge_model)
+
         result_record = {
             "eval_set_id": record.eval_set_id,
             "case_id": record.case_id,
@@ -79,6 +87,7 @@ def main() -> None:
             "round": case.round,
             "action_phase": case.action_phase,
             "source_dataset": str(config.dataset),
+            "judge_type": config.judge_type,
             "situations": case.situations,
             "retrieved_observation_count": len(case.retrieved_observations),
             "retrieved_strategy_point_count": len(case.retrieved_strategy_points),
@@ -94,7 +103,16 @@ def main() -> None:
         write_jsonl(out_path, result_record)
         written += 1
 
-        if scores:
+        if scores and config.judge_type == "application":
+            print(
+                f"  Scores: action={scores.action_quality} "
+                f"application={scores.strategy_application} "
+                f"grounding={scores.grounding} "
+                f"adoption={scores.adoption_accuracy} "
+                f"direction={scores.attribution_direction}",
+                flush=True,
+            )
+        elif scores:
             print(
                 f"  Scores: summary={scores.summary_quality} "
                 f"retrieval={scores.retrieval_relevance} "

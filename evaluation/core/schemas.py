@@ -7,6 +7,8 @@ from typing import Literal
 from Agents.constants import ActionPhase
 from pydantic import BaseModel, Field
 
+AttributionDirection = Literal["over", "under", "accurate"]
+
 
 class JudgeScores(BaseModel):
     summary_quality: int = Field(ge=1, le=5)
@@ -50,6 +52,24 @@ class ApplicationScores(BaseModel):
     action_quality: int = Field(ge=1, le=5)
     strategy_application: int = Field(ge=1, le=5)
     grounding: int = Field(ge=1, le=5)
+    adoption_accuracy: int | None = Field(
+        default=None,
+        ge=1,
+        le=5,
+        description=(
+            "Does the agent's self-reported adoption list match its observable "
+            "behavior? null when adoption self-report is not captured."
+        ),
+    )
+    attribution_direction: AttributionDirection | None = Field(
+        default=None,
+        description=(
+            "Direction of adoption mismatch: 'over' if agent claims points it "
+            "didn't follow, 'under' if agent omits points it clearly used, "
+            "'accurate' if self-report matches behavior. null when adoption "
+            "self-report is not captured."
+        ),
+    )
     fabricated_claims: list[str] = Field(default_factory=list)
     brief_reasoning: str = ""
 

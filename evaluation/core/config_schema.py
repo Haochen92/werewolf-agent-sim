@@ -126,12 +126,23 @@ class ApplicationExperimentConfig(BaseModel):
     """Config for replaying final discussion/vote actions from frozen cases."""
 
     dataset: Path
-    memory_mode: Literal["captured", "none"] = "captured"
+    memory_mode: Literal["captured", "none", "snapshot"] = "captured"
+    snapshots: list[MemorySnapshotConfig] | None = None
+    top_k: int = Field(default=3, ge=1)
+    max_retrieved_items: int = Field(default=0, ge=0)
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge: bool = False
     judge_model: str = "gemini-2.5-pro"
     sleep_seconds: float = Field(default=1.0, ge=0)
+
+    @model_validator(mode="after")
+    def require_snapshots_for_snapshot_mode(self) -> "ApplicationExperimentConfig":
+        if self.memory_mode == "snapshot" and not self.snapshots:
+            raise ValueError(
+                "snapshots must be provided when memory_mode is 'snapshot'."
+            )
+        return self
 
 
 class CapturedEvaluationConfig(BaseModel):
@@ -141,6 +152,7 @@ class CapturedEvaluationConfig(BaseModel):
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
     judge_model: str = "gemini-2.5-pro"
+    judge_type: Literal["pipeline", "application"] = "pipeline"
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 

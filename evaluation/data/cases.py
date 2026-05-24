@@ -34,6 +34,15 @@ def eval_case_from_span(span: dict[str, Any]) -> EvalCase | None:
 
 def eval_case_to_judge_inputs(case: EvalCase) -> dict[str, Any]:
     """Format one frozen case into the shared prompt inputs used by judges."""
+    if case.adopted_strategy_keys:
+        adoption_report = (
+            f"Agent reported strategy points "
+            f"[{', '.join(str(k) for k in case.adopted_strategy_keys)}] "
+            f"as influential to its decision."
+        )
+    else:
+        adoption_report = "(not captured)"
+
     return {
         "player_role": case.player_role,
         "day": case.day,
@@ -56,6 +65,7 @@ def eval_case_to_judge_inputs(case: EvalCase) -> dict[str, Any]:
             vote=case.agent_vote,
         ),
         "agent_updated_strategy": case.updated_strategy,
+        "agent_adoption_report": adoption_report,
     }
 
 

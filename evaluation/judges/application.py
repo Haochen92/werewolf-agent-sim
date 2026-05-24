@@ -46,6 +46,7 @@ def run_application_judge(
             vote=case.agent_vote,
         ),
         agent_updated_strategy=case.updated_strategy,
+        agent_adoption_report=inputs["agent_adoption_report"],
     )
     llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
     for attempt in range(max_retries + 1):
