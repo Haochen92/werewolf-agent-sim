@@ -40,11 +40,13 @@ Dataset: 230 frozen cases from 3 games (v2 adoption eval set), sampled at n=120.
 
 The overall scores dropped from n=30 (~4.8) to n=120 (~4.4-4.5), which is expected — larger samples include harder cases (ambiguous game states, weaker role-phase combinations) that weren't represented in the initial 30.
 
-**The headline finding is that no condition meaningfully outperforms the others.** The largest gap is 0.17 (action quality: both 4.46 vs obs-only 4.33), which at n=120 is within noise. Strategy-points-only has a slight edge on all three metrics, which contradicts the initial hypothesis that observations would be the stronger standalone contributor — but the margins are too small to draw that conclusion confidently.
+**No additive benefit from combining memory types.** The initial hypothesis was that observations and strategy points would complement each other — observations providing grounded evidence, strategy points providing actionable guidance. The data shows no such complementarity: the "both" condition sits between the two single-type conditions on every metric rather than above them.
+
+Strategy-points-only has the highest number on all three metrics, but the margins (0.04-0.17) are within noise at n=120 — the ordering could flip with a different sample. We note the direction without interpreting it. What the data does tell us: either memory type alone produces equivalent action quality to the full system, and the choice between them is an infrastructure decision rather than a performance one.
 
 ## Decision and Tradeoffs
 
-**No architectural decision is made in this experiment.** The data shows that both memory types contribute roughly equally and combining them produces no additive benefit. This is a necessary finding but not sufficient to make the final architecture call.
+**No architectural decision is made in this experiment.** The data shows that either memory type alone matches the combined system, but it doesn't tell us which to keep. That is an infrastructure and design question, not a performance one.
 
 The strongest case for dropping strategy points is operational: they require the adoption tracking pipeline and a planned Phase 2 effectiveness scoring system, while observations achieve equivalent performance with simpler infrastructure (`observation_count` as a built-in quality signal, self-correcting extraction).
 
