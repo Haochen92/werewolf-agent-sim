@@ -52,7 +52,13 @@ The strongest case for dropping strategy points is operational: they require the
 
 The strongest case for keeping strategy points is that this ablation tests retrieval and application in isolation — it doesn't capture whether strategy points improve *learning across games* (e.g., do agents converge on better play faster with prescriptive guidance?). A single-turn replay can't measure multi-game learning trajectories.
 
-The tradeoff we're accepting: locking these findings as a reference point without making the final architecture decision. A separate experiment with broader game variety and potentially multi-game evaluation would be needed to make that call definitively.
+### Implications for the Memory System
+
+The planned default going forward is observations-only for retrieval. Extraction continues for both memory types — strategy points keep accumulating in the store for future experimentation. Adoption tracking becomes dormant as a consequence (no strategy points retrieved means no adoptions to record), but the infrastructure remains in the codebase.
+
+This is a configuration change, not a removal. The rationale is pragmatic: equivalent performance at lower complexity, with `observation_count` serving as a built-in quality signal that doesn't require an adoption tracking pipeline. Strategy points are available to re-enable if multi-game evaluation or broader game variety reveals scenarios where prescriptive guidance adds measurable value.
+
+Though adoption tracking is now dormant, the Phase 1 experiment produced transferable findings regardless. The schema field ordering insight — placing metacognitive fields before action fields to create prospective commitment rather than retrospective rationalization — applies to any structured output task where a model must both act and reflect on its action.
 
 ## Lessons
 
