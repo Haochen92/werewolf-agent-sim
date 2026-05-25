@@ -1,0 +1,10 @@
+{
+  "eval_set_id": "dedup_v2",
+  "session_id": "v4_action_phase_v2_all_disabled",
+  "max_games": 0,
+  "max_samples": 0,
+  "filter_auto": false,
+  "seed": 42,
+  "created_from": "v4_action_phase_v2_all_disabled, 30 games, all dedup spans (unsampled)",
+  "overwrite": true
+}
