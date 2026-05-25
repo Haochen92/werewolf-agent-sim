@@ -1,0 +1,161 @@
+{
+  "scored_at": "2026-05-25T04:48:53.337129",
+  "dataset_path": "eval_sets/dedup_v2_sampled.jsonl",
+  "golden_path": "eval_sets/dedup_v2_golden_labels.json",
+  "scheme": "legacy",
+  "total": 50,
+  "strict_correct": 39,
+  "lenient_correct": 40,
+  "strict_accuracy": 0.78,
+  "lenient_accuracy": 0.8,
+  "per_type_accuracy": {
+    "observation": {
+      "total": 25,
+      "strict_correct": 18,
+      "lenient_correct": 19
+    },
+    "strategy_point": {
+      "total": 25,
+      "strict_correct": 21,
+      "lenient_correct": 21
+    }
+  },
+  "per_label": {
+    "D": {
+      "precision": 0.8235,
+      "recall": 0.7368,
+      "f1": 0.7778,
+      "support": 19
+    },
+    "M": {
+      "precision": 0.5556,
+      "recall": 0.8333,
+      "f1": 0.6667,
+      "support": 6
+    },
+    "K": {
+      "precision": 0.8333,
+      "recall": 0.8,
+      "f1": 0.8163,
+      "support": 25
+    }
+  },
+  "confusion_matrix": {
+    "D": {
+      "D": 14,
+      "M": 2,
+      "K": 3
+    },
+    "M": {
+      "D": 0,
+      "M": 5,
+      "K": 1
+    },
+    "K": {
+      "D": 3,
+      "M": 2,
+      "K": 20
+    }
+  },
+  "mismatches": [
+    {
+      "case_index": 1,
+      "item_type": "observation",
+      "golden_label": "M",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Strategic lesson same as C2 (persist with same target). 2 vs 3 saves is degree not kind."
+    },
+    {
+      "case_index": 16,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "M",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "2v1 endgame wolf 'too coordinated' tactic is distinct. LLM mislabeled as merge."
+    },
+    {
+      "case_index": 21,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "M",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Late bussing detection \u2014 distinct heuristic from C2's partner-protection detection. LLM mislabeled as merge."
+    },
+    {
+      "case_index": 22,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "M",
+      "also_acceptable": "M",
+      "lenient_correct": true,
+      "notes": "C2 already generalizes this pattern well. Borderline D/M."
+    },
+    {
+      "case_index": 24,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "M",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Exact same groupthink tactic as C5. Clear discard."
+    },
+    {
+      "case_index": 27,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Aggressive player might be frustrated Investigator \u2014 distinct from C2's general anti-consensus advice. LLM mislabeled as replace."
+    },
+    {
+      "case_index": 29,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Behavioral test + meta-accusation of coordinated dismissal \u2014 distinct from C4's passive guidance."
+    },
+    {
+      "case_index": 32,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Early game, challenge accuser pressuring quiet players \u2014 distinct redirect strategy from C2. LLM mislabeled as replace."
+    },
+    {
+      "case_index": 35,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": "M",
+      "lenient_correct": false,
+      "notes": "Same bandwagon-no-evidence pattern as C1. Confusing writing made it seem distinct. LLM mislabeled as keep."
+    },
+    {
+      "case_index": 40,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Same 'too obvious' defense, same outcome. Phase difference doesn't change lesson. LLM mislabeled as keep."
+    },
+    {
+      "case_index": 47,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Same as C2/C3: protect vocal player Night 1. LLM mislabeled as keep."
+    }
+  ]
+}
