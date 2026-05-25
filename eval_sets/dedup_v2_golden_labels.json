@@ -4,66 +4,510 @@
   "labeler": "human",
   "description": "Golden labels for 50 sampled per-extraction dedup cases (25 observations, 25 strategy_points). Labels use current D/M/K scheme. Strategy points only have D/K (no merge).",
   "label_schema": {
-    "D": "DISCARD — duplicate of an existing candidate, bump count",
-    "M": "MERGE — merge with an existing candidate (observations only)",
-    "K": "KEEP — distinct, keep as a new entry"
+    "D": "DISCARD \u2014 duplicate of an existing candidate, bump count",
+    "M": "MERGE \u2014 merge with an existing candidate (observations only)",
+    "K": "KEEP \u2014 distinct, keep as a new entry"
   },
-  "summary": {
-    "total": 50,
-    "D": 19,
-    "M": 6,
-    "K": 25
-  },
+  "summary": "D=31, M=2, K=32",
   "labels": [
-    {"case_index": 0, "case_id": "4f53550a38d6095f7e88a401aea64b0e:902cf01a1177fd42", "item_type": "observation", "golden_label": "K", "notes": null},
-    {"case_index": 1, "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:be0ccae425b39b21", "item_type": "observation", "golden_label": "M", "merge_candidate": 2, "notes": "Strategic lesson same as C2 (persist with same target). 2 vs 3 saves is degree not kind."},
-    {"case_index": 2, "case_id": "b1ea401bb8e967064bb054784e240e7a:d12b8b203d278bda", "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 2, "notes": null},
-    {"case_index": 3, "case_id": "74a591f6d46648faaebd78500437ae85:f64a5bf15a7186ea", "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 1, "notes": null},
-    {"case_index": 4, "case_id": "a275c5b021efd0447dc38d179863b615:483edc2980e7b53a", "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 3, "notes": null},
-    {"case_index": 5, "case_id": null, "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 4, "notes": null},
-    {"case_index": 6, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Proactive wolf tactic of framing correct votes as suspicious — distinct from defensive deflection."},
-    {"case_index": 7, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Bussing strategy — wolf votes with majority to eliminate partner. All candidates show opposite pattern."},
-    {"case_index": 8, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Confirmed non-wolf navigating post-mislynch — distinct from C1's questioning approach."},
-    {"case_index": 9, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 2, "notes": "Same as C2: own the mistake, pivot to analysis."},
-    {"case_index": 10, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "notes": "Same as C1: target vocal organizer Night 1."},
-    {"case_index": 11, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Vote manipulation to create deadlock — distinct from bussing in C1."},
-    {"case_index": 12, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "notes": "Same as C1: attack timing of Investigator reveal."},
-    {"case_index": 13, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Day 1 healer should avoid being vocal — distinct early-game survival advice."},
-    {"case_index": 14, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "notes": "Same as C1: partner doomed, vote with majority."},
-    {"case_index": 15, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Night 1 investigate quiet/low-substance player — distinct from mid-game candidates."},
-    {"case_index": 16, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "2v1 endgame wolf 'too coordinated' tactic is distinct. LLM mislabeled as merge."},
-    {"case_index": 17, "case_id": null, "item_type": "observation", "golden_label": "M", "merge_candidate": 2, "notes": "Same endgame voting-record pattern as C2, adds specific evidence detail."},
-    {"case_index": 18, "case_id": null, "item_type": "observation", "golden_label": "M", "merge_candidate": 1, "notes": "Wolves discrediting dead Investigator — enriches C1's general pattern."},
-    {"case_index": 19, "case_id": null, "item_type": "observation", "golden_label": "M", "merge_candidate": 4, "notes": "Wolf questioning healer saves — specific instance of C4's deflection pattern."},
-    {"case_index": 20, "case_id": null, "item_type": "observation", "golden_label": "M", "merge_candidate": 5, "notes": "Same credibility-destroyed Investigator pattern as C5."},
-    {"case_index": 21, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Late bussing detection — distinct heuristic from C2's partner-protection detection. LLM mislabeled as merge."},
-    {"case_index": 22, "case_id": null, "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 2, "also_acceptable": "M", "notes": "C2 already generalizes this pattern well. Borderline D/M."},
-    {"case_index": 23, "case_id": null, "item_type": "observation", "golden_label": "M", "merge_candidate": 2, "notes": "Same find-and-die pattern as C2."},
-    {"case_index": 24, "case_id": null, "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 5, "notes": "Exact same groupthink tactic as C5. Clear discard."},
-    {"case_index": 25, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "notes": "Same as C1: investigate dissenting voter. LLM mislabeled as replace."},
-    {"case_index": 26, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "notes": "Same as C1: treat posthumous Investigator accusation as ground truth."},
-    {"case_index": 27, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Aggressive player might be frustrated Investigator — distinct from C2's general anti-consensus advice. LLM mislabeled as replace."},
-    {"case_index": 28, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 3, "rewrite": true, "notes": "New entry is better written (emotional framing + evidence). Discard with rewrite."},
-    {"case_index": 29, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Behavioral test + meta-accusation of coordinated dismissal — distinct from C4's passive guidance."},
-    {"case_index": 30, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "notes": "Same as C1: use wolf targeting as credibility evidence."},
-    {"case_index": 31, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 2, "notes": "C2 already mentions deadlock scenario. Same reveal-under-pressure advice."},
-    {"case_index": 32, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Early game, challenge accuser pressuring quiet players — distinct redirect strategy from C2. LLM mislabeled as replace."},
-    {"case_index": 33, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 1, "rewrite": true, "notes": "Covers both emotional framing and evidence. Discard with rewrite of C1."},
-    {"case_index": 34, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Success vs failure of same strategy (protect vocal player Night 1). Opposite outcomes teach risk/reward."},
-    {"case_index": 35, "case_id": null, "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 1, "also_acceptable": "M", "notes": "Same bandwagon-no-evidence pattern as C1. Confusing writing made it seem distinct. LLM mislabeled as keep."},
-    {"case_index": 36, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Coordinated two-wolf counter-vote is distinct from lone dissenting vote in C1."},
-    {"case_index": 37, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Same dissenting-vote approach, but succeeds (avoids suspicion) vs C1 where it fails. Different outcome = different lesson."},
-    {"case_index": 38, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Wolves specifically identify and kill the Healer — distinct from pivoting to generic villager."},
-    {"case_index": 39, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Timing attack on Investigator reveal fails (4 players, strong credibility) vs C2 where it succeeds (1v1v1). Context determines outcome."},
-    {"case_index": 40, "case_id": null, "item_type": "observation", "golden_label": "D", "duplicate_of_candidate": 4, "notes": "Same 'too obvious' defense, same outcome. Phase difference doesn't change lesson. LLM mislabeled as keep."},
-    {"case_index": 41, "case_id": null, "item_type": "observation", "golden_label": "K", "notes": "Caught by discussion/voting contradiction + partner protest vote backfires — distinct trigger and compound dynamic."},
-    {"case_index": 42, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Conflicting advice with C1 (vote third target vs vote with majority). Both valid — gives agent tactical flexibility."},
-    {"case_index": 43, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "3-player endgame swing vote evaluating Investigator claim — completely different from C1."},
-    {"case_index": 44, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "After wolf eliminated, focus on dissenters — distinct from C1's villager-eliminated trigger."},
-    {"case_index": 45, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Detecting deflection from mistake analysis as wolf signal — distinct from C3 and C4."},
-    {"case_index": 46, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Weaponize post-mislynch paranoia against accuser — distinct from C2's timing attack and C5's passive exploitation."},
-    {"case_index": 47, "case_id": null, "item_type": "strategy_point", "golden_label": "D", "duplicate_of_candidate": 2, "notes": "Same as C2/C3: protect vocal player Night 1. LLM mislabeled as keep."},
-    {"case_index": 48, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Opposite defensive strategies: frame bad vote as deliberate test vs admit mistake (C1). Both valid options."},
-    {"case_index": 49, "case_id": null, "item_type": "strategy_point", "golden_label": "K", "notes": "Hero status enables aggressive accusation — opposite of C1's subtle low-profile approach. Different public standing = different tactic."}
+    {
+      "case_index": 0,
+      "case_id": "4f53550a38d6095f7e88a401aea64b0e:902cf01a1177fd42",
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": null
+    },
+    {
+      "case_index": 1,
+      "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:be0ccae425b39b21",
+      "item_type": "observation",
+      "golden_label": "D",
+      "merge_candidate": 2,
+      "notes": "Same lesson as C2 and C3: persist protecting same target. 2 vs 3 saves is degree, not kind. All three fields express the same idea."
+    },
+    {
+      "case_index": 2,
+      "case_id": "b1ea401bb8e967064bb054784e240e7a:d12b8b203d278bda",
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "notes": null
+    },
+    {
+      "case_index": 3,
+      "case_id": "74a591f6d46648faaebd78500437ae85:f64a5bf15a7186ea",
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": null
+    },
+    {
+      "case_index": 4,
+      "case_id": "a275c5b021efd0447dc38d179863b615:483edc2980e7b53a",
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "notes": null
+    },
+    {
+      "case_index": 5,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 4,
+      "notes": null
+    },
+    {
+      "case_index": 6,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Proactive wolf tactic of framing correct votes as suspicious \u2014 distinct from defensive deflection."
+    },
+    {
+      "case_index": 7,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Bussing strategy \u2014 wolf votes with majority to eliminate partner. All candidates show opposite pattern."
+    },
+    {
+      "case_index": 8,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Confirmed non-wolf navigating post-mislynch \u2014 distinct from C1's questioning approach."
+    },
+    {
+      "case_index": 9,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "notes": "Same as C2: own the mistake, pivot to analysis."
+    },
+    {
+      "case_index": 10,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": "Same as C1: target vocal organizer Night 1."
+    },
+    {
+      "case_index": 11,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Vote manipulation to create deadlock \u2014 distinct from bussing in C1."
+    },
+    {
+      "case_index": 12,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": "Same as C1: attack timing of Investigator reveal."
+    },
+    {
+      "case_index": 13,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Day 1 healer should avoid being vocal \u2014 distinct early-game survival advice."
+    },
+    {
+      "case_index": 14,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": "Same as C1: partner doomed, vote with majority."
+    },
+    {
+      "case_index": 15,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Night 1 investigate quiet/low-substance player \u2014 distinct from mid-game candidates."
+    },
+    {
+      "case_index": 16,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "2v1 endgame wolf 'too coordinated' tactic is distinct. LLM mislabeled as merge."
+    },
+    {
+      "case_index": 17,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "merge_candidate": 2,
+      "notes": "Different triggering situation from C2: Investigator killed prompts voting record analysis vs prior wolf elimination prompts it. Same approach (find lone dissenting vote) but agent needs to learn both triggers independently."
+    },
+    {
+      "case_index": 18,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "merge_candidate": 1,
+      "notes": "Structurally distinct situation from C1: coordinated two-wolf attack on Investigator, posthumous role reveal forming evidence. Different detection setup even though village uses same tool (voting record)."
+    },
+    {
+      "case_index": 19,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "M",
+      "merge_candidate": 4,
+      "notes": "Wolf questioning healer saves \u2014 specific instance of C4's deflection pattern."
+    },
+    {
+      "case_index": 20,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "M",
+      "merge_candidate": 5,
+      "notes": "Same credibility-destroyed Investigator pattern as C5."
+    },
+    {
+      "case_index": 21,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Late bussing detection \u2014 distinct heuristic from C2's partner-protection detection. LLM mislabeled as merge."
+    },
+    {
+      "case_index": 22,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "also_acceptable": "M",
+      "notes": "C2 already generalizes this pattern well. Borderline D/M."
+    },
+    {
+      "case_index": 23,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "D",
+      "merge_candidate": 2,
+      "notes": "Same find-and-die pattern as C2. C2 already covers the pattern with more detail (wolves targeted most influential player). New entry adds nothing the existing entry lacks."
+    },
+    {
+      "case_index": 24,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 5,
+      "notes": "Exact same groupthink tactic as C5. Clear discard."
+    },
+    {
+      "case_index": 25,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": "Same as C1: investigate dissenting voter. LLM mislabeled as replace."
+    },
+    {
+      "case_index": 26,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": "Same as C1: treat posthumous Investigator accusation as ground truth."
+    },
+    {
+      "case_index": 27,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Aggressive player might be frustrated Investigator \u2014 distinct from C2's general anti-consensus advice. LLM mislabeled as replace."
+    },
+    {
+      "case_index": 28,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "rewrite": true,
+      "notes": "New entry is better written (emotional framing + evidence). Discard with rewrite."
+    },
+    {
+      "case_index": 29,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Behavioral test + meta-accusation of coordinated dismissal \u2014 distinct from C4's passive guidance."
+    },
+    {
+      "case_index": 30,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "notes": "Same as C1: use wolf targeting as credibility evidence."
+    },
+    {
+      "case_index": 31,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "notes": "C2 already mentions deadlock scenario. Same reveal-under-pressure advice."
+    },
+    {
+      "case_index": 32,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Early game, challenge accuser pressuring quiet players \u2014 distinct redirect strategy from C2. LLM mislabeled as replace."
+    },
+    {
+      "case_index": 33,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "rewrite": true,
+      "notes": "Covers both emotional framing and evidence. Discard with rewrite of C1."
+    },
+    {
+      "case_index": 34,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Success vs failure of same strategy (protect vocal player Night 1). Opposite outcomes teach risk/reward."
+    },
+    {
+      "case_index": 35,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "also_acceptable": "M",
+      "notes": "Same bandwagon-no-evidence pattern as C1. Confusing writing made it seem distinct. LLM mislabeled as keep."
+    },
+    {
+      "case_index": 36,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Coordinated two-wolf counter-vote is distinct from lone dissenting vote in C1."
+    },
+    {
+      "case_index": 37,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Same dissenting-vote approach, but succeeds (avoids suspicion) vs C1 where it fails. Different outcome = different lesson."
+    },
+    {
+      "case_index": 38,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Wolves specifically identify and kill the Healer \u2014 distinct from pivoting to generic villager."
+    },
+    {
+      "case_index": 39,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Timing attack on Investigator reveal fails (4 players, strong credibility) vs C2 where it succeeds (1v1v1). Context determines outcome."
+    },
+    {
+      "case_index": 40,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 4,
+      "notes": "Same 'too obvious' defense, same outcome. Phase difference doesn't change lesson. LLM mislabeled as keep."
+    },
+    {
+      "case_index": 41,
+      "case_id": null,
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Caught by discussion/voting contradiction + partner protest vote backfires \u2014 distinct trigger and compound dynamic."
+    },
+    {
+      "case_index": 42,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Conflicting advice with C1 (vote third target vs vote with majority). Both valid \u2014 gives agent tactical flexibility."
+    },
+    {
+      "case_index": 43,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "3-player endgame swing vote evaluating Investigator claim \u2014 completely different from C1."
+    },
+    {
+      "case_index": 44,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "After wolf eliminated, focus on dissenters \u2014 distinct from C1's villager-eliminated trigger."
+    },
+    {
+      "case_index": 45,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Detecting deflection from mistake analysis as wolf signal \u2014 distinct from C3 and C4."
+    },
+    {
+      "case_index": 46,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Weaponize post-mislynch paranoia against accuser \u2014 distinct from C2's timing attack and C5's passive exploitation."
+    },
+    {
+      "case_index": 47,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "notes": "Same as C2/C3: protect vocal player Night 1. LLM mislabeled as keep."
+    },
+    {
+      "case_index": 48,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Opposite defensive strategies: frame bad vote as deliberate test vs admit mistake (C1). Both valid options."
+    },
+    {
+      "case_index": 49,
+      "case_id": null,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "notes": "Hero status enables aggressive accusation \u2014 opposite of C1's subtle low-profile approach. Different public standing = different tactic."
+    },
+    {
+      "case_index": 50,
+      "case_id": "b1ea401bb8e967064bb054784e240e7a:a3b262eeeba0204e",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C2: investigate vocal player Night 1, confirm villager ally. Two-night extension is degree not kind.",
+      "source_row": 22
+    },
+    {
+      "case_index": 51,
+      "case_id": "a275c5b021efd0447dc38d179863b615:bd9d4aa2ef323f64",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C2: use suspicious voting record to guide investigation, confirm wolf.",
+      "source_row": 123
+    },
+    {
+      "case_index": 52,
+      "case_id": "1beaa4d8739f5f570726ff6b046d156c:7f5790eb3bd9721c",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C1 (obs=2): wolves target analytical player Night 1, remove threat.",
+      "source_row": 308
+    },
+    {
+      "case_index": 53,
+      "case_id": "bac54e868d55f7bbd23168225c65efe6:a62cc0fb35da2ac9",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C1 (sim=0.908): aggressive evidence-free Investigator accusation fails post-mislynch. Auto-discarded.",
+      "source_row": 77
+    },
+    {
+      "case_index": 54,
+      "case_id": "9d18376f39230d8c63186d45597b8b2b:924fccfab8f1699c",
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Different detection method from C1: indirect deduction (cleared villager + process of elimination) vs direct investigation result.",
+      "source_row": 88
+    },
+    {
+      "case_index": 55,
+      "case_id": "4ac2415266e993fc721a406c70920e63:19f30680a5291b98",
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Distinct wolf tactic: reframe aggression as drama-stirring, question motives not substance. Different from C1 (exploit frustration) and C2 (evasive deflection that failed).",
+      "source_row": 219
+    },
+    {
+      "case_index": 56,
+      "case_id": "4f53550a38d6095f7e88a401aea64b0e:45a684547426e230",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C2 (obs=4): wolves target vocal player Night 1. Victim being Healer does not change the wolf decision.",
+      "source_row": 265
+    },
+    {
+      "case_index": 57,
+      "case_id": "798f83b17f29f7a60883f77a35d98352:0c239dc6199fb48f",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C1 (obs=5): wolves target active player Night 1.",
+      "source_row": 44
+    },
+    {
+      "case_index": 58,
+      "case_id": "0b47e882116e12d6d017dce4ac606b37:aa5297184f6471b2",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C1 (obs=4): wolves target first speaker Night 1.",
+      "source_row": 172
+    },
+    {
+      "case_index": 59,
+      "case_id": "2804cfeabf47e985f0f9d754713a048f:cedd81dcab0b2010",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C2 (obs=7): voting record catches wolf who voted to protect eliminated partner.",
+      "source_row": 232
+    },
+    {
+      "case_index": 60,
+      "case_id": "1beaa4d8739f5f570726ff6b046d156c:ef0195ca70829244",
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Distinct wolf tactic: question accuser healer save as suspicious. Different trigger situation from candidates.",
+      "source_row": 312
+    },
+    {
+      "case_index": 61,
+      "case_id": "798f83b17f29f7a60883f77a35d98352:9ad344466ded5e91",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C2 (obs=2): village eliminates aggressive Investigator perceived as disruptive.",
+      "source_row": 42
+    },
+    {
+      "case_index": 62,
+      "case_id": "53ff8ed9eac1f0273361959a0b9ff37f:9ebafa687b10a60c",
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Wolf succeeds with attack-the-method tactic while C1/C2 wolves fail with deflection \u2014 opposite outcome.",
+      "source_row": 108
+    },
+    {
+      "case_index": 63,
+      "case_id": "1beaa4d8739f5f570726ff6b046d156c:78dd1a1b33acdffe",
+      "item_type": "observation",
+      "golden_label": "K",
+      "notes": "Different triggering event: wolf partner eliminated vs Investigator posthumous reveal. Same approach (voting record) but independent triggers.",
+      "source_row": 309
+    },
+    {
+      "case_index": 64,
+      "case_id": "6d8038d97997ef29af7868ed7624bac0:cad88faf1b5e8e03",
+      "item_type": "observation",
+      "golden_label": "D",
+      "notes": "Same as C2: protect vocal player Night 1, save succeeds. Voted-out-next-day consequence does not change the Healer decision lesson.",
+      "source_row": 326
+    }
   ]
 }

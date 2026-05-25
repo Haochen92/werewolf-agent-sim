@@ -120,42 +120,82 @@ threshold; top {top_n} shown):
 
 Decide ONE of the following outcomes:
 
-(D) DISCARD — The new observation is an exact duplicate of an existing
-    observation. The situation, approach, AND outcome all express the same
-    idea, even if worded differently. Output the candidate number of the
-    entry it duplicates.
+(D) DISCARD — The existing entry already covers everything in the new
+    entry. The situation, approach, and outcome all express the same idea,
+    even if worded differently. No tactic variant, detection signal, or
+    contributing factor is present in the new entry that the existing entry
+    lacks. Output the candidate number it duplicates. The existing entry's
+    observation_count will be incremented automatically.
 
-(M) MERGE — The new observation shares the same situation and the same
-    functional outcome as an existing observation, but records a different
-    specific tactic in the approach field. This includes cases where the
-    agent tried a different excuse, defense, accusation, or voting pattern
-    but achieved the same result for the same structural reason.
+(M) MERGE — The new entry covers the same situation structure and outcome
+    as an existing entry, but adds a concrete detail the existing entry
+    lacks: a tactic variant in the approach, a specific example of a
+    general pattern, or a contributing factor absent from the existing text.
     Output the candidate number to merge with and the final merged
     observation fields (situation, approach, outcome). The merged approach
-    field MUST list ALL distinct tactics from both entries. The merged
-    outcome field summarizes the shared lesson. Increment observation_count
-    to reflect the combined total.
+    field MUST list ALL distinct tactics from both entries.
 
-(K) KEEP — The new observation is genuinely novel. Either the situation is
-    meaningfully different, or the outcome differs from all existing entries.
-    The new entry is stored exactly as extracted with no rewrites.
+(K) KEEP — The new entry teaches a different lesson. The triggering
+    situation, detection signal, or outcome is structurally different from
+    all existing entries. The agent must learn to recognize this trigger
+    independently, even if the approach or response is similar. The new
+    entry is stored exactly as extracted with no rewrites.
+
+DECISION TEST — apply in two stages, in order.
+In your REASONING, write out the lesson sentences before stating your
+decision.
+
+STAGE 1 — Different Trigger? (KEEP vs same-pattern):
+Write the core lesson of the new entry and the closest candidate each as:
+"An agent reading this learns..."
+
+If the triggering situation or detection signal is structurally different,
+KEEP. Stop here.
+
+"Structurally different" means a different game event, role interaction,
+or signal initiates the observation — not just different surface details
+within the same type of situation:
+- Different game event prompting the same analysis → KEEP.
+  (e.g., "Investigator killed → analyze voting record" vs "wolf
+  eliminated → analyze voting record" are different triggers even though
+  the approach is the same.)
+- Different wolf tactic requiring different detection → KEEP.
+  (e.g., detecting "late bussing" vs detecting "partner protection")
+- Different outcome (success vs failure of same approach) → KEEP.
+
+Surface differences do NOT make triggers structurally different:
+- Same tactic in a different game phase → same pattern.
+- Same lesson at a different scale or degree → same pattern.
+
+If the lessons address the same pattern, proceed to Stage 2.
+
+STAGE 2 — Added Value? (DISCARD vs MERGE):
+The entries cover the same pattern. Does the new entry contain anything
+the existing entry lacks?
+
+→ NOTHING NEW → DISCARD.
+  If the existing entry already covers everything in the new entry,
+  DISCARD — regardless of relative detail level. A longer or more
+  specific new entry that describes the same lesson is still a discard
+  when the existing entry already captures the principle.
+
+→ CONCRETE VARIANT → MERGE.
+  The new entry adds a tactic variant, a specific example of a general
+  pattern, or a contributing factor not present in the existing text.
+  (e.g., existing entry generalizes "wolves use misdirection in endgame";
+  new entry adds the specific tactic of questioning healer save choices
+  — merge to enrich the general pattern with a concrete instance.)
+
+MERGE is the rarest outcome. Most cases are clear duplicates (DISCARD)
+or genuinely different lessons (KEEP). Only choose MERGE when the new
+entry demonstrably adds a concrete variant to an existing entry that
+shares the same situation structure and outcome.
 
 DECISION RULES:
-- "Same lesson, different words" is a duplicate (D).
-- If the situation and outcome are functionally identical, different approach
-  wording alone does NOT justify KEEP. Multiple tactics that fail (or succeed)
-  for the same structural reason are one lesson, not separate observations.
-  Use MERGE (M) to accumulate the tactic variants.
-- Use KEEP (K) only when the situation is meaningfully different OR the outcome
-  genuinely differs from all candidates.
-- The test for MERGE vs KEEP: would the agent make a different strategic
-  decision based on reading the new observation versus the existing one? If
-  the lesson is "this category of tactic fails in this situation," adding
-  another example of the same category does not change the decision — MERGE it.
 - For MERGE, the rewritten observation must keep each field (situation,
-  approach, outcome) as separate coherent text. Use only details present in
-  the entries being compared. Do not infer or invent context not explicitly
-  stated in the input entries.
+  approach, outcome) as separate coherent text. Use only details present
+  in the entries being compared. Do not infer or invent context not
+  explicitly stated in the input entries.
 - When an output field asks for a candidate number, use only the bracketed
   candidate number shown in SIMILAR EXISTING OBSERVATIONS. Do not output
   UUID keys.
