@@ -25,6 +25,28 @@ threshold; top {top_n} shown):
 
 ---
 
+SITUATION COMPARISON:
+Two situations are functionally the same when a semantic search query
+matching one would also retrieve the other. If not, they are different
+situations — KEEP, even if the action advice is similar.
+
+Check these dimensions — if any differs enough that a search query for
+one would not match the other, the situations are different:
+- Information landscape: information-rich vs information-starved changes
+  which tactics are available.
+- Agent exposure: the agent's position — credibility level, whether under
+  suspicion, driving vs observing — changes the available action space.
+  E.g., "confirmed non-wolf with high credibility" vs "general villager
+  under suspicion" are different situations even if the trigger event
+  (post-mislynch) is the same.
+- Consensus texture: unified vs split vs no consensus changes social
+  strategy.
+- Game phase: early vs endgame changes stakes. BUT phase alone does not
+  make situations different if the tactic and available information are
+  the same.
+
+---
+
 Decide ONE of the following outcomes:
 
 (D) DISCARD — The new point expresses the same hypothesis as an existing
@@ -43,11 +65,10 @@ Decide ONE of the following outcomes:
     better, output only the candidate number with no rewrite.
 
 (K) KEEP — The new point is genuinely novel. Either the situation is
-    meaningfully different (different game phase, information landscape,
-    consensus texture, or agent exposure), OR the action recommends a
-    different choice that would lead the agent to a different target,
-    different timing, or different risk tradeoff. The new entry is stored
-    exactly as extracted with no rewrites.
+    meaningfully different per the situation comparison above, OR the action
+    recommends a different choice that would lead the agent to a different
+    target, different timing, or different risk tradeoff. The new entry is
+    stored exactly as extracted with no rewrites.
 
 DECISION TEST:
 Place an agent in the situation described. Would it take a different action
@@ -61,6 +82,12 @@ Apply this concretely:
 - Different SCOPE: "target the most vocal player" vs "target the most vocal
   player, but only if no healer save was announced" — the second adds a
   situational condition that changes when the action applies → KEEP.
+- Different CONFIDENCE POSTURE: "treat accusation as ground truth and act
+  immediately" vs "probe to evaluate alignment before committing" — same
+  direction but different certainty level → KEEP.
+- Opposite ACTION for same situation: "defend the aggressive accuser" vs
+  "challenge the accuser's motives" — conflicting strategies are by
+  definition different hypotheses → KEEP.
 - Different WORDS, SAME ACTION: "target the vocal player" vs "target the
   organizer" vs "target the player taking charge" → DISCARD. On the ground,
   these point to the same player.
@@ -68,10 +95,11 @@ Apply this concretely:
   vs "kill the leader because they might be the Investigator" → DISCARD.
   The agent does the same thing regardless of the reasoning.
 
-CALIBRATION NOTE:
-When in doubt, DISCARD. Over-discarding is recoverable — a genuinely novel
-tactic will be re-extracted from a future game. Under-discarding creates
-permanent retrieval pollution that requires batch cleanup.
+CALIBRATION:
+Focus on what the agent would DO, not on how the entries are worded. If
+both entries point the agent toward the same target, timing, and risk
+tradeoff, they are the same hypothesis — DISCARD, even if the reasoning
+or phrasing differs.
 
 DECISION RULES:
 - For DISCARD, the existing entry's observation_count will be incremented
@@ -118,78 +146,99 @@ threshold; top {top_n} shown):
 
 ---
 
+COMPARISON CRITERIA:
+
+Before deciding D/M/K, evaluate each field independently:
+
+SITUATION — "same" vs "different":
+Decisive test: would a semantic search query matching situation A also
+retrieve situation B? If not, they are different situations — KEEP, even
+if the underlying lesson is similar. An observation only helps the agent
+if it gets retrieved.
+
+Check these dimensions — if any differs enough that a search query for
+one would not match the other, the situations are different:
+- Information landscape: information-rich vs information-starved changes
+  which tactics are available. Different evidence types (voting record vs
+  behavioral read vs role claim) change what signal the agent looks for.
+- Consensus texture: unified village vs split village vs no consensus
+  changes the agent's social strategy.
+- Agent exposure: driving the push vs under suspicion changes the agent's
+  risk calculus.
+- Game phase: early vs endgame changes the stakes per action. BUT phase
+  alone does not make situations different if the tactic and available
+  information are the same.
+
+APPROACH — "same" vs "different":
+Two approaches are functionally the same when they point the agent toward
+the same action on the ground — same target type, same timing, same method.
+NOT different: wording ("target the leader" vs "target the organizer"),
+reasoning (same action, different justification), degrees of persistence
+(protecting 2 vs 3 times).
+Different: different tactic category (accusation vs deflection vs role
+claim), different detection method (voting record analysis vs behavioral
+pattern recognition), different dimension targeted (timing-based vs
+logic-based argument), one-off vs persistent pattern (investigating one
+night vs committing to a multi-night strategy — this crosses a qualitative
+threshold even though it looks like degree).
+
+OUTCOME — "same" vs "different":
+Two outcomes are functionally the same when they succeed or fail for the
+same structural reason.
+Same approach, opposite outcome (success vs failure) → always KEEP.
+These teach risk/reward — the agent needs both to know when a tactic
+works and when it doesn't.
+Different mechanism: failed because evidence was too strong vs failed
+because village was already coordinated → different.
+Partial outcomes: "worked initially then failed" is distinct from both
+pure success and pure failure.
+
+---
+
 Decide ONE of the following outcomes:
 
-(D) DISCARD — The existing entry already covers everything in the new
-    entry. The situation, approach, and outcome all express the same idea,
-    even if worded differently. No tactic variant, detection signal, or
-    contributing factor is present in the new entry that the existing entry
-    lacks. Output the candidate number it duplicates. The existing entry's
-    observation_count will be incremented automatically.
+(D) DISCARD — Situation, approach, and outcome are all functionally the
+    same per the comparison criteria above. The new entry teaches the same
+    lesson as the existing entry, even if it uses different words or adds
+    more detail. Output the candidate number it duplicates.
 
-(M) MERGE — The new entry covers the same situation structure and outcome
-    as an existing entry, but adds a concrete detail the existing entry
-    lacks: a tactic variant in the approach, a specific example of a
-    general pattern, or a contributing factor absent from the existing text.
+(M) MERGE — Situation and outcome are functionally the same, but the
+    approach contains a concrete tactic variant — from either side of the
+    interaction — that the existing entry does not already cover. This
+    includes different enemy tactics (excuses, deflections) recognized by
+    the same detection pattern, or different agent tactics (accusations,
+    pressure methods) applied in the same situation.
     Output the candidate number to merge with and the final merged
     observation fields (situation, approach, outcome). The merged approach
     field MUST list ALL distinct tactics from both entries.
 
-(K) KEEP — The new entry teaches a different lesson. The triggering
-    situation, detection signal, or outcome is structurally different from
-    all existing entries. The agent must learn to recognize this trigger
-    independently, even if the approach or response is similar. The new
-    entry is stored exactly as extracted with no rewrites.
+(K) KEEP — Situation or outcome is functionally different. The new entry
+    requires the agent to look for something different, not just respond
+    to something different. Store exactly as extracted with no rewrites.
 
-DECISION TEST — apply in two stages, in order.
-In your REASONING, write out the lesson sentences before stating your
-decision.
+EXAMPLES:
+- D: Healer saves same target 3 times vs 2 times. Same lesson ("persist
+  protecting confirmed targets"), different degree of persistence. → DISCARD.
+- D: Wolf uses "too obvious" defense in mid-game vs endgame, both fail
+  against evidence. Same tactic, different phase. → DISCARD.
+- M: Wolf deflects by questioning healer saves (new) vs accusing villagers
+  of coordination (existing). Same situation (endgame wolf deflection),
+  same outcome (village sees through it). Different tactic variant. → MERGE.
+- M: Investigator checks one active player Night 1 (existing) vs checks
+  active players on Night 1 AND Night 2 (new). One-off → persistent
+  crosses a qualitative threshold. → MERGE tactic variant.
+- K: Catching wolf via late bussing vs partner protection. Same village
+  response (press with voting evidence), but different detection signals
+  requiring different analytical approaches. → KEEP.
+- K: Healer protects vocal player Night 1 and save succeeds vs Healer
+  protects vocal player Night 1 but accidentally protects a wolf. Same
+  approach, opposite outcome — both teach risk/reward. → KEEP.
 
-STAGE 1 — Different Trigger? (KEEP vs same-pattern):
-Write the core lesson of the new entry and the closest candidate each as:
-"An agent reading this learns..."
-
-If the triggering situation or detection signal is structurally different,
-KEEP. Stop here.
-
-"Structurally different" means a different game event, role interaction,
-or signal initiates the observation — not just different surface details
-within the same type of situation:
-- Different game event prompting the same analysis → KEEP.
-  (e.g., "Investigator killed → analyze voting record" vs "wolf
-  eliminated → analyze voting record" are different triggers even though
-  the approach is the same.)
-- Different wolf tactic requiring different detection → KEEP.
-  (e.g., detecting "late bussing" vs detecting "partner protection")
-- Different outcome (success vs failure of same approach) → KEEP.
-
-Surface differences do NOT make triggers structurally different:
-- Same tactic in a different game phase → same pattern.
-- Same lesson at a different scale or degree → same pattern.
-
-If the lessons address the same pattern, proceed to Stage 2.
-
-STAGE 2 — Added Value? (DISCARD vs MERGE):
-The entries cover the same pattern. Does the new entry contain anything
-the existing entry lacks?
-
-→ NOTHING NEW → DISCARD.
-  If the existing entry already covers everything in the new entry,
-  DISCARD — regardless of relative detail level. A longer or more
-  specific new entry that describes the same lesson is still a discard
-  when the existing entry already captures the principle.
-
-→ CONCRETE VARIANT → MERGE.
-  The new entry adds a tactic variant, a specific example of a general
-  pattern, or a contributing factor not present in the existing text.
-  (e.g., existing entry generalizes "wolves use misdirection in endgame";
-  new entry adds the specific tactic of questioning healer save choices
-  — merge to enrich the general pattern with a concrete instance.)
-
-MERGE is the rarest outcome. Most cases are clear duplicates (DISCARD)
-or genuinely different lessons (KEEP). Only choose MERGE when the new
-entry demonstrably adds a concrete variant to an existing entry that
-shares the same situation structure and outcome.
+CALIBRATION:
+MERGE requires a clearly distinct tactic variant — a different category of
+action, not a different description of the same action. If you are unsure
+whether the approach difference is a genuine tactic variant or just
+different wording, choose DISCARD.
 
 DECISION RULES:
 - For MERGE, the rewritten observation must keep each field (situation,
