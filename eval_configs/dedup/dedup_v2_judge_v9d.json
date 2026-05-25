@@ -1,0 +1,7 @@
+{
+  "dataset": "eval_sets/dedup_v2_replay_flash_lite_prompt_v9d.jsonl",
+  "output": "eval_results/dedup_judge_flash_lite_v9d.jsonl",
+  "judge_model": "gemini-3.1-pro-preview",
+  "filter_auto": false,
+  "sleep_seconds": 1.0
+}

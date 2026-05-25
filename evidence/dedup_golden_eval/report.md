@@ -528,19 +528,85 @@ The K recall gap (52% vs 90%) is the critical difference. Over-discarded entries
 
 ### Decision
 
-**Keep flash-lite as the production model with v8 prompts.** The 3x cost multiplier and 7x latency increase are meaningful, and flash-lite's accuracy may improve with further prompt fine-tuning. The batch dedup pipeline provides a safety net for both over-discard (rare but impactful) and over-keep (common but recoverable). If prompt fine-tuning cannot close the K recall gap below ~35pp, revisit the model upgrade.
+**Keep flash-lite as the production model.** The 3x cost multiplier and 7x latency increase are meaningful, and flash-lite's accuracy improved with further prompt fine-tuning (see v9/v9d below). The batch dedup pipeline provides a safety net for both over-discard (rare but impactful) and over-keep (common but recoverable).
+
+## Prompt v9/v9d: Strategy-Focused Fine-Tuning (65 cases)
+
+### Diagnosis
+
+v8 flash-lite's 20 errors broke down as:
+- **K→D (9)**: 6 strategy_points, 3 observations — biggest problem
+- **K→M (5)**: all observations — mis-merging when situation is different
+- **D→M (4)**: all observations — over-merging when should discard
+- **D→K (1)** and **M→D (1)**: minor
+
+Strategy K→D was the highest-count targetable error. Analysis of the LLM reasoning on cases 32, 42, 48 revealed flash-lite was rationalizing at too high an abstraction level — it sees theme overlap (e.g., "both about voting when partner is doomed") and ignores that the actual actions conflict (vote with majority vs vote for a third target; acknowledge mistake vs deny mistake).
+
+### Experiments tried
+
+| Variant | Change | Overall | Strategy | K recall | Outcome |
+|---|---|---|---|---|---|
+| v8 (baseline) | — | 69.2% | 72.0% | 52% | — |
+| v9 | + DISCARD verification check | 70.8% | 76.0% | 55% | +1 strategy fix (case 8) |
+| v9b | + ACTION CHECK in output format | 67.7% | 68.0% | 48% | Regressed — structured output confused flash-lite |
+| v9c | + ACTION COMPARISON section (parallel to SITUATION COMPARISON) | 69.2% | 72.0% | 52% | Net zero — added noise, didn't help |
+| **v9d** | **v9 + action-before-situation field ordering** | **73.8%** | **84.0%** | **59%** | **+3 more strategy fixes (cases 32, 42, 45)** |
+
+### What changed in v9d (production prompt)
+
+Two changes from v8:
+
+1. **DISCARD verification check** (replaces CALIBRATION): Before choosing DISCARD, the model must verify both (a) situations are functionally the same and (b) recommended actions point in the same direction. If either fails, KEEP.
+
+2. **Action-before-situation field ordering**: In both the new extraction template and existing entries formatting, Action is presented before Situation. This causes flash-lite to anchor on action differences before getting absorbed by situation similarity.
+
+### Why action-first ordering works
+
+Flash-lite's K→D errors on strategy points consistently showed the model noticing situation similarity first and then rationalizing action differences as "tactical variations of the same strategy." By presenting the action field first, the model encounters conflicting advice ("vote with majority" vs "vote for a third target") before it sees the similar situation framing that would cause it to lump them together.
+
+This is a presentation-order effect, not a content change — the same information is shown, just reordered. It specifically helps strategy points where action direction is the key discriminator. It had no effect on observation accuracy (67.5% unchanged) because observation errors are dominated by M calibration issues, not action-direction blindness.
+
+### Results
+
+| Model | v8 | v9d | Delta |
+|---|---|---|---|
+| flash-lite overall | 69.2% | **73.8%** | +4.6pp |
+| flash-lite strategy | 72.0% | **84.0%** | +12.0pp |
+| flash-lite observation | 67.5% | 67.5% | 0 |
+| flash-lite K recall | 52% | **59%** | +7pp |
+| flash-lite K precision | 0.94 | **1.00** | +0.06 |
+| 3.5-flash overall | 80.0% | 80.0% | 0 |
+| 3.5-flash strategy | 88.0% | 88.0% | 0 |
+
+The v9d changes had no effect on 3.5-flash — it was already at 88% strategy accuracy, leaving no room for improvement on strategy K→D errors.
+
+### Remaining errors (flash-lite v9d, 17 total)
+
+**Strategy (4 errors)**: Cases 8, 27, 29, 48 — K→D where flash-lite still misses genuinely different situations or conflicting actions. These appear to be at the model's capability ceiling for this prompt structure.
+
+**Observation (13 errors)**: 9 of 13 involve M — either over-merging (D→M: 4 cases) or mis-merging when situations differ (K→M: 5 cases). The model is too generous in what it considers a "distinct tactic variant." Tightening M criteria risks breaking the 4/5 correct M predictions; loosening for K→M would worsen D→M. These pull in opposite directions.
+
+### Key lessons from v9 tuning
+
+**Presentation order matters more than explicit instructions.** The DISCARD verification check (v9) helped modestly (+1.6pp), but adding an ACTION COMPARISON section with detailed criteria (v9c) added zero value. The action-first field reorder (v9d) added +3pp on top of v9 — more impact than any textual instruction. For small models, how you present information matters more than how much you explain.
+
+**Structured output requirements can hurt small models.** v9b added an ACTION CHECK field to the output format, forcing flash-lite to explicitly state each entry's core action. This regressed accuracy by -3.1pp, likely because the additional output structure interfered with flash-lite's reasoning flow.
+
+**Observation accuracy appears to be at flash-lite's ceiling.** The 13 observation errors are dominated by M calibration — a problem where the fixes for different error types conflict. Further observation tuning offers diminishing returns without either dropping M from per-extraction dedup or upgrading the model.
 
 ## Decision and Tradeoffs
 
-**The prompt has been through three distinct phases**, each teaching a different lesson about calibration:
+**The prompt has been through four distinct phases**, each teaching a different lesson about calibration:
 
 1. **Phase 1 (v2-v5)**: Structural prompt changes (two-stage decision gates) consistently degraded accuracy. The flat prompt structure is better because it lets the model reason holistically rather than through forced sequential gates.
 
 2. **Phase 2 (v6)**: A flat prompt with a directional calibration cascade ("prefer D over M over K") improved D recall to 93% but crushed K recall to 41%. The cascade is a blunt instrument that can't distinguish genuine uncertainty from false confidence.
 
-3. **Phase 3 (v7-v8)**: Removing the cascade entirely caused over-merge. The current approach (v8) uses targeted calibration: not "prefer D in general" but "this specific pattern of difference is not sufficient for M/K." This addresses specific failure modes without biasing the overall distribution.
+3. **Phase 3 (v7-v8)**: Removing the cascade entirely caused over-merge. Targeted calibration (v8) addresses specific failure modes without biasing the overall distribution.
 
-**The model matters as much as the prompt.** 3.5-flash consistently outperforms flash-lite by 5-10pp regardless of prompt version. Flash-lite's K recall has never exceeded 55% on any prompt version, while 3.5-flash reached 93% on v7. The production model (flash-lite) may be at its accuracy ceiling for this task.
+4. **Phase 4 (v9-v9d)**: Presentation-order tuning. Reordering fields (action before situation) had more impact than adding explicit comparison criteria or structured output requirements. For small models, information architecture matters more than instruction volume.
+
+**The model matters as much as the prompt.** 3.5-flash consistently outperforms flash-lite by 6-8pp regardless of prompt version. Flash-lite's K recall reached 59% on v9d (up from a ceiling of 55%), while 3.5-flash sits at 90%. The gap has narrowed from 10.8pp (v8) to 6.2pp (v9d).
 
 **Over-discarding is still cheaper than over-keeping**, but the margin is smaller than we initially assumed. A discarded novel entry will be re-extracted from a future game — but only if a similar game situation occurs. For rare situations, over-discard means permanent information loss. The ideal operating point balances D and K recall, not maximizes one at the expense of the other.
 
@@ -558,11 +624,61 @@ The K recall gap (52% vs 90%) is the critical difference. Over-discarded entries
 
 **The retrieval test grounds abstract similarity judgments.** "Are these situations the same?" is subjective. "Would a search query for situation A retrieve situation B?" is concrete and testable. This reframing resolved several labeling disagreements and gave the LLM a more operational decision criterion. When building prompts for similarity judgment, anchor to the downstream use case (retrieval) rather than abstract semantic similarity.
 
+## Rewrite Quality Analysis: Flash-Lite v9d
+
+Judged by gemini-3.1-pro-preview on four dimensions (1-5 scale): decision_correctness, merge_quality, information_preservation, and fabrication_detected (boolean). Cases without rewrites (KEEP or DISCARD-without-rewrite) receive automatic 5s on merge_quality and info_preservation.
+
+### Overview
+
+Of 65 cases, 17 produced rewrites (14 MERGE, 3 DISCARD-with-rewrite). 0% fabrication rate across all 65 cases.
+
+| Metric | All 65 cases | 17 rewrite cases only |
+|---|---|---|
+| decision_correctness | 4.49 | 4.35 |
+| merge_quality | 4.77 | 4.12 |
+| information_preservation | 4.72 | 3.94 |
+| fabrication_detected | 0/65 (0%) | 0/17 (0%) |
+
+### Information preservation breakdown (rewrite cases)
+
+| Score | Count | % | Meaning |
+|---|---|---|---|
+| 5 (all detail retained) | 9 | 53% | Good merges — tactic variants combined cleanly |
+| 4 (minor nuances lost) | 3 | 18% | Acceptable — core ideas intact |
+| 3 (some loss, core retained) | 2 | 12% | Borderline — noticeable detail dropped |
+| 1-2 (destructive) | 3 | 18% | Critical info lost — entries were incompatible |
+
+### When rewrites are good
+
+The 12 rewrites scoring ip ≥ 4 share a pattern: the entries genuinely belong together (same game phase, same role position, same outcome direction). The model abstracts player IDs into role descriptions and lists tactic variants cleanly. Example: two Investigator Night 1 check strategies merged into "investigated conversation-leading players... or alternatively, investigated moderately active players" (ip=5, mq=5).
+
+Correct merges produce good rewrites because the entries are compatible — combining them is straightforward.
+
+### When rewrites are destructive
+
+All 3 destructive rewrites (ip ≤ 2) are also wrong decisions (decision_correctness ≤ 2):
+
+1. **DISCARD overwrote conflicting strategy**: Existing entry advised "acknowledge mistake and pivot"; new entry advised "reveal Investigator role to break deadlock." The rewrite replaced the existing entry's action entirely, losing the timing advice (ip=1, mq=1).
+
+2. **MERGE combined different game phases**: Early-game wolf defense (Day 2, no eliminations) merged with mid-game wolf exploitation (post-mislynch). The rewrite frankensteined both contexts, losing what made each distinct (ip=1, mq=2).
+
+3. **MERGE diluted a specific tactic**: A concrete lesson about identifying and targeting the Healer was merged into a generalized entry about "either a vocal player or specifically targeted the Healer," diluting the specific insight (ip=2, mq=2).
+
+### Cost-benefit of per-extraction MERGE
+
+Flash-lite v9d produced 14 MERGE decisions. Against golden labels:
+- **4 correct merges** (golden=M): 3 scored ip ≥ 4, 1 scored ip=3
+- **5 false merges from K** (golden=K): These should have been KEEP — the entries are genuinely different. 2 were destructive (ip ≤ 2), 3 were borderline (ip=3-4).
+- **4 false merges from D** (golden=D): These should have been DISCARD — no tactic variant exists. The rewrites added unnecessary complexity to entries that were already the same.
+- **1 correct merge from M/K** (ambiguous golden label)
+
+The 4 correct merges consolidate tactic variants that would otherwise be separate entries. But the 9 false merges either destroy information (K→M) or add noise (D→M). Batch dedup can perform the same consolidation later with a stronger model and full cluster context.
+
 ## What's Next
 
-1. **Flash-lite prompt fine-tuning**: The production model stays at flash-lite. Analyze v8's 20 error cases to find targetable patterns — especially the K misses (K→D on strategy, K→M on observations) — and try small, surgical prompt adjustments.
-2. **Rewrite quality analysis**: We've focused entirely on D/M/K decision accuracy. When the model merges or discards-with-rewrite, the quality of the rewritten text matters too — this hasn't been evaluated yet.
-3. **Revisit model upgrade if prompt ceiling is reached**: If flash-lite's K recall cannot be improved past ~60% through prompt changes, the 3.5-flash upgrade ($36.72/1000 games, +94s latency) becomes the next lever.
+1. **Score 3.5-flash rewrite quality** for comparison (judge run in progress).
+2. **Consider dropping M from per-extraction dedup**: Flash-lite produces 9 false merges vs 4 correct ones. The 3 destructive rewrites are all from wrong decisions. Removing M and letting batch dedup handle merging would eliminate those 9 observation errors and all destructive rewrites.
+3. **Revisit model upgrade if further accuracy is needed**: The flash-lite/3.5-flash gap narrowed from 10.8pp to 6.2pp with v9d. If observation accuracy needs to improve beyond what M-removal provides, the model upgrade ($36.72/1000 games) is the remaining lever.
 
 ## Artifacts
 
@@ -596,3 +712,8 @@ The K recall gap (52% vs 90%) is the critical difference. Over-discarded entries
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v8.jsonl` | Replay: flash-lite, prompt v8 (65 cases) |
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v8_verified.jsonl` | Replay: flash-lite, prompt v8 verified (5 identical runs confirm determinism) |
 | `eval_sets/dedup_v2_replay_35flash_prompt_v8.jsonl` | Replay: 3.5-flash, prompt v8 (65 cases) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v9.jsonl` | Replay: flash-lite, prompt v9 (65 cases, 70.8%) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v9d.jsonl` | Replay: flash-lite, prompt v9d (65 cases, 73.8% — production) |
+| `eval_sets/dedup_v2_replay_35flash_prompt_v9d.jsonl` | Replay: 3.5-flash, prompt v9d (65 cases, 80.0%) |
+| `eval_configs/dedup/dedup_v2_judge_v9d.json` | Config: judge flash-lite v9d with gemini-3.1-pro-preview |
+| `eval_configs/dedup/dedup_v2_judge_35flash_v9d.json` | Config: judge 3.5-flash v9d with gemini-3.1-pro-preview |
