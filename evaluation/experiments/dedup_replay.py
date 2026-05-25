@@ -75,8 +75,8 @@ def _format_candidates_for_strategy(candidates: list[DedupCandidate]) -> str:
             f"Key: {c.key} "
             f"(similarity={c.similarity:.3f}, "
             f"observed={c.observation_count}x)\n"
-            f"    Situation: {c.situation}\n"
-            f"    Action: {c.action or ''}"
+            f"    Action: {c.action or ''}\n"
+            f"    Situation: {c.situation}"
         )
     return "\n\n".join(lines)
 

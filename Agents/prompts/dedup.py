@@ -16,8 +16,8 @@ For the structured output field named "decision", use exactly the letter tag
 
 NEW EXTRACTION:
 Role: {new_role}
-Situation: {new_situation}
 Action: {new_action}
+Situation: {new_situation}
 
 SIMILAR EXISTING ENTRIES ({total_similar_count} entries above similarity
 threshold; top {top_n} shown):
@@ -95,11 +95,15 @@ Apply this concretely:
   vs "kill the leader because they might be the Investigator" → DISCARD.
   The agent does the same thing regardless of the reasoning.
 
-CALIBRATION:
+BEFORE CHOOSING DISCARD — verify both conditions hold:
+1. The situations are functionally the same per the situation comparison.
+2. The recommended actions point in the same direction — same target type,
+   same timing, same risk posture. If the entries recommend different or
+   conflicting actions for the same situation, they are competing hypotheses
+   — KEEP, not DISCARD.
 Focus on what the agent would DO, not on how the entries are worded. If
-both entries point the agent toward the same target, timing, and risk
-tradeoff, they are the same hypothesis — DISCARD, even if the reasoning
-or phrasing differs.
+both conditions hold, DISCARD even if the reasoning or phrasing differs.
+If either fails, KEEP.
 
 DECISION RULES:
 - For DISCARD, the existing entry's observation_count will be incremented

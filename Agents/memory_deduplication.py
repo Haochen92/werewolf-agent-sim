@@ -209,8 +209,8 @@ def _format_existing_entries(items: list) -> str:
         lines.append(
             f"[{i}] Candidate: {i}; Key: {item.key} "
             f"(similarity={item.score:.3f}, observed={value.get('observation_count', 1)}x)\n"
-            f"    Situation: {value.get('situation', '')}\n"
-            f"    Action: {value.get('action', '')}"
+            f"    Action: {value.get('action', '')}\n"
+            f"    Situation: {value.get('situation', '')}"
         )
     return "\n\n".join(lines)
 
