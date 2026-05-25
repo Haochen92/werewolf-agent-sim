@@ -116,11 +116,30 @@ Each observation has structured fields:
 - outcome: What resulted — how others responded and the downstream
   consequences. 1-2 sentences.
 
+PERSPECTIVE RULE:
+Each observation is assigned to a specific role. ALL THREE narrative fields
+(situation, approach, outcome) must be written from that role's perspective:
+- situation: What that role is facing or must respond to.
+- approach: What that role DID or FAILED TO DO — not what the opposing
+  side did. If the key lesson is about something that happened TO the
+  role (e.g., the Investigator was targeted), reframe the approach as
+  what the role did that led to that outcome (e.g., "The Investigator
+  had been highly visible after orchestrating the previous day's vote,
+  making them a predictable target").
+- outcome: The consequences from that role's perspective.
+
+If you find the approach describing the opposing side's actions ("The
+wolves identified..." in an Investigator observation), you have the
+wrong perspective. Either reframe to the assigned role's actions, or
+reassign the observation to the role whose actions you are actually
+describing.
+
 Guidelines:
 - Each field should be 1-2 sentences. Keep the total observation concise.
-- Assign each observation a perspective — the role that would find it most
-  useful. The same event can produce separate observations for different
-  roles if the lesson differs.
+- Assign each observation a perspective — the role whose actions or
+  decisions are the subject of the observation. If the same event teaches
+  different lessons to different roles, extract separate observations for
+  each, with each one's approach describing that role's own actions.
 - Assign each observation an action_phase — the phase where this lesson
   would be applied.
 - Look for multi-day patterns — causal chains and strategic sequences, not
