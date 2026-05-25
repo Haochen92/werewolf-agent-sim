@@ -114,21 +114,22 @@ class ScoreReport:
 def _compute_per_label(
     results: list[CaseResult],
 ) -> dict[str, dict[str, float]]:
+    unambiguous = [r for r in results if "/" not in r.golden_label]
     metrics: dict[str, dict[str, float]] = {}
     for label in LABEL_ORDER:
         tp = sum(
             1
-            for r in results
+            for r in unambiguous
             if r.golden_label == label and r.predicted_label == label
         )
         fp = sum(
             1
-            for r in results
+            for r in unambiguous
             if r.golden_label != label and r.predicted_label == label
         )
         fn = sum(
             1
-            for r in results
+            for r in unambiguous
             if r.golden_label == label and r.predicted_label != label
         )
         support = tp + fn
@@ -178,6 +179,48 @@ def _compute_per_type(
     return per_type
 
 
+def _match_golden(
+    records: list,
+    golden_data: dict,
+) -> dict[int, dict]:
+    """Match records to golden labels by case_id, falling back to index."""
+    labels_by_id = {
+        g["case_id"]: g
+        for g in golden_data["labels"]
+        if g.get("case_id")
+    }
+    labels_by_index = {g["case_index"]: g for g in golden_data["labels"]}
+
+    matched: dict[int, dict] = {}
+    used_golden: set[int] = set()
+    for idx, record in enumerate(records):
+        cid = getattr(record, "case_id", None)
+        golden = labels_by_id.get(cid) if cid else None
+        if golden is None:
+            golden = labels_by_index.get(idx)
+        if golden is not None:
+            gi = golden["case_index"]
+            if gi not in used_golden:
+                matched[idx] = golden
+                used_golden.add(gi)
+    return matched
+
+
+def _check_correct(
+    predicted: str, golden_label: str, also_acceptable: str | None
+) -> tuple[bool, bool]:
+    """Return (strict_correct, lenient_correct)."""
+    if "/" in golden_label:
+        acceptable = set(golden_label.split("/"))
+        strict = predicted in acceptable
+        return strict, strict
+    strict = predicted == golden_label
+    lenient = strict or (
+        also_acceptable is not None and predicted == also_acceptable
+    )
+    return strict, lenient
+
+
 def score(
     dataset_path: Path,
     golden_path: Path,
@@ -186,14 +229,14 @@ def score(
     with golden_path.open(encoding="utf-8") as f:
         golden_data = json.load(f)
 
-    labels_by_index = {g["case_index"]: g for g in golden_data["labels"]}
+    matched = _match_golden(records, golden_data)
 
     decisions = [r.dedup_case.decision for r in records]
     scheme = _detect_scheme(decisions)
 
     results: list[CaseResult] = []
     for idx, record in enumerate(records):
-        golden = labels_by_index.get(idx)
+        golden = matched.get(idx)
         if golden is None:
             continue
 
@@ -203,13 +246,12 @@ def score(
         golden_label = golden["golden_label"]
         also_acceptable = golden.get("also_acceptable")
 
-        strict_correct = predicted == golden_label
-        lenient_correct = strict_correct or (
-            also_acceptable is not None and predicted == also_acceptable
+        strict_correct, lenient_correct = _check_correct(
+            predicted, golden_label, also_acceptable
         )
 
         result = CaseResult(
-            case_index=idx,
+            case_index=golden.get("case_index", idx),
             item_type=golden["item_type"],
             golden_label=golden_label,
             predicted_label=predicted,
