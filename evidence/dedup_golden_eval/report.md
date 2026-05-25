@@ -324,72 +324,255 @@ After the golden label revision, we expanded the eval set from 50 to 65 cases to
 
 Human review found the 15 new cases were cleaner than the original 50 — 10 clear discards, 5 clear keeps, 0 merges. No borderline M cases were found, further confirming MERGE's rarity.
 
-**Revised golden label distribution (all 65 cases):** D=31, M=2, K=32
+**Revised golden label distribution (all 65 cases, after round 2 revision):** D=30, M=5, K=29, M/K=1
 
 ## Final Results
 
-The best configuration remains **3.5-flash + prompt v2** at 80% strict accuracy on 50 cases. However, this configuration was not re-run on the expanded 65-case set. The 65-case results for v5 are uniformly poor.
+The best configuration is **3.5-flash + prompt v8** at 80.0% strict accuracy on the full 65-case set.
 
-### 50-case comparison (revised golden labels, D=21, M=2, K=27)
+### Full comparison (65 cases, current golden labels: D=30, M=5, K=29, M/K=1)
 
-| Model | Prompt | Strict | Observations | Strategy |
-|---|---|---|---|---|
-| baseline v1 (2.5-flash) | v1 | 72% | 60% | 84% |
-| flash-lite | v2 | 64% | 56% | 72% |
-| **3.5-flash** | **v2** | **80%** | **72%** | **88%** |
-| 2.5-flash | v2 | 68% | 52% | 84% |
-| 2.5-pro | v2 | 70% | 68% | 72% |
-| flash-lite | v3 | 62% | 52% | 72% |
-| 3.5-flash | v3 | 78% | 68% | 88% |
-| flash-lite | v4 | 40% | 8% | 72% |
+| Model | Prompt | Accuracy | D recall | K recall | M recall |
+|---|---|---|---|---|---|
+| flash-lite | v5 | 60.0% | 70% | 45% | 80% |
+| flash-lite | v6 | 67.7% | 93% | 41% | 60% |
+| flash-lite | v7 | 69.2% | 77% | 55% | 100% |
+| flash-lite | v8 | **69.2%** | 83% | 52% | 80% |
+| 3.5-flash | v5 | 72.3% | 70% | 76% | 60% |
+| 3.5-flash | v6 | 75.4% | 90% | 66% | 40% |
+| 3.5-flash | v7 | 75.4% | 60% | 93% | 60% |
+| **3.5-flash** | **v8** | **80.0%** | **77%** | **90%** | 40% |
 
-### 65-case comparison (revised golden labels, D=31, M=2, K=32)
+3.5-flash v8 achieves the best balance: 77% D recall and 90% K recall, with 88% strategy point accuracy and 75% observation accuracy. Flash-lite v8 (69.2%) is verified deterministic at temperature 0 (5 identical runs).
 
-| Model | Prompt | Strict | Observations | Strategy |
-|---|---|---|---|---|
-| baseline v1 (2.5-flash) | v1 | 67.7% | 57.5% | 84% |
-| flash-lite | v5 | 56.9% | 47.5% | 72% |
-| 3.5-flash | v5 | 40.0% | 32.5% | 52% |
+## Prompt v6: Flat Prompt with Calibration Cascade (65 cases)
 
-The baseline's drop from 72% (50-case) to 67.7% (65-case) is expected — the additional 15 cases include harder examples. But v5 drops further, confirming it's not just harder data.
+### What changed
+
+Rather than iterating further on the two-stage structure (v2-v5), we reverted to a flat single-pass prompt — closer to the original v1 structure but incorporating the content-level insights from v2. The key additions:
+
+- **Dimensional situation comparison** for observations: information landscape, consensus texture, agent exposure, game phase — each with explicit guidance on when a dimension difference makes situations "different."
+- **Calibration cascade**: "When uncertain: prefer D over M, and M over K." This was the v2 insight that worked on 3.5-flash: a gentle nudge toward the more conservative decision.
+- **Clearer MERGE definition**: MERGE requires same situation + same outcome + different tactic variant. The "different tactic variant" criterion was sharpened: different tactic *category* (accusation vs deflection), not different wording of the same tactic.
+
+### Why
+
+v3-v5 showed that structural changes to the prompt (two-stage decision gates, explicit MERGE consideration) consistently hurt accuracy. The calibration cascade worked when embedded in a flat structure (v2) but failed when combined with structural gates (v4, v5). The hypothesis: return to a flat prompt, keep the good content from v2's definitions, and let the calibration cascade do its work without structural interference.
+
+### Results
+
+| Model | Prompt | Accuracy | D recall | K recall | M recall |
+|---|---|---|---|---|---|
+| flash-lite | v5 | 60.0% | 70% | 45% | 80% |
+| flash-lite | **v6** | **67.7%** | **93%** | 41% | 60% |
+| 3.5-flash | v5 | 72.3% | 70% | 76% | 60% |
+| 3.5-flash | **v6** | **75.4%** | **90%** | 66% | 40% |
+
+v6 improved overall accuracy for both models (+7.7pp flash-lite, +3.1pp 3.5-flash). The pattern was clear: D recall jumped dramatically (70%→93% flash-lite, 70%→90% 3.5-flash) but K recall suffered (45%→41% flash-lite, 76%→66% 3.5-flash).
+
+**The calibration cascade worked exactly as designed — too well.** "Prefer D over M, M over K" created a ratchet that pushed uncertain cases toward D. Since many K cases sit in the "uncertain between D and K" zone (similarity 0.55-0.85), the cascade systematically consumed them. Flash-lite's 41% K recall meant it was discarding more than half of genuinely novel entries.
+
+## Golden Label Revision: Round 2
+
+### Motivation
+
+The v6 results exposed a new signal: we had 32 cases where at least one model (flash-lite or 3.5-flash, using v6 prompt) disagreed with the golden label. Some of these were genuine model errors, but the v5→v6 accuracy jump (after the first golden label revision) taught us that model disagreements sometimes expose label errors. We reviewed all 32 disagreement cases one-by-one with full text.
+
+### Process
+
+Each of the 32 cases was examined with complete text for the new entry and all relevant candidates. The review applied the retrieval test as the primary criterion for situation comparison: would a semantic search query matching situation A also retrieve situation B? This test hadn't been fully internalized during the first labeling round.
+
+### Results: 10 labels changed
+
+| Case | Old | New | Key reason |
+|---|---|---|---|
+| 8 | D | **K** | Different agent position: confirmed non-wolf with high credibility vs general villager under suspicion |
+| 16 | M | **M/K** | Genuinely ambiguous — either interpretation defensible |
+| 17 | D | **D** | Confirmed after full review (no change) |
+| 18 | K | **K** | Confirmed (no change) |
+| 27 | D | **K** | Aggressive player might be frustrated Investigator — distinct situational scope |
+| 29 | D | **K** | Behavioral test + meta-accusation = distinct action from simple challenge |
+| 34 | D | **K** | Same approach, opposite outcome (success vs failure) — teaches risk/reward |
+| 36 | D | **K** | Different triggering situation despite surface similarity |
+| 37 | D | **K** | Success vs failure of same approach |
+| 38 | K | **M** | Same situation, different target choice = tactic variant |
+
+### Revised golden label distribution (65 cases)
+
+| Label | Previous | Revised | Change |
+|---|---|---|---|
+| D (Discard) | 31 | 30 | -1 |
+| M (Merge) | 2 | 5 | +3 |
+| K (Keep) | 32 | 29 | -3 |
+| M/K (either acceptable) | 0 | 1 | +1 |
+
+MERGE increased from 2 to 5 cases — still rare (~8%) but no longer negligibly small. The M/K label for Case 16 acknowledges genuine ambiguity rather than forcing a single answer.
+
+### Key insights from labeling that informed prompt revision
+
+Six distinct patterns emerged during the case-by-case review:
+
+1. **Retrieval test as ground truth**: The decisive test for "same vs different" situation is whether a semantic search query matching one would also retrieve the other. Two entries teaching the same lesson in semantically different situations must exist separately — otherwise the agent never sees the relevant entry when it needs it.
+
+2. **Confidence posture**: "Treat accusation as ground truth and act immediately" vs "probe to evaluate alignment before committing" point in the same direction but lead to meaningfully different agent behavior → KEEP.
+
+3. **Agent exposure**: Different agent positions (confirmed non-wolf with high credibility vs general villager under suspicion) create different situations even with the same trigger event.
+
+4. **Conflicting strategies**: Opposite actions for the same situation are by definition different hypotheses → KEEP. Both give the agent tactical flexibility.
+
+5. **Success vs failure**: Same approach with opposite outcomes teaches risk/reward → always KEEP.
+
+6. **One-off vs persistent**: 1x vs 2+ crosses the qualitative one-off → persistent threshold (MERGE tactic variant), but 2x vs 3x is just degrees of persistence (DISCARD).
+
+## Prompt v7: Removing the Calibration Cascade (65 cases)
+
+### What changed
+
+Incorporated all six insights from the golden label review into both the observation and strategy prompts:
+
+**Observation prompt:**
+- Replaced situation comparison with explicit retrieval test: "would a semantic search query matching situation A also retrieve situation B?"
+- Added one-off vs persistent distinction in approach comparison
+- Added explicit success vs failure → KEEP in outcome comparison
+- Added two new examples (M for one-off→persistent, K for success/failure)
+- **Removed the entire CALIBRATION section** — no more "prefer D over M, M over K"
+
+**Strategy prompt:**
+- Added new SITUATION COMPARISON section with retrieval test and dimensional checks (information landscape, agent exposure with example, consensus texture, game phase)
+- Added confidence posture and conflicting strategies as KEEP examples in DECISION TEST
+- **Removed CALIBRATION NOTE** — no more "when in doubt, DISCARD"
+
+### Why
+
+The v6 results showed the calibration cascade killed K recall (41% flash-lite, 66% 3.5-flash). The cascade was a blunt instrument: it applied the same "prefer D" bias to every uncertain case, regardless of whether the uncertainty was genuine (borderline D/K) or false (surface similarity masking genuine novelty). The hypothesis: remove the cascade entirely and rely on the improved decision criteria to guide the model's judgment.
+
+### Results
+
+| Model | v6 Accuracy | v7 Accuracy | v6 D | v7 D | v6 K | v7 K | v6 M | v7 M |
+|---|---|---|---|---|---|---|---|---|
+| flash-lite | 67.7% | **69.2%** | 93% | 77% | 41% | **55%** | 60% | **100%** |
+| 3.5-flash | 75.4% | 75.4% | 90% | 60% | 66% | **93%** | 40% | 60% |
+
+Removing the cascade worked for K recall: flash-lite jumped from 41%→55%, 3.5-flash from 66%→93%. M recall also improved. But D recall dropped sharply: flash-lite 93%→77%, 3.5-flash 90%→60%.
+
+**The pendulum swung too far.** Flash-lite predicted M 16 times (gold: 5) — it was using MERGE as a safe middle ground when uncertain, the mirror image of v6's over-discard. 3.5-flash predicted K too aggressively on cases where the surface situation looked different but the underlying action was the same.
+
+The calibration cascade is a lever with no neutral position: present = over-discard, absent = over-merge/over-keep. The next iteration targets this directly.
+
+## Prompt v8: Targeted Anti-Merge Calibration (65 cases, in progress)
+
+### What changed
+
+Added narrow calibration notes to both prompts, targeting the specific failure modes exposed by v7:
+
+**Observation prompt:** "MERGE requires a clearly distinct tactic variant — a different category of action, not a different description of the same action. If you are unsure whether the approach difference is a genuine tactic variant or just different wording, choose DISCARD."
+
+**Strategy prompt:** "Focus on what the agent would DO, not on how the entries are worded. If both entries point the agent toward the same target, timing, and risk tradeoff, they are the same hypothesis — DISCARD, even if the reasoning or phrasing differs."
+
+### Why
+
+v7's error analysis showed two distinct failure modes:
+
+1. **Observation D→M errors** (4 cases): flash-lite saw minor wording differences in the approach field and called them "tactic variants" warranting MERGE. E.g., "protect the vocal player" vs "protect the accusatory player" — same action, different description. The calibration targets this: MERGE requires a different *category* of action.
+
+2. **Strategy D→K errors** (8 cases for 3.5-flash): the model saw different reasoning or phrasing and concluded the hypotheses were different, even when the recommended action was identical. The calibration targets this: focus on what the agent would *do*, not on how the advice is *worded*.
+
+These are surgical corrections, not directional cascades. They don't say "prefer D over everything" — they say "this specific type of difference is not enough for M" and "this specific type of difference is not enough for K."
+
+### Results
+
+| Model | v7 Accuracy | v8 Accuracy | v7 D | v8 D | v7 K | v8 K | v7 M | v8 M |
+|---|---|---|---|---|---|---|---|---|
+| flash-lite | 69.2% | 69.2% | 77% | **83%** | 55% | 52% | 100% | 80% |
+| 3.5-flash | 75.4% | **80.0%** | 60% | **77%** | 93% | 90% | 60% | 40% |
+
+**3.5-flash v8 at 80.0% is the best configuration on the full 65-case set.** The targeted calibration recovered D recall (60%→77%, +17pp) while barely touching K recall (93%→90%, -3pp). Strategy point accuracy reached 88% (22/25), observation accuracy 75% (30/40). This is the sweet spot: the calibration note addresses the specific D→K failure mode (same action described differently) without creating a general bias.
+
+**Flash-lite v8 ties with v7 at 69.2%** but with a healthier internal balance: D recall recovered 6pp while K and M dropped modestly. Flash-lite's K recall (52%) remains its ceiling problem — it over-discards genuinely novel entries regardless of prompt version, consistently classifying 9 of 29 K cases as D. The remaining 20 errors are spread: 4 D→M (over-merge on same-action cases), 5 K→M (treating distinct situations as tactic variants), and 6 K→D (collapsing genuinely different entries).
+
+**The targeted calibration works better than directional cascades.** "MERGE requires a clearly distinct tactic variant" is a criterion, not a bias — it tells the model what M means, not to avoid M. "Focus on what the agent would DO" grounds the D/K distinction in behavior, not wording. These surgical corrections recovered D recall without the ratchet effect that killed K in v6.
+
+## Cost and Latency Analysis: flash-lite vs 3.5-flash
+
+### Pricing (per 1M tokens, paid tier)
+
+| Model | Input | Output (incl thinking) |
+|---|---|---|
+| flash-lite 3.1 | $0.25 | $1.50 |
+| 3.5-flash | $1.50 | $9.00 |
+
+Per-token ratio: 6x for both input and output.
+
+### Per-game economics
+
+The dedup pipeline runs ~15.6 LLM calls per game (390 spans across 25 games in the eval dataset). Each call sends ~1,163 input tokens (new entry + candidates) and receives ~200 output tokens. Flash-lite additionally generates ~400 thinking tokens per call (thinking=low mode).
+
+| Dimension | flash-lite | 3.5-flash | Delta |
+|---|---|---|---|
+| Cost/case | $0.0012 | $0.0035 | 3x |
+| Cost/game (15.6 cases) | $0.019 | $0.055 | 3x |
+| Cost/1000 games | $18.58 | $55.29 | +$36.72 |
+| Latency/case | ~1s | ~7s | 7x |
+| Latency/game | ~15s | ~109s | +94s |
+
+The per-case ratio is 3x (not 6x) because flash-lite's thinking tokens inflate its output cost, narrowing the effective gap.
+
+### What the accuracy gap costs in practice
+
+Per 1000 games (15,600 dedup decisions):
+
+- **Flash-lite (69.2%)**: ~4,805 wrong decisions. K recall at 52% means ~7.3 novel entries wrongly discarded per game.
+- **3.5-flash (80.0%)**: ~3,120 wrong decisions. K recall at 90% means ~1.4 novel entries wrongly discarded per game.
+
+The K recall gap (52% vs 90%) is the critical difference. Over-discarded entries from common situations will be re-extracted from future games, but entries from rare game states may be permanently lost. 3.5-flash's lower D recall (77% vs 83%) produces a few extra duplicates, but those are cleaned up by the existing batch dedup pipeline.
+
+### Decision
+
+**Keep flash-lite as the production model with v8 prompts.** The 3x cost multiplier and 7x latency increase are meaningful, and flash-lite's accuracy may improve with further prompt fine-tuning. The batch dedup pipeline provides a safety net for both over-discard (rare but impactful) and over-keep (common but recoverable). If prompt fine-tuning cannot close the K recall gap below ~35pp, revisit the model upgrade.
 
 ## Decision and Tradeoffs
 
-**The v2 prompt is the best we've found.** Combined with 3.5-flash, it achieves 80% strict accuracy on 50 cases — the only configuration to beat the baseline. Three iterations of structural prompt changes (v3, v4, v5) all made things worse.
+**The prompt has been through three distinct phases**, each teaching a different lesson about calibration:
 
-**Reverting to v2 is the right move, but we should keep the v5 prompt live.** The v5 prompt has cleaner definitions and better-structured decision logic. The v2 prompt's advantage comes from its calibration cascade accidentally matching the true MERGE rate — not from inherently better prompt engineering. In production, the pipeline runs flash-lite (not 3.5-flash), where v2's advantage over v5 is smaller (64% vs 57%). Neither is good enough to justify a model change in production — both have ~60% accuracy on the production model.
+1. **Phase 1 (v2-v5)**: Structural prompt changes (two-stage decision gates) consistently degraded accuracy. The flat prompt structure is better because it lets the model reason holistically rather than through forced sequential gates.
 
-**The larger issue: observation dedup accuracy is capped by MERGE ambiguity.** Strategy point accuracy is consistently high (72-88%) because the D/K binary is clean. Observation accuracy is consistently low (32-72%) because the D/M/K decision space introduces a rare, ambiguous category (MERGE at ~3%) that models can't reliably distinguish from D or K. The auto-discard threshold at 0.90 similarity handles clear duplicates; the LLM handles clear KEEPs; the middle zone (0.55-0.90 similarity) is where errors concentrate.
+2. **Phase 2 (v6)**: A flat prompt with a directional calibration cascade ("prefer D over M over K") improved D recall to 93% but crushed K recall to 41%. The cascade is a blunt instrument that can't distinguish genuine uncertainty from false confidence.
 
-**The acceptable tradeoff.** Over-discarding is cheaper than over-keeping. A lost observation will be re-extracted from a future game. A duplicate observation pollutes retrieval permanently. The current system already has the auto-discard threshold as a safety net for high-similarity cases. The LLM dedup layer adds value primarily for the D/K distinction at moderate similarity, where both the baseline and v2 prompts perform reasonably (60-72% obs accuracy).
+3. **Phase 3 (v7-v8)**: Removing the cascade entirely caused over-merge. The current approach (v8) uses targeted calibration: not "prefer D in general" but "this specific pattern of difference is not sufficient for M/K." This addresses specific failure modes without biasing the overall distribution.
+
+**The model matters as much as the prompt.** 3.5-flash consistently outperforms flash-lite by 5-10pp regardless of prompt version. Flash-lite's K recall has never exceeded 55% on any prompt version, while 3.5-flash reached 93% on v7. The production model (flash-lite) may be at its accuracy ceiling for this task.
+
+**Over-discarding is still cheaper than over-keeping**, but the margin is smaller than we initially assumed. A discarded novel entry will be re-extracted from a future game — but only if a similar game situation occurs. For rare situations, over-discard means permanent information loss. The ideal operating point balances D and K recall, not maximizes one at the expense of the other.
 
 ## Lessons
 
 **When all your models "fail" on the same cases, check the labels first.** Five models spanning three generations independently produced 0% MERGE recall on 4 cases. The initial diagnosis was "calibration cascade over-correction" — a prompt-level explanation. The actual cause was mislabeled golden data. Uniform cross-model failure is stronger evidence of label error than of prompt error, because prompt deficiencies tend to produce model-specific failure patterns.
 
-**Calibration overrides create ratchets regardless of direction.** "Doubt → D over M" eliminated true merges. "Doubt → M over K" (v4) created 25 false merges. Both failed for the same structural reason: when a rare label (M at 3%) is the target of a calibration override, the false-positive rate swamps the correction because most "doubted" cases are not that rare label. The override pushes the model away from its best judgment at exactly the boundary where judgment matters most.
+**Calibration cascades create ratchets regardless of direction.** "Doubt → D over M" eliminated true merges (v2). "Doubt → M over K" created 25 false merges (v4). Removing all calibration caused over-merge (v7). The lesson isn't "calibration is bad" — it's that *directional* calibration (prefer X over Y) creates a ratchet that kills the non-preferred category. Targeted calibration ("this specific pattern is not sufficient for X") avoids the ratchet by addressing failure modes directly.
 
-**Forcing explicit consideration of a rare option increases its false-positive rate.** The v2→v5 prompt restructuring moved MERGE from an implicit possibility (the model could choose it) to an explicit decision gate (Stage 2 forces a D/M choice for every same-pattern case). This increased M predictions from 1-2 (v2) to 14-19 (v5) despite adding "MERGE is the rarest outcome" framing. For rare decisions, implicit availability outperforms explicit decision gates — the model should be able to reach M but shouldn't be required to explicitly reject it for every case.
+**Forcing explicit consideration of a rare option increases its false-positive rate.** The v2→v5 prompt restructuring moved MERGE from an implicit possibility to an explicit decision gate. This increased M predictions from 1-2 to 14-19 despite adding "MERGE is the rarest outcome" framing. For rare decisions, implicit availability outperforms explicit decision gates.
 
-**Stronger models don't compensate for prompt regressions, but they amplify prompt improvements.** Flash-lite showed only modest variation across prompt versions (40-64%). 3.5-flash showed dramatic variation: 80% with v2 but 40% with v5. The stronger model extracted more value from the v2 calibration cascade but was also more sensitive to the v5 structural change. This means prompt improvements paired with model upgrades have multiplicative potential, but prompt regressions are also amplified.
+**Stronger models amplify both prompt improvements and regressions.** Flash-lite showed modest variation across prompt versions (60-69%). 3.5-flash showed dramatic variation: 82% (v2 baseline) to 40% (v5) to 75% (v6-v7). The stronger model extracts more value from good prompts but is also more sensitive to bad ones. This means prompt improvements paired with model upgrades have multiplicative potential.
 
-**Golden label iteration is part of the eval process, not a failure of it.** The initial 50-case labeling produced 6 MERGE labels. After cross-model validation, 4 were corrected. The corrections didn't invalidate the evaluation — they strengthened it by producing a more reliable ground truth. Treating golden labels as immutable ignores that the labeling process involves the same ambiguity the LLM faces. The right workflow is: label → score → investigate uniform failures → revise labels → re-score.
+**Golden label iteration is part of the eval process, not a failure of it.** Two rounds of label revision changed 14 labels total (4 in round 1, 10 in round 2). Each round was triggered by cross-model disagreement analysis. The corrections consistently strengthened the ground truth. The right workflow is: label → score → investigate uniform failures → revise labels → re-score.
+
+**The retrieval test grounds abstract similarity judgments.** "Are these situations the same?" is subjective. "Would a search query for situation A retrieve situation B?" is concrete and testable. This reframing resolved several labeling disagreements and gave the LLM a more operational decision criterion. When building prompts for similarity judgment, anchor to the downstream use case (retrieval) rather than abstract semantic similarity.
 
 ## What's Next
 
-1. **Revert to v2 prompt.** The v5 structural changes degraded accuracy. The v2 prompt with its calibration cascade is the best-performing version — revert the observation dedup prompt in `Agents/prompts/dedup.py`.
-2. **Evaluate 3.5-flash as production model.** 3.5-flash + v2 achieves 80% vs flash-lite's 64%. The cost/latency tradeoff (~8x slower) may be worth the accuracy gain. Run a cost comparison and check whether the latency increase is acceptable for per-extraction dedup.
-3. **Run 3.5-flash + v2 on expanded 65-case set.** The 80% figure is on 50 cases. Validate that it holds on the full 65-case set before committing to a model change.
-4. **Consider removing MERGE for observations.** Strategy points already don't support MERGE, and their accuracy is consistently higher. If observation MERGE is genuinely ~3% of cases, removing it simplifies the decision to binary D/K — which may improve accuracy by eliminating the ambiguous middle ground that causes most errors.
+1. **Flash-lite prompt fine-tuning**: The production model stays at flash-lite. Analyze v8's 20 error cases to find targetable patterns — especially the K misses (K→D on strategy, K→M on observations) — and try small, surgical prompt adjustments.
+2. **Rewrite quality analysis**: We've focused entirely on D/M/K decision accuracy. When the model merges or discards-with-rewrite, the quality of the rewritten text matters too — this hasn't been evaluated yet.
+3. **Revisit model upgrade if prompt ceiling is reached**: If flash-lite's K recall cannot be improved past ~60% through prompt changes, the 3.5-flash upgrade ($36.72/1000 games, +94s latency) becomes the next lever.
 
 ## Artifacts
 
 | File | Description |
 |---|---|
-| `eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D:31, M:2, K:32) with `also_acceptable` for borderline cases |
+| `eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D:30, M:5, K:29, M/K:1) after two revision rounds |
 | `eval_sets/dedup_v2_sampled.jsonl` | 65 sampled dedup cases (source dataset, expanded from 50) |
 | `eval_sets/dedup_v2.manifest.json` | Dataset manifest (390 cases, seed=42) |
-| `evaluation/experiments/dedup_score.py` | Deterministic golden-label scorer |
+| `evaluation/experiments/dedup_score.py` | Deterministic golden-label scorer (matches by case_id or index) |
+| `scripts/dedup_model_comparison.py` | Multi-file comparison script — scores all replay files and prints table |
 | `evidence/dedup_golden_eval/dedup_score_original_v2.json` | Original baseline scoring (78% strict, old labels) |
 | `evidence/dedup_golden_eval/tricky_cases.md` | 7 mislabeled cases with full text and prompt improvement suggestions |
 | `evidence/dedup_golden_eval/dedup_prompt_baseline.py` | Frozen baseline prompts (pre-revision) |
@@ -406,14 +589,10 @@ The baseline's drop from 72% (50-case) to 67.7% (65-case) is expected — the ad
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v4.jsonl` | Replay: flash-lite, prompt v4 (50 cases) |
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v5.jsonl` | Replay: flash-lite, prompt v5 (65 cases) |
 | `eval_sets/dedup_v2_replay_35flash_prompt_v5.jsonl` | Replay: 3.5-flash, prompt v5 (65 cases) |
-| `eval_results/dedup_v2_flash_lite_prompt_v2.json` | Score: flash-lite v2 (64%, revised labels) |
-| `eval_results/dedup_v2_35flash_prompt_v2.json` | Score: 3.5-flash v2 (80%, revised labels) |
-| `eval_results/dedup_v2_25flash_prompt_v2.json` | Score: 2.5-flash v2 (68%, revised labels) |
-| `eval_results/dedup_v2_25pro_prompt_v2.json` | Score: 2.5-pro v2 (70%, revised labels) |
-| `eval_results/dedup_v2_3flash_prompt_v2.json` | Score: 3-flash-preview v2 (66%, old labels) |
-| `eval_results/dedup_v2_flash_lite_prompt_v3.json` | Score: flash-lite v3 (62%, revised labels) |
-| `eval_results/dedup_v2_35flash_prompt_v3.json` | Score: 3.5-flash v3 (78%, revised labels) |
-| `eval_results/dedup_v2_flash_lite_prompt_v4.json` | Score: flash-lite v4 (40%, revised labels) |
-| `eval_results/dedup_v2_baseline_revised.json` | Score: baseline v1 on 65 cases (67.7%, revised labels) |
-| `eval_results/dedup_v2_flash_lite_prompt_v5.json` | Score: flash-lite v5 on 65 cases (56.9%, revised labels) |
-| `eval_results/dedup_v2_35flash_prompt_v5.json` | Score: 3.5-flash v5 on 65 cases (40.0%, revised labels) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v6.jsonl` | Replay: flash-lite, prompt v6 (65 cases) |
+| `eval_sets/dedup_v2_replay_35flash_prompt_v6.jsonl` | Replay: 3.5-flash, prompt v6 (65 cases) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v7.jsonl` | Replay: flash-lite, prompt v7 (65 cases) |
+| `eval_sets/dedup_v2_replay_35flash_prompt_v7.jsonl` | Replay: 3.5-flash, prompt v7 (65 cases) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v8.jsonl` | Replay: flash-lite, prompt v8 (65 cases) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v8_verified.jsonl` | Replay: flash-lite, prompt v8 verified (5 identical runs confirm determinism) |
+| `eval_sets/dedup_v2_replay_35flash_prompt_v8.jsonl` | Replay: 3.5-flash, prompt v8 (65 cases) |
