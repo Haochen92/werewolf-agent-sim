@@ -1,0 +1,14 @@
+{
+  "model": "gemini-3.5-flash",
+  "thinking": null,
+  "timestamp": "2026-05-26T12:23:46.992041",
+  "cluster_ids": [
+    4
+  ],
+  "results": [
+    {
+      "cluster_id": 4,
+      "error": "Invalid json output: \nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    }
+  ]
+}
