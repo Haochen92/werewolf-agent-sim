@@ -11,7 +11,7 @@ from Agents.formatters import (
     format_strategy_notes_postgame,
     format_wolf_channel,
 )
-from Agents.prompts import EPISTEMIC_STATUS_RULE, POSTGAME_EXTRACTION_PROMPT, SITUATION_STANDARDS
+from Agents.prompts import EPISTEMIC_STATUS_RULE, POSTGAME_EXTRACTION_PROMPT, ROLE_EXTRACTION_PROMPT, SITUATION_STANDARDS
 from Agents.schemas import GameStrategyOutput
 from Agents.state import OrchestratorGraph
 
@@ -79,6 +79,16 @@ def format_extraction_inputs(state: OrchestratorGraph) -> dict[str, str]:
 def build_extraction_prompt(inputs: dict[str, str]) -> str:
     """Build the full extraction prompt from pre-formatted inputs."""
     return POSTGAME_EXTRACTION_PROMPT.format(
+        situation_standards=SITUATION_STANDARDS,
+        epistemic_status_rule=EPISTEMIC_STATUS_RULE,
+        **inputs,
+    )
+
+
+def build_role_extraction_prompt(inputs: dict[str, str], role: str) -> str:
+    """Build a role-specific extraction prompt from pre-formatted inputs."""
+    role_prompt = ROLE_EXTRACTION_PROMPT.format(role=role)
+    return role_prompt.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
         **inputs,

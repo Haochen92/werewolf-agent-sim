@@ -242,6 +242,184 @@ Extract 4-8 principles per role. Focus on:
 """
 
 
+ROLE_EXTRACTION_PROMPT = """
+You are a {role} analyst reviewing this completed Werewolf game. Your goal is
+to extract lessons specifically for the {role} agent — what worked, what failed,
+and what the {role} should do differently in future games.
+
+GAME RULES:
+- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
+- Wolves know each other and secretly eliminate one villager per night
+- Healer can protect one player from elimination each night (cannot protect themselves)
+- Investigator can reveal one player's role each night, results are private
+- Day: all players discuss (up to 4 rounds), then vote to eliminate one player. Ties result in no elimination.
+- Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
+- Villagers win when all wolves are eliminated. Wolves win when they equal or outnumber villagers.
+- Eliminated players' roles are revealed.
+- The Game Master only announces eliminations from voting, wolf kills, and healer saves — NOT investigation results.
+
+{{situation_standards}}
+
+ACTION PHASES:
+Each observation and strategy point must be tagged with the game phase it
+applies to:
+- day_discussion: Lessons about what to say, how to argue, when to stay
+  silent, how to read others, and how to manage suspicion during public
+  discussion rounds.
+- day_vote: Lessons about vote target selection, vote timing, voting to
+  preserve cover, and reading voting patterns.
+- night_action: Lessons about night target selection — who wolves should
+  kill, who the healer should protect, who the investigator should
+  investigate. Villagers have no night action — do not assign night_action
+  to the villager perspective.
+
+Tag based on WHEN THE LESSON APPLIES, not when the event occurred. A night
+kill that teaches wolves whom to target is night_action. A night kill that
+teaches villagers how to read the kill pattern the next morning is
+day_discussion.
+
+---
+
+GAME DATA:
+
+PLAYERS AND ROLES:
+{{formatted_roles}}
+
+FULL GAME DISCUSSIONS:
+{{formatted_discussions}}
+
+FINAL STRATEGY NOTES:
+{{formatted_strategy_notes}}
+
+PREVIOUS ROLE STRATEGIES:
+{{formatted_previous_strategies}}
+
+GAME OUTCOME: {{game_outcome}}
+
+---
+
+TASK 1: OBSERVATION EXTRACTION
+
+Analyze the full game from the {role}'s perspective and extract key
+observations — patterns, mistakes, and pivotal moments that would help the
+{role} agent play better in future games. These observations are FACTS about
+what happened, written from a post-game omniscient perspective. You know all
+roles, all private actions, and all outcomes. They serve as episodic memory
+retrieved via semantic search in future games.
+
+NAMING RULE: Never use player IDs (player_1, player_2, etc.). Always refer to
+players by their role (the wolf, the investigator, a villager, the healer).
+When disambiguating multiple players of the same role, use behavioral
+descriptors.
+
+Good: "the wolf who led the early accusation", "the quiet villager",
+      "the surviving wolf", "the eliminated villager"
+Bad:  "player_2", "player_5 and player_8", "a villager (player_3)"
+
+Each observation has structured fields:
+
+- situation: The core game dynamic — what triggered the situation. Do not
+  embed dimensional context here; use the dedicated dimensional fields below.
+  1-2 sentences.
+- information_landscape (required): What evidence exists and what type —
+  information-rich (confirmed roles, voting records, caught lies) or
+  information-starved (no leads, speculative reads). 1 sentence.
+- game_phase (required): Early (no eliminations), mid (some data, roles
+  emerging), or endgame (few players, high stakes). Note what changed most
+  recently. 1 sentence.
+- consensus_texture (optional): Village alignment — unified, fragile, split,
+  or none. Driven by evidence or social momentum. Do not describe who is
+  under pressure here. Only include if relevant to the situation.
+- agent_exposure (optional): The agent's position — driving the push, aligned
+  with consensus, under indirect scrutiny, or primary target. What is the
+  basis. Only include if relevant to the situation.
+- approach: What the {role} did in that situation. 1-2 sentences.
+- outcome: What resulted — how others responded and the downstream
+  consequences. 1-2 sentences.
+
+Guidelines:
+- Every observation must use perspective="{role}". All narrative fields
+  (situation, approach, outcome) must be written from the {role}'s perspective.
+- approach must describe what the {role} DID or FAILED TO DO — not what the
+  opposing side did. If the key lesson is about something that happened TO the
+  {role}, reframe as what the {role} did that led to that outcome.
+- Each field should be 1-2 sentences. Keep the total observation concise.
+- Assign each observation an action_phase — the phase where this lesson
+  would be applied.
+- Look for multi-day patterns — causal chains and strategic sequences, not
+  just single-day events.
+- Extract 4-8 observations that cover the game's key dynamics for the {role}
+  across the relevant action phases.
+
+---
+
+TASK 2: STRATEGY POINT EXTRACTION
+
+Derive tactical hypotheses from the observations you extracted in Task 1. Each
+strategy point is a PROPOSED principle — it may or may not hold in future games.
+Your job is to distill the observation into a reusable hypothesis that preserves
+the situational specificity.
+
+For each principle:
+
+{{epistemic_status_rule}}
+
+**situation**: A "When..." or "If..." clause describing the core game dynamic
+this principle applies to. Do not embed dimensional context here; use the
+dedicated dimensional fields below. Do not include recommended actions,
+conditional strategy, or advice — those belong in the action field.
+Strategy points are retrieved during gameplay — the situation must be
+recognizable from the {role}'s perspective when other players' true
+roles are unknown. Strictly follow the epistemic status rule above.
+
+**information_landscape** (required): What evidence exists and what type —
+information-rich (confirmed roles, voting records, caught lies) or
+information-starved (no leads, speculative reads). 1 sentence.
+
+**game_phase** (required): Early (no eliminations), mid (some data, roles
+emerging), or endgame (few players, high stakes). Note what changed most
+recently. 1 sentence.
+
+**consensus_texture** (optional): Village alignment — unified, fragile, split,
+or none. Driven by evidence or social momentum. Do not describe who is under
+pressure here. Only include if relevant to the situation.
+
+**agent_exposure** (optional): The agent's position — driving the push,
+aligned with consensus, under indirect scrutiny, or primary target. What is
+the basis. Only include if relevant to the situation.
+
+**action**: The concrete recommended action, including WHY it works in this
+specific context. The action should capture a learned nuance, not restate
+common-sense fundamentals. This field may refer to the {role}, since
+the agent reading it knows their own role. Include conditional branches here
+if the situation implies different responses for different findings.
+
+**action_phase**: The game phase where this principle would be applied.
+
+Every principle must use perspective="{role}".
+
+DERIVATION RULE: Each strategy point should trace to one or more of your Task 1
+observations. If you find yourself writing a strategy point that doesn't connect
+to an observation, either you missed an observation in Task 1 or the point is
+too generic.
+
+QUALITY BAR — what to include vs. exclude:
+- EXCLUDE common-sense fundamentals the base strategy already covers (e.g.,
+  "eliminate active players," "protect important players," "vote with the
+  majority"). Only extract principles that add learned nuance beyond obvious play.
+- EXCLUDE vague situations without specific game dynamics.
+- EXCLUDE actions without reasoning for why they work in that context.
+- INCLUDE principles that capture non-obvious mechanisms — why a tactic works
+  given specific information availability, consensus texture, or agent exposure.
+- INCLUDE principles that refine previous strategies with new nuance.
+
+Extract 4-8 principles for the {role}. Focus on:
+- What the {role} did right that should be repeated
+- What the {role} did wrong that should be avoided
+- Novel situations that produced a clear lesson for the {role}
+"""
+
+
 # Archived version
 
 ARCHIVED_POSTGAME_EXTRACTION_PROMPT = """

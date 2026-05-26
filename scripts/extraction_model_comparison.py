@@ -15,13 +15,14 @@ load_dotenv()
 
 from Agents.llm_factory import create_chat_model
 
-from Agents.extraction import build_extraction_prompt
+from Agents.extraction import build_extraction_prompt, build_role_extraction_prompt
 from Agents.prompts import SITUATION_STANDARDS, EPISTEMIC_STATUS_RULE
 from Agents.schemas import GameStrategyOutput
 from evaluation.data.datasets import read_extraction_dataset
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PLAYER_ID_RE = re.compile(r"player_\d+")
+ROLES = ["wolf", "villager", "healer", "investigator"]
 
 MODEL_CONFIGS = {
     "gemini-3.5-flash": {
@@ -92,14 +93,17 @@ def format_samples(observations: list[dict], strategy_points: list[dict], n: int
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: extraction_model_comparison.py <model_key> <num_games> [start_offset]")
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    per_role = "--per-role" in sys.argv[1:]
+
+    if len(args) < 2:
+        print("Usage: extraction_model_comparison.py [--per-role] <model_key> <num_games> [start_offset]")
         print(f"Available models: {list(MODEL_CONFIGS.keys())}")
         sys.exit(1)
 
-    model_key = sys.argv[1]
-    num_games = int(sys.argv[2])
-    start_offset = int(sys.argv[3]) if len(sys.argv) > 3 else 0
+    model_key = args[0]
+    num_games = int(args[1])
+    start_offset = int(args[2]) if len(args) > 2 else 0
 
     if model_key not in MODEL_CONFIGS:
         print(f"Unknown model: {model_key}. Available: {list(MODEL_CONFIGS.keys())}")
@@ -112,7 +116,8 @@ def main():
     all_records = read_extraction_dataset(dataset_path)
     records = all_records[start_offset : start_offset + num_games]
 
-    print(f"Model: {model_key}", flush=True)
+    mode_label = "per-role" if per_role else "single-pass"
+    print(f"Model: {model_key} ({mode_label})", flush=True)
     print(f"Games: {num_games} (offset={start_offset})", flush=True)
     print(f"Dataset: {dataset_path}", flush=True)
     print("", flush=True)
@@ -132,18 +137,42 @@ def main():
             "formatted_previous_strategies": "No previous role strategy summaries.",
             "game_outcome": case.game_outcome,
         }
-        prompt = build_extraction_prompt(inputs)
 
         start = time.time()
-        output = run_extraction(llm, prompt)
-        elapsed = time.time() - start
 
-        if output is None:
-            print(f"[{i}/{num_games}] FAILED - game={case.game_id}", flush=True)
-            continue
+        if per_role:
+            combined_obs = []
+            combined_sps = []
+            role_failed = False
+            for role in ROLES:
+                prompt = build_role_extraction_prompt(inputs, role)
+                output = run_extraction(llm, prompt)
+                if output is None:
+                    print(
+                        f"[{i}/{num_games}] FAILED role={role} game={case.game_id[:8]}",
+                        flush=True,
+                    )
+                    role_failed = True
+                    continue
+                combined_obs.extend(output.observations)
+                combined_sps.extend(output.strategy_points)
+                time.sleep(0.5)
+            elapsed = time.time() - start
+            if role_failed and not combined_obs:
+                print(f"[{i}/{num_games}] FAILED - game={case.game_id[:8]}", flush=True)
+                continue
+            obs = [o.model_dump(mode="json") for o in combined_obs]
+            sps = [s.model_dump(mode="json") for s in combined_sps]
+        else:
+            prompt = build_extraction_prompt(inputs)
+            output = run_extraction(llm, prompt)
+            elapsed = time.time() - start
+            if output is None:
+                print(f"[{i}/{num_games}] FAILED - game={case.game_id[:8]}", flush=True)
+                continue
+            obs = [o.model_dump(mode="json") for o in output.observations]
+            sps = [s.model_dump(mode="json") for s in output.strategy_points]
 
-        obs = [o.model_dump(mode="json") for o in output.observations]
-        sps = [s.model_dump(mode="json") for s in output.strategy_points]
         all_observations.extend(obs)
         all_strategy_points.extend(sps)
 
@@ -151,6 +180,7 @@ def main():
             "game_id": case.game_id,
             "game_outcome": case.game_outcome,
             "model": model_key,
+            "mode": mode_label,
             "observations": obs,
             "strategy_points": sps,
             "elapsed_seconds": round(elapsed, 1),
@@ -192,7 +222,8 @@ def main():
     out_dir = REPO_ROOT / "evidence" / "extraction_quality" / "model_comparison"
     out_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_file = out_dir / f"{model_key}_{num_games}games_{timestamp}.jsonl"
+    suffix = "_per-role" if per_role else ""
+    out_file = out_dir / f"{model_key}_{num_games}games{suffix}_{timestamp}.jsonl"
     with out_file.open("w") as f:
         for r in results:
             f.write(json.dumps(r) + "\n")
