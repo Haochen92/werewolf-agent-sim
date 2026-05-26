@@ -1,0 +1,1009 @@
+{
+  "eval_set_id": "batch_dedup_golden_v1",
+  "created_at": "2026-05-26T11:00:42.914304",
+  "labeler": "human",
+  "description": "Golden labels for batch dedup cluster evaluation",
+  "label_schema": {
+    "DISCARD": "Entries are duplicates \u2014 same hypothesis. Pick survivor, delete rest.",
+    "MERGE": "Entries share situation+outcome but different tactics. Consolidate approach.",
+    "KEEP": "Entries are genuinely distinct \u2014 different situations or outcomes."
+  },
+  "labels": [
+    {
+      "cluster_id": 0,
+      "namespace": "observations/healer/day_discussion",
+      "kind": "observations",
+      "size": 10,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "ce570d93-205a-47e6-8aeb-8aa27971552d"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a302bd79-6e33-4801-9430-9bcf69c3571f"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "434ca33b-17d3-4e24-8aef-f395a35b512a"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "a786957c-bc1c-416a-aff2-0075203e49ee",
+          "source_keys": [
+            "a786957c-bc1c-416a-aff2-0075203e49ee",
+            "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "84cfd842-4a65-437c-a7ec-bb38883ac145"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "87672547-c279-445a-8142-df9539766559"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "68c2fc76-5fad-436f-8ee6-5a26ac3672d4"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "DISCARD 5 into 4 (same lesson: active healer targeted). KEEP all others including 6 and 8 (different situations despite similar approach)."
+    },
+    {
+      "cluster_id": 1,
+      "namespace": "observations/healer/day_vote",
+      "kind": "observations",
+      "size": 4,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "c401cec5-32cf-416d-991b-09e6b6b221a7"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "42f30e10-562d-4a86-a738-0224d4425daa"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a8ec1773-30fc-4c81-bd40-80c5ea353f3f"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6aca8c49-eae0-4315-94de-3f0704d753c7"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "4 distinct healer vote scenarios: doubt+join, targeted+eliminated, dissent+burned, suspicion+join."
+    },
+    {
+      "cluster_id": 4,
+      "namespace": "observations/investigator/day_discussion",
+      "kind": "observations",
+      "size": 23,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1f6bc8ae-4913-44e1-b3dc-2e736e21ae6c"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "47ad2598-176d-4bdc-a603-0c043d1e8889"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d20aabe2-7482-4b1a-9a72-ebaf0845d423"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "de5ab922-5632-446f-b3b3-7838635b026c",
+          "source_keys": [
+            "de5ab922-5632-446f-b3b3-7838635b026c",
+            "01348533-d9c9-496b-96de-3de4ae0956c6"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a9107742-f0fd-4e34-bca0-923d8dbd8bfc"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "a032bec1-12df-4ca5-9baf-f1903720ebcf",
+          "source_keys": [
+            "13891db7-c56b-4f3d-b9af-923c69bc2d34",
+            "a032bec1-12df-4ca5-9baf-f1903720ebcf"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d8ff9b6f-464d-4ce1-8a94-a73e3d6651ee"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a5db9f55-0d84-4167-b949-38797436a099"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "90eb75b7-9512-42f9-a14e-8ec0a0f7bca8"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "9f2f00b8-8e80-4faa-afee-879d135df291"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "10f4fa33-2844-4b22-ab4a-d6758141f4be"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "3d9a71f0-b514-48b0-b0b2-df0e4ef43f84"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a6d1e994-7725-4666-a351-be43fb94b33a"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d87c1479-d9d9-47c0-a29f-0260ba1cedc8"
+          ]
+        },
+        {
+          "action": "MERGE",
+          "survivor_key": "b9f7e67a-7f69-4fb6-aceb-8a2bddb32cf6",
+          "source_keys": [
+            "b9f7e67a-7f69-4fb6-aceb-8a2bddb32cf6",
+            "9b95aa9c-82c0-4438-aa86-aae81cb61842"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "28e010ef-1df7-436f-8d7c-5d0c9219ea5a"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "928fde7b-4c7d-46b3-81bc-c292747d9048"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6184533a-22e4-4328-b96a-c4bb0cb7e30f"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6161059f-8645-43c2-9947-afb5bb8cd6b0"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "dffa1e08-f2af-4368-86fa-9a8bdfc5ce52"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "DISCARD 6->9 (join consensus). DISCARD 10->4 (lead with public evidence). MERGE 17+18 (late claim fails). 20 unique entries spanning success/failure patterns."
+    },
+    {
+      "cluster_id": 5,
+      "namespace": "observations/investigator/day_vote",
+      "kind": "observations",
+      "size": 5,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "7c0a6e6d-2bee-4bed-8d66-139122985095"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "42e37cd6-5416-48b1-aa92-840569b8a23a"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "b34d12c2-9d2b-4ac6-9d36-b877dad2d896"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "5922bf88-e545-4f69-89e0-d55b0da3524d"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "5 distinct investigator vote scenarios with different situations and outcomes."
+    },
+    {
+      "cluster_id": 11,
+      "namespace": "observations/villager/day_vote",
+      "kind": "observations",
+      "size": 10,
+      "operations": [
+        {
+          "action": "MERGE",
+          "survivor_key": "da563937-9336-41f2-8953-84907519c7f7",
+          "source_keys": [
+            "da563937-9336-41f2-8953-84907519c7f7",
+            "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+            "2530d497-5f17-4d13-a24c-a5f0b41d1fa9"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "fc9a9421-cf86-4800-a6c1-a261bcf6c61f"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "7215e341-9dfe-4404-800f-a81fd0313a23"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "c4d1cfda-4c8e-4412-b4f4-eb216cb2060a"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "71ec2645-d5e5-4cad-96ad-f5c365c18ebc"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "300150ed-4b63-4193-94eb-5d6f1fa013b4"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "37d81419-2d5d-4af0-b548-7a0a8da537c6"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "f88a85ae-1ee2-49ec-9a16-e82938214c08"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "MERGE 1+4+10 (aggression bandwagoned, all info-starved mid-game). KEEP 5 and 9 separately (different game phases for coordination failure). KEEP 2,3,6,7,8."
+    },
+    {
+      "cluster_id": 14,
+      "namespace": "observations/wolf/day_discussion",
+      "kind": "observations",
+      "size": 15,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "11829d7b-0a38-4fdc-bfd5-d4b56964bc60"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6693c41f-266b-4494-85c2-20b07a4eadbd"
+          ]
+        },
+        {
+          "action": "MERGE",
+          "survivor_key": "55ad1ead-bb04-47ce-ad2c-902ff8738998",
+          "source_keys": [
+            "55ad1ead-bb04-47ce-ad2c-902ff8738998",
+            "da1fa775-c345-402a-bae6-0089b0a0f9c2",
+            "79288222-86d2-47fd-aebf-65660e6db983",
+            "8e991831-2aa3-4b7c-add0-1d3db8b159db"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "568171e8-8534-4fb7-be6c-225f223048e9"
+          ]
+        },
+        {
+          "action": "MERGE",
+          "survivor_key": "3b367498-04f3-4de5-9c3d-3bc0faab7a66",
+          "source_keys": [
+            "3b367498-04f3-4de5-9c3d-3bc0faab7a66",
+            "6e34e310-1958-4bda-b0aa-b89ede18fcba",
+            "075cd860-56a9-4efe-8ec8-22ce539bb79b"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4da35595-a2b5-4836-b19d-3d2740b46acc"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1668786a-f65e-4db1-8b1a-788ea50d77b8"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "551b1cd1-6f3e-49c8-809e-19c42d344a5a"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "2e7cfc60-08db-4a53-af2c-43f7b186fe32"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "92046e6d-6ce7-4a18-b51f-528ca8b49568"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "MERGE 3+8+10+12 (frame aggressor, same info-starved situation). MERGE 5+7+15 (cornered by vote record, deflection fails). KEEP 1,2,6 separate (frame Investigator but different game phases). KEEP 4,9,11,13,14 as unique."
+    },
+    {
+      "cluster_id": 16,
+      "namespace": "observations/wolf/day_vote",
+      "kind": "observations",
+      "size": 8,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "453891e8-d511-44d1-8f2c-2206606c3e93"
+          ]
+        },
+        {
+          "action": "MERGE",
+          "survivor_key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+          "source_keys": [
+            "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+            "10670f91-0c0b-4306-9a8f-d6706ba6facc"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "07265d73-9b48-4423-a763-5ba413df8d79"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4d55e9f0-6c20-4878-a3f0-8b629fe8c178"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "eb3e69f7-94aa-4273-9867-42fbe68e6817"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1b9f668e-9c67-4fcf-bf15-d9ce6667cdd6"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "42dfb995-f6df-401b-a220-081232ac4449"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "MERGE 2+7 (dissenting to save partner creates evidence trail). KEEP rest: 3/4 tie contrast, 5/8 bussing contrast, 1 passive, 6 defense history."
+    },
+    {
+      "cluster_id": 18,
+      "namespace": "observations/wolf/night_action",
+      "kind": "observations",
+      "size": 9,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "03c667f8-c977-4b88-b8ef-3e5fca99c49d"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6e026fa9-b3cb-4559-9cf9-09e265bff9cf"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "ee65140b-a606-4b27-9202-13e50c2e0217"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "773b1aa7-63e4-42a4-9077-f49dbfcdf297"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "450731f7-5e13-4408-a3de-9b2518abac8c"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "320e40f0-587c-49b9-ae81-70a925d6fad0"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "0d9700cc-4105-448e-ac2c-d05da573c125"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "7ced08b3-0eb4-4a9a-985e-3304eac4d162"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "48bd4753-7035-4b2d-8187-514de35f2f70"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "All 9 distinct: 4 target-selection entries with different contexts, 5 healer-save responses with different preconditions/outcomes."
+    },
+    {
+      "cluster_id": 19,
+      "namespace": "strategy_points/healer/day_discussion",
+      "kind": "strategy_points",
+      "size": 10,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "76cc3c9d-b314-4df1-90d3-9bba11618d98"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "309512ca-0a04-485e-8f5a-2b542a15df53"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "5e7cc5ba-fa6e-4fa2-8773-7b0378366ced"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "8bb8583f-b87f-4232-b72b-ae5f9b4de150"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "7750a68d-c8a2-4a3e-a87a-1cdad48240a9"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "8eef8fd7-58d6-42b9-b166-1b115426c7a7"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6bd08e77-efd4-4cc2-b358-6ad769786720"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "af1dbc2b-bc5e-41f7-815a-a0ffe029a179"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "513226d2-cdc1-4cee-ab4e-e41abffbc1cf"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "964e7343-23c6-40da-bbf7-59beaaef587a"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "All 10 distinct healer discussion strategies: different game phases, info landscapes, and agent exposure levels."
+    },
+    {
+      "cluster_id": 20,
+      "namespace": "strategy_points/healer/day_vote",
+      "kind": "strategy_points",
+      "size": 2,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "182ebc43-0538-4b82-8bd4-b5852870338f"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4922ee84-da73-480a-90ef-170739daf216"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "Different agent exposure: entry 1 is clean with doubts, entry 2 is under suspicion managing heat."
+    },
+    {
+      "cluster_id": 21,
+      "namespace": "strategy_points/healer/night_action",
+      "kind": "strategy_points",
+      "size": 9,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "5d45c137-fca7-4fc6-858c-b83f4239f9f7"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "9432c9c5-a7df-4bd1-87d7-775b4d567daf"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "44be75ae-d679-406f-a85f-b8a720a355a6",
+          "source_keys": [
+            "1b68828f-9970-428b-89d8-aaa843cd845c",
+            "c3052f71-145b-47c4-a255-5286eec994b3",
+            "44be75ae-d679-406f-a85f-b8a720a355a6",
+            "181ab968-4ed4-49ed-8406-2854e21dd7d8"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "8ebea450-ad90-4a03-b964-01593af8f0cd"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "e27a6988-ba49-4fec-8e23-f4e48f752d5d"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1cfd0d62-d3eb-4f87-882f-2f10b9c10eda"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "DISCARD 3+5+7 into 6 (Night 1 protect vocal leader, obs=39 best version). KEEP 2 (competing: protect quiet player). KEEP 4 vs 8 (competing: stay vs rotate after save). KEEP 1,9 (different mid-game contexts)."
+    },
+    {
+      "cluster_id": 23,
+      "namespace": "strategy_points/investigator/day_discussion",
+      "kind": "strategy_points",
+      "size": 3,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "8bd4a4a4-a114-4f49-89aa-a49ab7e177e7"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "82a4ac4c-3ac4-4dd6-a817-36fb1f9a40ee"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d364d473-8ed6-468b-926e-8886763d5f3a"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "3 completely different investigator discussion scenarios: deadlock pivot, quiet amplification, bussing education."
+    },
+    {
+      "cluster_id": 24,
+      "namespace": "strategy_points/investigator/day_vote",
+      "kind": "strategy_points",
+      "size": 3,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4207be33-a2ad-47e5-9294-0d528da2910d"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6710c4b7-4128-4afd-b1cf-3a917b3911bb"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "57449d0c-1bad-45d0-882e-0acfaf3642cf"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "Different knowledge states: speculative read vs confirmed info vs counter-consensus. Entry 3 is opposite action."
+    },
+    {
+      "cluster_id": 25,
+      "namespace": "strategy_points/investigator/night_action",
+      "kind": "strategy_points",
+      "size": 11,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "8f48a407-170f-4759-86f8-47829b131013"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "60ffc937-3744-4f04-9f49-49b6a0797cf5"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d2e8e182-a7e3-47ed-bdc2-5ca730fd94d9"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "68e2e2ec-8595-4f3a-b58a-13f1bd0a0a6f"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "0f8bab2a-21c3-46d3-a52a-df2b03132ff6"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "694d055e-288c-47e4-8227-f3af122c7a39"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "d2e8e182-a7e3-47ed-bdc2-5ca730fd94d9",
+          "source_keys": [
+            "d2e8e182-a7e3-47ed-bdc2-5ca730fd94d9",
+            "349c1708-c1f1-4080-bd27-d7e871022411"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "23fa1626-29d4-4414-a852-afbe7e49fa40"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "2d89ca26-d603-45c3-b2f3-609b3af9f134"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "60ffc937-3744-4f04-9f49-49b6a0797cf5",
+          "source_keys": [
+            "60ffc937-3744-4f04-9f49-49b6a0797cf5",
+            "8cb3b8b2-9ef8-4ddf-ba7d-57d4ad35eda5"
+          ]
+        },
+        {
+          "action": "DISCARD",
+          "survivor_key": "68e2e2ec-8595-4f3a-b58a-13f1bd0a0a6f",
+          "source_keys": [
+            "68e2e2ec-8595-4f3a-b58a-13f1bd0a0a6f",
+            "f2da6d3c-57e2-4910-890f-910c43242cb7"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "DISCARD 7\u21923 (quiet advice phase-independent). DISCARD 10\u21922 (wolf-aligned advice). DISCARD 11\u21924 (vocal/influential advice). KEEP 3 competing Night 1 hypotheses + 5 unique entries."
+    },
+    {
+      "cluster_id": 28,
+      "namespace": "strategy_points/villager/day_vote",
+      "kind": "strategy_points",
+      "size": 16,
+      "operations": [
+        {
+          "action": "DISCARD",
+          "survivor_key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "source_keys": [
+            "2f63bae5-ead1-45c8-87c9-1211ad266784",
+            "49a9bd54-1758-4458-b28a-27e5ae86773d"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "ec7540cf-547f-4082-874c-6cb7938fd373"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "3b4ce51c-ffd6-415a-973f-0902689fb2d4"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6065e609-2e97-4c83-8a93-9cf067834e25"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "09a16417-a56f-4347-9987-9810bfae4e90"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1e0fde37-2729-4809-98cb-6a2910c8b78a"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "e1c64739-2a78-44fc-a54e-2e33269d5ca9"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "b252d6b2-6620-4889-81ed-4ce737a2f975"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1cc944fd-bf5c-4b62-9524-0b1291f50c4e"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "afef4e16-12b0-4d9d-b5b2-e07cae23e576"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "984356e1-d54b-48e5-baf4-3a7d250092f8"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "f944cdb4-755c-44fb-9d33-7c1d75d22277"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "cc59764c-e376-4f63-be00-9e21b266b863"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "84d9366f-f068-481b-8e10-4457361d5b2d"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "de8be6d6-0553-4e38-b23d-1231a0c82e21"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "DISCARD 6 into 1 (specific case of resist-vibes-bandwagon principle). 15 genuinely distinct villager voting scenarios covering evidence evaluation, deadlock, scattered votes, wolf detection, Investigator claims."
+    },
+    {
+      "cluster_id": 31,
+      "namespace": "strategy_points/wolf/day_vote",
+      "kind": "strategy_points",
+      "size": 9,
+      "operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "b4116bf9-a06b-4347-8096-774ae05df788"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "5056de39-1c01-4c1d-a815-8e5275a8fd00"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "e9294fd5-f1aa-4268-811a-62021aedf2ec"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "42a05e82-3107-4124-a80f-b120ec1b8a59"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6ef092b3-32e1-4602-ab6b-1d8ad5625a97"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "62ef36a8-ddd1-4120-8b89-1be197da6bd6"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "21798fee-51a3-4cad-9d08-b741503d2523"
+          ]
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "33204b05-f607-4cde-b91b-d01b28cb82a8"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "All 9 distinct wolf voting strategies: bus partner, force tie, join mislynch, create bandwagon, third target, strategic dissent, avoid saved player, split to save partner."
+    },
+    {
+      "cluster_id": 33,
+      "namespace": "strategy_points/wolf/night_action",
+      "kind": "strategy_points",
+      "size": 2,
+      "operations": [
+        {
+          "action": "DISCARD",
+          "survivor_key": "d6191f69-fbe6-4318-8d42-41fbfadd459a",
+          "source_keys": [
+            "d6191f69-fbe6-4318-8d42-41fbfadd459a",
+            "5cf37186-e2bb-4922-b061-93280a610686"
+          ]
+        }
+      ],
+      "confidence": "high",
+      "notes": "Same hypothesis: target vocal organizer night 1. Entry 1 already captures healer risk that entry 2 lacks."
+    }
+  ]
+}

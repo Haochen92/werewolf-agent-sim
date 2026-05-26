@@ -80,17 +80,18 @@ def format_cluster(cluster: dict, cluster_idx: int) -> str:
     lines.append("")
 
     for i, item in enumerate(items, 1):
+        val = item.get("value", item)
         lines.append(f"--- Entry {i} ---")
         lines.append(f"  KEY: {item['key']}")
-        lines.append(f"  obs_count: {item.get('observation_count', 1)}")
+        lines.append(f"  obs_count: {val.get('observation_count', 1)}")
 
         if kind == "strategy_points":
-            lines.append(f"  SITUATION: {item.get('situation', '')}")
-            lines.append(f"  ACTION:    {item.get('action', '')}")
+            lines.append(f"  SITUATION: {val.get('situation', '')}")
+            lines.append(f"  ACTION:    {val.get('action', '')}")
         else:
-            lines.append(f"  SITUATION: {item.get('situation', '')}")
-            lines.append(f"  APPROACH:  {item.get('approach', '')}")
-            lines.append(f"  OUTCOME:   {item.get('outcome', '')}")
+            lines.append(f"  SITUATION: {val.get('situation', '')}")
+            lines.append(f"  APPROACH:  {val.get('approach', '')}")
+            lines.append(f"  OUTCOME:   {val.get('outcome', '')}")
         lines.append("")
 
     return "\n".join(lines)
