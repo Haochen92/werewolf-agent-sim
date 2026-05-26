@@ -960,9 +960,35 @@ The observation auto-keep is the biggest win — items from unseen games with co
 
 **Takeaway**: The similarity space is fundamentally mixed — items that are semantically similar can be genuinely novel (same situation, different lesson). No amount of embedding tuning can separate these without the LLM's reasoning about information content. The embedding pre-filter should remain conservative and let the LLM handle the gray zone.
 
+### Experiment: Multi-dimensional threshold boundaries
+
+**Hypothesis**: The 1D thresholds (action_sim for SP, content_sim for obs) may miss useful signal from other similarity dimensions. Two specific ideas: (1) For SP, use situation_sim as a second axis — requiring both high action AND high situation similarity for auto-discard could lower the action threshold. (2) For obs, use field-level sims (approach_sim, outcome_sim) for auto-keep — divergent approach or outcome is strong evidence for K.
+
+**Method**: Sweep 2D threshold grids on both golden (65) and cross-game (232) datasets at 1536 dims. For SP: `action≥X AND sit≥Y → D`, `action<X' OR sit<Y' → K`. For obs: `content≥X → D`, `min(approach, outcome) < Y → K`.
+
+**SP results**: In the interleaving zone (action_sim 0.85-0.93), D and K cases span the full situation_sim range:
+- Golden: D sit_sim 0.778-0.876, K sit_sim 0.734-0.853 — complete overlap
+- Cross-game: D sit_sim 0.787-0.878, K sit_sim 0.805-0.883 — complete overlap
+
+Adding sit_sim as a discard requirement only removes correct D cases (from 12 to 7-11 on cross-game) without filtering any K cases. Using sit_sim for keep (OR condition) introduces 3-24 wrong keeps depending on threshold. Situation similarity provides no additional separating power.
+
+**Obs field-level keep results**: Using `min(approach, outcome) < threshold` as a keep signal produces high error rates across all thresholds:
+- Cross-game: field<0.86 → 47K correct, 14D wrong; field<0.90 → 62K correct, 32D wrong
+- Golden: field<0.86 → 14K correct, 4D wrong; field<0.90 → 19K correct, 16D wrong
+
+The problem: genuine duplicates can have divergent per-field phrasing while conveying the same lesson. Content_sim (full concatenation) averages out field-level noise; individual field sims amplify it.
+
+**Decision**: The current 1D thresholds (action_sim for SP, content_sim for obs) are using the optimal signals. Neither situation_sim nor field-level sims provide additional zero-error separating power.
+
 ### What's next
 
-- **Field-level observation sims**: Content_sim works for both boundaries, but field-level sims (approach_sim, outcome_sim) could provide additional signal for borderline cases in the LLM zone. The `--obs-keep-mode field` flag in `eval_auto_dedup.py` supports sweeping with field-level sims.
+The embedding pre-filter calibration is complete. All plausible improvements have been tested:
+- Threshold grid sweeps on 65 human-labeled + 232 LLM-labeled cases
+- Cross-model validation (3.5-flash + flash-lite labelers)
+- Higher dimensions (3072) and task type (SEMANTIC_SIMILARITY) — no improvement
+- Multi-dimensional boundaries (situation_sim, field-level sims) — no improvement
+
+Future threshold adjustments should be driven by downstream retrieval quality rather than further calibration sweeps. If retrieval demands more aggressive discard or keep, the logged `similarity_scores` in Langfuse traces provide the data needed to re-sweep quickly.
 
 ### Instrumentation for Future Calibration
 
