@@ -26,7 +26,7 @@ Both types are stored in a vector store, namespaced by role. Before each game tu
 
 ### Phase 2 — Namespace Refinement and Pipeline Maturation
 
-Further iterations added action_phase namespace segregation (separating discussion-relevant from vote-relevant memories), store deduplication, retrieval filtering, and reranking. Each change was evaluated independently (see `evidence/retrieval_filtering/`, `evidence/store_dedup/`, `evidence/reranking/`). The adoption tracking experiment (`evidence/strategy_adoption/`) and memory ablation (`evidence/memory_ablation/`) led to the current planned default of observations-only retrieval.
+Further iterations added action_phase namespace segregation (separating discussion-relevant from vote-relevant memories), store deduplication, retrieval filtering, and reranking. Each change was evaluated independently (see `evidence/retrieval/filtering/`, `evidence/dedup/store_retrieval_impact/`, `evidence/retrieval/reranking/`). The adoption tracking experiment (`evidence/memory_system/strategy_adoption/`) and memory ablation (`evidence/memory_system/ablation/`) led to the current planned default of observations-only retrieval.
 
 ## Batch Evaluation Design
 
@@ -113,7 +113,7 @@ The priority is not more evidence that memory works. It's running a batch with t
 
 ## Artifacts
 
-All artifacts are co-located in `evidence/memory_effectiveness/`.
+All artifacts are co-located in `evidence/memory_system/effectiveness/`.
 
 | File | Description |
 |------|-------------|

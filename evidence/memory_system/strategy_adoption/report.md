@@ -231,7 +231,7 @@ This finding motivates the next experiment directly:
 
 ## Artifacts
 
-All artifacts are co-located in `evidence/strategy_adoption/`.
+All artifacts are co-located in `evidence/memory_system/strategy_adoption/`.
 
 | File | Description |
 |------|-------------|

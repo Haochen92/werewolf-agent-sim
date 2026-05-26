@@ -90,7 +90,7 @@ This is a separate undertaking from the current experiment series.
 
 ## Artifacts
 
-All artifacts are co-located in `evidence/memory_ablation/`.
+All artifacts are co-located in `evidence/memory_system/ablation/`.
 
 | File | Description |
 |------|-------------|
@@ -103,4 +103,4 @@ All artifacts are co-located in `evidence/memory_ablation/`.
 | `eval_results/ablation_n120_both.jsonl` | n=120 results, both memory types |
 | `eval_results/ablation_n120_obs_and_sp_only.jsonl` | n=120 results, observations-only + strategy-points-only (distinguished by `snapshot` field) |
 
-Shared dependency: eval set at `evidence/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl` (230 cases from 3 games). Empty store at `Agents/memory_stores/v4_deduped/empty.json`.
+Shared dependency: eval set at `evidence/memory_system/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl` (230 cases from 3 games). Empty store at `Agents/memory_stores/v4_deduped/empty.json`.

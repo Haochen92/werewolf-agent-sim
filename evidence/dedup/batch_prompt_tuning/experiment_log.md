@@ -14,7 +14,7 @@ Golden labels: `eval_sets/batch_dedup_golden_labels.json` — 17 clusters, 149 i
 
 ## Prompt Versions
 
-Each important checkpoint is stored in `evidence/batch_dedup_golden_eval/prompt_versions/`.
+Each important checkpoint is stored in `evidence/dedup/batch_prompt_tuning/prompt_versions/`.
 
 ### v0 (baseline)
 
@@ -178,6 +178,7 @@ For production batch dedup:
 
 ## Next Steps
 
-1. **Implement and validate the two-pass pipeline** — build the flash-lite triage → 2.5-pro verification pipeline and measure end-to-end accuracy and time on the golden eval set to confirm the projected savings hold.
-2. **Validate flash-lite-only for strategy points** — strategy uses only KEEP/DISCARD (no MERGE), so flash-lite's over-merge weakness does not apply. Run a dedicated eval to confirm standalone flash-lite is sufficient for strategy batch dedup.
-3. **Integrate batch dedup into the game pipeline** — once the pipeline approach is validated, wire batch dedup into the post-game flow as a periodic maintenance operation.
+1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure added to `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). End-to-end accuracy validation on golden eval set is pending.
+2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/report.md#phase-2).
+3. **Validate flash-lite-only for strategy points** — strategy uses only KEEP/DISCARD (no MERGE), so flash-lite's over-merge weakness does not apply. Run a dedicated eval to confirm standalone flash-lite is sufficient for strategy batch dedup.
+4. **Integrate batch dedup into the game pipeline** — once the pipeline approach is validated, wire batch dedup into the post-game flow as a periodic maintenance operation.
