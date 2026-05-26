@@ -36,6 +36,7 @@ from pathlib import Path
 
 import numpy as np
 
+from Agents.llm_factory import create_embeddings
 from Agents.memory import embeddings as embedding_model
 from Agents.retrieval_filters import cosine_similarity, embed_texts
 from evaluation.data.datasets import (
@@ -74,12 +75,15 @@ def _compute_strategy_embeddings(
     new_entry: dict,
     candidates: list[dict],
     situation_sim: float,
+    emb_model=None,
+    task_type: str | None = None,
 ) -> dict:
+    emb = emb_model or embedding_model
     new_action = new_entry.get("action", "")
     cand_actions = [c.get("action", "") or "" for c in candidates]
 
     texts = [new_action] + cand_actions
-    vecs = embed_texts(texts, embedding_model)
+    vecs = embed_texts(texts, emb, task_type=task_type)
     if len(vecs) < 2:
         return {"max_action_sim": None, "per_candidate": []}
 
@@ -105,7 +109,10 @@ def _compute_observation_embeddings(
     new_entry: dict,
     candidates: list[dict],
     situation_sim: float,
+    emb_model=None,
+    task_type: str | None = None,
 ) -> dict:
+    emb = emb_model or embedding_model
     new_sit = new_entry.get("situation", "")
     new_app = new_entry.get("approach", "")
     new_out = new_entry.get("outcome", "")
@@ -117,7 +124,7 @@ def _compute_observation_embeddings(
     ]
 
     content_texts = [new_content] + cand_contents
-    content_vecs = embed_texts(content_texts, embedding_model)
+    content_vecs = embed_texts(content_texts, emb, task_type=task_type)
     if len(content_vecs) < 2:
         return {
             "max_content_sim": None,
@@ -141,8 +148,8 @@ def _compute_observation_embeddings(
 
     approach_texts = [new_app] + [c.get("approach", "") or "" for c in candidates]
     outcome_texts = [new_out] + [c.get("outcome", "") or "" for c in candidates]
-    approach_vecs = embed_texts(approach_texts, embedding_model)
-    outcome_vecs = embed_texts(outcome_texts, embedding_model)
+    approach_vecs = embed_texts(approach_texts, emb, task_type=task_type)
+    outcome_vecs = embed_texts(outcome_texts, emb, task_type=task_type)
 
     max_approach_sim = 0.0
     max_outcome_sim = 0.0
@@ -205,6 +212,8 @@ def compute_all_embeddings(
     dataset_path: Path,
     golden_path: Path,
     cache_path: Path | None = None,
+    emb_model=None,
+    task_type: str | None = None,
 ) -> list[CaseEmbeddings]:
     if cache_path and cache_path.exists():
         logger.info("Loading cached embeddings from %s", cache_path)
@@ -240,6 +249,7 @@ def compute_all_embeddings(
         if item_type == "strategy_point":
             emb = _compute_strategy_embeddings(
                 new_entry, candidates_raw, situation_sim,
+                emb_model=emb_model, task_type=task_type,
             )
             ce = CaseEmbeddings(
                 case_index=golden["case_index"],
@@ -253,6 +263,7 @@ def compute_all_embeddings(
         else:
             emb = _compute_observation_embeddings(
                 new_entry, candidates_raw, situation_sim,
+                emb_model=emb_model, task_type=task_type,
             )
             ce = CaseEmbeddings(
                 case_index=golden["case_index"],
@@ -653,14 +664,33 @@ def parse_args() -> argparse.Namespace:
         "--obs-keep-mode", choices=["content", "field"], default="content",
         help="Observation auto-keep method: 'content' (content_sim) or 'field' (approach/outcome sims).",
     )
+    parser.add_argument(
+        "--dims", type=int, default=None,
+        help="Embedding output dimensionality (default: use model default).",
+    )
+    parser.add_argument(
+        "--task-type", type=str, default=None,
+        help="Task type for embeddings (e.g. SEMANTIC_SIMILARITY, RETRIEVAL_DOCUMENT).",
+    )
+    parser.add_argument(
+        "--embedding-model", type=str, default=None,
+        help="Embedding model name (default: gemini-embedding-001).",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
 
+    emb_model = None
+    if args.embedding_model or args.dims:
+        model_name = args.embedding_model or "gemini-embedding-001"
+        emb_model = create_embeddings(model_name, output_dimensionality=args.dims)
+        print(f"Using embedding model: {model_name}, dims={args.dims}, task_type={args.task_type}")
+
     cases = compute_all_embeddings(
         args.dataset, args.golden, args.cache,
+        emb_model=emb_model, task_type=args.task_type,
     )
 
     _print_distribution(cases, "strategy_point")

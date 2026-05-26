@@ -21,10 +21,14 @@ RETRY_DELAY_SECONDS = 5
 def embed_texts(
     texts: list[str],
     embedding_model: GoogleGenerativeAIEmbeddings,
+    task_type: str | None = None,
 ) -> list[NDArray[np.float64]]:
     for attempt in range(1, RETRY_ATTEMPTS + 1):
         try:
-            raw = embedding_model.embed_documents(texts)
+            kwargs: dict = {}
+            if task_type:
+                kwargs["task_type"] = task_type
+            raw = embedding_model.embed_documents(texts, **kwargs)
             return [np.asarray(v, dtype=np.float64) for v in raw]
         except Exception as exc:
             if attempt == RETRY_ATTEMPTS:
