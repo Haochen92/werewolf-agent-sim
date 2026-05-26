@@ -30,6 +30,7 @@ scripts/migrate_langfuse_traces.py
 .DS_Store
 .idea/
 .vscode/
+.claude/
 
 # Build artifacts
 build/
