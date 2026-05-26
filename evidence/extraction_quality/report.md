@@ -267,7 +267,7 @@ Quality delta (per-role minus single-pass):
 - **Diversity scores drop** across all models, but this is expected and not a real quality concern. Per-role extraction deliberately covers the same game events from 4 different perspectives — the judge sees overlapping events and scores them as "repetitive," but a wolf's view of a mislynch and a villager's view of the same mislynch are distinct retrieval targets. The diversity metric is not calibrated for per-role output. Perspective scores also dip slightly — possibly the merged output confuses the judge when it sees the same events from 4 perspectives.
 - **2.5-flash quality degrades substantially** under per-role (avg 4.43 vs 4.50 single-pass). Epistemic compliance drops to 4.00 (was 4.40) — more items means more chances for knowledge-level violations. Player_ID leakage re-appears at 5.1% despite the naming rule.
 - **3.5-flash quality holds** (avg 4.93 vs 4.92 single-pass). The only drops are diversity and perspective on one game (both scored 4), while grounding and epistemic both improve.
-- **Flash-lite gets the biggest volume boost** (+210% obs) but specificity drops to 3.80 (-0.10) — the weakest of the three models. Grounding and coverage both improve (+0.60 each). Per-role latency is extremely variable (58s–474s per game, avg 244s) — an 8.1x slowdown vs single-pass, making it impractical despite the volume gains.
+- **Flash-lite gets the biggest volume boost** (+210% obs). Grounding and coverage both improve (+0.60 each). Specificity drops to 3.80 (-0.10). Per-role latency is extremely variable (58s–474s per game, avg 244s) — an 8.1x slowdown vs single-pass.
 
 #### Judge scores vs actual content quality
 
@@ -290,6 +290,8 @@ Single-pass produces exactly 1 obs + 1 sp per game for the investigator. All 5 s
 - **Post-save positioning**: "After being healer-saved, don't lead aggressively — observe who's controlling the narrative." Single-pass just notes "you were too visible."
 - **Vote train analysis**: "Focus on who *initiated* the vote train vs who joined late — wolves hide in the middle of bandwagons."
 - **Pressure tactics**: "Challenge players using 'caution' to stall — demand they name specific suspects."
+
+The best flash-lite per-role insights are competitive with 3.5-flash — concise and actionable. The weakness is signal-to-noise: flash-lite surrounds these good points with filler ("don't reveal your role" repeated in every game, formulaic info_landscape fields). For a strategy store with dedup downstream, the filler is collapsed automatically, so the novel insights survive at flash-lite's much lower price point.
 
 #### 3.5-flash: decent single-pass coverage → meaningful per-role additions
 
@@ -317,9 +319,14 @@ The judge's diversity metric penalizes per-role output for covering the same gam
 
 The pattern across models is clear: **the less budget a model allocates to minority roles in single-pass, the larger the information gain from per-role extraction.** Flash-lite goes from 1 investigator item/game to 7 — a qualitative leap. 3.5-flash goes from 2 to 4 — still valuable. 2.5-flash goes from 3 to 5 — incremental.
 
+Peak insight quality is surprisingly similar across models — flash-lite's best investigator strategy points are as concise and actionable as 3.5-flash's. The difference is consistency: 3.5-flash maintains high quality across all items, while flash-lite's best ~40% is surrounded by generic filler. With a dedup pipeline downstream, this distinction matters less — dedup collapses the filler and the novel insights from all models survive.
+
 A retrieval-based evaluation — "given a specific in-game situation, does the per-role store return a useful strategy that the single-pass store misses?" — would better capture the downstream value than aggregate judge scores.
 
-**Recommendation:** Per-role extraction is viable for gemini-3.5-flash when higher volume is needed (e.g., to populate a sparse strategy store). The ~2x volume at comparable quality is worthwhile if the 3x cost/time overhead is acceptable. Not recommended for gemini-2.5-flash (epistemic drops) or flash-lite (low specificity, extreme latency variance).
+**Recommendation:** Per-role extraction is viable for all models when higher volume is needed to populate a strategy store, with the dedup pipeline handling filler collapse. Model choice depends on the tradeoff:
+- **gemini-3.5-flash**: best consistency — highest proportion of novel, actionable items. 3x cost overhead.
+- **gemini-3.1-flash-lite**: best value — peak insights are competitive with 3.5-flash at a fraction of the cost, but more filler to dedup. Latency is highly variable (58s–474s/game).
+- **gemini-2.5-flash**: not recommended — epistemic compliance drops and player_ID leakage re-emerges under per-role, and single-pass already captures most investigator situations.
 
 **Note:** Per-role results use 5 games vs 10 games for single-pass Phase 3, so the quality comparison has a sample size caveat. The volume and timing comparisons are directional.
 
