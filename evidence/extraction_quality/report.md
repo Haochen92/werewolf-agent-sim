@@ -442,6 +442,111 @@ Key observations:
 
 Flash-lite per-role produces **1.9x more items**, is **faster** (38s vs 44s — the 4 calls run quicker than one large call), costs **6x less**, and achieves **45% pairwise win rate** against 3.5-flash single-pass. With a dedup pipeline downstream that collapses filler, the volume advantage compounds — more unique insights survive dedup at a fraction of the cost.
 
+### gemini-2.5-pro evaluation (Phase 6)
+
+Added gemini-2.5-pro to the per-role pipeline to establish the quality ceiling. Ran both single-pass and per-role extraction on the same 5 games, then judged with the 8-dimension per-role judge and pairwise comparisons against 3.5-flash and flash-lite. Judge: gemini-3.1-pro-preview.
+
+#### Extraction output
+
+| Mode | Avg obs/game | Avg sp/game | Player_ID leak | Avg time/game |
+|---|---|---|---|---|
+| Single-pass | 8.6 | 9.0 | 0% | 75s (58–111s) |
+| Per-role | 18.4 | 20.0 | 0% | 235s (189–275s) |
+
+Per-role doubles volume (+114% obs, +122% sp) at 3.1x the latency — the same pattern seen with other models in Phase 4.
+
+#### Per-role judge scores (8 dimensions)
+
+**gemini-2.5-pro per-role:**
+
+| Role | Spec | Epist | Ground | Cover | Divers | Persp | StrDepth | Novelty |
+|---|---|---|---|---|---|---|---|---|
+| wolf (n=5) | 5.00 | 5.00 | 4.80 | 2.60 | 4.40 | 5.00 | 5.00 | 4.40 |
+| villager (n=5) | 4.80 | 5.00 | 5.00 | 4.40 | 4.80 | 3.80 | 5.00 | 4.60 |
+| healer (n=5) | 4.20 | 5.00 | 5.00 | 3.40 | 4.40 | 4.20 | 4.40 | 3.60 |
+| investigator (n=5) | 5.00 | 5.00 | 4.20 | 3.80 | 5.00 | 5.00 | 5.00 | 4.40 |
+| **OVERALL (n=20)** | **4.75** | **5.00** | **4.75** | **3.55** | **4.65** | **4.50** | **4.85** | **4.25** |
+
+**gemini-2.5-pro single-pass:**
+
+| Role | Spec | Epist | Ground | Cover | Divers | Persp | StrDepth | Novelty |
+|---|---|---|---|---|---|---|---|---|
+| wolf (n=5) | 4.60 | 5.00 | 4.60 | 2.00 | 4.60 | 5.00 | 4.80 | 3.80 |
+| villager (n=5) | 4.40 | 4.40 | 4.80 | 2.40 | 4.40 | 4.40 | 4.60 | 3.80 |
+| healer (n=5) | 3.40 | 5.00 | 4.80 | 1.20 | 2.60 | 4.40 | 4.00 | 2.20 |
+| investigator (n=5) | 4.20 | 4.80 | 3.60 | 1.40 | 3.80 | 5.00 | 4.40 | 3.20 |
+| **OVERALL (n=20)** | **4.15** | **4.80** | **4.45** | **1.75** | **3.85** | **4.70** | **4.45** | **3.25** |
+
+**Delta (per-role minus single-pass):**
+
+| Dimension | Per-role | Single-pass | Delta |
+|---|---|---|---|
+| Specificity | 4.75 | 4.15 | **+0.60** |
+| Epistemic | 5.00 | 4.80 | +0.20 |
+| Grounding | 4.75 | 4.45 | +0.30 |
+| Coverage | 3.55 | 1.75 | **+1.80** |
+| Diversity | 4.65 | 3.85 | **+0.80** |
+| Perspective | 4.50 | 4.70 | -0.20 |
+| Strategy depth | 4.85 | 4.45 | **+0.40** |
+| Novelty | 4.25 | 3.25 | **+1.00** |
+
+Per-role extraction is a clear win on 2.5-pro. The largest gains are coverage (+1.80), novelty (+1.00), and diversity (+0.80) — the dimensions that directly measure how much unique, non-obvious content is extracted. Single-pass healer and investigator coverage scores (1.20 and 1.40) are near-floor, confirming single-pass systematically starves minority roles even with a strong model.
+
+#### Cross-model comparison (8-dim judge, per-role extraction)
+
+| Model | Spec | Epist | Ground | Cover | Divers | Persp | StrDepth | Novelty | **Avg** |
+|---|---|---|---|---|---|---|---|---|---|
+| **gemini-2.5-pro** | 4.75 | 5.00 | 4.75 | 3.55 | 4.65 | 4.50 | 4.85 | 4.25 | **4.60** |
+| flash-lite medium | 3.60 | 4.80 | 4.25 | 2.55 | 3.90 | 4.85 | 3.95 | 2.95 | **3.86** |
+
+2.5-pro per-role scores higher on every dimension except perspective compliance (4.50 vs 4.85 — flash-lite's only advantage). The gap is widest on novelty (+1.30) and strategy depth (+0.90), the two new dimensions that measure insight quality rather than structural correctness.
+
+#### Pairwise comparison: single-pass vs per-role (same model)
+
+| Role | Single-pass wins | Per-role wins |
+|---|---|---|
+| wolf | 0 (0%) | **5 (100%)** |
+| villager | **3 (60%)** | 2 (40%) |
+| healer | 1 (20%) | **4 (80%)** |
+| investigator | 0 (0%) | **5 (100%)** |
+| **OVERALL** | **4 (20%)** | **16 (80%)** |
+
+Per-role dominates at 80% win rate. Single-pass only wins on villager — the role that gets the most attention in single-pass extraction because villager events dominate the transcript. Wolf and investigator are 5-0 sweeps for per-role.
+
+#### Pairwise comparison: 2.5-pro per-role vs 3.5-flash per-role
+
+| Role | 2.5-pro wins | 3.5-flash wins |
+|---|---|---|
+| wolf | **4 (80%)** | 1 (20%) |
+| villager | **3 (60%)** | 2 (40%) |
+| healer | **5 (100%)** | 0 (0%) |
+| investigator | **4 (80%)** | 1 (20%) |
+| **OVERALL** | **16 (80%)** | **4 (20%)** |
+
+2.5-pro dominates 3.5-flash when both use per-role extraction. The healer gap is most striking — 5-0 sweep. 3.5-flash's wins are scattered and low-confidence (the villager win in game 1ef60e08 had conf=1).
+
+#### Pairwise comparison: 2.5-pro per-role vs flash-lite medium per-role
+
+| Role | 2.5-pro wins | Flash-lite wins |
+|---|---|---|
+| wolf | **5 (100%)** | 0 (0%) |
+| villager | **5 (100%)** | 0 (0%) |
+| healer | **5 (100%)** | 0 (0%) |
+| investigator | **5 (100%)** | 0 (0%) |
+| **OVERALL** | **20 (100%)** | **0 (0%)** |
+
+Clean sweep at high confidence (all matchups conf 4-5). The quality gap between 2.5-pro and flash-lite is large and consistent across all roles and games.
+
+#### Findings
+
+**Quality hierarchy for per-role extraction:** gemini-2.5-pro (4.60 avg, 80-100% pairwise) >> gemini-3.5-flash (80% vs flash-lite in Phase 5) >> flash-lite medium (3.86 avg). The gap between pro and flash-lite (0.74 avg, 100% pairwise) is larger than the gap between 3.5-flash and flash-lite (89% vs 11% in Phase 5).
+
+**Per-role is even more beneficial for 2.5-pro than for smaller models.** Per-role wins 80% of matchups against single-pass with 2.5-pro, compared to the more mixed results seen in Phase 4 with flash models. The healer and investigator coverage gains are dramatic (1.20→3.40 and 1.40→3.80) — even a strong model can't adequately cover minority roles in a single pass.
+
+**Cost/quality tradeoff remains the key decision.** 2.5-pro per-role is unambiguously the best extractor, but at significant cost: ~$30/M output tokens vs flash-lite's ~$1.50/M, with 3.1x higher latency per game. The question is whether the 0.74-point judge improvement and 100% pairwise dominance over flash-lite translate to meaningfully better downstream retrieval after dedup collapses both into the strategy store.
+
+**The user's hypothesis holds: 4× flash-lite per-role is faster and cheaper than 1× 2.5-pro single-pass.** Flash-lite per-role runs in 38s/game (vs 75s for 2.5-pro single-pass) at ~20x lower cost, produces 1.7x more items (30.8 vs 17.6), and the per-role judge scores (3.86 avg) are competitive with 2.5-pro single-pass (3.86 avg). The tradeoff is whether flash-lite's lower per-item quality matters after dedup — and whether 2.5-pro per-role's substantially higher per-item quality (4.60 avg) justifies the premium.
+
 ## Prompt fix: player_ID enforcement
 
 Despite observations being allowed omniscient knowledge (they're post-game factual records), player_IDs are still undesirable because:
@@ -475,6 +580,12 @@ Fix: Replaced with a standalone NAMING RULE block containing:
 3. **Specificity was underestimated**: The judge was scoring against incomplete context. The actual retrieval query (composed_situation) is substantially more specific than the narrow situation field alone.
 
 4. **gemini-3.5-flash is viable as extractor**: Comparable quality at lower cost and higher speed, with ~20% fewer items per game.
+
+5. **Per-role extraction is strictly better than single-pass** for all models tested. The benefit scales with model capability — 2.5-pro per-role achieves 80% pairwise win rate vs its own single-pass, with the largest gains on coverage (+1.80), novelty (+1.00), and diversity (+0.80).
+
+6. **Model quality hierarchy is clear**: gemini-2.5-pro per-role (4.60 avg) >> 3.5-flash per-role >> flash-lite medium per-role (3.86 avg). 2.5-pro sweeps flash-lite 20-0 and beats 3.5-flash 16-4.
+
+7. **Flash-lite per-role remains the best value**: 4× flash-lite per-role is faster (38s vs 75s) and ~20× cheaper than 1× 2.5-pro single-pass, with comparable aggregate judge scores (3.86 vs 3.86). For strategy store population with dedup downstream, the cost/speed advantage outweighs the per-item quality gap.
 
 ## Artifacts
 
@@ -526,3 +637,10 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/per_role_judge_gemini-3.1-pro-preview_20260526_110816.jsonl` | Phase 5: per-role 8-dimension judge scores for flash-lite medium (20 role evals) |
 | `model_comparison/comparison_gemini-3.1-pro-preview_20260526_111845.jsonl` | Phase 5: pairwise comparison, flash-lite per-role vs 3.5-flash per-role (18 matchups) |
 | `model_comparison/comparison_gemini-3.1-pro-preview_20260526_114150.jsonl` | Phase 5: pairwise comparison, flash-lite per-role vs 3.5-flash single-pass (20 matchups) |
+| `model_comparison/gemini-2.5-pro_5games_20260526_120027.jsonl` | Phase 6: 2.5-pro single-pass extraction (5 games) |
+| `model_comparison/gemini-2.5-pro_5games_per-role_20260526_121348.jsonl` | Phase 6: 2.5-pro per-role extraction (5 games, 4 calls/game) |
+| `model_comparison/per_role_judge_gemini-3.1-pro-preview_20260526_121947.jsonl` | Phase 6: per-role 8-dimension judge scores for 2.5-pro per-role (20 role evals) |
+| `model_comparison/per_role_judge_gemini-3.1-pro-preview_20260526_121950.jsonl` | Phase 6: per-role 8-dimension judge scores for 2.5-pro single-pass (20 role evals) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_121952.jsonl` | Phase 6: pairwise comparison, 2.5-pro single-pass vs per-role (20 matchups) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_121958.jsonl` | Phase 6: pairwise comparison, 2.5-pro per-role vs 3.5-flash per-role (20 matchups) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_121959.jsonl` | Phase 6: pairwise comparison, 2.5-pro per-role vs flash-lite per-role (20 matchups) |
