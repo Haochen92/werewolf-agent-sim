@@ -267,7 +267,45 @@ Quality delta (per-role minus single-pass):
 - **Diversity scores drop** across all models, but this is expected and not a real quality concern. Per-role extraction deliberately covers the same game events from 4 different perspectives — the judge sees overlapping events and scores them as "repetitive," but a wolf's view of a mislynch and a villager's view of the same mislynch are distinct retrieval targets. The diversity metric is not calibrated for per-role output. Perspective scores also dip slightly — possibly the merged output confuses the judge when it sees the same events from 4 perspectives.
 - **2.5-flash quality degrades substantially** under per-role (avg 4.43 vs 4.50 single-pass). Epistemic compliance drops to 4.00 (was 4.40) — more items means more chances for knowledge-level violations. Player_ID leakage re-appears at 5.1% despite the naming rule.
 - **3.5-flash quality holds** (avg 4.93 vs 4.92 single-pass). The only drops are diversity and perspective on one game (both scored 4), while grounding and epistemic both improve.
-- **Flash-lite gets the biggest volume boost** (+210% obs). Grounding and coverage both improve (+0.60 each). Specificity drops to 3.80 (-0.10). Per-role latency is extremely variable (58s–474s per game, avg 244s) — an 8.1x slowdown vs single-pass.
+- **Flash-lite (high thinking) gets the biggest volume boost** (+210% obs). Grounding and coverage both improve (+0.60 each). Specificity drops to 3.80 (-0.10). Per-role latency is extremely variable (58s–474s per game, avg 244s) — an 8.1x slowdown vs single-pass. See the thinking budget experiment below for a much better configuration.
+
+#### Flash-lite thinking budget experiment: medium vs high
+
+The high thinking budget (8192 tokens) caused extreme latency variance for flash-lite per-role (58s–474s/game). Tested medium thinking (4096 tokens) on the same 5 games.
+
+| Metric | High (8192) | Medium (4096) |
+|---|---|---|
+| Avg time/game | 244s (58–474s) | 38s (36–40s) |
+| Avg obs/game | 15.2 | 14.8 |
+| Avg sp/game | 15.6 | 16.0 |
+| Judge avg | 4.13 | **4.57** |
+
+Judge score breakdown (high → medium):
+
+| Dimension | High | Medium | Delta |
+|---|---|---|---|
+| Specificity | 3.80 | **4.40** | +0.60 |
+| Epistemic | 4.80 | 4.80 | 0.00 |
+| Grounding | 4.20 | 4.20 | 0.00 |
+| Coverage | 5.00 | 5.00 | 0.00 |
+| Diversity | 3.20 | **4.00** | +0.80 |
+| Perspective | 4.80 | **5.00** | +0.20 |
+
+Medium thinking is strictly better: **6.4x faster**, **+0.44 judge avg**, comparable volume, zero latency spikes. The high thinking budget was actively hurting flash-lite — more thinking tokens led to worse and slower output.
+
+Manual inspection confirms medium thinking preserves the quality insights (investigation target selection, failure-mode pivots, pressure tactics) while producing less filler. Medium is also more willing to recommend sharing information ("publicly clear investigated villagers," "prepare to communicate findings before death") vs high thinking's conservative "never reveal your role" in every game.
+
+**Flash-lite medium per-role vs 3.5-flash single-pass:**
+
+| Metric | 3.5-flash single-pass | Flash-lite medium per-role |
+|---|---|---|
+| Avg items/game | 8.4 obs + 8.0 sp | 14.8 obs + 16.0 sp (**1.9x**) |
+| Investigator items (5 games) | 19 | 38 (**2x**) |
+| Avg time/game | 44s | 38s (faster) |
+| Output price/1M | $9.00 | $1.50 (**6x cheaper**) |
+| Judge avg | **4.92** | 4.57 (-0.35) |
+
+The judge gap is real on specificity (-0.60) and grounding (-0.50), but flash-lite medium per-role provides 2x the role coverage at 6x lower cost. For strategy store population with dedup downstream, this is a compelling tradeoff.
 
 #### Judge scores vs actual content quality
 
@@ -325,7 +363,7 @@ A retrieval-based evaluation — "given a specific in-game situation, does the p
 
 **Recommendation:** Per-role extraction is viable for all models when higher volume is needed to populate a strategy store, with the dedup pipeline handling filler collapse. Model choice depends on the tradeoff:
 - **gemini-3.5-flash**: best consistency — highest proportion of novel, actionable items. 3x cost overhead.
-- **gemini-3.1-flash-lite**: best value — peak insights are competitive with 3.5-flash at a fraction of the cost, but more filler to dedup. Latency is highly variable (58s–474s/game).
+- **gemini-3.1-flash-lite (medium thinking)**: best value — peak insights are competitive with 3.5-flash at 6x lower cost, 38s/game with stable latency. More filler to dedup than 3.5-flash but comparable speed.
 - **gemini-2.5-flash**: not recommended — epistemic compliance drops and player_ID leakage re-emerges under per-role, and single-pass already captures most investigator situations.
 
 **Note:** Per-role results use 5 games vs 10 games for single-pass Phase 3, so the quality comparison has a sample size caveat. The volume and timing comparisons are directional.
@@ -408,4 +446,6 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/gemini-2.5-flash_5games_per-role_20260526_090106.jsonl` | Phase 4: 2.5-flash per-role extraction (5 games, 4 calls/game) |
 | `model_comparison/gemini-3.1-flash-lite-high_5games_per-role_20260526_093903.jsonl` | Phase 4: flash-lite per-role extraction (5 games, 4 calls/game) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260526_090242.jsonl` | Phase 4: judge scores for 3.5-flash + 2.5-flash per-role extractions (10 cases, Vertex AI) |
-| `model_comparison/judge_gemini-3.1-pro-preview_20260526_093911.jsonl` | Phase 4: judge scores for flash-lite per-role extraction (5 cases, Vertex AI) |
+| `model_comparison/judge_gemini-3.1-pro-preview_20260526_093911.jsonl` | Phase 4: judge scores for flash-lite high per-role extraction (5 cases, Vertex AI) |
+| `model_comparison/gemini-3.1-flash-lite-medium_5games_per-role_20260526_101628.jsonl` | Phase 4: flash-lite medium thinking per-role extraction (5 games) |
+| `model_comparison/judge_gemini-3.1-pro-preview_20260526_101640.jsonl` | Phase 4: judge scores for flash-lite medium per-role extraction (5 cases, Vertex AI) |
