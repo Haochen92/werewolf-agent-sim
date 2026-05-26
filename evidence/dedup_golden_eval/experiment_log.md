@@ -119,7 +119,7 @@ The 7 tricky cases revealed three patterns in the dedup prompt's failure modes:
 
 These three biases are actionable prompt improvements. They're documented with full original text in `eval_sets/dedup_v2_tricky_cases.md`.
 
-## Lessons
+## Phase 1 Lessons
 
 **Ground-truth labels expose biases that LLM judges miss.** The existing `dedup_eval.py` LLM judge scored decision correctness on a 1-5 scale, but it couldn't identify systematic patterns like "over-merging when villager response is similar." That requires comparing predicted vs actual labels across cases and looking at the confusion matrix — which requires knowing the actual correct answer. LLM-as-judge is useful for evaluating *rewrite quality* (which is subjective), but *decision correctness* needs deterministic scoring against ground truth.
 
@@ -129,7 +129,7 @@ These three biases are actionable prompt improvements. They're documented with f
 
 **A small, well-annotated dataset beats a large noisy one for prompt debugging.** 50 cases was enough to identify three distinct bias patterns with specific prompt fixes. The value wasn't in the accuracy number (78% is a baseline, not a verdict) — it was in the mismatch analysis that showed *why* the LLM errs. The tricky cases file, with full original text and labeled tension, is more useful for prompt improvement than the aggregate metrics.
 
-## What's Next
+## Phase 1 — What's Next
 
 1. **Prompt refinement**: Apply the three bias corrections to the dedup prompt and re-run scoring to measure improvement. The tricky cases file provides the test cases.
 2. **Model comparison via replay**: Use `dedup_replay.py` to run the same 50 cases through different models (gemini-2.5-pro, gemini-3.5-flash) and score against golden labels. The scorer already handles replayed datasets.
@@ -459,7 +459,7 @@ Removing the cascade worked for K recall: flash-lite jumped from 41%→55%, 3.5-
 
 The calibration cascade is a lever with no neutral position: present = over-discard, absent = over-merge/over-keep. The next iteration targets this directly.
 
-## Prompt v8: Targeted Anti-Merge Calibration (65 cases, in progress)
+## Prompt v8: Targeted Anti-Merge Calibration (65 cases)
 
 ### What changed
 
@@ -505,7 +505,7 @@ Per-token ratio: 6x for both input and output.
 
 ### Per-game economics
 
-The dedup pipeline runs ~15.6 LLM calls per game (390 spans across 25 games in the eval dataset). Each call sends ~1,163 input tokens (new entry + candidates) and receives ~200 output tokens. Flash-lite additionally generates ~400 thinking tokens per call (thinking=low mode).
+The dedup pipeline runs ~15.6 LLM calls per game (390 spans across 30 games in the eval dataset). Each call sends ~1,163 input tokens (new entry + candidates) and receives ~200 output tokens. Flash-lite additionally generates ~400 thinking tokens per call (thinking=low mode).
 
 | Dimension | flash-lite | 3.5-flash | Delta |
 |---|---|---|---|
