@@ -18,8 +18,9 @@ from Agents.llm_factory import create_chat_model
 from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field
 
-from Agents.memory import DEDUP_THRESHOLD
+from Agents.memory import embeddings as _embedding_model
 from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, STRATEGY_DEDUP_PROMPT
+from Agents.retrieval_filters import cosine_similarity, embed_texts
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas import Observation, StoredObservation, StrategyPoint, StoredStrategyPoint
 from Agents.schemas.evaluation import DedupCase, DedupCandidate
@@ -36,6 +37,15 @@ DEDUP_TOP_N = 5
 DEDUP_MAX_RETRIES = 2
 DEDUP_MODEL = "gemini-3.1-flash-lite"
 DEDUP_THINKING_LEVEL = "low"
+
+# Embedding pre-filter thresholds — calibrated against dedup_v2 golden labels.
+# Zero-error boundaries on the 65-case golden set:
+#   SP: action_sim ≥0.90 → all D (5/10), action_sim <0.81 → all K (1/15)
+#   Obs: content_sim ≥0.96 → all D (4/20), content_sim <0.935 → all K (8/20)
+SP_ACTION_DISCARD_THRESHOLD = 0.90
+SP_ACTION_KEEP_THRESHOLD = 0.81
+OBS_CONTENT_DISCARD_THRESHOLD = 0.96
+OBS_CONTENT_KEEP_THRESHOLD = 0.935
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +130,7 @@ class DedupResult(BaseModel):
     auto: bool = False
     candidates: list[dict] = Field(default_factory=list)
     decision_detail: dict | None = None
+    similarity_scores: dict[str, float] | None = None
 
 
 class DedupStats(BaseModel):
@@ -132,6 +143,8 @@ class DedupStats(BaseModel):
     failed: int = 0  # Fell back to raw storage
     auto_kept: int = 0
     auto_discarded: int = 0
+    embedding_auto_kept: int = 0
+    embedding_auto_discarded: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -201,6 +214,89 @@ def _get_dedup_llm():
 
 
 # ---------------------------------------------------------------------------
+# Embedding pre-filters
+# ---------------------------------------------------------------------------
+
+
+def _embedding_prefilter_strategy_point(
+    point: StrategyPoint,
+    candidates: list,
+) -> tuple[Literal["discard", "keep"] | None, dict[str, float]]:
+    """Compare action embeddings to decide before LLM.
+
+    Returns (decision_or_None, similarity_scores_dict).
+    """
+    scores: dict[str, float] = {}
+    try:
+        texts = [point.action] + [c.value.get("action", "") for c in candidates]
+        vecs = embed_texts(texts, _embedding_model)
+        if len(vecs) < 2:
+            return None, scores
+
+        new_vec = vecs[0]
+        max_action_sim = 0.0
+        for i, cand_vec in enumerate(vecs[1:]):
+            sim = cosine_similarity(new_vec, cand_vec)
+            scores[f"action_sim_c{i + 1}"] = round(sim, 4)
+            max_action_sim = max(max_action_sim, sim)
+
+        scores["max_action_sim"] = round(max_action_sim, 4)
+
+        if max_action_sim >= SP_ACTION_DISCARD_THRESHOLD:
+            return "discard", scores
+        if max_action_sim < SP_ACTION_KEEP_THRESHOLD:
+            return "keep", scores
+        return None, scores
+
+    except Exception:
+        logger.warning("Embedding pre-filter failed for strategy point; falling through to LLM", exc_info=True)
+        return None, scores
+
+
+def _embedding_prefilter_observation(
+    observation: Observation,
+    candidates: list,
+) -> tuple[Literal["discard", "keep"] | None, dict[str, float]]:
+    """Compare content embeddings to decide before LLM.
+
+    Uses max content similarity (situation+approach+outcome concatenated) for
+    both auto-discard (high end) and auto-keep (low end).
+
+    Returns (decision_or_None, similarity_scores_dict).
+    """
+    scores: dict[str, float] = {}
+    try:
+        new_content = f"{observation.composed_situation} {observation.approach} {observation.outcome}"
+        content_texts = [new_content] + [
+            f"{c.value.get('situation', '')} {c.value.get('approach', '')} {c.value.get('outcome', '')}"
+            for c in candidates
+        ]
+        content_vecs = embed_texts(content_texts, _embedding_model)
+        if len(content_vecs) < 2:
+            return None, scores
+
+        new_vec = content_vecs[0]
+        max_content_sim = 0.0
+        for i, cand_vec in enumerate(content_vecs[1:]):
+            sim = cosine_similarity(new_vec, cand_vec)
+            scores[f"content_sim_c{i + 1}"] = round(sim, 4)
+            max_content_sim = max(max_content_sim, sim)
+        scores["max_content_sim"] = round(max_content_sim, 4)
+
+        if max_content_sim >= OBS_CONTENT_DISCARD_THRESHOLD:
+            return "discard", scores
+
+        if max_content_sim < OBS_CONTENT_KEEP_THRESHOLD:
+            return "keep", scores
+
+        return None, scores
+
+    except Exception:
+        logger.warning("Embedding pre-filter failed for observation; falling through to LLM", exc_info=True)
+        return None, scores
+
+
+# ---------------------------------------------------------------------------
 # Core dedup logic for a single observation
 # ---------------------------------------------------------------------------
 
@@ -226,15 +322,6 @@ def dedup_single_observation(
 
     candidates = _serialize_candidates(all_similar) if all_similar else []
 
-    if all_similar:
-        top_item = all_similar[0]
-        top_score = top_item.score or 0.0
-        if top_score >= DEDUP_THRESHOLD:
-            _update_auto_observation_duplicate(store, namespace, top_item.key, top_item)
-            return DedupResult(
-                action=DedupAction.DISCARD, auto=True, candidates=candidates,
-            )
-
     similar = [
         item
         for item in all_similar
@@ -245,6 +332,25 @@ def dedup_single_observation(
         _store_new_observation(store, namespace, observation, game_id)
         return DedupResult(
             action=DedupAction.KEEP, auto=True, candidates=candidates,
+        )
+
+    prefilter_decision, sim_scores = _embedding_prefilter_observation(
+        observation, similar,
+    )
+
+    if prefilter_decision == "discard":
+        top_item = similar[0]
+        _update_auto_observation_duplicate(store, namespace, top_item.key, top_item)
+        return DedupResult(
+            action=DedupAction.DISCARD, auto=True, candidates=candidates,
+            similarity_scores=sim_scores,
+        )
+
+    if prefilter_decision == "keep":
+        _store_new_observation(store, namespace, observation, game_id)
+        return DedupResult(
+            action=DedupAction.KEEP, auto=True, candidates=candidates,
+            similarity_scores=sim_scores,
         )
 
     decision = _call_observation_dedup_llm(observation, similar)
@@ -263,6 +369,7 @@ def dedup_single_observation(
         action=action,
         candidates=_serialize_candidates(similar),
         decision_detail=decision.model_dump(mode="json"),
+        similarity_scores=sim_scores,
     )
 
 
@@ -358,15 +465,6 @@ def dedup_single_strategy_point(
 
     candidates = _serialize_candidates(all_similar) if all_similar else []
 
-    if all_similar:
-        top_item = all_similar[0]
-        top_score = top_item.score or 0.0
-        if top_score >= DEDUP_THRESHOLD:
-            _update_auto_duplicate(store, namespace, top_item.key, top_item, point)
-            return DedupResult(
-                action=DedupAction.DISCARD, auto=True, candidates=candidates,
-            )
-
     similar = [
         item
         for item in all_similar
@@ -379,6 +477,25 @@ def dedup_single_strategy_point(
             action=DedupAction.KEEP, auto=True, candidates=candidates,
         )
 
+    prefilter_decision, sim_scores = _embedding_prefilter_strategy_point(
+        point, similar,
+    )
+
+    if prefilter_decision == "discard":
+        top_item = similar[0]
+        _update_auto_duplicate(store, namespace, top_item.key, top_item, point)
+        return DedupResult(
+            action=DedupAction.DISCARD, auto=True, candidates=candidates,
+            similarity_scores=sim_scores,
+        )
+
+    if prefilter_decision == "keep":
+        _store_new_point(store, namespace, point, game_id)
+        return DedupResult(
+            action=DedupAction.KEEP, auto=True, candidates=candidates,
+            similarity_scores=sim_scores,
+        )
+
     decision = _call_dedup_llm(point, similar)
     if decision is None:
         return None
@@ -388,6 +505,7 @@ def dedup_single_strategy_point(
         action=action,
         candidates=_serialize_candidates(similar),
         decision_detail=decision.model_dump(mode="json"),
+        similarity_scores=sim_scores,
     )
 
 
@@ -688,6 +806,7 @@ def _emit_dedup_span(
         decision=decision,
         decision_detail=result.decision_detail if result else None,
         auto=auto,
+        similarity_scores=result.similarity_scores if result else None,
     )
 
     with langfuse.start_as_current_observation(
@@ -767,16 +886,21 @@ def run_observation_downstream_dedup(
             stats.kept += 1
             if result.auto:
                 stats.auto_kept += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_kept += 1
         elif result.action == DedupAction.DISCARD:
             stats.discarded += 1
             if result.auto:
                 stats.auto_discarded += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_discarded += 1
 
     logger.info(
         f"Observation dedup complete: {stats.kept} kept, "
         f"{stats.discarded} discarded, "
         f"{stats.failed} failed, "
-        f"{stats.auto_kept} auto-kept, {stats.auto_discarded} auto-discarded"
+        f"{stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
+        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
     )
     return stats
 
@@ -834,14 +958,18 @@ def run_downstream_dedup(
             stats.kept += 1
             if result.auto:
                 stats.auto_kept += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_kept += 1
         elif result.action == DedupAction.DISCARD:
             stats.discarded += 1
             if result.auto:
                 stats.auto_discarded += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_discarded += 1
 
     logger.info(
         f"Dedup complete: {stats.kept} kept, {stats.discarded} discarded, "
-        f"{stats.failed} failed, {stats.auto_kept} auto-kept, "
-        f"{stats.auto_discarded} auto-discarded"
+        f"{stats.failed} failed, {stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
+        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
     )
     return stats

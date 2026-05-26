@@ -103,3 +103,4 @@ class DedupCase(BaseModel):
     decision: str = ""
     decision_detail: dict | None = None
     auto: bool = False
+    similarity_scores: dict[str, float] | None = None

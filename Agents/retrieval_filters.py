@@ -37,7 +37,7 @@ def embed_texts(
     return []
 
 
-def _cosine_similarity(a: NDArray[np.float64], b: NDArray[np.float64]) -> float:
+def cosine_similarity(a: NDArray[np.float64], b: NDArray[np.float64]) -> float:
     norm_a = np.linalg.norm(a)
     norm_b = np.linalg.norm(b)
     if norm_a == 0 or norm_b == 0:
@@ -74,7 +74,7 @@ def mmr_filter(
         for i in remaining:
             rel = normalized[i]
             max_sim = max(
-                _cosine_similarity(embeddings[i], embeddings[j])
+                cosine_similarity(embeddings[i], embeddings[j])
                 for j in selected_indices
             )
             mmr = lambda_ * rel - (1 - lambda_) * max_sim
@@ -117,7 +117,7 @@ def dedup_gate(
 
     for i in range(1, len(items)):
         too_similar = any(
-            _cosine_similarity(embeddings[i], embeddings[j]) > similarity_threshold
+            cosine_similarity(embeddings[i], embeddings[j]) > similarity_threshold
             for j in selected_indices
         )
         if not too_similar:
