@@ -51,6 +51,25 @@ DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS = 5
 DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY = 1.0
 DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
 
+DEFAULT_TRIAGE_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_TRIAGE_THINKING_LEVEL = "medium"
+
+
+class TwoPassConfig(BaseModel):
+    """Configuration for two-pass batch dedup: fast triage + targeted verification.
+
+    Pass 1 (triage): cheap/fast model classifies all entries. KEEP and DISCARD
+    decisions are trusted. MERGE decisions are escalated to pass 2.
+
+    Pass 2 (verify): slower/smarter model re-evaluates only the MERGE-flagged
+    entries and writes merge text where appropriate.
+    """
+
+    triage_model: str = DEFAULT_TRIAGE_MODEL
+    triage_thinking_level: str | None = DEFAULT_TRIAGE_THINKING_LEVEL
+    verify_model: str = DEFAULT_BATCH_MODEL
+    verify_thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL or None
+
 
 class StrategyBatchOperation(BaseModel):
     action: Literal["DISCARD", "KEEP"]
@@ -789,6 +808,78 @@ def _call_cluster_llm(
     return result
 
 
+def _two_pass_cluster_dedup(
+    memory_kind: MemoryKind,
+    role: str,
+    action_phase: str,
+    live_cluster_keys: list[str],
+    items_by_key: dict[str, Any],
+    two_pass: TwoPassConfig,
+) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
+    """Run two-pass dedup on a single cluster.
+
+    Pass 1: triage model classifies all entries.
+    Pass 2: verify model re-evaluates only MERGE-flagged entries.
+    Returns a combined output with trusted + verified operations.
+    """
+    entries, index_to_key = _format_cluster_entries(
+        memory_kind, live_cluster_keys, items_by_key,
+    )
+
+    triage_result = _call_cluster_llm(
+        memory_kind, role, action_phase, entries, index_to_key,
+        model=two_pass.triage_model,
+        thinking_level=two_pass.triage_thinking_level,
+    )
+
+    trusted_ops = []
+    merge_keys: set[str] = set()
+
+    for op in triage_result.operations:
+        if op.action == "MERGE":
+            merge_keys.update(op.source_keys)
+        else:
+            trusted_ops.append(op)
+
+    if not merge_keys:
+        return triage_result
+
+    logger.info(
+        "Two-pass: triage flagged %d keys as MERGE in cluster of %d, "
+        "escalating to verify model",
+        len(merge_keys), len(live_cluster_keys),
+    )
+
+    verify_keys = [k for k in live_cluster_keys if k in merge_keys]
+    if len(verify_keys) < 2:
+        for op in triage_result.operations:
+            if op.action == "MERGE":
+                op.action = "KEEP"
+                op.merged_situation = None
+                op.survivor_key = None
+                if hasattr(op, "merged_approach"):
+                    op.merged_approach = None
+                if hasattr(op, "merged_outcome"):
+                    op.merged_outcome = None
+                if hasattr(op, "merged_action"):
+                    op.merged_action = None
+        return triage_result
+
+    verify_entries, verify_index_to_key = _format_cluster_entries(
+        memory_kind, verify_keys, items_by_key,
+    )
+    verify_result = _call_cluster_llm(
+        memory_kind, role, action_phase, verify_entries, verify_index_to_key,
+        model=two_pass.verify_model,
+        thinking_level=two_pass.verify_thinking_level,
+    )
+
+    all_ops = trusted_ops + list(verify_result.operations)
+    if memory_kind == "strategy_points":
+        return StrategyBatchDedupOutput(operations=all_ops)
+    return ObservationBatchDedupOutput(operations=all_ops)
+
+
 def dedup_namespace(
     target_store: BaseStore,
     memory_kind: MemoryKind,
@@ -806,6 +897,7 @@ def dedup_namespace(
     embedding_model: str,
     embedding_dims: int,
     max_clusters: int | None = None,
+    two_pass: TwoPassConfig | None = None,
 ) -> NamespaceStats:
     namespace = (memory_kind, role, action_phase)
     items_by_key = _fetch_namespace_items(target_store, namespace)
@@ -845,19 +937,29 @@ def dedup_namespace(
             stats.skipped_clusters += 1
             continue
 
-        entries, index_to_key = _format_cluster_entries(
-            memory_kind, live_cluster_keys, items_by_key,
-        )
         try:
-            result = _call_cluster_llm(
-                memory_kind,
-                role,
-                action_phase,
-                entries,
-                index_to_key,
-                model,
-                thinking_level,
-            )
+            if two_pass is not None:
+                result = _two_pass_cluster_dedup(
+                    memory_kind,
+                    role,
+                    action_phase,
+                    live_cluster_keys,
+                    items_by_key,
+                    two_pass,
+                )
+            else:
+                entries, index_to_key = _format_cluster_entries(
+                    memory_kind, live_cluster_keys, items_by_key,
+                )
+                result = _call_cluster_llm(
+                    memory_kind,
+                    role,
+                    action_phase,
+                    entries,
+                    index_to_key,
+                    model,
+                    thinking_level,
+                )
         except Exception as exc:
             logger.warning(
                 "Batch dedup failed for namespace=%s role=%s cluster_size=%s: %s",
@@ -1004,6 +1106,7 @@ def run_batch_memory_dedup(
     max_clusters: int | None = None,
     cluster_report_only: bool = False,
     preview_chars: int = 160,
+    two_pass: TwoPassConfig | None = None,
 ) -> BatchDedupReport:
     memory_kinds = memory_kinds or ["observations", "strategy_points"]
     selected_roles = selected_roles or list(roles)
@@ -1078,6 +1181,7 @@ def run_batch_memory_dedup(
                         model=model,
                         thinking_level=thinking_level,
                         max_clusters=max_clusters,
+                        two_pass=two_pass,
                     )
                 except Exception as exc:
                     logger.warning(
@@ -1222,6 +1326,31 @@ def _parse_args() -> argparse.Namespace:
         help="Apply mutations and dump the store. Without this, run a dry-run report.",
     )
     parser.add_argument(
+        "--two-pass",
+        action="store_true",
+        help="Enable two-pass pipeline: fast triage model → targeted verification model.",
+    )
+    parser.add_argument(
+        "--triage-model",
+        default=DEFAULT_TRIAGE_MODEL,
+        help="Triage model for two-pass mode (pass 1).",
+    )
+    parser.add_argument(
+        "--triage-thinking-level",
+        default=DEFAULT_TRIAGE_THINKING_LEVEL,
+        help="Thinking level for triage model.",
+    )
+    parser.add_argument(
+        "--verify-model",
+        default=DEFAULT_BATCH_MODEL,
+        help="Verification model for two-pass mode (pass 2).",
+    )
+    parser.add_argument(
+        "--verify-thinking-level",
+        default=DEFAULT_BATCH_THINKING_LEVEL,
+        help="Thinking level for verification model.",
+    )
+    parser.add_argument(
         "--report-path",
         type=Path,
         default=None,
@@ -1236,6 +1365,15 @@ def main() -> int:
     seed_store_dir = args.seed_store_dir or args.store_dir
     dump_store_dir = args.dump_store_dir or args.store_dir
     thinking_level = args.thinking_level or None
+
+    two_pass_config = None
+    if args.two_pass:
+        two_pass_config = TwoPassConfig(
+            triage_model=args.triage_model,
+            triage_thinking_level=args.triage_thinking_level or None,
+            verify_model=args.verify_model,
+            verify_thinking_level=args.verify_thinking_level or None,
+        )
 
     report = run_batch_memory_dedup(
         seed_store_dir=seed_store_dir,
@@ -1255,6 +1393,7 @@ def main() -> int:
         max_clusters=args.max_clusters,
         cluster_report_only=args.cluster_report_only,
         preview_chars=args.preview_chars,
+        two_pass=two_pass_config,
     )
     report_json = json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True)
     if args.report_path:

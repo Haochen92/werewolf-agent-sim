@@ -82,8 +82,8 @@ Cluster 25 (strategy, 11 entries) is consistently hard — 64% for both models.
 2. **BEFORE MERGING checklist was the key improvement** for 2.5-pro — reduced over-merge from 12 to 2 errors.
 3. **Calibration bias should be neutral** — "when in doubt KEEP" hurt 3.5-flash; "when in doubt DISCARD" only applies to strategy. The right bias depends on downstream retrieval quality and agent strategy application, not on the prompt.
 4. **Cluster size limit of 15 is well-supported** — all models degrade sharply above 15 entries.
-5. **flash-lite is not viable** for batch dedup — over-merges regardless of prompt quality.
-6. **3.5-flash is the recommended model for decisions** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
+5. **flash-lite is not viable as a standalone model** for batch dedup — over-merges regardless of prompt quality. However, its high KEEP precision (91.8%) and DISCARD precision (86.7%) make it effective as a triage pass in a two-pass pipeline (see Time and Cost Analysis).
+6. **Two-pass pipeline (flash-lite triage → 2.5-pro verification) is the recommended production approach** — combines flash-lite's speed and KEEP/DISCARD precision with 2.5-pro's merge quality, reducing 2.5-pro API volume by ~69% (see Time and Cost Analysis). **3.5-flash remains the best single-model option** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
 
 ## Merge Rewrite Quality
 
@@ -119,9 +119,65 @@ The observation prompt at ~7383 chars is at 3.5-flash's structured output capaci
 
 **2.5-pro writes high-quality merges** with good information preservation (4.0/5) but fabricates 33% of the time — introducing game context not present in source entries.
 
+## Time and Cost Analysis
+
+### Per-model performance on 111-key eval set (11 clusters, v3 prompts)
+
+| Model | Accuracy | Total Time | Time/Cluster | Relative Speed |
+|---|---|---|---|---|
+| gemini-3.1-flash-lite (medium) | 72.1% | 145s | 13.2s | 1.0x (baseline) |
+| gemini-3.5-flash | 86.5% | 342s | 31.1s | 2.4x slower |
+| gemini-2.5-pro | 83.8% | 513s | 46.7s | 3.5x slower |
+
+At production scale (v4 store: 522 items, ~50 clusters), a full 2.5-pro batch dedup run takes 30-40 minutes. This makes it a periodic maintenance operation, not something to run after every game. Cost per run is comparable across models (2.5-pro and 3.5-flash have similar per-token pricing), but the time cost is significant.
+
+### Two-pass pipeline: flash-lite triage + 2.5-pro verification
+
+Analysis of flash-lite's per-prediction precision revealed an asymmetric error pattern that enables a two-pass pipeline:
+
+**Flash-lite confusion matrix (v3 prompts, 111 keys):**
+
+| Golden ↓ \ Model → | KEEP | DISCARD | MERGE | MISSING |
+|---|---|---|---|---|
+| KEEP (77) | **56** | 2 | 19 | 0 |
+| DISCARD (20) | 2 | **13** | 4 | 1 |
+| MERGE (14) | 3 | 0 | **11** | 0 |
+
+**Flash-lite precision by predicted action:**
+
+| Prediction | Precision | Interpretation |
+|---|---|---|
+| KEEP | 56/61 = **91.8%** | Highly reliable — only 5 errors out of 61 predictions |
+| DISCARD | 13/15 = **86.7%** | Reliable — only 2 errors out of 15 predictions |
+| MERGE | 11/34 = **32.4%** | Unreliable — 23 of 34 predictions were wrong (19 KEEP, 4 DISCARD) |
+
+Flash-lite's dominant error mode is over-merging: it flags entries as MERGE that should be KEEP. But when it says KEEP or DISCARD, it's right ~90% of the time. This makes it an effective triage model.
+
+**Two-pass design:**
+
+1. **Pass 1 (flash-lite, medium thinking):** Runs on all clusters. KEEP and DISCARD decisions are trusted. All MERGE decisions are escalated to pass 2.
+2. **Pass 2 (2.5-pro):** Only processes the keys flash-lite flagged as MERGE (~30% of total). Re-decides KEEP/MERGE/DISCARD and writes merge text where appropriate.
+
+**Projected cost/time savings on 111-key eval set:**
+
+- Pass 1: 11 clusters at 13.2s/cluster = ~145s (111 keys)
+- Pass 2: ~34 MERGE-flagged keys across fewer, smaller clusters at 46.7s/cluster ≈ ~140s
+- Total: ~285s vs 513s for pure 2.5-pro (44% time reduction)
+- 2.5-pro API volume: ~34 keys vs 111 keys (69% reduction)
+
+At production scale (522 items), the savings compound because flash-lite processes the full store cheaply and only the ambiguous MERGE cases reach 2.5-pro.
+
+**For strategy points** (KEEP/DISCARD only, no MERGE operation), flash-lite may be sufficient on its own — the over-merge problem doesn't apply. This needs separate validation.
+
 ### Recommendation
 
 For production batch dedup:
-- **2.5-pro for everything** is the simplest path — slightly lower action accuracy (83.8% vs 86.5%) but much better merge quality, and pricing is comparable. Fabrication rate needs monitoring but is addressable through prompt refinement.
-- **Two-pass pipeline** (3.5-flash decisions → 2.5-pro rewrites) would get best action accuracy + good rewrite quality but adds complexity.
-- **3.5-flash with graceful degradation** — accept missing approach/outcome fields and fall back to survivor entry text or concatenation. Cheapest, but loses the merge quality benefit.
+- **Two-pass pipeline** (flash-lite triage → 2.5-pro verification + rewrites) is the recommended path. Flash-lite's KEEP/DISCARD precision is high enough to trust, and escalating only MERGE decisions to 2.5-pro dramatically reduces cost and time while preserving merge quality.
+- **2.5-pro for everything** remains the simplest fallback — slightly lower action accuracy (83.8% vs 86.5%) but no pipeline complexity. Viable for small stores or infrequent runs.
+- **3.5-flash with graceful degradation** — accept missing approach/outcome fields and fall back to survivor entry text. Cheapest single-pass option, but loses merge quality benefit.
+
+## Next Steps
+
+1. **Implement and validate the two-pass pipeline** — build the flash-lite triage → 2.5-pro verification pipeline and measure end-to-end accuracy and time on the golden eval set to confirm the projected savings hold.
+2. **Validate flash-lite-only for strategy points** — strategy uses only KEEP/DISCARD (no MERGE), so flash-lite's over-merge weakness does not apply. Run a dedicated eval to confirm standalone flash-lite is sufficient for strategy batch dedup.
+3. **Integrate batch dedup into the game pipeline** — once the pipeline approach is validated, wire batch dedup into the post-game flow as a periodic maintenance operation.
