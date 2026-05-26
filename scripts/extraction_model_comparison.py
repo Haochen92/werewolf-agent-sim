@@ -47,6 +47,10 @@ MODEL_CONFIGS = {
         "temperature": 0.0,
         "thinking_level": "medium",
     },
+    "gemini-2.5-pro": {
+        "model": "gemini-2.5-pro",
+        "temperature": 0.0,
+    },
 }
 
 
