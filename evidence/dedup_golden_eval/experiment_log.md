@@ -833,3 +833,121 @@ K→D errors dropped from 9 to 4. The calibration successfully prevented 5 false
 | `eval_sets/dedup_v2_replay_35flash_prompt_v10.jsonl` | Replay: 3.5-flash, prompt v10 (65 cases, Vertex AI) |
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v11.jsonl` | Replay: flash-lite, prompt v11 (65 cases, 80.0%, Vertex AI) |
 | `eval_sets/dedup_v2_replay_35flash_prompt_v11.jsonl` | Replay: 3.5-flash, prompt v11 (65 cases, 83.1%, Vertex AI) |
+
+## Embedding Pre-filter for Deterministic Auto-Decisions
+
+### Motivation
+
+Per-role extraction produces 2-3x more items than single-pass extraction (4 LLM calls per game x 4-8 items each), which overwhelms the LLM dedup pipeline. The existing dedup flow uses only situation embedding similarity from InMemoryStore search: items below `DEDUP_SIMILARITY_THRESHOLD` (0.55) bypass dedup entirely, and everything above gets an LLM call. This is wasteful — many cases are obvious duplicates or obviously novel, and the LLM call adds latency and cost without changing the outcome.
+
+The idea: add a content-aware embedding pre-filter that compares more than just situation similarity. For strategy points, embed and compare the **action** field. For observations, embed and compare the **full content** (situation + approach + outcome concatenated). Use these similarities to make deterministic keep/discard decisions before LLM fallback.
+
+### Design
+
+**Strategy points**: After `store.search` finds candidates by situation similarity, embed `[new_action, cand1_action, cand2_action, ...]`, compute cosine similarity between new and each candidate's action. Take max action_sim. If action_sim >= discard threshold -> auto-discard. If action_sim < keep threshold -> auto-keep. Otherwise -> LLM.
+
+**Observations**: Embed full content strings `f"{situation} {approach} {outcome}"` for new entry and all candidates. Take max content_sim. If content_sim >= discard threshold -> auto-discard. If content_sim < keep threshold -> auto-keep. Otherwise -> LLM.
+
+On any embedding failure, fall through to LLM (fail-open).
+
+### Calibration on Golden Set (65 cases)
+
+Used the existing 65-case golden label set (`dedup_v2_golden_labels.json`: D=30, M=5, K=29, M/K=1) to find zero-error threshold boundaries. Embedded all cases using `gemini-embedding-001` at 1536D, cached to `evidence/dedup_golden_eval/embedding_cache.json`.
+
+**Strategy points (25 cases: D=10, K=15)**
+
+Action similarity distribution shows a gap between D and K:
+- All D cases with action_sim >= 0.813; 5 of 10 D cases above 0.90
+- All K cases with action_sim <= 0.899
+- Zero-error boundary: discard >= 0.90, keep < 0.81
+
+**Observations (40 cases: D=20, K=19, M=1)**
+
+Content similarity is a stronger discriminator than field-level (approach/outcome) sims:
+- All D cases with content_sim >= 0.936
+- All K cases with content_sim <= 0.929
+- Zero-error boundary: discard >= 0.96, keep < 0.935
+
+Field-level approach/outcome sims were also computed but showed heavy D/K overlap, making them unsuitable as standalone discriminators. Content_sim (the full concatenation) captures all three fields at once and produces cleaner separation.
+
+### Cross-Game Validation (232 cases)
+
+The golden set only contains "hard" cases (sit_sim 0.70-0.91) because all cases were originally selected as LLM-worthy. To validate that the thresholds hold on a broader distribution, we built a cross-game calibration dataset.
+
+**Dataset construction** (`evaluation/experiments/auto_dedup_dataset_builder.py`): Load extraction JSONL from 5 games into an InMemoryStore, then search extractions from 5 *different* games against that store. This produces genuinely novel items (from unseen games) alongside structurally similar ones, covering a broader similarity spectrum than the golden set.
+
+Config: `configs/eval/auto_dedup_build_v1_cross_game.json`. Store: gemini-3.5-flash extractions from 5 games. Search: gemini-2.5-flash extractions from 10 games (5 overlapping with store, 5 unseen). Output: 232 cases (116 SP + 116 obs) in `eval_sets/auto_dedup_v1_cross_game.jsonl`.
+
+**Labeling**: Each case was labeled D/K by running the production dedup prompt through two models:
+
+| Labeler | D | K | Agreement with 3.5-flash |
+|---|---|---|---|
+| gemini-3.5-flash | 93 | 139 | — |
+| gemini-3.1-flash-lite | 144 | 88 | 75.4% (175/232) |
+
+Flash-lite is heavily discard-biased: 54 cases where 3.5-flash says K but lite says D, only 3 the other way. This matches flash-lite's known over-discard tendency from the prompt tuning experiments (K recall 52-59% vs 3.5-flash's 90%).
+
+**Calibration results**: Swept thresholds against both label sets. The zero-error boundaries are identical regardless of which labeler is used:
+
+| Type | Metric | Discard threshold | Keep threshold | Auto-rate (3.5-flash labels) |
+|---|---|---|---|---|
+| Strategy point | action_sim | >= 0.93 | < 0.81 | 14.7% (12D + 5K) |
+| Observation | content_sim | >= 0.96 | < 0.93 | 31.0% (7D + 29K) |
+
+All per-case decisions show zero errors at these thresholds across the full 232-case pool, for both label sets.
+
+### Threshold Choice
+
+The golden set (25 SP cases) showed a clean gap at action_sim 0.90 — all D above 0.903, all K below 0.899. The cross-game set (116 SP cases) reveals this was a small-sample artifact: 14/41 D cases fall below 0.90, and 20/75 K cases sit above 0.90. The D/K distributions heavily interleave in the 0.83-0.93 range.
+
+Production thresholds:
+
+| Constant | Value | Rationale |
+|---|---|---|
+| `SP_ACTION_DISCARD_THRESHOLD` | 0.93 | Zero-error boundary on cross-game set with *both* labelers. The golden set (25 SP) showed a gap at 0.90, but the cross-game set (116 SP) reveals D/K interleaving in 0.83-0.93. Critically, even flash-lite — the discard-biased labeler (D=144 vs 3.5-flash's D=93) — places the zero-error boundary at 0.93. When the model that maximally favors discard still can't justify auto-discarding below 0.93, 0.90 is too aggressive. |
+| `SP_ACTION_KEEP_THRESHOLD` | 0.81 | Below lowest D in golden set (0.813); zero errors on cross-game |
+| `OBS_CONTENT_DISCARD_THRESHOLD` | 0.96 | Zero errors on both golden and cross-game sets |
+| `OBS_CONTENT_KEEP_THRESHOLD` | 0.935 | Zero errors on golden set; cross-game confirms clean separation at 0.93 |
+
+### Impact
+
+On the cross-game dataset (232 cases), applying all four thresholds:
+- SP: 10.3% auto-discard, 4.3% auto-keep, 85.3% LLM
+- Obs: 6.0% auto-discard, 25.0% auto-keep, 69.0% LLM
+- Combined: ~23% of cases auto-decided, saving LLM calls
+
+The observation auto-keep is the biggest win — items from unseen games with content_sim < 0.935 are reliably novel. The SP auto-rate is lower because action similarity in werewolf games is structurally compressed (many strategies recommend similar actions in different situations).
+
+### What's next
+
+- **Higher-dimensional embedding model**: The current `gemini-embedding-001` at 1536D may compress the similarity space. A higher-dim model could give better D/K separation, especially for strategy points where the 0.83-0.93 interleaving zone is wide.
+- **Field-level observation sims**: Content_sim works for both boundaries, but field-level sims (approach_sim, outcome_sim) could provide additional signal for borderline cases in the LLM zone. The `--obs-keep-mode field` flag in `eval_auto_dedup.py` supports sweeping with field-level sims.
+
+### Instrumentation for Future Calibration
+
+A key lesson from this work: the threshold calibration would have been much simpler if embedding similarities had been logged from the start. We had to retroactively build a dataset builder, compute embeddings from frozen extraction artifacts, create a labeling pipeline, and run a separate calibration sweep — all because the production dedup flow didn't record the similarity scores that the auto-layer needs to calibrate against.
+
+Going forward, every dedup decision now logs its full embedding similarities to Langfuse via the `similarity_scores` field on `DedupResult` and `DedupCase`. Each span records per-candidate sims (`action_sim_c1`, `content_sim_c1`, etc.) and the max sim used for the threshold decision. The batch entry points also distinguish embedding-auto from situation-only-auto in `DedupStats` (via `embedding_auto_kept` / `embedding_auto_discarded`).
+
+This means future threshold tuning reduces to: pull traces → extract cases with `similarity_scores` → sweep. No re-embedding, no dataset builder, no separate labeling run. The LLM decisions on the non-auto cases serve as free labeled data accumulating over time — exactly the "log tuples and find where the boundary sits" approach, but with golden-labeled calibration as the principled anchor and production traces as the ongoing validation.
+
+The tracing infrastructure (`_emit_dedup_span` → Langfuse span → `fetch_dedup_cases()` → `DedupDatasetRecord`) was already in place for decision-level eval. Adding `similarity_scores` to the existing span output was a one-field change that unlocks continuous threshold monitoring without any new infrastructure.
+
+## Embedding Pre-filter Artifacts
+
+| File | Description |
+|---|---|
+| `Agents/memory_deduplication.py` | Production pre-filter: `_embedding_prefilter_strategy_point()`, `_embedding_prefilter_observation()` |
+| `evaluation/experiments/eval_auto_dedup.py` | Calibration sweep: embeds cases, caches, sweeps threshold grid, reports Pareto frontier |
+| `evaluation/experiments/auto_dedup_dataset_builder.py` | Builds calibration datasets from extraction JSONL files |
+| `evaluation/experiments/auto_dedup_labeler.py` | Labels auto-dedup cases via LLM for golden label creation |
+| `evaluation/core/config_schema.py` | `AutoDedupDatasetBuildConfig`, `AutoDedupCalibrationConfig` |
+| `evaluation/data/datasets.py` | `AutoDedupRecord`, `read_auto_dedup_dataset()`, `write_auto_dedup_dataset()` |
+| `configs/eval/auto_dedup_build_v1.json` | Same-game dataset config (192 cases) |
+| `configs/eval/auto_dedup_build_v1_cross_game.json` | Cross-game dataset config (232 cases) |
+| `eval_sets/auto_dedup_v1.jsonl` | Same-game calibration dataset (192 cases) |
+| `eval_sets/auto_dedup_v1_cross_game.jsonl` | Cross-game calibration dataset (232 cases) |
+| `evidence/dedup_golden_eval/embedding_cache.json` | Cached embedding sims for 65 golden cases |
+| `evidence/auto_dedup/cross_game_embedding_cache.json` | Cached embedding sims for 232 cross-game cases |
+| `evidence/auto_dedup/cross_game_golden_labels.json` | 232 golden labels from gemini-3.5-flash |
+| `evidence/auto_dedup/cross_game_golden_labels_flash_lite.json` | 232 golden labels from gemini-3.1-flash-lite |

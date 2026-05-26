@@ -1,0 +1,1498 @@
+{
+  "eval_set_id": "auto_dedup_v1_cross_game",
+  "created_at": "2026-05-26T16:04:08.825548",
+  "labeler": "LLM:gemini-3.5-flash",
+  "description": "Auto-labeled by gemini-3.5-flash using production dedup prompts",
+  "label_schema": {
+    "D": "DISCARD - duplicate of an existing candidate",
+    "K": "KEEP - distinct, keep as a new entry"
+  },
+  "summary": "K=139, D=93",
+  "labels": [
+    {
+      "case_index": 0,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to candidate 1. The situation in both is an information-starved early game where wolves target the most vocal player. The approach is the same tactic of eliminating a perceived organizer, and the outcome is identical: the kill fails because the healer predictably saves the obvious target."
+    },
+    {
+      "case_index": 1,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new observation is a functional duplicate of candidate 3. Both describe a mid-game situation where a wolf is under primary scrutiny and uses the exact same deflection tactic: accusing a villager of 'trying to stay off the radar' for asking questions. In both cases, this approach was immediately identified as a classic deflection, which failed and resulted in the wolf's elimination."
+    },
+    {
+      "case_index": 2,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to candidate 2. In both cases, a surviving wolf under pressure from their voting record attempts to deflect by accusing their main accusers of suspicious coordination. This approach fails for the same reason in both observations: the village ignores the deflection and focuses on the hard evidence, leading to the wolf's elimination."
+    },
+    {
+      "case_index": 3,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to candidate 1. Both describe an early-game scenario where a villager, confirmed innocent by a healer's save, successfully leverages their status to pressure other players, forcing a wolf to reveal themselves through behavioral tells. The situation, approach, and successful outcome are the same, so the new entry offers no new lesson."
+    },
+    {
+      "case_index": 4,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation is being kept because it describes a fundamentally different situation from all existing candidates. The new observation occurs in an 'information-starved' environment where the villagers' approach is to pressure suspects based on behavioral patterns like passivity. In contrast, all similar existing observations take place in 'information-rich' settings where the villagers' successful approach is to ignore deflections and focus on concrete evidence like voting records."
+    },
+    {
+      "case_index": 5,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "Both the new observation and candidate 2 describe the same core scenario: a wolf attempts to use a vote against their eliminated partner to appear innocent, a tactic known as bussing. The villagers' approach in both cases is to analyze the voting record and past behavior to expose this inconsistency. Since the situation, approach, and successful outcome are functionally identical, the new observation is a duplicate."
+    },
+    {
+      "case_index": 6,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to candidate 1. Both describe a Night 1, information-starved scenario where the healer successfully protects the most active villager, resulting in a confirmed town-aligned leader for the village to rally around. The situation, approach, and outcome all teach the same lesson."
+    },
+    {
+      "case_index": 7,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an information-starved situation with a fragile consensus, whereas the most similar candidate (Candidate 2) features an information-rich environment with a unified consensus. Additionally, the healer's approach in the new observation involves a distinct balancing tactic\u2014supporting the push while cautioning against a rushed vote\u2014which differs from the low-profile consensus-following approach in Candidate 2."
+    },
+    {
+      "case_index": 8,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 2. In both, the healer supports a unified mid-game consensus against the remaining wolf by reinforcing evidence of their inconsistent behavior and deflections, resulting in the wolf's successful elimination."
+    },
+    {
+      "case_index": 9,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a baseline scenario where investigating an active player on Night 1 successfully yields a confirmed town-aligned player. In contrast, Candidate 1 describes a specific scenario where this same approach results in a redundant investigation because the target was also saved by the healer. Keeping both allows the agent to understand both the standard utility and the potential redundancy risks of targeting highly active players early on."
+    },
+    {
+      "case_index": 10,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to Candidate 2, as both describe an investigator targeting a player who defended the first wolf and then bussed them (or cast a late, self-preserving vote). The situations are both mid-game scenarios following the first wolf's elimination, and both outcomes result in successfully confirming the second wolf with certainty. Therefore, this entry does not offer any new tactical insights and can be discarded."
+    },
+    {
+      "case_index": 11,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is a duplicate of Candidate 2. Both describe a mid-game situation where the investigator has a confirmed wolf and pushes them without revealing their role by highlighting the wolf's behavioral pivot from defending the first wolf to bussing them. Both result in a successful village vote and win."
+    },
+    {
+      "case_index": 12,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends targeting and eliminating the most active and vocal player in the early game to disrupt village organization. This directly conflicts with the advice in Candidates 1 and 2, which explicitly warn against targeting the most vocal leader due to the risk of healer protection. Because these represent competing hypotheses with different risk tradeoffs for the same situation, the new entry must be kept."
+    },
+    {
+      "case_index": 13,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends deflecting pressure by making a vague behavioral accusation, such as accusing a player of staying off the radar. In contrast, Candidate 2 explicitly advises against simple deflections and instead recommends framing accusations around inconsistent logic or voting patterns. Because these represent different tactical approaches and risk profiles for a wolf under pressure, the new entry is kept as a distinct strategy."
+    },
+    {
+      "case_index": 14,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction describes the same core strategy of bussing a doomed wolf partner to avoid being linked to them upon their elimination. Although the new entry specifies an information-starved landscape driven by behavioral patterns, the resulting action and the underlying logic of aligning with an unavoidable consensus remain identical to Candidate 1."
+    },
+    {
+      "case_index": 15,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy proposes discrediting accusers by framing their coordination as 'suspicious synchronization' to split the village. This directly conflicts with Candidate 5 and Candidate 1, which explicitly advise against accusing accusers of coordination or orchestration in this situation. Since these represent competing hypotheses for the same situation, the entry must be kept."
+    },
+    {
+      "case_index": 16,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point advises a regular villager to actively challenge players advocating for passivity, using the saved player as a focal point. This is distinct from Candidate 3, which advises letting the saved player lead discussions, and Candidate 2, which is written from the perspective of the saved player themselves. Thus, it introduces a more active, specific targeting strategy for a standard villager."
+    },
+    {
+      "case_index": 17,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends an active, aggressive rhetorical action of relentlessly pressing and framing passive players as aiding the wolves, whereas Candidate 1 focuses on passive cognitive evaluation to avoid bandwagoning. Additionally, unlike Candidates 2 and 3 which require the agent to be a confirmed innocent player, this strategy is designed for a general villager, representing a different level of agent exposure and risk."
+    },
+    {
+      "case_index": 18,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction is a duplicate of Candidate 1, as both describe a situation where a suspect attempts to deflect accusations by accusing their accusers of coordination. The recommended action in both cases is identical: ignore the distraction of the coordination charge and maintain focus on the suspect's documented voting history and behavioral contradictions. An agent would take the exact same action under both strategies."
+    },
+    {
+      "case_index": 19,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new extraction describes the exact same strategy as Candidate 3, advising the healer to protect the most active and vocal player on the first night to counter early wolf targeting. Both situations represent an early-game, information-starved state where the healer must rely on initial discussion patterns to select a target."
+    },
+    {
+      "case_index": 20,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes an information-starved mid-game situation where suspicion is based purely on behavioral patterns rather than concrete evidence, which differs from the information-rich scenarios in the existing candidates. Additionally, the action recommends a unique dual-posture of supporting pressure while cautioning the village against rushing a vote to prevent a mislynch, representing a distinct tactical approach."
+    },
+    {
+      "case_index": 21,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends investigating the active leader on the first night to gain crucial early information, which directly conflicts with Candidate 1's advice to avoid vocal leaders and target moderately active players instead. Because these two entries present opposing actions for the exact same early-game, information-starved situation, they represent competing hypotheses. Thus, the new entry must be kept to preserve both strategic options for the agent."
+    },
+    {
+      "case_index": 22,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction describes the same situation and action as Candidate 1. Both recommend that the Investigator target the player who showed behavioral links, such as defending or deflecting, to the recently eliminated wolf during the mid-game phase. Since the target selection and situational context are functionally identical, the new entry is a duplicate."
+    },
+    {
+      "case_index": 23,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new strategy point is a duplicate of Candidate 1. Both describe an investigator who has privately identified a wolf and must convince the village to vote them out using behavioral evidence and voting records without revealing their role. The recommended actions are functionally identical, advising the agent to lead the accusation using public behavioral flaws to protect their identity."
+    },
+    {
+      "case_index": 24,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a collective effort by multiple unconfirmed villagers to proactively demand suspects and analyze reactions after a healer save. This differs from Candidates 1 and 2, where a single, confirmed-innocent saved villager leveraged their safe platform to drive the interrogation. This distinction is important because it provides a strategy for regular villagers to generate information without relying on a single trusted leader."
+    },
+    {
+      "case_index": 25,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is a duplicate of Candidate 1, as both describe a mid-game situation where a wolf is pressured and eliminated after casting a dissenting vote during a previous wolf-lynch. The approach of analyzing the voting record and demanding explanations, as well as the outcome of the wolf's deflections failing and leading to their elimination, are functionally identical."
+    },
+    {
+      "case_index": 26,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation presents a distinct tactic variant where the wolf deflects by counter-accusing key power roles (the healer and investigator) of having suspicious voting records. This differs from Candidate 1 and 4 (which involve accusations of coordination/collusion) and Candidate 2 (which involves accusations of erratic behavior). It also differs from Candidate 3, where the village actively investigated the off-voters rather than immediately ignoring the deflection to press the wolf."
+    },
+    {
+      "case_index": 27,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1 across all three fields. In both cases, the wolves target a vocal leader in an information-starved early game, only for the healer to save the target, which grants the village an early advantage. Therefore, this new observation does not offer any new strategic insights and can be discarded as a duplicate of Candidate 1."
+    },
+    {
+      "case_index": 28,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 1. In both cases, a wolf votes for a villager instead of joining the consensus against their partner, leading to the partner's elimination and the surviving wolf being heavily suspected the next day."
+    },
+    {
+      "case_index": 29,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is a duplicate of Candidate 1. Both describe a surviving wolf in a mid-game scenario attempting to deflect scrutiny from their suspicious voting record by pointing to other players' votes and framing their own as an 'honest mistake,' which ultimately fails as the investigator guides the village to eliminate them."
+    },
+    {
+      "case_index": 30,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new observation describes a healer protecting a vocal, organizing villager on Night 1, resulting in a successful save that provides the village with a confirmed town member. This is functionally identical in situation, approach, and outcome to Candidate 3, which also details protecting a highly vocal leader on Night 1 to achieve a successful save and a confirmed survivor."
+    },
+    {
+      "case_index": 31,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 1. Both describe a healer defending an anomalous dissenting vote as 'testing a lead' during a mid-game phase, resulting in increased scrutiny and forcing the healer to align with the consensus to survive."
+    },
+    {
+      "case_index": 32,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "While Candidate 1 shares a similar situation and approach of targeting a vocal player, its outcome was redundant due to a healer save on the same target. The new observation resulted in a successful acquisition of private information, representing a different outcome. Keeping both observations helps the agent understand the risk versus reward of investigating active players early in the game."
+    },
+    {
+      "case_index": 33,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 1. In both, the investigator drives the push against a confirmed wolf in the mid-game by highlighting their suspicious voting record and cautious behavior. Both result in the successful elimination of the wolf through unified village consensus."
+    },
+    {
+      "case_index": 34,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a unique situation where the investigator must recover from casting a dissenting vote on a villager while holding private information on a wolf. None of the existing candidates address managing the scrutiny of a voting discrepancy while maintaining a push on a confirmed wolf, making this a distinct scenario."
+    },
+    {
+      "case_index": 35,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point is distinct because it is formulated for a general villager rather than the saved player specifically. While Candidates 1 and 3 require the agent to be the confirmed saved player to lead the push, this entry advises a general villager to proactively initiate the suspect-naming process and analyze reactions. This difference in agent exposure and credibility level changes the risk profile and social dynamics of the action."
+    },
+    {
+      "case_index": 36,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends directly and relentlessly pressing a player who cast a dissenting vote, treating their voting discrepancy as a strong indicator of wolf alignment. In contrast, Candidate 1 advises caution when evaluating off-voters because they might be special town roles, suggesting instead that the agent should target players who actively exploit and amplify suspicion on these off-voters. Because these two entries recommend different target focuses and risk postures for the same underlying situation, the new entry is a distinct strategy."
+    },
+    {
+      "case_index": 37,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new entry describes the same core strategy as Candidate 2, where a suspect attempts to deflect attention away from their suspicious voting record by accusing others. In both cases, the recommended action is to ignore the deflection and relentlessly redirect the village's focus back to the suspect's objective voting history. An agent would execute the exact same behavior under both entries, making the new one redundant."
+    },
+    {
+      "case_index": 38,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends actively targeting a vocal leader in the early game to disrupt village cohesion, accepting the risk of healer protection. This directly conflicts with Candidate 1 and Candidate 4, which advise avoiding such players to bypass healer protection. Since these represent competing hypotheses with different risk tradeoffs for the same situation, the new entry must be kept."
+    },
+    {
+      "case_index": 39,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction duplicates Candidate 1, as both describe a mid-game situation where a wolf partner is facing inevitable elimination under strong village consensus. Both entries advise the agent to vote with the majority to eliminate their partner to avoid being exposed by a dissenting or isolated vote."
+    },
+    {
+      "case_index": 40,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends deflecting suspicion by highlighting other players who also voted against the consensus, framing the agent's own vote as an honest mistake. In contrast, Candidate 1 explicitly advises against deflecting onto other players who missed the vote, suggesting instead to acknowledge the mistake and pivot to late bandwagoners. Because these represent conflicting tactical recommendations for the same situation, they are competing hypotheses and the new entry must be kept."
+    },
+    {
+      "case_index": 41,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new extraction is a duplicate of Candidate 3, as both recommend that the healer protect the most vocal or leading player on the first night of the game. The situations described in both entries are functionally identical, focusing on an information-starved early game phase before any eliminations have occurred. An agent reading either entry would take the exact same action of protecting the active leader on Night 1."
+    },
+    {
+      "case_index": 42,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction is a duplicate of Candidate 1, as both describe a healer being questioned for voting against a successful wolf elimination. Both entries recommend the exact same tactical response: justifying the vote as an attempt to test a lead and quickly aligning with the village consensus to deflect suspicion."
+    },
+    {
+      "case_index": 43,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new extraction recommends targeting a vocal leader for the first night's investigation to establish a strong lead or a known good player early on. In contrast, Candidate 1 recommends explicitly avoiding vocal leaders to prevent wasted or redundant investigations, suggesting moderately active players instead. Because these two entries propose conflicting target choices for the exact same early-game situation, they represent competing hypotheses and both must be kept."
+    },
+    {
+      "case_index": 44,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new entry describes the exact same situation as Candidate 1, where an investigator with a private wolf finding is under scrutiny for their past voting record. The recommended actions are also functionally identical, advising the agent to focus on accusing the wolf using public behavioral cues rather than getting distracted by defending their own voting record."
+    },
+    {
+      "case_index": 45,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends a passive, low-profile posture ('avoid appearing overly eager') when the village is already unifying against the identified wolf. This is distinct from Candidate 1, which advises active deflection and pivoting focus under a split consensus, and Candidate 3, which involves actively driving the push. The difference in consensus texture and agent exposure leads to a different risk-tradeoff and action plan."
+    },
+    {
+      "case_index": 46,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 5,
+      "reasoning": "The new observation is functionally identical to Candidate 5. Both describe a scenario in the early game where the wolves target a highly vocal player who took the initiative to lead discussions, resulting in the successful elimination of the healer and leaving the village disorganized."
+    },
+    {
+      "case_index": 47,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is a duplicate of Candidate 1. Both describe a situation where the healer is eliminated on Night 1, leading the village to aggressively question players who advocated for passive or quiet strategies on Day 1, which successfully results in exposing and eliminating a wolf."
+    },
+    {
+      "case_index": 48,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1 across all three fields. In both, a wolf is pressured in the mid-game after the healer's death due to contradictory early-game statements, attempts to deflect by framing the accusations as 'infighting' and attacking the accusers, and is ultimately eliminated when the village sees through the deflection. Thus, the new observation does not offer any new strategic insights and can be discarded as a duplicate of Candidate 1."
+    },
+    {
+      "case_index": 49,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is a duplicate of Candidate 2. Both describe a situation where the investigator identifies a wolf on Night 1 after the healer is eliminated, and uses the approach of highlighting the wolf's suspicious Day 1 comment about monitoring quiet players to guide the village to a successful vote without revealing their role."
+    },
+    {
+      "case_index": 50,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation demonstrates a successful 'bussing' tactic where voting for a doomed partner successfully deflects suspicion. This is distinct from Candidate 1, where voting for an innocent player led to exposure, and Candidate 2, where voting for the partner failed due to prior defense of that partner."
+    },
+    {
+      "case_index": 51,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation should be kept as it represents a baseline scenario of analyzing voting records to identify hesitant voters and silent allies, exposing the wolf's late votes and deflections. This differs from Candidate 2, which specifically addresses a wolf trying to dismiss the analysis as a trap, and Candidate 3, which deals with a wolf claiming credit for a late vote after defending their partner. Keeping this provides the agent with a standard model of voting record analysis separate from specific defensive counter-strategies."
+    },
+    {
+      "case_index": 52,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1. In both, a surviving wolf under scrutiny in the mid-game attempts to deflect accusations based on voting records by accusing their accusers of coordinated attacks. In both cases, the village recognizes this deflection as highly defensive and characteristic of a wolf, leading to the wolf's elimination."
+    },
+    {
+      "case_index": 53,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1. In both, the investigator has identified the second wolf in the mid-game and successfully guides the village to eliminate them without revealing their role by highlighting the target's avoidant behavior and late vote on the first wolf."
+    },
+    {
+      "case_index": 54,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends targeting the most vocal and organizing player on the first night to disrupt village leadership, which directly conflicts with the advice in Candidates 1 and 2 to avoid targeting such players due to healer protection risk. Because these represent competing hypotheses and opposite actions for the same early-game situation, the new entry must be kept."
+    },
+    {
+      "case_index": 55,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction is functionally identical to Candidate 1. Both situations describe the aftermath of the healer (critical protective role) being eliminated on Night 1 in an information-starved landscape, and both recommend aggressively targeting players who advocated for passivity or inaction on Day 1."
+    },
+    {
+      "case_index": 56,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction is a duplicate of Candidate 1, as both address a situation where a wolf is under scrutiny for past contradictory statements in the mid-game. Both recommend avoiding defensive attacks on the accusers and instead reframing the contradiction with a plausible, pro-village explanation to maintain credibility. An agent would execute the exact same tactical response under both entries."
+    },
+    {
+      "case_index": 57,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new strategy point is a duplicate of Candidate 2. Both describe a situation where an investigator has a private wolf finding in an information-starved, early-to-mid-game village and wants to guide them to eliminate the wolf without revealing their role. The recommended actions are functionally identical: subtly highlighting the target's public contradictions or inconsistencies so the village adopts the lead naturally while the investigator maintains low exposure."
+    },
+    {
+      "case_index": 58,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction describes the exact same situation and action as Candidate 1, where a wolf must vote with the unified village consensus to eliminate their partner to avoid being exposed by a dissenting vote. Both entries target the same behavior in the mid-game under an information-rich landscape where the partner's elimination is inevitable. Therefore, the new entry is a duplicate of Candidate 1."
+    },
+    {
+      "case_index": 59,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction is a duplicate of Candidate 1. Both describe the exact same situation where a wolf has been eliminated and the village must analyze the voting record to find the remaining wolf. The recommended actions are identical, advising the agent to look for late voters or players who tried to steer the discussion away from the wolf."
+    },
+    {
+      "case_index": 60,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction duplicates Candidate 2, as both address a situation where a wolf is the primary target under heavy scrutiny based on voting records in an information-rich mid-game. Both recommend avoiding defensive deflections (such as calling the evidence a trap or accusing players of collusion) and instead advise the agent to provide a plausible alternative explanation for their votes while redirecting focus to a new suspect."
+    },
+    {
+      "case_index": 61,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction describes the same strategy as Candidate 1, which is to guide the village to eliminate an investigated wolf by highlighting their behavioral inconsistencies and public flaws rather than revealing the Investigator role. Although the new entry specifies that this is a 'second' wolf in the mid-game, the tactical execution, risk posture, and target selection remain identical to Candidate 1."
+    },
+    {
+      "case_index": 62,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation details a successful wolf deflection tactic in an information-starved situation that led to a villager mislynch. This represents a distinct outcome from the existing candidates, which all describe successful village efforts to identify and execute deflecting wolves. Retaining this observation provides a valuable example of a village failure state under low-information conditions."
+    },
+    {
+      "case_index": 63,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to Candidate 2. Both describe a mid-game situation after a villager mislynch where wolves try to suppress discussion of the voting record, the villagers respond by calling out this suppression and questioning those responsible, and this successfully exposes a wolf leading to their elimination."
+    },
+    {
+      "case_index": 64,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1 across all fields. Both describe an endgame scenario where the village maintains focus on the remaining wolf's past defensive alignment and ignores their attempts to frame the consensus as 'groupthink', resulting in a successful vote-out and village victory."
+    },
+    {
+      "case_index": 65,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation should be kept because it describes a different situation and outcome compared to Candidate 2. The new observation starts from the very beginning of the game (no eliminations) and results in a successful elimination that creates chaos, whereas Candidate 2 starts after a failed Night 1 kill and results in a strategically disadvantageous outcome where the target had already established town connections."
+    },
+    {
+      "case_index": 66,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a successful outcome where the wolves' deflection and counter-accusation of an aggressive villager successfully shifted suspicion and led to a mislynch. In contrast, Candidate 1 and Candidate 2 describe very similar situations and approaches but resulted in failure. Keeping this observation is necessary to teach the agent the risk/reward dynamics of this defensive tactic."
+    },
+    {
+      "case_index": 67,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The situation, approach, and outcome of the new observation are functionally identical to Candidate 2. In both, wolves under scrutiny after a mislynch try to deflect by criticizing the retrospective analysis of voting records and shifting blame, which the village recognizes as suspicious, leading to the elimination of a wolf."
+    },
+    {
+      "case_index": 68,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to Candidate 2, where a surviving wolf under pressure due to alignment with an eliminated partner attempts to deflect by accusing the village of groupthink. In both cases, this meta-argument is dismissed due to strong objective evidence, resulting in the wolf's elimination."
+    },
+    {
+      "case_index": 69,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 4,
+      "reasoning": "The new observation is a duplicate of Candidate 4, as both describe a scenario where a healer successfully protects a villager on Night 1 but switches targets on Night 2. In both cases, the wolves target the same villager again, resulting in their elimination. The situation, approach, and outcome are functionally identical and teach the same lesson."
+    },
+    {
+      "case_index": 70,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a unique scenario where wolves attempt to shut down post-mislynch discussion by framing it as 'division' or 'rehashing'. The healer's approach of actively calling out this specific meta-deflection strategy differs from existing entries, which focus on defending against direct accusations or supporting consensus from a low profile."
+    },
+    {
+      "case_index": 71,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 1. In both cases, during an information-rich endgame with a unified consensus, the healer supports the vote against the remaining wolf while keeping a low profile, resulting in a successful elimination without drawing attention."
+    },
+    {
+      "case_index": 72,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to Candidate 2. Both describe an investigator who, following a Night 1 healer save, investigates the saved player on Night 1 and the healer on Night 2, resulting in a successful private network of trusted key village roles."
+    },
+    {
+      "case_index": 73,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation features a split consensus where wolves are actively trying to shut down analysis, which the investigator counters by advocating for evidence-based discussion of a failed attack and mislynch. This meta-discussion tactic of calling out analysis-blocking behavior is distinct from the direct, target-specific accusations based on voting records or behavioral reads found in the existing observations."
+    },
+    {
+      "case_index": 74,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 5,
+      "reasoning": "The new observation is a duplicate of Candidate 5. Both describe an endgame situation where the remaining wolf attempts to deflect by accusing the village of 'groupthink', and the investigator successfully counters this by ignoring the meta-arguments and focusing on the objective voting alignment, leading to a villager victory."
+    },
+    {
+      "case_index": 75,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction describes the same situation and action as Candidate 1, focusing on scrutinizing players who advocate for extreme caution in the early game and pushing them to name suspects. Both entries target the same behavior (passivity/caution as a wolf stalling tactic) under identical information-starved early-game conditions."
+    },
+    {
+      "case_index": 76,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction recommends analyzing the voting record of a mislynch to identify who initiated and amplified the push, which is functionally identical to the action in Candidate 2. Both entries address the same post-mislynch situation and guide the agent to perform the same analytical steps to find the wolves responsible for the bandwagon."
+    },
+    {
+      "case_index": 77,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point focuses on a specific endgame scenario where a consensus is already forming against a player who defended an eliminated wolf, recommending immediate convergence and treating 'groupthink' deflections as proof of guilt. This differs from Candidate 4, which focuses on the analytical phase of identifying suspects, and Candidates 2 and 5, which provide conversational guidelines on how to handle coordination accusations rather than directing the village to execute a rapid vote convergence."
+    },
+    {
+      "case_index": 78,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends prioritizing the elimination of active, organizing villagers to disrupt town consensus in the early game. This directly conflicts with the advice in Candidates 1 and 2, which recommend avoiding these highly vocal leaders due to the risk of healer protection. Because this represents a fundamentally different risk tradeoff and target selection strategy for the same situation, it must be kept as a distinct hypothesis."
+    },
+    {
+      "case_index": 79,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point introduces a unique defensive tactic for a wolf under indirect scrutiny for inactivity: framing their caution as a deliberate effort to avoid a mislynch while counter-accusing aggressive players of rushing the village. This differs significantly from Candidate 2, which focuses on framing accusations around logical inconsistencies when pressured to name suspects, and Candidate 3, which focuses on coordinating contrasting behavioral styles between wolf partners. Since the situation and the specific action are distinct, this entry should be kept."
+    },
+    {
+      "case_index": 80,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends framing the analysis of past votes as 'rehashing' or 'chaos' to shut down pattern recognition, which directly conflicts with the advice in Candidate 1 and Candidate 2 that explicitly warns against dismissing the vote or calling it rehashing. Because these entries offer opposite, competing tactical recommendations for the exact same situation, they represent distinct hypotheses that must both be kept in the database."
+    },
+    {
+      "case_index": 81,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "While the situation is highly similar to Candidate 1, the recommended action represents a distinct tactical approach. Candidate 1 advises an active, aggressive defense by fabricating a narrative of betrayal and pushing an alternative suspect, whereas the new entry suggests a passive approach of remaining quiet or subtly sowing doubt while preparing for elimination. This difference in risk posture and active vs. passive play warrants keeping the new entry as a distinct strategy."
+    },
+    {
+      "case_index": 82,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point addresses the early-game (Night 1) information-starved situation, offering guidance on protecting active organizers or those under early suspicion before any saves or eliminations have occurred. In contrast, the existing candidates all assume a more advanced game state, such as a prior successful save or a wolf elimination. This makes the new entry a distinct and valuable heuristic for the healer's initial moves."
+    },
+    {
+      "case_index": 83,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a distinct situation where suspected wolves attempt to shut down post-mislynch discussion by framing it as 'division' or 'rehashing'. This differs from Candidate 1 (where the agent is personally accused of being quiet) and Candidate 2 (where the agent supports another player's accusation against collusion deflections). The recommended action of calling out this specific 'moving on' tactic to analyze voting records represents a unique tactical response."
+    },
+    {
+      "case_index": 84,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new entry is a duplicate of Candidate 1, as both describe an endgame scenario where the village has a strong consensus against a suspected wolf. In both cases, the healer is advised to support the consensus vote while avoiding a leadership role to maintain a low profile and protect their identity."
+    },
+    {
+      "case_index": 85,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends prioritizing active players and organizers in the early game, which directly conflicts with Candidate 1's advice to avoid vocal leaders. Additionally, while Candidate 2 also suggests targeting active players, it is restricted to situations where the investigator faces a high risk of immediate elimination, making the new point's general early-game application distinct."
+    },
+    {
+      "case_index": 86,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes a distinct tactical approach compared to Candidate 1. While Candidate 1 focuses on protecting and validating cleared innocent targets under high threat of elimination, the new entry advises using public events and behavioral analysis to generate active leads when the village is struggling. This results in a different action focus, shifting from managing cleared targets to analyzing public game events."
+    },
+    {
+      "case_index": 87,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new entry describes the same situation as Candidate 1, where a wolf has been eliminated and the investigator is targeting an aligned player in the endgame using voting records. The recommended action in both cases is to focus strictly on public evidence and deflection tactics to secure the elimination without revealing the investigator role. Therefore, the agent would take the exact same action under both strategies."
+    },
+    {
+      "case_index": 88,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1, where the investigator is saved by the healer on night one, leads the day's discussion by analyzing why they were targeted, and is subsequently killed by the wolves on the following night."
+    },
+    {
+      "case_index": 89,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1. In both cases, the healer protects an active, vocal player on Night 1 without prior information, resulting in a successful save that provides the village with a confirmed town-aligned leader for Day 2."
+    },
+    {
+      "case_index": 90,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation should be kept because it represents a distinct outcome compared to existing entries. While Candidate 4 describes a pure failure where the saved player remains a town leader, the new observation details a delayed success where the target is successfully eliminated on the second night. Additionally, its approach focuses on the initial Night 1 targeting decision, which differs from Candidate 1's focus on the Night 2 double-tap decision."
+    },
+    {
+      "case_index": 91,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an information-starved situation where a villager is mislynched due to social momentum and accusations of 'rushing' based on communication style. In contrast, all the existing candidates describe information-rich situations focused on analyzing voting records to successfully eliminate wolves. Since the situation, approach, and outcome are all functionally different, this observation must be kept."
+    },
+    {
+      "case_index": 92,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation details a successful wolf tactic of actively aligning with and amplifying a village consensus to mislynch a villager who was 'rushing' the vote. This differs from Candidate 5, where a similar information-starved situation led to a failed passive caution strategy that drew suspicion. Keeping this observation is important as it documents a successful proactive manipulation approach rather than a failed defensive one."
+    },
+    {
+      "case_index": 93,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new observation is a duplicate of Candidate 3. Both describe a mid-game situation after a mislynch and investigator death where villagers analyze voting records to expose a wolf who voted early despite preaching caution, refusing to let them deflect to quiet players."
+    },
+    {
+      "case_index": 94,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 5,
+      "reasoning": "The new observation is a duplicate of Candidate 5. Both describe a mid-game situation where a wolf is scrutinized for early participation in a mislynch, attempts to deflect by criticizing the analysis of past votes, and tries to pivot the focus to quiet players, resulting in their elimination."
+    },
+    {
+      "case_index": 95,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1, where a wolf in the endgame attempts to deflect from their voting record by accusing the village of coordinated attacks or groupthink. In both cases, the villagers successfully ignore the deflection, maintain focus on the voting evidence, and secure a village victory."
+    },
+    {
+      "case_index": 96,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is a duplicate of Candidate 1. In both cases, the surviving wolf in the endgame attempts to deflect from a damning voting record by accusing the villagers of coordinated behavior, which fails because the physical evidence of the voting record is too strong."
+    },
+    {
+      "case_index": 97,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The situation in the new entry is highly similar to Candidate 1, where the player is saved by a healer and publicly confirmed as town-aligned. However, the recommended actions are directly conflicting: the new entry advises aggressively leading the discussion and leveraging confirmed status, whereas Candidate 1 advises adopting a moderate profile to avoid drawing attention. Because these represent competing strategic hypotheses for the same situation, the new entry must be kept."
+    },
+    {
+      "case_index": 98,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction and Candidate 1 describe the exact same situation of a healer choosing a protection target on the first night of the game under information-starved conditions. Both recommend the identical action of protecting the most active or vocal player who is attempting to lead discussions. Although the phrasing and specific reasoning differ slightly, the resulting agent behavior would be identical."
+    },
+    {
+      "case_index": 99,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends targeting the most active and vocal player on Night 1 to disrupt village coordination, accepting the risk of a healer save. In contrast, Candidates 1 and 2 recommend the opposite action for the exact same situation\u2014avoiding the vocal leader to bypass healer protection. Since these represent conflicting hypotheses with different risk tradeoffs, the new entry must be kept."
+    },
+    {
+      "case_index": 100,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "While Candidate 1 also addresses the tension between aggressive play and caution in an information-starved early game, its action focuses on evaluating caution-preachers as potential wolves who are stalling. In contrast, the new extraction advises defending a player accused of 'rushing' by demanding concrete evidence to prevent a narrative-driven mislynch. This represents a different tactical focus and risk posture, justifying keeping the new entry."
+    },
+    {
+      "case_index": 101,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a distinct tactical situation where a wolf exploits a fragile, emerging consensus against a player accused of 'rushing' the vote. This differs significantly from the existing candidates, which focus on wolf-partner coordination, post-mislynch defense, and self-defense under pressure. Keeping this entry provides the agent with a specific behavioral exploitation strategy during information-starved phases."
+    },
+    {
+      "case_index": 102,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction is a duplicate of Candidate 2. Both entries describe a mid-game situation following a mislynch where a player's voting behavior contradicts their stated principles (specifically, voting early despite preaching caution), and both recommend demanding a direct explanation while preventing them from deflecting or pivoting."
+    },
+    {
+      "case_index": 103,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry recommends an offensive pivot strategy of accusing others of being 'too quiet' or 'controlling the narrative' when confronted with inconsistencies. This is distinct from Candidate 1, which advises a defensive de-escalation approach using pro-village explanations, and Candidate 2, which focuses on explaining a specific vote post-mortem."
+    },
+    {
+      "case_index": 104,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction describes a situation where a player deflecting from their voting record accuses the village of coordination, and recommends ignoring this deflection to focus strictly on their voting behavior. This is functionally identical to Candidate 2, which also advises dismissing accusations of coordination or lockstep voting to maintain focus on objective voting data. Since both entries address the same scenario with the same tactical response, the new extraction is a duplicate."
+    },
+    {
+      "case_index": 105,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends a conflicting action compared to Candidate 1 and Candidate 2, which both explicitly advise against accusing the village of coordination or orchestration. While the situations are highly similar (a surviving wolf facing scrutiny over a damning voting record in the endgame), the new entry proposes a high-risk, aggressive counter-accusation of collusion, representing a competing hypothesis. Therefore, the entry should be kept to preserve this alternative strategic option."
+    },
+    {
+      "case_index": 106,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a successful early-game strategy during the very first discussion round where wolves blend in by asking generic questions and claiming to be new. In contrast, the most similar candidates (such as Candidate 1 and 2) involve defensive stalling tactics under pressure later in the game that ultimately failed and drew suspicion. Thus, the situation, approach, and outcome are all functionally distinct."
+    },
+    {
+      "case_index": 107,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is a duplicate of Candidate 1. Both describe the wolves targeting a vocal leader on Night 1 in an information-starved early game, resulting in the healer saving the target and creating a confirmed town-aligned leader."
+    },
+    {
+      "case_index": 108,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation details a successful wolf deflection strategy that resulted in the elimination of an aggressive villager under fragile consensus. In contrast, similar existing observations (such as Candidate 1) result in failure, where the village easily identified the deflection and executed the wolves. Keeping this observation is crucial for the agent to understand the conditions under which this tactic succeeds versus fails."
+    },
+    {
+      "case_index": 109,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a mid-game situation where the village is reeling from a mislynch, creating a unique context of confusion and self-doubt, which differs from the early-game, post-Night-1 situations in the existing candidates. Additionally, the approach of re-targeting a previously saved leader succeeds here due to the healer's disorientation, whereas in Candidate 1, the immediate re-targeting on Night 2 had mixed results because the target had already established connections."
+    },
+    {
+      "case_index": 110,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation details a failure to leverage a healer-saved player, leading to an unfocused discussion and a mislynch. This contrasts with Candidates 1, 2, and 3, which depict successful strategies where the village or the saved player actively drove the discussion to catch a wolf. Because the approach and outcome are functionally different (passive failure vs. active success), the observation should be kept."
+    },
+    {
+      "case_index": 111,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1. Both describe an information-starved situation where an aggressive villager is targeted and unanimously voted out after a healer save but before any prior eliminations, resulting in a wasted vote and a mislynch for the town."
+    },
+    {
+      "case_index": 112,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "While the situation and approach of auditing the previous vote after a mislynch are similar to Candidate 4, the outcome is functionally opposite. In Candidate 4, the analysis successfully exposed a wolf, whereas here it led to unproductive circular arguments and town-on-town accusations, resulting in failure. Keeping this observation is crucial for teaching the agent the risks and potential failure modes of this tactic."
+    },
+    {
+      "case_index": 113,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a failure outcome where auditing past mislynches devolves into a circular argument and town-on-town accusations, allowing wolves to win. This contrasts with existing observations like Candidate 1 and Candidate 5, where analyzing past voting records successfully exposes wolves. Keeping this entry is valuable as it teaches the agent the risks and failure modes of this tactic when the village is split and information-starved."
+    },
+    {
+      "case_index": 114,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is a duplicate of Candidate 1, as both describe a healer protecting a vocal player on the first night in an information-starved game phase. The approach of targeting the most active player for protection is identical, and both result in a successful save that confirms a town-aligned leader for the village. Therefore, the new entry does not offer any new strategic insights."
+    },
+    {
+      "case_index": 115,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation occurs in a game state after a Day 2 mislynch, which alters the information landscape by adding voting records and reducing the town's numbers. This is functionally different from Candidate 2 (before the first vote) and Candidate 3 (after discussion but without a lynch), meaning a search query for post-mislynch healer decisions would not retrieve them."
+    },
+    {
+      "case_index": 116,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "While Candidate 1 shares a similar situation of investigating a vocal player on Night 1, its outcome was redundant due to an overlapping healer save. The new observation represents a different outcome where the investigator successfully gains private knowledge of a confirmed villager, which is a distinct result."
+    },
+    {
+      "case_index": 117,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a situation where the investigator fails to guide the village by getting bogged down in circular arguments about past mislynches. This differs from Candidate 2, where the investigator chose to keep the information entirely private to protect their role. The new observation teaches a different tactical error (engaging in unproductive debates rather than leveraging confirmed townies to narrow down suspects), so it should be kept."
+    },
+    {
+      "case_index": 118,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an endgame scenario where the investigator successfully identifies a wolf but is killed before sharing the information, resulting in a wolf victory. This differs significantly from the existing mid-game and early-game observations which focus on target selection strategies and result in either successful wolf identification or redundant town confirmations. The outcome here highlights a critical vulnerability in the endgame that is not captured by the other entries."
+    },
+    {
+      "case_index": 119,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends a specific passive blending tactic of asking generic, open-ended questions to establish a neutral or newcomer persona during the very first day. This is distinct from Candidate 2, which advises against passivity and instead advocates for proactively constructing target narratives when pressured. Because it offers a unique behavioral approach for the initial information-starved phase, it should be kept."
+    },
+    {
+      "case_index": 120,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends prioritizing the elimination of vocal, leading players even if they were previously saved by the healer, under the assumption that the healer will not protect them twice. This directly conflicts with Candidate 1 and Candidate 2, which advise shifting targets away from a saved player to avoid wasting a night kill. Because these represent competing hypotheses with opposite actions for the same situation, the new entry must be kept."
+    },
+    {
+      "case_index": 121,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a specific situation where an aggressive player is pushing accusations without concrete evidence, and recommends framing their behavior as 'chaotic' or 'forced' to turn the village against them. This is distinct from Candidate 1, which focuses on avoiding passivity when pressured, and Candidate 2, which deals with deflecting pressure by analyzing logical inconsistencies. The specific framing tactic ('chaotic'/'forced') against a loud player represents a novel action path for the agent."
+    },
+    {
+      "case_index": 122,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends actively encouraging the village to dwell on past mistakes and focus on evasive players to stall and exhaust discussion time. This is fundamentally different from Candidates 1 and 2, which advise the agent not to dismiss past analysis and instead focus on defending their own voting record under scrutiny. The situation also differs as it targets a village already trapped in circular arguments rather than an active, structured investigation targeting the agent."
+    },
+    {
+      "case_index": 123,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction and Candidate 2 describe the same situation where a player is confirmed innocent via a healer save in the early game. Both recommend that other villagers treat this player as a trusted anchor to lead discussions and coordinate village actions. The minor addition of protecting the saved player from future attacks does not change the core strategic behavior of leveraging them as a trusted leader."
+    },
+    {
+      "case_index": 124,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new strategy point is functionally identical to Candidate 1, as both advise a villager to resist joining a bandwagon against an aggressive player when the accusations are purely behavioral and lack concrete evidence. Additionally, both entries recommend the same counter-strategy of scrutinizing the players who are actively amplifying or framing these accusations to find potential wolves."
+    },
+    {
+      "case_index": 125,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends actively steering the discussion away from past votes and focusing on current behavior to break a circular argument. This directly conflicts with existing entries like Candidate 2 and Candidate 4, which advise treating any attempt to move away from past votes as a major red flag and instead demand forcing analysis of those votes. Because it represents a competing hypothesis with a different action direction for a similar situation, it must be kept."
+    },
+    {
+      "case_index": 126,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends a forward-looking approach of pivoting the discussion to current behaviors and new suspects after a mislynch, which directly conflicts with the retrospective analysis advocated in Candidates 1 and 2. While Candidates 1 and 2 treat deflecting from the voting record as a wolf indicator, this strategy proposes that a villager should actively drive such a pivot to focus on active progress. Because these represent competing hypotheses and opposite action directions for the same situation, the new entry should be kept."
+    },
+    {
+      "case_index": 127,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new extraction recommends protecting a vocal or leading player on the first night to counter early wolf targets, which is functionally identical to Candidate 3's advice to protect the most vocal or proactive player from the Day 1 discussion. Both situations describe an early-game, information-starved environment on Night 1 where the healer must act based on initial discussion activity. An agent would make the exact same decision under both strategies."
+    },
+    {
+      "case_index": 128,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a distinct mid-game situation where a Day 2 mislynch has occurred, which alters the village's vulnerability compared to the early-game scenarios in Candidates 1 and 3. Furthermore, the action introduces a nuanced risk-balancing approach (evaluating whether to spread risk to other strong players or stick to the confirmed town player) that differs from the more absolute directives in the existing candidates."
+    },
+    {
+      "case_index": 129,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy focuses on using the process of elimination (knowing who is innocent) to direct suspicion toward uninvestigated players and break a village deadlock. This is distinct from Candidate 1, which focuses on clearing innocent targets to prevent mislynches because the investigator is under imminent threat of being night-killed. The two entries address different tactical goals and agent exposure levels."
+    },
+    {
+      "case_index": 130,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a distinct mid-to-endgame situation where the investigator already has confirmed town-aligned roles and needs to find a wolf to break a village deadlock. This differs from Candidate 5, which focuses on the early game immediately after a healer save to build a trusted network, and Candidate 3, which addresses early-game high-elimination-risk scenarios. The action also specifically targets players causing disarray or deflecting to find a wolf, rather than confirming friendly roles."
+    },
+    {
+      "case_index": 131,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy addresses a mid-to-endgame deadlock where the investigator has private information (confirmed town-aligned roles) but the village is in disarray, whereas existing entries focus on early-game survival or post-wolf-elimination scenarios. The recommended action targets players actively deflecting or causing disarray to break the deadlock, which is distinct from targeting defenders of an eliminated wolf or high-risk survival targets."
+    },
+    {
+      "case_index": 132,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 4,
+      "reasoning": "The new observation is a duplicate of Candidate 4. Both describe an early-game, information-starved situation where the wolves target a highly vocal player on Night 1, resulting in the successful elimination of the healer."
+    },
+    {
+      "case_index": 133,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a successful deflection tactic where wolves framed an aggressive villager's demands as 'rushing,' resulting in a split vote and no elimination. While similar to Candidate 2, where wolves accused active villagers of being overly aggressive, Candidate 2 resulted in failure and drew suspicion to the wolves. Keeping both observations is necessary to teach the agent the risk/reward dynamics of this defensive framing tactic."
+    },
+    {
+      "case_index": 134,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "While the situation and approach are similar to Candidate 1 and Candidate 3, the outcome is opposite. In the existing observations, the deflection failed and led to a wolf's elimination, whereas in this new observation, the tactic successfully maintained a deadlock and prevented an elimination. Keeping this observation is necessary to teach the agent the risk/reward balance of this strategy."
+    },
+    {
+      "case_index": 135,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a split-village deadlock situation where wolves actively maintain a tie to prevent eliminations. This is functionally distinct from the existing candidates, which all involve a unified village consensus where wolves either attempt to blend in or cast anomalous votes. Therefore, this represents a unique tactical scenario and must be kept."
+    },
+    {
+      "case_index": 136,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a successful mid-game night kill of an analytical villager in an information-rich environment, which successfully disorganized the village. In contrast, the existing candidates all describe early-game or mid-game attempts to target vocal players that resulted in failure, healer saves, or strategic disadvantages for the wolves. This new entry provides a valuable example of a successful tactical elimination under specific information-rich conditions."
+    },
+    {
+      "case_index": 137,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a unique situation involving consecutive voting ties and a deadlocked village in the mid-to-endgame, which leads to a wolf victory. None of the existing candidates address this specific scenario of voting deadlocks or the failure to coordinate to break ties, making it a valuable addition to the database."
+    },
+    {
+      "case_index": 138,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an information-starved situation with fragile consensus where an aggressive villager's demanding tone alienates others and draws suspicion. In contrast, all the existing candidates describe information-rich situations with unified consensus where the village successfully analyzes voting records to defeat wolf deflections. Because the information landscape, consensus texture, and tactical dynamics are fundamentally different, this observation must be kept."
+    },
+    {
+      "case_index": 139,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a failure mode where villagers got bogged down in meta-arguments about the validity of analyzing voting records, rather than treating the dismissal of such analysis as a scum indicator. This contrasts with Candidate 1, where the villagers successfully bypassed the suppression by systematically analyzing the votes and calling out the suppressors, leading to a wolf's elimination. Keeping this observation is valuable as it highlights a distinct negative outcome and a different tactical error (engaging in circular arguments about methodology) compared to the successful execution in Candidate 1."
+    },
+    {
+      "case_index": 140,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a unique endgame scenario where an investigator with private information hesitates to align with a villager's push against a wolf, resulting in a late vote shift that fails to secure a majority and leads to a wolf victory. None of the existing candidates capture this specific dynamic of delayed alignment by an investigator or the resulting failure to break a deadlock in time. Thus, it should be kept as a distinct learning experience."
+    },
+    {
+      "case_index": 141,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 1. In both cases, the healer takes a highly visible, proactive role in the early game's initial discussion, leading to their targeted elimination by the wolves on Night 1."
+    },
+    {
+      "case_index": 142,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an investigator targeting players under suspicion who turned out to be innocent or already eliminated, whereas Candidate 5 describes an investigator targeting quiet or trusted players to avoid conflict. This represents a different targeting strategy and failure mode, making it valuable to keep as a distinct lesson."
+    },
+    {
+      "case_index": 143,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a unique failure mode where the investigator is alive during a deadlocked mid-to-endgame with confirmed villager info but fails to leverage it, instead focusing on communication styles. This differs from Candidate 1, where the investigator is killed early before they can act, and from Candidates 2-5, which focus on successful wolf eliminations."
+    },
+    {
+      "case_index": 144,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a mid-to-endgame situation with repeated tie votes, a split consensus, and an information-rich landscape where the investigator's voting pattern contributes to a deadlock. This is functionally different from the existing candidates, which focus on early-game scenarios involving outlier votes, bandwagons, or behavioral reads in information-starved environments. Since the situation, approach, and outcome do not match any of the existing candidates, this observation should be kept."
+    },
+    {
+      "case_index": 145,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends targeting the highly active, organizing player on Night 1 to eliminate key roles early and sow confusion. In contrast, Candidates 1 and 2 recommend avoiding this exact target due to the high risk of healer protection, suggesting a moderately active target instead. Because these represent conflicting strategies and different risk tradeoffs for the same situation, the new entry must be kept as a competing hypothesis."
+    },
+    {
+      "case_index": 146,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a specific defensive tactic for a wolf to frame an aggressive player's push as 'rushing' or 'steering' to align with wary villagers and split the vote. This is distinct from Candidate 3, which warns against passive obstructionism and advocates for presenting alternative suspects when pressured. Since none of the existing candidates cover this specific framing technique to exploit village anxiety over aggressive play, the entry should be kept."
+    },
+    {
+      "case_index": 147,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends actively dismissing voting record analysis as exhausting or a distraction to suppress evidence. This directly contradicts the advice in Candidates 1, 2, and 3, which explicitly warn against dismissing such analysis and instead advocate for participating in it. Since these represent opposing tactical choices for similar situations, the new entry is kept as a distinct, competing hypothesis."
+    },
+    {
+      "case_index": 148,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point introduces a novel tactical maneuver of coordinating with a wolf partner to force a tie vote, thereby preventing any elimination and extending the night phase. This is distinct from the existing candidates, which focus on bussing a partner under pressure or managing voting records during a unanimous bandwagon. The situation (a split village where a tie is possible) and the action (forcing a tie) represent a different strategic goal and risk profile."
+    },
+    {
+      "case_index": 149,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends prioritizing the elimination of a highly vocal, analytical villager who is actively driving evidence-based analysis to disrupt village coordination. This contrasts with the existing candidates (such as Candidate 1 and 4), which advise avoiding vocal leaders to bypass healer protection or focusing on quiet, non-vocal analytical players. Thus, it represents a distinct target priority and risk tradeoff."
+    },
+    {
+      "case_index": 150,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy addresses a unique situation of repeated voting deadlocks and recommends coordinating votes to break the tie, even on a less-than-ideal target, to prevent wolves from gaining a numbers advantage. None of the existing candidates address deadlocks or tie-breaking; they instead focus on analyzing voting patterns after a wolf has already been successfully eliminated. This represents a novel situation and action that is not covered by the current database."
+    },
+    {
+      "case_index": 151,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new strategy point is a duplicate of Candidate 1, as both advise treating the suppression or dismissal of voting record analysis after a failed vote as a strong indicator of wolf alignment. While the new entry specifies a tie vote and Candidate 1 specifies a mislynch, the core situation of having public voting data that some players try to avoid analyzing is functionally identical. In both cases, the agent is directed to focus scrutiny on the players attempting to dismiss the data, leading to the same strategic action."
+    },
+    {
+      "case_index": 152,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point focuses on self-regulation for a villager who feels the urge to push aggressively in an information-starved environment, advising them to temper their tone and offer concrete analytical methods. In contrast, Candidate 1 focuses on how an observing player should evaluate other aggressive or cautious players. Because the agent's role/exposure and the recommended actions are fundamentally different, this represents a novel strategy."
+    },
+    {
+      "case_index": 153,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy focuses on using the eliminated villager's own voting history and accusations as a trusted baseline to evaluate other players' alignments. This differs from Candidate 1 and Candidate 3, which analyze the behavior and justifications of the players who voted to eliminate the villager. This distinction provides a different analytical target (the dead villager's allies and adversaries) rather than just scrutinizing the bandwagon."
+    },
+    {
+      "case_index": 154,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction duplicates the core strategy of Candidate 2, which advises the healer to maintain a low, non-leading profile during early information-starved discussions to avoid being targeted by wolves. Both entries recommend avoiding an active organizing or leadership role while still participating enough to blend in with standard villager behavior."
+    },
+    {
+      "case_index": 155,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends targeting active narrative-pushers and deadlock-creators while explicitly avoiding players under heavy suspicion. This represents a distinct target selection profile compared to Candidate 1, which targets moderately active players, and Candidate 3, which targets highly suspicious or polarizing players under high personal threat."
+    },
+    {
+      "case_index": 156,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy addresses a specific mechanical deadlock (repeated tie votes) where the investigator must actively align with privately confirmed villagers to push a vote, accepting the risk of being more assertive. This differs from Candidate 2, which focuses on information preservation and soft-claiming/hard-claiming due to an imminent night-kill threat. The tactical goals (breaking a voting tie vs. preventing information loss upon death) and the risk profiles are distinct, warranting a new entry."
+    },
+    {
+      "case_index": 157,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a mid-to-endgame situation with a split village and deadlocks where the investigator must vote with the majority to prevent a tie. This is functionally distinct from Candidate 1 and Candidate 2, which both focus on early-game, information-starved scenarios involving consensus or bandwagoning. Because the game phase, information landscape, and consensus texture are completely different, this represents a novel strategy."
+    },
+    {
+      "case_index": 158,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation demonstrates a successful outcome where advocating for caution successfully stalled a Day 1 vote and allowed a night kill. In contrast, Candidate 1 and Candidate 2 describe similar situations and approaches that resulted in failure, drawing suspicion and leading to the wolves being targeted. Keeping this observation is necessary to teach the agent the risk/reward balance of this stalling tactic."
+    },
+    {
+      "case_index": 159,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation demonstrates a successful outcome where targeting vocal leaders on consecutive nights successfully disrupted the village's strategy. In contrast, the existing candidates all depict failures of this tactic due to healer protections or strategic missteps. Keeping this observation is crucial for teaching the agent the risk/reward dynamics of this approach."
+    },
+    {
+      "case_index": 160,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a distinct situation where wolves are scrutinized for behavioral patterns (stalling and calls for caution) rather than voting records as in Candidate 4. Additionally, the approach of accusing accusers of 'coordinated distraction' and 'pre-planned scripts' represents a unique defensive tactic compared to the existing candidates."
+    },
+    {
+      "case_index": 161,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a coordinated effort by both wolves to split the vote and force a tie to save the targeted partner. This is tactically distinct from Candidate 1, where the surviving wolf unilaterally voted for an innocent villager without coordination, and Candidate 3, where the wolves cast uncoordinated, isolated votes on different targets. Thus, it represents a unique tactical approach and outcome pattern that should be kept."
+    },
+    {
+      "case_index": 162,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is a duplicate of Candidate 2, as both describe a surviving wolf in the endgame trying to discredit a unified village consensus by framing it as artificial or orchestrated (groupthink/manufactured narrative). In both cases, this meta-defensive tactic fails against strong objective evidence, resulting in the wolf's elimination."
+    },
+    {
+      "case_index": 163,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "While Candidate 5 shares a similar information-starved early game situation and behavioral targeting approach, its outcome is a success (exposing a wolf), whereas the new observation results in a failure (mislynch of the active villager). Keeping this observation is necessary to teach the agent the risks and potential failure modes of this behavioral tactic."
+    },
+    {
+      "case_index": 164,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an information-starved environment where a vocal villager's aggressive behavioral confrontation leads to them being targeted by both wolves and the village. In contrast, the existing observations all feature information-rich environments where the village successfully analyzes voting records to overcome wolf deflections. Because the situation, approach, and outcome are all fundamentally different from the candidates, this observation should be kept."
+    },
+    {
+      "case_index": 165,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a mid-game scenario where the structural pressure to vote (after a skipped Day 1 vote) and a lack of clear targets leads to a panic-lynch of an active villager. This differs from Candidates 1 and 3, which focus on early-game behavioral framing where wolves weaponize an aggressive player's communication style. The new entry thus provides a distinct lesson about game-state pressure versus behavioral manipulation."
+    },
+    {
+      "case_index": 166,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation should be kept because it focuses on a different detection signal than the existing entries. While Candidate 1 addresses individual inconsistency (preaching caution but voting early), the new observation targets a coordinated pair of players based on their shared 'caution' rhetoric and aligned voting patterns. This represents a distinct analytical approach for identifying wolf partners in the mid-game."
+    },
+    {
+      "case_index": 167,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a mid-game scenario where the healer aggressively drives the discussion to eliminate a wolf, resulting in their own night elimination due to high visibility. This differs from Candidates 2 and 5, where the healer successfully survived by keeping a low profile, and Candidate 4, which focuses on early-game facilitation rather than mid-game scum-hunting."
+    },
+    {
+      "case_index": 168,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The situation and approach are highly similar to Candidate 2, where the investigator targets an active player on Night 1. However, the outcomes differ significantly: in Candidate 2, the scan was redundant due to a healer save, whereas here it successfully yielded a private confirmed town role to build trust. Keeping both observations teaches the agent the risk/reward trade-offs of targeting vocal players early on."
+    },
+    {
+      "case_index": 169,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation occurs in the mid-game after a mislynch, whereas Candidate 2 describes an early-game scenario on Day 2 with no eliminations. Additionally, the new approach focuses on a single mid-game decision to target an active but non-suspect player, rather than a multi-night strategy starting from a public healer save."
+    },
+    {
+      "case_index": 170,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a successful process-of-elimination strategy where the investigator uses privately confirmed town roles to narrow down suspects and safely pushes them using public evidence. This situation is fundamentally different from Candidates 1\u20134, which focus on pushing a confirmed wolf target. While Candidate 5 also features confirmed innocent villagers, it represents a failure state where the investigator is eliminated before utilizing the information, whereas the new observation demonstrates a successful approach and outcome."
+    },
+    {
+      "case_index": 171,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends advocating for caution and stalling the vote to exploit the village's fear of mislynching in an information-starved early game. This is distinct from Candidate 1, which focuses on coordination and avoiding mirroring between wolf partners, and Candidate 2, which advises against passive caution and instead suggests pushing alternative targets. Thus, it represents a novel tactical choice for a wolf in the early game."
+    },
+    {
+      "case_index": 172,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends prioritizing the elimination of highly active and vocal villagers during the early to mid-game to remove threats to the wolves' cover. This directly conflicts with the existing entries (Candidates 1, 2, and 3), which advise avoiding these vocal leaders due to the risk of healer protection. Because it represents a competing hypothesis with a different target selection strategy, it must be kept."
+    },
+    {
+      "case_index": 173,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy proposes a proactive deflection tactic of accusing accusers of 'coordinated distraction' or 'infighting' when both wolf partners are under scrutiny. This directly conflicts with the advice in Candidate 3, which warns against labeling questions as 'infighting' or 'distractions,' and Candidate 5, which advises against accusing players for asking questions. Because it represents a distinct and competing strategic hypothesis with a different action path, it should be kept."
+    },
+    {
+      "case_index": 174,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction duplicates Candidate 1, as both describe a situation where a wolf partner is facing unavoidable elimination under a unified village consensus in the mid-game. Both recommend voting with the majority to eliminate the partner to avoid casting a dissenting or lone vote that would isolate and expose the agent once the partner's role is revealed."
+    },
+    {
+      "case_index": 175,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point proposes a direct counter-strategy to Candidate 1 and Candidate 2. While those candidates advise the agent to avoid attacking the village's consensus as orchestrated or collusive, the new point explicitly recommends doing so as a last-ditch effort to sow doubt. Because these represent conflicting strategic hypotheses for the same endgame situation, the new entry must be kept."
+    },
+    {
+      "case_index": 176,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new strategy point is a duplicate of Candidate 1, as both address the same situation where players advocate for extreme caution in an early, information-starved game state. The recommended actions in both entries advise the agent to scrutinize these cautious players and challenge their lack of commitment or failure to name suspects. Since the target, timing, and core action are identical, the new entry does not offer any novel utility."
+    },
+    {
+      "case_index": 177,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry offers unique tactical advice on self-preservation and exposure management for an active villager, warning them to balance their assertiveness to avoid night kills and mislynches. None of the existing candidates address this risk-mitigation strategy for the proactive player, focusing instead on analyzing other players' behaviors or deflections."
+    },
+    {
+      "case_index": 178,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy advises resisting voting altogether in an information-starved environment with fragile consensus to avoid a high-risk mislynch. This is distinct from Candidate 5, which focuses on analyzing the instigators of a specific bandwagon rather than advocating for caution or abstaining from voting. The two entries lead to different tactical decisions regarding whether to vote or how to redirect suspicion."
+    },
+    {
+      "case_index": 179,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a mid-game situation with concrete voting records and mislynch data, whereas Candidate 5 focuses on an early-game, information-starved environment. Additionally, the action in the new point involves actively building an evidence-based case against players who consistently maintained caution, which differs from Candidate 4's focus on players who broke their own principles of caution."
+    },
+    {
+      "case_index": 180,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes a mid-game situation where the healer has been highly active and driving the push, recommending they actively moderate their activity to avoid wolf targeting. This differs from Candidate 3, which focuses on an endgame scenario with an already established consensus where the healer simply avoids leading the vote. The new strategy addresses the transition from high visibility to self-preservation, which is a distinct tactical adjustment."
+    },
+    {
+      "case_index": 181,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends investigating active leaders and organizers during the first night to confirm a town role early. This directly conflicts with Candidate 1, which advises avoiding vocal leaders to prevent wasted investigations and instead targeting moderately active players. Because these represent competing hypotheses for the exact same situation, the new entry must be kept."
+    },
+    {
+      "case_index": 182,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a mid-game situation after a mislynch and a night kill where the investigator has already confirmed one villager, which is distinct from the early-game or post-wolf-elimination situations in the existing entries. Furthermore, its recommendation to target active and influential players to identify key town roles like the Healer represents a different tactical approach and risk profile compared to existing entries that advise avoiding vocal leaders or focus on post-healer-save scenarios."
+    },
+    {
+      "case_index": 183,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes a distinct scenario where the Investigator has confirmed multiple town roles and uses process of elimination to join a push against remaining suspicious players. This differs from Candidate 2, which focuses on defending and clearing those innocent players, and Candidates 3 and 5, which require a direct wolf investigation finding. The action here targets uncleared suspects using public evidence while keeping the cleared list secret, representing a unique tactical approach."
+    },
+    {
+      "case_index": 184,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation describes targeting a highly active player on Night 1 who turns out to be the Healer, resulting in their elimination and the loss of village protection. This is functionally identical to Candidate 1 in situation (Night 1, information-starved), approach (targeting the vocal organizer), and outcome (successful elimination of the healer, removing village protection). Therefore, the new observation is a duplicate of Candidate 1."
+    },
+    {
+      "case_index": 185,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation describes a healer who initiates early discussion to guide the village, only to be targeted and eliminated by the wolves on Night 1. This is functionally identical to Candidate 1, where the healer's proactive ice-breaking and attempt to prompt early reads leads to their Night 1 elimination. Since the situation, approach, and outcome all align with Candidate 1, the new observation is a duplicate."
+    },
+    {
+      "case_index": 186,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation should be kept because it describes a distinct approach and outcome compared to the existing entries. While Candidate 1 shares a similar situation of an investigator pushing a wolf in an information-starved village, the new approach focuses on relentlessly challenging calls for caution as stalling tactics rather than analyzing specific healer-hunting behavior. Furthermore, the outcome introduces a critical risk-reward trade-off (drawing significant attention to the investigator) that is absent from the clean successes in the other candidates."
+    },
+    {
+      "case_index": 187,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation should be kept because its situation is functionally different from the existing candidates. It features an information-starved landscape based on behavioral reads under direct scrutiny in the mid-game, whereas Candidate 4 involves an information-rich landscape with voting records, and Candidate 2 involves early-game indirect scrutiny of multiple wolves. This difference in information availability and agent exposure changes the retrieval context and tactical calculus."
+    },
+    {
+      "case_index": 188,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation occurs in an information-starved landscape where villagers must rely on behavioral reads and communication style to identify stalling tactics. This differs significantly from the existing candidates, which are set in information-rich environments where players analyze objective voting records. Keeping this observation provides the agent with a valuable tactic for games where voting data is scarce."
+    },
+    {
+      "case_index": 189,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a coordinated voting strategy where both wolves vote for the investigator leading the charge in an attempt to split the vote. This is distinct from Candidate 1, where a single wolf cast a lone vote on a villager, and Candidate 3, where the wolves cast uncoordinated votes on different targets. This unique tactical approach warrants keeping the observation."
+    },
+    {
+      "case_index": 190,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a scenario where the investigator is targeted and eliminated by the wolves due to high exposure after leading a successful lynch. This is functionally different from the existing observations, which focus on the investigator's active choices of night investigation targets and their outcomes."
+    },
+    {
+      "case_index": 191,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a specific scenario where an investigator successfully leads a charge against a wolf and is killed overnight, prompting the village to target players who voted for the investigator instead of the wolf. While Candidate 2 also analyzes off-votes after a wolf lynch, it lacks the critical context of the investigator's identity and subsequent night kill, which provides a distinct tactical signal for semantic retrieval. Therefore, this observation should be kept to capture this specific role-based voting analysis."
+    },
+    {
+      "case_index": 192,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to Candidate 2. In both cases, a wolf under scrutiny for a past vote tries to deflect by arguing that analyzing past votes is counterproductive or a distraction, and both attempts fail for the same reason, leading to the wolf's elimination."
+    },
+    {
+      "case_index": 193,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation details a defensive tactic from the perspective of an individual villager under scrutiny who clears their name by admitting a misjudgment. In contrast, the existing candidates all focus on the collective village's perspective of analyzing and pressuring other suspects. This represents a different agent exposure and a unique defensive approach, making it valuable to keep."
+    },
+    {
+      "case_index": 194,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new extraction recommends prioritizing the elimination of highly active, organizing players on Night 1 to disrupt village coordination, accepting the risk of healer protection. In contrast, Candidates 1 and 2 advise avoiding these vocal leaders on Night 1 to bypass potential healer protection. Because these represent conflicting strategies and different risk tradeoffs for the exact same situation, the new entry must be kept as a distinct hypothesis."
+    },
+    {
+      "case_index": 195,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new extraction advises a healer to avoid taking a leadership role or being overly active during the initial day discussion to prevent being targeted early. This is functionally identical to Candidate 2, which instructs players to adopt a passive, reactive tone rather than an organizing tone in early discussions to avoid signaling they are a high-utility power role. Both entries describe the same early-game, information-starved situation and recommend the same risk-averse, low-profile behavior."
+    },
+    {
+      "case_index": 196,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new strategy point is functionally identical to Candidate 2, as both address an investigator who has privately identified a wolf and must convince an information-starved village to vote them out. The recommended actions in both cases advise driving the accusation by focusing on publicly observable behavioral flaws, such as deflections and stalling, to build a case. An agent would execute the same behavioral-based pushing strategy under both entries."
+    },
+    {
+      "case_index": 197,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 5,
+      "reasoning": "The new extraction duplicates Candidate 5, as both address the same core issue of a wolf player using passive stalling tactics (advocating caution or pleading for patience) under pressure in an information-starved mid-game. Both entries recommend the exact same corrective action: pivoting away from passivity to present a specific, plausible alternative accusation or narrative. An agent would execute the same strategic shift under either guideline."
+    },
+    {
+      "case_index": 198,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "Both the new entry and Candidate 1 address the same situation where players advocate for extreme caution and refuse to name suspects in an information-starved environment. The recommended actions are functionally identical, as both advise the agent to focus on these cautious players as potential stalling wolves, with the new entry's suggestion to press them being a natural execution of Candidate 1's advice to evaluate them."
+    },
+    {
+      "case_index": 199,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point introduces a distinct tactical alternative where the agent can choose to vote for an exposed key pro-village role instead of busing their partner, which is not covered by the existing entries. Additionally, the situation is set in an information-starved landscape rather than the information-rich environments of the similar candidates, altering the risk profile and justification strategy. This represents a different risk tradeoff and target selection, justifying keeping the entry."
+    },
+    {
+      "case_index": 200,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry focuses on daytime communication strategies, specifically mitigating exposure and signaling for protection after successfully leading a wolf's elimination. In contrast, the existing entries focus exclusively on selecting night investigation targets when facing high elimination risk. Since the action space is entirely different, this entry represents a novel strategy."
+    },
+    {
+      "case_index": 201,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new extraction describes a distinct situation where a specific pro-village role is killed overnight and revealed, creating a highly certain information landscape regarding who voted against them. This differs from Candidate 3, where roles are speculative and the focus is on identifying players who exploit the suspicion on general off-voters. Additionally, the action in the new extraction targets the specific off-voters for direct justification, whereas Candidate 3 focuses on observing third-party exploitation of that suspicion."
+    },
+    {
+      "case_index": 202,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes a situation where the agent is the primary target under a unified consensus specifically due to a past vote against a revealed pro-village role, which is distinct from Candidate 4's focus on indirect scrutiny and fragile consensus. Furthermore, its recommendation to pivot to accusing the accusers of having ulterior motives directly conflicts with Candidate 3's advice to avoid accusing accusers of collusion, representing a distinct competing hypothesis."
+    },
+    {
+      "case_index": 203,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point introduces a novel self-defense tactic for a villager under scrutiny for a past incorrect vote, advising them to transparently admit their mistake and redirect pressure to silent co-voters. None of the existing candidates address this specific self-preservation and credibility-building action; they instead focus on identifying wolves who deflect or managing suspects who accuse their accusers. Thus, the new entry represents a distinct and valuable addition to the database."
+    },
+    {
+      "case_index": 204,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a tactic for breaking a deadlock of vague discussions by forcing players to make concrete accusations and then analyzing their deflections. This is distinct from Candidate 2, which focuses on questioning a specific player's past advice regarding quiet players, and Candidate 1, which relies on an information-rich voting record. Therefore, this represents a unique behavioral intervention in an information-starved state."
+    },
+    {
+      "case_index": 205,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes an information-starved situation where the village must rely on behavioral patterns (deflection) to identify wolves, whereas the most similar existing observations (such as Candidates 1 and 2) feature information-rich environments with concrete voting records. This difference in the information landscape and the corresponding detection method (behavioral analysis vs. voting record analysis) means the situations and approaches are functionally distinct."
+    },
+    {
+      "case_index": 206,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation is from the perspective of a villager (investigator) who made an anomalous vote and was eliminated due to a failed deflection, whereas Candidate 1 is from the villagers' perspective where the outlier was a wolf. The differences in roles, perspectives, and outcomes provide distinct strategic lessons for the agent."
+    },
+    {
+      "case_index": 207,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1. Both describe an endgame scenario where the final cornered wolf attempts to discredit the village's consensus by calling it 'manufactured' or 'collusion', and in both cases, the villagers hold firm and ignore the deflection, resulting in a successful vote and a village victory."
+    },
+    {
+      "case_index": 208,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is a duplicate of Candidate 2. Both describe a Night 1 scenario where the wolves target a vocal leader to disrupt the village, and in both cases, the healer successfully saves the target, resulting in a failed elimination."
+    },
+    {
+      "case_index": 209,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new observation is functionally identical to Candidate 2, as both describe a wolf under direct pressure in the mid-game deflecting by accusing their challenger of being quiet or staying off the radar. In both cases, the village easily recognized this deflection tactic, leading to the wolf's elimination or downfall."
+    },
+    {
+      "case_index": 210,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation demonstrates a successful execution of voting with the village to eliminate a wolf partner to maintain cover. This directly contrasts with the failures in Candidate 1 (voting against consensus) and Candidate 2 (failing due to prior defense of the partner). Keeping this observation provides the agent with a crucial success case for this tactical situation."
+    },
+    {
+      "case_index": 211,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation describes a situation where the wolf is aligned with the village consensus and not under suspicion, allowing them to offensively amplify doubts against an investigator. In contrast, all existing candidates depict wolves under direct scrutiny attempting defensive deflections that ultimately fail. This represents a distinct tactical scenario and a successful outcome that is not captured by the current database."
+    },
+    {
+      "case_index": 212,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation is functionally identical to Candidate 1, as both describe an endgame scenario where the last wolf attempts to deflect suspicion by accusing the unified villagers of collusion or coordinated consensus. In both cases, the village dismissed this meta-argument, resulting in the wolf's elimination and a village victory."
+    },
+    {
+      "case_index": 213,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new observation describes a Night 1 scenario where the healer protects a vocal leader and successfully saves them from a wolf attack. This is functionally identical to Candidate 1 in situation (information-starved Night 1), approach (protecting the vocal leader), and outcome (successful save of the target)."
+    },
+    {
+      "case_index": 214,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 1. Both describe a 4-player endgame where the healer ignores the final wolf's accusations of village collusion/manufactured consensus, focuses on the established evidence, and successfully votes the wolf out."
+    },
+    {
+      "case_index": 215,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "While Candidate 1 shares a very similar situation and approach of investigating a vocal player on Night 1, its outcome was redundant because the target was saved by the healer. The new observation represents a successful outcome where the investigation provides a valuable piece of confirmed information without redundancy. Keeping both helps the agent understand the risk of redundancy versus the reward of gaining confirmed town info."
+    },
+    {
+      "case_index": 216,
+      "item_type": "observation",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The situation, approach, and outcome are functionally identical to Candidate 2. Both describe an investigator in a mid-game, information-rich scenario targeting a highly defensive or evasive player and successfully identifying them as a wolf."
+    },
+    {
+      "case_index": 217,
+      "item_type": "observation",
+      "golden_label": "K",
+      "reasoning": "The new observation features a unique situation where the investigator is under heavy scrutiny as the primary target due to an anomalous dissenting vote. The approach of deflecting scrutiny by accusing another player rather than justifying the vote leads to a failed outcome (elimination), which is not represented in any of the existing successful, low-exposure observations."
+    },
+    {
+      "case_index": 218,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends an active, high-agency behavior (challenging passive players to name names) for any general villager during an information-starved early game. This is distinct from Candidate 1, which focuses on passive evaluation of cautious players, and Candidate 4, which restricts a similar action to a highly specific situation where the agent is a publicly confirmed saved villager."
+    },
+    {
+      "case_index": 219,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes an information-starved situation where the agent is merely observing a passive player's deflection, whereas Candidate 1 describes an information-rich situation where the agent is actively driving the interrogation with unified consensus. These differing social dynamics and agent roles change the available action space from actively rallying a vote to diagnostic observation."
+    },
+    {
+      "case_index": 220,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 3,
+      "reasoning": "The new extraction and Candidate 3 describe the same tactic of demanding a logical explanation from the sole outlier voter who did not join the consensus to eliminate a confirmed wolf. Although the game phases differ (mid-game vs. endgame), the prompt states that phase alone does not make situations different if the tactic and available information are the same. Therefore, the new entry is a duplicate of Candidate 3."
+    },
+    {
+      "case_index": 221,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction is a duplicate of Candidate 1. Both describe a situation where a cornered suspect attempts to deflect by accusing the village of collusion or manufactured consensus, and both recommend the same action of ignoring the distraction, holding firm to the accumulated evidence, and maintaining the unified vote."
+    },
+    {
+      "case_index": 222,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy recommends targeting a vocal leader on the first night to disrupt village organization, whereas Candidates 1 and 2 explicitly advise avoiding the vocal leader to bypass potential healer protection. Because these entries recommend conflicting actions and different targets for the exact same situation, they represent competing hypotheses and must both be kept."
+    },
+    {
+      "case_index": 223,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes a reactive situation where the wolf is under direct scrutiny for passivity in an information-starved landscape, which is distinct from the proactive context of Candidate 5 and the information-rich context of Candidate 2. Furthermore, the action of deflecting with a vague accusation against a quiet player represents a different tactical choice than Candidate 2's analytical approach of targeting inconsistent logic."
+    },
+    {
+      "case_index": 224,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new entry duplicates Candidate 1, as both describe a situation where a wolf partner is facing unavoidable elimination under unified consensus. Both recommend voting with the village to eliminate the partner to avoid being isolated and exposed by a lone dissenting vote."
+    },
+    {
+      "case_index": 225,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point describes an offensive maneuver where a wolf amplifies suspicion against an investigator who is vulnerable due to an anomalous vote, aiming to eliminate a key information role. This is distinct from the existing candidates, which primarily focus on self-defense strategies (Candidates 1, 2, and 4) or general voting record analysis (Candidate 3). The specific focus on exploiting an investigator's vulnerability to eliminate a power role represents a unique tactical option."
+    },
+    {
+      "case_index": 226,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new strategy point recommends actively accusing the unified village of collusion and a manufactured consensus to sow doubt. This directly contradicts the advice in Candidates 1, 2, and 4, which explicitly warn against accusing players of coordination or groupthink in this situation. Because these represent conflicting, competing hypotheses for the same situation, the new point must be kept."
+    },
+    {
+      "case_index": 227,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new strategy point is a duplicate of Candidate 1, as both advise the healer to protect the most active or vocal player during the first night's setup. The situations are functionally identical, describing an early-game, information-starved environment where only initial discussion patterns are available. An agent following either strategy would target the same player under the same conditions."
+    },
+    {
+      "case_index": 228,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 2,
+      "reasoning": "The new entry is a duplicate of Candidate 2. Both describe an endgame situation where a suspected wolf attempts to deflect by accusing the village of collusion or coordination, and both recommend the same action of ignoring the distraction, holding firm to objective evidence, and framing the accusation as a desperate wolf survival tactic."
+    },
+    {
+      "case_index": 229,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new extraction recommends investigating a vocal player attempting to lead the discussion on the first night. This directly conflicts with Candidate 1, which explicitly advises avoiding the most vocal leader to prevent wasted investigations and instead targeting moderately active players. Since these entries recommend opposite actions for the same situation, they represent competing hypotheses and both must be kept."
+    },
+    {
+      "case_index": 230,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "duplicate_of_candidate": 1,
+      "reasoning": "The new extraction and Candidate 1 describe the same situation of choosing a night investigation target after a wolf has been eliminated in the mid-game. Both recommend targeting players who exhibited evasive, avoidant, or deflective behavior during the day's discussion. Thus, they advise the same action and the new entry is a duplicate."
+    },
+    {
+      "case_index": 231,
+      "item_type": "strategy_point",
+      "golden_label": "K",
+      "reasoning": "The new entry describes a situation where the wolf has already been eliminated, and the investigator is under heavy, unified scrutiny for an anomalous vote. The recommended action is to provide a clear justification without deflecting, which directly contrasts with Candidate 1's advice to deflect and pivot focus to an active wolf target. Because the situations differ in the status of the wolf (eliminated vs. alive) and the actions recommend opposite approaches to handling scrutiny, this represents a distinct strategy."
+    }
+  ]
+}
