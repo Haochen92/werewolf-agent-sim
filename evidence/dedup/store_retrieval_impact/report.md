@@ -82,16 +82,72 @@ Filtering made scores *worse*. Two mechanisms caused this:
 
 **Content coverage is the real bottleneck.** After both store dedup and retrieval filtering, strategy points still showed 70%+ redundancy and unique_lessons near 1. The store simply doesn't contain entries for many common situations. No amount of retrieval engineering can surface knowledge that doesn't exist.
 
+## Phase 2: v3 Prompt Calibration and Larger Sample (n=39)
+
+The original evaluation above used n=5 frozen cases and v0 (untuned) batch dedup prompts. After tuning batch prompts through v1-v3 (see [batch_prompt_tuning](../batch_prompt_tuning/experiment_log.md)), we created a third store — v4_deduped_v2 — using v3 prompts, then re-evaluated all three stores on the full 40-case eval set (39 complete).
+
+### Store sizes
+
+| Store | Prompts | Observations | Strategy Points | Total | Reduction |
+|---|---|---|---|---|---|
+| v4 | — | 324 | 198 | 522 | — |
+| v4_deduped | v0 (untuned) | 150 | 167 | 320 | 39% |
+| v4_deduped_v2 | v3 (tuned) | 269 | 163 | 432 | 17% |
+
+The v3 prompts are far more conservative — anti-over-merge calibration, BEFORE MERGING checklist, and indexed keys eliminated the aggressive merging that v0 performed.
+
+### Observations (n=39 scenarios)
+
+| Metric | v4 | v4_deduped | v4_deduped_v2 |
+|---|---|---|---|
+| Avg retrieved | 5.1 | 4.6 | 5.0 |
+| Relevance | 4.51 | 4.26 | 4.44 |
+| Efficiency | 3.26 | 3.26 | **3.44** |
+| Unique Lessons | 2.62 | 2.41 | **2.82** |
+| Redundancy ratio | 46% | 46% | **42%** |
+
+### Strategy Points (n=39 scenarios)
+
+| Metric | v4 | v4_deduped | v4_deduped_v2 |
+|---|---|---|---|
+| Avg retrieved | 4.4 | 4.4 | 4.3 |
+| Relevance | 3.85 | 3.62 | 3.72 |
+| Efficiency | 2.87 | 3.00 | 2.95 |
+| Unique Lessons | 1.87 | 1.79 | 1.90 |
+| Redundancy ratio | 59% | 59% | 58% |
+
+### Per-case win/loss analysis (v4_deduped_v2 vs v4)
+
+| Metric | Obs W/T/L | Strat W/T/L |
+|---|---|---|
+| Relevance | 2/31/7 | 1/34/5 |
+| Efficiency | 9/26/5 | 4/35/1 |
+| Unique Lessons | 9/26/5 | 4/33/3 |
+
+### Phase 2 findings
+
+**The n=5 sample was optimistic about v4_deduped.** At n=39, v4_deduped (v0 prompts) actually *hurts* relevance for observations (-0.28 mean delta, 2W/24T/14L) without improving efficiency at all. The aggressive 39% store reduction crossed the line from removing redundancy into removing useful entries.
+
+**v4_deduped_v2 (v3 prompts, 17% reduction) is the best of the three stores.** It achieves the highest efficiency (3.44) and unique lessons (2.82) for observations while keeping relevance close to the raw store (4.44 vs 4.51). The conservative dedup preserves diverse entries that v0 would have aggressively merged.
+
+**v4_deduped_v2 clearly dominates v4_deduped.** Across both observations and strategy points, v4_deduped_v2 wins on relevance (+0.17 obs, +0.10 strat), unique lessons (+0.38 obs, +0.10 strat), and is competitive on efficiency. The v3 prompt tuning paid off.
+
+**Strategy points remain a content coverage problem, not a dedup problem.** All three stores show similar strategy metrics (~59% redundancy, ~1.9 unique lessons). This confirms the phase 1 finding — the store lacks entries for common situations.
+
+**The original report's core insight still holds: fix the root cause, not the symptom.** But the *degree* of dedup matters. v0's aggressive merging was itself a new problem — the v3 prompts' anti-over-merge calibration threads the needle between removing true duplicates and preserving useful diversity.
+
 ## Artifacts
 
 | File | Description |
 |---|---|
-| [01_v4_vs_v4deduped_baseline.md](01_v4_vs_v4deduped_baseline.md) | Retrieval eval: v4 vs v4_deduped, baseline pipeline |
-| [02_v4deduped_with_filtering.md](02_v4deduped_with_filtering.md) | Retrieval eval: v4_deduped with filtering pipeline |
+| [01_v4_vs_v4deduped_baseline.md](01_v4_vs_v4deduped_baseline.md) | Phase 1: v4 vs v4_deduped retrieval eval (n=5) |
+| [02_v4deduped_with_filtering.md](02_v4deduped_with_filtering.md) | Phase 1: v4_deduped with filtering pipeline (n=5) |
 
 ## Code References
 
-- `Agents/memory_batch_deduplication.py` — batch dedup pipeline, cluster size cap, Langfuse tracing
-- `Agents/memory_stores/v4_deduped/` — deduped store output
-- `eval_configs/store_dedup_comparison.json` — v4 vs v4_deduped eval config
-- `eval_configs/deduped_filtering.json` — filtering on clean store eval config
+- `Agents/memory_batch_deduplication.py` — batch dedup pipeline, cluster size cap, two-pass support
+- `Agents/memory_stores/v4_deduped/` — v0-prompt deduped store (320 items)
+- `Agents/memory_stores/v4_deduped_v2/` — v3-prompt deduped store (432 items)
+- `eval_configs/store_dedup/store_dedup_comparison.json` — phase 1 eval config (n=5)
+- `eval_configs/store_dedup/dedup_v2_comparison.json` — phase 2 eval config (n=39)
+- `eval_results/retrieval_eval_20260526_174803.jsonl` — phase 2 raw results
