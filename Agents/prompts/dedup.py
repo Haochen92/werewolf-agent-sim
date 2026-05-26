@@ -262,9 +262,11 @@ one of them would do the same thing. Choose one survivor_key (the best-worded
 entry). The apply step will preserve that key, sum observation_counts from all
 source_keys, and delete absorbed keys.
 
-If none of the entries is well-written on its own but elements across multiple
-entries could be combined into a stronger version, provide merged_situation and
-merged_action for the survivor_key. Use only details present in the source
+If the survivor_key entry is already well-written and covers the hypothesis
+adequately, do not provide merged fields — just output the survivor_key. Only
+provide merged_situation and merged_action when no single entry captures the
+full hypothesis on its own and elements across multiple entries could be
+combined into a stronger version. Use only details present in the source
 entries. Do not add dimensional fields (information landscape, consensus
 texture, agent exposure, game phase) that no source entry contains; only
 reorganize or clarify what is already stated.
@@ -272,6 +274,27 @@ reorganize or clarify what is already stated.
 KEEP — Entries are genuinely distinct and need no changes. Use when entries in
 the cluster represent different hypotheses — different targets, different
 timing, different risk tradeoffs, or different situational scope.
+
+SITUATION COMPARISON:
+Two situations are functionally the same when a semantic search query
+matching one would also retrieve the other. If not, they are different
+situations — they belong in separate KEEP operations even if the action
+advice is similar.
+
+Check these dimensions — if any differs enough that a search query for
+one would not match the other, the situations are different:
+- Information landscape: information-rich vs information-starved changes
+  which tactics are available.
+- Agent exposure: the agent's position — credibility level, whether under
+  suspicion, driving vs observing — changes the available action space.
+  E.g., "confirmed non-wolf with high credibility" vs "general villager
+  under suspicion" are different situations even if the trigger event
+  (post-mislynch) is the same.
+- Consensus texture: unified vs split vs no consensus changes social
+  strategy.
+- Game phase: early vs endgame changes stakes. BUT phase alone does not
+  make situations different if the tactic and available information are
+  the same.
 
 DECISION TEST:
 For each pair of entries in the cluster, ask: would an agent in the described
@@ -294,10 +317,24 @@ Apply this concretely:
   player, but only if no healer save was announced" — the second adds a
   situational condition that changes when the action applies → different
   hypotheses → KEEP both.
+- Different CONFIDENCE POSTURE: "treat accusation as ground truth and act
+  immediately" vs "probe to evaluate alignment before committing" — same
+  direction but different certainty level → different hypotheses → KEEP both.
+- Opposite ACTION for same situation: "defend the aggressive accuser" vs
+  "challenge the accuser's motives" — conflicting strategies are by
+  definition different hypotheses → KEEP both.
 
 A cluster of 9 similar entries might resolve to 1 DISCARD group (all same
 hypothesis) or 2 DISCARD groups (two distinct hypotheses, each with redundant
 copies) or a mix of DISCARD and KEEP operations.
+
+BEFORE GROUPING ENTRIES UNDER DISCARD — verify both conditions hold for
+every pair in the group:
+1. The situations are functionally the same per the situation comparison.
+2. The recommended actions point in the same direction — same target type,
+   same timing, same risk posture.
+If entries recommend different or conflicting actions for the same
+situation, they are competing hypotheses — separate KEEP operations.
 
 CALIBRATION NOTE:
 When in doubt, DISCARD. Over-discarding is recoverable — a genuinely novel
@@ -366,12 +403,87 @@ Rules:
 - KEEP: Entries are genuinely distinct — different situations OR different
   outcomes. No change needed for the listed source_keys.
 
-Decision test: Would the agent make a different strategic decision based on
-reading entry A versus entry B? If both entries teach "this category of
-tactic fails in this situation," they are one lesson — MERGE them. If one
-entry shows failure and another shows success, they are different lessons —
-KEEP both.
+COMPARISON CRITERIA:
 
+Before choosing an operation, evaluate each field independently:
+
+SITUATION — "same" vs "different":
+Would a semantic search query matching situation A also retrieve
+situation B? If not, they are different situations — KEEP, even if the
+underlying lesson is similar.
+
+Check these dimensions:
+- Information landscape: information-rich vs information-starved changes
+  which tactics are available. Different evidence types (voting record vs
+  behavioral read vs role claim) change what signal the agent looks for.
+- Consensus texture: unified village vs split village vs no consensus
+  changes the agent's social strategy.
+- Agent exposure: driving the push vs under suspicion changes the agent's
+  risk calculus.
+- Game phase: early vs endgame changes the stakes per action. BUT phase
+  alone does not make situations different if the tactic and available
+  information are the same.
+
+APPROACH — "same" vs "different":
+Two approaches are functionally the same when they point the agent toward
+the same action on the ground — same target type, same timing, same method.
+NOT different: wording variations, different reasoning for the same action.
+Different: different tactic category (accusation vs deflection vs role
+claim), different detection method (voting record analysis vs behavioral
+pattern recognition), different dimension targeted (timing-based vs
+logic-based argument).
+
+OUTCOME — "same" vs "different":
+Two outcomes are functionally the same when they succeed or fail for the
+same structural reason.
+Same approach, opposite outcome (success vs failure) → always KEEP.
+Different mechanism: failed because evidence was too strong vs failed
+because village was already coordinated → different.
+Partial outcomes: "worked initially then failed" is distinct from both
+pure success and pure failure.
+
+MERGE REQUIRES SITUATION AND OUTCOME TO MATCH:
+Similar situations alone do not justify MERGE. You must also confirm that
+the outcome follows the same success/failure pattern. The approaches should
+differ in specific tactic but both succeed or fail for the same structural
+reason. If the outcome differs (success vs failure, or different failure
+mechanism), KEEP — even if situations look nearly identical.
+
+DISCARD REQUIRES ALL THREE FIELDS TO MATCH:
+Situation, approach, AND outcome must all be functionally the same. If the
+approach uses a different tactic category or detection method, the entries
+are not duplicates — consider MERGE (if outcome matches) or KEEP.
+
+DECISION TEST:
+For each pair of entries, ask: would the agent make a different strategic
+decision based on reading entry A versus entry B?
+
+- Both entries teach "this category of tactic fails in this situation"
+  → one lesson → MERGE them (consolidate tactic variants with counts).
+- One entry shows failure, another shows success → different lessons
+  → KEEP both.
+- Same situation, same outcome, same tactic → redundant → DISCARD.
+- Same situation but different tactic categories (accusation vs deflection),
+  even if both fail → different lessons about what doesn't work → KEEP both.
+- Different situations (different retrieval match) with same approach →
+  different lessons (the tactic works/fails in different contexts) → KEEP.
+
+EXAMPLES:
+- DISCARD: Wolf uses "too obvious" defense in mid-game (entry A) vs
+  near-identical "too obvious" defense phrasing in endgame (entry B),
+  both fail against evidence. Same tactic, same outcome. → DISCARD.
+- MERGE: Wolf deflects by questioning healer saves (3x) and entry B records
+  wolf deflecting by accusing groupthink (2x) — same situation, same
+  failure outcome, different specific tactics. → MERGE with approach listing
+  both tactics and their counts.
+- KEEP: Healer protects vocal player Night 1 and save succeeds vs Healer
+  protects vocal player Night 1 but accidentally protects a wolf. Same
+  approach, opposite outcome — both teach risk/reward. → KEEP both.
+- KEEP: Catching wolf via late bussing vs partner protection. Same village
+  response, but different detection signals requiring different analytical
+  approaches. → KEEP both.
+
+Rules:
 - Use only keys shown in the cluster. Do not invent new keys.
 - A single cluster may require multiple operations (e.g., MERGE a subgroup
   of 5, KEEP 2 others that have different outcomes).
