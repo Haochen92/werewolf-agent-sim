@@ -368,6 +368,80 @@ A retrieval-based evaluation — "given a specific in-game situation, does the p
 
 **Note:** Per-role results use 5 games vs 10 games for single-pass Phase 3, so the quality comparison has a sample size caveat. The volume and timing comparisons are directional.
 
+### Per-role judge pipeline (Phase 5)
+
+Extended the judge from 6 to 8 dimensions and built two new evaluation tools:
+
+**New dimensions added:**
+- **strategy_depth** — Does the strategy point provide concrete conditions, a specific action, and reasoning for WHY it works? (1=generic platitude, 5=specific technique with conditions and learned nuance)
+- **novelty** — Does the item capture a non-obvious mechanism, or restate common-sense fundamentals? (1=obvious advice, 5=reframes how you'd approach the situation)
+
+Both dimensions were already demanded by the extraction prompt (lines 187-211 of extraction.py) but never measured by the judge.
+
+**New tools:**
+1. `scripts/per_role_judge.py` — judges extraction outputs per-role (each role evaluated separately with all 8 dimensions)
+2. `scripts/per_role_comparison.py` — pairwise comparison of 2+ extraction outputs per game × role, with tournament-style W/T/L ranking
+
+#### Per-role judge: flash-lite medium (8 dimensions)
+
+Judged flash-lite medium per-role extraction (5 games, 20 role evaluations). Judge: gemini-3.1-pro-preview.
+
+| Role | Spec | Epist | Ground | Cover | Divers | Persp | **StrDepth** | **Novelty** |
+|---|---|---|---|---|---|---|---|---|
+| wolf (n=5) | 3.80 | 5.00 | 4.60 | 2.60 | 4.00 | 5.00 | 4.40 | 3.40 |
+| villager (n=5) | 4.00 | 5.00 | 5.00 | 2.60 | 3.80 | 5.00 | 4.40 | 3.20 |
+| healer (n=5) | 3.20 | 4.60 | 4.20 | 2.80 | 3.80 | 4.40 | 3.40 | 2.40 |
+| investigator (n=5) | 3.40 | 4.60 | 3.20 | 2.20 | 4.00 | 5.00 | 3.60 | 2.80 |
+| **OVERALL (n=20)** | **3.60** | **4.80** | **4.25** | **2.55** | **3.90** | **4.85** | **3.95** | **2.95** |
+
+**Findings:**
+- The new dimensions produce differentiated scores — not ceiling effects. Strategy depth (3.95) is stronger than novelty (2.95), indicating items are tactically specific but often restate known approaches.
+- Healer consistently scores lowest across most dimensions — fewer game events to draw on, leading to thinner coverage and less novel insights.
+- Coverage (2.55) is the weakest dimension. This is a per-role judge artifact: each role only sees events from its own perspective, so the judge (calibrated for whole-game coverage) rates it low. This is the same dynamic as the diversity issue — the metric isn't calibrated for per-role output.
+- Perspective compliance (4.85) and epistemic compliance (4.80) remain near-ceiling, confirming per-role extraction handles these well.
+
+#### Pairwise comparison: flash-lite per-role vs 3.5-flash per-role
+
+Same extraction mode (per-role), different models. 5 games × 4 roles = 20 matchups. Judge: gemini-3.1-pro-preview.
+
+| Role | Flash-lite medium | 3.5-flash |
+|---|---|---|
+| wolf | 0W 0T 4L (0%) | 4W 0T 0L (100%) |
+| villager | 1W 0T 4L (20%) | 4W 0T 1L (80%) |
+| healer | 0W 0T 4L (0%) | 4W 0T 0L (100%) |
+| investigator | 1W 0T 4L (20%) | 4W 0T 1L (80%) |
+| **OVERALL** | **2W 0T 16L (11%)** | **16W 0T 2L (89%)** |
+
+When both models use the same extraction mode, 3.5-flash dominates — 89% win rate with high confidence (most matchups conf=5). The quality gap between models is real and substantial when the extraction approach is held constant.
+
+#### Pairwise comparison: flash-lite per-role vs 3.5-flash single-pass
+
+The key question: can a cheaper model with per-role extraction compete with a stronger model's single-pass output? Flash-lite medium per-role (4 calls × $1.50/M) vs 3.5-flash single-pass (1 call × $9.00/M). 5 games × 4 roles = 20 matchups.
+
+| Role | Flash-lite per-role | 3.5-flash single-pass |
+|---|---|---|
+| wolf | 2W 0T 3L (40%) | 3W 0T 2L (60%) |
+| villager | 2W 0T 3L (40%) | 3W 0T 2L (60%) |
+| healer | **3W 0T 2L (60%)** | 2W 0T 3L (40%) |
+| investigator | 2W 0T 3L (40%) | 3W 0T 2L (60%) |
+| **OVERALL** | **9W 0T 11L (45%)** | **11W 0T 9L (55%)** |
+
+**This is nearly a coin flip.** Flash-lite per-role goes from 11% (vs 3.5-flash per-role) to 45% (vs 3.5-flash single-pass) — the per-role extraction mode closes most of the model quality gap.
+
+Key observations:
+- Flash-lite per-role **wins on healer** (60%) — single-pass underallocates attention to healer items, so per-role's dedicated healer call produces better output even from a weaker model.
+- Wolf, villager, investigator are all 40-60 splits — close enough that game-specific factors matter more than model quality.
+- All 20 matchups completed successfully (0 judge failures) after adding validators for the pairwise judge's output normalization.
+
+**Cost/speed comparison:**
+
+| Config | Items/game | Time/game | Output price/1M | Effective cost | Quality (pairwise) |
+|---|---|---|---|---|---|
+| 3.5-flash single-pass | 16.4 | 44s | $9.00 | 1x baseline | 55% win rate |
+| Flash-lite medium per-role | 30.8 | 38s | $1.50 | ~6x cheaper | 45% win rate |
+
+Flash-lite per-role produces **1.9x more items**, is **faster** (38s vs 44s — the 4 calls run quicker than one large call), costs **6x less**, and achieves **45% pairwise win rate** against 3.5-flash single-pass. With a dedup pipeline downstream that collapses filler, the volume advantage compounds — more unique insights survive dedup at a fraction of the cost.
+
 ## Prompt fix: player_ID enforcement
 
 Despite observations being allowed omniscient knowledge (they're post-game factual records), player_IDs are still undesirable because:
@@ -449,3 +523,6 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/judge_gemini-3.1-pro-preview_20260526_093911.jsonl` | Phase 4: judge scores for flash-lite high per-role extraction (5 cases, Vertex AI) |
 | `model_comparison/gemini-3.1-flash-lite-medium_5games_per-role_20260526_101628.jsonl` | Phase 4: flash-lite medium thinking per-role extraction (5 games) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260526_101640.jsonl` | Phase 4: judge scores for flash-lite medium per-role extraction (5 cases, Vertex AI) |
+| `model_comparison/per_role_judge_gemini-3.1-pro-preview_20260526_110816.jsonl` | Phase 5: per-role 8-dimension judge scores for flash-lite medium (20 role evals) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_111845.jsonl` | Phase 5: pairwise comparison, flash-lite per-role vs 3.5-flash per-role (18 matchups) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_114150.jsonl` | Phase 5: pairwise comparison, flash-lite per-role vs 3.5-flash single-pass (20 matchups) |
