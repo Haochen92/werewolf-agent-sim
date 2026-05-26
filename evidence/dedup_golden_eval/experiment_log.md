@@ -990,6 +990,44 @@ The embedding pre-filter calibration is complete. All plausible improvements hav
 
 Future threshold adjustments should be driven by downstream retrieval quality rather than further calibration sweeps. If retrieval demands more aggressive discard or keep, the logged `similarity_scores` in Langfuse traces provide the data needed to re-sweep quickly.
 
+### Key Learning: Why Embedding Similarity Has a Fundamental Ceiling
+
+The calibration experiments above all converge on the same finding: the embedding pre-filter's auto-decision coverage plateaus around 15-30% regardless of how we tune it — higher dimensions, different task types, multi-dimensional boundaries. This section explains *why*, with concrete evidence from the dataset.
+
+#### Embeddings capture topic, not position
+
+Embedding models represent text as high-dimensional vectors that encode *what a text is about* — its topic, domain, entities, and vocabulary. They do not encode *what stance the text takes* on that topic. This means two texts can embed as nearly identical while giving contradictory advice.
+
+**Case 155** from the cross-game dataset illustrates this clearly (action_sim = 0.946 at 3072 dims, 0.913 at 1536 dims):
+
+> **NEW entry action**: "Prioritize investigating players who are actively pushing narratives, dismissing evidence, or creating deadlocks, rather than players who are already under heavy suspicion or confirmed roles, to maximize the chance of identifying a wolf."
+>
+> **Best candidate action**: "Avoid investigating the most vocal leader or the player most likely to be targeted by the wolves. If they are killed, your investigation is wasted; if they are saved by the healer, they are already soft-confirmed to the village, making your private investigation redundant. Instead, target moderately active players who are harder to read behaviorally."
+
+These embed as 94.6% similar because they share the same topic (investigation targeting), role (investigator), game phase (early game), and vocabulary (investigate, players, active, target). The embedding model sees "both texts are about investigation targeting strategy for the investigator role in early game." But the actual advice directly contradicts: the new entry says to go after the *most active* players pushing narratives, while the candidate says to *avoid* the most vocal leader and target *moderately* active players instead. This is a genuine KEEP — the new entry teaches a different (arguably opposing) lesson.
+
+This is not an isolated case. The spot-check of the 8 highest-similarity K cases in the cross-game dataset (action_sim 0.916-0.946) found 6 clear genuine K cases and only 2 borderline. The pattern is consistent: high embedding similarity reflects topical overlap, not prescriptive agreement.
+
+#### Why this is a hard problem for embeddings
+
+The issue is analogous to a well-known limitation in NLP: "Invest in crypto" and "Don't invest in crypto" embed very similarly in most models because they share all the same content words and differ only in a negation that carries minimal weight in the embedding space. For strategy points, the equivalent is two pieces of advice about the same tactical situation that disagree on *what to do*. The situation, role, game phase, and tactical vocabulary are identical — the disagreement lives in the relational structure of the advice (target X *instead of* Y), which embeddings flatten into a topic-level average.
+
+This explains several observations from the calibration:
+1. **The D/K interleaving zone (action_sim 0.83-0.93) is irreducible.** In this range, items share the same topic and game context but may teach the same lesson (D) or a different one (K). No embedding trick can separate these — it requires understanding what the advice *means*, not just what it's *about*.
+2. **Higher dimensions (3072) didn't help.** More dimensions capture finer topical distinctions but don't introduce the ability to detect prescriptive disagreement. The D/K interleaving zone shifts but doesn't shrink.
+3. **SEMANTIC_SIMILARITY task type didn't help.** Switching from retrieval-oriented to similarity-oriented embeddings changes how the space is projected but doesn't add the relational reasoning needed to tell "same advice" from "opposite advice on the same topic."
+4. **Situation_sim provides no additional signal.** Both D and K cases have the same range of situation similarity because the *situation is genuinely similar* — that's not the ambiguity. The ambiguity is in the action.
+5. **Field-level sims (approach, outcome) don't help for observations either.** Genuine duplicates can use different phrasing for the same approach or outcome, making field-level sims too noisy. Content_sim averages out the noise; individual fields amplify it.
+
+#### Implications for the pre-filter design
+
+The embedding pre-filter is correctly designed as a *conservative triage layer*, not a replacement for LLM reasoning:
+- **High similarity (above discard threshold)**: Very high embedding similarity means near-identical text — not just the same topic but the same phrasing. These are safe to auto-discard because textual near-identity implies prescriptive agreement.
+- **Low similarity (below keep threshold)**: Very low embedding similarity means different topics entirely. Safe to auto-keep because different topics cannot be duplicates.
+- **Middle zone (LLM fallback)**: Items that share a topic but may or may not agree on what to do. Only an LLM can reason about whether "investigate active players" and "avoid investigating the most vocal leader" are the same advice or contradictory advice.
+
+The ~15-30% auto-decision rate is not a failure of tuning — it's the natural ceiling of what topical similarity can determine without reasoning. The pre-filter eliminates the trivially obvious cases; the LLM handles the rest. Attempts to push beyond this ceiling (by lowering the discard threshold or raising the keep threshold) will always sacrifice correctness because they cross into the zone where topical similarity ≠ prescriptive agreement.
+
 ### Instrumentation for Future Calibration
 
 A key lesson from this work: the threshold calibration would have been much simpler if embedding similarities had been logged from the start. We had to retroactively build a dataset builder, compute embeddings from frozen extraction artifacts, create a labeling pipeline, and run a separate calibration sweep — all because the production dedup flow didn't record the similarity scores that the auto-layer needs to calibrate against.
