@@ -61,8 +61,8 @@
       "case_index": 6,
       "case_id": "9d18376f39230d8c63186d45597b8b2b:b05b70c53d07793e",
       "item_type": "observation",
-      "golden_label": "M",
-      "notes": "Same endgame situation, different wolf tactic variants (proactive framing vs defensive deflection), same failed outcome. Merge tactic variant."
+      "golden_label": "K",
+      "notes": "[was M, relabeled K for v11 no-merge] Same endgame situation, different wolf tactic variants (proactive framing vs defensive deflection), same failed outcome. Merge tactic variant."
     },
     {
       "case_index": 7,
@@ -158,17 +158,17 @@
       "case_index": 19,
       "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:c05b8ccd3c4d27c1",
       "item_type": "observation",
-      "golden_label": "M",
+      "golden_label": "K",
       "merge_candidate": 4,
-      "notes": "Wolf questioning healer saves \u2014 specific instance of C4's deflection pattern."
+      "notes": "[was M, relabeled K for v11 no-merge] Wolf questioning healer saves \u2014 specific instance of C4's deflection pattern."
     },
     {
       "case_index": 20,
       "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:37a0800cf33f539e",
       "item_type": "observation",
-      "golden_label": "M",
+      "golden_label": "K",
       "merge_candidate": 5,
-      "notes": "Same credibility-destroyed Investigator pattern as C5."
+      "notes": "[was M, relabeled K for v11 no-merge] Same credibility-destroyed Investigator pattern as C5."
     },
     {
       "case_index": 21,
@@ -307,8 +307,8 @@
       "case_index": 38,
       "case_id": "23412f8e162d0b0bceea914fff66310d:4777e55d949afa20",
       "item_type": "observation",
-      "golden_label": "M",
-      "notes": "Same post-save pivot situation, same successful outcome. Tactic variant: identify and target the Healer specifically vs switch to generic influential villager."
+      "golden_label": "K",
+      "notes": "[was M, relabeled K for v11 no-merge] Same post-save pivot situation, same successful outcome. Tactic variant: identify and target the Healer specifically vs switch to generic influential villager."
     },
     {
       "case_index": 39,
@@ -393,8 +393,8 @@
       "case_index": 50,
       "case_id": "b1ea401bb8e967064bb054784e240e7a:a3b262eeeba0204e",
       "item_type": "observation",
-      "golden_label": "M",
-      "notes": "Same situation/outcome as C2 (investigate vocal player early game, confirm villager). One-off vs persistent (two-night systematic) crosses qualitative threshold \u2014 tactic variant worth merging.",
+      "golden_label": "K",
+      "notes": "[was M, relabeled K for v11 no-merge] Same situation/outcome as C2 (investigate vocal player early game, confirm villager). One-off vs persistent (two-night systematic) crosses qualitative threshold \u2014 tactic variant worth merging.",
       "source_row": 22
     },
     {

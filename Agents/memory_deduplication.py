@@ -84,28 +84,6 @@ class ObservationDiscard(BaseModel):
     )
 
 
-class ObservationMerge(BaseModel):
-    decision: Literal["M", "MERGE"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-    merge_candidate: int = Field(
-        ge=1,
-        description="The 1-based candidate number of the existing observation to merge with",
-    )
-    merged_situation: str = Field(
-        description="The merged situation text, keeping the best specificity from both",
-    )
-    merged_approach: str = Field(
-        description=(
-            "The merged approach text listing ALL distinct tactics from both entries"
-        ),
-    )
-    merged_outcome: str = Field(
-        description="The merged outcome summarizing the shared lesson",
-    )
-
-
 class ObservationKeep(BaseModel):
     decision: Literal["K", "KEEP"]
     reasoning: str = Field(
@@ -116,7 +94,6 @@ class ObservationKeep(BaseModel):
 class ObservationDedupDecisionOutput(BaseModel):
     result: Annotated[
         ObservationDiscard
-        | ObservationMerge
         | ObservationKeep,
         Field(discriminator="decision"),
     ]
@@ -134,7 +111,6 @@ class DedupAction(str, Enum):
     REPLACE = "B"
     DIFFERENTIATE = "C"
     KEEP = "D"
-    MERGE = "M"
 
 
 class DedupResult(BaseModel):
@@ -153,7 +129,6 @@ class DedupStats(BaseModel):
     discarded: int = 0
     replaced: int = 0
     differentiated: int = 0
-    merged: int = 0
     failed: int = 0  # Fell back to raw storage
     auto_kept: int = 0
     auto_discarded: int = 0
@@ -294,7 +269,7 @@ def dedup_single_observation(
 def _call_observation_dedup_llm(
     observation: Observation,
     similar_items: list,
-) -> ObservationDiscard | ObservationMerge | ObservationKeep | None:
+) -> ObservationDiscard | ObservationKeep | None:
     """Call the LLM to decide how to integrate the new observation."""
     prompt = OBSERVATION_DEDUP_PROMPT.format(
         new_role=observation.perspective,
@@ -484,7 +459,6 @@ def _candidate_validation_error(decision: BaseModel, candidate_count: int) -> st
     candidate: int | None = None
     for field_name in (
         "duplicate_of_candidate",
-        "merge_candidate",
     ):
         value = getattr(decision, field_name, None)
         if value is not None:
@@ -571,7 +545,7 @@ def _apply_observation_decision(
     namespace: tuple[str, ...],
     observation: Observation,
     similar_items: list,
-    decision: ObservationDiscard | ObservationMerge | ObservationKeep,
+    decision: ObservationDiscard | ObservationKeep,
     game_id: str,
 ) -> DedupAction:
     """Apply the LLM's observation dedup decision to the store."""
@@ -587,35 +561,6 @@ def _apply_observation_decision(
                 )
                 _store_new_observation(store, namespace, observation, game_id)
             return DedupAction.DISCARD
-
-        case ObservationMerge(
-            merge_candidate=candidate,
-            merged_situation=situation,
-            merged_approach=approach,
-            merged_outcome=outcome,
-        ):
-            item = _item_for_candidate(similar_items, candidate)
-            if item is not None:
-                existing_value = item.value
-                store.put(
-                    namespace,
-                    item.key,
-                    {
-                        "situation": situation,
-                        "approach": approach,
-                        "outcome": outcome,
-                        "observation_count": existing_value.get("observation_count", 1)
-                        + 1,
-                        "last_observed": datetime.now().isoformat(),
-                        "game_id": game_id,
-                    },
-                )
-            else:
-                logger.warning(
-                    f"MERGE referenced invalid candidate {candidate}; storing as new"
-                )
-                _store_new_observation(store, namespace, observation, game_id)
-            return DedupAction.MERGE
 
         case ObservationKeep():
             _store_new_observation(
@@ -826,12 +771,10 @@ def run_observation_downstream_dedup(
             stats.discarded += 1
             if result.auto:
                 stats.auto_discarded += 1
-        elif result.action == DedupAction.MERGE:
-            stats.merged += 1
 
     logger.info(
         f"Observation dedup complete: {stats.kept} kept, "
-        f"{stats.discarded} discarded, {stats.merged} merged, "
+        f"{stats.discarded} discarded, "
         f"{stats.failed} failed, "
         f"{stats.auto_kept} auto-kept, {stats.auto_discarded} auto-discarded"
     )
