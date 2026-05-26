@@ -1,0 +1,28 @@
+{
+  "dataset": "eval_sets/v4_filtering_eval.jsonl",
+  "snapshots": [
+    {
+      "label": "v4",
+      "observations_path": "Agents/memory_stores/v4/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v4/strategy_points.json"
+    },
+    {
+      "label": "v4_deduped",
+      "observations_path": "Agents/memory_stores/v4_deduped/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v4_deduped/strategy_points.json"
+    },
+    {
+      "label": "v4_deduped_v2",
+      "observations_path": "Agents/memory_stores/v4_deduped_v2/observations.json",
+      "strategy_points_path": "Agents/memory_stores/v4_deduped_v2/strategy_points.json"
+    }
+  ],
+  "pipelines": [
+    {"label": "baseline", "filtering": false}
+  ],
+  "top_k": 3,
+  "max_retrieved_items": 0,
+  "judge": true,
+  "judge_model": "gemini-2.5-flash",
+  "sleep_seconds": 1.0
+}
