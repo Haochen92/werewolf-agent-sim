@@ -918,9 +918,50 @@ On the cross-game dataset (232 cases), applying all four thresholds:
 
 The observation auto-keep is the biggest win — items from unseen games with content_sim < 0.935 are reliably novel. The SP auto-rate is lower because action similarity in werewolf games is structurally compressed (many strategies recommend similar actions in different situations).
 
+### Experiment: 3072 dimensions + SEMANTIC_SIMILARITY task type
+
+**Hypothesis**: The 1536-dim `gemini-embedding-001` with default task type (`RETRIEVAL_DOCUMENT`) may compress the similarity space, limiting D/K separation. Two independent interventions could improve it: (1) increasing to 3072 dimensions for finer-grained similarity scores, and (2) using `SEMANTIC_SIMILARITY` task type instead of `RETRIEVAL_DOCUMENT` since dedup is a symmetric similarity task, not asymmetric retrieval.
+
+**Method**: 2×2 factorial design on both the golden set (65 cases) and cross-game set (232 cases), sweeping thresholds with the same grid. Each combination computes fresh embeddings cached to a separate file.
+
+| Condition | Dims | Task Type |
+|---|---|---|
+| Baseline | 1536 | RETRIEVAL_DOCUMENT (default) |
+| Task-only | 1536 | SEMANTIC_SIMILARITY |
+| Dims-only | 3072 | RETRIEVAL_DOCUMENT (default) |
+| Both | 3072 | SEMANTIC_SIMILARITY |
+
+**Results — SP zero-error auto rates:**
+
+| Condition | Golden (25 SP) | Cross-game (116 SP) |
+|---|---|---|
+| 1536 + default | 24% (≥0.90, <0.81) | 14.7% (≥0.93, <0.81) |
+| 1536 + SEMANTIC_SIM | 36% (≥0.91, <0.87) | 16.4% (≥0.94, <0.86) |
+| 3072 + default | 24% (≥0.91, <0.82) | — |
+| 3072 + SEMANTIC_SIM | 56% (≥0.92, <0.89) | 12.9% (≥0.95, <0.88) |
+
+**Results — Obs zero-error auto rates:**
+
+| Condition | Golden (40 obs) | Cross-game (116 obs) |
+|---|---|---|
+| 1536 + default | 30% (≥0.96, <0.94) | 31% (≥0.96, <0.93) |
+| 1536 + SEMANTIC_SIM | 40% (≥0.95, <0.93) | 24.1% (≥0.97, <0.92) |
+| 3072 + default | 27.5% (≥0.96, <0.94) | — |
+| 3072 + SEMANTIC_SIM | 40% (≥0.96, <0.94) | 25% (≥0.97, <0.93) |
+
+**Analysis**:
+
+1. **SEMANTIC_SIMILARITY widens the keep zone** — at 1536 dims, the keep threshold rises from <0.81 to <0.86 for SP (more K cases auto-kept). But this comes at the cost of tighter discard thresholds (0.93→0.94 for SP), because genuinely-different items (labeled K) now cluster closer to duplicates.
+2. **3072 dims amplify the effect** but don't help independently — on the golden set, dims-only (3072+default) gives identical SP auto rates to baseline. The benefit only appears when combined with SEMANTIC_SIMILARITY.
+3. **Golden set overstates improvement** — the 25 SP golden cases don't have enough high-sim K cases to expose the tightened discard boundary. The 116 SP cross-game cases reveal heavy K/D interleaving in the 0.88-0.95 range at 3072 dims + SEMANTIC_SIM.
+4. **Cross-game results are negative** — SP auto rate drops from 14.7% to 12.9% with both changes. Obs drops from 31% to 25%. The wider keep zone doesn't compensate for the tighter discard zone on the larger dataset.
+
+**Decision**: Keep the current configuration (1536 dims, default `RETRIEVAL_DOCUMENT` task type). The baseline is the most robust on the cross-game dataset. Neither 3072 dims nor SEMANTIC_SIMILARITY improve net auto-decision coverage.
+
+**Takeaway**: The similarity space is fundamentally mixed — items that are semantically similar can be genuinely novel (same situation, different lesson). No amount of embedding tuning can separate these without the LLM's reasoning about information content. The embedding pre-filter should remain conservative and let the LLM handle the gray zone.
+
 ### What's next
 
-- **Higher-dimensional embedding model**: The current `gemini-embedding-001` at 1536D may compress the similarity space. A higher-dim model could give better D/K separation, especially for strategy points where the 0.83-0.93 interleaving zone is wide.
 - **Field-level observation sims**: Content_sim works for both boundaries, but field-level sims (approach_sim, outcome_sim) could provide additional signal for borderline cases in the LLM zone. The `--obs-keep-mode field` flag in `eval_auto_dedup.py` supports sweeping with field-level sims.
 
 ### Instrumentation for Future Calibration
@@ -951,3 +992,8 @@ The tracing infrastructure (`_emit_dedup_span` → Langfuse span → `fetch_dedu
 | `evidence/auto_dedup/cross_game_embedding_cache.json` | Cached embedding sims for 232 cross-game cases |
 | `evidence/auto_dedup/cross_game_golden_labels.json` | 232 golden labels from gemini-3.5-flash |
 | `evidence/auto_dedup/cross_game_golden_labels_flash_lite.json` | 232 golden labels from gemini-3.1-flash-lite |
+| `evidence/auto_dedup/golden_embedding_cache_3072_dims.json` | Golden set at 3072 dims + SEMANTIC_SIMILARITY |
+| `evidence/auto_dedup/cross_game_embedding_cache_3072_dims.json` | Cross-game at 3072 dims + SEMANTIC_SIMILARITY |
+| `evidence/auto_dedup/golden_embedding_cache_3072_dims_default_task.json` | Golden set at 3072 dims + default task type |
+| `evidence/auto_dedup/golden_embedding_cache_1536_dims_semantic_sim.json` | Golden set at 1536 dims + SEMANTIC_SIMILARITY |
+| `evidence/auto_dedup/cross_game_embedding_cache_1536_semantic_sim.json` | Cross-game at 1536 dims + SEMANTIC_SIMILARITY |

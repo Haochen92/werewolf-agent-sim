@@ -1,0 +1,2575 @@
+[
+  {
+    "case_index": 0,
+    "case_id": "4f53550a38d6095f7e88a401aea64b0e:902cf01a1177fd42",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8063,
+    "max_action_sim": null,
+    "max_content_sim": 0.9478,
+    "max_approach_sim": 0.869,
+    "max_outcome_sim": 0.9059,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9036,
+        "situation_sim": 0.8063,
+        "approach_sim": 0.869,
+        "outcome_sim": 0.8483
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9478,
+        "situation_sim": 0.751,
+        "approach_sim": 0.8689,
+        "outcome_sim": 0.9059
+      }
+    ]
+  },
+  {
+    "case_index": 1,
+    "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:be0ccae425b39b21",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8767,
+    "max_action_sim": null,
+    "max_content_sim": 0.9691,
+    "max_approach_sim": 0.9262,
+    "max_outcome_sim": 0.928,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9691,
+        "situation_sim": 0.8767,
+        "approach_sim": 0.9111,
+        "outcome_sim": 0.906
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9546,
+        "situation_sim": 0.8579,
+        "approach_sim": 0.9262,
+        "outcome_sim": 0.928
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9547,
+        "situation_sim": 0.8574,
+        "approach_sim": 0.9259,
+        "outcome_sim": 0.8906
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9124,
+        "situation_sim": 0.8268,
+        "approach_sim": 0.9089,
+        "outcome_sim": 0.8876
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9394,
+        "situation_sim": 0.8248,
+        "approach_sim": 0.9118,
+        "outcome_sim": 0.9278
+      }
+    ]
+  },
+  {
+    "case_index": 2,
+    "case_id": "b1ea401bb8e967064bb054784e240e7a:d12b8b203d278bda",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8587,
+    "max_action_sim": null,
+    "max_content_sim": 0.946,
+    "max_approach_sim": 0.9725,
+    "max_outcome_sim": 0.9231,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9292,
+        "situation_sim": 0.8587,
+        "approach_sim": 0.9002,
+        "outcome_sim": 0.9231
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.946,
+        "situation_sim": 0.8581,
+        "approach_sim": 0.9725,
+        "outcome_sim": 0.8817
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.926,
+        "situation_sim": 0.8553,
+        "approach_sim": 0.9356,
+        "outcome_sim": 0.8575
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9154,
+        "situation_sim": 0.8471,
+        "approach_sim": 0.8722,
+        "outcome_sim": 0.8546
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9198,
+        "situation_sim": 0.844,
+        "approach_sim": 0.883,
+        "outcome_sim": 0.8605
+      }
+    ]
+  },
+  {
+    "case_index": 3,
+    "case_id": "74a591f6d46648faaebd78500437ae85:f64a5bf15a7186ea",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8835,
+    "max_action_sim": null,
+    "max_content_sim": 0.9461,
+    "max_approach_sim": 0.9024,
+    "max_outcome_sim": 0.9015,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9461,
+        "situation_sim": 0.8835,
+        "approach_sim": 0.8853,
+        "outcome_sim": 0.8522
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9374,
+        "situation_sim": 0.883,
+        "approach_sim": 0.8995,
+        "outcome_sim": 0.8791
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9458,
+        "situation_sim": 0.8558,
+        "approach_sim": 0.9024,
+        "outcome_sim": 0.9015
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9227,
+        "situation_sim": 0.7863,
+        "approach_sim": 0.881,
+        "outcome_sim": 0.8393
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9169,
+        "situation_sim": 0.7765,
+        "approach_sim": 0.8491,
+        "outcome_sim": 0.8371
+      }
+    ]
+  },
+  {
+    "case_index": 4,
+    "case_id": "a275c5b021efd0447dc38d179863b615:483edc2980e7b53a",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8828,
+    "max_action_sim": null,
+    "max_content_sim": 0.9549,
+    "max_approach_sim": 0.9454,
+    "max_outcome_sim": 0.8961,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9472,
+        "situation_sim": 0.8828,
+        "approach_sim": 0.8833,
+        "outcome_sim": 0.8441
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9265,
+        "situation_sim": 0.8624,
+        "approach_sim": 0.8944,
+        "outcome_sim": 0.8431
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9398,
+        "situation_sim": 0.8424,
+        "approach_sim": 0.9037,
+        "outcome_sim": 0.8538
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9549,
+        "situation_sim": 0.8322,
+        "approach_sim": 0.9454,
+        "outcome_sim": 0.8961
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.909,
+        "situation_sim": 0.7742,
+        "approach_sim": 0.906,
+        "outcome_sim": 0.8443
+      }
+    ]
+  },
+  {
+    "case_index": 5,
+    "case_id": "53ff8ed9eac1f0273361959a0b9ff37f:dd893cd064d20a10",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8696,
+    "max_action_sim": null,
+    "max_content_sim": 0.9605,
+    "max_approach_sim": 0.9453,
+    "max_outcome_sim": 0.8865,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9415,
+        "situation_sim": 0.8696,
+        "approach_sim": 0.9175,
+        "outcome_sim": 0.8789
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9425,
+        "situation_sim": 0.8666,
+        "approach_sim": 0.8734,
+        "outcome_sim": 0.8816
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9249,
+        "situation_sim": 0.8659,
+        "approach_sim": 0.8856,
+        "outcome_sim": 0.8501
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9605,
+        "situation_sim": 0.8511,
+        "approach_sim": 0.9453,
+        "outcome_sim": 0.8865
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9092,
+        "situation_sim": 0.8368,
+        "approach_sim": 0.8752,
+        "outcome_sim": 0.8583
+      }
+    ]
+  },
+  {
+    "case_index": 6,
+    "case_id": "9d18376f39230d8c63186d45597b8b2b:b05b70c53d07793e",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8499,
+    "max_action_sim": null,
+    "max_content_sim": 0.9609,
+    "max_approach_sim": 0.899,
+    "max_outcome_sim": 0.9243,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9609,
+        "situation_sim": 0.8499,
+        "approach_sim": 0.872,
+        "outcome_sim": 0.9243
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9537,
+        "situation_sim": 0.8418,
+        "approach_sim": 0.8889,
+        "outcome_sim": 0.8942
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9475,
+        "situation_sim": 0.8369,
+        "approach_sim": 0.8357,
+        "outcome_sim": 0.914
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9272,
+        "situation_sim": 0.8311,
+        "approach_sim": 0.899,
+        "outcome_sim": 0.8822
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9375,
+        "situation_sim": 0.8302,
+        "approach_sim": 0.8673,
+        "outcome_sim": 0.8817
+      }
+    ]
+  },
+  {
+    "case_index": 7,
+    "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:2f6ef52ed2cbc282",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8362,
+    "max_action_sim": null,
+    "max_content_sim": 0.9294,
+    "max_approach_sim": 0.9094,
+    "max_outcome_sim": 0.8572,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9294,
+        "situation_sim": 0.8362,
+        "approach_sim": 0.8759,
+        "outcome_sim": 0.8572
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9228,
+        "situation_sim": 0.8256,
+        "approach_sim": 0.8904,
+        "outcome_sim": 0.8516
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9162,
+        "situation_sim": 0.8179,
+        "approach_sim": 0.887,
+        "outcome_sim": 0.8278
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9228,
+        "situation_sim": 0.8179,
+        "approach_sim": 0.9094,
+        "outcome_sim": 0.8306
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.8564,
+        "situation_sim": 0.8057,
+        "approach_sim": 0.8936,
+        "outcome_sim": 0.8141
+      }
+    ]
+  },
+  {
+    "case_index": 8,
+    "case_id": "b83d6120482d4725b9dc20cbf0902957:d3a1cf42736c0f85",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.7923,
+    "max_action_sim": 0.8673,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8478,
+        "situation_sim": 0.7923
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8406,
+        "situation_sim": 0.7369
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8673,
+        "situation_sim": 0.7353
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8655,
+        "situation_sim": 0.7248
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.784,
+        "situation_sim": 0.6914
+      }
+    ]
+  },
+  {
+    "case_index": 9,
+    "case_id": "798f83b17f29f7a60883f77a35d98352:c09551a828276591",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8331,
+    "max_action_sim": 0.9439,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9439,
+        "situation_sim": 0.8331
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.9153,
+        "situation_sim": 0.8057
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.869,
+        "situation_sim": 0.7928
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8191,
+        "situation_sim": 0.7844
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8831,
+        "situation_sim": 0.7841
+      }
+    ]
+  },
+  {
+    "case_index": 10,
+    "case_id": "4f53550a38d6095f7e88a401aea64b0e:4f96e97faf695fa4",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8346,
+    "max_action_sim": 0.978,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.978,
+        "situation_sim": 0.8346
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.9024,
+        "situation_sim": 0.7665
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.9124,
+        "situation_sim": 0.7276
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.9043,
+        "situation_sim": 0.7019
+      }
+    ]
+  },
+  {
+    "case_index": 11,
+    "case_id": "851a7e98e76711fe3c95c4e6d88fa7a0:bcdedbe1a59225ae",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.7229,
+    "max_action_sim": 0.86,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.86,
+        "situation_sim": 0.7229
+      }
+    ]
+  },
+  {
+    "case_index": 12,
+    "case_id": "c0b5514e851755fd742b14a5f76f36ec:f99b3e276b706550",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8592,
+    "max_action_sim": 0.936,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.936,
+        "situation_sim": 0.8592
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8372,
+        "situation_sim": 0.8236
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8291,
+        "situation_sim": 0.8128
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8148,
+        "situation_sim": 0.8058
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8459,
+        "situation_sim": 0.8
+      }
+    ]
+  },
+  {
+    "case_index": 13,
+    "case_id": "798f83b17f29f7a60883f77a35d98352:cdfb7a483a3bae1f",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.7394,
+    "max_action_sim": 0.8685,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8501,
+        "situation_sim": 0.7394
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8685,
+        "situation_sim": 0.739
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8668,
+        "situation_sim": 0.7369
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.815,
+        "situation_sim": 0.7147
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8003,
+        "situation_sim": 0.6992
+      }
+    ]
+  },
+  {
+    "case_index": 14,
+    "case_id": "4ac2415266e993fc721a406c70920e63:3424604efcf5e5fd",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8758,
+    "max_action_sim": 0.9121,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9121,
+        "situation_sim": 0.8758
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.9022,
+        "situation_sim": 0.8542
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8819,
+        "situation_sim": 0.7836
+      }
+    ]
+  },
+  {
+    "case_index": 15,
+    "case_id": "0b47e882116e12d6d017dce4ac606b37:f4adea62c53508f8",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.7337,
+    "max_action_sim": 0.9052,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9052,
+        "situation_sim": 0.7337
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8672,
+        "situation_sim": 0.7324
+      }
+    ]
+  },
+  {
+    "case_index": 16,
+    "case_id": "b83d6120482d4725b9dc20cbf0902957:79c5d4a605c7294c",
+    "item_type": "observation",
+    "golden_label": "M/K",
+    "situation_sim": 0.8359,
+    "max_action_sim": null,
+    "max_content_sim": 0.9311,
+    "max_approach_sim": 0.9147,
+    "max_outcome_sim": 0.9249,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9311,
+        "situation_sim": 0.8359,
+        "approach_sim": 0.8761,
+        "outcome_sim": 0.8928
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9303,
+        "situation_sim": 0.8313,
+        "approach_sim": 0.9147,
+        "outcome_sim": 0.9249
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.8937,
+        "situation_sim": 0.7949,
+        "approach_sim": 0.8184,
+        "outcome_sim": 0.8337
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.8955,
+        "situation_sim": 0.7825,
+        "approach_sim": 0.8666,
+        "outcome_sim": 0.8452
+      }
+    ]
+  },
+  {
+    "case_index": 17,
+    "case_id": "eab6f934fe1d2e1b6a31560dc3ef9d62:cd989a8398de2ddc",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8299,
+    "max_action_sim": null,
+    "max_content_sim": 0.9469,
+    "max_approach_sim": 0.9031,
+    "max_outcome_sim": 0.909,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9469,
+        "situation_sim": 0.8299,
+        "approach_sim": 0.8588,
+        "outcome_sim": 0.8676
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9468,
+        "situation_sim": 0.815,
+        "approach_sim": 0.9031,
+        "outcome_sim": 0.909
+      }
+    ]
+  },
+  {
+    "case_index": 18,
+    "case_id": "851a7e98e76711fe3c95c4e6d88fa7a0:f61752a0168a8a05",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8627,
+    "max_action_sim": null,
+    "max_content_sim": 0.9452,
+    "max_approach_sim": 0.8853,
+    "max_outcome_sim": 0.9207,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9452,
+        "situation_sim": 0.8627,
+        "approach_sim": 0.8736,
+        "outcome_sim": 0.9189
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9038,
+        "situation_sim": 0.7896,
+        "approach_sim": 0.8853,
+        "outcome_sim": 0.9207
+      }
+    ]
+  },
+  {
+    "case_index": 19,
+    "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:c05b8ccd3c4d27c1",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.7816,
+    "max_action_sim": null,
+    "max_content_sim": 0.9058,
+    "max_approach_sim": 0.8932,
+    "max_outcome_sim": 0.8772,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9058,
+        "situation_sim": 0.7816,
+        "approach_sim": 0.8516,
+        "outcome_sim": 0.8754
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.8994,
+        "situation_sim": 0.7804,
+        "approach_sim": 0.8084,
+        "outcome_sim": 0.8606
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9006,
+        "situation_sim": 0.7758,
+        "approach_sim": 0.8796,
+        "outcome_sim": 0.85
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9032,
+        "situation_sim": 0.7734,
+        "approach_sim": 0.8932,
+        "outcome_sim": 0.8772
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.8858,
+        "situation_sim": 0.7623,
+        "approach_sim": 0.8453,
+        "outcome_sim": 0.8537
+      }
+    ]
+  },
+  {
+    "case_index": 20,
+    "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:37a0800cf33f539e",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8392,
+    "max_action_sim": null,
+    "max_content_sim": 0.9493,
+    "max_approach_sim": 0.8845,
+    "max_outcome_sim": 0.952,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9293,
+        "situation_sim": 0.8392,
+        "approach_sim": 0.8771,
+        "outcome_sim": 0.8605
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9436,
+        "situation_sim": 0.837,
+        "approach_sim": 0.8747,
+        "outcome_sim": 0.9179
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9444,
+        "situation_sim": 0.8366,
+        "approach_sim": 0.8845,
+        "outcome_sim": 0.9381
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9296,
+        "situation_sim": 0.8358,
+        "approach_sim": 0.8154,
+        "outcome_sim": 0.8906
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9493,
+        "situation_sim": 0.8343,
+        "approach_sim": 0.8733,
+        "outcome_sim": 0.952
+      }
+    ]
+  },
+  {
+    "case_index": 21,
+    "case_id": "6fba79441b108ada5a62eab9ac63683c:5207c9f05801fc59",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8395,
+    "max_action_sim": null,
+    "max_content_sim": 0.943,
+    "max_approach_sim": 0.8865,
+    "max_outcome_sim": 0.9304,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9217,
+        "situation_sim": 0.8395,
+        "approach_sim": 0.7958,
+        "outcome_sim": 0.9049
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9308,
+        "situation_sim": 0.8363,
+        "approach_sim": 0.8443,
+        "outcome_sim": 0.8737
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9409,
+        "situation_sim": 0.8296,
+        "approach_sim": 0.8865,
+        "outcome_sim": 0.9138
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9322,
+        "situation_sim": 0.8264,
+        "approach_sim": 0.8266,
+        "outcome_sim": 0.8613
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.943,
+        "situation_sim": 0.8261,
+        "approach_sim": 0.8644,
+        "outcome_sim": 0.9304
+      }
+    ]
+  },
+  {
+    "case_index": 22,
+    "case_id": "4ac2415266e993fc721a406c70920e63:9d18d5fce9874130",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8267,
+    "max_action_sim": null,
+    "max_content_sim": 0.9441,
+    "max_approach_sim": 0.9302,
+    "max_outcome_sim": 0.9093,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9441,
+        "situation_sim": 0.8267,
+        "approach_sim": 0.9302,
+        "outcome_sim": 0.8242
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9326,
+        "situation_sim": 0.804,
+        "approach_sim": 0.9048,
+        "outcome_sim": 0.9093
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9197,
+        "situation_sim": 0.7969,
+        "approach_sim": 0.9011,
+        "outcome_sim": 0.908
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.8906,
+        "situation_sim": 0.7864,
+        "approach_sim": 0.9032,
+        "outcome_sim": 0.8888
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.8881,
+        "situation_sim": 0.7588,
+        "approach_sim": 0.8833,
+        "outcome_sim": 0.8697
+      }
+    ]
+  },
+  {
+    "case_index": 23,
+    "case_id": "3cb41b6a492938b79341e59a71d530c7:45f28172f9f209cd",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8203,
+    "max_action_sim": null,
+    "max_content_sim": 0.955,
+    "max_approach_sim": 0.9192,
+    "max_outcome_sim": 0.9491,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9268,
+        "situation_sim": 0.8203,
+        "approach_sim": 0.906,
+        "outcome_sim": 0.86
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.955,
+        "situation_sim": 0.8177,
+        "approach_sim": 0.9077,
+        "outcome_sim": 0.9491
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.918,
+        "situation_sim": 0.8171,
+        "approach_sim": 0.8598,
+        "outcome_sim": 0.8922
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9009,
+        "situation_sim": 0.7739,
+        "approach_sim": 0.9192,
+        "outcome_sim": 0.8638
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9436,
+        "situation_sim": 0.7723,
+        "approach_sim": 0.8697,
+        "outcome_sim": 0.9227
+      }
+    ]
+  },
+  {
+    "case_index": 24,
+    "case_id": "0b47e882116e12d6d017dce4ac606b37:0d7399985bc79d96",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8484,
+    "max_action_sim": null,
+    "max_content_sim": 0.9466,
+    "max_approach_sim": 0.9108,
+    "max_outcome_sim": 0.9554,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9407,
+        "situation_sim": 0.8484,
+        "approach_sim": 0.836,
+        "outcome_sim": 0.9191
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9443,
+        "situation_sim": 0.8484,
+        "approach_sim": 0.8673,
+        "outcome_sim": 0.9351
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9446,
+        "situation_sim": 0.8439,
+        "approach_sim": 0.7945,
+        "outcome_sim": 0.9191
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9412,
+        "situation_sim": 0.8436,
+        "approach_sim": 0.8092,
+        "outcome_sim": 0.9281
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9466,
+        "situation_sim": 0.8436,
+        "approach_sim": 0.9108,
+        "outcome_sim": 0.9554
+      }
+    ]
+  },
+  {
+    "case_index": 25,
+    "case_id": "a275c5b021efd0447dc38d179863b615:687cfe46f8eb0ad4",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8054,
+    "max_action_sim": 0.904,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.904,
+        "situation_sim": 0.8054
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8592,
+        "situation_sim": 0.7744
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8791,
+        "situation_sim": 0.7624
+      }
+    ]
+  },
+  {
+    "case_index": 26,
+    "case_id": "851a7e98e76711fe3c95c4e6d88fa7a0:42781631a1f4d207",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8416,
+    "max_action_sim": 0.8843,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8843,
+        "situation_sim": 0.8416
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8561,
+        "situation_sim": 0.7974
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8289,
+        "situation_sim": 0.7058
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.7875,
+        "situation_sim": 0.6782
+      }
+    ]
+  },
+  {
+    "case_index": 27,
+    "case_id": "798f83b17f29f7a60883f77a35d98352:bbfbd68dc553ca12",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8261,
+    "max_action_sim": 0.8863,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.886,
+        "situation_sim": 0.8261
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8814,
+        "situation_sim": 0.8243
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8863,
+        "situation_sim": 0.7304
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8657,
+        "situation_sim": 0.695
+      }
+    ]
+  },
+  {
+    "case_index": 28,
+    "case_id": "88998dfad7d1224f15687e2192bdb33e:0de7c16d8a495300",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8555,
+    "max_action_sim": 0.8634,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.851,
+        "situation_sim": 0.8555
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8224,
+        "situation_sim": 0.8489
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8468,
+        "situation_sim": 0.8401
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8634,
+        "situation_sim": 0.8338
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.839,
+        "situation_sim": 0.8336
+      }
+    ]
+  },
+  {
+    "case_index": 29,
+    "case_id": "6fba79441b108ada5a62eab9ac63683c:6807cad538539445",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.86,
+    "max_action_sim": 0.8224,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8224,
+        "situation_sim": 0.86
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.7705,
+        "situation_sim": 0.8494
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.785,
+        "situation_sim": 0.8416
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.7907,
+        "situation_sim": 0.8337
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.7607,
+        "situation_sim": 0.824
+      }
+    ]
+  },
+  {
+    "case_index": 30,
+    "case_id": "2804cfeabf47e985f0f9d754713a048f:36980826d4d09175",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.7778,
+    "max_action_sim": 0.9004,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9004,
+        "situation_sim": 0.7778
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8557,
+        "situation_sim": 0.7776
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8719,
+        "situation_sim": 0.7662
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8602,
+        "situation_sim": 0.7645
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.7823,
+        "situation_sim": 0.7618
+      }
+    ]
+  },
+  {
+    "case_index": 31,
+    "case_id": "2804cfeabf47e985f0f9d754713a048f:88dc77d4fb3b61a6",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8301,
+    "max_action_sim": 0.8847,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.7999,
+        "situation_sim": 0.8301
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8847,
+        "situation_sim": 0.8264
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8662,
+        "situation_sim": 0.8
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8815,
+        "situation_sim": 0.7914
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8763,
+        "situation_sim": 0.7839
+      }
+    ]
+  },
+  {
+    "case_index": 32,
+    "case_id": "3cb41b6a492938b79341e59a71d530c7:707d224534aa32ad",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.841,
+    "max_action_sim": 0.8735,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8735,
+        "situation_sim": 0.841
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8564,
+        "situation_sim": 0.7911
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.7807,
+        "situation_sim": 0.7695
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.7923,
+        "situation_sim": 0.7688
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8139,
+        "situation_sim": 0.7581
+      }
+    ]
+  },
+  {
+    "case_index": 33,
+    "case_id": "b1c7c1e4b5fc084c1f18d4dabce1e7f6:10d3817f4a2cd4e3",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8214,
+    "max_action_sim": 0.8321,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.7801,
+        "situation_sim": 0.8214
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8321,
+        "situation_sim": 0.808
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.7902,
+        "situation_sim": 0.7936
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.7969,
+        "situation_sim": 0.7924
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.7246,
+        "situation_sim": 0.7879
+      }
+    ]
+  },
+  {
+    "case_index": 34,
+    "case_id": "86cf05c2ee6b44248da2205e7a703111:ecd738f48a23e594",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8612,
+    "max_action_sim": null,
+    "max_content_sim": 0.9232,
+    "max_approach_sim": 0.9367,
+    "max_outcome_sim": 0.8384,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9232,
+        "situation_sim": 0.8612,
+        "approach_sim": 0.9367,
+        "outcome_sim": 0.8384
+      }
+    ]
+  },
+  {
+    "case_index": 35,
+    "case_id": "b83d6120482d4725b9dc20cbf0902957:f000baeb9253dcae",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8626,
+    "max_action_sim": null,
+    "max_content_sim": 0.9506,
+    "max_approach_sim": 0.9536,
+    "max_outcome_sim": 0.8975,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9506,
+        "situation_sim": 0.8626,
+        "approach_sim": 0.9536,
+        "outcome_sim": 0.8975
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9181,
+        "situation_sim": 0.8258,
+        "approach_sim": 0.9252,
+        "outcome_sim": 0.8863
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.892,
+        "situation_sim": 0.7735,
+        "approach_sim": 0.8281,
+        "outcome_sim": 0.8678
+      }
+    ]
+  },
+  {
+    "case_index": 36,
+    "case_id": "86cf05c2ee6b44248da2205e7a703111:a394a47029825dc2",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.841,
+    "max_action_sim": null,
+    "max_content_sim": 0.9408,
+    "max_approach_sim": 0.8416,
+    "max_outcome_sim": 0.8597,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9408,
+        "situation_sim": 0.841,
+        "approach_sim": 0.8416,
+        "outcome_sim": 0.8597
+      }
+    ]
+  },
+  {
+    "case_index": 37,
+    "case_id": "53ff8ed9eac1f0273361959a0b9ff37f:f6abf5b91d14a05d",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8599,
+    "max_action_sim": null,
+    "max_content_sim": 0.9483,
+    "max_approach_sim": 0.9011,
+    "max_outcome_sim": 0.9103,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9338,
+        "situation_sim": 0.8599,
+        "approach_sim": 0.8968,
+        "outcome_sim": 0.8546
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9343,
+        "situation_sim": 0.8286,
+        "approach_sim": 0.8992,
+        "outcome_sim": 0.8707
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9483,
+        "situation_sim": 0.828,
+        "approach_sim": 0.9011,
+        "outcome_sim": 0.8636
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9442,
+        "situation_sim": 0.8246,
+        "approach_sim": 0.8947,
+        "outcome_sim": 0.9103
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.92,
+        "situation_sim": 0.8178,
+        "approach_sim": 0.8978,
+        "outcome_sim": 0.9044
+      }
+    ]
+  },
+  {
+    "case_index": 38,
+    "case_id": "23412f8e162d0b0bceea914fff66310d:4777e55d949afa20",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8769,
+    "max_action_sim": null,
+    "max_content_sim": 0.9463,
+    "max_approach_sim": 0.9302,
+    "max_outcome_sim": 0.8585,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9341,
+        "situation_sim": 0.8769,
+        "approach_sim": 0.8915,
+        "outcome_sim": 0.8457
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.914,
+        "situation_sim": 0.8708,
+        "approach_sim": 0.9031,
+        "outcome_sim": 0.8382
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9463,
+        "situation_sim": 0.8481,
+        "approach_sim": 0.882,
+        "outcome_sim": 0.8539
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9399,
+        "situation_sim": 0.8481,
+        "approach_sim": 0.9302,
+        "outcome_sim": 0.8354
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9249,
+        "situation_sim": 0.8412,
+        "approach_sim": 0.86,
+        "outcome_sim": 0.8585
+      }
+    ]
+  },
+  {
+    "case_index": 39,
+    "case_id": "c0b5514e851755fd742b14a5f76f36ec:3731c6ff181e42af",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8495,
+    "max_action_sim": null,
+    "max_content_sim": 0.9613,
+    "max_approach_sim": 0.8892,
+    "max_outcome_sim": 0.9392,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9613,
+        "situation_sim": 0.8495,
+        "approach_sim": 0.8584,
+        "outcome_sim": 0.9392
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9356,
+        "situation_sim": 0.8404,
+        "approach_sim": 0.8892,
+        "outcome_sim": 0.9195
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9416,
+        "situation_sim": 0.8394,
+        "approach_sim": 0.8322,
+        "outcome_sim": 0.8919
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9433,
+        "situation_sim": 0.8394,
+        "approach_sim": 0.866,
+        "outcome_sim": 0.9115
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.928,
+        "situation_sim": 0.8137,
+        "approach_sim": 0.8266,
+        "outcome_sim": 0.9129
+      }
+    ]
+  },
+  {
+    "case_index": 40,
+    "case_id": "a275c5b021efd0447dc38d179863b615:0988396b2c0f2cc9",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8557,
+    "max_action_sim": null,
+    "max_content_sim": 0.9451,
+    "max_approach_sim": 0.8813,
+    "max_outcome_sim": 0.8995,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9397,
+        "situation_sim": 0.8557,
+        "approach_sim": 0.8813,
+        "outcome_sim": 0.8943
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.938,
+        "situation_sim": 0.843,
+        "approach_sim": 0.8717,
+        "outcome_sim": 0.8477
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9152,
+        "situation_sim": 0.8423,
+        "approach_sim": 0.8551,
+        "outcome_sim": 0.8474
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9451,
+        "situation_sim": 0.8343,
+        "approach_sim": 0.8781,
+        "outcome_sim": 0.8995
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.916,
+        "situation_sim": 0.8332,
+        "approach_sim": 0.8517,
+        "outcome_sim": 0.8442
+      }
+    ]
+  },
+  {
+    "case_index": 41,
+    "case_id": "3cb41b6a492938b79341e59a71d530c7:2b0fb2f39d2ad68b",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8464,
+    "max_action_sim": null,
+    "max_content_sim": 0.9325,
+    "max_approach_sim": 0.9059,
+    "max_outcome_sim": 0.9095,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9247,
+        "situation_sim": 0.8464,
+        "approach_sim": 0.8945,
+        "outcome_sim": 0.8483
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9325,
+        "situation_sim": 0.8361,
+        "approach_sim": 0.8748,
+        "outcome_sim": 0.86
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9248,
+        "situation_sim": 0.8287,
+        "approach_sim": 0.8641,
+        "outcome_sim": 0.8798
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9233,
+        "situation_sim": 0.8242,
+        "approach_sim": 0.9059,
+        "outcome_sim": 0.9095
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9194,
+        "situation_sim": 0.8229,
+        "approach_sim": 0.8694,
+        "outcome_sim": 0.8324
+      }
+    ]
+  },
+  {
+    "case_index": 42,
+    "case_id": "0b47e882116e12d6d017dce4ac606b37:9df0246acb7b99e5",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8409,
+    "max_action_sim": 0.9061,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9061,
+        "situation_sim": 0.8409
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8888,
+        "situation_sim": 0.8155
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.877,
+        "situation_sim": 0.7438
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.863,
+        "situation_sim": 0.7267
+      }
+    ]
+  },
+  {
+    "case_index": 43,
+    "case_id": "74a591f6d46648faaebd78500437ae85:b096c10a940f9283",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.7082,
+    "max_action_sim": 0.8477,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8477,
+        "situation_sim": 0.7082
+      }
+    ]
+  },
+  {
+    "case_index": 44,
+    "case_id": "c853c21092434245d717af5b5365fc6a:0545ad1cc263209b",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.7907,
+    "max_action_sim": 0.8878,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8878,
+        "situation_sim": 0.7907
+      }
+    ]
+  },
+  {
+    "case_index": 45,
+    "case_id": "6fba79441b108ada5a62eab9ac63683c:c6559b4559159dfb",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8034,
+    "max_action_sim": 0.8939,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8399,
+        "situation_sim": 0.8034
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.7539,
+        "situation_sim": 0.8032
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8487,
+        "situation_sim": 0.8003
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8939,
+        "situation_sim": 0.7991
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.846,
+        "situation_sim": 0.7943
+      }
+    ]
+  },
+  {
+    "case_index": 46,
+    "case_id": "88998dfad7d1224f15687e2192bdb33e:1d4d65599feffcd3",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8507,
+    "max_action_sim": 0.8663,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8609,
+        "situation_sim": 0.8507
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8165,
+        "situation_sim": 0.8279
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8663,
+        "situation_sim": 0.8166
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8224,
+        "situation_sim": 0.8132
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8421,
+        "situation_sim": 0.807
+      }
+    ]
+  },
+  {
+    "case_index": 47,
+    "case_id": "23412f8e162d0b0bceea914fff66310d:5381e52cde68e398",
+    "item_type": "strategy_point",
+    "golden_label": "D",
+    "situation_sim": 0.8404,
+    "max_action_sim": 0.9365,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9106,
+        "situation_sim": 0.8404
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8369,
+        "situation_sim": 0.8375
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.9365,
+        "situation_sim": 0.8277
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8369,
+        "situation_sim": 0.7671
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8793,
+        "situation_sim": 0.7169
+      }
+    ]
+  },
+  {
+    "case_index": 48,
+    "case_id": "b1ea401bb8e967064bb054784e240e7a:b85b7dd8bc747c3a",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8531,
+    "max_action_sim": 0.8806,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.8485,
+        "situation_sim": 0.8531
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8494,
+        "situation_sim": 0.8221
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.834,
+        "situation_sim": 0.8166
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8176,
+        "situation_sim": 0.7939
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8806,
+        "situation_sim": 0.7895
+      }
+    ]
+  },
+  {
+    "case_index": 49,
+    "case_id": "1beaa4d8739f5f570726ff6b046d156c:dffb693a668b1314",
+    "item_type": "strategy_point",
+    "golden_label": "K",
+    "situation_sim": 0.8418,
+    "max_action_sim": 0.9098,
+    "max_content_sim": null,
+    "max_approach_sim": null,
+    "max_outcome_sim": null,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "action_sim": 0.9098,
+        "situation_sim": 0.8418
+      },
+      {
+        "candidate": 2,
+        "action_sim": 0.8487,
+        "situation_sim": 0.802
+      },
+      {
+        "candidate": 3,
+        "action_sim": 0.8934,
+        "situation_sim": 0.7929
+      },
+      {
+        "candidate": 4,
+        "action_sim": 0.8057,
+        "situation_sim": 0.791
+      },
+      {
+        "candidate": 5,
+        "action_sim": 0.8837,
+        "situation_sim": 0.7867
+      }
+    ]
+  },
+  {
+    "case_index": 50,
+    "case_id": "b1ea401bb8e967064bb054784e240e7a:a3b262eeeba0204e",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.863,
+    "max_action_sim": null,
+    "max_content_sim": 0.946,
+    "max_approach_sim": 0.943,
+    "max_outcome_sim": 0.913,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9286,
+        "situation_sim": 0.863,
+        "approach_sim": 0.8887,
+        "outcome_sim": 0.875
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9274,
+        "situation_sim": 0.8629,
+        "approach_sim": 0.8959,
+        "outcome_sim": 0.878
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9377,
+        "situation_sim": 0.8408,
+        "approach_sim": 0.943,
+        "outcome_sim": 0.9106
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.946,
+        "situation_sim": 0.8232,
+        "approach_sim": 0.9252,
+        "outcome_sim": 0.9097
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9175,
+        "situation_sim": 0.797,
+        "approach_sim": 0.87,
+        "outcome_sim": 0.913
+      }
+    ]
+  },
+  {
+    "case_index": 51,
+    "case_id": "a275c5b021efd0447dc38d179863b615:bd9d4aa2ef323f64",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8273,
+    "max_action_sim": null,
+    "max_content_sim": 0.95,
+    "max_approach_sim": 0.9403,
+    "max_outcome_sim": 0.9278,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9197,
+        "situation_sim": 0.8273,
+        "approach_sim": 0.886,
+        "outcome_sim": 0.874
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.95,
+        "situation_sim": 0.8175,
+        "approach_sim": 0.9403,
+        "outcome_sim": 0.9278
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9186,
+        "situation_sim": 0.8082,
+        "approach_sim": 0.8809,
+        "outcome_sim": 0.8572
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9217,
+        "situation_sim": 0.7919,
+        "approach_sim": 0.8981,
+        "outcome_sim": 0.8815
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9208,
+        "situation_sim": 0.7644,
+        "approach_sim": 0.9246,
+        "outcome_sim": 0.8789
+      }
+    ]
+  },
+  {
+    "case_index": 52,
+    "case_id": "1beaa4d8739f5f570726ff6b046d156c:7f5790eb3bd9721c",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8853,
+    "max_action_sim": null,
+    "max_content_sim": 0.9526,
+    "max_approach_sim": 0.9236,
+    "max_outcome_sim": 0.8779,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9526,
+        "situation_sim": 0.8853,
+        "approach_sim": 0.9236,
+        "outcome_sim": 0.8779
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9303,
+        "situation_sim": 0.8599,
+        "approach_sim": 0.9063,
+        "outcome_sim": 0.8707
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9149,
+        "situation_sim": 0.7717,
+        "approach_sim": 0.8635,
+        "outcome_sim": 0.8351
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9093,
+        "situation_sim": 0.758,
+        "approach_sim": 0.8918,
+        "outcome_sim": 0.8605
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9017,
+        "situation_sim": 0.7569,
+        "approach_sim": 0.8333,
+        "outcome_sim": 0.8388
+      }
+    ]
+  },
+  {
+    "case_index": 53,
+    "case_id": "bac54e868d55f7bbd23168225c65efe6:a62cc0fb35da2ac9",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.9082,
+    "max_action_sim": null,
+    "max_content_sim": 0.9816,
+    "max_approach_sim": 0.9044,
+    "max_outcome_sim": 0.9499,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9816,
+        "situation_sim": 0.9082,
+        "approach_sim": 0.9044,
+        "outcome_sim": 0.9499
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9546,
+        "situation_sim": 0.8745,
+        "approach_sim": 0.8997,
+        "outcome_sim": 0.906
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9535,
+        "situation_sim": 0.8731,
+        "approach_sim": 0.7865,
+        "outcome_sim": 0.8851
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9372,
+        "situation_sim": 0.8548,
+        "approach_sim": 0.8934,
+        "outcome_sim": 0.9086
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9344,
+        "situation_sim": 0.8487,
+        "approach_sim": 0.8679,
+        "outcome_sim": 0.9194
+      }
+    ]
+  },
+  {
+    "case_index": 54,
+    "case_id": "9d18376f39230d8c63186d45597b8b2b:924fccfab8f1699c",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8608,
+    "max_action_sim": null,
+    "max_content_sim": 0.9545,
+    "max_approach_sim": 0.9059,
+    "max_outcome_sim": 0.9128,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9545,
+        "situation_sim": 0.8608,
+        "approach_sim": 0.9035,
+        "outcome_sim": 0.9128
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9428,
+        "situation_sim": 0.8525,
+        "approach_sim": 0.8551,
+        "outcome_sim": 0.8977
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9431,
+        "situation_sim": 0.826,
+        "approach_sim": 0.8779,
+        "outcome_sim": 0.9088
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9406,
+        "situation_sim": 0.8241,
+        "approach_sim": 0.9059,
+        "outcome_sim": 0.8874
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9186,
+        "situation_sim": 0.8187,
+        "approach_sim": 0.893,
+        "outcome_sim": 0.8899
+      }
+    ]
+  },
+  {
+    "case_index": 55,
+    "case_id": "4ac2415266e993fc721a406c70920e63:19f30680a5291b98",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.857,
+    "max_action_sim": null,
+    "max_content_sim": 0.9378,
+    "max_approach_sim": 0.8958,
+    "max_outcome_sim": 0.9429,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9318,
+        "situation_sim": 0.857,
+        "approach_sim": 0.8195,
+        "outcome_sim": 0.8955
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9273,
+        "situation_sim": 0.8498,
+        "approach_sim": 0.8674,
+        "outcome_sim": 0.8724
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9376,
+        "situation_sim": 0.844,
+        "approach_sim": 0.8501,
+        "outcome_sim": 0.8879
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9133,
+        "situation_sim": 0.8304,
+        "approach_sim": 0.8601,
+        "outcome_sim": 0.9138
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9378,
+        "situation_sim": 0.8284,
+        "approach_sim": 0.8958,
+        "outcome_sim": 0.9429
+      }
+    ]
+  },
+  {
+    "case_index": 56,
+    "case_id": "4f53550a38d6095f7e88a401aea64b0e:45a684547426e230",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8832,
+    "max_action_sim": null,
+    "max_content_sim": 0.9439,
+    "max_approach_sim": 0.9262,
+    "max_outcome_sim": 0.8951,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9432,
+        "situation_sim": 0.8832,
+        "approach_sim": 0.9262,
+        "outcome_sim": 0.8666
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9439,
+        "situation_sim": 0.8758,
+        "approach_sim": 0.8781,
+        "outcome_sim": 0.8695
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9347,
+        "situation_sim": 0.8613,
+        "approach_sim": 0.891,
+        "outcome_sim": 0.8951
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.917,
+        "situation_sim": 0.7858,
+        "approach_sim": 0.8659,
+        "outcome_sim": 0.8805
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9159,
+        "situation_sim": 0.7843,
+        "approach_sim": 0.846,
+        "outcome_sim": 0.8717
+      }
+    ]
+  },
+  {
+    "case_index": 57,
+    "case_id": "798f83b17f29f7a60883f77a35d98352:0c239dc6199fb48f",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.898,
+    "max_action_sim": null,
+    "max_content_sim": 0.978,
+    "max_approach_sim": 0.9544,
+    "max_outcome_sim": 0.9222,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9482,
+        "situation_sim": 0.898,
+        "approach_sim": 0.865,
+        "outcome_sim": 0.8746
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9403,
+        "situation_sim": 0.8707,
+        "approach_sim": 0.9127,
+        "outcome_sim": 0.8782
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9419,
+        "situation_sim": 0.8515,
+        "approach_sim": 0.8714,
+        "outcome_sim": 0.8812
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.978,
+        "situation_sim": 0.8475,
+        "approach_sim": 0.9544,
+        "outcome_sim": 0.9105
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9376,
+        "situation_sim": 0.7995,
+        "approach_sim": 0.9451,
+        "outcome_sim": 0.9222
+      }
+    ]
+  },
+  {
+    "case_index": 58,
+    "case_id": "0b47e882116e12d6d017dce4ac606b37:aa5297184f6471b2",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.889,
+    "max_action_sim": null,
+    "max_content_sim": 0.9793,
+    "max_approach_sim": 0.9806,
+    "max_outcome_sim": 0.9302,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9447,
+        "situation_sim": 0.889,
+        "approach_sim": 0.8796,
+        "outcome_sim": 0.8795
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9493,
+        "situation_sim": 0.8764,
+        "approach_sim": 0.9308,
+        "outcome_sim": 0.8722
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9793,
+        "situation_sim": 0.8721,
+        "approach_sim": 0.9806,
+        "outcome_sim": 0.9302
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9137,
+        "situation_sim": 0.8564,
+        "approach_sim": 0.8805,
+        "outcome_sim": 0.8168
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9112,
+        "situation_sim": 0.7987,
+        "approach_sim": 0.8561,
+        "outcome_sim": 0.8621
+      }
+    ]
+  },
+  {
+    "case_index": 59,
+    "case_id": "2804cfeabf47e985f0f9d754713a048f:cedd81dcab0b2010",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8625,
+    "max_action_sim": null,
+    "max_content_sim": 0.9485,
+    "max_approach_sim": 0.9261,
+    "max_outcome_sim": 0.9371,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9485,
+        "situation_sim": 0.8625,
+        "approach_sim": 0.9261,
+        "outcome_sim": 0.8755
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9403,
+        "situation_sim": 0.8251,
+        "approach_sim": 0.9181,
+        "outcome_sim": 0.9019
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9024,
+        "situation_sim": 0.8243,
+        "approach_sim": 0.8759,
+        "outcome_sim": 0.8918
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9278,
+        "situation_sim": 0.8196,
+        "approach_sim": 0.869,
+        "outcome_sim": 0.9371
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.8847,
+        "situation_sim": 0.8192,
+        "approach_sim": 0.8603,
+        "outcome_sim": 0.8493
+      }
+    ]
+  },
+  {
+    "case_index": 60,
+    "case_id": "1beaa4d8739f5f570726ff6b046d156c:ef0195ca70829244",
+    "item_type": "observation",
+    "golden_label": "K",
+    "situation_sim": 0.8105,
+    "max_action_sim": null,
+    "max_content_sim": 0.9264,
+    "max_approach_sim": 0.9004,
+    "max_outcome_sim": 0.9111,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9264,
+        "situation_sim": 0.8105,
+        "approach_sim": 0.8847,
+        "outcome_sim": 0.9111
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9247,
+        "situation_sim": 0.8004,
+        "approach_sim": 0.9004,
+        "outcome_sim": 0.8888
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9201,
+        "situation_sim": 0.7864,
+        "approach_sim": 0.8847,
+        "outcome_sim": 0.8904
+      }
+    ]
+  },
+  {
+    "case_index": 61,
+    "case_id": "798f83b17f29f7a60883f77a35d98352:9ad344466ded5e91",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8517,
+    "max_action_sim": null,
+    "max_content_sim": 0.9417,
+    "max_approach_sim": 0.8994,
+    "max_outcome_sim": 0.9449,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9257,
+        "situation_sim": 0.8517,
+        "approach_sim": 0.8035,
+        "outcome_sim": 0.8375
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9323,
+        "situation_sim": 0.8384,
+        "approach_sim": 0.8994,
+        "outcome_sim": 0.934
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9417,
+        "situation_sim": 0.8382,
+        "approach_sim": 0.8504,
+        "outcome_sim": 0.884
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9115,
+        "situation_sim": 0.8312,
+        "approach_sim": 0.8347,
+        "outcome_sim": 0.8556
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.941,
+        "situation_sim": 0.8273,
+        "approach_sim": 0.8669,
+        "outcome_sim": 0.9449
+      }
+    ]
+  },
+  {
+    "case_index": 62,
+    "case_id": "53ff8ed9eac1f0273361959a0b9ff37f:9ebafa687b10a60c",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8611,
+    "max_action_sim": null,
+    "max_content_sim": 0.9543,
+    "max_approach_sim": 0.8937,
+    "max_outcome_sim": 0.9881,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9423,
+        "situation_sim": 0.8611,
+        "approach_sim": 0.8523,
+        "outcome_sim": 0.8734
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9433,
+        "situation_sim": 0.8517,
+        "approach_sim": 0.8605,
+        "outcome_sim": 0.8865
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9543,
+        "situation_sim": 0.8455,
+        "approach_sim": 0.8937,
+        "outcome_sim": 0.9881
+      },
+      {
+        "candidate": 4,
+        "content_sim": 0.9364,
+        "situation_sim": 0.8257,
+        "approach_sim": 0.8637,
+        "outcome_sim": 0.9454
+      },
+      {
+        "candidate": 5,
+        "content_sim": 0.9262,
+        "situation_sim": 0.8246,
+        "approach_sim": 0.809,
+        "outcome_sim": 0.8341
+      }
+    ]
+  },
+  {
+    "case_index": 63,
+    "case_id": "1beaa4d8739f5f570726ff6b046d156c:78dd1a1b33acdffe",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8707,
+    "max_action_sim": null,
+    "max_content_sim": 0.9514,
+    "max_approach_sim": 0.9012,
+    "max_outcome_sim": 0.9006,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9514,
+        "situation_sim": 0.8707,
+        "approach_sim": 0.9012,
+        "outcome_sim": 0.9006
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.8946,
+        "situation_sim": 0.8023,
+        "approach_sim": 0.8386,
+        "outcome_sim": 0.8185
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.8846,
+        "situation_sim": 0.752,
+        "approach_sim": 0.8736,
+        "outcome_sim": 0.8501
+      }
+    ]
+  },
+  {
+    "case_index": 64,
+    "case_id": "6d8038d97997ef29af7868ed7624bac0:cad88faf1b5e8e03",
+    "item_type": "observation",
+    "golden_label": "D",
+    "situation_sim": 0.8766,
+    "max_action_sim": null,
+    "max_content_sim": 0.9503,
+    "max_approach_sim": 0.9301,
+    "max_outcome_sim": 0.895,
+    "per_candidate": [
+      {
+        "candidate": 1,
+        "content_sim": 0.9322,
+        "situation_sim": 0.8766,
+        "approach_sim": 0.9122,
+        "outcome_sim": 0.8888
+      },
+      {
+        "candidate": 2,
+        "content_sim": 0.9503,
+        "situation_sim": 0.8454,
+        "approach_sim": 0.9301,
+        "outcome_sim": 0.8511
+      },
+      {
+        "candidate": 3,
+        "content_sim": 0.9213,
+        "situation_sim": 0.7636,
+        "approach_sim": 0.9278,
+        "outcome_sim": 0.895
+      }
+    ]
+  }
+]
