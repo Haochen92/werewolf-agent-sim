@@ -1,0 +1,58 @@
+{
+  "eval_model": "gemini-3.5-flash",
+  "eval_thinking": null,
+  "judge_model": "gemini-2.5-pro",
+  "source_result": "evidence/batch_dedup_golden_eval/eval_gemini_3.5_flash_20260526_132829.json",
+  "timestamp": "2026-05-26T14:00:48.999482",
+  "num_cases": 3,
+  "results": [
+    {
+      "cluster_id": 14,
+      "kind": "observations",
+      "role": "wolf",
+      "action_phase": "day_discussion",
+      "action": "MERGE",
+      "num_source_keys": 3,
+      "elapsed_s": 27.5,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 1,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged situation text is excellent, perfectly abstracting the core elements from all sources to ensure full retrieval coverage. However, the merge operation is critically flawed because it completely discards the `approach` and `outcome` fields, resulting in a total loss of information about the specific tactics used and why they failed."
+      }
+    },
+    {
+      "cluster_id": 14,
+      "kind": "observations",
+      "role": "wolf",
+      "action_phase": "day_discussion",
+      "action": "MERGE",
+      "num_source_keys": 4,
+      "elapsed_s": 22.4,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 3,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged text is an excellent, high-quality abstraction of the core situation present in all source entries, ensuring it would be retrieved by queries for any of them. However, in generalizing, it loses specific, meaningful details about the information landscape (e.g., 'healer's death', 'failed wolf attack') that were present in the originals."
+      }
+    },
+    {
+      "cluster_id": 16,
+      "kind": "observations",
+      "role": "wolf",
+      "action_phase": "day_vote",
+      "action": "MERGE",
+      "num_source_keys": 2,
+      "elapsed_s": 29.4,
+      "scores": {
+        "retrieval_coverage": 3,
+        "merge_quality": 2,
+        "information_preservation": 1,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged output only rewrites the `situation` and completely omits the `approach` and `outcome` fields. This loses the most critical information: the specific tactic (dissenting vote) and its negative outcome. While the rewritten situation captures the general theme, it loses retrieval for queries about the tactic itself and is too vague to be useful, as it only describes a choice point rather than a learned lesson."
+      }
+    }
+  ]
+}

@@ -96,13 +96,11 @@ class ObservationBatchOperation(BaseModel):
     )
     merged_approach: str | None = Field(
         default=None,
-        description=(
-            "Merged approach listing all distinct tactics with counts for MERGE"
-        ),
+        description="Merged approach with all tactics and counts for MERGE",
     )
     merged_outcome: str | None = Field(
         default=None,
-        description="Merged outcome summarizing the shared lesson for MERGE",
+        description="Merged outcome for MERGE",
     )
 
 

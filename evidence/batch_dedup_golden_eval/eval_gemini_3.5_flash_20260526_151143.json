@@ -1,0 +1,818 @@
+{
+  "model": "gemini-3.5-flash",
+  "thinking": null,
+  "timestamp": "2026-05-26T15:11:43.460090",
+  "cluster_ids": [
+    0,
+    4,
+    11,
+    14,
+    16,
+    21,
+    25,
+    28,
+    33,
+    5,
+    20
+  ],
+  "results": [
+    {
+      "cluster_id": 0,
+      "total_keys": 10,
+      "correct": 8,
+      "accuracy": 0.8,
+      "golden_distribution": {
+        "KEEP": 8,
+        "DISCARD": 2
+      },
+      "model_distribution": {
+        "KEEP": 10
+      },
+      "errors": [
+        {
+          "key": "c7cf1300",
+          "golden": "DISCARD",
+          "model": "KEEP"
+        },
+        {
+          "key": "a786957c",
+          "golden": "DISCARD",
+          "model": "KEEP"
+        }
+      ],
+      "elapsed_s": 20.1,
+      "model_operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "ce570d93-205a-47e6-8aeb-8aa27971552d",
+            "a302bd79-6e33-4801-9430-9bcf69c3571f",
+            "434ca33b-17d3-4e24-8aef-f395a35b512a",
+            "a786957c-bc1c-416a-aff2-0075203e49ee",
+            "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+            "84cfd842-4a65-437c-a7ec-bb38883ac145",
+            "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+            "87672547-c279-445a-8142-df9539766559",
+            "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+            "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78"
+          ],
+          "reasoning": "All 10 entries represent distinct strategic scenarios with different game phases, information landscapes, agent exposure levels, or contrasting outcomes, and thus must be kept separate to preserve unique retrieval contexts. Specifically: [1] and [9] differ because [1] is a mid-game false accusation resolved by factual correction, while [9] is an endgame true accusation resolved by admitting the mistake and pivoting. [4] and [5] both involve the healer being targeted for being active, but [4] occurs in the early-game with a blank info landscape, whereas [5] occurs in the mid-game after a successful save. [6] and [8] both involve staying low-profile, but [6] is mid-game after a successful save to hide identity, while [8] is endgame during an established consensus. [2], [3], [7], and [10] represent entirely unique tactical situations (trusting a dead investigator, failing to claim under duress, misinterpreting evidence and voting with wolves, and actively building a consensus against a wolf pair, respectively) with distinct outcomes."
+        }
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "total_keys": 23,
+      "correct": 17,
+      "accuracy": 0.7391304347826086,
+      "golden_distribution": {
+        "KEEP": 17,
+        "DISCARD": 4,
+        "MERGE": 2
+      },
+      "model_distribution": {
+        "MERGE": 4,
+        "KEEP": 19
+      },
+      "errors": [
+        {
+          "key": "9b95aa9c",
+          "golden": "MERGE",
+          "model": "KEEP"
+        },
+        {
+          "key": "13891db7",
+          "golden": "DISCARD",
+          "model": "MERGE"
+        },
+        {
+          "key": "a032bec1",
+          "golden": "DISCARD",
+          "model": "MERGE"
+        },
+        {
+          "key": "de5ab922",
+          "golden": "DISCARD",
+          "model": "MERGE"
+        },
+        {
+          "key": "b9f7e67a",
+          "golden": "MERGE",
+          "model": "KEEP"
+        },
+        {
+          "key": "01348533",
+          "golden": "DISCARD",
+          "model": "MERGE"
+        }
+      ],
+      "elapsed_s": 45.7,
+      "model_operations": [
+        {
+          "action": "MERGE",
+          "source_keys": [
+            "de5ab922-5632-446f-b3b3-7838635b026c",
+            "13891db7-c56b-4f3d-b9af-923c69bc2d34",
+            "a032bec1-12df-4ca5-9baf-f1903720ebcf",
+            "01348533-d9c9-496b-96de-3de4ae0956c6"
+          ],
+          "survivor_key": "a032bec1-12df-4ca5-9baf-f1903720ebcf",
+          "reasoning": "These entries describe the same endgame situation where the Investigator has privately identified the final wolf and there is already strong public evidence or consensus against them. In all cases, the Investigator successfully secures the wolf's elimination and protects their own identity by pushing or joining the consensus using only public evidence (voting records, contradictory behavior, deflection) rather than claiming their role."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1f6bc8ae-4913-44e1-b3dc-2e736e21ae6c"
+          ],
+          "reasoning": "Investigator defends an innocent villager under heavy attack in the endgame, but the defense fails and the villager is eliminated."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "47ad2598-176d-4bdc-a603-0c043d1e8889"
+          ],
+          "reasoning": "Investigator fails to defend against a fragmented, aimless vote in an early/mid-game information-starved landscape and is eliminated by a scattered vote."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d20aabe2-7482-4b1a-9a72-ebaf0845d423"
+          ],
+          "reasoning": "Investigator finds a wolf on Night 1 and eventually reveals their role to force the elimination, which succeeds but results in the Investigator being night-killed."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a9107742-f0fd-4e34-bca0-923d8dbd8bfc"
+          ],
+          "reasoning": "Investigator uses Day 2 voting records in the mid-game to pressure a wolf who dismissed the voting history, successfully building a consensus to eliminate them."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d8ff9b6f-464d-4ce1-8a94-a73e3d6651ee"
+          ],
+          "reasoning": "Investigator identifies a wolf on Night 1 and subtly guides the village by questioning the wolf's contradictory advice from Day 1, successfully eliminating them without revealing their role or getting night-killed."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a5db9f55-0d84-4167-b949-38797436a099"
+          ],
+          "reasoning": "A broad strategic observation about actively but subtly guiding the village across mid-to-endgame phases by reinforcing correct suspicions and highlighting public evidence without revealing the Investigator role."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "90eb75b7-9512-42f9-a14e-8ec0a0f7bca8"
+          ],
+          "reasoning": "Investigator correctly identifies a wolf in the early game but is voted out because they focused on a subjective 'vibe check' communication style which was easily dismissed."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "9f2f00b8-8e80-4faa-afee-879d135df291"
+          ],
+          "reasoning": "Investigator tries to raise suspicion about a player who voted with the village by suggesting performative 'bussing', but fails to explain the concept and is voted out."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "10f4fa33-2844-4b22-ab4a-d6758141f4be"
+          ],
+          "reasoning": "Investigator has private knowledge clearing two villagers but sides with a wolf's attack on a villager, leading to a mislynch and wasting their informational advantage."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "3d9a71f0-b514-48b0-b0b2-df0e4ef43f84"
+          ],
+          "reasoning": "Investigator has not found a wolf in the endgame but uses strong public voting records to lead the charge against a suspect as a normal villager, successfully eliminating the wolf."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "a6d1e994-7725-4666-a351-be43fb94b33a"
+          ],
+          "reasoning": "Investigator tries to guide an information-starved village using abstract concepts like 'analyzing ambiguity', which is perceived as evasive and leads to their elimination."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "d87c1479-d9d9-47c0-a29f-0260ba1cedc8"
+          ],
+          "reasoning": "Investigator takes a highly visible role leading Day 1 discussion, which makes them the wolves' Night 1 target and gets them eliminated before sharing findings."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "b9f7e67a-7f69-4fb6-aceb-8a2bddb32cf6"
+          ],
+          "reasoning": "Investigator aggressively demands a wolf's elimination in the endgame, claiming conclusive proof but refusing to show it or reveal their role, leading to the Investigator being voted out."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "9b95aa9c-82c0-4438-aa86-aae81cb61842"
+          ],
+          "reasoning": "Investigator waits until a 4-player endgame to claim their role and make an accusation without having established prior credibility, leading to skepticism and their night-kill."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "28e010ef-1df7-436f-8d7c-5d0c9219ea5a"
+          ],
+          "reasoning": "Investigator attempts to deflect intense pressure on their own voting record by accusing a known wolf, which is perceived as deflection and leads to their elimination."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "928fde7b-4c7d-46b3-81bc-c292747d9048"
+          ],
+          "reasoning": "Investigator aggressively questions a wolf's arguments for inaction in the mid-game without revealing their role, successfully eliminating the wolf but getting night-killed due to high prominence."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6184533a-22e4-4328-b96a-c4bb0cb7e30f"
+          ],
+          "reasoning": "Investigator has private info clearing two villagers but consistently votes against an aggressive villager they dislike, contributing to a deadlock and a wolf victory."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6161059f-8645-43c2-9947-afb5bb8cd6b0"
+          ],
+          "reasoning": "Investigator gets drawn into a prolonged circular debate with a villager, making them highly visible and leading to their night-kill after the villager is eliminated."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "dffa1e08-f2af-4368-86fa-9a8bdfc5ce52"
+          ],
+          "reasoning": "Investigator is publicly confirmed town by a healer save but has no wolf leads, and misjudges a proactive villager as suspicious, leading to a mislynch and their own night-kill."
+        }
+      ]
+    },
+    {
+      "cluster_id": 11,
+      "total_keys": 10,
+      "correct": 10,
+      "accuracy": 1.0,
+      "golden_distribution": {
+        "MERGE": 3,
+        "KEEP": 7
+      },
+      "model_distribution": {
+        "MERGE": 3,
+        "KEEP": 7
+      },
+      "errors": [],
+      "elapsed_s": 38.9,
+      "model_operations": [
+        {
+          "action": "MERGE",
+          "source_keys": [
+            "da563937-9336-41f2-8953-84907519c7f7",
+            "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+            "2530d497-5f17-4d13-a24c-a5f0b41d1fa9"
+          ],
+          "survivor_key": "da563937-9336-41f2-8953-84907519c7f7",
+          "reasoning": "Entries [1], [4], and [10] describe the same functional situation: an early or mid-game first elimination vote where the village is information-starved and relies on speculative reads of communication style. In all three, an aggressive or demanding town member (Investigator or active villager) is targeted due to their tone or impatience, leading to a bandwagon mislynch that hands the advantage to the wolves. We merge these into a single observation, preserving the specific tactics and counts."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "fc9a9421-cf86-4800-a6c1-a261bcf6c61f"
+          ],
+          "reasoning": "Entry [2] describes an endgame scenario where a wolf is caught via voting record contradictions, which is a distinct information-rich situation and outcome."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "7215e341-9dfe-4404-800f-a81fd0313a23"
+          ],
+          "reasoning": "Entry [3] describes a mid-game situation where the Investigator is mislynched after questioning the motives behind a successful wolf elimination. This is a distinct situation involving post-elimination analysis and split consensus."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "c4d1cfda-4c8e-4412-b4f4-eb216cb2060a"
+          ],
+          "reasoning": "Entry [5] describes a three-player endgame where villagers fail to coordinate their votes, leading to a tie and a wolf win. This is a distinct coordination failure scenario."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "71ec2645-d5e5-4cad-96ad-f5c365c18ebc"
+          ],
+          "reasoning": "Entry [6] describes a three-player endgame where a villager blindly trusts an incorrect Investigator report, leading to a mislynch. This is a distinct scenario about misplaced trust in flawed information."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "300150ed-4b63-4193-94eb-5d6f1fa013b4"
+          ],
+          "reasoning": "Entry [7] describes a mid-game situation where the village overweights a voting anomaly by the Investigator, leading to a mislynch. This is a distinct situation based on voting record analysis rather than tone."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "37d81419-2d5d-4af0-b548-7a0a8da537c6"
+          ],
+          "reasoning": "Entry [8] describes a mid-game situation from the perspective of an individual villager who voted against the Investigator, leading to personal suspicion. This is a distinct individual-level lesson."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "f88a85ae-1ee2-49ec-9a16-e82938214c08"
+          ],
+          "reasoning": "Entry [9] describes a mid-game situation where villagers identify coordinating wolves but fail to consolidate votes, leading to a tie. This is a distinct mid-game coordination failure."
+        }
+      ]
+    },
+    {
+      "cluster_id": 14,
+      "total_keys": 15,
+      "correct": 6,
+      "accuracy": 0.4,
+      "golden_distribution": {
+        "KEEP": 8,
+        "MERGE": 7
+      },
+      "model_distribution": {
+        "KEEP": 4,
+        "MERGE": 3
+      },
+      "errors": [
+        {
+          "key": "551b1cd1",
+          "golden": "KEEP",
+          "model": "MISSING"
+        },
+        {
+          "key": "8e991831",
+          "golden": "MERGE",
+          "model": "MISSING"
+        },
+        {
+          "key": "79288222",
+          "golden": "MERGE",
+          "model": "MISSING"
+        },
+        {
+          "key": "92046e6d",
+          "golden": "KEEP",
+          "model": "MISSING"
+        },
+        {
+          "key": "4da35595",
+          "golden": "KEEP",
+          "model": "MISSING"
+        },
+        {
+          "key": "da1fa775",
+          "golden": "MERGE",
+          "model": "MISSING"
+        },
+        {
+          "key": "1668786a",
+          "golden": "KEEP",
+          "model": "MISSING"
+        },
+        {
+          "key": "55ad1ead",
+          "golden": "MERGE",
+          "model": "KEEP"
+        },
+        {
+          "key": "2e7cfc60",
+          "golden": "KEEP",
+          "model": "MISSING"
+        }
+      ],
+      "elapsed_s": 60.0,
+      "model_operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "11829d7b-0a38-4fdc-bfd5-d4b56964bc60"
+          ],
+          "reasoning": "This is an endgame situation where the Investigator has actual private info on the lone wolf. The wolf successfully deflects by attacking the Investigator's aggressive, evidence-free push. This is distinct from early-game scenarios or scenarios where the wolf is cornered by public voting records."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6693c41f-266b-4494-85c2-20b07a4eadbd"
+          ],
+          "reasoning": "This is an early-game (Day 1), info-starved situation where the Investigator accuses a wolf. The wolves join an organic village backlash against the accuser. This is distinct from endgame scenarios where the stakes are higher and the Investigator has concrete info."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "55ad1ead-bb04-47ce-ad2c-902ff8738998"
+          ],
+          "reasoning": "This is an early-game situation where an assertive villager pushes for a vote, and a wolf forms a powerful coalition with the Investigator to argue against voting without evidence. The involvement of the Investigator in the coalition makes this a unique strategic dynamic."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "568171e8-8534-4fb7-be6c-225f223048e9"
+          ],
+          "reasoning": "This is an endgame situation where the Investigator accuses the Healer, and the last wolf counter-pressures the Investigator by attacking the timing of their claim. This is a distinct defensive/offensive pivot compared to defending oneself."
+        },
+        {
+          "action": "MERGE",
+          "source_keys": [
+            "3b367498-04f3-4de5-9c3d-3bc0faab7a66",
+            "6e34e310-1958-4bda-b0aa-b89ede18fcba",
+            "075cd860-56a9-4efe-8ec8-22ce539bb79b"
+          ],
+          "survivor_key": "3b367498-04f3-4de5-9c3d-3bc0faab7a66",
+          "merged_situation": "In the endgame, a wolf faces intense, coordinated pressure from the village due to a damning voting record or outlier vote from the previous day.",
+          "reasoning": "These entries describe an endgame situation where a wolf is under intense, evidence-based pressure due to a damning voting record. In all three, the wolf attempts various deflections (calling the inquiry a distraction, accusing others of coordination/erratic behavior, or refusing to explain the vote), which fail because they do not address the concrete evidence, leading to the wolf's elimination. Merging these consolidates these failed deflection tactics and their counts."
+        }
+      ]
+    },
+    {
+      "cluster_id": 16,
+      "total_keys": 8,
+      "correct": 8,
+      "accuracy": 1.0,
+      "golden_distribution": {
+        "KEEP": 6,
+        "MERGE": 2
+      },
+      "model_distribution": {
+        "KEEP": 6,
+        "MERGE": 2
+      },
+      "errors": [],
+      "elapsed_s": 27.6,
+      "model_operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "453891e8-d511-44d1-8f2c-2206606c3e93"
+          ],
+          "reasoning": "Entry [1] describes an endgame situation where a villager is the primary suspect, and the wolves successfully blend in by joining the majority vote. This is a distinct situation and successful outcome compared to other entries."
+        },
+        {
+          "action": "MERGE",
+          "source_keys": [
+            "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+            "10670f91-0c0b-4306-9a8f-d6706ba6facc"
+          ],
+          "survivor_key": "22222222-2222-2222-2222-222222222222",
+          "reasoning": "Entries [2] and [7] describe the same functional situation (a wolf partner is targeted by a strong village consensus) and the same failed outcome (the remaining wolf casts a dissenting vote to save their partner, which fails and creates an incriminating voting record that leads to their own elimination). They are merged to consolidate this lesson."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "07265d73-9b48-4423-a763-5ba413df8d79"
+          ],
+          "reasoning": "Entry [3] describes a mid-game situation where wolves successfully coordinate to create a tie, stalling the game and leading to a win through attrition. This represents a successful outcome, unlike entry [4]."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4d55e9f0-6c20-4878-a3f0-8b629fe8c178"
+          ],
+          "reasoning": "Entry [4] describes an early-game situation where wolves coordinate to create a tie, which succeeds in the short term but ultimately fails because the voting record permanently links them and leads to their elimination. This is a different outcome and game phase compared to entry [3]."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "eb3e69f7-94aa-4273-9867-42fbe68e6817"
+          ],
+          "reasoning": "Entry [5] describes a successful 'bussing' tactic where the remaining wolf votes to eliminate their partner and successfully avoids suspicion because they had no prior history of defending them. This is a different outcome and strategic context compared to entry [8]."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1b9f668e-9c67-4fcf-bf15-d9ce6667cdd6"
+          ],
+          "reasoning": "Entry [6] describes an endgame situation where the last wolf attempts to deflect accusations about their history of defending a partner by accusing the town of 'group-think'. This is a distinct deflection tactic and situation."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "42dfb995-f6df-401b-a220-081232ac4449"
+          ],
+          "reasoning": "Entry [8] describes a failed 'bussing' tactic where the remaining wolf votes to eliminate their partner but is still eliminated the next day because their prior history of defending the partner is remembered. This teaches a different lesson from the successful bussing in entry [5]."
+        }
+      ]
+    },
+    {
+      "cluster_id": 21,
+      "total_keys": 9,
+      "correct": 8,
+      "accuracy": 0.8888888888888888,
+      "golden_distribution": {
+        "KEEP": 5,
+        "DISCARD": 4
+      },
+      "model_distribution": {
+        "KEEP": 6,
+        "DISCARD": 3
+      },
+      "errors": [
+        {
+          "key": "1b68828f",
+          "golden": "DISCARD",
+          "model": "KEEP"
+        }
+      ],
+      "elapsed_s": 18.6,
+      "model_operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "5d45c137-fca7-4fc6-858c-b83f4239f9f7"
+          ],
+          "reasoning": "This entry describes a specific mid-game situation following a successful wolf elimination with a clear village leader, which is distinct from early-game or post-miselimination scenarios."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "9432c9c5-a7df-4bd1-87d7-775b4d567daf"
+          ],
+          "reasoning": "This entry represents a distinct counter-strategy for Night 1, advising the healer to avoid vocal players and protect quiet, thoughtful players instead, which directly conflicts with the strategy of protecting active leaders."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1b68828f-9970-428b-89d8-aaa843cd845c"
+          ],
+          "reasoning": "This entry covers the early-to-mid game transition and introduces a specific tactical recommendation of consecutive-night protection to counter persistent wolf targeting, which is distinct from Night 1 setup strategies."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "8ebea450-ad90-4a03-b964-01593af8f0cd"
+          ],
+          "reasoning": "This entry represents one side of a key tactical decision: protecting the same saved player on consecutive nights to secure their survival and confirm their alignment."
+        },
+        {
+          "action": "DISCARD",
+          "source_keys": [
+            "c3052f71-145b-47c4-a255-5286eec994b3",
+            "44be75ae-d679-406f-a85f-b8a720a355a6",
+            "181ab968-4ed4-49ed-8406-2854e21dd7d8"
+          ],
+          "survivor_key": "44be75ae-d679-406f-a85f-b8a720a355a6",
+          "reasoning": "Entries 5, 6, and 7 all address the same Night 1 situation where the healer must rely on Day 1 discussion dynamics to protect a vocal leader. They are merged into entry 6 as the survivor, combining their details into a stronger, unified strategy."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "e27a6988-ba49-4fec-8e23-f4e48f752d5d"
+          ],
+          "reasoning": "This entry represents the alternative hypothesis to entry 4, recommending that the healer rotate protection away from a saved player to maximize defensive coverage, representing a distinct risk tradeoff."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1cfd0d62-d3eb-4f87-882f-2f10b9c10eda"
+          ],
+          "reasoning": "This entry describes a unique mid-game situation following a miselimination in a polarized village, targeting a surviving vocal player to counter wolf momentum, which is distinct from other mid-game scenarios."
+        }
+      ]
+    },
+    {
+      "cluster_id": 25,
+      "error": "Invalid json output: \nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+      "cluster_id": 28,
+      "total_keys": 16,
+      "correct": 15,
+      "accuracy": 0.9375,
+      "golden_distribution": {
+        "DISCARD": 2,
+        "KEEP": 14
+      },
+      "model_distribution": {
+        "DISCARD": 3,
+        "KEEP": 13
+      },
+      "errors": [
+        {
+          "key": "3b4ce51c",
+          "golden": "KEEP",
+          "model": "DISCARD"
+        }
+      ],
+      "elapsed_s": 31.5,
+      "model_operations": [
+        {
+          "action": "DISCARD",
+          "source_keys": [
+            "2f63bae5-ead1-45c8-87c9-1211ad266784",
+            "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+            "49a9bd54-1758-4458-b28a-27e5ae86773d"
+          ],
+          "survivor_key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "reasoning": "Entries [1], [3], and [6] all address the same core hypothesis: in the early to mid-game, when information is scarce, an aggressive accuser attempts to push the village into a hasty, evidence-free vote based on vibes or momentum. The recommended actions are aligned in resisting this pressure, demanding concrete evidence, and potentially counter-voting the accuser to force them to defend their methods. Merging these into [1] preserves the strategy while combining the tactical recommendations."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "ec7540cf-547f-4082-874c-6cb7938fd373"
+          ],
+          "reasoning": "Entry [2] addresses a specific endgame scenario involving a last-minute, unverified Investigator claim, recommending evaluating the claimant's past silence before deciding."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "6065e609-2e97-4c83-8a93-9cf067834e25"
+          ],
+          "reasoning": "Entry [4] focuses on an endgame scenario where a player's voting record shows they were the sole dissenter against a successful wolf elimination, recommending making this record the central point of discussion."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "09a16417-a56f-4347-9987-9810bfae4e90"
+          ],
+          "reasoning": "Entry [5] deals with an endgame conflict between an influential player's accusation and clear public voting records, recommending prioritizing the verifiable data over the claim."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1e0fde37-2729-4809-98cb-6a2910c8b78a"
+          ],
+          "reasoning": "Entry [7] addresses a mid-game scenario where a player selectively weaponizes a past unanimous mislynch against another player while ignoring their own identical vote."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "e1c64739-2a78-44fc-a54e-2e33269d5ca9"
+          ],
+          "reasoning": "Entry [8] describes an early-game scenario where a credible player leads an accusation based on behavioral reads and the accused offers a weak, evasive defense, recommending voting with the emerging consensus."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "b252d6b2-6620-4889-81ed-4ce737a2f975"
+          ],
+          "reasoning": "Entry [9] addresses a mid-game scenario with scattered votes and no consensus, recommending pushing for a consolidated vote to prevent plurality eliminations by wolves."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "1cc944fd-bf5c-4b62-9524-0b1291f50c4e"
+          ],
+          "reasoning": "Entry [10] addresses the same scattered-vote situation as [9] but proposes a competing hypothesis: avoiding piling onto weakly supported candidates and instead forcing a tie or no-elimination day."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "afef4e16-12b0-4d9d-b5b2-e07cae23e576"
+          ],
+          "reasoning": "Entry [11] describes a scenario with a strong, evidence-based consensus, recommending voting decisively with the majority to ensure the removal of a likely threat."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "984356e1-d54b-48e5-baf4-3a7d250092f8"
+          ],
+          "reasoning": "Entry [12] focuses on a player who consistently advocates caution and stalls votes without naming suspects, recommending treating this behavior as a wolf indicator."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "f944cdb4-755c-44fb-9d33-7c1d75d22277"
+          ],
+          "reasoning": "Entry [13] addresses an endgame stalemate with confusing voting records, recommending focusing on confirmed targets via healer saves as ground truth."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "cc59764c-e376-4f63-be00-9e21b266b863"
+          ],
+          "reasoning": "Entry [14] deals with an endgame scenario where a confirmed Investigator has been eliminated and left an unproven accusation, recommending treating it as strong but not infallible evidence."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "84d9366f-f068-481b-8e10-4457361d5b2d"
+          ],
+          "reasoning": "Entry [15] addresses a mid-game scenario where multiple players coordinate to suppress the analysis of voting records, recommending treating this coordination as a primary wolf signal."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "de8be6d6-0553-4e38-b23d-1231a0c82e21"
+          ],
+          "reasoning": "Entry [16] focuses on breaking a recurring tie-vote deadlock by targeting members of the specific bloc that is maintaining the stalemate."
+        }
+      ]
+    },
+    {
+      "cluster_id": 33,
+      "total_keys": 2,
+      "correct": 2,
+      "accuracy": 1.0,
+      "golden_distribution": {
+        "DISCARD": 2
+      },
+      "model_distribution": {
+        "DISCARD": 2
+      },
+      "errors": [],
+      "elapsed_s": 8.4,
+      "model_operations": [
+        {
+          "action": "DISCARD",
+          "source_keys": [
+            "d6191f69-fbe6-4318-8d42-41fbfadd459a",
+            "5cf37186-e2bb-4922-b061-93280a610686"
+          ],
+          "survivor_key": "d6191f69-fbe6-4318-8d42-41fbfadd459a",
+          "reasoning": "Both entries describe the same Night 1 strategy of targeting the most vocal, organizing player to disrupt the village, accepting the risk of a Healer save. Merging them combines the reasoning of disrupting village organization with targeting influential players."
+        }
+      ]
+    },
+    {
+      "cluster_id": 5,
+      "total_keys": 5,
+      "correct": 5,
+      "accuracy": 1.0,
+      "golden_distribution": {
+        "KEEP": 5
+      },
+      "model_distribution": {
+        "KEEP": 5
+      },
+      "errors": [],
+      "elapsed_s": 17.6,
+      "model_operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54"
+          ],
+          "reasoning": "Entry [1] represents a scenario where the Investigator voted against a correct village consensus based on a speculative private read, resulting in a temporary loss of credibility but a successful pivot later. This is distinct in both approach (deviating from consensus) and outcome."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "7c0a6e6d-2bee-4bed-8d66-139122985095"
+          ],
+          "reasoning": "Entry [2] represents a successful aggressive play where leading a vote on a gut read successfully eliminated a wolf, though it resulted in the Investigator being targeted and killed the next night. This is a distinct success/risk outcome."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "42e37cd6-5416-48b1-aa92-840569b8a23a"
+          ],
+          "reasoning": "Entry [3] represents a failed aggressive play where leading a vote on a weak behavioral read led to the elimination of a villager. This is the opposite outcome of Entry [2] and teaches a different lesson about information quality."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "b34d12c2-9d2b-4ac6-9d36-b877dad2d896"
+          ],
+          "reasoning": "Entry [4] deals with a defensive scenario where the Investigator is under threat of elimination but chooses not to claim their role or reveal their wolf finding, leading to their elimination and loss of information. This is a unique tactical dilemma."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "5922bf88-e545-4f69-89e0-d55b0da3524d"
+          ],
+          "reasoning": "Entry [5] represents a scenario of following a mistaken, strong village consensus to vote out a player who turned out to be the Healer. This is distinct from Entry [1] (where the Investigator deviated from a correct consensus) and Entry [3] (where the Investigator initiated the bad vote)."
+        }
+      ]
+    },
+    {
+      "cluster_id": 20,
+      "total_keys": 2,
+      "correct": 2,
+      "accuracy": 1.0,
+      "golden_distribution": {
+        "KEEP": 2
+      },
+      "model_distribution": {
+        "KEEP": 2
+      },
+      "errors": [],
+      "elapsed_s": 10.0,
+      "model_operations": [
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "182ebc43-0538-4b82-8bd4-b5852870338f"
+          ],
+          "reasoning": "This entry addresses a situation where the agent is not under suspicion but feels uneasy about a consensus target, advising them to voice skepticism briefly but ultimately vote with the group to avoid a split vote."
+        },
+        {
+          "action": "KEEP",
+          "source_keys": [
+            "4922ee84-da73-480a-90ef-170739daf216"
+          ],
+          "reasoning": "This entry addresses a different exposure level where the agent is under minor suspicion and needs to manage their own heat, advising them to vote with the majority to align with the village and avoid drawing attention by defending themselves."
+        }
+      ]
+    }
+  ]
+}

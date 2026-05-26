@@ -1,0 +1,154 @@
+{
+  "eval_model": "gemini-2.5-pro",
+  "eval_thinking": null,
+  "judge_model": "gemini-2.5-pro",
+  "source_result": "evidence/batch_dedup_golden_eval/eval_gemini_2.5_pro_20260526_133120.json",
+  "timestamp": "2026-05-26T14:02:55.843507",
+  "num_cases": 9,
+  "results": [
+    {
+      "cluster_id": 4,
+      "kind": "observations",
+      "role": "investigator",
+      "action_phase": "day_discussion",
+      "action": "MERGE",
+      "num_source_keys": 6,
+      "elapsed_s": 31.5,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 2,
+        "fabrication_detected": true,
+        "brief_reasoning": "The merged situation is an excellent generalization that would be retrieved by queries for any of the source entries. The quality is also superb, creating a clearer, more structured entry by enumerating tactics. However, the information preservation is poor because the counts for two of the three tactics are fabricated and do not match the source entries, which is a critical error."
+      }
+    },
+    {
+      "cluster_id": 11,
+      "kind": "observations",
+      "role": "villager",
+      "action_phase": "day_vote",
+      "action": "MERGE",
+      "num_source_keys": 2,
+      "elapsed_s": 19.3,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 5,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merge is excellent. It combines keywords from both entries (e.g., \"early or mid-game\", \"social frustration\", \"mire the following day's discussion\") ensuring full retrieval coverage. It abstracts the two specific instances into a clearer, more strategically useful pattern, and perfectly preserves all key details, including the distinct outcomes and the counted tactic in the approach field."
+      }
+    },
+    {
+      "cluster_id": 14,
+      "kind": "observations",
+      "role": "wolf",
+      "action_phase": "day_discussion",
+      "action": "MERGE",
+      "num_source_keys": 4,
+      "elapsed_s": 34.3,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 4,
+        "information_preservation": 2,
+        "fabrication_detected": true,
+        "brief_reasoning": "The merged situation is excellent and captures the core context of all source entries, ensuring high retrieval coverage. However, the information preservation is poor because the tactic counts in the 'approach' section are incorrect; the \"3x\" count is not supported by the source entries, which constitutes a fabrication. While the structure is an improvement, this factual error significantly degrades the quality and reliability of the merged entry."
+      }
+    },
+    {
+      "cluster_id": 14,
+      "kind": "observations",
+      "role": "wolf",
+      "action_phase": "day_discussion",
+      "action": "MERGE",
+      "num_source_keys": 3,
+      "elapsed_s": 18.2,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 4,
+        "information_preservation": 3,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged situation text is an excellent generalization that would be retrieved by queries for any of the source entries. The overall rewrite is clear and captures the core pattern well, making it a good synthesis. However, it loses meaningful detail in the 'approach' section by getting the counts wrong for several tactics (e.g., 'refusing to provide a reason' and 'calling the inquiry a distraction' both appeared in multiple entries but are counted as 1x), which lowers the information preservation score."
+      }
+    },
+    {
+      "cluster_id": 16,
+      "kind": "observations",
+      "role": "wolf",
+      "action_phase": "day_vote",
+      "action": "MERGE",
+      "num_source_keys": 2,
+      "elapsed_s": 30.4,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 5,
+        "fabrication_detected": true,
+        "brief_reasoning": "The merge is excellent, creating a clear, generalized situation that would be retrieved by queries for either source entry. It improves on the originals by explicitly separating the two distinct tactics ('coordinated' vs 'lone' vote) while preserving the shared outcome. The counts (e.g., '6x') are flagged as fabrication because they are not present in the provided source entries, though they are likely a valid aggregation from the larger cluster."
+      }
+    },
+    {
+      "cluster_id": 21,
+      "kind": "strategy_points",
+      "role": "healer",
+      "action_phase": "night_action",
+      "action": "DISCARD",
+      "num_source_keys": 4,
+      "elapsed_s": 16.9,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 5,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged situation successfully combines 'Night 1' and 'Early to mid-game' to cover all source contexts for retrieval. The merged action is an excellent synthesis, preserving the core tactic while also including the specific follow-up actions and reasoning from entries [1] and [3], such as protecting on consecutive nights and the public confirmation of innocence. No information was fabricated."
+      }
+    },
+    {
+      "cluster_id": 25,
+      "kind": "strategy_points",
+      "role": "investigator",
+      "action_phase": "night_action",
+      "action": "DISCARD",
+      "num_source_keys": 2,
+      "elapsed_s": 17.5,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 4,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged situation successfully combines the key retrieval terms from both sources ('mid-game', 'information-starved', 'no clear suspects'). The rewritten action and reasoning create a single, more comprehensive strategy point that is clearer than either original. Only minor nuances were lost, such as the contrast with investigating quiet players, but the core targets and justifications were perfectly preserved and integrated."
+      }
+    },
+    {
+      "cluster_id": 25,
+      "kind": "strategy_points",
+      "role": "investigator",
+      "action_phase": "night_action",
+      "action": "DISCARD",
+      "num_source_keys": 2,
+      "elapsed_s": 19.2,
+      "scores": {
+        "retrieval_coverage": 5,
+        "merge_quality": 5,
+        "information_preservation": 5,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged situation preserves all key retrieval terms from the highly similar source entries. The rewrite is excellent, creating a more comprehensive strategy by combining the two target types (quiet vs. low-substance) and their respective rationales into a single, clear action. All meaningful details from both sources are retained and integrated effectively."
+      }
+    },
+    {
+      "cluster_id": 33,
+      "kind": "strategy_points",
+      "role": "wolf",
+      "action_phase": "night_action",
+      "action": "DISCARD",
+      "num_source_keys": 2,
+      "elapsed_s": 18.0,
+      "scores": {
+        "retrieval_coverage": 4,
+        "merge_quality": 5,
+        "information_preservation": 5,
+        "fabrication_detected": false,
+        "brief_reasoning": "The merged situation captures the core context of both entries but drops the explicit \"Early game\" tag, which could cause it to be missed by some queries. The merged action is excellent, combining the target description, strategic reasoning, and risk assessment from both sources into a single, clearer, and more comprehensive instruction. All meaningful details are preserved."
+      }
+    }
+  ]
+}
