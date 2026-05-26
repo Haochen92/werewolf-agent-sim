@@ -162,6 +162,62 @@ class ExtractionScores(BaseModel):
             "5=every observation consistently framed from assigned role's perspective"
         ),
     )
+    strategy_depth: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Strategy points ONLY — observations exempt (score 5). "
+            "Does the action field provide concrete conditions, a specific "
+            "recommended action, and reasoning for WHY it works in this context? "
+            "1=generic platitude ('be careful', 'don't reveal your role'); "
+            "3=concrete action but reasoning is thin or obvious; "
+            "5=specific technique with conditions, reasoning, and learned nuance"
+        ),
+    )
+    novelty: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does each item capture a non-obvious mechanism or insight, or "
+            "restate common-sense fundamentals any experienced player knows? "
+            "1=obvious advice ('eliminate active players', 'protect important players'); "
+            "3=reasonable insight but not surprising; "
+            "5=reframes how you'd approach the situation, surfaces a non-obvious pattern"
+        ),
+    )
+    brief_reasoning: str = ""
+
+
+class PerRoleExtractionResult(BaseModel):
+    role: str
+    observation_count: int = 0
+    strategy_point_count: int = 0
+    scores: ExtractionScores | None = None
+
+
+class PerRoleExtractionScores(BaseModel):
+    role_results: list[PerRoleExtractionResult] = Field(default_factory=list)
+
+    @property
+    def aggregate(self) -> dict[str, float]:
+        dims = [
+            "specificity", "epistemic_compliance", "grounding", "coverage",
+            "diversity", "perspective_compliance", "strategy_depth", "novelty",
+        ]
+        scored = [r for r in self.role_results if r.scores is not None]
+        if not scored:
+            return {}
+        return {
+            dim: sum(getattr(r.scores, dim) for r in scored) / len(scored)
+            for dim in dims
+        }
+
+
+class PairwiseExtractionScores(BaseModel):
+    output_a: ExtractionScores
+    output_b: ExtractionScores
+    winner: Literal["a", "b", "tie"]
+    confidence: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
 
 
