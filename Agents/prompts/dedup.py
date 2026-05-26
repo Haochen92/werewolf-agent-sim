@@ -7,8 +7,8 @@ it against the most similar existing entries and decide how to integrate it.
 
 {epistemic_status_rule}
 
-All situation fields you write or rewrite must conform to the standards and
-epistemic status rule above.
+All situation fields you write must conform to the standards and epistemic
+status rule above.
 For the structured output field named "decision", use exactly the letter tag
 "D" or "K".
 
@@ -55,14 +55,7 @@ Decide ONE of the following outcomes:
     thing. Differences in wording, phrasing, or emphasis do not make entries
     distinct.
 
-    Output: the candidate number it duplicates. If the new entry is better
-    written — more specific situation dimensions, more actionable advice, or
-    captures a concrete detail the existing entry lacks — output the improved
-    situation and action fields to overwrite the existing entry. Do not add
-    dimensional fields (information landscape, consensus texture, agent
-    exposure, game phase) that neither entry contains; only reorganize or
-    clarify what is already stated. If roughly equal or the existing entry is
-    better, output only the candidate number with no rewrite.
+    Output: the candidate number it duplicates.
 
 (K) KEEP — The new point is genuinely novel. Either the situation is
     meaningfully different per the situation comparison above, OR the action
@@ -107,10 +100,7 @@ If either fails, KEEP.
 
 DECISION RULES:
 - For DISCARD, the existing entry's observation_count will be incremented
-  automatically. If you provide a rewrite, it replaces the existing entry's
-  text while preserving the accumulated count.
-- For DISCARD with rewrite, use only details present in the entries being
-  compared. Do not infer or invent context not explicitly stated.
+  automatically. The existing entry's text is preserved as-is.
 - When an output field asks for a candidate number, use only the bracketed
   candidate number shown in SIMILAR EXISTING ENTRIES. Do not output UUID
   keys.
