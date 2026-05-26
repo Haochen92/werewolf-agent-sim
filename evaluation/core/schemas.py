@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Literal
 
 from Agents.constants import ActionPhase
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 AttributionDirection = Literal["over", "under", "accurate"]
 
@@ -219,6 +219,21 @@ class PairwiseExtractionScores(BaseModel):
     winner: Literal["a", "b", "tie"]
     confidence: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
+
+    @field_validator("winner", mode="before")
+    @classmethod
+    def normalize_winner(cls, v: str) -> str:
+        v = str(v).strip().lower()
+        if v in ("output_a", "a"):
+            return "a"
+        if v in ("output_b", "b"):
+            return "b"
+        return v
+
+    @field_validator("confidence", mode="before")
+    @classmethod
+    def clamp_confidence(cls, v: int) -> int:
+        return max(1, min(5, int(v)))
 
 
 class SituationSummaryScores(BaseModel):
