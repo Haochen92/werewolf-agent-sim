@@ -38,7 +38,11 @@ import numpy as np
 
 from Agents.memory import embeddings as embedding_model
 from Agents.retrieval_filters import cosine_similarity, embed_texts
-from evaluation.data.datasets import read_dedup_dataset
+from evaluation.data.datasets import (
+    AutoDedupRecord,
+    read_auto_dedup_dataset,
+    read_dedup_dataset,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +164,43 @@ def _compute_observation_embeddings(
     }
 
 
+def _load_cases(dataset_path: Path) -> list[tuple[int, str, str, dict, list[dict]]]:
+    """Load dataset in either DedupDatasetRecord or AutoDedupRecord format.
+
+    Returns list of (case_index, case_id, item_type, new_entry, candidates_raw).
+    """
+    cases = []
+    try:
+        auto_records = read_auto_dedup_dataset(dataset_path)
+        for r in auto_records:
+            cases.append((
+                r.case_index,
+                str(r.case_index),
+                r.item_type,
+                r.new_entry,
+                r.candidates,
+            ))
+        return cases
+    except Exception:
+        pass
+
+    records = read_dedup_dataset(dataset_path)
+    for idx, record in enumerate(records):
+        case = record.dedup_case
+        candidates_raw = [
+            c.model_dump() if hasattr(c, "model_dump") else c
+            for c in case.candidates
+        ]
+        cases.append((
+            idx,
+            record.case_id,
+            case.item_type,
+            case.new_entry,
+            candidates_raw,
+        ))
+    return cases
+
+
 def compute_all_embeddings(
     dataset_path: Path,
     golden_path: Path,
@@ -171,40 +212,39 @@ def compute_all_embeddings(
             cached = json.load(f)
         return [CaseEmbeddings(**c) for c in cached]
 
-    records = read_dedup_dataset(dataset_path)
+    cases = _load_cases(dataset_path)
     with golden_path.open() as f:
         golden_data = json.load(f)
 
-    labels_by_id = {g["case_id"]: g for g in golden_data["labels"]}
+    labels_by_id = {g.get("case_id", ""): g for g in golden_data["labels"]}
     labels_by_index = {g["case_index"]: g for g in golden_data["labels"]}
 
     results: list[CaseEmbeddings] = []
 
-    for idx, record in enumerate(records):
-        case = record.dedup_case
-        cid = record.case_id
-        golden = labels_by_id.get(cid) or labels_by_index.get(idx)
+    for case_index, case_id, item_type, new_entry, candidates_raw in cases:
+        golden = labels_by_id.get(case_id) or labels_by_index.get(case_index)
         if golden is None:
             continue
 
-        candidates_raw = [c.model_dump() if hasattr(c, "model_dump") else c for c in case.candidates]
-        situation_sim = max((c.get("similarity", 0.0) for c in candidates_raw), default=0.0)
+        situation_sim = max(
+            (c.get("similarity", 0.0) for c in candidates_raw), default=0.0,
+        )
 
         print(
             f"[{len(results) + 1}] case={golden['case_index']} "
-            f"type={case.item_type:16s} label={golden['golden_label']} "
+            f"type={item_type:16s} label={golden['golden_label']} "
             f"sit_sim={situation_sim:.3f}",
             end="",
         )
 
-        if case.item_type == "strategy_point":
+        if item_type == "strategy_point":
             emb = _compute_strategy_embeddings(
-                case.new_entry, candidates_raw, situation_sim,
+                new_entry, candidates_raw, situation_sim,
             )
             ce = CaseEmbeddings(
                 case_index=golden["case_index"],
-                case_id=cid,
-                item_type=case.item_type,
+                case_id=case_id,
+                item_type=item_type,
                 golden_label=golden["golden_label"],
                 situation_sim=round(situation_sim, 4),
                 max_action_sim=emb["max_action_sim"],
@@ -212,12 +252,12 @@ def compute_all_embeddings(
             )
         else:
             emb = _compute_observation_embeddings(
-                case.new_entry, candidates_raw, situation_sim,
+                new_entry, candidates_raw, situation_sim,
             )
             ce = CaseEmbeddings(
                 case_index=golden["case_index"],
-                case_id=cid,
-                item_type=case.item_type,
+                case_id=case_id,
+                item_type=item_type,
                 golden_label=golden["golden_label"],
                 situation_sim=round(situation_sim, 4),
                 max_content_sim=emb["max_content_sim"],
@@ -351,7 +391,7 @@ def sweep_strategy_thresholds(
 
 
 # ---------------------------------------------------------------------------
-# Threshold sweep — observations (content sim for discard, field sim for keep)
+# Threshold sweep — observations
 # ---------------------------------------------------------------------------
 
 
@@ -359,7 +399,13 @@ def sweep_observation_thresholds(
     cases: list[CaseEmbeddings],
     discard_range: tuple[float, float, float],
     keep_range: tuple[float, float, float],
+    keep_mode: str = "content",
 ) -> list[ThresholdResult]:
+    """Sweep observation thresholds.
+
+    keep_mode="content": use content_sim for both discard and keep boundaries.
+    keep_mode="field": use field-level sims (approach/outcome) for auto-keep.
+    """
     obs_cases = [c for c in cases if c.item_type == "observation" and c.max_content_sim is not None]
     if not obs_cases:
         return []
@@ -389,7 +435,7 @@ def sweep_observation_thresholds(
                     r.correct_auto_discard += 1
                 else:
                     r.wrong_auto_discard += 1
-            elif _obs_should_auto_keep(c, k_thresh):
+            elif _obs_should_auto_keep(c, k_thresh, keep_mode):
                 r.auto_keep += 1
                 if c.golden_label in (GOLDEN_K, GOLDEN_M, "M/K"):
                     r.correct_auto_keep += 1
@@ -403,13 +449,20 @@ def sweep_observation_thresholds(
     return results
 
 
-def _obs_should_auto_keep(c: CaseEmbeddings, field_threshold: float) -> bool:
+def _obs_should_auto_keep(
+    c: CaseEmbeddings,
+    threshold: float,
+    mode: str = "content",
+) -> bool:
+    if mode == "content":
+        return (c.max_content_sim or 1.0) < threshold
+
     if c.max_approach_sim is None or c.max_outcome_sim is None:
         return False
     for pc in c.per_candidate:
         a_sim = pc.get("approach_sim", 1.0)
         o_sim = pc.get("outcome_sim", 1.0)
-        if a_sim < field_threshold or o_sim < field_threshold:
+        if a_sim < threshold or o_sim < threshold:
             return True
     return False
 
@@ -553,7 +606,7 @@ def _print_per_case_decision(
             content_sim = c.max_content_sim or 0
             if content_sim >= discard_thresh:
                 decision = "AUTO-D"
-            elif _obs_should_auto_keep(c, keep_thresh):
+            elif _obs_should_auto_keep(c, keep_thresh, "content"):
                 decision = "AUTO-K"
             else:
                 decision = "LLM   "
@@ -596,6 +649,10 @@ def parse_args() -> argparse.Namespace:
         "--show-decisions", action="store_true",
         help="Print per-case decisions for the best Pareto point.",
     )
+    parser.add_argument(
+        "--obs-keep-mode", choices=["content", "field"], default="content",
+        help="Observation auto-keep method: 'content' (content_sim) or 'field' (approach/outcome sims).",
+    )
     return parser.parse_args()
 
 
@@ -615,8 +672,10 @@ def main() -> None:
     sp_results = sweep_strategy_thresholds(cases, discard_range, keep_range)
     _print_sweep("STRATEGY POINTS (action similarity)", sp_results)
 
-    obs_results = sweep_observation_thresholds(cases, discard_range, keep_range)
-    _print_sweep("OBSERVATIONS (content/field similarity)", obs_results)
+    obs_results = sweep_observation_thresholds(
+        cases, discard_range, keep_range, keep_mode=args.obs_keep_mode,
+    )
+    _print_sweep(f"OBSERVATIONS (content sim, keep={args.obs_keep_mode})", obs_results)
 
     if args.show_decisions:
         sp_zero = [r for r in sp_results if r.wrong_auto_discard == 0 and r.wrong_auto_keep == 0 and r.auto_rate > 0]
