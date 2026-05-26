@@ -547,6 +547,44 @@ Clean sweep at high confidence (all matchups conf 4-5). The quality gap between 
 
 **The user's hypothesis holds: 4× flash-lite per-role is faster and cheaper than 1× 2.5-pro single-pass.** Flash-lite per-role runs in 38s/game (vs 75s for 2.5-pro single-pass) at ~20x lower cost, produces 1.7x more items (30.8 vs 17.6), and the per-role judge scores (3.86 avg) are competitive with 2.5-pro single-pass (3.86 avg). The tradeoff is whether flash-lite's lower per-item quality matters after dedup — and whether 2.5-pro per-role's substantially higher per-item quality (4.60 avg) justifies the premium.
 
+#### Cross-mode comparison: best single-pass vs per-role models
+
+The practical question: can per-role extraction from a cheaper model beat the best single-pass model?
+
+**2.5-pro single-pass vs 3.5-flash per-role:**
+
+| Role | 2.5-pro single wins | 3.5-flash per-role wins |
+|---|---|---|
+| wolf | 1 (20%) | **4 (80%)** |
+| villager | 1 (20%) | **4 (80%)** |
+| healer | 1 (20%) | **4 (80%)** |
+| investigator | 1 (20%) | **4 (80%)** |
+| **OVERALL** | **4 (20%)** | **16 (80%)** |
+
+3.5-flash per-role dominates uniformly — 80% across all 4 roles, including wolf where single-pass has full coverage. Per-role 3.5-flash wins on quality, not just coverage.
+
+**2.5-pro single-pass vs flash-lite medium per-role:**
+
+| Role | 2.5-pro single wins | Flash-lite per-role wins |
+|---|---|---|
+| wolf | **5 (100%)** | 0 (0%) |
+| villager | **4 (80%)** | 1 (20%) |
+| healer | 1 (20%) | **4 (80%)** |
+| investigator | **4 (80%)** | 1 (20%) |
+| **OVERALL** | **14 (70%)** | **6 (30%)** |
+
+Flash-lite per-role loses overall (30%) but wins healer 80%. 2.5-pro's per-item quality overcomes flash-lite's coverage advantage on wolf (5-0), villager (4-1), and investigator (4-1). Only healer — the most coverage-starved role — flips to flash-lite.
+
+**Observation quality analysis:**
+
+Single-pass doesn't just undercount minority roles — it produces **redundant** observations across games. Healer observations from 2.5-pro single-pass (8 across 5 games): 5 of 8 are variants of "first night, no information, choose who to protect." After dedup, these collapse to ~2-3 unique situations.
+
+Per-role healer observations (19-21 across 5 games) cover the full arc: first-night targeting, post-save dynamics, wolf retaliatory kills, healer under scrutiny, healer as early casualty, mislynch observation. After dedup, 10+ unique situations survive.
+
+The prompt requests "4-8 items per role" in both modes, but single-pass models produce ~50% of the requested volume and concentrate on the dominant role (wolf). Per-role forces compliance with the per-role target by giving each role a dedicated call.
+
+**Implication:** The single-pass coverage deficit is both quantitative (fewer items) and qualitative (more redundant items). The dedup argument — that lower volume means less downstream work — is inverted here: single-pass output is MORE redundant per item than per-role output, so dedup removes a higher proportion while retaining fewer unique situations.
+
 ## Prompt fix: player_ID enforcement
 
 Despite observations being allowed omniscient knowledge (they're post-game factual records), player_IDs are still undesirable because:
@@ -644,3 +682,5 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/comparison_gemini-3.1-pro-preview_20260526_121952.jsonl` | Phase 6: pairwise comparison, 2.5-pro single-pass vs per-role (20 matchups) |
 | `model_comparison/comparison_gemini-3.1-pro-preview_20260526_121958.jsonl` | Phase 6: pairwise comparison, 2.5-pro per-role vs 3.5-flash per-role (20 matchups) |
 | `model_comparison/comparison_gemini-3.1-pro-preview_20260526_121959.jsonl` | Phase 6: pairwise comparison, 2.5-pro per-role vs flash-lite per-role (20 matchups) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_123813.jsonl` | Phase 6: cross-mode comparison, 2.5-pro single-pass vs 3.5-flash per-role (20 matchups) |
+| `model_comparison/comparison_gemini-3.1-pro-preview_20260526_123811.jsonl` | Phase 6: cross-mode comparison, 2.5-pro single-pass vs flash-lite per-role (20 matchups) |
