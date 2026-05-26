@@ -286,6 +286,42 @@ class SituationSummaryScores(BaseModel):
     brief_reasoning: str = ""
 
 
+class BatchDedupMergeScores(BaseModel):
+    retrieval_coverage: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Will the merged situation be retrieved by the same queries that "
+            "would have matched each original source entry? "
+            "1=covers only one sub-situation; 5=full retrieval reach preserved"
+        ),
+    )
+    merge_quality: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Is the rewritten text well-formed, specific, and an improvement? "
+            "1=worse than originals; 5=clearer and more precise than any source"
+        ),
+    )
+    information_preservation: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Were important nuances preserved? Tactics with counts, specific "
+            "conditions, mechanism detail? "
+            "1=critical distinctions lost; 5=all meaningful detail retained"
+        ),
+    )
+    fabrication_detected: bool = Field(
+        default=False,
+        description=(
+            "Did the rewrite introduce context not present in source entries?"
+        ),
+    )
+    brief_reasoning: str = ""
+
+
 class DedupScores(BaseModel):
     decision_correctness: int = Field(
         ge=1,
