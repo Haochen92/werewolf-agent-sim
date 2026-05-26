@@ -32,10 +32,10 @@ MODEL_CONFIGS = {
         "model": "gemini-3-flash-preview",
         "temperature": 0.0,
     },
-    "gemini-3.1-flash-lite-max": {
+    "gemini-3.1-flash-lite-high": {
         "model": "gemini-3.1-flash-lite",
         "temperature": 0.0,
-        "model_kwargs": {"thinking_config": {"mode": "max"}},
+        "thinking_level": "high",
     },
     "gemini-2.5-flash": {
         "model": "gemini-2.5-flash",
