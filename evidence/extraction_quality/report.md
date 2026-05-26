@@ -176,9 +176,48 @@ Judge: gemini-3.1-pro-preview, same model as the original comparison. Backend: V
 - **gemini-2.5-pro** and **gemini-3-flash-preview** tied at 4.60. Both had 2-3 cases with perspective slips (approach describing opposing side's actions).
 - **gemini-2.5-flash** is the weakest at 4.20, with one case scoring 2 (pervasive violations). The older model is less disciplined about maintaining consistent role perspective.
 
-This is a baseline for the old prompt (no perspective rule). Phase 3 will re-extract with the current prompt and compare.
+This is a baseline for the old prompt (no perspective rule).
 
 **Note on backend calibration:** This re-judging was run on Vertex AI, while the original judge scores were from Google AI. The two backends produce different outputs at temp=0, so absolute scores on the original 5 dimensions shifted slightly (e.g., grounding for flash-preview moved from 4.90 to 4.40). Relative rankings within each run are valid; absolute scores should not be compared across backend runs.
+
+### Perspective compliance with prompt rule (Phase 3)
+
+Re-extracted the same 10 games using the current prompt (which includes the perspective rule added in commit fc12ca4) and judged with the updated 6-dimension judge. Flash-lite was also switched from `thinking_config: {mode: "max"}` to `thinking_level: "high"` (8192 token budget via factory) since the max mode may be buggy. Flash-preview was skipped (unstable API).
+
+#### Extraction output (with perspective rule)
+
+| Model | Avg obs/game | Avg sp/game | Player_ID leak | Avg time/game |
+|---|---|---|---|---|
+| gemini-3.1-flash-lite (high thinking) | 4.9 | 4.9 | 0% | 30s |
+| gemini-3.5-flash | 8.2 | 7.7 | 0% | 44s |
+| gemini-2.5-flash | 12.2 | 11.8 | 0% | 43s |
+
+Flash-lite now produces variable output (4-6 per game) instead of the fixed 4+4 pattern seen with max thinking. 2.5-flash player_ID leakage dropped from 3.4% to 0% — the naming rule in the current prompt is effective across all models.
+
+#### Judge scores (with perspective rule)
+
+| Model | Perspective | Specificity | Epistemic | Grounding | Coverage | Diversity |
+|---|---|---|---|---|---|---|
+| gemini-3.5-flash | **5.00** | 5.00 | 4.80 | 4.70 | 5.00 | 5.00 |
+| gemini-3.1-flash-lite (high thinking) | **5.00** | 3.90 | 5.00 | 3.60 | 4.40 | 4.40 |
+| gemini-2.5-flash | **4.80** | 4.80 | 4.40 | 4.40 | 5.00 | 4.00 |
+
+#### Perspective compliance delta (Phase 2 → Phase 3)
+
+| Model | Without rule | With rule | Delta |
+|---|---|---|---|
+| gemini-3.5-flash | 4.90 | **5.00** | +0.10 |
+| gemini-3.1-flash-lite | 4.70 | **5.00** | +0.30 |
+| gemini-2.5-flash | 4.20 | **4.80** | +0.60 |
+
+**Findings:**
+
+- The perspective rule lifts all models. The biggest improvement is gemini-2.5-flash (+0.60), the model that had the worst natural perspective compliance.
+- **gemini-3.5-flash** and **flash-lite** both reach ceiling (5.00) with the rule — perfect perspective compliance across all 10 games each.
+- **gemini-2.5-flash** improves substantially but doesn't reach ceiling (4.80). Two games still scored 4, meaning occasional perspective slips remain even with the explicit rule.
+- The other 5 dimensions are comparable to Phase 2 within noise. Flash-lite's lower specificity (3.90 vs 4.40) and grounding (3.60 vs 4.40) may reflect the thinking mode change (high vs max) rather than the prompt change, but the sample size is too small to separate these effects.
+
+**Note:** Phase 2 and Phase 3 are not perfectly controlled — the prompt changed (perspective rule + naming rule), and flash-lite's thinking config changed. The perspective compliance delta is the cleanest signal since it directly measures what the new rule targets.
 
 ## Prompt fix: player_ID enforcement
 
@@ -250,3 +289,7 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/judge_gemini-3.1-pro-preview_20260524_152136.jsonl` | Judge scores for 2.5-flash (10 cases) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260524_152753.jsonl` | Judge scores for 2.5-pro baseline (10 cases) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260526_072522.jsonl` | Re-judge with perspective compliance dimension, all 5 models (50 cases, Vertex AI) |
+| `model_comparison/gemini-3.1-flash-lite-high_10games_20260526_080135.jsonl` | Phase 3: flash-lite high thinking re-extraction (10 games, with perspective rule) |
+| `model_comparison/gemini-3.5-flash_10games_20260526_080359.jsonl` | Phase 3: 3.5-flash re-extraction (10 games, with perspective rule) |
+| `model_comparison/gemini-2.5-flash_10games_20260526_080350.jsonl` | Phase 3: 2.5-flash re-extraction (10 games, with perspective rule) |
+| `model_comparison/judge_gemini-3.1-pro-preview_20260526_080415.jsonl` | Phase 3: judge scores for all 3 re-extractions (30 cases, Vertex AI) |
