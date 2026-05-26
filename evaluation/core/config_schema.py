@@ -291,3 +291,46 @@ class DedupExperimentConfig(BaseModel):
     judge_model: str = "gemini-2.5-pro"
     filter_auto: bool = False
     sleep_seconds: float = Field(default=1.0, ge=0)
+
+
+# ---------------------------------------------------------------------------
+# Auto-dedup threshold calibration
+# ---------------------------------------------------------------------------
+
+
+class AutoDedupDatasetBuildConfig(BaseModel):
+    """Config for building a dedup threshold calibration dataset.
+
+    Takes extraction JSONL files, builds an in-memory store from ``store_files``,
+    then searches each item from ``extraction_files`` against the store.  This
+    produces cases across the full similarity spectrum.
+
+    Key experiment axes:
+    - **store_files vs extraction_files**: controls cross-model and cross-game overlap.
+      Use the same files for both to test within-model dedup; use different models'
+      extractions to test cross-model dedup.
+    - **top_n**: how many candidates the store returns per query.
+    - **min_similarity**: floor for including candidates.  Set to 0 to capture
+      the full spectrum including near-zero matches for auto-keep calibration.
+    """
+
+    eval_set_id: str
+    extraction_files: list[Path] = Field(min_length=1)
+    store_files: list[Path] = Field(min_length=1)
+    top_n: int = Field(default=5, ge=1)
+    min_similarity: float = Field(default=0.0, ge=0.0, le=1.0)
+    max_samples: int = Field(default=0, ge=0)
+    seed: int = 42
+    output: Path | None = None
+    overwrite: bool = False
+
+
+class AutoDedupCalibrationConfig(BaseModel):
+    """Config for sweeping thresholds against a labeled calibration dataset."""
+
+    dataset: Path
+    golden: Path
+    cache: Path | None = None
+    discard_range: tuple[float, float, float] = (0.80, 1.01, 0.005)
+    keep_range: tuple[float, float, float] = (0.50, 0.90, 0.01)
+    output: Path | None = None

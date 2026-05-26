@@ -198,3 +198,44 @@ def write_dedup_dataset(path: Path, records: list[DedupDatasetRecord]) -> None:
     with path.open("w", encoding="utf-8") as file:
         for record in records:
             file.write(record.model_dump_json() + "\n")
+
+
+# ---------------------------------------------------------------------------
+# Auto-dedup calibration dataset records
+# ---------------------------------------------------------------------------
+
+
+class AutoDedupRecord(BaseModel):
+    eval_set_id: str
+    case_index: int
+    game_id: str
+    item_type: str
+    perspective: str
+    action_phase: str
+    new_entry: dict
+    candidates: list[dict]
+    situation_sim: float
+    embedding_scores: dict[str, float] | None = None
+
+
+def read_auto_dedup_dataset(path: Path) -> list[AutoDedupRecord]:
+    records: list[AutoDedupRecord] = []
+    with path.open(encoding="utf-8") as file:
+        for line_number, line in enumerate(file, 1):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                records.append(AutoDedupRecord.model_validate_json(stripped))
+            except Exception as exc:
+                raise ValueError(
+                    f"Invalid auto-dedup record on line {line_number} of {path}: {exc}"
+                ) from exc
+    return records
+
+
+def write_auto_dedup_dataset(path: Path, records: list[AutoDedupRecord]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as file:
+        for record in records:
+            file.write(record.model_dump_json() + "\n")

@@ -1,0 +1,14 @@
+{
+  "eval_set_id": "auto_dedup_v1_cross_game",
+  "extraction_files": [
+    "evidence/extraction_quality/model_comparison/gemini-2.5-flash_10games_20260524_152100.jsonl"
+  ],
+  "store_files": [
+    "evidence/extraction_quality/model_comparison/gemini-3.5-flash_5games_per-role_20260526_090203.jsonl"
+  ],
+  "top_n": 5,
+  "min_similarity": 0.0,
+  "seed": 42,
+  "output": "eval_sets/auto_dedup_v1_cross_game.jsonl",
+  "overwrite": true
+}

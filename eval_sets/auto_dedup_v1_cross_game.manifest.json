@@ -1,0 +1,29 @@
+{
+  "eval_set_id": "auto_dedup_v1_cross_game",
+  "created_at": "2026-05-26T15:11:28.653320",
+  "extraction_files": [
+    "evidence/extraction_quality/model_comparison/gemini-2.5-flash_10games_20260524_152100.jsonl"
+  ],
+  "store_files": [
+    "evidence/extraction_quality/model_comparison/gemini-3.5-flash_5games_per-role_20260526_090203.jsonl"
+  ],
+  "top_n": 5,
+  "min_similarity": 0.0,
+  "case_count": 232,
+  "per_type": {
+    "observation": {
+      "count": 116,
+      "min_sim": 0.7822,
+      "max_sim": 0.9127,
+      "mean_sim": 0.8518
+    },
+    "strategy_point": {
+      "count": 116,
+      "min_sim": 0.7653,
+      "max_sim": 0.9103,
+      "mean_sim": 0.8391
+    }
+  },
+  "seed": 42,
+  "max_samples": 0
+}

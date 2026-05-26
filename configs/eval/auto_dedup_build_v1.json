@@ -1,0 +1,14 @@
+{
+  "eval_set_id": "auto_dedup_v1",
+  "extraction_files": [
+    "evidence/extraction_quality/model_comparison/gemini-2.5-pro_5games_per-role_20260526_121348.jsonl"
+  ],
+  "store_files": [
+    "evidence/extraction_quality/model_comparison/gemini-3.5-flash_5games_per-role_20260526_090203.jsonl"
+  ],
+  "top_n": 5,
+  "min_similarity": 0.0,
+  "seed": 42,
+  "output": "eval_sets/auto_dedup_v1.jsonl",
+  "overwrite": true
+}
