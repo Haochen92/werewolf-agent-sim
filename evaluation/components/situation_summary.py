@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
-import os
 import time
 from logging import getLogger
 from typing import Any
 
 from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 
 from Agents.prompt_inputs import build_agent_prompt_input
 from Agents.prompts import (
@@ -36,19 +35,13 @@ SITUATION_SUMMARY_PROMPTS: dict[str, ChatPromptTemplate] = {
 }
 
 
-def make_google_llm(config: VariantConfig | Any) -> ChatGoogleGenerativeAI:
-    kwargs: dict[str, Any] = {
-        "model": config.model,
-        "temperature": config.temperature,
-    }
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-    if google_api_key:
-        kwargs["api_key"] = google_api_key
-    if getattr(config, "thinking_budget", None) is not None:
-        kwargs["thinking_budget"] = config.thinking_budget
-    if getattr(config, "thinking_level", None) is not None:
-        kwargs["thinking_level"] = config.thinking_level
-    return ChatGoogleGenerativeAI(**kwargs)
+def make_google_llm(config: VariantConfig | Any):
+    return create_chat_model(
+        config.model,
+        temperature=config.temperature,
+        thinking_level=getattr(config, "thinking_level", None),
+        thinking_budget=getattr(config, "thinking_budget", None),
+    )
 
 
 def eval_case_to_agent_payload(case: EvalCase) -> dict[str, Any]:

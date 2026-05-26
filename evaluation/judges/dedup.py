@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.schemas.evaluation import DedupCase
@@ -99,7 +99,7 @@ def run_dedup_judge(
     model: str = DEFAULT_JUDGE_MODEL,
     max_retries: int = 1,
 ) -> DedupScores | None:
-    llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
+    llm = create_chat_model(model)
 
     decision_label = DECISION_LABELS.get(case.decision, case.decision)
     reasoning = ""

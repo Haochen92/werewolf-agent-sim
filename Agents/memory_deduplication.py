@@ -12,9 +12,9 @@ import logging
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Annotated, Literal
+from typing import Annotated, Literal
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field
 
@@ -51,20 +51,6 @@ class StrategyDiscard(BaseModel):
     duplicate_of_candidate: int = Field(
         ge=1,
         description="The 1-based candidate number of the existing entry this duplicates",
-    )
-    improved_situation: Optional[str] = Field(
-        default=None,
-        description=(
-            "If the new entry is better written, the improved situation text "
-            "to overwrite the existing entry. Omit if the existing is equal or better."
-        ),
-    )
-    improved_action: Optional[str] = Field(
-        default=None,
-        description=(
-            "If the new entry is better written, the improved action text "
-            "to overwrite the existing entry. Omit if the existing is equal or better."
-        ),
     )
 
 
@@ -231,9 +217,9 @@ def _format_existing_observations(items: list) -> str:
     return "\n\n".join(lines)
 
 
-def _get_dedup_llm() -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(
-        model=DEDUP_MODEL,
+def _get_dedup_llm():
+    return create_chat_model(
+        DEDUP_MODEL,
         temperature=0.0,
         thinking_level=DEDUP_THINKING_LEVEL,
     )
@@ -533,22 +519,16 @@ def _apply_decision(
     """Apply the LLM's dedup decision to the store."""
 
     match decision:
-        case StrategyDiscard(
-            duplicate_of_candidate=candidate,
-            improved_situation=improved_sit,
-            improved_action=improved_act,
-        ):
+        case StrategyDiscard(duplicate_of_candidate=candidate):
             item = _item_for_candidate(similar_items, candidate)
             if item is not None:
                 existing_value = item.value
-                situation = improved_sit or existing_value.get("situation", "")
-                action = improved_act or existing_value.get("action", "")
                 store.put(
                     namespace,
                     item.key,
                     {
-                        "situation": situation,
-                        "action": action,
+                        "situation": existing_value.get("situation", ""),
+                        "action": existing_value.get("action", ""),
                         "observation_count": existing_value.get("observation_count", 1) + 1,
                         "last_observed": datetime.now().isoformat(),
                         "game_id": game_id,

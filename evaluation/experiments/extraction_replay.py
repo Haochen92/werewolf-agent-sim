@@ -22,7 +22,7 @@ from datetime import datetime
 from logging import getLogger
 from pathlib import Path
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 
 from Agents.extraction import build_extraction_prompt
 from Agents.schemas import GameStrategyOutput
@@ -38,7 +38,7 @@ PLAYER_ID_RE = re.compile(r"player_\d+")
 
 
 def _make_llm(model: str, temperature: float = 0.0, **kwargs):
-    return ChatGoogleGenerativeAI(model=model, temperature=temperature, **kwargs)
+    return create_chat_model(model, temperature=temperature, **kwargs)
 
 
 def _run_extraction(llm, prompt: str) -> GameStrategyOutput:

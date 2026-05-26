@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.formatters import format_day_channel
@@ -44,7 +44,7 @@ def run_summary_judge(
     max_retries: int = 1,
 ) -> SituationSummaryScores | None:
     prompt = _build_judge_prompt(case, situations)
-    llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
+    llm = create_chat_model(model)
 
     for attempt in range(max_retries + 1):
         try:

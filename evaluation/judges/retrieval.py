@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.prompts.standards import SITUATION_STANDARDS
@@ -54,10 +54,7 @@ def run_retrieval_judge(
         situations="\n".join(f"- {situation}" for situation in situations),
         items=items_formatted,
     )
-    llm_kwargs: dict = {"model": model, "temperature": 0.0}
-    if thinking_level:
-        llm_kwargs["thinking_level"] = thinking_level
-    llm = ChatGoogleGenerativeAI(**llm_kwargs)
+    llm = create_chat_model(model, thinking_level=thinking_level)
     for attempt in range(max_retries + 1):
         try:
             response = llm.invoke(

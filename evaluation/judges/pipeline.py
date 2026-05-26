@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.schemas.evaluation import EvalCase
@@ -17,8 +17,8 @@ from evaluation.judges.prompts import JUDGE_SYSTEM_PROMPT, JUDGE_USER_PROMPT
 DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
 
 
-def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL) -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(model=model, temperature=0.0)
+def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL):
+    return create_chat_model(model)
 
 
 def _parse_judge_scores(text: str) -> JudgeScores:

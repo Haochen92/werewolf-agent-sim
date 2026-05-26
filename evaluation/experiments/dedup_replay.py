@@ -21,7 +21,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+import os
+
+from Agents.llm_factory import create_chat_model
 from pydantic import BaseModel
 
 from Agents.memory_deduplication import (
@@ -40,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 def _make_llm(model: str, temperature: float = 0.0, **kwargs):
-    return ChatGoogleGenerativeAI(model=model, temperature=temperature, **kwargs)
+    return create_chat_model(model, temperature=temperature, **kwargs)
 
 
 # ---------------------------------------------------------------------------
@@ -120,7 +122,7 @@ def _output_schema_for(item_type: str) -> type[BaseModel]:
 
 
 def _replay_dedup_decision(
-    llm: ChatGoogleGenerativeAI,
+    llm,
     case: DedupCase,
     max_retries: int = 1,
 ) -> tuple[str, dict[str, Any] | None] | None:

@@ -12,7 +12,7 @@ from typing import Any, Literal
 
 import numpy as np
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from Agents.llm_factory import create_chat_model, create_embeddings
 from langgraph.store.base import BaseStore
 from pydantic import BaseModel, Field
 
@@ -152,14 +152,12 @@ def _langfuse_handler():
     return CallbackHandler()
 
 
-def _get_batch_llm(model: str, thinking_level: str | None) -> ChatGoogleGenerativeAI:
-    kwargs: dict[str, Any] = {
-        "model": model,
-        "temperature": 0.0,
-    }
-    if thinking_level:
-        kwargs["thinking_level"] = thinking_level
-    return ChatGoogleGenerativeAI(**kwargs)
+def _get_batch_llm(model: str, thinking_level: str | None):
+    return create_chat_model(
+        model,
+        temperature=0.0,
+        thinking_level=thinking_level,
+    )
 
 
 def _fetch_namespace_items(
@@ -331,9 +329,9 @@ def _bounded_seed_clusters(
 def _get_batch_embeddings(
     model: str,
     output_dimensionality: int,
-) -> GoogleGenerativeAIEmbeddings:
-    return GoogleGenerativeAIEmbeddings(
-        model=model,
+):
+    return create_embeddings(
+        model,
         output_dimensionality=output_dimensionality,
     )
 

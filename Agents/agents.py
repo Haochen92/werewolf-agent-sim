@@ -7,9 +7,10 @@ import random
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.runtime import Runtime
 from pydantic import BaseModel, create_model
+
+from Agents.llm_factory import create_chat_model
 
 from Agents.tracing import GraphContext, langfuse
 from Agents.game_config import game_config_from_runnable
@@ -105,48 +106,32 @@ def _thinking_level_from_env(
 
 @lru_cache(maxsize=1)
 def get_llm():
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-    kwargs: dict[str, Any] = {
-        "model": os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
-        "temperature": float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-    }
-    thinking_level = _thinking_level_from_env(
-        "GOOGLE_GENAI_THINKING_LEVEL",
-        DEFAULT_GAME_THINKING_LEVEL,
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_THINKING_LEVEL",
+            DEFAULT_GAME_THINKING_LEVEL,
+        ),
     )
-    if thinking_level:
-        kwargs["thinking_level"] = thinking_level
-    if google_api_key:
-        kwargs["google_api_key"] = google_api_key
-    return ChatGoogleGenerativeAI(**kwargs)
 
 @lru_cache(maxsize=1)
 def get_llm_pro():
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-    kwargs: dict[str, Any] = {
-        "model": os.getenv("GOOGLE_GENAI_PRO_MODEL", "gemini-2.5-pro"),
-        "temperature": float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-    }
-    if google_api_key:
-        kwargs["google_api_key"] = google_api_key
-    return ChatGoogleGenerativeAI(**kwargs)
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_PRO_MODEL", "gemini-2.5-pro"),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+    )
 
 
 @lru_cache(maxsize=1)
 def get_llm_pro_backup():
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-    kwargs: dict[str, Any] = {
-        "model": os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL),
-        "temperature": float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-    }
-    thinking_level = _thinking_level_from_env(
-        "GOOGLE_GENAI_PRO_BACKUP_THINKING_LEVEL",
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_PRO_BACKUP_THINKING_LEVEL",
+        ),
     )
-    if thinking_level:
-        kwargs["thinking_level"] = thinking_level
-    if google_api_key:
-        kwargs["google_api_key"] = google_api_key
-    return ChatGoogleGenerativeAI(**kwargs)
 
 
 def _validate_target(target: str, valid_targets: list[str], player_id: str) -> str | None:

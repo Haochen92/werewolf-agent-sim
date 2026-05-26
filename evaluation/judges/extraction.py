@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
@@ -76,7 +76,7 @@ def run_extraction_judge(
     model: str = DEFAULT_JUDGE_MODEL,
     max_retries: int = 1,
 ) -> ExtractionScores | None:
-    llm = ChatGoogleGenerativeAI(model=model, temperature=0.0)
+    llm = create_chat_model(model)
     prompt = EXTRACTION_USER_PROMPT.format(
         roles=_format_roles(case.roles),
         game_outcome=case.game_outcome,

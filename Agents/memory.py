@@ -5,7 +5,7 @@ import uuid
 from dotenv import load_dotenv
 from langgraph.store.base import BaseStore
 from langgraph.store.memory import InMemoryStore
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from Agents.llm_factory import create_embeddings
 
 from Agents.prompts import RERANK_PROMPT
 from Agents.schemas import (
@@ -103,8 +103,8 @@ def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: st
         store.put(("strategy", role), "latest", stored.model_dump())
 
 
-embeddings = GoogleGenerativeAIEmbeddings(
-    model="gemini-embedding-001",
+embeddings = create_embeddings(
+    "gemini-embedding-001",
     output_dimensionality=1536,
 )
 

@@ -19,7 +19,7 @@ if str(REPO_ROOT) not in sys.path:
 
 load_dotenv(REPO_ROOT / ".env")
 
-from langchain_google_genai import ChatGoogleGenerativeAI  # noqa: E402
+from Agents.llm_factory import create_chat_model  # noqa: E402
 from langfuse import get_client  # noqa: E402
 
 
@@ -537,8 +537,8 @@ def sample_spans(
     return sampled
 
 
-def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL) -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(model=model, temperature=0.0)
+def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL):
+    return create_chat_model(model)
 
 
 def _strip_json_fences(text: str) -> str:
