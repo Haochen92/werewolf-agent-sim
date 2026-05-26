@@ -142,7 +142,7 @@ Tested four flash-tier models as extraction alternatives to gemini-2.5-pro, all 
 
 **gemini-2.5-flash** is the volume king at 11.6 obs/game — nearly 2x flash-3.5. At $2.50/M output it's the best price/volume ratio. But quality is lower: diversity drops to 4.40 (repetitive items when volume is high), epistemic compliance to 4.60 (some role knowledge leaks in strategy points), and 3.4% player_ID leakage in observations despite the naming rule. The older model follows the prohibition less reliably.
 
-**gemini-3.1-flash-lite (max thinking)** is too minimal for extraction. It consistently produces exactly 4 observations + 4 strategy points per game regardless of game complexity, missing important dynamics (coverage 4.50) and failing to ground claims in the transcript (grounding 3.80). Thinking tokens aren't even metered for this model, so max thinking is free — but the model simply lacks capacity for this task.
+**gemini-3.1-flash-lite (max thinking)** is too minimal for extraction. It consistently produces exactly 4 observations + 4 strategy points per game regardless of game complexity, missing important dynamics (coverage 4.50) and failing to ground claims in the transcript (grounding 3.80). Thinking tokens are metered as output at $1.50/M — cheap but not free. The model simply lacks capacity for this task.
 
 ### Note on judge calibration
 
@@ -154,6 +154,31 @@ The gemini-3.1-pro-preview judge scores higher than the gemini-3.5-flash judge u
 - **Budget pick**: gemini-2.5-flash — 3.6x cheaper output, highest volume, acceptable quality if player_ID leakage and some repetition are tolerable
 - **Watch**: gemini-3-flash-preview — best quality, good price, but wait for latency to stabilize
 - **Not recommended**: gemini-3.1-flash-lite — insufficient capacity for extraction
+
+### Perspective compliance (added post-hoc)
+
+After adding a perspective rule to the extraction prompt (requiring observation fields to be written from the assigned role's perspective), we added a 6th judge dimension — perspective compliance — and re-judged the original extractions (which were produced *without* the perspective rule). This measures natural perspective compliance before the prompt enforced it.
+
+Judge: gemini-3.1-pro-preview, same model as the original comparison. Backend: Vertex AI (the original comparison used Google AI, so absolute scores on the other 5 dimensions may differ slightly — see note on backend calibration below).
+
+| Model | Perspective | Specificity | Epistemic | Grounding | Coverage | Diversity |
+|---|---|---|---|---|---|---|
+| gemini-3.5-flash | **4.90** | 5.00 | 5.00 | 4.70 | 5.00 | 5.00 |
+| gemini-3.1-flash-lite (max thinking) | 4.70 | 4.40 | 5.00 | 4.40 | 4.50 | 4.80 |
+| gemini-2.5-pro (baseline) | 4.60 | 5.00 | 5.00 | 4.90 | 5.00 | 5.00 |
+| gemini-3-flash-preview | 4.60 | 4.90 | 5.00 | 4.40 | 4.90 | 5.00 |
+| gemini-2.5-flash | 4.20 | 4.80 | 4.70 | 4.80 | 5.00 | 4.20 |
+
+**Findings:**
+
+- **gemini-3.5-flash** leads at 4.90 — near-ceiling even without the perspective rule. Only 1 of 10 cases scored below 5.
+- **gemini-3.1-flash-lite** scored 4.70, surprisingly higher than 2.5-pro. With only 4 observations per game, there are fewer opportunities for perspective violations — the low volume may be masking the issue.
+- **gemini-2.5-pro** and **gemini-3-flash-preview** tied at 4.60. Both had 2-3 cases with perspective slips (approach describing opposing side's actions).
+- **gemini-2.5-flash** is the weakest at 4.20, with one case scoring 2 (pervasive violations). The older model is less disciplined about maintaining consistent role perspective.
+
+This is a baseline for the old prompt (no perspective rule). Phase 3 will re-extract with the current prompt and compare.
+
+**Note on backend calibration:** This re-judging was run on Vertex AI, while the original judge scores were from Google AI. The two backends produce different outputs at temp=0, so absolute scores on the original 5 dimensions shifted slightly (e.g., grounding for flash-preview moved from 4.90 to 4.40). Relative rankings within each run are valid; absolute scores should not be compared across backend runs.
 
 ## Prompt fix: player_ID enforcement
 
@@ -224,3 +249,4 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/judge_gemini-3.1-pro-preview_20260524_150928.jsonl` | Judge scores for flash-3.5, flash-3-preview, flash-lite (30 cases) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260524_152136.jsonl` | Judge scores for 2.5-flash (10 cases) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260524_152753.jsonl` | Judge scores for 2.5-pro baseline (10 cases) |
+| `model_comparison/judge_gemini-3.1-pro-preview_20260526_072522.jsonl` | Re-judge with perspective compliance dimension, all 5 models (50 cases, Vertex AI) |
