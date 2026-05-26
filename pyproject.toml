@@ -19,6 +19,7 @@ dependencies = [
     "scipy>=1.16.0",
     "pandas (>=3.0.3,<4.0.0)",
     "matplotlib (>=3.10.9,<4.0.0)",
+    "langchain-google-vertexai (>=3.2.3,<4.0.0)",
 ]
 
 [project.scripts]
