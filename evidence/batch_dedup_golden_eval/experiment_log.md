@@ -83,4 +83,45 @@ Cluster 25 (strategy, 11 entries) is consistently hard — 64% for both models.
 3. **Calibration bias should be neutral** — "when in doubt KEEP" hurt 3.5-flash; "when in doubt DISCARD" only applies to strategy. The right bias depends on downstream retrieval quality and agent strategy application, not on the prompt.
 4. **Cluster size limit of 15 is well-supported** — all models degrade sharply above 15 entries.
 5. **flash-lite is not viable** for batch dedup — over-merges regardless of prompt quality.
-6. **3.5-flash is the recommended model** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
+6. **3.5-flash is the recommended model for decisions** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
+
+## Merge Rewrite Quality
+
+After scoring per-key action accuracy, we evaluated the quality of merged text (merged_situation, merged_approach, merged_outcome) using a separate LLM judge (gemini-2.5-pro). This matters because a correct MERGE decision with bad rewrite text degrades the memory store.
+
+### Judge dimensions
+
+- **Retrieval coverage** (1-5): Will the merged situation be retrieved by the same queries that matched each original entry?
+- **Merge quality** (1-5): Is the rewritten text well-formed, specific, and an improvement?
+- **Information preservation** (1-5): Were important nuances preserved (tactic counts, conditions, mechanisms)?
+- **Fabrication detected** (bool): Did the rewrite introduce context not in source entries?
+
+Pipeline: `evaluation/experiments/batch_dedup_merge_eval.py` extracts MERGE/DISCARD-with-rewrite operations from eval result JSONs, pairs with source entries from the cluster file, and sends to the judge.
+
+### Results (v3 prompts)
+
+| Model | Cases | Retrieval Coverage | Merge Quality | Info Preservation | Fabrication Rate |
+|---|---|---|---|---|---|
+| gemini-3.5-flash | 6 | 4.33 | 3.00 | 1.67 | 0% |
+| gemini-2.5-pro | 6 | 4.33 | 4.00 | 4.00 | 33% |
+
+### Analysis
+
+**3.5-flash drops merged_approach and merged_outcome fields entirely** during MERGE operations — it only outputs merged_situation. This is the root cause of the 1.67 information preservation score. Three attempts to fix this via prompt/schema changes all failed:
+
+1. Verbose "REQUIRED for MERGE" schema descriptions — caused 3+ cluster JSON parse failures
+2. Detailed per-field merge rules in prompt (~7750 chars) — 4 cluster failures
+3. Minimal one-sentence "all three fields are required" addition (~7425 chars) — 3 cluster failures
+
+The observation prompt at ~7383 chars is at 3.5-flash's structured output capacity limit. Any additional instruction text triggers JSON parse failures on MERGE-heavy clusters. This is a model limitation, not a prompt issue.
+
+**3.5-flash run-to-run variance**: Re-runs with identical v3 prompts showed different clusters failing JSON parse (C25 on one run, none on another) and C14 accuracy fluctuating between 40-100%. The model is non-deterministic near its capacity boundary. Best observed: 86.5% (96/111). Worst same-prompt re-run: 81.0% (81/100, 1 cluster failed).
+
+**2.5-pro writes high-quality merges** with good information preservation (4.0/5) but fabricates 33% of the time — introducing game context not present in source entries.
+
+### Recommendation
+
+For production batch dedup:
+- **2.5-pro for everything** is the simplest path — slightly lower action accuracy (83.8% vs 86.5%) but much better merge quality, and pricing is comparable. Fabrication rate needs monitoring but is addressable through prompt refinement.
+- **Two-pass pipeline** (3.5-flash decisions → 2.5-pro rewrites) would get best action accuracy + good rewrite quality but adds complexity.
+- **3.5-flash with graceful degradation** — accept missing approach/outcome fields and fall back to survivor entry text or concatenation. Cheapest, but loses the merge quality benefit.
