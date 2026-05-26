@@ -240,8 +240,7 @@ You are cleaning a strategy-point memory database for an AI Werewolf agent.
 The entries below are a candidate similarity cluster from one role and
 action-phase namespace.
 
-Each entry has:
-- key: stable store key
+Each entry is numbered [1], [2], etc. and has:
 - situation: the situation text used for semantic retrieval
 - action: the recommended action
 - observation_count: how often this memory has been observed
@@ -259,8 +258,8 @@ must use one of these action values: DISCARD, KEEP.
 DISCARD — Two or more entries express the same hypothesis. They describe the
 same situation and recommend the same action direction — an agent reading any
 one of them would do the same thing. Choose one survivor_key (the best-worded
-entry). The apply step will preserve that key, sum observation_counts from all
-source_keys, and delete absorbed keys.
+entry, by its number). The apply step will preserve that entry, sum
+observation_counts from all source_keys, and delete absorbed entries.
 
 If the survivor_key entry is already well-written and covers the hypothesis
 adequately, do not provide merged fields — just output the survivor_key. Only
@@ -342,8 +341,10 @@ tactic will be re-extracted from a future game. Under-discarding leaves
 retrieval pollution that triggered this cleanup in the first place.
 
 Rules:
-- Use only keys shown in the cluster. Do not invent new keys.
-- Every key in the cluster must appear in exactly one operation.
+- Use only entry numbers shown in the cluster (e.g. "1", "2"). Do not use
+  UUIDs or invent new identifiers.
+- Every entry number in the cluster must appear in exactly one operation's
+  source_keys.
 - Prefer the fewest surviving entries that preserve genuinely distinct
   hypotheses.
 
@@ -358,7 +359,7 @@ Cluster entries:
 BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT = """
 You are cleaning an episodic observation memory database for an AI Werewolf
 agent. The entries below are a candidate similarity cluster from one role
-and action-phase namespace.
+and action-phase namespace. Each entry is numbered [1], [2], etc.
 
 Observations have three structured fields:
 - situation: The game conditions (used for semantic search matching). Should
@@ -379,14 +380,15 @@ one of these action values: DISCARD, MERGE, KEEP.
 
 Rules:
 - DISCARD: Entries are exact duplicates — same situation, approach, AND
-  outcome. Choose one survivor_key; the apply step will preserve that key,
-  sum counts, and delete absorbed keys.
+  outcome. Choose one survivor_key (by entry number); the apply step will
+  preserve that entry, sum counts, and delete absorbed entries.
 
 - MERGE: Entries share the same functional situation and the same functional
   outcome, but record different specific tactics in the approach field.
   Multiple tactics that fail (or succeed) for the same structural reason
-  are one lesson, not separate observations. Choose one survivor_key and
-  provide merged_situation, merged_approach, and merged_outcome.
+  are one lesson, not separate observations. Choose one survivor_key (by
+  entry number) and provide merged_situation, merged_approach, and
+  merged_outcome.
 
   Approach field rules for MERGE:
   - List each distinct tactic with its count: "Claiming a 'frame job' (4x),
@@ -442,12 +444,20 @@ because village was already coordinated → different.
 Partial outcomes: "worked initially then failed" is distinct from both
 pure success and pure failure.
 
-MERGE REQUIRES SITUATION AND OUTCOME TO MATCH:
-Similar situations alone do not justify MERGE. You must also confirm that
-the outcome follows the same success/failure pattern. The approaches should
-differ in specific tactic but both succeed or fail for the same structural
-reason. If the outcome differs (success vs failure, or different failure
-mechanism), KEEP — even if situations look nearly identical.
+BEFORE MERGING — verify ALL of these hold for every entry in the group:
+1. The situations pass the retrieval test: a single merged situation text
+   would be retrieved by the same vector search queries that match EACH
+   original entry. If original entries have different game phases, different
+   info landscapes, or different agent exposure that would match different
+   queries, they belong in separate KEEP operations — even if the lesson
+   is similar.
+2. The outcomes follow the same success/failure pattern and fail/succeed
+   for the same structural reason.
+3. The approaches differ only in specific tactic variant, not in tactic
+   category (accusation vs deflection vs role claim are different categories).
+A MERGE group larger than 3-4 entries is a red flag — it usually means
+the model is grouping by "lesson theme" rather than by retrieval context.
+Re-check each pair in the group against condition 1.
 
 DISCARD REQUIRES ALL THREE FIELDS TO MATCH:
 Situation, approach, AND outcome must all be functionally the same. If the
@@ -484,10 +494,12 @@ EXAMPLES:
   approaches. → KEEP both.
 
 Rules:
-- Use only keys shown in the cluster. Do not invent new keys.
+- Use only entry numbers shown in the cluster (e.g. "1", "2"). Do not use
+  UUIDs or invent new identifiers.
+- Every entry number in the cluster must appear in exactly one operation's
+  source_keys.
 - A single cluster may require multiple operations (e.g., MERGE a subgroup
-  of 5, KEEP 2 others that have different outcomes).
-- Prefer merging near-duplicates over preserving repeated memories.
+  of 3, KEEP 4 others that have different situations or outcomes).
 
 Role: {role}
 Action phase: {action_phase}

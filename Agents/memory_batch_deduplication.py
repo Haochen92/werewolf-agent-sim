@@ -46,7 +46,7 @@ DEFAULT_BATCH_EMBEDDING_MODEL = os.getenv(
 )
 DEFAULT_BATCH_EMBEDDING_DIMS = int(os.getenv("MEMORY_BATCH_EMBEDDING_DIMS", "1536"))
 DEFAULT_BATCH_SIMILARITY_THRESHOLD = 0.70
-DEFAULT_MAX_CLUSTER_SIZE = 25
+DEFAULT_MAX_CLUSTER_SIZE = 15
 DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS = 5
 DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY = 1.0
 DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
@@ -56,12 +56,12 @@ class StrategyBatchOperation(BaseModel):
     action: Literal["DISCARD", "KEEP"]
     reasoning: str
     source_keys: list[str] = Field(
-        description="Keys in this cluster that the operation applies to",
+        description="Entry numbers in this cluster that the operation applies to",
         min_length=1,
     )
     survivor_key: str | None = Field(
         default=None,
-        description="Existing key to preserve for DISCARD",
+        description="Entry number to preserve for DISCARD",
     )
     merged_situation: str | None = Field(
         default=None,
@@ -83,12 +83,12 @@ class ObservationBatchOperation(BaseModel):
     action: Literal["DISCARD", "MERGE", "KEEP"]
     reasoning: str
     source_keys: list[str] = Field(
-        description="Keys in this cluster that the operation applies to",
+        description="Entry numbers in this cluster that the operation applies to",
         min_length=1,
     )
     survivor_key: str | None = Field(
         default=None,
-        description="Existing key to preserve for DISCARD or MERGE",
+        description="Entry number to preserve for DISCARD or MERGE",
     )
     merged_situation: str | None = Field(
         default=None,
@@ -463,11 +463,18 @@ def _format_cluster_entries(
     memory_kind: MemoryKind,
     cluster_keys: list[str],
     items_by_key: dict[str, Any],
-) -> str:
+) -> tuple[str, dict[str, str]]:
+    """Format cluster entries for LLM prompt using numbered indices.
+
+    Returns (formatted_text, index_to_key_map) where the map translates
+    string indices ("1", "2", ...) back to real UUID keys.
+    """
     lines: list[str] = []
-    for key in cluster_keys:
+    index_to_key: dict[str, str] = {}
+    for i, key in enumerate(cluster_keys, 1):
+        index_to_key[str(i)] = key
         value = items_by_key[key].value
-        lines.append(f"KEY: {key}")
+        lines.append(f"[{i}]")
         lines.append(f"observation_count: {value.get('observation_count', 1)}")
         lines.append(f"last_observed: {_format_datetime(value.get('last_observed'))}")
         lines.append(f"situation: {value.get('situation', '')}")
@@ -477,7 +484,7 @@ def _format_cluster_entries(
             lines.append(f"approach: {value.get('approach', '')}")
             lines.append(f"outcome: {value.get('outcome', '')}")
         lines.append("")
-    return "\n".join(lines).strip()
+    return "\n".join(lines).strip(), index_to_key
 
 
 def _cluster_preview(
@@ -724,11 +731,26 @@ def _apply_observation_operation(
     return "failed", 0
 
 
+def _remap_operation_keys(
+    operation: StrategyBatchOperation | ObservationBatchOperation,
+    index_to_key: dict[str, str],
+) -> None:
+    """Translate numbered indices back to real UUID keys in-place."""
+    operation.source_keys = [
+        index_to_key.get(k, k) for k in operation.source_keys
+    ]
+    if operation.survivor_key is not None:
+        operation.survivor_key = index_to_key.get(
+            operation.survivor_key, operation.survivor_key,
+        )
+
+
 def _call_cluster_llm(
     memory_kind: MemoryKind,
     role: str,
     action_phase: str,
     entries: str,
+    index_to_key: dict[str, str],
     model: str,
     thinking_level: str | None,
 ) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
@@ -758,10 +780,15 @@ def _call_cluster_llm(
         config={"run_name": run_name, "callbacks": [_langfuse_handler()]},
     )
     if isinstance(result, output_schema):
-        return result
-    if isinstance(result, dict):
-        return output_schema.model_validate(result)
-    raise TypeError(f"Unexpected batch dedup result type: {type(result)!r}")
+        pass
+    elif isinstance(result, dict):
+        result = output_schema.model_validate(result)
+    else:
+        raise TypeError(f"Unexpected batch dedup result type: {type(result)!r}")
+
+    for op in result.operations:
+        _remap_operation_keys(op, index_to_key)
+    return result
 
 
 def dedup_namespace(
@@ -820,13 +847,16 @@ def dedup_namespace(
             stats.skipped_clusters += 1
             continue
 
-        entries = _format_cluster_entries(memory_kind, live_cluster_keys, items_by_key)
+        entries, index_to_key = _format_cluster_entries(
+            memory_kind, live_cluster_keys, items_by_key,
+        )
         try:
             result = _call_cluster_llm(
                 memory_kind,
                 role,
                 action_phase,
                 entries,
+                index_to_key,
                 model,
                 thinking_level,
             )
