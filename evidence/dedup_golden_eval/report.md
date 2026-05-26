@@ -624,60 +624,88 @@ The v9d changes had no effect on 3.5-flash — it was already at 88% strategy ac
 
 **The retrieval test grounds abstract similarity judgments.** "Are these situations the same?" is subjective. "Would a search query for situation A retrieve situation B?" is concrete and testable. This reframing resolved several labeling disagreements and gave the LLM a more operational decision criterion. When building prompts for similarity judgment, anchor to the downstream use case (retrieval) rather than abstract semantic similarity.
 
-## Rewrite Quality Analysis: Flash-Lite v9d
+## Rewrite Quality Analysis
 
-Judged by gemini-3.1-pro-preview on four dimensions (1-5 scale): decision_correctness, merge_quality, information_preservation, and fabrication_detected (boolean). Cases without rewrites (KEEP or DISCARD-without-rewrite) receive automatic 5s on merge_quality and info_preservation.
+Judged by gemini-3.1-pro-preview on four dimensions (1-5 scale): decision_correctness, merge_quality, information_preservation, and fabrication_detected (boolean). Cases without rewrites (KEEP or DISCARD-without-rewrite) receive automatic 5s on merge_quality and info_preservation. Two types of rewrite exist: MERGE produces a combined observation (merged situation, approach, outcome), and DISCARD-with-rewrite overwrites the existing strategy point's situation and action fields with improved text from the new entry.
 
-### Overview
+### Flash-Lite v9d
 
-Of 65 cases, 17 produced rewrites (14 MERGE, 3 DISCARD-with-rewrite). 0% fabrication rate across all 65 cases.
+Of 65 cases, 19 produced rewrites: 14 MERGE (all observations) and 5 DISCARD-with-rewrite (all strategy points). 0% fabrication rate.
 
-| Metric | All 65 cases | 17 rewrite cases only |
+**MERGE rewrites (14 observation cases)**
+
+| Quality | Count | Cases |
 |---|---|---|
-| decision_correctness | 4.49 | 4.35 |
-| merge_quality | 4.77 | 4.12 |
-| information_preservation | 4.72 | 3.94 |
-| fabrication_detected | 0/65 (0%) | 0/17 (0%) |
+| Perfect (mq=5, ip=5) | 8 | 4 gold=K/M/K, 2 gold=M, 2 gold=D — correct merges and compatible false merges |
+| Mediocre (ip 3-4) | 4 | 2 gold=D (unnecessary merges), 1 gold=M/K, 1 gold=D |
+| Destructive (ip ≤ 2) | 2 | 1 gold=M (ip=2), 1 gold=K (ip=1) |
+| **Avg** | | **mq=4.36, ip=4.21** |
 
-### Information preservation breakdown (rewrite cases)
+Against golden labels, the 14 merges break down as: 4 correct (gold=M, 3 scored ip ≥ 4, 1 scored ip=2), 5 false merges from K (2 destructive, 3 perfect/mediocre), 4 false merges from D (unnecessary rewrites), and 1 ambiguous (gold=M/K).
 
-| Score | Count | % | Meaning |
-|---|---|---|---|
-| 5 (all detail retained) | 9 | 53% | Good merges — tactic variants combined cleanly |
-| 4 (minor nuances lost) | 3 | 18% | Acceptable — core ideas intact |
-| 3 (some loss, core retained) | 2 | 12% | Borderline — noticeable detail dropped |
-| 1-2 (destructive) | 3 | 18% | Critical info lost — entries were incompatible |
+**DISCARD-with-rewrite (5 strategy point cases)**
 
-### When rewrites are good
+| Quality | Count | Cases |
+|---|---|---|
+| Perfect (mq=5, ip=5) | 2 | Both gold=D or gold=K — correct decisions with clean improvement |
+| Mediocre (ip 3-4) | 2 | gold=D (ip=3), gold=K (ip=4) |
+| Destructive (ip ≤ 2) | 1 | gold=D (ip=1, mq=1) — overwrote conflicting strategy entirely |
+| **Avg** | | **mq=3.80, ip=3.60** |
 
-The 12 rewrites scoring ip ≥ 4 share a pattern: the entries genuinely belong together (same game phase, same role position, same outcome direction). The model abstracts player IDs into role descriptions and lists tactic variants cleanly. Example: two Investigator Night 1 check strategies merged into "investigated conversation-leading players... or alternatively, investigated moderately active players" (ip=5, mq=5).
+**Overall: 19 rewrites, avg mq=4.21, ip=4.05. IP distribution: 5:11, 4:3, 3:2, 2:1, 1:2.**
 
-Correct merges produce good rewrites because the entries are compatible — combining them is straightforward.
+### 3.5-Flash v9d
 
-### When rewrites are destructive
+Of 65 cases, 11 produced rewrites: 5 MERGE (all observations) and 6 DISCARD-with-rewrite (all strategy points). 0% fabrication rate.
 
-All 3 destructive rewrites (ip ≤ 2) are also wrong decisions (decision_correctness ≤ 2):
+**MERGE rewrites (5 observation cases)**
 
-1. **DISCARD overwrote conflicting strategy**: Existing entry advised "acknowledge mistake and pivot"; new entry advised "reveal Investigator role to break deadlock." The rewrite replaced the existing entry's action entirely, losing the timing advice (ip=1, mq=1).
+| Quality | Count | Cases |
+|---|---|---|
+| Perfect (mq=5, ip=5) | 4 | 2 gold=M (correct), 1 gold=K, 1 gold=D |
+| Mediocre (ip 3-4) | 1 | gold=K (ip=4) |
+| Destructive (ip ≤ 2) | 0 | — |
+| **Avg** | | **mq=4.80, ip=4.80** |
 
-2. **MERGE combined different game phases**: Early-game wolf defense (Day 2, no eliminations) merged with mid-game wolf exploitation (post-mislynch). The rewrite frankensteined both contexts, losing what made each distinct (ip=1, mq=2).
+3.5-flash produced only 5 merges vs flash-lite's 14 — it correctly avoids most false merges, which eliminates the destructive rewrites entirely.
 
-3. **MERGE diluted a specific tactic**: A concrete lesson about identifying and targeting the Healer was merged into a generalized entry about "either a vocal player or specifically targeted the Healer," diluting the specific insight (ip=2, mq=2).
+**DISCARD-with-rewrite (6 strategy point cases)**
 
-### Cost-benefit of per-extraction MERGE
+| Quality | Count | Cases |
+|---|---|---|
+| Perfect (mq=5, ip=5) | 4 | All gold=D — correct decisions with clean improvement |
+| Mediocre (ip 3-4) | 1 | gold=D (ip=3) — same case (fe46f8eb0ad4) that flash-lite also scored ip=3 |
+| Destructive (ip ≤ 2) | 1 | gold=K (ip=2, mq=3) — wrong decision; overwrote a genuinely different strategy |
+| **Avg** | | **mq=4.33, ip=4.17** |
 
-Flash-lite v9d produced 14 MERGE decisions. Against golden labels:
-- **4 correct merges** (golden=M): 3 scored ip ≥ 4, 1 scored ip=3
-- **5 false merges from K** (golden=K): These should have been KEEP — the entries are genuinely different. 2 were destructive (ip ≤ 2), 3 were borderline (ip=3-4).
-- **4 false merges from D** (golden=D): These should have been DISCARD — no tactic variant exists. The rewrites added unnecessary complexity to entries that were already the same.
-- **1 correct merge from M/K** (ambiguous golden label)
+**Overall: 11 rewrites, avg mq=4.55, ip=4.45. IP distribution: 5:8, 4:1, 3:1, 2:1.**
 
-The 4 correct merges consolidate tactic variants that would otherwise be separate entries. But the 9 false merges either destroy information (K→M) or add noise (D→M). Batch dedup can perform the same consolidation later with a stronger model and full cluster context.
+### Cross-Model Comparison
+
+| Dimension | Flash-lite (19 rewrites) | 3.5-flash (11 rewrites) |
+|---|---|---|
+| Avg merge_quality | 4.21 | 4.55 |
+| Avg info_preservation | 4.05 | 4.45 |
+| Perfect rewrites | 10/19 (53%) | 8/11 (73%) |
+| Destructive rewrites | 3/19 (16%) | 1/11 (9%) |
+| Fabrication | 0% | 0% |
+
+3.5-flash's advantage is primarily **fewer rewrites, not better rewrites**. When both models rewrite the same case, the quality gap is modest — the shared mediocre case (fe46f8eb0ad4, ip=3 for both) and the shared perfect cases confirm this. 3.5-flash's higher averages come from avoiding the 9 false merges that produce flash-lite's worst scores.
+
+The one case where both models score poorly — fe46f8eb0ad4, a strategy DISCARD-with-rewrite — scores ip=3 on both models. This is a prompt issue, not a model issue: the rewrite instructions don't give enough guidance on what to preserve when improving an existing strategy point's fields.
+
+### When rewrites fail: prompt vs model
+
+The destructive rewrites (ip ≤ 2) fall into two categories:
+
+**Wrong decision → bad rewrite (both models).** Flash-lite's 2 destructive observation merges and 3.5-flash's 1 destructive strategy rewrite all have decision_correctness ≤ 2. The entries were incompatible — combining them was impossible regardless of rewrite instructions. Fixing decision accuracy (the D/M/K prompt) would prevent these.
+
+**Mediocre rewrites on correct decisions (prompt issue).** The shared ip=3 case (fe46f8eb0ad4) has decision_correctness=5 on both models — the decision was right, but the rewrite lost nuance. Flash-lite's 4 mediocre observation merges include 2 correct decisions (gold=D, gold=M/K) where the model combined entries adequately but dropped minor details. The current rewrite instructions say "output the final merged observation fields" and "MUST list ALL distinct tactics" but don't specify how to preserve situational context, outcome nuance, or observation counts during the merge.
 
 ## What's Next
 
-1. **Score 3.5-flash rewrite quality** for comparison (judge run in progress).
-2. **Consider dropping M from per-extraction dedup**: Flash-lite produces 9 false merges vs 4 correct ones. The 3 destructive rewrites are all from wrong decisions. Removing M and letting batch dedup handle merging would eliminate those 9 observation errors and all destructive rewrites.
+1. **Tune rewrite instructions**: The mediocre cases on correct decisions indicate the rewrite prompt section needs improvement. Both models share the same weak case (fe46f8eb0ad4), confirming this is a prompt issue. The merge instruction ("MUST list ALL distinct tactics") addresses approach but not situation or outcome preservation.
+2. **Consider dropping M from per-extraction dedup**: Flash-lite produces 9 false merges vs 4 correct ones. Removing M and letting batch dedup handle merging would eliminate the 2 destructive observation rewrites and all false-merge noise.
 3. **Revisit model upgrade if further accuracy is needed**: The flash-lite/3.5-flash gap narrowed from 10.8pp to 6.2pp with v9d. If observation accuracy needs to improve beyond what M-removal provides, the model upgrade ($36.72/1000 games) is the remaining lever.
 
 ## Artifacts
@@ -717,3 +745,5 @@ The 4 correct merges consolidate tactic variants that would otherwise be separat
 | `eval_sets/dedup_v2_replay_35flash_prompt_v9d.jsonl` | Replay: 3.5-flash, prompt v9d (65 cases, 80.0%) |
 | `eval_configs/dedup/dedup_v2_judge_v9d.json` | Config: judge flash-lite v9d with gemini-3.1-pro-preview |
 | `eval_configs/dedup/dedup_v2_judge_35flash_v9d.json` | Config: judge 3.5-flash v9d with gemini-3.1-pro-preview |
+| `eval_results/dedup_judge_flash_lite_v9d.jsonl` | Judge results: flash-lite v9d rewrite quality (19 rewrites) |
+| `eval_results/dedup_judge_35flash_v9d.jsonl` | Judge results: 3.5-flash v9d rewrite quality (11 rewrites) |
