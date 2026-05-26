@@ -124,7 +124,7 @@ Observations have three structured fields:
 - outcome: What resulted
 
 For the structured output field named "decision", use exactly the letter tag
-"D", "M", or "K"; do not use DISCARD, MERGE, or KEEP.
+"D" or "K"; do not use DISCARD or KEEP.
 
 ---
 
@@ -142,7 +142,7 @@ threshold; top {top_n} shown):
 
 COMPARISON CRITERIA:
 
-Before deciding D/M/K, evaluate each field independently:
+Before deciding D/K, evaluate each field independently:
 
 SITUATION — "same" vs "different":
 Decisive test: would a semantic search query matching situation A also
@@ -187,6 +187,14 @@ because village was already coordinated → different.
 Partial outcomes: "worked initially then failed" is distinct from both
 pure success and pure failure.
 
+DISCARD REQUIRES ALL THREE FIELDS TO MATCH:
+Similar situations alone do not justify DISCARD. You must also confirm that
+the approach uses the same tactic category AND the outcome follows the same
+success/failure pattern. If the approach uses a different tactic (e.g.,
+proactive framing vs defensive deflection, voting record analysis vs
+behavioral reading) or the outcome differs (success vs failure), KEEP —
+even if the situations look nearly identical.
+
 ---
 
 Decide ONE of the following outcomes:
@@ -196,31 +204,21 @@ Decide ONE of the following outcomes:
     lesson as the existing entry, even if it uses different words or adds
     more detail. Output the candidate number it duplicates.
 
-(M) MERGE — Situation and outcome are functionally the same, but the
-    approach contains a concrete tactic variant — from either side of the
-    interaction — that the existing entry does not already cover. This
-    includes different enemy tactics (excuses, deflections) recognized by
-    the same detection pattern, or different agent tactics (accusations,
-    pressure methods) applied in the same situation.
-    Output the candidate number to merge with and the final merged
-    observation fields (situation, approach, outcome). The merged approach
-    field MUST list ALL distinct tactics from both entries.
-
-(K) KEEP — Situation or outcome is functionally different. The new entry
-    requires the agent to look for something different, not just respond
-    to something different. Store exactly as extracted with no rewrites.
+(K) KEEP — The new entry differs in situation, approach, or outcome per
+    the comparison criteria above. This includes cases where:
+    - The situation is functionally different (different retrieval match)
+    - The approach uses a different tactic category or detection method
+    - The outcome differs in success/failure or structural mechanism
+    Store exactly as extracted with no rewrites.
 
 EXAMPLES:
 - D: Healer saves same target 3 times vs 2 times. Same lesson ("persist
   protecting confirmed targets"), different degree of persistence. → DISCARD.
 - D: Wolf uses "too obvious" defense in mid-game vs endgame, both fail
   against evidence. Same tactic, different phase. → DISCARD.
-- M: Wolf deflects by questioning healer saves (new) vs accusing villagers
-  of coordination (existing). Same situation (endgame wolf deflection),
-  same outcome (village sees through it). Different tactic variant. → MERGE.
-- M: Investigator checks one active player Night 1 (existing) vs checks
-  active players on Night 1 AND Night 2 (new). One-off → persistent
-  crosses a qualitative threshold. → MERGE tactic variant.
+- K: Wolf deflects by questioning healer saves (new) vs accusing villagers
+  of coordination (existing). Same situation but different tactic variant
+  — the agent learns a different defensive pattern to watch for. → KEEP.
 - K: Catching wolf via late bussing vs partner protection. Same village
   response (press with voting evidence), but different detection signals
   requiring different analytical approaches. → KEEP.
@@ -228,17 +226,9 @@ EXAMPLES:
   protects vocal player Night 1 but accidentally protects a wolf. Same
   approach, opposite outcome — both teach risk/reward. → KEEP.
 
-CALIBRATION:
-MERGE requires a clearly distinct tactic variant — a different category of
-action, not a different description of the same action. If you are unsure
-whether the approach difference is a genuine tactic variant or just
-different wording, choose DISCARD.
-
 DECISION RULES:
-- For MERGE, the rewritten observation must keep each field (situation,
-  approach, outcome) as separate coherent text. Use only details present
-  in the entries being compared. Do not infer or invent context not
-  explicitly stated in the input entries.
+- For DISCARD, the existing entry's observation_count will be incremented
+  automatically. The existing entry's text is preserved as-is.
 - When an output field asks for a candidate number, use only the bracketed
   candidate number shown in SIMILAR EXISTING OBSERVATIONS. Do not output
   UUID keys.
