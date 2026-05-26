@@ -219,6 +219,57 @@ Flash-lite now produces variable output (4-6 per game) instead of the fixed 4+4 
 
 **Note:** Phase 2 and Phase 3 are not perfectly controlled — the prompt changed (perspective rule + naming rule), and flash-lite's thinking config changed. The perspective compliance delta is the cleanest signal since it directly measures what the new rule targets.
 
+### Per-role extraction experiment (Phase 4)
+
+Instead of one LLM call extracting all roles simultaneously, per-role extraction makes 4 separate calls — one for each role (wolf, villager, healer, investigator) — using a role-specific prompt that locks the perspective field and asks for 4-8 items per role. Outputs are merged into a single result per game.
+
+Tested on 5 games (subset of the same dataset) with gemini-3.5-flash and gemini-2.5-flash. Flash-lite was also attempted but hung indefinitely on the first game and was killed.
+
+#### Extraction output (per-role)
+
+| Model | Avg obs/game | Avg sp/game | Player_ID leak | Avg time/game |
+|---|---|---|---|---|
+| gemini-3.5-flash | 16.2 | 16.4 | 0% | 136s |
+| gemini-2.5-flash | 19.6 | 19.2 | 5.1% obs, 0% sp | 125s |
+| gemini-3.1-flash-lite (high thinking) | — | — | — | FAILED |
+
+#### Judge scores (per-role)
+
+| Model | Perspective | Specificity | Epistemic | Grounding | Coverage | Diversity | **Avg** |
+|---|---|---|---|---|---|---|---|
+| gemini-3.5-flash | 4.80 | 5.00 | 5.00 | 5.00 | 5.00 | 4.80 | **4.93** |
+| gemini-2.5-flash | 4.40 | 4.60 | 4.00 | 5.00 | 5.00 | 3.60 | **4.43** |
+
+#### Single-pass vs per-role comparison
+
+Volume change (per-role relative to single-pass):
+
+| Model | Obs/game | Sp/game | Time/game |
+|---|---|---|---|
+| gemini-3.5-flash | 8.2 → 16.2 (+98%) | 7.7 → 16.4 (+113%) | 44s → 136s (+3.1x) |
+| gemini-2.5-flash | 12.2 → 19.6 (+61%) | 11.8 → 19.2 (+63%) | 43s → 125s (+2.9x) |
+
+Quality delta (per-role minus single-pass):
+
+| Model | Perspective | Specificity | Epistemic | Grounding | Coverage | Diversity |
+|---|---|---|---|---|---|---|
+| gemini-3.5-flash | -0.20 | 0.00 | +0.20 | +0.30 | 0.00 | -0.20 |
+| gemini-2.5-flash | -0.40 | -0.20 | -0.40 | +0.60 | 0.00 | -0.40 |
+
+**Findings:**
+
+- **Volume nearly doubles** with per-role extraction: ~2x more observations and strategy points per game. This is the primary benefit — each role-focused call produces 4-5 items rather than sharing a budget of ~8 items across all roles.
+- **Time and cost ~3x higher**: 4 sequential LLM calls per game instead of 1, with inter-call delays.
+- **Grounding improves for both models** (+0.30 for 3.5-flash, +0.60 for 2.5-flash). When focused on a single role, the model grounds claims more thoroughly in the transcript.
+- **Diversity and perspective drop**, especially for 2.5-flash. Items from different role calls overlap on the same game events described from different angles, which the judge scores as repetitive. Perspective violations are surprising given the prompt locks the role — possibly the merged output confuses the judge when it sees the same events from 4 perspectives.
+- **2.5-flash quality degrades substantially** under per-role (avg 4.43 vs 4.50 single-pass). Epistemic compliance drops to 4.00 (was 4.40) — more items means more chances for knowledge-level violations. Player_ID leakage re-appears at 5.1% despite the naming rule.
+- **3.5-flash quality holds** (avg 4.93 vs 4.92 single-pass). The only drops are diversity and perspective on one game (both scored 4), while grounding and epistemic both improve.
+- **Flash-lite cannot handle per-role extraction**: hung indefinitely on the first game. The structured output schema with 4-8 items may exceed its capacity even for a single role.
+
+**Recommendation:** Per-role extraction is viable for gemini-3.5-flash when higher volume is needed (e.g., to populate a sparse strategy store). The ~2x volume at comparable quality is worthwhile if the 3x cost/time overhead is acceptable. Not recommended for gemini-2.5-flash due to quality degradation, or for flash-lite due to failure to complete.
+
+**Note:** Per-role results use 5 games vs 10 games for single-pass Phase 3, so the quality comparison has a sample size caveat. The volume and timing comparisons are directional.
+
 ## Prompt fix: player_ID enforcement
 
 Despite observations being allowed omniscient knowledge (they're post-game factual records), player_IDs are still undesirable because:
@@ -293,3 +344,6 @@ All artifacts are co-located in this evidence folder.
 | `model_comparison/gemini-3.5-flash_10games_20260526_080359.jsonl` | Phase 3: 3.5-flash re-extraction (10 games, with perspective rule) |
 | `model_comparison/gemini-2.5-flash_10games_20260526_080350.jsonl` | Phase 3: 2.5-flash re-extraction (10 games, with perspective rule) |
 | `model_comparison/judge_gemini-3.1-pro-preview_20260526_080415.jsonl` | Phase 3: judge scores for all 3 re-extractions (30 cases, Vertex AI) |
+| `model_comparison/gemini-3.5-flash_5games_per-role_20260526_090203.jsonl` | Phase 4: 3.5-flash per-role extraction (5 games, 4 calls/game) |
+| `model_comparison/gemini-2.5-flash_5games_per-role_20260526_090106.jsonl` | Phase 4: 2.5-flash per-role extraction (5 games, 4 calls/game) |
+| `model_comparison/judge_gemini-3.1-pro-preview_20260526_090242.jsonl` | Phase 4: judge scores for per-role extractions (10 cases, Vertex AI) |
