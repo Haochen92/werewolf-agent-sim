@@ -38,11 +38,14 @@ from evaluation.core.settings import REPO_ROOT
 EVAL_CLUSTER_IDS = [0, 4, 11, 14, 16, 21, 25, 28, 33, 5, 20]
 
 
-def format_entries(cluster: dict) -> str:
+def format_entries(cluster: dict) -> tuple[str, dict[str, str]]:
+    """Format cluster entries using numbered indices, returning index-to-key map."""
     lines: list[str] = []
-    for item in cluster["items"]:
+    index_to_key: dict[str, str] = {}
+    for i, item in enumerate(cluster["items"], 1):
+        index_to_key[str(i)] = item["key"]
         val = item.get("value", item)
-        lines.append(f"KEY: {item['key']}")
+        lines.append(f"[{i}]")
         lines.append(f"observation_count: {val.get('observation_count', 1)}")
         lines.append(f"last_observed: {val.get('last_observed', 'N/A')}")
         lines.append(f"situation: {val.get('situation', '')}")
@@ -52,7 +55,11 @@ def format_entries(cluster: dict) -> str:
             lines.append(f"approach: {val.get('approach', '')}")
             lines.append(f"outcome: {val.get('outcome', '')}")
         lines.append("")
-    return "\n".join(lines).strip()
+    return "\n".join(lines).strip(), index_to_key
+
+
+def _remap_keys(source_keys: list[str], index_to_key: dict[str, str]) -> list[str]:
+    return [index_to_key.get(k, k) for k in source_keys]
 
 
 def call_model(
@@ -61,7 +68,7 @@ def call_model(
     thinking_level: str | None,
 ) -> dict[str, Any]:
     llm = create_chat_model(model, temperature=0.0, thinking_level=thinking_level)
-    entries = format_entries(cluster)
+    entries, index_to_key = format_entries(cluster)
     ns = cluster["namespace"]
     role = ns[1] if isinstance(ns, list) else ns.split("/")[1]
     action_phase = ns[2] if isinstance(ns, list) else ns.split("/")[2]
@@ -93,9 +100,12 @@ def call_model(
 
     ops = []
     for op in result.operations:
-        d = {"action": op.action, "source_keys": op.source_keys}
+        d = {
+            "action": op.action,
+            "source_keys": _remap_keys(op.source_keys, index_to_key),
+        }
         if op.survivor_key:
-            d["survivor_key"] = op.survivor_key
+            d["survivor_key"] = index_to_key.get(op.survivor_key, op.survivor_key)
         if hasattr(op, "merged_situation") and op.merged_situation:
             d["merged_situation"] = op.merged_situation
         if hasattr(op, "merged_approach") and op.merged_approach:
