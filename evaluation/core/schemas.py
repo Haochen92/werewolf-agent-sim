@@ -150,6 +150,18 @@ class ExtractionScores(BaseModel):
             "1=mostly duplicate advice in different words; 5=every item adds a distinct idea"
         ),
     )
+    perspective_compliance: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Are observations written from the assigned role's perspective? "
+            "Approach should describe the assigned role's own actions, not the "
+            "opposing side's. Situation and outcome should be framed from that "
+            "role's viewpoint. Strategy points are exempt from this dimension. "
+            "1=approach routinely describes opposing side's actions; "
+            "5=every observation consistently framed from assigned role's perspective"
+        ),
+    )
     brief_reasoning: str = ""
 
 

@@ -514,9 +514,23 @@ moments and learnings from this game for each role?
    4 = mostly distinct with minor thematic overlap
    5 = every item adds a distinct strategic idea
 
+6. PERSPECTIVE COMPLIANCE (observations ONLY — ignore strategy points for \
+this dimension): Is each observation written from the assigned role's \
+perspective across all three narrative fields (situation, approach, outcome)?
+   - situation should describe what the assigned role is facing
+   - approach should describe what the assigned role DID or FAILED TO DO — \
+not what the opposing side did. If an observation's approach says "The wolves \
+identified..." in an Investigator observation, that is a perspective violation.
+   - outcome should describe consequences from the assigned role's viewpoint
+   1 = pervasive violations — approach routinely describes opposing side's actions
+   2 = several observations frame approach from the wrong perspective
+   3 = mostly compliant with isolated perspective slips
+   4 = strong compliance, minor framing issues at most
+   5 = every observation is consistently framed from the assigned role's perspective
+
 Respond ONLY with valid JSON, no markdown fences:
 {{"specificity": N, "epistemic_compliance": N, "grounding": N, \
-"coverage": N, "diversity": N, \
+"coverage": N, "diversity": N, "perspective_compliance": N, \
 "brief_reasoning": "2-3 sentences explaining your scores"}}
 """
 
