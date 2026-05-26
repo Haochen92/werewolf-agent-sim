@@ -702,17 +702,99 @@ The destructive rewrites (ip ≤ 2) fall into two categories:
 
 **Mediocre rewrites on correct decisions (prompt issue).** The shared ip=3 case (fe46f8eb0ad4) has decision_correctness=5 on both models — the decision was right, but the rewrite lost nuance. Flash-lite's 4 mediocre observation merges include 2 correct decisions (gold=D, gold=M/K) where the model combined entries adequately but dropped minor details. The current rewrite instructions say "output the final merged observation fields" and "MUST list ALL distinct tactics" but don't specify how to preserve situational context, outcome nuance, or observation counts during the merge.
 
+## Prompt v10: Removing DISCARD-with-Rewrite from Strategy (65 cases)
+
+### What changed
+
+Removed the optional rewrite fields (`improved_situation`, `improved_action`) from strategy DISCARD. Previously, when discarding a new strategy point, the model could optionally overwrite the existing entry's text if it deemed the new entry better written. Now DISCARD simply increments the observation count and preserves the existing entry as-is.
+
+### Why
+
+Analysis of rewrite quality showed: (a) models rewrote both fields 60-97% of the time even when value was in only one detail, (b) 3/4 "good" D-rewrite cases were arguably mislabeled DISCARDs that should have been KEEPs, (c) the shared mediocre case (fe46f8eb0ad4) confirmed this is a prompt limitation, not a model limitation. Removing the rewrite option forces cleaner D/K boundary decisions.
+
+### Results
+
+**Important caveat**: Between v9d and v10, we switched from Google AI Studio to Vertex AI backend. This affects model outputs even at temperature=0 (confirmed by re-running flash-lite v10 on both backends: 76.9% on Google AI vs 73.8% on Vertex AI). All v10+ results use Vertex AI. Scores are comparable within v10+ but not directly comparable to v9d.
+
+| Model | v9d (Google AI) | v10 (Vertex AI) |
+|---|---|---|
+| flash-lite overall | 73.8% | 73.8% |
+| flash-lite obs | 67.5% | 60.0% |
+| flash-lite strategy | 84.0% | **96.0%** |
+| 3.5-flash overall | 80.0% | 73.8% |
+| 3.5-flash obs | 75.0% | 70.0% |
+| 3.5-flash strategy | 88.0% | 80.0% |
+
+The strategy improvement for flash-lite (84% → 96%) is genuine — the prompt change directly targets strategy decisions. The observation changes are backend noise (prompt unchanged for observations). Cross-backend comparison is unreliable for measuring prompt impact.
+
+## Prompt v11: Removing MERGE from Observation Dedup (65 cases)
+
+### What changed
+
+Removed the MERGE (M) option from per-extraction observation dedup. The prompt now only supports DISCARD (D) and KEEP (K). Golden labels updated: 5 M labels relabeled to K. Batch dedup retains MERGE for cluster-level cleanup.
+
+### Why
+
+MERGE was rare in practice — only 5/65 golden cases. Both models heavily over-merged: flash-lite predicted 15 MERGEs (vs 5 golden), 3.5-flash predicted 8. False merges produced the worst rewrite quality scores (ip ≤ 2) and corrupted existing memory entries. Removing M and letting batch dedup handle tactic-variant consolidation eliminates these destructive rewrites.
+
+The decision boundary was also hard for models to learn. The D/M distinction ("same lesson" vs "same situation but different tactic variant") required nuanced approach comparison that models frequently got wrong. D/K is a cleaner binary: "same observation, or different?"
+
+### Results
+
+| Model | v10 (Vertex) | v11 | Delta |
+|---|---|---|---|
+| flash-lite overall | 73.8% | **80.0%** | +6.2pp |
+| flash-lite obs | 60.0% | **70.0%** | +10.0pp |
+| flash-lite strategy | 96.0% | 96.0% | — |
+| 3.5-flash overall | 73.8% | **83.1%** | +9.3pp |
+| 3.5-flash obs | 70.0% | **82.5%** | +12.5pp |
+| 3.5-flash strategy | 80.0% | 84.0% | +4.0pp |
+
+Golden labels: D=30, K=34 (was D=30, M=5, K=29).
+
+### Error analysis
+
+The two models show opposite error profiles on v11:
+
+**Flash-lite v11**: 13 errors, 9 are K→D (over-discarding). The model sees high similarity scores (0.82-0.86) and collapses entries that have genuinely different approaches or outcomes. Most of the over-discarded cases (7/9) are former M labels now relabeled K — entries with similar situations but different tactic variants that should be kept.
+
+**3.5-flash v11**: 11 errors, ALL are D→K (under-discarding, 100% K precision). The model is conservative — it never wrongly discards, but keeps duplicates that teach the same lesson with different specific examples.
+
+Shared errors (cases 30, 63, 64): both models fail to discard these — they may represent genuinely hard boundary cases.
+
+## Prompt v11b: Strengthening the Three-Field Match Requirement (65 cases)
+
+### What changed
+
+Added an explicit calibration section before the decision options:
+
+> **DISCARD REQUIRES ALL THREE FIELDS TO MATCH:** Similar situations alone do not justify DISCARD. You must also confirm that the approach uses the same tactic category AND the outcome follows the same success/failure pattern. If the approach uses a different tactic (e.g., proactive framing vs defensive deflection, voting record analysis vs behavioral reading) or the outcome differs (success vs failure), KEEP — even if the situations look nearly identical.
+
+### Why
+
+Flash-lite's 9 K→D errors in v11 showed a pattern: the model was DISCARDing entries with similar situations (sim > 0.80) without adequately checking approach and outcome differences. The calibration makes the three-field requirement explicit and gives concrete examples of tactic differences that should trigger KEEP.
+
+### Results (flash-lite only)
+
+| flash-lite | v11 | v11b | Delta |
+|---|---|---|---|
+| Overall | 80.0% | **83.1%** | +3.1pp |
+| Observation | 70.0% | **75.0%** | +5.0pp |
+| Strategy | 96.0% | 96.0% | — |
+
+K→D errors dropped from 9 to 4. The calibration successfully prevented 5 false discards without introducing new errors. Remaining 4 K→D errors are harder cases where the approach difference is subtler (e.g., indirect deduction vs direct investigation — both are "investigation" at a coarse level).
+
 ## What's Next
 
-1. **Tune rewrite instructions**: The mediocre cases on correct decisions indicate the rewrite prompt section needs improvement. Both models share the same weak case (fe46f8eb0ad4), confirming this is a prompt issue. The merge instruction ("MUST list ALL distinct tactics") addresses approach but not situation or outcome preservation.
-2. **Consider dropping M from per-extraction dedup**: Flash-lite produces 9 false merges vs 4 correct ones. Removing M and letting batch dedup handle merging would eliminate the 2 destructive observation rewrites and all false-merge noise.
-3. **Revisit model upgrade if further accuracy is needed**: The flash-lite/3.5-flash gap narrowed from 10.8pp to 6.2pp with v9d. If observation accuracy needs to improve beyond what M-removal provides, the model upgrade ($36.72/1000 games) is the remaining lever.
+1. **Run 3.5-flash on v11b**: Confirm the three-field calibration doesn't hurt the conservative model's already-good K precision.
+2. **Address 3.5-flash under-discarding**: 11 D→K errors suggest adding same-lesson calibration — "different examples of the same lesson are still duplicates" — but this may conflict with flash-lite's over-discard tendency. May need model-specific tuning or accept the accuracy ceiling.
+3. **Investigate shared hard cases (30, 63, 64)**: Both models fail on these — review golden labels for possible mislabeling or accept as genuine ambiguity.
 
 ## Artifacts
 
 | File | Description |
 |---|---|
-| `eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D:30, M:5, K:29, M/K:1) after two revision rounds |
+| `eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D:30, K:34, M/K:1) — M relabeled to K for v11 |
 | `eval_sets/dedup_v2_sampled.jsonl` | 65 sampled dedup cases (source dataset, expanded from 50) |
 | `eval_sets/dedup_v2.manifest.json` | Dataset manifest (390 cases, seed=42) |
 | `evaluation/experiments/dedup_score.py` | Deterministic golden-label scorer (matches by case_id or index) |
@@ -747,3 +829,7 @@ The destructive rewrites (ip ≤ 2) fall into two categories:
 | `eval_configs/dedup/dedup_v2_judge_35flash_v9d.json` | Config: judge 3.5-flash v9d with gemini-3.1-pro-preview |
 | `eval_results/dedup_judge_flash_lite_v9d.jsonl` | Judge results: flash-lite v9d rewrite quality (19 rewrites) |
 | `eval_results/dedup_judge_35flash_v9d.jsonl` | Judge results: 3.5-flash v9d rewrite quality (11 rewrites) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v10.jsonl` | Replay: flash-lite, prompt v10 (65 cases, Google AI backend) |
+| `eval_sets/dedup_v2_replay_35flash_prompt_v10.jsonl` | Replay: 3.5-flash, prompt v10 (65 cases, Vertex AI) |
+| `eval_sets/dedup_v2_replay_flash_lite_prompt_v11.jsonl` | Replay: flash-lite, prompt v11 (65 cases, 80.0%, Vertex AI) |
+| `eval_sets/dedup_v2_replay_35flash_prompt_v11.jsonl` | Replay: 3.5-flash, prompt v11 (65 cases, 83.1%, Vertex AI) |
