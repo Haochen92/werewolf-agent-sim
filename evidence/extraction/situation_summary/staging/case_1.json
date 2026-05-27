@@ -1,0 +1,49 @@
+{
+  "golden_situations": [
+    "The village's first vote is approaching with no prior voting records or eliminations. Information landscape: Information-starved — the only concrete data is a publicly announced healer save; all suspicion is driven by communication style analysis and perceived evasion. Consensus texture: A fragile consensus is forming against one player for deflection, while that player and an ally argue for patience — the split is tone-based, not evidence-based. Game phase: Early mid-game, first elimination pending.",
+    "The healer whose night-1 save was publicly announced must now cast a vote without revealing their identity. Agent exposure: Low — the healer has maintained a low profile through discussion but must now take a visible stance. Information landscape: The saved player is leading the village push and is a likely wolf target again tonight. Game phase: First vote, where the healer's voting choice and tonight's protection target are both critical."
+  ],
+  "observation_labels": [
+    {
+      "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+      "relevance": 1,
+      "score": 0.7921,
+      "situation": "Endgame, with a strong, evidence-based consensus forming against the likely final wolf. The information landscape is rich, driven by voting records. The Healer is not the primary target but may be under minor suspicion or have slight personal doubts.",
+      "approach": "Voted with the majority to eliminate the wolf (1x), Voiced concern but ultimately voted with the majority (1x).",
+      "outcome": "Successfully eliminated the final wolf, securing a win for the village. This approach avoided a split vote and solidified the Healer's position as a team player."
+    },
+    {
+      "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+      "relevance": 2,
+      "score": 0.7853,
+      "situation": "In the final vote with four players remaining, the Healer (player 2) was targeted for their passive communication style throughout the game. Information landscape: The information was based entirely on social reads and voting history, as no confirmed roles were left in play. Game phase: Endgame, with one wolf remaining.",
+      "approach": "The Healer attempted to defend their quietness as an observational strategy but failed to take a decisive stance until it was too late, only casting a vote after consensus had already formed against them.",
+      "outcome": "The Healer was voted out. This was the game-losing move, as it left the final wolf in a 2 vs. 1 situation, guaranteeing their victory."
+    },
+    {
+      "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+      "relevance": 2,
+      "score": 0.7813,
+      "situation": "A credible Investigator claim led to a strong consensus against a player who turned out to be a wolf. Information landscape: The village had a strong lead from the Investigator's claim, making the vote seem straightforward. Game phase: Mid-game, at the first elimination vote. Consensus texture: A strong, multi-player consensus was driven by the Investigator's specific, credible claim.",
+      "approach": "The Healer (player_8), fearing a potential wolf-led bandwagon, voted against the Investigator instead of the accused wolf. This was the only vote against the Investigator besides the wolf's own.",
+      "outcome": "The wolf was eliminated, but the Healer's dissenting vote was recorded. The next day, after the Investigator was killed, this vote became irrefutable evidence that led to the Healer being mislynched."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "4922ee84-da73-480a-90ef-170739daf216",
+      "relevance": 1,
+      "score": 0.7757,
+      "situation": "In the mid-game or endgame, a strong consensus is forming against a player based on voting records or other public evidence. You are currently under minor suspicion for a past action, and you need to manage this heat while the village focuses on another target.",
+      "action": "Do not aggressively defend your past actions, as this can make you seem defensive and draw more suspicion. Instead, vote with the emerging majority to align yourself with the village, help eliminate a likely threat, and reduce the focus on you."
+    },
+    {
+      "key": "182ebc43-0538-4b82-8bd4-b5852870338f",
+      "relevance": 2,
+      "score": 0.7706,
+      "situation": "In the mid-game or endgame, a strong consensus is forming against a player, either driven by evidence-based information like voting records or by a credible Investigator claim. You feel uneasy about the target despite the strength of the consensus, and you are not currently under significant suspicion yourself.",
+      "action": "Briefly voice your skepticism to ensure all angles are considered, but do not cast a lone protest vote against the consensus. Unless you can provide concrete counter-evidence, vote with the group or abstain."
+    }
+  ],
+  "notes": "Healer/day_vote namespace is very thin (3 obs, 2 strat total). No entries for information-starved first-vote dynamics — store coverage gap. Retrieved items are relevant for healer voting behavior but mostly from endgame contexts. Structured situation format used."
+}

@@ -1,0 +1,160 @@
+{
+  "golden_situations": [
+    "The wolves' night-1 kill was blocked by the healer, leaving all players alive. Information landscape: No voting records, no accusations, no behavioral differentiation — the only public data is the healer save, which implicitly village-confirms the saved player and signals an active healer. Consensus texture: No consensus; universal caution from day 1 persists. Agent exposure: Neither wolf has drawn attention yet, but the wolves must identify the most dangerous villager through behavioral reads while avoiding coordinated patterns that link the wolf pair. Game phase: Early mid-game, first substantive discussion pending."
+  ],
+  "observation_labels": [
+    {
+      "key": "9d1739db-2823-476b-90ef-d9b6340c4bcd",
+      "relevance": 1,
+      "score": 0.8115,
+      "situation": "After the village mistakenly eliminated the Healer, the discussion turned to analyzing that vote. Information landscape: rich with voting records. Game phase: Mid-game, after two eliminations.",
+      "approach": "Wolf deflected scrutiny by framing another player's dissenting vote as suspicious.",
+      "outcome": "Village turned on the dissenter, eliminating another villager."
+    },
+    {
+      "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+      "relevance": 2,
+      "score": 0.7989,
+      "situation": "A wolf or wolves were put under pressure for stalling behaviors. Information landscape: info-starved, suspicion based on behavioral reads, centered on a healer save. Game phase: Mid-game, following first night action.",
+      "approach": "Wolf attempted to defend by framing accuser as 'disruptive' or deflecting onto another villager.",
+      "outcome": "Villagers interpreted passivity and deflection as guilt. Strong consensus formed, wolf eliminated."
+    },
+    {
+      "key": "79288222-86d2-47fd-aebf-65660e6db983",
+      "relevance": 2,
+      "score": 0.7969,
+      "situation": "In an information-starved mid-game, a proactive villager aggressively demands players name suspects. Village has no consensus, only lead is a recent healer save. Wolves not primary target but under pressure to contribute.",
+      "approach": "Wolf framed proactive villager's aggression as suspicious tactic to force a rushed vote, while urging caution.",
+      "outcome": "Village turned on the aggressive villager, eliminating them. Removed a proactive town member."
+    },
+    {
+      "key": "83487df0-7a81-4308-9f90-d72e19e0d4a0",
+      "relevance": 1,
+      "score": 0.7941,
+      "situation": "After the village mistakenly eliminated the Investigator, discussion fractured over analyzing that vote. Information landscape: rich regarding Day 2 vote. Game phase: Mid-game, both Investigator and Healer eliminated.",
+      "approach": "One wolf publicly agreed with a villager's flawed logic to amplify conflict, while both wolves voted for a different target.",
+      "outcome": "Villagers eliminated the contrarian villager, wolves' split vote caused more confusion."
+    },
+    {
+      "key": "374a2e35-8402-4632-9b31-613f85a0cf63",
+      "relevance": 2,
+      "score": 0.7783,
+      "situation": "A wolf attempted to analyze a failed night attack by suggesting the saved villager must have been a 'threat.' Information landscape: only info was failed wolf attack. Game phase: Mid-game, after first night but before eliminations.",
+      "approach": "Wolf tried to backtrack, claiming it was just an observation and the village was 'infighting.'",
+      "outcome": "Village formed strong consensus against the wolf, eliminated unanimously. Other wolf bussed their partner."
+    },
+    {
+      "key": "9355e610-6db8-4980-bb2b-c73b0e82116c",
+      "relevance": 2,
+      "score": 0.7774,
+      "situation": "An Investigator proposed scrutinizing how players reacted to a healer save. Two wolves coordinated to dismiss this. Information landscape: info-starved, only lead was saved player. Game phase: Mid-game, following first night action.",
+      "approach": "Wolves framed the Investigator's analysis as a distraction, steering village away from productive inquiry.",
+      "outcome": "Village followed wolves' narrative and eliminated the Investigator."
+    },
+    {
+      "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+      "relevance": 1,
+      "score": 0.7773,
+      "situation": "A villager correctly used Day 2 voting records to accuse a group including both wolves. Information landscape: becoming info-rich with voting records. Game phase: Endgame, five players remaining.",
+      "approach": "Wolves aggressively challenged the accuser's motives, ignoring the voting evidence.",
+      "outcome": "Successfully shifted suspicion onto the accuser. Healer was convinced by wolves' narrative, leading to another villager elimination."
+    },
+    {
+      "key": "1fbc6519-4ae7-40d7-8436-7f91ee75b27a",
+      "relevance": 0,
+      "score": 0.7730,
+      "situation": "Final vote with four players left. Information landscape: rich with voting history. Game phase: Endgame.",
+      "approach": "Wolf joined villagers in pressuring the passive Healer.",
+      "outcome": "Healer voted out, securing wolf victory."
+    },
+    {
+      "key": "cc10c6bf-be83-4fd6-b59d-14cc3e499f1a",
+      "relevance": 2,
+      "score": 0.7717,
+      "situation": "During Day 2 discussions, Wolf attempted to sound helpful by suggesting analyzing voting patterns. Information landscape: info-starved, no vote had occurred on Day 1. Game phase: Mid-game, following first night's elimination of Healer.",
+      "approach": "Wolf continued to pivot to generalities like 'silence' instead of addressing specific criticism.",
+      "outcome": "Consensus formed against the wolf, eliminated and confirmed. Costly factual blunder."
+    },
+    {
+      "key": "568171e8-8534-4fb7-be6c-225f223048e9",
+      "relevance": 0,
+      "score": 0.7706,
+      "situation": "Endgame, Investigator made a late unverified role claim. Information landscape: claim was info-rich but unverified. Game phase: Endgame, four players left.",
+      "approach": "Wolf attacked the timing of the claim, framing it as desperate.",
+      "outcome": "Successfully sowed doubt, split the vote. Wolf killed Investigator that night."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "a7c6ac54-d430-417f-932c-6906683a9314",
+      "relevance": 2,
+      "score": 0.8200,
+      "situation": "When a wolf target is saved by the healer and the village begins discussing the motive. Information landscape: village has confirmed non-wolf player. Game phase: Mid-game, first night attack revealed.",
+      "action": "Actively participate in analyzing the failed kill, proposing theories about why that player was targeted, to appear aligned with the village."
+    },
+    {
+      "key": "fc5e48a9-5cbc-477a-bd6c-04063ed3d664",
+      "relevance": 2,
+      "score": 0.8108,
+      "situation": "When a wolf target is saved by the healer and village discusses the motive. Information landscape: only info is the failed attack, speculative reads. Game phase: Mid-game, first night attack revealed.",
+      "action": "Do not justify attack by calling survivor a 'threat.' Agree the save was fortunate and pivot the conversation."
+    },
+    {
+      "key": "7eebdf18-9f10-4ae5-a16a-3aee445b29b8",
+      "relevance": 1,
+      "score": 0.7685,
+      "situation": "When a confirmed non-wolf player becomes aggressive and polarizing. Information landscape: village has a trusted voice causing infighting. Game phase: Mid-game, after a mislynch.",
+      "action": "Amplify frustration, frame the confirmed player as 'disruptive' to turn opinion against them."
+    },
+    {
+      "key": "5cf87925-5515-4cb2-bae1-388505a8f024",
+      "relevance": 2,
+      "score": 0.7618,
+      "situation": "If you are trying to appear helpful during early game. Information landscape: info-starved, no votes or confirmed roles. Game phase: Early-game.",
+      "action": "Avoid referencing evidence that doesn't exist yet. Stick to generic observations, ask open-ended questions."
+    },
+    {
+      "key": "21399e68-38b7-482a-88f6-a87a8181c5a5",
+      "relevance": 1,
+      "score": 0.7462,
+      "situation": "When the village is conducting a post-mortem on a mislynch. Information landscape: rich with data from mistaken vote. Game phase: Mid-game, after mislynch.",
+      "action": "Actively participate in the post-mortem, offer plausible pro-village alternate explanation rather than dismissing analysis."
+    },
+    {
+      "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+      "relevance": 2,
+      "score": 0.7452,
+      "situation": "If you and your wolf partner are pressured to provide suspects in an info-starved early game. Information landscape: no voting records, suspicion based on communication style. Game phase: Early to mid-game.",
+      "action": "Advocate for calm and evidence-based decisions. Use 'reasonable' stance to contrast with aggressive accuser."
+    },
+    {
+      "key": "17add23c-00b5-4a83-a830-ebe6cdf55722",
+      "relevance": 1,
+      "score": 0.7443,
+      "situation": "Mid-game, after a villager has been incorrectly eliminated. Information landscape: voting record from mislynch. Social pressure: both wolves under pressure.",
+      "action": "Don't use same deflection tactic as your partner. Create distance between wolf pair responses."
+    },
+    {
+      "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+      "relevance": 1,
+      "score": 0.7422,
+      "situation": "Mid-game, village made major error in previous vote, conducting post-mortem. Information landscape: rich with data from mistaken vote.",
+      "action": "Frame mistake as 'collective failure,' argue to focus on present behavior."
+    },
+    {
+      "key": "e1428900-f94c-4385-826c-8466f9b25462",
+      "relevance": 0,
+      "score": 0.7382,
+      "situation": "Mid-game, village analyzing voting records, you are under pressure regarding your voting history. Information landscape: shifting to evidence-based using voting records.",
+      "action": "Attack the analysis process, frame discussion as 'circular' or 'infighting,' deflect by accusing a quiet player."
+    },
+    {
+      "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+      "relevance": 1,
+      "score": 0.7282,
+      "situation": "If you are accused by a player who just publicly survived a night attack. Information landscape: accuser has immense credibility. Game phase: Mid-game.",
+      "action": "Don't try to make survivor's survival look suspicious. Calmly address behavioral accusations or shift focus to third party."
+    }
+  ],
+  "notes": "Single merged golden situation (two drafts were redundant). Wolf/day_discussion namespace is large. Strong retrieval for post-healer-save wolf scenarios. Top strategy points (SP1, SP2) are exact-match for this situation. Some mid-game/endgame observations with voting records retrieved — situation match is weaker but lessons about wolf coordination tactics are transferable."
+}
