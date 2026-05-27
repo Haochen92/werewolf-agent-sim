@@ -262,3 +262,52 @@ likely because strategy point situations are written more generically
 2. Decide whether extraction prompts need core dilemma update based
    on the gap between state-similar but dilemma-different cases
 3. Consider whether store coverage gaps warrant new extraction passes
+
+### 2026-05-27 — Golden vs captured situations comparison
+
+Ran retrieval with the pipeline-captured situations (what the model actually
+produced) and compared NDCG@5 against the golden situation baselines.
+
+**Mean NDCG@5: golden 0.783 vs captured 0.671 (delta = +0.112)**
+
+The situation summary prompt is leaving 11.2 pp of retrieval quality on the
+table relative to hand-crafted queries.
+
+| Case | Role | Golden@5 | Captured@5 | Delta | Unlabeled |
+|---|---|---|---|---|---|
+| 14 | wolf | 0.934 | 0.364 | +0.570 | 21 |
+| 34 | villager | 0.754 | 0.192 | +0.563 | 19 |
+| 39 | wolf | 0.820 | 0.515 | +0.305 | 7 |
+| 38 | wolf | 1.000 | 0.723 | +0.277 | 9 |
+| 37 | wolf | 0.717 | 0.460 | +0.256 | 8 |
+| 16 | healer | 0.754 | 0.934 | -0.180 | 0 |
+| 1 | healer | 0.879 | 0.986 | -0.107 | 0 |
+| 2 | investigator | 0.830 | 0.927 | -0.097 | 12 |
+
+**Caveat: unlabeled items.** When captured situations retrieve items not in
+the golden set, those items get relevance=0 by default. Cases with high
+unlabeled counts (14: 21, 34: 19, 12: 17) likely have inflated deltas —
+the true captured NDCG could be higher. A fair comparison would require
+labeling the union of golden and captured retrievals.
+
+**Patterns in the worst cases:**
+- Cases 14, 34, 37, 38, 39 (all large deltas) are from the same game
+  (cdcd2c6e). The pipeline situations for these cases may have been
+  too generic or missed the core dilemma dimension.
+- Wolf cases show the largest average gap — the pipeline struggles most
+  with wolf-specific strategic tensions.
+- Cases where captured > golden (1, 2, 16) are mostly healer/investigator
+  with 0 unlabeled — the pipeline sometimes produces better queries than
+  our hand-crafted ones for simpler role dynamics.
+
+**Interpretation:**
+The 11.2 pp gap confirms that improving the situation summary prompt is a
+viable lever for retrieval quality. However, the unlabeled item problem means
+the true gap is probably smaller (maybe 5-8 pp after proper labeling). The
+wolf-heavy worst cases suggest the core dilemma dimension is most impactful
+for complex multi-agent strategic situations.
+
+**Next steps:**
+1. Persist indexed store to avoid re-embedding (~2 MB serialized file)
+2. Label the union of golden + captured retrievals for a fair comparison
+3. Test core dilemma prompt changes on the worst-delta cases first
