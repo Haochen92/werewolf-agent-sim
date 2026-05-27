@@ -29,8 +29,20 @@ from Agents.memory_batch_deduplication import (
 )
 from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
+    BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
     BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
 )
+
+PROMPT_VARIANTS = {
+    "default": {
+        "observation": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
+        "strategy": BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
+    },
+    "lite": {
+        "observation": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
+        "strategy": BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
+    },
+}
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from evaluation.core.settings import REPO_ROOT
 
@@ -62,42 +74,7 @@ def _remap_keys(source_keys: list[str], index_to_key: dict[str, str]) -> list[st
     return [index_to_key.get(k, k) for k in source_keys]
 
 
-def call_model(
-    cluster: dict,
-    model: str,
-    thinking_level: str | None,
-) -> dict[str, Any]:
-    llm = create_chat_model(model, temperature=0.0, thinking_level=thinking_level)
-    entries, index_to_key = format_entries(cluster)
-    ns = cluster["namespace"]
-    role = ns[1] if isinstance(ns, list) else ns.split("/")[1]
-    action_phase = ns[2] if isinstance(ns, list) else ns.split("/")[2]
-    kind = cluster["kind"]
-
-    if kind == "strategy_points":
-        prompt = BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT.format(
-            role=role,
-            action_phase=action_phase,
-            entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        )
-        schema = StrategyBatchDedupOutput
-    else:
-        prompt = BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT.format(
-            role=role,
-            action_phase=action_phase,
-            entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-        )
-        schema = ObservationBatchDedupOutput
-
-    result = llm.with_structured_output(schema).invoke(
-        [{"role": "user", "content": prompt}],
-    )
-    if isinstance(result, dict):
-        result = schema.model_validate(result)
-
+def _extract_ops(result, index_to_key: dict[str, str]) -> list[dict]:
     ops = []
     for op in result.operations:
         d = {
@@ -117,7 +94,127 @@ def call_model(
         if hasattr(op, "reasoning"):
             d["reasoning"] = op.reasoning
         ops.append(d)
-    return {"operations": ops}
+    return ops
+
+
+def _invoke_model(
+    cluster: dict,
+    model: str,
+    thinking_level: str | None,
+    entries: str,
+    index_to_key: dict[str, str],
+    prompt_variant: str = "default",
+):
+    llm = create_chat_model(model, temperature=0.0, thinking_level=thinking_level)
+    ns = cluster["namespace"]
+    role = ns[1] if isinstance(ns, list) else ns.split("/")[1]
+    action_phase = ns[2] if isinstance(ns, list) else ns.split("/")[2]
+    kind = cluster["kind"]
+
+    prompts = PROMPT_VARIANTS[prompt_variant]
+
+    if kind == "strategy_points":
+        prompt = prompts["strategy"].format(
+            role=role,
+            action_phase=action_phase,
+            entries=entries,
+            situation_standards=SITUATION_STANDARDS,
+            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
+        )
+        schema = StrategyBatchDedupOutput
+    else:
+        prompt = prompts["observation"].format(
+            role=role,
+            action_phase=action_phase,
+            entries=entries,
+            situation_standards=SITUATION_STANDARDS,
+        )
+        schema = ObservationBatchDedupOutput
+
+    result = llm.with_structured_output(schema).invoke(
+        [{"role": "user", "content": prompt}],
+    )
+    if isinstance(result, dict):
+        result = schema.model_validate(result)
+    return result
+
+
+def call_model(
+    cluster: dict,
+    model: str,
+    thinking_level: str | None,
+    prompt_variant: str = "default",
+) -> dict[str, Any]:
+    entries, index_to_key = format_entries(cluster)
+    result = _invoke_model(cluster, model, thinking_level, entries, index_to_key, prompt_variant=prompt_variant)
+    return {"operations": _extract_ops(result, index_to_key)}
+
+
+def call_model_two_pass(
+    cluster: dict,
+    triage_model: str,
+    triage_thinking: str | None,
+    verify_model: str,
+    verify_thinking: str | None,
+    prompt_variant: str = "default",
+) -> dict[str, Any]:
+    """Two-pass: triage model classifies, KEEP/DISCARD trusted, MERGE escalated."""
+    entries, index_to_key = format_entries(cluster)
+    key_to_index = {v: k for k, v in index_to_key.items()}
+
+    triage_result = _invoke_model(
+        cluster, triage_model, triage_thinking, entries, index_to_key,
+        prompt_variant=prompt_variant,
+    )
+
+    trusted_ops = []
+    merge_keys: set[str] = set()
+    for op in triage_result.operations:
+        real_keys = _remap_keys(op.source_keys, index_to_key)
+        if op.action == "MERGE":
+            merge_keys.update(real_keys)
+        else:
+            trusted_ops.append(op)
+
+    escalated_count = len(merge_keys)
+
+    if not merge_keys:
+        ops = _extract_ops(triage_result, index_to_key)
+        return {"operations": ops, "escalated_keys": 0, "total_keys": len(index_to_key)}
+
+    if len(merge_keys) < 2:
+        for op in triage_result.operations:
+            if op.action == "MERGE":
+                op.action = "KEEP"
+                op.merged_situation = None
+                op.survivor_key = None
+                if hasattr(op, "merged_approach"):
+                    op.merged_approach = None
+                if hasattr(op, "merged_outcome"):
+                    op.merged_outcome = None
+        ops = _extract_ops(triage_result, index_to_key)
+        return {"operations": ops, "escalated_keys": escalated_count, "total_keys": len(index_to_key)}
+
+    verify_items = [
+        item for item in cluster["items"] if item["key"] in merge_keys
+    ]
+    verify_cluster = dict(cluster, items=verify_items, size=len(verify_items))
+    verify_entries, verify_index_to_key = format_entries(verify_cluster)
+
+    verify_result = _invoke_model(
+        verify_cluster, verify_model, verify_thinking,
+        verify_entries, verify_index_to_key,
+    )
+
+    all_ops = (
+        _extract_ops(type(triage_result)(operations=trusted_ops), index_to_key)
+        + _extract_ops(verify_result, verify_index_to_key)
+    )
+    return {
+        "operations": all_ops,
+        "escalated_keys": escalated_count,
+        "total_keys": len(index_to_key),
+    }
 
 
 def build_key_labels(golden_ops: list[dict]) -> dict[str, str]:
@@ -179,9 +276,13 @@ def run_eval(
     model: str,
     thinking_level: str | None,
     cluster_ids: list[int],
+    two_pass: dict | None = None,
+    prompt_variant: str = "default",
 ) -> list[dict]:
     label_by_id = {l["cluster_id"]: l for l in labels["labels"]}
     results = []
+    total_escalated = 0
+    total_eval_keys = 0
 
     for cid in cluster_ids:
         if cid not in label_by_id:
@@ -194,7 +295,17 @@ def run_eval(
 
         t0 = time.time()
         try:
-            model_result = call_model(cluster, model, thinking_level)
+            if two_pass:
+                model_result = call_model_two_pass(
+                    cluster,
+                    triage_model=two_pass["triage_model"],
+                    triage_thinking=two_pass["triage_thinking"],
+                    verify_model=two_pass["verify_model"],
+                    verify_thinking=two_pass["verify_thinking"],
+                    prompt_variant=prompt_variant,
+                )
+            else:
+                model_result = call_model(cluster, model, thinking_level, prompt_variant=prompt_variant)
         except Exception as e:
             print(f"ERROR: {e}")
             results.append({
@@ -207,10 +318,20 @@ def run_eval(
         score = score_cluster(golden["operations"], model_result["operations"], cid)
         score["elapsed_s"] = round(elapsed, 1)
         score["model_operations"] = model_result["operations"]
+        if "escalated_keys" in model_result:
+            score["escalated_keys"] = model_result["escalated_keys"]
+            score["total_keys_in_cluster"] = model_result["total_keys"]
+            total_escalated += model_result["escalated_keys"]
+            total_eval_keys += model_result["total_keys"]
+
         results.append(score)
 
         status = f"{score['accuracy']:.0%} ({score['correct']}/{score['total_keys']})"
-        print(f"{status}  [{elapsed:.1f}s]  golden={score['golden_distribution']}  model={score['model_distribution']}")
+        esc = f"  esc={model_result['escalated_keys']}/{model_result['total_keys']}" if "escalated_keys" in model_result else ""
+        print(f"{status}  [{elapsed:.1f}s]{esc}  golden={score['golden_distribution']}  model={score['model_distribution']}")
+
+    if two_pass and total_eval_keys:
+        print(f"\n  Escalation rate: {total_escalated}/{total_eval_keys} = {total_escalated/total_eval_keys:.0%}")
 
     return results
 
@@ -267,14 +388,26 @@ def print_summary(results: list[dict], model: str, thinking: str | None) -> None
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate batch dedup models")
-    parser.add_argument("--model", required=True)
+    parser.add_argument("--model", default=None)
     parser.add_argument("--thinking", default=None)
+    parser.add_argument("--two-pass", action="store_true",
+                        help="Run two-pass eval (flash-lite triage -> 2.5-pro verify)")
+    parser.add_argument("--triage-model", default="gemini-3.1-flash-lite")
+    parser.add_argument("--triage-thinking", default="medium")
+    parser.add_argument("--verify-model", default="gemini-2.5-pro")
+    parser.add_argument("--verify-thinking", default=None)
     parser.add_argument("--source", type=Path, default=REPO_ROOT / "eval_sets" / "batch_dedup_clusters_v4.json")
     parser.add_argument("--labels", type=Path, default=REPO_ROOT / "eval_sets" / "batch_dedup_golden_labels.json")
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--prompt-variant", default="default",
+                        choices=list(PROMPT_VARIANTS.keys()),
+                        help="Prompt variant to use (default: standard v3 prompts)")
     parser.add_argument("--cluster-ids", type=str, default=None,
                         help="Comma-separated cluster IDs (default: eval set)")
     args = parser.parse_args()
+
+    if not args.two_pass and not args.model:
+        parser.error("--model is required unless --two-pass is used")
 
     with open(args.source) as f:
         clusters = json.load(f)
@@ -287,23 +420,49 @@ def main() -> None:
         else EVAL_CLUSTER_IDS
     )
 
-    print(f"Running batch dedup eval: {args.model} (thinking={args.thinking})")
+    two_pass_config = None
+    if args.two_pass:
+        two_pass_config = {
+            "triage_model": args.triage_model,
+            "triage_thinking": args.triage_thinking,
+            "verify_model": args.verify_model,
+            "verify_thinking": args.verify_thinking,
+        }
+        model_label = f"two-pass ({args.triage_model} -> {args.verify_model})"
+        print(f"Running batch dedup eval: {model_label}")
+        print(f"  Triage: {args.triage_model} (thinking={args.triage_thinking})")
+        print(f"  Verify: {args.verify_model} (thinking={args.verify_thinking})")
+    else:
+        model_label = args.model
+        print(f"Running batch dedup eval: {args.model} (thinking={args.thinking})")
+    if args.prompt_variant != "default":
+        print(f"Prompt variant: {args.prompt_variant}")
     print(f"Clusters: {cluster_ids}\n")
 
-    results = run_eval(clusters, labels, args.model, args.thinking, cluster_ids)
-    print_summary(results, args.model, args.thinking)
+    results = run_eval(
+        clusters, labels, args.model, args.thinking, cluster_ids,
+        two_pass=two_pass_config,
+        prompt_variant=args.prompt_variant,
+    )
+    print_summary(results, model_label, args.thinking if not args.two_pass else "two-pass")
 
     if args.output is None:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_slug = args.model.replace("/", "_").replace("-", "_")
-        thinking_slug = f"_think_{args.thinking}" if args.thinking else ""
-        args.output = REPO_ROOT / "evidence" / "batch_dedup_golden_eval" / f"eval_{model_slug}{thinking_slug}_{ts}.json"
+        if args.two_pass:
+            model_slug = "two_pass_lite_pro"
+        else:
+            model_slug = args.model.replace("/", "_").replace("-", "_")
+        thinking_slug = f"_think_{args.thinking}" if args.thinking and not args.two_pass else ""
+        variant_slug = f"_{args.prompt_variant}" if args.prompt_variant != "default" else ""
+        args.output = REPO_ROOT / "evidence" / "dedup" / "batch_prompt_tuning" / f"eval_{model_slug}{thinking_slug}{variant_slug}_{ts}.json"
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w") as f:
         json.dump({
-            "model": args.model,
-            "thinking": args.thinking,
+            "model": model_label,
+            "thinking": args.thinking if not args.two_pass else "two-pass",
+            "prompt_variant": args.prompt_variant,
+            "two_pass": two_pass_config,
             "timestamp": datetime.now().isoformat(),
             "cluster_ids": cluster_ids,
             "results": results,
