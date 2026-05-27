@@ -73,6 +73,25 @@ def compute_case_ndcg(
     return results
 
 
+_store_seeded = False
+
+
+def _ensure_store():
+    global _store_seeded
+    if _store_seeded:
+        return
+    from Agents.memory import store as memory_store
+    from Agents.memory_persistence import seed_memory_from_json_files_cached
+
+    seed_memory_from_json_files_cached(
+        observations_path=STORE_DIR / "observations.json",
+        strategy_points_path=STORE_DIR / "strategy_points.json",
+        target_store=memory_store,
+        cache_dir=STORE_DIR,
+    )
+    _store_seeded = True
+
+
 def compute_captured_ndcg(
     case_entry: dict,
     ks: list[int],
@@ -83,14 +102,9 @@ def compute_captured_ndcg(
         retrieve_observations_for_agent,
         retrieve_strategy_points_for_agent,
     )
-    from Agents.memory_persistence import seed_memory_from_json_files
     from evaluation.data.datasets import read_eval_dataset
 
-    seed_memory_from_json_files(
-        observations_path=STORE_DIR / "observations.json",
-        strategy_points_path=STORE_DIR / "strategy_points.json",
-        target_store=memory_store,
-    )
+    _ensure_store()
 
     records = read_eval_dataset(EVAL_DATASET)
     record = records[case_entry["case_index"]]

@@ -9,6 +9,9 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Indexed memory store caches (embedding vectors, regenerated from source)
+indexed_cache.pkl
+
 # Virtual environments
 .venv/
 venv/

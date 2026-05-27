@@ -55,7 +55,7 @@ from Agents.memory import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
-from Agents.memory_persistence import seed_memory_from_json_files
+from Agents.memory_persistence import seed_memory_from_json_files_cached
 from Agents.prompts import SITUATION_ROLE_LENS, SITUATION_STANDARDS
 from Agents.schemas.evaluation import EvalCase
 from evaluation.core.settings import REPO_ROOT
@@ -80,10 +80,11 @@ def _ensure_store():
         return
     from Agents.memory import store
 
-    seed_memory_from_json_files(
+    seed_memory_from_json_files_cached(
         observations_path=STORE_DIR / "observations.json",
         strategy_points_path=STORE_DIR / "strategy_points.json",
         target_store=store,
+        cache_dir=STORE_DIR,
     )
     _store_seeded = True
 

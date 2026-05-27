@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import pickle
 import time
-from datetime import date, datetime
+from collections import defaultdict
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from langgraph.store.base import BaseStore, PutOp
+from langgraph.store.base import BaseStore, Item, PutOp
 from pydantic import BaseModel
 
 from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
@@ -19,6 +22,7 @@ MEMORY_STORES_DIR = Path(__file__).resolve().parent / "memory_stores"
 DEFAULT_MEMORY_STORE_DIR = MEMORY_STORES_DIR / "v1_post_dedup"
 OBSERVATIONS_FILE_NAME = "observations.json"
 STRATEGY_POINTS_FILE_NAME = "strategy_points.json"
+INDEXED_CACHE_FILE_NAME = "indexed_cache.pkl"
 _SEEDED_STORE_IDS: set[int] = set()
 _TRANSIENT_MEMORY_STORE_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 _TRANSIENT_MEMORY_STORE_ERROR_MARKERS = (
@@ -258,6 +262,149 @@ def _all_namespace_items(
         if len(page) < limit:
             break
     return items
+
+
+def _file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save_indexed_store_cache(
+    target_store: BaseStore,
+    cache_path: str | Path,
+    observations_path: str | Path,
+    strategy_points_path: str | Path,
+) -> None:
+    """Serialize store data and embedding vectors to a cache file.
+
+    The cache file includes SHA-256 hashes of the source JSON files so it can
+    be invalidated when the source data changes.
+    """
+    cache_path = Path(cache_path)
+
+    data_dict: dict[tuple[str, ...], dict[str, dict[str, Any]]] = {}
+    for namespace, items in target_store._data.items():
+        data_dict[namespace] = {}
+        for key, item in items.items():
+            data_dict[namespace][key] = {
+                "value": item.value,
+                "created_at": item.created_at.isoformat() if item.created_at else None,
+                "updated_at": item.updated_at.isoformat() if item.updated_at else None,
+            }
+
+    vectors_dict: dict[tuple[str, ...], dict[str, dict[str, list[float]]]] = {}
+    for namespace, items in target_store._vectors.items():
+        vectors_dict[namespace] = {}
+        for key, paths in items.items():
+            vectors_dict[namespace][key] = dict(paths)
+
+    payload = {
+        "version": 1,
+        "observations_sha256": _file_sha256(Path(observations_path)),
+        "strategy_points_sha256": _file_sha256(Path(strategy_points_path)),
+        "data": data_dict,
+        "vectors": vectors_dict,
+    }
+
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(cache_path, "wb") as f:
+        pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    logger.info(
+        "Saved indexed store cache to %s (%d bytes)",
+        cache_path,
+        cache_path.stat().st_size,
+    )
+
+
+def load_indexed_store_cache(
+    cache_path: str | Path,
+    target_store: BaseStore,
+    observations_path: str | Path,
+    strategy_points_path: str | Path,
+) -> bool:
+    """Load store data and vectors from a cache file.
+
+    Returns True if the cache was valid and loaded successfully,
+    False if the cache is missing, stale, or corrupt.
+    """
+    cache_path = Path(cache_path)
+    if not cache_path.exists():
+        return False
+
+    try:
+        with open(cache_path, "rb") as f:
+            payload = pickle.load(f)  # noqa: S301
+    except Exception:
+        logger.warning("Corrupt cache file %s, will re-seed", cache_path)
+        return False
+
+    if payload.get("version") != 1:
+        return False
+
+    obs_sha = _file_sha256(Path(observations_path))
+    sp_sha = _file_sha256(Path(strategy_points_path))
+    if (
+        payload.get("observations_sha256") != obs_sha
+        or payload.get("strategy_points_sha256") != sp_sha
+    ):
+        logger.info("Cache stale (source files changed), will re-seed")
+        return False
+
+    now = datetime.now(timezone.utc)
+    for namespace, items in payload["data"].items():
+        for key, item_data in items.items():
+            target_store._data[namespace][key] = Item(
+                value=item_data["value"],
+                key=key,
+                namespace=namespace,
+                created_at=datetime.fromisoformat(item_data["created_at"]) if item_data["created_at"] else now,
+                updated_at=datetime.fromisoformat(item_data["updated_at"]) if item_data["updated_at"] else now,
+            )
+
+    for namespace, items in payload["vectors"].items():
+        for key, paths in items.items():
+            target_store._vectors[namespace][key] = paths
+
+    logger.info(
+        "Loaded indexed store from cache: %d namespaces, %d vectors",
+        len(payload["data"]),
+        sum(len(v) for v in payload["vectors"].values()),
+    )
+    return True
+
+
+def seed_memory_from_json_files_cached(
+    observations_path: str | Path | None = None,
+    strategy_points_path: str | Path | None = None,
+    target_store: BaseStore = store,
+    cache_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    """Seed the store from cache if available, otherwise from API + save cache."""
+    default_observations, default_strategy_points = memory_store_paths(
+        DEFAULT_MEMORY_STORE_DIR
+    )
+    observations_path = Path(observations_path or default_observations)
+    strategy_points_path = Path(strategy_points_path or default_strategy_points)
+
+    if cache_dir is None:
+        cache_dir = observations_path.parent
+    cache_path = Path(cache_dir) / INDEXED_CACHE_FILE_NAME
+
+    if load_indexed_store_cache(
+        cache_path, target_store, observations_path, strategy_points_path
+    ):
+        return {"from_cache": True}
+
+    counts = seed_memory_from_json_files(
+        observations_path=observations_path,
+        strategy_points_path=strategy_points_path,
+        target_store=target_store,
+    )
+
+    save_indexed_store_cache(
+        target_store, cache_path, observations_path, strategy_points_path
+    )
+    return {**counts, "from_cache": False}
 
 
 def seed_memory_from_json_files(
