@@ -260,7 +260,7 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     if not current_day_messages:
         return {}
 
-    from Agents.agents import get_llm
+    from Agents.agents import get_llm_summary
     from Agents.formatters import format_day_channel
 
     prompt = DAY_SUMMARY_PROMPT.format(
@@ -270,7 +270,7 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     )
     for attempt in range(max_retries + 1):
         try:
-            result = get_llm().with_structured_output(DaySummaryOutput).invoke(prompt)
+            result = get_llm_summary().with_structured_output(DaySummaryOutput).invoke(prompt)
             summary = _serialize_day_summary(result)
             break
         except Exception as exc:

@@ -115,6 +115,21 @@ def get_llm():
         ),
     )
 
+DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
+
+
+@lru_cache(maxsize=1)
+def get_llm_summary():
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
+            DEFAULT_SUMMARY_THINKING_LEVEL,
+        ),
+    )
+
+
 @lru_cache(maxsize=1)
 def get_llm_pro():
     return create_chat_model(
