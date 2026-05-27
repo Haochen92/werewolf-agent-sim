@@ -198,3 +198,67 @@ sufficient for matching, no change needed. If NDCG reveals a gap between
 state-similar but dilemma-different cases, updating extraction to produce
 explicit dilemma fields is the next lever. Defer until golden-label eval
 is complete.
+
+### 2026-05-27 — Labeling complete (20/20) + NDCG baseline
+
+Completed all 20 golden labels across 4 roles and 2 phases. Final batch
+(cases 35, 37, 38, 39) all from game cdcd2c6e, providing cross-perspective
+coverage of the same game from villager, wolf, and investigator viewpoints.
+
+**Totals**: 176 observation labels + 164 strategy labels = 340 relevance
+judgments. Distribution: 74 highly relevant (2), 91 partially relevant (1),
+11 not relevant (0) for observations; 44/64/56 for strategy points.
+
+**NDCG results (golden situations, v4_deduped_v2 store):**
+
+| Metric | Observations | Strategy Points | Combined |
+|---|---|---|---|
+| NDCG@3 | 0.791 | 0.737 | 0.780 |
+| NDCG@5 | 0.804 | 0.746 | 0.783 |
+| NDCG@10 | 0.910 | 0.858 | 0.830 |
+
+Observations rank better than strategy points at all cutoffs.
+
+**Per-role (combined NDCG@10):**
+
+| Role | NDCG@10 | n |
+|---|---|---|
+| healer | 0.900 | 4 |
+| wolf | 0.844 | 6 |
+| investigator | 0.825 | 5 |
+| villager | 0.762 | 5 |
+
+Villager retrieval is weakest — cases 13 (0.771) and 35 (0.634) drag it
+down. Both are day_vote cases where strategy point rankings are poor
+(SP NDCG@3 = 0.168 for both), suggesting the store lacks good strategy
+entries for villager voting with behavioral-only evidence.
+
+**Per-phase (combined NDCG@10):**
+
+| Phase | NDCG@10 | n |
+|---|---|---|
+| day_discussion | 0.818 | 11 |
+| day_vote | 0.845 | 9 |
+
+Phases are comparable at @10, but day_vote is weaker at @3 (0.721 vs
+0.829), meaning the most relevant vote strategies aren't surfacing at
+the top of the ranked list.
+
+**Interpretation**: Overall NDCG@10 of 0.83 is a solid baseline. The
+embedding retrieval is doing a reasonable job of surfacing relevant
+memories, but there's room for improvement in top-3 precision. The
+strategy point rankings are consistently worse than observations,
+likely because strategy point situations are written more generically
+(broader applicability = less precise semantic match).
+
+**Coverage gaps identified during labeling**:
+- villager/day_vote: thin strategy coverage for behavioral-evidence-only voting
+- wolf/day_vote: no "wolf as target" strategies, no "hopeless case" entries
+- investigator/day_vote: small namespace with few entries
+
+**Next steps**:
+1. Run `--include-captured` comparison to measure golden vs pipeline
+   situation gap (requires embedding API)
+2. Decide whether extraction prompts need core dilemma update based
+   on the gap between state-similar but dilemma-different cases
+3. Consider whether store coverage gaps warrant new extraction passes
