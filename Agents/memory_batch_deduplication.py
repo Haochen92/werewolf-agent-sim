@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from collections import defaultdict, deque
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Literal
@@ -59,6 +59,44 @@ DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY = 30.0
 
 DEFAULT_TRIAGE_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_TRIAGE_THINKING_LEVEL = "medium"
+
+DEDUP_TIMESTAMP_FILE = ".last_dedup_at"
+
+
+def _read_last_dedup_at(store_dir: Path) -> datetime | None:
+    ts_path = store_dir / DEDUP_TIMESTAMP_FILE
+    if not ts_path.exists():
+        return None
+    text = ts_path.read_text().strip()
+    if not text:
+        return None
+    return datetime.fromisoformat(text)
+
+
+def _write_last_dedup_at(store_dir: Path, ts: datetime | None = None) -> None:
+    ts = ts or datetime.now(timezone.utc)
+    (store_dir / DEDUP_TIMESTAMP_FILE).write_text(ts.isoformat() + "\n")
+
+
+def _collect_new_keys(store_dir: Path, since: datetime) -> set[str]:
+    """Return keys from the JSON store whose created_at is after *since*."""
+    new_keys: set[str] = set()
+    for filename in ("observations.json", "strategy_points.json"):
+        path = store_dir / filename
+        if not path.exists():
+            continue
+        with open(path) as f:
+            data = json.load(f)
+        for entries in data.get("namespaces", {}).values():
+            for entry in entries:
+                created = entry.get("created_at")
+                if not created:
+                    new_keys.add(entry["key"])
+                    continue
+                entry_ts = datetime.fromisoformat(created)
+                if entry_ts > since:
+                    new_keys.add(entry["key"])
+    return new_keys
 
 
 class TwoPassConfig(BaseModel):
@@ -909,6 +947,7 @@ def dedup_namespace(
     max_clusters: int | None = None,
     two_pass: TwoPassConfig | None = None,
     prompt_variant: str = "default",
+    new_keys: set[str] | None = None,
 ) -> NamespaceStats:
     namespace = (memory_kind, role, action_phase)
     items_by_key = _fetch_namespace_items(target_store, namespace)
@@ -926,6 +965,16 @@ def dedup_namespace(
     )
     if max_clusters is not None:
         clusters = clusters[:max_clusters]
+
+    if new_keys is not None:
+        total_before = len(clusters)
+        clusters = [c for c in clusters if any(k in new_keys for k in c)]
+        skipped_incremental = total_before - len(clusters)
+        if skipped_incremental:
+            logger.info(
+                "Incremental: skipped %d all-old clusters for %s/%s (%d remain)",
+                skipped_incremental, memory_kind, role, len(clusters),
+            )
 
     if clusters:
         sizes = [len(c) for c in clusters]
@@ -1116,6 +1165,7 @@ def run_batch_memory_dedup(
     model: str = DEFAULT_BATCH_MODEL,
     thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL,
     max_clusters: int | None = None,
+    incremental: bool = False,
     cluster_report_only: bool = False,
     preview_chars: int = 160,
     two_pass: TwoPassConfig | None = None,
@@ -1130,6 +1180,25 @@ def run_batch_memory_dedup(
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
+
+    new_keys: set[str] | None = None
+    if incremental:
+        last_dedup = _read_last_dedup_at(seed_store_dir)
+        if last_dedup is None:
+            logger.info("Incremental: no previous dedup timestamp found, processing all entries")
+        else:
+            new_keys = _collect_new_keys(seed_store_dir, last_dedup)
+            logger.info(
+                "Incremental: %d new keys since %s",
+                len(new_keys), last_dedup.isoformat(),
+            )
+            if not new_keys:
+                logger.info("Incremental: no new entries, nothing to do")
+                return BatchDedupReport(
+                    apply=apply,
+                    seed_store_dir=str(seed_store_dir),
+                    dump_store_dir=str(dump_store_dir),
+                )
 
     report = BatchDedupReport(
         apply=apply,
@@ -1196,6 +1265,7 @@ def run_batch_memory_dedup(
                         max_clusters=max_clusters,
                         two_pass=two_pass,
                         prompt_variant=prompt_variant,
+                        new_keys=new_keys,
                     )
                 except Exception as exc:
                     logger.warning(
@@ -1222,6 +1292,8 @@ def run_batch_memory_dedup(
             strategy_points_path=strategy_points_dump_path,
             target_store=target_store,
         )
+        _write_last_dedup_at(dump_store_dir)
+        logger.info("Wrote dedup timestamp to %s", dump_store_dir / DEDUP_TIMESTAMP_FILE)
 
     return report
 
@@ -1340,6 +1412,11 @@ def _parse_args() -> argparse.Namespace:
         help="Apply mutations and dump the store. Without this, run a dry-run report.",
     )
     parser.add_argument(
+        "--incremental",
+        action="store_true",
+        help="Only process clusters containing entries added since the last dedup run.",
+    )
+    parser.add_argument(
         "--two-pass",
         action="store_true",
         help="Enable two-pass pipeline: fast triage model → targeted verification model.",
@@ -1415,6 +1492,7 @@ def main() -> int:
         preview_chars=args.preview_chars,
         two_pass=two_pass_config,
         prompt_variant=args.prompt_variant,
+        incremental=args.incremental,
     )
     report_json = json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True)
     if args.report_path:
