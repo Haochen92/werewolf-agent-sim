@@ -1,0 +1,48 @@
+{
+  "golden_situations": [
+    "A confirmed wolf was eliminated by near-unanimous vote, and the player who most visibly defended that wolf is now the primary target. Information landscape: Information-rich — voting records from Day 2 provide concrete evidence of the target's alliance with the eliminated wolf and late pivot. Consensus texture: Strong, near-unanimous consensus driven by voting record analysis. The target's only defense is accusing the village of coordinated wolf behavior. Agent exposure: The healer has maintained a low profile throughout, is not under scrutiny, and is aligned with the consensus. Game phase: Mid-game, one wolf eliminated, one remaining among six players. Core dilemma: the healer must vote with a strong consensus without drawing attention, but needs to evaluate whether the overwhelming pile-on is genuinely evidence-based or whether a wolf is hiding within the accusers."
+  ],
+  "observation_labels": [
+    {
+      "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+      "relevance": 2,
+      "score": 0.8346,
+      "situation": "Strong evidence-based consensus against likely final wolf, info-rich via voting records. Healer not primary target, may have minor doubts.",
+      "approach": "Voted with majority to eliminate wolf, voiced concern but ultimately aligned.",
+      "outcome": "Successfully eliminated final wolf, avoided split vote, solidified team player position."
+    },
+    {
+      "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+      "relevance": 1,
+      "score": 0.8220,
+      "situation": "Endgame, healer targeted for passive communication. Social reads + voting history. Coordinated push against healer.",
+      "approach": "Attempted to defend quietness as observational strategy, failed to take decisive stance.",
+      "outcome": "Healer voted out, game-losing move — left wolf in 2v1."
+    },
+    {
+      "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+      "relevance": 2,
+      "score": 0.7901,
+      "situation": "Strong consensus from credible investigator claim. Healer feared bandwagon, dissented. Mid-game, first vote.",
+      "approach": "Voted against the accused wolf, fearing a wolf-led bandwagon, cast the only dissenting vote besides the wolf's.",
+      "outcome": "Dissenting vote was recorded, became irrefutable evidence leading to healer's mislynch next day."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "4922ee84-da73-480a-90ef-170739daf216",
+      "relevance": 1,
+      "score": 0.7734,
+      "situation": "Strong consensus based on voting records, you're under minor suspicion, need to manage heat.",
+      "action": "Vote with emerging majority to align with village and reduce focus on you."
+    },
+    {
+      "key": "182ebc43-0538-4b82-8bd4-b5852870338f",
+      "relevance": 2,
+      "score": 0.7708,
+      "situation": "Strong consensus from voting records or investigator claim. You feel uneasy but not under suspicion.",
+      "action": "Voice skepticism briefly but don't cast lone protest vote. Vote with group unless you have concrete counter-evidence."
+    }
+  ],
+  "notes": "Thin namespace (3 obs, 2 strat total in healer/day_vote). Retrieval quality excellent — ranking correctly separates 2s from 1s. Obs 3 is a strong cautionary tale about dissenting from a correct consensus. SP2 is near-exact situation match. Small candidate set limits NDCG granularity."
+}

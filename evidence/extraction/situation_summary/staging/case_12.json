@@ -1,0 +1,160 @@
+{
+  "golden_situations": [
+    "The village is in its first substantive discussion with no voting records, no eliminations, and no role claims — the only hard data is a healer save. Information landscape: Information-starved — all reads are behavioral, driven by communication style (who pushes for action vs. who advocates caution). Consensus texture: A fragile majority is coalescing against a cautious player who has been pressured into finally naming a counter-suspect, but it is tone-based, not evidence-based. A visible two-player cautious bloc is forming. Agent exposure: The villager has been part of the majority pressuring the cautious player and is not under scrutiny. Game phase: Early mid-game, no eliminations yet, first vote approaching. Core dilemma: the villager must decide whether the cautious player's evasion is genuinely suspicious or whether the village is creating a false lead from communication style alone, with no concrete evidence either way."
+  ],
+  "observation_labels": [
+    {
+      "key": "a9ee4229-1150-4fd5-8502-d53c427da991",
+      "relevance": 1,
+      "score": 0.8217,
+      "situation": "Post-miselimination, saved villager used credibility to interrogate voting record. Info-rich, strong consensus.",
+      "approach": "Aggressively interrogated players who made anomalous votes, demanding explanations.",
+      "outcome": "Village correctly identified and eliminated wolf based on voting record analysis."
+    },
+    {
+      "key": "104f28cf-0a33-4579-b29a-e4684a14b8c7",
+      "relevance": 2,
+      "score": 0.8041,
+      "situation": "Villager defended accused player, believing accuser unfairly aggressive. Info-starved, communication style reads.",
+      "approach": "Strongly defended the accused wolf, framing the investigator's push as suspicious target manufacturing.",
+      "outcome": "Defense provided cover for wolf, turned village against investigator. Defending villager became top suspect."
+    },
+    {
+      "key": "c64295b9-47f9-48a4-929a-160b172dc4b8",
+      "relevance": 2,
+      "score": 0.8022,
+      "situation": "Post-healer-save, wolf deflects using flawed logic. Multi-player consensus forms to challenge deflection.",
+      "approach": "Multiple villagers challenged wolf's flawed framing, identifying it as deflection.",
+      "outcome": "Village correctly identified and eliminated the wolf pushing flawed logic."
+    },
+    {
+      "key": "b53922e1-0e6b-49d7-8ec0-42993026c26b",
+      "relevance": 1,
+      "score": 0.8011,
+      "situation": "Post-investigator-elimination, info-starved but rich with past voting data. Village focused on anomalous vote.",
+      "approach": "Relentlessly questioned wolf's motive for anomalous vote, rejected vague explanations.",
+      "outcome": "Focused interrogation led to correct wolf elimination."
+    },
+    {
+      "key": "07fd072f-9590-4624-81ac-8c7f5bb50140",
+      "relevance": 2,
+      "score": 0.8004,
+      "situation": "Post-miselimination, wolf pair continuing mutual defense and caution advocacy. Clear behavioral pattern forming.",
+      "approach": "Villagers systematically pointed out consistent coordination between cautious pair across two days.",
+      "outcome": "Successfully identified and voted out wolf from the cautious pair."
+    },
+    {
+      "key": "8ccbab63-1011-4a21-b2c8-462ef076a8a6",
+      "relevance": 1,
+      "score": 0.7988,
+      "situation": "Player accused for sole dissenting vote. Became defensive, attacked bandwagon logic.",
+      "approach": "Became defensive and attacked the bandwagon instead of explaining own vote.",
+      "outcome": "Village misread defensiveness as guilt, voted out the villager."
+    },
+    {
+      "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+      "relevance": 1,
+      "score": 0.7959,
+      "situation": "Post-wolf-elimination, two players questioned for voting against majority. Voting record as primary evidence.",
+      "approach": "Players gave weak defense, but another player's more suspicious record drew focus.",
+      "outcome": "Village weighed evidence correctly, prioritized the more egregious anomaly."
+    },
+    {
+      "key": "33c696ae-2f83-4166-8c24-932834e56dd4",
+      "relevance": 2,
+      "score": 0.7944,
+      "situation": "Villager saved by healer Night 1, creating first concrete lead. Early-game.",
+      "approach": "Saved villager used survival as credibility, took leading role, aggressively questioned others.",
+      "outcome": "Established trusted village voice, focused investigation, pivotal in identifying wolves."
+    },
+    {
+      "key": "440f0350-6674-499a-92ad-a67045093bdc",
+      "relevance": 1,
+      "score": 0.7937,
+      "situation": "Villager confirmed town after two healer saves, applied pressure on passive players. Info shifted from starved to rich.",
+      "approach": "Village rallied around confirmed villager, used accusations as focal point.",
+      "outcome": "Pressure caused wolf to become defensive, leading to correct elimination."
+    },
+    {
+      "key": "721ed82e-b650-4f46-8df6-a0f65bb99e15",
+      "relevance": 2,
+      "score": 0.7929,
+      "situation": "Info-starved mid-game, proactive villager aggressively demands names. Fragile consensus, village anxious for lead.",
+      "approach": "Targeted quiet players, aggressively demanded names to break stalemate.",
+      "outcome": "Wolves reframed aggression as disruptive. Village turned on accuser, costly mislynch."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "18268625-d318-4992-91a3-0074910a3be9",
+      "relevance": 1,
+      "score": 0.7904,
+      "situation": "Coordinated dismissal of analytical method in info-starved early game.",
+      "action": "Treat coordinated dismissal as potential wolf pack evidence."
+    },
+    {
+      "key": "f71e8766-3af0-4033-9a08-7ad22f31a17e",
+      "relevance": 2,
+      "score": 0.7893,
+      "situation": "Early game, info-starved, vibes-based accusations dominating. Binary conflict between aggressive and cautious camps.",
+      "action": "Challenge accuser methodology, resist becoming primary defender of accused, redirect focus to logical fallacies."
+    },
+    {
+      "key": "bab6a351-a85b-4218-8618-973d783349e0",
+      "relevance": 2,
+      "score": 0.7828,
+      "situation": "Players advocating for inaction ('wait and see'), defending each other's passivity. Info-starved, behavioral reads.",
+      "action": "Frame 'wait and see' as pro-wolf strategy. Challenge passive players to name suspects independently."
+    },
+    {
+      "key": "2b903631-1efa-42f2-b01c-8cfbaa5c5b51",
+      "relevance": 0,
+      "score": 0.7819,
+      "situation": "Saved player survives after split vote miselimination. Rally behind saved player, interrogate voters.",
+      "action": "Rally behind saved player, aggressively interrogate those who drove miselimination."
+    },
+    {
+      "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+      "relevance": 1,
+      "score": 0.7813,
+      "situation": "Aggressive evidence-free accusation after mislynch. Village fearful of repeating mistake.",
+      "action": "Force accuser to provide specific verifiable evidence. If they cannot, suspect manipulation."
+    },
+    {
+      "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+      "relevance": 0,
+      "score": 0.7813,
+      "situation": "Post-investigator-elimination endgame, analyzing voting behavior from wolf elimination.",
+      "action": "Scrutinize quiet/hesitant players from wolf elimination vote."
+    },
+    {
+      "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+      "relevance": 1,
+      "score": 0.7756,
+      "situation": "Post-mislynch, blame cycle. Trust low, village demoralized.",
+      "action": "Resist blame cycle. Acknowledge own role before analyzing others."
+    },
+    {
+      "key": "6de91cd0-a3b7-441e-9f8a-945417455dc8",
+      "relevance": 2,
+      "score": 0.7742,
+      "situation": "Early game, aggressive player demanding answers from quiet player. Village reacting to style not content.",
+      "action": "Defend aggressive player's right to ask hard questions. Attacking aggressive style is a classic wolf tactic."
+    },
+    {
+      "key": "d322503b-b9cd-4d82-8b2e-7638d19f6e49",
+      "relevance": 1,
+      "score": 0.7702,
+      "situation": "Strong consensus on single piece of evidence. Vocal players driving it.",
+      "action": "Pause before committing. Consider whether target's counter-arguments have merit."
+    },
+    {
+      "key": "5216777a-b932-40ef-87cb-8ef4e4388341",
+      "relevance": 0,
+      "score": 0.7625,
+      "situation": "Player with poor track record makes new strong accusation. Credibility evaluation.",
+      "action": "Evaluate new accusation on its own merits, not accuser's past performance."
+    }
+  ],
+  "notes": "First villager/day_discussion case. Large namespace. Good retrieval diversity — mix of info-starved early-game and post-elimination voting-record scenarios. Top observations span both cautionary (mislynch from aggressive accusations) and successful (identifying wolf deflection). SP2, SP3, SP8 form a coherent trio addressing the exact aggressive-vs-cautious dynamic in this case. Several post-elimination observations retrieved due to partial situation overlap but correctly get relevance=1 for phase mismatch."
+}
