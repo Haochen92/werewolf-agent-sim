@@ -1,0 +1,160 @@
+{
+  "golden_situations": [
+    "The village has a confirmed wolf elimination and a clear voting record anomaly: one player voted with the wolf while the rest were unanimous. A second healer save has reinforced village momentum. Information landscape: Information-rich — voting records provide a concrete deviation, and two consecutive healer saves confirm an active protector. Consensus texture: Strong, near-unanimous consensus against the anomalous voter, driven by voting record evidence. The target's defense is failing. Agent exposure: The healer has maintained a low profile, is aligned with consensus, and is not under scrutiny. Two public saves make the healer's existence known but identity still hidden. Game phase: Mid-game, one wolf eliminated, seven players remaining. Core dilemma: the healer must let the evidence-driven consensus proceed without over-contributing in a way that reveals analytical depth or creates a visible leadership role that draws wolf attention."
+  ],
+  "observation_labels": [
+    {
+      "key": "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78",
+      "relevance": 2,
+      "score": 0.8463,
+      "situation": "Healer took active role analyzing voting records mid-game. Key evidence was Day 2 voting record.",
+      "approach": "Directly challenged suspicious pair, pointed out coordinated rhetoric.",
+      "outcome": "Helped solidify vote against wolf but killed next night due to visibility."
+    },
+    {
+      "key": "434ca33b-17d3-4e24-8aef-f395a35b512a",
+      "relevance": 1,
+      "score": 0.8308,
+      "situation": "Healer facing near-unanimous vote for elimination. No evidence, unsubstantiated suspicion. Mid-game post-save.",
+      "approach": "Did not claim role, cast unexplained vote against wolf.",
+      "outcome": "Eliminated, devastating blow to village. Failure to claim under duress cost protection."
+    },
+    {
+      "key": "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+      "relevance": 2,
+      "score": 0.8236,
+      "situation": "Healer briefly implicated for suspicious vote similar to main wolf suspect. Info-rich voting record. Endgame.",
+      "approach": "Acknowledged mistake, immediately pivoted to agree with main accusation.",
+      "outcome": "Quick admission deflected all suspicion, preserved role."
+    },
+    {
+      "key": "ce570d93-205a-47e6-8aeb-8aa27971552d",
+      "relevance": 1,
+      "score": 0.8191,
+      "situation": "Villager mistakenly accused healer of suspicious vote. Rich voting records. Mid-game.",
+      "approach": "Immediately corrected factual error by referencing public vote log.",
+      "outcome": "False narrative stopped, healer maintained credibility."
+    },
+    {
+      "key": "a302bd79-6e33-4801-9430-9bcf69c3571f",
+      "relevance": 1,
+      "score": 0.8190,
+      "situation": "Post-investigator-elimination, village trusted dead investigator's info. Info-rich endgame. Strong consensus.",
+      "approach": "Healer and villagers immediately trusted posthumous investigator information.",
+      "outcome": "Unified front eliminated both wolves over two days."
+    },
+    {
+      "key": "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+      "relevance": 2,
+      "score": 0.8050,
+      "situation": "Healer became influential voice after Night 1 save. Only info was save occurred. Mid-game, all alive.",
+      "approach": "Engaged actively in discussion, attempted to guide village.",
+      "outcome": "Increased influence drew wolves' attention, killed Night 2."
+    },
+    {
+      "key": "87672547-c279-445a-8142-df9539766559",
+      "relevance": 2,
+      "score": 0.7959,
+      "situation": "Village rapidly formed accurate evidence-based consensus against suspect. Info-rich, voting records. Endgame.",
+      "approach": "Healer stayed quiet, avoided unnecessary commentary.",
+      "outcome": "Village succeeded, healer never endangered."
+    },
+    {
+      "key": "84cfd842-4a65-437c-a7ec-bb38883ac145",
+      "relevance": 2,
+      "score": 0.7867,
+      "situation": "Healer's successful save publicly announced. Info-rich confirmed data. Mid-game post-night-action.",
+      "approach": "Remained low-profile, avoided credit for save while participating in analysis.",
+      "outcome": "Identity concealed, village weaponized confirmed information successfully."
+    },
+    {
+      "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+      "relevance": 1,
+      "score": 0.7708,
+      "situation": "Villager used voting records to accuse group including wolves. Endgame, five players. Wolves counter-attacked.",
+      "approach": "Healer misinterpreted evidence-based argument, sided with wolves.",
+      "outcome": "Healer's pivotal vote eliminated innocent villager, wolves won."
+    },
+    {
+      "key": "a786957c-bc1c-416a-aff2-0075203e49ee",
+      "relevance": 1,
+      "score": 0.7485,
+      "situation": "Day 1, healer took active facilitator role. Info completely blank. Early-game.",
+      "approach": "Asked questions, prompted others to share hunches.",
+      "outcome": "Proactive behavior made healer wolf priority target, killed Night 1."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "8bb8583f-b87f-4232-b72b-ae5f9b4de150",
+      "relevance": 2,
+      "score": 0.7716,
+      "situation": "Just made successful publicly announced save. Identity secret but existence known. Mid-game.",
+      "action": "Maintain low profile, encourage village to analyze reactions, don't hint at role."
+    },
+    {
+      "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+      "relevance": 0,
+      "score": 0.7696,
+      "situation": "Healer is target of strong voting consensus, elimination certain. Mid-game.",
+      "action": "Publicly claim Healer role to prevent elimination."
+    },
+    {
+      "key": "5e7cc5ba-fa6e-4fa2-8773-7b0378366ced",
+      "relevance": 2,
+      "score": 0.7589,
+      "situation": "Clear logical accusation against player, accused defending poorly. Mid-game.",
+      "action": "Join cross-examination, point out defense flaws, build credibility while keeping role hidden."
+    },
+    {
+      "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+      "relevance": 0,
+      "score": 0.7428,
+      "situation": "Final three, one likely wolf. Info-rich with complete voting records. Endgame.",
+      "action": "Trust the data, find inconsistencies in voting history."
+    },
+    {
+      "key": "8eef8fd7-58d6-42b9-b166-1b115426c7a7",
+      "relevance": 1,
+      "score": 0.7390,
+      "situation": "First day, info completely starved. Early game, wolves hunting high-value targets.",
+      "action": "Avoid strong leadership, let another player draw initial fire."
+    },
+    {
+      "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+      "relevance": 1,
+      "score": 0.7356,
+      "situation": "Mid-to-late game, quiet healer with thin participation record. Pressure mounting on quiet players.",
+      "action": "Take public stance and name a suspect. Quiet play is indistinguishable from wolf evasiveness."
+    },
+    {
+      "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+      "relevance": 1,
+      "score": 0.7286,
+      "situation": "Eliminated wolf had voted against you. Info-rich with voting log. Mid-game.",
+      "action": "Highlight wolf's vote against you as proof wolves considered you a threat."
+    },
+    {
+      "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+      "relevance": 1,
+      "score": 0.7282,
+      "situation": "Accused by village's primary suspect as deflection. Info-rich, suspicion already on accuser. Endgame.",
+      "action": "Don't engage in lengthy defense or reveal role. Trust evidence against accuser, vote with consensus."
+    },
+    {
+      "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+      "relevance": 2,
+      "score": 0.7255,
+      "situation": "Lightly implicated for past vote that looks suspicious. Old voting record scrutinized. Mid-to-endgame.",
+      "action": "Briefly acknowledge mistake, pivot to support main case against more suspicious player."
+    },
+    {
+      "key": "af1dbc2b-bc5e-41f7-815a-a0ffe029a179",
+      "relevance": 0,
+      "score": 0.6926,
+      "situation": "Player presents evidence-based argument against group, group responds with coordinated personal attacks.",
+      "action": "Trust evidence over social pressure. Coordinated deflection ignoring facts indicates wolf pack."
+    }
+  ],
+  "notes": "Healer/day_discussion namespace (10 obs). Good retrieval quality — obs 1, 6, 7, 8 form a coherent set about the healer visibility tradeoff (contribute vs. draw wolf attention). Obs 7 (stay quiet during evidence-based consensus) and obs 1 (take active role, get killed) present the exact tension in our dilemma. SP1, SP3, SP9 are directly applicable. Three SP scored 0 (wrong exposure or phase). Obs 6 is the key cautionary tale: healer who became influential after save was killed Night 2 — directly relevant given our healer has had two saves announced."
+}

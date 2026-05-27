@@ -1,0 +1,146 @@
+{
+  "golden_situations": [
+    "The wolf's partner was eliminated by near-unanimous vote, and the surviving wolf is the primary target heading into a vote. Information landscape: Information-rich — voting records provide concrete evidence of the wolf's alliance with the eliminated partner and late-pivot bus vote. Consensus texture: Strong, near-unanimous consensus driven by voting record evidence. All five villagers have independently cited the same evidence across four discussion rounds. Agent exposure: The wolf is the primary target with no remaining allies. Every defensive argument (calling consensus suspicious coordination) has been dismissed and used as further evidence of guilt. Game phase: Mid-game, one wolf eliminated, six players remaining, vote imminent. Core dilemma: the wolf must cast a vote that either attempts a last-ditch redirect or concedes the elimination — further defense via groupthink accusations has failed, and the vote is likely to be unanimous."
+  ],
+  "observation_labels": [
+    {
+      "key": "42dfb995-f6df-401b-a220-081232ac4449",
+      "relevance": 2,
+      "score": 0.8686,
+      "situation": "Wolf bussed partner during near-certain elimination. Had previously defended partner. Mid-game first vote.",
+      "approach": "Voted with majority to eliminate partner (bussing).",
+      "outcome": "Survived the vote, but prior defense was remembered. Eliminated next day based on that evidence."
+    },
+    {
+      "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+      "relevance": 1,
+      "score": 0.8589,
+      "situation": "Strong evidence-based consensus against wolf partner. Info-rich, voting records.",
+      "approach": "Cast lone dissenting vote against different villager or protest vote against accuser.",
+      "outcome": "Dissenting vote created incriminating link, later used as evidence for elimination."
+    },
+    {
+      "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+      "relevance": 1,
+      "score": 0.8428,
+      "situation": "Wolf cast dissenting vote alongside partner against villager during strong consensus. Mid-game first vote.",
+      "approach": "Both wolves voted against a villager instead of joining majority.",
+      "outcome": "Coordinated vote created undeniable link to confirmed wolf, eliminated next day."
+    },
+    {
+      "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+      "relevance": 0,
+      "score": 0.8396,
+      "situation": "Split village vote, wolves coordinated strategic vote for different villager. Endgame.",
+      "approach": "Wolves voted together for influential villager instead of joining majority.",
+      "outcome": "Votes were noted but created ambiguity, helped avoid suspicion."
+    },
+    {
+      "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+      "relevance": 0,
+      "score": 0.8356,
+      "situation": "Strong consensus against non-wolf target. Wolves not suspected, must decide vote tactically. Mid-game.",
+      "approach": "Wolf pack voted as bloc, dissenting from village consensus.",
+      "outcome": "Created incriminating voting link between wolves, later used as evidence."
+    },
+    {
+      "key": "bcf0a890-eef8-4fbb-b278-d1331befc47e",
+      "relevance": 2,
+      "score": 0.8313,
+      "situation": "Last wolf voted with majority to eliminate partner, wasn't active in discussion. Endgame, voting record under scrutiny.",
+      "approach": "Accused villagers of 'rehearsed coordination' instead of defending own actions.",
+      "outcome": "Deflection failed, village correctly identified vote as self-preservation tactic, wolf eliminated."
+    },
+    {
+      "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+      "relevance": 0,
+      "score": 0.8269,
+      "situation": "Strong consensus forming against villager on speculative reads. Wolves not suspected. Mid-game.",
+      "approach": "Wolves joined majority vote, hiding within town momentum.",
+      "outcome": "Villager eliminated, wolves blended in successfully."
+    },
+    {
+      "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+      "relevance": 1,
+      "score": 0.8257,
+      "situation": "Wolf partner caught, strong consensus. Remaining wolf had no prior defense of partner.",
+      "approach": "Immediately abandoned partner, joined majority vote without hesitation.",
+      "outcome": "Successfully avoided suspicion by having no prior link to eliminated wolf."
+    },
+    {
+      "key": "538ff88c-351a-4b72-a38f-ab1a12e12083",
+      "relevance": 2,
+      "score": 0.8238,
+      "situation": "Wolf partner's cover blown, near-unanimous consensus. Mid-game first vote.",
+      "approach": "Initially defended partner, then voted with majority.",
+      "outcome": "Survived day but earlier defense became primary evidence, eliminated next day."
+    },
+    {
+      "key": "72434618-3e76-4a14-849d-1a6eab43b326",
+      "relevance": 1,
+      "score": 0.8207,
+      "situation": "Wolf partner under intense scrutiny, strong unbreakable consensus. Mid-game elimination vote.",
+      "approach": "Voted with majority to eliminate partner.",
+      "outcome": "Avoided immediate suspicion, but hesitation or timing could be used as later evidence."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+      "relevance": 1,
+      "score": 0.8299,
+      "situation": "Endgame, strong consensus against wolf partner, elimination inevitable.",
+      "action": "Vote against a different less-suspicious villager to create confusing signal."
+    },
+    {
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "relevance": 0,
+      "score": 0.8160,
+      "situation": "Mid-game, fragile consensus against partner, counter-accusation gaining traction.",
+      "action": "Vote for other accused player to split vote and cause no-elimination."
+    },
+    {
+      "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+      "relevance": 1,
+      "score": 0.8000,
+      "situation": "Strong multi-player consensus against wolf partner, elimination inevitable. Mid-game.",
+      "action": "Vote with majority to eliminate partner. Don't defend then bus at last second."
+    },
+    {
+      "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+      "relevance": 0,
+      "score": 0.7509,
+      "situation": "Strong consensus against villager, wolf's vote not needed. Mid-to-late game.",
+      "action": "Cast dissenting vote with specific plausible reason to build credibility."
+    },
+    {
+      "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+      "relevance": 0,
+      "score": 0.7461,
+      "situation": "Deadlocked vote, no strong consensus. Wolves can manipulate toward tie.",
+      "action": "Coordinate with partner to force tie and prevent elimination."
+    },
+    {
+      "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+      "relevance": 0,
+      "score": 0.7348,
+      "situation": "Split vote between targets, wolves can't swing outcome. Mid-to-endgame.",
+      "action": "Vote for third unsuspected player, preferably vocal leader."
+    },
+    {
+      "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+      "relevance": 0,
+      "score": 0.7314,
+      "situation": "Scattered speculative votes on high-value town role. No strong consensus. Mid-game.",
+      "action": "Pile onto scattered votes to create illusion of organic consensus for mislynch."
+    },
+    {
+      "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+      "relevance": 0,
+      "score": 0.7129,
+      "situation": "Healer-saved player publicly announced. Info-rich. Mid-game.",
+      "action": "Don't vote for the protected player — signals wolf alignment."
+    }
+  ],
+  "notes": "Wolf/day_vote namespace is heavily skewed toward 'how to vote when partner is targeted' scenarios. Coverage gap: no strategy points for 'wolf is the primary target facing elimination.' Most observations are about the bussing decision and its aftermath — relevant as lessons about what led to our wolf's current predicament, but none directly address voting when you ARE the target. Obs 1, 6, 9 form a coherent set showing the defend-then-bus pattern and its consequences. Seven of eight strategy points scored 0 — the namespace doesn't cover the wolf's current dilemma at all."
+}
