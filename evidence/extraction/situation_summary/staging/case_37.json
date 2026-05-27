@@ -1,0 +1,146 @@
+{
+  "golden_situations": [
+    "The wolf pair's coordinated caution rhetoric is being called out as suspicious by two active villagers who demand suspects be named. Information landscape: Information-starved — no voting records, no role claims, only one night kill. Suspicion is driven entirely by behavioral patterns (coordinated stalling, refusal to name suspects). Consensus texture: Fragile split — two villagers actively push for a vote against one of the wolves, while others remain uncommitted. One villager has declared a vote. Agent exposure: The wolf is under direct behavioral scrutiny alongside their partner for coordinated inaction. The pairing has been explicitly identified. Game phase: Early-to-mid game, first vote opportunity, seven players remaining. Core dilemma: maintaining the stalling strategy prevents information-generating votes but is drawing increasing suspicion that links both wolves — the wolf must decide whether to break from the partner's rhetoric and name a target to create distance, or hold the line and risk the first vote landing on a wolf."
+  ],
+  "observation_labels": [
+    {
+      "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+      "relevance": 1,
+      "score": 0.8049,
+      "situation": "Split vote, wolves coordinated for different villager. Endgame 6 players, info-rich.",
+      "approach": "Voted for influential villager instead of joining majority.",
+      "outcome": "Votes noted but created ambiguity, helped avoid suspicion."
+    },
+    {
+      "key": "42dfb995-f6df-401b-a220-081232ac4449",
+      "relevance": 1,
+      "score": 0.8043,
+      "situation": "Strong consensus against wolf partner. Mid-game first vote. Wolf had previously defended partner.",
+      "approach": "Bussed partner by voting with majority.",
+      "outcome": "Survived but prior defense was remembered, eliminated next day."
+    },
+    {
+      "key": "07265d73-9b48-4423-a763-5ba413df8d79",
+      "relevance": 1,
+      "score": 0.8016,
+      "situation": "Village divided, wolves voted in unison for vocal villager to create 3-way tie. Info-rich mid-game.",
+      "approach": "Coordinated vote to force tie and stall game.",
+      "outcome": "Tie achieved, stalled game for two days, wolves won through attrition."
+    },
+    {
+      "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+      "relevance": 1,
+      "score": 0.7999,
+      "situation": "Wolf partner under suspicion from investigator. Polarized village, mid-game deadlock.",
+      "approach": "Wolves voted as bloc for investigator to force tie.",
+      "outcome": "Tie bought another night, but voting link created evidence against remaining wolf."
+    },
+    {
+      "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+      "relevance": 2,
+      "score": 0.7951,
+      "situation": "Strong consensus against non-wolf target. Wolves not suspected. Decided how to vote tactically.",
+      "approach": "Voted as bloc dissenting from consensus.",
+      "outcome": "Created incriminating voting link between wolves, later used as key evidence."
+    },
+    {
+      "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+      "relevance": 2,
+      "score": 0.7936,
+      "situation": "Info-starved, wolves engineered voting deadlock for consecutive days. No consensus, manufactured split.",
+      "approach": "Split votes between main targets to prevent any majority.",
+      "outcome": "No eliminations for two days, wolves won through attrition. Closest match to our stalling strategy."
+    },
+    {
+      "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+      "relevance": 1,
+      "score": 0.7913,
+      "situation": "Strong consensus against wolf partner. Wolf cast lone dissenting vote.",
+      "approach": "Dissented against different villager or protested against accuser.",
+      "outcome": "Dissenting vote created incriminating link, used as evidence for elimination."
+    },
+    {
+      "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+      "relevance": 1,
+      "score": 0.7909,
+      "situation": "Strong consensus against wolf partner. Both wolves cast dissenting vote together.",
+      "approach": "Both dissented against same villager.",
+      "outcome": "Coordinated dissent created undeniable link, eliminated next day."
+    },
+    {
+      "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+      "relevance": 1,
+      "score": 0.7905,
+      "situation": "Wolf partner caught, strong consensus. Remaining wolf had NO prior defense of partner.",
+      "approach": "Immediately abandoned partner, joined majority.",
+      "outcome": "Successfully avoided suspicion — no prior link to eliminated wolf."
+    },
+    {
+      "key": "b1b6a7aa-5ce6-4be4-b8c6-70e6abaa9936",
+      "relevance": 1,
+      "score": 0.7883,
+      "situation": "Strong consensus, wolf cast lone unexplained vote. Defended later with 'groupthink.'",
+      "approach": "Dissented, then used 'groupthink' as justification.",
+      "outcome": "Drew intense scrutiny, weak justification failed, eliminated."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "relevance": 2,
+      "score": 0.8173,
+      "situation": "Fragile consensus against partner, counter-accusation gaining traction. Vote swingable.",
+      "action": "Vote for other accused player to split vote and cause no-elimination."
+    },
+    {
+      "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+      "relevance": 0,
+      "score": 0.7780,
+      "situation": "Endgame, strong consensus against partner, elimination inevitable.",
+      "action": "Vote for different less-suspicious villager to create confusing signal."
+    },
+    {
+      "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+      "relevance": 1,
+      "score": 0.7627,
+      "situation": "Strong multi-player consensus against partner, elimination inevitable. Mid-game.",
+      "action": "Bus partner early, don't defend then bus at last second."
+    },
+    {
+      "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+      "relevance": 2,
+      "score": 0.7565,
+      "situation": "Deadlocked village, no strong consensus. Wolves can manipulate toward tie.",
+      "action": "Coordinate with partner to force tie and prevent elimination."
+    },
+    {
+      "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+      "relevance": 1,
+      "score": 0.7451,
+      "situation": "Scattered speculative votes on high-value role. No strong consensus.",
+      "action": "Pile onto scattered votes to create illusion of organic consensus."
+    },
+    {
+      "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+      "relevance": 1,
+      "score": 0.7367,
+      "situation": "Strong consensus against villager (mislynch), wolf vote not needed. Mid-to-late game.",
+      "action": "Dissent with specific plausible reason. Don't use vague 'groupthink.'"
+    },
+    {
+      "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+      "relevance": 0,
+      "score": 0.7324,
+      "situation": "Split vote, wolves can't swing outcome. Mid-to-endgame.",
+      "action": "Vote for third unsuspected player, preferably vocal leader."
+    },
+    {
+      "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+      "relevance": 0,
+      "score": 0.6953,
+      "situation": "Healer-saved player publicly announced. Mid-game.",
+      "action": "Don't vote for protected player. Completely different scenario."
+    }
+  ],
+  "notes": "Wolf/day_vote namespace. Moderate retrieval quality — heavily weighted toward 'how to vote when partner is targeted' with strong consensus and inevitable elimination, while our case has fragile consensus and a swingable vote. Obs 5 (1033b4f0, 8 obs) is the key cautionary: bloc voting creates incriminating links. Obs 6 (cd1368ff) is the closest situational match: wolves engineering deadlocks in info-starved environments. SP1 and SP4 are the most applicable — split vote to prevent elimination, and force tie through coordination. Coverage gap: no entries specifically for 'wolf pair under behavioral scrutiny for coordinated rhetoric in info-starved first vote' — most entries assume established voting records."
+}

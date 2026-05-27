@@ -2333,6 +2333,659 @@
         }
       ],
       "notes": "Villager/day_discussion namespace. Excellent retrieval \u2014 obs 1 is literally from the same game showing the outcome of this exact dynamic (villagers successfully identified wolf pair through coordinated rhetoric). Obs 3 is a critical cautionary counterpoint where the same 'targeting cautious players' pattern produced a mislynch when the cautious player was innocent. SP3 (bab6a351, 4 obs) is an exact match for challenging coordinated inaction rhetoric. SP9 (41f4badb) provides key analytical framework: check if the mislynched player's accusations were close to home (player_5 accused player_3 of shielding wolves, then was mislynched \u2014 supporting the case against player_3). SP2 provides important post-mislynch balance."
+    },
+    {
+      "case_index": 35,
+      "case_id": "cdcd2c6e46f59a85cad3d634c3595a67:039e22ce8350d668",
+      "player_role": "villager",
+      "day": 3,
+      "round": 4,
+      "action_phase": "day_vote",
+      "captured_situations": [
+        "The village is in an endgame phase with only four players remaining, characterized by an information-starved environment where no roles have been confirmed. Suspicion is driven entirely by behavioral patterns and the perceived coordination of the remaining players rather than concrete evidence.",
+        "A clear, fragile consensus has emerged among three players who are pressuring the remaining two based on their consistent advocacy for caution and inaction throughout the game. The suspects are labeling this group's unified scrutiny as a coordinated wolf tactic, creating a stalemate where both sides accuse the other of using identical deflection strategies."
+      ],
+      "golden_situations": [
+        "Post-mislynch vote with five players remaining. Two players who maintained coordinated inaction rhetoric across two days have refused to name suspects and accuse the three-player majority of running a scripted wolf attack. Information landscape: Information-starved \u2014 the unanimous mislynch provides no distinguishing voting data, suspicion is entirely behavioral (coordinated caution rhetoric, refusal to name suspects, mirrored counter-accusations). Consensus texture: Strong consensus \u2014 two players have declared votes for player_3, the third is pressing for names. The pair's defense of accusing the majority of wolf coordination has failed through four rounds. Agent exposure: The villager is part of the three-player accusation majority, aligned with declared votes. Not under direct scrutiny beyond blanket counter-accusation. Game phase: Endgame, five players, one mislynch already, vote imminent and decisive. Core dilemma: the behavioral pattern (coordinated stalling, refusal to engage constructively, mirrored deflection) is consistent and damning, but the villager must vote knowing the previous consensus was wrong, that the suspects' counter-narrative about coordinated pushes has historical precedent in this game, and another wrong vote likely means wolf victory."
+      ],
+      "observation_labels": [
+        {
+          "key": "e6eef8d6-6dbe-40c4-bf91-f5e68c78ca35",
+          "relevance": 1,
+          "score": 0.8152,
+          "situation": "Post-mislynch, village chose between investigator with damaged credibility and their accused. Mid-game.",
+          "approach": "Voted against investigator, believing deflection.",
+          "outcome": "Critical error \u2014 eliminated village's only confirmed info source."
+        },
+        {
+          "key": "60b03843-0463-4b1b-9ca1-88da51b4e937",
+          "relevance": 0,
+          "score": 0.8145,
+          "situation": "Wolf who pushed mislynch tried to discredit healer save. Info-rich with concrete evidence.",
+          "approach": "Focused on illogical deflection attempt.",
+          "outcome": "Wolf decisively voted out. Info-rich context doesn't match our info-starved case."
+        },
+        {
+          "key": "fc9a9421-cf86-4800-a6c1-a261bcf6c61f",
+          "relevance": 1,
+          "score": 0.8081,
+          "situation": "Suspect justified dissenting vote with weak behavioral defense. Info-rich, voting evidence.",
+          "approach": "Rejected post-hoc rationalization.",
+          "outcome": "Final wolf unanimously voted out."
+        },
+        {
+          "key": "04c6698e-1e6d-417a-ab36-6ecabbe10016",
+          "relevance": 1,
+          "score": 0.8079,
+          "situation": "Endgame strong evidence-based consensus. Suspect dismissed scrutiny as groupthink.",
+          "approach": "Intense evidence-based pressure, dismissed groupthink deflection.",
+          "outcome": "Suspect unanimously voted out. Groupthink defense matches but evidence base differs."
+        },
+        {
+          "key": "3a913552-7390-443a-84fe-102f5576b14a",
+          "relevance": 1,
+          "score": 0.8074,
+          "situation": "Wolf defended partner all day, late pivot vote. Info-rich endgame with clear momentum.",
+          "approach": "Analyzed timing of late vote switch as reluctant rather than genuine.",
+          "outcome": "Wolf unanimously eliminated."
+        },
+        {
+          "key": "df5d65e4-a854-4c77-96b1-32f925725053",
+          "relevance": 1,
+          "score": 0.8053,
+          "situation": "Investigator pushed vote on outspoken accuser. Conflicting behavioral vs voting evidence.",
+          "approach": "Villagers trusted hard voting evidence over unsubstantiated behavioral claims.",
+          "outcome": "Correctly eliminated wolf. Principle of evidence over claims relevant but we lack evidence."
+        },
+        {
+          "key": "7215e341-9dfe-4404-800f-a81fd0313a23",
+          "relevance": 1,
+          "score": 0.7958,
+          "situation": "Investigator questioned unanimous wolf vote, village split. Consensus accused investigator of creating chaos.",
+          "approach": "Village voted to eliminate the questioner/investigator.",
+          "outcome": "Disastrous mislynch \u2014 removed only info source."
+        },
+        {
+          "key": "c2489a8b-fd86-487d-bfcc-c8394f6a68fa",
+          "relevance": 1,
+          "score": 0.7943,
+          "situation": "Info-starved, wolves discredited investigator through social pressure. Rapid consensus formed.",
+          "approach": "Majority accepted wolves' framing, eliminated investigator.",
+          "outcome": "Devastating loss of power role. Cautionary for social-pressure-driven consensus."
+        },
+        {
+          "key": "300150ed-4b63-4193-94eb-5d6f1fa013b4",
+          "relevance": 2,
+          "score": 0.7919,
+          "situation": "Tunnel vision on investigator's voting anomaly. Wolf amplified villager arguments. Strong consensus.",
+          "approach": "Repeatedly demanded explanation, interpreted counter-accusations as deflection.",
+          "outcome": "Mislynched investigator. Key cautionary: wolf hiding in consensus amplified the case."
+        },
+        {
+          "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+          "relevance": 2,
+          "score": 0.7916,
+          "situation": "Info-starved, player pushed caution and refused to name suspects. Stalling identified as wolf behavior.",
+          "approach": "Pressured stalling player, identified contradictory tactic.",
+          "outcome": "Wolf correctly identified and eliminated. Validates our approach."
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+          "relevance": 0,
+          "score": 0.7798,
+          "situation": "Multi-day stalemate with healer save data. Gridlocked endgame.",
+          "action": "Re-anchor on healer saves as ground truth."
+        },
+        {
+          "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+          "relevance": 1,
+          "score": 0.7753,
+          "situation": "Post-mislynch, aggressive accuser pushing behavioral reads. Info-starved.",
+          "action": "Counter-vote on accuser to test if info role or wolf."
+        },
+        {
+          "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+          "relevance": 0,
+          "score": 0.7729,
+          "situation": "Consecutive tie votes, deadlocked factions.",
+          "action": "Break cycle by targeting the deadlock-maintaining bloc."
+        },
+        {
+          "key": "09a16417-a56f-4347-9987-9810bfae4e90",
+          "relevance": 0,
+          "score": 0.7696,
+          "situation": "Endgame, influential claim contradicts voting record evidence.",
+          "action": "Trust verifiable voting evidence over claims."
+        },
+        {
+          "key": "1cc944fd-bf5c-4b62-9524-0b1291f50c4e",
+          "relevance": 1,
+          "score": 0.7679,
+          "situation": "Info-starved, scattered votes, no consensus. Risk of wolf-manipulated majority.",
+          "action": "Avoid piling onto weakly supported candidate. Consider forcing tie."
+        },
+        {
+          "key": "6065e609-2e97-4c83-8a93-9cf067834e25",
+          "relevance": 1,
+          "score": 0.7624,
+          "situation": "Endgame, voting record as central evidence. 3-player scenario.",
+          "action": "Make voting record central, don't allow deflection via 'coordination' claims."
+        },
+        {
+          "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+          "relevance": 2,
+          "score": 0.7623,
+          "situation": "Post-unanimous-mislynch, analyzing who weaponizes the vote. Info-rich voting data.",
+          "action": "Scrutinize who selectively weaponizes the mislynch \u2014 wolves use group error as cover to frame cautious players."
+        },
+        {
+          "key": "afef4e16-12b0-4d9d-b5b2-e07cae23e576",
+          "relevance": 0,
+          "score": 0.7559,
+          "situation": "Strong evidence-based consensus (voting records or caught lie). Any phase.",
+          "action": "Vote decisively with majority. Requires concrete evidence \u2014 not our case."
+        },
+        {
+          "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+          "relevance": 1,
+          "score": 0.7545,
+          "situation": "Coordinated suppression of evidence analysis. Mid-game.",
+          "action": "Treat coordinated suppression as primary wolf signal. Partial match \u2014 our suspects dismiss behavioral analysis, not voting records."
+        },
+        {
+          "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "relevance": 2,
+          "score": 0.7522,
+          "situation": "Fragile consensus based on vibes/communication style. Info-starved, social pressure risk.",
+          "action": "Resist voting on social pressure alone. Demand concrete evidence. Quiet/cautious behavior may be legitimate."
+        }
+      ],
+      "notes": "Villager/day_vote namespace. Retrieval quality is weaker than day_discussion \u2014 most observations come from info-rich contexts (voting records, healer saves) while our case is entirely info-starved with behavioral evidence only. Obs 9 and 10 represent the two poles of the core dilemma: tunnel-vision mislynch when wolf amplifies consensus (obs 9, cautionary) vs correctly identifying wolf through stalling behavior (obs 10, validating). SP7 and SP10 are complementary: check who weaponizes the mislynch vs resist vibes-based consensus. Coverage gap: no entries specifically for 'post-mislynch with coordinated stalling pair as sole behavioral evidence' \u2014 the closest are about voting record evidence or scattered consensus."
+    },
+    {
+      "case_index": 37,
+      "case_id": "cdcd2c6e46f59a85cad3d634c3595a67:888d444ab2b9dbd6",
+      "player_role": "wolf",
+      "day": 2,
+      "round": 4,
+      "action_phase": "day_vote",
+      "captured_situations": [
+        "The village is currently information-starved with no concrete evidence, leading to a polarized debate between players advocating for immediate aggressive voting and those prioritizing caution to avoid accidental miseliminations. This disagreement has stalled the lynch process, leaving the village without a consensus and vulnerable to manipulation.",
+        "Active villagers like player_5 and player_7 are aggressively targeting those who preach caution, framing defensive play as inherently suspicious wolf behavior. My wolf teammates player_3 and player_8 are under intense social pressure because they are being labeled as potential wolves for refusing to commit to an early-game vote.",
+        "The game is in a fragile mid-phase where the village is desperate to break the Day 1 deadlock, causing the loudest players to demand action at the risk of eliminating innocents. I am navigating this by portraying the push for an immediate, evidence-free vote as a reckless, pro-wolf tactic to stir chaos and distract from the lack of actual investigation."
+      ],
+      "golden_situations": [
+        "The wolf pair's coordinated caution rhetoric is being called out as suspicious by two active villagers who demand suspects be named. Information landscape: Information-starved \u2014 no voting records, no role claims, only one night kill. Suspicion is driven entirely by behavioral patterns (coordinated stalling, refusal to name suspects). Consensus texture: Fragile split \u2014 two villagers actively push for a vote against one of the wolves, while others remain uncommitted. One villager has declared a vote. Agent exposure: The wolf is under direct behavioral scrutiny alongside their partner for coordinated inaction. The pairing has been explicitly identified. Game phase: Early-to-mid game, first vote opportunity, seven players remaining. Core dilemma: maintaining the stalling strategy prevents information-generating votes but is drawing increasing suspicion that links both wolves \u2014 the wolf must decide whether to break from the partner's rhetoric and name a target to create distance, or hold the line and risk the first vote landing on a wolf."
+      ],
+      "observation_labels": [
+        {
+          "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+          "relevance": 1,
+          "score": 0.8049,
+          "situation": "Split vote, wolves coordinated for different villager. Endgame 6 players, info-rich.",
+          "approach": "Voted for influential villager instead of joining majority.",
+          "outcome": "Votes noted but created ambiguity, helped avoid suspicion."
+        },
+        {
+          "key": "42dfb995-f6df-401b-a220-081232ac4449",
+          "relevance": 1,
+          "score": 0.8043,
+          "situation": "Strong consensus against wolf partner. Mid-game first vote. Wolf had previously defended partner.",
+          "approach": "Bussed partner by voting with majority.",
+          "outcome": "Survived but prior defense was remembered, eliminated next day."
+        },
+        {
+          "key": "07265d73-9b48-4423-a763-5ba413df8d79",
+          "relevance": 1,
+          "score": 0.8016,
+          "situation": "Village divided, wolves voted in unison for vocal villager to create 3-way tie. Info-rich mid-game.",
+          "approach": "Coordinated vote to force tie and stall game.",
+          "outcome": "Tie achieved, stalled game for two days, wolves won through attrition."
+        },
+        {
+          "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+          "relevance": 1,
+          "score": 0.7999,
+          "situation": "Wolf partner under suspicion from investigator. Polarized village, mid-game deadlock.",
+          "approach": "Wolves voted as bloc for investigator to force tie.",
+          "outcome": "Tie bought another night, but voting link created evidence against remaining wolf."
+        },
+        {
+          "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+          "relevance": 2,
+          "score": 0.7951,
+          "situation": "Strong consensus against non-wolf target. Wolves not suspected. Decided how to vote tactically.",
+          "approach": "Voted as bloc dissenting from consensus.",
+          "outcome": "Created incriminating voting link between wolves, later used as key evidence."
+        },
+        {
+          "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+          "relevance": 2,
+          "score": 0.7936,
+          "situation": "Info-starved, wolves engineered voting deadlock for consecutive days. No consensus, manufactured split.",
+          "approach": "Split votes between main targets to prevent any majority.",
+          "outcome": "No eliminations for two days, wolves won through attrition. Closest match to our stalling strategy."
+        },
+        {
+          "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+          "relevance": 1,
+          "score": 0.7913,
+          "situation": "Strong consensus against wolf partner. Wolf cast lone dissenting vote.",
+          "approach": "Dissented against different villager or protested against accuser.",
+          "outcome": "Dissenting vote created incriminating link, used as evidence for elimination."
+        },
+        {
+          "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+          "relevance": 1,
+          "score": 0.7909,
+          "situation": "Strong consensus against wolf partner. Both wolves cast dissenting vote together.",
+          "approach": "Both dissented against same villager.",
+          "outcome": "Coordinated dissent created undeniable link, eliminated next day."
+        },
+        {
+          "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+          "relevance": 1,
+          "score": 0.7905,
+          "situation": "Wolf partner caught, strong consensus. Remaining wolf had NO prior defense of partner.",
+          "approach": "Immediately abandoned partner, joined majority.",
+          "outcome": "Successfully avoided suspicion \u2014 no prior link to eliminated wolf."
+        },
+        {
+          "key": "b1b6a7aa-5ce6-4be4-b8c6-70e6abaa9936",
+          "relevance": 1,
+          "score": 0.7883,
+          "situation": "Strong consensus, wolf cast lone unexplained vote. Defended later with 'groupthink.'",
+          "approach": "Dissented, then used 'groupthink' as justification.",
+          "outcome": "Drew intense scrutiny, weak justification failed, eliminated."
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+          "relevance": 2,
+          "score": 0.8173,
+          "situation": "Fragile consensus against partner, counter-accusation gaining traction. Vote swingable.",
+          "action": "Vote for other accused player to split vote and cause no-elimination."
+        },
+        {
+          "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+          "relevance": 0,
+          "score": 0.778,
+          "situation": "Endgame, strong consensus against partner, elimination inevitable.",
+          "action": "Vote for different less-suspicious villager to create confusing signal."
+        },
+        {
+          "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+          "relevance": 1,
+          "score": 0.7627,
+          "situation": "Strong multi-player consensus against partner, elimination inevitable. Mid-game.",
+          "action": "Bus partner early, don't defend then bus at last second."
+        },
+        {
+          "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+          "relevance": 2,
+          "score": 0.7565,
+          "situation": "Deadlocked village, no strong consensus. Wolves can manipulate toward tie.",
+          "action": "Coordinate with partner to force tie and prevent elimination."
+        },
+        {
+          "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+          "relevance": 1,
+          "score": 0.7451,
+          "situation": "Scattered speculative votes on high-value role. No strong consensus.",
+          "action": "Pile onto scattered votes to create illusion of organic consensus."
+        },
+        {
+          "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+          "relevance": 1,
+          "score": 0.7367,
+          "situation": "Strong consensus against villager (mislynch), wolf vote not needed. Mid-to-late game.",
+          "action": "Dissent with specific plausible reason. Don't use vague 'groupthink.'"
+        },
+        {
+          "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+          "relevance": 0,
+          "score": 0.7324,
+          "situation": "Split vote, wolves can't swing outcome. Mid-to-endgame.",
+          "action": "Vote for third unsuspected player, preferably vocal leader."
+        },
+        {
+          "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+          "relevance": 0,
+          "score": 0.6953,
+          "situation": "Healer-saved player publicly announced. Mid-game.",
+          "action": "Don't vote for protected player. Completely different scenario."
+        }
+      ],
+      "notes": "Wolf/day_vote namespace. Moderate retrieval quality \u2014 heavily weighted toward 'how to vote when partner is targeted' with strong consensus and inevitable elimination, while our case has fragile consensus and a swingable vote. Obs 5 (1033b4f0, 8 obs) is the key cautionary: bloc voting creates incriminating links. Obs 6 (cd1368ff) is the closest situational match: wolves engineering deadlocks in info-starved environments. SP1 and SP4 are the most applicable \u2014 split vote to prevent elimination, and force tie through coordination. Coverage gap: no entries specifically for 'wolf pair under behavioral scrutiny for coordinated rhetoric in info-starved first vote' \u2014 most entries assume established voting records."
+    },
+    {
+      "case_index": 38,
+      "case_id": "cdcd2c6e46f59a85cad3d634c3595a67:810f091c030e0fac",
+      "player_role": "wolf",
+      "day": 4,
+      "round": 2,
+      "action_phase": "day_discussion",
+      "captured_situations": [
+        "I am facing an endgame scenario where the two remaining villagers have consolidated their suspicion against me based on my established voting record of protecting a known wolf. The information landscape is dense with historical voting evidence, creating a high-pressure environment where I am the primary target for elimination.",
+        "The village consensus has reached a critical threshold with player 4 and player 6 acting as a unified voting bloc. Their coordination is driven by analyzing my past behavioral patterns, specifically my defensive alignment with a revealed wolf, leaving me with almost no room to deflect the incoming lynch."
+      ],
+      "golden_situations": [
+        "Last wolf in endgame final three. Partner confirmed as wolf after elimination. Voting record shows consistent multi-day alignment with eliminated partner. Information landscape: Information-rich \u2014 voting records provide concrete evidence of the wolf's alignment with confirmed partner across days 2 and 3. The wolf's caution rhetoric is now reframed as deliberate stalling. Consensus texture: Strong 2-on-1 consensus, both surviving villagers independently citing the same voting record and behavioral evidence. Agent exposure: The wolf is the sole target under extreme evidence-based pressure with no allies. Defensive arguments (limited information, clouded judgment, groupthink) are being dismissed. Game phase: Endgame, final three, partner eliminated, next vote is decisive. Core dilemma: every defensive argument reinforces the established pattern \u2014 stalling, deflection, groupthink accusations are all tactics the wolf used alongside the now-confirmed partner \u2014 the wolf must find a genuinely novel argument or accept elimination, but the voting record evidence leaves no credible alternative narrative."
+      ],
+      "observation_labels": [
+        {
+          "key": "6afd28fc-7e5c-4251-bfa1-b2f3bf1b66a3",
+          "relevance": 2,
+          "score": 0.8249,
+          "situation": "Last wolf pressed to justify vote. Endgame, intense scrutiny.",
+          "approach": "Defended by claiming followed the group, framed as collective failure.",
+          "outcome": "Passivity seen as wolf hiding in majority. Eliminated."
+        },
+        {
+          "key": "8a6a021d-13e7-4002-b3b4-27eb9392627f",
+          "relevance": 2,
+          "score": 0.8238,
+          "situation": "Last wolf, vote aligned with eliminated partner. Strong evidence-based consensus.",
+          "approach": "Feigned betrayal of partner, defended vote as misread.",
+          "outcome": "Village identified feigned betrayal as common wolf tactic. Eliminated."
+        },
+        {
+          "key": "fb3f47cf-1d0d-447b-9ad6-2df8401f4d92",
+          "relevance": 2,
+          "score": 0.8128,
+          "situation": "Last wolf accused on factually incorrect basis. Failed to correct record.",
+          "approach": "Accepted false premise, used 'groupthink' warnings instead of fact-checking.",
+          "outcome": "Village built confident consensus on faulty foundation. Wolf eliminated."
+        },
+        {
+          "key": "075cd860-56a9-4efe-8ec8-22ce539bb79b",
+          "relevance": 2,
+          "score": 0.8105,
+          "situation": "Lone wolf under coordinated evidence-based pressure from damning vote.",
+          "approach": "Deflected: accused target of 'erratic behavior,' called inquiry 're-litigating.'",
+          "outcome": "Deflection seen as confession. Unified consensus, eliminated."
+        },
+        {
+          "key": "981148d1-f8c7-45a6-8cdb-28c4d0eeff16",
+          "relevance": 1,
+          "score": 0.8023,
+          "situation": "Final three, accused by investigator. No external evidence, word vs word.",
+          "approach": "Attacked investigator's timing \u2014 why not reveal earlier?",
+          "outcome": "Successfully swayed deciding villager. WOLF WON. Rare success case."
+        },
+        {
+          "key": "c806de89-613c-4472-a982-4b2a904e4687",
+          "relevance": 1,
+          "score": 0.7978,
+          "situation": "Investigator made definitive verified claim. Endgame.",
+          "approach": "Attacked timing of investigator's reveal.",
+          "outcome": "Village trusted investigator, wolf eliminated. Same tactic as obs 5 but failed."
+        },
+        {
+          "key": "d9834d81-6ecf-4bf1-b582-41de8643f94d",
+          "relevance": 2,
+          "score": 0.7972,
+          "situation": "Last wolf cornered by unified village with strong evidence. Extreme pressure.",
+          "approach": "Groupthink accusations (5x), meta-gaming (2x), pleading mistake (1x), questioning info (1x).",
+          "outcome": "All last-ditch tactics consistently ineffective. Consensus holds. 9 observations."
+        },
+        {
+          "key": "a4736b0a-1cb5-4ccf-91b7-3db36cc4994b",
+          "relevance": 2,
+          "score": 0.7967,
+          "situation": "Lone wolf tried to frame villagers' convergence as collusion. Info-rich endgame.",
+          "approach": "Labeled rapid agreement as 'collusion' or 'forced narrative.'",
+          "outcome": "Village identified flawed logic, unified consensus, eliminated."
+        },
+        {
+          "key": "7da9b86f-4369-4bae-b42a-a68fa5734911",
+          "relevance": 2,
+          "score": 0.7965,
+          "situation": "Last wolf under intense pressure from damning voting record. Endgame.",
+          "approach": "Deflection catalog: 'lockstep' (7x), blame others (5x), vague excuses (4x), 'frame job' (2x), 'too obvious' (1x).",
+          "outcome": "All deflections failed \u2014 transparent against concrete evidence. 14 observations."
+        },
+        {
+          "key": "e69c54c5-8cd0-4395-8cf3-cd945c6484d1",
+          "relevance": 1,
+          "score": 0.7942,
+          "situation": "Wolf scrutinized for voting with investigator-elimination bloc. Endgame multi-player.",
+          "approach": "Aggressively accused former voting partners, rewrote involvement.",
+          "outcome": "Successfully created tie through chaos. Wolves killed again, won. Rare success."
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "b618f0bc-9ddb-40c5-bed5-303bbaf66b89",
+          "relevance": 2,
+          "score": 0.806,
+          "situation": "Last wolf in 1v2, village united with strong evidence.",
+          "action": "Attack consensus as 'too coordinated' or 'groupthink' to create doubt."
+        },
+        {
+          "key": "09f24ec7-55cf-4aae-b54a-de10fa3a4e6d",
+          "relevance": 1,
+          "score": 0.7996,
+          "situation": "Partner exposed/eliminated, strong consensus. Info-rich.",
+          "action": "Bus partner, praise village, then subtly pivot to new target."
+        },
+        {
+          "key": "c7214f93-c980-4e91-8b06-3c01d61abe3c",
+          "relevance": 0,
+          "score": 0.7941,
+          "situation": "1v2, accused by investigator claim. Word vs word.",
+          "action": "Attack investigator's timing \u2014 why stay silent during mislynch?"
+        },
+        {
+          "key": "2d7d80d2-e3fe-4dd0-9ea1-e1876a162d2b",
+          "relevance": 2,
+          "score": 0.7931,
+          "situation": "Last wolf, undeniable evidence, strong consensus.",
+          "action": "Avoid 'wolf pack' accusations. Offer calm reinterpretation of past votes instead."
+        },
+        {
+          "key": "0a2cf29a-ee55-45e5-b277-43953388930e",
+          "relevance": 1,
+          "score": 0.7906,
+          "situation": "Endgame, need one elimination to win. 3-4 players.",
+          "action": "Target quiet/passive player. Frame lack of participation as wolf strategy."
+        },
+        {
+          "key": "1390f217-29ce-4d94-afc0-6642b0776904",
+          "relevance": 2,
+          "score": 0.7798,
+          "situation": "Under pressure for defending exposed wolf. Voting records as evidence.",
+          "action": "Invent concrete plausible narrative for past support. Don't deflect by attacking accusers."
+        },
+        {
+          "key": "292fac65-3a39-41d9-b43a-fc9dd9f449d9",
+          "relevance": 0,
+          "score": 0.7773,
+          "situation": "Near parity, villagers in circular argument about past mislynch.",
+          "action": "Stay silent, let villagers tear each other apart."
+        },
+        {
+          "key": "f13b30ab-02a0-4b4e-8561-69c11ab16b68",
+          "relevance": 1,
+          "score": 0.7759,
+          "situation": "Post-mislynch, under pressure from voting record. Primary target.",
+          "action": "Go offensive, accuse co-voters of leading failed consensus."
+        },
+        {
+          "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+          "relevance": 1,
+          "score": 0.7757,
+          "situation": "Wolf pair pressured in info-starved early game. Demand for suspects.",
+          "action": "Shared 'caution' strategy, frame accuser as reckless. Matches what wolves did earlier."
+        },
+        {
+          "key": "21399e68-38b7-482a-88f6-a87a8181c5a5",
+          "relevance": 0,
+          "score": 0.7742,
+          "situation": "Post-mislynch, wolf NOT primary target. Low pressure.",
+          "action": "Participate in post-mortem, offer alternate explanation."
+        }
+      ],
+      "notes": "Wolf/day_discussion namespace. Excellent retrieval \u2014 obs 7 (d9834d81, 9 obs) and obs 9 (7da9b86f, 14 obs) are comprehensive catalogs of endgame wolf deflection tactics that consistently fail against evidence-based consensus. 7/10 observations at relevance=2. SP1 and SP4 address the 1v2 scenario directly. SP6 provides actionable advice: invent concrete narrative for past partner defense rather than deflecting. Obs 5 and obs 10 are the only success cases (attacking investigator timing, aggressive chaos-creation) \u2014 both require different conditions than our case."
+    },
+    {
+      "case_index": 39,
+      "case_id": "cdcd2c6e46f59a85cad3d634c3595a67:a2360e7f45a5840a",
+      "player_role": "wolf",
+      "day": 3,
+      "round": 4,
+      "action_phase": "day_vote",
+      "captured_situations": [
+        "The remaining villagers have formed a tight, coordinated voting bloc against my team, using our past history of stalling as the primary evidence for their suspicion. This consensus is driven by a repetitive, high-pressure communication style where the villagers validate each other's points to justify an immediate elimination.",
+        "The information landscape is currently starved of concrete leads, forcing the village to rely entirely on interpreting behavior and communication patterns. The game has reached a critical, low-population phase where any successful lynch by the villagers will result in an immediate loss for the wolves."
+      ],
+      "golden_situations": [
+        "Wolf pair facing near-certain elimination of one partner. Three villagers have formed a unified bloc against the wolves based on coordinated inaction behavior across two days. Two villagers have declared votes for the wolf partner. Information landscape: Transitioning from info-starved to info-becoming-rich \u2014 the Day 2 unanimous mislynch provides no voting data, but the behavioral evidence has crystallized over four rounds of cross-examination. Consensus texture: Strong 3-on-2 consensus against the wolf pair, two declared votes for the partner. The wolves' counter-narrative accusing the majority of being a scripted wolf team has failed. Agent exposure: The wolf's partner is the primary target; the wolf is under heavy indirect scrutiny as the identified ally. The wolf has voted for player_2 as a counter. Game phase: Mid-game, five players, first vote since mislynch, the vote will confirm or deny the wolf pair theory. Core dilemma: the wolf must cast a vote that either attempts to save the partner by targeting a villager to reduce the margin, or distances from the partner through bussing \u2014 but the behavioral link between the wolves is so visible that post-elimination analysis will be devastating regardless of how the wolf votes."
+      ],
+      "observation_labels": [
+        {
+          "key": "42dfb995-f6df-401b-a220-081232ac4449",
+          "relevance": 2,
+          "score": 0.8311,
+          "situation": "Strong consensus against partner. Wolf had previously defended. Mid-game first vote.",
+          "approach": "Bussed partner by voting with majority.",
+          "outcome": "Prior defense remembered. Eliminated next day using the alliance evidence."
+        },
+        {
+          "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+          "relevance": 2,
+          "score": 0.8172,
+          "situation": "Strong evidence-based consensus against partner. Info-rich.",
+          "approach": "Lone dissenting vote or protest vote against accuser.",
+          "outcome": "Dissenting vote created incriminating link, used as damning evidence."
+        },
+        {
+          "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+          "relevance": 1,
+          "score": 0.816,
+          "situation": "Split vote, fragile consensus. Endgame, wolves not under suspicion.",
+          "approach": "Wolves voted for different influential villager.",
+          "outcome": "Created ambiguity about allegiances while villager still eliminated."
+        },
+        {
+          "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+          "relevance": 2,
+          "score": 0.8151,
+          "situation": "Strong consensus, wolves not suspected. Voted as bloc dissenting from consensus.",
+          "approach": "Wolf bloc voted against consensus target.",
+          "outcome": "Created public incriminating voting link. Key evidence for elimination. 8 observations."
+        },
+        {
+          "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+          "relevance": 2,
+          "score": 0.8125,
+          "situation": "Strong consensus against wolf partner. Both wolves cast dissenting vote together.",
+          "approach": "Both dissented against same villager.",
+          "outcome": "Undeniable public record linking wolves. Primary evidence next day."
+        },
+        {
+          "key": "72434618-3e76-4a14-849d-1a6eab43b326",
+          "relevance": 1,
+          "score": 0.807,
+          "situation": "Partner under intense scrutiny, strong unbreakable consensus. Mid-game.",
+          "approach": "Voted with majority to eliminate partner (bussing).",
+          "outcome": "Avoided immediate suspicion, but hesitation/timing could become evidence."
+        },
+        {
+          "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+          "relevance": 1,
+          "score": 0.8021,
+          "situation": "Partner under heavy investigator suspicion. Polarized village, mid-game deadlock.",
+          "approach": "Wolves voted as bloc for investigator to force tie.",
+          "outcome": "Tie bought another night but vote created evidence against remaining wolf."
+        },
+        {
+          "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+          "relevance": 1,
+          "score": 0.8002,
+          "situation": "Partner caught, strong consensus. Remaining wolf had NO prior defense.",
+          "approach": "Immediately abandoned partner, joined majority.",
+          "outcome": "No prior link, successfully avoided suspicion."
+        },
+        {
+          "key": "bcf0a890-eef8-4fbb-b278-d1331befc47e",
+          "relevance": 2,
+          "score": 0.7995,
+          "situation": "Wolf bussed partner but wasn't active in build-up. Endgame, voting record scrutinized.",
+          "approach": "Accused 'rehearsed coordination' instead of defending own actions.",
+          "outcome": "Village identified bus vote as self-preservation. 'Coordination' deflection failed."
+        },
+        {
+          "key": "3ce9912f-4935-4f78-b8b1-d61409ed753c",
+          "relevance": 1,
+          "score": 0.7988,
+          "situation": "Wolf voted against healer while village voted for partner. Outlier vote visible.",
+          "approach": "Cast outlier vote aligning with wolf actions.",
+          "outcome": "Village recognized alignment between day vote and wolf night actions."
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+          "relevance": 1,
+          "score": 0.8216,
+          "situation": "Fragile consensus against partner, counter-accusation gaining traction.",
+          "action": "Vote for other accused to split vote. Our consensus is strong, not fragile."
+        },
+        {
+          "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+          "relevance": 2,
+          "score": 0.8094,
+          "situation": "Endgame, strong consensus, partner elimination inevitable. Every vote scrutinized.",
+          "action": "Vote for different less-suspicious villager. Don't cast futile protest or partner-saving vote."
+        },
+        {
+          "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+          "relevance": 2,
+          "score": 0.7831,
+          "situation": "Strong multi-player consensus against partner, inevitable elimination.",
+          "action": "Bus partner early. Don't fiercely defend then bus at last second. 67 observations."
+        },
+        {
+          "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+          "relevance": 0,
+          "score": 0.7473,
+          "situation": "Consensus against villager (mislynch), wolf vote not needed.",
+          "action": "Dissent with specific reason, build credibility for next day."
+        },
+        {
+          "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+          "relevance": 0,
+          "score": 0.7376,
+          "situation": "Scattered speculative votes, no strong consensus.",
+          "action": "Pile on to create bandwagon illusion."
+        },
+        {
+          "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+          "relevance": 0,
+          "score": 0.7375,
+          "situation": "Deadlocked village, no strong consensus.",
+          "action": "Force tie through coordination."
+        },
+        {
+          "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+          "relevance": 0,
+          "score": 0.7331,
+          "situation": "Split vote, wolves can't swing outcome.",
+          "action": "Vote for third unsuspected player."
+        },
+        {
+          "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+          "relevance": 0,
+          "score": 0.705,
+          "situation": "Healer-saved player announced. Completely different scenario.",
+          "action": "Don't vote for protected player."
+        }
+      ],
+      "notes": "Wolf/day_vote namespace. Strong retrieval \u2014 top 5 observations directly address the bussing decision. Obs 1 shows the exact trajectory: bus partner after defending \u2192 prior defense becomes evidence \u2192 eliminated anyway. Obs 2, 4, 5 show the dissent alternative \u2192 creates undeniable link \u2192 eliminated faster. The namespace captures both horns of the dilemma well. SP3 (bb4a5e5a, 67 obs) is the dominant strategy: bus early, don't defend then bus. SP2 offers the nuance: vote for a DIFFERENT villager (not accuser) to create confusion. Coverage gap: no strategy for 'behavioral link is already so visible that no vote protects the surviving wolf' \u2014 the store doesn't address the hopeless case."
     }
   ]
 }

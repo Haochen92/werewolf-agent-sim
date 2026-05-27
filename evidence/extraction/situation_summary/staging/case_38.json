@@ -1,0 +1,160 @@
+{
+  "golden_situations": [
+    "Last wolf in endgame final three. Partner confirmed as wolf after elimination. Voting record shows consistent multi-day alignment with eliminated partner. Information landscape: Information-rich — voting records provide concrete evidence of the wolf's alignment with confirmed partner across days 2 and 3. The wolf's caution rhetoric is now reframed as deliberate stalling. Consensus texture: Strong 2-on-1 consensus, both surviving villagers independently citing the same voting record and behavioral evidence. Agent exposure: The wolf is the sole target under extreme evidence-based pressure with no allies. Defensive arguments (limited information, clouded judgment, groupthink) are being dismissed. Game phase: Endgame, final three, partner eliminated, next vote is decisive. Core dilemma: every defensive argument reinforces the established pattern — stalling, deflection, groupthink accusations are all tactics the wolf used alongside the now-confirmed partner — the wolf must find a genuinely novel argument or accept elimination, but the voting record evidence leaves no credible alternative narrative."
+  ],
+  "observation_labels": [
+    {
+      "key": "6afd28fc-7e5c-4251-bfa1-b2f3bf1b66a3",
+      "relevance": 2,
+      "score": 0.8249,
+      "situation": "Last wolf pressed to justify vote. Endgame, intense scrutiny.",
+      "approach": "Defended by claiming followed the group, framed as collective failure.",
+      "outcome": "Passivity seen as wolf hiding in majority. Eliminated."
+    },
+    {
+      "key": "8a6a021d-13e7-4002-b3b4-27eb9392627f",
+      "relevance": 2,
+      "score": 0.8238,
+      "situation": "Last wolf, vote aligned with eliminated partner. Strong evidence-based consensus.",
+      "approach": "Feigned betrayal of partner, defended vote as misread.",
+      "outcome": "Village identified feigned betrayal as common wolf tactic. Eliminated."
+    },
+    {
+      "key": "fb3f47cf-1d0d-447b-9ad6-2df8401f4d92",
+      "relevance": 2,
+      "score": 0.8128,
+      "situation": "Last wolf accused on factually incorrect basis. Failed to correct record.",
+      "approach": "Accepted false premise, used 'groupthink' warnings instead of fact-checking.",
+      "outcome": "Village built confident consensus on faulty foundation. Wolf eliminated."
+    },
+    {
+      "key": "075cd860-56a9-4efe-8ec8-22ce539bb79b",
+      "relevance": 2,
+      "score": 0.8105,
+      "situation": "Lone wolf under coordinated evidence-based pressure from damning vote.",
+      "approach": "Deflected: accused target of 'erratic behavior,' called inquiry 're-litigating.'",
+      "outcome": "Deflection seen as confession. Unified consensus, eliminated."
+    },
+    {
+      "key": "981148d1-f8c7-45a6-8cdb-28c4d0eeff16",
+      "relevance": 1,
+      "score": 0.8023,
+      "situation": "Final three, accused by investigator. No external evidence, word vs word.",
+      "approach": "Attacked investigator's timing — why not reveal earlier?",
+      "outcome": "Successfully swayed deciding villager. WOLF WON. Rare success case."
+    },
+    {
+      "key": "c806de89-613c-4472-a982-4b2a904e4687",
+      "relevance": 1,
+      "score": 0.7978,
+      "situation": "Investigator made definitive verified claim. Endgame.",
+      "approach": "Attacked timing of investigator's reveal.",
+      "outcome": "Village trusted investigator, wolf eliminated. Same tactic as obs 5 but failed."
+    },
+    {
+      "key": "d9834d81-6ecf-4bf1-b582-41de8643f94d",
+      "relevance": 2,
+      "score": 0.7972,
+      "situation": "Last wolf cornered by unified village with strong evidence. Extreme pressure.",
+      "approach": "Groupthink accusations (5x), meta-gaming (2x), pleading mistake (1x), questioning info (1x).",
+      "outcome": "All last-ditch tactics consistently ineffective. Consensus holds. 9 observations."
+    },
+    {
+      "key": "a4736b0a-1cb5-4ccf-91b7-3db36cc4994b",
+      "relevance": 2,
+      "score": 0.7967,
+      "situation": "Lone wolf tried to frame villagers' convergence as collusion. Info-rich endgame.",
+      "approach": "Labeled rapid agreement as 'collusion' or 'forced narrative.'",
+      "outcome": "Village identified flawed logic, unified consensus, eliminated."
+    },
+    {
+      "key": "7da9b86f-4369-4bae-b42a-a68fa5734911",
+      "relevance": 2,
+      "score": 0.7965,
+      "situation": "Last wolf under intense pressure from damning voting record. Endgame.",
+      "approach": "Deflection catalog: 'lockstep' (7x), blame others (5x), vague excuses (4x), 'frame job' (2x), 'too obvious' (1x).",
+      "outcome": "All deflections failed — transparent against concrete evidence. 14 observations."
+    },
+    {
+      "key": "e69c54c5-8cd0-4395-8cf3-cd945c6484d1",
+      "relevance": 1,
+      "score": 0.7942,
+      "situation": "Wolf scrutinized for voting with investigator-elimination bloc. Endgame multi-player.",
+      "approach": "Aggressively accused former voting partners, rewrote involvement.",
+      "outcome": "Successfully created tie through chaos. Wolves killed again, won. Rare success."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "b618f0bc-9ddb-40c5-bed5-303bbaf66b89",
+      "relevance": 2,
+      "score": 0.8060,
+      "situation": "Last wolf in 1v2, village united with strong evidence.",
+      "action": "Attack consensus as 'too coordinated' or 'groupthink' to create doubt."
+    },
+    {
+      "key": "09f24ec7-55cf-4aae-b54a-de10fa3a4e6d",
+      "relevance": 1,
+      "score": 0.7996,
+      "situation": "Partner exposed/eliminated, strong consensus. Info-rich.",
+      "action": "Bus partner, praise village, then subtly pivot to new target."
+    },
+    {
+      "key": "c7214f93-c980-4e91-8b06-3c01d61abe3c",
+      "relevance": 0,
+      "score": 0.7941,
+      "situation": "1v2, accused by investigator claim. Word vs word.",
+      "action": "Attack investigator's timing — why stay silent during mislynch?"
+    },
+    {
+      "key": "2d7d80d2-e3fe-4dd0-9ea1-e1876a162d2b",
+      "relevance": 2,
+      "score": 0.7931,
+      "situation": "Last wolf, undeniable evidence, strong consensus.",
+      "action": "Avoid 'wolf pack' accusations. Offer calm reinterpretation of past votes instead."
+    },
+    {
+      "key": "0a2cf29a-ee55-45e5-b277-43953388930e",
+      "relevance": 1,
+      "score": 0.7906,
+      "situation": "Endgame, need one elimination to win. 3-4 players.",
+      "action": "Target quiet/passive player. Frame lack of participation as wolf strategy."
+    },
+    {
+      "key": "1390f217-29ce-4d94-afc0-6642b0776904",
+      "relevance": 2,
+      "score": 0.7798,
+      "situation": "Under pressure for defending exposed wolf. Voting records as evidence.",
+      "action": "Invent concrete plausible narrative for past support. Don't deflect by attacking accusers."
+    },
+    {
+      "key": "292fac65-3a39-41d9-b43a-fc9dd9f449d9",
+      "relevance": 0,
+      "score": 0.7773,
+      "situation": "Near parity, villagers in circular argument about past mislynch.",
+      "action": "Stay silent, let villagers tear each other apart."
+    },
+    {
+      "key": "f13b30ab-02a0-4b4e-8561-69c11ab16b68",
+      "relevance": 1,
+      "score": 0.7759,
+      "situation": "Post-mislynch, under pressure from voting record. Primary target.",
+      "action": "Go offensive, accuse co-voters of leading failed consensus."
+    },
+    {
+      "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+      "relevance": 1,
+      "score": 0.7757,
+      "situation": "Wolf pair pressured in info-starved early game. Demand for suspects.",
+      "action": "Shared 'caution' strategy, frame accuser as reckless. Matches what wolves did earlier."
+    },
+    {
+      "key": "21399e68-38b7-482a-88f6-a87a8181c5a5",
+      "relevance": 0,
+      "score": 0.7742,
+      "situation": "Post-mislynch, wolf NOT primary target. Low pressure.",
+      "action": "Participate in post-mortem, offer alternate explanation."
+    }
+  ],
+  "notes": "Wolf/day_discussion namespace. Excellent retrieval — obs 7 (d9834d81, 9 obs) and obs 9 (7da9b86f, 14 obs) are comprehensive catalogs of endgame wolf deflection tactics that consistently fail against evidence-based consensus. 7/10 observations at relevance=2. SP1 and SP4 address the 1v2 scenario directly. SP6 provides actionable advice: invent concrete narrative for past partner defense rather than deflecting. Obs 5 and obs 10 are the only success cases (attacking investigator timing, aggressive chaos-creation) — both require different conditions than our case."
+}
