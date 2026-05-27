@@ -1,0 +1,24 @@
+DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Summarize what happened in today's public discussion.
+
+GAME CONTEXT:
+- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
+- Eliminated players' roles are revealed on death.
+- The Game Master announces wolf kills and healer saves, but NOT investigation results.
+
+DAY {current_day} PUBLIC DISCUSSION ONLY:
+{day_channel}
+
+Write a concise summary of Day {current_day} discussion in exactly this format:
+
+Key accusations: [Who accused whom and the core reasoning. Use format "player_X accused player_Y of [reason]".]
+Defenses: [How accused players responded. Use format "player_X defended by [method]".]
+Any role reveals and their substantiation: [Use format "player_X revealed as ROLE with [evidence/reasoning]".]
+Any alliances or voting blocs that formed: [Use format "player_X and player_Y formed an alliance based on [reason]".]
+
+Rules:
+- Do not include vote results, eliminations, night kills, or healer saves.
+- Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
+- Only reference roles when they have been publicly revealed through a player's own claim during discussion.
+- Be specific about what was said and claimed, not vague summaries.
+- Keep the total summary under 300 words.
+"""

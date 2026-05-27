@@ -1,0 +1,29 @@
+DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Summarize what happened in today's public discussion.
+
+GAME CONTEXT:
+- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
+- Eliminated players' roles are revealed on death.
+- The Game Master announces wolf kills and healer saves, but NOT investigation results.
+
+{situation_standards}
+
+DAY {current_day} PUBLIC DISCUSSION ONLY:
+{day_channel}
+
+Write a concise summary of Day {current_day} discussion in exactly this format:
+
+Key accusations and defenses: [Who accused whom, the core reasoning, and how accused players responded. For each accusation, note the TYPE of evidence behind it: voting record, communication style, behavioral pattern, or concrete claim. Use format "player_X accused player_Y of [reason] (evidence type: [type]); player_Y defended by [method]".]
+Role claims: [Any role reveals and their substantiation. Use format "player_X claimed ROLE with [evidence/reasoning]". Write "None" if no claims were made.]
+Alliances and blocs: [Use format "player_X and player_Y aligned based on [reason]". Write "None" if no alliances formed.]
+Village dynamics: [Characterize the overall discussion dynamics using the dimensional framework above. Cover: (1) What type of evidence is driving suspicion — voting records, communication style, behavioral patterns, or concrete claims? (2) How aligned is the village — unified push against one target, fragmented suspicion across many, or split into opposing camps? Is this driven by evidence or social momentum? (3) Who is driving the discussion vs. staying quiet or deflecting?]
+
+Rules:
+- Do not include vote results, eliminations, night kills, or healer saves.
+- Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
+- When a player claims a role, distinguish the certainty level:
+  - Claimed with public evidence (e.g., "player_X claimed Investigator, and their accusation was later confirmed by elimination")
+  - Claimed without evidence (e.g., "player_X claimed Healer with no corroborating events")
+  - Do not treat unverified claims as fact.
+- Be specific about what was said and claimed, not vague summaries.
+- Keep the total summary under 400 words.
+"""

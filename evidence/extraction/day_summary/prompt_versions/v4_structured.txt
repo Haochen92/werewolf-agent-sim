@@ -1,0 +1,29 @@
+DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Extract a structured summary of today's public discussion.
+
+GAME CONTEXT:
+- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
+- Eliminated players' roles are revealed on death.
+- The Game Master announces wolf kills and healer saves, but NOT investigation results.
+
+{situation_standards}
+
+DAY {current_day} PUBLIC DISCUSSION ONLY:
+{day_channel}
+
+Extract all strategically important information from the discussion into the structured fields. Be exhaustive — every distinct accusation should be a separate entry with ALL participating accusers listed.
+
+Rules:
+- Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion — both voting history and vote declarations are strategically critical.
+- Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
+- When a player claims a role, distinguish the certainty level in the evidence field:
+  - Confirmed by death reveal: eliminated players' roles are publicly revealed — reference to a dead player's known role is a confirmed fact, NOT a claim. Do not list confirmed-dead roles as role_claims.
+  - Claimed with public corroboration (e.g., "accusation confirmed by subsequent elimination")
+  - Claimed without evidence (write "unverified")
+  - A healer save announced by the Game Master confirms the player is not a wolf, but does NOT confirm their specific role.
+  - Do not treat unverified claims as fact.
+- Be specific about what was said and claimed, not vague summaries.
+"""
+
+# Structured output schema: DaySummaryOutput (Agents/schemas/output.py)
+# Uses: Accusation, RoleClaim, Alliance, VillageDynamics nested models
+# Serialized via _serialize_day_summary() in Agents/nodes.py
