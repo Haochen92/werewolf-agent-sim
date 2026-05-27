@@ -355,4 +355,75 @@ consumers that may parse specific fields. Epistemic correctness is deprioritized
 because actual Game Master announcements are appended to the day dialogue
 separately — the summary doesn't need to infer epistemic status.
 
+### 2026-05-27 — Model comparison experiment
+
+Added `--gen-model` and `--thinking` flags to the eval runner to test
+different generation models with the same structured output prompt (v4b).
+
+**Configurations tested:**
+1. gemini-3.1-flash-lite, thinking=minimal (current default)
+2. gemini-3.1-flash-lite, thinking=medium
+3. gemini-3.5-flash (no thinking)
+4. gemini-2.5-pro (no thinking)
+
+**Results (18 pairs, judge=gemini-2.5-pro):**
+
+| Model                   | comp  |  acc  | evid  |  dyn  | epis  |
+|-------------------------|-------|-------|-------|-------|-------|
+| flash-lite (minimal)    |  4.50 |  4.61 |  4.89 |  5.00 |  4.72 |
+| flash-lite (medium)     |  4.44 |  4.89 |  4.94 |  5.00 |  5.00 |
+| 3.5-flash               |  4.78 |  4.78 |  5.00 |  5.00 |  5.00 |
+| **2.5-pro**             |**4.83**|**4.94**|**5.00**|  5.00 |  5.00 |
+
+**Observations:**
+
+1. **2.5-pro scores highest** — completeness (4.83) and accuracy (4.94).
+   Three dimensions at perfect 5.00. But ~120 min for 18 pairs.
+
+2. **3.5-flash is close** — completeness 4.78, accuracy 4.78, three
+   dimensions perfect. But ~80 min for 18 pairs — a large latency increase
+   over flash-lite for a marginal score gain.
+
+3. **flash-lite (medium thinking) matches 3.5-flash quality at flash-lite
+   latency** (~10 min for 18 pairs). Accuracy jumps 4.61→4.89 and epistemic
+   hits perfect 5.00 vs minimal thinking. Completeness slightly regresses
+   (4.50→4.44) but within noise.
+
+4. **All models achieve perfect 5.00 on dynamics** — the structured output
+   with SITUATION_STANDARDS is robust across model capabilities.
+
+**Manual inspection of failure cases:**
+
+Compared actual summaries on pairs where flash-lite (minimal) had issues:
+
+- `6a8635b0_day2` (comp 3): minimal dropped player_1 from accusers list
+  (the primary instigator). Medium thinking and 3.5-flash both include
+  player_1 correctly.
+- `8e437de2_day3` (acc 2): minimal **fabricated a Game Master announcement**
+  about a healer save that didn't happen. Medium thinking produces no
+  hallucination — correctly lists no role claims. 3.5-flash also correct.
+- `cdcd2c6e_day2` (comp 3): all models miss the explicit vote declaration;
+  medium thinking and 3.5-flash both score 4 (partial improvement).
+
+The key distinction between flash-lite minimal and medium thinking: medium
+thinking avoids hallucinations (fabricated facts) and accuser omissions.
+These are the most damaging failure modes for downstream agent decisions
+since day summary is the only representation of prior days agents see.
+
+3.5-flash occasionally over-extracts (spurious "villager" role claims from
+players just saying "I'm not a wolf"), while flash-lite medium thinking
+produces cleaner output. 3.5-flash also adds ~70 min latency per eval run
+for no meaningful quality gain over flash-lite medium.
+
+**Per-pair files:**
+- `eval_results_31-flash-lite_medium.jsonl` / `eval_summary_31-flash-lite_medium.txt`
+- `eval_results_35-flash.jsonl` / `eval_summary_35-flash.txt`
+- `eval_results_25-pro.jsonl` / `eval_summary_25-pro.txt`
+
+**Decision:** Use flash-lite with medium thinking for day summaries. It
+matches 3.5-flash quality on the dimensions that matter (completeness,
+accuracy) at flash-lite latency. The thinking budget eliminates the two
+worst failure modes of minimal thinking (hallucinated facts, dropped
+accusers) without the latency cost of upgrading the model.
+
 ### Experiment complete

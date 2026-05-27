@@ -1,0 +1,53 @@
+Day Summary Eval — 18 pairs scored
+Gen model: gemini-3.5-flash (thinking=minimal)
+Judge model: gemini-2.5-pro
+
+Dimension                    Avg  Min  Max
+------------------------------------------
+completeness                4.78    4    5
+accuracy                    4.78    3    5
+evidence_type_clarity       5.00    5    5
+village_dynamics            5.00    5    5
+epistemic_correctness       5.00    5    5
+
+Per-pair scores:
+pair_id                 comp   acc  evid   dyn  epis
+----------------------------------------------------
+0313eab5_day2              5     5     5     5     5
+0313eab5_day3              5     5     5     5     5
+0313eab5_day4              5     5     5     5     5
+04aabab0_day2              5     5     5     5     5
+04aabab0_day3              5     5     5     5     5
+04aabab0_day4              5     5     5     5     5
+278da20b_day2              5     5     5     5     5
+6a8635b0_day2              5     5     5     5     5
+6a8635b0_day3              5     5     5     5     5
+6a8635b0_day5              5     5     5     5     5
+732da649_day2              5     5     5     5     5
+8498d5f4_day2              4     5     5     5     5
+8498d5f4_day3              5     5     5     5     5
+8e437de2_day2              5     5     5     5     5
+8e437de2_day3              4     5     5     5     5
+cdcd2c6e_day2              4     5     5     5     5
+cdcd2c6e_day3              4     3     5     5     5
+cdcd2c6e_day4              5     3     5     5     5
+
+Reasoning:
+  0313eab5_day2: The summary is excellent, perfectly capturing the core dynamic of the day. It correctly identifies that the discussion was a repetitive loop of asking for information, and astutely separates the players driving for specifics (2, 7, 8) from the more passive participants.
+  0313eab5_day3: The summary is excellent, accurately capturing the core conflict between the bloc pushing on player_3 (P2, P6, P7) and the meta-analysis from player_5. It correctly distinguishes between hard evidence (voting records) and soft evidence (behavioral patterns) for all key accusations, and the village dynamics section is a precise and insightful characterization of the day's discussion.
+  0313eab5_day4: This is an excellent summary that perfectly captures the day's dynamics. It correctly identifies the unified pressure on player_5, accurately details the three distinct accusations and defenses, and correctly labels the evidence type for each. The dynamics and epistemic status sections are also flawless.
+  04aabab0_day2: The summary is flawless for this simple transcript. It correctly identifies the complete lack of accusations or claims, and its characterization of the village dynamic is precise, noting the information-starved state and correctly identifying the players who initiated the conversation.
+  04aabab0_day3: This is an excellent summary that perfectly captures the state of the game. It correctly identifies the primary accusation against player_2, the secondary accusation against players 3 and 7, and the counter-accusation from player_2, all while accurately labeling the evidence types and characterizing the overall village dynamic with high precision.
+  04aabab0_day4: This is an excellent summary that perfectly captures the core conflict, all accusations, and all defenses. The village dynamics section is particularly strong, accurately describing the nuanced alignment between player_6 and player_7 against player_3, and correctly identifying the discussion drivers.
+  278da20b_day2: This is an excellent summary that perfectly captures the strategic and social dynamics of the discussion. It correctly identifies the central conflict (player_1/player_3 vs. player_6), the deflection (player_6 vs. player_5), and the moderating voices (player_4), all while accurately attributing claims and labeling evidence types.
+  6a8635b0_day2: This is an excellent summary that perfectly captures the narrative of the day. It correctly identifies the formation of a pressure group, the specific players being targeted, and the behavioral evidence used against them, while also providing a nuanced and accurate description of the overall village dynamics.
+  6a8635b0_day3: This is an excellent summary that scores perfectly across all dimensions. It accurately captures the core accusations, defenses, and the resulting village alignment, correctly labels the evidence types (communication slip vs. behavioral pattern), and precisely characterizes the group dynamics, including who is driving the discussion.
+  6a8635b0_day5: This is an excellent summary that perfectly captures the game state and strategic arguments. It correctly identifies the core conflict (player_5's vote vs. player_6's unconfirmed status), accurately labels the evidence types, and precisely describes the village dynamics and epistemic certainty of all roles.
+  732da649_day2: The summary is excellent, accurately capturing all key accusations, defenses, and the formation of a pressure bloc. It correctly identifies player_5 as the primary driver of discussion and provides a precise, insightful characterization of the village dynamics, including the shift in focus from player_1 to player_3.
+  8498d5f4_day2: The summary is excellent, accurately capturing the primary conflict between the active investigators (p1, p4, p6) and the cautious players (p2, p5). It correctly identifies all accusations, defenses, and alliances. Its only minor omission is not explicitly stating that player_1 and player_6 cast votes for player_2, though it correctly captures the resulting consensus to target them.
+  8498d5f4_day3: The summary is excellent across all dimensions. It perfectly captures the central conflict (a 5-player bloc vs. player_5), correctly identifies the evidence types for both the main accusation (voting_record) and the counter-accusation (communication_style), and provides a nuanced, accurate characterization of the village dynamics.
+  8e437de2_day2: The summary is excellent, perfectly capturing the nuance of a discussion with no concrete accusations. It correctly identifies the single piece of hard information (the save) and astutely characterizes the village's response as creating a speculative framework for observation rather than pushing a target. The distinction between active framework-setters and passive question-askers is particularly insightful and accurate.
+  8e437de2_day3: The summary is exceptionally accurate and well-structured, correctly identifying the core conflict, the drivers, and the evidence basis for all accusations. Its only minor weakness is the omission of strategically relevant claims from Player 1 and Player 3 about being targeted by wolves, which serve as alignment signals.
+  cdcd2c6e_day2: The summary is excellent, accurately capturing the core conflict between the aggressive (5, 7) and cautious (3, 8) factions. The village dynamics section is particularly insightful. The only minor omission is player_6's specific contribution to the cautious argument, which prevents a perfect completeness score.
+  cdcd2c6e_day3: The summary excels at characterizing the village dynamics and labeling evidence types. However, it contains a significant inaccuracy by framing the counter-accusation from players 3 & 8 as being directed solely at player 2, when the transcript shows it was aimed at the entire opposing bloc (2, 4, & 6), misrepresenting the scope of the conflict.
+  cdcd2c6e_day4: The summary is excellent at capturing the overall dynamics, evidence types, and strategic content. However, it makes a significant accuracy error by stating player_4 claimed villager, when it was actually player_6 who made that claim about player_4, which is a meaningful distinction.
