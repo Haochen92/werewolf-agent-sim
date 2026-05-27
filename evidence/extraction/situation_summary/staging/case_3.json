@@ -1,0 +1,71 @@
+{
+  "golden_situations": [
+    "The investigator privately confirmed as villager the same player who was publicly saved by the healer — making the private finding redundant. Information landscape: Information-starved — no voting records, no eliminations. All suspicion driven by communication style and perceived evasion. Consensus texture: A fragile consensus is forming against one player for deflection under pressure, but it is tone-based with no evidentiary support. Agent exposure: The investigator has maintained a low profile and is not under scrutiny. Game phase: Early mid-game, first elimination vote pending. Core dilemma: the investigator has no unique information advantage and must decide whether to follow a conviction-free, tone-based consensus or risk standing out by dissenting."
+  ],
+  "observation_labels": [
+    {
+      "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+      "relevance": 2,
+      "score": 0.8151,
+      "situation": "Investigator initiated vote on weak behavioral read in info-starved village, private check revealed villager. Mid-game, directionless.",
+      "approach": "Broke stalemate by accusing player who seemed to deflect by mirroring questions.",
+      "outcome": "Village followed and eliminated a villager. Acting on poor-quality info caused harm."
+    },
+    {
+      "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+      "relevance": 2,
+      "score": 0.8134,
+      "situation": "Investigator voted against consensus on private behavioral read, ended up in bloc with a wolf. First elimination vote, info-starved.",
+      "approach": "Voted against correct wolf target based on speculative read, contradicting village consensus.",
+      "outcome": "Severely damaged credibility. Pivoting later allowed partial trust repair."
+    },
+    {
+      "key": "7c0a6e6d-2bee-4bed-8d66-139122985095",
+      "relevance": 1,
+      "score": 0.8008,
+      "situation": "Investigator had strong suspicion but no proof from night action. Info-starved, first elimination vote.",
+      "approach": "Took the lead, cast first vote against suspect with confidence.",
+      "outcome": "Wolf eliminated, but leadership made investigator the next target."
+    },
+    {
+      "key": "b34d12c2-9d2b-4ac6-9d36-b877dad2d896",
+      "relevance": 1,
+      "score": 0.8001,
+      "situation": "Investigator eliminated by plurality while holding wolf identity. Info-starved, first elimination, fragile consensus against them for vague accusations.",
+      "approach": "Chose not to reveal role or finding, maintained soft-pressure strategy.",
+      "outcome": "Eliminated, role revealed, valuable information lost."
+    },
+    {
+      "key": "5922bf88-e545-4f69-89e0-d55b0da3524d",
+      "relevance": 2,
+      "score": 0.7838,
+      "situation": "Strong unsubstantiated consensus to vote out a player. Investigator had no info on target, knew another was villager. First vote after healer save.",
+      "approach": "Aligned with group consensus and voted to eliminate the target.",
+      "outcome": "Catastrophic error — eliminated the Healer, paving the way for wolf victory."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "4207be33-a2ad-47e5-9294-0d528da2910d",
+      "relevance": 1,
+      "score": 0.7736,
+      "situation": "Private speculative suspicion contradicts strong public consensus based on voting records. Mid-to-late game, dissenting vote makes you suspect.",
+      "action": "Abandon speculative read and vote with consensus unless you've investigated the target and know they're innocent."
+    },
+    {
+      "key": "57449d0c-1bad-45d0-882e-0acfaf3642cf",
+      "relevance": 2,
+      "score": 0.7643,
+      "situation": "Strong vibes-based consensus without concrete evidence. Investigator has private villager confirmations suggesting target may be power role.",
+      "action": "Refuse to join bandwagon vote. Better to abstain than contribute to eliminating a power role on social pressure."
+    },
+    {
+      "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+      "relevance": 0,
+      "score": 0.7541,
+      "situation": "Privately confirmed wolf, village independently reaching same conclusion on strong public evidence. Mid-to-endgame.",
+      "action": "Stay quiet and vote with majority. No need to reveal role."
+    }
+  ],
+  "notes": "Thin namespace (5 obs, 3 strat total in investigator/day_vote). Retrieval quality good — top items directly relevant. Obs 5 is a particularly valuable cautionary tale (mislynching healer by following unsubstantiated consensus post-healer-save) that closely mirrors this case's risk. SP2 is the strongest strategy match. SP3 is a clean non-match (different info advantage, different consensus quality)."
+}

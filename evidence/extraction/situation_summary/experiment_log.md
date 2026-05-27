@@ -183,3 +183,18 @@ similar *choices* within similar states).
 Constrained to one sentence describing the agent's specific tradeoff. Updated
 both SITUATION_STANDARDS (shared across extraction, dedup, and situation
 summary) and SITUATION_SUMMARY_SUFFIX (query generation instructions).
+
+**Also applied: reduce max situations from 1-3 to 1-2.** Labeling revealed
+the pipeline never produces 3 useful situations, and frequently fills the
+second slot with a redundant angle of the first. Changed "1-3" to "1-2" and
+replaced "Do not describe the same conflict from multiple angles" with
+"Only write a second situation if it captures a genuinely independent
+decision. Two views of the same conflict is one situation, not two."
+
+**Open question: propagate to extraction prompts?** Existing store entries
+have implicit dilemmas in ~60-70% of strategy points and ~30-40% of
+observations. If the retrieval eval shows the implicit dilemmas are
+sufficient for matching, no change needed. If NDCG reveals a gap between
+state-similar but dilemma-different cases, updating extraction to produce
+explicit dilemma fields is the next lever. Defer until golden-label eval
+is complete.
