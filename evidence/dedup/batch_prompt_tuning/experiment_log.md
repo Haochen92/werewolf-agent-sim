@@ -169,16 +169,148 @@ At production scale (522 items), the savings compound because flash-lite process
 
 **For strategy points** (KEEP/DISCARD only, no MERGE operation), flash-lite may be sufficient on its own — the over-merge problem doesn't apply. This needs separate validation.
 
+### Two-pass golden eval results (v3 prompts)
+
+End-to-end accuracy validation of the two-pass pipeline on the 111-key golden eval set.
+
+| Approach | Accuracy | Time | Escalation Rate |
+|---|---|---|---|
+| **Two-pass (lite→pro)** | **89.2% (99/111)** | **311s** | **25% (28/111 keys)** |
+| 3.5-flash single-pass | 86.5% (96/111) | 343s | — |
+| 2.5-pro single-pass | 83.8% (93/111) | 513s | — |
+| flash-lite standalone | 72.1% (80/111) | 145s | — |
+
+The two-pass pipeline is the best approach across all dimensions: highest accuracy (+2.7pp over next best), fastest of the accurate options, and gets 2.5-pro's merge rewrite quality where it matters.
+
+**Strategy clusters had 0% escalation** — all KEEP/DISCARD decisions handled by flash-lite alone. Escalation only happens on observation clusters with real MERGE candidates.
+
+**Per-cluster results:**
+
+| Cluster | Kind | Size | Accuracy | Escalated | Notes |
+|---|---|---|---|---|---|
+| C0 | obs | 10 | 80% (8/10) | 0/10 | Flash-lite missed 2 DISCARDs |
+| C4 | obs | 23 | 83% (19/23) | 8/23 | Largest cluster, good targeting |
+| C5 | obs | 5 | 100% (5/5) | 0/5 | Pure-KEEP control |
+| C11 | obs | 10 | 100% (10/10) | 6/10 | Perfect with escalation |
+| C14 | obs | 15 | 80% (12/15) | 10/15 | 2.5-pro over-merged 3 items |
+| C16 | obs | 8 | 100% (8/8) | 4/8 | Perfect with escalation |
+| C20 | strat | 2 | 100% (2/2) | 0/2 | Pure-KEEP control |
+| C21 | strat | 9 | 89% (8/9) | 0/9 | 1 missed DISCARD |
+| C25 | strat | 11 | 82% (9/11) | 0/11 | Over-discarded 2 |
+| C28 | strat | 16 | 100% (16/16) | 0/16 | Perfect |
+| C33 | strat | 2 | 100% (2/2) | 0/2 | Perfect |
+
+**Confusion matrix (12 errors):**
+
+| Golden ↓ \ Model → | KEEP | DISCARD | MERGE | MISSING |
+|---|---|---|---|---|
+| KEEP (77) | **71** | 2 | 4 | 0 |
+| DISCARD (20) | 2 | **17** | 0 | 1 |
+| MERGE (14) | 3 | 0 | **11** | 0 |
+
+No dominant error mode. The 4 KEEP→MERGE errors come from 2.5-pro over-merging on escalated items, consistent with its known tendency.
+
+**Escalation rate: golden eval vs full store.** The golden eval showed 25% escalation (28/111 keys), much lower than the 64% seen on the full v4 store dry run. The full store has more large/ambiguous observation clusters that trigger flash-lite's over-merge tendency. At production scale, the escalation rate will likely fall between these bounds depending on cluster composition.
+
+**Full-store dry run results (v4, 522 items):**
+
+| | v4 (raw) | Two-pass result | v4_deduped_v2 (3.5-flash) | v4_deduped (v0) |
+|---|---|---|---|---|
+| Observations | 324 | 279 (-14%) | 269 (-17%) | 150 (-54%) |
+| Strategy | 198 | 160 (-19%) | 163 (-18%) | 167 (-16%) |
+| **Total** | **522** | **439 (-16%)** | **432 (-17%)** | **320 (-39%)** |
+
+The two-pass produces comparable store sizes to 3.5-flash single-pass (16% vs 17% reduction), with the advantage of proper merge rewrite quality from 2.5-pro.
+
 ### Recommendation
 
-For production batch dedup:
-- **Two-pass pipeline** (flash-lite triage → 2.5-pro verification + rewrites) is the recommended path. Flash-lite's KEEP/DISCARD precision is high enough to trust, and escalating only MERGE decisions to 2.5-pro dramatically reduces cost and time while preserving merge quality.
-- **2.5-pro for everything** remains the simplest fallback — slightly lower action accuracy (83.8% vs 86.5%) but no pipeline complexity. Viable for small stores or infrequent runs.
-- **3.5-flash with graceful degradation** — accept missing approach/outcome fields and fall back to survivor entry text. Cheapest single-pass option, but loses merge quality benefit.
+**Two-pass pipeline (flash-lite triage → 2.5-pro verification)** is the recommended production approach:
+- Best accuracy (89.2%) and fastest accurate option (311s on eval set)
+- Flash-lite handles all strategy KEEP/DISCARD decisions standalone (0% escalation)
+- 2.5-pro writes high-quality merge text only where needed
+- Comparable store-size outcomes to 3.5-flash single-pass, with better merge quality
+
+**Remaining concern:** Full-store escalation rate (64%) is higher than golden eval (25%). This affects efficiency but not accuracy — the pipeline still produces correct results, just with more 2.5-pro calls than optimal. Potential mitigations: stronger anti-merge bias in flash-lite triage prompt, or cluster size limits that reduce ambiguity.
+
+## Flash-lite Anti-Overmerge Prompt Tuning
+
+The default v3 observation prompt causes flash-lite to over-merge (19 KEEP→MERGE errors, 32.4% MERGE precision). A dedicated "lite" prompt variant was created to address this without changing 2.5-pro's prompt.
+
+### Prompt changes (v3 → lite)
+
+Stored as `prompt_versions/batch_v4_lite_anti_overmerge.py`. Key additions to observation prompt only (strategy prompt unchanged):
+
+- **CALIBRATION note at top**: "KEEP is the default. Most entries should be kept. MERGE is rare."
+- **MERGE RED FLAGS checklist**: 6 conditions that indicate over-merge (different game phases, different player counts, etc.)
+- **Group size tightening**: Merge groups >3 entries flagged as "almost always wrong"
+- **"When in doubt KEEP" directive**: Explicit instruction for ambiguous cases
+- Prompt length: 7284 chars (99 chars shorter than default 7383 chars)
+
+### Golden eval results (lite prompt, flash-lite only)
+
+| Approach | Accuracy | Time | Notes |
+|---|---|---|---|
+| **flash-lite + lite prompt** | **85.6% (95/111)** | **132s** | KEEP→MERGE: 1 (down from 19) |
+| flash-lite + v3 default | 72.1% (80/111) | 145s | KEEP→MERGE: 19 |
+| two-pass (lite→pro, v3) | 89.2% (99/111) | 311s | Best overall |
+| 3.5-flash (v3) | 86.5% (96/111) | 343s | Best single-model |
+
+**Confusion matrix (lite prompt, 16 errors):**
+
+| Golden ↓ \ Model → | KEEP | DISCARD | MERGE | MISSING |
+|---|---|---|---|---|
+| KEEP (77) | **74** | 2 | 1 | 0 |
+| DISCARD (20) | 2 | **13** | 4 | 1 |
+| MERGE (14) | 5 | 1 | **8** | 0 |
+
+**Per-prediction precision:**
+
+| Prediction | Default v3 | Lite prompt | Change |
+|---|---|---|---|
+| KEEP | 56/61 = 91.8% | 74/81 = 91.4% | ~same |
+| DISCARD | 13/15 = 86.7% | 13/16 = 81.2% | ~same |
+| MERGE | 11/34 = 32.4% | 8/13 = **61.5%** | +29pp |
+
+The lite prompt fixed the over-merge problem. MERGE precision jumped from 32.4% to 61.5%. The error profile flipped from over-merge (19 KEEP→MERGE) to slight under-merge (5 MERGE→KEEP), which is the safe direction. KEEP and DISCARD precision remained stable.
+
+### V4 full-store dry run comparison
+
+| Config | Obs Items | Obs Remain | Obs Merged | Obs Disc | Strat Items | Strat Remain | Strat Disc | Total | Remain | Red% |
+|---|---|---|---|---|---|---|---|---|---|---|
+| v4 raw (3.5-flash) | 324 | 150 | 174 | 0 | 198 | 147 | 51 | 522 | 297 | 43.1% |
+| v4_deduped_v2 (3.5-flash) | 324 | 269 | 54 | 1 | 198 | 163 | 35 | 522 | 432 | 17.2% |
+| two-pass (lite→pro, v3) | 324 | 279 | 40 | 5 | 198 | 160 | 38 | 522 | 439 | 15.9% |
+| **flash-lite + lite prompt** | **324** | **280** | **44** | **0** | **198** | **160** | **38** | **522** | **440** | **15.7%** |
+
+Flash-lite with the lite prompt produces nearly identical store-level outcomes to the two-pass pipeline (440 vs 439 remaining), without requiring 2.5-pro at all. Strategy point decisions are identical across both (160 remaining, 38 discarded) — the lite prompt only changes observation behavior.
+
+The observation merge count (44) is slightly higher than two-pass (40), suggesting flash-lite still has a mild over-merge tendency that 2.5-pro would catch. However, the 0 observation discards (vs 5 in two-pass) shows the lite prompt is more conservative overall.
+
+### Two-pass with lite prompt (validated)
+
+Initial eval had a bug: `--prompt-variant` wasn't passed to the triage call in `call_model_two_pass()`. After fixing (`batch_dedup_eval.py` lines 153-166), re-ran with the lite prompt actually applied.
+
+| Approach | Accuracy | Time | Escalation | MERGE→KEEP |
+|---|---|---|---|---|
+| Two-pass + v3 default | **89.2% (99/111)** | 311s | 25% (28 keys) | 3 |
+| Two-pass + lite prompt | 84.7% (94/111) | **227s** | **12% (13 keys)** | 7 |
+| Flash-lite + lite standalone | 85.6% (95/111) | 132s | — | 5 |
+| 3.5-flash single-pass | 86.5% (96/111) | 343s | — | — |
+
+The lite prompt halved escalation (25% → 12%) and reduced total time by 27% (311s → 227s), but accuracy dropped 4.5pp (89.2% → 84.7%). The cause: the lite prompt's conservatism prevents legitimate MERGEs from reaching 2.5-pro (7 MERGE→KEEP errors vs 3 with default). The v3 default prompt's "over-escalation" is actually beneficial — 2.5-pro catches false MERGEs while confirming real ones.
+
+### Recommendation (updated)
+
+**Two-pass pipeline remains the recommended approach.** The prompt variant choice is a speed/accuracy tradeoff:
+
+- **Best accuracy: two-pass + v3 default prompt** (89.2%, 311s, 25% escalation). Over-escalation is a feature — all real MERGEs reach 2.5-pro for verification. Use this for periodic maintenance dedup where quality matters most.
+- **Best speed/cost ratio: two-pass + lite prompt** (84.7%, 227s, 12% escalation). 27% faster, 52% fewer 2.5-pro calls. Trades 4.5pp accuracy for efficiency. Use this if running dedup more frequently (e.g., after every few games) where cumulative cost matters.
+
+Current default: **v3 default prompt**. Switch to lite if batch dedup frequency increases.
 
 ## Next Steps
 
-1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure added to `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). End-to-end accuracy validation on golden eval set is pending.
+1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure in `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). Golden eval: 89.2% accuracy, best of all approaches. See [two-pass golden eval results](#two-pass-golden-eval-results-v3-prompts).
 2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/report.md#phase-2).
-3. **Validate flash-lite-only for strategy points** — strategy uses only KEEP/DISCARD (no MERGE), so flash-lite's over-merge weakness does not apply. Run a dedicated eval to confirm standalone flash-lite is sufficient for strategy batch dedup.
-4. **Integrate batch dedup into the game pipeline** — once the pipeline approach is validated, wire batch dedup into the post-game flow as a periodic maintenance operation.
+3. ~~**Tune flash-lite triage prompt**~~ — **Done.** Lite anti-overmerge prompt created and evaluated. Standalone: 85.6% (up from 72.1%). Two-pass with lite: 84.7% at 12% escalation vs 89.2% at 25% escalation with v3 default. See [flash-lite anti-overmerge prompt tuning](#flash-lite-anti-overmerge-prompt-tuning) and [two-pass with lite prompt](#two-pass-with-lite-prompt-validated).
+4. **Integrate batch dedup into the game pipeline** — wire two-pass batch dedup into the post-game flow as a periodic maintenance operation.
