@@ -356,6 +356,156 @@ Cluster entries:
 """
 
 
+BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE = """
+You are cleaning an episodic observation memory database for an AI Werewolf
+agent. The entries below are a candidate similarity cluster from one role
+and action-phase namespace. Each entry is numbered [1], [2], etc.
+
+Observations have three structured fields:
+- situation: The game conditions (used for semantic search matching). Should
+  use agent roles, never player IDs, and be specific enough for retrieval.
+- approach: What the agent did in that situation. May list multiple tactics
+  with per-tactic counts in the format "tactic description (Nx)".
+- outcome: What resulted — how others responded and the downstream
+  consequences.
+
+{situation_standards}
+
+When you rewrite observations, keep each field (situation, approach, outcome)
+as separate coherent text. Use the situation standards above to keep the
+situation field specific enough for retrieval.
+
+Resolve this cluster using one or more operations. Every operation must use
+one of these action values: DISCARD, MERGE, KEEP.
+
+CALIBRATION: KEEP is the default. Most entries in a cluster should be KEPTed.
+MERGE is rare — typically only 1-2 entries in a cluster qualify. If you find
+yourself merging more than a third of the cluster, re-examine each merge
+group. You are likely grouping by topic similarity rather than by genuinely
+identical lessons. When in doubt between MERGE and KEEP, always KEEP.
+
+Rules:
+- DISCARD: Entries are exact duplicates — same situation, approach, AND
+  outcome. Choose one survivor_key (by entry number); the apply step will
+  preserve that entry, sum counts, and delete absorbed entries.
+
+- MERGE: Entries share the EXACT same functional situation and the EXACT
+  same functional outcome, but record different specific tactics in the
+  approach field. Multiple tactics that fail (or succeed) for the same
+  structural reason are one lesson, not separate observations. Choose one
+  survivor_key (by entry number) and provide merged_situation,
+  merged_approach, and merged_outcome.
+
+  Approach field rules for MERGE:
+  - List each distinct tactic with its count: "Claiming a 'frame job' (4x),
+    pleading genuine mistake (3x), accusing groupthink (5x)".
+  - Preserve existing counts from entries being merged. A tactic with no
+    existing count annotation is (1x).
+  - If the merged list exceeds 7 distinct tactics, group similar variants
+    under a category label: "Various weak excuses — frame job, genuine
+    mistake, and 3 similar variants (12x total)". Keep the 3-4 most
+    distinct tactics listed individually.
+  - The merged outcome summarizes the shared lesson.
+  - observation_count will be summed automatically.
+
+- KEEP: Entries are genuinely distinct — different situations OR different
+  outcomes. No change needed for the listed source_keys.
+
+COMPARISON CRITERIA:
+
+Before choosing an operation, evaluate each field independently:
+
+SITUATION — "same" vs "different":
+Would a semantic search query matching situation A also retrieve
+situation B? If not, they are different situations — KEEP, even if the
+underlying lesson is similar.
+
+Check these dimensions:
+- Information landscape: information-rich vs information-starved changes
+  which tactics are available. Different evidence types (voting record vs
+  behavioral read vs role claim) change what signal the agent looks for.
+- Consensus texture: unified village vs split village vs no consensus
+  changes the agent's social strategy.
+- Agent exposure: driving the push vs under suspicion changes the agent's
+  risk calculus.
+- Game phase: early vs endgame changes the stakes per action. BUT phase
+  alone does not make situations different if the tactic and available
+  information are the same.
+
+APPROACH — "same" vs "different":
+Two approaches are functionally the same when they point the agent toward
+the same action on the ground — same target type, same timing, same method.
+NOT different: wording variations, different reasoning for the same action.
+Different: different tactic category (accusation vs deflection vs role
+claim), different detection method (voting record analysis vs behavioral
+pattern recognition), different dimension targeted (timing-based vs
+logic-based argument).
+
+OUTCOME — "same" vs "different":
+Two outcomes are functionally the same when they succeed or fail for the
+same structural reason.
+Same approach, opposite outcome (success vs failure) → always KEEP.
+Different mechanism: failed because evidence was too strong vs failed
+because village was already coordinated → different.
+Partial outcomes: "worked initially then failed" is distinct from both
+pure success and pure failure.
+
+MERGE RED FLAGS — if any of these apply, KEEP instead:
+- Different game phases or timing contexts (early vs endgame)
+- Different player dynamics described (wolf-led vs village-led push)
+- Different specific behaviors being observed or reacted to
+- More than 3 entries in the merge group
+- Entries describe failures for different structural reasons
+- A merged situation would be too broad to match any specific search query
+
+BEFORE MERGING — verify ALL of these hold for every entry in the group:
+1. The situations pass the retrieval test: a single merged situation text
+   would be retrieved by the same vector search queries that match EACH
+   original entry. If original entries have different game phases, different
+   info landscapes, or different agent exposure that would match different
+   queries, they belong in separate KEEP operations — even if the lesson
+   is similar.
+2. The outcomes follow the same success/failure pattern and fail/succeed
+   for the same structural reason.
+3. The approaches differ only in specific tactic variant, not in tactic
+   category (accusation vs deflection vs role claim are different categories).
+A MERGE group larger than 3 entries is almost always wrong — it usually
+means you are grouping by "lesson theme" rather than by retrieval context.
+
+DISCARD REQUIRES ALL THREE FIELDS TO MATCH:
+Situation, approach, AND outcome must all be functionally the same. If the
+approach uses a different tactic category or detection method, the entries
+are not duplicates — consider MERGE (if outcome matches) or KEEP.
+
+DECISION TEST:
+For each pair of entries, ask: would the agent make a different strategic
+decision based on reading entry A versus entry B?
+
+- Both entries teach "this category of tactic fails in this situation"
+  → one lesson → MERGE them (consolidate tactic variants with counts).
+- One entry shows failure, another shows success → different lessons
+  → KEEP both.
+- Same situation, same outcome, same tactic → redundant → DISCARD.
+- Same situation but different tactic categories (accusation vs deflection),
+  even if both fail → different lessons about what doesn't work → KEEP both.
+- Different situations (different retrieval match) with same approach →
+  different lessons (the tactic works/fails in different contexts) → KEEP.
+
+Rules:
+- Use only entry numbers shown in the cluster (e.g. "1", "2"). Do not use
+  UUIDs or invent new identifiers.
+- Every entry number in the cluster must appear in exactly one operation's
+  source_keys.
+- A single cluster may require multiple operations (e.g., MERGE a subgroup
+  of 2-3, KEEP the rest that have different situations or outcomes).
+
+Role: {role}
+Action phase: {action_phase}
+
+Cluster entries:
+{entries}
+"""
+
 BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT = """
 You are cleaning an episodic observation memory database for an AI Werewolf
 agent. The entries below are a candidate similarity cluster from one role

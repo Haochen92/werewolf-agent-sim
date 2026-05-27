@@ -27,8 +27,14 @@ from Agents.memory_persistence import (
 )
 from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
+    BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
     BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
 )
+
+_OBS_PROMPT_VARIANTS = {
+    "default": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
+    "lite": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
+}
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 load_dotenv()
@@ -770,6 +776,7 @@ def _call_cluster_llm(
     index_to_key: dict[str, str],
     model: str,
     thinking_level: str | None,
+    prompt_variant: str = "default",
 ) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
     llm = _get_batch_llm(model, thinking_level)
     if memory_kind == "strategy_points":
@@ -783,7 +790,10 @@ def _call_cluster_llm(
         output_schema = StrategyBatchDedupOutput
         run_name = "batch_dedup_strategy_points"
     else:
-        prompt = BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT.format(
+        obs_prompt_template = _OBS_PROMPT_VARIANTS.get(
+            prompt_variant, BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
+        )
+        prompt = obs_prompt_template.format(
             role=role,
             action_phase=action_phase,
             entries=entries,
@@ -898,6 +908,7 @@ def dedup_namespace(
     embedding_dims: int,
     max_clusters: int | None = None,
     two_pass: TwoPassConfig | None = None,
+    prompt_variant: str = "default",
 ) -> NamespaceStats:
     namespace = (memory_kind, role, action_phase)
     items_by_key = _fetch_namespace_items(target_store, namespace)
@@ -959,6 +970,7 @@ def dedup_namespace(
                     index_to_key,
                     model,
                     thinking_level,
+                    prompt_variant=prompt_variant,
                 )
         except Exception as exc:
             logger.warning(
@@ -1107,6 +1119,7 @@ def run_batch_memory_dedup(
     cluster_report_only: bool = False,
     preview_chars: int = 160,
     two_pass: TwoPassConfig | None = None,
+    prompt_variant: str = "default",
 ) -> BatchDedupReport:
     memory_kinds = memory_kinds or ["observations", "strategy_points"]
     selected_roles = selected_roles or list(roles)
@@ -1182,6 +1195,7 @@ def run_batch_memory_dedup(
                         thinking_level=thinking_level,
                         max_clusters=max_clusters,
                         two_pass=two_pass,
+                        prompt_variant=prompt_variant,
                     )
                 except Exception as exc:
                     logger.warning(
@@ -1351,6 +1365,12 @@ def _parse_args() -> argparse.Namespace:
         help="Thinking level for verification model.",
     )
     parser.add_argument(
+        "--prompt-variant",
+        default="default",
+        choices=list(_OBS_PROMPT_VARIANTS.keys()),
+        help="Observation prompt variant (default: standard v3 prompts).",
+    )
+    parser.add_argument(
         "--report-path",
         type=Path,
         default=None,
@@ -1394,6 +1414,7 @@ def main() -> int:
         cluster_report_only=args.cluster_report_only,
         preview_chars=args.preview_chars,
         two_pass=two_pass_config,
+        prompt_variant=args.prompt_variant,
     )
     report_json = json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True)
     if args.report_path:
