@@ -286,6 +286,59 @@ class SituationSummaryScores(BaseModel):
     brief_reasoning: str = ""
 
 
+class DaySummaryScores(BaseModel):
+    completeness: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary capture all strategically important information "
+            "from the raw discussion? Accusations, defenses, claims, alliances, "
+            "and pressure dynamics. "
+            "1=major omissions; 5=all significant content preserved"
+        ),
+    )
+    accuracy: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Are attributions correct? Right player IDs, accurate characterization "
+            "of who said what, no fabricated claims or misattributed reasoning. "
+            "1=major errors; 5=every attribution verifiable in the transcript"
+        ),
+    )
+    evidence_type_clarity: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary distinguish the TYPE of evidence driving suspicion — "
+            "voting records, communication style, behavioral patterns, or concrete "
+            "claims? This is critical for downstream situation characterization. "
+            "1=no evidence type distinction; 5=every accusation's evidence basis is explicit"
+        ),
+    )
+    village_dynamics: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary characterize overall discussion dynamics: village "
+            "alignment (unified/split/fragmented), whether consensus is evidence-driven "
+            "or social momentum, and who is driving vs. passive? "
+            "1=no dynamics; 5=clear, specific characterization of village state"
+        ),
+    )
+    epistemic_correctness: int = Field(
+        ge=1,
+        le=5,
+        description=(
+            "Does the summary treat role claims at the appropriate certainty level? "
+            "Unverified claims should not be stated as fact. Confirmed roles should "
+            "be distinguished from claimed roles. "
+            "1=treats claims as fact; 5=correctly distinguishes certainty levels"
+        ),
+    )
+    brief_reasoning: str = ""
+
+
 class BatchDedupMergeScores(BaseModel):
     retrieval_coverage: int = Field(
         ge=1,
