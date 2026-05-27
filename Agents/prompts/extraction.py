@@ -1,26 +1,27 @@
-DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Summarize what happened in today's public discussion.
+DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Extract a structured summary of today's public discussion.
 
 GAME CONTEXT:
 - 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
 - Eliminated players' roles are revealed on death.
 - The Game Master announces wolf kills and healer saves, but NOT investigation results.
 
+{situation_standards}
+
 DAY {current_day} PUBLIC DISCUSSION ONLY:
 {day_channel}
 
-Write a concise summary of Day {current_day} discussion in exactly this format:
-
-Key accusations: [Who accused whom and the core reasoning. Use format "player_X accused player_Y of [reason]".]
-Defenses: [How accused players responded. Use format "player_X defended by [method]".]
-Any role reveals and their substantiation: [Use format "player_X revealed as ROLE with [evidence/reasoning]".]
-Any alliances or voting blocs that formed: [Use format "player_X and player_Y formed an alliance based on [reason]".]
+Extract all strategically important information from the discussion into the structured fields. Be exhaustive — every distinct accusation should be a separate entry with ALL participating accusers listed.
 
 Rules:
-- Do not include vote results, eliminations, night kills, or healer saves.
+- Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion — both voting history and vote declarations are strategically critical.
 - Use player IDs (player_1, player_2, etc.), not role names, since roles are generally unknown during the game.
-- Only reference roles when they have been publicly revealed through a player's own claim during discussion.
+- When a player claims a role, distinguish the certainty level in the evidence field:
+  - Confirmed by death reveal: eliminated players' roles are publicly revealed — reference to a dead player's known role is a confirmed fact, NOT a claim. Do not list confirmed-dead roles as role_claims.
+  - Claimed with public corroboration (e.g., "accusation confirmed by subsequent elimination")
+  - Claimed without evidence (write "unverified")
+  - A healer save announced by the Game Master confirms the player is not a wolf, but does NOT confirm their specific role.
+  - Do not treat unverified claims as fact.
 - Be specific about what was said and claimed, not vague summaries.
-- Keep the total summary under 300 words.
 """
 
 POSTGAME_EXTRACTION_PROMPT = """

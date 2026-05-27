@@ -16,7 +16,7 @@ from Agents.state import (
     WolfNightGraph,
 )
 
-from Agents.prompts import DAY_SUMMARY_PROMPT
+from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
 from Agents.schemas import DaySummaryOutput
 from Agents.extraction import (
     build_extraction_prompt,
@@ -206,6 +206,51 @@ def check_round(
     return "PREPARE_ROUND"
 
 
+def _serialize_day_summary(result: DaySummaryOutput) -> str:
+    parts = []
+
+    if result.accusations:
+        acc_parts = []
+        for a in result.accusations:
+            accusers = ", ".join(a.accusers)
+            entry = (
+                f"{accusers} accused {a.target} of {a.reasoning} "
+                f"(evidence type: {a.evidence_type})"
+            )
+            if a.defense:
+                entry += f"; {a.target} defended by {a.defense}"
+            acc_parts.append(entry)
+        parts.append("Key accusations and defenses: " + " | ".join(acc_parts))
+    else:
+        parts.append("Key accusations and defenses: None.")
+
+    if result.role_claims:
+        claims = [
+            f"{c.player} claimed {c.claimed_role} ({c.evidence})"
+            for c in result.role_claims
+        ]
+        parts.append("Role claims: " + "; ".join(claims))
+    else:
+        parts.append("Role claims: None.")
+
+    if result.alliances:
+        blocs = [
+            f"{', '.join(a.players)} aligned based on {a.basis}"
+            for a in result.alliances
+        ]
+        parts.append("Alliances and blocs: " + "; ".join(blocs))
+    else:
+        parts.append("Alliances and blocs: None.")
+
+    vd = result.village_dynamics
+    parts.append(
+        f"Village dynamics: {vd.information_landscape} "
+        f"{vd.consensus} {vd.drivers}"
+    )
+
+    return "\n".join(parts)
+
+
 def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     current_day = state.get("current_day", 1)
     current_day_messages = [
@@ -221,11 +266,12 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
+        situation_standards=SITUATION_STANDARDS,
     )
     for attempt in range(max_retries + 1):
         try:
             result = get_llm().with_structured_output(DaySummaryOutput).invoke(prompt)
-            summary = result.summary.strip()
+            summary = _serialize_day_summary(result)
             break
         except Exception as exc:
             logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
