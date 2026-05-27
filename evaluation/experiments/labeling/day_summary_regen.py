@@ -79,8 +79,14 @@ def load_pairs() -> list[dict]:
     return sorted(all_pairs, key=lambda p: p["pair_id"])
 
 
-def generate_summary(raw_discussion: list[dict], day: int) -> str:
-    from Agents.agents import get_llm
+def generate_summary(
+    raw_discussion: list[dict],
+    day: int,
+    *,
+    model: str | None = None,
+    thinking_level: str | None = None,
+) -> str:
+    from Agents.llm_factory import create_chat_model
 
     messages = [
         DayChannel(
@@ -100,7 +106,13 @@ def generate_summary(raw_discussion: list[dict], day: int) -> str:
 
     from Agents.nodes import _serialize_day_summary
 
-    result = get_llm().with_structured_output(DaySummaryOutput).invoke(prompt)
+    if model:
+        llm = create_chat_model(model, temperature=1.0, thinking_level=thinking_level)
+    else:
+        from Agents.agents import get_llm
+        llm = get_llm()
+
+    result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
     return _serialize_day_summary(result)
 
 

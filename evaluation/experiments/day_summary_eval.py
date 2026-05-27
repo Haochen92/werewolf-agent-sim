@@ -5,6 +5,8 @@ eval sets, then judges each summary using the day summary rubric judge.
 
 Usage:
     poetry run python -m evaluation.experiments.day_summary_eval [--pair PAIR_ID] [--judge-model MODEL]
+    poetry run python -m evaluation.experiments.day_summary_eval --gen-model gemini-3.5-flash
+    poetry run python -m evaluation.experiments.day_summary_eval --gen-model gemini-3.1-flash-lite --thinking medium
 """
 
 import argparse
@@ -22,18 +24,33 @@ from evaluation.judges.day_summary import (
 )
 
 OUTPUT_DIR = Path("evidence/extraction/day_summary")
-RESULTS_FILE = OUTPUT_DIR / "eval_results.jsonl"
-SUMMARY_FILE = OUTPUT_DIR / "eval_summary.txt"
 
 
-def run_eval(pairs: list[dict], judge_model: str) -> list[dict]:
+def _output_suffix(gen_model: str | None, thinking_level: str | None) -> str:
+    model = (gen_model or "flash-lite").replace("gemini-", "").replace(".", "")
+    parts = [model]
+    if thinking_level:
+        parts.append(thinking_level)
+    return "_".join(parts)
+
+
+def run_eval(
+    pairs: list[dict],
+    judge_model: str,
+    *,
+    gen_model: str | None = None,
+    thinking_level: str | None = None,
+) -> list[dict]:
     results = []
     for i, p in enumerate(pairs, 1):
         print(f"\n[{i}/{len(pairs)}] {p['pair_id']} (day={p['day']}, {len(p['raw_discussion'])} msgs)")
 
         print("  Generating summary...", flush=True)
         try:
-            new_summary = generate_summary(p["raw_discussion"], p["day"])
+            new_summary = generate_summary(
+                p["raw_discussion"], p["day"],
+                model=gen_model, thinking_level=thinking_level,
+            )
         except Exception as exc:
             print(f"  ERROR generating summary: {exc}")
             continue
@@ -52,6 +69,8 @@ def run_eval(pairs: list[dict], judge_model: str) -> list[dict]:
             "message_count": len(p["raw_discussion"]),
             "new_summary": new_summary,
             "old_summary": p.get("old_summary"),
+            "gen_model": gen_model or "gemini-3.1-flash-lite",
+            "thinking_level": thinking_level or "minimal",
             "judge_model": judge_model,
             "scores": scores.model_dump() if scores else None,
         }
@@ -75,10 +94,13 @@ def run_eval(pairs: list[dict], judge_model: str) -> list[dict]:
     return results
 
 
-def write_results(results: list[dict]):
+def write_results(results: list[dict], suffix: str):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    with open(RESULTS_FILE, "w") as f:
+    results_file = OUTPUT_DIR / f"eval_results_{suffix}.jsonl"
+    summary_file = OUTPUT_DIR / f"eval_summary_{suffix}.txt"
+
+    with open(results_file, "w") as f:
         for r in results:
             f.write(json.dumps(r) + "\n")
 
@@ -90,6 +112,7 @@ def write_results(results: list[dict]):
     dims = ["completeness", "accuracy", "evidence_type_clarity", "village_dynamics", "epistemic_correctness"]
     lines = []
     lines.append(f"Day Summary Eval — {len(scored)} pairs scored")
+    lines.append(f"Gen model: {scored[0]['gen_model']} (thinking={scored[0]['thinking_level']})")
     lines.append(f"Judge model: {scored[0]['judge_model']}")
     lines.append("")
     lines.append(f"{'Dimension':<25s}  {'Avg':>5s}  {'Min':>3s}  {'Max':>3s}")
@@ -119,15 +142,25 @@ def write_results(results: list[dict]):
             lines.append(f"  {r['pair_id']}: {s['brief_reasoning']}")
 
     summary_text = "\n".join(lines)
-    SUMMARY_FILE.write_text(summary_text + "\n")
+    summary_file.write_text(summary_text + "\n")
     print(f"\n{summary_text}")
-    print(f"\nResults: {RESULTS_FILE}")
-    print(f"Summary: {SUMMARY_FILE}")
+    print(f"\nResults: {results_file}")
+    print(f"Summary: {summary_file}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Day summary quality evaluation")
     parser.add_argument("--pair", help="Only evaluate this pair ID")
+    parser.add_argument(
+        "--gen-model",
+        default=None,
+        help="Generation model (default: gemini-3.1-flash-lite via get_llm())",
+    )
+    parser.add_argument(
+        "--thinking",
+        default=None,
+        help="Thinking level for generation model (minimal, low, medium, high)",
+    )
     parser.add_argument(
         "--judge-model",
         default=DEFAULT_DAY_SUMMARY_JUDGE_MODEL,
@@ -142,9 +175,17 @@ def main():
             print(f"Pair '{args.pair}' not found.")
             return
 
-    print(f"Running day summary eval on {len(pairs)} pairs with judge={args.judge_model}")
-    results = run_eval(pairs, args.judge_model)
-    write_results(results)
+    gen_label = args.gen_model or "gemini-3.1-flash-lite (default)"
+    thinking_label = args.thinking or "minimal (default)"
+    print(f"Running day summary eval on {len(pairs)} pairs")
+    print(f"  gen={gen_label}, thinking={thinking_label}, judge={args.judge_model}")
+
+    results = run_eval(
+        pairs, args.judge_model,
+        gen_model=args.gen_model, thinking_level=args.thinking,
+    )
+    suffix = _output_suffix(args.gen_model, args.thinking)
+    write_results(results, suffix)
 
 
 if __name__ == "__main__":
