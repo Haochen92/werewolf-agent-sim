@@ -344,15 +344,36 @@ Stored at `Agents/memory_stores/v2_idempotency` for comparison. Report at `eval_
 
 Running batch dedup repeatedly on the same store will cause cumulative shrinkage — each pass removes ~10% of items. Some removals are legitimate (the first pass missed them), but others degrade the store by merging retrieval-distinct entries.
 
-**Mitigations to consider before integration:**
-- **Incremental dedup only**: Track which entries have been deduped (e.g., `dedup_version` field) and only process new entries against the existing deduped store. Never re-process the full store.
-- **Convergence threshold**: Run dedup, then re-run as a dry run. If the second pass would change >N% of entries, flag for manual review rather than applying.
-- **Dedup lock**: Mark entries as "dedup-finalized" after processing. Only cluster finalized entries with new (unfinalized) entries, never with each other.
+**Mitigations:**
+- **Incremental dedup**: Track last dedup timestamp, only process clusters containing new entries. Prevents re-processing old entries while still comparing new entries against old neighbors. **Implemented** — see below.
+- **Full-store refresh (deliberate)**: Periodic re-run without `--incremental` to consolidate older entries that have been superseded by newer experience. The 10.4% shrinkage is partly legitimate — strategy discards are mostly correct, and observation rewrites update language to be more general/retrievable. The risk is only from unbounded repeated full-store runs.
+
+### Incremental dedup (implemented)
+
+Added `--incremental` flag to `memory_batch_deduplication.py`. Mechanism:
+
+1. After each `--apply` run, writes `.last_dedup_at` timestamp to the store directory
+2. On next `--incremental` run, reads this timestamp and scans JSON files for entries with `created_at > last_dedup_at`
+3. Clusters are built normally (all entries participate in similarity matching), but only clusters containing at least one new entry are sent to the LLM
+4. All-old clusters are skipped — no re-processing, no cost
+
+Usage:
+```
+# Routine after-game dedup (only new entries)
+poetry run python Agents/memory_batch_deduplication.py --store-dir <path> --incremental --apply --two-pass
+
+# Periodic full-store refresh (deliberate re-processing)
+poetry run python Agents/memory_batch_deduplication.py --store-dir <path> --apply --two-pass
+```
+
+This gives two complementary modes:
+- **Incremental** (after each batch of games): integrates new entries against existing store, prevents bloat
+- **Full refresh** (less frequently): re-processes everything, consolidates older entries reflecting newer dynamics
 
 ## Next Steps
 
 1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure in `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). Golden eval: 89.2% accuracy, best of all approaches. See [two-pass golden eval results](#two-pass-golden-eval-results-v3-prompts).
 2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/report.md#phase-2).
 3. ~~**Tune flash-lite triage prompt**~~ — **Done.** Lite anti-overmerge prompt created and evaluated. Standalone: 85.6% (up from 72.1%). Two-pass with lite: 84.7% at 12% escalation vs 89.2% at 25% escalation with v3 default. See [flash-lite anti-overmerge prompt tuning](#flash-lite-anti-overmerge-prompt-tuning) and [two-pass with lite prompt](#two-pass-with-lite-prompt-validated).
-4. **Solve idempotency before integration** — the pipeline removes ~10% of entries on each re-run, with some merges degrading quality. Need incremental dedup (only process new entries) or a dedup-lock mechanism before wiring into the game flow. See [idempotency test](#idempotency-test).
-5. **Integrate batch dedup into the game pipeline** — wire two-pass batch dedup into the post-game flow, pending idempotency fix.
+4. ~~**Solve idempotency before integration**~~ — **Done.** Incremental dedup mode (`--incremental`) implemented. Tracks `.last_dedup_at` timestamp, skips all-old clusters. See [incremental dedup](#incremental-dedup-implemented).
+5. **Integrate batch dedup into the game pipeline** — wire two-pass batch dedup into the post-game flow. Incremental mode ready; trigger strategy (game count, store size, schedule) TBD.
