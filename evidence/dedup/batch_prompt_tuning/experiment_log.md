@@ -82,7 +82,7 @@ Cluster 25 (strategy, 11 entries) is consistently hard — 64% for both models.
 2. **BEFORE MERGING checklist was the key improvement** for 2.5-pro — reduced over-merge from 12 to 2 errors.
 3. **Calibration bias should be neutral** — "when in doubt KEEP" hurt 3.5-flash; "when in doubt DISCARD" only applies to strategy. The right bias depends on downstream retrieval quality and agent strategy application, not on the prompt.
 4. **Cluster size limit of 15 is well-supported** — all models degrade sharply above 15 entries.
-5. **flash-lite is not viable as a standalone model** for batch dedup — over-merges regardless of prompt quality. However, its high KEEP precision (91.8%) and DISCARD precision (86.7%) make it effective as a triage pass in a two-pass pipeline (see Time and Cost Analysis).
+5. **flash-lite is not viable as a standalone model** for batch dedup — the lite prompt fixes over-merge (85.6% accuracy) but flash-lite has the same merge rewrite limitation as 3.5-flash: it drops `merged_approach` and `merged_outcome` fields, outputting only `merged_situation`. Only 2.5-pro produces complete merge rewrites (see Merge Rewrite Quality). This is why two-pass is needed: flash-lite triages, 2.5-pro writes the merges.
 6. **Two-pass pipeline (flash-lite triage → 2.5-pro verification) is the recommended production approach** — combines flash-lite's speed and KEEP/DISCARD precision with 2.5-pro's merge quality, reducing 2.5-pro API volume by ~69% (see Time and Cost Analysis). **3.5-flash remains the best single-model option** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
 
 ## Merge Rewrite Quality
