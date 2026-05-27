@@ -31,6 +31,7 @@ from Agents.memory_deduplication import (
 from Agents.memory_persistence import (
     dump_memory_to_json_files_from_config,
     memory_persistence_config_from_runnable,
+    run_batch_dedup_from_config,
 )
 from Agents.tracing import (
     DayResolutionMetric,
@@ -679,5 +680,17 @@ def post_game_analysis(
         memory_persistence_config,
         target_store=store,
     )
+
+    batch_dedup_report = run_batch_dedup_from_config(
+        memory_persistence_config,
+        target_store=store,
+    )
+    if batch_dedup_report:
+        total_merged = sum(s.get("merged", 0) for s in batch_dedup_report.get("stats", []))
+        total_discarded = sum(s.get("discarded", 0) for s in batch_dedup_report.get("stats", []))
+        logger.info(
+            "Batch dedup: %d merged, %d discarded",
+            total_merged, total_discarded,
+        )
 
     logger.info(f"Post-game analysis completed and stored for game_id: {game_id}")

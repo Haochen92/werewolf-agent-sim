@@ -40,6 +40,18 @@ _TRANSIENT_MEMORY_STORE_ERROR_MARKERS = (
 )
 
 
+class BatchDedupConfig(BaseModel):
+    """Settings for post-game incremental batch dedup."""
+
+    enabled: bool = False
+    two_pass: bool = True
+    triage_model: str = "gemini-3.1-flash-lite"
+    triage_thinking_level: str | None = "medium"
+    verify_model: str = "gemini-2.5-pro"
+    verify_thinking_level: str | None = None
+    prompt_variant: str = "default"
+
+
 class MemoryPersistenceConfig(BaseModel):
     """Seed/dump settings for the process-global LangGraph memory store.
 
@@ -51,6 +63,7 @@ class MemoryPersistenceConfig(BaseModel):
     dump_enabled: bool = True
     seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
     dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
+    batch_dedup: BatchDedupConfig = BatchDedupConfig()
 
 
 def normalize_memory_persistence_config(
@@ -426,3 +439,45 @@ def dump_memory_to_json_files_from_config(
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
+
+
+def run_batch_dedup_from_config(
+    config: MemoryPersistenceConfig | dict[str, Any] | None = None,
+    target_store: BaseStore = store,
+) -> dict[str, Any] | None:
+    """Run incremental batch dedup if enabled in config.
+
+    Must be called AFTER dump_memory_to_json_files_from_config so the JSON
+    files reflect the latest state including newly extracted entries.
+    """
+    from Agents.memory_batch_deduplication import (
+        TwoPassConfig,
+        run_batch_memory_dedup,
+    )
+
+    memory_config = normalize_memory_persistence_config(config)
+    dedup_cfg = memory_config.batch_dedup
+    if not dedup_cfg.enabled:
+        return None
+
+    store_dir = memory_config.dump_store_dir
+
+    two_pass = None
+    if dedup_cfg.two_pass:
+        two_pass = TwoPassConfig(
+            triage_model=dedup_cfg.triage_model,
+            triage_thinking_level=dedup_cfg.triage_thinking_level,
+            verify_model=dedup_cfg.verify_model,
+            verify_thinking_level=dedup_cfg.verify_thinking_level,
+        )
+
+    report = run_batch_memory_dedup(
+        target_store=target_store,
+        seed_store_dir=store_dir,
+        dump_store_dir=store_dir,
+        apply=True,
+        incremental=True,
+        two_pass=two_pass,
+        prompt_variant=dedup_cfg.prompt_variant,
+    )
+    return report.model_dump(mode="json")
