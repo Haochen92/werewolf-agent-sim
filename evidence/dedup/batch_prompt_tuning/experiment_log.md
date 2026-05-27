@@ -308,9 +308,51 @@ The lite prompt halved escalation (25% → 12%) and reduced total time by 27% (3
 
 Current default: **v3 default prompt**. Switch to lite if batch dedup frequency increases.
 
+## Idempotency Test
+
+Ran the two-pass pipeline (v3 default prompt) on `v4_deduped_v2` — a store that was already deduped once with 3.5-flash. If the pipeline were idempotent, it should produce near-zero changes.
+
+### Results
+
+| | Before (v4_deduped_v2) | After 2nd run | Removed | % |
+|---|---|---|---|---|
+| Observations | 269 | 239 | 30 merged | 11.2% |
+| Strategy | 163 | 148 | 15 discarded | 9.2% |
+| **Total** | **432** | **387** | **45** | **10.4%** |
+
+**The pipeline is not idempotent.** A second run removed another 45 items (10.4% of the store).
+
+Stored at `Agents/memory_stores/v2_idempotency` for comparison. Report at `eval_results/store_dedup/v2_idempotency_report.json`.
+
+### Analysis of second-pass changes
+
+**Observation merges (30 absorbed, 22 survivors rewritten):**
+- Rewrite quality is good: 2.5-pro preserved all three fields (situation, approach, outcome) in 22/22 cases. Tactic counts added where missing (9/22 had counts before → 22/22 after).
+- Game phase markers preserved in 19/22 situations. Player IDs correctly generalized out.
+- However, some merges combined genuinely distinct situations. Example: an early-game investigator accusation (no established credibility) was merged with an endgame investigator lead (rich information, final wolf). These would be retrieved by different queries and represent different lessons.
+
+**Strategy discards (15 removed):**
+- Mostly legitimate. E.g., three near-identical "first night wolf target selection" strategies (ec98a356, d6191f69, a579efaf) discarded as duplicates of survivors (44dbaaee, 54a1a2d3) that express the same advice with minor wording differences.
+
+### Root causes
+
+1. **Re-clustering after dedup changes composition.** The first dedup removes entries, changing which entries fall into the same similarity cluster on the next run. Entries that were in separate clusters before may now be grouped together, creating new merge/discard opportunities.
+2. **Model non-determinism on borderline cases.** The same cluster presented twice may get different KEEP/MERGE/DISCARD decisions, especially near the decision boundary.
+3. **Embedding similarity != situation identity.** Entries with similar embeddings (so they cluster together) may describe functionally different situations. The LLM correctly keeps them separate in one clustering context but merges them in another.
+
+### Implications for production
+
+Running batch dedup repeatedly on the same store will cause cumulative shrinkage — each pass removes ~10% of items. Some removals are legitimate (the first pass missed them), but others degrade the store by merging retrieval-distinct entries.
+
+**Mitigations to consider before integration:**
+- **Incremental dedup only**: Track which entries have been deduped (e.g., `dedup_version` field) and only process new entries against the existing deduped store. Never re-process the full store.
+- **Convergence threshold**: Run dedup, then re-run as a dry run. If the second pass would change >N% of entries, flag for manual review rather than applying.
+- **Dedup lock**: Mark entries as "dedup-finalized" after processing. Only cluster finalized entries with new (unfinalized) entries, never with each other.
+
 ## Next Steps
 
 1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure in `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). Golden eval: 89.2% accuracy, best of all approaches. See [two-pass golden eval results](#two-pass-golden-eval-results-v3-prompts).
 2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/report.md#phase-2).
 3. ~~**Tune flash-lite triage prompt**~~ — **Done.** Lite anti-overmerge prompt created and evaluated. Standalone: 85.6% (up from 72.1%). Two-pass with lite: 84.7% at 12% escalation vs 89.2% at 25% escalation with v3 default. See [flash-lite anti-overmerge prompt tuning](#flash-lite-anti-overmerge-prompt-tuning) and [two-pass with lite prompt](#two-pass-with-lite-prompt-validated).
-4. **Integrate batch dedup into the game pipeline** — wire two-pass batch dedup into the post-game flow as a periodic maintenance operation.
+4. **Solve idempotency before integration** — the pipeline removes ~10% of entries on each re-run, with some merges degrading quality. Need incremental dedup (only process new entries) or a dedup-lock mechanism before wiring into the game flow. See [idempotency test](#idempotency-test).
+5. **Integrate batch dedup into the game pipeline** — wire two-pass batch dedup into the post-game flow, pending idempotency fix.
