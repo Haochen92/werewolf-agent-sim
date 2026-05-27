@@ -1,0 +1,160 @@
+{
+  "golden_situations": [
+    "Endgame final three. The confirmed wolf's consistent defender and voting partner is the primary target. The investigator has privately confirmed one of the two other surviving players as a villager, narrowing the wolf to the target or the third player. Information landscape: Information-rich — voting records show the target consistently aligned with the confirmed wolf across multiple days, and the investigator's private confirmation eliminates one player from suspicion. Consensus texture: Strong 2-on-1 consensus driven by voting record evidence of wolf-aligned behavior. The target defends with 'groupthink' and 'hindsight bias' accusations. Agent exposure: The investigator is aligned with consensus, has chosen strategic silence to avoid role exposure. Private finding corroborates but does not extend the public case. Game phase: Endgame, three players remaining, one wolf eliminated, critical vote — incorrect elimination means wolf wins. Core dilemma: the investigator's private confirmation adds certainty but revealing it would expose the role with no strategic gain since the consensus is already correct — the risk is that if the vote somehow fails, the investigator is killed tonight without ever sharing their information."
+  ],
+  "observation_labels": [
+    {
+      "key": "fd88ea00-70bb-4add-aea7-5b518e571917",
+      "relevance": 1,
+      "score": 0.8535,
+      "situation": "Investigator revealed in final 3, villager skeptical due to timing. No pre-existing consensus.",
+      "approach": "Revealed role and finding, couldn't justify withholding information.",
+      "outcome": "Villager sided with wolf's argument, investigator eliminated. Wolf won."
+    },
+    {
+      "key": "de5ab922-5632-446f-b3b3-7838635b026c",
+      "relevance": 2,
+      "score": 0.8428,
+      "situation": "Investigator confirmed wolf privately, strong public evidence from wolf defending eliminated partner. Endgame.",
+      "approach": "Led accusation using public contradictory behavior, not role claim.",
+      "outcome": "Village converged on public evidence, wolf eliminated without investigator exposure."
+    },
+    {
+      "key": "443bf51b-b86e-4927-8f52-d2683770ee34",
+      "relevance": 1,
+      "score": 0.8400,
+      "situation": "Investigator in voting deadlock with identified wolf. No consensus, firm deadlock.",
+      "approach": "Revealed role and finding to break stalemate.",
+      "outcome": "Reveal successful, wolf eliminated, but investigator killed next night."
+    },
+    {
+      "key": "1ab6cc11-4973-405a-ac1b-a58e366b809a",
+      "relevance": 1,
+      "score": 0.8170,
+      "situation": "Investigator with private finding, endgame 4 players. Decided when to reveal.",
+      "approach": "Clear public claim on Day 4, resisted debate about timing.",
+      "outcome": "Confident claim created unbreakable consensus, wolf eliminated."
+    },
+    {
+      "key": "d20aabe2-7482-4b1a-9a72-ebaf0845d423",
+      "relevance": 0,
+      "score": 0.8135,
+      "situation": "Investigator found wolf night 1, info-starved village. Early game, no leads.",
+      "approach": "Revealed role to force village's hand.",
+      "outcome": "Wolf eliminated but investigator became obvious target."
+    },
+    {
+      "key": "1f6bc8ae-4913-44e1-b3dc-2e736e21ae6c",
+      "relevance": 0,
+      "score": 0.8114,
+      "situation": "Investigator's confirmed villager under coordinated attack. Private info CONTRADICTS consensus.",
+      "approach": "Defended innocent player without revealing role.",
+      "outcome": "Defense failed, innocent villager eliminated. Wolves won."
+    },
+    {
+      "key": "b9f7e67a-7f69-4fb6-aceb-8a2bddb32cf6",
+      "relevance": 1,
+      "score": 0.8102,
+      "situation": "Investigator aggressively pushed elimination, asserted 'conclusive proof' but refused to provide it.",
+      "approach": "Aggressive demand without evidence sharing.",
+      "outcome": "Village found push suspicious, eliminated investigator. Cautionary tale."
+    },
+    {
+      "key": "3d9a71f0-b514-48b0-b0b2-df0e4ef43f84",
+      "relevance": 2,
+      "score": 0.8101,
+      "situation": "Investigator had only villager confirmations (no wolf found), strong public voting record evidence.",
+      "approach": "Did not reveal role, led charge using public evidence as normal villager.",
+      "outcome": "Successfully eliminated wolf without exposing role."
+    },
+    {
+      "key": "01348533-d9c9-496b-96de-3de4ae0956c6",
+      "relevance": 2,
+      "score": 0.8049,
+      "situation": "Investigator with private guilty result AND damning public voting record. Info-rich endgame.",
+      "approach": "Pushed elimination using only public voting record as justification.",
+      "outcome": "Successfully led elimination without revealing role."
+    },
+    {
+      "key": "9f2f00b8-8e80-4faa-afee-879d135df291",
+      "relevance": 0,
+      "score": 0.8033,
+      "situation": "Investigator accused village-aligned wolf of bussing. Private info contradicts public perception.",
+      "approach": "Pushed bussing accusation without explaining concept clearly.",
+      "outcome": "Village sided against investigator, eliminated them."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "a79b348d-e256-4513-b4f8-5670e22101c4",
+      "relevance": 2,
+      "score": 0.8141,
+      "situation": "Private wolf identification, strong corroborating public evidence. Need to build consensus without revealing.",
+      "action": "Lead with public evidence, frame certainty as strong conviction from shared evidence, don't reveal role."
+    },
+    {
+      "key": "82a4ac4c-3ac4-4dd6-a817-36fb1f9a40ee",
+      "relevance": 2,
+      "score": 0.8041,
+      "situation": "Village already converging on your known wolf based on accurate public analysis. Mid-to-endgame.",
+      "action": "Keep contributions focused, don't reveal role, amplify existing public evidence."
+    },
+    {
+      "key": "5681a68d-971e-490a-a711-00a03766475c",
+      "relevance": 1,
+      "score": 0.7964,
+      "situation": "Village suspicious of your target based on flawed reasoning. Private confirms correct conclusion.",
+      "action": "Don't correct the flaw, agree using own reasons. Steer momentum without revealing."
+    },
+    {
+      "key": "bef45b74-35e4-4152-b691-afe0a1da43f9",
+      "relevance": 1,
+      "score": 0.7943,
+      "situation": "Endgame, definitive guilty result, have been silent during previous votes.",
+      "action": "Build credibility before potential reveal, address withholding proactively."
+    },
+    {
+      "key": "d364d473-8ed6-468b-926e-8886763d5f3a",
+      "relevance": 0,
+      "score": 0.7939,
+      "situation": "Private info contradicts public on bussing wolf. Village views wolf's record as proof of innocence.",
+      "action": "Explain bussing concept, educate village to re-evaluate evidence."
+    },
+    {
+      "key": "752d7069-f0ab-4298-a7a1-caf0541e4c3b",
+      "relevance": 0,
+      "score": 0.7803,
+      "situation": "Identified final wolf, 4 players. Village not yet converging.",
+      "action": "Make direct confident public claim, refuse lengthy debate."
+    },
+    {
+      "key": "a591690e-d1aa-496f-89a7-d80ab1c75d49",
+      "relevance": 0,
+      "score": 0.7774,
+      "situation": "Investigator under suspicion from own voting record. Need to neutralize before redirecting.",
+      "action": "Address suspicion directly, provide plausible reason, then pivot to target."
+    },
+    {
+      "key": "8bd4a4a4-a114-4f49-89aa-a49ab7e177e7",
+      "relevance": 0,
+      "score": 0.7740,
+      "situation": "1-on-1 deadlock with target, info-starved, no consensus.",
+      "action": "Disengage from direct attacks, pivot to silent players."
+    },
+    {
+      "key": "f25fcf4f-641a-443b-aa84-ca035b1dcdfc",
+      "relevance": 0,
+      "score": 0.7678,
+      "situation": "Early game, identified wolf night 1, no other leads. Info-starved public.",
+      "action": "State case with confidence, build on observable behavior, don't reveal role."
+    },
+    {
+      "key": "2e9c7b4b-feed-4757-917f-44fa30c4338d",
+      "relevance": 1,
+      "score": 0.7638,
+      "situation": "Endgame, confirmed innocence of most remaining, single suspect left. Info-rich private.",
+      "action": "Lead discussion against uncleared player with confidence, without revealing role."
+    }
+  ],
+  "notes": "Investigator/day_discussion namespace has strong retrieval quality. Obs 2, 8, 9 form a coherent set about investigators using public evidence without revealing role — the exact pattern our agent follows. SP1 (14 obs) and SP2 (3 obs) are the strongest matches, directly supporting the silence-with-public-evidence approach. Obs 1, 7 provide cautionary tales about both revealing (and being distrusted) and pushing too aggressively (and appearing suspicious). The namespace handles the 'investigator with redundant private info aligned with consensus' scenario well, particularly at the strategy level."
+}

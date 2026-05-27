@@ -1,0 +1,160 @@
+{
+  "golden_situations": [
+    "A confirmed wolf was eliminated, and the sole surviving dissenter — who voted with the wolf against an innocent player — is the primary target under multi-player cross-examination. Two consecutive healer saves have strengthened village momentum. Information landscape: Information-rich — voting records provide concrete evidence of the suspect's wolf-aligned vote, two healer saves confirm an active protector. Consensus texture: Strong, near-unanimous consensus driven by voting record evidence. The target's defense oscillates between claiming 'genuine error' and deflecting with 'coordinated accusations are suspicious,' failing under sustained pressure. Agent exposure: The villager is aligned with consensus but has chosen deliberate silence to observe how the suspect responds under pressure. Not under scrutiny. Game phase: Mid-game, one wolf eliminated, seven players remaining, discussion round 3. Core dilemma: the villager's strategic silence lets the suspect self-incriminate but contributes nothing to identifying the second wolf, who may be safely hiding within the unified anti-suspect consensus."
+  ],
+  "observation_labels": [
+    {
+      "key": "07fd072f-9590-4624-81ac-8c7f5bb50140",
+      "relevance": 1,
+      "score": 0.8460,
+      "situation": "Villagers identified wolf pair through coordinated rhetoric, built evidence-based pressure. Post-mislynch mid-game.",
+      "approach": "Systematically pointed out coordination, rejected deflection attempts.",
+      "outcome": "Correctly eliminated wolf, broke partnership."
+    },
+    {
+      "key": "578f03b1-9fe2-437d-907b-d781fe62608f",
+      "relevance": 1,
+      "score": 0.8442,
+      "situation": "Wolf under pressure for inconsistent statements. Info-starved, behavioral tells only. Strong organic consensus.",
+      "approach": "Relentlessly questioned contradictions, refused subject changes.",
+      "outcome": "Wolf eliminated, strategy of scrutinizing inconsistencies validated."
+    },
+    {
+      "key": "a9ee4229-1150-4fd5-8502-d53c427da991",
+      "relevance": 2,
+      "score": 0.8413,
+      "situation": "Post-miselimination, healer-saved player led voting record interrogation. Info-rich. Strong convergence.",
+      "approach": "Aggressively interrogated dissenters using voting records, pointed out deflections.",
+      "outcome": "Correctly identified and eliminated wolf through voting record pressure."
+    },
+    {
+      "key": "13870e0b-4267-44c7-b90b-75da7b90cd99",
+      "relevance": 2,
+      "score": 0.8374,
+      "situation": "Wolf caught misrepresenting voting record. Info-rich. Strong consensus from independent verification.",
+      "approach": "Meticulously fact-checked claims against public voting record.",
+      "outcome": "Evidence-based approach exposed wolf's lies, successful elimination."
+    },
+    {
+      "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+      "relevance": 1,
+      "score": 0.8349,
+      "situation": "Post-wolf-elimination, multiple dissenters questioned. Village weighing relative suspicion.",
+      "approach": "Prioritized the most egregious voting anomaly over less suspicious deviations.",
+      "outcome": "Correctly identified lone dissenter as wolf, triage approach worked."
+    },
+    {
+      "key": "0ac6f17d-6d27-492f-9bfe-42c12760e869",
+      "relevance": 1,
+      "score": 0.8344,
+      "situation": "Post-investigator-elimination, endgame, fractured village. Wolf successfully manipulated.",
+      "approach": "Villagers engaged in circular arguments, failed to unite on evidence.",
+      "outcome": "Tie vote, no elimination, wolves won. Cautionary failure case."
+    },
+    {
+      "key": "8ccbab63-1011-4a21-b2c8-462ef076a8a6",
+      "relevance": 1,
+      "score": 0.8286,
+      "situation": "Villager accused for sole dissenting vote. Became defensive, attacked 'bandwagon' logic.",
+      "approach": "Village interpreted defensive behavior as guilt.",
+      "outcome": "Mislynched villager — cautionary case where dissenting vote doesn't always mean wolf."
+    },
+    {
+      "key": "f39b12a6-4ea6-4b05-8d58-9c50232c8fcf",
+      "relevance": 2,
+      "score": 0.8276,
+      "situation": "Wolf under scrutiny for role in mislynch. Deflected by attacking process of analyzing past votes. Mid-game.",
+      "approach": "Villagers persisted through deflection, refused to be distracted.",
+      "outcome": "Wolf's deflection seen as guilt evidence, strong consensus, eliminated."
+    },
+    {
+      "key": "1463b5bd-38d1-4580-8258-78b40f8054d7",
+      "relevance": 1,
+      "score": 0.8258,
+      "situation": "Endgame, village pressuring quiet/evasive players after wolf elimination. Info-rich.",
+      "approach": "Demanded suspects name alternatives, spotted defensive deflection.",
+      "outcome": "Wolf failed to provide logical suspects, correctly eliminated."
+    },
+    {
+      "key": "634161d7-26fe-4ebc-8dcf-f01f80979510",
+      "relevance": 0,
+      "score": 0.8243,
+      "situation": "Post-investigator-elimination, using posthumous investigator findings. Different info source entirely.",
+      "approach": "Focused on investigator's validated suspicion, ignored deflection.",
+      "outcome": "Successfully eliminated wolf using investigator's legacy."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+      "relevance": 1,
+      "score": 0.8286,
+      "situation": "Post-wolf-elimination, scrutinize quiet/hesitant players. Endgame, investigator eliminated.",
+      "action": "Pressure for distinct suspects; wolf hiding in majority will deflect rather than provide alternate theory."
+    },
+    {
+      "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+      "relevance": 0,
+      "score": 0.8107,
+      "situation": "Post-mislynch blame cycle. Village on defensive.",
+      "action": "Resist blame cycle, challenge who targets dissenters instead of group mistake."
+    },
+    {
+      "key": "2b903631-1efa-42f2-b01c-8cfbaa5c5b51",
+      "relevance": 0,
+      "score": 0.8041,
+      "situation": "Post-mislynch, healer-saved player leads recovery. Info-rich.",
+      "action": "Rally behind saved player, interrogate those who drove miselimination."
+    },
+    {
+      "key": "3c63e195-43fd-4943-8fe3-3dbbd31eb2d5",
+      "relevance": 0,
+      "score": 0.7947,
+      "situation": "Player questions motives of successful unanimous wolf vote. Mid-game.",
+      "action": "Consider bussing possibility, don't dismiss questioner — may have investigator info."
+    },
+    {
+      "key": "bab6a351-a85b-4218-8618-973d783349e0",
+      "relevance": 0,
+      "score": 0.7834,
+      "situation": "Players advocating inaction in info-starved early game.",
+      "action": "Frame passivity as pro-wolf, challenge passive players to name suspects."
+    },
+    {
+      "key": "da44ad05-2786-408e-81ab-face67b8a91a",
+      "relevance": 1,
+      "score": 0.7820,
+      "situation": "Late voter joined unanimous wolf elimination at last moment. Now making weak accusations. Endgame.",
+      "action": "Scrutinize late voter for bussing, challenge voting record inconsistency."
+    },
+    {
+      "key": "d322503b-b9cd-4d82-8b2e-7638d19f6e49",
+      "relevance": 1,
+      "score": 0.7750,
+      "situation": "Strong consensus on single evidence point. Mid-game. Tunnel vision risk.",
+      "action": "Pause, consider target's counter-arguments. Over-focus on one data point enables wolf exploitation."
+    },
+    {
+      "key": "18268625-d318-4992-91a3-0074910a3be9",
+      "relevance": 0,
+      "score": 0.7722,
+      "situation": "Coordinated dismissal of analytical method in info-starved early game.",
+      "action": "Treat coordinated dismissal as wolf pack signal."
+    },
+    {
+      "key": "0d69b314-fbd9-4624-8a9f-983f0cdfd05b",
+      "relevance": 2,
+      "score": 0.7708,
+      "situation": "Post-wolf-elimination, voting record provides concrete evidence. Mid-game.",
+      "action": "Focus on players who defended or dissented with confirmed wolf. Relentlessly question reasoning."
+    },
+    {
+      "key": "5216777a-b932-40ef-87cb-8ef4e4388341",
+      "relevance": 0,
+      "score": 0.7694,
+      "situation": "Post-mislynch, low-credibility player makes new accusation.",
+      "action": "Evaluate new accusation on merits, not accuser's past performance."
+    }
+  ],
+  "notes": "Villager/day_discussion namespace is large. Good observation retrieval — obs 3, 4, 8 are strong matches for 'villager observing evidence-based voting record pressure on suspect who deflects.' Obs 7 is a cautionary mislynch counterpoint. Obs 8 closely matches player_6's specific defense pattern (attacking the analysis process). Strategy retrieval is weaker — many post-mislynch entries (SP2, SP3, SP10) don't match our post-correct-elimination context. SP9 (0d69b314, observed 28x) is the most directly applicable. Coverage gap: no strategy points for 'villager choosing strategic silence during strong evidence-based consensus.' The silence dilemma — contribute to identifying second wolf vs. let consensus work autonomously — is unaddressed in retrieved strategies."
+}

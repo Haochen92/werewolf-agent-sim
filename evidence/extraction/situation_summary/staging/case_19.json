@@ -1,0 +1,71 @@
+{
+  "golden_situations": [
+    "The investigator has privately confirmed two players as villager and healer, both aligned with the village consensus. The primary suspect voted with the eliminated wolf while the rest were unanimous. Information landscape: Information-rich — voting records provide concrete evidence of the suspect's wolf-aligned vote, two consecutive healer saves add momentum. The investigator's private findings corroborate the public evidence without adding new wolf leads. Consensus texture: Strong, near-unanimous consensus driven by voting record evidence. Agent exposure: The investigator is aligned with consensus, not under scrutiny, must vote without revealing role. Game phase: Mid-game, one wolf eliminated, seven players remaining, vote imminent. Core dilemma: the investigator's private findings add certainty but no new public information — they must vote with the consensus while maintaining cover, knowing their confirmed healer identity gives them a valuable ally to protect if this vote succeeds."
+  ],
+  "observation_labels": [
+    {
+      "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+      "relevance": 1,
+      "score": 0.8107,
+      "situation": "Investigator voted against consensus on private read, ended up in wolf's bloc. Mid-game first vote.",
+      "approach": "Acted on speculative read, contradicted village consensus.",
+      "outcome": "Severely damaged credibility. Pivoting later allowed partial repair."
+    },
+    {
+      "key": "b34d12c2-9d2b-4ac6-9d36-b877dad2d896",
+      "relevance": 1,
+      "score": 0.7950,
+      "situation": "Investigator eliminated while holding wolf identity. Info-starved, first vote. Fragile consensus against them.",
+      "approach": "Didn't reveal role or finding, maintained soft-pressure strategy.",
+      "outcome": "Eliminated, role revealed, information lost."
+    },
+    {
+      "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+      "relevance": 1,
+      "score": 0.7793,
+      "situation": "Investigator initiated vote on weak behavioral read. Info-starved, directionless village.",
+      "approach": "Broke stalemate by accusing deflecting player.",
+      "outcome": "Village followed lead but eliminated a villager."
+    },
+    {
+      "key": "5922bf88-e545-4f69-89e0-d55b0da3524d",
+      "relevance": 1,
+      "score": 0.7766,
+      "situation": "Strong unsubstantiated consensus to vote out a player. Investigator had no info on target. Post-healer-save.",
+      "approach": "Aligned with group consensus.",
+      "outcome": "Catastrophic error — eliminated the Healer."
+    },
+    {
+      "key": "7c0a6e6d-2bee-4bed-8d66-139122985095",
+      "relevance": 1,
+      "score": 0.7762,
+      "situation": "Investigator with strong suspicion but no proof. Info-starved, first vote.",
+      "approach": "Cast first vote against suspect with confidence.",
+      "outcome": "Wolf eliminated but leadership made investigator next target."
+    }
+  ],
+  "strategy_labels": [
+    {
+      "key": "4207be33-a2ad-47e5-9294-0d528da2910d",
+      "relevance": 2,
+      "score": 0.7870,
+      "situation": "Private suspicion contradicts strong public consensus based on voting records. Mid-to-late game.",
+      "action": "Vote with consensus unless you've investigated the target and know they're innocent."
+    },
+    {
+      "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+      "relevance": 2,
+      "score": 0.7835,
+      "situation": "Confirmed wolf privately, village independently reached same conclusion on strong public evidence.",
+      "action": "Stay quiet, vote with majority. No need to reveal role — intervention adds no value."
+    },
+    {
+      "key": "57449d0c-1bad-45d0-882e-0acfaf3642cf",
+      "relevance": 0,
+      "score": 0.7581,
+      "situation": "Strong vibes-based consensus without evidence. Private info suggests target may be power role.",
+      "action": "Refuse to join bandwagon — better to abstain than contribute to power role elimination."
+    }
+  ],
+  "notes": "Thin namespace (5 obs, 3 strat total in investigator/day_vote). No observations scored 2 — store has no entries for 'investigator with redundant private info voting with strong evidence-based consensus.' All retrieved observations involve investigators acting on private reads or in info-starved environments. SP1 and SP2 are strong matches for the voting decision. Coverage gap: investigator/day_vote lacks entries for the aligned-consensus-with-redundant-info scenario."
+}
