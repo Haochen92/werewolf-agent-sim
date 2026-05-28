@@ -1,0 +1,586 @@
+{
+  "description": "Multi-model consensus labels for retrieval candidates",
+  "models": [
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash"
+  ],
+  "stats": {
+    "total_items": 40,
+    "unanimous": 27,
+    "majority": 0,
+    "split": 13
+  },
+  "cases": [
+    {
+      "case_index": 4,
+      "case_id": "278da20b69d7bcd7970c113f10dc347b:a3facf64db4b602b",
+      "player_role": "villager",
+      "day": 3,
+      "round": 1,
+      "action_phase": "day_discussion",
+      "golden_situations": [
+        "A wolf was correctly eliminated by near-unanimous vote, but the sole dissenting voter \u2014 who targeted a different player instead of the confirmed wolf \u2014 has not yet been scrutinized. The village's most active voice, the healer-saved player who led the accusation, was killed overnight, leaving a leadership vacuum. Information landscape: Information-rich \u2014 the Day 2 voting record clearly shows one player broke from the 6-1 consensus to vote for a non-wolf target. Game phase: Mid-game, day 3 with 6 players and 1 wolf remaining; the village lost its key information anchor overnight. Consensus texture: No current consensus \u2014 the previous day's unified push lost its driver. Agent exposure: Unnoticed \u2014 voted correctly with the majority, no special role or information."
+      ],
+      "observation_labels": [
+        {
+          "key": "13870e0b-4267-44c7-b90b-75da7b90cd99",
+          "relevance": 2,
+          "score": 0.8364,
+          "situation": "On Day 3, villagers analyzed the previous day's voting record that eliminated the Healer and noticed a wolf (player_7) was trying to misrepresent the facts. Information landscape: The voting record from Day 2 provided information-rich, concrete evidence to analyze. Game phase: Mid-game, with the town reeling from the loss of the Healer and now hunting for culprits. Consensus texture: A strong consensus formed around player_7, driven by multiple players independently verifying that player_7 was lying about the vote being unanimous.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The villagers meticulously fact-checked player_7's claim that the vote was a 'collective mistake' that everyone agreed to. They used the public voting record to prove this was a lie and build a case.",
+          "outcome": "This evidence-based approach successfully identified and eliminated a wolf, demonstrating the power of using verifiable game history to expose verbal lies about voting records."
+        },
+        {
+          "key": "0ac6f17d-6d27-492f-9bfe-42c12760e869",
+          "relevance": 2,
+          "score": 0.8294,
+          "situation": "After the Investigator was mistakenly eliminated, villagers analyzed the vote to find the wolves. Information landscape: The voting record from Day 2 was the primary piece of information-rich evidence. Game phase: Endgame, with only five players remaining and both village power roles gone. Consensus texture: There was no consensus due to active wolf manipulation. The villagers were fractured, with some (player_7, player_6) correctly identifying wolf player_4's suspicious deflection, while others were distracted by the wolf's accusations.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The villagers engaged in circular arguments, allowing wolf player_4 to successfully pit them against each other. They failed to unite against the most suspicious player.",
+          "outcome": "The vote was a tie, no one was eliminated, and the wolves performed the final kill at night to win. The village's inability to form a consensus from clear voting evidence was their final failure."
+        },
+        {
+          "key": "8ccbab63-1011-4a21-b2c8-462ef076a8a6",
+          "relevance": 2,
+          "score": 0.8287,
+          "situation": "A player (player_5) was accused of being suspicious for casting the sole dissenting vote against the majority that eliminated the Healer. Information landscape: The evidence was a single voting record anomaly, while the accused's accuser (player_7, a wolf) was part of the mistaken majority. Game phase: Mid-game, with the village trying to recover from the major error of voting out their Healer. Social pressure: The accused villager was put under intense pressure from multiple players to justify their vote.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "Player_5, a villager, became defensive and attacked the 'bandwagon' logic instead of providing a clear reason for their own vote.",
+          "outcome": "The village failed to weigh the evidence correctly, interpreting the defensive behavior as guilt and voting out the villager."
+        },
+        {
+          "key": "07fd072f-9590-4624-81ac-8c7f5bb50140",
+          "relevance": 2,
+          "score": 0.8271,
+          "situation": "After incorrectly eliminating an active villager (player_5) who had accused a wolf pair (player_3, player_8) of stalling, the remaining villagers noticed the same wolf pair continuing their strategy of mutual defense and advocating for caution. Information landscape: The information landscape was becoming richer, using the previous day's voting record and the revealed role of the mislynched villager as key evidence. Game phase: Mid-game, with two villagers eliminated by wolves and one by vote. The village was losing numbers and needed a successful elimination. Consensus texture: A strong consensus formed organically among the remaining villagers (player_2, player_4, player_6) based on the clear behavioral pattern of the wolf pair.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "The villagers systematically pointed out the consistent coordination between player_3 and player_8, focusing on their shared rhetoric of inaction across two days. They rejected the wolves' attempts to deflect blame and coordinated their votes.",
+          "outcome": "The villagers successfully identified and voted out player_3, confirming he was a wolf. This broke the wolf partnership and provided the village with the momentum needed to win."
+        },
+        {
+          "key": "16fddf0f-3ebe-42a8-9c08-9c5b16f5cf95",
+          "relevance": 2,
+          "score": 0.8268,
+          "situation": "After a villager was mislynched, the village identified a wolf (Player 3) who had cast a lone, unexplained vote against the healer during that mislynch. Information landscape: The information landscape was rich with voting data from the previous day, allowing players to pinpoint a specific, anomalous action. Game phase: Mid-game, following a failed vote. The village was motivated to correct its course. Consensus texture: A strong consensus was built by three vocal villagers (Players 1, 4, 6) who relentlessly focused their questioning on the wolf's specific action, refusing to be sidetracked by broader arguments about groupthink.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The villagers continuously demanded a specific justification for the vote against the healer. They correctly identified the wolf's attempts to deflect and pivot as evidence of guilt.",
+          "outcome": "The focused and persistent questioning prevented the wolf from escaping scrutiny, leading to a strong and accurate consensus to vote them out. This corrected the village's course and led directly to a win."
+        },
+        {
+          "key": "a9ee4229-1150-4fd5-8502-d53c427da991",
+          "relevance": 2,
+          "score": 0.8232,
+          "situation": "Following the miselimination of player_8, a villager (player_3) who survived a night attack due to a healer save used their heightened credibility to lead an investigation into the players who voted against them. Information landscape: Information-rich, as the previous day's voting record provided concrete data on who pushed the split vote. Game phase: Mid-game, one miselimination has occurred and voting patterns are established. Consensus texture: A strong multi-player convergence formed around analyzing the previous day's voting record. Social pressure: Player_1 and player_5 were under intense evidence-based pressure to explain their prior votes.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "Player_3 and their allies aggressively interrogated player_1 and player_5, demanding explanations for their voting choices and pointing out deflections, rather than letting them evade scrutiny.",
+          "outcome": "The interrogated players failed to provide logical reasons, leading the village to correctly identify and eliminate player_5 as a wolf, and subsequently player_1, demonstrating the effectiveness of using voting records to expose wolf deflections."
+        },
+        {
+          "key": "8adf1779-c82b-44ff-8e3d-7a6fd4bc5cce",
+          "relevance": 2,
+          "score": 0.819,
+          "situation": "A player was eliminated and revealed to be a wolf, generating the first concrete voting record. Information landscape: Information-rich, with a revealed role and a clear voting record showing who supported and opposed the elimination. Game phase: Mid-game, shifting from behavioral reads to concrete voting analysis. Consensus texture: Strong consensus against the newly revealed wolf's defenders.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "Villagers immediately targeted the players who cast dissenting votes instead of joining the majority against the wolf.",
+          "outcome": "The dissenting voter was forced onto the defensive and ultimately eliminated the next day, confirming the predictive power of voting records."
+        },
+        {
+          "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+          "relevance": 2,
+          "score": 0.8136,
+          "situation": "After a wolf was eliminated, two players (healer player_4 and investigator player_7) were questioned for voting for a villager (player_8) instead of the confirmed wolf. Information landscape: The voting record from the wolf elimination was the primary source of new, hard evidence for the village. Game phase: Mid-game, with one wolf eliminated and pressure mounting to find the second. Social pressure: Players 4 and 7 were under moderate pressure to explain their votes, which deviated from the successful majority.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The players gave a weak defense, claiming they were 'testing a different lead'. However, another player (wolf player_2) had a far more suspicious voting record, having been the lone dissenter.",
+          "outcome": "The village successfully weighed the evidence, prioritizing the more egregious voting anomaly of player_2 over the less suspicious votes of players 4 and 7, leading to a correct elimination."
+        },
+        {
+          "key": "b53922e1-0e6b-49d7-8ec0-42993026c26b",
+          "relevance": 2,
+          "score": 0.8125,
+          "situation": "After the village mistakenly eliminated their Investigator, they were left with no active leads. Information landscape: The landscape became information-starved of new intel but rich with past data, specifically the voting record from the Investigator's elimination. Game phase: Mid-game, Day 3, with the village at an informational disadvantage. Social pressure: The village collectively redirected pressure onto a player who made an anomalous vote during the prior day's chaotic elimination.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The villagers focused on the single, unexplained vote cast by player_3 (a wolf). They relentlessly questioned the wolf's motive and rejected their vague explanations.",
+          "outcome": "The focused interrogation based on the voting record led the village to correctly identify and eliminate the wolf, recovering from their previous day's mistake."
+        },
+        {
+          "key": "578f03b1-9fe2-437d-907b-d781fe62608f",
+          "relevance": 2,
+          "score": 0.809,
+          "situation": "A player who advocated for passivity on Day 1 was put under pressure on Day 2 and attempted to deflect by attacking the very strategy they had previously promoted (deflection via self-contradiction). Information landscape: The village was information-starved, relying solely on behavioral tells and Day 1 conversation logs after the healer's death. Game phase: Mid-game, where the first day's statements became the primary evidence. Consensus texture: A strong consensus formed organically as multiple players independently pointed out the same logical contradiction in the target's statements. Social pressure: The wolf (player_8) was under evidence-based pressure from multiple villagers who noticed their shifting arguments.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "The villagers (led by player_3, player_4, player_5) relentlessly questioned the wolf's inconsistent logic, refusing to let them change the subject. They framed the contradiction as a sign of deception.",
+          "outcome": "The wolf was unable to provide a coherent defense, was voted out, and their role was confirmed. This validated the villagers' strategy of scrutinizing inconsistent statements."
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+          "relevance": 2,
+          "score": 0.802,
+          "situation": "When a confirmed investigator has been eliminated and the village needs to identify the final wolf among players who previously voted out the first wolf. Information landscape: Information-rich, with a confirmed wolf elimination and the revelation of the investigator's identity. Game phase: Endgame, with few players remaining and a critical need to find the final threat. Consensus texture: A fragile but forming consensus focused on analyzing the voting behavior from the day the first wolf was eliminated.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "action": "Scrutinize the players who were notably quiet or hesitant during the wolf's elimination, and pressure them to provide their own distinct suspects; a wolf hiding in the voting majority will often deflect and attack the accusers rather than providing a logical alternate theory."
+        },
+        {
+          "key": "2b903631-1efa-42f2-b01c-8cfbaa5c5b51",
+          "relevance": 1,
+          "score": 0.795,
+          "situation": "When a vocal player survives a night attack (confirmed by a healer save announcement) after being the opposing target in a split vote that led to a miselimination. Information landscape: Information-rich, utilizing the previous day's voting records and the confirmed save to identify anomalies. Game phase: Mid-game, leveraging the confirmed healer save and the first elimination data. Consensus texture: A strong multi-player convergence forming around the saved player's perspective.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Rally behind the saved player and aggressively interrogate those who drove the miselimination, demanding logical justifications for their votes and preventing them from pivoting to new topics."
+        },
+        {
+          "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+          "relevance": 0,
+          "score": 0.7874,
+          "situation": "If the village has just made a clear mistake, such as voting out a fellow villager, and discussion turns to blaming individuals. Information landscape: Trust is low, the village is on the defensive, and the eliminated player's villager role has been confirmed. Game phase: Mid- to late-game, when the number of players is dwindling. Consensus texture: The village is demoralized, and players may aggressively target dissenters or specific individuals to deflect blame from the collective mistake.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 0,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "action": "Resist the urge to get stuck in a cycle of blame. Acknowledge your own role in the mistaken vote before analyzing the behavior of others to maintain objectivity. If a player aggressively targets the only person who voted differently, challenge them directly: ask why they are focusing on the dissenter instead of the group who made the mistake, as this is a common tactic to deflect blame from their own suspicious vote."
+        },
+        {
+          "key": "3c63e195-43fd-4943-8fe3-3dbbd31eb2d5",
+          "relevance": 1,
+          "score": 0.7832,
+          "situation": "When a player questions the motives behind a recent, successful, and unanimous vote that eliminated a confirmed wolf, specifically suggesting a 'bussing' strategy. Information landscape: Information-rich, as the confirmed wolf's past actions and voters are known. Game phase: Mid-game, right after a wolf has been voted out. Consensus texture: Strong consensus validated by a role reveal.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Do not immediately dismiss this player. Seriously consider their argument that a wolf may have 'bussed' to gain trust, and ask the accuser to elaborate on why they find the behavior performative, as they may be an Investigator with crucial information."
+        },
+        {
+          "key": "e4aa0470-b055-4488-8d26-fff8ff022fa9",
+          "relevance": 2,
+          "score": 0.7829,
+          "situation": "If a player is voted out and revealed to be a villager, resulting in a mislynch. Information landscape: This is a moment of information-rich clarity, confirming the previous day's consensus was wrong. Game phase: Mid- to endgame. Focus on the dissenting voting bloc who voted against the mislynch.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "action": "Immediately focus all public scrutiny on the members of that dissenting voting bloc. Demand that each one explains their reasoning. Treat evasive answers or attempts to change the subject as strong signs of wolf activity."
+        },
+        {
+          "key": "0d69b314-fbd9-4624-8a9f-983f0cdfd05b",
+          "relevance": 2,
+          "score": 0.7811,
+          "situation": "After the village has successfully voted out a player who was revealed to be a wolf, typically during the mid-game. The information landscape is rich, with the previous day's voting record providing concrete evidence to identify players who may have been allied with the confirmed wolf.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Focus suspicion on any player who defended, was hesitant to condemn, or cast a dissenting vote for the now-confirmed wolf. Relentlessly question their reasoning. If a player who previously supported the wolf later voted against them, challenge this as a potential 'bus vote' and make their inconsistent history the central focus. Treat deflection or weak reasoning as strong confirmation of guilt."
+        },
+        {
+          "key": "41f4badb-495d-470b-9e55-fc0bd99d5191",
+          "relevance": 0,
+          "score": 0.7788,
+          "situation": "If a player who was aggressively accusing others is eliminated and revealed to be a villager, resulting in a mislynch. Information landscape: This is a moment of information-rich clarity, confirming the previous day's consensus was wrong. Game phase: Mid- to endgame. Focus on the voting majority who initiated the lynch.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 0,
+            "gemini-2.5-pro": 0,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Immediately redirect suspicion onto the player(s) who most aggressively initiated and pushed for that failed elimination. Specifically, analyze whether the eliminated villager was targeted because their accusations were hitting close to home; the players who successfully discredited them were likely wolves deflecting suspicion from themselves or their partners."
+        },
+        {
+          "key": "da44ad05-2786-408e-81ab-face67b8a91a",
+          "relevance": 2,
+          "score": 0.7705,
+          "situation": "When reviewing the voting record against an eliminated, confirmed wolf, observe players who only joined the unanimous vote at the very end of the round. If such a player initiates a weak accusation against others the following day, they are likely attempting to shift suspicion. Information landscape: Information-rich, with explicit voting sequences and a confirmed enemy role. Game phase: Endgame, after at least one wolf is eliminated and the search narrows. Social pressure: The accuser is likely trying to preemptively shift suspicion away from themselves.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Scrutinize the late voter for 'bussing' or distraction tactics. Immediately challenge them on their voting record: ask why they were hesitant to vote for a confirmed wolf yesterday but are so confident in their new, flimsy accusation today. This pattern is a classic sign of a wolf trying to create a distraction or gain trust."
+        },
+        {
+          "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+          "relevance": 1,
+          "score": 0.7658,
+          "situation": "When a player makes an aggressive, evidence-free accusation the day after the village mistakenly eliminated a player. Information landscape: The village is reeling from a mislynch and is fearful of repeating it. Consensus texture: The accuser is attempting to single-handedly drive a consensus based on behavioral reads ('aggression') rather than verifiable evidence.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Resist dismissing the claim based on style alone. Force the accuser to provide specific, verifiable evidence that underpins their certainty. If they cannot, suspect them of manipulation; if they can, you may have found an information role who is simply a poor communicator under pressure."
+        },
+        {
+          "key": "62511a41-1ae5-41b5-9a98-aaedc0467f58",
+          "relevance": 2,
+          "score": 0.7658,
+          "situation": "After the village has mislynched a player who is revealed to be a key power role (e.g., Investigator). The information landscape becomes rich with the definitive evidence of the previous day's voting record and, if applicable, the power role's final findings. This occurs in the mid- to late-game, when the loss of a power role creates an urgent need to correct course.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Immediately make the voting record the sole focus of the discussion. Systematically demand that every player who voted for the eliminated power role provide a specific, evidence-based justification. Treat deflection, appeals to 'group responsibility,' or claims of 'going with the flow' as primary signals of guilt. If the power role made a final accusation, treat it as a high-probability lead."
+        }
+      ]
+    },
+    {
+      "case_index": 5,
+      "case_id": "278da20b69d7bcd7970c113f10dc347b:5b696347ec49372c",
+      "player_role": "villager",
+      "day": 2,
+      "round": 4,
+      "action_phase": "day_vote",
+      "golden_situations": [
+        "Multiple players are demanding suspects be named after a healer save, but one player was caught deflecting pressure by accusing another of 'forced behavior' when directly questioned about their own vague comments. The village is split between those pushing for action and those advocating caution. Information landscape: Information-starved \u2014 no voting records or role claims; the only hard data is the healer save, all suspicion is behavioral. Game phase: Early game, first vote with all 8 players alive. Consensus texture: Fragile consensus forming against the deflecting player, driven by behavioral reads from multiple independent sources. Agent exposure: Low profile \u2014 observing the escalation without being directly involved in accusations."
+      ],
+      "observation_labels": [
+        {
+          "key": "60b03843-0463-4b1b-9ca1-88da51b4e937",
+          "relevance": 2,
+          "score": 0.8376,
+          "situation": "A player (player_5) who pushed for a mislynch on Day 2 attempted to cast suspicion on a player who was just publicly saved by the healer. Information landscape: The landscape was information-rich, combining the Day 2 voting record with the new fact of a confirmed wolf target. Game phase: Mid-game, with a clear opportunity to identify a wolf based on their reaction to the healer's save. Consensus texture: A strong, unified consensus formed organically among the villagers and the healer against player_5, driven by clear evidence of deflection.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "The villagers and healer focused on player_5's illogical attempt to discredit the save, using it as the final piece of evidence needed to confirm their suspicions from the previous day's vote.",
+          "outcome": "Player_5, a wolf, was decisively voted out, demonstrating how a wolf's poor attempt at misdirection can provide the village with the certainty it needs."
+        },
+        {
+          "key": "7215e341-9dfe-4404-800f-a81fd0313a23",
+          "relevance": 2,
+          "score": 0.8288,
+          "situation": "A player (the Investigator) began questioning the motives behind a recent, successful, and unanimous wolf elimination, pointing suspicion at another player (a Wolf) who joined the vote. Information landscape: The village had just confirmed a wolf via elimination, creating a moment of high trust in the group's collective judgment. Game phase: Mid-game, with one wolf eliminated and momentum on the village's side. Consensus texture: The village was split, with some following the Investigator's new suspicion and others defending the prior consensus, viewing the new accusation as an attempt to create chaos.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "A significant portion of the village voted to eliminate the accuser (the Investigator), believing it was a wolf tactic to undermine a correct village decision.",
+          "outcome": "The village eliminated their own Investigator, a disastrous misplay that handed momentum back to the wolves and removed their only source of guaranteed information."
+        },
+        {
+          "key": "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+          "relevance": 2,
+          "score": 0.8222,
+          "situation": "After the Investigator was killed on Night 1, a frustrated villager (player_5) began aggressively demanding that others make accusations. Information landscape: The village was information-starved, with no confirmed roles or voting records to analyze. Game phase: Early game, heading into the first elimination vote. Consensus texture: A fragile consensus formed against the demanding villager (player_5), driven by the village's frustration and the wolves' amplification. Social pressure: The pressure on player_5 was initially vibes-based, stemming from their impatient tone, and was quickly capitalized on by a majority.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The majority of the village, including both wolves, voted to eliminate player_5.",
+          "outcome": "A villager was mislynched, giving the wolves a significant numerical advantage early in the game."
+        },
+        {
+          "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+          "relevance": 2,
+          "score": 0.8202,
+          "situation": "In an information-starved environment with no prior votes, villagers faced a player who repeatedly pushed for caution and discouraged naming specific suspects. Game phase: Mid-game, building up to the first vote. Consensus texture: A fragile consensus was forming around general suspicions until this specific stalling behavior was identified.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "Players noticed that the stalling player was talking about 'voting patterns' when no vote had occurred. Villagers identified this persistent stalling as a contradictory tactic and pressured the player to provide a concrete perspective or face elimination.",
+          "outcome": "The majority of villagers were persuaded by this evidence-based argument and voted out the stalling player, who was revealed to be a wolf. This demonstrated the effectiveness of pressuring those who encourage inaction and using logical deduction over vague suspicion."
+        },
+        {
+          "key": "c2489a8b-fd86-487d-bfcc-c8394f6a68fa",
+          "relevance": 2,
+          "score": 0.817,
+          "situation": "The village, with no concrete leads, was swayed by two wolves who discredited an Investigator's suggestion. Information landscape: The village was information-starved, relying purely on behavioral reads and persuasion rather than voting records or claims. Game phase: Mid-game, Day 2. No eliminations had occurred, so there was no voting record to analyze, making the group susceptible to social pressure. Consensus texture: A strong and rapid consensus formed against the Investigator, driven by the wolves' coordinated dismissal of their ideas.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The majority of villagers and the healer accepted the wolves' framing and voted out the Investigator, believing them to be sowing discord.",
+          "outcome": "The village eliminated their most powerful information-gathering role, which was a devastating loss. The wolves succeeded in removing their biggest threat without outing themselves."
+        },
+        {
+          "key": "df5d65e4-a854-4c77-96b1-32f925725053",
+          "relevance": 1,
+          "score": 0.8044,
+          "situation": "An Investigator (player_8), previously a reliable voice, pushed a vote onto a villager (player_4) whose only crime was being an outspoken accuser of the eventual final wolf (player_7). Information landscape: There was conflicting evidence: a power role's behavioral accusation versus another player's suspicious voting record. Game phase: Endgame, with the game on the line. Consensus texture: A fragile consensus was challenged, splitting the village into a 3-person majority bloc and a 2-person minority bloc.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "Three villagers (player_4, player_5, player_6) trusted the hard evidence of player_7's vote over the Investigator's unsubstantiated behavioral claims and voted together.",
+          "outcome": "The villager bloc out-voted the Investigator and the wolf, correctly eliminating the final wolf and winning the game. This demonstrated the importance of prioritizing verifiable evidence over claims from power roles."
+        },
+        {
+          "key": "fc9a9421-cf86-4800-a6c1-a261bcf6c61f",
+          "relevance": 2,
+          "score": 0.8041,
+          "situation": "A suspect attempted to justify their dissenting vote against a villager (cast during a wolf elimination) by claiming the villager was vague. Information landscape: Information-rich, with a glaring contradiction between voting a vaguely acting player versus a confirmed wolf. Game phase: Endgame, with few remaining players and high stakes. Consensus texture: Strong, multi-player convergence based on specific voting evidence.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "Villagers rejected the weak behavioral defense, recognizing it as a post-hoc rationalization for deliberate pack protection.",
+          "outcome": "The defending player was unanimously voted out and revealed to be the final wolf, resulting in a village victory."
+        },
+        {
+          "key": "a2b72438-8108-4088-909a-e2d2b5e195f5",
+          "relevance": 2,
+          "score": 0.8022,
+          "situation": "A massive voting bandwagon formed against a quiet villager (player_8) on Day 2, despite the village having confirmed information that player_7 was saved by the Healer. Information landscape: The key piece of information was the Healer's save, yet the vote was driven by speculation and pressure against a quiet player. Game phase: Mid-game, after the first night action revealed a failed wolf attack. Consensus texture: A strong, multi-player consensus formed rapidly against player_8, with six of the eight players voting together.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "The majority of the village, including the wolves, Investigator, and Healer, voted to eliminate player_8, who had been quiet. The wolves (player_5, player_6) joined this consensus to hide.",
+          "outcome": "A villager was eliminated, wasting the information advantage gained from the healer's save. The wolves successfully eliminated a villager without drawing any suspicion to themselves."
+        },
+        {
+          "key": "e6eef8d6-6dbe-40c4-bf91-f5e68c78ca35",
+          "relevance": 2,
+          "score": 0.8018,
+          "situation": "On Day 3, the village had to decide whether to trust the Investigator (player 3), who had just led a mistaken vote the previous day, or the player they were accusing (player 6). Information landscape: The vote was based on conflicting narratives: the Investigator's new claim versus their damaged credibility from the previous day's voting record. Game phase: Mid-game, with the village feeling distrustful after a mislynch. Consensus texture: A strong consensus formed against the Investigator, driven by the wolf and villagers who were focused on the Investigator's past error.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "approach": "The villagers (players 1 and 5) voted against the Investigator, believing they were trying to deflect blame rather than providing a genuine lead.",
+          "outcome": "The Investigator was eliminated, which was a critical error that removed the village's only source of confirmed information and empowered the wolves."
+        },
+        {
+          "key": "5208560e-43e5-4565-bebf-ddb62f91577c",
+          "relevance": 2,
+          "score": 0.8008,
+          "situation": "On Day 2, following a recent mislynch and the death of the Healer, the village was information-starved and feeling guilty. A player (player_7) made an aggressive accusation against another player, despite having participated in the previous mislynch. The village, seeking to quell conflict and avoid further mistakes, formed a consensus against the accuser.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "approach": "The villagers focused on the accuser's (player_7) past flawed vote and aggressive style, interpreting it as a wolf-like diversion rather than a genuine attempt to find a wolf. They voted overwhelmingly to eliminate the accuser.",
+          "outcome": "The eliminated player was revealed to be the Investigator, a major loss for the village that was orchestrated by the wolves, who gained the majority."
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "e1c64739-2a78-44fc-a54e-2e33269d5ca9",
+          "relevance": 2,
+          "score": 0.8099,
+          "situation": "In the early game, when the information landscape is speculative, a credible, though unconfirmed, player leads an accusation against another based on behavioral reads, causing a fragile consensus to form. The accused player responds with a weak or evasive defense that focuses on attacking the accuser's motives.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Vote with the emerging consensus. In the early game, acting decisively on a strong lead from a credible player is often better than hesitating and allowing wolves another night to kill, provided the accused's defense is evasive rather than substantive."
+        },
+        {
+          "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+          "relevance": 2,
+          "score": 0.8004,
+          "situation": "In the mid-game, when trust is low and a recent mislynch has occurred, a single, aggressive accuser pushes for a vote based on subjective behavioral reads rather than voting records or role-based claims. The information landscape is starved, and the accuser is applying intense social pressure to force a quick decision.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "action": "Consider a counter-vote on the accuser. Forcing them to defend their methods can reveal whether they are an information role with poor communication or a wolf using high-pressure tactics. This move punishes attempts to railroad the village and reinforces a standard for evidence-based decisions."
+        },
+        {
+          "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+          "relevance": 0,
+          "score": 0.7881,
+          "situation": "If the village has been paralyzed by consecutive tie votes, and the information landscape is rich with voting data that clearly identifies a consistent bloc of players maintaining the deadlock. Game phase: Mid-game or endgame, when breaking a stalemate is critical for survival. Consensus texture: No consensus, only a recurring stalemate created by two opposing factions.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 0,
+            "gemini-2.5-pro": 0,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Break the cycle by voting for a new target, specifically targeting members of the bloc that has been voting in unison to create the ties. Convince others that maintaining the status quo is a loss and that forcing a new outcome is the only path forward."
+        },
+        {
+          "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "relevance": 2,
+          "score": 0.781,
+          "situation": "In the early to mid-game, a fragile consensus forms against a player based on vibes or communication style rather than concrete evidence, often driven by an accuser whose own credibility is unverified. The information landscape is starved of voting records or role claims, and the village is at risk of a miselimination due to social pressure.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Resist the urge to vote out a player simply for being aggressive, unpopular, or quiet. Abstain from the vote or vote for a different suspect and demand that the accusers provide concrete evidence. Consider that aggressive behavior can be a frustrated Investigator, while quiet behavior can be a cautious villager or a role-holder trying to avoid attention; weigh the substance of arguments against the deflections of the accuser before casting your vote."
+        },
+        {
+          "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+          "relevance": 1,
+          "score": 0.7771,
+          "situation": "When analyzing a past unanimous mislynch of a confirmed power role, and one player aggressively singles out another's participation while ignoring their own identical vote. Information landscape: Information-rich, using documented voting records and a confirmed flipped role. Game phase: Mid-game, right after a significant elimination provides concrete data. Social pressure: Vibes-based pressure weaponizing a previous group mistake.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Scrutinize the player selectively weaponizing the unanimous vote; wolves often use the cover of a group mislynch to set up their next target by framing a villager's cautious behavior as protecting a wolf, conveniently omitting their own role in the power role's death."
+        },
+        {
+          "key": "984356e1-d54b-48e5-baf4-3a7d250092f8",
+          "relevance": 2,
+          "score": 0.7707,
+          "situation": "When a player consistently advocates for caution, delays votes, and demands to wait for patterns while refusing to provide their own concrete suspects. Information landscape: Information-starved, where only behavioral reads and communication styles are available. Game phase: Mid-game, building up to the first critical vote.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 2,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Treat persistent stalling and refusal to name suspects as a strong wolf indicator, as wolves benefit from inaction and extending information-starved days. Pressure them to name specific suspects or vote for them."
+        },
+        {
+          "key": "09a16417-a56f-4347-9987-9810bfae4e90",
+          "relevance": 0,
+          "score": 0.7678,
+          "situation": "In an endgame scenario where a single incorrect vote can lose the game, an influential player, such as a suspected Investigator, makes an accusation that directly contradicts clear, public evidence like a voting record. The information landscape is defined by this conflict between a high-credibility claim and verifiable data.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 0,
+            "gemini-2.5-pro": 0,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Trust the verifiable evidence over the influential player's claim. Power roles can be mistaken, and wolves can fake claims, but a voting record is an undeniable fact. Vote according to the hard evidence."
+        },
+        {
+          "key": "afef4e16-12b0-4d9d-b5b2-e07cae23e576",
+          "relevance": 1,
+          "score": 0.7581,
+          "situation": "If a strong, evidence-based consensus has formed against a single player during the discussion phase. Information landscape: The consensus is supported by concrete evidence like voting records or a caught lie, not just vibes. Game phase: Any phase, but especially critical in mid- to endgame. Consensus texture: Multiple players have independently voiced their agreement and cited the same evidence.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "unanimous",
+          "action": "Ensure you vote decisively with the majority. This guarantees the removal of a likely threat, prevents a tied vote that would give wolves another night to kill, and demonstrates village solidarity, making it harder for remaining wolves to operate."
+        },
+        {
+          "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+          "relevance": 2,
+          "score": 0.7569,
+          "situation": "If the game descends into a multi-day stalemate with tied votes, and the information landscape is dominated by confusing and contradictory voting records. Game phase: Endgame, when a single mis-vote will likely lose the game. Consensus texture: A fractured state of gridlock, driven by wolf manipulation and villager frustration.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 1,
+            "gemini-2.5-pro": 2,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "action": "Resist the urge to vote randomly. Instead, re-anchor your focus on the most reliable pieces of information you have, such as which players have been confirmed targets via healer saves. Use this as your ground truth and refuse to vote against them, even if they are at the center of the stalemate's voting blocs. Scrutinize those who have benefited most from the chaos\u2014the ones who argue against analysis."
+        },
+        {
+          "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+          "relevance": 0,
+          "score": 0.7541,
+          "situation": "If multiple players coordinate to dismiss or suppress the analysis of the only hard evidence available, such as voting records. Information landscape: The information landscape contains concrete evidence (voting patterns), but some players are trying to frame it as irrelevant. Game phase: Mid-game, when analyzing past votes is crucial to finding wolf packs. Social pressure: A coordinated effort is underway to shut down a specific line of inquiry, likely to protect players who benefited from a previous deadlock.",
+          "model_scores": {
+            "gemini-3.1-flash-lite": 0,
+            "gemini-2.5-pro": 1,
+            "gemini-2.0-flash": null
+          },
+          "confidence": "split",
+          "action": "Immediately treat the coordinated suppression of evidence as a primary wolf signal. Rally the other villagers to form a voting bloc and eliminate the most vocal player pushing this narrative; failure to consolidate votes in this moment will lead to another deadlock."
+        }
+      ]
+    }
+  ]
+}
