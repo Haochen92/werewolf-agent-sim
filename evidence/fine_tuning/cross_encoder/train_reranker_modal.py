@@ -5,7 +5,7 @@ Used to replace the LLM reranking call in the retrieval pipeline.
 
 Training data: reranker_train.jsonl / reranker_eval.jsonl from prep_reranker_data.py
 (case-level hold-out split, one eval case per role to prevent query leakage)
-Labels: 0.0 (irrelevant), 0.5 (partial), 1.0 (relevant)
+Labels: 0.0 (irrelevant), 0.25 (partial), 1.0 (relevant)
 
 Usage:
     poetry run modal run evidence/fine_tuning/cross_encoder/train_reranker_modal.py \
@@ -74,7 +74,7 @@ def train(
 
     train_labels = [r["label"] for r in train_raw]
     eval_labels = [r["label"] for r in eval_raw]
-    for lbl in [0.0, 0.5, 1.0]:
+    for lbl in [0.0, 0.25, 1.0]:
         tc = sum(1 for l in train_labels if l == lbl)
         ec = sum(1 for l in eval_labels if l == lbl)
         print(f"    label={lbl}: train={tc}, eval={ec}")
@@ -134,7 +134,7 @@ def train(
 
     def ndcg_at_k(rels, k):
         def dcg(r, k):
-            return sum(r[i] / math.log2(i + 2) for i in range(min(k, len(r))))
+            return sum((2 ** r[i] - 1) / math.log2(i + 2) for i in range(min(k, len(r))))
         actual = dcg(rels, k)
         ideal = dcg(sorted(rels, reverse=True), k)
         return actual / ideal if ideal > 0 else 1.0
@@ -150,8 +150,9 @@ def train(
     for case_idx in sorted(case_preds):
         items = case_preds[case_idx]
         items.sort(key=lambda x: x["pred"], reverse=True)
-        # Map 0.0/0.5/1.0 back to 0/1/2 for NDCG
-        rels = [int(it["label"] * 2) for it in items]
+        # Map training labels back to graded relevance for NDCG
+        label_to_rel = {0.0: 0, 0.25: 1, 1.0: 2}
+        rels = [label_to_rel.get(it["label"], round(it["label"] * 2)) for it in items]
         n5 = ndcg_at_k(rels, 5)
         ndcg5s.append(n5)
         print(f"  Case {case_idx}: NDCG@5={n5:.3f} (n={len(items)})")
