@@ -1,0 +1,333 @@
+[
+  {
+    "case_index": 0,
+    "role": "healer",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The game is in a 6-player endgame with one wolf remaining, creating an information-rich but high-stakes environment where a single mis-vote is fatal. A strong consensus from the previous day identified one wolf, and the voting record provides a clear lead on a new primary suspect. As the anonymous but confirmed healer, my core dilemma is whether to actively push the village towards this logical suspect and risk outing myself as an important role, or to remain passive and trust the village's judgment, which could result in losing the game.",
+      "As the confirmed healer in a 6-player endgame, my nightly save is the village's only defense against the last wolf's kill. The wolves have already demonstrated they are hunting for me by killing the player I saved on the first night. My core dilemma is choosing who to protect: the primary wolf suspect to gather information if they are attacked, a player leading the discussion who is a high-value target, or a quiet player who might be seen as an easy kill."
+    ],
+    "captured_situations": [
+      "The village has successfully eliminated one wolf, providing a solid anchor for analysis based on the voting record of the previous day. However, the loss of a villager overnight creates an information-starved environment where the remaining players must determine if the voting bloc against the wolf was genuine or included strategic band-wagoning by remaining wolves.",
+      "As the healer who already revealed their utility by saving a player on the first night, I am now a high-priority target for the wolves in a mid-game phase with shrinking numbers. The game has transitioned into a critical period where my ability to protect others is compromised by the immediate threat to my own survival."
+    ],
+    "golden_ndcg_5": 0.9269658250786468,
+    "captured_ndcg_5": 0.8421757737602428,
+    "new_ndcg_5": 0.7573857224418385,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 1,
+    "role": "healer",
+    "phase": "day_vote",
+    "new_situations": [
+      "In an information-starved early game where suspicion is based on communication style, I have been indirectly accused of being too passive. My accuser is now being scrutinized for deflecting, which has drawn me into a minor conflict before any voting consensus has formed. My core dilemma is how to navigate this scrutiny and contribute to the discussion to avoid appearing evasive, without being so defensive that I attract more suspicion as a power role.",
+      "As the anonymous Healer, I successfully saved player_1, who is now aggressively driving the village discussion and attracting significant attention. This has made them a central, yet polarizing, figure, with the village split on whether to follow their lead. My core dilemma is whether to use my single nightly save to protect this now-controversial player again, which might be predictable to the wolves, or to protect a less prominent player and risk losing the game's most active information-seeker."
+    ],
+    "captured_situations": [
+      "The village is in an information-starved early game phase with no voting records, leading players to rely entirely on communication style and tone analysis to drive suspicion. A conflict has emerged where player_1 is pressuring others for specific justifications, while players like player_6 are accused of deflecting by labeling such aggressive inquiries as premature.",
+      "A direct confrontation is developing between player_6 and player_5, where the former is using behavioral critique to label the latter's call for patience as suspicious stalling. This has shifted the social pressure onto player_6, who is now being scrutinized by player_1 and player_3 for using redirection tactics to avoid answering direct questions."
+    ],
+    "golden_ndcg_5": 0.8792872118748392,
+    "captured_ndcg_5": 0.9863520113014781,
+    "new_ndcg_5": 0.8656392231763174,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 2,
+    "role": "investigator",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The game is in an early, information-starved phase, but a major event has occurred: a player was attacked by wolves and saved by the healer. My private investigation confirms this player is a villager, aligning my certain knowledge with strong public evidence. The core dilemma is whether to reveal my power role and finding to create a confirmed town anchor at the risk of being targeted, or to maintain my cover while the village likely intuits the same conclusion less certainly.",
+      "Following a Day 1 with no accusations or voting, the village is an information-starved blank slate, with no behavioral data to analyze for most players. The established group culture is one of extreme caution, making it difficult to identify suspicious behavior to guide my next investigation. My core dilemma is whether to select my next investigation target randomly, or to actively try and provoke discussion to generate leads, which might make me appear aggressive and draw suspicion."
+    ],
+    "captured_situations": [
+      "The village is currently in a state of high information scarcity during the early game, with players exhibiting extreme caution and avoiding definitive accusations or voting patterns. This lack of engagement creates a void where no behavioral baselines have been established, making it difficult to distinguish between genuine villager hesitancy and wolf-aligned tactical silence.",
+      "My private investigation has confirmed that player_1 is a villager, a result that currently contradicts the implicit suspicion usually directed at first-day speakers. I must now balance this knowledge with the public consensus, ensuring I do not accidentally signal my investigator role while navigating the group's lack of transparent debate."
+    ],
+    "golden_ndcg_5": 0.830419897363192,
+    "captured_ndcg_5": 0.9269658250786468,
+    "new_ndcg_5": 0.6887676151990412,
+    "new_unlabeled": 10
+  },
+  {
+    "case_index": 3,
+    "role": "investigator",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is in an information-starved, early-game phase where the only lead is a failed wolf attack on a player I privately know is a villager. This confirmed villager is now driving a fragile consensus against player_6 based on perceived evasiveness, but several other players are advocating for caution, creating a split. My core dilemma is whether to use my private knowledge to support the villager-led push against a potentially suspicious player at the risk of outing myself as a power role, or to maintain my low profile and let the village decide without my influence."
+    ],
+    "captured_situations": [
+      "The village is currently information-starved with no voting records, leading to a polarized debate between player 1 and player 6 based entirely on communication style and perceived defensiveness. The social pressure is mounting on player 6, whose attempts to shift focus onto player 5 are being met with skepticism by others who view the deflection as stalling.",
+      "As an investigator who knows player 1 is a villager, I am observing a high-stakes social dynamic where player 1 is aggressively challenging potential wolves while others like player 4 and player 6 urge caution to avoid misinformed voting. This tension is forcing players to pick sides between supporting player 1's transparency or advocating for a more measured, evidence-based approach that currently lacks concrete data."
+    ],
+    "golden_ndcg_5": 0.9013035765734799,
+    "captured_ndcg_5": 0.9013035765734799,
+    "new_ndcg_5": 0.659712443790349,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 6,
+    "role": "wolf",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The game has shifted from information-starved to having a concrete lead, as our failed night attack revealed the existence of a Healer who saved player_1. This event provides the village its first likely-confirmed villager and a power role to rally around before any public discussion has begun. My core dilemma is whether to try and undermine this new information to create chaos, or to feign alignment with the inevitable villager effort to protect player_1.",
+      "Entering the first elimination vote of the game, my wolf team must now orchestrate a successful lynching to regain momentum. The village, however, has a natural rallying point around the player saved by the Healer, creating a strong pro-villager narrative. The core dilemma is how to build a credible case against a villager target without appearing overly aggressive or coordinated, especially when the village's attention is focused elsewhere."
+    ],
+    "captured_situations": [
+      "The village is in an information-starved state following a failed night kill where the healer protected the target, leaving no concrete evidence or voting patterns from Day 1 to analyze. Players remain highly cautious and are currently in the early-game phase, focusing on observing communication styles rather than forming clear accusations or alliances.",
+      "As a wolf team, we face the risk of suspicion falling upon us if we fail to divert attention away from our group during this opening period of the second day. We must identify which of the surviving villagers, such as player_1 who survived the initial attack, possesses the most influence and poses the greatest threat to our survival if they begin to coordinate the village's investigative efforts."
+    ],
+    "golden_ndcg_5": 0.8930068676327362,
+    "captured_ndcg_5": 0.7469385177900298,
+    "new_ndcg_5": 0.8930068676327362,
+    "new_unlabeled": 5
+  },
+  {
+    "case_index": 9,
+    "role": "healer",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village has reached a strong, evidence-based consensus against a player who defended a confirmed wolf on the previous day before voting with the majority. This target is now deflecting by accusing the most vocal villagers of being a coordinated wolf team. I am aligned with the consensus but have maintained a low profile, avoiding a leadership role. The core dilemma is whether to trust the overwhelming village consensus or to consider that the target's defensive counter-accusation might be a correct, last-ditch effort by a framed villager.",
+      "As a healer in the mid-game with six players remaining, I have private information that one player is a confirmed villager from a previous successful heal. Several players, including my confirmed villager, are taking high-profile roles in prosecuting the main suspect, making them likely targets for a wolf attack. My identity is not suspected, giving me freedom to act. My core dilemma is whether to use my nightly heal to protect the single player I know is innocent, or to gamble on protecting a different, equally vocal player who might be a more strategic target for the wolves."
+    ],
+    "captured_situations": [
+      "A vocal majority is aggressively pressuring player 5, citing their previous alliance with an eliminated wolf as definitive proof of alignment. The suspects, in turn, characterize this intense, multi-player focus as a coordinated wolf pack tactic to force a blind elimination.",
+      "The village is transitioning into a mid-game phase characterized by a high volume of voting-pattern evidence following the elimination of a known wolf. The discourse is dominated by accusations of behavioral inconsistency, where defensive shifts are being interpreted as opportunistic attempts to stay under the radar."
+    ],
+    "golden_ndcg_5": 0.9519475762801467,
+    "captured_ndcg_5": 0.8879149724065322,
+    "new_ndcg_5": 0.9605753368118396,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 10,
+    "role": "investigator",
+    "phase": "day_discussion",
+    "new_situations": [
+      "My private investigation has confirmed a player is a wolf, and this aligns with a strong, unified village consensus based on behavioral evidence. As a primary driver of this consensus, I am now being accused by the wolf of suspicious coordination with another villager in an attempt to deflect. The core dilemma is how to maintain pressure on the correct target without my aggressive stance, fueled by secret knowledge, becoming the new focus of suspicion.",
+      "The village is on the verge of eliminating a wolf I privately identified, but my active role in guiding the consensus risks outing me as a power role. The discussion is currently focused on public behavioral evidence, which I am using to build my case. The dilemma is how to ensure the village follows through on the correct vote without revealing the certainty of my information, which would make me a high-priority target for the remaining wolves."
+    ],
+    "captured_situations": [
+      "I have confirmed via my private investigation that player_5 is a wolf, creating a situation where I must lead the village to an elimination while keeping my investigative role hidden. The public discussion is currently centered on player_5's history of defending the previously eliminated wolf, player_2, creating a clear behavioral evidence trail for the consensus to follow.",
+      "A vocal group is pushing for player_5's elimination, but player_5 is attempting to deflect suspicion by characterizing this multi-player pressure as a coordinated wolf team tactic. I must navigate this dynamic where the accused is weaponizing the concept of 'bussing' and 'coordinated narratives' to cast doubt on the very villagers who are driving the correct investigation."
+    ],
+    "golden_ndcg_5": 0.6261806449294969,
+    "captured_ndcg_5": 0.6917831836856677,
+    "new_ndcg_5": 0.795760747566305,
+    "new_unlabeled": 12
+  },
+  {
+    "case_index": 12,
+    "role": "villager",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village has its first lead: a confirmed town-aligned player who was saved. A fragile consensus is forming to pressure players advocating for inaction, but this push has been met with deflection and counter-accusations against the most aggressive questioners. The core dilemma is whether to maintain pressure on the original passive target, risking that the counter-accusations split the vote, or to pivot and defend myself, which could stall momentum entirely."
+    ],
+    "captured_situations": [
+      "The village is currently information-starved with no voting records or role claims, leading to a stalemate where players are divided between those pushing for aggressive accusations to create data and those advocating for caution to avoid mis-elimination. This dynamic has created an environment where 'passivity' and 'eagerness' are being weaponized as proxies for wolf-aligned behavior.",
+      "A secondary conflict has emerged where player_2 and player_5 are being pressured by the majority for their cautious stance, while they have pivoted to counter-accusing player_8 and player_4 of manipulative behavior. The group is caught in a cycle of defensive posturing rather than building a logical case against a specific suspect."
+    ],
+    "golden_ndcg_5": 0.7573857224418385,
+    "captured_ndcg_5": 0.7227265726449519,
+    "new_ndcg_5": 0.6992148198508501,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 13,
+    "role": "villager",
+    "phase": "day_vote",
+    "new_situations": [
+      "In the mid-game, a strong village consensus has formed against a player who defended a now-confirmed wolf on the previous day before voting with the majority. This evidence-driven push is being challenged by the target, who claims the unified accusers are a coordinated wolf team trying to force a mis-vote. The core dilemma is whether to trust the strong, evidence-based consensus against this suspect despite their plausible counter-narrative that such perfect unity is itself a sign of a wolf pack's manipulation."
+    ],
+    "captured_situations": [
+      "Player 5 is under heavy scrutiny for their late-stage vote shift after defending a confirmed wolf, and they are responding by characterizing their accusers as a coordinated wolf team. This dynamic pits a player's documented defensive history against their current attempts to frame collective evidence as artificial collusion.",
+      "The village consensus is converging on player 5 due to their prior alignment with the eliminated wolf, resulting in a tense environment where the accused attempts to deflect by highlighting the synchronous timing of their attackers. This creates a volatile situation where the accused's aggressive counter-narrative is being used to test the village's confidence in their voting evidence."
+    ],
+    "golden_ndcg_5": 0.650392590074575,
+    "captured_ndcg_5": 0.5117558763970509,
+    "new_ndcg_5": 0.5,
+    "new_unlabeled": 3
+  },
+  {
+    "case_index": 14,
+    "role": "wolf",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village has a strong, evidence-based consensus against me, built on my documented history of defending a now-confirmed wolf. My attempts to deflect by accusing my primary accusers of suspicious coordination are failing and being labeled as a classic wolf diversion. I am the sole, primary target, and my vote against my former partner is being interpreted as a failed self-preservation gambit, not a genuine change of heart. My core dilemma is whether to continue my failing defense and attempts to discredit my accusers, or to attempt a high-risk pivot to accuse a less vocal player in a desperate bid to fracture the unified village."
+    ],
+    "captured_situations": [
+      "I am facing intense, synchronized social pressure from two villagers, player_7 and player_8, who are using my past voting record and association with an eliminated wolf to build a consensus against me. Their coordinated accusations of my behavior as 'performative' and 'opportunistic' are creating a high-stakes, mid-game narrative that labels my defensive responses as deliberate deflections.",
+      "The village is currently information-rich due to the confirmed elimination of a wolf and the resulting scrutiny of voting patterns from previous rounds. This shift has made my previous defensive stance of 'cautious observation' a focal point for suspicion, and I am being scrutinized for the timing of my vote against my former partner.",
+      "A potential voting bloc is forming among player_1, player_3, player_6, player_7, and player_8, who are collectively analyzing historical interaction data to identify the last remaining wolf. This consensus-driven environment makes any attempt to redirect suspicion toward other players extremely difficult and risks painting my defensive maneuvers as further evidence of guilt."
+    ],
+    "golden_ndcg_5": 0.934397461243829,
+    "captured_ndcg_5": 0.3643788548091025,
+    "new_ndcg_5": 0.39791470588901956,
+    "new_unlabeled": 9
+  },
+  {
+    "case_index": 15,
+    "role": "wolf",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village has formed a unified, evidence-based consensus against me, using my Day 2 defense of a now-confirmed wolf as irrefutable proof. My attempts to deflect by pointing out suspicious coordination among my accusers are failing, as the entire group remains focused on my past actions. The core dilemma is that I must break this consensus despite having no way to plausibly deny the historical evidence, forcing a choice between doubling down on a failing counter-accusation or inventing a completely new, high-risk defense."
+    ],
+    "captured_situations": [
+      "The village is currently mid-game and possesses clear voting evidence from the previous round that links my wolf partner to the players now under investigation. A strong, multi-player consensus has formed against me, driven primarily by players 7 and 8 who are citing my past defense of the eliminated wolf to justify my immediate removal.",
+      "I am facing an intense, coordinated pressure campaign where multiple villagers are using identical, synchronized logic to frame my defensive pivots as inherently suspicious. This social pressure is almost entirely based on analyzing my previous behavioral patterns and voting record during the last round rather than any new information.",
+      "The remaining villagers are shifting the information landscape toward a binary choice between my guilt or a potential conspiracy among my loudest critics. By consistently labeling the aggressive, aligned questioning from other players as a manufactured wolf team, I am attempting to create enough friction to disrupt the current momentum against me."
+    ],
+    "golden_ndcg_5": 0.6163989078593143,
+    "captured_ndcg_5": 0.6685622027129364,
+    "new_ndcg_5": 0.22460731655903235,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 16,
+    "role": "healer",
+    "phase": "day_discussion",
+    "new_situations": [
+      "A strong, evidence-based consensus has formed to eliminate me in the mid-game, based on a past vote where I aligned with a now-confirmed wolf. As the secret Healer, my attempts to deflect have been ineffective, leaving me as the primary target of a unified village. The core dilemma is whether to reveal my critical role to save myself\u2014risking disbelief or future targeting\u2014or be silently eliminated, thereby crippling the village's defenses."
+    ],
+    "captured_situations": [
+      "The village has reached a strong, evidence-driven consensus to eliminate player 6 due to their anomalous voting record during the previous round when a known wolf was identified. This push is being sustained by multiple players who are pointing to the specific, measurable deviation in the voting data as a clear indicator of malicious intent.",
+      "As the healer, I am currently facing the challenge of balancing my survival with my role-specific responsibility, having already protected individuals targeted twice by the wolves. The focus of the group has shifted almost entirely onto player 6, providing me a low-profile window, but I must remain cautious that my continued survival does not become an point of scrutiny if the wolves shift their targeting strategy."
+    ],
+    "golden_ndcg_5": 0.7543701539552121,
+    "captured_ndcg_5": 0.934397461243829,
+    "new_ndcg_5": 0.4777969189511402,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 19,
+    "role": "investigator",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is in the mid-game and has formed a unified, evidence-based consensus to eliminate a player who voted with a confirmed wolf on the previous day. My private information as the investigator confirms the target's vote was against the healer, making the public case even stronger. I am safely aligned with the majority and not under any suspicion. My core dilemma is whether to simply vote with the overwhelming consensus or to reveal my private information to cement the vote, which would expose the healer and my own power role to the remaining wolves."
+    ],
+    "captured_situations": [
+      "The village is currently mid-game with a strong, evidence-driven consensus targeting player_6 for their suspicious voting record on Day 2. The pressure is explicitly based on their choice to vote against the healer rather than the confirmed wolf, and player_6 is actively deflecting by characterizing this scrutiny as a coordinated diversion.",
+      "My private role as the investigator has confirmed the alignment of player_1 and player_2, which provides me with a secure anchor while the village focuses on the public voting history. I must balance providing subtle, evidence-backed guidance to maintain the consensus against the wolf-suspect without revealing my investigative role and becoming the next target."
+    ],
+    "golden_ndcg_5": 0.8470858852562799,
+    "captured_ndcg_5": 0.6971533001755515,
+    "new_ndcg_5": 0.9155230494702449,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 20,
+    "role": "villager",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village has a strong, evidence-based consensus against a single player who, along with a now-confirmed wolf, voted against the majority on the previous day's successful elimination. In the face of unanimous accusation, this player is offering weak defenses and attempting to deflect suspicion onto the loudest accusers. The core dilemma is whether to trust this overwhelming consensus for a swift elimination or to entertain the suspect's deflection, which risks losing momentum and allowing a potential wolf to survive."
+    ],
+    "captured_situations": [
+      "A player is under intense scrutiny due to a suspicious vote cast against a villager during a round where the majority successfully eliminated a known wolf. The pressure is driven by collective voting evidence from the previous day, leading to a direct confrontation where the suspect claims their action was a mistake in judgment rather than malicious intent.",
+      "The village is experiencing a strong consensus-driven push against a specific player based on their deviation from the group's voting record on Day 2. Multiple players are coordinating their inquiries, demanding a logical justification for why that individual chose to vote against a non-wolf target while the rest of the group identified the wolf."
+    ],
+    "golden_ndcg_5": 0.7040090042240594,
+    "captured_ndcg_5": 0.7165902417430504,
+    "new_ndcg_5": 0.6534240600791781,
+    "new_unlabeled": 6
+  },
+  {
+    "case_index": 30,
+    "role": "investigator",
+    "phase": "day_discussion",
+    "new_situations": [
+      "In a 3-player endgame, the village has a strong, evidence-based consensus to vote out the final wolf, whose identity is confirmed to me by my private investigation results. The public evidence is solid, but the cornered wolf is attempting to sow doubt by framing the 2 vs 1 consensus as suspicious groupthink. My core dilemma is whether to hold my tongue and trust the public logic will prevail, or reveal my definitive information as an investigator to secure the win, which risks looking like a desperate, last-minute fabrication."
+    ],
+    "captured_situations": [
+      "In the endgame phase with only three players remaining, a strong consensus has formed against player 8 based on their history of voting to protect a confirmed wolf. This alignment between the two remaining villagers creates significant social pressure on player 8, who claims these choices were made under uncertainty rather than malice.",
+      "The information landscape is currently driven by a compelling voting record that heavily implicates player 8, overriding their defense regarding early-game missteps. As the investigator who has already confirmed player 4 as a villager, my private knowledge aligns with the public logic, yet I must remain silent to protect my role from being targeted by the remaining wolf."
+    ],
+    "golden_ndcg_5": 0.6725956711234347,
+    "captured_ndcg_5": 0.5815506572374046,
+    "new_ndcg_5": 0.8073332658149857,
+    "new_unlabeled": 5
+  },
+  {
+    "case_index": 34,
+    "role": "villager",
+    "phase": "day_discussion",
+    "new_situations": [
+      "In the endgame with five players remaining, a fragile consensus is forming against a pair of players who have consistently advocated for caution and inaction since day two. This behavioral alignment is the only significant lead, as a unanimous mislynch on the previous day rendered the voting record useless for clearing anyone. The core dilemma is whether to commit to this behavioral evidence and risk a game-losing mislynch, or to hesitate and allow the wolves another night.",
+      "The village was manipulated into a unanimous, fatal mislynch yesterday, and now a new majority is rapidly forming against a different set of players based on similar social momentum and behavioral reads. The pattern of a quick, aggressive consensus feels dangerously similar to the previous day's mistake. The core dilemma is whether to trust that this new consensus is a genuine break against the wolves, or to treat it with suspicion as a potential repeat of a successful wolf manipulation tactic."
+    ],
+    "captured_situations": [
+      "The village is in a high-stakes endgame phase with only four players remaining, where the consensus has fractured into two distinct camps. Two players are under intense pressure for their consistent, tactical alignment and repeated advocacy for stalling tactics during previous voting cycles.",
+      "The information landscape is heavily compromised by the previous day's unanimous vote against a villager, rendering past voting records unreliable as a tool for clearing suspects. Suspicion is now driven entirely by communication patterns and the perceived deflection tactics used by the surviving players to shift blame for the failed lynch."
+    ],
+    "golden_ndcg_5": 0.7543701539552121,
+    "captured_ndcg_5": 0.19178318368566782,
+    "new_ndcg_5": 0.5222030810488597,
+    "new_unlabeled": 11
+  },
+  {
+    "case_index": 35,
+    "role": "villager",
+    "phase": "day_vote",
+    "new_situations": [
+      "In a 5-player endgame, the village has fractured into a 3-player bloc pressuring a 2-player bloc based on behavioral evidence of stalling and deflection. My faction is driving the consensus, but the targeted duo is accusing us of being a coordinated wolf team, creating a tense standoff where the vote is game-deciding. The core dilemma is whether to trust my allies and push the vote on a suspect from the duo, knowing a mistake means losing the game and that a wolf could be manipulating our bloc from within."
+    ],
+    "captured_situations": [
+      "The village is in an endgame phase with only four players remaining, characterized by an information-starved environment where no roles have been confirmed. Suspicion is driven entirely by behavioral patterns and the perceived coordination of the remaining players rather than concrete evidence.",
+      "A clear, fragile consensus has emerged among three players who are pressuring the remaining two based on their consistent advocacy for caution and inaction throughout the game. The suspects are labeling this group's unified scrutiny as a coordinated wolf tactic, creating a stalemate where both sides accuse the other of using identical deflection strategies."
+    ],
+    "golden_ndcg_5": 0.42059924596710974,
+    "captured_ndcg_5": 0.38010016688126197,
+    "new_ndcg_5": 0.5221293293344146,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 37,
+    "role": "wolf",
+    "phase": "day_vote",
+    "new_situations": [
+      "In an information-starved early game, the village has polarized into two factions: aggressive players demanding a vote and a 'caution' faction that includes my allies. My allies are now the primary targets of suspicion, as their calls for inaction are being framed as a wolf-shielding tactic. I have vocally supported caution but am not yet directly linked to the players under fire.",
+      "An aggressive villager is successfully gaining momentum by framing my pack's 'caution' strategy as a wolf tactic, putting direct pressure on my allies. The village is starting to rally behind this logic, viewing any call for inaction as suspicious. My core dilemma is whether to try and discredit this aggressive player, which could draw attention to myself, or to allow the pressure to build on my ally in the hope it leads to a mislynch that benefits the pack."
+    ],
+    "captured_situations": [
+      "The village is currently information-starved with no concrete evidence, leading to a polarized debate between players advocating for immediate aggressive voting and those prioritizing caution to avoid accidental miseliminations. This disagreement has stalled the lynch process, leaving the village without a consensus and vulnerable to manipulation.",
+      "Active villagers like player_5 and player_7 are aggressively targeting those who preach caution, framing defensive play as inherently suspicious wolf behavior. My wolf teammates player_3 and player_8 are under intense social pressure because they are being labeled as potential wolves for refusing to commit to an early-game vote.",
+      "The game is in a fragile mid-phase where the village is desperate to break the Day 1 deadlock, causing the loudest players to demand action at the risk of eliminating innocents. I am navigating this by portraying the push for an immediate, evidence-free vote as a reckless, pro-wolf tactic to stir chaos and distract from the lack of actual investigation."
+    ],
+    "golden_ndcg_5": 0.7165902417430504,
+    "captured_ndcg_5": 0.4601696937327943,
+    "new_ndcg_5": 0.8535105373852008,
+    "new_unlabeled": 5
+  },
+  {
+    "case_index": 38,
+    "role": "wolf",
+    "phase": "day_discussion",
+    "new_situations": [
+      "I am the last wolf in a 1v2 endgame, and the two remaining villagers are unified against me. Their consensus is built on the hard evidence of my voting record and consistent defense of my wolf partner, who was just lynched. The information landscape is rich but points entirely at me, leaving me as the sole, logical suspect with no one else to deflect to. My core dilemma is how to fracture a consensus built on solid, historical evidence when my past actions are indefensible and there are no alternative targets."
+    ],
+    "captured_situations": [
+      "I am facing an endgame scenario where the two remaining villagers have consolidated their suspicion against me based on my established voting record of protecting a known wolf. The information landscape is dense with historical voting evidence, creating a high-pressure environment where I am the primary target for elimination.",
+      "The village consensus has reached a critical threshold with player 4 and player 6 acting as a unified voting bloc. Their coordination is driven by analyzing my past behavioral patterns, specifically my defensive alignment with a revealed wolf, leaving me with almost no room to deflect the incoming lynch."
+    ],
+    "golden_ndcg_5": 1.0,
+    "captured_ndcg_5": 0.7234267649959281,
+    "new_ndcg_5": 0.7860137352654724,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 39,
+    "role": "wolf",
+    "phase": "day_vote",
+    "new_situations": [
+      "In a 5-player endgame, a unified bloc of three villagers has formed a consensus to eliminate me, based on my and my ally's shared 'caution' rhetoric from a previous day. The village is information-starved, so this behavioral read is the only evidence driving the vote, and I am the primary target. The core dilemma is how to fracture this unified bloc when their accusation is based on a correct observation of my alliance, forcing me to deflect by attacking their own coordination as suspicious."
+    ],
+    "captured_situations": [
+      "The remaining villagers have formed a tight, coordinated voting bloc against my team, using our past history of stalling as the primary evidence for their suspicion. This consensus is driven by a repetitive, high-pressure communication style where the villagers validate each other's points to justify an immediate elimination.",
+      "The information landscape is currently starved of concrete leads, forcing the village to rely entirely on interpreting behavior and communication patterns. The game has reached a critical, low-population phase where any successful lynch by the villagers will result in an immediate loss for the wolves."
+    ],
+    "golden_ndcg_5": 0.819972692711383,
+    "captured_ndcg_5": 0.5147714448836774,
+    "new_ndcg_5": 0.650392590074575,
+    "new_unlabeled": 5
+  }
+]

@@ -1,0 +1,337 @@
+[
+  {
+    "case_index": 0,
+    "role": "healer",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The successful elimination of a wolf has shifted the village's focus, but the loss of a villager necessitates a new analytical approach to the remaining pool. I face the tension of needing to provide effective protection for a high-value target while avoiding the scrutiny that comes with being identified as a power role. Information landscape: Information-rich due to the confirmed wolf identity of player_6 and the resulting voting record. Game phase: Mid-game, following the successful elimination of a wolf and the subsequent loss of a villager. Consensus texture: Unified, as the village successfully coordinated to eliminate a confirmed wolf. Agent exposure: Aligned with the consensus, as I participated in the successful vote against the wolf without drawing undue attention.",
+      "With the wolf count reduced, the remaining players are likely to re-evaluate their positions and potential alliances, creating a volatile environment. I must decide whether to continue protecting the most vocal contributors or pivot to protecting those who are currently under-the-radar to prevent further villager losses. Information landscape: Information-rich, driven by the voting patterns from the previous day that exposed a wolf. Game phase: Mid-game, characterized by the transition from the first successful elimination to the next phase of investigation. Consensus texture: Fragile, as the village must now determine if the remaining players are aligned or if new wolves are hiding within the previous consensus. Agent exposure: Under indirect scrutiny, as my survival and participation in the previous vote could lead others to analyze my motives if I become too active."
+    ],
+    "captured_situations": [
+      "The village has successfully eliminated one wolf, providing a solid anchor for analysis based on the voting record of the previous day. However, the loss of a villager overnight creates an information-starved environment where the remaining players must determine if the voting bloc against the wolf was genuine or included strategic band-wagoning by remaining wolves.",
+      "As the healer who already revealed their utility by saving a player on the first night, I am now a high-priority target for the wolves in a mid-game phase with shrinking numbers. The game has transitioned into a critical period where my ability to protect others is compromised by the immediate threat to my own survival."
+    ],
+    "golden_ndcg_5": 0.9269658250786468,
+    "captured_ndcg_5": 0.8421757737602428,
+    "new_ndcg_5": 0.7618017901203944,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 1,
+    "role": "healer",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is experiencing a conflict between players demanding immediate accountability and those advocating for caution, with the debate centering on communication styles rather than concrete evidence. I must decide whether to intervene in this escalating argument to influence the vote or maintain a low profile to protect my identity as the healer. Information landscape: Information-starved; the only evidence is the failed night kill, and current suspicions are driven entirely by communication style and perceived evasiveness. Game phase: Early-mid phase; no eliminations have occurred, but the failed kill has shifted the focus from observation to active suspicion. Consensus texture: Fragile and split; there is no consensus, and the village is currently divided between those demanding immediate action and those advocating for caution. Agent exposure: Aligned with the general village caution; I am currently under no direct scrutiny, but my role as the healer makes me a high-value target if I become too vocal or influential."
+    ],
+    "captured_situations": [
+      "The village is in an information-starved early game phase with no voting records, leading players to rely entirely on communication style and tone analysis to drive suspicion. A conflict has emerged where player_1 is pressuring others for specific justifications, while players like player_6 are accused of deflecting by labeling such aggressive inquiries as premature.",
+      "A direct confrontation is developing between player_6 and player_5, where the former is using behavioral critique to label the latter's call for patience as suspicious stalling. This has shifted the social pressure onto player_6, who is now being scrutinized by player_1 and player_3 for using redirection tactics to avoid answering direct questions."
+    ],
+    "golden_ndcg_5": 0.8792872118748392,
+    "captured_ndcg_5": 0.9863520113014781,
+    "new_ndcg_5": 0.8656392231763174,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 2,
+    "role": "investigator",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village is currently in a state of extreme caution with no concrete leads or voting history, creating a vacuum of information. I possess private confirmation of a villager's role, which creates a tension between the need to influence the village toward a safe target and the risk of revealing my power role too early. Information landscape: Information-starved; there are no voting records or caught lies, only speculative behavioral observations. Game phase: Early phase; the game has transitioned from Day 1 to Day 2 with no eliminations, leaving the village without any concrete data points. Consensus texture: No consensus; the village is currently paralyzed by caution and a lack of evidence. Agent exposure: Aligned with the general cautious consensus; I am currently under no scrutiny, but my private knowledge of player_1's role is not yet public.",
+      "The healer's successful save of player_1 on Night 1 provides a potential focal point for the village, but the lack of public discussion makes it difficult to leverage this without drawing attention to myself. I must decide whether to use this information to build a defensive alliance or keep it hidden to protect my role as an investigator. Information landscape: Information-rich regarding the healer's action, but information-starved regarding wolf identity. Game phase: Early phase; the recent revelation of the healer's save is the only significant event that has occurred. Consensus texture: Fragile; the village has not yet reacted to the healer's save, leaving the potential for either unity or confusion. Agent exposure: Aligned with the consensus; I am currently observing the village's reaction to the save without revealing my own investigative findings."
+    ],
+    "captured_situations": [
+      "The village is currently in a state of high information scarcity during the early game, with players exhibiting extreme caution and avoiding definitive accusations or voting patterns. This lack of engagement creates a void where no behavioral baselines have been established, making it difficult to distinguish between genuine villager hesitancy and wolf-aligned tactical silence.",
+      "My private investigation has confirmed that player_1 is a villager, a result that currently contradicts the implicit suspicion usually directed at first-day speakers. I must now balance this knowledge with the public consensus, ensuring I do not accidentally signal my investigator role while navigating the group's lack of transparent debate."
+    ],
+    "golden_ndcg_5": 0.830419897363192,
+    "captured_ndcg_5": 0.9269658250786468,
+    "new_ndcg_5": 0.9269658250786468,
+    "new_unlabeled": 6
+  },
+  {
+    "case_index": 3,
+    "role": "investigator",
+    "phase": "day_vote",
+    "new_situations": [
+      "A vocal conflict has emerged between player 1 and player 6, where player 1 demands accountability and player 6 attempts to deflect scrutiny by accusing player 5 of stalling. This creates a tension between the desire for decisive action and the risk of lynching based on defensive posturing rather than concrete evidence. Information landscape: Information-starved; the village lacks voting records or role reveals, relying entirely on subjective interpretations of communication style and behavioral patterns. Game phase: Early-mid phase; the game is transitioning from a period of observation to the first real pressure to eliminate a player following a failed night kill. Consensus texture: Fragile and split; the village is divided between those favoring immediate action and those advocating for caution to avoid a mislynch. Agent exposure: Aligned with the consensus of observation; I am maintaining a low profile to avoid revealing my investigator role while monitoring the friction between the vocal players.",
+      "The village is under pressure to produce a lynch despite having no hard evidence, forcing a choice between following the most vocal accuser or resisting the push to avoid a potential mislynch. This creates a dilemma where silence is safe but potentially suspicious, while active participation risks drawing unwanted attention to my role. Information landscape: Information-starved; there is no objective data, only subjective interpretations of tone and defensive maneuvers. Game phase: Early-mid phase; the game is moving past the initial introductory phase, and the lack of a previous vote increases the urgency to establish a target. Consensus texture: No consensus; the village is struggling to find a common target, with social momentum currently shifting toward whoever appears most evasive. Agent exposure: Under indirect scrutiny; as a quiet player, I risk being targeted for passivity if I do not contribute to the debate, yet I must avoid exposing my investigative role."
+    ],
+    "captured_situations": [
+      "The village is currently information-starved with no voting records, leading to a polarized debate between player 1 and player 6 based entirely on communication style and perceived defensiveness. The social pressure is mounting on player 6, whose attempts to shift focus onto player 5 are being met with skepticism by others who view the deflection as stalling.",
+      "As an investigator who knows player 1 is a villager, I am observing a high-stakes social dynamic where player 1 is aggressively challenging potential wolves while others like player 4 and player 6 urge caution to avoid misinformed voting. This tension is forcing players to pick sides between supporting player 1's transparency or advocating for a more measured, evidence-based approach that currently lacks concrete data."
+    ],
+    "golden_ndcg_5": 0.9013035765734799,
+    "captured_ndcg_5": 0.9013035765734799,
+    "new_ndcg_5": 0.9092569759280646,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 6,
+    "role": "wolf",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The failed night kill on player_1 has confirmed the presence of a healer, shifting the village's focus toward identifying protected players and potential healer targets. This forces a decision between continuing to target high-value players or pivoting to safer, less protected targets to avoid further failed attempts. Information landscape: Information-starved regarding specific roles, but the failed kill provides a concrete data point about the healer's existence. Game phase: Mid-game transition, as the first night's failed kill provides the first tangible evidence of protective roles. Consensus texture: No consensus yet, as the village is just beginning to process the failed kill. Agent exposure: Aligned with the village's general confusion, but under potential scrutiny if I push too hard against the healer's target.",
+      "The lack of voting or accusations on Day 1 has left the village without a behavioral baseline, creating a vacuum where any initial opinion could be perceived as suspicious. I must contribute to the discussion to avoid being labeled as a lurker while ensuring my contributions do not inadvertently draw attention to my lack of analytical depth. Information landscape: Information-starved with no voting records or caught lies to leverage. Game phase: Early-mid transition, characterized by a lack of eliminations and a need to establish a narrative. Consensus texture: No consensus, as the village is currently in a state of cautious observation. Agent exposure: Aligned with the village's cautious stance, but vulnerable to being targeted for inactivity if I do not participate."
+    ],
+    "captured_situations": [
+      "The village is in an information-starved state following a failed night kill where the healer protected the target, leaving no concrete evidence or voting patterns from Day 1 to analyze. Players remain highly cautious and are currently in the early-game phase, focusing on observing communication styles rather than forming clear accusations or alliances.",
+      "As a wolf team, we face the risk of suspicion falling upon us if we fail to divert attention away from our group during this opening period of the second day. We must identify which of the surviving villagers, such as player_1 who survived the initial attack, possesses the most influence and poses the greatest threat to our survival if they begin to coordinate the village's investigative efforts."
+    ],
+    "golden_ndcg_5": 0.8930068676327362,
+    "captured_ndcg_5": 0.7469385177900298,
+    "new_ndcg_5": 0.819972692711383,
+    "new_unlabeled": 13
+  },
+  {
+    "case_index": 9,
+    "role": "healer",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is heavily focused on eliminating player 5 due to their previous alliance with the confirmed wolf, creating a high-pressure environment where any dissent is viewed as suspicious. I must decide whether to commit to this consensus or risk being seen as a contrarian, while balancing the need to protect my identity as a healer. Information landscape: Information-rich, driven by concrete voting records from the previous day and behavioral patterns observed during the current discussion. Game phase: Mid-game, characterized by the recent elimination of a wolf and the subsequent shift in focus toward the remaining suspect. Consensus texture: Unified, driven by strong evidence from past voting behavior and consistent social momentum. Agent exposure: Aligned with the consensus, maintaining a low profile to avoid scrutiny while monitoring the potential for a wolf-team trap."
+    ],
+    "captured_situations": [
+      "A vocal majority is aggressively pressuring player 5, citing their previous alliance with an eliminated wolf as definitive proof of alignment. The suspects, in turn, characterize this intense, multi-player focus as a coordinated wolf pack tactic to force a blind elimination.",
+      "The village is transitioning into a mid-game phase characterized by a high volume of voting-pattern evidence following the elimination of a known wolf. The discourse is dominated by accusations of behavioral inconsistency, where defensive shifts are being interpreted as opportunistic attempts to stay under the radar."
+    ],
+    "golden_ndcg_5": 0.9519475762801467,
+    "captured_ndcg_5": 0.8879149724065322,
+    "new_ndcg_5": 0.9519475762801467,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 10,
+    "role": "investigator",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village is aggressively targeting player_5, who is confirmed as a wolf by my private investigation. I must decide whether to lead the charge and risk appearing like a power role or to support the consensus subtly to ensure the elimination without drawing scrutiny to my own analytical depth. Information landscape: Information-rich due to the confirmed wolf status of player_2 and the clear behavioral patterns of player_5. Game phase: Mid-game, following the successful elimination of one wolf and the subsequent death of a villager. Consensus texture: Unified and evidence-driven, with the majority of players focusing on player_5's past defensive behavior toward the known wolf. Agent exposure: Aligned with the consensus, leveraging the village's momentum to push for the elimination of the known wolf.",
+      "player_5 is attempting to survive by framing the village's consensus against them as a 'coordinated wolf team' effort, creating a potential distraction. I face the tension of needing to dismantle this deflection without revealing the specific source of my certainty, which could expose my role as an investigator. Information landscape: Information-rich, as the debate centers on observable voting records and communication styles from the previous day. Game phase: Mid-game, with the village currently debating the validity of player_5's counter-accusations. Consensus texture: Fragile, as player_5's accusations of 'coordinated narratives' threaten to sow doubt among the villagers. Agent exposure: Under indirect scrutiny, as I am part of the group pushing the consensus that player_5 is attempting to discredit."
+    ],
+    "captured_situations": [
+      "I have confirmed via my private investigation that player_5 is a wolf, creating a situation where I must lead the village to an elimination while keeping my investigative role hidden. The public discussion is currently centered on player_5's history of defending the previously eliminated wolf, player_2, creating a clear behavioral evidence trail for the consensus to follow.",
+      "A vocal group is pushing for player_5's elimination, but player_5 is attempting to deflect suspicion by characterizing this multi-player pressure as a coordinated wolf team tactic. I must navigate this dynamic where the accused is weaponizing the concept of 'bussing' and 'coordinated narratives' to cast doubt on the very villagers who are driving the correct investigation."
+    ],
+    "golden_ndcg_5": 0.6261806449294969,
+    "captured_ndcg_5": 0.6917831836856677,
+    "new_ndcg_5": 0.584790051318404,
+    "new_unlabeled": 13
+  },
+  {
+    "case_index": 12,
+    "role": "villager",
+    "phase": "day_discussion",
+    "new_situations": [
+      "A divide has emerged between players demanding immediate, aggressive analysis to prevent stagnation and those advocating for observational caution to avoid mis-lynching. This creates a strategic tension where pushing for accountability risks being labeled as 'too eager' or manipulative, while remaining cautious risks being perceived as a wolf attempting to stall the game. Information landscape: Information-starved; suspicion is driven entirely by communication style and behavioral patterns rather than voting records or confirmed roles. Game phase: Early game; the recent save of player 1 has provided a focal point for discussion but has not yet yielded concrete data. Consensus texture: Split; the village is divided between those demanding immediate accountability and those prioritizing observational caution. Agent exposure: Driving the push; I am actively pressuring passive players to force a lead, which risks marking me as a target for those who view aggressive play as suspicious.",
+      "As pressure mounts to name suspects, players are beginning to deflect by accusing their accusers of manipulative behavior. This creates a cycle where the act of questioning someone is framed as a wolf tactic, making it difficult to distinguish between genuine suspicion and defensive deflection. Information landscape: Information-starved; accusations are based on subjective interpretations of tone and intent rather than objective evidence. Game phase: Early game; the transition from polite consensus to active suspicion has just begun. Consensus texture: Fragile; the initial unity has dissolved into defensive posturing as players react to being pressured. Agent exposure: Aligned with consensus; I am part of the group pushing for accountability, but I am now subject to the same counter-accusations of being 'too eager' that are being leveled at others."
+    ],
+    "captured_situations": [
+      "The village is currently information-starved with no voting records or role claims, leading to a stalemate where players are divided between those pushing for aggressive accusations to create data and those advocating for caution to avoid mis-elimination. This dynamic has created an environment where 'passivity' and 'eagerness' are being weaponized as proxies for wolf-aligned behavior.",
+      "A secondary conflict has emerged where player_2 and player_5 are being pressured by the majority for their cautious stance, while they have pivoted to counter-accusing player_8 and player_4 of manipulative behavior. The group is caught in a cycle of defensive posturing rather than building a logical case against a specific suspect."
+    ],
+    "golden_ndcg_5": 0.7573857224418385,
+    "captured_ndcg_5": 0.7227265726449519,
+    "new_ndcg_5": 0.3156484524795145,
+    "new_unlabeled": 13
+  },
+  {
+    "case_index": 13,
+    "role": "villager",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is locked in a high-stakes confrontation with a suspect who is attempting to delegitimize the consensus by framing the collective scrutiny as a coordinated wolf maneuver. This forces a choice between maintaining pressure on the most statistically suspicious player based on their voting history or questioning if the intensity of the current push is masking a different wolf's agenda. Information landscape: Information-rich, driven by concrete voting records from the previous day and observable behavioral patterns of deflection. Game phase: Mid-game, following the successful elimination of one wolf and the subsequent loss of a villager. Consensus texture: Highly unified among the majority, driven by evidence-based suspicion of past voting behavior rather than social momentum. Agent exposure: Aligned with the consensus, actively pushing for accountability based on the suspect's documented history of protecting a known wolf."
+    ],
+    "captured_situations": [
+      "Player 5 is under heavy scrutiny for their late-stage vote shift after defending a confirmed wolf, and they are responding by characterizing their accusers as a coordinated wolf team. This dynamic pits a player's documented defensive history against their current attempts to frame collective evidence as artificial collusion.",
+      "The village consensus is converging on player 5 due to their prior alignment with the eliminated wolf, resulting in a tense environment where the accused attempts to deflect by highlighting the synchronous timing of their attackers. This creates a volatile situation where the accused's aggressive counter-narrative is being used to test the village's confidence in their voting evidence."
+    ],
+    "golden_ndcg_5": 0.650392590074575,
+    "captured_ndcg_5": 0.5117558763970509,
+    "new_ndcg_5": 0.6069931323672637,
+    "new_unlabeled": 3
+  },
+  {
+    "case_index": 14,
+    "role": "wolf",
+    "phase": "day_discussion",
+    "new_situations": [
+      "I am the primary target of a coordinated attack by two villagers who are leveraging my past association with an eliminated wolf to build a case against me. The tension lies in the need to maintain a calm, cooperative facade to appear as a misunderstood villager while avoiding the trap of appearing overly defensive or reactive to their accusations. Information landscape: The village is information-rich, with suspicion driven by concrete voting records and behavioral analysis of past associations. Game phase: Mid-game, following the successful elimination of a wolf and the subsequent shift in focus to the remaining wolf. Consensus texture: The village is fragile and split, with a vocal faction driving a push against me while others observe and weigh the evidence. Agent exposure: I am the primary target, based on behavioral reads and my previous association with the eliminated wolf.",
+      "The village is actively scrutinizing the voting history of the previous day to identify the remaining wolf, creating a high-stakes environment where any defensive move is interpreted as a potential deflection. The tension is between the necessity of participating in the analysis to appear helpful and the danger that any analytical contribution will be perceived as a calculated attempt to shift the spotlight. Information landscape: The village is information-rich, with the investigation centered on the voting record of the previous day. Game phase: Mid-game, with the village actively processing the data from the first wolf elimination. Consensus texture: The village consensus is fragile, driven by the search for patterns in past voting behavior. Agent exposure: I am under indirect scrutiny, as the village evaluates all players' past voting records for signs of wolf-like behavior."
+    ],
+    "captured_situations": [
+      "I am facing intense, synchronized social pressure from two villagers, player_7 and player_8, who are using my past voting record and association with an eliminated wolf to build a consensus against me. Their coordinated accusations of my behavior as 'performative' and 'opportunistic' are creating a high-stakes, mid-game narrative that labels my defensive responses as deliberate deflections.",
+      "The village is currently information-rich due to the confirmed elimination of a wolf and the resulting scrutiny of voting patterns from previous rounds. This shift has made my previous defensive stance of 'cautious observation' a focal point for suspicion, and I am being scrutinized for the timing of my vote against my former partner.",
+      "A potential voting bloc is forming among player_1, player_3, player_6, player_7, and player_8, who are collectively analyzing historical interaction data to identify the last remaining wolf. This consensus-driven environment makes any attempt to redirect suspicion toward other players extremely difficult and risks painting my defensive maneuvers as further evidence of guilt."
+    ],
+    "golden_ndcg_5": 0.934397461243829,
+    "captured_ndcg_5": 0.3643788548091025,
+    "new_ndcg_5": 0.7227265726449519,
+    "new_unlabeled": 16
+  },
+  {
+    "case_index": 15,
+    "role": "wolf",
+    "phase": "day_vote",
+    "new_situations": [
+      "I am the primary target of the village's scrutiny due to my past association with an eliminated wolf. I must decide whether to continue justifying my previous defensive stance or pivot entirely to attacking the credibility of those leading the charge against me. Information landscape: The village is information-rich, relying heavily on the voting records from Day 2 to establish a pattern of behavior that links me to the eliminated wolf. Game phase: Mid-game, where the recent elimination of a wolf has shifted the focus toward analyzing the remaining players' past associations. Consensus texture: The village is currently unified against me, driven by the evidence of my past voting record and defensive communication. Agent exposure: I am the primary target, identified through my direct association with the eliminated wolf and my previous attempts to discourage early accusations.",
+      "I am attempting to fracture the village's unified front by framing the most vocal accusers as a suspicious, coordinated bloc. This forces the village to choose between maintaining their current consensus or questioning the motives of those driving the investigation. Information landscape: The landscape is information-starved regarding the actual roles of my accusers, forcing me to rely on behavioral patterns and the timing of their accusations as evidence of collusion. Game phase: Mid-game, as the village transitions from the post-elimination high to selecting the next target. Consensus texture: The consensus is fragile, as the village's current alignment is heavily dependent on the social momentum generated by a small group of vocal players. Agent exposure: I am under intense scrutiny and am attempting to shift the focus by highlighting the synchronized behavior of my accusers to create doubt about their intentions."
+    ],
+    "captured_situations": [
+      "The village is currently mid-game and possesses clear voting evidence from the previous round that links my wolf partner to the players now under investigation. A strong, multi-player consensus has formed against me, driven primarily by players 7 and 8 who are citing my past defense of the eliminated wolf to justify my immediate removal.",
+      "I am facing an intense, coordinated pressure campaign where multiple villagers are using identical, synchronized logic to frame my defensive pivots as inherently suspicious. This social pressure is almost entirely based on analyzing my previous behavioral patterns and voting record during the last round rather than any new information.",
+      "The remaining villagers are shifting the information landscape toward a binary choice between my guilt or a potential conspiracy among my loudest critics. By consistently labeling the aggressive, aligned questioning from other players as a manufactured wolf team, I am attempting to create enough friction to disrupt the current momentum against me."
+    ],
+    "golden_ndcg_5": 0.6163989078593143,
+    "captured_ndcg_5": 0.6685622027129364,
+    "new_ndcg_5": 0.3779405648605947,
+    "new_unlabeled": 7
+  },
+  {
+    "case_index": 16,
+    "role": "healer",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village is aggressively targeting a single player based on their past voting record, creating a binary choice between joining the consensus or risking suspicion for hesitation. This forces a tradeoff between maintaining a low profile to protect my healer role and participating in the lynch to avoid being labeled as a wolf sympathizer. Information landscape: Information-rich environment driven by concrete voting records from the previous round that clearly isolate an outlier. Game phase: Mid-game, characterized by the successful elimination of one wolf and the subsequent shift toward analyzing voting patterns. Consensus texture: Highly unified and driven by collective evidence-based momentum against a specific player. Agent exposure: Aligned with the consensus, though I am currently a high-value target for the wolves as the healer who has been previously targeted."
+    ],
+    "captured_situations": [
+      "The village has reached a strong, evidence-driven consensus to eliminate player 6 due to their anomalous voting record during the previous round when a known wolf was identified. This push is being sustained by multiple players who are pointing to the specific, measurable deviation in the voting data as a clear indicator of malicious intent.",
+      "As the healer, I am currently facing the challenge of balancing my survival with my role-specific responsibility, having already protected individuals targeted twice by the wolves. The focus of the group has shifted almost entirely onto player 6, providing me a low-profile window, but I must remain cautious that my continued survival does not become an point of scrutiny if the wolves shift their targeting strategy."
+    ],
+    "golden_ndcg_5": 0.7543701539552121,
+    "captured_ndcg_5": 0.934397461243829,
+    "new_ndcg_5": 0.8274043288765652,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 19,
+    "role": "investigator",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is fixated on Player 6 due to their anomalous voting record on Day 2, creating a binary choice between executing a high-probability target or questioning if the intense, unified pressure is a diversion. This forces a decision on whether to trust the historical data or fear a potential trap within the consensus. Information landscape: Information-rich, centered on concrete voting records from the previous round. Game phase: Mid-game, following the successful elimination of one wolf. Consensus texture: Highly unified, driven by evidence-based voting patterns. Agent exposure: Aligned with the consensus, using private role knowledge to validate the target's suspicious behavior.",
+      "As an investigator, I must decide how aggressively to lead the charge against Player 6 without revealing my power role to the remaining wolves. The tension lies in balancing the necessity of eliminating a suspicious player against the risk of becoming the next target for the wolves. Information landscape: Information-rich regarding the target's past vote, but speculative regarding the remaining wolf's identity. Game phase: Mid-game, with the village actively hunting the next wolf. Consensus texture: Unified, driven by the desire to capitalize on the momentum of the first successful elimination. Agent exposure: Driving the push, based on the combination of public voting records and private confirmation of the healer's role."
+    ],
+    "captured_situations": [
+      "The village is currently mid-game with a strong, evidence-driven consensus targeting player_6 for their suspicious voting record on Day 2. The pressure is explicitly based on their choice to vote against the healer rather than the confirmed wolf, and player_6 is actively deflecting by characterizing this scrutiny as a coordinated diversion.",
+      "My private role as the investigator has confirmed the alignment of player_1 and player_2, which provides me with a secure anchor while the village focuses on the public voting history. I must balance providing subtle, evidence-backed guidance to maintain the consensus against the wolf-suspect without revealing my investigative role and becoming the next target."
+    ],
+    "golden_ndcg_5": 0.8470858852562799,
+    "captured_ndcg_5": 0.6971533001755515,
+    "new_ndcg_5": 0.7283312291251001,
+    "new_unlabeled": 0
+  },
+  {
+    "case_index": 20,
+    "role": "villager",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village is heavily focused on Player 6's anomalous voting record from the previous day, creating a high-pressure interrogation dynamic. The tension lies in determining whether Player 6's defensive deflection is a calculated attempt to sow discord among the villagers or a genuine, albeit clumsy, attempt to explain a past mistake. Information landscape: Information-rich, driven by concrete voting records from the Day 2 elimination of a confirmed wolf. Game phase: Mid-game, following the successful elimination of a wolf which has shifted the focus to analyzing past voting patterns. Consensus texture: Unified, driven by the clear evidence of the Day 2 vote against the confirmed wolf. Agent exposure: Aligned with the consensus, observing the interrogation of a primary suspect based on their voting history."
+    ],
+    "captured_situations": [
+      "A player is under intense scrutiny due to a suspicious vote cast against a villager during a round where the majority successfully eliminated a known wolf. The pressure is driven by collective voting evidence from the previous day, leading to a direct confrontation where the suspect claims their action was a mistake in judgment rather than malicious intent.",
+      "The village is experiencing a strong consensus-driven push against a specific player based on their deviation from the group's voting record on Day 2. Multiple players are coordinating their inquiries, demanding a logical justification for why that individual chose to vote against a non-wolf target while the rest of the group identified the wolf."
+    ],
+    "golden_ndcg_5": 0.7040090042240594,
+    "captured_ndcg_5": 0.7165902417430504,
+    "new_ndcg_5": 0.6802470806639247,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 30,
+    "role": "investigator",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The game has reached a final three standoff where the village must decide between the suspect and the remaining players. The tension lies in maintaining the momentum of the vote against the last suspected wolf based on their voting history with a confirmed wolf, while ensuring the final elimination is successful without revealing my investigative role. Information landscape: Information-rich, driven by concrete voting records and the confirmed identity of a previously eliminated wolf. Game phase: Endgame, with the recent elimination of a wolf and a healer narrowing the field to three players. Consensus texture: Unified between the two villagers, driven by the clear voting pattern linking the suspect to the confirmed wolf. Agent exposure: Aligned with the consensus and actively driving the push against the suspect based on their association with the confirmed wolf."
+    ],
+    "captured_situations": [
+      "In the endgame phase with only three players remaining, a strong consensus has formed against player 8 based on their history of voting to protect a confirmed wolf. This alignment between the two remaining villagers creates significant social pressure on player 8, who claims these choices were made under uncertainty rather than malice.",
+      "The information landscape is currently driven by a compelling voting record that heavily implicates player 8, overriding their defense regarding early-game missteps. As the investigator who has already confirmed player 4 as a villager, my private knowledge aligns with the public logic, yet I must remain silent to protect my role from being targeted by the remaining wolf."
+    ],
+    "golden_ndcg_5": 0.6725956711234347,
+    "captured_ndcg_5": 0.5815506572374046,
+    "new_ndcg_5": 0.6496091412312497,
+    "new_unlabeled": 3
+  },
+  {
+    "case_index": 34,
+    "role": "villager",
+    "phase": "day_discussion",
+    "new_situations": [
+      "The village is split between an active faction demanding accountability and a defensive pair (3 and 8) advocating for extreme caution, with the latter being accused of using stalling tactics to protect themselves. This creates a tension where I must decide whether to commit to the push against the suspected pair or risk being perceived as a passive observer complicit in their potential deception. Information landscape: Information-starved regarding roles, but rich in behavioral patterns and voting history from the previous day's failed lynch. Game phase: Endgame, with only five players remaining and the village having lost three villagers in two days, making every vote critical. Consensus texture: Split between an aggressive faction pushing for accountability and a defensive faction advocating for caution, with no clear evidence to bridge the gap. Agent exposure: Aligned with the consensus of the active group in scrutinizing the defensive pair, based on their consistent tactical alignment and stalling behavior.",
+      "The previous day's unanimous vote for a villager has rendered simple voting records unreliable, forcing a shift toward analyzing communication styles and rhetorical patterns. This creates a dilemma where I must distinguish between genuine caution and wolf-driven obfuscation without falling into another trap of groupthink. Information landscape: Information-starved due to the lack of confirmed roles and the misleading nature of the previous day's unanimous vote. Game phase: Endgame, where the loss of three villagers has significantly narrowed the margin for error. Consensus texture: Fragile and volatile, as the village is reeling from the realization that the previous day's consensus was entirely wrong. Agent exposure: Under indirect scrutiny as I attempt to navigate the suspicion directed at the 3/8 pair while avoiding being labeled as a bandwagoner myself."
+    ],
+    "captured_situations": [
+      "The village is in a high-stakes endgame phase with only four players remaining, where the consensus has fractured into two distinct camps. Two players are under intense pressure for their consistent, tactical alignment and repeated advocacy for stalling tactics during previous voting cycles.",
+      "The information landscape is heavily compromised by the previous day's unanimous vote against a villager, rendering past voting records unreliable as a tool for clearing suspects. Suspicion is now driven entirely by communication patterns and the perceived deflection tactics used by the surviving players to shift blame for the failed lynch."
+    ],
+    "golden_ndcg_5": 0.7543701539552121,
+    "captured_ndcg_5": 0.19178318368566782,
+    "new_ndcg_5": 0.6069931323672637,
+    "new_unlabeled": 14
+  },
+  {
+    "case_index": 35,
+    "role": "villager",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is polarized between an active faction demanding accountability for past stalling and a defensive pair claiming this scrutiny is a coordinated wolf trap. This forces a choice between committing to a high-stakes lynch based on behavioral patterns or risking a stalemate that favors the wolves. Information landscape: Information-rich regarding voting history and communication styles, but speculative regarding the actual roles of the remaining players. Game phase: Endgame, with the recent loss of another villager creating extreme pressure to avoid a mislynch. Consensus texture: Split between two factions, with the majority driven by the interpretation of past stalling as evidence of guilt. Agent exposure: Aligned with the consensus pushing for a vote, based on the behavioral read of the suspects' consistent defensive deflection."
+    ],
+    "captured_situations": [
+      "The village is in an endgame phase with only four players remaining, characterized by an information-starved environment where no roles have been confirmed. Suspicion is driven entirely by behavioral patterns and the perceived coordination of the remaining players rather than concrete evidence.",
+      "A clear, fragile consensus has emerged among three players who are pressuring the remaining two based on their consistent advocacy for caution and inaction throughout the game. The suspects are labeling this group's unified scrutiny as a coordinated wolf tactic, creating a stalemate where both sides accuse the other of using identical deflection strategies."
+    ],
+    "golden_ndcg_5": 0.42059924596710974,
+    "captured_ndcg_5": 0.38010016688126197,
+    "new_ndcg_5": 0.5804751699305777,
+    "new_unlabeled": 2
+  },
+  {
+    "case_index": 37,
+    "role": "wolf",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is split between those demanding an immediate lynch to avoid stagnation and those advocating for extreme caution to prevent a mislynch. This creates a high-pressure environment where the 'caution' stance is being framed as suspicious, forcing me to decide whether to double down on the defensive narrative or pivot to avoid being associated with my allies' increasingly scrutinized position. Information landscape: Information-starved; the suspicion is driven entirely by behavioral patterns and communication styles rather than concrete evidence or voting records. Game phase: Early-mid phase; the first villager death has occurred, and the group is struggling to transition from passive observation to active elimination. Consensus texture: Split; the village is divided between two opposing philosophies of play, with no clear evidence-based consensus forming. Agent exposure: Aligned with the 'caution' consensus of my allies, which is currently under indirect scrutiny from the more aggressive players.",
+      "The aggressive players are actively targeting the 'cautious' bloc, creating a risk that my alignment with my allies will lead to collective suspicion. I must navigate the tension of supporting my allies' strategy without appearing to be part of a coordinated defensive block that the village is beginning to identify as a potential wolf pack. Information landscape: Information-starved; the lack of hard data makes the village rely on social momentum and accusations of 'wolf-like' behavior to justify lynching. Game phase: Early-mid phase; the pressure to act is mounting as the village fears losing another member, shifting the focus from general caution to specific player accountability. Consensus texture: Fragile; the village is prone to shifting momentum based on the most vocal participants, making the current 'caution' stance vulnerable to being labeled as obstructionist. Agent exposure: Under indirect scrutiny; my association with the cautious bloc makes me a target for those pushing for an immediate vote, requiring a delicate balance to avoid becoming the primary focus."
+    ],
+    "captured_situations": [
+      "The village is currently information-starved with no concrete evidence, leading to a polarized debate between players advocating for immediate aggressive voting and those prioritizing caution to avoid accidental miseliminations. This disagreement has stalled the lynch process, leaving the village without a consensus and vulnerable to manipulation.",
+      "Active villagers like player_5 and player_7 are aggressively targeting those who preach caution, framing defensive play as inherently suspicious wolf behavior. My wolf teammates player_3 and player_8 are under intense social pressure because they are being labeled as potential wolves for refusing to commit to an early-game vote.",
+      "The game is in a fragile mid-phase where the village is desperate to break the Day 1 deadlock, causing the loudest players to demand action at the risk of eliminating innocents. I am navigating this by portraying the push for an immediate, evidence-free vote as a reckless, pro-wolf tactic to stir chaos and distract from the lack of actual investigation."
+    ],
+    "golden_ndcg_5": 0.7165902417430504,
+    "captured_ndcg_5": 0.4601696937327943,
+    "new_ndcg_5": 0.4774770439198113,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 38,
+    "role": "wolf",
+    "phase": "day_discussion",
+    "new_situations": [
+      "I am the sole remaining wolf facing a unified front of two villagers who have identified my voting history with a previously eliminated wolf as definitive proof of my alignment. I must navigate the tension between offering a plausible defense for my past actions and avoiding a defensive posture that would validate their accusations of stalling and manipulation. Information landscape: The village is information-rich, with the primary evidence being a clear, documented voting record linking me to a confirmed wolf. Game phase: This is the endgame phase, where the recent elimination of a wolf and the healer has narrowed the field to the final three players. Consensus texture: The village is unified, with the remaining two players acting in complete alignment based on the concrete evidence of past voting patterns. Agent exposure: I am the primary target of the village's suspicion, with my exposure driven entirely by my documented association with the deceased wolf."
+    ],
+    "captured_situations": [
+      "I am facing an endgame scenario where the two remaining villagers have consolidated their suspicion against me based on my established voting record of protecting a known wolf. The information landscape is dense with historical voting evidence, creating a high-pressure environment where I am the primary target for elimination.",
+      "The village consensus has reached a critical threshold with player 4 and player 6 acting as a unified voting bloc. Their coordination is driven by analyzing my past behavioral patterns, specifically my defensive alignment with a revealed wolf, leaving me with almost no room to deflect the incoming lynch."
+    ],
+    "golden_ndcg_5": 1.0,
+    "captured_ndcg_5": 0.7234267649959281,
+    "new_ndcg_5": 0.6379365213265478,
+    "new_unlabeled": 4
+  },
+  {
+    "case_index": 39,
+    "role": "wolf",
+    "phase": "day_vote",
+    "new_situations": [
+      "The village is coalescing around a narrative that the two wolves are a coordinated duo, using their past voting history and defensive communication style as evidence. The tension lies in needing to break this consensus without appearing overly defensive or confirming the villagers' suspicions of a pre-planned strategy. Information landscape: Information-starved regarding specific roles, but rich in behavioral patterns and voting history from the previous day. Game phase: Endgame, with the village rapidly narrowing the pool and high stakes per vote as the wolf-to-villager ratio becomes critical. Consensus texture: Highly unified among the three villagers, driven by social momentum and the observation of the wolf pair's consistent alignment. Agent exposure: Primary target, under intense scrutiny due to the association with the other wolf and the history of stalling tactics.",
+      "The need to redirect the village's focus toward the internal coordination of the remaining villagers to create a counter-narrative. The tension is between maintaining a defensive posture to survive the current vote and aggressively shifting the target to avoid being the sole focus of the village's scrutiny. Information landscape: Information-starved, relying on speculative reads of the villagers' communication patterns to cast doubt on their unity. Game phase: Endgame, where the pressure to eliminate a wolf is at its peak and any misstep leads to immediate loss. Consensus texture: Fragile, as the villagers' unity is based on a shared suspicion that can be undermined if they are forced to turn on each other. Agent exposure: Under indirect scrutiny, attempting to pivot from being the primary target to an observer of the villagers' own potential collusion."
+    ],
+    "captured_situations": [
+      "The remaining villagers have formed a tight, coordinated voting bloc against my team, using our past history of stalling as the primary evidence for their suspicion. This consensus is driven by a repetitive, high-pressure communication style where the villagers validate each other's points to justify an immediate elimination.",
+      "The information landscape is currently starved of concrete leads, forcing the village to rely entirely on interpreting behavior and communication patterns. The game has reached a critical, low-population phase where any successful lynch by the villagers will result in an immediate loss for the wolves."
+    ],
+    "golden_ndcg_5": 0.819972692711383,
+    "captured_ndcg_5": 0.5147714448836774,
+    "new_ndcg_5": 0.7234267649959281,
+    "new_unlabeled": 5
+  }
+]
