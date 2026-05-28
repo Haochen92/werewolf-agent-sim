@@ -3,7 +3,8 @@
 Trains a cross-encoder that scores (situation_query, memory_text) → relevance.
 Used to replace the LLM reranking call in the retrieval pipeline.
 
-Training data: reranker_pairs.jsonl from prep_reranker_data.py
+Training data: reranker_train.jsonl / reranker_eval.jsonl from prep_reranker_data.py
+(case-level hold-out split, one eval case per role to prevent query leakage)
 Labels: 0.0 (irrelevant), 0.5 (partial), 1.0 (relevant)
 
 Usage:
@@ -43,13 +44,13 @@ vol = modal.Volume.from_name("cross-encoder-reranker-output", create_if_missing=
     volumes={"/output": vol},
 )
 def train(
-    data_jsonl: str,
+    train_jsonl: str,
+    eval_jsonl: str,
     base_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
     epochs: int = 20,
     batch_size: int = 16,
     lr: float = 2e-5,
     warmup_ratio: float = 0.1,
-    eval_cases: str = "",
     run_name: str = "reranker_v1",
 ):
     from sentence_transformers.cross_encoder import CrossEncoder
@@ -57,7 +58,6 @@ def train(
     from sentence_transformers.cross_encoder.training_args import CrossEncoderTrainingArguments
     from datasets import Dataset
     import os
-    import random
     import numpy as np
 
     os.environ["WANDB_DISABLED"] = "true"
@@ -65,24 +65,12 @@ def train(
     print(f"Loading base model: {base_model}")
     model = CrossEncoder(base_model)
 
-    raw = [json.loads(line) for line in data_jsonl.strip().split("\n") if line.strip()]
-    print(f"Loaded {len(raw)} pairs")
-
-    held_out = set(int(c) for c in eval_cases.split(",") if c.strip()) if eval_cases else set()
-
-    if held_out:
-        train_raw = [r for r in raw if r["case_index"] not in held_out]
-        eval_raw = [r for r in raw if r["case_index"] in held_out]
-        print(f"  Hold-out eval cases: {sorted(held_out)}")
-    else:
-        random.seed(42)
-        random.shuffle(raw)
-        split = int(len(raw) * 0.85)
-        train_raw = raw[:split]
-        eval_raw = raw[split:]
+    train_raw = [json.loads(line) for line in train_jsonl.strip().split("\n") if line.strip()]
+    eval_raw = [json.loads(line) for line in eval_jsonl.strip().split("\n") if line.strip()]
 
     print(f"  Train: {len(train_raw)}")
     print(f"  Eval:  {len(eval_raw)}")
+    print(f"  Eval cases: {sorted(set(r['case_index'] for r in eval_raw))}")
 
     train_labels = [r["label"] for r in train_raw]
     eval_labels = [r["label"] for r in eval_raw]
@@ -205,30 +193,33 @@ def main(
     batch_size: int = 16,
     lr: float = 2e-5,
     run_name: str = "reranker_v1",
-    eval_cases: str = "",
-    pairs_path: str = "evidence/fine_tuning/cross_encoder/reranker_pairs.jsonl",
+    train_path: str = "evidence/fine_tuning/cross_encoder/reranker_train.jsonl",
+    eval_path: str = "evidence/fine_tuning/cross_encoder/reranker_eval.jsonl",
 ):
     from pathlib import Path
 
-    data_path = Path(pairs_path)
-    if not data_path.exists():
-        raise FileNotFoundError(f"Data not found: {data_path}")
+    train_data = Path(train_path)
+    eval_data = Path(eval_path)
+    if not train_data.exists():
+        raise FileNotFoundError(f"Train data not found: {train_data}. Run prep_reranker_data.py first.")
+    if not eval_data.exists():
+        raise FileNotFoundError(f"Eval data not found: {eval_data}. Run prep_reranker_data.py first.")
 
-    data_jsonl = data_path.read_text()
-    n = len([l for l in data_jsonl.strip().split("\n") if l.strip()])
+    train_jsonl = train_data.read_text()
+    eval_jsonl = eval_data.read_text()
+    n_train = len([l for l in train_jsonl.strip().split("\n") if l.strip()])
+    n_eval = len([l for l in eval_jsonl.strip().split("\n") if l.strip()])
 
-    print(f"Uploading {n} pairs from {data_path}")
+    print(f"Uploading {n_train} train + {n_eval} eval pairs")
     print(f"Config: model={base_model}, epochs={epochs}, batch_size={batch_size}, lr={lr}")
-    if eval_cases:
-        print(f"Hold-out eval cases: {eval_cases}")
 
     result = train.remote(
-        data_jsonl=data_jsonl,
+        train_jsonl=train_jsonl,
+        eval_jsonl=eval_jsonl,
         base_model=base_model,
         epochs=epochs,
         batch_size=batch_size,
         lr=lr,
-        eval_cases=eval_cases,
         run_name=run_name,
     )
 
