@@ -142,7 +142,7 @@ def run_situation_summary_variant(
     latency_ms = round((time.perf_counter() - started) * 1000)
     result = result_bundle["parsed"]
     raw_message = result_bundle.get("raw")
-    situations = list(result.situations)
+    situations = result.composed_situations
 
     input_text = rendered_prompt_text(
         prompt_template,

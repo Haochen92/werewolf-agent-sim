@@ -119,12 +119,67 @@ class InvestigatorOutput(BaseModel):
     updated_strategy: str
 
 
-class SituationSummary(BaseModel):
-    situations: list[str] = Field(
+class SituationEntry(BaseModel):
+    situation: str = Field(
         description=(
-            "1-3 discrete situations the player currently faces, each as a 2-3 "
-            "sentence description of a game dynamic suitable for semantic search."
+            "The core game dynamic — what happened and who is involved. "
+            "Lead with the concrete event or conflict, not abstract framing. "
+            "Do not embed dimensional context (information landscape, game "
+            "phase, etc.) here; use the dedicated fields below. 2-3 sentences."
+        )
+    )
+    information_landscape: str = Field(
+        description=(
+            "What evidence exists and what type: information-rich (confirmed "
+            "roles, voting records, caught lies) or information-starved (no "
+            "leads, speculative reads). 1 sentence."
+        )
+    )
+    game_phase: str = Field(
+        description=(
+            "Early (no eliminations, no data), mid (some data, roles "
+            "emerging), or endgame (few players, high stakes per vote). "
+            "Note what changed most recently. 1 sentence."
+        )
+    )
+    consensus_texture: str = Field(
+        description=(
+            "How aligned is the village? Unified, fragile, split, or no "
+            "consensus? Driven by evidence or social momentum? Do not "
+            "describe who is under pressure here."
+        ),
+    )
+    agent_exposure: str = Field(
+        description=(
+            "The agent's position: driving the push, aligned with consensus, "
+            "under indirect scrutiny, or primary target? Based on specific "
+            "evidence, behavioral reads, or association?"
+        ),
+    )
+
+    @property
+    def composed(self) -> str:
+        from Agents.schemas.memory import _compose_situation
+
+        return _compose_situation(
+            self.situation,
+            self.information_landscape,
+            self.game_phase,
+            self.consensus_texture,
+            self.agent_exposure,
+        )
+
+
+class SituationSummary(BaseModel):
+    situations: list[SituationEntry] = Field(
+        description=(
+            "1-2 distinct situations the player currently faces, each with "
+            "structured dimensional fields for semantic search."
         ),
         min_length=1,
-        max_length=3,
+        max_length=2,
     )
+
+    @property
+    def composed_situations(self) -> list[str]:
+        return [s.composed for s in self.situations]

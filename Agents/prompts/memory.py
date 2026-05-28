@@ -63,7 +63,7 @@ SITUATION_ROLE_LENS = {
     "wolf": "Also note: which villager is most dangerous to leave alive, and whether the pressure on your team could be redirected.",
     "villager": "Also note: who is being evasive, voting inconsistencies, and unresolved accusations.",
     "healer": "Also note: who most needs protection, whether your activity level risks exposing you, and whether it's time to claim.",
-    "investigator": "Also note: whether your private findings align with or contradict the public consensus, and whether your communication style is marking you as a power role.",
+    "investigator": "Lead with how your private findings relate to the public narrative — do they confirm, contradict, or add nothing new? Also note whether your communication style is marking you as a power role.",
 }
 
 
@@ -82,16 +82,21 @@ Your current strategy note:
 Your role-specific lens:
 {role_lens}
 
-Describe 1-2 distinct situations you are currently facing. Each situation will
-be used as a semantic search query to retrieve relevant strategy advice, so
-describe the GAME DYNAMICS, not just who said what.
+Describe 1-2 distinct situations you are currently facing using the structured
+fields. Each situation will be used as a semantic search query to retrieve
+relevant strategy advice, so describe GAME DYNAMICS, not just who said what.
 
 Only write a second situation if it captures a genuinely independent decision.
 Two views of the same conflict is one situation, not two.
 
-FORMAT: Write each situation as a 2-3 sentence description grounded in the
-dimensional framework. End each situation with the core dilemma — the specific
-tradeoff or decision you face, not just the game state.
+For each situation, fill in ALL structured fields:
+- situation: The core game dynamic (2-3 sentences). Lead with the concrete
+  event or conflict and who is involved. Do not embed dimensional context
+  here — use the dedicated fields below.
+- information_landscape: Evidence type and richness (1 sentence).
+- game_phase: Phase and what changed recently (1 sentence).
+- consensus_texture: Village alignment and driver (1 sentence).
+- agent_exposure: Your position and basis (1 sentence).
 
 Do NOT include plans, recommendations, or what you should do. Only describe
 what is happening and the tension it creates.
@@ -107,16 +112,21 @@ Your current strategy note:
 Your role-specific lens:
 {role_lens}
 
-Describe 1-2 distinct situations you are currently facing. Each situation will
-be used as a semantic search query to retrieve relevant strategy advice, so
-describe the GAME DYNAMICS, not just who said what.
+Describe 1-2 distinct situations you are currently facing using the structured
+fields. Each situation will be used as a semantic search query to retrieve
+relevant strategy advice, so describe GAME DYNAMICS, not just who said what.
 
 Only write a second situation if it captures a genuinely independent decision.
 Two views of the same conflict is one situation, not two.
 
-FORMAT: Write each situation as a 2-3 sentence description grounded in the
-dimensional framework. End each situation with the core dilemma — the specific
-tradeoff or decision you face, not just the game state.
+For each situation, fill in ALL structured fields:
+- situation: The core game dynamic (2-3 sentences). Lead with the concrete
+  event or conflict and who is involved. Do not embed dimensional context
+  here — use the dedicated fields below.
+- information_landscape: Evidence type and richness (1 sentence).
+- game_phase: Phase and what changed recently (1 sentence).
+- consensus_texture: Village alignment and driver (1 sentence).
+- agent_exposure: Your position and basis (1 sentence).
 
 Do NOT include plans, recommendations, or what you should do. Only describe
 what is happening and the tension it creates.

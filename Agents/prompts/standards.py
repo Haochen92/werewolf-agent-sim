@@ -22,11 +22,6 @@ Ground situation descriptions in these dimensions as relevant:
 - Game phase: Early (no eliminations, no data), mid (some data, roles
   emerging), or endgame (few players, high stakes per vote)? What changed
   most recently?
-- Core dilemma: In one sentence, what is the specific strategic tension or
-  tradeoff the agent faces right now? This is the decision point, not the
-  game state — e.g., "must contribute to discussion without revealing
-  analytical depth that marks them as a power role" or "private info
-  contradicts the emerging consensus."
 
 
 SPECIFICITY TEST:

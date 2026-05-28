@@ -387,7 +387,7 @@ def _generate_situations_for_agent(
                     )
                 },
             )
-            return result.situations
+            return result.composed_situations
         except Exception as e:
             logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")
             if attempt < max_retries:
