@@ -1,13 +1,16 @@
 """Centralized factory for LLM chat models and embeddings.
 
 All LLM instantiation across the project should go through this module.
-Supports two backends:
+Supports three backends:
 
 - **vertex** (default): Uses Vertex AI via Application Default Credentials
   on the ``global`` endpoint.  Active when ``LLM_BACKEND=vertex`` or when
   no ``GOOGLE_API_KEY`` is set.
 - **google** (legacy): Uses the Google Generative AI Developer API with an
   API key.  Set by ``LLM_BACKEND=google`` (requires ``GOOGLE_API_KEY``).
+- **nim**: Uses NVIDIA NIM via the OpenAI-compatible API.
+  Set model prefix ``nim/`` (e.g. ``"nim/deepseek-ai/deepseek-v4-flash"``).
+  Requires ``NVIDIA_API_KEY``.
 
 On Vertex AI, ``thinking_level`` is translated to ``thinking_budget`` (token
 count) because the 2.x model series does not support the string-based
@@ -17,6 +20,7 @@ count) because the 2.x model series does not support the string-based
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from typing import Any
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
@@ -29,6 +33,40 @@ THINKING_LEVEL_TO_BUDGET: dict[str, int] = {
     "medium": 4096,
     "high": 8192,
 }
+
+
+_NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
+
+
+@dataclass
+class _NIMResponse:
+    content: str
+
+
+class NIMChatModel:
+    """Thin wrapper around NVIDIA NIM API with LangChain-compatible .invoke()."""
+
+    def __init__(self, model: str, *, temperature: float = 0.0):
+        from openai import OpenAI
+
+        api_key = os.getenv("NVIDIA_API_KEY")
+        if not api_key:
+            raise ValueError("NVIDIA_API_KEY not set")
+        self._client = OpenAI(base_url=_NIM_BASE_URL, api_key=api_key)
+        self._model = model
+        self._temperature = temperature
+
+    def invoke(self, prompt: str) -> _NIMResponse:
+        if isinstance(prompt, str):
+            messages = [{"role": "user", "content": prompt}]
+        else:
+            messages = prompt
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            temperature=self._temperature,
+        )
+        return _NIMResponse(content=response.choices[0].message.content)
 
 
 def _use_vertex() -> bool:
@@ -47,24 +85,29 @@ def create_chat_model(
     thinking_level: str | None = None,
     thinking_budget: int | None = None,
     **kwargs: Any,
-) -> ChatGoogleGenerativeAI:
+) -> ChatGoogleGenerativeAI | NIMChatModel:
     """Create a chat model using the configured backend.
 
     Parameters
     ----------
     model:
-        Gemini model identifier (e.g. ``"gemini-2.5-flash"``).
+        Model identifier.  Use ``"nim/<org>/<model>"`` for NVIDIA NIM
+        (e.g. ``"nim/deepseek-ai/deepseek-v4-flash"``), otherwise a
+        Gemini model name (e.g. ``"gemini-2.5-flash"``).
     temperature:
         Sampling temperature.
     thinking_level:
         Symbolic thinking level (``"minimal"``, ``"low"``, ``"medium"``,
-        ``"high"``).
+        ``"high"``).  Ignored for NIM models.
     thinking_budget:
         Explicit thinking token budget.  Takes precedence over
-        ``thinking_level`` when both are provided.
+        ``thinking_level`` when both are provided.  Ignored for NIM models.
     **kwargs:
-        Forwarded to ``ChatGoogleGenerativeAI``.
+        Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM).
     """
+    if model.startswith("nim/"):
+        return NIMChatModel(model.removeprefix("nim/"), temperature=temperature)
+
     build_kwargs: dict[str, Any] = {
         "model": model,
         "temperature": temperature,
