@@ -22,9 +22,9 @@ OBS_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "observat
 SP_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
 OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
 
-RELEVANCE_MAP = {0: 0.0, 1: 0.5, 2: 1.0}
+RELEVANCE_MAP = {0: 0.0, 1: 0.25, 2: 1.0}
 
-EVAL_CASES = {10, 14, 16, 20}
+EVAL_CASES = {5, 10, 14, 16, 20, 22, 24, 29}
 
 
 def _load_memory_texts() -> dict[str, str]:
@@ -84,12 +84,12 @@ def _build_pairs(data: dict, key_to_text: dict[str, str]) -> list[dict]:
 
 
 def _print_split_stats(pairs: list[dict], name: str) -> None:
-    by_label = {0.0: 0, 0.5: 0, 1.0: 0}
+    by_label = {0.0: 0, 0.25: 0, 1.0: 0}
     for p in pairs:
         by_label[p["label"]] += 1
     cases = sorted(set(p["case_index"] for p in pairs))
     print(f"  {name}: {len(pairs)} pairs, {len(cases)} cases")
-    print(f"    irrelevant={by_label[0.0]}  partial={by_label[0.5]}  relevant={by_label[1.0]}")
+    print(f"    irrelevant={by_label[0.0]}  partial={by_label[0.25]}  relevant={by_label[1.0]}")
 
 
 def _write_jsonl(pairs: list[dict], path: Path) -> None:
