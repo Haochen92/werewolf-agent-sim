@@ -143,9 +143,15 @@ def train(
 
     chat_examples = []
     for ex in oversampled:
-        text = tokenizer.apply_chat_template(
-            ex["messages"], tokenize=False, add_generation_prompt=False
-        )
+        template_kwargs = dict(tokenize=False, add_generation_prompt=False)
+        try:
+            text = tokenizer.apply_chat_template(
+                ex["messages"], **template_kwargs, enable_thinking=False,
+            )
+        except TypeError:
+            text = tokenizer.apply_chat_template(
+                ex["messages"], **template_kwargs,
+            )
         chat_examples.append({"text": text})
 
     dataset = Dataset.from_list(chat_examples).shuffle(seed=42)

@@ -91,9 +91,13 @@ def run_eval(
     for i, case in enumerate(cases):
         prompt = case["prompt"]
         messages = [{"role": "user", "content": prompt}]
-        text = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
+        template_kwargs = dict(tokenize=False, add_generation_prompt=True)
+        try:
+            text = tokenizer.apply_chat_template(
+                messages, **template_kwargs, enable_thinking=False,
+            )
+        except TypeError:
+            text = tokenizer.apply_chat_template(messages, **template_kwargs)
         inputs = tokenizer(text, return_tensors="pt").to(model.device)
 
         with torch.no_grad():
