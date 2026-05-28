@@ -1,0 +1,2291 @@
+/home/ubuntu/.cache/pypoetry/virtualenvs/werewolf-game-v7lKgM40-py3.11/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+10:30:10 INFO Overriding dedup model: gemini-3.5-flash
+10:30:10 INFO Seeding fresh store from Agents/memory_stores/v4_deduped_v2
+10:32:44 INFO Store seeded: 269 observations, 163 strategy points
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-3.5-flash_10games_20260526_080359.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-3.5-flash_5games_20260524_145259.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-3.5-flash_5games_20260524_145649.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-3.5-flash_5games_per-role_20260526_090203.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-2.5-pro_10games_original.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-2.5-pro_5games_20260526_120027.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-2.5-pro_5games_per-role_20260526_121348.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-3.1-flash-lite-high_5games_per-role_20260526_093903.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-3.1-flash-lite-medium_5games_per-role_20260526_101628.jsonl
+10:32:44 INFO Loading evidence/extraction/quality/model_comparison/gemini-2.5-flash_5games_per-role_20260526_090106.jsonl
+10:32:44 INFO Loaded 1412 entries to process
+10:32:44 INFO [1/1412] observation wolf/night_action
+10:32:47 INFO [2/1412] observation healer/night_action
+10:32:50 INFO AFC is enabled with max remote calls: 10.
+10:32:53 INFO [3/1412] observation wolf/day_discussion
+10:32:57 INFO [4/1412] observation wolf/day_vote
+10:33:00 INFO AFC is enabled with max remote calls: 10.
+10:33:04 INFO [5/1412] observation investigator/night_action
+10:33:07 INFO [6/1412] observation investigator/day_discussion
+10:33:10 INFO AFC is enabled with max remote calls: 10.
+10:33:12 INFO [7/1412] observation villager/day_discussion
+10:33:13 INFO [8/1412] observation healer/day_discussion
+10:33:14 INFO [9/1412] strategy_point wolf/night_action
+10:33:16 INFO [10/1412] strategy_point healer/night_action
+10:33:19 INFO AFC is enabled with max remote calls: 10.
+10:33:21 INFO [11/1412] strategy_point wolf/day_discussion
+10:33:25 INFO AFC is enabled with max remote calls: 10.
+10:33:26 INFO [12/1412] strategy_point wolf/day_vote
+10:33:32 INFO AFC is enabled with max remote calls: 10.
+10:33:34 INFO [13/1412] strategy_point investigator/night_action
+10:33:39 INFO AFC is enabled with max remote calls: 10.
+10:33:41 INFO [14/1412] strategy_point investigator/day_discussion
+10:33:47 INFO AFC is enabled with max remote calls: 10.
+10:33:49 INFO [15/1412] strategy_point villager/day_discussion
+10:33:54 INFO AFC is enabled with max remote calls: 10.
+10:33:56 INFO [16/1412] strategy_point healer/day_discussion
+10:34:02 INFO AFC is enabled with max remote calls: 10.
+10:34:03 INFO [17/1412] observation wolf/night_action
+10:34:09 INFO AFC is enabled with max remote calls: 10.
+10:34:11 INFO [18/1412] observation wolf/day_vote
+10:34:14 INFO [19/1412] observation wolf/day_discussion
+10:34:15 INFO [20/1412] observation investigator/night_action
+10:34:16 INFO [21/1412] observation investigator/night_action
+10:34:17 INFO [22/1412] observation investigator/day_discussion
+10:34:19 INFO [23/1412] observation healer/night_action
+10:34:22 INFO AFC is enabled with max remote calls: 10.
+10:34:23 INFO [24/1412] observation healer/day_vote
+10:34:24 INFO [25/1412] observation villager/day_discussion
+10:34:26 INFO [26/1412] observation villager/day_discussion
+10:34:27 INFO [27/1412] strategy_point wolf/night_action
+10:34:30 INFO AFC is enabled with max remote calls: 10.
+10:34:32 INFO [28/1412] strategy_point wolf/day_vote
+10:34:35 INFO AFC is enabled with max remote calls: 10.
+10:34:37 INFO [29/1412] strategy_point wolf/day_discussion
+10:34:39 INFO [30/1412] strategy_point investigator/night_action
+10:34:42 INFO AFC is enabled with max remote calls: 10.
+10:34:44 INFO [31/1412] strategy_point investigator/day_discussion
+10:34:49 INFO AFC is enabled with max remote calls: 10.
+10:34:51 INFO [32/1412] strategy_point healer/night_action
+10:34:57 INFO AFC is enabled with max remote calls: 10.
+10:34:59 INFO [33/1412] strategy_point healer/day_vote
+10:35:04 INFO AFC is enabled with max remote calls: 10.
+10:35:05 INFO [34/1412] strategy_point villager/day_discussion
+10:35:11 INFO AFC is enabled with max remote calls: 10.
+10:35:13 INFO [35/1412] strategy_point villager/day_discussion
+10:35:19 INFO AFC is enabled with max remote calls: 10.
+10:35:21 INFO [36/1412] observation investigator/day_discussion
+10:35:24 INFO [37/1412] observation investigator/day_discussion
+10:35:25 INFO [38/1412] observation wolf/day_discussion
+10:35:27 INFO [39/1412] observation wolf/day_discussion
+10:35:28 INFO [40/1412] observation wolf/night_action
+10:35:29 INFO [41/1412] observation villager/day_discussion
+10:35:32 INFO AFC is enabled with max remote calls: 10.
+10:35:34 INFO [42/1412] observation villager/day_vote
+10:35:35 INFO [43/1412] observation healer/day_discussion
+10:35:36 INFO [44/1412] strategy_point investigator/day_discussion
+10:35:40 INFO AFC is enabled with max remote calls: 10.
+10:35:41 INFO [45/1412] strategy_point investigator/night_action
+10:35:45 INFO AFC is enabled with max remote calls: 10.
+10:35:47 INFO [46/1412] strategy_point wolf/day_discussion
+10:35:53 INFO AFC is enabled with max remote calls: 10.
+10:35:54 INFO [47/1412] strategy_point wolf/day_vote
+10:36:00 INFO AFC is enabled with max remote calls: 10.
+10:36:02 INFO [48/1412] strategy_point wolf/night_action
+10:36:05 INFO [49/1412] strategy_point villager/day_discussion
+10:36:08 INFO AFC is enabled with max remote calls: 10.
+10:36:10 INFO [50/1412] strategy_point villager/day_vote
+10:36:14 INFO AFC is enabled with max remote calls: 10.
+10:36:16 INFO [51/1412] strategy_point healer/day_discussion
+10:36:21 INFO AFC is enabled with max remote calls: 10.
+10:36:23 INFO [52/1412] observation wolf/night_action
+10:36:26 INFO [53/1412] observation wolf/day_discussion
+10:36:28 INFO [54/1412] observation wolf/day_vote
+10:36:29 INFO [55/1412] observation wolf/day_discussion
+10:36:30 INFO [56/1412] observation villager/day_discussion
+10:36:31 INFO [57/1412] observation villager/day_discussion
+10:36:32 INFO [58/1412] observation healer/night_action
+10:36:33 INFO [59/1412] observation healer/night_action
+10:36:34 INFO [60/1412] observation investigator/night_action
+10:36:35 INFO [61/1412] observation investigator/day_discussion
+10:36:36 INFO [62/1412] strategy_point wolf/night_action
+10:36:40 INFO AFC is enabled with max remote calls: 10.
+10:36:42 INFO [63/1412] strategy_point wolf/day_discussion
+10:36:45 INFO AFC is enabled with max remote calls: 10.
+10:36:47 INFO [64/1412] strategy_point wolf/day_discussion
+10:36:53 INFO AFC is enabled with max remote calls: 10.
+10:36:55 INFO [65/1412] strategy_point villager/day_discussion
+10:37:00 INFO AFC is enabled with max remote calls: 10.
+10:37:02 INFO [66/1412] strategy_point villager/day_discussion
+10:37:08 INFO AFC is enabled with max remote calls: 10.
+10:37:10 INFO [67/1412] strategy_point healer/night_action
+10:37:13 INFO [68/1412] strategy_point healer/night_action
+10:37:16 INFO AFC is enabled with max remote calls: 10.
+10:37:18 INFO [69/1412] strategy_point investigator/night_action
+10:37:22 INFO AFC is enabled with max remote calls: 10.
+10:37:25 INFO [70/1412] strategy_point investigator/day_discussion
+10:37:30 INFO AFC is enabled with max remote calls: 10.
+10:37:32 INFO [71/1412] observation investigator/day_discussion
+10:37:35 INFO [72/1412] observation wolf/day_discussion
+10:37:36 INFO [73/1412] observation healer/night_action
+10:37:37 INFO [74/1412] observation villager/day_discussion
+10:37:39 INFO [75/1412] observation wolf/day_vote
+10:37:43 INFO AFC is enabled with max remote calls: 10.
+10:37:45 INFO [76/1412] observation villager/day_discussion
+10:37:51 INFO AFC is enabled with max remote calls: 10.
+10:37:52 INFO [77/1412] strategy_point investigator/day_discussion
+10:37:58 INFO AFC is enabled with max remote calls: 10.
+10:38:00 INFO [78/1412] strategy_point wolf/day_discussion
+10:38:05 INFO AFC is enabled with max remote calls: 10.
+10:38:07 INFO [79/1412] strategy_point healer/night_action
+10:38:13 INFO AFC is enabled with max remote calls: 10.
+10:38:14 INFO [80/1412] strategy_point villager/day_discussion
+10:38:20 INFO AFC is enabled with max remote calls: 10.
+10:38:22 INFO [81/1412] strategy_point wolf/day_vote
+10:38:28 INFO AFC is enabled with max remote calls: 10.
+10:38:30 INFO [82/1412] strategy_point villager/day_discussion
+10:38:35 INFO AFC is enabled with max remote calls: 10.
+10:38:37 INFO [83/1412] observation wolf/night_action
+10:38:43 INFO AFC is enabled with max remote calls: 10.
+10:38:47 INFO [84/1412] observation wolf/day_discussion
+10:38:51 INFO [85/1412] observation wolf/night_action
+10:38:52 INFO [86/1412] observation wolf/day_discussion
+10:38:53 INFO [87/1412] observation villager/day_discussion
+10:38:56 INFO AFC is enabled with max remote calls: 10.
+10:38:59 INFO [88/1412] observation villager/day_discussion
+10:39:02 INFO [89/1412] observation healer/night_action
+10:39:06 INFO AFC is enabled with max remote calls: 10.
+10:39:08 INFO [90/1412] observation healer/day_discussion
+10:39:12 INFO [91/1412] observation investigator/night_action
+10:39:13 INFO [92/1412] observation investigator/day_discussion
+10:39:14 INFO [93/1412] strategy_point wolf/day_discussion
+10:39:17 INFO AFC is enabled with max remote calls: 10.
+10:39:19 INFO [94/1412] strategy_point wolf/night_action
+10:39:23 INFO AFC is enabled with max remote calls: 10.
+10:39:24 INFO [95/1412] strategy_point wolf/day_discussion
+10:39:28 INFO AFC is enabled with max remote calls: 10.
+10:39:30 INFO [96/1412] strategy_point villager/day_discussion
+10:39:35 INFO AFC is enabled with max remote calls: 10.
+10:39:38 INFO [97/1412] strategy_point villager/day_discussion
+10:39:43 INFO AFC is enabled with max remote calls: 10.
+10:39:45 INFO [98/1412] strategy_point healer/night_action
+10:39:49 INFO [99/1412] strategy_point healer/day_discussion
+10:39:52 INFO AFC is enabled with max remote calls: 10.
+10:39:54 INFO [100/1412] strategy_point investigator/day_discussion
+10:39:58 INFO AFC is enabled with max remote calls: 10.
+10:39:59 INFO [101/1412] strategy_point investigator/day_discussion
+10:40:05 INFO AFC is enabled with max remote calls: 10.
+10:40:07 INFO [102/1412] observation wolf/night_action
+10:40:12 INFO AFC is enabled with max remote calls: 10.
+10:40:14 INFO [103/1412] observation wolf/day_vote
+10:40:19 INFO AFC is enabled with max remote calls: 10.
+10:40:21 INFO [104/1412] observation wolf/day_discussion
+10:40:24 INFO [105/1412] observation wolf/day_vote
+10:40:25 INFO [106/1412] observation investigator/day_discussion
+10:40:27 INFO [107/1412] observation investigator/night_action
+10:40:28 INFO [108/1412] observation investigator/day_discussion
+10:40:29 INFO [109/1412] observation villager/day_discussion
+10:40:30 INFO [110/1412] observation villager/day_discussion
+10:40:31 INFO [111/1412] observation villager/day_vote
+10:40:32 INFO [112/1412] observation healer/day_discussion
+10:40:36 INFO AFC is enabled with max remote calls: 10.
+10:40:37 INFO [113/1412] strategy_point wolf/night_action
+10:40:39 INFO [114/1412] strategy_point wolf/day_vote
+10:40:42 INFO AFC is enabled with max remote calls: 10.
+10:40:44 INFO [115/1412] strategy_point wolf/day_discussion
+10:40:47 INFO AFC is enabled with max remote calls: 10.
+10:40:49 INFO [116/1412] strategy_point investigator/day_discussion
+10:40:55 INFO AFC is enabled with max remote calls: 10.
+10:40:57 INFO [117/1412] strategy_point investigator/day_vote
+10:41:02 INFO AFC is enabled with max remote calls: 10.
+10:41:05 INFO [118/1412] strategy_point villager/day_discussion
+10:41:10 INFO AFC is enabled with max remote calls: 10.
+10:41:12 INFO [119/1412] strategy_point villager/day_vote
+10:41:18 INFO AFC is enabled with max remote calls: 10.
+10:41:25 INFO [120/1412] strategy_point healer/day_discussion
+10:41:30 INFO AFC is enabled with max remote calls: 10.
+10:41:32 INFO [121/1412] observation wolf/day_discussion
+10:41:36 INFO [122/1412] observation wolf/day_vote
+10:41:37 INFO [123/1412] observation wolf/night_action
+10:41:41 INFO AFC is enabled with max remote calls: 10.
+10:41:43 INFO [124/1412] observation villager/day_discussion
+10:41:47 INFO [125/1412] observation villager/day_discussion
+10:41:50 INFO AFC is enabled with max remote calls: 10.
+10:41:52 INFO [126/1412] observation healer/day_discussion
+10:41:55 INFO AFC is enabled with max remote calls: 10.
+10:41:57 INFO [127/1412] observation investigator/night_action
+10:42:03 INFO AFC is enabled with max remote calls: 10.
+10:42:05 INFO [128/1412] observation investigator/day_discussion
+10:42:08 INFO [129/1412] strategy_point wolf/day_discussion
+10:42:11 INFO AFC is enabled with max remote calls: 10.
+10:42:14 INFO [130/1412] strategy_point wolf/day_discussion
+10:42:19 INFO AFC is enabled with max remote calls: 10.
+10:42:21 INFO [131/1412] strategy_point wolf/day_vote
+10:42:27 INFO AFC is enabled with max remote calls: 10.
+10:42:29 INFO [132/1412] strategy_point wolf/night_action
+10:42:34 INFO AFC is enabled with max remote calls: 10.
+10:42:36 INFO [133/1412] strategy_point villager/day_discussion
+10:42:42 INFO AFC is enabled with max remote calls: 10.
+10:42:44 INFO [134/1412] strategy_point villager/day_discussion
+10:42:47 INFO AFC is enabled with max remote calls: 10.
+10:42:49 INFO [135/1412] strategy_point healer/day_discussion
+10:42:52 INFO AFC is enabled with max remote calls: 10.
+10:42:54 INFO [136/1412] strategy_point investigator/night_action
+10:43:00 INFO AFC is enabled with max remote calls: 10.
+10:43:02 INFO [137/1412] observation investigator/night_action
+10:43:05 INFO [138/1412] observation investigator/day_discussion
+10:43:07 INFO [139/1412] observation wolf/night_action
+10:43:08 INFO [140/1412] observation wolf/day_vote
+10:43:09 INFO [141/1412] observation villager/day_discussion
+10:43:10 INFO [142/1412] observation wolf/day_discussion
+10:43:11 INFO [143/1412] strategy_point investigator/day_discussion
+10:43:12 INFO [144/1412] strategy_point wolf/day_vote
+10:43:15 INFO AFC is enabled with max remote calls: 10.
+10:43:17 INFO [145/1412] strategy_point villager/day_discussion
+10:43:21 INFO AFC is enabled with max remote calls: 10.
+10:43:23 INFO [146/1412] strategy_point wolf/day_discussion
+10:43:26 INFO AFC is enabled with max remote calls: 10.
+10:43:28 INFO [147/1412] strategy_point investigator/night_action
+10:43:34 INFO AFC is enabled with max remote calls: 10.
+10:43:36 INFO [148/1412] strategy_point wolf/night_action
+10:43:39 INFO AFC is enabled with max remote calls: 10.
+10:43:42 INFO [149/1412] observation wolf/night_action
+10:43:44 INFO [150/1412] observation wolf/day_vote
+10:43:47 INFO AFC is enabled with max remote calls: 10.
+10:43:49 INFO [151/1412] observation investigator/day_discussion
+10:43:53 INFO AFC is enabled with max remote calls: 10.
+10:43:56 INFO [152/1412] observation healer/night_action
+10:43:59 INFO [153/1412] observation villager/day_discussion
+10:44:01 INFO [154/1412] strategy_point wolf/night_action
+10:44:04 INFO AFC is enabled with max remote calls: 10.
+10:44:05 INFO [155/1412] strategy_point wolf/day_vote
+10:44:09 INFO AFC is enabled with max remote calls: 10.
+10:44:11 INFO [156/1412] strategy_point investigator/day_discussion
+10:44:14 INFO AFC is enabled with max remote calls: 10.
+10:44:16 INFO [157/1412] strategy_point healer/night_action
+10:44:19 INFO AFC is enabled with max remote calls: 10.
+10:44:21 INFO [158/1412] strategy_point villager/day_discussion
+10:44:27 INFO AFC is enabled with max remote calls: 10.
+10:44:29 INFO [159/1412] strategy_point investigator/night_action
+10:44:32 INFO [160/1412] observation wolf/night_action
+10:44:36 INFO AFC is enabled with max remote calls: 10.
+10:44:38 INFO [161/1412] observation villager/day_discussion
+10:44:43 INFO AFC is enabled with max remote calls: 10.
+10:44:47 INFO [162/1412] observation investigator/day_discussion
+10:44:53 INFO AFC is enabled with max remote calls: 10.
+10:44:56 INFO [163/1412] observation healer/day_discussion
+10:45:00 INFO [164/1412] observation wolf/day_discussion
+10:45:01 INFO [165/1412] strategy_point wolf/night_action
+10:45:04 INFO AFC is enabled with max remote calls: 10.
+10:45:08 INFO [166/1412] strategy_point villager/day_discussion
+10:45:14 INFO AFC is enabled with max remote calls: 10.
+10:45:15 INFO [167/1412] strategy_point investigator/day_discussion
+10:45:21 INFO AFC is enabled with max remote calls: 10.
+10:45:23 INFO [168/1412] strategy_point healer/day_discussion
+10:45:29 INFO AFC is enabled with max remote calls: 10.
+10:45:31 INFO [169/1412] strategy_point wolf/day_discussion
+10:45:37 INFO AFC is enabled with max remote calls: 10.
+10:45:40 INFO [170/1412] observation wolf/night_action
+10:45:46 INFO AFC is enabled with max remote calls: 10.
+10:45:53 INFO [171/1412] observation wolf/day_discussion
+10:45:56 INFO [172/1412] observation wolf/day_vote
+10:46:00 INFO AFC is enabled with max remote calls: 10.
+10:46:02 INFO [173/1412] observation investigator/day_discussion
+10:46:03 INFO [174/1412] observation villager/day_discussion
+10:46:04 INFO [175/1412] observation villager/day_vote
+10:46:05 INFO [176/1412] observation healer/day_discussion
+10:46:09 INFO AFC is enabled with max remote calls: 10.
+10:46:11 INFO [177/1412] strategy_point wolf/night_action
+10:46:14 INFO AFC is enabled with max remote calls: 10.
+10:46:17 INFO [178/1412] strategy_point wolf/day_discussion
+10:46:20 INFO AFC is enabled with max remote calls: 10.
+10:46:22 INFO [179/1412] strategy_point wolf/day_vote
+10:46:28 INFO AFC is enabled with max remote calls: 10.
+10:46:30 INFO [180/1412] strategy_point investigator/day_discussion
+10:46:35 INFO AFC is enabled with max remote calls: 10.
+10:46:37 INFO [181/1412] strategy_point villager/day_discussion
+10:46:43 INFO AFC is enabled with max remote calls: 10.
+10:46:45 INFO [182/1412] strategy_point villager/day_vote
+10:46:50 INFO AFC is enabled with max remote calls: 10.
+10:46:52 INFO [183/1412] strategy_point healer/day_discussion
+10:46:58 INFO AFC is enabled with max remote calls: 10.
+10:47:00 INFO [184/1412] observation wolf/day_discussion
+10:47:03 INFO [185/1412] observation villager/day_vote
+10:47:04 INFO [186/1412] observation investigator/night_action
+10:47:05 INFO [187/1412] observation healer/day_discussion
+10:47:09 INFO AFC is enabled with max remote calls: 10.
+10:47:12 INFO [188/1412] observation wolf/night_action
+10:47:15 INFO [189/1412] strategy_point wolf/day_discussion
+10:47:18 INFO AFC is enabled with max remote calls: 10.
+10:47:20 INFO [190/1412] strategy_point villager/day_discussion
+10:47:24 INFO AFC is enabled with max remote calls: 10.
+10:47:26 INFO [191/1412] strategy_point investigator/night_action
+10:47:29 INFO AFC is enabled with max remote calls: 10.
+10:47:31 INFO [192/1412] strategy_point healer/night_action
+10:47:35 INFO [193/1412] strategy_point wolf/day_discussion
+10:47:38 INFO AFC is enabled with max remote calls: 10.
+10:47:40 INFO [194/1412] strategy_point villager/day_vote
+10:47:43 INFO AFC is enabled with max remote calls: 10.
+10:47:45 INFO [195/1412] observation wolf/night_action
+10:47:50 INFO AFC is enabled with max remote calls: 10.
+10:47:51 INFO [196/1412] observation investigator/night_action
+10:47:55 INFO AFC is enabled with max remote calls: 10.
+10:47:58 INFO [197/1412] observation wolf/day_discussion
+10:48:01 INFO [198/1412] observation villager/day_discussion
+10:48:05 INFO AFC is enabled with max remote calls: 10.
+10:48:07 INFO [199/1412] observation wolf/day_discussion
+10:48:12 INFO AFC is enabled with max remote calls: 10.
+10:48:14 INFO [200/1412] observation healer/night_action
+10:48:18 INFO AFC is enabled with max remote calls: 10.
+10:48:19 INFO [201/1412] strategy_point wolf/night_action
+10:48:21 INFO [202/1412] strategy_point investigator/day_discussion
+10:48:24 INFO AFC is enabled with max remote calls: 10.
+10:48:26 INFO [203/1412] strategy_point wolf/day_vote
+10:48:30 INFO AFC is enabled with max remote calls: 10.
+10:48:32 INFO [204/1412] strategy_point villager/day_discussion
+10:48:37 INFO AFC is enabled with max remote calls: 10.
+10:48:39 INFO [205/1412] strategy_point wolf/day_discussion
+10:48:44 INFO AFC is enabled with max remote calls: 10.
+10:48:46 INFO [206/1412] strategy_point healer/night_action
+10:48:52 INFO AFC is enabled with max remote calls: 10.
+10:48:54 INFO [207/1412] observation investigator/day_discussion
+10:49:00 INFO AFC is enabled with max remote calls: 10.
+10:49:02 INFO [208/1412] observation investigator/night_action
+10:49:07 INFO AFC is enabled with max remote calls: 10.
+10:49:09 INFO [209/1412] observation investigator/night_action
+10:49:12 INFO [210/1412] observation investigator/day_vote
+10:49:16 INFO AFC is enabled with max remote calls: 10.
+10:49:20 INFO [211/1412] observation wolf/night_action
+10:49:23 INFO [212/1412] observation wolf/day_discussion
+10:49:24 INFO [213/1412] observation wolf/day_discussion
+10:49:25 INFO [214/1412] observation wolf/day_discussion
+10:49:26 INFO [215/1412] observation villager/day_discussion
+10:49:30 INFO AFC is enabled with max remote calls: 10.
+10:49:32 INFO [216/1412] observation villager/day_discussion
+10:49:35 INFO [217/1412] observation villager/day_discussion
+10:49:37 INFO [218/1412] observation villager/day_vote
+10:49:40 INFO AFC is enabled with max remote calls: 10.
+10:49:42 INFO [219/1412] observation healer/night_action
+10:49:45 INFO [220/1412] observation healer/day_discussion
+10:49:47 INFO [221/1412] observation healer/day_discussion
+10:49:48 INFO [222/1412] observation healer/night_action
+10:49:51 INFO AFC is enabled with max remote calls: 10.
+10:49:53 INFO [223/1412] strategy_point investigator/day_discussion
+10:49:58 INFO AFC is enabled with max remote calls: 10.
+10:50:00 INFO [224/1412] strategy_point investigator/night_action
+10:50:06 INFO AFC is enabled with max remote calls: 10.
+10:50:08 INFO [225/1412] strategy_point investigator/night_action
+10:50:13 INFO AFC is enabled with max remote calls: 10.
+10:50:15 INFO [226/1412] strategy_point investigator/day_discussion
+10:50:21 INFO AFC is enabled with max remote calls: 10.
+10:50:26 INFO [227/1412] strategy_point wolf/night_action
+10:50:29 INFO [228/1412] strategy_point wolf/day_discussion
+10:50:32 INFO AFC is enabled with max remote calls: 10.
+10:50:34 INFO [229/1412] strategy_point wolf/day_discussion
+10:50:40 INFO AFC is enabled with max remote calls: 10.
+10:50:42 INFO [230/1412] strategy_point wolf/day_vote
+10:50:47 INFO AFC is enabled with max remote calls: 10.
+10:50:49 INFO [231/1412] strategy_point villager/day_discussion
+10:50:55 INFO AFC is enabled with max remote calls: 10.
+10:50:56 INFO [232/1412] strategy_point villager/day_discussion
+10:51:02 INFO AFC is enabled with max remote calls: 10.
+10:51:04 INFO [233/1412] strategy_point villager/day_vote
+10:51:07 INFO [234/1412] strategy_point villager/day_discussion
+10:51:11 INFO AFC is enabled with max remote calls: 10.
+10:51:13 INFO [235/1412] strategy_point healer/night_action
+10:51:16 INFO [236/1412] strategy_point healer/day_discussion
+10:51:19 INFO AFC is enabled with max remote calls: 10.
+10:51:21 INFO [237/1412] strategy_point healer/day_discussion
+10:51:23 INFO [238/1412] strategy_point healer/night_action
+10:51:26 INFO AFC is enabled with max remote calls: 10.
+10:51:28 INFO [239/1412] observation wolf/day_discussion
+10:51:31 INFO [240/1412] observation villager/day_discussion
+10:51:33 INFO [241/1412] observation investigator/night_action
+10:51:34 INFO [242/1412] observation healer/night_action
+10:51:37 INFO AFC is enabled with max remote calls: 10.
+10:51:39 INFO [243/1412] observation wolf/day_vote
+10:51:42 INFO AFC is enabled with max remote calls: 10.
+10:51:44 INFO [244/1412] observation villager/day_discussion
+10:51:47 INFO [245/1412] strategy_point wolf/day_discussion
+10:51:51 INFO AFC is enabled with max remote calls: 10.
+10:51:53 INFO [246/1412] strategy_point villager/day_discussion
+10:51:56 INFO AFC is enabled with max remote calls: 10.
+10:51:58 INFO [247/1412] strategy_point investigator/night_action
+10:52:04 INFO AFC is enabled with max remote calls: 10.
+10:52:06 INFO [248/1412] strategy_point healer/night_action
+10:52:11 INFO AFC is enabled with max remote calls: 10.
+10:52:13 INFO [249/1412] strategy_point wolf/day_vote
+10:52:19 INFO AFC is enabled with max remote calls: 10.
+10:52:21 INFO [250/1412] strategy_point villager/day_discussion
+10:52:26 INFO AFC is enabled with max remote calls: 10.
+10:52:28 INFO [251/1412] strategy_point investigator/day_discussion
+10:52:34 INFO AFC is enabled with max remote calls: 10.
+10:52:36 INFO [252/1412] observation healer/night_action
+10:52:41 INFO AFC is enabled with max remote calls: 10.
+10:52:45 INFO [253/1412] observation wolf/day_vote
+10:52:48 INFO [254/1412] observation investigator/night_action
+10:52:50 INFO [255/1412] observation villager/day_discussion
+10:52:53 INFO AFC is enabled with max remote calls: 10.
+10:52:55 INFO [256/1412] observation investigator/day_discussion
+10:52:59 INFO AFC is enabled with max remote calls: 10.
+10:53:01 INFO [257/1412] observation healer/day_discussion
+10:53:04 INFO [258/1412] strategy_point wolf/day_vote
+10:53:07 INFO AFC is enabled with max remote calls: 10.
+10:53:09 INFO [259/1412] strategy_point healer/night_action
+10:53:13 INFO AFC is enabled with max remote calls: 10.
+10:53:15 INFO [260/1412] strategy_point investigator/day_discussion
+10:53:20 INFO AFC is enabled with max remote calls: 10.
+10:53:22 INFO [261/1412] strategy_point villager/day_discussion
+10:53:28 INFO AFC is enabled with max remote calls: 10.
+10:53:30 INFO [262/1412] strategy_point healer/day_discussion
+10:53:35 INFO AFC is enabled with max remote calls: 10.
+10:53:37 INFO [263/1412] strategy_point investigator/night_action
+10:53:43 INFO AFC is enabled with max remote calls: 10.
+10:53:45 INFO [264/1412] observation wolf/night_action
+10:53:50 INFO AFC is enabled with max remote calls: 10.
+10:53:56 INFO [265/1412] observation wolf/day_discussion
+10:53:59 INFO [266/1412] observation wolf/day_vote
+10:54:00 INFO [267/1412] observation investigator/night_action
+10:54:02 INFO [268/1412] observation investigator/day_discussion
+10:54:05 INFO AFC is enabled with max remote calls: 10.
+10:54:09 INFO [269/1412] observation villager/day_discussion
+10:54:15 INFO AFC is enabled with max remote calls: 10.
+10:54:17 INFO [270/1412] observation villager/day_discussion
+10:54:22 INFO AFC is enabled with max remote calls: 10.
+10:54:24 INFO [271/1412] observation healer/day_discussion
+10:54:30 INFO AFC is enabled with max remote calls: 10.
+10:54:31 INFO [272/1412] strategy_point wolf/night_action
+10:54:35 INFO [273/1412] strategy_point wolf/day_discussion
+10:54:38 INFO AFC is enabled with max remote calls: 10.
+10:54:40 INFO [274/1412] strategy_point wolf/day_vote
+10:54:47 INFO AFC is enabled with max remote calls: 10.
+10:54:49 INFO [275/1412] strategy_point wolf/day_discussion
+10:54:55 INFO AFC is enabled with max remote calls: 10.
+10:54:56 INFO [276/1412] strategy_point villager/day_discussion
+10:55:02 INFO AFC is enabled with max remote calls: 10.
+10:55:04 INFO [277/1412] strategy_point villager/day_discussion
+10:55:09 INFO AFC is enabled with max remote calls: 10.
+10:55:11 INFO [278/1412] strategy_point villager/day_discussion
+10:55:17 INFO AFC is enabled with max remote calls: 10.
+10:55:18 INFO [279/1412] strategy_point healer/day_discussion
+10:55:24 INFO AFC is enabled with max remote calls: 10.
+10:55:26 INFO [280/1412] strategy_point healer/night_action
+10:55:31 INFO AFC is enabled with max remote calls: 10.
+10:55:33 INFO [281/1412] strategy_point investigator/night_action
+10:55:39 INFO AFC is enabled with max remote calls: 10.
+10:55:41 INFO [282/1412] strategy_point investigator/day_discussion
+10:55:46 INFO AFC is enabled with max remote calls: 10.
+10:55:48 INFO [283/1412] strategy_point investigator/night_action
+10:55:54 INFO AFC is enabled with max remote calls: 10.
+10:55:56 INFO [284/1412] observation wolf/day_discussion
+10:55:59 INFO [285/1412] observation villager/day_discussion
+10:56:00 INFO [286/1412] observation healer/night_action
+10:56:03 INFO AFC is enabled with max remote calls: 10.
+10:56:07 INFO [287/1412] observation investigator/day_discussion
+10:56:10 INFO [288/1412] observation wolf/night_action
+10:56:12 INFO [289/1412] observation villager/day_vote
+10:56:15 INFO AFC is enabled with max remote calls: 10.
+10:56:17 INFO [290/1412] strategy_point wolf/day_discussion
+10:56:20 INFO AFC is enabled with max remote calls: 10.
+10:56:22 INFO [291/1412] strategy_point villager/day_discussion
+10:56:26 INFO AFC is enabled with max remote calls: 10.
+10:56:27 INFO [292/1412] strategy_point healer/night_action
+10:56:28 INFO [293/1412] strategy_point investigator/day_discussion
+10:56:32 INFO AFC is enabled with max remote calls: 10.
+10:56:34 INFO [294/1412] strategy_point wolf/night_action
+10:56:40 INFO AFC is enabled with max remote calls: 10.
+10:56:42 INFO [295/1412] strategy_point villager/day_vote
+10:56:47 INFO AFC is enabled with max remote calls: 10.
+10:56:49 INFO [296/1412] observation investigator/day_discussion
+10:56:55 INFO AFC is enabled with max remote calls: 10.
+10:56:57 INFO [297/1412] observation wolf/day_vote
+10:57:00 INFO [298/1412] observation villager/day_discussion
+10:57:01 INFO [299/1412] observation wolf/day_discussion
+10:57:05 INFO AFC is enabled with max remote calls: 10.
+10:57:07 INFO [300/1412] observation healer/night_action
+10:57:10 INFO AFC is enabled with max remote calls: 10.
+10:57:12 INFO [301/1412] observation wolf/day_vote
+10:57:13 INFO [302/1412] strategy_point healer/night_action
+10:57:16 INFO AFC is enabled with max remote calls: 10.
+10:57:18 INFO [303/1412] strategy_point villager/day_discussion
+10:57:19 INFO [304/1412] strategy_point wolf/day_discussion
+10:57:23 INFO AFC is enabled with max remote calls: 10.
+10:57:25 INFO [305/1412] strategy_point wolf/day_vote
+10:57:30 INFO AFC is enabled with max remote calls: 10.
+10:57:32 INFO [306/1412] strategy_point villager/day_discussion
+10:57:36 INFO [307/1412] strategy_point investigator/day_discussion
+10:57:39 INFO AFC is enabled with max remote calls: 10.
+10:57:41 INFO [308/1412] observation wolf/night_action
+10:57:42 INFO [309/1412] observation wolf/day_discussion
+10:57:43 INFO [310/1412] observation wolf/day_discussion
+10:57:44 INFO [311/1412] observation wolf/day_vote
+10:57:48 INFO AFC is enabled with max remote calls: 10.
+10:57:51 INFO [312/1412] observation wolf/day_discussion
+10:57:54 INFO [313/1412] observation villager/day_discussion
+10:57:57 INFO AFC is enabled with max remote calls: 10.
+10:57:59 INFO [314/1412] observation villager/day_vote
+10:58:00 INFO [315/1412] observation villager/day_discussion
+10:58:04 INFO AFC is enabled with max remote calls: 10.
+10:58:06 INFO [316/1412] observation villager/day_discussion
+10:58:09 INFO [317/1412] observation healer/night_action
+10:58:12 INFO AFC is enabled with max remote calls: 10.
+10:58:14 INFO [318/1412] observation healer/day_discussion
+10:58:16 INFO [319/1412] observation healer/night_action
+10:58:19 INFO AFC is enabled with max remote calls: 10.
+10:58:22 INFO [320/1412] observation healer/day_discussion
+10:58:28 INFO AFC is enabled with max remote calls: 10.
+10:58:30 INFO [321/1412] observation investigator/night_action
+10:58:33 INFO [322/1412] observation investigator/night_action
+10:58:34 INFO [323/1412] observation investigator/day_discussion
+10:58:38 INFO AFC is enabled with max remote calls: 10.
+10:58:41 INFO [324/1412] observation investigator/day_discussion
+10:58:43 INFO [325/1412] strategy_point wolf/night_action
+10:58:44 INFO [326/1412] strategy_point wolf/day_discussion
+10:58:48 INFO AFC is enabled with max remote calls: 10.
+10:58:50 INFO [327/1412] strategy_point wolf/day_discussion
+10:58:55 INFO AFC is enabled with max remote calls: 10.
+10:58:57 INFO [328/1412] strategy_point wolf/day_vote
+10:59:03 INFO AFC is enabled with max remote calls: 10.
+10:59:05 INFO [329/1412] strategy_point wolf/day_discussion
+10:59:11 INFO AFC is enabled with max remote calls: 10.
+10:59:13 INFO [330/1412] strategy_point villager/day_discussion
+10:59:18 INFO AFC is enabled with max remote calls: 10.
+10:59:20 INFO [331/1412] strategy_point villager/day_discussion
+10:59:26 INFO AFC is enabled with max remote calls: 10.
+10:59:28 INFO [332/1412] strategy_point villager/day_vote
+10:59:33 INFO AFC is enabled with max remote calls: 10.
+10:59:36 INFO [333/1412] strategy_point villager/day_discussion
+10:59:41 INFO AFC is enabled with max remote calls: 10.
+10:59:43 INFO [334/1412] strategy_point healer/night_action
+10:59:49 INFO AFC is enabled with max remote calls: 10.
+10:59:51 INFO [335/1412] strategy_point healer/day_discussion
+10:59:57 INFO AFC is enabled with max remote calls: 10.
+10:59:58 INFO [336/1412] strategy_point healer/night_action
+11:00:04 INFO AFC is enabled with max remote calls: 10.
+11:00:07 INFO [337/1412] strategy_point healer/day_discussion
+11:00:13 INFO AFC is enabled with max remote calls: 10.
+11:00:14 INFO [338/1412] strategy_point investigator/night_action
+11:00:18 INFO AFC is enabled with max remote calls: 10.
+11:00:20 INFO [339/1412] strategy_point investigator/day_discussion
+11:00:23 INFO AFC is enabled with max remote calls: 10.
+11:00:25 INFO [340/1412] strategy_point investigator/day_discussion
+11:00:29 INFO AFC is enabled with max remote calls: 10.
+11:00:31 INFO [341/1412] strategy_point investigator/night_action
+11:00:34 INFO [342/1412] observation wolf/night_action
+11:00:36 INFO [343/1412] observation wolf/day_vote
+11:00:40 INFO AFC is enabled with max remote calls: 10.
+11:00:42 INFO [344/1412] observation wolf/day_discussion
+11:00:47 INFO AFC is enabled with max remote calls: 10.
+11:00:49 INFO [345/1412] observation wolf/night_action
+11:00:52 INFO [346/1412] observation villager/day_discussion
+11:00:56 INFO AFC is enabled with max remote calls: 10.
+11:00:58 INFO [347/1412] observation villager/day_discussion
+11:01:01 INFO AFC is enabled with max remote calls: 10.
+11:01:03 INFO [348/1412] observation villager/day_discussion
+11:01:06 INFO AFC is enabled with max remote calls: 10.
+11:01:08 INFO [349/1412] observation villager/day_discussion
+11:01:12 INFO [350/1412] observation healer/night_action
+11:01:15 INFO AFC is enabled with max remote calls: 10.
+11:01:17 INFO [351/1412] observation healer/day_vote
+11:01:18 INFO [352/1412] observation healer/day_discussion
+11:01:19 INFO [353/1412] observation healer/night_action
+11:01:22 INFO AFC is enabled with max remote calls: 10.
+11:01:24 INFO [354/1412] observation investigator/night_action
+11:01:25 INFO [355/1412] observation investigator/day_vote
+11:01:29 INFO AFC is enabled with max remote calls: 10.
+11:01:31 INFO [356/1412] observation investigator/day_discussion
+11:01:37 INFO AFC is enabled with max remote calls: 10.
+11:01:39 INFO [357/1412] strategy_point wolf/night_action
+11:01:43 INFO [358/1412] strategy_point wolf/day_vote
+11:01:46 INFO AFC is enabled with max remote calls: 10.
+11:01:48 INFO [359/1412] strategy_point wolf/day_discussion
+11:01:54 INFO AFC is enabled with max remote calls: 10.
+11:01:56 INFO [360/1412] strategy_point wolf/night_action
+11:02:01 INFO AFC is enabled with max remote calls: 10.
+11:02:03 INFO [361/1412] strategy_point villager/day_discussion
+11:02:09 INFO AFC is enabled with max remote calls: 10.
+11:02:11 INFO [362/1412] strategy_point villager/day_vote
+11:02:17 INFO AFC is enabled with max remote calls: 10.
+11:02:19 INFO [363/1412] strategy_point villager/day_discussion
+11:02:25 INFO AFC is enabled with max remote calls: 10.
+11:02:26 INFO [364/1412] strategy_point villager/day_discussion
+11:02:32 INFO AFC is enabled with max remote calls: 10.
+11:02:34 INFO [365/1412] strategy_point healer/night_action
+11:02:40 INFO AFC is enabled with max remote calls: 10.
+11:02:42 INFO [366/1412] strategy_point healer/day_vote
+11:02:47 INFO AFC is enabled with max remote calls: 10.
+11:02:49 INFO [367/1412] strategy_point healer/day_discussion
+11:02:55 INFO AFC is enabled with max remote calls: 10.
+11:02:57 INFO [368/1412] strategy_point healer/night_action
+11:03:02 INFO AFC is enabled with max remote calls: 10.
+11:03:04 INFO [369/1412] strategy_point investigator/night_action
+11:03:10 INFO AFC is enabled with max remote calls: 10.
+11:03:12 INFO [370/1412] strategy_point investigator/day_vote
+11:03:17 INFO AFC is enabled with max remote calls: 10.
+11:03:19 INFO [371/1412] strategy_point investigator/day_discussion
+11:03:25 INFO AFC is enabled with max remote calls: 10.
+11:03:27 INFO [372/1412] strategy_point investigator/day_discussion
+11:03:33 INFO AFC is enabled with max remote calls: 10.
+11:03:35 INFO [373/1412] observation wolf/day_discussion
+11:03:38 INFO [374/1412] observation wolf/day_discussion
+11:03:39 INFO [375/1412] observation wolf/night_action
+11:03:41 INFO [376/1412] observation villager/day_discussion
+11:03:42 INFO [377/1412] observation villager/day_vote
+11:03:43 INFO [378/1412] observation villager/day_discussion
+11:03:44 INFO [379/1412] observation villager/day_vote
+11:03:46 INFO [380/1412] observation healer/day_discussion
+11:03:49 INFO AFC is enabled with max remote calls: 10.
+11:03:51 INFO [381/1412] observation healer/night_action
+11:03:52 INFO [382/1412] observation healer/day_discussion
+11:03:53 INFO [383/1412] observation healer/day_discussion
+11:03:54 INFO [384/1412] observation investigator/day_discussion
+11:03:58 INFO AFC is enabled with max remote calls: 10.
+11:04:03 INFO [385/1412] observation investigator/day_discussion
+11:04:06 INFO [386/1412] observation investigator/night_action
+11:04:07 INFO [387/1412] strategy_point wolf/day_discussion
+11:04:11 INFO AFC is enabled with max remote calls: 10.
+11:04:13 INFO [388/1412] strategy_point wolf/day_vote
+11:04:18 INFO AFC is enabled with max remote calls: 10.
+11:04:20 INFO [389/1412] strategy_point wolf/day_discussion
+11:04:26 INFO AFC is enabled with max remote calls: 10.
+11:04:28 INFO [390/1412] strategy_point wolf/day_discussion
+11:04:33 INFO AFC is enabled with max remote calls: 10.
+11:04:35 INFO [391/1412] strategy_point villager/day_discussion
+11:04:41 INFO AFC is enabled with max remote calls: 10.
+11:04:43 INFO [392/1412] strategy_point villager/day_vote
+11:04:46 INFO [393/1412] strategy_point villager/day_discussion
+11:04:50 INFO AFC is enabled with max remote calls: 10.
+11:04:52 INFO [394/1412] strategy_point villager/day_vote
+11:04:57 INFO AFC is enabled with max remote calls: 10.
+11:05:00 INFO [395/1412] strategy_point healer/day_discussion
+11:05:05 INFO AFC is enabled with max remote calls: 10.
+11:05:07 INFO [396/1412] strategy_point healer/day_discussion
+11:05:13 INFO AFC is enabled with max remote calls: 10.
+11:05:14 INFO [397/1412] strategy_point healer/night_action
+11:05:20 INFO AFC is enabled with max remote calls: 10.
+11:05:22 INFO [398/1412] strategy_point healer/night_action
+11:05:28 INFO AFC is enabled with max remote calls: 10.
+11:05:30 INFO [399/1412] strategy_point investigator/day_discussion
+11:05:35 INFO AFC is enabled with max remote calls: 10.
+11:05:37 INFO [400/1412] strategy_point investigator/day_discussion
+11:05:43 INFO AFC is enabled with max remote calls: 10.
+11:05:45 INFO [401/1412] strategy_point investigator/night_action
+11:05:50 INFO AFC is enabled with max remote calls: 10.
+11:05:52 INFO [402/1412] observation wolf/day_discussion
+11:05:55 INFO [403/1412] observation wolf/day_discussion
+11:05:56 INFO [404/1412] observation wolf/day_discussion
+11:05:57 INFO [405/1412] observation wolf/night_action
+11:05:58 INFO [406/1412] observation villager/day_vote
+11:06:00 INFO [407/1412] observation villager/day_discussion
+11:06:01 INFO [408/1412] observation villager/day_discussion
+11:06:02 INFO [409/1412] observation villager/day_discussion
+11:06:03 INFO [410/1412] observation healer/night_action
+11:06:04 INFO [411/1412] observation healer/night_action
+11:06:07 INFO AFC is enabled with max remote calls: 10.
+11:06:09 INFO [412/1412] observation healer/day_vote
+11:06:12 INFO AFC is enabled with max remote calls: 10.
+11:06:17 INFO [413/1412] observation healer/night_action
+11:06:22 INFO AFC is enabled with max remote calls: 10.
+11:06:24 INFO [414/1412] observation healer/day_discussion
+11:06:30 INFO AFC is enabled with max remote calls: 10.
+11:06:31 INFO [415/1412] observation investigator/night_action
+11:06:35 INFO [416/1412] observation investigator/day_vote
+11:06:36 INFO [417/1412] observation investigator/day_discussion
+11:06:37 INFO [418/1412] observation investigator/day_discussion
+11:06:40 INFO AFC is enabled with max remote calls: 10.
+11:06:45 INFO [419/1412] strategy_point wolf/day_discussion
+11:06:52 INFO AFC is enabled with max remote calls: 10.
+11:06:54 INFO [420/1412] strategy_point wolf/day_discussion
+11:07:00 INFO AFC is enabled with max remote calls: 10.
+11:07:02 INFO [421/1412] strategy_point wolf/day_discussion
+11:07:07 INFO AFC is enabled with max remote calls: 10.
+11:07:09 INFO [422/1412] strategy_point wolf/night_action
+11:07:15 INFO AFC is enabled with max remote calls: 10.
+11:07:17 INFO [423/1412] strategy_point villager/day_discussion
+11:07:22 INFO AFC is enabled with max remote calls: 10.
+11:07:25 INFO [424/1412] strategy_point villager/day_discussion
+11:07:30 INFO AFC is enabled with max remote calls: 10.
+11:07:32 INFO [425/1412] strategy_point villager/day_vote
+11:07:37 INFO AFC is enabled with max remote calls: 10.
+11:07:39 INFO [426/1412] strategy_point villager/day_discussion
+11:07:43 INFO [427/1412] strategy_point healer/night_action
+11:07:44 INFO [428/1412] strategy_point healer/day_vote
+11:07:47 INFO AFC is enabled with max remote calls: 10.
+11:07:49 INFO [429/1412] strategy_point healer/night_action
+11:07:53 INFO AFC is enabled with max remote calls: 10.
+11:07:54 INFO [430/1412] strategy_point healer/day_discussion
+11:08:00 INFO AFC is enabled with max remote calls: 10.
+11:08:02 INFO [431/1412] strategy_point investigator/night_action
+11:08:08 INFO AFC is enabled with max remote calls: 10.
+11:08:10 INFO [432/1412] strategy_point investigator/day_vote
+11:08:15 INFO AFC is enabled with max remote calls: 10.
+11:08:17 INFO [433/1412] strategy_point investigator/day_discussion
+11:08:21 INFO [434/1412] strategy_point investigator/day_discussion
+11:08:24 INFO AFC is enabled with max remote calls: 10.
+11:08:26 INFO [435/1412] observation wolf/night_action
+11:08:32 INFO AFC is enabled with max remote calls: 10.
+11:08:34 INFO [436/1412] observation wolf/day_vote
+11:08:37 INFO [437/1412] observation wolf/day_discussion
+11:08:38 INFO [438/1412] observation wolf/day_vote
+11:08:41 INFO AFC is enabled with max remote calls: 10.
+11:08:43 INFO [439/1412] observation wolf/day_discussion
+11:08:45 INFO [440/1412] observation villager/day_vote
+11:08:48 INFO AFC is enabled with max remote calls: 10.
+11:08:50 INFO [441/1412] observation villager/day_discussion
+11:08:53 INFO [442/1412] observation villager/day_vote
+11:08:57 INFO AFC is enabled with max remote calls: 10.
+11:08:59 INFO [443/1412] observation villager/day_discussion
+11:09:02 INFO [444/1412] observation healer/day_discussion
+11:09:03 INFO [445/1412] observation healer/night_action
+11:09:07 INFO AFC is enabled with max remote calls: 10.
+11:09:10 INFO [446/1412] observation healer/day_vote
+11:09:13 INFO [447/1412] observation healer/day_discussion
+11:09:16 INFO AFC is enabled with max remote calls: 10.
+11:09:18 INFO [448/1412] observation investigator/day_discussion
+11:09:21 INFO [449/1412] observation investigator/day_vote
+11:09:22 INFO [450/1412] observation investigator/day_discussion
+11:09:23 INFO [451/1412] observation investigator/day_discussion
+11:09:25 INFO [452/1412] observation investigator/night_action
+11:09:26 INFO [453/1412] strategy_point wolf/night_action
+11:09:27 INFO [454/1412] strategy_point wolf/day_vote
+11:09:30 INFO AFC is enabled with max remote calls: 10.
+11:09:33 INFO [455/1412] strategy_point wolf/day_discussion
+11:09:38 INFO AFC is enabled with max remote calls: 10.
+11:09:40 INFO [456/1412] strategy_point wolf/day_vote
+11:09:45 INFO AFC is enabled with max remote calls: 10.
+11:09:47 INFO [457/1412] strategy_point wolf/day_discussion
+11:09:52 INFO AFC is enabled with max remote calls: 10.
+11:09:54 INFO [458/1412] strategy_point villager/day_vote
+11:10:00 INFO AFC is enabled with max remote calls: 10.
+11:10:02 INFO [459/1412] strategy_point villager/day_discussion
+11:10:05 INFO [460/1412] strategy_point villager/day_vote
+11:10:08 INFO AFC is enabled with max remote calls: 10.
+11:10:11 INFO [461/1412] strategy_point villager/day_discussion
+11:10:16 INFO AFC is enabled with max remote calls: 10.
+11:10:18 INFO [462/1412] strategy_point healer/night_action
+11:10:23 INFO AFC is enabled with max remote calls: 10.
+11:10:25 INFO [463/1412] strategy_point healer/day_discussion
+11:10:31 INFO AFC is enabled with max remote calls: 10.
+11:10:33 INFO [464/1412] strategy_point healer/day_vote
+11:10:38 INFO AFC is enabled with max remote calls: 10.
+11:10:40 INFO [465/1412] strategy_point healer/day_discussion
+11:10:46 INFO AFC is enabled with max remote calls: 10.
+11:10:48 INFO [466/1412] strategy_point investigator/day_discussion
+11:10:53 INFO AFC is enabled with max remote calls: 10.
+11:10:55 INFO [467/1412] strategy_point investigator/day_discussion
+11:11:01 INFO AFC is enabled with max remote calls: 10.
+11:11:03 INFO [468/1412] strategy_point investigator/day_discussion
+11:11:09 INFO AFC is enabled with max remote calls: 10.
+11:11:11 INFO [469/1412] strategy_point investigator/day_discussion
+11:11:16 INFO AFC is enabled with max remote calls: 10.
+11:11:18 INFO [470/1412] strategy_point investigator/night_action
+11:11:24 INFO AFC is enabled with max remote calls: 10.
+11:11:26 INFO [471/1412] observation villager/day_discussion
+11:11:30 INFO AFC is enabled with max remote calls: 10.
+11:11:32 INFO [472/1412] observation wolf/day_discussion
+11:11:35 INFO [473/1412] observation investigator/day_discussion
+11:11:37 INFO [474/1412] observation wolf/day_vote
+11:11:38 INFO [475/1412] observation healer/night_action
+11:11:41 INFO AFC is enabled with max remote calls: 10.
+11:11:43 INFO [476/1412] observation villager/day_discussion
+11:11:44 INFO [477/1412] observation wolf/night_action
+11:11:45 INFO [478/1412] observation wolf/day_discussion
+11:11:49 INFO AFC is enabled with max remote calls: 10.
+11:11:51 INFO [479/1412] strategy_point villager/day_discussion
+11:11:54 INFO AFC is enabled with max remote calls: 10.
+11:11:56 INFO [480/1412] strategy_point villager/day_discussion
+11:12:00 INFO AFC is enabled with max remote calls: 10.
+11:12:01 INFO [481/1412] strategy_point wolf/night_action
+11:12:02 INFO [482/1412] strategy_point wolf/day_discussion
+11:12:06 INFO AFC is enabled with max remote calls: 10.
+11:12:08 INFO [483/1412] strategy_point investigator/day_discussion
+11:12:13 INFO AFC is enabled with max remote calls: 10.
+11:12:15 INFO [484/1412] strategy_point healer/night_action
+11:12:21 INFO AFC is enabled with max remote calls: 10.
+11:12:23 INFO [485/1412] strategy_point wolf/day_vote
+11:12:28 INFO AFC is enabled with max remote calls: 10.
+11:12:30 INFO [486/1412] strategy_point villager/day_discussion
+11:12:36 INFO AFC is enabled with max remote calls: 10.
+11:12:37 INFO [487/1412] observation villager/day_discussion
+11:12:43 INFO AFC is enabled with max remote calls: 10.
+11:12:46 INFO [488/1412] observation wolf/day_vote
+11:12:52 INFO AFC is enabled with max remote calls: 10.
+11:12:55 INFO [489/1412] observation investigator/day_discussion
+11:13:00 INFO AFC is enabled with max remote calls: 10.
+11:13:02 INFO [490/1412] observation healer/night_action
+11:13:05 INFO [491/1412] observation wolf/day_discussion
+11:13:08 INFO AFC is enabled with max remote calls: 10.
+11:13:10 INFO [492/1412] observation villager/day_discussion
+11:13:12 INFO [493/1412] observation healer/day_vote
+11:13:12 INFO [494/1412] observation wolf/night_action
+11:13:14 INFO [495/1412] strategy_point wolf/day_vote
+11:13:17 INFO AFC is enabled with max remote calls: 10.
+11:13:19 INFO [496/1412] strategy_point villager/day_discussion
+11:13:22 INFO AFC is enabled with max remote calls: 10.
+11:13:24 INFO [497/1412] strategy_point investigator/day_discussion
+11:13:28 INFO AFC is enabled with max remote calls: 10.
+11:13:30 INFO [498/1412] strategy_point healer/night_action
+11:13:35 INFO AFC is enabled with max remote calls: 10.
+11:13:37 INFO [499/1412] strategy_point wolf/day_discussion
+11:13:42 INFO AFC is enabled with max remote calls: 10.
+11:13:45 INFO [500/1412] strategy_point villager/day_vote
+11:13:48 INFO AFC is enabled with max remote calls: 10.
+11:13:51 INFO [501/1412] strategy_point healer/day_vote
+11:13:53 INFO [502/1412] strategy_point investigator/night_action
+11:13:57 INFO AFC is enabled with max remote calls: 10.
+11:13:59 INFO [503/1412] observation investigator/day_discussion
+11:14:02 INFO [504/1412] observation villager/day_discussion
+11:14:03 INFO [505/1412] observation wolf/day_discussion
+11:14:05 INFO [506/1412] observation wolf/day_vote
+11:14:08 INFO AFC is enabled with max remote calls: 10.
+11:14:10 INFO [507/1412] observation villager/day_discussion
+11:14:13 INFO AFC is enabled with max remote calls: 10.
+11:14:15 INFO [508/1412] observation wolf/night_action
+11:14:16 INFO [509/1412] observation healer/day_discussion
+11:14:17 INFO [510/1412] observation investigator/night_action
+11:14:21 INFO AFC is enabled with max remote calls: 10.
+11:14:22 INFO [511/1412] strategy_point investigator/day_discussion
+11:14:26 INFO AFC is enabled with max remote calls: 10.
+11:14:28 INFO [512/1412] strategy_point villager/day_discussion
+11:14:34 INFO AFC is enabled with max remote calls: 10.
+11:14:36 INFO [513/1412] strategy_point wolf/day_discussion
+11:14:41 INFO AFC is enabled with max remote calls: 10.
+11:14:44 INFO [514/1412] strategy_point wolf/day_vote
+11:14:49 INFO AFC is enabled with max remote calls: 10.
+11:14:51 INFO [515/1412] strategy_point wolf/night_action
+11:14:54 INFO [516/1412] strategy_point healer/day_discussion
+11:14:57 INFO AFC is enabled with max remote calls: 10.
+11:14:59 INFO [517/1412] strategy_point villager/day_discussion
+11:15:00 INFO [518/1412] strategy_point investigator/night_action
+11:15:04 INFO AFC is enabled with max remote calls: 10.
+11:15:06 INFO [519/1412] observation wolf/night_action
+11:15:09 INFO [520/1412] observation wolf/day_discussion
+11:15:10 INFO [521/1412] observation wolf/day_discussion
+11:15:11 INFO [522/1412] observation wolf/day_discussion
+11:15:12 INFO [523/1412] observation villager/day_discussion
+11:15:14 INFO [524/1412] observation villager/day_discussion
+11:15:17 INFO AFC is enabled with max remote calls: 10.
+11:15:19 INFO [525/1412] observation villager/day_vote
+11:15:22 INFO AFC is enabled with max remote calls: 10.
+11:15:24 INFO [526/1412] observation healer/night_action
+11:15:30 INFO AFC is enabled with max remote calls: 10.
+11:15:32 INFO [527/1412] observation investigator/day_discussion
+11:15:35 INFO [528/1412] strategy_point wolf/day_discussion
+11:15:36 INFO [529/1412] strategy_point wolf/day_discussion
+11:15:37 INFO [530/1412] strategy_point wolf/day_discussion
+11:15:40 INFO AFC is enabled with max remote calls: 10.
+11:15:42 INFO [531/1412] strategy_point wolf/night_action
+11:15:46 INFO AFC is enabled with max remote calls: 10.
+11:15:48 INFO [532/1412] strategy_point villager/day_discussion
+11:15:53 INFO AFC is enabled with max remote calls: 10.
+11:15:55 INFO [533/1412] strategy_point villager/day_discussion
+11:16:01 INFO AFC is enabled with max remote calls: 10.
+11:16:03 INFO [534/1412] strategy_point villager/day_discussion
+11:16:06 INFO [535/1412] strategy_point healer/night_action
+11:16:09 INFO AFC is enabled with max remote calls: 10.
+11:16:11 INFO [536/1412] strategy_point investigator/day_discussion
+11:16:15 INFO AFC is enabled with max remote calls: 10.
+11:16:17 INFO [537/1412] observation wolf/day_discussion
+11:16:20 INFO [538/1412] observation villager/day_discussion
+11:16:24 INFO AFC is enabled with max remote calls: 10.
+11:16:25 INFO [539/1412] observation wolf/day_vote
+11:16:29 INFO AFC is enabled with max remote calls: 10.
+11:16:31 INFO [540/1412] observation villager/day_discussion
+11:16:34 INFO [541/1412] observation healer/night_action
+11:16:38 INFO AFC is enabled with max remote calls: 10.
+11:16:39 INFO [542/1412] observation investigator/day_discussion
+11:16:40 INFO [543/1412] observation wolf/night_action
+11:16:44 INFO AFC is enabled with max remote calls: 10.
+11:16:46 INFO [544/1412] strategy_point wolf/day_discussion
+11:16:49 INFO AFC is enabled with max remote calls: 10.
+11:16:51 INFO [545/1412] strategy_point villager/day_discussion
+11:16:56 INFO AFC is enabled with max remote calls: 10.
+11:16:58 INFO [546/1412] strategy_point wolf/day_vote
+11:17:04 INFO AFC is enabled with max remote calls: 10.
+11:17:05 INFO [547/1412] strategy_point villager/day_vote
+11:17:11 INFO AFC is enabled with max remote calls: 10.
+11:17:14 INFO [548/1412] strategy_point wolf/day_discussion
+11:17:19 INFO AFC is enabled with max remote calls: 10.
+11:17:21 INFO [549/1412] strategy_point healer/night_action
+11:17:27 INFO AFC is enabled with max remote calls: 10.
+11:17:29 INFO [550/1412] strategy_point investigator/day_discussion
+11:17:32 INFO [551/1412] observation wolf/day_discussion
+11:17:35 INFO AFC is enabled with max remote calls: 10.
+11:17:37 INFO [552/1412] observation villager/day_vote
+11:17:39 INFO [553/1412] observation wolf/night_action
+11:17:42 INFO AFC is enabled with max remote calls: 10.
+11:17:44 INFO [554/1412] observation healer/night_action
+11:17:45 INFO [555/1412] observation investigator/day_discussion
+11:17:46 INFO [556/1412] observation villager/day_discussion
+11:17:48 INFO [557/1412] observation wolf/day_discussion
+11:17:51 INFO AFC is enabled with max remote calls: 10.
+11:17:53 INFO [558/1412] observation investigator/night_action
+11:17:57 INFO [559/1412] strategy_point wolf/day_discussion
+11:18:00 INFO AFC is enabled with max remote calls: 10.
+11:18:02 INFO [560/1412] strategy_point wolf/night_action
+11:18:03 INFO [561/1412] strategy_point wolf/day_discussion
+11:18:06 INFO AFC is enabled with max remote calls: 10.
+11:18:08 INFO [562/1412] strategy_point wolf/day_vote
+11:18:14 INFO AFC is enabled with max remote calls: 10.
+11:18:16 INFO [563/1412] strategy_point villager/day_discussion
+11:18:22 INFO AFC is enabled with max remote calls: 10.
+11:18:23 INFO [564/1412] strategy_point villager/day_discussion
+11:18:27 INFO [565/1412] strategy_point healer/night_action
+11:18:28 INFO [566/1412] strategy_point investigator/day_discussion
+11:18:31 INFO AFC is enabled with max remote calls: 10.
+11:18:33 INFO [567/1412] observation wolf/night_action
+11:18:36 INFO AFC is enabled with max remote calls: 10.
+11:18:38 INFO [568/1412] observation wolf/day_discussion
+11:18:41 INFO [569/1412] observation villager/day_vote
+11:18:43 INFO [570/1412] observation investigator/day_discussion
+11:18:46 INFO AFC is enabled with max remote calls: 10.
+11:18:48 INFO [571/1412] observation wolf/night_action
+11:18:51 INFO [572/1412] observation villager/day_discussion
+11:18:52 INFO [573/1412] observation healer/day_discussion
+11:18:53 INFO [574/1412] observation wolf/day_discussion
+11:18:55 INFO [575/1412] strategy_point wolf/night_action
+11:18:56 INFO [576/1412] strategy_point wolf/day_discussion
+11:18:59 INFO AFC is enabled with max remote calls: 10.
+11:19:01 INFO [577/1412] strategy_point wolf/day_discussion
+11:19:04 INFO AFC is enabled with max remote calls: 10.
+11:19:06 INFO [578/1412] strategy_point wolf/day_discussion
+11:19:12 INFO AFC is enabled with max remote calls: 10.
+11:19:14 INFO [579/1412] strategy_point villager/day_vote
+11:19:17 INFO [580/1412] strategy_point villager/day_vote
+11:19:18 INFO [581/1412] strategy_point investigator/night_action
+11:19:19 INFO [582/1412] strategy_point investigator/day_discussion
+11:19:23 INFO AFC is enabled with max remote calls: 10.
+11:19:24 INFO [583/1412] strategy_point healer/day_discussion
+11:19:28 INFO AFC is enabled with max remote calls: 10.
+11:19:30 INFO [584/1412] observation wolf/day_discussion
+11:19:33 INFO [585/1412] observation villager/day_discussion
+11:19:34 INFO [586/1412] observation wolf/night_action
+11:19:38 INFO AFC is enabled with max remote calls: 10.
+11:19:39 INFO [587/1412] observation investigator/night_action
+11:19:45 INFO AFC is enabled with max remote calls: 10.
+11:19:49 INFO [588/1412] observation wolf/day_vote
+11:19:52 INFO [589/1412] observation villager/day_discussion
+11:19:53 INFO [590/1412] observation healer/day_discussion
+11:19:54 INFO [591/1412] strategy_point wolf/day_discussion
+11:19:58 INFO AFC is enabled with max remote calls: 10.
+11:20:00 INFO [592/1412] strategy_point villager/day_discussion
+11:20:05 INFO AFC is enabled with max remote calls: 10.
+11:20:07 INFO [593/1412] strategy_point wolf/night_action
+11:20:12 INFO AFC is enabled with max remote calls: 10.
+11:20:14 INFO [594/1412] strategy_point investigator/night_action
+11:20:19 INFO AFC is enabled with max remote calls: 10.
+11:20:21 INFO [595/1412] strategy_point wolf/day_vote
+11:20:27 INFO AFC is enabled with max remote calls: 10.
+11:20:28 INFO [596/1412] strategy_point villager/day_discussion
+11:20:34 INFO AFC is enabled with max remote calls: 10.
+11:20:36 INFO [597/1412] strategy_point healer/night_action
+11:20:39 INFO [598/1412] strategy_point investigator/day_discussion
+11:20:43 INFO AFC is enabled with max remote calls: 10.
+11:20:44 INFO [599/1412] observation investigator/day_discussion
+11:20:47 INFO [600/1412] observation wolf/day_discussion
+11:20:48 INFO [601/1412] observation wolf/day_discussion
+11:20:52 INFO AFC is enabled with max remote calls: 10.
+11:20:54 INFO [602/1412] observation villager/day_discussion
+11:20:59 INFO AFC is enabled with max remote calls: 10.
+11:21:03 INFO [603/1412] observation healer/day_discussion
+11:21:08 INFO AFC is enabled with max remote calls: 10.
+11:21:10 INFO [604/1412] observation wolf/night_action
+11:21:15 INFO AFC is enabled with max remote calls: 10.
+11:21:17 INFO [605/1412] observation villager/day_vote
+11:21:19 INFO [606/1412] observation investigator/night_action
+11:21:23 INFO AFC is enabled with max remote calls: 10.
+11:21:25 INFO [607/1412] strategy_point wolf/day_discussion
+11:21:30 INFO AFC is enabled with max remote calls: 10.
+11:21:32 INFO [608/1412] strategy_point villager/day_discussion
+11:21:38 INFO AFC is enabled with max remote calls: 10.
+11:21:40 INFO [609/1412] strategy_point investigator/day_discussion
+11:21:45 INFO AFC is enabled with max remote calls: 10.
+11:21:49 INFO [610/1412] strategy_point wolf/night_action
+11:21:52 INFO [611/1412] strategy_point villager/day_discussion
+11:21:53 INFO [612/1412] strategy_point healer/day_discussion
+11:21:56 INFO AFC is enabled with max remote calls: 10.
+11:21:58 INFO [613/1412] strategy_point wolf/day_vote
+11:21:59 INFO [614/1412] strategy_point healer/night_action
+11:22:00 INFO [615/1412] observation wolf/night_action
+11:22:02 INFO [616/1412] observation healer/night_action
+11:22:05 INFO AFC is enabled with max remote calls: 10.
+11:22:08 INFO [617/1412] observation villager/day_discussion
+11:22:11 INFO [618/1412] observation wolf/day_vote
+11:22:12 INFO [619/1412] observation investigator/day_discussion
+11:22:16 INFO AFC is enabled with max remote calls: 10.
+11:22:19 INFO [620/1412] observation wolf/day_discussion
+11:22:22 INFO [621/1412] observation villager/day_vote
+11:22:24 INFO [622/1412] observation villager/day_discussion
+11:22:25 INFO [623/1412] strategy_point wolf/night_action
+11:22:26 INFO [624/1412] strategy_point wolf/day_vote
+11:22:30 INFO AFC is enabled with max remote calls: 10.
+11:22:32 INFO [625/1412] strategy_point wolf/day_discussion
+11:22:38 INFO AFC is enabled with max remote calls: 10.
+11:22:40 INFO [626/1412] strategy_point wolf/day_discussion
+11:22:43 INFO [627/1412] strategy_point villager/day_discussion
+11:22:44 INFO [628/1412] strategy_point villager/day_discussion
+11:22:45 INFO [629/1412] strategy_point investigator/day_discussion
+11:22:47 INFO [630/1412] strategy_point healer/night_action
+11:22:50 INFO AFC is enabled with max remote calls: 10.
+11:22:52 INFO [631/1412] observation wolf/night_action
+11:22:55 INFO AFC is enabled with max remote calls: 10.
+11:22:59 INFO [632/1412] observation villager/day_discussion
+11:23:04 INFO AFC is enabled with max remote calls: 10.
+11:23:10 INFO [633/1412] observation wolf/day_discussion
+11:23:16 INFO AFC is enabled with max remote calls: 10.
+11:23:17 INFO [634/1412] observation wolf/day_vote
+11:23:21 INFO [635/1412] observation investigator/day_discussion
+11:23:22 INFO [636/1412] observation wolf/day_discussion
+11:23:23 INFO [637/1412] observation healer/night_action
+11:23:26 INFO AFC is enabled with max remote calls: 10.
+11:23:29 INFO [638/1412] observation healer/day_discussion
+11:23:33 INFO [639/1412] strategy_point wolf/night_action
+11:23:36 INFO AFC is enabled with max remote calls: 10.
+11:23:38 INFO [640/1412] strategy_point wolf/day_discussion
+11:23:41 INFO AFC is enabled with max remote calls: 10.
+11:23:43 INFO [641/1412] strategy_point wolf/day_vote
+11:23:49 INFO AFC is enabled with max remote calls: 10.
+11:23:51 INFO [642/1412] strategy_point wolf/day_discussion
+11:23:56 INFO AFC is enabled with max remote calls: 10.
+11:23:58 INFO [643/1412] strategy_point villager/day_discussion
+11:24:01 INFO [644/1412] strategy_point villager/day_discussion
+11:24:05 INFO AFC is enabled with max remote calls: 10.
+11:24:07 INFO [645/1412] strategy_point investigator/day_discussion
+11:24:12 INFO AFC is enabled with max remote calls: 10.
+11:24:17 INFO [646/1412] strategy_point healer/night_action
+11:24:23 INFO AFC is enabled with max remote calls: 10.
+11:24:25 INFO [647/1412] observation wolf/night_action
+11:24:31 INFO AFC is enabled with max remote calls: 10.
+11:24:33 INFO [648/1412] observation wolf/day_vote
+11:24:38 INFO AFC is enabled with max remote calls: 10.
+11:24:43 INFO [649/1412] observation wolf/day_discussion
+11:24:48 INFO AFC is enabled with max remote calls: 10.
+11:24:50 INFO [650/1412] observation villager/day_discussion
+11:24:56 INFO AFC is enabled with max remote calls: 10.
+11:24:58 INFO [651/1412] observation villager/day_discussion
+11:25:03 INFO AFC is enabled with max remote calls: 10.
+11:25:05 INFO [652/1412] observation healer/night_action
+11:25:11 INFO AFC is enabled with max remote calls: 10.
+11:25:13 INFO [653/1412] observation healer/day_vote
+11:25:18 INFO AFC is enabled with max remote calls: 10.
+11:25:20 INFO [654/1412] observation investigator/day_discussion
+11:25:25 INFO AFC is enabled with max remote calls: 10.
+11:25:27 INFO [655/1412] observation investigator/night_action
+11:25:32 INFO AFC is enabled with max remote calls: 10.
+11:25:34 INFO [656/1412] strategy_point wolf/day_vote
+11:25:40 INFO AFC is enabled with max remote calls: 10.
+11:25:42 INFO [657/1412] strategy_point wolf/day_discussion
+11:25:47 INFO AFC is enabled with max remote calls: 10.
+11:25:50 INFO [658/1412] strategy_point wolf/night_action
+11:25:53 INFO [659/1412] strategy_point villager/day_discussion
+11:25:56 INFO AFC is enabled with max remote calls: 10.
+11:25:58 INFO [660/1412] strategy_point villager/day_discussion
+11:26:01 INFO [661/1412] strategy_point healer/night_action
+11:26:03 INFO [662/1412] strategy_point healer/day_vote
+11:26:06 INFO AFC is enabled with max remote calls: 10.
+11:26:08 INFO [663/1412] strategy_point investigator/day_discussion
+11:26:11 INFO AFC is enabled with max remote calls: 10.
+11:26:13 INFO [664/1412] strategy_point investigator/night_action
+11:26:16 INFO AFC is enabled with max remote calls: 10.
+11:26:18 INFO [665/1412] observation wolf/night_action
+11:26:22 INFO AFC is enabled with max remote calls: 10.
+11:26:23 INFO [666/1412] observation wolf/day_discussion
+11:26:27 INFO AFC is enabled with max remote calls: 10.
+11:26:29 INFO [667/1412] observation wolf/day_vote
+11:26:34 INFO AFC is enabled with max remote calls: 10.
+11:26:36 INFO [668/1412] observation wolf/day_discussion
+11:26:42 INFO AFC is enabled with max remote calls: 10.
+11:26:44 INFO [669/1412] observation investigator/day_discussion
+11:26:50 INFO AFC is enabled with max remote calls: 10.
+11:26:53 INFO [670/1412] observation investigator/night_action
+11:26:58 INFO AFC is enabled with max remote calls: 10.
+11:27:00 INFO [671/1412] observation investigator/night_action
+11:27:03 INFO [672/1412] observation villager/day_discussion
+11:27:05 INFO [673/1412] observation villager/day_discussion
+11:27:06 INFO [674/1412] observation healer/day_discussion
+11:27:09 INFO AFC is enabled with max remote calls: 10.
+11:27:11 INFO [675/1412] strategy_point wolf/day_discussion
+11:27:14 INFO AFC is enabled with max remote calls: 10.
+11:27:16 INFO [676/1412] strategy_point wolf/day_discussion
+11:27:22 INFO AFC is enabled with max remote calls: 10.
+11:27:23 INFO [677/1412] strategy_point wolf/day_vote
+11:27:27 INFO [678/1412] strategy_point wolf/night_action
+11:27:28 INFO [679/1412] strategy_point villager/day_discussion
+11:27:31 INFO AFC is enabled with max remote calls: 10.
+11:27:33 INFO [680/1412] strategy_point villager/day_discussion
+11:27:36 INFO AFC is enabled with max remote calls: 10.
+11:27:38 INFO [681/1412] strategy_point villager/day_discussion
+11:27:41 INFO AFC is enabled with max remote calls: 10.
+11:27:43 INFO [682/1412] strategy_point investigator/day_discussion
+11:27:46 INFO AFC is enabled with max remote calls: 10.
+11:27:48 INFO [683/1412] strategy_point investigator/night_action
+11:27:51 INFO AFC is enabled with max remote calls: 10.
+11:27:53 INFO [684/1412] strategy_point investigator/night_action
+11:27:57 INFO AFC is enabled with max remote calls: 10.
+11:27:59 INFO [685/1412] strategy_point healer/day_discussion
+11:28:04 INFO AFC is enabled with max remote calls: 10.
+11:28:06 INFO [686/1412] strategy_point healer/night_action
+11:28:12 INFO AFC is enabled with max remote calls: 10.
+11:28:14 INFO [687/1412] observation wolf/day_discussion
+11:28:17 INFO [688/1412] observation villager/day_discussion
+11:28:20 INFO AFC is enabled with max remote calls: 10.
+11:28:22 INFO [689/1412] observation wolf/day_discussion
+11:28:25 INFO AFC is enabled with max remote calls: 10.
+11:28:28 INFO [690/1412] observation villager/day_discussion
+11:28:33 INFO AFC is enabled with max remote calls: 10.
+11:28:35 INFO [691/1412] observation investigator/day_discussion
+11:28:41 INFO AFC is enabled with max remote calls: 10.
+11:28:43 INFO [692/1412] observation healer/night_action
+11:28:48 INFO AFC is enabled with max remote calls: 10.
+11:28:50 INFO [693/1412] observation wolf/day_discussion
+11:28:56 INFO AFC is enabled with max remote calls: 10.
+11:28:57 INFO [694/1412] observation wolf/night_action
+11:29:03 INFO AFC is enabled with max remote calls: 10.
+11:29:07 INFO [695/1412] strategy_point wolf/day_discussion
+11:29:13 INFO AFC is enabled with max remote calls: 10.
+11:29:14 INFO [696/1412] strategy_point villager/day_discussion
+11:29:20 INFO AFC is enabled with max remote calls: 10.
+11:29:22 INFO [697/1412] strategy_point villager/day_discussion
+11:29:27 INFO AFC is enabled with max remote calls: 10.
+11:29:29 INFO [698/1412] strategy_point wolf/day_discussion
+11:29:34 INFO AFC is enabled with max remote calls: 10.
+11:29:37 INFO [699/1412] strategy_point investigator/day_discussion
+11:29:42 INFO AFC is enabled with max remote calls: 10.
+11:29:44 INFO [700/1412] strategy_point healer/night_action
+11:29:50 INFO AFC is enabled with max remote calls: 10.
+11:29:52 INFO [701/1412] strategy_point wolf/day_discussion
+11:29:57 INFO AFC is enabled with max remote calls: 10.
+11:29:59 INFO [702/1412] strategy_point villager/day_vote
+11:30:05 INFO AFC is enabled with max remote calls: 10.
+11:30:07 INFO [703/1412] observation wolf/day_discussion
+11:30:10 INFO [704/1412] observation wolf/day_vote
+11:30:11 INFO [705/1412] observation villager/day_discussion
+11:30:12 INFO [706/1412] observation villager/day_discussion
+11:30:16 INFO AFC is enabled with max remote calls: 10.
+11:30:19 INFO [707/1412] observation healer/night_action
+11:30:24 INFO AFC is enabled with max remote calls: 10.
+11:30:26 INFO [708/1412] observation investigator/day_discussion
+11:30:29 INFO [709/1412] observation wolf/night_action
+11:30:32 INFO AFC is enabled with max remote calls: 10.
+11:30:36 INFO [710/1412] observation healer/night_action
+11:30:39 INFO [711/1412] strategy_point wolf/day_discussion
+11:30:42 INFO AFC is enabled with max remote calls: 10.
+11:30:45 INFO [712/1412] strategy_point wolf/day_vote
+11:30:50 INFO AFC is enabled with max remote calls: 10.
+11:30:52 INFO [713/1412] strategy_point wolf/night_action
+11:30:58 INFO AFC is enabled with max remote calls: 10.
+11:31:00 INFO [714/1412] strategy_point villager/day_discussion
+11:31:05 INFO AFC is enabled with max remote calls: 10.
+11:31:08 INFO [715/1412] strategy_point villager/day_discussion
+11:31:13 INFO AFC is enabled with max remote calls: 10.
+11:31:15 INFO [716/1412] strategy_point healer/night_action
+11:31:20 INFO AFC is enabled with max remote calls: 10.
+11:31:22 INFO [717/1412] strategy_point investigator/day_discussion
+11:31:28 INFO AFC is enabled with max remote calls: 10.
+11:31:30 INFO [718/1412] strategy_point villager/day_discussion
+11:31:35 INFO AFC is enabled with max remote calls: 10.
+11:31:37 INFO [719/1412] observation wolf/day_discussion
+11:31:40 INFO [720/1412] observation wolf/day_vote
+11:31:44 INFO AFC is enabled with max remote calls: 10.
+11:31:46 INFO [721/1412] observation wolf/day_discussion
+11:31:49 INFO [722/1412] observation wolf/night_action
+11:31:53 INFO AFC is enabled with max remote calls: 10.
+11:31:56 INFO [723/1412] observation villager/day_discussion
+11:31:59 INFO [724/1412] observation villager/day_discussion
+11:32:00 INFO [725/1412] observation villager/day_discussion
+11:32:04 INFO AFC is enabled with max remote calls: 10.
+11:32:06 INFO [726/1412] observation villager/day_vote
+11:32:11 INFO AFC is enabled with max remote calls: 10.
+11:32:13 INFO [727/1412] observation villager/day_discussion
+11:32:18 INFO AFC is enabled with max remote calls: 10.
+11:32:21 INFO [728/1412] observation healer/night_action
+11:32:24 INFO [729/1412] observation healer/day_discussion
+11:32:27 INFO AFC is enabled with max remote calls: 10.
+11:32:29 INFO [730/1412] observation healer/night_action
+11:32:33 INFO [731/1412] observation healer/day_discussion
+11:32:36 INFO AFC is enabled with max remote calls: 10.
+11:32:38 INFO [732/1412] observation investigator/night_action
+11:32:44 INFO AFC is enabled with max remote calls: 10.
+11:32:48 INFO [733/1412] observation investigator/day_discussion
+11:32:52 INFO [734/1412] observation investigator/night_action
+11:32:53 INFO [735/1412] observation investigator/day_discussion
+11:32:54 INFO [736/1412] observation investigator/day_discussion
+11:32:55 INFO [737/1412] strategy_point wolf/day_discussion
+11:32:59 INFO AFC is enabled with max remote calls: 10.
+11:33:01 INFO [738/1412] strategy_point wolf/day_vote
+11:33:07 INFO AFC is enabled with max remote calls: 10.
+11:33:09 INFO [739/1412] strategy_point wolf/day_discussion
+11:33:15 INFO AFC is enabled with max remote calls: 10.
+11:33:17 INFO [740/1412] strategy_point wolf/night_action
+11:33:20 INFO [741/1412] strategy_point villager/day_discussion
+11:33:23 INFO AFC is enabled with max remote calls: 10.
+11:33:25 INFO [742/1412] strategy_point villager/day_discussion
+11:33:29 INFO AFC is enabled with max remote calls: 10.
+11:33:31 INFO [743/1412] strategy_point villager/day_discussion
+11:33:36 INFO AFC is enabled with max remote calls: 10.
+11:33:38 INFO [744/1412] strategy_point villager/day_discussion
+11:33:44 INFO AFC is enabled with max remote calls: 10.
+11:33:46 INFO [745/1412] strategy_point villager/day_vote
+11:33:51 INFO AFC is enabled with max remote calls: 10.
+11:33:53 INFO [746/1412] strategy_point villager/day_discussion
+11:33:59 INFO AFC is enabled with max remote calls: 10.
+11:34:01 INFO [747/1412] strategy_point healer/night_action
+11:34:07 INFO AFC is enabled with max remote calls: 10.
+11:34:08 INFO [748/1412] strategy_point healer/night_action
+11:34:13 INFO AFC is enabled with max remote calls: 10.
+11:34:15 INFO [749/1412] strategy_point healer/day_discussion
+11:34:20 INFO AFC is enabled with max remote calls: 10.
+11:34:22 INFO [750/1412] strategy_point healer/day_discussion
+11:34:28 INFO AFC is enabled with max remote calls: 10.
+11:34:30 INFO [751/1412] strategy_point healer/day_vote
+11:34:35 INFO AFC is enabled with max remote calls: 10.
+11:34:37 INFO [752/1412] strategy_point investigator/night_action
+11:34:38 INFO [753/1412] strategy_point investigator/day_discussion
+11:34:41 INFO AFC is enabled with max remote calls: 10.
+11:34:44 INFO [754/1412] strategy_point investigator/night_action
+11:34:47 INFO [755/1412] strategy_point investigator/day_discussion
+11:34:50 INFO AFC is enabled with max remote calls: 10.
+11:34:53 INFO [756/1412] strategy_point investigator/day_discussion
+11:34:59 INFO AFC is enabled with max remote calls: 10.
+11:35:00 INFO [757/1412] observation wolf/night_action
+11:35:04 INFO [758/1412] observation wolf/day_vote
+11:35:07 INFO AFC is enabled with max remote calls: 10.
+11:35:10 INFO [759/1412] observation wolf/day_discussion
+11:35:16 INFO AFC is enabled with max remote calls: 10.
+11:35:17 INFO [760/1412] observation wolf/day_vote
+11:35:21 INFO [761/1412] observation villager/day_discussion
+11:35:22 INFO [762/1412] observation villager/day_discussion
+11:35:25 INFO AFC is enabled with max remote calls: 10.
+11:35:27 INFO [763/1412] observation villager/day_vote
+11:35:28 INFO [764/1412] observation villager/day_discussion
+11:35:30 INFO [765/1412] observation healer/night_action
+11:35:33 INFO AFC is enabled with max remote calls: 10.
+11:35:36 INFO [766/1412] observation healer/day_vote
+11:35:41 INFO AFC is enabled with max remote calls: 10.
+11:35:43 INFO [767/1412] observation healer/day_discussion
+11:35:46 INFO [768/1412] observation healer/day_vote
+11:35:47 INFO [769/1412] observation investigator/day_vote
+11:35:49 INFO [770/1412] observation investigator/day_discussion
+11:35:50 INFO [771/1412] observation investigator/night_action
+11:35:53 INFO AFC is enabled with max remote calls: 10.
+11:35:58 INFO [772/1412] observation investigator/night_action
+11:36:02 INFO [773/1412] observation investigator/day_discussion
+11:36:03 INFO [774/1412] strategy_point wolf/day_vote
+11:36:06 INFO AFC is enabled with max remote calls: 10.
+11:36:08 INFO [775/1412] strategy_point wolf/day_discussion
+11:36:14 INFO AFC is enabled with max remote calls: 10.
+11:36:16 INFO [776/1412] strategy_point wolf/night_action
+11:36:17 INFO [777/1412] strategy_point wolf/day_vote
+11:36:18 INFO [778/1412] strategy_point villager/day_discussion
+11:36:19 INFO [779/1412] strategy_point villager/day_discussion
+11:36:23 INFO AFC is enabled with max remote calls: 10.
+11:36:25 INFO [780/1412] strategy_point villager/day_vote
+11:36:29 INFO AFC is enabled with max remote calls: 10.
+11:36:31 INFO [781/1412] strategy_point villager/day_discussion
+11:36:37 INFO AFC is enabled with max remote calls: 10.
+11:36:39 INFO [782/1412] strategy_point villager/day_discussion
+11:36:45 INFO AFC is enabled with max remote calls: 10.
+11:36:47 INFO [783/1412] strategy_point healer/night_action
+11:36:53 INFO AFC is enabled with max remote calls: 10.
+11:36:55 INFO [784/1412] strategy_point healer/day_vote
+11:36:58 INFO AFC is enabled with max remote calls: 10.
+11:37:00 INFO [785/1412] strategy_point healer/day_discussion
+11:37:04 INFO AFC is enabled with max remote calls: 10.
+11:37:05 INFO [786/1412] strategy_point healer/day_discussion
+11:37:09 INFO AFC is enabled with max remote calls: 10.
+11:37:11 INFO [787/1412] strategy_point healer/day_discussion
+11:37:15 INFO AFC is enabled with max remote calls: 10.
+11:37:17 INFO [788/1412] strategy_point investigator/day_vote
+11:37:20 INFO AFC is enabled with max remote calls: 10.
+11:37:22 INFO [789/1412] strategy_point investigator/day_discussion
+11:37:28 INFO AFC is enabled with max remote calls: 10.
+11:37:30 INFO [790/1412] strategy_point investigator/night_action
+11:37:33 INFO [791/1412] strategy_point investigator/night_action
+11:37:34 INFO [792/1412] strategy_point investigator/day_discussion
+11:37:38 INFO AFC is enabled with max remote calls: 10.
+11:37:42 INFO [793/1412] observation wolf/night_action
+11:37:48 INFO AFC is enabled with max remote calls: 10.
+11:37:55 INFO [794/1412] observation wolf/day_discussion
+11:38:00 INFO AFC is enabled with max remote calls: 10.
+11:38:02 INFO [795/1412] observation wolf/day_vote
+11:38:08 INFO AFC is enabled with max remote calls: 10.
+11:38:10 INFO [796/1412] observation wolf/night_action
+11:38:13 INFO [797/1412] observation wolf/day_discussion
+11:38:17 INFO AFC is enabled with max remote calls: 10.
+11:38:19 INFO [798/1412] observation villager/day_discussion
+11:38:22 INFO AFC is enabled with max remote calls: 10.
+11:38:26 INFO [799/1412] observation villager/day_discussion
+11:38:32 INFO AFC is enabled with max remote calls: 10.
+11:38:33 INFO [800/1412] observation villager/day_discussion
+11:38:37 INFO [801/1412] observation villager/day_discussion
+11:38:38 INFO [802/1412] observation villager/day_discussion
+11:38:39 INFO [803/1412] observation healer/day_discussion
+11:38:43 INFO AFC is enabled with max remote calls: 10.
+11:38:44 INFO [804/1412] observation healer/night_action
+11:38:48 INFO AFC is enabled with max remote calls: 10.
+11:38:51 INFO [805/1412] observation healer/day_discussion
+11:38:54 INFO [806/1412] observation healer/night_action
+11:38:55 INFO [807/1412] observation investigator/day_discussion
+11:38:58 INFO AFC is enabled with max remote calls: 10.
+11:39:00 INFO [808/1412] observation investigator/night_action
+11:39:04 INFO AFC is enabled with max remote calls: 10.
+11:39:06 INFO [809/1412] observation investigator/day_discussion
+11:39:07 INFO [810/1412] observation investigator/day_discussion
+11:39:10 INFO AFC is enabled with max remote calls: 10.
+11:39:13 INFO [811/1412] strategy_point wolf/night_action
+11:39:16 INFO [812/1412] strategy_point wolf/day_discussion
+11:39:20 INFO AFC is enabled with max remote calls: 10.
+11:39:22 INFO [813/1412] strategy_point wolf/day_discussion
+11:39:25 INFO [814/1412] strategy_point wolf/day_vote
+11:39:29 INFO AFC is enabled with max remote calls: 10.
+11:39:33 INFO [815/1412] strategy_point wolf/night_action
+11:39:35 INFO [816/1412] strategy_point wolf/day_discussion
+11:39:38 INFO AFC is enabled with max remote calls: 10.
+11:39:41 INFO [817/1412] strategy_point villager/day_discussion
+11:39:44 INFO [818/1412] strategy_point villager/day_discussion
+11:39:47 INFO AFC is enabled with max remote calls: 10.
+11:39:50 INFO [819/1412] strategy_point villager/day_discussion
+11:39:55 INFO AFC is enabled with max remote calls: 10.
+11:39:57 INFO [820/1412] strategy_point villager/day_discussion
+11:40:03 INFO AFC is enabled with max remote calls: 10.
+11:40:05 INFO [821/1412] strategy_point villager/day_discussion
+11:40:11 INFO AFC is enabled with max remote calls: 10.
+11:40:13 INFO [822/1412] strategy_point villager/day_discussion
+11:40:18 INFO AFC is enabled with max remote calls: 10.
+11:40:20 INFO [823/1412] strategy_point healer/day_discussion
+11:40:26 INFO AFC is enabled with max remote calls: 10.
+11:40:28 INFO [824/1412] strategy_point healer/night_action
+11:40:33 INFO AFC is enabled with max remote calls: 10.
+11:40:35 INFO [825/1412] strategy_point healer/day_discussion
+11:40:41 INFO AFC is enabled with max remote calls: 10.
+11:40:43 INFO [826/1412] strategy_point healer/night_action
+11:40:49 INFO AFC is enabled with max remote calls: 10.
+11:40:51 INFO [827/1412] strategy_point investigator/day_discussion
+11:40:57 INFO AFC is enabled with max remote calls: 10.
+11:40:59 INFO [828/1412] strategy_point investigator/night_action
+11:41:04 INFO AFC is enabled with max remote calls: 10.
+11:41:06 INFO [829/1412] strategy_point investigator/day_discussion
+11:41:12 INFO AFC is enabled with max remote calls: 10.
+11:41:14 INFO [830/1412] strategy_point investigator/day_discussion
+11:41:20 INFO AFC is enabled with max remote calls: 10.
+11:41:21 INFO [831/1412] observation wolf/day_discussion
+11:41:25 INFO [832/1412] observation wolf/day_vote
+11:41:26 INFO [833/1412] observation wolf/day_discussion
+11:41:27 INFO [834/1412] observation wolf/day_vote
+11:41:28 INFO [835/1412] observation wolf/night_action
+11:41:31 INFO AFC is enabled with max remote calls: 10.
+11:41:33 INFO [836/1412] observation wolf/day_discussion
+11:41:37 INFO AFC is enabled with max remote calls: 10.
+11:41:39 INFO [837/1412] observation villager/day_vote
+11:41:44 INFO AFC is enabled with max remote calls: 10.
+11:41:46 INFO [838/1412] observation villager/day_discussion
+11:41:49 INFO [839/1412] observation villager/day_discussion
+11:41:53 INFO AFC is enabled with max remote calls: 10.
+11:41:55 INFO [840/1412] observation villager/day_discussion
+11:41:58 INFO [841/1412] observation healer/night_action
+11:42:02 INFO AFC is enabled with max remote calls: 10.
+11:42:04 INFO [842/1412] observation healer/day_vote
+11:42:07 INFO [843/1412] observation healer/night_action
+11:42:11 INFO AFC is enabled with max remote calls: 10.
+11:42:12 INFO [844/1412] observation healer/day_discussion
+11:42:16 INFO [845/1412] observation healer/night_action
+11:42:17 INFO [846/1412] observation healer/day_discussion
+11:42:18 INFO [847/1412] observation investigator/night_action
+11:42:19 INFO [848/1412] observation investigator/night_action
+11:42:23 INFO AFC is enabled with max remote calls: 10.
+11:42:24 INFO [849/1412] observation investigator/day_vote
+11:42:30 INFO AFC is enabled with max remote calls: 10.
+11:42:34 INFO [850/1412] observation investigator/day_discussion
+11:42:39 INFO AFC is enabled with max remote calls: 10.
+11:42:41 INFO [851/1412] observation investigator/day_discussion
+11:42:47 INFO AFC is enabled with max remote calls: 10.
+11:42:49 INFO [852/1412] strategy_point wolf/day_discussion
+11:42:55 INFO AFC is enabled with max remote calls: 10.
+11:42:57 INFO [853/1412] strategy_point wolf/day_discussion
+11:43:01 INFO AFC is enabled with max remote calls: 10.
+11:43:03 INFO [854/1412] strategy_point wolf/day_vote
+11:43:04 INFO [855/1412] strategy_point wolf/day_discussion
+11:43:08 INFO AFC is enabled with max remote calls: 10.
+11:43:10 INFO [856/1412] strategy_point wolf/night_action
+11:43:13 INFO AFC is enabled with max remote calls: 10.
+11:43:15 INFO [857/1412] strategy_point wolf/day_discussion
+11:43:21 INFO AFC is enabled with max remote calls: 10.
+11:43:23 INFO [858/1412] strategy_point villager/day_discussion
+11:43:29 INFO AFC is enabled with max remote calls: 10.
+11:43:31 INFO [859/1412] strategy_point villager/day_discussion
+11:43:34 INFO [860/1412] strategy_point villager/day_discussion
+11:43:37 INFO AFC is enabled with max remote calls: 10.
+11:43:39 INFO [861/1412] strategy_point villager/day_discussion
+11:43:45 INFO AFC is enabled with max remote calls: 10.
+11:43:47 INFO [862/1412] strategy_point healer/night_action
+11:43:53 INFO AFC is enabled with max remote calls: 10.
+11:43:55 INFO [863/1412] strategy_point healer/night_action
+11:43:58 INFO [864/1412] strategy_point healer/night_action
+11:44:02 INFO AFC is enabled with max remote calls: 10.
+11:44:04 INFO [865/1412] strategy_point healer/day_discussion
+11:44:09 INFO AFC is enabled with max remote calls: 10.
+11:44:12 INFO [866/1412] strategy_point healer/day_vote
+11:44:17 INFO AFC is enabled with max remote calls: 10.
+11:44:19 INFO [867/1412] strategy_point healer/day_discussion
+11:44:24 INFO AFC is enabled with max remote calls: 10.
+11:44:27 INFO [868/1412] strategy_point investigator/night_action
+11:44:30 INFO [869/1412] strategy_point investigator/night_action
+11:44:34 INFO AFC is enabled with max remote calls: 10.
+11:44:35 INFO [870/1412] strategy_point investigator/day_vote
+11:44:38 INFO AFC is enabled with max remote calls: 10.
+11:44:40 INFO [871/1412] strategy_point investigator/day_discussion
+11:44:44 INFO AFC is enabled with max remote calls: 10.
+11:44:46 INFO [872/1412] strategy_point investigator/day_discussion
+11:44:52 INFO AFC is enabled with max remote calls: 10.
+11:44:55 INFO [873/1412] observation wolf/night_action
+11:44:58 INFO [874/1412] observation wolf/day_vote
+11:45:02 INFO AFC is enabled with max remote calls: 10.
+11:45:05 INFO [875/1412] observation wolf/night_action
+11:45:11 INFO AFC is enabled with max remote calls: 10.
+11:45:15 INFO [876/1412] observation wolf/day_discussion
+11:45:18 INFO [877/1412] observation wolf/day_vote
+11:45:19 INFO [878/1412] observation wolf/day_discussion
+11:45:23 INFO AFC is enabled with max remote calls: 10.
+11:45:25 INFO [879/1412] observation villager/day_vote
+11:45:30 INFO AFC is enabled with max remote calls: 10.
+11:45:36 INFO [880/1412] observation villager/day_discussion
+11:45:42 INFO AFC is enabled with max remote calls: 10.
+11:45:43 INFO [881/1412] observation villager/day_vote
+11:45:49 INFO AFC is enabled with max remote calls: 10.
+11:45:51 INFO [882/1412] observation villager/day_discussion
+11:45:54 INFO [883/1412] observation healer/night_action
+11:45:55 INFO [884/1412] observation healer/night_action
+11:45:56 INFO [885/1412] observation healer/day_discussion
+11:46:00 INFO AFC is enabled with max remote calls: 10.
+11:46:02 INFO [886/1412] observation healer/day_vote
+11:46:04 INFO [887/1412] observation investigator/day_discussion
+11:46:08 INFO AFC is enabled with max remote calls: 10.
+11:46:12 INFO [888/1412] observation investigator/day_discussion
+11:46:15 INFO [889/1412] observation investigator/night_action
+11:46:18 INFO AFC is enabled with max remote calls: 10.
+11:46:20 INFO [890/1412] observation investigator/night_action
+11:46:22 INFO [891/1412] strategy_point wolf/night_action
+11:46:25 INFO AFC is enabled with max remote calls: 10.
+11:46:27 INFO [892/1412] strategy_point wolf/day_vote
+11:46:30 INFO AFC is enabled with max remote calls: 10.
+11:46:35 INFO [893/1412] strategy_point wolf/night_action
+11:46:40 INFO AFC is enabled with max remote calls: 10.
+11:46:42 INFO [894/1412] strategy_point wolf/day_discussion
+11:46:48 INFO AFC is enabled with max remote calls: 10.
+11:46:50 INFO [895/1412] strategy_point wolf/day_vote
+11:46:56 INFO AFC is enabled with max remote calls: 10.
+11:46:58 INFO [896/1412] strategy_point wolf/day_discussion
+11:47:03 INFO AFC is enabled with max remote calls: 10.
+11:47:05 INFO [897/1412] strategy_point villager/day_discussion
+11:47:11 INFO AFC is enabled with max remote calls: 10.
+11:47:13 INFO [898/1412] strategy_point villager/day_discussion
+11:47:19 INFO AFC is enabled with max remote calls: 10.
+11:47:21 INFO [899/1412] strategy_point villager/day_vote
+11:47:26 INFO AFC is enabled with max remote calls: 10.
+11:47:28 INFO [900/1412] strategy_point villager/day_discussion
+11:47:34 INFO AFC is enabled with max remote calls: 10.
+11:47:35 INFO [901/1412] strategy_point villager/day_discussion
+11:47:39 INFO [902/1412] strategy_point healer/night_action
+11:47:40 INFO [903/1412] strategy_point healer/night_action
+11:47:41 INFO [904/1412] strategy_point healer/day_discussion
+11:47:44 INFO AFC is enabled with max remote calls: 10.
+11:47:46 INFO [905/1412] strategy_point healer/day_vote
+11:47:52 INFO AFC is enabled with max remote calls: 10.
+11:47:54 INFO [906/1412] strategy_point investigator/day_discussion
+11:47:59 INFO AFC is enabled with max remote calls: 10.
+11:48:01 INFO [907/1412] strategy_point investigator/day_discussion
+11:48:07 INFO AFC is enabled with max remote calls: 10.
+11:48:09 INFO [908/1412] strategy_point investigator/day_discussion
+11:48:15 INFO AFC is enabled with max remote calls: 10.
+11:48:17 INFO [909/1412] strategy_point investigator/day_discussion
+11:48:23 INFO AFC is enabled with max remote calls: 10.
+11:48:25 INFO [910/1412] strategy_point investigator/night_action
+11:48:29 INFO [911/1412] observation wolf/day_discussion
+11:48:30 INFO [912/1412] observation wolf/day_vote
+11:48:33 INFO AFC is enabled with max remote calls: 10.
+11:48:35 INFO [913/1412] observation wolf/night_action
+11:48:36 INFO [914/1412] observation wolf/day_discussion
+11:48:39 INFO AFC is enabled with max remote calls: 10.
+11:48:41 INFO [915/1412] observation villager/day_discussion
+11:48:42 INFO [916/1412] observation villager/day_discussion
+11:48:46 INFO AFC is enabled with max remote calls: 10.
+11:48:48 INFO [917/1412] observation villager/day_vote
+11:48:49 INFO [918/1412] observation villager/day_discussion
+11:48:50 INFO [919/1412] observation healer/night_action
+11:48:54 INFO AFC is enabled with max remote calls: 10.
+11:48:56 INFO [920/1412] observation healer/day_discussion
+11:48:59 INFO [921/1412] observation healer/day_discussion
+11:49:00 INFO [922/1412] observation healer/day_vote
+11:49:01 INFO [923/1412] observation investigator/night_action
+11:49:02 INFO [924/1412] observation investigator/night_action
+11:49:04 INFO [925/1412] observation investigator/day_discussion
+11:49:07 INFO AFC is enabled with max remote calls: 10.
+11:49:09 INFO [926/1412] observation investigator/day_discussion
+11:49:11 INFO [927/1412] strategy_point wolf/day_discussion
+11:49:12 INFO [928/1412] strategy_point wolf/day_vote
+11:49:16 INFO AFC is enabled with max remote calls: 10.
+11:49:18 INFO [929/1412] strategy_point wolf/night_action
+11:49:21 INFO AFC is enabled with max remote calls: 10.
+11:49:23 INFO [930/1412] strategy_point wolf/day_discussion
+11:49:29 INFO AFC is enabled with max remote calls: 10.
+11:49:31 INFO [931/1412] strategy_point villager/day_discussion
+11:49:37 INFO AFC is enabled with max remote calls: 10.
+11:49:38 INFO [932/1412] strategy_point villager/day_discussion
+11:49:44 INFO AFC is enabled with max remote calls: 10.
+11:49:46 INFO [933/1412] strategy_point villager/day_vote
+11:49:50 INFO [934/1412] strategy_point villager/day_discussion
+11:49:53 INFO AFC is enabled with max remote calls: 10.
+11:49:58 INFO [935/1412] strategy_point healer/night_action
+11:50:04 INFO AFC is enabled with max remote calls: 10.
+11:50:06 INFO [936/1412] strategy_point healer/day_discussion
+11:50:12 INFO AFC is enabled with max remote calls: 10.
+11:50:14 INFO [937/1412] strategy_point healer/day_discussion
+11:50:19 INFO AFC is enabled with max remote calls: 10.
+11:50:22 INFO [938/1412] strategy_point healer/day_discussion
+11:50:28 INFO AFC is enabled with max remote calls: 10.
+11:50:30 INFO [939/1412] strategy_point investigator/night_action
+11:50:36 INFO AFC is enabled with max remote calls: 10.
+11:50:38 INFO [940/1412] strategy_point investigator/night_action
+11:50:44 INFO AFC is enabled with max remote calls: 10.
+11:50:46 INFO [941/1412] strategy_point investigator/day_discussion
+11:50:51 INFO AFC is enabled with max remote calls: 10.
+11:50:54 INFO [942/1412] strategy_point investigator/day_discussion
+11:50:59 INFO AFC is enabled with max remote calls: 10.
+11:51:02 INFO [943/1412] observation wolf/night_action
+11:51:05 INFO [944/1412] observation wolf/day_vote
+11:51:08 INFO AFC is enabled with max remote calls: 10.
+11:51:10 INFO [945/1412] observation wolf/day_discussion
+11:51:11 INFO [946/1412] observation wolf/day_discussion
+11:51:12 INFO [947/1412] observation villager/day_discussion
+11:51:14 INFO [948/1412] observation villager/day_vote
+11:51:15 INFO [949/1412] observation villager/day_discussion
+11:51:16 INFO [950/1412] observation villager/day_discussion
+11:51:17 INFO [951/1412] observation healer/day_discussion
+11:51:18 INFO [952/1412] observation healer/day_vote
+11:51:19 INFO [953/1412] observation healer/day_discussion
+11:51:22 INFO AFC is enabled with max remote calls: 10.
+11:51:25 INFO [954/1412] observation healer/night_action
+11:51:31 INFO AFC is enabled with max remote calls: 10.
+11:51:33 INFO [955/1412] observation investigator/night_action
+11:51:36 INFO [956/1412] observation investigator/day_vote
+11:51:37 INFO [957/1412] observation investigator/day_discussion
+11:51:38 INFO [958/1412] observation investigator/day_discussion
+11:51:42 INFO AFC is enabled with max remote calls: 10.
+11:51:47 INFO [959/1412] strategy_point wolf/night_action
+11:51:53 INFO AFC is enabled with max remote calls: 10.
+11:51:55 INFO [960/1412] strategy_point wolf/day_vote
+11:52:01 INFO AFC is enabled with max remote calls: 10.
+11:52:03 INFO [961/1412] strategy_point wolf/day_discussion
+11:52:08 INFO AFC is enabled with max remote calls: 10.
+11:52:11 INFO [962/1412] strategy_point wolf/day_discussion
+11:52:16 INFO AFC is enabled with max remote calls: 10.
+11:52:19 INFO [963/1412] strategy_point villager/day_discussion
+11:52:24 INFO AFC is enabled with max remote calls: 10.
+11:52:26 INFO [964/1412] strategy_point villager/day_vote
+11:52:32 INFO AFC is enabled with max remote calls: 10.
+11:52:34 INFO [965/1412] strategy_point villager/day_discussion
+11:52:40 INFO AFC is enabled with max remote calls: 10.
+11:52:42 INFO [966/1412] strategy_point villager/day_discussion
+11:52:47 INFO AFC is enabled with max remote calls: 10.
+11:52:49 INFO [967/1412] strategy_point healer/night_action
+11:52:55 INFO AFC is enabled with max remote calls: 10.
+11:52:57 INFO [968/1412] strategy_point healer/day_vote
+11:53:02 INFO AFC is enabled with max remote calls: 10.
+11:53:04 INFO [969/1412] strategy_point healer/day_discussion
+11:53:10 INFO AFC is enabled with max remote calls: 10.
+11:53:11 INFO [970/1412] strategy_point healer/day_discussion
+11:53:15 INFO [971/1412] strategy_point investigator/night_action
+11:53:18 INFO AFC is enabled with max remote calls: 10.
+11:53:20 INFO [972/1412] strategy_point investigator/day_vote
+11:53:25 INFO AFC is enabled with max remote calls: 10.
+11:53:27 INFO [973/1412] strategy_point investigator/day_discussion
+11:53:33 INFO AFC is enabled with max remote calls: 10.
+11:53:35 INFO [974/1412] strategy_point investigator/day_discussion
+11:53:40 INFO AFC is enabled with max remote calls: 10.
+11:53:43 INFO [975/1412] observation wolf/day_discussion
+11:53:46 INFO [976/1412] observation wolf/day_discussion
+11:53:47 INFO [977/1412] observation wolf/day_vote
+11:53:48 INFO [978/1412] observation wolf/night_action
+11:53:49 INFO [979/1412] observation villager/day_discussion
+11:53:53 INFO AFC is enabled with max remote calls: 10.
+11:53:55 INFO [980/1412] observation villager/day_discussion
+11:53:56 INFO [981/1412] observation villager/day_vote
+11:53:59 INFO AFC is enabled with max remote calls: 10.
+11:54:01 INFO [982/1412] observation villager/day_discussion
+11:54:02 INFO [983/1412] observation healer/day_discussion
+11:54:06 INFO AFC is enabled with max remote calls: 10.
+11:54:08 INFO [984/1412] observation healer/day_discussion
+11:54:13 INFO AFC is enabled with max remote calls: 10.
+11:54:16 INFO [985/1412] observation healer/day_discussion
+11:54:19 INFO [986/1412] observation investigator/day_discussion
+11:54:22 INFO AFC is enabled with max remote calls: 10.
+11:54:24 INFO [987/1412] observation investigator/day_discussion
+11:54:25 INFO [988/1412] observation investigator/day_discussion
+11:54:26 INFO [989/1412] strategy_point wolf/day_discussion
+11:54:30 INFO AFC is enabled with max remote calls: 10.
+11:54:33 INFO [990/1412] strategy_point wolf/day_discussion
+11:54:38 INFO AFC is enabled with max remote calls: 10.
+11:54:40 INFO [991/1412] strategy_point wolf/day_vote
+11:54:44 INFO [992/1412] strategy_point wolf/night_action
+11:54:47 INFO AFC is enabled with max remote calls: 10.
+11:54:49 INFO [993/1412] strategy_point villager/day_discussion
+11:54:55 INFO AFC is enabled with max remote calls: 10.
+11:54:57 INFO [994/1412] strategy_point villager/day_discussion
+11:55:03 INFO AFC is enabled with max remote calls: 10.
+11:55:05 INFO [995/1412] strategy_point villager/day_vote
+11:55:11 INFO AFC is enabled with max remote calls: 10.
+11:55:13 INFO [996/1412] strategy_point investigator/day_discussion
+11:55:18 INFO AFC is enabled with max remote calls: 10.
+11:55:21 INFO [997/1412] strategy_point healer/day_discussion
+11:55:26 INFO AFC is enabled with max remote calls: 10.
+11:55:29 INFO [998/1412] strategy_point healer/day_discussion
+11:55:34 INFO AFC is enabled with max remote calls: 10.
+11:55:37 INFO [999/1412] strategy_point healer/day_discussion
+11:55:42 INFO AFC is enabled with max remote calls: 10.
+11:55:44 INFO [1000/1412] strategy_point investigator/day_discussion
+11:55:50 INFO AFC is enabled with max remote calls: 10.
+11:55:51 INFO [1001/1412] strategy_point investigator/day_vote
+11:55:57 INFO AFC is enabled with max remote calls: 10.
+11:55:59 INFO [1002/1412] strategy_point investigator/day_discussion
+11:56:05 INFO AFC is enabled with max remote calls: 10.
+11:56:07 INFO [1003/1412] strategy_point investigator/night_action
+11:56:13 INFO AFC is enabled with max remote calls: 10.
+11:56:15 INFO [1004/1412] observation wolf/night_action
+11:56:20 INFO AFC is enabled with max remote calls: 10.
+11:56:22 INFO [1005/1412] observation wolf/day_discussion
+11:56:26 INFO [1006/1412] observation wolf/day_discussion
+11:56:27 INFO [1007/1412] observation wolf/day_discussion
+11:56:28 INFO [1008/1412] observation villager/day_discussion
+11:56:29 INFO [1009/1412] observation villager/day_discussion
+11:56:32 INFO AFC is enabled with max remote calls: 10.
+11:56:34 INFO [1010/1412] observation villager/day_discussion
+11:56:35 INFO [1011/1412] observation villager/day_discussion
+11:56:36 INFO [1012/1412] observation healer/night_action
+11:56:40 INFO AFC is enabled with max remote calls: 10.
+11:56:42 INFO [1013/1412] observation healer/day_vote
+11:56:42 INFO [1014/1412] observation healer/day_discussion
+11:56:46 INFO AFC is enabled with max remote calls: 10.
+11:56:49 INFO [1015/1412] observation healer/night_action
+11:56:52 INFO [1016/1412] observation investigator/day_discussion
+11:56:53 INFO [1017/1412] observation investigator/day_discussion
+11:56:54 INFO [1018/1412] observation investigator/day_discussion
+11:56:55 INFO [1019/1412] strategy_point wolf/night_action
+11:56:59 INFO AFC is enabled with max remote calls: 10.
+11:57:02 INFO [1020/1412] strategy_point wolf/day_discussion
+11:57:08 INFO AFC is enabled with max remote calls: 10.
+11:57:10 INFO [1021/1412] strategy_point wolf/day_discussion
+11:57:15 INFO AFC is enabled with max remote calls: 10.
+11:57:17 INFO [1022/1412] strategy_point wolf/day_discussion
+11:57:23 INFO AFC is enabled with max remote calls: 10.
+11:57:25 INFO [1023/1412] strategy_point villager/day_discussion
+11:57:30 INFO AFC is enabled with max remote calls: 10.
+11:57:32 INFO [1024/1412] strategy_point villager/day_discussion
+11:57:35 INFO [1025/1412] strategy_point villager/day_discussion
+11:57:37 INFO [1026/1412] strategy_point villager/day_discussion
+11:57:40 INFO AFC is enabled with max remote calls: 10.
+11:57:42 INFO [1027/1412] strategy_point healer/night_action
+11:57:48 INFO AFC is enabled with max remote calls: 10.
+11:57:50 INFO [1028/1412] strategy_point healer/day_vote
+11:57:55 INFO AFC is enabled with max remote calls: 10.
+11:57:57 INFO [1029/1412] strategy_point healer/day_discussion
+11:58:03 INFO AFC is enabled with max remote calls: 10.
+11:58:05 INFO [1030/1412] strategy_point healer/day_discussion
+11:58:10 INFO AFC is enabled with max remote calls: 10.
+11:58:13 INFO [1031/1412] strategy_point investigator/day_discussion
+11:58:18 INFO AFC is enabled with max remote calls: 10.
+11:58:20 INFO [1032/1412] strategy_point investigator/day_discussion
+11:58:26 INFO AFC is enabled with max remote calls: 10.
+11:58:28 INFO [1033/1412] strategy_point investigator/day_vote
+11:58:33 INFO AFC is enabled with max remote calls: 10.
+11:58:35 INFO [1034/1412] strategy_point investigator/day_discussion
+11:58:41 INFO AFC is enabled with max remote calls: 10.
+11:58:43 INFO [1035/1412] observation wolf/day_vote
+11:58:48 INFO AFC is enabled with max remote calls: 10.
+11:58:51 INFO [1036/1412] observation wolf/day_discussion
+11:58:54 INFO [1037/1412] observation wolf/day_discussion
+11:58:55 INFO [1038/1412] observation wolf/night_action
+11:58:56 INFO [1039/1412] observation villager/day_discussion
+11:58:57 INFO [1040/1412] observation villager/day_discussion
+11:59:01 INFO AFC is enabled with max remote calls: 10.
+11:59:02 INFO [1041/1412] observation villager/day_discussion
+11:59:04 INFO [1042/1412] observation villager/day_discussion
+11:59:05 INFO [1043/1412] observation healer/night_action
+11:59:06 INFO [1044/1412] observation healer/day_vote
+11:59:07 INFO [1045/1412] observation healer/day_discussion
+11:59:08 INFO [1046/1412] observation healer/day_discussion
+11:59:10 INFO [1047/1412] observation investigator/day_discussion
+11:59:12 INFO [1048/1412] observation investigator/day_discussion
+11:59:13 INFO [1049/1412] observation investigator/day_vote
+11:59:15 INFO [1050/1412] strategy_point wolf/day_vote
+11:59:16 INFO [1051/1412] strategy_point wolf/day_discussion
+11:59:19 INFO AFC is enabled with max remote calls: 10.
+11:59:21 INFO [1052/1412] strategy_point wolf/day_discussion
+11:59:25 INFO AFC is enabled with max remote calls: 10.
+11:59:27 INFO [1053/1412] strategy_point wolf/night_action
+11:59:32 INFO AFC is enabled with max remote calls: 10.
+11:59:34 INFO [1054/1412] strategy_point villager/day_discussion
+11:59:40 INFO AFC is enabled with max remote calls: 10.
+11:59:42 INFO [1055/1412] strategy_point villager/day_discussion
+11:59:47 INFO AFC is enabled with max remote calls: 10.
+11:59:49 INFO [1056/1412] strategy_point villager/day_discussion
+11:59:55 INFO AFC is enabled with max remote calls: 10.
+11:59:57 INFO [1057/1412] strategy_point villager/day_discussion
+12:00:01 INFO [1058/1412] strategy_point healer/night_action
+12:00:02 INFO [1059/1412] strategy_point healer/day_vote
+12:00:05 INFO AFC is enabled with max remote calls: 10.
+12:00:07 INFO [1060/1412] strategy_point healer/day_discussion
+12:00:11 INFO AFC is enabled with max remote calls: 10.
+12:00:13 INFO [1061/1412] strategy_point healer/day_discussion
+12:00:16 INFO [1062/1412] strategy_point investigator/night_action
+12:00:19 INFO AFC is enabled with max remote calls: 10.
+12:00:21 INFO [1063/1412] strategy_point investigator/day_discussion
+12:00:25 INFO [1064/1412] strategy_point investigator/day_discussion
+12:00:28 INFO AFC is enabled with max remote calls: 10.
+12:00:30 INFO [1065/1412] observation wolf/night_action
+12:00:31 INFO [1066/1412] observation wolf/day_discussion
+12:00:32 INFO [1067/1412] observation wolf/day_vote
+12:00:33 INFO [1068/1412] observation wolf/day_discussion
+12:00:34 INFO [1069/1412] observation villager/day_discussion
+12:00:36 INFO [1070/1412] observation villager/day_discussion
+12:00:39 INFO AFC is enabled with max remote calls: 10.
+12:00:41 INFO [1071/1412] observation villager/day_discussion
+12:00:44 INFO AFC is enabled with max remote calls: 10.
+12:00:46 INFO [1072/1412] observation healer/night_action
+12:00:50 INFO [1073/1412] observation healer/day_discussion
+12:00:51 INFO [1074/1412] observation healer/day_discussion
+12:00:52 INFO [1075/1412] observation healer/day_discussion
+12:00:53 INFO [1076/1412] observation investigator/night_action
+12:00:54 INFO [1077/1412] observation investigator/night_action
+12:00:55 INFO [1078/1412] observation investigator/day_discussion
+12:00:56 INFO [1079/1412] observation investigator/day_discussion
+12:00:57 INFO [1080/1412] strategy_point wolf/night_action
+12:00:59 INFO [1081/1412] strategy_point wolf/day_discussion
+12:01:02 INFO AFC is enabled with max remote calls: 10.
+12:01:04 INFO [1082/1412] strategy_point wolf/day_discussion
+12:01:05 INFO [1083/1412] strategy_point wolf/day_discussion
+12:01:08 INFO AFC is enabled with max remote calls: 10.
+12:01:10 INFO [1084/1412] strategy_point villager/day_discussion
+12:01:13 INFO AFC is enabled with max remote calls: 10.
+12:01:15 INFO [1085/1412] strategy_point villager/day_discussion
+12:01:19 INFO AFC is enabled with max remote calls: 10.
+12:01:21 INFO [1086/1412] strategy_point villager/day_discussion
+12:01:24 INFO AFC is enabled with max remote calls: 10.
+12:01:26 INFO [1087/1412] strategy_point villager/day_vote
+12:01:31 INFO AFC is enabled with max remote calls: 10.
+12:01:34 INFO [1088/1412] strategy_point healer/night_action
+12:01:39 INFO AFC is enabled with max remote calls: 10.
+12:01:41 INFO [1089/1412] strategy_point healer/day_discussion
+12:01:46 INFO AFC is enabled with max remote calls: 10.
+12:01:48 INFO [1090/1412] strategy_point healer/day_discussion
+12:01:51 INFO [1091/1412] strategy_point healer/day_vote
+12:01:54 INFO AFC is enabled with max remote calls: 10.
+12:01:56 INFO [1092/1412] strategy_point investigator/night_action
+12:01:57 INFO [1093/1412] strategy_point investigator/night_action
+12:02:01 INFO AFC is enabled with max remote calls: 10.
+12:02:03 INFO [1094/1412] strategy_point investigator/day_discussion
+12:02:09 INFO AFC is enabled with max remote calls: 10.
+12:02:11 INFO [1095/1412] strategy_point investigator/day_discussion
+12:02:16 INFO AFC is enabled with max remote calls: 10.
+12:02:18 INFO [1096/1412] observation wolf/night_action
+12:02:22 INFO [1097/1412] observation wolf/day_vote
+12:02:23 INFO [1098/1412] observation wolf/day_discussion
+12:02:24 INFO [1099/1412] observation wolf/night_action
+12:02:25 INFO [1100/1412] observation villager/day_discussion
+12:02:26 INFO [1101/1412] observation villager/day_discussion
+12:02:31 INFO AFC is enabled with max remote calls: 10.
+12:02:33 INFO [1102/1412] observation villager/day_vote
+12:02:36 INFO [1103/1412] observation healer/night_action
+12:02:37 INFO [1104/1412] observation healer/day_vote
+12:02:38 INFO [1105/1412] observation healer/day_discussion
+12:02:39 INFO [1106/1412] observation healer/day_vote
+12:02:40 INFO [1107/1412] observation investigator/day_vote
+12:02:41 INFO [1108/1412] observation investigator/day_discussion
+12:02:45 INFO AFC is enabled with max remote calls: 10.
+12:02:47 INFO [1109/1412] observation investigator/day_discussion
+12:02:48 INFO [1110/1412] observation investigator/night_action
+12:02:49 INFO [1111/1412] strategy_point wolf/day_vote
+12:02:53 INFO AFC is enabled with max remote calls: 10.
+12:02:54 INFO [1112/1412] strategy_point wolf/day_discussion
+12:02:58 INFO AFC is enabled with max remote calls: 10.
+12:03:00 INFO [1113/1412] strategy_point wolf/night_action
+12:03:05 INFO AFC is enabled with max remote calls: 10.
+12:03:07 INFO [1114/1412] strategy_point wolf/day_discussion
+12:03:13 INFO AFC is enabled with max remote calls: 10.
+12:03:14 INFO [1115/1412] strategy_point villager/day_discussion
+12:03:20 INFO AFC is enabled with max remote calls: 10.
+12:03:22 INFO [1116/1412] strategy_point villager/day_discussion
+12:03:27 INFO AFC is enabled with max remote calls: 10.
+12:03:30 INFO [1117/1412] strategy_point villager/day_vote
+12:03:35 INFO AFC is enabled with max remote calls: 10.
+12:03:37 INFO [1118/1412] strategy_point villager/day_discussion
+12:03:42 INFO AFC is enabled with max remote calls: 10.
+12:03:44 INFO [1119/1412] strategy_point healer/night_action
+12:03:50 INFO AFC is enabled with max remote calls: 10.
+12:03:52 INFO [1120/1412] strategy_point healer/day_vote
+12:03:57 INFO AFC is enabled with max remote calls: 10.
+12:03:59 INFO [1121/1412] strategy_point healer/day_discussion
+12:04:02 INFO [1122/1412] strategy_point healer/day_vote
+12:04:06 INFO AFC is enabled with max remote calls: 10.
+12:04:07 INFO [1123/1412] strategy_point investigator/day_vote
+12:04:10 INFO AFC is enabled with max remote calls: 10.
+12:04:24 INFO [1124/1412] strategy_point investigator/day_discussion
+12:04:29 INFO AFC is enabled with max remote calls: 10.
+12:04:32 INFO [1125/1412] strategy_point investigator/day_discussion
+12:04:37 INFO AFC is enabled with max remote calls: 10.
+12:04:39 INFO [1126/1412] strategy_point investigator/night_action
+12:04:44 INFO AFC is enabled with max remote calls: 10.
+12:04:47 INFO [1127/1412] observation wolf/night_action
+12:04:50 INFO [1128/1412] observation wolf/day_discussion
+12:04:51 INFO [1129/1412] observation wolf/day_discussion
+12:04:52 INFO [1130/1412] observation wolf/day_vote
+12:04:56 INFO AFC is enabled with max remote calls: 10.
+12:05:02 INFO [1131/1412] observation villager/day_discussion
+12:05:07 INFO AFC is enabled with max remote calls: 10.
+12:05:09 INFO [1132/1412] observation villager/day_discussion
+12:05:14 INFO AFC is enabled with max remote calls: 10.
+12:05:16 INFO [1133/1412] observation villager/day_discussion
+12:05:19 INFO [1134/1412] observation healer/day_discussion
+12:05:23 INFO AFC is enabled with max remote calls: 10.
+12:05:24 INFO [1135/1412] observation healer/night_action
+12:05:25 INFO [1136/1412] observation healer/day_discussion
+12:05:27 INFO [1137/1412] observation investigator/day_discussion
+12:05:30 INFO AFC is enabled with max remote calls: 10.
+12:05:32 INFO [1138/1412] observation investigator/day_vote
+12:05:36 INFO [1139/1412] observation investigator/day_discussion
+12:05:37 INFO [1140/1412] strategy_point wolf/day_discussion
+12:05:38 INFO [1141/1412] strategy_point wolf/day_discussion
+12:05:41 INFO AFC is enabled with max remote calls: 10.
+12:05:43 INFO [1142/1412] strategy_point wolf/day_vote
+12:05:46 INFO AFC is enabled with max remote calls: 10.
+12:05:49 INFO [1143/1412] strategy_point wolf/night_action
+12:05:54 INFO AFC is enabled with max remote calls: 10.
+12:05:56 INFO [1144/1412] strategy_point villager/day_discussion
+12:06:02 INFO AFC is enabled with max remote calls: 10.
+12:06:03 INFO [1145/1412] strategy_point villager/day_vote
+12:06:09 INFO AFC is enabled with max remote calls: 10.
+12:06:12 INFO [1146/1412] strategy_point villager/day_discussion
+12:06:17 INFO AFC is enabled with max remote calls: 10.
+12:06:19 INFO [1147/1412] strategy_point villager/day_discussion
+12:06:25 INFO AFC is enabled with max remote calls: 10.
+12:06:27 INFO [1148/1412] strategy_point healer/day_discussion
+12:06:33 INFO AFC is enabled with max remote calls: 10.
+12:06:35 INFO [1149/1412] strategy_point healer/night_action
+12:06:40 INFO AFC is enabled with max remote calls: 10.
+12:06:42 INFO [1150/1412] strategy_point healer/day_discussion
+12:06:48 INFO AFC is enabled with max remote calls: 10.
+12:06:50 INFO [1151/1412] strategy_point healer/night_action
+12:06:55 INFO AFC is enabled with max remote calls: 10.
+12:06:57 INFO [1152/1412] strategy_point investigator/day_discussion
+12:07:01 INFO [1153/1412] strategy_point investigator/day_discussion
+12:07:04 INFO AFC is enabled with max remote calls: 10.
+12:07:06 INFO [1154/1412] strategy_point investigator/night_action
+12:07:12 INFO AFC is enabled with max remote calls: 10.
+12:07:14 INFO [1155/1412] strategy_point investigator/day_discussion
+12:07:19 INFO AFC is enabled with max remote calls: 10.
+12:07:21 INFO [1156/1412] observation wolf/night_action
+12:07:24 INFO [1157/1412] observation wolf/day_discussion
+12:07:26 INFO [1158/1412] observation wolf/day_vote
+12:07:27 INFO [1159/1412] observation wolf/day_discussion
+12:07:28 INFO [1160/1412] observation villager/day_discussion
+12:07:29 INFO [1161/1412] observation villager/day_vote
+12:07:32 INFO AFC is enabled with max remote calls: 10.
+12:07:34 INFO [1162/1412] observation villager/day_discussion
+12:07:35 INFO [1163/1412] observation villager/day_discussion
+12:07:39 INFO AFC is enabled with max remote calls: 10.
+12:07:40 INFO [1164/1412] observation healer/night_action
+12:07:42 INFO [1165/1412] observation healer/day_discussion
+12:07:43 INFO [1166/1412] observation healer/day_vote
+12:07:43 INFO [1167/1412] observation healer/night_action
+12:07:45 INFO [1168/1412] observation investigator/day_discussion
+12:07:46 INFO [1169/1412] observation investigator/day_vote
+12:07:47 INFO [1170/1412] observation investigator/night_action
+12:07:48 INFO [1171/1412] observation investigator/day_discussion
+12:07:51 INFO AFC is enabled with max remote calls: 10.
+12:07:56 INFO [1172/1412] strategy_point wolf/night_action
+12:08:01 INFO AFC is enabled with max remote calls: 10.
+12:08:03 INFO [1173/1412] strategy_point wolf/day_discussion
+12:08:09 INFO AFC is enabled with max remote calls: 10.
+12:08:11 INFO [1174/1412] strategy_point wolf/day_vote
+12:08:16 INFO AFC is enabled with max remote calls: 10.
+12:08:18 INFO [1175/1412] strategy_point wolf/day_discussion
+12:08:24 INFO AFC is enabled with max remote calls: 10.
+12:08:26 INFO [1176/1412] strategy_point villager/day_discussion
+12:08:31 INFO AFC is enabled with max remote calls: 10.
+12:08:33 INFO [1177/1412] strategy_point villager/day_vote
+12:08:39 INFO AFC is enabled with max remote calls: 10.
+12:08:41 INFO [1178/1412] strategy_point villager/day_discussion
+12:08:46 INFO AFC is enabled with max remote calls: 10.
+12:08:48 INFO [1179/1412] strategy_point villager/day_discussion
+12:08:52 INFO [1180/1412] strategy_point healer/night_action
+12:08:55 INFO AFC is enabled with max remote calls: 10.
+12:08:57 INFO [1181/1412] strategy_point healer/day_discussion
+12:09:01 INFO AFC is enabled with max remote calls: 10.
+12:09:02 INFO [1182/1412] strategy_point healer/night_action
+12:09:08 INFO AFC is enabled with max remote calls: 10.
+12:09:16 INFO [1183/1412] strategy_point healer/day_vote
+12:09:21 INFO AFC is enabled with max remote calls: 10.
+12:09:23 INFO [1184/1412] strategy_point investigator/day_discussion
+12:09:29 INFO AFC is enabled with max remote calls: 10.
+12:09:31 INFO [1185/1412] strategy_point investigator/day_vote
+12:09:36 INFO AFC is enabled with max remote calls: 10.
+12:09:38 INFO [1186/1412] strategy_point investigator/day_discussion
+12:09:44 INFO AFC is enabled with max remote calls: 10.
+12:09:46 INFO [1187/1412] strategy_point investigator/night_action
+12:09:52 INFO AFC is enabled with max remote calls: 10.
+12:09:53 INFO [1188/1412] observation wolf/day_vote
+12:09:59 INFO AFC is enabled with max remote calls: 10.
+12:10:02 INFO [1189/1412] observation wolf/night_action
+12:10:07 INFO AFC is enabled with max remote calls: 10.
+12:10:12 INFO [1190/1412] observation wolf/day_discussion
+12:10:15 INFO [1191/1412] observation wolf/day_discussion
+12:10:16 INFO [1192/1412] observation villager/day_vote
+12:10:20 INFO AFC is enabled with max remote calls: 10.
+12:10:22 INFO [1193/1412] observation villager/day_discussion
+12:10:23 INFO [1194/1412] observation villager/day_discussion
+12:10:27 INFO AFC is enabled with max remote calls: 10.
+12:10:29 INFO [1195/1412] observation villager/day_discussion
+12:10:32 INFO [1196/1412] observation healer/night_action
+12:10:33 INFO [1197/1412] observation healer/day_vote
+12:10:34 INFO [1198/1412] observation healer/day_discussion
+12:10:36 INFO [1199/1412] observation healer/day_discussion
+12:10:37 INFO [1200/1412] observation investigator/day_discussion
+12:10:40 INFO AFC is enabled with max remote calls: 10.
+12:10:42 INFO [1201/1412] observation investigator/day_vote
+12:10:45 INFO [1202/1412] observation investigator/night_action
+12:10:49 INFO AFC is enabled with max remote calls: 10.
+12:10:51 INFO [1203/1412] strategy_point wolf/day_vote
+12:10:57 INFO AFC is enabled with max remote calls: 10.
+12:10:59 INFO [1204/1412] strategy_point wolf/night_action
+12:11:04 INFO AFC is enabled with max remote calls: 10.
+12:11:06 INFO [1205/1412] strategy_point wolf/day_discussion
+12:11:11 INFO AFC is enabled with max remote calls: 10.
+12:11:13 INFO [1206/1412] strategy_point wolf/day_discussion
+12:11:18 INFO AFC is enabled with max remote calls: 10.
+12:11:20 INFO [1207/1412] strategy_point villager/day_vote
+12:11:25 INFO AFC is enabled with max remote calls: 10.
+12:11:27 INFO [1208/1412] strategy_point villager/day_discussion
+12:11:33 INFO AFC is enabled with max remote calls: 10.
+12:11:35 INFO [1209/1412] strategy_point villager/day_discussion
+12:11:38 INFO [1210/1412] strategy_point villager/day_discussion
+12:11:42 INFO AFC is enabled with max remote calls: 10.
+12:11:44 INFO [1211/1412] strategy_point healer/night_action
+12:11:49 INFO AFC is enabled with max remote calls: 10.
+12:11:51 INFO [1212/1412] strategy_point healer/day_discussion
+12:11:57 INFO AFC is enabled with max remote calls: 10.
+12:11:59 INFO [1213/1412] strategy_point healer/day_discussion
+12:12:04 INFO AFC is enabled with max remote calls: 10.
+12:12:06 INFO [1214/1412] strategy_point healer/day_discussion
+12:12:10 INFO [1215/1412] strategy_point investigator/day_discussion
+12:12:13 INFO AFC is enabled with max remote calls: 10.
+12:12:16 INFO [1216/1412] strategy_point investigator/night_action
+12:12:22 INFO AFC is enabled with max remote calls: 10.
+12:12:23 INFO [1217/1412] strategy_point investigator/day_discussion
+12:12:29 INFO AFC is enabled with max remote calls: 10.
+12:12:31 INFO [1218/1412] strategy_point investigator/night_action
+12:12:37 INFO AFC is enabled with max remote calls: 10.
+12:12:39 INFO [1219/1412] observation wolf/night_action
+12:12:42 INFO [1220/1412] observation wolf/day_discussion
+12:12:44 INFO [1221/1412] observation wolf/day_discussion
+12:12:45 INFO [1222/1412] observation wolf/day_vote
+12:12:46 INFO [1223/1412] observation wolf/night_action
+12:12:47 INFO [1224/1412] observation wolf/day_discussion
+12:12:48 INFO [1225/1412] observation villager/day_discussion
+12:12:52 INFO AFC is enabled with max remote calls: 10.
+12:12:53 INFO [1226/1412] observation villager/day_discussion
+12:12:57 INFO [1227/1412] observation villager/day_discussion
+12:13:00 INFO AFC is enabled with max remote calls: 10.
+12:13:02 INFO [1228/1412] observation villager/day_discussion
+12:13:06 INFO [1229/1412] observation villager/day_discussion
+12:13:10 INFO AFC is enabled with max remote calls: 10.
+12:13:12 INFO [1230/1412] observation healer/night_action
+12:13:15 INFO [1231/1412] observation healer/day_discussion
+12:13:17 INFO [1232/1412] observation healer/day_vote
+12:13:17 INFO [1233/1412] observation healer/day_discussion
+12:13:19 INFO [1234/1412] observation investigator/night_action
+12:13:20 INFO [1235/1412] observation investigator/day_discussion
+12:13:21 INFO [1236/1412] observation investigator/night_action
+12:13:22 INFO [1237/1412] observation investigator/day_discussion
+12:13:26 INFO AFC is enabled with max remote calls: 10.
+12:13:28 INFO [1238/1412] observation investigator/day_discussion
+12:13:29 INFO [1239/1412] strategy_point wolf/night_action
+12:13:32 INFO AFC is enabled with max remote calls: 10.
+12:13:34 INFO [1240/1412] strategy_point wolf/day_discussion
+12:13:40 INFO AFC is enabled with max remote calls: 10.
+12:13:41 INFO [1241/1412] strategy_point wolf/day_discussion
+12:13:47 INFO AFC is enabled with max remote calls: 10.
+12:13:49 INFO [1242/1412] strategy_point wolf/day_vote
+12:13:56 INFO AFC is enabled with max remote calls: 10.
+12:13:57 INFO [1243/1412] strategy_point wolf/night_action
+12:14:03 INFO AFC is enabled with max remote calls: 10.
+12:14:05 INFO [1244/1412] strategy_point wolf/day_discussion
+12:14:11 INFO AFC is enabled with max remote calls: 10.
+12:14:13 INFO [1245/1412] strategy_point villager/day_discussion
+12:14:16 INFO [1246/1412] strategy_point villager/day_discussion
+12:14:20 INFO AFC is enabled with max remote calls: 10.
+12:14:22 INFO [1247/1412] strategy_point villager/day_discussion
+12:14:27 INFO AFC is enabled with max remote calls: 10.
+12:14:29 INFO [1248/1412] strategy_point villager/day_discussion
+12:14:35 INFO AFC is enabled with max remote calls: 10.
+12:14:37 INFO [1249/1412] strategy_point villager/day_discussion
+12:14:42 INFO AFC is enabled with max remote calls: 10.
+12:14:44 INFO [1250/1412] strategy_point healer/night_action
+12:14:50 INFO AFC is enabled with max remote calls: 10.
+12:14:51 INFO [1251/1412] strategy_point healer/day_discussion
+12:14:57 INFO AFC is enabled with max remote calls: 10.
+12:14:59 INFO [1252/1412] strategy_point healer/day_vote
+12:15:04 INFO AFC is enabled with max remote calls: 10.
+12:15:06 INFO [1253/1412] strategy_point healer/day_discussion
+12:15:12 INFO AFC is enabled with max remote calls: 10.
+12:15:14 INFO [1254/1412] strategy_point investigator/night_action
+12:15:18 INFO [1255/1412] strategy_point investigator/day_discussion
+12:15:21 INFO AFC is enabled with max remote calls: 10.
+12:15:23 INFO [1256/1412] strategy_point investigator/night_action
+12:15:27 INFO AFC is enabled with max remote calls: 10.
+12:15:28 INFO [1257/1412] strategy_point investigator/day_discussion
+12:15:34 INFO AFC is enabled with max remote calls: 10.
+12:15:36 INFO [1258/1412] strategy_point investigator/day_discussion
+12:15:41 INFO AFC is enabled with max remote calls: 10.
+12:15:43 INFO [1259/1412] observation wolf/night_action
+12:15:47 INFO [1260/1412] observation wolf/day_vote
+12:15:50 INFO AFC is enabled with max remote calls: 10.
+12:15:52 INFO [1261/1412] observation wolf/day_vote
+12:15:58 INFO AFC is enabled with max remote calls: 10.
+12:15:59 INFO [1262/1412] observation wolf/day_discussion
+12:16:03 INFO [1263/1412] observation villager/day_discussion
+12:16:06 INFO AFC is enabled with max remote calls: 10.
+12:16:08 INFO [1264/1412] observation villager/day_vote
+12:16:11 INFO AFC is enabled with max remote calls: 10.
+12:16:13 INFO [1265/1412] observation villager/day_discussion
+12:16:19 INFO AFC is enabled with max remote calls: 10.
+12:16:24 INFO [1266/1412] observation villager/day_discussion
+12:16:27 INFO [1267/1412] observation villager/day_discussion
+12:16:28 INFO [1268/1412] observation healer/night_action
+12:16:29 INFO [1269/1412] observation healer/day_vote
+12:16:30 INFO [1270/1412] observation healer/night_action
+12:16:32 INFO [1271/1412] observation healer/day_discussion
+12:16:33 INFO [1272/1412] observation healer/day_vote
+12:16:34 INFO [1273/1412] observation investigator/night_action
+12:16:35 INFO [1274/1412] observation investigator/day_vote
+12:16:39 INFO AFC is enabled with max remote calls: 10.
+12:16:42 INFO [1275/1412] observation investigator/night_action
+12:16:45 INFO [1276/1412] observation investigator/day_discussion
+12:16:49 INFO AFC is enabled with max remote calls: 10.
+12:16:50 INFO [1277/1412] strategy_point wolf/day_discussion
+12:16:57 INFO AFC is enabled with max remote calls: 10.
+12:16:59 INFO [1278/1412] strategy_point wolf/day_vote
+12:17:05 INFO AFC is enabled with max remote calls: 10.
+12:17:06 INFO [1279/1412] strategy_point wolf/day_discussion
+12:17:12 INFO AFC is enabled with max remote calls: 10.
+12:17:14 INFO [1280/1412] strategy_point wolf/night_action
+12:17:17 INFO [1281/1412] strategy_point wolf/day_discussion
+12:17:21 INFO AFC is enabled with max remote calls: 10.
+12:17:23 INFO [1282/1412] strategy_point villager/day_discussion
+12:17:29 INFO AFC is enabled with max remote calls: 10.
+12:17:31 INFO [1283/1412] strategy_point villager/day_vote
+12:17:36 INFO AFC is enabled with max remote calls: 10.
+12:17:38 INFO [1284/1412] strategy_point villager/day_discussion
+12:17:44 INFO AFC is enabled with max remote calls: 10.
+12:17:45 INFO [1285/1412] strategy_point villager/day_discussion
+12:17:51 INFO AFC is enabled with max remote calls: 10.
+12:17:53 INFO [1286/1412] strategy_point villager/day_discussion
+12:17:58 INFO AFC is enabled with max remote calls: 10.
+12:18:00 INFO [1287/1412] strategy_point villager/day_discussion
+12:18:06 INFO AFC is enabled with max remote calls: 10.
+12:18:08 INFO [1288/1412] strategy_point healer/night_action
+12:18:13 INFO AFC is enabled with max remote calls: 10.
+12:18:15 INFO [1289/1412] strategy_point healer/day_vote
+12:18:20 INFO AFC is enabled with max remote calls: 10.
+12:18:22 INFO [1290/1412] strategy_point healer/night_action
+12:18:28 INFO AFC is enabled with max remote calls: 10.
+12:18:29 INFO [1291/1412] strategy_point healer/day_discussion
+12:18:35 INFO AFC is enabled with max remote calls: 10.
+12:18:37 INFO [1292/1412] strategy_point healer/day_vote
+12:18:42 INFO AFC is enabled with max remote calls: 10.
+12:18:44 INFO [1293/1412] strategy_point investigator/night_action
+12:18:47 INFO [1294/1412] strategy_point investigator/day_vote
+12:18:50 INFO AFC is enabled with max remote calls: 10.
+12:18:52 INFO [1295/1412] strategy_point investigator/night_action
+12:18:56 INFO AFC is enabled with max remote calls: 10.
+12:18:57 INFO [1296/1412] strategy_point investigator/day_discussion
+12:19:01 INFO AFC is enabled with max remote calls: 10.
+12:19:02 INFO [1297/1412] observation wolf/night_action
+12:19:06 INFO AFC is enabled with max remote calls: 10.
+12:19:08 INFO [1298/1412] observation wolf/day_discussion
+12:19:12 INFO [1299/1412] observation wolf/day_discussion
+12:19:15 INFO AFC is enabled with max remote calls: 10.
+12:19:17 INFO [1300/1412] observation wolf/day_vote
+12:19:18 INFO [1301/1412] observation wolf/day_discussion
+12:19:19 INFO [1302/1412] observation villager/day_discussion
+12:19:20 INFO [1303/1412] observation villager/day_discussion
+12:19:24 INFO AFC is enabled with max remote calls: 10.
+12:19:26 INFO [1304/1412] observation villager/day_discussion
+12:19:27 INFO [1305/1412] observation villager/day_discussion
+12:19:28 INFO [1306/1412] observation villager/day_discussion
+12:19:29 INFO [1307/1412] observation villager/day_discussion
+12:19:30 INFO [1308/1412] observation healer/day_discussion
+12:19:31 INFO [1309/1412] observation healer/day_discussion
+12:19:33 INFO [1310/1412] observation healer/day_discussion
+12:19:34 INFO [1311/1412] observation healer/day_discussion
+12:19:35 INFO [1312/1412] observation investigator/night_action
+12:19:36 INFO [1313/1412] observation investigator/day_discussion
+12:19:37 INFO [1314/1412] observation investigator/day_discussion
+12:19:38 INFO [1315/1412] observation investigator/day_vote
+12:19:39 INFO [1316/1412] observation investigator/night_action
+12:19:40 INFO [1317/1412] observation investigator/day_discussion
+12:19:43 INFO AFC is enabled with max remote calls: 10.
+12:19:45 INFO [1318/1412] strategy_point wolf/night_action
+12:19:46 INFO [1319/1412] strategy_point wolf/day_discussion
+12:19:50 INFO AFC is enabled with max remote calls: 10.
+12:19:51 INFO [1320/1412] strategy_point wolf/day_discussion
+12:19:55 INFO AFC is enabled with max remote calls: 10.
+12:19:57 INFO [1321/1412] strategy_point wolf/day_vote
+12:20:00 INFO AFC is enabled with max remote calls: 10.
+12:20:02 INFO [1322/1412] strategy_point wolf/day_discussion
+12:20:06 INFO AFC is enabled with max remote calls: 10.
+12:20:07 INFO [1323/1412] strategy_point villager/day_discussion
+12:20:11 INFO AFC is enabled with max remote calls: 10.
+12:20:13 INFO [1324/1412] strategy_point villager/day_discussion
+12:20:18 INFO AFC is enabled with max remote calls: 10.
+12:20:20 INFO [1325/1412] strategy_point villager/day_discussion
+12:20:26 INFO AFC is enabled with max remote calls: 10.
+12:20:27 INFO [1326/1412] strategy_point villager/day_discussion
+12:20:33 INFO AFC is enabled with max remote calls: 10.
+12:20:35 INFO [1327/1412] strategy_point villager/day_discussion
+12:20:41 INFO AFC is enabled with max remote calls: 10.
+12:20:43 INFO [1328/1412] strategy_point healer/day_discussion
+12:20:49 INFO AFC is enabled with max remote calls: 10.
+12:20:50 INFO [1329/1412] strategy_point healer/day_discussion
+12:20:56 INFO AFC is enabled with max remote calls: 10.
+12:20:58 INFO [1330/1412] strategy_point healer/day_discussion
+12:21:03 INFO AFC is enabled with max remote calls: 10.
+12:21:05 INFO [1331/1412] strategy_point healer/day_discussion
+12:21:11 INFO AFC is enabled with max remote calls: 10.
+12:21:12 INFO [1332/1412] strategy_point investigator/night_action
+12:21:15 INFO [1333/1412] strategy_point investigator/day_discussion
+12:21:19 INFO AFC is enabled with max remote calls: 10.
+12:21:21 INFO [1334/1412] strategy_point investigator/day_discussion
+12:21:27 INFO AFC is enabled with max remote calls: 10.
+12:21:28 INFO [1335/1412] strategy_point investigator/night_action
+12:21:34 INFO AFC is enabled with max remote calls: 10.
+12:21:35 INFO [1336/1412] strategy_point investigator/day_discussion
+12:21:41 INFO AFC is enabled with max remote calls: 10.
+12:21:43 INFO [1337/1412] observation wolf/night_action
+12:21:46 INFO [1338/1412] observation wolf/day_discussion
+12:21:48 INFO [1339/1412] observation wolf/day_discussion
+12:21:49 INFO [1340/1412] observation wolf/day_discussion
+12:21:50 INFO [1341/1412] observation wolf/day_discussion
+12:21:51 INFO [1342/1412] observation villager/day_discussion
+12:21:55 INFO AFC is enabled with max remote calls: 10.
+12:21:57 INFO [1343/1412] observation villager/day_vote
+12:22:00 INFO [1344/1412] observation villager/day_discussion
+12:22:04 INFO AFC is enabled with max remote calls: 10.
+12:22:05 INFO [1345/1412] observation villager/day_discussion
+12:22:09 INFO AFC is enabled with max remote calls: 10.
+12:22:10 INFO [1346/1412] observation villager/day_discussion
+12:22:13 INFO [1347/1412] observation healer/night_action
+12:22:17 INFO AFC is enabled with max remote calls: 10.
+12:22:18 INFO [1348/1412] observation healer/day_vote
+12:22:19 INFO [1349/1412] observation healer/night_action
+12:22:23 INFO AFC is enabled with max remote calls: 10.
+12:22:28 INFO [1350/1412] observation healer/day_discussion
+12:22:31 INFO [1351/1412] observation healer/day_discussion
+12:22:32 INFO [1352/1412] observation investigator/night_action
+12:22:36 INFO AFC is enabled with max remote calls: 10.
+12:22:37 INFO [1353/1412] observation investigator/day_vote
+12:22:38 INFO [1354/1412] observation investigator/night_action
+12:22:42 INFO AFC is enabled with max remote calls: 10.
+12:22:44 INFO [1355/1412] observation investigator/day_discussion
+12:22:47 INFO [1356/1412] observation investigator/day_discussion
+12:22:50 INFO AFC is enabled with max remote calls: 10.
+12:22:52 INFO [1357/1412] strategy_point wolf/night_action
+12:22:55 INFO AFC is enabled with max remote calls: 10.
+12:22:57 INFO [1358/1412] strategy_point wolf/day_discussion
+12:23:01 INFO AFC is enabled with max remote calls: 10.
+12:23:02 INFO [1359/1412] strategy_point wolf/day_discussion
+12:23:06 INFO AFC is enabled with max remote calls: 10.
+12:23:07 INFO [1360/1412] strategy_point wolf/day_discussion
+12:23:11 INFO AFC is enabled with max remote calls: 10.
+12:23:13 INFO [1361/1412] strategy_point wolf/day_discussion
+12:23:18 INFO AFC is enabled with max remote calls: 10.
+12:23:21 INFO [1362/1412] strategy_point villager/day_discussion
+12:23:26 INFO AFC is enabled with max remote calls: 10.
+12:23:28 INFO [1363/1412] strategy_point villager/day_discussion
+12:23:35 INFO AFC is enabled with max remote calls: 10.
+12:23:37 INFO [1364/1412] strategy_point villager/day_discussion
+12:23:42 INFO AFC is enabled with max remote calls: 10.
+12:23:44 INFO [1365/1412] strategy_point villager/day_discussion
+12:23:50 INFO AFC is enabled with max remote calls: 10.
+12:23:52 INFO [1366/1412] strategy_point villager/day_discussion
+12:23:57 INFO AFC is enabled with max remote calls: 10.
+12:23:59 INFO [1367/1412] strategy_point healer/night_action
+12:24:05 INFO AFC is enabled with max remote calls: 10.
+12:24:07 INFO [1368/1412] strategy_point healer/day_vote
+12:24:12 INFO AFC is enabled with max remote calls: 10.
+12:24:14 INFO [1369/1412] strategy_point healer/night_action
+12:24:19 INFO AFC is enabled with max remote calls: 10.
+12:24:21 INFO [1370/1412] strategy_point healer/day_discussion
+12:24:24 INFO [1371/1412] strategy_point healer/day_discussion
+12:24:27 INFO AFC is enabled with max remote calls: 10.
+12:24:29 INFO [1372/1412] strategy_point investigator/night_action
+12:24:35 INFO AFC is enabled with max remote calls: 10.
+12:24:37 INFO [1373/1412] strategy_point investigator/day_vote
+12:24:42 INFO AFC is enabled with max remote calls: 10.
+12:24:44 INFO [1374/1412] strategy_point investigator/night_action
+12:24:49 INFO AFC is enabled with max remote calls: 10.
+12:24:51 INFO [1375/1412] strategy_point investigator/day_discussion
+12:24:56 INFO AFC is enabled with max remote calls: 10.
+12:24:58 INFO [1376/1412] strategy_point investigator/day_discussion
+12:25:04 INFO AFC is enabled with max remote calls: 10.
+12:25:05 INFO [1377/1412] observation wolf/night_action
+12:25:09 INFO [1378/1412] observation wolf/day_discussion
+12:25:10 INFO [1379/1412] observation wolf/night_action
+12:25:11 INFO [1380/1412] observation wolf/day_discussion
+12:25:12 INFO [1381/1412] observation wolf/day_discussion
+12:25:13 INFO [1382/1412] observation villager/day_discussion
+12:25:14 INFO [1383/1412] observation villager/day_discussion
+12:25:16 INFO [1384/1412] observation villager/day_discussion
+12:25:21 INFO AFC is enabled with max remote calls: 10.
+12:25:23 INFO [1385/1412] observation villager/day_discussion
+12:25:26 INFO [1386/1412] observation villager/day_discussion
+12:25:30 INFO AFC is enabled with max remote calls: 10.
+12:25:32 INFO [1387/1412] observation healer/night_action
+12:25:35 INFO [1388/1412] observation healer/day_discussion
+12:25:36 INFO [1389/1412] observation healer/night_action
+12:25:38 INFO [1390/1412] observation healer/day_discussion
+12:25:39 INFO [1391/1412] observation healer/day_discussion
+12:25:42 INFO AFC is enabled with max remote calls: 10.
+12:25:45 INFO [1392/1412] observation investigator/day_discussion
+12:25:48 INFO [1393/1412] observation investigator/night_action
+12:25:49 INFO [1394/1412] observation investigator/day_discussion
+12:25:52 INFO AFC is enabled with max remote calls: 10.
+12:25:54 INFO [1395/1412] observation investigator/night_action
+12:25:58 INFO AFC is enabled with max remote calls: 10.
+12:26:00 INFO [1396/1412] strategy_point wolf/night_action
+12:26:05 INFO AFC is enabled with max remote calls: 10.
+12:26:07 INFO [1397/1412] strategy_point wolf/day_discussion
+12:26:12 INFO AFC is enabled with max remote calls: 10.
+12:26:14 INFO [1398/1412] strategy_point wolf/day_discussion
+12:26:19 INFO AFC is enabled with max remote calls: 10.
+12:26:22 INFO [1399/1412] strategy_point wolf/day_vote
+12:26:25 INFO AFC is enabled with max remote calls: 10.
+12:26:27 INFO [1400/1412] strategy_point villager/day_discussion
+12:26:33 INFO AFC is enabled with max remote calls: 10.
+12:26:35 INFO [1401/1412] strategy_point villager/day_discussion
+12:26:40 INFO AFC is enabled with max remote calls: 10.
+12:26:42 INFO [1402/1412] strategy_point villager/day_discussion
+12:26:48 INFO AFC is enabled with max remote calls: 10.
+12:26:49 INFO [1403/1412] strategy_point villager/day_discussion
+12:26:55 INFO AFC is enabled with max remote calls: 10.
+12:26:57 INFO [1404/1412] strategy_point healer/night_action
+12:27:00 INFO [1405/1412] strategy_point healer/night_action
+12:27:04 INFO AFC is enabled with max remote calls: 10.
+12:27:07 INFO [1406/1412] strategy_point healer/day_discussion
+12:27:10 INFO [1407/1412] strategy_point healer/day_discussion
+12:27:13 INFO AFC is enabled with max remote calls: 10.
+12:27:16 INFO [1408/1412] strategy_point healer/day_discussion
+12:27:21 INFO AFC is enabled with max remote calls: 10.
+12:27:23 INFO [1409/1412] strategy_point investigator/day_discussion
+12:27:29 INFO AFC is enabled with max remote calls: 10.
+12:27:31 INFO [1410/1412] strategy_point investigator/night_action
+12:27:36 INFO AFC is enabled with max remote calls: 10.
+12:27:38 INFO [1411/1412] strategy_point investigator/day_discussion
+12:27:44 INFO AFC is enabled with max remote calls: 10.
+12:27:46 INFO [1412/1412] strategy_point investigator/night_action
+12:27:51 INFO AFC is enabled with max remote calls: 10.
+12:27:53 INFO Done. Wrote 1412 cases to evidence/fine_tuning/dedup_classifier/cases_flash35.jsonl
+12:27:53 INFO Stats: {'K_auto': 423, 'total': 1412, 'D_llm': 517, 'K_llm': 330, 'D_auto': 128, 'DISCARD_llm': 14}
