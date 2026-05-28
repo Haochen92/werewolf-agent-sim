@@ -1,0 +1,472 @@
+{
+  "judge_model": "gemini-2.5-pro",
+  "regen_file": "/home/ubuntu/projects/werewolf-agent-sim/evidence/extraction/situation_summary/regenerated_situations.json",
+  "summary": {
+    "total": 20,
+    "captured_wins": 7,
+    "regenerated_wins": 13,
+    "ties": 0
+  },
+  "cases": [
+    {
+      "case_index": 0,
+      "role": "healer",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 1,
+        "specificity": 2,
+        "retrieval_usefulness": 1,
+        "non_redundancy": 4,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A correctly identifies the agent's situation as a hidden healer and frames the strategic dilemmas perfectly. Output B makes a critical, game-altering fabrication by stating the healer has 'revealed their utility', which is false and would lead to retrieving incorrect strategies."
+    },
+    {
+      "case_index": 1,
+      "role": "healer",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 3,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is far superior because it frames the situation from the agent's specific role perspective (healer), creating queries that are useful for retrieving strategic advice about the agent's own dilemmas. Output B is just an objective summary of the public discussion and lacks this crucial first-person, role-aware context."
+    },
+    {
+      "case_index": 2,
+      "role": "investigator",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 2,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is highly redundant, with both points describing the exact same dilemma of whether to reveal private information. Output B is much better, as it provides two distinct retrieval angles: one about the general village atmosphere of caution, and another about the agent's specific dilemma as an investigator with a confirmed villager."
+    },
+    {
+      "case_index": 3,
+      "role": "investigator",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 3,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A provides two distinct and highly specific angles for retrieval: the public state of the village conflict and the agent's private interpretation of it. Output B is more redundant, with both points focusing on the agent's internal dilemma, making it less effective for querying different types of information."
+    },
+    {
+      "case_index": 6,
+      "role": "wolf",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 5,
+        "role_perspective": 4
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Both outputs are excellent, but Output B is slightly better because it frames the situation as two distinct and highly actionable dilemmas for the wolf agent: one about the next night's target and one about the immediate day's discussion strategy. This framing is more likely to retrieve targeted strategic advice."
+    },
+    {
+      "case_index": 9,
+      "role": "healer",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 4,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 5,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 2,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is far superior because it frames the situation from the agent's specific role as a healer, incorporating the core dilemma of participation versus staying hidden. Output B provides a good summary of the public discussion but completely fails to adopt the agent's perspective, making it much less useful for retrieving relevant strategies."
+    },
+    {
+      "case_index": 10,
+      "role": "investigator",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Both outputs are very good, but Output A is superior because it frames the situation in terms of strategic tensions and dilemmas for the agent. This is more useful for retrieval than Output B's more descriptive, factual summary."
+    },
+    {
+      "case_index": 12,
+      "role": "villager",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 5,
+        "role_perspective": 2
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B is far superior because it correctly frames the situation from the agent's perspective, including the specific dilemmas the agent faces. This makes it much more useful for retrieving relevant strategies compared to Output A's more neutral, descriptive summary."
+    },
+    {
+      "case_index": 13,
+      "role": "villager",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 2,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A provides two distinct and useful angles on the situation: the overall village dilemma and the specific tactic being used by the suspect. Output B is highly redundant, with both of its points describing the exact same dynamic in slightly different words."
+    },
+    {
+      "case_index": 14,
+      "role": "wolf",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 1,
+        "specificity": 2,
+        "retrieval_usefulness": 1,
+        "non_redundancy": 4,
+        "role_perspective": 2
+      },
+      "reasoning": "Output A is fundamentally unfaithful to the context, incorrectly stating that the agent's partner is under attack when the agent themself is the one being targeted and their partner is already dead. Output B correctly and specifically identifies the agent's predicament, the key accusers, and the strategic challenge."
+    },
+    {
+      "case_index": 15,
+      "role": "wolf",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 1,
+        "specificity": 2,
+        "retrieval_usefulness": 1,
+        "non_redundancy": 4,
+        "role_perspective": 1
+      },
+      "reasoning": "Output A has a catastrophic error, misidentifying the agent (player_5) as their own partner. Output B correctly understands the agent's identity, the pressure they are under, and their strategic response, making it far more accurate and useful."
+    },
+    {
+      "case_index": 16,
+      "role": "healer",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 4,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 1,
+        "specificity": 2,
+        "retrieval_usefulness": 1,
+        "non_redundancy": 3,
+        "role_perspective": 1
+      },
+      "reasoning": "Output A accurately reflects the game state and the agent's role-specific dilemma. Output B contains major factual errors, incorrectly stating that the agent (the healer) was targeted and saved, which makes it completely unfaithful to the context and useless for strategic retrieval."
+    },
+    {
+      "case_index": 19,
+      "role": "investigator",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 2,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 5,
+        "role_perspective": 4
+      },
+      "reasoning": "Output A makes a major factual error, stating that the wolves made \"repeated attempts on the healer.\" The context shows the healer saved others who were attacked, but was not attacked themselves. Output B is factually accurate, more specific about the public debate, and perfectly captures the agent's private knowledge and strategic dilemma."
+    },
+    {
+      "case_index": 20,
+      "role": "villager",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 1,
+        "role_perspective": 2
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 3,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is far superior because it perfectly frames the situation from the agent's perspective, incorporating the private strategy of whether to maintain silence or intervene. Output B is just a redundant, third-person summary of the public discussion and lacks this crucial role-specific strategic dilemma."
+    },
+    {
+      "case_index": 30,
+      "role": "investigator",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 3,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is better because its two points are more distinct. It separates the public game state from the agent's private knowledge and strategy, whereas Output B presents the same core dilemma twice with slightly different wording, making it redundant."
+    },
+    {
+      "case_index": 34,
+      "role": "villager",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 2,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 3
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 4
+      },
+      "reasoning": "Output A is factually correct and frames the situation as a set of core dilemmas, which is highly useful for retrieving strategic advice. Output B makes a significant factual error about the number of players remaining, which severely undermines its quality."
+    },
+    {
+      "case_index": 35,
+      "role": "villager",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 3,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 3,
+        "role_perspective": 4
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is better because it more accurately frames the situation from the agent's perspective by posing the core dilemmas the agent faces. It is also more faithful to the context, avoiding the factual error about player count that is present in Output B."
+    },
+    {
+      "case_index": 37,
+      "role": "wolf",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 2,
+        "specificity": 3,
+        "retrieval_usefulness": 2,
+        "non_redundancy": 3,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B critically fails by misidentifying the agent (player_8) as an outside observer of player_8, which is a complete failure of role perspective. Output A is perfectly framed from the agent's perspective and presents two distinct, highly useful dilemmas for strategy retrieval."
+    },
+    {
+      "case_index": 38,
+      "role": "wolf",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Both outputs are very strong, but Output B is superior because it frames the situation as a set of 'core dilemmas'. This structure is more effective for retrieving actionable strategies, as it explicitly poses the strategic questions the agent needs to answer. Its two points are also more distinct."
+    },
+    {
+      "case_index": 39,
+      "role": "wolf",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 5,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is superior because it frames the situation as a set of core strategic dilemmas for the agent to solve. This makes it a much more useful query for retrieving actionable advice compared to Output B, which is more of a descriptive summary."
+    }
+  ]
+}

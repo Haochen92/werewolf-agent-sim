@@ -1,0 +1,472 @@
+{
+  "judge_model": "gemini-3.1-pro-preview",
+  "regen_file": "/home/ubuntu/projects/werewolf-agent-sim/evidence/extraction/situation_summary/regenerated_situations.json",
+  "summary": {
+    "total": 20,
+    "captured_wins": 9,
+    "regenerated_wins": 11,
+    "ties": 0
+  },
+  "cases": [
+    {
+      "case_index": 0,
+      "role": "healer",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 4,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 4
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A provides a more accurate and actionable role perspective, correctly noting that the healer's identity remains hidden while capturing the specific dilemma of balancing influence with survival. Output B's phrasing about revealing utility could confuse the agent into thinking its identity is known."
+    },
+    {
+      "case_index": 1,
+      "role": "healer",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 3,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A successfully frames the situation from the agent's first-person perspective and incorporates the specific dilemmas of playing the healer, making it much better for retrieving relevant strategic memories. Output B is highly specific but reads like an omniscient third-person narrator, completely ignoring the agent's role and internal perspective."
+    },
+    {
+      "case_index": 2,
+      "role": "investigator",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 4,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 4,
+        "specificity": 3,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 4
+      },
+      "regenerated_scores": {
+        "faithfulness": 4,
+        "specificity": 3,
+        "retrieval_usefulness": 2,
+        "non_redundancy": 1,
+        "role_perspective": 4
+      },
+      "reasoning": "Both outputs completely miss the crucial public information that player_1 was attacked by wolves and saved by the healer, which makes the investigator's dilemma about revealing their result on player_1 largely moot. However, Output A is much better because its points are distinct, whereas Output B is highly redundant, repeating the exact same dilemma in both bullet points."
+    },
+    {
+      "case_index": 3,
+      "role": "investigator",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 4,
+        "specificity": 3,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 3,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B captures the specific player dynamics (e.g., player 6 deflecting to player 5, player 4 urging caution) much better than Output A, which relies on slightly more generic framing. Output B also excellently integrates the agent's private knowledge of player 1's innocence into the observation of the public conflict."
+    },
+    {
+      "case_index": 6,
+      "role": "wolf",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 4
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B is superior because it explicitly incorporates the specific Day 1 village consensus (monitoring for aggressive/pushy behavior) and frames the agent's immediate day discussion dilemma around that exact constraint, making it highly effective for retrieving targeted wolf strategies."
+    },
+    {
+      "case_index": 9,
+      "role": "healer",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 3,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B successfully integrates the agent's private role (healer) and strategic dilemma into the summary, making it highly effective for targeted retrieval. Output A reads like an omniscient narrator and completely ignores the agent's specific perspective."
+    },
+    {
+      "case_index": 10,
+      "role": "investigator",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 4,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is slightly more accurate in its description of the specific counter-attack, correctly noting that player 5 is targeting players 7 and 8. Output B incorrectly states that player 5 is weaponizing the concept of 'bussing', when in fact it was player 8 who brought up bussing against player 5."
+    },
+    {
+      "case_index": 12,
+      "role": "villager",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 2
+      },
+      "regenerated_scores": {
+        "faithfulness": 3,
+        "specificity": 2,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 3,
+        "role_perspective": 4
+      },
+      "reasoning": "Output B accurately captures the specific player dynamics and names involved in the counter-accusations, whereas Output A is overly generic and slightly misattributes an accusation directed at player_4 to the agent itself."
+    },
+    {
+      "case_index": 13,
+      "role": "villager",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 4,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 2,
+        "role_perspective": 3
+      },
+      "regenerated_scores": {
+        "faithfulness": 4,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 2,
+        "role_perspective": 2
+      },
+      "reasoning": "Output A accurately reflects the game state without inventing a false dilemma. Output B suggests the agent is torn on whether to believe Player 5's counter-accusations, which directly contradicts the agent's private strategy to ignore the distraction and vote for Player 5."
+    },
+    {
+      "case_index": 14,
+      "role": "wolf",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 1,
+        "specificity": 2,
+        "retrieval_usefulness": 1,
+        "non_redundancy": 3,
+        "role_perspective": 2
+      },
+      "reasoning": "Output A hallucinates that the agent has a surviving partner who is being targeted, whereas the agent is actually the last remaining wolf and the direct target of the accusations. Output B perfectly captures the intense pressure the agent is facing and their exact situation."
+    },
+    {
+      "case_index": 15,
+      "role": "wolf",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 1,
+        "specificity": 4,
+        "retrieval_usefulness": 2,
+        "non_redundancy": 4,
+        "role_perspective": 1
+      },
+      "reasoning": "Output A accurately captures the agent's situation and strategy from the correct perspective. Output B completely fails on role perspective and faithfulness by referring to the agent (player_5) as 'my partner, player_5', fundamentally misunderstanding the agent's identity."
+    },
+    {
+      "case_index": 16,
+      "role": "healer",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 1,
+        "specificity": 3,
+        "retrieval_usefulness": 2,
+        "non_redundancy": 3,
+        "role_perspective": 2
+      },
+      "reasoning": "Output A contains major fabrications, incorrectly claiming that the agent was targeted and saved twice, rather than being the healer who saved others. Output B accurately reflects the game state and the agent's actual actions as the healer."
+    },
+    {
+      "case_index": 19,
+      "role": "investigator",
+      "phase": "day_vote",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 4,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 3,
+        "role_perspective": 4
+      },
+      "reasoning": "Output A is more specific, accurately capturing the agent's private knowledge of both player_1 and player_2, as well as the exact nature of player_6's deflection. Output B is somewhat redundant, as both points focus heavily on the tension of leading the vote without becoming the next target."
+    },
+    {
+      "case_index": 20,
+      "role": "villager",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 3,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 2,
+        "role_perspective": 1
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A excellently incorporates the agent's private strategy and frames the situation around the agent's specific dilemma (whether to maintain silence or intervene). Output B is highly redundant and reads like an omniscient narrator, completely ignoring the agent's perspective."
+    },
+    {
+      "case_index": 30,
+      "role": "investigator",
+      "phase": "day_discussion",
+      "winner": "captured",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 4,
+        "specificity": 2,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 2,
+        "role_perspective": 4
+      },
+      "reasoning": "Output B is significantly better because it uses specific player names and exact details from the game state, whereas Output A relies on generic terms like 'the suspect' and 'a villager'. Output B also has less redundancy between its points."
+    },
+    {
+      "case_index": 34,
+      "role": "villager",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 3,
+        "specificity": 3,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 2
+      },
+      "regenerated_scores": {
+        "faithfulness": 4,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 3
+      },
+      "reasoning": "Output A better captures the agent's specific strategic dilemma regarding whether to push the suspected pair or resist a new bandwagon. Output B incorrectly states there are four players remaining (adopting a false statement from another player's chat) and reads more like an omniscient narrator."
+    },
+    {
+      "case_index": 35,
+      "role": "villager",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 3,
+        "specificity": 3,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 2
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 3,
+        "role_perspective": 2
+      },
+      "reasoning": "Output A is more faithful as it avoids Output B's factual error of stating there are only four players remaining (there are five). Output A also captures the specific arguments (stalling vs. coordinated wolf strategy) better, making it more useful for retrieval, though both outputs lack a strong first-person role perspective."
+    },
+    {
+      "case_index": 37,
+      "role": "wolf",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 3,
+        "specificity": 4,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 3,
+        "role_perspective": 2
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 3,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B contains a critical perspective error by referring to the agent itself (player_8) in the third person as a 'wolf teammate'. Output A correctly maintains the first-person role perspective and accurately captures the strategic dilemma of being grouped with a fellow wolf."
+    },
+    {
+      "case_index": 38,
+      "role": "wolf",
+      "phase": "day_discussion",
+      "winner": "regenerated",
+      "confidence": 4,
+      "swapped": true,
+      "captured_scores": {
+        "faithfulness": 5,
+        "specificity": 5,
+        "retrieval_usefulness": 4,
+        "non_redundancy": 2,
+        "role_perspective": 5
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 3,
+        "role_perspective": 5
+      },
+      "reasoning": "Output A is better because it frames the situations around the agent's strategic dilemmas (deflecting vs. appearing desperate, sowing discord vs. staying calm), making it much more useful for retrieving actionable advice. Output B is highly redundant, essentially stating the exact same problem in both bullet points without exploring the agent's options."
+    },
+    {
+      "case_index": 39,
+      "role": "wolf",
+      "phase": "day_vote",
+      "winner": "regenerated",
+      "confidence": 5,
+      "swapped": false,
+      "captured_scores": {
+        "faithfulness": 4,
+        "specificity": 3,
+        "retrieval_usefulness": 3,
+        "non_redundancy": 4,
+        "role_perspective": 4
+      },
+      "regenerated_scores": {
+        "faithfulness": 5,
+        "specificity": 4,
+        "retrieval_usefulness": 5,
+        "non_redundancy": 4,
+        "role_perspective": 5
+      },
+      "reasoning": "Output B is superior because it explicitly captures the 3v2 endgame dynamic and frames the situation around actionable dilemmas for the wolf role, making it highly effective for retrieving relevant strategies."
+    }
+  ]
+}

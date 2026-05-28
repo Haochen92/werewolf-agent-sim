@@ -308,6 +308,122 @@ wolf-heavy worst cases suggest the core dilemma dimension is most impactful
 for complex multi-agent strategic situations.
 
 **Next steps:**
-1. Persist indexed store to avoid re-embedding (~2 MB serialized file)
-2. Label the union of golden + captured retrievals for a fair comparison
-3. Test core dilemma prompt changes on the worst-delta cases first
+1. ~~Persist indexed store to avoid re-embedding~~ ✓ done (indexed_cache.pkl, 6.2 MB)
+2. ~~Regenerate with updated prompt to isolate prompt impact~~ ✓ done (see below)
+3. Label the union of golden + captured retrievals for a fair comparison
+
+---
+
+### Regenerated situation eval (flash-lite, core dilemma prompt)
+
+Regenerated all 20 cases using the current prompt (core dilemma dimension,
+1-2 situations) with `gemini-3.1-flash-lite` at `temperature=0.0`,
+`thinking=medium`. All cases produced exactly 2 situations.
+
+**Three-way NDCG@5 comparison:**
+
+| Metric | Golden | Old captured | New regen | New−Old |
+|--------|--------|-------------|-----------|---------|
+| Overall mean | 0.7829 | 0.6725 | 0.7023 | +0.0298 |
+| Clean subset (n=6, unlbl≤4) | 0.8768 | 0.8749 | 0.7907 | −0.0842 |
+
+**Per-role means:**
+
+| Role | Golden | Old cap | New regen | Delta |
+|------|--------|---------|-----------|-------|
+| healer (n=4) | 0.8781 | 0.9127 | 0.7903 | −0.1224 |
+| investigator (n=5) | 0.7755 | 0.7598 | 0.8156 | +0.0558 |
+| villager (n=5) | 0.6574 | 0.5046 | 0.6220 | +0.1174 |
+| wolf (n=6) | 0.8301 | 0.5797 | 0.6162 | +0.0365 |
+
+**Interpretation:**
+- The raw overall delta (+0.030) is misleading — on clean cases where
+  scoring is reliable (both old and new have ≤4 unlabeled items), the
+  new prompt is **worse** by −0.084.
+- Healer regressed most (−0.122). The old captured situations for healer
+  cases were already near-golden quality. The new prompt's core dilemma
+  framing may be over-specializing queries for complex roles at the
+  expense of simpler healer dynamics.
+- Villager improved most (+0.117), suggesting the core dilemma dimension
+  helps the weakest-performing role by adding strategic context that was
+  previously missing.
+- Wolf improved slightly (+0.037) but still far below golden (0.830).
+  The core dilemma framing alone isn't sufficient for wolf retrieval.
+- The improvements on high-unlabeled cases (villager, wolf, investigator)
+  may partly reflect lucky retrieval of unlabeled items that happen to be
+  relevant but scored as 0. Need union labeling to confirm.
+
+**Key takeaway:**
+The core dilemma prompt update is **not a clear win for retrieval quality**.
+The healer regression on clean cases is concerning. The improvements on
+complex roles are promising but confounded by the unlabeled item problem.
+
+---
+
+### Prompt iteration: structured schema + dimensional fields
+
+Iterated through several prompt versions to improve retrieval quality.
+Key insight: the free-form `list[str]` situation output was format-mismatched
+with the indexed store, where entries use explicit dimensional labels
+(`Information landscape:`, `Game phase:`, etc.) composed from structured
+extraction fields.
+
+**Changes tested:**
+
+1. **v2 (free-form, core dilemma)**: Original prompt with core dilemma as 5th
+   dimension. Free-form text output.
+2. **v3 (structured schema)**: `SituationEntry` with 5 required fields matching
+   extraction schema. Composed via `_compose_situation()` to match indexed format.
+3. **v4 (remove core dilemma)**: Dropped core dilemma from SITUATION_STANDARDS —
+   it's redundant with the 4 dimensions and was pushing models toward abstract
+   framing over concrete events.
+4. **v4b (investigator lens fix)**: Changed investigator lens from "also note
+   whether findings align" to "Lead with how your private findings relate to the
+   public narrative." Also tested lens placement (bottom = worse, original = better).
+
+**NDCG@5 results across all variants:**
+
+| Prompt + Model | Overall | Clean (n=7) | Healer | Investigator | Villager | Wolf |
+|---|---|---|---|---|---|---|
+| Golden | 0.783 | 0.845 | 0.878 | 0.776 | 0.657 | 0.830 |
+| Old captured (v1) | 0.673 | 0.823 | 0.913 | 0.760 | 0.505 | 0.580 |
+| v2 free-form, flash-lite | 0.702 | 0.791 | 0.790 | 0.816 | 0.622 | 0.616 |
+| v2 free-form, 2.5-pro | 0.682 | 0.734 | 0.765 | 0.773 | 0.579 | 0.634 |
+| v3 structured, flash-lite | 0.688 | 0.807 | 0.852 | 0.760 | 0.558 | 0.627 |
+| v3 structured, 2.5-pro | 0.690 | 0.820 | 0.833 | 0.725 | 0.545 | 0.685 |
+| v4 no-dilemma, flash-lite | 0.708 | 0.811 | 0.874 | 0.668 | 0.700 | 0.638 |
+| v4 no-dilemma, 2.5-pro | 0.700 | 0.815 | 0.897 | 0.654 | 0.563 | 0.721 |
+| **v4b lens-fix, flash-lite** | **0.721** | **0.804** | 0.874 | 0.720 | 0.700 | 0.638 |
+
+**Pairwise quality judge (captured v1 vs regenerated v2, 3.1-pro judge):**
+
+| Metric | v2 free-form | v3 structured |
+|---|---|---|
+| Win rate (regen) | 55% (11-9) | 50% (10-10) |
+| role_perspective delta | +0.40 | +0.50 |
+| specificity delta | −0.60 | −0.65 |
+| retrieval_usefulness delta | −0.20 | −0.50 |
+
+**Key findings:**
+- Structured schema (v3) improved clean-subset NDCG by closing the format
+  gap with indexed store entries.
+- Removing core dilemma (v4) was the biggest single improvement — stopped
+  models from abstracting and pushed toward concrete game events.
+- Model capability matters less than prompt format: flash-lite matches or
+  beats 2.5-pro on most variants. Pro helps wolf cases specifically.
+- Investigator lens fix (v4b) recovered investigator regression by
+  front-loading private findings in the situation description.
+- Flash-lite fails structured output with optional/nullable fields; all
+  fields must be required strings.
+
+**Final prompt (v4b) vs old captured:**
+- Overall: +0.049 (0.721 vs 0.673)
+- Villager: +0.196 (0.700 vs 0.505) — largest per-role improvement
+- Wolf: +0.058 (0.638 vs 0.580)
+- Healer: −0.039 (0.874 vs 0.913) — small regression, acceptable
+- Investigator: −0.040 (0.720 vs 0.760) — small regression, improved from v4
+
+**Next steps:**
+1. Label the union of golden + captured + regenerated retrievals for fairer scoring
+2. Cross-encoder reranker to close remaining gap on retrieval side
+3. Consider per-role prompt tuning if investigator continues to lag
