@@ -1,0 +1,1425 @@
+{
+  "labeler": "chatgpt",
+  "cases": [
+    {
+      "case_index": 4,
+      "observation_labels": [
+        {
+          "key": "13870e0b-4267-44c7-b90b-75da7b90cd99",
+          "relevance": 2
+        },
+        {
+          "key": "0ac6f17d-6d27-492f-9bfe-42c12760e869",
+          "relevance": 1
+        },
+        {
+          "key": "8ccbab63-1011-4a21-b2c8-462ef076a8a6",
+          "relevance": 2
+        },
+        {
+          "key": "07fd072f-9590-4624-81ac-8c7f5bb50140",
+          "relevance": 1
+        },
+        {
+          "key": "16fddf0f-3ebe-42a8-9c08-9c5b16f5cf95",
+          "relevance": 2
+        },
+        {
+          "key": "a9ee4229-1150-4fd5-8502-d53c427da991",
+          "relevance": 2
+        },
+        {
+          "key": "8adf1779-c82b-44ff-8e3d-7a6fd4bc5cce",
+          "relevance": 2
+        },
+        {
+          "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+          "relevance": 2
+        },
+        {
+          "key": "b53922e1-0e6b-49d7-8ec0-42993026c26b",
+          "relevance": 2
+        },
+        {
+          "key": "578f03b1-9fe2-437d-907b-d781fe62608f",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+          "relevance": 1
+        },
+        {
+          "key": "2b903631-1efa-42f2-b01c-8cfbaa5c5b51",
+          "relevance": 1
+        },
+        {
+          "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+          "relevance": 0
+        },
+        {
+          "key": "3c63e195-43fd-4943-8fe3-3dbbd31eb2d5",
+          "relevance": 1
+        },
+        {
+          "key": "e4aa0470-b055-4488-8d26-fff8ff022fa9",
+          "relevance": 0
+        },
+        {
+          "key": "0d69b314-fbd9-4624-8a9f-983f0cdfd05b",
+          "relevance": 2
+        },
+        {
+          "key": "41f4badb-495d-470b-9e55-fc0bd99d5191",
+          "relevance": 0
+        },
+        {
+          "key": "da44ad05-2786-408e-81ab-face67b8a91a",
+          "relevance": 1
+        },
+        {
+          "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+          "relevance": 0
+        },
+        {
+          "key": "62511a41-1ae5-41b5-9a98-aaedc0467f58",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 5,
+      "observation_labels": [
+        {
+          "key": "60b03843-0463-4b1b-9ca1-88da51b4e937",
+          "relevance": 1
+        },
+        {
+          "key": "7215e341-9dfe-4404-800f-a81fd0313a23",
+          "relevance": 0
+        },
+        {
+          "key": "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+          "relevance": 2
+        },
+        {
+          "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+          "relevance": 2
+        },
+        {
+          "key": "c2489a8b-fd86-487d-bfcc-c8394f6a68fa",
+          "relevance": 1
+        },
+        {
+          "key": "df5d65e4-a854-4c77-96b1-32f925725053",
+          "relevance": 0
+        },
+        {
+          "key": "fc9a9421-cf86-4800-a6c1-a261bcf6c61f",
+          "relevance": 0
+        },
+        {
+          "key": "a2b72438-8108-4088-909a-e2d2b5e195f5",
+          "relevance": 1
+        },
+        {
+          "key": "e6eef8d6-6dbe-40c4-bf91-f5e68c78ca35",
+          "relevance": 0
+        },
+        {
+          "key": "5208560e-43e5-4565-bebf-ddb62f91577c",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "e1c64739-2a78-44fc-a54e-2e33269d5ca9",
+          "relevance": 2
+        },
+        {
+          "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+          "relevance": 1
+        },
+        {
+          "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+          "relevance": 0
+        },
+        {
+          "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "relevance": 2
+        },
+        {
+          "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+          "relevance": 0
+        },
+        {
+          "key": "984356e1-d54b-48e5-baf4-3a7d250092f8",
+          "relevance": 2
+        },
+        {
+          "key": "09a16417-a56f-4347-9987-9810bfae4e90",
+          "relevance": 0
+        },
+        {
+          "key": "afef4e16-12b0-4d9d-b5b2-e07cae23e576",
+          "relevance": 0
+        },
+        {
+          "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+          "relevance": 0
+        },
+        {
+          "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 7,
+      "observation_labels": [
+        {
+          "key": "3ce9912f-4935-4f78-b8b1-d61409ed753c",
+          "relevance": 1
+        },
+        {
+          "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+          "relevance": 1
+        },
+        {
+          "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+          "relevance": 2
+        },
+        {
+          "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+          "relevance": 2
+        },
+        {
+          "key": "42dfb995-f6df-401b-a220-081232ac4449",
+          "relevance": 2
+        },
+        {
+          "key": "538ff88c-351a-4b72-a38f-ab1a12e12083",
+          "relevance": 2
+        },
+        {
+          "key": "c7e4022b-a98e-4a65-ba7d-e3918791f45f",
+          "relevance": 1
+        },
+        {
+          "key": "453891e8-d511-44d1-8f2c-2206606c3e93",
+          "relevance": 1
+        },
+        {
+          "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+          "relevance": 1
+        },
+        {
+          "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+          "relevance": 2
+        },
+        {
+          "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+          "relevance": 0
+        },
+        {
+          "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+          "relevance": 1
+        },
+        {
+          "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+          "relevance": 2
+        },
+        {
+          "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+          "relevance": 2
+        },
+        {
+          "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+          "relevance": 1
+        },
+        {
+          "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+          "relevance": 1
+        },
+        {
+          "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 8,
+      "observation_labels": [
+        {
+          "key": "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+          "relevance": 2
+        },
+        {
+          "key": "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78",
+          "relevance": 1
+        },
+        {
+          "key": "a786957c-bc1c-416a-aff2-0075203e49ee",
+          "relevance": 1
+        },
+        {
+          "key": "434ca33b-17d3-4e24-8aef-f395a35b512a",
+          "relevance": 1
+        },
+        {
+          "key": "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+          "relevance": 0
+        },
+        {
+          "key": "84cfd842-4a65-437c-a7ec-bb38883ac145",
+          "relevance": 2
+        },
+        {
+          "key": "a302bd79-6e33-4801-9430-9bcf69c3571f",
+          "relevance": 0
+        },
+        {
+          "key": "ce570d93-205a-47e6-8aeb-8aa27971552d",
+          "relevance": 0
+        },
+        {
+          "key": "87672547-c279-445a-8142-df9539766559",
+          "relevance": 0
+        },
+        {
+          "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+          "relevance": 0
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "8bb8583f-b87f-4232-b72b-ae5f9b4de150",
+          "relevance": 2
+        },
+        {
+          "key": "8eef8fd7-58d6-42b9-b166-1b115426c7a7",
+          "relevance": 1
+        },
+        {
+          "key": "5e7cc5ba-fa6e-4fa2-8773-7b0378366ced",
+          "relevance": 0
+        },
+        {
+          "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+          "relevance": 0
+        },
+        {
+          "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+          "relevance": 0
+        },
+        {
+          "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+          "relevance": 0
+        },
+        {
+          "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+          "relevance": 0
+        },
+        {
+          "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+          "relevance": 0
+        },
+        {
+          "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+          "relevance": 0
+        },
+        {
+          "key": "af1dbc2b-bc5e-41f7-815a-a0ffe029a179",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 11,
+      "observation_labels": [
+        {
+          "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+          "relevance": 2
+        },
+        {
+          "key": "b34d12c2-9d2b-4ac6-9d36-b877dad2d896",
+          "relevance": 1
+        },
+        {
+          "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+          "relevance": 1
+        },
+        {
+          "key": "5922bf88-e545-4f69-89e0-d55b0da3524d",
+          "relevance": 2
+        },
+        {
+          "key": "7c0a6e6d-2bee-4bed-8d66-139122985095",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "4207be33-a2ad-47e5-9294-0d528da2910d",
+          "relevance": 0
+        },
+        {
+          "key": "57449d0c-1bad-45d0-882e-0acfaf3642cf",
+          "relevance": 2
+        },
+        {
+          "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 17,
+      "observation_labels": [
+        {
+          "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+          "relevance": 1
+        },
+        {
+          "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+          "relevance": 0
+        },
+        {
+          "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+          "relevance": 0
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "4922ee84-da73-480a-90ef-170739daf216",
+          "relevance": 0
+        },
+        {
+          "key": "182ebc43-0538-4b82-8bd4-b5852870338f",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 18,
+      "observation_labels": [
+        {
+          "key": "a49feaa8-ca91-4120-afbc-2a191afc6e08",
+          "relevance": 2
+        },
+        {
+          "key": "3625d761-b7d2-42a4-b872-d253d343f26b",
+          "relevance": 1
+        },
+        {
+          "key": "928fde7b-4c7d-46b3-81bc-c292747d9048",
+          "relevance": 1
+        },
+        {
+          "key": "bb9b8a2c-f53d-4c8a-9171-eec352f36671",
+          "relevance": 1
+        },
+        {
+          "key": "a5db9f55-0d84-4167-b949-38797436a099",
+          "relevance": 2
+        },
+        {
+          "key": "6184533a-22e4-4328-b96a-c4bb0cb7e30f",
+          "relevance": 2
+        },
+        {
+          "key": "dffa1e08-f2af-4368-86fa-9a8bdfc5ce52",
+          "relevance": 1
+        },
+        {
+          "key": "fd88ea00-70bb-4add-aea7-5b518e571917",
+          "relevance": 1
+        },
+        {
+          "key": "d8ff9b6f-464d-4ce1-8a94-a73e3d6651ee",
+          "relevance": 1
+        },
+        {
+          "key": "1ab6cc11-4973-405a-ac1b-a58e366b809a",
+          "relevance": 1
+        },
+        {
+          "key": "a9107742-f0fd-4e34-bca0-923d8dbd8bfc",
+          "relevance": 1
+        },
+        {
+          "key": "a6d1e994-7725-4666-a351-be43fb94b33a",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "a79b348d-e256-4513-b4f8-5670e22101c4",
+          "relevance": 1
+        },
+        {
+          "key": "61de853f-6e2b-435b-84f4-2c932190389f",
+          "relevance": 2
+        },
+        {
+          "key": "d6b71a52-c14b-48c7-b870-65cf9bad5c10",
+          "relevance": 0
+        },
+        {
+          "key": "5681a68d-971e-490a-a711-00a03766475c",
+          "relevance": 1
+        },
+        {
+          "key": "b98bd43c-79aa-49ee-955e-ca01762e6a89",
+          "relevance": 2
+        },
+        {
+          "key": "9c21fe39-3201-4f6f-9804-86724a235af4",
+          "relevance": 2
+        },
+        {
+          "key": "82a4ac4c-3ac4-4dd6-a817-36fb1f9a40ee",
+          "relevance": 1
+        },
+        {
+          "key": "29866942-0c42-4d8b-9bd5-cfae431c50ba",
+          "relevance": 1
+        },
+        {
+          "key": "f25fcf4f-641a-443b-aa84-ca035b1dcdfc",
+          "relevance": 1
+        },
+        {
+          "key": "3ad8ba65-371a-4957-930d-c3434325b069",
+          "relevance": 1
+        },
+        {
+          "key": "c557f813-1d60-4689-b823-849d51b1ded1",
+          "relevance": 2
+        },
+        {
+          "key": "9f51af0e-1e52-46f3-afb4-8f77fdc3fc41",
+          "relevance": 0
+        },
+        {
+          "key": "bd79d243-9a69-4bfe-84fa-37d575940772",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "case_index": 21,
+      "observation_labels": [
+        {
+          "key": "1ed6c526-fe32-4c76-bb01-e957b36c500c",
+          "relevance": 2
+        },
+        {
+          "key": "3ebecdce-6fc8-4e17-b5d0-55a2725aa92e",
+          "relevance": 2
+        },
+        {
+          "key": "3edc3901-721e-470c-b760-acfb03ee84f5",
+          "relevance": 2
+        },
+        {
+          "key": "60b03843-0463-4b1b-9ca1-88da51b4e937",
+          "relevance": 1
+        },
+        {
+          "key": "53e65a70-5d06-48e9-af0f-eefc3771ce3e",
+          "relevance": 2
+        },
+        {
+          "key": "c2489a8b-fd86-487d-bfcc-c8394f6a68fa",
+          "relevance": 1
+        },
+        {
+          "key": "2b17e5ca-2d8d-4085-950f-b86a6c10aabe",
+          "relevance": 2
+        },
+        {
+          "key": "a2b72438-8108-4088-909a-e2d2b5e195f5",
+          "relevance": 2
+        },
+        {
+          "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+          "relevance": 1
+        },
+        {
+          "key": "09bd03c1-5fd3-43a2-936a-739fe77a7c68",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "e1c64739-2a78-44fc-a54e-2e33269d5ca9",
+          "relevance": 0
+        },
+        {
+          "key": "984356e1-d54b-48e5-baf4-3a7d250092f8",
+          "relevance": 1
+        },
+        {
+          "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+          "relevance": 0
+        },
+        {
+          "key": "b252d6b2-6620-4889-81ed-4ce737a2f975",
+          "relevance": 2
+        },
+        {
+          "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+          "relevance": 0
+        },
+        {
+          "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "relevance": 1
+        },
+        {
+          "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+          "relevance": 0
+        },
+        {
+          "key": "1cc944fd-bf5c-4b62-9524-0b1291f50c4e",
+          "relevance": 2
+        },
+        {
+          "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+          "relevance": 0
+        },
+        {
+          "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 22,
+      "observation_labels": [
+        {
+          "key": "9d1739db-2823-476b-90ef-d9b6340c4bcd",
+          "relevance": 1
+        },
+        {
+          "key": "f732818d-6b2f-426b-85dd-4268ac55b780",
+          "relevance": 2
+        },
+        {
+          "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+          "relevance": 2
+        },
+        {
+          "key": "83487df0-7a81-4308-9f90-d72e19e0d4a0",
+          "relevance": 1
+        },
+        {
+          "key": "ceef18b3-1e85-4105-9120-3d66edbbccb5",
+          "relevance": 2
+        },
+        {
+          "key": "1fbc6519-4ae7-40d7-8436-7f91ee75b27a",
+          "relevance": 0
+        },
+        {
+          "key": "79288222-86d2-47fd-aebf-65660e6db983",
+          "relevance": 0
+        },
+        {
+          "key": "084c2417-f2de-4ad2-b020-de0a40da0109",
+          "relevance": 2
+        },
+        {
+          "key": "fb99dc92-c159-41dc-a5c6-d4acd41d4318",
+          "relevance": 2
+        },
+        {
+          "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "a7c6ac54-d430-417f-932c-6906683a9314",
+          "relevance": 1
+        },
+        {
+          "key": "fc5e48a9-5cbc-477a-bd6c-04063ed3d664",
+          "relevance": 1
+        },
+        {
+          "key": "7eebdf18-9f10-4ae5-a16a-3aee445b29b8",
+          "relevance": 1
+        },
+        {
+          "key": "17add23c-00b5-4a83-a830-ebe6cdf55722",
+          "relevance": 1
+        },
+        {
+          "key": "21399e68-38b7-482a-88f6-a87a8181c5a5",
+          "relevance": 1
+        },
+        {
+          "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+          "relevance": 0
+        },
+        {
+          "key": "e1428900-f94c-4385-826c-8466f9b25462",
+          "relevance": 2
+        },
+        {
+          "key": "ef42a0e8-ce54-423e-af36-908e8487aacd",
+          "relevance": 0
+        },
+        {
+          "key": "09f24ec7-55cf-4aae-b54a-de10fa3a4e6d",
+          "relevance": 2
+        },
+        {
+          "key": "f13b30ab-02a0-4b4e-8561-69c11ab16b68",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 23,
+      "observation_labels": [
+        {
+          "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+          "relevance": 2
+        },
+        {
+          "key": "4d55e9f0-6c20-4878-a3f0-8b629fe8c178",
+          "relevance": 2
+        },
+        {
+          "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+          "relevance": 2
+        },
+        {
+          "key": "3ce9912f-4935-4f78-b8b1-d61409ed753c",
+          "relevance": 1
+        },
+        {
+          "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+          "relevance": 1
+        },
+        {
+          "key": "07265d73-9b48-4423-a763-5ba413df8d79",
+          "relevance": 1
+        },
+        {
+          "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+          "relevance": 1
+        },
+        {
+          "key": "42dfb995-f6df-401b-a220-081232ac4449",
+          "relevance": 1
+        },
+        {
+          "key": "b1b6a7aa-5ce6-4be4-b8c6-70e6abaa9936",
+          "relevance": 1
+        },
+        {
+          "key": "538ff88c-351a-4b72-a38f-ab1a12e12083",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+          "relevance": 1
+        },
+        {
+          "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+          "relevance": 1
+        },
+        {
+          "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+          "relevance": 2
+        },
+        {
+          "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+          "relevance": 1
+        },
+        {
+          "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+          "relevance": 2
+        },
+        {
+          "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+          "relevance": 1
+        },
+        {
+          "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+          "relevance": 1
+        },
+        {
+          "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "case_index": 24,
+      "observation_labels": [
+        {
+          "key": "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78",
+          "relevance": 1
+        },
+        {
+          "key": "434ca33b-17d3-4e24-8aef-f395a35b512a",
+          "relevance": 1
+        },
+        {
+          "key": "a786957c-bc1c-416a-aff2-0075203e49ee",
+          "relevance": 2
+        },
+        {
+          "key": "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+          "relevance": 1
+        },
+        {
+          "key": "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+          "relevance": 0
+        },
+        {
+          "key": "a302bd79-6e33-4801-9430-9bcf69c3571f",
+          "relevance": 0
+        },
+        {
+          "key": "ce570d93-205a-47e6-8aeb-8aa27971552d",
+          "relevance": 0
+        },
+        {
+          "key": "87672547-c279-445a-8142-df9539766559",
+          "relevance": 0
+        },
+        {
+          "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+          "relevance": 0
+        },
+        {
+          "key": "84cfd842-4a65-437c-a7ec-bb38883ac145",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "8eef8fd7-58d6-42b9-b166-1b115426c7a7",
+          "relevance": 2
+        },
+        {
+          "key": "5e7cc5ba-fa6e-4fa2-8773-7b0378366ced",
+          "relevance": 0
+        },
+        {
+          "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+          "relevance": 0
+        },
+        {
+          "key": "8bb8583f-b87f-4232-b72b-ae5f9b4de150",
+          "relevance": 1
+        },
+        {
+          "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+          "relevance": 0
+        },
+        {
+          "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+          "relevance": 0
+        },
+        {
+          "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+          "relevance": 0
+        },
+        {
+          "key": "af1dbc2b-bc5e-41f7-815a-a0ffe029a179",
+          "relevance": 0
+        },
+        {
+          "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+          "relevance": 0
+        },
+        {
+          "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 25,
+      "observation_labels": [
+        {
+          "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+          "relevance": 2
+        },
+        {
+          "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+          "relevance": 1
+        },
+        {
+          "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "182ebc43-0538-4b82-8bd4-b5852870338f",
+          "relevance": 1
+        },
+        {
+          "key": "4922ee84-da73-480a-90ef-170739daf216",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 26,
+      "observation_labels": [
+        {
+          "key": "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78",
+          "relevance": 2
+        },
+        {
+          "key": "a302bd79-6e33-4801-9430-9bcf69c3571f",
+          "relevance": 1
+        },
+        {
+          "key": "ce570d93-205a-47e6-8aeb-8aa27971552d",
+          "relevance": 1
+        },
+        {
+          "key": "434ca33b-17d3-4e24-8aef-f395a35b512a",
+          "relevance": 0
+        },
+        {
+          "key": "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+          "relevance": 1
+        },
+        {
+          "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+          "relevance": 2
+        },
+        {
+          "key": "87672547-c279-445a-8142-df9539766559",
+          "relevance": 1
+        },
+        {
+          "key": "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+          "relevance": 0
+        },
+        {
+          "key": "84cfd842-4a65-437c-a7ec-bb38883ac145",
+          "relevance": 0
+        },
+        {
+          "key": "a786957c-bc1c-416a-aff2-0075203e49ee",
+          "relevance": 0
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "5e7cc5ba-fa6e-4fa2-8773-7b0378366ced",
+          "relevance": 2
+        },
+        {
+          "key": "8bb8583f-b87f-4232-b72b-ae5f9b4de150",
+          "relevance": 0
+        },
+        {
+          "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+          "relevance": 1
+        },
+        {
+          "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+          "relevance": 0
+        },
+        {
+          "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+          "relevance": 1
+        },
+        {
+          "key": "8eef8fd7-58d6-42b9-b166-1b115426c7a7",
+          "relevance": 0
+        },
+        {
+          "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+          "relevance": 1
+        },
+        {
+          "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+          "relevance": 1
+        },
+        {
+          "key": "af1dbc2b-bc5e-41f7-815a-a0ffe029a179",
+          "relevance": 2
+        },
+        {
+          "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 27,
+      "observation_labels": [
+        {
+          "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+          "relevance": 2
+        },
+        {
+          "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+          "relevance": 1
+        },
+        {
+          "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "182ebc43-0538-4b82-8bd4-b5852870338f",
+          "relevance": 2
+        },
+        {
+          "key": "4922ee84-da73-480a-90ef-170739daf216",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "case_index": 28,
+      "observation_labels": [
+        {
+          "key": "928fde7b-4c7d-46b3-81bc-c292747d9048",
+          "relevance": 1
+        },
+        {
+          "key": "d87c1479-d9d9-47c0-a29f-0260ba1cedc8",
+          "relevance": 1
+        },
+        {
+          "key": "d8ff9b6f-464d-4ce1-8a94-a73e3d6651ee",
+          "relevance": 1
+        },
+        {
+          "key": "a6d1e994-7725-4666-a351-be43fb94b33a",
+          "relevance": 2
+        },
+        {
+          "key": "aaa08a1d-619d-4c9d-8d35-2ea43852c26e",
+          "relevance": 1
+        },
+        {
+          "key": "3625d761-b7d2-42a4-b872-d253d343f26b",
+          "relevance": 2
+        },
+        {
+          "key": "dffa1e08-f2af-4368-86fa-9a8bdfc5ce52",
+          "relevance": 1
+        },
+        {
+          "key": "a49feaa8-ca91-4120-afbc-2a191afc6e08",
+          "relevance": 1
+        },
+        {
+          "key": "d20aabe2-7482-4b1a-9a72-ebaf0845d423",
+          "relevance": 1
+        },
+        {
+          "key": "6184533a-22e4-4328-b96a-c4bb0cb7e30f",
+          "relevance": 2
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "d6b71a52-c14b-48c7-b870-65cf9bad5c10",
+          "relevance": 1
+        },
+        {
+          "key": "9f51af0e-1e52-46f3-afb4-8f77fdc3fc41",
+          "relevance": 2
+        },
+        {
+          "key": "5681a68d-971e-490a-a711-00a03766475c",
+          "relevance": 0
+        },
+        {
+          "key": "61de853f-6e2b-435b-84f4-2c932190389f",
+          "relevance": 1
+        },
+        {
+          "key": "29866942-0c42-4d8b-9bd5-cfae431c50ba",
+          "relevance": 0
+        },
+        {
+          "key": "f25fcf4f-641a-443b-aa84-ca035b1dcdfc",
+          "relevance": 0
+        },
+        {
+          "key": "3ad8ba65-371a-4957-930d-c3434325b069",
+          "relevance": 0
+        },
+        {
+          "key": "a79b348d-e256-4513-b4f8-5670e22101c4",
+          "relevance": 0
+        },
+        {
+          "key": "306a4905-b9dc-4ec4-99e6-438cc5238d55",
+          "relevance": 0
+        },
+        {
+          "key": "f294f167-8d7b-4886-9320-bef57f076a97",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "case_index": 29,
+      "observation_labels": [
+        {
+          "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+          "relevance": 2
+        },
+        {
+          "key": "b34d12c2-9d2b-4ac6-9d36-b877dad2d896",
+          "relevance": 1
+        },
+        {
+          "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+          "relevance": 1
+        },
+        {
+          "key": "7c0a6e6d-2bee-4bed-8d66-139122985095",
+          "relevance": 1
+        },
+        {
+          "key": "5922bf88-e545-4f69-89e0-d55b0da3524d",
+          "relevance": 2
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "4207be33-a2ad-47e5-9294-0d528da2910d",
+          "relevance": 1
+        },
+        {
+          "key": "57449d0c-1bad-45d0-882e-0acfaf3642cf",
+          "relevance": 2
+        },
+        {
+          "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 31,
+      "observation_labels": [
+        {
+          "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+          "relevance": 2
+        },
+        {
+          "key": "b34d12c2-9d2b-4ac6-9d36-b877dad2d896",
+          "relevance": 1
+        },
+        {
+          "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+          "relevance": 1
+        },
+        {
+          "key": "5922bf88-e545-4f69-89e0-d55b0da3524d",
+          "relevance": 2
+        },
+        {
+          "key": "7c0a6e6d-2bee-4bed-8d66-139122985095",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "4207be33-a2ad-47e5-9294-0d528da2910d",
+          "relevance": 2
+        },
+        {
+          "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+          "relevance": 0
+        },
+        {
+          "key": "57449d0c-1bad-45d0-882e-0acfaf3642cf",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "case_index": 32,
+      "observation_labels": [
+        {
+          "key": "a48c4d74-4986-4ff1-b855-3df694944a51",
+          "relevance": 2
+        },
+        {
+          "key": "07fd072f-9590-4624-81ac-8c7f5bb50140",
+          "relevance": 2
+        },
+        {
+          "key": "a9ee4229-1150-4fd5-8502-d53c427da991",
+          "relevance": 0
+        },
+        {
+          "key": "578f03b1-9fe2-437d-907b-d781fe62608f",
+          "relevance": 2
+        },
+        {
+          "key": "721ed82e-b650-4f46-8df6-a0f65bb99e15",
+          "relevance": 2
+        },
+        {
+          "key": "13870e0b-4267-44c7-b90b-75da7b90cd99",
+          "relevance": 0
+        },
+        {
+          "key": "0ac6f17d-6d27-492f-9bfe-42c12760e869",
+          "relevance": 0
+        },
+        {
+          "key": "8adf1779-c82b-44ff-8e3d-7a6fd4bc5cce",
+          "relevance": 0
+        },
+        {
+          "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+          "relevance": 0
+        },
+        {
+          "key": "ecd420cb-420c-4243-8822-f352829083d5",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "f71e8766-3af0-4033-9a08-7ad22f31a17e",
+          "relevance": 2
+        },
+        {
+          "key": "bab6a351-a85b-4218-8618-973d783349e0",
+          "relevance": 2
+        },
+        {
+          "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+          "relevance": 0
+        },
+        {
+          "key": "18268625-d318-4992-91a3-0074910a3be9",
+          "relevance": 2
+        },
+        {
+          "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+          "relevance": 0
+        },
+        {
+          "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+          "relevance": 0
+        },
+        {
+          "key": "6de91cd0-a3b7-441e-9f8a-945417455dc8",
+          "relevance": 2
+        },
+        {
+          "key": "2b903631-1efa-42f2-b01c-8cfbaa5c5b51",
+          "relevance": 0
+        },
+        {
+          "key": "ee58bfad-0056-4d79-b455-68f4709b66ad",
+          "relevance": 2
+        },
+        {
+          "key": "d322503b-b9cd-4d82-8b2e-7638d19f6e49",
+          "relevance": 0
+        }
+      ]
+    },
+    {
+      "case_index": 33,
+      "observation_labels": [
+        {
+          "key": "c2489a8b-fd86-487d-bfcc-c8394f6a68fa",
+          "relevance": 2
+        },
+        {
+          "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+          "relevance": 2
+        },
+        {
+          "key": "7215e341-9dfe-4404-800f-a81fd0313a23",
+          "relevance": 0
+        },
+        {
+          "key": "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+          "relevance": 2
+        },
+        {
+          "key": "fc9a9421-cf86-4800-a6c1-a261bcf6c61f",
+          "relevance": 0
+        },
+        {
+          "key": "300150ed-4b63-4193-94eb-5d6f1fa013b4",
+          "relevance": 0
+        },
+        {
+          "key": "e6eef8d6-6dbe-40c4-bf91-f5e68c78ca35",
+          "relevance": 0
+        },
+        {
+          "key": "f88a85ae-1ee2-49ec-9a16-e82938214c08",
+          "relevance": 1
+        },
+        {
+          "key": "53e65a70-5d06-48e9-af0f-eefc3771ce3e",
+          "relevance": 2
+        },
+        {
+          "key": "37d81419-2d5d-4af0-b548-7a0a8da537c6",
+          "relevance": 1
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "984356e1-d54b-48e5-baf4-3a7d250092f8",
+          "relevance": 2
+        },
+        {
+          "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+          "relevance": 1
+        },
+        {
+          "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+          "relevance": 1
+        },
+        {
+          "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+          "relevance": 0
+        },
+        {
+          "key": "e1c64739-2a78-44fc-a54e-2e33269d5ca9",
+          "relevance": 2
+        },
+        {
+          "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+          "relevance": 0
+        },
+        {
+          "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "relevance": 2
+        },
+        {
+          "key": "b252d6b2-6620-4889-81ed-4ce737a2f975",
+          "relevance": 1
+        },
+        {
+          "key": "09a16417-a56f-4347-9987-9810bfae4e90",
+          "relevance": 0
+        },
+        {
+          "key": "1cc944fd-bf5c-4b62-9524-0b1291f50c4e",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "case_index": 36,
+      "observation_labels": [
+        {
+          "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+          "relevance": 2
+        },
+        {
+          "key": "cc10c6bf-be83-4fd6-b59d-14cc3e499f1a",
+          "relevance": 2
+        },
+        {
+          "key": "55ad1ead-bb04-47ce-ad2c-902ff8738998",
+          "relevance": 2
+        },
+        {
+          "key": "92046e6d-6ce7-4a18-b51f-528ca8b49568",
+          "relevance": 1
+        },
+        {
+          "key": "79288222-86d2-47fd-aebf-65660e6db983",
+          "relevance": 2
+        },
+        {
+          "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+          "relevance": 1
+        },
+        {
+          "key": "83487df0-7a81-4308-9f90-d72e19e0d4a0",
+          "relevance": 1
+        },
+        {
+          "key": "bfb69c8b-424e-4530-a940-f094e1c4630d",
+          "relevance": 2
+        },
+        {
+          "key": "9355e610-6db8-4980-bb2b-c73b0e82116c",
+          "relevance": 1
+        },
+        {
+          "key": "d0bde61b-6528-4fa2-b49a-0d76d1a9712c",
+          "relevance": 2
+        }
+      ],
+      "strategy_labels": [
+        {
+          "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+          "relevance": 2
+        },
+        {
+          "key": "17add23c-00b5-4a83-a830-ebe6cdf55722",
+          "relevance": 1
+        },
+        {
+          "key": "21399e68-38b7-482a-88f6-a87a8181c5a5",
+          "relevance": 0
+        },
+        {
+          "key": "7eebdf18-9f10-4ae5-a16a-3aee445b29b8",
+          "relevance": 0
+        },
+        {
+          "key": "5cf87925-5515-4cb2-bae1-388505a8f024",
+          "relevance": 2
+        },
+        {
+          "key": "a7c6ac54-d430-417f-932c-6906683a9314",
+          "relevance": 0
+        },
+        {
+          "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+          "relevance": 0
+        },
+        {
+          "key": "fc5e48a9-5cbc-477a-bd6c-04063ed3d664",
+          "relevance": 0
+        },
+        {
+          "key": "09f24ec7-55cf-4aae-b54a-de10fa3a4e6d",
+          "relevance": 0
+        },
+        {
+          "key": "3b06f99a-28d7-457b-9f6e-594775ebbb78",
+          "relevance": 2
+        }
+      ]
+    }
+  ]
+}

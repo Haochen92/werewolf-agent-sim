@@ -1,8 +1,8 @@
 """Label retrieval candidates using multi-model consensus.
 
-For each (golden_situation, memory_text) pair, asks multiple Gemini models
+For each (golden_situation, memory_text) pair, asks multiple LLM models
 to rate relevance on a 0/1/2 scale. Outputs per-model scores and a consensus
-label for easy disagreement analysis.
+label for easy disagreement analysis. Supports Gemini and NIM (nim/ prefix).
 
 Usage:
     # Trial run: label 3 cases to spot-check model agreement
@@ -21,10 +21,14 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from collections import Counter
 
+from dotenv import load_dotenv
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
+load_dotenv(REPO_ROOT / ".env")
 CANDIDATES_PATH = (
     REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
     / "candidates_for_labeling.json"
@@ -68,7 +72,7 @@ def _format_memory_text(item: dict, mem_type: str) -> str:
         return f"Situation: {item['situation']} | Action: {item['action']}"
 
 
-THINKING_MODELS = {"gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"}
+THINKING_MODELS = {"gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash"}
 
 
 def _extract_text(content) -> str:
@@ -195,10 +199,14 @@ def label_all(
             )
 
             scores = {}
-            for model in models:
-                score = _call_model(model, prompt)
-                scores[model] = score
-                time.sleep(0.3)
+            with ThreadPoolExecutor(max_workers=len(models)) as executor:
+                futures = {
+                    executor.submit(_call_model, model, prompt): model
+                    for model in models
+                }
+                for future in as_completed(futures):
+                    model = futures[future]
+                    scores[model] = future.result()
 
             consensus = _compute_consensus(scores)
             total_items += 1
@@ -227,8 +235,12 @@ def label_all(
 
             label_char = str(consensus["label"]) if consensus["label"] is not None else "?"
             conf_char = consensus["confidence"][0].upper()
+            def _short_name(m: str) -> str:
+                if m.startswith("nim/"):
+                    return m.split("/")[-1]
+                return m.split("-")[-1]
             model_strs = " ".join(
-                f"{m.split('-')[-1]}={s}" for m, s in scores.items()
+                f"{_short_name(m)}={s}" for m, s in scores.items()
             )
             print(f"  [{label_char}]{conf_char} {model_strs} | {item['situation'][:70]}...")
 
@@ -281,7 +293,8 @@ def main():
     )
     parser.add_argument(
         "--models", nargs="+",
-        default=["gemini-3.1-flash-lite", "gemini-2.5-pro", "gemini-2.0-flash"],
+        default=["gemini-3.1-flash-lite", "gemini-3.5-flash",
+                 "nim/qwen/qwen3.5-397b-a17b"],
         help="Models to use for consensus labeling",
     )
     parser.add_argument("--trial", action="store_true", help="Run trial with subset of cases")
