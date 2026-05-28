@@ -416,14 +416,40 @@ extraction fields.
 - Flash-lite fails structured output with optional/nullable fields; all
   fields must be required strings.
 
-**Final prompt (v4b) vs old captured:**
+**Final prompt (v4b) vs old captured (original labels, 340 items):**
 - Overall: +0.049 (0.721 vs 0.673)
 - Villager: +0.196 (0.700 vs 0.505) — largest per-role improvement
 - Wolf: +0.058 (0.638 vs 0.580)
 - Healer: −0.039 (0.874 vs 0.913) — small regression, acceptable
 - Investigator: −0.040 (0.720 vs 0.760) — small regression, improved from v4
 
+Note: 108 items (28% of v4b retrieval set) were unlabeled and scored as 0,
+biasing results for cases where v4b retrieved different items than the golden set.
+
+### Phase 2: Expanded labels (union labeling)
+
+Labeled the 108 unlabeled items retrieved by v4b across 14 cases (Opus 4.6
+auto-labels, relevance 0/1/2). This eliminates the unlabeled-item bias.
+
+**v4b vs old captured (expanded labels, 448 items, 0 unlabeled):**
+
+| | Golden | Old Captured | v4b Regen | Delta |
+|---|---|---|---|---|
+| Overall | 0.774 | 0.701 | 0.762 | **+0.061** |
+| Healer | 0.878 | 0.913 | 0.874 | −0.039 |
+| Investigator | 0.776 | 0.769 | 0.811 | **+0.042** |
+| Villager | 0.643 | 0.489 | 0.701 | **+0.212** |
+| Wolf | 0.814 | 0.680 | 0.696 | +0.016 |
+
+**What changed with expanded labels:**
+- Overall improvement is slightly larger (+0.061 vs +0.049)
+- Investigator flipped from −0.040 to +0.042 — was actually improving all along,
+  masked by unlabeled penalty on items that v4b retrieved but golden set didn't cover
+- Villager improvement even stronger (+0.212 vs +0.196)
+- Wolf improvement much smaller (+0.016 vs +0.058) — was inflated by unlabeled items
+- Cases with most unlabeled items showed biggest corrections: case 34 (+0.415),
+  case 35 (+0.439), case 30 (+0.265)
+
 **Next steps:**
-1. Label the union of golden + captured + regenerated retrievals for fairer scoring
-2. Cross-encoder reranker to close remaining gap on retrieval side
-3. Consider per-role prompt tuning if investigator continues to lag
+1. Cross-encoder reranker to close remaining gap on retrieval side
+2. Consider per-role prompt tuning if investigator continues to lag

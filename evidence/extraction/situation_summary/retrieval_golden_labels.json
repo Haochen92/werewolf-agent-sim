@@ -1,8 +1,8 @@
 {
   "eval_set_id": "situation_retrieval_golden_v1",
   "created_at": "2026-05-27T09:01:05.287647",
-  "labeler": "human+claude",
-  "description": "Golden labels for situation summary retrieval evaluation. Contains golden situation queries and graded relevance labels for retrieved memories.",
+  "labeler": "human+claude+opus-4.6",
+  "description": "Golden labels for situation summary retrieval evaluation. Contains golden situation queries and graded relevance labels for retrieved memories. Extended with Opus 4.6 auto-labels for v4b union items.",
   "frozen_artifacts": {
     "dataset": {
       "path": "eval_sets/v4_filtering_eval.jsonl",
@@ -350,6 +350,21 @@
           "situation": "Investigator led Day 1 discussion actively. Info landscape: info-starved, first day. Game phase: Early game.",
           "approach": "Tried to steer conversation, stood out as proactive.",
           "outcome": "High visibility made them wolves' Night 1 target. Eliminated before sharing findings."
+        },
+        {
+          "key": "009e502f-9dbf-4f4a-a94b-0704abe5d577",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d20aabe2-7482-4b1a-9a72-ebaf0845d423",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "47ad2598-176d-4bdc-a603-0c043d1e8889",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -422,6 +437,16 @@
           "score": 0.7615,
           "situation": "Repeatedly targeted by wolves but saved by healer. Info landscape: public confirms you were targeted. Game phase: Mid-game.",
           "action": "Use pattern of being targeted as evidence of importance."
+        },
+        {
+          "key": "9c21fe39-3201-4f6f-9804-86724a235af4",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d364d473-8ed6-468b-926e-8886763d5f3a",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Re-labeled after merging two golden situations into one (generic landscape dump + role-specific were redundant). Merged query boosted obs 2 (abstract talk backfiring in info-starved post-save) from rank 7 to rank 2. Many retrieved items assume wolf ID rather than villager confirmation \u2014 different information advantage type. Store coverage gap for 'investigator with only villager confirmation in early game' scenario."
@@ -601,6 +626,41 @@
           "situation": "Endgame, Investigator made a late unverified role claim. Information landscape: claim was info-rich but unverified. Game phase: Endgame, four players left.",
           "approach": "Wolf attacked the timing of the claim, framing it as desperate.",
           "outcome": "Successfully sowed doubt, split the vote. Wolf killed Investigator that night."
+        },
+        {
+          "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "da1fa775-c345-402a-bae6-0089b0a0f9c2",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "55ad1ead-bb04-47ce-ad2c-902ff8738998",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d0bde61b-6528-4fa2-b49a-0d76d1a9712c",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d3944116-f2f5-44ba-8309-fa96986243c6",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "92046e6d-6ce7-4a18-b51f-528ca8b49568",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "675c0947-8b72-47fe-8c2e-00e5b9edba3c",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -673,6 +733,31 @@
           "score": 0.7282,
           "situation": "If you are accused by a player who just publicly survived a night attack. Information landscape: accuser has immense credibility. Game phase: Mid-game.",
           "action": "Don't try to make survivor's survival look suspicious. Calmly address behavioral accusations or shift focus to third party."
+        },
+        {
+          "key": "e66e063d-6c6d-448a-955e-34452f974008",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "3b06f99a-28d7-457b-9f6e-594775ebbb78",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "03001b8a-eb39-4d81-98d1-bdbb1bd2b9e6",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "c36bd404-bf2f-42b5-8c0f-cd71e52399d7",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "292fac65-3a39-41d9-b43a-fc9dd9f449d9",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Single merged golden situation (two drafts were redundant). Wolf/day_discussion namespace is large. Strong retrieval for post-healer-save wolf scenarios. Top strategy points (SP1, SP2) are exact-match for this situation. Some mid-game/endgame observations with voting records retrieved \u2014 situation match is weaker but lessons about wolf coordination tactics are transferable."
@@ -829,6 +914,51 @@
           "situation": "Investigator with confirmed innocent info, public discussion chaotic and speculative. No consensus.",
           "approach": "Failed to leverage private knowledge \u2014 remained passive or voted with flawed majority.",
           "outcome": "Village made critical errors, wolves won. Private information wasted."
+        },
+        {
+          "key": "1f6bc8ae-4913-44e1-b3dc-2e736e21ae6c",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "009e502f-9dbf-4f4a-a94b-0704abe5d577",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "a9107742-f0fd-4e34-bca0-923d8dbd8bfc",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "10f4fa33-2844-4b22-ab4a-d6758141f4be",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d8ff9b6f-464d-4ce1-8a94-a73e3d6651ee",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "47d5f740-5db7-4dde-88a3-ced07aa082f0",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "6161059f-8645-43c2-9947-afb5bb8cd6b0",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "75d68e2e-dcc9-4ef1-afab-243bb7ffe505",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "fb7f00a1-e092-4985-9956-8b56e56120ef",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -901,6 +1031,31 @@
           "score": 0.7852,
           "situation": "ID'd wolf with night action, no other leads. Info-starved early-mid game.",
           "action": "Guide conversation, point out suspicious behaviors. Reveal role as last resort."
+        },
+        {
+          "key": "8bd4a4a4-a114-4f49-89aa-a49ab7e177e7",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "9f51af0e-1e52-46f3-afb4-8f77fdc3fc41",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "b98bd43c-79aa-49ee-955e-ca01762e6a89",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "bef45b74-35e4-4152-b691-afe0a1da43f9",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "82f6fdfb-1315-410b-9bd7-3071675a5893",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Large namespace (41 obs, many strat). Retrieval quality good \u2014 top-ranked obs 2 and SP 2 are the strongest matches. SP2 (82a4ac4c) is the exact strategy for this scenario: village converging correctly, just amplify. Obs 5 and SP5 both address the bussing dynamic present in this case. Several info-starved variants retrieved due to 'investigator with confirmed wolf' overlap \u2014 correctly downranked by score but still relevance=1 due to partial situation match."
@@ -999,6 +1154,41 @@
           "situation": "Info-starved mid-game, proactive villager aggressively demands names. Fragile consensus, village anxious for lead.",
           "approach": "Targeted quiet players, aggressively demanded names to break stalemate.",
           "outcome": "Wolves reframed aggression as disruptive. Village turned on accuser, costly mislynch."
+        },
+        {
+          "key": "578f03b1-9fe2-437d-907b-d781fe62608f",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "4f4d9296-59c0-4534-8a95-0b677edc361e",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "a48c4d74-4986-4ff1-b855-3df694944a51",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "e256391f-c2fa-4a27-b228-b3c6ad455340",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "436340e8-4abc-4035-87cf-9522b33ed074",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "634161d7-26fe-4ebc-8dcf-f01f80979510",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "773e9e04-afe3-4df8-84cd-bec97d0de516",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -1071,6 +1261,21 @@
           "score": 0.7625,
           "situation": "Player with poor track record makes new strong accusation. Credibility evaluation.",
           "action": "Evaluate new accusation on its own merits, not accuser's past performance."
+        },
+        {
+          "key": "da44ad05-2786-408e-81ab-face67b8a91a",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "ee58bfad-0056-4d79-b455-68f4709b66ad",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "First villager/day_discussion case. Large namespace. Good retrieval diversity \u2014 mix of info-starved early-game and post-elimination voting-record scenarios. Top observations span both cautionary (mislynch from aggressive accusations) and successful (identifying wolf deflection). SP2, SP3, SP8 form a coherent trio addressing the exact aggressive-vs-cautious dynamic in this case. Several post-elimination observations retrieved due to partial situation overlap but correctly get relevance=1 for phase mismatch."
@@ -1169,6 +1374,11 @@
           "situation": "Suspect justified dissenting vote with weak excuse. Info-rich endgame, strong consensus.",
           "approach": "Villagers rejected weak behavioral defense as post-hoc rationalization.",
           "outcome": "Unanimously voted out final wolf, village victory."
+        },
+        {
+          "key": "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -1241,6 +1451,16 @@
           "score": 0.7632,
           "situation": "Endgame, voting record shows suspect voted against wolf elimination. Suspect deflects with 'coordination' accusation.",
           "action": "Make voting record central, don't allow deflection via 'coordination' claims."
+        },
+        {
+          "key": "e1c64739-2a78-44fc-a54e-2e33269d5ca9",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Villager/day_vote namespace. Good retrieval \u2014 obs 5 and 9 are near-exact pattern matches (suspect with wolf-aligned voting record dismissing consensus as 'groupthink'/'coordination'). Obs 8 is an important cautionary counterpoint (strong consensus amplified by wolf can be wrong). Strategy points weaker match overall \u2014 many info-starved/stalemate situations retrieved that don't match our info-rich consensus. SP6 and SP10 are the strongest matches. Five strategy points scored 0 \u2014 namespace may have a coverage gap for 'strong post-elimination evidence-based consensus' voting scenarios."
@@ -1340,6 +1560,51 @@
           "situation": "Endgame, wolf accused of not voting with majority (factually incorrect). Wolf failed to correct record.",
           "approach": "Accepted false premise, tried to defend non-existent suspicious action with 'groupthink' warnings.",
           "outcome": "Failure to correct false accusation let village build confident consensus on faulty foundation."
+        },
+        {
+          "key": "bfb69c8b-424e-4530-a940-f094e1c4630d",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "1668786a-f65e-4db1-8b1a-788ea50d77b8",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "9355e610-6db8-4980-bb2b-c73b0e82116c",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "374a2e35-8402-4632-9b31-613f85a0cf63",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "79288222-86d2-47fd-aebf-65660e6db983",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "ddc8ea7e-6593-4b95-b856-861aed34367a",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d0bde61b-6528-4fa2-b49a-0d76d1a9712c",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d72f9bd4-53b1-4fe6-8611-1e3c545b5667",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -1412,6 +1677,46 @@
           "score": 0.7712,
           "situation": "Post-mislynch, village conducting post-mortem. Wolf NOT currently primary target.",
           "action": "Participate in post-mortem, offer plausible alternate explanation rather than dismissing analysis."
+        },
+        {
+          "key": "840e4d45-930d-42ea-90e0-482177f69a97",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "9a7d41e3-52d1-4b4b-b032-a23958a16d1d",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "e66e063d-6c6d-448a-955e-34452f974008",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "f4137b55-8af0-4387-9b14-22232da9d006",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "4001774c-4554-4567-a1d6-21bbd404867f",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Wolf/day_discussion namespace is large and well-populated. Excellent retrieval quality \u2014 top 4 observations are all near-exact matches for 'wolf under evidence-based pressure after partner elimination.' Obs 9 (d9834d81) aggregates 9 instances of wolves using 'groupthink' accusations \u2014 near-exact match to player_5's strategy. SP2 and SP3 are complementary (attack consensus vs. avoid appearing desperate) \u2014 retrieving both is valuable. SP6 and SP7 address the post-bus survival strategy directly. One 0-relevance strategy point (SP10) where wolf is NOT the primary target."
@@ -1511,6 +1816,36 @@
           "situation": "Wolf partner under intense scrutiny, strong unbreakable consensus. Mid-game elimination vote.",
           "approach": "Voted with majority to eliminate partner.",
           "outcome": "Avoided immediate suspicion, but hesitation or timing could be used as later evidence."
+        },
+        {
+          "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "07265d73-9b48-4423-a763-5ba413df8d79",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "453891e8-d511-44d1-8f2c-2206606c3e93",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "29967b04-96a1-4068-98a7-3b21871d554c",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "3ce9912f-4935-4f78-b8b1-d61409ed753c",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -1918,6 +2253,31 @@
           "situation": "Post-investigator-elimination, using posthumous investigator findings. Different info source entirely.",
           "approach": "Focused on investigator's validated suspicion, ignored deflection.",
           "outcome": "Successfully eliminated wolf using investigator's legacy."
+        },
+        {
+          "key": "f65b76f0-4209-4047-83b5-47e05376fe61",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "9db72477-d523-41dd-8660-414129435a93",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "436340e8-4abc-4035-87cf-9522b33ed074",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "721ed82e-b650-4f46-8df6-a0f65bb99e15",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "4f4d9296-59c0-4534-8a95-0b677edc361e",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -1990,6 +2350,31 @@
           "score": 0.7694,
           "situation": "Post-mislynch, low-credibility player makes new accusation.",
           "action": "Evaluate new accusation on merits, not accuser's past performance."
+        },
+        {
+          "key": "6de91cd0-a3b7-441e-9f8a-945417455dc8",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "5ff0bc89-c31a-483c-b30a-be59479b4687",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "c16acef9-8496-4cdd-94d8-3bb85efcdd8e",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "289fb882-5723-427a-b47e-e694f0905878",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Villager/day_discussion namespace is large. Good observation retrieval \u2014 obs 3, 4, 8 are strong matches for 'villager observing evidence-based voting record pressure on suspect who deflects.' Obs 7 is a cautionary mislynch counterpoint. Obs 8 closely matches player_6's specific defense pattern (attacking the analysis process). Strategy retrieval is weaker \u2014 many post-mislynch entries (SP2, SP3, SP10) don't match our post-correct-elimination context. SP9 (0d69b314, observed 28x) is the most directly applicable. Coverage gap: no strategy points for 'villager choosing strategic silence during strong evidence-based consensus.' The silence dilemma \u2014 contribute to identifying second wolf vs. let consensus work autonomously \u2014 is unaddressed in retrieved strategies."
@@ -2088,6 +2473,16 @@
           "situation": "Investigator accused village-aligned wolf of bussing. Private info contradicts public perception.",
           "approach": "Pushed bussing accusation without explaining concept clearly.",
           "outcome": "Village sided against investigator, eliminated them."
+        },
+        {
+          "key": "a49feaa8-ca91-4120-afbc-2a191afc6e08",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "009e502f-9dbf-4f4a-a94b-0704abe5d577",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -2160,6 +2555,16 @@
           "score": 0.7638,
           "situation": "Endgame, confirmed innocence of most remaining, single suspect left. Info-rich private.",
           "action": "Lead discussion against uncleared player with confidence, without revealing role."
+        },
+        {
+          "key": "61de853f-6e2b-435b-84f4-2c932190389f",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "c557f813-1d60-4689-b823-849d51b1ded1",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Investigator/day_discussion namespace has strong retrieval quality. Obs 2, 8, 9 form a coherent set about investigators using public evidence without revealing role \u2014 the exact pattern our agent follows. SP1 (14 obs) and SP2 (3 obs) are the strongest matches, directly supporting the silence-with-public-evidence approach. Obs 1, 7 provide cautionary tales about both revealing (and being distrusted) and pushing too aggressively (and appearing suspicious). The namespace handles the 'investigator with redundant private info aligned with consensus' scenario well, particularly at the strategy level."
@@ -2258,6 +2663,26 @@
           "situation": "Endgame, pressuring quiet/evasive players post-wolf-elimination. Info-rich.",
           "approach": "Demanded suspects provide alternatives, spotted defensive deflection.",
           "outcome": "Wolf failed to offer logical suspects, correctly eliminated."
+        },
+        {
+          "key": "104f28cf-0a33-4579-b29a-e4684a14b8c7",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "13870e0b-4267-44c7-b90b-75da7b90cd99",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "9db72477-d523-41dd-8660-414129435a93",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -2330,6 +2755,26 @@
           "score": 0.7796,
           "situation": "Post-wolf-elimination, late voter scrutiny. Info-rich voting sequences.",
           "action": "Scrutinize late voters for bussing tactics."
+        },
+        {
+          "key": "f71e8766-3af0-4033-9a08-7ad22f31a17e",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "6de91cd0-a3b7-441e-9f8a-945417455dc8",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "2b903631-1efa-42f2-b01c-8cfbaa5c5b51",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Villager/day_discussion namespace. Excellent retrieval \u2014 obs 1 is literally from the same game showing the outcome of this exact dynamic (villagers successfully identified wolf pair through coordinated rhetoric). Obs 3 is a critical cautionary counterpoint where the same 'targeting cautious players' pattern produced a mislynch when the cautious player was innocent. SP3 (bab6a351, 4 obs) is an exact match for challenging coordinated inaction rhetoric. SP9 (41f4badb) provides key analytical framework: check if the mislynched player's accusations were close to home (player_5 accused player_3 of shielding wolves, then was mislynched \u2014 supporting the case against player_3). SP2 provides important post-mislynch balance."
@@ -2428,6 +2873,21 @@
           "situation": "Info-starved, player pushed caution and refused to name suspects. Stalling identified as wolf behavior.",
           "approach": "Pressured stalling player, identified contradictory tactic.",
           "outcome": "Wolf correctly identified and eliminated. Validates our approach."
+        },
+        {
+          "key": "f88a85ae-1ee2-49ec-9a16-e82938214c08",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "c4d1cfda-4c8e-4412-b4f4-eb216cb2060a",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "09bd03c1-5fd3-43a2-936a-739fe77a7c68",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -2500,6 +2960,16 @@
           "score": 0.7522,
           "situation": "Fragile consensus based on vibes/communication style. Info-starved, social pressure risk.",
           "action": "Resist voting on social pressure alone. Demand concrete evidence. Quiet/cautious behavior may be legitimate."
+        },
+        {
+          "key": "e1c64739-2a78-44fc-a54e-2e33269d5ca9",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "b252d6b2-6620-4889-81ed-4ce737a2f975",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Villager/day_vote namespace. Retrieval quality is weaker than day_discussion \u2014 most observations come from info-rich contexts (voting records, healer saves) while our case is entirely info-starved with behavioral evidence only. Obs 9 and 10 represent the two poles of the core dilemma: tunnel-vision mislynch when wolf amplifies consensus (obs 9, cautionary) vs correctly identifying wolf through stalling behavior (obs 10, validating). SP7 and SP10 are complementary: check who weaponizes the mislynch vs resist vibes-based consensus. Coverage gap: no entries specifically for 'post-mislynch with coordinated stalling pair as sole behavioral evidence' \u2014 the closest are about voting record evidence or scattered consensus."
@@ -2599,6 +3069,26 @@
           "situation": "Strong consensus, wolf cast lone unexplained vote. Defended later with 'groupthink.'",
           "approach": "Dissented, then used 'groupthink' as justification.",
           "outcome": "Drew intense scrutiny, weak justification failed, eliminated."
+        },
+        {
+          "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "4d55e9f0-6c20-4878-a3f0-8b629fe8c178",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "29967b04-96a1-4068-98a7-3b21871d554c",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -2755,6 +3245,21 @@
           "situation": "Wolf scrutinized for voting with investigator-elimination bloc. Endgame multi-player.",
           "approach": "Aggressively accused former voting partners, rewrote involvement.",
           "outcome": "Successfully created tie through chaos. Wolves killed again, won. Rare success."
+        },
+        {
+          "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "1668786a-f65e-4db1-8b1a-788ea50d77b8",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "675c0947-8b72-47fe-8c2e-00e5b9edba3c",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
@@ -2827,6 +3332,21 @@
           "score": 0.7742,
           "situation": "Post-mislynch, wolf NOT primary target. Low pressure.",
           "action": "Participate in post-mortem, offer alternate explanation."
+        },
+        {
+          "key": "54701d09-ccb2-4379-aae6-803116cdcc18",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "f4137b55-8af0-4387-9b14-22232da9d006",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "4001774c-4554-4567-a1d6-21bbd404867f",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
         }
       ],
       "notes": "Wolf/day_discussion namespace. Excellent retrieval \u2014 obs 7 (d9834d81, 9 obs) and obs 9 (7da9b86f, 14 obs) are comprehensive catalogs of endgame wolf deflection tactics that consistently fail against evidence-based consensus. 7/10 observations at relevance=2. SP1 and SP4 address the 1v2 scenario directly. SP6 provides actionable advice: invent concrete narrative for past partner defense rather than deflecting. Obs 5 and obs 10 are the only success cases (attacking investigator timing, aggressive chaos-creation) \u2014 both require different conditions than our case."
@@ -2925,6 +3445,26 @@
           "situation": "Wolf voted against healer while village voted for partner. Outlier vote visible.",
           "approach": "Cast outlier vote aligning with wolf actions.",
           "outcome": "Village recognized alignment between day vote and wolf night actions."
+        },
+        {
+          "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+          "relevance": 1,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "453891e8-d511-44d1-8f2c-2206606c3e93",
+          "relevance": 0,
+          "labeled_by": "opus-4.6"
+        },
+        {
+          "key": "538ff88c-351a-4b72-a38f-ab1a12e12083",
+          "relevance": 2,
+          "labeled_by": "opus-4.6"
         }
       ],
       "strategy_labels": [
