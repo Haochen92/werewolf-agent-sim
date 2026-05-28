@@ -44,3 +44,9 @@ dist/
 # Large JSON files
 eval_results/
 batch_results/
+
+# Fine-tuned model weights (download from Modal volume instead)
+evidence/fine_tuning/embedding/gte_base_run*/
+evidence/fine_tuning/dedup_classifier/local_output/
+evidence/fine_tuning/cross_encoder/ce_minilm_dedup_run1/
+evidence/fine_tuning/cross_encoder/ce_minilm_dedup_onnx/

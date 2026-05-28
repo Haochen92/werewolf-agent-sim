@@ -20,6 +20,7 @@ dependencies = [
     "pandas (>=3.0.3,<4.0.0)",
     "matplotlib (>=3.10.9,<4.0.0)",
     "langchain-google-vertexai (>=3.2.3,<4.0.0)",
+    "sentence-transformers (>=5.5.1,<6.0.0)",
 ]
 
 [project.scripts]
@@ -42,6 +43,7 @@ packages = [{ include = "Agents" }, { include = "evaluation" }]
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
 ruff = "^0.8.0"
+modal = "^1.4.3"
 
 [build-system]
 requires = ["poetry-core>=1.8.0"]
