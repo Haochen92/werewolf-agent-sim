@@ -33,7 +33,8 @@ scripts/migrate_langfuse_traces.py
 .DS_Store
 .idea/
 .vscode/
-.claude/
+.claude/settings.local.json
+.claude/plans/
 
 # Build artifacts
 build/
