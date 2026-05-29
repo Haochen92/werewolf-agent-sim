@@ -51,7 +51,7 @@ GOLDEN_LABELS_PATH = (
 )
 CE_MODEL_PATH = (
     REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
-    / "reranker_v2_768pairs"
+    / "reranker_v3"
 )
 OBS_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "observations.json"
 SP_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
