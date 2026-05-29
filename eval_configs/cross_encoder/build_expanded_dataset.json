@@ -1,0 +1,12 @@
+{
+  "eval_set_id": "v4_reranker_expanded",
+  "session_ids": [
+    "v4_action_phase_v2_all_enabled_remainder_all_enabled",
+    "v4_action_phase_v2_wolf_only"
+  ],
+  "created_from": "v4_action_phase_v2 sessions (all_enabled + wolf_only), expanded for cross-encoder training",
+  "max_games": 15,
+  "per_role_per_phase": 1,
+  "max_samples": 120,
+  "seed": 42
+}

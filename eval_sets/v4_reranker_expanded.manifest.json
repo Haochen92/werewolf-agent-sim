@@ -1,0 +1,11 @@
+{
+  "case_count": 110,
+  "created_at": "2026-05-29T19:27:46.897678",
+  "created_from": "v4_action_phase_v2 sessions (all_enabled + wolf_only), expanded for cross-encoder training",
+  "dataset_path": "/Users/liuhaochen/Projects/werewolf_game/eval_sets/v4_reranker_expanded.jsonl",
+  "eval_set_id": "v4_reranker_expanded",
+  "max_games": 15,
+  "max_samples": 120,
+  "per_role_per_phase": 1,
+  "seed": 42
+}
