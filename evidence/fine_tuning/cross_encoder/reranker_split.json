@@ -1,0 +1,52 @@
+{
+  "description": "Stratified train/val/test split for reranker cross-encoder",
+  "seed": 42,
+  "strategy": "stratified by (player_role x action_phase), 3/1/1 per stratum",
+  "golden_labels_sha256": "4934bf74f62c4916e0c29d6f974d202057c974d97f5ab0e1104006a82f4daa60",
+  "train": [
+    1,
+    5,
+    6,
+    7,
+    8,
+    10,
+    11,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    24,
+    25,
+    28,
+    29,
+    32,
+    34,
+    36,
+    39
+  ],
+  "val": [
+    2,
+    4,
+    22,
+    23,
+    26,
+    27,
+    31,
+    33
+  ],
+  "test": [
+    0,
+    3,
+    9,
+    12,
+    30,
+    35,
+    37,
+    38
+  ]
+}

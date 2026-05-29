@@ -3,13 +3,13 @@
 Trains a cross-encoder that scores (situation_query, memory_text) → relevance.
 Used to replace the LLM reranking call in the retrieval pipeline.
 
-Training data: reranker_train.jsonl / reranker_eval.jsonl from prep_reranker_data.py
-(case-level hold-out split, one eval case per role to prevent query leakage)
+Training data: reranker_train.jsonl / reranker_val.jsonl from prep_reranker_data.py
+(stratified split from reranker_split.json, 24 train / 8 val / 8 test)
 Labels: 0.0 (irrelevant), 0.25 (partial), 1.0 (relevant)
 
 Usage:
     poetry run modal run evidence/fine_tuning/cross_encoder/train_reranker_modal.py \
-        --run-name reranker_v1
+        --run-name reranker_v3
 
     poetry run modal run evidence/fine_tuning/cross_encoder/train_reranker_modal.py \
         --base-model BAAI/bge-reranker-base --run-name reranker_bge_v1
@@ -46,6 +46,7 @@ vol = modal.Volume.from_name("cross-encoder-reranker-output", create_if_missing=
 def train(
     train_jsonl: str,
     eval_jsonl: str,
+    split_manifest_json: str | None = None,
     base_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
     epochs: int = 20,
     batch_size: int = 16,
@@ -67,6 +68,22 @@ def train(
 
     train_raw = [json.loads(line) for line in train_jsonl.strip().split("\n") if line.strip()]
     eval_raw = [json.loads(line) for line in eval_jsonl.strip().split("\n") if line.strip()]
+
+    if split_manifest_json:
+        manifest = json.loads(split_manifest_json)
+        train_cases = set(p["case_index"] for p in train_raw)
+        eval_cases = set(p["case_index"] for p in eval_raw)
+        expected_train = set(manifest["train"])
+        expected_val = set(manifest["val"])
+        if train_cases != expected_train:
+            print(f"WARNING: train data cases {sorted(train_cases)} don't match "
+                  f"manifest train {sorted(expected_train)}")
+        if eval_cases != expected_val:
+            print(f"WARNING: eval data cases {sorted(eval_cases)} don't match "
+                  f"manifest val {sorted(expected_val)}")
+        overlap = train_cases & eval_cases
+        if overlap:
+            print(f"ERROR: train/eval overlap on cases {sorted(overlap)}")
 
     print(f"  Train: {len(train_raw)}")
     print(f"  Eval:  {len(eval_raw)}")
@@ -123,6 +140,27 @@ def train(
     )
 
     trainer.train()
+
+    loss_curve = {
+        "train_loss": [],
+        "eval_loss": [],
+        "epochs": [],
+    }
+    for entry in trainer.state.log_history:
+        if "loss" in entry and "epoch" in entry:
+            loss_curve["train_loss"].append({
+                "step": entry.get("step"), "epoch": entry["epoch"], "loss": entry["loss"],
+            })
+        if "eval_loss" in entry and "epoch" in entry:
+            loss_curve["eval_loss"].append({
+                "step": entry.get("step"), "epoch": entry["epoch"], "loss": entry["eval_loss"],
+            })
+            loss_curve["epochs"].append(entry["epoch"])
+
+    curve_path = f"/output/{run_name}_loss_curve.json"
+    with open(curve_path, "w") as f:
+        json.dump(loss_curve, f, indent=2)
+    print(f"Loss curve saved to {curve_path}")
 
     # Evaluate: score all eval pairs and compute ranking metrics
     eval_pairs = [(r["sentence1"], r["sentence2"]) for r in eval_raw]
@@ -195,7 +233,7 @@ def main(
     lr: float = 2e-5,
     run_name: str = "reranker_v1",
     train_path: str = "evidence/fine_tuning/cross_encoder/reranker_train.jsonl",
-    eval_path: str = "evidence/fine_tuning/cross_encoder/reranker_eval.jsonl",
+    eval_path: str = "evidence/fine_tuning/cross_encoder/reranker_val.jsonl",
 ):
     from pathlib import Path
 
@@ -205,6 +243,11 @@ def main(
         raise FileNotFoundError(f"Train data not found: {train_data}. Run prep_reranker_data.py first.")
     if not eval_data.exists():
         raise FileNotFoundError(f"Eval data not found: {eval_data}. Run prep_reranker_data.py first.")
+
+    split_path = Path("evidence/fine_tuning/cross_encoder/reranker_split.json")
+    split_manifest_json = split_path.read_text() if split_path.exists() else None
+    if not split_manifest_json:
+        print("WARNING: split manifest not found — skipping validation")
 
     train_jsonl = train_data.read_text()
     eval_jsonl = eval_data.read_text()
@@ -217,6 +260,7 @@ def main(
     result = train.remote(
         train_jsonl=train_jsonl,
         eval_jsonl=eval_jsonl,
+        split_manifest_json=split_manifest_json,
         base_model=base_model,
         epochs=epochs,
         batch_size=batch_size,
