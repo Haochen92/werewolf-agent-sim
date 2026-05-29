@@ -46,7 +46,8 @@ EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
 def dcg_at_k(relevances: list[int], k: int) -> float:
     score = 0.0
     for i, rel in enumerate(relevances[:k]):
-        score += rel / math.log2(i + 2)
+        gain = 2 ** rel - 1
+        score += gain / math.log2(i + 2)
     return score
 
 

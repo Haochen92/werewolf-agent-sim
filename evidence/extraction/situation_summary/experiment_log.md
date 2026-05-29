@@ -453,3 +453,45 @@ auto-labels, relevance 0/1/2). This eliminates the unlabeled-item bias.
 **Next steps:**
 1. Cross-encoder reranker to close remaining gap on retrieval side
 2. Consider per-role prompt tuning if investigator continues to lag
+
+### Phase 3: Exponential NDCG gains + skewed training labels
+
+Switched from linear NDCG gains (`rel`) to exponential (`2^rel - 1`).
+Rationale: a grade-2 memory (exact same dilemma) is much more valuable
+than grade-1 (related but different angle). Exponential gains make a 2
+worth 3x a 1 (was 2x).
+
+Also skewed cross-encoder training labels: 0→0.0, 1→0.25, 2→1.0 (was
+0.0/0.5/1.0). The model now learns that partial relevance is closer to
+irrelevant than to highly relevant.
+
+**Re-scored existing 20 cases with exponential NDCG (golden situations):**
+
+| Metric | Observations | Strategy Points | Combined |
+|---|---|---|---|
+| NDCG@3 | 0.719 | 0.678 | 0.711 |
+| NDCG@5 | 0.715 | 0.689 | 0.708 |
+| NDCG@10 | 0.795 | 0.766 | 0.732 |
+
+Scores are lower than linear NDCG (was 0.783 combined @5) because
+exponential gains penalize 1-before-2 ranking errors more heavily.
+
+**Per-role (combined NDCG@5, exponential):**
+
+| Role | NDCG@5 | n |
+|---|---|---|
+| healer | 0.834 | 4 |
+| wolf | 0.767 | 6 |
+| investigator | 0.705 | 5 |
+| villager | 0.538 | 5 |
+
+Villager dropped furthest (0.657→0.538) — confirms the store lacks
+highly-relevant entries for villager voting scenarios. Partial matches
+dominate the top slots.
+
+**Golden vs captured (exponential NDCG@5):**
+
+Mean: golden 0.708 vs captured 0.640 (delta = +0.068)
+
+Largest gaps: case 34 (+0.545), case 14 (+0.485), case 38 (+0.312).
+All wolf/villager cases from the same game (cdcd2c6e).
