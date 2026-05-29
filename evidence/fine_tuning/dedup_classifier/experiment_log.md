@@ -322,32 +322,187 @@ Ran inference on 65 golden eval cases using T4 GPU on Modal. The model generates
 
 Decision distribution: 31 D, 34 K — roughly balanced, so the model isn't degenerate, just wrong.
 
-### Analysis
+### Analysis: systematic underfitting, not random
 
-The model is essentially random (43% vs 50% coin flip). Despite strong training metrics (93.6% token accuracy, loss 0.08), it fails catastrophically on the golden set. Both error directions are severe:
+At first glance, 43% accuracy looks random. Per-type breakdown reveals it's not — the model learned a **per-type class prior shortcut**:
 
-- **18 false keeps (60% of D cases):** The model finds superficial differences between clearly duplicate entries and uses them to justify K. It generates fluent, plausible-sounding reasoning that reaches the wrong conclusion.
-- **19 false discards (56% of K cases):** The model claims entries are "identical" or have "the same situation and action" when they have meaningfully different contexts, strategies, or outcomes.
+**Strategy points (25 golden cases):**
+
+|  | pred D | pred K |
+|--|--------|--------|
+| gold D (10) | **10** | 0 |
+| gold K (15) | **15** | 0 |
+
+The model predicts D for *every* strategy point. It gets all 10 true-D correct by default but misclassifies all 15 K cases.
+
+**Observations (40 golden cases):**
+
+|  | pred D | pred K |
+|--|--------|--------|
+| gold D (20) | 2 | **18** |
+| gold K (19+1 M/K) | 4 | **15** |
+
+The model predicts K for almost every observation (33/40). It barely discriminates.
+
+**Root cause:** The model found the cheapest shortcut available — predict based on item type, not text content. This is classic underfitting: the model doesn't have enough capacity (or the right training signal) to learn the actual decision boundary, so it defaults to the strongest statistical prior.
 
 ### Why training metrics were misleading
 
-The high token accuracy (93.6%) reflects the model learning to reproduce the *format* — `DECISION: D/K\nREASONING: ...` — and predict common reasoning tokens. It does not reflect the model learning the actual *decision boundary*. The dedup task requires:
+93.6% token accuracy = the model learned to reproduce the output *format* (`DECISION: D/K\nREASONING: ...`). The D/K decision is 1 token out of ~200 in the assistant response, so ~99.5% of the loss gradient teaches format reproduction. The model can achieve high token accuracy by perfectly copying reasoning structure while getting every decision wrong.
 
-1. Comparing multi-field entries (situation, action/approach/outcome) across new entry and 1-5 candidates
-2. Understanding whether differences are *meaningful* (distinct advice) vs *superficial* (same advice rephrased)
-3. Resolving the opposite-action problem (same topic, opposite advice = K)
+### Problem 1: Diluted training signal
 
-A 1.5B model fine-tuned on 863 examples cannot learn these distinctions. The task requires reasoning about the *meaning* of game strategies, not pattern matching on surface features.
+The SFT loss is averaged across all output tokens equally. The D/K decision token gets the same weight as every formatting and reasoning token. This means:
+- ~0.5% of gradient signal teaches the actual classification
+- ~99.5% of gradient signal teaches the model to reproduce flash-3.5's reasoning style
+- The model optimizes for the easy 99.5% and treats the decision token as noise
 
-### Conclusion
+### Problem 2: Dataset imbalance
 
-The dedup classifier fine-tuning experiment confirms that **1.5B parameters is insufficient for this task**. The training succeeded mechanically (low loss, high token accuracy, proper format) but the model lacks the reasoning capacity to make correct dedup decisions.
+The training set has two imbalances that enable the per-type shortcut:
 
-**Status: concluded.** Revisit if either condition is met:
-1. **Larger model (8-14B)** — e.g. Llama 3.1 8B or Qwen 2.5 14B via Together AI LoRA fine-tuning. Models in this range cross the reasoning threshold that 1.5B couldn't reach. Per-token cost is low enough to be practical.
-2. **More labeled data** — the 863-example dataset may be too small to teach the nuanced decision boundary even with a capable model. Production traces accumulate free labeled data over time.
+| | D | K | Ratio |
+|---|---|---|---|
+| Strategy points | 261 | 348 | 33:67 |
+| Observations | 129 | 125 | 42:58 |
+| **SP:Obs overall** | **609** | **254** | **72:28** |
 
-Fine-tuning budget may be better allocated to **agent personality** rather than dedup — personality is harder to solve with prompt engineering alone, and game transcripts provide richer training signal.
+After 3x oversampling of hard cases (difficulty 1-2):
+
+| | D | K | Ratio |
+|---|---|---|---|
+| Strategy points | 269 | 548 | 33:67 |
+| Observations | 135 | 189 | 42:58 |
+
+SP outnumbers observations 2.5:1, and within SP, K heavily outnumbers D. A model that learns "SP → D" and "Obs → K" (or any type-based shortcut) gets rewarded without reading the text.
+
+### Problem 3: Label quality
+
+| Source | Cases | Review | Estimated noise |
+|--------|-------|--------|----------------|
+| Co-labeled (human reviewed) | 617 | Manual | Low |
+| Unanimous-K (3 models agreed) | 246 | None | Unknown — all 3 models agreed, but the D-bias pattern (21% false-D on unanimous-D) suggests unanimous-K labels are more reliable than unanimous-D |
+
+26.4% of co-labeled cases overrode flash-3.5's judgment, meaning the training data has substantial correction from the baseline model. The 246 unanimous-K cases were not human-reviewed — if 5-10% are noisy, that's 12-25 incorrect labels.
+
+---
+
+## Reopened: Diagnostic Plan (2026-05-28)
+
+The 1.5B result is ambiguous: is the underfitting caused by **model size** or **data/training issues**? Three problems identified — diluted signal, dataset imbalance, and the per-type shortcut opportunity. Increasing model size alone won't fix these if the training setup enables shortcuts.
+
+### Fix attempted: Weighted decision loss
+
+Instead of equal loss across all tokens, upweight the decision token so the model is forced to optimize for D/K accuracy:
+
+- Reasoning tokens: weight 1.0 (still contribute gradient for training stability and output structure)
+- Decision token (D/K): weight 100x (~33% of total loss vs ~0.5% unweighted)
+
+Rationale: keep the benefits of chain-of-thought supervision (reasoning tokens guide internal representations) while making the decision token the primary optimization target. Pure decision-only training (stripping reasoning entirely) would give only ~1000 tokens of total supervision — too thin for stable training.
+
+### Training run 2: qwen3_4b_run1 (2026-05-28)
+
+Ran Qwen3-4B-Instruct-2507 on the original dataset (with reasoning, no weighted loss) as a baseline before applying fixes. This tests whether model capacity alone resolves the shortcut pattern.
+
+**Config:** Qwen/Qwen3-4B-Instruct-2507, QLoRA rank=16, 3 epochs, batch_size=2, grad_accum=4, lr=2e-4, L4 GPU. Added `enable_thinking=False` for Qwen3 chat template compatibility.
+
+**Status:** Stopped early — training was ~6 hours (429 steps at ~49s/step). At step 30/429 (epoch 0.07), token accuracy was 49.7% (expected to climb to ~94% as model learns format). Stopped to prepare weighted loss instead of waiting for a likely-shortcutting run to finish.
+
+### Training run 3: qwen1b_weighted100x (2026-05-28)
+
+**Purpose:** Isolate whether the diluted loss signal was the problem. Same 1.5B model that failed at 43%, but with 100x decision token weight.
+
+**Config:** Qwen/Qwen2.5-1.5B-Instruct, QLoRA rank=16, 3 epochs, batch_size=2, grad_accum=4, lr=2e-4, L4 GPU, `--decision-weight 100`.
+
+**Training metrics:** Final loss 1.91 (vs 0.08 unweighted). The high loss is expected — the 100x weight heavily penalizes wrong D/K predictions. Training completed in ~2.5 hours (429 steps at ~20s/step).
+
+**Results: 46.2% accuracy (30/65)**
+
+| | Unweighted 1.5B (run 1) | Weighted 100x 1.5B (run 3) |
+|---|---|---|
+| **Overall** | 43.1% | 46.2% |
+| SP accuracy | 40.0% | 40.0% |
+| Obs accuracy | 45.0% | 50.0% |
+
+**Per-type confusion matrix:**
+
+Strategy points (25 cases):
+```
+         pred_D  pred_K
+gold_D       10       0   (n=10)
+gold_K       15       0   (n=15)
+```
+
+Observations (40 cases):
+```
+         pred_D  pred_K
+gold_D        0      20   (n=20)
+gold_K        0      20   (n=20)
+```
+
+**The weighted loss hardened the shortcut instead of fixing it.** The model now predicts D for every SP and K for every observation with zero exceptions. The unweighted run at least had a few cross-predictions (2 D predictions for observations). Upweighting the decision token just made the model more confident in the per-type prior.
+
+**Conclusion:** The 1.5B model's failure is **not a diluted loss signal problem**. The model genuinely cannot learn within-type D/K discrimination from this dataset at 1.5B parameters. The per-type class prior is the best feature it can extract regardless of how the loss is weighted.
+
+### Training run 4: qwen3_4b_weighted100x (2026-05-28)
+
+**Purpose:** Test whether 4B model capacity resolves the shortcut. The 1.5B weighted result eliminates loss signal as the variable — if 4B also shortcuts, it's a data problem (volume or balance).
+
+**Config:** Qwen/Qwen3-4B-Instruct-2507, QLoRA rank=16, 3 epochs, batch_size=2, grad_accum=4, lr=2e-4, L4 GPU, `--decision-weight 100`.
+
+**Status:** Training interrupted mid-run due to CPU overload. Relaunched with checkpoint resumption. ~5.5 hours estimated total.
+
+**What to look for at eval:**
+1. Per-type confusion matrix: does the model predict both D and K within each item type?
+2. If yes → model capacity was the bottleneck; consider scaling to 7-8B for better accuracy
+3. If no (same per-type shortcut) → the task cannot be learned from 863 examples at any reasonable model size; need more data or different approach
+
+**Decision after this run:**
+- If 4B discriminates within types → promising, consider rebalancing data and/or more labeled examples
+- If 4B still shortcuts → **stop the classifier fine-tuning track**. The remaining 70-80% of dedup decisions stay as LLM API calls
+
+---
+
+## Future: Dataset Expansion
+
+The current 863 examples have two issues for scaling: type imbalance (72% SP / 28% Obs) and all labels came from 3 Gemini models that share a systematic D-bias. Expanding the dataset addresses both the classifier and cross-encoder.
+
+### How much more data
+
+| Target | Total | New needed | New Obs needed | New SP needed |
+|--------|-------|-----------|----------------|---------------|
+| Current | 863 | — | — | — |
+| 2,000 (balanced) | 2,000 | ~1,140 | ~750 | ~390 |
+| 3,000 (balanced) | 3,000 | ~2,140 | ~1,250 | ~890 |
+
+~2,000 balanced examples is the minimum for meaningful improvement — roughly 2.3x current size, with most growth in observations to fix the 72:28 imbalance.
+
+### Labeling reliability from round 1
+
+The 3-Gemini triage showed a strong D-bias that makes auto-labeling asymmetric:
+
+| Agreement type | Error rate | Auto-label? |
+|----------------|-----------|-------------|
+| Unanimous K (3/3 K) | ~5% est. | Yes — models don't over-keep |
+| Majority K (2/3 K) | 6.9% | Yes — still reliable |
+| Majority D (2/3 D) | **36.6%** | No — must review |
+| Unanimous D (3/3 D) | **21.4%** | No — must review |
+
+**Efficient pipeline:** auto-label all K-majority cases, manually review only D-majority cases. This cuts manual effort to ~40-60% of new cases.
+
+### Diversifying the triage panel
+
+Using 3 Gemini models introduced correlated D-bias — they share similar failure modes. For the next labeling round, use models from different families to get more independent votes:
+
+- 1 Gemini model (flash-3.5 or flash-lite)
+- 1 OpenAI model (GPT-4o-mini or similar)
+- 1 open-source model (e.g. Qwen or Llama via Together AI)
+
+More independent voters → unanimous agreement is more meaningful → can auto-label more cases confidently.
+
+### Expanding the golden test set
+
+The current golden eval set (65 cases) is small. Reserving ~100-150 of the new labeled cases as additional test data would give more reliable eval metrics, especially per-type breakdowns (currently only 25 SP and 40 Obs test cases).
 
 ## Artifacts
 

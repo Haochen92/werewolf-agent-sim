@@ -115,7 +115,12 @@ def run_eval(
         ).strip()
 
         decision_match = re.search(r"DECISION:\s*([DKMdkm])", response)
-        decision = decision_match.group(1).upper() if decision_match else "?"
+        if decision_match:
+            decision = decision_match.group(1).upper()
+        elif response.strip()[:1].upper() in ("D", "K", "M"):
+            decision = response.strip()[0].upper()
+        else:
+            decision = "?"
 
         results.append({
             "case_index": case["case_index"],

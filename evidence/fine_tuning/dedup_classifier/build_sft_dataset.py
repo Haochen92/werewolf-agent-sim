@@ -115,7 +115,9 @@ def format_prompt(case: dict) -> str:
         )
 
 
-def format_assistant_output(label: str, reasoning: str, candidates: list | None = None) -> str:
+def format_assistant_output(label: str, reasoning: str, candidates: list | None = None, decision_only: bool = False) -> str:
+    if decision_only:
+        return label
     if label == "D":
         out = f"DECISION: D\nREASONING: {reasoning}"
         if candidates:
@@ -215,7 +217,7 @@ def generate_reasoning_for_hard_cases():
     print(f"Done. Reasoning saved to {output_path}")
 
 
-def build_dataset():
+def build_dataset(decision_only: bool = False):
     """Assemble the full SFT dataset from all labeled cases."""
     _load_prompts()
     agreed, disagreed, colab = _load_data()
@@ -255,7 +257,7 @@ def build_dataset():
             print(f"Warning: no usable reasoning for case {idx} (terse: '{rec.get('reasoning', '')}')")
             continue
 
-        assistant_output = format_assistant_output(label, reasoning, src["candidates"] if label == "D" else None)
+        assistant_output = format_assistant_output(label, reasoning, src["candidates"] if label == "D" else None, decision_only=decision_only)
 
         examples.append({
             "messages": [
@@ -281,7 +283,7 @@ def build_dataset():
 
         prompt_text = format_prompt(case)
         reasoning = case["model_decisions"]["gemini-3.5-flash"]["reasoning"]
-        assistant_output = format_assistant_output("K", reasoning)
+        assistant_output = format_assistant_output("K", reasoning, decision_only=decision_only)
 
         examples.append({
             "messages": [
@@ -297,7 +299,8 @@ def build_dataset():
             },
         })
 
-    output_path = DIR / "sft_dataset.jsonl"
+    suffix = "_decision_only" if decision_only else ""
+    output_path = DIR / f"sft_dataset{suffix}.jsonl"
     with open(output_path, "w") as f:
         for ex in examples:
             f.write(json.dumps(ex) + "\n")
@@ -305,7 +308,7 @@ def build_dataset():
     from collections import Counter
     tiers = Counter(ex["metadata"]["difficulty"] for ex in examples)
     labels = Counter(
-        "D" if "DECISION: D" in ex["messages"][1]["content"] else "K"
+        "D" if ex["messages"][1]["content"].strip().startswith("D") else "K"
         for ex in examples
     )
     types = Counter(ex["metadata"]["item_type"] for ex in examples)
@@ -320,11 +323,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--generate-reasoning", action="store_true")
     parser.add_argument("--build", action="store_true")
+    parser.add_argument("--decision-only", action="store_true",
+                        help="Assistant output is just D or K (no reasoning)")
     args = parser.parse_args()
 
     if args.generate_reasoning:
         generate_reasoning_for_hard_cases()
     if args.build:
-        build_dataset()
+        build_dataset(decision_only=args.decision_only)
     if not args.generate_reasoning and not args.build:
         parser.print_help()

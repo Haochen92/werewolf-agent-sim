@@ -1,7 +1,6 @@
 """QLoRA fine-tuning for dedup classifier on Modal.
 
-Trains small models (1-3B) with QLoRA adapters on the SFT dataset.
-Uses Unsloth for 2x faster training with 70% less memory.
+Trains small models (1-8B) with QLoRA adapters on the SFT dataset.
 
 Setup:
     pip install modal
@@ -9,24 +8,19 @@ Setup:
     modal secret create huggingface HF_TOKEN=hf_xxx
 
 Usage:
-    # Train both 1B and 3B models (recommended first run):
-    modal run evidence/fine_tuning/dedup_classifier/train_modal.py --both
-
-    # Train just the 3B model:
+    # Default (Qwen2.5-3B):
     modal run evidence/fine_tuning/dedup_classifier/train_modal.py
 
-    # Train just the 1B model:
+    # With weighted decision loss (10x weight on D/K token):
     modal run evidence/fine_tuning/dedup_classifier/train_modal.py \
-        --base-model Qwen/Qwen2.5-1.5B-Instruct --run-name qwen1b_run1
+        --base-model Qwen/Qwen3-4B-Instruct-2507 \
+        --run-name qwen3_4b_weighted \
+        --decision-weight 10
 
     # Custom config:
     modal run evidence/fine_tuning/dedup_classifier/train_modal.py \
-        --base-model meta-llama/Llama-3.2-3B-Instruct \
+        --base-model Qwen/Qwen3-4B-Instruct-2507 \
         --lora-rank 16 --epochs 3 --lr 2e-4
-
-Models:
-    ~1B: Qwen/Qwen2.5-1.5B-Instruct (default small)
-    ~3B: Qwen/Qwen2.5-3B-Instruct   (default large)
 """
 
 from __future__ import annotations
@@ -61,7 +55,7 @@ vol = modal.Volume.from_name("dedup-finetune-output", create_if_missing=True)
 @app.function(
     image=image,
     gpu="L4",
-    timeout=120 * MINUTES,
+    timeout=480 * MINUTES,
     secrets=[modal.Secret.from_name("huggingface")],
     volumes={"/output": vol},
 )
@@ -76,6 +70,7 @@ def train(
     grad_accum: int = 4,
     max_seq_length: int = 4096,
     oversample_hard: int = 3,
+    decision_weight: float = 1.0,
     run_name: str = "run_001",
 ):
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainerCallback
@@ -89,6 +84,38 @@ def train(
         def on_save(self, args, state, control, **kwargs):
             vol.commit()
             print(f"  Volume committed at step {state.global_step}")
+
+    class WeightedDecisionTrainer(SFTTrainer):
+        """SFTTrainer that upweights the decision token (D/K) in the loss."""
+
+        def __init__(self, *args, decision_token_ids=None, weight=10.0, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._decision_token_ids = decision_token_ids or set()
+            self._decision_weight = weight
+
+        def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+            labels = inputs.pop("labels")
+            outputs = model(**inputs)
+            logits = outputs.logits
+
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
+
+            weights = torch.ones_like(shift_labels, dtype=shift_logits.dtype)
+            for tid in self._decision_token_ids:
+                weights[shift_labels == tid] = self._decision_weight
+
+            loss_fct = torch.nn.CrossEntropyLoss(reduction="none", ignore_index=-100)
+            flat_loss = loss_fct(
+                shift_logits.view(-1, shift_logits.size(-1)),
+                shift_labels.view(-1),
+            )
+            loss = flat_loss.view(shift_labels.shape)
+
+            valid = (shift_labels != -100).float()
+            weighted_loss = (loss * weights * valid).sum() / (weights * valid).sum()
+
+            return (weighted_loss, outputs) if return_outputs else weighted_loss
 
     os.environ["WANDB_DISABLED"] = "true"
 
@@ -156,6 +183,15 @@ def train(
 
     dataset = Dataset.from_list(chat_examples).shuffle(seed=42)
 
+    decision_token_ids = set()
+    if decision_weight > 1.0:
+        d_ids = tokenizer.encode("DECISION: D", add_special_tokens=False)
+        k_ids = tokenizer.encode("DECISION: K", add_special_tokens=False)
+        decision_token_ids = {d_ids[-1], k_ids[-1]}
+        print(f"  Decision weighting: {decision_weight}x on token IDs {decision_token_ids}")
+        print(f"    'DECISION: D' tokens → {d_ids} → decision='{tokenizer.decode([d_ids[-1]])}'")
+        print(f"    'DECISION: K' tokens → {k_ids} → decision='{tokenizer.decode([k_ids[-1]])}'")
+
     output_dir = f"/output/{run_name}"
 
     resume_from = None
@@ -168,28 +204,37 @@ def train(
             resume_from = f"{output_dir}/{checkpoints[-1]}"
             print(f"  Resuming from checkpoint: {resume_from}")
 
-    trainer = SFTTrainer(
+    sft_config = SFTConfig(
+        output_dir=output_dir,
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=grad_accum,
+        num_train_epochs=epochs,
+        learning_rate=lr,
+        warmup_steps=10,
+        logging_steps=10,
+        save_strategy="epoch",
+        bf16=True,
+        optim="adamw_8bit",
+        lr_scheduler_type="cosine",
+        seed=42,
+        max_seq_length=max_seq_length,
+        dataset_text_field="text",
+        packing=False,
+    )
+
+    trainer_cls = WeightedDecisionTrainer if decision_weight > 1.0 else SFTTrainer
+    trainer_kwargs = {}
+    if decision_weight > 1.0:
+        trainer_kwargs["decision_token_ids"] = decision_token_ids
+        trainer_kwargs["weight"] = decision_weight
+
+    trainer = trainer_cls(
         model=model,
         train_dataset=dataset,
-        args=SFTConfig(
-            output_dir=output_dir,
-            per_device_train_batch_size=batch_size,
-            gradient_accumulation_steps=grad_accum,
-            num_train_epochs=epochs,
-            learning_rate=lr,
-            warmup_steps=10,
-            logging_steps=10,
-            save_strategy="epoch",
-            bf16=True,
-            optim="adamw_8bit",
-            lr_scheduler_type="cosine",
-            seed=42,
-            max_seq_length=max_seq_length,
-            dataset_text_field="text",
-            packing=False,
-        ),
+        args=sft_config,
         processing_class=tokenizer,
         callbacks=[VolumeCommitCallback()],
+        **trainer_kwargs,
     )
 
     print("Starting training...")
@@ -227,6 +272,7 @@ def main(
     epochs: int = 3,
     lr: float = 2e-4,
     oversample_hard: int = 3,
+    decision_weight: float = 1.0,
     run_name: str = "",
     dataset_path: str = "evidence/fine_tuning/dedup_classifier/sft_dataset.jsonl",
     both: bool = False,
@@ -254,6 +300,8 @@ def main(
         print(f"Training: {model_name} → {rname}")
         print(f"  {n_examples} examples, rank={lora_rank}, epochs={epochs}, lr={lr}")
         print(f"  Hard case oversampling: {oversample_hard}x for difficulty 1-2")
+        if decision_weight > 1.0:
+            print(f"  Decision token weight: {decision_weight}x")
         print(f"{'='*60}\n")
 
         result = train.remote(
@@ -263,6 +311,7 @@ def main(
             epochs=epochs,
             lr=lr,
             oversample_hard=oversample_hard,
+            decision_weight=decision_weight,
             run_name=rname,
         )
 
