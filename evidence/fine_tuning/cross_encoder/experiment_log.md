@@ -168,3 +168,109 @@ Model weights on Modal volume `cross-encoder-finetune-output`:
 ```bash
 modal volume get cross-encoder-finetune-output ce_minilm_dedup_run1/ ./local_cross_encoder/
 ```
+
+---
+
+# Fine-Tuning: Cross-Encoder for Retrieval Reranking
+
+## Motivation
+
+The retrieval pipeline uses flash-lite as an LLM reranker to score (query, memory) pairs after embedding retrieval. This adds ~50% per-turn cost. A fine-tuned cross-encoder could replace it: same scoring quality, ~79ms on CPU, zero API cost.
+
+Training data comes from golden retrieval labels — human-annotated relevance grades for (situation_query, memory_text) pairs across 40 game cases.
+
+## Dataset
+
+Source: `retrieval_golden_labels.json` — 40 cases, 768 labeled (query, memory, relevance) triples.
+
+Two labeling methods:
+- **Old batch (20 cases):** human + claude + opus-4.6 labels — high quality
+- **New batch (20 cases):** 4-model consensus (ChatGPT + flash-lite + 3.5-flash + Qwen 3.5 397B) with manual review corrections (14 items corrected out of 84 reviewed, ~5% error rate)
+
+Label mapping: 0 (irrelevant) → 0.0, 1 (partial) → 0.25, 2 (relevant) → 1.0
+
+Prepared by `prep_reranker_data.py`. Case-level hold-out split prevents query leakage.
+
+### Systematic auto-model bias in new labels
+
+The 3 auto models (flash-lite, 3.5-flash, Qwen) systematically inflate relevance compared to ChatGPT (which had full game context). Auto distribution: 44% grade-2 vs ChatGPT 31%. Pairwise agreement: auto models agree with each other (71-74%) more than with ChatGPT (56-68%).
+
+Manual review found all 14 errors followed the same pattern: auto models matched surface-level themes without checking whether the memory's preconditions actually applied to the query situation. The remaining ~230 unreviewed items likely contain more of this noise.
+
+## Training: reranker_v1_baseline (2026-05-29)
+
+**Purpose:** Baseline with original 20 human-labeled cases only.
+
+**Config:** cross-encoder/ms-marco-MiniLM-L-6-v2 (22M params), 20 epochs, batch_size=16, lr=2e-5, warmup_ratio=0.1, bf16, L4 GPU, eval_strategy=epoch, best model by eval_loss.
+
+**Data:** 327 train pairs (16 cases), 121 eval pairs (4 cases: {10, 14, 16, 20})
+
+**Eval metrics:**
+
+| Case | Role | NDCG@5 | n |
+|------|------|--------|---|
+| 10 | investigator-discussion | 0.657 | 34 |
+| 14 | wolf-discussion | 0.774 | 37 |
+| 16 | healer-discussion | 0.887 | 20 |
+| 20 | villager-discussion | 0.790 | 30 |
+| **Mean** | | **0.777** | |
+
+- MSE: 1.155
+- Pearson r: 0.397
+
+## Training: reranker_v2_768pairs (2026-05-29)
+
+**Purpose:** Expanded dataset with all 40 cases (human + 4-model consensus labels).
+
+**Config:** Same as v1 baseline.
+
+**Data:** 579 train pairs (32 cases), 189 eval pairs (8 cases: {5, 10, 14, 16, 20, 22, 24, 29} — 4 old + 4 new, one per role)
+
+**Eval metrics:**
+
+| Case | Role | Split | NDCG@5 | n |
+|------|------|-------|--------|---|
+| 5 | villager-vote | new | 1.000 | 20 |
+| 10 | investigator-discussion | old | 0.589 | 34 |
+| 14 | wolf-discussion | old | 0.774 | 37 |
+| 16 | healer-discussion | old | 1.000 | 20 |
+| 20 | villager-discussion | old | 0.744 | 30 |
+| 22 | wolf-discussion | new | 0.786 | 20 |
+| 24 | healer-discussion | new | 0.573 | 20 |
+| 29 | investigator-vote | new | 0.958 | 8 |
+| **Mean** | | | **0.803** | |
+
+- MSE: 3.923
+- Pearson r: 0.518
+
+### v1 vs v2 comparison on overlapping eval cases
+
+| Case | v1 (327 train) | v2 (579 train) | Delta |
+|------|----------------|----------------|-------|
+| 10 | 0.657 | 0.589 | -0.068 |
+| 14 | 0.774 | 0.774 | +0.000 |
+| 16 | 0.887 | 1.000 | +0.113 |
+| 20 | 0.790 | 0.744 | -0.046 |
+| **Mean** | **0.777** | **0.777** | **0.000** |
+
+NDCG@5 is flat on the 4 overlapping cases — the extra 20 cases didn't improve ranking quality on these specific queries. However, Pearson r improved significantly (0.397 → 0.518), indicating better score calibration across the full eval set. Better calibration helps with score thresholding and downstream weighting even if top-5 ranking is unchanged.
+
+Likely causes for flat NDCG: (1) new labels are noisier than human labels, partially canceling out the volume gain; (2) 1.8x data increase may be too small for the MiniLM to show ranking gains — may need 2-3k+ pairs.
+
+## Model storage
+
+Weights on Modal volume `cross-encoder-reranker-output`:
+```bash
+modal volume ls cross-encoder-reranker-output
+# reranker_v1           (dedup CE, unrelated)
+# reranker_bge_v1       (dedup CE, unrelated)
+# reranker_v1_baseline  (retrieval reranker, 20-case baseline)
+# reranker_v2_768pairs  (retrieval reranker, 40-case expanded)
+```
+
+Download:
+```bash
+modal volume get cross-encoder-reranker-output reranker_v2_768pairs/ ./local_reranker/
+```
+
+Note: local inference causes 300% CPU usage with default PyTorch threading. Single-threaded settings (`OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 torch.set_num_threads(1)`) reduce to ~100% at 79ms/call, but still caused system instability on test machine. ONNX export or S3-backed serverless inference may be needed for production.

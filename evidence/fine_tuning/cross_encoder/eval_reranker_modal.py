@@ -56,7 +56,7 @@ def evaluate(
 
     def ndcg_at_k(rels, k):
         def dcg(r, k):
-            return sum(r[i] / math.log2(i + 2) for i in range(min(k, len(r))))
+            return sum((2 ** r[i] - 1) / math.log2(i + 2) for i in range(min(k, len(r))))
         actual = dcg(rels, k)
         ideal = dcg(sorted(rels, reverse=True), k)
         return actual / ideal if ideal > 0 else 1.0
@@ -79,7 +79,8 @@ def evaluate(
         for case_idx in sorted(case_items):
             items = case_items[case_idx]
             items.sort(key=lambda x: x["score"], reverse=True)
-            rels = [int(it["label"] * 2) for it in items]
+            label_to_rel = {0.0: 0, 0.25: 1, 1.0: 2}
+            rels = [label_to_rel.get(it["label"], round(it["label"] * 2)) for it in items]
             n3 = ndcg_at_k(rels, 3)
             n5 = ndcg_at_k(rels, 5)
             n10 = ndcg_at_k(rels, 10)
