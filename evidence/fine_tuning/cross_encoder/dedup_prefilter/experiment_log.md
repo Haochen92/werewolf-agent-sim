@@ -226,8 +226,8 @@ Only 38 unique games exist across all datasets; 34 are already used. To reach 10
 
 | File | Description |
 |------|-------------|
-| `train_modal.py` | Cross-encoder training on Modal (L4 GPU) |
-| `eval_modal.py` | Golden set eval with Gemini baseline comparison |
+| `evaluation/training/` (`modal_runner --adapter dedup`) | Cross-encoder training on Modal (L4 GPU) — replaces the removed `train_modal.py` |
+| `eval_modal.py` | Golden set eval with Gemini baseline comparison (kept — distinct from the module's train/eval-split metrics) |
 | `models/cross_encoder/ce_minilm_dedup_run1/` | Fine-tuned MiniLM weights (gitignored; fetch from Modal) |
 | `../../embedding/pairs_dedup.jsonl` | Training pairs matching production auto-dedup fields |
 | `../../embedding/build_pairs.py --text dedup` | Generates dedup-matched pairs |

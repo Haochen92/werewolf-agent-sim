@@ -281,15 +281,20 @@ Folder layout (`evidence/fine_tuning/cross_encoder/reranker/`):
 
 | Path | Contents |
 |------|----------|
-| `scripts/` | Reproducibility scripts: situation generation, candidate retrieval, stratified split, training-data prep, and Modal GPU training |
+| `scripts/` | Data-prep reproducibility scripts: situation generation, candidate retrieval, stratified split, training-data prep (training/eval now via `evaluation/training/`) |
 | `labels/round1_original/` | Original 40-case labeling — candidates, ChatGPT + 3-model consensus, 4-model merged golden |
 | `labels/round2_expanded/` | Expanded 109-case labeling — 2.5-pro situations, 1,848 candidates, per-model labels (flash-lite / mistral / NIM-8B), 5-model merged golden, tie lists |
 | `labels/manual_batches/` | ChatGPT + Sonnet manual labeling prompts and responses (22 batches each) |
-| `training_data/` | Stratified `reranker_split.json` + train/val/test JSONL pairs (consumed by `scripts/train_reranker_modal.py`) |
+| `training_data/` | Stratified `reranker_split.json` + train/val/test JSONL pairs (consumed by `evaluation/training/` via `modal_runner --adapter reranker`) |
 
 **Labeling pipeline:** the multi-model consensus labeling was run through the production `evaluation/labeling/` module (engine / voter / merger / exporter + reranker adapter). The earlier ad-hoc labeling scripts (`label_candidates.py`, `merge_labels.py`, `merge_expanded_labels.py`, `export_for_manual_labeling.py`) were fully superseded by that module and have been removed — see git history for their last state.
 
-**Training & evaluation pipeline:** training and evaluation are migrating to the production `evaluation/training/` module (shared engine + reranker adapter). Evaluation now runs on CPU via `poetry run python -m evaluation.training.evaluate --adapter reranker --model models/cross_encoder/reranker_v4 --split test`, whose `RankingEvaluator` reproduces the held-out metrics below exactly (NDCG@5=0.882) — the old `eval_reranker_modal.py` has been removed. Training is moving to `evaluation/training/runner/modal_runner.py --adapter reranker`; `scripts/train_reranker_modal.py` is kept until a Modal GPU run certifies the new pipeline reproduces v4.
+**Training & evaluation pipeline:** training and evaluation now run through the production `evaluation/training/` module (shared engine + reranker adapter); the per-experiment `train_reranker_modal.py` and `eval_reranker_modal.py` scripts have been removed.
+
+- **Train** (Modal L4): `poetry run modal run evaluation/training/runner/modal_runner.py --adapter reranker --run-name reranker_v5 --epochs 20`
+- **Evaluate** (CPU): `poetry run python -m evaluation.training.evaluate --adapter reranker --model models/cross_encoder/reranker_v4 --split test` — its `RankingEvaluator` reproduces the held-out metrics below exactly (NDCG@5=0.882).
+
+The module was validated against the saved `reranker_v4` (eval exact-repro) and via a Modal training run that reproduced the training loop end-to-end.
 
 Model weights on Modal volume `cross-encoder-reranker-output`:
 ```bash
