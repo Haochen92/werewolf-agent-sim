@@ -83,13 +83,16 @@ def main(
     epochs: int = 20,
     batch_size: int = 16,
     lr: float = 2e-5,
+    data_dir: str = "",
 ):
     from evaluation.training.adapters import get_adapter
     from evaluation.training.config import TrainConfig
 
     # read_raw runs locally (plain disk reads, no ML deps) so the GPU container
-    # receives a ready-to-train payload.
-    adapter_obj = get_adapter(adapter)
+    # receives a ready-to-train payload. data_dir overrides the adapter's default
+    # split location (e.g. the situation+action variant for the v5 ablation).
+    adapter_kwargs = {"data_dir": data_dir} if data_dir else {}
+    adapter_obj = get_adapter(adapter, **adapter_kwargs)
     raw = adapter_obj.read_raw()
 
     config = TrainConfig(

@@ -9,6 +9,7 @@ Usage:
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -26,7 +27,25 @@ SPLIT_PATH = OUTPUT_DIR / "reranker_split.json"
 RELEVANCE_MAP = {0: 0.0, 1: 0.25, 2: 1.0}
 
 
-def _load_memory_texts() -> dict[str, str]:
+def _load_memory_texts(
+    sp_include_action: bool = False,
+    obs_situation_only: bool = False,
+) -> dict[str, str]:
+    """Build the cross-encoder document text (sentence2) for every memory.
+
+    Defaults match current production: observations are ``Situation | Approach |
+    Outcome``, strategy points are situation-only.
+
+    Two ablation knobs, each isolating one memory type:
+    - ``sp_include_action``: append the strategy action to the SP situation —
+      tests whether the action (which labelers saw) adds SP ranking signal.
+    - ``obs_situation_only``: drop approach+outcome from observations, leaving
+      ``Situation: …`` only — tests whether the pure situation-matcher design
+      (situation-only for *both* types) loses observation ranking quality.
+
+    In each case only the toggled type's text changes; the other type is
+    byte-identical to the default, so it acts as a control.
+    """
     key_to_text: dict[str, str] = {}
 
     with open(OBS_STORE) as f:
@@ -35,17 +54,22 @@ def _load_memory_texts() -> dict[str, str]:
         for item in items:
             val = item["value"]
             parts = [f"Situation: {val['situation']}"]
-            if val.get("approach"):
-                parts.append(f"Approach: {val['approach']}")
-            if val.get("outcome"):
-                parts.append(f"Outcome: {val['outcome']}")
+            if not obs_situation_only:
+                if val.get("approach"):
+                    parts.append(f"Approach: {val['approach']}")
+                if val.get("outcome"):
+                    parts.append(f"Outcome: {val['outcome']}")
             key_to_text[item["key"]] = " | ".join(parts)
 
     with open(SP_STORE) as f:
         sp_data = json.load(f)
     for items in sp_data["namespaces"].values():
         for item in items:
-            key_to_text[item["key"]] = item["value"]["situation"]
+            val = item["value"]
+            text = val["situation"]
+            if sp_include_action and val.get("action"):
+                text = f"{text} | Action: {val['action']}"
+            key_to_text[item["key"]] = text
 
     return key_to_text
 
@@ -120,8 +144,33 @@ def _load_split() -> dict[str, set[int]]:
 
 
 def main():
-    key_to_text = _load_memory_texts()
-    print(f"Loaded {len(key_to_text)} memory texts")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--sp-include-action", action="store_true",
+        help="Append the strategy action to the situation in sentence2 "
+             "(v5 input-parity ablation). Default: situation-only (matches production).",
+    )
+    parser.add_argument(
+        "--obs-situation-only", action="store_true",
+        help="Drop approach+outcome from observations, leaving situation only "
+             "(pure situation-matcher ablation). Default: Situation|Approach|Outcome "
+             "(matches production).",
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, default=OUTPUT_DIR,
+        help="Where to write reranker_{train,val,test}.jsonl. The case split is "
+             "always read from the canonical training_data/reranker_split.json so "
+             "both arms share identical splits.",
+    )
+    args = parser.parse_args()
+
+    key_to_text = _load_memory_texts(
+        sp_include_action=args.sp_include_action,
+        obs_situation_only=args.obs_situation_only,
+    )
+    print(f"Loaded {len(key_to_text)} memory texts "
+          f"(sp_include_action={args.sp_include_action}, "
+          f"obs_situation_only={args.obs_situation_only})")
 
     splits = _load_split()
     print(f"Split: {len(splits['train'])} train / {len(splits['val'])} val / {len(splits['test'])} test")
@@ -140,11 +189,11 @@ def main():
         _print_split_stats(split_pairs[name], name)
 
     for name in ["train", "val", "test"]:
-        _write_jsonl(split_pairs[name], OUTPUT_DIR / f"reranker_{name}.jsonl")
+        _write_jsonl(split_pairs[name], args.output_dir / f"reranker_{name}.jsonl")
 
     print(f"\nWrote:")
     for name in ["train", "val", "test"]:
-        print(f"  {OUTPUT_DIR / f'reranker_{name}.jsonl'}")
+        print(f"  {args.output_dir / f'reranker_{name}.jsonl'}")
 
 
 if __name__ == "__main__":
