@@ -51,7 +51,7 @@ GOLDEN_LABELS_PATH = (
 )
 CE_MODEL_PATH = (
     REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
-    / "reranker_v3"
+    / "reranker_v4"
 )
 OBS_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "observations.json"
 SP_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
@@ -59,7 +59,7 @@ SPLIT_PATH = (
     REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker_split.json"
 )
 
-ALL_METHODS = ["bi-encoder", "cross-encoder", "flash-lite", "cohere"]
+ALL_METHODS = ["bi-encoder", "cross-encoder", "flash-lite", "flash-35", "cohere"]
 
 
 # ---------------------------------------------------------------------------
@@ -215,12 +215,12 @@ def score_cross_encoder(all_items: list[list[dict]]) -> list[list[float]]:
 
 
 def score_flash_lite(all_items: list[list[dict]]) -> list[list[float]]:
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    from Agents.llm_factory import create_chat_model
 
     from Agents.prompts import RERANK_PROMPT
     from Agents.schemas import RerankResult
 
-    llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
+    llm = create_chat_model("gemini-3.1-flash-lite", temperature=0.0)
     chain = RERANK_PROMPT | llm.with_structured_output(RerankResult)
 
     results = []
@@ -270,10 +270,41 @@ def score_cohere(all_items: list[list[dict]]) -> list[list[float]]:
     return results
 
 
+def score_flash_35(all_items: list[list[dict]]) -> list[list[float]]:
+    from Agents.llm_factory import create_chat_model
+    from Agents.prompts import RERANK_PROMPT
+    from Agents.schemas import RerankResult
+
+    llm = create_chat_model("gemini-3.5-flash", temperature=0.0)
+    chain = RERANK_PROMPT | llm.with_structured_output(RerankResult)
+
+    results = []
+    for ci, case_items in enumerate(all_items):
+        situations_text = "\n".join(
+            f"- {s}" for s in case_items[0]["query"].split("\n")
+        )
+        numbered = "\n".join(
+            f"[{i}] {it['doc_text']}" for i, it in enumerate(case_items)
+        )
+        try:
+            result = chain.invoke(
+                {"situations": situations_text, "candidates": numbered},
+            )
+            score_map = {r.index: r.relevance for r in result.rankings}
+            scores = [float(score_map.get(i, 1)) for i in range(len(case_items))]
+        except Exception as e:
+            print(f"    case {ci}: flash-3.5 failed ({e}), using fallback scores")
+            scores = [0.0] * len(case_items)
+        results.append(scores)
+        time.sleep(0.2)
+    return results
+
+
 SCORERS = {
     "bi-encoder": score_bi_encoder,
     "cross-encoder": score_cross_encoder,
     "flash-lite": score_flash_lite,
+    "flash-35": score_flash_35,
     "cohere": score_cohere,
 }
 
@@ -386,7 +417,6 @@ def main() -> None:
     )
     parser.add_argument(
         "--methods", nargs="+", default=["bi-encoder", "cross-encoder", "flash-lite"],
-        choices=ALL_METHODS,
     )
     parser.add_argument("--include-cohere", action="store_true")
     parser.add_argument("--k", type=int, nargs="+", default=[3, 5])
