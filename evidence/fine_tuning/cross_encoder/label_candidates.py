@@ -2,7 +2,8 @@
 
 For each (golden_situation, memory_text) pair, asks multiple LLM models
 to rate relevance on a 0/1/2 scale. Outputs per-model scores and a consensus
-label for easy disagreement analysis. Supports Gemini and NIM (nim/ prefix).
+label for easy disagreement analysis. Supports Gemini, NIM (nim/ prefix),
+and Mistral (mistral/ prefix).
 
 Usage:
     # Trial run: label 3 cases to spot-check model agreement
@@ -20,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -74,6 +76,45 @@ def _format_memory_text(item: dict, mem_type: str) -> str:
 
 THINKING_MODELS = {"gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash"}
 
+# Requests per minute by prefix. NIM free tier = 40 rpm; use 20 to leave
+# headroom for retries.
+_RPM_LIMITS: dict[str, float] = {
+    "nim/": 20,
+}
+
+
+class _RateLimiter:
+    """Per-model token-bucket rate limiter (thread-safe)."""
+
+    def __init__(self):
+        self._locks: dict[str, threading.Lock] = {}
+        self._last_call: dict[str, float] = {}
+        self._global_lock = threading.Lock()
+
+    def wait(self, model: str) -> None:
+        rpm = None
+        for prefix, limit in _RPM_LIMITS.items():
+            if model.startswith(prefix):
+                rpm = limit
+                break
+        if rpm is None:
+            return
+        min_interval = 60.0 / rpm
+        with self._global_lock:
+            if model not in self._locks:
+                self._locks[model] = threading.Lock()
+                self._last_call[model] = 0.0
+        lock = self._locks[model]
+        with lock:
+            now = time.monotonic()
+            elapsed = now - self._last_call[model]
+            if elapsed < min_interval:
+                time.sleep(min_interval - elapsed)
+            self._last_call[model] = time.monotonic()
+
+
+_rate_limiter = _RateLimiter()
+
 
 def _extract_text(content) -> str:
     if isinstance(content, str):
@@ -94,10 +135,11 @@ def _call_model(model_name: str, prompt: str, max_retries: int = 3) -> int | Non
 
     kwargs = {}
     if model_name in THINKING_MODELS:
-        kwargs["thinking_level"] = "medium"
+        kwargs["thinking_level"] = "low"
 
     for attempt in range(max_retries):
         try:
+            _rate_limiter.wait(model_name)
             llm = create_chat_model(model_name, temperature=0.0, **kwargs)
             response = llm.invoke(prompt)
             text = _extract_text(response.content)
@@ -108,7 +150,8 @@ def _call_model(model_name: str, prompt: str, max_retries: int = 3) -> int | Non
             return None
         except Exception as e:
             if attempt < max_retries - 1:
-                wait = 2 ** (attempt + 1)
+                is_rate_limit = "429" in str(e)
+                wait = 10 if is_rate_limit else 2 ** (attempt + 1)
                 print(f"    Retry {attempt + 1} for {model_name}: {e}")
                 time.sleep(wait)
             else:
@@ -236,7 +279,7 @@ def label_all(
             label_char = str(consensus["label"]) if consensus["label"] is not None else "?"
             conf_char = consensus["confidence"][0].upper()
             def _short_name(m: str) -> str:
-                if m.startswith("nim/"):
+                if m.startswith("nim/") or m.startswith("mistral/"):
                     return m.split("/")[-1]
                 return m.split("-")[-1]
             model_strs = " ".join(
@@ -256,6 +299,19 @@ def label_all(
             "strategy_labels": sp_labels,
         })
 
+        _save_checkpoint(output_path, models, results,
+                         total_items, total_unanimous, total_majority, total_split)
+
+    print(f"\n{'='*60}")
+    print(f"Labeled {total_items} items across {len(results)} cases")
+    print(f"  Unanimous: {total_unanimous} ({total_unanimous/max(total_items,1)*100:.0f}%)")
+    print(f"  Majority:  {total_majority} ({total_majority/max(total_items,1)*100:.0f}%)")
+    print(f"  Split:     {total_split} ({total_split/max(total_items,1)*100:.0f}%)")
+    print(f"Wrote: {output_path}")
+
+
+def _save_checkpoint(output_path, models, results,
+                     total_items, total_unanimous, total_majority, total_split):
     output = {
         "description": "Multi-model consensus labels for retrieval candidates",
         "models": models,
@@ -267,18 +323,10 @@ def label_all(
         },
         "cases": results,
     }
-
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(output, f, indent=2)
         f.write("\n")
-
-    print(f"\n{'='*60}")
-    print(f"Labeled {total_items} items across {len(results)} cases")
-    print(f"  Unanimous: {total_unanimous} ({total_unanimous/max(total_items,1)*100:.0f}%)")
-    print(f"  Majority:  {total_majority} ({total_majority/max(total_items,1)*100:.0f}%)")
-    print(f"  Split:     {total_split} ({total_split/max(total_items,1)*100:.0f}%)")
-    print(f"Wrote: {output_path}")
 
 
 def main():
@@ -293,8 +341,9 @@ def main():
     )
     parser.add_argument(
         "--models", nargs="+",
-        default=["gemini-3.1-flash-lite", "gemini-3.5-flash",
-                 "nim/qwen/qwen3.5-397b-a17b"],
+        default=["gemini-3.1-flash-lite",
+                 "mistral/mistral-small-2506",
+                 "nim/meta/llama-3.3-70b-instruct"],
         help="Models to use for consensus labeling",
     )
     parser.add_argument("--trial", action="store_true", help="Run trial with subset of cases")

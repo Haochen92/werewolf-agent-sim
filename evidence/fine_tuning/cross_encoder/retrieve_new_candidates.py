@@ -31,6 +31,10 @@ def main():
         help="JSON file with golden situations per case",
     )
     parser.add_argument(
+        "--eval-dataset", type=Path, default=EVAL_DATASET,
+        help="Eval dataset JSONL (must match situation case indices)",
+    )
+    parser.add_argument(
         "--output", type=Path,
         default=REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "candidates_for_labeling.json",
     )
@@ -47,7 +51,7 @@ def main():
     print(f"Loaded golden situations for {len(case_situations)} cases")
 
     from evaluation.data.datasets import read_eval_dataset
-    records = read_eval_dataset(EVAL_DATASET)
+    records = read_eval_dataset(args.eval_dataset)
     print(f"Loaded {len(records)} eval records")
 
     from Agents.memory import store
