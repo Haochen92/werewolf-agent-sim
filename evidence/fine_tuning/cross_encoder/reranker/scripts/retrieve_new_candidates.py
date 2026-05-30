@@ -5,9 +5,9 @@ for cases that have golden situations but no relevance labels yet.
 Outputs a JSON file with retrieved candidates ready for labeling.
 
 Usage:
-    poetry run python evidence/fine_tuning/cross_encoder/reranker/retrieve_new_candidates.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/scripts/retrieve_new_candidates.py \
         --situations-file /tmp/new_golden_situations.json \
-        --output evidence/fine_tuning/cross_encoder/reranker/candidates_for_labeling.json
+        --output evidence/fine_tuning/cross_encoder/reranker/labels/round1_original/candidates_for_labeling.json
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import argparse
 import json
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = Path(__file__).resolve().parents[5]
 EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
 STORE_DIR = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2"
 GOLDEN_LABELS_PATH = (
@@ -36,7 +36,7 @@ def main():
     )
     parser.add_argument(
         "--output", type=Path,
-        default=REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "candidates_for_labeling.json",
+        default=REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "labels" / "round1_original" / "candidates_for_labeling.json",
     )
     parser.add_argument("--top-k", type=int, default=10)
     args = parser.parse_args()

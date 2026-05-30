@@ -55,7 +55,7 @@ CE_MODEL_PATH = (
 OBS_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "observations.json"
 SP_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
 SPLIT_PATH = (
-    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "reranker_split.json"
+    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "training_data" / "reranker_split.json"
 )
 
 ALL_METHODS = ["bi-encoder", "cross-encoder", "flash-lite", "flash-35", "cohere"]

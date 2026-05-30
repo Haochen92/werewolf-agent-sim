@@ -5,8 +5,8 @@ downstream scripts read from. Stratified by (player_role x action_phase)
 with proportional allocation (~70/15/15) per stratum.
 
 Usage:
-    poetry run python evidence/fine_tuning/cross_encoder/reranker/generate_split.py
-    poetry run python evidence/fine_tuning/cross_encoder/reranker/generate_split.py --seed 123
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/scripts/generate_split.py
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/scripts/generate_split.py --seed 123
 """
 from __future__ import annotations
 
@@ -17,12 +17,12 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = Path(__file__).resolve().parents[5]
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
     / "retrieval_golden_labels.json"
 )
-OUTPUT_PATH = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "reranker_split.json"
+OUTPUT_PATH = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "training_data" / "reranker_split.json"
 
 
 def main() -> None:

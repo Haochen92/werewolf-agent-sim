@@ -142,7 +142,7 @@ Changed model lineup from previous round (Qwen NIM was down):
 
 Infrastructure changes:
 - Added `MistralChatModel` to `Agents/llm_factory.py` (`mistral/` prefix)
-- Per-model rate limiter in `label_candidates.py` (NIM 40 rpm cap)
+- Per-model rate limiter (NIM 40 rpm cap) — now in `evaluation/labeling/engine.py`
 - Incremental checkpoint saves after each case
 - Models run independently (3 separate processes) instead of blocking on slowest
 - Built reusable `evaluation/labeling/` module (config, engine, voter, merger, exporter, adapters)
@@ -277,19 +277,17 @@ New labeling tasks subclass `LabelingAdapter` and plug into the generic engine. 
 
 ### Artifacts
 
-| File | Description |
-|------|-------------|
-| `generate_situations.py` | Batch situation generation via production pipeline |
-| `expanded_golden_situations.json` | 109 cases with 2.5-pro generated situations |
-| `expanded_candidates_for_labeling.json` | 1,848 (query, memory) pairs |
-| `expanded_labels_mistral.json` | Mistral-small labels (1,848 items) |
-| `expanded_labels_flashlite.json` | Flash-lite labels (1,848 items) |
-| `expanded_labels_nim.json` | NIM 8B labels (1,848 items) |
-| `expanded_merged_labels.json` | 5-model consensus + Opus tiebreak (1,848 items) |
-| `labeling_prompts/batch_*.md` | 22 ChatGPT/Sonnet labeling batches |
-| `labeling_responses/batch_*_response.json` | ChatGPT responses (22 batches) |
-| `sonnet_responses/batch_*_response.json` | Sonnet responses (22 batches) |
-| `merge_expanded_labels.py` | Ad-hoc 4-model merge (superseded by evaluation/labeling/) |
+Folder layout (`evidence/fine_tuning/cross_encoder/reranker/`):
+
+| Path | Contents |
+|------|----------|
+| `scripts/` | Reproducibility scripts: situation generation, candidate retrieval, stratified split, training-data prep, and Modal GPU train/eval |
+| `labels/round1_original/` | Original 40-case labeling — candidates, ChatGPT + 3-model consensus, 4-model merged golden |
+| `labels/round2_expanded/` | Expanded 109-case labeling — 2.5-pro situations, 1,848 candidates, per-model labels (flash-lite / mistral / NIM-8B), 5-model merged golden, tie lists |
+| `labels/manual_batches/` | ChatGPT + Sonnet manual labeling prompts and responses (22 batches each) |
+| `training_data/` | Stratified `reranker_split.json` + train/val/test JSONL pairs (consumed by `scripts/train_reranker_modal.py`) |
+
+**Labeling pipeline:** the multi-model consensus labeling was run through the production `evaluation/labeling/` module (engine / voter / merger / exporter + reranker adapter). The earlier ad-hoc labeling scripts (`label_candidates.py`, `merge_labels.py`, `merge_expanded_labels.py`, `export_for_manual_labeling.py`) were fully superseded by that module and have been removed — see git history for their last state.
 
 Model weights on Modal volume `cross-encoder-reranker-output`:
 ```bash

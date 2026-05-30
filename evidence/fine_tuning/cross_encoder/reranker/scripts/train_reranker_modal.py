@@ -8,10 +8,10 @@ Training data: reranker_train.jsonl / reranker_val.jsonl from prep_reranker_data
 Labels: 0.0 (irrelevant), 0.25 (partial), 1.0 (relevant)
 
 Usage:
-    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/train_reranker_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/scripts/train_reranker_modal.py \
         --run-name reranker_v3
 
-    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/train_reranker_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/scripts/train_reranker_modal.py \
         --base-model BAAI/bge-reranker-base --run-name reranker_bge_v1
 """
 from __future__ import annotations
@@ -232,8 +232,8 @@ def main(
     batch_size: int = 16,
     lr: float = 2e-5,
     run_name: str = "reranker_v1",
-    train_path: str = "evidence/fine_tuning/cross_encoder/reranker/reranker_train.jsonl",
-    eval_path: str = "evidence/fine_tuning/cross_encoder/reranker/reranker_val.jsonl",
+    train_path: str = "evidence/fine_tuning/cross_encoder/reranker/training_data/reranker_train.jsonl",
+    eval_path: str = "evidence/fine_tuning/cross_encoder/reranker/training_data/reranker_val.jsonl",
 ):
     from pathlib import Path
 
@@ -244,7 +244,7 @@ def main(
     if not eval_data.exists():
         raise FileNotFoundError(f"Eval data not found: {eval_data}. Run prep_reranker_data.py first.")
 
-    split_path = Path("evidence/fine_tuning/cross_encoder/reranker/reranker_split.json")
+    split_path = Path("evidence/fine_tuning/cross_encoder/reranker/training_data/reranker_split.json")
     split_manifest_json = split_path.read_text() if split_path.exists() else None
     if not split_manifest_json:
         print("WARNING: split manifest not found — skipping validation")

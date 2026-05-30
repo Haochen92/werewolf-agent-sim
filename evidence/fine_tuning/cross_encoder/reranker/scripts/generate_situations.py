@@ -6,14 +6,14 @@ Outputs a JSON file compatible with retrieve_new_candidates.py.
 
 Usage:
     # Generate for all cases in the expanded dataset
-    poetry run python evidence/fine_tuning/cross_encoder/reranker/generate_situations.py
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/scripts/generate_situations.py
 
     # Use a different model
-    poetry run python evidence/fine_tuning/cross_encoder/reranker/generate_situations.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/scripts/generate_situations.py \
         --model gemini-2.5-pro
 
     # Generate for a subset
-    poetry run python evidence/fine_tuning/cross_encoder/reranker/generate_situations.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/scripts/generate_situations.py \
         --max-cases 10
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ from evaluation.core.settings import REPO_ROOT, load_project_env
 load_project_env()
 
 EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_reranker_expanded.jsonl"
-OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker"
+OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "labels" / "round2_expanded"
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
     / "retrieval_golden_labels.json"
