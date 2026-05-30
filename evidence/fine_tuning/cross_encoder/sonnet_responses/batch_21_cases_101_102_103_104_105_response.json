@@ -1,0 +1,115 @@
+[
+  {
+    "case_index": 101,
+    "labels": [
+      {"idx": 1, "key": "5922bf88-e54", "type": "observation", "relevance": 1},
+      {"idx": 2, "key": "4619f4d5-ea2", "type": "observation", "relevance": 2},
+      {"idx": 3, "key": "42e37cd6-541", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "b34d12c2-9d2", "type": "observation", "relevance": 0},
+      {"idx": 5, "key": "7c0a6e6d-2be", "type": "observation", "relevance": 0},
+      {"idx": 6, "key": "4207be33-a2a", "type": "strategy_point", "relevance": 2},
+      {"idx": 7, "key": "57449d0c-1ba", "type": "strategy_point", "relevance": 0},
+      {"idx": 8, "key": "6710c4b7-412", "type": "strategy_point", "relevance": 2}
+    ]
+  },
+  {
+    "case_index": 102,
+    "labels": [
+      {"idx": 1, "key": "a9ee4229-115", "type": "observation", "relevance": 1},
+      {"idx": 2, "key": "07fd072f-959", "type": "observation", "relevance": 1},
+      {"idx": 3, "key": "13870e0b-426", "type": "observation", "relevance": 0},
+      {"idx": 4, "key": "104f28cf-0a3", "type": "observation", "relevance": 1},
+      {"idx": 5, "key": "33c696ae-2f8", "type": "observation", "relevance": 2},
+      {"idx": 6, "key": "a48c4d74-498", "type": "observation", "relevance": 2},
+      {"idx": 7, "key": "440f0350-667", "type": "observation", "relevance": 1},
+      {"idx": 8, "key": "c64295b9-47f", "type": "observation", "relevance": 2},
+      {"idx": 9, "key": "578f03b1-9fe", "type": "observation", "relevance": 2},
+      {"idx": 10, "key": "721ed82e-b65", "type": "observation", "relevance": 2},
+      {"idx": 11, "key": "2b903631-1ef", "type": "strategy_point", "relevance": 0},
+      {"idx": 12, "key": "a0db6dc0-645", "type": "strategy_point", "relevance": 0},
+      {"idx": 13, "key": "f71e8766-3af", "type": "strategy_point", "relevance": 2},
+      {"idx": 14, "key": "18268625-d31", "type": "strategy_point", "relevance": 1},
+      {"idx": 15, "key": "014d6b34-2c6", "type": "strategy_point", "relevance": 0},
+      {"idx": 16, "key": "bab6a351-a85", "type": "strategy_point", "relevance": 2},
+      {"idx": 17, "key": "6de91cd0-a3b", "type": "strategy_point", "relevance": 2},
+      {"idx": 18, "key": "9d5249e6-94c", "type": "strategy_point", "relevance": 1},
+      {"idx": 19, "key": "00d76005-3b5", "type": "strategy_point", "relevance": 2},
+      {"idx": 20, "key": "5216777a-b93", "type": "strategy_point", "relevance": 0}
+    ]
+  },
+  {
+    "case_index": 103,
+    "labels": [
+      {"idx": 1, "key": "7215e341-9df", "type": "observation", "relevance": 0},
+      {"idx": 2, "key": "c2489a8b-fd8", "type": "observation", "relevance": 2},
+      {"idx": 3, "key": "9d390cf1-21a", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "60b03843-046", "type": "observation", "relevance": 0},
+      {"idx": 5, "key": "bcf4cdb5-116", "type": "observation", "relevance": 2},
+      {"idx": 6, "key": "f88a85ae-1ee", "type": "observation", "relevance": 1},
+      {"idx": 7, "key": "fc9a9421-cf8", "type": "observation", "relevance": 0},
+      {"idx": 8, "key": "e6eef8d6-6db", "type": "observation", "relevance": 1},
+      {"idx": 9, "key": "1ed6c526-fe3", "type": "observation", "relevance": 1},
+      {"idx": 10, "key": "c6bbd95c-e26", "type": "observation", "relevance": 0},
+      {"idx": 11, "key": "de8be6d6-055", "type": "strategy_point", "relevance": 0},
+      {"idx": 12, "key": "f944cdb4-755", "type": "strategy_point", "relevance": 0},
+      {"idx": 13, "key": "84d9366f-f06", "type": "strategy_point", "relevance": 1},
+      {"idx": 14, "key": "e1c64739-2a7", "type": "strategy_point", "relevance": 2},
+      {"idx": 15, "key": "1e0fde37-272", "type": "strategy_point", "relevance": 0},
+      {"idx": 16, "key": "3b4ce51c-ffd", "type": "strategy_point", "relevance": 0},
+      {"idx": 17, "key": "09a16417-a56", "type": "strategy_point", "relevance": 0},
+      {"idx": 18, "key": "2f63bae5-ead", "type": "strategy_point", "relevance": 2},
+      {"idx": 19, "key": "984356e1-d54", "type": "strategy_point", "relevance": 2},
+      {"idx": 20, "key": "1cc944fd-bf5", "type": "strategy_point", "relevance": 1}
+    ]
+  },
+  {
+    "case_index": 104,
+    "labels": [
+      {"idx": 1, "key": "0ac6f17d-6d2", "type": "observation", "relevance": 2},
+      {"idx": 2, "key": "578f03b1-9fe", "type": "observation", "relevance": 2},
+      {"idx": 3, "key": "07fd072f-959", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "4f4d9296-59c", "type": "observation", "relevance": 2},
+      {"idx": 5, "key": "88c90b6f-dd0", "type": "observation", "relevance": 2},
+      {"idx": 6, "key": "773e9e04-afe", "type": "observation", "relevance": 2},
+      {"idx": 7, "key": "436340e8-4ab", "type": "observation", "relevance": 1},
+      {"idx": 8, "key": "9db72477-d52", "type": "observation", "relevance": 1},
+      {"idx": 9, "key": "0c2e22c6-97e", "type": "observation", "relevance": 2},
+      {"idx": 10, "key": "a9ee4229-115", "type": "observation", "relevance": 1},
+      {"idx": 11, "key": "014d6b34-2c6", "type": "strategy_point", "relevance": 1},
+      {"idx": 12, "key": "da44ad05-278", "type": "strategy_point", "relevance": 2},
+      {"idx": 13, "key": "a0db6dc0-645", "type": "strategy_point", "relevance": 0},
+      {"idx": 14, "key": "3c63e195-43f", "type": "strategy_point", "relevance": 1},
+      {"idx": 15, "key": "18268625-d31", "type": "strategy_point", "relevance": 0},
+      {"idx": 16, "key": "bab6a351-a85", "type": "strategy_point", "relevance": 0},
+      {"idx": 17, "key": "d322503b-b9c", "type": "strategy_point", "relevance": 1},
+      {"idx": 18, "key": "00d76005-3b5", "type": "strategy_point", "relevance": 2},
+      {"idx": 19, "key": "9ecebb2f-5bc", "type": "strategy_point", "relevance": 1},
+      {"idx": 20, "key": "9d5249e6-94c", "type": "strategy_point", "relevance": 0}
+    ]
+  },
+  {
+    "case_index": 105,
+    "labels": [
+      {"idx": 1, "key": "f88a85ae-1ee", "type": "observation", "relevance": 2},
+      {"idx": 2, "key": "60b03843-046", "type": "observation", "relevance": 1},
+      {"idx": 3, "key": "7215e341-9df", "type": "observation", "relevance": 2},
+      {"idx": 4, "key": "c2489a8b-fd8", "type": "observation", "relevance": 1},
+      {"idx": 5, "key": "300150ed-4b6", "type": "observation", "relevance": 1},
+      {"idx": 6, "key": "e6eef8d6-6db", "type": "observation", "relevance": 0},
+      {"idx": 7, "key": "04c6698e-1e6", "type": "observation", "relevance": 2},
+      {"idx": 8, "key": "fc9a9421-cf8", "type": "observation", "relevance": 2},
+      {"idx": 9, "key": "df5d65e4-a85", "type": "observation", "relevance": 0},
+      {"idx": 10, "key": "53e65a70-5d0", "type": "observation", "relevance": 1},
+      {"idx": 11, "key": "84d9366f-f06", "type": "strategy_point", "relevance": 2},
+      {"idx": 12, "key": "de8be6d6-055", "type": "strategy_point", "relevance": 1},
+      {"idx": 13, "key": "1e0fde37-272", "type": "strategy_point", "relevance": 2},
+      {"idx": 14, "key": "e1c64739-2a7", "type": "strategy_point", "relevance": 2},
+      {"idx": 15, "key": "3b4ce51c-ffd", "type": "strategy_point", "relevance": 1},
+      {"idx": 16, "key": "f944cdb4-755", "type": "strategy_point", "relevance": 0},
+      {"idx": 17, "key": "afef4e16-12b", "type": "strategy_point", "relevance": 2},
+      {"idx": 18, "key": "1cc944fd-bf5", "type": "strategy_point", "relevance": 0},
+      {"idx": 19, "key": "2f63bae5-ead", "type": "strategy_point", "relevance": 0},
+      {"idx": 20, "key": "09a16417-a56", "type": "strategy_point", "relevance": 1}
+    ]
+  }
+]

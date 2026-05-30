@@ -1,0 +1,98 @@
+[
+  {
+    "case_index": 76,
+    "labels": [
+      {"idx": 1, "key": "a302bd79-6e3", "type": "observation", "relevance": 1},
+      {"idx": 2, "key": "87672547-c27", "type": "observation", "relevance": 1},
+      {"idx": 3, "key": "d11fc4bf-bc8", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "68c2fc76-5fa", "type": "observation", "relevance": 0},
+      {"idx": 5, "key": "a7ca80e1-7bc", "type": "observation", "relevance": 0},
+      {"idx": 6, "key": "ce570d93-205", "type": "observation", "relevance": 0},
+      {"idx": 7, "key": "434ca33b-17d", "type": "observation", "relevance": 0},
+      {"idx": 8, "key": "84cfd842-4a6", "type": "observation", "relevance": 1},
+      {"idx": 9, "key": "a786957c-bc1", "type": "observation", "relevance": 0},
+      {"idx": 10, "key": "c7cf1300-438", "type": "observation", "relevance": 1},
+      {"idx": 11, "key": "513226d2-cdc", "type": "strategy_point", "relevance": 0},
+      {"idx": 12, "key": "5e7cc5ba-fa6", "type": "strategy_point", "relevance": 1},
+      {"idx": 13, "key": "6bd08e77-efd", "type": "strategy_point", "relevance": 0},
+      {"idx": 14, "key": "7750a68d-c8a", "type": "strategy_point", "relevance": 1},
+      {"idx": 15, "key": "309512ca-0a0", "type": "strategy_point", "relevance": 0},
+      {"idx": 16, "key": "8bb8583f-b87", "type": "strategy_point", "relevance": 2},
+      {"idx": 17, "key": "af1dbc2b-bc5", "type": "strategy_point", "relevance": 1},
+      {"idx": 18, "key": "964e7343-23c", "type": "strategy_point", "relevance": 0},
+      {"idx": 19, "key": "8eef8fd7-58d", "type": "strategy_point", "relevance": 0},
+      {"idx": 20, "key": "76cc3c9d-b31", "type": "strategy_point", "relevance": 0}
+    ]
+  },
+  {
+    "case_index": 77,
+    "labels": [
+      {"idx": 1, "key": "a8ec1773-30f", "type": "observation", "relevance": 2},
+      {"idx": 2, "key": "42f30e10-562", "type": "observation", "relevance": 1},
+      {"idx": 3, "key": "6aca8c49-eae", "type": "observation", "relevance": 2}
+    ]
+  },
+  {
+    "case_index": 78,
+    "labels": [
+      {"idx": 1, "key": "009e502f-9db", "type": "observation", "relevance": 2},
+      {"idx": 2, "key": "a6d1e994-772", "type": "observation", "relevance": 2},
+      {"idx": 3, "key": "4134d192-e62", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "04dbed73-a68", "type": "observation", "relevance": 1},
+      {"idx": 5, "key": "d20aabe2-748", "type": "observation", "relevance": 1},
+      {"idx": 6, "key": "dffa1e08-f2a", "type": "observation", "relevance": 0},
+      {"idx": 7, "key": "a49feaa8-ca9", "type": "observation", "relevance": 1},
+      {"idx": 8, "key": "75d68e2e-dcc", "type": "observation", "relevance": 0},
+      {"idx": 9, "key": "d8ff9b6f-464", "type": "observation", "relevance": 1},
+      {"idx": 10, "key": "a9107742-f0f", "type": "observation", "relevance": 0},
+      {"idx": 11, "key": "5681a68d-971", "type": "strategy_point", "relevance": 0},
+      {"idx": 12, "key": "9f51af0e-1e5", "type": "strategy_point", "relevance": 2},
+      {"idx": 13, "key": "f25fcf4f-641", "type": "strategy_point", "relevance": 0},
+      {"idx": 14, "key": "8bd4a4a4-a11", "type": "strategy_point", "relevance": 1},
+      {"idx": 15, "key": "b98bd43c-79a", "type": "strategy_point", "relevance": 0},
+      {"idx": 16, "key": "a79b348d-e25", "type": "strategy_point", "relevance": 0},
+      {"idx": 17, "key": "3ad8ba65-371", "type": "strategy_point", "relevance": 0},
+      {"idx": 18, "key": "9c21fe39-320", "type": "strategy_point", "relevance": 0},
+      {"idx": 19, "key": "306a4905-b9d", "type": "strategy_point", "relevance": 0},
+      {"idx": 20, "key": "bd79d243-9a6", "type": "strategy_point", "relevance": 0}
+    ]
+  },
+  {
+    "case_index": 79,
+    "labels": [
+      {"idx": 1, "key": "42e37cd6-541", "type": "observation", "relevance": 2},
+      {"idx": 2, "key": "4619f4d5-ea2", "type": "observation", "relevance": 2},
+      {"idx": 3, "key": "b34d12c2-9d2", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "5922bf88-e54", "type": "observation", "relevance": 1},
+      {"idx": 5, "key": "7c0a6e6d-2be", "type": "observation", "relevance": 1},
+      {"idx": 6, "key": "57449d0c-1ba", "type": "strategy_point", "relevance": 1},
+      {"idx": 7, "key": "4207be33-a2a", "type": "strategy_point", "relevance": 2},
+      {"idx": 8, "key": "6710c4b7-412", "type": "strategy_point", "relevance": 0}
+    ]
+  },
+  {
+    "case_index": 80,
+    "labels": [
+      {"idx": 1, "key": "fd88ea00-70b", "type": "observation", "relevance": 1},
+      {"idx": 2, "key": "de5ab922-563", "type": "observation", "relevance": 2},
+      {"idx": 3, "key": "3d9a71f0-b51", "type": "observation", "relevance": 1},
+      {"idx": 4, "key": "47d5f740-5db", "type": "observation", "relevance": 1},
+      {"idx": 5, "key": "928fde7b-4c7", "type": "observation", "relevance": 2},
+      {"idx": 6, "key": "443bf51b-b86", "type": "observation", "relevance": 1},
+      {"idx": 7, "key": "a49feaa8-ca9", "type": "observation", "relevance": 2},
+      {"idx": 8, "key": "1ab6cc11-497", "type": "observation", "relevance": 2},
+      {"idx": 9, "key": "d20aabe2-748", "type": "observation", "relevance": 1},
+      {"idx": 10, "key": "a5db9f55-0d8", "type": "observation", "relevance": 2},
+      {"idx": 11, "key": "a79b348d-e25", "type": "strategy_point", "relevance": 2},
+      {"idx": 12, "key": "5681a68d-971", "type": "strategy_point", "relevance": 1},
+      {"idx": 13, "key": "82a4ac4c-3ac", "type": "strategy_point", "relevance": 1},
+      {"idx": 14, "key": "d364d473-8ed", "type": "strategy_point", "relevance": 2},
+      {"idx": 15, "key": "f25fcf4f-641", "type": "strategy_point", "relevance": 2},
+      {"idx": 16, "key": "bef45b74-35e", "type": "strategy_point", "relevance": 1},
+      {"idx": 17, "key": "3ad8ba65-371", "type": "strategy_point", "relevance": 2},
+      {"idx": 18, "key": "61de853f-6e2", "type": "strategy_point", "relevance": 1},
+      {"idx": 19, "key": "b98bd43c-79a", "type": "strategy_point", "relevance": 0},
+      {"idx": 20, "key": "29866942-0c4", "type": "strategy_point", "relevance": 2}
+    ]
+  }
+]

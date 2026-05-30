@@ -1,0 +1,1358 @@
+[
+  {
+    "case_index": 1,
+    "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "Mid to late game, when the village is desperate for a kill and a strong, multi-player consensus is f"
+  },
+  {
+    "case_index": 6,
+    "key": "a79b348d-e256-4513-b4f8-5670e22101c4",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If you have privately identified a wolf and there is strong, corroborating public evidence, but the "
+  },
+  {
+    "case_index": 7,
+    "key": "4207be33-a2ad-47e5-9294-0d528da2910d",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If you hold a private, speculative suspicion about a player, but the public village consensus is bui"
+  },
+  {
+    "case_index": 10,
+    "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If the village has just made a clear mistake, such as voting out a fellow villager, and discussion t"
+  },
+  {
+    "case_index": 10,
+    "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "When a player tries to control the narrative by summarizing a previous vote, or by aggressively labe"
+  },
+  {
+    "case_index": 11,
+    "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If the village has been paralyzed by consecutive tie votes, and the information landscape is rich wi"
+  },
+  {
+    "case_index": 11,
+    "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If the game descends into a multi-day stalemate with tied votes, and the information landscape is do"
+  },
+  {
+    "case_index": 13,
+    "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "In the mid-game, when trust is low and a recent mislynch has occurred, a single, aggressive accuser "
+  },
+  {
+    "case_index": 13,
+    "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "In the early to mid-game, a fragile consensus forms against a player based on vibes or communication"
+  },
+  {
+    "case_index": 22,
+    "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If the voting record shows an eliminated wolf had cast a vote against you. Information landscape: Th"
+  },
+  {
+    "case_index": 26,
+    "key": "5681a68d-971e-490a-a711-00a03766475c",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If you have privately identified a wolf, and the village is already suspicious of them based on flaw"
+  },
+  {
+    "case_index": 31,
+    "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If multiple players coordinate to dismiss or suppress the analysis of the only hard evidence availab"
+  },
+  {
+    "case_index": 35,
+    "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "Mid-game, when a strong, multi-player consensus is forming against your wolf partner based on behavi"
+  },
+  {
+    "case_index": 35,
+    "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "Mid to late game, when the village is desperate for a kill and a strong, multi-player consensus is f"
+  },
+  {
+    "case_index": 36,
+    "key": "2d7d80d2-e3fe-4dd0-9ea1-e1876a162d2b",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "Endgame, when you are the last wolf and the village has united against you based on undeniable, conc"
+  },
+  {
+    "case_index": 36,
+    "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": 0,
+      "nim": 2
+    },
+    "situation": "If you and your wolf partner are being pressured to provide suspects in an information-starved early"
+  },
+  {
+    "case_index": 46,
+    "key": "9d1739db-2823-476b-90ef-d9b6340c4bcd",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "After the village mistakenly eliminated the Healer, the discussion turned to analyzing that vote. In"
+  },
+  {
+    "case_index": 46,
+    "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A wolf or wolves were put under pressure for stalling behaviors, such as advocating for a passive 'w"
+  },
+  {
+    "case_index": 47,
+    "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "When the player you attempted to kill overnight is saved by the Healer and their survival is publicl"
+  },
+  {
+    "case_index": 47,
+    "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid-game, when a strong, multi-player consensus is forming against your wolf partner based on behavi"
+  },
+  {
+    "case_index": 48,
+    "key": "1668786a-f65e-4db1-8b1a-788ea50d77b8",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "In the endgame, the remaining villagers began accusing each other intensely, driven by the pressure "
+  },
+  {
+    "case_index": 48,
+    "key": "675c0947-8b72-47fe-8c2e-00e5b9edba3c",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "In the endgame, the remaining villagers began to turn on each other, arguing about a past mislynch. "
+  },
+  {
+    "case_index": 48,
+    "key": "981148d1-f8c7-45a6-8cdb-28c4d0eeff16",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "In the final three, the last wolf (Player 3) was publicly accused by the Investigator (Player 7). In"
+  },
+  {
+    "case_index": 48,
+    "key": "568171e8-8534-4fb7-be6c-225f223048e9",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "In the endgame, the Investigator (player_5) made a late, unverified role claim accusing the Healer ("
+  },
+  {
+    "case_index": 48,
+    "key": "c7214f93-c980-4e91-8b06-3c01d61abe3c",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "Endgame, when you are the last wolf in a 1v2 scenario and are accused by a player making an explicit"
+  },
+  {
+    "case_index": 48,
+    "key": "9a7d41e3-52d1-4b4b-b032-a23958a16d1d",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid-to-endgame, when you are under evidence-based pressure from a single, vocal accuser who has sudd"
+  },
+  {
+    "case_index": 49,
+    "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A strong consensus formed to eliminate a villager (player_6/player_7) who was being aggressively tar"
+  },
+  {
+    "case_index": 49,
+    "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "Mid-game, during a critical vote where the information landscape is defined by conflicting behaviora"
+  },
+  {
+    "case_index": 50,
+    "key": "a302bd79-6e33-4801-9430-9bcf69c3571f",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After the Investigator was voted out, confirming their role, the remaining villagers and the Healer "
+  },
+  {
+    "case_index": 50,
+    "key": "87672547-c279-445a-8142-df9539766559",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The village rapidly formed an accurate, evidence-backed consensus against a suspect based on voting "
+  },
+  {
+    "case_index": 50,
+    "key": "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "With the village dwindling and no clear leads, the healer (player_2) took an active role in the Day "
+  },
+  {
+    "case_index": 50,
+    "key": "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The healer (player_7) was briefly implicated for having a suspicious vote in the past, similar to th"
+  },
+  {
+    "case_index": 50,
+    "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A villager (player_2) used voting records to question a group that had collectively voted out anothe"
+  },
+  {
+    "case_index": 50,
+    "key": "84cfd842-4a65-437c-a7ec-bb38883ac145",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The game master publicly announced the healer's successful save, confirming the targeted player's al"
+  },
+  {
+    "case_index": 50,
+    "key": "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After successfully protecting a player on Night 1, the Healer became an influential voice in the Day"
+  },
+  {
+    "case_index": 50,
+    "key": "5e7cc5ba-fa6e-4fa2-8773-7b0378366ced",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a clear and logical accusation has been made against a player, and the accused is defending the"
+  },
+  {
+    "case_index": 50,
+    "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If the voting record shows an eliminated wolf had cast a vote against you. Information landscape: Th"
+  },
+  {
+    "case_index": 50,
+    "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When you are lightly implicated due to a past action, such as a vote that now looks suspicious in hi"
+  },
+  {
+    "case_index": 51,
+    "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "In the final vote with four players remaining, the Healer (player 2) was targeted for their passive "
+  },
+  {
+    "case_index": 51,
+    "key": "4922ee84-da73-480a-90ef-170739daf216",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "In the mid-game or endgame, a strong consensus is forming against a player based on voting records o"
+  },
+  {
+    "case_index": 51,
+    "key": "182ebc43-0538-4b82-8bd4-b5852870338f",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "In the mid-game or endgame, a strong consensus is forming against a player, either driven by evidenc"
+  },
+  {
+    "case_index": 52,
+    "key": "dffa1e08-f2af-4368-86fa-9a8bdfc5ce52",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The Investigator (player_1) was saved by the healer and thus publicly confirmed as town-aligned. Inf"
+  },
+  {
+    "case_index": 52,
+    "key": "a9107742-f0fd-4e34-bca0-923d8dbd8bfc",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After a villager was mislynched on Day 2, an astute player (the Investigator) used the voting record"
+  },
+  {
+    "case_index": 52,
+    "key": "d8ff9b6f-464d-4ce1-8a94-a73e3d6651ee",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The Investigator (player_7) identified a wolf (player_1) on the first night but had no public eviden"
+  },
+  {
+    "case_index": 52,
+    "key": "f25fcf4f-641a-443b-aa84-ca035b1dcdfc",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "If you have identified a wolf on the first night and need to convince the village when there are no "
+  },
+  {
+    "case_index": 54,
+    "key": "d56c4c50-44b5-44e0-89bf-9fcd6284ae0c",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After a wolf was eliminated, two players (healer player_4 and investigator player_7) were questioned"
+  },
+  {
+    "case_index": 54,
+    "key": "9db72477-d523-41dd-8660-414129435a93",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A villager, Player 8, became fixated on their suspicion of another villager, Player 6, even after th"
+  },
+  {
+    "case_index": 54,
+    "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "When a confirmed investigator has been eliminated and the village needs to identify the final wolf a"
+  },
+  {
+    "case_index": 54,
+    "key": "3c63e195-43fd-4943-8fe3-3dbbd31eb2d5",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a player questions the motives behind a recent, successful, and unanimous vote that eliminated "
+  },
+  {
+    "case_index": 54,
+    "key": "18268625-d318-4992-91a3-0074910a3be9",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If suspicion against a player is based on a complex behavioral read, and multiple players instantly "
+  },
+  {
+    "case_index": 54,
+    "key": "bab6a351-a85b-4218-8618-973d783349e0",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When one or more players consistently advocate for inaction, such as urging the group to 'wait and s"
+  },
+  {
+    "case_index": 54,
+    "key": "5216777a-b932-40ef-87cb-8ef4e4388341",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a player who previously made a mistake (e.g., led a wrong vote) makes a new, strong accusation "
+  },
+  {
+    "case_index": 54,
+    "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a player makes an aggressive, evidence-free accusation the day after the village mistakenly eli"
+  },
+  {
+    "case_index": 55,
+    "key": "60b03843-0463-4b1b-9ca1-88da51b4e937",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "A player (player_5) who pushed for a mislynch on Day 2 attempted to cast suspicion on a player who w"
+  },
+  {
+    "case_index": 55,
+    "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "In the mid-game, when trust is low and a recent mislynch has occurred, a single, aggressive accuser "
+  },
+  {
+    "case_index": 55,
+    "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When analyzing a past unanimous mislynch of a confirmed power role, and one player aggressively sing"
+  },
+  {
+    "case_index": 55,
+    "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If multiple players coordinate to dismiss or suppress the analysis of the only hard evidence availab"
+  },
+  {
+    "case_index": 55,
+    "key": "afef4e16-12b0-4d9d-b5b2-e07cae23e576",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If a strong, evidence-based consensus has formed against a single player during the discussion phase"
+  },
+  {
+    "case_index": 55,
+    "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If the game descends into a multi-day stalemate with tied votes, and the information landscape is do"
+  },
+  {
+    "case_index": 56,
+    "key": "9355e610-6db8-4980-bb2b-c73b0e82116c",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "An Investigator proposed a valid line of inquiry, suggesting the village scrutinize how players reac"
+  },
+  {
+    "case_index": 56,
+    "key": "79288222-86d2-47fd-aebf-65660e6db983",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "In an information-starved mid-game, a proactive villager aggressively demands that players name susp"
+  },
+  {
+    "case_index": 56,
+    "key": "83487df0-7a81-4308-9f90-d72e19e0d4a0",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "After the village mistakenly eliminated the Investigator, the discussion fractured over whether to a"
+  },
+  {
+    "case_index": 56,
+    "key": "bfb69c8b-424e-4530-a940-f094e1c4630d",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A villager (player_7) made a weak accusation against another villager (player_8) for being too quiet"
+  },
+  {
+    "case_index": 56,
+    "key": "55ad1ead-bb04-47ce-ad2c-902ff8738998",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "An assertive villager (player_7) aggressively pushed for a vote on Day 2 to break the village's inac"
+  },
+  {
+    "case_index": 56,
+    "key": "e1428900-f94c-4385-826c-8466f9b25462",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid-game, when the village is analyzing voting records or past events to identify suspicious pattern"
+  },
+  {
+    "case_index": 56,
+    "key": "566b08b4-4b6a-4fd3-89e0-b73ec2b91b7d",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "Mid-game, when an information role or a player with high credibility correctly accuses you or a wolf"
+  },
+  {
+    "case_index": 56,
+    "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "If you are accused by a player who just publicly survived a night attack. Information landscape: The"
+  },
+  {
+    "case_index": 57,
+    "key": "3ce9912f-4935-4f78-b8b1-d61409ed753c",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A wolf attempted to eliminate the primary night kill target (the Healer) via a day vote while the re"
+  },
+  {
+    "case_index": 57,
+    "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "A strong consensus formed to eliminate a villager (player_6/player_7) who was being aggressively tar"
+  },
+  {
+    "case_index": 57,
+    "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "Wolf player_2 was caught due to their poor deflection under pressure, and a strong village consensus"
+  },
+  {
+    "case_index": 57,
+    "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A wolf (player_6) cast a dissenting vote for a villager (player_8) alongside their wolf partner (pla"
+  },
+  {
+    "case_index": 57,
+    "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "After the investigator was eliminated, the village had no clear leads, and the discussion was fragme"
+  },
+  {
+    "case_index": 57,
+    "key": "29967b04-96a1-4068-98a7-3b21871d554c",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Two separate bandwagons formed against villagers (player_7 and player_8) based on heated but evidenc"
+  },
+  {
+    "case_index": 57,
+    "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "Mid-game, during a critical vote where the information landscape is defined by conflicting behaviora"
+  },
+  {
+    "case_index": 57,
+    "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "When the player you attempted to kill overnight is saved by the Healer and their survival is publicl"
+  },
+  {
+    "case_index": 57,
+    "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid to late game, when the village is desperate for a kill and a strong, multi-player consensus is f"
+  },
+  {
+    "case_index": 58,
+    "key": "7eebdf18-9f10-4ae5-a16a-3aee445b29b8",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a player who is confirmed non-wolf (e.g., saved by the healer) becomes aggressive and polarizin"
+  },
+  {
+    "case_index": 59,
+    "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "A wolf (player_6) cast a dissenting vote for a villager (player_8) alongside their wolf partner (pla"
+  },
+  {
+    "case_index": 59,
+    "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "When the player you attempted to kill overnight is saved by the Healer and their survival is publicl"
+  },
+  {
+    "case_index": 59,
+    "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid to late game, when the village is desperate for a kill and a strong, multi-player consensus is f"
+  },
+  {
+    "case_index": 60,
+    "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "A villager (player_2) correctly used Day 2 voting records to accuse a group of players that included"
+  },
+  {
+    "case_index": 60,
+    "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Villagers began to argue amongst themselves about who was responsible for the previous day's mistake"
+  },
+  {
+    "case_index": 60,
+    "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "A wolf or wolves were put under pressure for stalling behaviors, such as advocating for a passive 'w"
+  },
+  {
+    "case_index": 60,
+    "key": "a7c6ac54-d430-417f-932c-6906683a9314",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a wolf target is saved by the healer and the village begins discussing the motive behind the at"
+  },
+  {
+    "case_index": 60,
+    "key": "fc5e48a9-5cbc-477a-bd6c-04063ed3d664",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a wolf target is saved by the healer and the village begins discussing the motive behind the at"
+  },
+  {
+    "case_index": 60,
+    "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If you are accused by a player who just publicly survived a night attack. Information landscape: The"
+  },
+  {
+    "case_index": 60,
+    "key": "17add23c-00b5-4a83-a830-ebe6cdf55722",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid-game, after a villager has been incorrectly eliminated. Information landscape: The voting record"
+  },
+  {
+    "case_index": 61,
+    "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Endgame, when few players remain and every vote is heavily scrutinized. A strong, evidence-based con"
+  },
+  {
+    "case_index": 61,
+    "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a few scattered, speculative votes are placed on a high-value town role who is not otherwise a "
+  },
+  {
+    "case_index": 61,
+    "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "Mid to endgame, when the village vote is split between two or more targets and your pack cannot swin"
+  },
+  {
+    "case_index": 62,
+    "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 0,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "When you are the target of a strong voting consensus and your elimination seems certain, regardless "
+  },
+  {
+    "case_index": 62,
+    "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 0,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "If you are in the final three with two other players, one of whom is likely the wolf. Information la"
+  },
+  {
+    "case_index": 62,
+    "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 0,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "If you are directly accused by a player who is the village's primary suspect. Information landscape:"
+  },
+  {
+    "case_index": 62,
+    "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 0,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "If the voting record shows an eliminated wolf had cast a vote against you. Information landscape: Th"
+  },
+  {
+    "case_index": 64,
+    "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A villager (player_2) used voting records to question a group that had collectively voted out anothe"
+  },
+  {
+    "case_index": 64,
+    "key": "68c2fc76-5fad-436f-8ee6-5a26ac3672d4",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The healer (player_7) was briefly implicated for having a suspicious vote in the past, similar to th"
+  },
+  {
+    "case_index": 64,
+    "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If you are directly accused by a player who is the village's primary suspect. Information landscape:"
+  },
+  {
+    "case_index": 64,
+    "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If you are in the final three with two other players, one of whom is likely the wolf. Information la"
+  },
+  {
+    "case_index": 65,
+    "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "Endgame, with a strong, evidence-based consensus forming against the likely final wolf. The informat"
+  },
+  {
+    "case_index": 65,
+    "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "A credible Investigator claim led to a strong consensus against a player who turned out to be a wolf"
+  },
+  {
+    "case_index": 66,
+    "key": "b53922e1-0e6b-49d7-8ec0-42993026c26b",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After the village mistakenly eliminated their Investigator, they were left with no active leads. Inf"
+  },
+  {
+    "case_index": 66,
+    "key": "a48c4d74-4986-4ff1-b855-3df694944a51",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The Day 2 discussion started with all players making generic, non-committal statements about the fir"
+  },
+  {
+    "case_index": 66,
+    "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "When a player makes an aggressive, evidence-free accusation the day after the village mistakenly eli"
+  },
+  {
+    "case_index": 67,
+    "key": "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After the Investigator was killed on Night 1, a frustrated villager (player_5) began aggressively de"
+  },
+  {
+    "case_index": 67,
+    "key": "bcf4cdb5-116d-4d31-a5c1-eb9563c04aa3",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "In an information-starved environment with no prior votes, villagers faced a player who repeatedly p"
+  },
+  {
+    "case_index": 67,
+    "key": "1ed6c526-fe32-4c76-bb01-e957b36c500c",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "The village had no leads or confirmed roles, leading to a scattered discussion. Information landscap"
+  },
+  {
+    "case_index": 67,
+    "key": "df5d65e4-a854-4c77-96b1-32f925725053",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "An Investigator (player_8), previously a reliable voice, pushed a vote onto a villager (player_4) wh"
+  },
+  {
+    "case_index": 67,
+    "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If the game descends into a multi-day stalemate with tied votes, and the information landscape is do"
+  },
+  {
+    "case_index": 67,
+    "key": "984356e1-d54b-48e5-baf4-3a7d250092f8",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When a player consistently advocates for caution, delays votes, and demands to wait for patterns whi"
+  },
+  {
+    "case_index": 67,
+    "key": "3b4ce51c-ffd6-415a-973f-0902689fb2d4",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "In the mid-game, when trust is low and a recent mislynch has occurred, a single, aggressive accuser "
+  },
+  {
+    "case_index": 67,
+    "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "If multiple players coordinate to dismiss or suppress the analysis of the only hard evidence availab"
+  },
+  {
+    "case_index": 68,
+    "key": "0ac6f17d-6d27-492f-9bfe-42c12760e869",
+    "type": "observation",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 2,
+      "flashlite": null,
+      "nim": 1
+    },
+    "situation": "After the Investigator was mistakenly eliminated, villagers analyzed the vote to find the wolves. In"
+  },
+  {
+    "case_index": 68,
+    "key": "bab6a351-a85b-4218-8618-973d783349e0",
+    "type": "strategy_point",
+    "scores": {
+      "chatgpt": null,
+      "mistral": 1,
+      "flashlite": null,
+      "nim": 2
+    },
+    "situation": "When one or more players consistently advocate for inaction, such as urging the group to 'wait and s"
+  }
+]
