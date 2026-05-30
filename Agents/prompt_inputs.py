@@ -11,6 +11,7 @@ from Agents.formatters import (
     format_wolf_channel,
 )
 from Agents.prompts import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS, SITUATION_STANDARDS
+from Agents.prompts.standards import EPISTEMIC_STATUS_RULE
 
 
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
@@ -59,7 +60,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             if isinstance(retrieved_observations, str)
             else format_retrieved_observations(retrieved_observations)
         ),
-        "situation_standards": SITUATION_STANDARDS,
+        "situation_standards": SITUATION_STANDARDS + "\n" + EPISTEMIC_STATUS_RULE,
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
         "adoption_instruction": ADOPTION_INSTRUCTION,
     }

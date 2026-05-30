@@ -1,7 +1,7 @@
 """Centralized factory for LLM chat models and embeddings.
 
 All LLM instantiation across the project should go through this module.
-Supports three backends:
+Supports four backends:
 
 - **vertex** (default): Uses Vertex AI via Application Default Credentials
   on the ``global`` endpoint.  Active when ``LLM_BACKEND=vertex`` or when
@@ -11,6 +11,9 @@ Supports three backends:
 - **nim**: Uses NVIDIA NIM via the OpenAI-compatible API.
   Set model prefix ``nim/`` (e.g. ``"nim/deepseek-ai/deepseek-v4-flash"``).
   Requires ``NVIDIA_API_KEY``.
+- **mistral**: Uses the Mistral API (OpenAI-compatible).
+  Set model prefix ``mistral/`` (e.g. ``"mistral/mistral-small-2506"``).
+  Requires ``MISTRAL_API_KEY``.
 
 On Vertex AI, ``thinking_level`` is translated to ``thinking_budget`` (token
 count) because the 2.x model series does not support the string-based
@@ -36,10 +39,11 @@ THINKING_LEVEL_TO_BUDGET: dict[str, int] = {
 
 
 _NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
+_MISTRAL_BASE_URL = "https://api.mistral.ai/v1"
 
 
 @dataclass
-class _NIMResponse:
+class _OpenAICompatResponse:
     content: str
 
 
@@ -56,7 +60,7 @@ class NIMChatModel:
         self._model = model
         self._temperature = temperature
 
-    def invoke(self, prompt: str) -> _NIMResponse:
+    def invoke(self, prompt: str) -> _OpenAICompatResponse:
         if isinstance(prompt, str):
             messages = [{"role": "user", "content": prompt}]
         else:
@@ -66,7 +70,33 @@ class NIMChatModel:
             messages=messages,
             temperature=self._temperature,
         )
-        return _NIMResponse(content=response.choices[0].message.content)
+        return _OpenAICompatResponse(content=response.choices[0].message.content)
+
+
+class MistralChatModel:
+    """Thin wrapper around Mistral API with LangChain-compatible .invoke()."""
+
+    def __init__(self, model: str, *, temperature: float = 0.0):
+        from openai import OpenAI
+
+        api_key = os.getenv("MISTRAL_API_KEY")
+        if not api_key:
+            raise ValueError("MISTRAL_API_KEY not set")
+        self._client = OpenAI(base_url=_MISTRAL_BASE_URL, api_key=api_key)
+        self._model = model
+        self._temperature = temperature
+
+    def invoke(self, prompt: str) -> _OpenAICompatResponse:
+        if isinstance(prompt, str):
+            messages = [{"role": "user", "content": prompt}]
+        else:
+            messages = prompt
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            temperature=self._temperature,
+        )
+        return _OpenAICompatResponse(content=response.choices[0].message.content)
 
 
 def _use_vertex() -> bool:
@@ -107,6 +137,9 @@ def create_chat_model(
     """
     if model.startswith("nim/"):
         return NIMChatModel(model.removeprefix("nim/"), temperature=temperature)
+
+    if model.startswith("mistral/"):
+        return MistralChatModel(model.removeprefix("mistral/"), temperature=temperature)
 
     build_kwargs: dict[str, Any] = {
         "model": model,
