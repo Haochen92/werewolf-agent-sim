@@ -312,3 +312,81 @@ Download:
 ```bash
 modal volume get cross-encoder-reranker-output reranker_v4/ ./models/cross_encoder/reranker_v4/
 ```
+
+## Training: reranker_v5 — strategy situation+action vs situation-only (2026-05-30)
+
+**Purpose:** Input-parity ablation for the strategy-point label-leakage concern. Labelers saw the full strategy point (situation + action) and were prompted to judge action usefulness, but production/v4 score strategy points **situation-only**. Does a CE that *also* sees the action rank strategy points better — i.e., do the action-visible labels reward signal absent from the situation-only input?
+
+**Design:** Two arms trained through the `evaluation/training` pipeline (identical engine, seed=42, 20 epochs, bs16, lr2e-5, MiniLM-L6); the *only* difference is strategy-point `sentence2`. Observations are byte-identical across arms → control.
+- `reranker_v5_sitonly`: SP `sentence2 = situation` (= production/v4 format)
+- `reranker_v5_sitact`: SP `sentence2 = situation | Action: …`
+
+Each model is evaluated on its own matching held-out test split (same 17 cases / labels).
+
+**Held-out test (NDCG@5 by memory type):**
+
+| Subset | sitonly | sitact | Δ |
+|--------|---------|--------|---|
+| strategy_point | 0.846 | 0.860 | **+0.015** |
+| observation (control) | 0.937 | 0.931 | −0.006 |
+| overall | 0.879 | 0.886 | +0.006 |
+
+SP detail: NDCG@3 0.838→0.871, Pearson r 0.500→0.586; 95% CIs overlap ([0.770, 0.917] vs [0.782, 0.929]). The observation control is flat (NDCG@10 ±0.000), confirming the only mover is the SP text.
+
+**Read:** +0.015 NDCG@5 within overlapping CIs → the action gives no trustworthy ranking gain; the small Pearson bump is calibration, not top-k ordering. Situation-only retained. (A gain here also couldn't be cleanly separated from the model fitting the labelers' action-lean.)
+
+## Training: reranker_v5_allsitonly — observation situation-only ablation (2026-05-30)
+
+**Purpose:** Test "pure situation matcher for *everything*" — strip observation approach/outcome so both memory types are situation-only.
+
+**Design:** vs `reranker_v5_sitonly` (obs = `Situation | Approach | Outcome`, SP = situation). New arm `reranker_v5_allsitonly` sets obs = `Situation` only, SP unchanged → strategy points are the control.
+
+**Held-out test:**
+
+| Subset | obs_full (prod) | obs_sitonly | Δ |
+|--------|-----------------|-------------|---|
+| observation NDCG@3 | 0.928 | 0.902 | **−0.026** |
+| observation NDCG@5 | 0.937 | 0.923 | −0.014 |
+| strategy_point NDCG@5 (control) | 0.846 | 0.852 | +0.007 |
+
+SP control flat (validates). Stripping observation content costs ~0.026 NDCG@3 — at the top-3 the agent actually consumes (`RERANK_KEEP=3`) — with no upside. Observation approach/outcome are descriptive scenario content that genuinely augments situation matching, so they are kept.
+
+## SP label-drift diagnostic (2026-05-30)
+
+**Purpose:** Directly estimate whether seeing the action changed the *labels* (the contamination question, distinct from the input-parity retrain).
+
+**Design:** The auto panel re-scored 240 sampled SP pairs (seed 42) twice — action-visible vs situation-only — with identical prompt wording, only the candidate text toggled, so per-model flip rate isolates the action's effect. Run through the labeling engine (`max_item_workers=8`).
+
+**Per-model flip rate (label changed when action hidden):**
+
+| Model | flip rate | mean signed Δ (action − sit-only) |
+|-------|-----------|-----------------------------------|
+| gemini-3.1-flash-lite | 0/240 = 0.0% | +0.000 |
+| mistral-small-2506 | 11/240 = 4.6% | −0.013 |
+| nim/llama-3.1-8b | 0/160 = 0.0% | +0.000 |
+
+Low flip, no directional bias. (NIM returned unparseable output on ~33% of pairs → 160 valid. The "consensus rounded-mean flip" of 10.4% is a rounding/missing-value artifact, not real drift — the per-model rates are the signal.)
+
+**Scope caveat:** covers the 3 automated voters, not the 2 full-context manual labelers (ChatGPT, Sonnet), who reason more and are the most likely to have used the action — the untested residual.
+
+## Conclusion — strategy-point reranker label leakage
+
+A formatting mismatch in the labeling protocol created a potential label leak in the strategy-point reranker: labelers were shown the full strategy point (situation + action) and asked whether recalling it "would help decide what to do" — which invites action usefulness — whereas the production reranker scores **situation-only** inputs. Label target and model input therefore may not coincide.
+
+We ran two diagnostics to bound the impact. **(1)** An input-parity retrain that additionally exposed the strategy action to the cross-encoder improved strategy-point NDCG@5 by only **+0.015** (95% CIs overlapping) — within noise — indicating the hidden action was not a meaningful source of ranking signal. **(2)** A sampled situation-only relabel diagnostic, re-scoring strategy-point pairs with and without the action, showed **low per-model flip rates (0–4.6% across the three automated voters) and no directional bias**. Together these indicate the existing labels already behave largely as situation-relevance labels despite the imperfect protocol.
+
+We therefore keep the strategy reranker situation-only and do not relabel at this stage. The rationale is not that the leakage concern is invalid, but that the **measured expected impact is low** and a situation-only relabel would, in expectation, reproduce the current labels — and situation-only is the intended objective on first principles (the action is prescriptive advice the agent judges, not a matching key).
+
+Observations are handled differently and deliberately. Their approach/outcome are **descriptive** scenario content, not prescriptive advice, and the production reranker sees the same fields the labeler saw, so there is no input/label mismatch. A parallel ablation confirmed this content carries genuine ranking signal — removing it cost **~0.026 NDCG@3**, at the top-k the agent actually consumes. We therefore treat observation approach/outcome as **scenario augmentation, not leakage**, while acknowledging it blends pure situation relevance with richer precedent context.
+
+The strongest remaining uncertainty is **scope**: the drift diagnostic covered the three automated voters but not the two full-context manual labelers (ChatGPT, Sonnet), who reason more and are the most likely to have used the action. A situation-only relabel of strategy points — primarily to retest those careful labelers — would close this completely, and remains a clean, **low-priority future-work** item.
+
+## Model storage (v5 arms)
+
+v5 arms on Modal volume `cross-encoder-training-output` (the `evaluation/training` pipeline's volume):
+```
+reranker_v5_sitonly      (SP situation-only — = production format)
+reranker_v5_sitact       (SP situation+action — ablation)
+reranker_v5_allsitonly   (obs situation-only — ablation)
+```
+Training inputs: `training_data_{sitonly,sitact,allsitonly}/`. Diagnostic raw labels + report: `labels/diagnostic_sp_drift/`. Ablation comparison metrics: `eval_sitonly_vs_sitact_results.json`. Reproduce via `scripts/prep_reranker_data.py` (`--sp-include-action` / `--obs-situation-only`), `scripts/eval_arms.py`, and `scripts/sp_label_drift_diagnostic.py`.

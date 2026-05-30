@@ -50,3 +50,7 @@ batch_results/
 # Single rule survives experiment-folder reorganizations.
 /models/
 evidence/fine_tuning/dedup_classifier/local_output/
+# Reranker ablation data variants — regenerable from prep_reranker_data.py flags
+evidence/fine_tuning/cross_encoder/reranker/training_data_sitonly/
+evidence/fine_tuning/cross_encoder/reranker/training_data_sitact/
+evidence/fine_tuning/cross_encoder/reranker/training_data_allsitonly/

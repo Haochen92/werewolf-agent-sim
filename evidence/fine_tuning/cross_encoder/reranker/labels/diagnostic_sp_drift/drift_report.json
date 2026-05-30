@@ -1,0 +1,38 @@
+{
+  "n_pairs": 240,
+  "models": {
+    "gemini-3.1-flash-lite": {
+      "pairs": 240,
+      "flip_rate": 0.0,
+      "mean_abs_delta": 0.0,
+      "mean_signed_delta": 0.0,
+      "delta_distribution": {
+        "0": 240
+      }
+    },
+    "mistral/mistral-small-2506": {
+      "pairs": 240,
+      "flip_rate": 0.0458,
+      "mean_abs_delta": 0.0458,
+      "mean_signed_delta": -0.0125,
+      "delta_distribution": {
+        "-1": 7,
+        "0": 229,
+        "1": 4
+      }
+    },
+    "nim/meta/llama-3.1-8b-instruct": {
+      "pairs": 160,
+      "flip_rate": 0.0,
+      "mean_abs_delta": 0.0,
+      "mean_signed_delta": 0.0,
+      "delta_distribution": {
+        "0": 160
+      }
+    }
+  },
+  "consensus": {
+    "pairs": 240,
+    "rounded_mean_flip_rate": 0.1042
+  }
+}

@@ -1,0 +1,2410 @@
+{
+  "models": [
+    "gemini-3.1-flash-lite",
+    "mistral/mistral-small-2506",
+    "nim/meta/llama-3.1-8b-instruct"
+  ],
+  "total_items": 240,
+  "results": [
+    {
+      "case_index": 0,
+      "key": "79288222-86d2-47fd-aebf-65660e6db983",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 2,
+      "key": "2d7d80d2-e3fe-4dd0-9ea1-e1876a162d2b",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 0,
+      "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 0,
+      "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 2,
+      "key": "675c0947-8b72-47fe-8c2e-00e5b9edba3c",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 1,
+      "key": "3ce9912f-4935-4f78-b8b1-d61409ed753c",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 3,
+      "key": "42dfb995-f6df-401b-a220-081232ac4449",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 2,
+      "key": "09f24ec7-55cf-4aae-b54a-de10fa3a4e6d",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 3,
+      "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 6,
+      "key": "009e502f-9dbf-4f4a-a94b-0704abe5d577",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 5,
+      "key": "42dfb995-f6df-401b-a220-081232ac4449",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 7,
+      "key": "42e37cd6-5416-48b1-aa92-840569b8a23a",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 4,
+      "key": "a7c6ac54-d430-417f-932c-6906683a9314",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 4,
+      "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 6,
+      "key": "928fde7b-4c7d-46b3-81bc-c292747d9048",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 6,
+      "key": "306a4905-b9dc-4ec4-99e6-438cc5238d55",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 7,
+      "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 8,
+      "key": "443bf51b-b86e-4927-8f52-d2683770ee34",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 8,
+      "key": "6ecca84c-747c-44ea-af41-6dc8cd366ef1",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 10,
+      "key": "f71e8766-3af0-4033-9a08-7ad22f31a17e",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 9,
+      "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 8,
+      "key": "d20aabe2-7482-4b1a-9a72-ebaf0845d423",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 10,
+      "key": "8ccbab63-1011-4a21-b2c8-462ef076a8a6",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 10,
+      "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 10,
+      "key": "436340e8-4abc-4035-87cf-9522b33ed074",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 11,
+      "key": "9d390cf1-21a6-4f76-8e85-86a16f1d3cda",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 11,
+      "key": "fc9a9421-cf86-4800-a6c1-a261bcf6c61f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 11,
+      "key": "1cc944fd-bf5c-4b62-9524-0b1291f50c4e",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 11,
+      "key": "2f63bae5-ead1-45c8-87c9-1211ad266784",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 12,
+      "key": "578f03b1-9fe2-437d-907b-d781fe62608f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 12,
+      "key": "e5985281-5e1f-420e-8ece-2dd45a8859b5",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 12,
+      "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 12,
+      "key": "844f7fe2-8066-4658-99c5-e1fda13f2a9a",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 14,
+      "key": "da1fa775-c345-402a-bae6-0089b0a0f9c2",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 14,
+      "key": "d0bde61b-6528-4fa2-b49a-0d76d1a9712c",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 12,
+      "key": "3c63e195-43fd-4943-8fe3-3dbbd31eb2d5",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 14,
+      "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 15,
+      "key": "1033b4f0-e788-4193-b7c4-5a2cbcf0ef56",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 17,
+      "key": "cd1368ff-c32f-4ef2-9543-f6fd5f34ec46",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 15,
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 17,
+      "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 17,
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 15,
+      "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 18,
+      "key": "79288222-86d2-47fd-aebf-65660e6db983",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 18,
+      "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 18,
+      "key": "bf336582-f166-47a8-b2dc-d43e56d98ec1",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 20,
+      "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 21,
+      "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 17,
+      "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 22,
+      "key": "8bb8583f-b87f-4232-b72b-ae5f9b4de150",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 17,
+      "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 24,
+      "key": "84cfd842-4a65-437c-a7ec-bb38883ac145",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 17,
+      "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 24,
+      "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 18,
+      "key": "568171e8-8534-4fb7-be6c-225f223048e9",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 24,
+      "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 24,
+      "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 24,
+      "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 26,
+      "key": "d6b71a52-c14b-48c7-b870-65cf9bad5c10",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 26,
+      "key": "5681a68d-971e-490a-a711-00a03766475c",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 26,
+      "key": "b98bd43c-79aa-49ee-955e-ca01762e6a89",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 28,
+      "key": "b9f7e67a-7f69-4fb6-aceb-8a2bddb32cf6",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 27,
+      "key": "b34d12c2-9d2b-4ac6-9d36-b877dad2d896",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 28,
+      "key": "5681a68d-971e-490a-a711-00a03766475c",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 29,
+      "key": "6710c4b7-4128-4afd-b1cf-3a917b3911bb",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 30,
+      "key": "33c696ae-2f83-4166-8c24-932834e56dd4",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 28,
+      "key": "443bf51b-b86e-4927-8f52-d2683770ee34",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 30,
+      "key": "16fddf0f-3ebe-42a8-9c08-9c5b16f5cf95",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 30,
+      "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 31,
+      "key": "c2489a8b-fd86-487d-bfcc-c8394f6a68fa",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "8ccbab63-1011-4a21-b2c8-462ef076a8a6",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "88c90b6f-dd0e-4ea1-9500-e2c17816472e",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "0c2e22c6-97e0-4fad-ad69-359f9fb9a2cf",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "f39b12a6-4ea6-4b05-8d58-9c50232c8fcf",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "d322503b-b9cd-4d82-8b2e-7638d19f6e49",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "5ff0bc89-c31a-483c-b30a-be59479b4687",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 32,
+      "key": "18268625-d318-4992-91a3-0074910a3be9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 33,
+      "key": "09a16417-a56f-4347-9987-9810bfae4e90",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 33,
+      "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 34,
+      "key": "e66e063d-6c6d-448a-955e-34452f974008",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 37,
+      "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 36,
+      "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 37,
+      "key": "42dfb995-f6df-401b-a220-081232ac4449",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 38,
+      "key": "9355e610-6db8-4980-bb2b-c73b0e82116c",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 38,
+      "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 39,
+      "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 39,
+      "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 41,
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 40,
+      "key": "ddc8ea7e-6593-4b95-b856-861aed34367a",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 35,
+      "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 42,
+      "key": "83487df0-7a81-4308-9f90-d72e19e0d4a0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 35,
+      "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 36,
+      "key": "8a6a021d-13e7-4002-b3b4-27eb9392627f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 42,
+      "key": "d48d8fbe-c26a-4904-9f3c-f20081148798",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 42,
+      "key": "ab90817a-43ca-4cae-a21b-3c6afd037afb",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 42,
+      "key": "4da35595-a2b5-4836-b19d-3d2740b46acc",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 42,
+      "key": "bf336582-f166-47a8-b2dc-d43e56d98ec1",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 42,
+      "key": "79288222-86d2-47fd-aebf-65660e6db983",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 43,
+      "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 43,
+      "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 43,
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 43,
+      "key": "b4116bf9-a06b-4347-8096-774ae05df788",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 43,
+      "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 44,
+      "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 45,
+      "key": "bcf0a890-eef8-4fbb-b278-d1331befc47e",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 46,
+      "key": "374a2e35-8402-4632-9b31-613f85a0cf63",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 48,
+      "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 45,
+      "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 48,
+      "key": "a4736b0a-1cb5-4ccf-91b7-3db36cc4994b",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 48,
+      "key": "e69c54c5-8cd0-4395-8cf3-cd945c6484d1",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 49,
+      "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 52,
+      "key": "a591690e-d1aa-496f-89a7-d80ab1c75d49",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 51,
+      "key": "4922ee84-da73-480a-90ef-170739daf216",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 48,
+      "key": "566b08b4-4b6a-4fd3-89e0-b73ec2b91b7d",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 52,
+      "key": "443bf51b-b86e-4927-8f52-d2683770ee34",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 48,
+      "key": "8a6a021d-13e7-4002-b3b4-27eb9392627f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 52,
+      "key": "a9107742-f0fd-4e34-bca0-923d8dbd8bfc",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 52,
+      "key": "306a4905-b9dc-4ec4-99e6-438cc5238d55",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 54,
+      "key": "c64295b9-47f9-48a4-929a-160b172dc4b8",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 55,
+      "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 56,
+      "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 54,
+      "key": "5216777a-b932-40ef-87cb-8ef4e4388341",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 57,
+      "key": "29967b04-96a1-4068-98a7-3b21871d554c",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 56,
+      "key": "21399e68-38b7-482a-88f6-a87a8181c5a5",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 58,
+      "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 58,
+      "key": "83487df0-7a81-4308-9f90-d72e19e0d4a0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 58,
+      "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 59,
+      "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 59,
+      "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 61,
+      "key": "42a05e82-3107-4124-a80f-b120ec1b8a59",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 61,
+      "key": "62ef36a8-ddd1-4120-8b89-1be197da6bd6",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 62,
+      "key": "87672547-c279-445a-8142-df9539766559",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 62,
+      "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 61,
+      "key": "6ef092b3-32e1-4602-ab6b-1d8ad5625a97",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 62,
+      "key": "8bb8583f-b87f-4232-b72b-ae5f9b4de150",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 0
+      }
+    },
+    {
+      "case_index": 62,
+      "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 62,
+      "key": "964e7343-23c6-40da-bbf7-59beaaef587a",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 62,
+      "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 0,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 64,
+      "key": "a7ca80e1-7bcf-4c8a-abc1-b4b2f3c6ef78",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 64,
+      "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 64,
+      "key": "76cc3c9d-b314-4df1-90d3-9bba11618d98",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 65,
+      "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 66,
+      "key": "7462c1ff-3b61-441e-a4c3-46edf8ffb32f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 66,
+      "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 67,
+      "key": "3edc3901-721e-470c-b760-acfb03ee84f5",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 68,
+      "key": "721ed82e-b650-4f46-8df6-a0f65bb99e15",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 68,
+      "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 69,
+      "key": "04c6698e-1e6d-417a-ab36-6ecabbe10016",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 69,
+      "key": "60b03843-0463-4b1b-9ca1-88da51b4e937",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 69,
+      "key": "09a16417-a56f-4347-9987-9810bfae4e90",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 70,
+      "key": "55ad1ead-bb04-47ce-ad2c-902ff8738998",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 70,
+      "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 74,
+      "key": "c7cf1300-4380-4733-bcfa-d6b1c64fcdfe",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 70,
+      "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 74,
+      "key": "513226d2-cdc1-4cee-ab4e-e41abffbc1cf",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 71,
+      "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 71,
+      "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 75,
+      "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 76,
+      "key": "7750a68d-c8a2-4a3e-a87a-1cdad48240a9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 76,
+      "key": "6bd08e77-efd4-4cc2-b358-6ad769786720",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 72,
+      "key": "c7214f93-c980-4e91-8b06-3c01d61abe3c",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 77,
+      "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 77,
+      "key": "6aca8c49-eae0-4315-94de-3f0704d753c7",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 77,
+      "key": "42f30e10-562d-4a86-a738-0224d4425daa",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 78,
+      "key": "dffa1e08-f2af-4368-86fa-9a8bdfc5ce52",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 78,
+      "key": "a6d1e994-7725-4666-a351-be43fb94b33a",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 78,
+      "key": "3ad8ba65-371a-4957-930d-c3434325b069",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 78,
+      "key": "bd79d243-9a69-4bfe-84fa-37d575940772",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 80,
+      "key": "47d5f740-5db7-4dde-88a3-ced07aa082f0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 80,
+      "key": "82a4ac4c-3ac4-4dd6-a817-36fb1f9a40ee",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 80,
+      "key": "bef45b74-35e4-4152-b691-afe0a1da43f9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 84,
+      "key": "014d6b34-2c60-4d51-a172-5da499879e67",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 73,
+      "key": "42dfb995-f6df-401b-a220-081232ac4449",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 82,
+      "key": "d322503b-b9cd-4d82-8b2e-7638d19f6e49",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 84,
+      "key": "00d76005-3b58-45aa-adc3-2f8ed91212f0",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 85,
+      "key": "7215e341-9dfe-4404-800f-a81fd0313a23",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 85,
+      "key": "300150ed-4b63-4193-94eb-5d6f1fa013b4",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 75,
+      "key": "a8ec1773-30fc-4c81-bd40-80c5ea353f3f",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 85,
+      "key": "f88a85ae-1ee2-49ec-9a16-e82938214c08",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 85,
+      "key": "afef4e16-12b0-4d9d-b5b2-e07cae23e576",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 86,
+      "key": "e552a4ce-f557-4f5b-a541-aec826614a47",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 87,
+      "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 87,
+      "key": "eb3e69f7-94aa-4273-9867-42fbe68e6817",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 87,
+      "key": "8bcd53c6-fa3d-4c2f-8756-96264f45b651",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 88,
+      "key": "ceef18b3-1e85-4105-9120-3d66edbbccb5",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 88,
+      "key": "17add23c-00b5-4a83-a830-ebe6cdf55722",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 88,
+      "key": "292fac65-3a39-41d9-b43a-fc9dd9f449d9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 88,
+      "key": "0a2cf29a-ee55-45e5-b277-43953388930e",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 88,
+      "key": "b618f0bc-9ddb-40c5-bed5-303bbaf66b89",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 89,
+      "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 90,
+      "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 89,
+      "key": "e9294fd5-f1aa-4268-811a-62021aedf2ec",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 91,
+      "key": "33204b05-f607-4cde-b91b-d01b28cb82a8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 0
+      }
+    },
+    {
+      "case_index": 91,
+      "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 89,
+      "key": "21798fee-51a3-4cad-9d08-b741503d2523",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "b59c7455-6cd8-46ef-9f3f-f43d6532750a",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "bf336582-f166-47a8-b2dc-d43e56d98ec1",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "1390f217-29ce-4d94-afc0-6642b0776904",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "7eebdf18-9f10-4ae5-a16a-3aee445b29b8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 90,
+      "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "a776fd3c-49e2-4f1a-9137-62a2d96e8175",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 90,
+      "key": "e66e063d-6c6d-448a-955e-34452f974008",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "c4fe88af-573f-4d60-8c89-b64aff54013e",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 92,
+      "key": "e1428900-f94c-4385-826c-8466f9b25462",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 93,
+      "key": "07265d73-9b48-4423-a763-5ba413df8d79",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 93,
+      "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 93,
+      "key": "3b9c3f75-4312-4ae8-afd2-a9f4e7a3d5f1",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 93,
+      "key": "bb4a5e5a-11a7-4b10-ad04-ccf46a35f3cf",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 94,
+      "key": "434ca33b-17d3-4e24-8aef-f395a35b512a",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 94,
+      "key": "d11fc4bf-bc89-4cb5-9954-b5a7b72fa0d9",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 96,
+      "key": "309512ca-0a04-485e-8f5a-2b542a15df53",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 98,
+      "key": "8bd4a4a4-a114-4f49-89aa-a49ab7e177e7",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 98,
+      "key": "a79b348d-e256-4513-b4f8-5670e22101c4",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 98,
+      "key": "3ad8ba65-371a-4957-930d-c3434325b069",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 99,
+      "key": "4619f4d5-ea2e-4ff2-a4f1-6441a577ce54",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 100,
+      "key": "04dbed73-a684-4e7d-897d-6cae2803c3e4",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 100,
+      "key": "9f51af0e-1e52-46f3-afb4-8f77fdc3fc41",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 102,
+      "key": "440f0350-6674-499a-92ad-a67045093bdc",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 102,
+      "key": "a0db6dc0-6452-433d-9db9-7d3ed881fe75",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 102,
+      "key": "6de91cd0-a3b7-441e-9f8a-945417455dc8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 103,
+      "key": "f944cdb4-755c-44fb-9d33-7c1d75d22277",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 103,
+      "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 104,
+      "key": "4f4d9296-59c0-4534-8a95-0b677edc361e",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 104,
+      "key": "9d5249e6-94c8-4098-861c-a09a4964c1ff",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 0,
+        "nim/meta/llama-3.1-8b-instruct": null
+      }
+    },
+    {
+      "case_index": 105,
+      "key": "84d9366f-f068-481b-8e10-4457361d5b2d",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 105,
+      "key": "de8be6d6-0553-4e38-b23d-1231a0c82e21",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 105,
+      "key": "1e0fde37-2729-4809-98cb-6a2910c8b78a",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 106,
+      "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 106,
+      "key": "568171e8-8534-4fb7-be6c-225f223048e9",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 107,
+      "key": "09b9bae0-849b-4b82-90d0-2cb23b4adf00",
+      "item_type": "observation",
+      "model_scores": {
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 107,
+      "key": "12224812-1ea1-48b2-a48f-73bcdd2f4ad1",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 106,
+      "key": "7eebdf18-9f10-4ae5-a16a-3aee445b29b8",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 108,
+      "key": "b369c51e-9692-464e-bdf7-aa0baf625199",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 106,
+      "key": "a8be92bd-36c6-4a79-b2dc-d171c563dbf9",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 108,
+      "key": "a394b860-e1b5-411f-ad7a-bff8229ee5c0",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 107,
+      "key": "8e6e3cbd-d31a-4730-89af-b0b241542fc6",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1,
+        "gemini-3.1-flash-lite": 1
+      }
+    },
+    {
+      "case_index": 108,
+      "key": "9355e610-6db8-4980-bb2b-c73b0e82116c",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    },
+    {
+      "case_index": 108,
+      "key": "17add23c-00b5-4a83-a830-ebe6cdf55722",
+      "item_type": "strategy_point",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "gemini-3.1-flash-lite": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2
+      }
+    },
+    {
+      "case_index": 107,
+      "key": "5d53cedb-aacd-4b1b-804d-fe68e51f6c23",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 1,
+        "gemini-3.1-flash-lite": 1,
+        "nim/meta/llama-3.1-8b-instruct": 1
+      }
+    },
+    {
+      "case_index": 109,
+      "key": "72434618-3e76-4a14-849d-1a6eab43b326",
+      "item_type": "observation",
+      "model_scores": {
+        "mistral/mistral-small-2506": 2,
+        "nim/meta/llama-3.1-8b-instruct": 2,
+        "gemini-3.1-flash-lite": 2
+      }
+    }
+  ]
+}
