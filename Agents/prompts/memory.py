@@ -79,6 +79,8 @@ Your current strategy note:
 
 {situation_standards}
 
+{epistemic_status_rule}
+
 Your role-specific lens:
 {role_lens}
 
@@ -108,6 +110,8 @@ Your current strategy note:
 {previous_strategy}
 
 {situation_standards}
+
+{epistemic_status_rule}
 
 Your role-specific lens:
 {role_lens}

@@ -60,7 +60,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
             if isinstance(retrieved_observations, str)
             else format_retrieved_observations(retrieved_observations)
         ),
-        "situation_standards": SITUATION_STANDARDS + "\n" + EPISTEMIC_STATUS_RULE,
+        "situation_standards": SITUATION_STANDARDS,
+        "epistemic_status_rule": EPISTEMIC_STATUS_RULE,
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
         "adoption_instruction": ADOPTION_INSTRUCTION,
     }
