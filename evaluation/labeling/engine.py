@@ -99,6 +99,7 @@ def label_items(
     output_path: Path,
     checkpoint_every: int = 1,
     resume: bool = False,
+    max_item_workers: int = 1,
 ) -> list[dict]:
     """Label items with multiple models, saving checkpoints.
 
@@ -109,6 +110,10 @@ def label_items(
         output_path: Where to write checkpoint/final JSON.
         checkpoint_every: Save after this many items.
         resume: If True, skip items already in output_path.
+        max_item_workers: Process this many items concurrently (default 1 =
+            original sequential behavior). >1 overlaps slow per-item calls; the
+            per-model rate limiter still bounds each model's request rate, so
+            high-latency models (e.g. a thinking model) stop gating throughput.
 
     Returns:
         List of per-item result dicts with model_scores and item metadata.
@@ -127,15 +132,13 @@ def label_items(
         print(f"Resuming: {len(existing_keys)} items already labeled")
 
     results = list(existing_results)
-    labeled_count = len(existing_results)
+    todo = [it for it in items if adapter.item_key(it) not in existing_keys]
+    total = len(existing_results) + len(todo)
+    write_lock = threading.Lock()
+    counter = {"n": len(existing_results)}
 
-    for i, item in enumerate(items):
-        item_key = adapter.item_key(item)
-        if item_key in existing_keys:
-            continue
-
+    def _process(item: LabelItem) -> dict:
         prompt = adapter.format_prompt(item)
-
         scores: dict[str, int | str | None] = {}
         with ThreadPoolExecutor(max_workers=len(models)) as executor:
             futures = {
@@ -143,28 +146,35 @@ def label_items(
                 for m in models
             }
             for future in as_completed(futures):
-                m = futures[future]
-                scores[m.name] = future.result()
+                scores[futures[future].name] = future.result()
 
-        labeled_count += 1
-        result_entry = {
+        entry = {
             "case_index": item.case_index,
             "key": item.key,
             "item_type": item.item_type,
             "model_scores": scores,
         }
-        results.append(result_entry)
-
         _short = lambda m: m.split("/")[-1] if "/" in m else m.split("-")[-1]
         score_str = " ".join(f"{_short(m)}={s}" for m, s in scores.items())
-        print(f"  [{labeled_count}/{len(items)}] {score_str} | "
-              f"{item.context.get('situation', '')[:70]}...")
+        with write_lock:
+            results.append(entry)
+            counter["n"] += 1
+            print(f"  [{counter['n']}/{total}] {score_str} | "
+                  f"{item.context.get('situation', '')[:70]}...")
+            if counter["n"] % checkpoint_every == 0:
+                _save_checkpoint(output_path, models, results)
+        return entry
 
-        if labeled_count % checkpoint_every == 0:
-            _save_checkpoint(output_path, models, results)
+    if max_item_workers <= 1:
+        for item in todo:
+            _process(item)
+    else:
+        with ThreadPoolExecutor(max_workers=max_item_workers) as pool:
+            for fut in as_completed([pool.submit(_process, it) for it in todo]):
+                fut.result()
 
     _save_checkpoint(output_path, models, results)
-    print(f"\nLabeled {labeled_count} items total. Wrote: {output_path}")
+    print(f"\nLabeled {counter['n']} items total. Wrote: {output_path}")
     return results
 
 

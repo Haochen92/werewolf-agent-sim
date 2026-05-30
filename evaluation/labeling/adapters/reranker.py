@@ -58,7 +58,7 @@ For EACH case below, read the game state and golden situation query, then rate e
 Respond with a JSON array per case containing objects with "key" (the 12-char prefix shown) and "relevance" (0/1/2)."""
 
 
-def _format_memory_text(item: dict, mem_type: str) -> str:
+def _format_memory_text(item: dict, mem_type: str, show_action: bool = True) -> str:
     if mem_type == "observation":
         parts = [f"Situation: {item['situation']}"]
         if item.get("approach"):
@@ -67,11 +67,23 @@ def _format_memory_text(item: dict, mem_type: str) -> str:
             parts.append(f"Outcome: {item['outcome']}")
         return " | ".join(parts)
     else:
-        return f"Situation: {item['situation']} | Action: {item['action']}"
+        if show_action and item.get("action"):
+            return f"Situation: {item['situation']} | Action: {item['action']}"
+        return f"Situation: {item['situation']}"
 
 
 class RerankerAdapter(LabelingAdapter):
-    """Adapter for reranker cross-encoder relevance labeling (0/1/2 scale)."""
+    """Adapter for reranker cross-encoder relevance labeling (0/1/2 scale).
+
+    ``show_action`` controls whether strategy-point candidates expose the action
+    field (default True = production labeling format). Setting it False shows the
+    situation only — used by the SP label-drift diagnostic to isolate how much
+    the action text moves labels. ``sp_only`` skips observation candidates.
+    """
+
+    def __init__(self, show_action: bool = True, sp_only: bool = False):
+        self.show_action = show_action
+        self.sp_only = sp_only
 
     @property
     def label_values(self) -> list[int]:
