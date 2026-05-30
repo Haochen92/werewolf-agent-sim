@@ -23,10 +23,25 @@ count) because the 2.x model series does not support the string-based
 from __future__ import annotations
 
 import os
+import threading
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+
+# The factory is the central reader of provider API keys (MISTRAL_API_KEY,
+# NVIDIA_API_KEY, …) from the environment, so it loads .env itself rather than
+# relying on each caller (e.g. the labeling engine) to have done so first.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+# Chat-model instances are immutable after construction and safe to reuse across
+# threads (the underlying SDK/httpx clients are thread-safe). Building one is
+# non-trivial (client + auth setup), so memoize by construction args — callers in
+# hot loops (e.g. the multi-model labeling engine) would otherwise rebuild per call.
+_MODEL_CACHE: dict[Any, Any] = {}
+_MODEL_CACHE_LOCK = threading.Lock()
 
 _DEFAULT_VERTEX_LOCATION = "global"
 
@@ -116,7 +131,10 @@ def create_chat_model(
     thinking_budget: int | None = None,
     **kwargs: Any,
 ) -> ChatGoogleGenerativeAI | NIMChatModel:
-    """Create a chat model using the configured backend.
+    """Create (or reuse) a chat model using the configured backend.
+
+    Instances are memoized by construction args (see ``_MODEL_CACHE``); repeated
+    calls with the same args return the same shared, thread-safe instance.
 
     Parameters
     ----------
@@ -135,6 +153,36 @@ def create_chat_model(
     **kwargs:
         Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM).
     """
+    try:
+        cache_key: Any = (
+            model, temperature, thinking_level, thinking_budget,
+            tuple(sorted(kwargs.items())),
+        )
+        hash(cache_key)
+    except TypeError:
+        cache_key = None  # unhashable kwargs -> bypass cache
+    if cache_key is not None and (cached := _MODEL_CACHE.get(cache_key)) is not None:
+        return cached
+
+    instance = _build_chat_model(
+        model, temperature=temperature, thinking_level=thinking_level,
+        thinking_budget=thinking_budget, **kwargs,
+    )
+    if cache_key is None:
+        return instance
+    with _MODEL_CACHE_LOCK:
+        return _MODEL_CACHE.setdefault(cache_key, instance)
+
+
+def _build_chat_model(
+    model: str,
+    *,
+    temperature: float = 0.0,
+    thinking_level: str | None = None,
+    thinking_budget: int | None = None,
+    **kwargs: Any,
+) -> ChatGoogleGenerativeAI | NIMChatModel:
+    """Construct a fresh chat model (uncached). See ``create_chat_model``."""
     if model.startswith("nim/"):
         return NIMChatModel(model.removeprefix("nim/"), temperature=temperature)
 
