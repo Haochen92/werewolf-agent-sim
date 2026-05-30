@@ -124,7 +124,7 @@ Root cause: two compounding issues:
 
 **Model download:**
 ```bash
-modal volume get embedding-finetune-output gte_base_run4/ ./evidence/fine_tuning/embedding/gte_base_run4/
+modal volume get embedding-finetune-output gte_base_run4/ ./models/embedding/gte_base_run4/
 ```
 
 **Note:** Model weights (~600MB) are gitignored. Download from Modal volume on other machines.

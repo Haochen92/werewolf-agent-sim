@@ -50,13 +50,12 @@ GOLDEN_LABELS_PATH = (
     / "retrieval_golden_labels.json"
 )
 CE_MODEL_PATH = (
-    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
-    / "reranker_v4"
+    REPO_ROOT / "models" / "cross_encoder" / "reranker_v4"
 )
 OBS_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "observations.json"
 SP_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
 SPLIT_PATH = (
-    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker_split.json"
+    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "reranker_split.json"
 )
 
 ALL_METHODS = ["bi-encoder", "cross-encoder", "flash-lite", "flash-35", "cohere"]

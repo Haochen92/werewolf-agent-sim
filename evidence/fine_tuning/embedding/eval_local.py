@@ -5,7 +5,7 @@ distributions on the golden dedup cases.
 
 Usage:
     poetry run python evidence/fine_tuning/embedding/eval_local.py \
-        --model evidence/fine_tuning/embedding/gte_base_run4 \
+        --model models/embedding/gte_base_run4 \
         --base Alibaba-NLP/gte-modernbert-base
 """
 

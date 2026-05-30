@@ -46,9 +46,7 @@ dist/
 eval_results/
 batch_results/
 
-# Fine-tuned model weights (download from Modal volume instead)
-evidence/fine_tuning/embedding/gte_base_run*/
+# Model weights live under /models/ (download from Modal volume instead).
+# Single rule survives experiment-folder reorganizations.
+/models/
 evidence/fine_tuning/dedup_classifier/local_output/
-evidence/fine_tuning/cross_encoder/ce_minilm_dedup_run1/
-evidence/fine_tuning/cross_encoder/ce_minilm_dedup_onnx/
-evidence/fine_tuning/cross_encoder/reranker_v*/
