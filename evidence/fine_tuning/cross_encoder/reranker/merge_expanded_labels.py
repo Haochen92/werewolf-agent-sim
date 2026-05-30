@@ -10,10 +10,10 @@ Voting logic (4 models):
   - 1/3 minority → label with majority, flag for spot-check
 
 Usage:
-    poetry run python evidence/fine_tuning/cross_encoder/merge_expanded_labels.py
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/merge_expanded_labels.py
 
     # Dry run to see disagreement stats only
-    poetry run python evidence/fine_tuning/cross_encoder/merge_expanded_labels.py --dry-run
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/merge_expanded_labels.py --dry-run
 """
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ import json
 from collections import Counter
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-CE_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+CE_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker"
 
 
 def _load_chatgpt_labels(response_dir: Path) -> dict[str, int]:

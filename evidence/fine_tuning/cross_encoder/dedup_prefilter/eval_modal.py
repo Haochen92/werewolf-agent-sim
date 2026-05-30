@@ -4,7 +4,7 @@ Scores all golden set pairs with the cross-encoder, sweeps auto-dedup
 thresholds, and compares with cosine similarity baseline.
 
 Usage:
-    poetry run modal run evidence/fine_tuning/cross_encoder/eval_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/dedup_prefilter/eval_modal.py \
         --run-name ce_minilm_run1
 """
 

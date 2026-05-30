@@ -5,14 +5,14 @@ retrieved candidates, so the labeler has complete context.
 
 Usage:
     # All 20 new cases into one file (with game context)
-    poetry run python evidence/fine_tuning/cross_encoder/export_for_manual_labeling.py
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/export_for_manual_labeling.py
 
     # Specific cases
-    poetry run python evidence/fine_tuning/cross_encoder/export_for_manual_labeling.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/export_for_manual_labeling.py \
         --cases 4 5 7
 
     # Per-case files
-    poetry run python evidence/fine_tuning/cross_encoder/export_for_manual_labeling.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/export_for_manual_labeling.py \
         --per-case
 """
 from __future__ import annotations
@@ -21,13 +21,13 @@ import argparse
 import json
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 CANDIDATES_PATH = (
-    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
+    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker"
     / "candidates_for_labeling.json"
 )
 EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
-OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "labeling_prompts"
+OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "labeling_prompts"
 
 SYSTEM_INSTRUCTIONS = """\
 You are labeling retrieval results for a werewolf social deduction game's episodic memory system.

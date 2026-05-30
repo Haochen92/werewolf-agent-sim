@@ -4,10 +4,10 @@ Trains a cross-encoder that scores (situation_A, situation_B) → relevance.
 Used to replace cosine similarity in auto-dedup threshold decisions.
 
 Usage:
-    poetry run modal run evidence/fine_tuning/cross_encoder/train_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/dedup_prefilter/train_modal.py \
         --run-name ce_minilm_run1
 
-    poetry run modal run evidence/fine_tuning/cross_encoder/train_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/dedup_prefilter/train_modal.py \
         --base-model BAAI/bge-reranker-base --run-name ce_bge_run1
 """
 
@@ -147,7 +147,7 @@ def train(
 
     vol.commit()
     print(f"\nDownload with:")
-    print(f"  modal volume get cross-encoder-finetune-output {run_name}/ ./local_cross_encoder/")
+    print(f"  modal volume get cross-encoder-finetune-output {run_name}/ ./models/cross_encoder/{run_name}/")
 
     return {
         "model": base_model,

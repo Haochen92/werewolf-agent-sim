@@ -8,12 +8,12 @@ Disagreements are resolved by majority vote; ties default to ChatGPT
 (full-context labeler).
 
 Usage:
-    poetry run python evidence/fine_tuning/cross_encoder/merge_labels.py
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/merge_labels.py
 
     # Custom paths
-    poetry run python evidence/fine_tuning/cross_encoder/merge_labels.py \
-        --chatgpt evidence/fine_tuning/cross_encoder/chatgpt_labels_full.json \
-        --consensus evidence/fine_tuning/cross_encoder/consensus_labels_3model.json
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/merge_labels.py \
+        --chatgpt evidence/fine_tuning/cross_encoder/reranker/chatgpt_labels_full.json \
+        --consensus evidence/fine_tuning/cross_encoder/reranker/consensus_labels_3model.json
 """
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ import json
 from collections import Counter
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-CROSS_ENCODER_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+CROSS_ENCODER_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker"
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
     / "retrieval_golden_labels.json"

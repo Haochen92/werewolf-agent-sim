@@ -4,15 +4,15 @@ Scores pairs with the cross-encoder and compares reranking quality (NDCG@k)
 against bi-encoder cosine similarity baseline. Defaults to test split only.
 
 Usage:
-    poetry run modal run evidence/fine_tuning/cross_encoder/eval_reranker_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/eval_reranker_modal.py \
         --run-name reranker_v3
 
     # Evaluate on validation set
-    poetry run modal run evidence/fine_tuning/cross_encoder/eval_reranker_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/eval_reranker_modal.py \
         --run-name reranker_v3 --split val
 
     # Also evaluate base (pre-trained) model for comparison
-    poetry run modal run evidence/fine_tuning/cross_encoder/eval_reranker_modal.py \
+    poetry run modal run evidence/fine_tuning/cross_encoder/reranker/eval_reranker_modal.py \
         --run-name reranker_v3 --include-base
 """
 from __future__ import annotations
@@ -159,7 +159,7 @@ def main(
 ):
     from pathlib import Path
 
-    base_dir = Path("evidence/fine_tuning/cross_encoder")
+    base_dir = Path("evidence/fine_tuning/cross_encoder/reranker")
 
     if split == "all":
         print("WARNING: Evaluating on ALL data including training set — "

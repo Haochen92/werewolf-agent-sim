@@ -7,14 +7,14 @@ and Mistral (mistral/ prefix).
 
 Usage:
     # Trial run: label 3 cases to spot-check model agreement
-    poetry run python evidence/fine_tuning/cross_encoder/label_candidates.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/label_candidates.py \
         --trial --trial-cases 3
 
     # Full run: label all cases
-    poetry run python evidence/fine_tuning/cross_encoder/label_candidates.py
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/label_candidates.py
 
     # Resume from a partial run
-    poetry run python evidence/fine_tuning/cross_encoder/label_candidates.py \
+    poetry run python evidence/fine_tuning/cross_encoder/reranker/label_candidates.py \
         --resume
 """
 from __future__ import annotations
@@ -29,13 +29,13 @@ from collections import Counter
 
 from dotenv import load_dotenv
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 load_dotenv(REPO_ROOT / ".env")
 CANDIDATES_PATH = (
-    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
+    REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker"
     / "candidates_for_labeling.json"
 )
-OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder"
+OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker"
 
 LABEL_PROMPT = """\
 You are labeling retrieval results for a werewolf social deduction game's episodic memory system.
