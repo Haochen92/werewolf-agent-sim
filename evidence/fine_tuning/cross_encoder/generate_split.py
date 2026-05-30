@@ -2,7 +2,7 @@
 
 Creates a deterministic split manifest (reranker_split.json) that all
 downstream scripts read from. Stratified by (player_role x action_phase)
-with 3/1/1 allocation per stratum (24 train / 8 val / 8 test).
+with proportional allocation (~70/15/15) per stratum.
 
 Usage:
     poetry run python evidence/fine_tuning/cross_encoder/generate_split.py
@@ -53,25 +53,27 @@ def main() -> None:
     for (role, phase) in sorted(strata.keys()):
         indices = sorted(strata[(role, phase)])
         rng.shuffle(indices)
-        train.extend(indices[:3])
-        val.append(indices[3])
-        test.append(indices[4])
-        print(f"  {role:>13} x {phase:<16}: "
-              f"train={sorted(indices[:3])}  val=[{indices[3]}]  test=[{indices[4]}]")
+        n = len(indices)
+        n_test = max(1, round(n * 0.15))
+        n_val = max(1, round(n * 0.15))
+        n_train = n - n_val - n_test
+        test.extend(indices[:n_test])
+        val.extend(indices[n_test : n_test + n_val])
+        train.extend(indices[n_test + n_val :])
+        print(f"  {role:>13} x {phase:<16}: {n:3d} cases → "
+              f"train={n_train}  val={n_val}  test={n_test}")
 
     train.sort()
     val.sort()
     test.sort()
 
-    assert len(train) == 24
-    assert len(val) == 8
-    assert len(test) == 8
-    assert len(set(train) | set(val) | set(test)) == 40
+    total = len(set(train) | set(val) | set(test))
+    assert total == len(data["labels"]), f"Expected {len(data['labels'])}, got {total}"
 
     manifest = {
         "description": "Stratified train/val/test split for reranker cross-encoder",
         "seed": args.seed,
-        "strategy": "stratified by (player_role x action_phase), 3/1/1 per stratum",
+        "strategy": "stratified by (player_role x action_phase), ~70/15/15 per stratum",
         "golden_labels_sha256": labels_hash,
         "train": train,
         "val": val,
