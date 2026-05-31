@@ -1,0 +1,91 @@
+{
+  "n_items": 1848,
+  "sample": 0,
+  "seed": 42,
+  "design": "condition B (query+context) vs stored condition A (query-only); same panel, prompt byte-identical apart from added game-state block",
+  "models": {
+    "flashlite": {
+      "pairs": 1848,
+      "flip_rate": 0.2727,
+      "mean_abs_delta": 0.2846,
+      "mean_signed_delta": -0.1071,
+      "promotion_0_to_useful_rate": 0.1331,
+      "demotion_useful_to_0_rate": 0.1435,
+      "delta_distribution": {
+        "-2": 18,
+        "-1": 326,
+        "0": 1344,
+        "1": 156,
+        "2": 4
+      },
+      "by_item_type": {
+        "observation": {
+          "pairs": 955,
+          "flips": 235,
+          "flip_rate": 0.2461
+        },
+        "strategy_point": {
+          "pairs": 893,
+          "flips": 269,
+          "flip_rate": 0.3012
+        }
+      }
+    },
+    "mistral": {
+      "pairs": 1848,
+      "flip_rate": 0.1304,
+      "mean_abs_delta": 0.1304,
+      "mean_signed_delta": -0.0222,
+      "promotion_0_to_useful_rate": 0.2857,
+      "demotion_useful_to_0_rate": 0.0076,
+      "delta_distribution": {
+        "-1": 141,
+        "0": 1607,
+        "1": 100
+      },
+      "by_item_type": {
+        "observation": {
+          "pairs": 955,
+          "flips": 133,
+          "flip_rate": 0.1393
+        },
+        "strategy_point": {
+          "pairs": 893,
+          "flips": 108,
+          "flip_rate": 0.1209
+        }
+      }
+    },
+    "nim": {
+      "pairs": 1465,
+      "flip_rate": 0.3413,
+      "mean_abs_delta": 0.342,
+      "mean_signed_delta": -0.3188,
+      "promotion_0_to_useful_rate": null,
+      "demotion_useful_to_0_rate": 0.0102,
+      "delta_distribution": {
+        "-2": 1,
+        "-1": 482,
+        "0": 965,
+        "1": 17
+      },
+      "by_item_type": {
+        "observation": {
+          "pairs": 740,
+          "flips": 214,
+          "flip_rate": 0.2892
+        },
+        "strategy_point": {
+          "pairs": 725,
+          "flips": 286,
+          "flip_rate": 0.3945
+        }
+      }
+    }
+  },
+  "consensus": {
+    "pairs": 1848,
+    "rounded_mean_flip_rate": 0.2127,
+    "mean_signed_delta": -0.1311
+  }
+}
