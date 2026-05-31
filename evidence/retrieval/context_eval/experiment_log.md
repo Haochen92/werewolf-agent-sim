@@ -497,12 +497,38 @@ lives in the marginal "1 vs 0" band, which sits at lower ranks; NDCG@5 is driven
 action-visible labels, the **action-visibility residual is moot for ranking** — no situation-only
 re-pass needed.
 
-**Net decision:**
-- **Reranker:** keep v4 as-is. No relabel, no retrain, no manual SP re-pass. (Caveat: n=13
-  held-out, round-2 only — a directional gate, not a definitive NDCG re-measure.)
-- **Human anchor:** its justification is now **purely the context eval** (summary recall +
-  adoption ground truth), not the reranker. Scope it accordingly — small, honest, or written up
-  as designed-and-piloted.
-- The over-crediting finding remains valuable as a **labeling-process** lesson (cheap-panel
-  majority vote inflates relevance; use strong judges or flash-lite-CoT, audit a human anchor),
-  independent of whether this particular reranker needed retraining.
+### Step 1c: power re-check — the n=13 gate was underpowered (2026-05-31)
+
+n=13 detects only a ~0.10 NDCG drop reliably (per-case SD ≈ 0.12 → ~40–45 cases needed for a
+0.05 effect). Folding in the held-out **val** cases roughly doubles n (script: `scripts/
+reeval_v4_power.py`):
+
+| memory type | split | n | drop biased→clean | 95% CI |
+|---|---|---|---|---|
+| observation | test | 13 | +0.059 | [+0.000, +0.118] |
+| observation | **test+val** | **25** | **+0.087** | **[+0.022, +0.151]** ← significant |
+| strategy_point | test | 13 | +0.041 | [−0.031, +0.113] |
+| strategy_point | **test+val** | **24** | **+0.030** | [−0.017, +0.077] |
+
+**Revised conclusion (supersedes the "not warranted" call above):**
+- **Observations DO degrade under clean labels** — a real ~0.06–0.09 NDCG@5 gap, significant at
+  n=25. The n=13 "not significant" was a power artifact. (Caveat: val was used for model
+  selection, so part of its larger drop may be selection optimism; the true effect is likely
+  the lower end, ~0.06. test-only alone is borderline-significant.)
+- **Strategy points do NOT degrade** — flat and non-significant even at n=24.
+
+**Net decision (revised):**
+- **Observations:** a relabel+retrain has a **small but real** expected upside (~0.06–0.09
+  NDCG@5) **and is cheap** — the existing ChatGPT/Sonnet OBS labels are input-matched, so it's
+  just soft-averaging them and retraining, **no new labeling.** Worth doing as a low-cost
+  experiment; whether ~0.07 NDCG matters is ultimately a downstream-game-outcome question
+  ([[reranking-pipeline-decisions]]).
+- **Strategy points:** keep as-is. No significant degradation, and the situation-only re-pass
+  (expensive, manual) is not justified.
+- **Human anchor:** justification is **purely the context eval** now, not the reranker.
+- The over-crediting finding stands as a **labeling-process** lesson (cheap-panel majority vote
+  inflates relevance; use strong judges or flash-lite-CoT + a human anchor).
+
+**Methodological note:** the n=13→n=25 revision is itself the lesson — a cheap directional gate
+flagged "maybe fine," but it was underpowered; expanding the held-out set before concluding
+changed the answer for observations. Report the gate as *directional*, not definitive.
