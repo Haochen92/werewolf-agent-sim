@@ -314,3 +314,57 @@ creates is **false-positive topical matches**, not missed memories.
 5. **Caveat on the ceiling:** the strong judges saw the pro summary as guidance and were
    occasionally a touch generous themselves (the day-2 endgame case). They are the best
    proxy we have, not infallible — spot-audit, don't deify.
+
+## Follow-up 2: can flash-lite reason its way to the strong judges? (2026-05-31)
+
+Question: is flash-lite a bad *judge*, or just bad at judging without doing the reasoning
+itself? Condition C gives flash-lite the full game state with **no pro summary** and makes
+it write its own situation analysis first, then rate (chain-of-thought).
+Script: `scripts/flashlite_self_summary_judge.py`; 400-item sample, seed 42.
+
+**First, the realistic ceiling.** Relevance is intrinsically fuzzy: the two strong judges
+agree with **each other** only **80.5%** (binary useful cut) / 64.5% (exact 0/1/2) on the
+same 400 items. No labeler is "ground truth"; ~20% binary disagreement is the noise floor.
+
+### Agreement with strong judges (same 400 items, 95% CI ≈ ±4.9%)
+
+| Condition | agreement | vs ceiling 80.5% |
+|---|---|---|
+| A. query-only (no context) | 73.5% | below |
+| B. context + pro summary, direct rate | **77.0%** | ~at ceiling |
+| C. context + self-analysis (CoT), no pro summary | 75.2% | ~at ceiling |
+| *ceiling: chatgpt vs sonnet* | *80.5%* | — |
+
+All three flash-lite conditions are within one CI of each other and of the ceiling. **On
+raw accuracy, CoT does not beat simply handing flash-lite the context+pro-summary** (75.2 vs
+77.0, tied; head-to-head when they differ, B is closer to strong 55 vs 39). So self-reasoning
+doesn't make flash-lite a *more accurate* judge.
+
+### But CoT substantially reduces the over-crediting BIAS
+
+Direction of the disagreements (over = flash-lite says useful, strong say not):
+
+| Condition | over | under | % of disagreements over-crediting |
+|---|---|---|---|
+| A. query-only | 98 | 8 | **92%** |
+| B. context + pro summary | 401 | 79 | 84% (full 1848) |
+| C. context + self-CoT | 65 | 34 | **66%** |
+
+CoT roughly halves the topical over-crediting skew. Crucially, its **accuracy did not drop**
+while doing so (75.2% ≈ B's 77%) — the extra "not useful" calls land mostly on items the
+strong judges *also* reject, so this is genuine bias-correction, not blind conservatism.
+
+### What this means
+
+- **Relevance labeling has a hard ~80% ceiling.** Stop treating any single labeler as truth;
+  every eval here is bounded by this.
+- **flash-lite + context is a near-ceiling *accurate* cheap judge** — much better than the raw
+  "68% vs strong" number (Follow-up 1) implied, because that was query-only *and* measured
+  against a noisy reference. With context, flash-lite is about as accurate as the task allows.
+  (mistral/nim remain degenerate — this is flash-lite specifically.)
+- **CoT's value is bias, not accuracy.** If we want a cheap labeler that does NOT inject the
+  topical-over-ranking bias, flash-lite-CoT is the best cheap option: near-ceiling accuracy
+  *and* roughly balanced errors.
+- This **reopens cheap scaling.** Strong judges give gold labels on only 109 cases; a
+  flash-lite-CoT pass is near-ceiling-accurate and low-bias, so it can label far more cases
+  cheaply — likely a bigger lever for the reranker than re-deriving labels on the same 109.

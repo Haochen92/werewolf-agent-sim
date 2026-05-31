@@ -1,0 +1,28 @@
+{
+  "sample": 400,
+  "seed": 42,
+  "conditions": {
+    "A_query_only": {
+      "agree": 294,
+      "n": 400,
+      "rate": 0.735
+    },
+    "B_context_prosummary": {
+      "agree": 308,
+      "n": 400,
+      "rate": 0.77
+    },
+    "C_context_self_cot": {
+      "agree": 301,
+      "n": 400,
+      "rate": 0.7525
+    }
+  },
+  "cot_vs_context_B": {
+    "toward_strong": 39,
+    "away": 55,
+    "same": 306,
+    "n": 400
+  },
+  "cot_nulls": 0
+}
