@@ -1,5 +1,32 @@
 # Context-Based Retrieval Evaluation
 
+> **⏩ READING GUIDE / CURRENT STATE (updated 2026-05-31). Start here if you're picking this up fresh.**
+> This log is a long investigation with several deliberate course-corrections. Read this block,
+> then jump to **"FORWARD PLAN (Part 1 + Part 2)" at the very bottom** — that's the actionable
+> spec. Everything between is the chronological evidence trail.
+>
+> **One-paragraph journey.** Goal: build a retrieval eval that labels memory relevance against
+> the *game context*, not the situation summary. A precondition diagnostic found (1) the cheap
+> auto label panel (mistral/nim) is **unusable** as judges — they label almost everything
+> "relevant" (mistral 7/1848 zeros, nim 0; nim also failed 21% of long prompts); (2) query-only
+> labels **systematically over-credit topical matches** — 93% of their disagreements with the
+> strong judges are over-crediting, and the reranker's *merged training labels* 99%, concentrated
+> in the **majority-vote merge tier** (458/1383). (3) Relevance has a hard **~80% inter-judge
+> ceiling** (ChatGPT vs Sonnet agree 80.5% binary / 64.5% exact) — no single labeler is "truth."
+> (4) flash-lite **with context** is a near-ceiling cheap judge (77% vs the 80.5% ceiling); adding
+> chain-of-thought doesn't raise accuracy but **halves its over-crediting bias** (92%→66%). (5) A
+> cheap "does the bias actually hurt the reranker" gate: held v4's ranking fixed, re-scored vs
+> strict strong-judge labels — observations drop ~0.06–0.09 NDCG@5 (significant only after folding
+> val in, n=25; the n=13 first look was underpowered), strategy points flat → **reranker relabel
+> is low-priority**.
+>
+> **The conceptual turn that drives the forward plan:** the reranker eval and the summary-recall
+> eval need **two different gold sets with *opposite* blinding** (reranker = relevance to the
+> *query*, context-blind; summary-recall = usefulness given the *context*, summary-blind). Our
+> existing strong-judge labels saw **both** query and context → a mash-up that is the clean gold
+> for *neither*. The forward plan builds the two golds properly, once, with a vendor-diverse LLM
+> panel + a human anchor. **Status: design fully specified, no Part-1/Part-2 labeling run yet.**
+
 ## Motivation
 
 The current retrieval eval labels memory relevance against the **situation summary query** — "is this memory relevant to the situation description?" This makes the ground truth query-dependent: if the situation summary misses a key tension, a memory that addresses that tension scores 0 even though it's exactly what the agent needs.
@@ -532,3 +559,162 @@ reeval_v4_power.py`):
 **Methodological note:** the n=13→n=25 revision is itself the lesson — a cheap directional gate
 flagged "maybe fine," but it was underpowered; expanding the held-out set before concluding
 changed the answer for observations. Report the gate as *directional*, not definitive.
+
+---
+
+# ═══════════ FORWARD PLAN (Part 1 + Part 2) — the actual next steps (2026-05-31) ═══════════
+
+This is the consolidated, actionable spec. Everything above is the evidence that led here.
+
+## 0. The conceptual key — two ground truths, OPPOSITE blinding (do not mash them up again)
+
+The reranker and the summary-recall eval ask different questions with different anchors:
+
+| | **Reranker eval** | **Summary-recall eval** |
+|---|---|---|
+| Question | given the situation query (good or bad), can it retrieve the memories relevant **to that written query**? | does the summary surface the memories useful **for the context**? |
+| Anchor | the **query Q** | the **context C** |
+| Label = | relevance(M \| Q) — **pure-Q** | usefulness(M \| C) — **pure-C** |
+| Labeler sees | Q + M, **context-blind** | C + M, **summary-blind** |
+| Why blind | the reranker only ever sees Q (no context); rewarding memories Q can't point to is an unreachable target | you're *evaluating* Q, so Q in the label = circular |
+
+The blindings are **mutually exclusive**, so one labeling pass cannot serve both. What we have:
+`auto-panel query-only` = pure-Q but weak/over-crediting; `ChatGPT+Sonnet manual` = Q **+** C
+(strong but a mash-up). **Neither clean gold exists yet** — that's what Part 1/2 build.
+
+## 1. Scope decisions
+
+- **Memory-extraction quality (the 3rd connected component) is scoped OUT** — judging whether an
+  extraction is good needs reading whole game scripts (not feasible). Trust the existing per-role
+  extraction pipeline.
+- **The gold is conditional on the current `v4_deduped_v2` DB** (which has mixed memory quality
+  from single-pass extraction + weak-model dedup rewrites). This is fine and needs **no cleanup
+  first**: junk memories self-exclude (judged 0), near-duplicates surface in the precision/
+  efficiency metric, and only *missing* useful memories are invisible — that's the scoped-out
+  extraction axis. Document the conditionality.
+
+## 2. Model roster (decided)
+
+**Bias principle:** diversity *a priori* (different vendor/lineage = decorrelated bias) +
+correction *post-hoc* (the human anchor measures each judge's skew; you can't pick "opposite-
+biased" models up front). Never let a summary-writer also judge (it would favor memories its own
+summary retrieved). Keep Gemini on the writer side only.
+
+**Writers — 4 (the conditions under test in Part 1):**
+
+| writer | role | input $/M | output $/M | speed | notes |
+|---|---|---|---|---|---|
+| `gemini-3.1-flash-lite` | production baseline (bar) | 0.25 | 1.50 | ~381 tok/s | what we run now |
+| Gemini 2.5/3 Pro | quality ceiling (reference) | high | high | — | not a prod candidate |
+| `meta/llama-4-maverick-17b-128e-instruct` | open candidate | 0.15 | 0.60 | MoE ~17B active | cheaper than 3.1 FL on both |
+| `qwen/qwen3-next-80b-a3b-instruct` | open candidate | 0.09 | 1.10 | MoE ~3B active | cheapest input; free tier on OpenRouter |
+
+Dropped mistral-small / nim-8b as writers (too small for full-context summarization — distinct
+from their failure as *judges*). Against **3.1** flash-lite both open models **undercut on cost**;
+speed is the open production question (see §3).
+
+**Judges — 3 LLM + human (the measurement instrument):**
+
+| judge | lineage | role |
+|---|---|---|
+| ChatGPT | OpenAI | strong judge |
+| Claude Sonnet | Anthropic | strong judge |
+| `deepseek-ai/deepseek-v4-pro` | DeepSeek | 3rd diverse judge (NOT a writer; different model from the open writers) |
+| **Human (~150 items)** | — | calibrator/anchor — measures & corrects each judge's skew |
+
+3 judges → majority + "all agree" high-confidence + disagreement-routing. Judge cost is
+negligible (~$1–2 total at this volume); the human anchor is the only bounded human cost.
+
+## 3. Infra & speed
+
+- **Use OpenRouter for the open models** (sidesteps NIM's free-tier rate limits; it aggregates
+  multiple providers per model, OpenAI-compatible). Add an `openrouter/` wrapper to
+  `Agents/llm_factory.py` — same ~10-line pattern as the existing `nim/` wrapper (base_url
+  `https://openrouter.ai/api/v1`, `OPENROUTER_API_KEY`). NIM stays available; OpenRouter is the
+  reliable paid fallback. Qwen3-Next has a **$0 free tier** on OpenRouter for the experiment.
+- **Speed is NOT a pre-gate.** For the experiment it's batch (parallelize). For production it's a
+  third axis (quality × cost × speed) and is **provider-dependent** (low-active-param MoE on
+  Groq/Cerebras can match/beat flash-lite; on commodity GPU it won't). For summarization (short
+  output, big input) latency is dominated by prefill/TTFT. **Measure per-summary latency during
+  Part 1** (free) and apply the speed gate only at the production-decision step — weighted by
+  whether the game loop is batch sim (latency secondary) or live (per-turn latency the player
+  feels).
+
+## 4. Part 1 — Context validation + summary recall (PRIORITY; the original goal)
+
+Builds the **pure-C usefulness gold** and answers "which summarizer best surfaces the
+context-useful memories" + "can an open model replace flash-lite."
+
+1. Each of the 4 writers generates situation summaries for each case.
+2. Retrieve **top-10** per writer; **UNION** the retrievals → the candidate pool (union fixes the
+   pool-coverage bias: a single-model pool makes that model the ceiling by construction).
+3. **Label pure-C:** the 3-judge panel sees **context + candidate, summary hidden**, CoT,
+   rubric-driven, **soft labels** (mean of judges; no tiebreaker — the Opus tiebreak itself leaned
+   generous, 68% over-credit). Validate against the human anchor (§6).
+4. **Metrics per writer:** recall@5 and recall@10 of the gold useful-set (decouple pool depth from
+   metric K), **plus precision/efficiency** of the retrieved set (the metric the drift finding said
+   matters — topical false positives, not just misses).
+5. **Scale:** start 40–50 stratified cases (role × phase); expand if signal is promising.
+
+Outputs: the pure-C gold (also feeds **strategy adoption** later), a ranking of summarizers, and
+the open-vs-flash-lite production signal (quality from recall, cost from §2, latency from §3).
+
+## 5. Part 2 — Reranker pure-Q gold (OPTIONAL / lower priority)
+
+The gate (Step 1a–c) showed the reranker is ~adequate (obs ~0.06–0.09 NDCG gap, SP flat), so this
+is **low-priority** — do it only if that obs gap matters downstream.
+
+- Reuse Part 1's summaries as queries, sampled as a **realistic MIXTURE of qualities** (production
+  won't use the most expensive summarizer for a 100+/game call), not just the pro summary.
+- **Label pure-Q:** judges see **query + candidate, context-blind**; SP = situation-only, OBS =
+  situation+content (match the reranker's input). Easier/cheaper — no transcript to read.
+- Then re-derive reranker train/test on pure-Q labels, retrain (Modal), compare old-vs-new **on the
+  clean pure-Q test labels**. Note: existing strong labels are context-contaminated for this and
+  can't be reused as-is.
+
+## 6. The labeling protocol (applies to each gold)
+
+0. **Rubric first** (highest ROI): 0/1/2 definitions, the input each type is judged on, **6–8
+   worked edge cases** (phase mismatch, topical-but-useless, partial). Identical rubric for humans
+   and all LLM judges.
+1. **Stratified human anchor (~150)**, split **calibration / validation** (fit any bias correction
+   on one half, test on the other). Stratify by memory-type × agreement-pattern × role,
+   oversampling the **confident-agreement** zone (where correlated over-crediting hides). If a 2nd
+   human is available, dual-label ~30 for inter-annotator agreement (κ).
+2. **Vendor-diverse panel at scale**, CoT, same rubric.
+3. **Calibrate panel→human + pre-registered acceptance test**, e.g.: accept panel as gold if
+   panel-vs-human binary agreement ≥ 80%, 95% CI lower bound ≥ 75%, and no significant directional
+   bias (sign test). This is the "reasonable confidence level."
+4. **Route only hard cases to humans** (panel disagreement / low confidence); cap it (~≤100).
+5. **Final gold** = calibrated panel where confident (soft when the panel splits) + human label on
+   routed items. Report coverage, panel-vs-human agreement + CI, κ, per-judge skew, % human-routed.
+
+Human cost ≈ one focused day (1–2h rubric + ~2–3h for the 150 anchor, grouped by game state so each
+scene is read once + ~1–2h routed adjudication). **Integrity:** actually run the anchor, or mark it
+honestly as designed/piloted — never claim a validation that wasn't done.
+
+## 7. Status: decided vs open
+
+- **Decided:** the two-gold decomposition; the roster (§2); OpenRouter infra; Part 1 = priority,
+  Part 2 = optional; extraction scoped out; soft labels; human-anchor design; speed not pre-gated.
+- **Reranker net decision (from the gate):** keep v4; the relabel is a small-upside, downstream-
+  gated, low-priority option — not blocking.
+- **Open / pin at the start of next session:** exact case count (40–50?), confirm the Qwen variant,
+  **add the `openrouter/` wrapper + run two smoke tests** (an open writer on a full-context summary;
+  DeepSeek on one judge prompt) to verify the roster responds, then generate Part 1 summaries.
+
+## 8. Artifacts map (where everything is)
+
+- **Diagnostic scripts:** `scripts/context_drift_diagnostic.py`, `flashlite_self_summary_judge.py`,
+  `reeval_v4_clean_obs.py`, `reeval_v4_clean_sp.py`, `reeval_v4_power.py`.
+- **Adapter:** `evaluation/labeling/adapters/context_relevance.py` (ContextRerankerAdapter —
+  injects game state into the reranker prompt; `render_game_state`).
+- **This session's label outputs:** `labels/context_labels.json`, `drift_report.json`,
+  `cot_labels.json`, `cot_report.json`, `reeval_v4_clean_{obs,sp}.json`.
+- **Source labels (per-judge scores in `labeling.scores`):**
+  `evidence/fine_tuning/cross_encoder/reranker/labels/round2_expanded/expanded_merged_labels.json`;
+  candidates `expanded_candidates_for_labeling.json`; pro summaries `expanded_golden_situations.json`.
+- **Eval dataset:** `eval_sets/v4_reranker_expanded.jsonl` (109 cases; case_index aligns 1:1).
+- **Reranker split/data:** `evidence/fine_tuning/cross_encoder/reranker/training_data/`
+  (`reranker_split.json`, `reranker_{train,val,test}.jsonl`); model `models/cross_encoder/reranker_v4`.
+- **Reranker log (cross-referenced):** `evidence/fine_tuning/cross_encoder/reranker/experiment_log.md`.
