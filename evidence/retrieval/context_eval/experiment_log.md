@@ -410,3 +410,64 @@ disagreements (flip ~458 labels useful→not). See recommendation in
    measurement exists ([[reranking-pipeline-decisions]]); this re-eval respects it by
    *measuring* before optimizing. (c) For the stated ~2,800-pair volume bottleneck,
    flash-lite-CoT is the cheap low-bias way to scale, rather than more 3-auto-majority labels.
+
+## Premise lock-in before the (costly, irreversible) human pass (2026-05-31)
+
+**The strong-judge / human labels serve BOTH goals** (confirmed):
+- (a) **Context eval ground truth** — validating situation-summary recall + strategy adoption (the original proposal).
+- (b) **Reranker re-baseline** — replacing the over-crediting merged labels.
+
+**Memory-type input-match rule** (governs which existing labels are reusable — the label
+target must match what the reranker actually scores):
+- **Observations:** reranker input = `situation | approach | outcome`; labelers saw the same
+  → existing ChatGPT/Sonnet OBS labels are **valid, reusable, soft-averaged**. ✓
+- **Strategy points:** reranker input = **situation-only**; labelers saw `situation | Action`
+  → **mismatch**. The existing SP labels are "situation+action usefulness", not "situation
+  relevance". This is the **untested residual** from the reranker log (the auto panel showed a
+  0–4.6% action effect, but ChatGPT/Sonnet were never retested situation-only). For a clean SP
+  reranker target, SP must be re-judged **situation-only** — a cheap LLM pass, not human — and
+  situation-only is the correct objective on first principles (the agent judges the action
+  downstream = adoption, not retrieval).
+
+**Cost-ordered sequence (cheap-first):**
+1. **Re-eval v4 on OBSERVATION strong-judge labels** (the clean, matched subset) — no humans.
+   Does the over-crediting actually manifest in v4's observation ranking, or wash out? **Gate
+   the rest on this.**
+2. If it manifests: SP situation-only LLM re-pass + OBS soft labels → retrain → compare on
+   clean labels.
+3. **Human anchor (~150 stratified, blind)** validates the LLM ground truth **once**, serving
+   both goals — not a per-consumer redo. **Status: DESIGNED, not yet executed** (stratification
+   60 both-useful / 45 both-not / 45 disagree; sample size from a proportion-CI calc, p≈0.8,
+   ±8% at 95%; soft strong-judge targets so no tiebreaker bias).
+
+**Caveat bounding step 2:** the reranker input can't see full game context, so only the
+over-crediting visible in the *situation text* (phase/precondition mismatch) is learnable;
+context-only relevance is noise to it. Expect partial gains — measure, don't assume.
+
+### Step 1 result: v4 observation ranking under clean labels (2026-05-31)
+
+Held v4's ranking fixed, scored it on its 13 round-2 held-out test cases (observations only —
+the input-matched subset; 4 round-1 test cases skipped, no strong labels).
+Script: `scripts/reeval_v4_clean_obs.py`.
+
+| v4 observation ranking, NDCG@5 scored against… | value |
+|---|---|
+| BIASED merged labels (what v4 was tuned toward) | 0.905 |
+| CLEAN soft strong-judge labels | 0.845 |
+| *bi-encoder reference vs clean* | *0.737* |
+
+Paired drop biased→clean: **+0.059, 95% CI [+0.001, +0.118]** (n=13), driven by 2–3 cases
+(per-case drops: most ≈0, two at 0.23/0.30).
+
+**Read — observations don't justify a relabel.** The drop is *small and borderline*
+(CI barely clears 0, n=13, fragile). And under the strict labels v4 still beats the bi-encoder
+by **+0.108** — most of its ranking value survives the stricter grading. So the over-crediting
+bias did **not** meaningfully corrupt v4's *observation* ranking. Spending a relabel + human
+pass to fix observations is not warranted on this evidence.
+
+**The open question is strategy points, not observations.** This step deliberately excluded SP
+(input mismatch). SP is exactly where (a) the labels saw the action the reranker can't, and
+(b) v4 was weakest (SP NDCG@5 0.841 overall, investigator×SP 0.629). So the gate is *half*
+closed: observations are fine; the only potentially-justified relabel is the **SP
+situation-only** pass — which is also the one with the cleanest first-principles rationale.
+Next: a SP situation-only LLM re-pass, then the same re-eval on SP before any retrain/human pass.

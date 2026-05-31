@@ -390,3 +390,28 @@ reranker_v5_sitact       (SP situation+action — ablation)
 reranker_v5_allsitonly   (obs situation-only — ablation)
 ```
 Training inputs: `training_data_{sitonly,sitact,allsitonly}/`. Diagnostic raw labels + report: `labels/diagnostic_sp_drift/`. Ablation comparison metrics: `eval_sitonly_vs_sitact_results.json`. Reproduce via `scripts/prep_reranker_data.py` (`--sp-include-action` / `--obs-situation-only`), `scripts/eval_arms.py`, and `scripts/sp_label_drift_diagnostic.py`.
+
+## Cross-ref: over-crediting quantified + planned strong-judge re-baseline (2026-05-31)
+
+Full analysis in `evidence/retrieval/context_eval/experiment_log.md`. The "Systematic
+auto-model bias in new labels" noted earlier is now quantified at scale and located:
+
+- The merged labels **over-credit vs the strong judges (ChatGPT+Sonnet) on 514/1848 items**,
+  concentrated in the **majority-merge tier** (458, 89% of the leak) — the correlated generous
+  auto-trio (Mistral+NIM agree 73%, rarely emit "0") outvotes the 2 careful judges. Unanimous
+  tier is clean.
+- **Relevance has a ~80% ceiling** (ChatGPT vs Sonnet agree only 80.5% binary). flash-lite
+  **with context** is already near it (77%); a self-reasoning (CoT) variant doesn't beat that on
+  accuracy but roughly halves the over-crediting bias (84%→66%) — a cheap low-bias labeler for
+  scaling.
+
+**Planned clean re-baseline** on the 109 expanded cases with **soft strong-judge labels**
+(mean of ChatGPT/Sonnet — no tiebreaker, since the Opus tiebreak itself leaned generous, 68%
+over-credit). **Memory-type rule:** OBS labels reusable (input matches what the labelers saw);
+**SP needs a situation-only re-pass** — this closes the action-visibility residual flagged in
+the SP drift section above (the manual labelers ChatGPT/Sonnet were never retested
+situation-only). **Cheap-first gate:** re-eval v4 on clean OBS labels *before* any retrain or
+human pass.
+
+A ~150-item stratified **human anchor** to validate the all-LLM ground truth is **designed but
+not yet executed** (see context_eval log).

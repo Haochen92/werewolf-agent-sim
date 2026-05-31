@@ -1,0 +1,104 @@
+{
+  "n_cases": 13,
+  "skipped_round1": 4,
+  "means": {
+    "v4_vs_biased": 0.9047,
+    "v4_vs_clean": 0.8453,
+    "bi_vs_clean": 0.7366,
+    "bi_vs_biased": 0.7539
+  },
+  "v4_drop_biased_to_clean": 0.0594,
+  "per_case": [
+    {
+      "case_index": 50,
+      "role": "healer",
+      "n_obs": 10,
+      "v4_vs_biased": 0.6452622578874543,
+      "v4_vs_clean": 0.6979358537976866
+    },
+    {
+      "case_index": 51,
+      "role": "healer",
+      "n_obs": 3,
+      "v4_vs_biased": 0.7535053784016018,
+      "v4_vs_clean": 0.7595475057666551
+    },
+    {
+      "case_index": 52,
+      "role": "investigator",
+      "n_obs": 10,
+      "v4_vs_biased": 0.9496847312141588,
+      "v4_vs_clean": 0.7211160315628757
+    },
+    {
+      "case_index": 64,
+      "role": "healer",
+      "n_obs": 10,
+      "v4_vs_biased": 0.9435400345025503,
+      "v4_vs_clean": 0.9488524405150902
+    },
+    {
+      "case_index": 65,
+      "role": "healer",
+      "n_obs": 3,
+      "v4_vs_biased": 0.7650602049249389,
+      "v4_vs_clean": 0.666060019760868
+    },
+    {
+      "case_index": 66,
+      "role": "villager",
+      "n_obs": 10,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 0.9595294514389838
+    },
+    {
+      "case_index": 73,
+      "role": "wolf",
+      "n_obs": 10,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 1.0
+    },
+    {
+      "case_index": 79,
+      "role": "investigator",
+      "n_obs": 5,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 0.979395885531371
+    },
+    {
+      "case_index": 86,
+      "role": "wolf",
+      "n_obs": 10,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 0.9728394323595693
+    },
+    {
+      "case_index": 87,
+      "role": "wolf",
+      "n_obs": 10,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 0.9073112558339465
+    },
+    {
+      "case_index": 103,
+      "role": "villager",
+      "n_obs": 10,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 1.0
+    },
+    {
+      "case_index": 107,
+      "role": "wolf",
+      "n_obs": 10,
+      "v4_vs_biased": 0.7038009784940286,
+      "v4_vs_clean": 0.6798657500426858
+    },
+    {
+      "case_index": 108,
+      "role": "wolf",
+      "n_obs": 10,
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 0.6960348036183307
+    }
+  ]
+}
