@@ -1,0 +1,93 @@
+{
+  "n_cases": 13,
+  "skipped_round1": 4,
+  "means": {
+    "v4_vs_biased": 0.8514,
+    "v4_vs_clean": 0.8104
+  },
+  "drop_mean": 0.041,
+  "drop_ci95": [
+    -0.0314,
+    0.1134
+  ],
+  "per_case": [
+    {
+      "case_index": 50,
+      "role": "healer",
+      "v4_vs_biased": 0.8087628841777144,
+      "v4_vs_clean": 0.46507689091041365
+    },
+    {
+      "case_index": 51,
+      "role": "healer",
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 1.0
+    },
+    {
+      "case_index": 52,
+      "role": "investigator",
+      "v4_vs_biased": 0.600230036261335,
+      "v4_vs_clean": 0.6996924011674653
+    },
+    {
+      "case_index": 64,
+      "role": "healer",
+      "v4_vs_biased": 0.5497412444661915,
+      "v4_vs_clean": 0.4641512658460627
+    },
+    {
+      "case_index": 65,
+      "role": "healer",
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 1.0
+    },
+    {
+      "case_index": 66,
+      "role": "villager",
+      "v4_vs_biased": 0.9778690698001683,
+      "v4_vs_clean": 0.9518894869958924
+    },
+    {
+      "case_index": 73,
+      "role": "wolf",
+      "v4_vs_biased": 0.9435400345025503,
+      "v4_vs_clean": 0.9355698761941834
+    },
+    {
+      "case_index": 79,
+      "role": "investigator",
+      "v4_vs_biased": 0.6157063128734906,
+      "v4_vs_clean": 0.7765540568916383
+    },
+    {
+      "case_index": 86,
+      "role": "wolf",
+      "v4_vs_biased": 1.0,
+      "v4_vs_clean": 0.9938904689480104
+    },
+    {
+      "case_index": 87,
+      "role": "wolf",
+      "v4_vs_biased": 0.8501553481385182,
+      "v4_vs_clean": 0.8698737629086314
+    },
+    {
+      "case_index": 103,
+      "role": "villager",
+      "v4_vs_biased": 0.9598624203120085,
+      "v4_vs_clean": 0.8356228564355143
+    },
+    {
+      "case_index": 107,
+      "role": "wolf",
+      "v4_vs_biased": 0.8687949224876581,
+      "v4_vs_clean": 0.7024888957524734
+    },
+    {
+      "case_index": 108,
+      "role": "wolf",
+      "v4_vs_biased": 0.8936198566774768,
+      "v4_vs_clean": 0.8405980116473172
+    }
+  ]
+}

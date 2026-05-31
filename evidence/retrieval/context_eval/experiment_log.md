@@ -471,3 +471,38 @@ pass to fix observations is not warranted on this evidence.
 closed: observations are fine; the only potentially-justified relabel is the **SP
 situation-only** pass — which is also the one with the cleanest first-principles rationale.
 Next: a SP situation-only LLM re-pass, then the same re-eval on SP before any retrain/human pass.
+
+### Step 1b result: v4 strategy-point ranking under clean labels — gate now closed (2026-05-31)
+
+Before paying for a manual ChatGPT/Sonnet situation-only SP re-pass, we ran the SP gate with
+the **existing** (action-visible) strong-judge SP labels — cheap-first. Script:
+`scripts/reeval_v4_clean_sp.py`. SP doc = situation-only (matches reranker input).
+
+| v4 SP ranking, NDCG@5 scored against… | value |
+|---|---|
+| BIASED merged labels | 0.851 |
+| CLEAN soft strong-judge labels | 0.810 |
+
+Paired drop biased→clean: **+0.041, 95% CI [−0.031, +0.113] — includes zero, not significant**
+(n=13). Per-case mixed: a couple drop, but the investigator cases (v4's weak cell) actually
+*improve* under clean labels.
+
+**Conclusion — the reranker relabel is NOT warranted.** Across **both** memory types, v4's
+ranking holds up against the strict strong-judge labels: observations drop +0.059 (barely
+significant, 2–3 cases), strategy points +0.041 (not significant), and v4 still beats the
+bi-encoder under clean labels. The over-crediting bias is real in the **labels** but did not
+translate into materially worse reranker **rankings**. Likely mechanism: the over-crediting
+lives in the marginal "1 vs 0" band, which sits at lower ranks; NDCG@5 is driven by the top
+"2"s where the judges agree and v4 already ranks well. Because the SP ranking holds even under
+action-visible labels, the **action-visibility residual is moot for ranking** — no situation-only
+re-pass needed.
+
+**Net decision:**
+- **Reranker:** keep v4 as-is. No relabel, no retrain, no manual SP re-pass. (Caveat: n=13
+  held-out, round-2 only — a directional gate, not a definitive NDCG re-measure.)
+- **Human anchor:** its justification is now **purely the context eval** (summary recall +
+  adoption ground truth), not the reranker. Scope it accordingly — small, honest, or written up
+  as designed-and-piloted.
+- The over-crediting finding remains valuable as a **labeling-process** lesson (cheap-panel
+  majority vote inflates relevance; use strong judges or flash-lite-CoT, audit a human anchor),
+  independent of whether this particular reranker needed retraining.
