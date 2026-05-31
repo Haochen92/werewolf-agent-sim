@@ -368,3 +368,45 @@ strong judges *also* reject, so this is genuine bias-correction, not blind conse
 - This **reopens cheap scaling.** Strong judges give gold labels on only 109 cases; a
   flash-lite-CoT pass is near-ceiling-accurate and low-bias, so it can label far more cases
   cheaply — likely a bigger lever for the reranker than re-deriving labels on the same 109.
+
+## Cross-reference: this confirms a KNOWN bias in the reranker labels, and locates it
+
+The reranker experiment log (`evidence/fine_tuning/cross_encoder/reranker/experiment_log.md`,
+"Systematic auto-model bias in new labels") already flagged exactly this: *"the 3 auto models
+systematically inflate relevance compared to ChatGPT (full context)... matched surface-level
+themes without checking whether the memory's preconditions actually applied."* Our work adds
+two things:
+
+1. **Scale + survival through the merge.** The bias isn't diluted away by the 5-model vote:
+   the official merged labels over-credit vs the strong judges on **514/1848** items.
+2. **Exactly where it survives** — the **majority tier**:
+
+   | merge confidence tier | items | over-credit vs strong judges |
+   |---|---|---|
+   | unanimous (5/5) | 281 | 0% — clean |
+   | **majority (3+ agree)** | 1383 | **33% (458) — 89% of all the leak** |
+   | tie_tiebreaker (Sonnet) | 144 | 20% |
+   | opus_tiebreak | 40 | 68% (n=40; "when in doubt → 1") |
+
+   The 3-of-5 majority rule lets the correlated generous auto-trio (Mistral+NIM agree 73%,
+   rarely emit "0") outvote the two careful strong judges. Unanimous and Sonnet-tiebreak
+   tiers are fine.
+
+**Debiasing needs no relabeling** — re-merge trusting ChatGPT+Sonnet on the majority-tier
+disagreements (flip ~458 labels useful→not). See recommendation in
+[[project-context-based-retrieval-eval]] / below.
+
+### Recommended sequence for the reranker (disciplined, cheap-first)
+
+1. **Re-derive the TEST split only** with a strong-judge-weighted merge (ChatGPT+Sonnet
+   agree → their label; split → opus/keep), and **re-score the existing v4 reranker on it.**
+   Zero training. Answers: does the bias actually manifest in v4's rankings, or wash out?
+2. **Only if v4 degrades on clean labels:** re-derive the train split too, retrain (Modal),
+   compare old vs new model *on the clean test labels* (not the old biased ones).
+3. **Caveats:** (a) the reranker input is situation/summary-only (per v5 ablations), so only
+   the over-crediting that's visible in the situation text — phase/precondition mismatch — is
+   learnable; context-only-visible relevance is not. Expect partial gains. (b) There is a
+   standing decision to not over-optimize reranking until downstream game-outcome
+   measurement exists ([[reranking-pipeline-decisions]]); this re-eval respects it by
+   *measuring* before optimizing. (c) For the stated ~2,800-pair volume bottleneck,
+   flash-lite-CoT is the cheap low-bias way to scale, rather than more 3-auto-majority labels.
