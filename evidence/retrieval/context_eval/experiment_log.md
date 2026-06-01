@@ -1,5 +1,15 @@
 # Context-Based Retrieval Evaluation
 
+> **🛑 EXECUTION DEFERRED (2026-06-01) — DO NOT START LABELLING.** The methodology below is
+> hardened and final, but **all human labelling is parked until after the foundation rebuild.** Five
+> substrate changes are coming (parallel→sequential game, more roles, consolidated tracing, night-phase
+> memory, **v5 DB replacing v4_deduped_v2**) — and every gold here is conditioned on that substrate
+> (candidate pools are top-10 retrievals from v4_deduped_v2; cases are day-only / 4-role / parallel).
+> Labelling now would be thrown away. **What survives wholesale: the methodology** (two-gold opposite
+> blinding, acceptance gates, progressive staged labelling, balance analysis). **Resume = re-run the
+> case-building + labelling on stable v5**, cheaply via the consolidated tracing pipeline. See
+> [[project-ship-roadmap]] Phase A/B. Everything below is the design to execute *then*, not now.
+
 > **⏩ READING GUIDE / CURRENT STATE (updated 2026-05-31). Start here if you're picking this up fresh.**
 > This log is a long investigation with several deliberate course-corrections. Read this block,
 > then jump to **"FORWARD PLAN (Part 1 + Part 2)" at the very bottom** — that's the actionable
@@ -566,6 +576,38 @@ changed the answer for observations. Report the gate as *directional*, not defin
 
 This is the consolidated, actionable spec. Everything above is the evidence that led here.
 
+## ⭐ LATEST SCOPE DECISION (2026-05-31, end of session) — read this before §1–8
+
+The full validated two-gold program below is **deliberately descoped** to fit the actual deliverable:
+
+- **Part 1 (context / summary recall): SMALL directional smoke test, NOT the full gold.** The only
+  live reason to run it is deciding whether to **swap flash-lite for another writer** — a switch
+  decision needs a *direction* ("promising / not / clearly worse"), not a statistically-validated
+  gold. Run a small stratified sample (~10–20 cases, exact n TBD), judge with a strong model, report
+  as **directional, expand only if promising.** Generate the candidate-model summaries anyway — they
+  double as Part 2 queries (the realistic-quality mixture §5 wants).
+- **Part 2 (reranker pure-Q gold): DO IT — it's the concrete deliverable.** Labelling is easier/
+  cheaper (situation-only, no transcript), and the payoff is tangible: a **small local cross-encoder
+  that reliably replaces an LLM reranker** (cost/latency win) *plus* a showcase of a **principled,
+  statistically-supported labelling process** (pre-registered acceptance, staged human anchor, bias
+  gate). **Honest framing:** the value is the *deployable artifact + methodology*, NOT a big reranker
+  accuracy gain — the gate already showed v4 is ~adequate. Don't oversell the quality delta.
+  **UPDATE (2026-06-01):** the LEVEL-gated commit is dropped — go **straight to the full ~130-case
+  pure-Q gold + retrain** (see §5). A diagnostic gate can only say "don't bother," which can't change
+  a decision driven by the artifact; the "does a CE train & beat baseline" risk is already retired by
+  v4. Headroom is answered *empirically* by scoring old-v4 vs new model on a clean ~40-case test —
+  which needs **~22 newly generated cases** (clean held-out v4 never saw) on top of relabelling the
+  108 existing. flash-lite triage is kept only as an optional labelling *speed-up*, not a gate.
+- **Summary-quality claim (scoped):** the situation summary is **functional** — conforms to prompt,
+  passes LLM-judge + a manual spot-check of ~5–10 summaries. **Optimality / summarizer-comparison is
+  future work** (the full Part 1 gold). Never let a single LLM judge carry a comparative claim.
+- **Costs:** 3rd judge (DeepSeek) ≈ **$3–5 total** out of pocket; GPT/Claude via API ≈ tens of $;
+  the binding cost is **human anchor time**, staged (pilot ~50, expand only if it doesn't clear).
+  *(Chat subscriptions ≠ API — automate the panel via API; reserve manual time for the anchor.)*
+- **Meta:** retrieval/labelling depth is **capped here.** Next effort rebalances to the agentic core +
+  a **downstream game-outcome metric** ([[project-episodic-memory-remaining-work]]) — the signal that
+  would actually tell us whether any of this retrieval quality moves agent performance.
+
 ## 0. The conceptual key — two ground truths, OPPOSITE blinding (do not mash them up again)
 
 The reranker and the summary-recall eval ask different questions with different anchors:
@@ -613,25 +655,38 @@ Dropped mistral-small / nim-8b as writers (too small for full-context summarizat
 from their failure as *judges*). Against **3.1** flash-lite both open models **undercut on cost**;
 speed is the open production question (see §3).
 
+**Open ceiling gap (raised this session — flagged OPEN).** The two open writers above are both
+*lightweight* (chosen as cheap flash-lite-3.1 *replacements*), so neither is a quality ceiling.
+The roster's ceiling is **Gemini Pro — which is not open.** Whether we *also* need a **heavyweight
+open** writer (NIM-hosted: Llama-3.1-405B / Nemotron-class / Qwen2.5-72B — **not** DeepSeek, it is a
+judge) depends on the production goal: *cheapest-good-enough, any vendor* → no open ceiling needed
+(Gemini Pro as reference bar + 2 cheap open candidates vs flash-lite suffices); *open-only stack* →
+add one heavyweight open writer, else we never test whether open reaches Pro-tier summary quality.
+A 405B-class open writer would also decorrelate the union pool (see §4). **Goal not yet pinned.**
+
 **Judges — 3 LLM + human (the measurement instrument):**
 
 | judge | lineage | role |
 |---|---|---|
 | ChatGPT | OpenAI | strong judge |
 | Claude Sonnet | Anthropic | strong judge |
-| `deepseek-ai/deepseek-v4-pro` | DeepSeek | 3rd diverse judge (NOT a writer; different model from the open writers) |
+| `deepseek-ai/deepseek-v4-pro` | DeepSeek | 3rd diverse judge (NOT a writer). **Viability caveat:** via NIM it may hit free-tier limits; DeepSeek's own API is out-of-pocket but cheap (~$1–3 at this volume). **Optional** — see the GPT+Claude-only fallback in §5. |
 | **Human (~150 items)** | — | calibrator/anchor — measures & corrects each judge's skew |
 
-3 judges → majority + "all agree" high-confidence + disagreement-routing. Judge cost is
-negligible (~$1–2 total at this volume); the human anchor is the only bounded human cost.
+3 judges → majority + "all agree" high-confidence + disagreement-routing — but with **soft labels**
+an even **2-judge panel (GPT + Claude) is fine** (no tiebreak needed, you average). **LLM judge cost
+(corrected):** with premium judges + CoT it is **low tens of dollars per gold**, not $1–2 (that
+figure assumed cheap judges); DeepSeek direct adds ~$1–3; a flash-lite-CoT pass is near-free. Still
+negligible beside the human anchor, which is the only bounded human cost.
 
 ## 3. Infra & speed
 
-- **Use OpenRouter for the open models** (sidesteps NIM's free-tier rate limits; it aggregates
-  multiple providers per model, OpenAI-compatible). Add an `openrouter/` wrapper to
-  `Agents/llm_factory.py` — same ~10-line pattern as the existing `nim/` wrapper (base_url
-  `https://openrouter.ai/api/v1`, `OPENROUTER_API_KEY`). NIM stays available; OpenRouter is the
-  reliable paid fallback. Qwen3-Next has a **$0 free tier** on OpenRouter for the experiment.
+- **Open writers run via NVIDIA NIM** (existing `nim/` wrapper — no new infra). The only pre-step is
+  a **responsiveness smoke test** for the chosen NIM model(s) — *not* a production gate, just a "does
+  it respond at full-context length" check. **OpenRouter is dropped** for now: it was production
+  plumbing, and the cost-feasibility question it was meant to answer is **already settled by the §2
+  price table** (both open candidates undercut flash-lite 3.1). Revisit only at the production-
+  replacement step.
 - **Speed is NOT a pre-gate.** For the experiment it's batch (parallelize). For production it's a
   third axis (quality × cost × speed) and is **provider-dependent** (low-active-param MoE on
   Groq/Cerebras can match/beat flash-lite; on commodity GPU it won't). For summarization (short
@@ -656,52 +711,209 @@ context-useful memories" + "can an open model replace flash-lite."
    matters — topical false positives, not just misses).
 5. **Scale:** start 40–50 stratified cases (role × phase); expand if signal is promising.
 
+**Pool-coverage bound (decided — NO separate completeness-critic).** A memory that exists in the DB
+but *no* writer surfaces is invisible to the eval and silently counts as missing. We do **not** add a
+"what memories *should* be useful" critic: it can't help when the memory may not be in the DB at all
+(that's the scoped-out extraction axis), and the grounded version of it — a decorrelated retrieval
+against the real DB — is just "broaden the pool," which we already get from vendor-diverse writers.
+So instead: **maximize pool coverage via vendor-diverse writers** (Gemini + open; a heavyweight open
+writer per §2 decorrelates further) and **document the residual bound honestly** — recall numbers are
+*relative to the union pool*, and anything no candidate retrieved is out of scope (= the retrieval/
+extraction ceiling). Relative writer comparison is unaffected: the blind spot is symmetric across writers.
+
 Outputs: the pure-C gold (also feeds **strategy adoption** later), a ranking of summarizers, and
 the open-vs-flash-lite production signal (quality from recall, cost from §2, latency from §3).
 
-## 5. Part 2 — Reranker pure-Q gold (OPTIONAL / lower priority)
+## 5. Part 2 — Reranker pure-Q gold (DECIDED 2026-06-01: full gold + retrain, NO diagnostic gates)
 
-The gate (Step 1a–c) showed the reranker is ~adequate (obs ~0.06–0.09 NDCG gap, SP flat), so this
-is **low-priority** — do it only if that obs gap matters downstream.
+**Decision (supersedes the earlier optional / LEVEL-gated framing).** Build the full pure-Q gold and
+**retrain from scratch** — skip the Level-1/Level-2 *gates*. Rationale: the deliverable is the
+**artifact** (a deployable local cross-encoder trained on clean labels + a showcase of a principled,
+statistically-supported labelling process), **not** a go/no-go on whether to optimize. A diagnostic
+gate can only ever return *"don't bother — v4 is near the ceiling"* — which **cannot change** a
+decision driven by the artifact's portfolio value. And the one genuinely risky question ("does a
+cross-encoder even train and beat the bi-encoder on this data?") is **already retired by v4**
+(NDCG@5 0.882). So the gates would spend effort — on numbers we've already learned not to fully trust
+(the n=13→n=25 flip) — to answer a question we are no longer asking.
 
+**Headroom is answered empirically, as a byproduct — not pre-measured.** After retraining, score
+**both old v4 and the new model on the same clean held-out test.** *That* is the "is v4 leaving points
+on the table" answer, obtained by running the real experiment instead of a proxy: new ≈ old ⇒ v4 was
+already at the label-noise ceiling (a complete, shippable result); new > old ⇒ real recoverable
+points. Strictly more trustworthy than any pre-gate, because it is the actual thing, not a stand-in.
+
+**Steps:**
+1. Build the pure-Q gold on **~130 cases** (inventory below), labelled per the §6 protocol (LLM panel
+   at scale + bounded human anchor).
+2. Re-split (train/val/test), retrain the CE on Modal with v4's recipe.
+3. Score **old v4 and new model on the clean held-out test** → headroom answer + the deployable artifact.
+4. **Honest framing:** the expected result may be *"≈ no gain."* That is still a strong portfolio
+   piece — a deployable local reranker + a statistically-supported labelling method. **Do not oversell
+   a delta** the gate already suggested is small.
+
+**Case inventory — do we need to generate new cases? Partly (~22), for one specific reason:**
+
+| bucket | count | generate? | label? |
+|---|---|---|---|
+| existing cases (query + top-10 pool on `v4_deduped_v2`) | 108 | **No — reuse the pools** | **Yes — all need fresh pure-Q labels** (existing labels are the context-contaminated mash-up, unusable) |
+| new cases (fresh game states v4 never saw) | ~22 | **Yes — run through the existing summary→retrieve pipeline** | Yes — fresh pure-Q labels |
+| **total** | **~130** | ~22 new | all 130 relabelled |
+
+The **only** reason to generate the ~22 is a **clean held-out test of ~40 that v4 never saw.** v4's
+pristine held-out is just **17** (val was used for model selection), and 17 cases cannot reliably
+detect a 0.05 NDCG difference (per-case SD ≈ 0.12 → ~40 needed) — scoring old-vs-new on 17 would just
+repeat the underpower trap the gate already taught us. `~17 pristine + ~23 new ≈ 40` clean test = a
+trustworthy headroom number. Generation is **pipeline work** (run ~23 game states through
+summary→retrieve to emit query+candidate pools), cheap, **no human time until labelling**. The other
+~108 just need relabelling — their candidate pools already exist.
+
+**Who labels what (the scale worry, resolved).** The **LLM panel** labels all ~130 cases (~1,300
+pairs) — cheap, automated, API. **Human** effort is bounded and does **NOT** scale with the corpus:
+~150 anchor *judgments* (validate the panel, §6) + ≤100 routed hard cases ≈ **~250 human
+pair-judgments total**, not 1,300. Pure-Q pairs are short (query + one candidate, context-blind).
+
+**Labelling details:**
 - Reuse Part 1's summaries as queries, sampled as a **realistic MIXTURE of qualities** (production
-  won't use the most expensive summarizer for a 100+/game call), not just the pro summary.
-- **Label pure-Q:** judges see **query + candidate, context-blind**; SP = situation-only, OBS =
-  situation+content (match the reranker's input). Easier/cheaper — no transcript to read.
-- Then re-derive reranker train/test on pure-Q labels, retrain (Modal), compare old-vs-new **on the
-  clean pure-Q test labels**. Note: existing strong labels are context-contaminated for this and
-  can't be reused as-is.
+  won't call the priciest summarizer 100+×/game), not just the pro summary.
+- **Pure-Q:** judges see **query + candidate, context-blind**; SP = situation-only, OBS =
+  situation+content (match the reranker's input). Easier/cheaper than Part 1 — no transcript to read.
+- Existing strong labels are context-contaminated for this and **can't be reused as-is.**
+- **Judges:** **GPT + Claude alone is a defensible 2-judge panel for Part 2** (cross-vendor
+  decorrelation — the same pair that set the 80.5% ceiling; soft labels → no tiebreak needed).
+  DeepSeek is an optional 3rd vendor (~$1–3 if its NIM free tier is unreliable and you pay direct).
+- **flash-lite triage (optional, SPEED only — NOT a gate):** pre-label all pairs; auto-accept where
+  flash-lite + both strong judges agree; route only the splits to a human. Cuts human effort to the
+  contested minority. Not trusted as a verdict — every routed pair is human-verified, so the
+  "can't trust flash-lite" concern doesn't bite (it only ever skips the unanimous-obvious pairs).
 
 ## 6. The labeling protocol (applies to each gold)
 
 0. **Rubric first** (highest ROI): 0/1/2 definitions, the input each type is judged on, **6–8
    worked edge cases** (phase mismatch, topical-but-useless, partial). Identical rubric for humans
    and all LLM judges.
-1. **Stratified human anchor (~150)**, split **calibration / validation** (fit any bias correction
-   on one half, test on the other). Stratify by memory-type × agreement-pattern × role,
-   oversampling the **confident-agreement** zone (where correlated over-crediting hides). If a 2nd
-   human is available, dual-label ~30 for inter-annotator agreement (κ).
+1. **Stratified human anchor (~150 *judgments*, NOT 150 cases)** — each judgment = one human label on
+   one candidate memory; a single case supplies ~17–25 candidates, so ~150 judgments come from only
+   ~20–40 cases. **You already have 108 cases → no case generation is needed for the anchor.** Split
+   **calibration / validation** (fit any bias correction on one half, test on the other). Stratify by
+   memory-type × agreement-pattern × role, oversampling the **confident-agreement** zone (where
+   correlated over-crediting hides). **Spread, don't cluster:** judgments within one case are
+   correlated, so draw a few candidates from many cases rather than exhausting a handful — sourcing
+   all ~150 from ~5 cases collapses the *effective* sample (design effect) and your real CI ends up
+   far wider than ±8%. (Reading-efficiency — read each scene once — pulls the other way; the
+   compromise is a handful of candidates per case across ~20–40 cases.) If a 2nd human is available,
+   dual-label ~30 for inter-annotator agreement (κ).
 2. **Vendor-diverse panel at scale**, CoT, same rubric.
 3. **Calibrate panel→human + pre-registered acceptance test**, e.g.: accept panel as gold if
    panel-vs-human binary agreement ≥ 80%, 95% CI lower bound ≥ 75%, and no significant directional
-   bias (sign test). This is the "reasonable confidence level."
+   bias (sign test). This is the "reasonable confidence level." **Why 80%, and how firm it is:** 80%
+   is the *measured* reproducibility ceiling of the task — but from **one strong-model pair**
+   (ChatGPT vs Sonnet, 400 items, **binary** cut; exact 0/1/2 agreement is only 64.5%), both anchored
+   on the same pro summary (may inflate it), with ±~4% sampling error. It is a **provisional
+   strong-model proxy — NOT a measured human-human ceiling or a hard law.** The dual-human κ (item 1)
+   is what upgrades it: if human κ comes back higher, raise the bar; if lower, 80% is already
+   generous. Don't deify it. (We can't demand >80% because that asks the panel to agree with one
+   human more than two strong judges agree with each other; the ≥75% lower-bound floor is the 5-pt
+   buffer that keeps the test achievable at the ceiling.)
 4. **Route only hard cases to humans** (panel disagreement / low confidence); cap it (~≤100).
 5. **Final gold** = calibrated panel where confident (soft when the panel splits) + human label on
    routed items. Report coverage, panel-vs-human agreement + CI, κ, per-judge skew, % human-routed.
+
+**How many human judgments for what confidence (the real commit-vs-defer decision).** The anchor
+validates *panel-vs-human agreement* — a single proportion at p≈0.8. **Unit = one human judgment on
+one candidate memory, NOT a case.** Like a political poll, the sample size is set by the *precision
+you want*, not by the population: a ±3% national poll uses ~1,000 people whether the electorate is
+10M or 300M. Same here — this cost is **FIXED; it does NOT scale with the number of cases or LLM
+labels in the corpus:**
+
+| target 95% CI half-width | human judgments (validate raw panel) | if split 50/50 for bias-correction |
+|---|---|---|
+| ±10% | ~62 | ~124 |
+| ±8% (the §6 default) | ~96 | ~190 |
+| ±5% | ~246 | ~490 |
+
+**~100 human judgments** buys the defensible claim "panel agrees with human 80±8%, no significant
+bias" → panel accepted as gold. That ~100 is the threshold between *validated gold* and *designed/
+future-work*; below ~60 it's a pilot. Routed hard-case adjudication (~≤100) is separate and cappable.
+**Don't conflate two sample sizes:** this **~96 is *judgments*** validating the labeling instrument;
+the **~40 in §5 is *cases*** giving NDCG-power for the reranker verdict. Different units, different
+questions.
+
+(*"Validate raw panel" vs "bias-correction split":* the left column **only measures** the panel's
+agreement and ships the panel labels as-is — all N humans go into one agreement estimate. The right
+column additionally **fits a correction** to the panel's skew, so it must split the humans into a
+calibration half (fit the correction) and a held-out validation half (test it honestly) — hence ~2×
+the labels. Use raw-validate if the panel passes the acceptance test clean; only fit a correction if
+the panel shows a measurable, consistent skew worth removing.)
+
+### Deciding whether to correct, and when to trust model agreement (staged, pre-registered)
+
+**Don't pre-commit to 96/190 humans. Stage it and let a principled test stop you early.**
+
+1. **Pre-register δ** — the smallest directional skew you'd bother correcting (e.g. ±5 percentage
+   points of items). This is what makes "no correction needed" an honest claim rather than a
+   p-hacked null.
+2. **Pilot ~40–50 stratified human labels**, oversampling the **all-models-agree zone** (see the
+   unanimity logic below).
+3. **Test for skew on the pilot — two tests, not one:**
+   - **McNemar / sign test** on the discordant (panel≠human) pairs → tests *presence* of directional
+     bias. Significant + lopsided → you need correction, found out for ~50 labels.
+   - **Equivalence test (TOST) against ±δ** → tests *absence*. Failing to reject McNemar is **not**
+     proof of no bias (that's the n=13 underpowered trap again); only a CI for the skew sitting
+     **entirely inside [−δ, +δ]** licenses "negligible skew, raw-validate, no correction."
+   - Stop early if the result is clearly negligible *or* clearly large; expand toward ~96 **only** in
+     the ambiguous zone (small point estimate, CI still wider than δ). Honest sample sizes: certify
+     negligibility within ±10pp ≈ 80 labels, within ±5pp ≈ a few hundred — but staging usually pays
+     far less than the worst case.
+4. **The same pilot also tests the accuracy threshold** (not just bias) — check whether the 95% lower
+   bound on agreement already clears the 75% floor. **Optional-stopping discipline:** pre-register the
+   looks (e.g. n≈50 then n≈100) and **stop early only in the unambiguous directions** (clearly clears
+   / clearly fails); naive peek-and-continue inflates the error rate. Expected outcome: flash-lite-CoT
+   *alone* already hit ~75–77% vs the strong judges, so a 2–3 vendor strong panel should land
+   mid-to-high 80s → a ~50-label pilot may clear outright. Whether you save labels depends on the
+   realized margin (unknown until you look): high accuracy → big early saving; borderline → expand to
+   ~100–250 (no saving, no waste); failing → stop at ~50. **One pilot serves both gates.**
+
+**Unanimity is suspect *a priori*, trusted only *after* the audit — not by assumption.**
+The prior "unanimous tier = 0% leak" finding held because that unanimous set **included the two
+careful strong judges** (the leak was the *majority* tier, where the generous auto-trio outvoted
+them). That is "agreement that contains a careful judge," not "agreement is safe." For a panel whose
+members may share a *correlated* bias (any all-frontier-LLM panel risks this), unanimous agreement is
+exactly where a shared bias produces confident-but-wrong labels — agreement looks like reliability
+but is shared blindness, and no intra-panel statistic reveals it; only the human can. So the sequence:
+   1. **A priori the unanimous-agree tier is the SUSPECT zone** → oversample it in the pilot.
+   2. **Run the skew/TOST test on that tier specifically** (powered to detect a δ-sized *tier* skew —
+      a stratified, adequately-sized audit, **not** a token sample).
+   3. **If skew ≤ δ → unanimity is now an *earned* reliable signal** → trust the agree-tier on the
+      rest of the data and route remaining humans to disagreements only (the label saving).
+   4. **If skew detected → unanimity is NOT safe for this panel** → correct, or keep human coverage on
+      the agree-tier too.
+
+**Where a 3rd model (DeepSeek > Grok on cost) helps — and where it does NOT.** It lowers ensemble
+variance, decorrelates bias (more likely to land in the no-correction regime), and makes a *3-vendor
+unanimous* a stronger agree-signal for routing. It does **NOT** lower the human floor for establishing
+validity: the human is an *external, different-class* instrument and the LLM judges share correlated
+bias (the 5-model vote did **not** dilute the over-crediting — only strong/human judges caught it).
+More correlated-LLM votes cannot substitute for the anchor. The 3rd model's real "fewer humans" win is
+*concentration* via routing, not a lower validity floor.
 
 Human cost ≈ one focused day (1–2h rubric + ~2–3h for the 150 anchor, grouped by game state so each
 scene is read once + ~1–2h routed adjudication). **Integrity:** actually run the anchor, or mark it
 honestly as designed/piloted — never claim a validation that wasn't done.
 
-## 7. Status: decided vs open
+## 7. Status: decided vs open (updated 2026-05-31, this session)
 
-- **Decided:** the two-gold decomposition; the roster (§2); OpenRouter infra; Part 1 = priority,
-  Part 2 = optional; extraction scoped out; soft labels; human-anchor design; speed not pre-gated.
-- **Reranker net decision (from the gate):** keep v4; the relabel is a small-upside, downstream-
-  gated, low-priority option — not blocking.
-- **Open / pin at the start of next session:** exact case count (40–50?), confirm the Qwen variant,
-  **add the `openrouter/` wrapper + run two smoke tests** (an open writer on a full-context summary;
-  DeepSeek on one judge prompt) to verify the roster responds, then generate Part 1 summaries.
+- **Decided:** the two-gold decomposition; Part 1 = priority, Part 2 = optional/leveled; extraction
+  scoped out; soft labels; speed not pre-gated; **open writers via NIM (OpenRouter dropped)**; **no
+  completeness-critic — pool-coverage bound documented instead** (§4); **GPT+Claude is an acceptable
+  2-judge panel, DeepSeek optional** (§2/§5); the human-anchor confidence table + **staged
+  pre-registered-δ correction gate (McNemar + TOST) and the certify-then-trust unanimity rule** (§6);
+  the Part 2 level ladder with the n=40 / ~130-case math (§5).
+- **Reranker net decision (from the gate):** keep v4; relabel is small-upside, downstream-gated,
+  low-priority — not blocking. **Recommended path: Level 1 (cheap pure-Q confirm) → decide.**
+- **Open / pin next:** (1) **production goal — open-only stack vs cheapest-good-enough** — decides
+  whether a heavyweight open writer joins the roster (§2); (2) exact Part 1 case count (40–50?) and
+  Qwen variant; (3) NIM responsiveness smoke test for the chosen open writer(s); then generate Part 1
+  summaries.
 
 ## 8. Artifacts map (where everything is)
 
