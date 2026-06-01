@@ -9,6 +9,12 @@ Usage:
     modal run evidence/fine_tuning/dedup_classifier/eval_modal.py \
         --run-name qwen1b_run1
 
+    # Eval a specific checkpoint (when training didn't finish):
+    modal run evidence/fine_tuning/dedup_classifier/eval_modal.py \
+        --run-name qwen3_4b_weighted100x \
+        --checkpoint 286 \
+        --base-model Qwen/Qwen3-4B-Instruct-2507
+
     # Then score with existing eval pipeline:
     poetry run python -m evaluation.experiments.dedup_score \
         --dataset eval_sets/dedup_ft_predictions.jsonl \
@@ -51,6 +57,7 @@ def run_eval(
     eval_cases_json: str,
     run_name: str = "qwen1b_run1",
     base_model: str = "Qwen/Qwen2.5-1.5B-Instruct",
+    checkpoint: int = 0,
     max_new_tokens: int = 256,
 ) -> str:
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
@@ -58,11 +65,18 @@ def run_eval(
     import torch
     import os
 
-    lora_path = f"/output/{run_name}/lora_adapter"
+    if checkpoint > 0:
+        lora_path = f"/output/{run_name}/checkpoint-{checkpoint}"
+    else:
+        lora_path = f"/output/{run_name}/lora_adapter"
     if not os.path.exists(lora_path):
-        available = os.listdir("/output")
+        available_runs = os.listdir("/output")
+        run_dir = f"/output/{run_name}"
+        available_in_run = os.listdir(run_dir) if os.path.exists(run_dir) else []
         raise FileNotFoundError(
-            f"Adapter not found at {lora_path}. Available runs: {available}"
+            f"Adapter not found at {lora_path}. "
+            f"Available runs: {available_runs}. "
+            f"Contents of {run_name}/: {available_in_run}"
         )
 
     print(f"Loading base model: {base_model}")
@@ -141,6 +155,7 @@ def run_eval(
 def main(
     run_name: str = "qwen1b_run1",
     base_model: str = "Qwen/Qwen2.5-1.5B-Instruct",
+    checkpoint: int = 0,
     source: str = "eval_sets/dedup_v2_sampled.jsonl",
     output: str = "eval_sets/dedup_ft_predictions.jsonl",
 ):
@@ -219,6 +234,7 @@ def main(
         eval_cases_json=json.dumps(eval_cases),
         run_name=run_name,
         base_model=base_model,
+        checkpoint=checkpoint,
     )
 
     results = json.loads(results_json)

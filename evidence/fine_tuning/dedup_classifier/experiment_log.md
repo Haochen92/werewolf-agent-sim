@@ -463,6 +463,51 @@ gold_K        0      20   (n=20)
 
 ---
 
+## Evaluation: qwen3_4b_weighted100x (2026-05-29)
+
+Training was repeatedly preempted by Modal spot instance reclamation at ~step 330 (epoch 2.3). Checkpoints at step 143 (epoch 1) and 286 (epoch 2) survived. Evaluated both rather than continuing to burn GPU time on a run that may not finish.
+
+### Results
+
+| Model | Accuracy | SP Acc | Obs Acc | D Prec | D Rec | K Prec | K Rec | D Pred | K Pred |
+|---|---|---|---|---|---|---|---|---|---|
+| Qwen 1.5B (unweighted) | 43.1% | 40.0% | 45.0% | 0.39 | 0.40 | 0.45 | 0.44 | 31 | 34 |
+| Qwen 1.5B (weighted 100x) | 46.2% | 40.0% | 50.0% | — | — | — | — | 25 | 40 |
+| **Qwen 4B ckpt-143** (epoch 1) | **69.2%** | **72.0%** | **67.5%** | **0.86** | **0.40** | **0.64** | **0.94** | **14** | **51** |
+| **Qwen 4B ckpt-286** (epoch 2) | **64.6%** | **76.0%** | **57.5%** | **0.89** | **0.27** | **0.60** | **0.97** | **9** | **56** |
+| Flash-lite v11b (LLM baseline) | 83.1% | 96.0% | 75.0% | 0.85 | 0.77 | 0.81 | 0.88 | 27 | 37 |
+| Flash-3.5 v11b (LLM baseline) | 84.6% | 84.0% | 85.0% | 0.95 | 0.70 | 0.79 | 0.97 | 22 | 43 |
+
+### Diagnostic answer: model size was the bottleneck
+
+The 4B model **does not collapse to per-type shortcuts**. Both checkpoints make real discriminative D/K decisions within each item type, unlike the 1.5B which predicted all-D for strategy points and all-K for observations. This confirms the 1.5B model lacked the capacity to learn the decision boundary.
+
+### But 4B is not competitive with LLM baselines
+
+Despite discriminating within types, the 4B model is heavily K-biased:
+- **D recall is critically low** (40% at epoch 1, dropping to 27% at epoch 2) — it misses most duplicates
+- **K recall is very high** (94-97%) — it correctly identifies most non-duplicates
+- **More training made it worse overall** — accuracy dropped from 69.2% to 64.6% between epochs 1 and 2, with D predictions falling from 14 to 9
+
+The training data is 60% D / 40% K, so the K-bias is not a data balance problem. The 100x decision weight should push toward D sensitivity, but the model still defaults to K when uncertain.
+
+### Why: task complexity exceeds model capacity
+
+Identifying duplicates requires understanding semantic equivalence — "is this the same advice phrased differently?" This is fundamentally harder than identifying non-duplicates, which only requires finding any difference. The LLM baselines (flash-lite, flash-3.5) achieve balanced precision/recall because they reason about meaning in-context. The 4B model with QLoRA can pattern-match on surface features but lacks the reasoning depth to confidently classify duplicates, so it defaults to the safe choice (K).
+
+The gap is qualitative, not just quantitative — more training epochs or data rebalancing won't close a 15-20% accuracy gap when the failure mode is insufficient reasoning capacity.
+
+### Conclusion
+
+The dedup classifier fine-tuning track has reached its limit at accessible model sizes:
+- **1.5B:** collapses to per-type shortcuts (43% accuracy)
+- **4B:** discriminates but is too K-biased to be useful (65-69% accuracy)
+- **LLM baselines:** 83-85% accuracy with balanced precision/recall
+
+Scaling to 7-8B might close some of the gap, but at that size the inference cost advantage over a flash-lite API call shrinks significantly. The per-extraction dedup decision stays as an LLM API call.
+
+---
+
 ## Future: Dataset Expansion
 
 The current 863 examples have two issues for scaling: type imbalance (72% SP / 28% Obs) and all labels came from 3 Gemini models that share a systematic D-bias. Expanding the dataset addresses both the classifier and cross-encoder.
