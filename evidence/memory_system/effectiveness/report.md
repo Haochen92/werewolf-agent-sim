@@ -95,7 +95,8 @@ In Batch A, villagers with memory dominated (96.7%). In Batch B, villagers with 
 ## Limitations
 
 - **No computed_metrics for Batch A.** Win rate is the only available outcome metric for the v3_deduped batch. We can't verify whether the same gameplay patterns (wolf blending, healer saves) drove the result.
-- **Confounded variables.** Two things changed between batches (store version + namespace). We can't attribute the regression to one factor without running the intermediate configurations (v3_deduped with action_phase, or v4 without action_phase).
+- **Confounded variables.** Two things changed between batches (store version + namespace). We can't attribute the regression to one factor without running the intermediate configurations (v3_deduped with action_phase, or v4 without action_phase) — ideally **on shared seeds** so the comparison isn't a fresh random draw (see the paired-design section).
+- **n=30 is too small to call the baselines "identical."** The argument that the 70% vs 74% baselines rule out game variance is weak — at n=30 each has a 95% CI of ±~16pp, so they are statistically indistinguishable across a wide range of true values. Paired/seeded baselines would make this comparison tight enough to actually support that claim.
 - **Pre-current configuration.** Neither batch uses the current planned default (observations-only, v4_deduped store, filtering enabled). The latest config may recover Batch A's effectiveness or remain in Batch B territory.
 - **Visual-only evidence for Phase 0.** The monolithic strategy system's improvement was observed through transcript inspection, not measured systematically. We can't quantify how much of the Phase 1 improvement over "no memory" is attributable to the RAG architecture vs simply having more game experience in the store.
 
@@ -105,10 +106,34 @@ Memory effectiveness is proven — the question is not "does it work?" but "what
 
 The priority is not more evidence that memory works. It's running a batch with the current configuration to determine where it falls between these two bounds.
 
+## Statistical Design for the Validation Batch — Paired / Seeded Games
+
+The validation batch should not be run as two independent pools of games (N memory-off, N memory-on). It should be run as **matched pairs that share a seed**: for each of N seeds, run the game twice with *identical initial conditions* — same role assignment (who is wolf/healer/investigator), same RNG stream, same persona assignment — differing in **only** the treatment (memory on vs off). Analyze the **within-pair difference**, not the two pool averages.
+
+**Why this cuts the games needed.** A werewolf game's outcome has two variance sources: (1) the treatment effect we care about (does memory help), and (2) the luck of the setup — a wolf-favored role draw, an easy/hard configuration — which is noise. The variance of the difference between two conditions is
+
+```
+Var(on − off) = Var(on) + Var(off) − 2·Cov(on, off)
+```
+
+Independent games have `Cov = 0`, so you eat the full variance and must run many games for source-(2) noise to average out. Paired games share the setup, so their outcomes are **positively correlated** (`Cov > 0`); the `−2·Cov` term **cancels the shared setup noise**. The games needed scale with `(1 − ρ)`, where ρ is the within-pair outcome correlation: ρ≈0.5 roughly halves the games; a high ρ (the setup strongly determines difficulty, which it does in werewolf) can cut them by an order of magnitude. In plain terms: instead of asking "do memory-on games win more *on average*," you ask "*on this exact setup*, did turning memory on change the outcome" — comparing like with like, with the game's inherent luck subtracted out.
+
+**Binary win/loss → McNemar.** Classify each seed-pair: both-win / both-lose are **concordant** and carry no signal (the game was just easy or hard regardless of memory); only the **discordant** pairs (on-wins/off-loses vs the reverse) count, and McNemar tests whether they are asymmetric. You spend statistical power only on games where memory actually changed the result. For dense metrics (correct-elimination rate, survival, investigator accuracy), use a paired t / Wilcoxon on the per-pair differences.
+
+**This is not the headline's bottleneck — it's the confound-killer.** The observed effects here are large (Batch A 70%→97%, prior runs ~60%→90%). For a ~27–30pp lift, even the *independent* design needs only ~25–30 games/arm to be well powered — which is exactly why the existing 30-game batches showed clear signal. So pairing is **not** required to prove the headline. Its real payoff for *this* report is:
+
+1. **Resolving the Batch A vs Batch B regression.** The 97%-vs-73% gap for the "same" all-enabled condition is currently unattributable — two confounded variables (store version + namespace) measured on two *different* 30-game draws. Run the candidate configs **on the same seed set** and the setup variance cancels, so any remaining difference is the configuration effect, not two luck-of-the-draw samples.
+2. **A tighter, more defensible headline.** Pairing shrinks the CI on the memory effect, pre-empting the "Batch A was just a lucky 30 games" critique.
+3. **Power for the *subtle* comparisons** — ranking configurations that land between the 73% and 97% bounds, where the effect is small and the independent design would again be underpowered.
+
+**Practical caveat.** The two games in a pair *will* diverge after the first memory-influenced action — that divergence **is** the treatment effect and is expected; LLM nondeterminism means they were never going to stay byte-identical. You pair on **initial conditions**, not trajectories — and in werewolf the dominant variance (role assignment, setup balance) lives in exactly those initial conditions. This requires the sim to be **seedable**: drive *every* stochastic component — role assignment, persona assignment, night RNG, **and the sequential scheduler's turn-order tie-break (`seeded_random`)** — from one master seed, identical across both arms.
+
+A note specifically on the scheduler's turn-order randomness: seeding shares the RNG *stream*, but it does **not** keep turn order identical across the pair, because the order is computed from transcript-derived signals (pressure/debt/eligibility) that diverge as soon as memory changes what is said. Before divergence the order is identical; after, it diverges even with a shared stream. This is fine and wanted — turn-order shifts caused by memory are part of memory's legitimate effect, not a nuisance to cancel — and the factor is small by design (a within-tier tie-break that cannot reorder across hard signals), so its residual contribution averages out over the pairs. Seed it to share what can be shared and for reproducibility; don't expect (or want) it locked across the pair.
+
 ## What's Next
 
-1. **Latest-config batch** — Run 30 games each for no-memory and all-enabled (observations-only) with v4_deduped store and filtering. This determines whether the current system recovers Batch A's effectiveness.
-2. **Isolate the regression** — If the latest config still shows no benefit, test v4_deduped without action_phase namespace to isolate whether namespace granularity or store content is the culprit.
+1. **Latest-config batch (paired/seeded)** — Run ~30 **seed-pairs**: each seed played twice (no-memory vs all-enabled, observations-only) with v4_deduped store + filtering and *identical initial conditions*. Analyze within-pair (McNemar for win/loss; paired test for computed_metrics). Determines whether the current system recovers Batch A's effectiveness, with setup variance controlled.
+2. **Isolate the regression (shared seeds)** — If the latest config still shows no benefit, test v4_deduped without action_phase namespace **on the same seed set** to isolate namespace granularity vs store content — paired, so the comparison isn't confounded by a fresh random draw.
 3. **Computed metrics for Batch A equivalent** — The latest batch should include computed_metrics to understand which gameplay dynamics drive the improvement.
 
 ## Artifacts
