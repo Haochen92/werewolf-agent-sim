@@ -12,7 +12,7 @@ def format_day_channel(messages: list[DayChannel]) -> str:
     if not messages:
         return "No messages yet."
     return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.player}: {m.message}" for m in messages
+        f"[Day {m.day} · #{m.seq}] {m.player}: {m.message}" for m in messages
     )
 
 
@@ -53,7 +53,7 @@ def format_day_channel_postgame(messages: list[DayChannel], roles: dict[str, str
     if not messages:
         return "No messages yet."
     return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
+        f"[Day {m.day} · #{m.seq}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
         for m in messages
     )
 
