@@ -7,6 +7,7 @@ from Agents.schemas.evaluation import (
     ExtractionCase,
 )
 from Agents.schemas.game_events import (
+    AddressedTarget,
     DayChannel,
     DaySummary,
     DayVote,
@@ -47,6 +48,7 @@ from Agents.schemas.output import (
 
 __all__ = [
     "ActionPhase",
+    "AddressedTarget",
     "CandidateRelevance",
     "ComputedGameMetrics",
     "DedupCandidate",

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from Agents.schemas.game_events import AddressedTarget
+
 
 class WolfNightDiscussOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
@@ -18,8 +20,11 @@ class DayDiscussOutput(BaseModel):
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
     )
-    message: str | None
+    message: str
     updated_strategy: str
+    addressed_targets: list[AddressedTarget] = Field(
+        description="List of targets addressed in the discussion. Empty list if none.",
+    )
 
 
 class DayVoteOutput(BaseModel):
@@ -178,7 +183,7 @@ class SituationSummary(BaseModel):
         ),
         min_length=1,
         max_length=2,
-    )
+    )    
 
     @property
     def composed_situations(self) -> list[str]:
