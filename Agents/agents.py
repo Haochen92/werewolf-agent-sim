@@ -250,13 +250,15 @@ def _run_agent(
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
                 return output if output else None
+            current_day = payload.get("current_day", 1)
             output = {
                 "day_channel": [
                     DayChannel(
-                        day=payload.get("current_day", 1),
-                        round=payload.get("current_round", 1),
+                        day=current_day,
+                        seq=sum(1 for m in payload.get("day_channel", []) if m.day == current_day),
                         player=player_id,
                         message=message,
+                        addressed_targets=getattr(result, "addressed_targets", []),
                     )
                 ]
             }

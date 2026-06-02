@@ -91,11 +91,11 @@ def generate_summary(
     messages = [
         DayChannel(
             day=msg.get("day", day),
-            round=msg.get("round", 1),
+            seq=i,  # 0-based position in the (already-ordered) frozen discussion
             player=msg["player"],
             message=msg["message"],
         )
-        for msg in raw_discussion
+        for i, msg in enumerate(raw_discussion)
     ]
 
     prompt = DAY_SUMMARY_PROMPT.format(

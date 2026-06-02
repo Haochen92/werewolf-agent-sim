@@ -192,12 +192,15 @@ def check_round(
     if state["current_day"] < game_config.first_voting_day:
         return "SUMMARIZE_DAY_DISCUSSION"
 
-    # Check if anyone spoke this round
-    current_round_messages = [
+    # INTERIM (sequential rewrite): DayChannel.round was dropped, so we can no longer
+    # filter by round. This whole round-loop control (PREPARE_ROUND/fan_out/check_round)
+    # is replaced by the SCHEDULE node in Stage 4; until then, terminate only if no player
+    # has spoken at all this day (max_discussion_rounds below still caps the loop).
+    current_day_player_messages = [
         m for m in state["day_channel"]
-        if m.day == state["current_day"] and m.round == state["current_round"]
+        if m.day == state["current_day"] and m.player != "game_master"
     ]
-    if not current_round_messages:
+    if not current_day_player_messages:
         return "SUMMARIZE_DAY_DISCUSSION"
 
     if state["current_round"] >= game_config.max_discussion_rounds_per_day:
@@ -400,7 +403,7 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=0,
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -429,7 +432,7 @@ Player {voted_player} has been voted out and was a {state['roles'][voted_player]
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=state.get("current_round", 1),
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -450,7 +453,7 @@ It's a tie between players {candidates}. No one is voted out this day."""
         "day_channel": [
             DayChannel(
                 day=current_day,
-                round=state.get("current_round", 0),
+                seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                 player="game_master",
                 message=message,
             )
@@ -516,7 +519,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=state.get("current_round", 0),
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -540,7 +543,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=state.get("current_round", 0),
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -590,7 +593,7 @@ def end_game(state: OrchestratorGraph):
         "day_channel": [
             DayChannel(
                 day=state.get("current_day", 1),
-                round=0,
+                seq=sum(1 for m in state["day_channel"] if m.day == state.get("current_day", 1)),
                 player="game_master",
                 message=f"Game over! The {winner} have won!",
             )
