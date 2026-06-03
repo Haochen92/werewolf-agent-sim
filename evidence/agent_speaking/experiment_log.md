@@ -661,3 +661,156 @@ total-dialogue / token cap. No scheduler primitives.
   discussion-quality A/B** (worktree-on-tag, like concurrent). It's the clean ablation isolating
   *sequential generation* (concurrent→naive) from *smart scheduling* (naive→reactive/proactive) — if the
   scheduler barely beats naive-sequential there, the complexity isn't paying off.
+
+### Scheduler state: stateless recompute vs stateful incremental (chose stateless)
+
+The scheduler can either (a) **recompute** its view (per-agent recency + grouped obligations) from
+`day_channel` on every SCHEDULE cycle, or (b) keep **stateful** dicts in graph state and mutate them
+after each utterance (set last-spoke, add/clear obligations). At our scale — N=9, U≈22 utterances/day —
+stateless is ~O(U²)≈500 pure-Python ops/day vs the corrected stateful ~O(N·U)≈200 (store *absolute* seq
+for recency, don't sweep +1 each turn). Both are microseconds, dwarfed by the ~U LLM calls at seconds
+each. **Compute is not the deciding axis.**
+
+We chose **stateless**, and the honest tally is **2 wins, not 3** — "resume-safety" and "no-drift" are
+the *same* property wearing two hats (derived state desyncing from the source of truth). The two
+independent wins:
+1. **Correct-by-construction** — a fresh scan can't disagree with the transcript; the dangerous half of
+   stateful, the in-place obligation mutation that *never self-heals* if one update is missed, simply
+   doesn't exist.
+2. **Trivially-valid test fixtures** — a unit test hand-builds a `day_channel` and asserts the pick; no
+   replaying an update sequence to reach a state first.
+
+We're trading a **zero-weight con** (the O(U²) scan) for two **nonzero pros** — not a close call. (The
+stateful cons aren't uniform: recency-via-absolute-seq is low-risk/monotonic; obligation-via-mutation is
+the whole danger. If perf ever forced a migration you'd move recency first and leave obligations as a
+fresh scan — but going *half*-stateful at this scale just buys back a desync surface for a win we don't
+need.)
+
+**The verdict is load-bearing on one assumption: `day_channel` (plus within-day-immutable game state)
+fully determines scheduling state.** Verified for Phase 0:
+- Every obligation is **created and discharged inside `day_channel`** (`question`/`accusation`/`response`
+  in `addressed_targets`). **Known exception:** the **human player's speech-acts are not extracted yet**
+  (deferred to Phase 1) → a human turn carries no `addressed_targets`, so for *human* games the
+  transcript is not sufficient and stateless would silently miss it. **Phase 0 is all-agent → holds**;
+  the one break is already on the Phase-1 list.
+- **Recency** derives from `day_channel`. **Private-info/centrality** inputs read from **game state**
+  (`investigator_results`, roles, survivors) which is **set at night, never mutated during discussion** —
+  a read-only source-of-truth input, *not* a desync-prone cache. So sufficiency = "`day_channel` +
+  within-day-immutable state," and the second half can't drift.
+- The `game_master` night announcement is a non-player `day_channel` entry → filtered (never an obligated
+  agent or candidate).
+
+**No-regret:** ship stateless as the reference. If scale ever makes the scan hot (it won't until U is in
+the thousands, or LLM cost stops dominating), the stateful incremental drops in *and stateless stays as
+the oracle to validate it against*. We never pay the desync/test tax until forced, and even then keep the
+source-of-truth check. Not a 3–0-and-free call — **2–0 on the weight that matters, contingent on
+`day_channel` sufficiency (verified for Phase 0), cheaply reversible if scale ever changes.**
+
+(Consequence settled here: with `pass_turn` as the explicit terminate signal, the scheduler no longer
+needs to know whether the *previous* utterance was reactive or proactive — that was a relic of the old
+barren-inference termination rule. `firing_reason` is therefore **tracing-only** (Langfuse span metadata)
++ the transient `Send`-payload **brief** to the speaking node; it is **not** added to `DayGraphState` and
+**not** persisted on the `DayChannel` record.)
+
+### The `pass_turn` valve — bounded silence on the proactive path (2026-06-03)
+
+Re-introduces a *scoped* silence option that the Smoke-4 "drop the null" decision had removed wholesale.
+The distinction that makes this safe: **Smoke 4 falsified the structured novelty *label*** (folded
+`repeated/borderline/new` classification), **not** the lightweight "say nothing if you'd only restate"
+valve (the original concurrent silence rule). Re-introducing the *valve* is not resurrecting the
+falsified mechanism. Three constraints:
+- **Proactive-only.** A *reactive* speaker owes a turn (was questioned/accused) → always speaks. The
+  valve applies solely to the one proactive pick on a quiet cycle — exactly the "don't force a selected
+  agent to speak when they genuinely have nothing fresh" case.
+- **`pass_turn: bool` (required), not `message: str | None`.** A nullable message re-triggers the
+  flash-lite nullable-field JSON gotcha that drove `message: str`. An all-required boolean sidesteps it;
+  proactive prompt says "set `pass_turn=true` if you'd only restate," reactive turns always emit
+  `pass_turn=false`.
+- **A proactive pass = the terminate signal.** The top-ranked proactive candidate is, by the ranking,
+  the agent most likely to have something fresh; if even they pass, the quiet cycle is dry → **terminate,
+  no re-pick** (kills the re-pick/re-spend complexity). This *replaces* the old fuzzy "barren-utterance"
+  termination inference and removes its need to know the previous utterance's mode.
+
+**Honest caveat (Smoke 4):** self-authorship optimism means the agent will *under*-use the pass (often
+convinces itself it has something), so this is a **weak** filter — but cheap (no extra call, just a flag)
+and it yields a *cleaner* convergence signal than inference. The **global cap is the backstop** for the
+optimism case (agent emits filler instead of passing → cap stops it).
+
+### DayChannel storage vs display — decouple, trim the biggest token source (2026-06-03)
+
+The Pydantic model is *storage*; the formatter is *display* — already decoupled, so this is formatter-only,
+state untouched.
+- **`addressed_targets` already never render** (`format_day_channel` emits only `[Day · #seq] player:
+  message`) → no clutter today. They stay in state (scheduler reads them; optionally handed to the
+  speaker as the `firing_reason` brief). No change needed.
+- **Drop `seq` from all display** — zero semantic value to the LLM, ordering implicit in the list.
+- **Drop `day` from the agent-facing transcript** — verified the live transcript an agent reads is
+  **today-only** (`prompt_inputs.py` → `format_day_channel_for_day`; prior days arrive compressed via
+  `format_day_summaries`), so per-line `[Day X]` is pure redundancy → render once as a header. Keep `day`
+  in the postgame/summary formatters (they genuinely span days).
+- Agent-facing render becomes `player_id: message` lines. Trims ~10–12 chars × ~U lines × every agent
+  call off the largest token source. Lands as a Stage-1 follow-up / Stage-5 polish.
+
+### Stage 2 parameters — LOCKED defaults (2026-06-03)
+
+- **Freshness/recency window = all of today.** Obligations are day-scoped; the `(speaker→target, stance)`
+  key handles repetition without a sliding window.
+- **Per-pair K = 2** — a *test* starting value (deliberately conservative to expose whether genuine
+  disputes truncate; one-line bump to 3 if logs show real arguments cut short).
+- **Global cap = 3×N surviving players, floored ~6.** This is the *hard backstop, not the target*
+  (`pass_turn` does the real termination), so bias it generous enough to never truncate a legitimately
+  active day; raising 2.5→3 is low-risk since it only bites in the optimism/escalation failure mode.
+- **Seeded-random source = `(session_id, day, seq)`** — `session_id` from `RunnableConfig`, `day`+`seq`
+  from state; reproducible (resume + clean A/B replay) and varies per utterance (no single agent wins
+  every tie). No new state.
+
+#### Freshness vs per-pair-K — they are TWO different mechanisms (clarified; the common muddle)
+
+Both live only in `build_reactive_queue` (obligation *creation*), never in the proactive path. They are
+not the same "occurs at most twice" rule:
+- **Freshness = no double-counting an *open* edge.** While B still owes A (hasn't responded), A repeating
+  the address — *even reworded / "new angle"* — creates **no second obligation**. The key
+  `(speaker→target, stance)` ignores wording *by design* (so no LLM is needed to judge "new angle?").
+  Stops A from spamming to pile pressure.
+- **Per-pair K = cap on *total re-engagements* of a directed pair across the day.** After B *discharges*
+  and A comes back, that's a *new* fire — allowed, but only up to K. The (K+1)th A→B creates no obligation.
+
+Edge lifecycle (A→B accusation, K=2):
+```
+A accuses B          → B obligated       (fire 1)
+A repeats (B silent) → ignored           (freshness: open dup)
+B defends            → discharged
+A re-accuses B       → B obligated again  (fire 2)
+B defends
+A re-accuses B       → BLOCKED            (K=2 reached)
+```
+**New info from a *different* player is a *different* edge:** `C→B accusation` has its own key + own
+K-count → fresh obligation on B regardless of A's history. New player ↔ same target = new pressure.
+
+### Private-info dropped to zero for Phase 0 — scheduler is role-blind (2026-06-03)
+
+5b collapsed under scrutiny: **healer info is ~worthless to volunteer** (a save surfaces as "no one
+died"); **SK / vigilante (future roles) have no shareable info**; so the boost would *only ever* apply to
+the **investigator** — one role, a genuine power-role tell, and no clean way to do it subtly. Applying the
+same logic that dropped centrality: **leave private-info out of Phase 0.** **Proactive ranking = recency +
+seeded-random only; the scheduler is role-blind.** Consequences:
+- The investigator's reveal becomes a **strategic *agent* decision** (prompt/strategy/situation), not a
+  scheduling one — where reveal-timing belongs. The scheduler just doesn't *suppress* them; they get
+  proactive turns via recency rotation + the opener floor and decide whether to reveal when they speak.
+- **The power-role tell disappears** (no scheduler signal to infer) — solves "how to boost subtly" by
+  removing the mechanism. **Future-proof:** role-blind needs no change when SK/vigilante land.
+- *Future refinement (only if logs show valuable investigator info chronically not reaching the table):*
+  small weight-not-sort boost, only-with-result, random-diluted.
+
+**Observation (separate workstream, not Phase 0):** current games lack advanced techniques (no
+role-claim demands / counter-claims). Sequential generation *helps the substrate* (a role-claim demand
+can now actually land and be answered, which the frozen-snapshot model couldn't do), but the dynamics
+themselves are driven by **more power roles** (role expansion), **strategy injection** (memory/strategy
+system), and **human-introduced dynamics** — not the scheduler. This reinforces the role-blind decision:
+claim/reveal behaviour should emerge from strategy + prompting, not be hard-wired into who-speaks-next.
+
+**Stage 2 design CLOSED.** Primitives: `build_reactive_queue` (per-target discharge/create, grouped by
+obligated agent, freshness + per-pair-K=2), `speech_recency` (derived), `rank_proactive` (recency +
+seeded-random, role-blind), `select_next` (reactive-first → 1 proactive w/ `pass_turn` → opener-floor=1 →
+terminate; cap 3×N). All pure functions of `day_channel` + within-day-immutable state; unit-testable, no
+LLM. Next: point 3 — LangGraph wiring (SCHEDULE node + single-`Send` self-loop).
