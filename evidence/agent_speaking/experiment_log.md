@@ -814,3 +814,34 @@ obligated agent, freshness + per-pair-K=2), `speech_recency` (derived), `rank_pr
 seeded-random, role-blind), `select_next` (reactive-first → 1 proactive w/ `pass_turn` → opener-floor=1 →
 terminate; cap 3×N). All pure functions of `day_channel` + within-day-immutable state; unit-testable, no
 LLM. Next: point 3 — LangGraph wiring (SCHEDULE node + single-`Send` self-loop).
+
+### Point 3 prelude — proactive budget revised (1 → P), passes recorded in `day_channel` (2026-06-03)
+
+While wiring point 3 a fragility in the locked "**budget=1, pass=terminate, no re-pick**" rule surfaced:
+**one** agent's pass would end the whole day even if other agents had a thread to open. Revised:
+
+- **Proactive budget P (default 3, was 1).** On a quiet cycle, give up to P *distinct* proactive picks
+  the floor; **terminate only when P of them pass in a row.** Stronger convergence signal (several agents
+  independently have nothing) than one decline.
+- **A pass is recorded as a hidden `DayChannel` marker (`passed=True`, empty message, no targets)** —
+  *not* "no append." This is the key move: the stateless scheduler can only react to what's in
+  `day_channel`, so the pass must live there. Effects: (a) SCHEDULE counts trailing passes for
+  termination; (b) the passer's recency advances → next pick rotates to a *different* agent; (c) inert for
+  obligations (empty targets); (d) formatter skips it (not shown to agents); (e) excluded from the
+  utterance cap (only real utterances count). **Statelessness preserved/reinforced** — `day_channel`
+  stays the single source of truth; a pass is now a first-class (if hidden) conversational event.
+- **Revised termination:** terminate when the **trailing `proactive_budget` utterances are all passes**;
+  *any* real utterance resets the streak. Global cap (3×N) is the backstop. This **supersedes** the
+  budget-1/pass-terminate and the older "barren-utterance inference" rules.
+- **Wiring simplification (vs the earlier `Command`-to-SUMMARIZE-on-pass idea):** because passes are now
+  visible to SCHEDULE, the role node **always loops back to SCHEDULE** (plain edge) and **SCHEDULE owns
+  all termination** (cap | trailing-P-passes | no eligible speaker). One owner for the stop decision.
+- **Schema implication (human-owned):** `DayChannel` gains `passed: bool = False`; `DayDiscussOutput`
+  `pass_turn` maps into it. Reactive speakers always emit `pass_turn=False`, so a pass-marker
+  unambiguously means a *proactive* decline → trailing-pass counting is clean.
+
+**Config landed** (`game_config.py`): `discussion_utterance_multiplier=3.0`, `min_discussion_utterances=6`,
+`per_pair_reengagement_cap=2`, `proactive_budget=3`, `opener_floor=1`, plus `utterance_cap(n)` and
+`discussion_recursion_limit(n)=2·cap+10` helpers (8p→cap 24/limit 58; 15p→45/100). `recursion_limit` must
+exceed worst-case super-steps so the graceful cap fires before `GraphRecursionError`; derive it from the
+cap at the day-graph invoke (Stage 4 wiring; interim hardcoded 100 is safe ≤15p).
