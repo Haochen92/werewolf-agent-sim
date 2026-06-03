@@ -205,19 +205,20 @@ passes.
 ---
 
 ## Cross-cutting
-- [ ] **Tracing:** `SCHEDULE` logs per-turn scores (pressure/debt/tier/chosen + reason) — inspectable
-      for tuning. (Folds into the broader Phase A tracing rework.)
-- [ ] **Params** centralized with defaults (tune later, not now): pressure type-weights, recency
-      window, debt magnitude, quiet-nudge, global cap, per-pair K, opener-floor = **1**, proactive
-      budget = **1** (Phase 0), proactive ranking weights (private-info / recency / centrality).
+- [ ] **Tracing:** `SCHEDULE` logs per-turn ranking + chosen speaker + `firing_reason` to the Langfuse
+      span — inspectable for tuning. (Folds into the broader Phase A tracing rework.)
+- [x] **Params** centralized in `game_config.py` (committed c25a675): `discussion_utterance_multiplier`
+      =3.0, `min_discussion_utterances`=6, `per_pair_reengagement_cap`=2, `proactive_budget`=**3**,
+      `opener_floor`=1, + `utterance_cap()`/`discussion_recursion_limit()`. Proactive ranking is
+      **role-blind = recency + seeded-random ONLY** (private-info + centrality dropped — see log). Tune later.
 
 ## Build-time residuals to carry (NOT blockers)
 - Speech-act: the 1-D accusation-over-labeling residual was **resolved by the 2-D revision**
   (it was axis-conflation, not error — smoke test 1b). Remaining: at-scale validity of the 2-field
   structure + blind-judge-at-scale; `response`/`mention` are rare in endgame slices (common early).
 - **Proactive redundancy** (replaces the dropped novelty residual) — with no novelty gate, a proactive
-  speaker on a quiet cycle *might* restate. **Observe in logs.** Bounded by budget=1 + content
-  discipline. If it bites, add embedding-similarity novelty (0 extra LLM calls — Smoke 4 refinement).
+  speaker on a quiet cycle *might* restate. **Observe in logs.** Bounded by `proactive_budget`(=3) +
+  `pass_turn` + content discipline. If it bites, add embedding-similarity novelty (0 extra LLM calls).
 - Proactive ranking heuristics deferred to later phases: stance-vs-majority, strategy-profile "push",
   info-value (need extra logic / semantic parsing — not Phase 0). Cross-candidate dedup via wave/batch.
 - Optional: free-text **RAG-query stability vs temp** — separate test, only if query consistency bites.

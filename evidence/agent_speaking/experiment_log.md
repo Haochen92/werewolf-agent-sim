@@ -1,23 +1,30 @@
 # Sequential Day Discussion (Agent Speaking Coherence)
 
-> **⏩ READING GUIDE / CURRENT STATE (updated 2026-06-01). Start here if picking this up fresh.**
-> Goal: replace the concurrent (everyone-speaks-once-per-round, generated in parallel against a
-> frozen transcript) day-discussion model with a **sequential, scheduler-driven** one, so the
-> conversation reads naturally (turn-taking, adjacency, tapering) while fairness is enforced only
-> at the vote. Full design + phased build plan is in **`plan.md`** (verbatim from the design
-> discussion). This log records (1) a grounding pass over the current codebase, (2) the analysis
-> of the plan against that code, and (3) a **point-by-point review** that locks each design tension
-> before moving on.
+> **⏩ READING GUIDE / CURRENT STATE (updated 2026-06-03). Start here if picking this up fresh.**
+> Goal: replace the concurrent (everyone-speaks-once-per-round, parallel against a frozen transcript)
+> day discussion with a **sequential, scheduler-driven** one — natural turn-taking, fairness only at
+> the vote.
 >
-> **Process:** we walked the five tensions one at a time, locking each. **ALL 5 POINTS LOCKED +
-> BOTH load-bearing LLM mechanisms smoke-tested (2026-06-01) — Phase 0 design VALIDATED & CLOSED.**
-> Speech-acts: 100% valid, beats string-match (smoke test 1). Novelty labels: 100% clean separation
-> at the extremes (smoke test 2). See **"Locked decisions"**, the two **smoke-test** sections, and
-> **"Phase 0 — DESIGN VALIDATED & CLOSED"** near the bottom; those *supersede* the earlier "tensions"
-> / "Proposed Phase 0 shape" trail. **Status: design done & de-risked, no implementation started.**
-> Next: **build Phase 0 on a feature branch**, carrying build-time residuals (speech-act accusation
-> over-labeling; novelty borderline calibration; both at temp-1.0/folded). Resume at "Phase 0 —
-> DESIGN VALIDATED & CLOSED".
+> **THE AUTHORITATIVE BUILD SPEC IS `phase0_build_checklist.md`** (kept aligned to the final design).
+> This log is the chronological *reasoning trail* — later entries supersede earlier ones. **Final
+> design state (2026-06-03):**
+> - **Model:** stateless **reactive/proactive** scheduler (the earlier *weighted-score* framing and
+>   the *folded LLM novelty gate* are BOTH dropped — see "Smoke test 4" and "Stage 2 design pass").
+> - **4 pure primitives:** `build_reactive_queue` (grouped by obligated agent; freshness on open
+>   `(speaker→target,stance)`; per-pair K=2) · `speech_recency` (derived) · `rank_proactive`
+>   (**ROLE-BLIND: recency + seeded-random only** — private-info AND centrality dropped) · `select_next`.
+>   *(Earlier names PressureCalculator/DebtTracker and any private-info/centrality/budget-1 mentions are
+>   superseded.)*
+> - **Silence/termination:** structural (unscheduled = silent); `pass_turn` valve on proactive →
+>   hidden `DayChannel(passed=True)` marker; **proactive_budget=3**, terminate on 3 trailing passes,
+>   cap=3×N. **No LLM mechanism left to validate.**
+> - **Built so far:** Stage 1 schema committed (831b908..c021ce4); scheduler params in `game_config.py`
+>   (c25a675). **Next = BUILD (human-owned):** Stage 1 follow-ups (`DayChannel.passed`+`pass_turn`,
+>   display trim) → Stage 2 primitives → Stage 4 graph rewire → Stage 5 prompts.
+> - **The most current detail lives in the dated 2026-06-03 sections near the bottom** ("Stage 2 design
+>   pass", "pass_turn valve", "parameters", "Private-info dropped to zero", "Point 3 prelude"). The
+>   "Locked decisions (Points 1-5)" and "Phase 0 — DESIGN VALIDATED & CLOSED" sections are the *earlier*
+>   trail and are superseded where they conflict (esp. anything about novelty gating or a weighted score).
 
 ## Motivation
 
@@ -628,11 +635,12 @@ queue is empty.
   deterministic non-LLM pieces: *who speaks* = scheduler; *quality of what they say* = the
   content-discipline prompt (kept; only the `return null` instruction is removed in Stage 5).
 
-**Net:** the Stage-2 primitives are now (1) `build_reactive_queue` (per-target discharge/create, grouped
-by obligated agent, freshness + per-pair-K), (2) `speech_recency` (derived, feeds proactive only),
-(3) `rank_proactive` (recency + private-info + seeded random), (4) `select_next` (reactive-first →
-budget-1 proactive → opener-floor → terminate). All pure functions of `day_channel`; unit-testable
-without any LLM.
+**Net (as of this subsection — SUPERSEDED below):** primitives (1) `build_reactive_queue`,
+(2) `speech_recency`, (3) `rank_proactive` (recency + private-info + seeded random), (4) `select_next`
+(reactive-first → budget-1 proactive → opener-floor → terminate). ⚠️ **Two of these were revised LATER
+the same day:** `rank_proactive` became **role-blind (recency + seeded-random; private-info dropped)**
+— see "Private-info dropped to zero"; and budget-1/pass-terminate became **proactive_budget=3 + pass
+recorded as a marker** — see "Point 3 prelude". Read those two sections for the final shape.
 
 ### Alternative weighed: "naive sequential round-robin" (rejected for production; kept as an A/B arm)
 
