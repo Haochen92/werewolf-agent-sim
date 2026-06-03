@@ -550,3 +550,114 @@ parameter tuning (explicitly deferred):
 - **Sequencing:** feature branch off `main`; incremental commits (schema → scheduler → graph
   rewiring → prompt edits). Fold `round→seq` output/trace-schema changes into the broader Phase A
   v5 migration.
+
+## Stage 2 design pass — selection model reconciliation + queue data shape (2026-06-03)
+
+Pre-build alignment for the scheduler primitives. Stage 1 schema + downstream integration are committed
+(feature-branch, 5 commits, `concurrent-baseline` tag @ d7415d0); this pass settles *how* the pure-fn
+scheduler selects a speaker before any code. No LLM, no smoke test needed — this is logic, unit-testable
+in Stage 2. Two things resolved: (1) which selection model, (2) the queue's data shape.
+
+### Decision: reactive/proactive model (drop the vestigial weighted score)
+
+The checklist carried **two** selection models layered from two eras, and they're incompatible as
+written: an **old unified weighted score** (`pressure + intent − debt + quiet_nudge + seeded_random`,
+strict tiers, pick max — predates Smoke 4) and the **Smoke-4 reactive/proactive** model (a deterministic
+obligation queue that bypasses scoring; proactive ranking only on quiet cycles). The weighted score is a
+**vestige** — once Smoke 4 made reactive obligations a hard gate, a blended per-agent score has nothing
+left to do (you owe a turn or you don't; the `intent` term never had a source). Comparison on the four
+axes that matter here:
+
+| Axis | Weighted score | Reactive/proactive (CHOSEN) |
+|---|---|---|
+| Natural-sounding | Weaker — a direct question can hang unanswered if another agent out-scores the addressee → reads as people talking past each other. | **Stronger** — encodes turn-taking "adjacency pairs" (question→answer, accusation→defense are near-obligatory); being addressed forces you to the front. |
+| Dynamic strategy on latest state | Fully dynamic | **Identical** — both recompute from `day_channel` each turn; the agent's situation/reasoning is generated at **dispatch time** in both. This axis does **not** differentiate. |
+| LLM cost | — | **Identical — zero.** Both are pure functions over the transcript; the only call is the chosen speaker's generation. Total-utterance count (hence cost) is a function of the **termination rule**, not the selection model. |
+| Other | Tuning hell (interacting weights); "why did X speak?" = "the sum"; cannot *guarantee* a question is answered; hard to unit-test. | More rigid (proactive rationed to budget/quiet-cycle) — but that rationing **is** the feature, and it's explainable + unit-testable. |
+
+**LOCKED: reactive/proactive.** It wins on naturalness + testability, ties on dynamism + cost; its only
+"cost" (rationed proactive creativity) is the mechanism that stops everyone speaking at once. The unified
+weighted score and the `intent` term are **dropped**. This also collapses the primitive set — there is no
+single blended score; selection is (a) an obligation queue + (b) a proactive ranking run only when the
+queue is empty.
+
+### Queue data shape (resolved here; dictates the Stage-2 types)
+
+1. **Obligations are per-`addressed_target`, not per-message.** A `DayChannel` carries a *list* of
+   targets, so one message both **discharges** and **creates**: e.g. B's reply `[{A, response, defense},
+   {C, mention, accusation}]` clears B's debt to A *and* puts C on the hook. We iterate targets; each one
+   independently discharges (`addressed_form==response` toward someone the speaker owed) or creates
+   (`question`→owes-answer, `accusation`→owes-defense). This per-target rule **is** the ping-pong engine
+   (a "response" that counter-accuses keeps the thread alive) — intended; bounded by freshness + K.
+2. **The reactive queue is keyed by the *obligated agent*, obligations grouped.** B appears **once**,
+   carrying the set `owes=[{from:A,kind:answer},{from:C,kind:answer}]`. When B is scheduled the
+   `firing_reason` brief is *"A and C both questioned you — address them"* → **B answers both in one
+   turn**, discharging all open obligations toward the people he addresses. Grouping doubles as natural
+   dedup (no N separate turns for N accusers).
+3. **Empty `addressed_targets` = inert for scheduling.** "Anyone have clues?" / an opening read addresses
+   nobody → creates **no** obligation (a room-question shouldn't force one specific answerer — that would
+   flood). It's a valid proactive/broadcast utterance; if nobody bites it dies, like a rhetorical
+   question. No schema change. The proactive "lane" is **not** a pre-populated queue — when the reactive
+   queue is empty the selector ranks all eligible non-owing agents **on demand** and takes the top 1.
+4. **Stateless = one transcript pass scores *all* agents (not N per-agent scans).** Each SCHEDULE cycle
+   does a single `O(messages)` pass over today's `day_channel` that simultaneously fills, for every
+   agent, `last_spoke_seq` (→ recency = `current_seq − last_spoke_seq`, ∞ if silent) and the obligation
+   set. ~9 players × ~25 msgs = microseconds, zero LLM. "Stateless" means *derive the whole picture from
+   the transcript each cycle*, not *one agent at a time* — there is no mutable per-turn counter dict to
+   desync on resume. Fully assertable in unit tests with hand-built transcripts.
+
+### Confirmed sub-decisions
+
+- **Proactive ranking = recency + private-info weight + small seeded-random tiebreak.** Private-info is a
+  *weight*, never a strict first-sort (a guaranteed slot is a power-role tell — P3). **Centrality
+  (accusation-graph in-degree) is DROPPED for Phase 0** — most abstract of the three signals, mild
+  over-engineering for a first cut. *Future refinement:* if run logs show proactive picks wandering off
+  the live controversy, add accusation-graph centrality among non-reactive players.
+- **K=2 is per *directed pair* (A→B), not per agent** — bounds total A→B re-engagements in the window;
+  a hot A↔B feud re-engages ~2 rounds each way, then freshness + K starve it and proactive takes over.
+- **Same accusation, different angle — handled by freshness, not K.** The freshness key
+  `(speaker→target, stance)` excludes `addressed_form` *and wording* → a rephrased re-accusation has the
+  **same key** → creates **no fresh obligation** → the target is not forced to re-defend, *by
+  construction* (the angle is irrelevant because the key ignores content). K=2 is the harder backstop.
+  **Honest residual:** freshness stops a repeat from *obligating* anyone, but can't stop an agent from
+  being *proactively* picked and choosing to restate — that leak is owned by the content-discipline
+  prompt now, and by the deferred embedding-novelty (0 extra calls, Smoke 4 #4) later if logs show it.
+- **Silence rule, restated post-Smoke-4:** silence is now **structural, not self-selected** — if the
+  scheduler doesn't pick you, that's your silence (most agents speak 0× on a quiet day — P3, intended).
+  When a role node runs, the agent **always** speaks (`message: str`, no null). Split cleanly into two
+  deterministic non-LLM pieces: *who speaks* = scheduler; *quality of what they say* = the
+  content-discipline prompt (kept; only the `return null` instruction is removed in Stage 5).
+
+**Net:** the Stage-2 primitives are now (1) `build_reactive_queue` (per-target discharge/create, grouped
+by obligated agent, freshness + per-pair-K), (2) `speech_recency` (derived, feeds proactive only),
+(3) `rank_proactive` (recency + private-info + seeded random), (4) `select_next` (reactive-first →
+budget-1 proactive → opener-floor → terminate). All pure functions of `day_channel`; unit-testable
+without any LLM.
+
+### Alternative weighed: "naive sequential round-robin" (rejected for production; kept as an A/B arm)
+
+A simpler midpoint between concurrent and the scheduler surfaced: keep generation **sequential against a
+live transcript** (drop `fan_out_day`, loop the existing role nodes), but pick the next speaker by
+**fixed seat order**, keep the **existing self-selected silence rule** to thin dialogue, and terminate on
+total-dialogue / token cap. No scheduler primitives.
+
+- **What it fixes:** concurrent's worst flaw — the frozen-snapshot redundancy (N agents reacting to the
+  same stale transcript → simultaneous duplicate accusations). Live sequential generation removes it, and
+  it's cheap to build. This is the bulk of concurrent's quality gap.
+- **Order advantage — not eliminated, and mis-axised.** Self-silence lets a seat *yield*, never
+  *preempt*: P1 holds right-of-first-refusal every cycle, so low-index seats keep an agenda-setting
+  advantage whenever they use it. Worse, it **mis-orders by urgency** — an accused P2 can't respond until
+  their slot returns, while un-accused P3..P7 speak first. Priority is keyed on an **arbitrary** axis
+  (seat index) where the natural one is conversational relevance. Reactive/proactive replaces seat- with
+  relevance-priority and uses seeded-random only for genuine ties.
+- **Disqualifier for production:** it **retains the self-selected silence rule — the exact mechanism
+  Smoke 4 falsified.** "Do I have something new to add?" *is* the self-judged-novelty call that didn't
+  discriminate, so its termination + redundancy control sit on the broken primitive (self-authorship
+  optimism → nobody passes → runs to the token cap with filler).
+- **Cost:** worst per useful utterance — every seat's turn is an LLM call **even on a pass** (a null is
+  still a call), and it can't parallelize. Ranking: reactive/proactive (1 call/utterance, never a
+  non-speaker) < concurrent (parallel fan-out) < naive round-robin (wasted pass-calls, serial).
+- **Disposition:** rejected as the production model; **kept as an optional third arm in the
+  discussion-quality A/B** (worktree-on-tag, like concurrent). It's the clean ablation isolating
+  *sequential generation* (concurrent→naive) from *smart scheduling* (naive→reactive/proactive) — if the
+  scheduler barely beats naive-sequential there, the complexity isn't paying off.
