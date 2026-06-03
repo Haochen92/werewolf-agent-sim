@@ -20,6 +20,17 @@ order. File:line refs are from the 2026-06-01 grounding pass (verify before edit
 ## Stage 1 — Schema foundation (`DayChannel`, speech-acts, `seq`)
 *Implements: Point 2 (speech-acts), Point 4 (round→seq). Everything else builds on this.*
 
+> **STATUS: largely DONE & COMMITTED** (831b908..e4d4d21). Committed field names (authoritative):
+> `DayChannel{day, seq, player, message, addressed_targets}`, `AddressedTarget{target, addressed_form,
+> stance}`. The bullets below keep the *original* `addressed`/`address_form` draft naming — superseded by
+> the committed names; ignore the drift. **Two Stage-1 follow-ups remain (2026-06-03):**
+> - [ ] **`DayChannel.passed: bool = False`** + **`DayDiscussOutput.pass_turn: bool`** (required) — the
+>       proactive silence valve. A pass appends a hidden `passed=True` marker (empty message, no targets);
+>       `pass_turn` maps into it. Reactive turns always emit `pass_turn=False`. (See log "Point 3 prelude".)
+> - [ ] **Display trim:** drop `seq` from all formatters + `day` from the agent-facing (today-only)
+>       transcript → render `player_id: message`; formatter **skips `passed` rows**. Storage unchanged;
+>       keep `day` in postgame/summary formatters. (See log "DayChannel storage vs display".)
+
 - [ ] `DayChannel` (`Agents/schemas/game_events.py:6-10`): **drop `round`**, **add `seq: int`**
       (monotonic per-day utterance index), **add `addressed: list[AddressedTarget]`**.
 - [ ] New `AddressedTarget{ target: str, address_form: AddressForm, stance: Stance }` — **2-D, revised
@@ -59,48 +70,54 @@ order. File:line refs are from the 2026-06-01 grounding pass (verify before edit
 ---
 
 ## Stage 2 — Scheduler primitives (pure functions over the transcript)
-*Implements: Point 1 (stateless scheduler), Point 5 (pressure/debt/freshness/K-cap). No LLM here —
-unit-testable.*
+*Implements: Point 1 (stateless scheduler), Point 5 (freshness/K-cap/termination). No LLM — unit-testable.*
 
-- [ ] `PressureCalculator(today's day_channel ordered by seq) -> {agent: (tier, score)}`:
-  - tier from the 2-D fields: **tier-1** = `form==question ∨ stance==accusation`; within tier-1,
-    order `question` before bare `accusation`. `form==response` = discharge (debt relief).
-    `form==mention ∧ stance≠accusation` = low-pressure (no forced turn).
-  - recency decay over a rolling window; drop self-mentions.
-  - **freshness/dedup**: a restated `(speaker→target, stance)` within the window adds **no** fresh
-    pressure (**form EXCLUDED** — a rephrased re-accusation must not read as fresh). This kills
-    pure-repetition ping-pong; question-looping is bounded by per-pair max-K + global cap, not freshness.
-  - **per-pair max-K** re-engagement cap (≈2): after K `(A→B)` re-triggers in the window, further
-    mutual triggers stop creating tier-1 (the only lever that bounds *escalating* domination — debt
-    cannot, see below).
-- [ ] `DebtTracker(last N utterances) -> {agent: debt, quiet_nudge}`. **Debt must NOT demote out of
-      the addressed/tier-1 tier** (a direct fresh address is always answerable once). Debt/quiet-nudge
-      only move the *proactive/low-pressure* ordering.
-- [ ] Tiered score `pressure + intent − debt + quiet_nudge + seeded_random`, **strict tiers**:
-      seeded-random breaks ties *within* a tier only. Seed off `(game_id, day, seq)` for reproducible
-      resume.
-- [ ] `EligibilityGate` — **reactive obligations + ranked proactive opportunity** (Smoke 4 redesign;
-      NO novelty gate):
-  - **reactive queue** = *undischarged* obligations over the window: addressed with `form==question`
-    → owes an answer (top); `stance==accusation` → owes a defense. **Cleared** when answered
-    (`form==response` toward the asker). Reactive speakers bypass any gate — they have a deterministic
-    reason. *Order within tier-1: question before accusation.*
-  - **proactive opportunity** fires **only when the reactive queue is empty** (quiet cycle),
-    budget-capped (Phase 0 = **1**). Candidate ranked by cheap deterministic heuristics:
-    (a) **has unrevealed private info** — heavy weight, NOT a strict first-sort (a guaranteed slot is a
-    power-role tell — P3); (b) **hasn't spoken recently** (`DebtTracker`); (c) **suspicion-graph
-    centrality among players NOT already reactive-queued** (uses `addressed_targets` accusation edges;
-    restrict to non-targeted to avoid double-counting reactive). **Seeded-random** tiebreak among top
-    candidates `(game_id, day, seq)`. *No novelty check — proactive = scheduler-created opportunity,
-    bounded by the budget, not by a proof of novelty.*
-  - **day-start opener floor = 1** (forced first utterance), seeded-random.
-  - *Dependency:* the per-pair-K + freshness caps above are what let the reactive queue drain so
-    proactive can ever fire (else continuous accusations starve it).
+> **DESIGN CLOSED 2026-06-03** — see experiment_log "Stage 2 design pass" + "Point 3 prelude". Model =
+> **reactive/proactive** (NOT a unified weighted score — `intent`/blended-score dropped). Proactive is
+> **role-blind** (private-info + centrality dropped for Phase 0). Scheduler is **stateless** (recompute
+> from `day_channel` each SCHEDULE cycle; one transcript scan scores all agents). Params live in
+> `game_config.py` (committed c25a675).
+>
+> **Use the COMMITTED schema field names** (`game_events.py`): `DayChannel.addressed_targets`,
+> `AddressedTarget.addressed_form` ∈ {question,response,mention}, `.stance` ∈
+> {accusation,defense,agreement,neutral}, `.target`, `DayChannel.passed`. (Earlier drafts said
+> `addressed`/`address_form`/`form` — naming drift; ignore.)
 
-**Acceptance:** unit tests on synthetic transcripts — A questions B ⇒ B reactive (owes answer); B
-responds to A ⇒ obligation cleared; restated accusation ⇒ no fresh obligation; K+1th `(A→B)` ⇒ no
-tier-1; reactive non-empty ⇒ no proactive; reactive empty ⇒ exactly 1 proactive, ranked + seeded;
-empty-pressure day start ⇒ opener floor fires exactly once.
+Four pure fns of *(today's `day_channel` + within-day-immutable game state)*:
+
+- [ ] `build_reactive_queue(today) -> list[ReactiveItem]` — obligations **keyed by the obligated agent**
+      (grouped, so a multi-accused agent answers everyone in one turn):
+  - per `addressed_target`: `addressed_form=="question"` → target owes an answer; `stance=="accusation"`
+    → target owes a defense; `addressed_form=="response"` → **discharges the *speaker's own*** debt to
+    that target.
+  - **freshness**: while an edge `(speaker→target, stance)` is *open* (target hasn't discharged), a
+    restatement (`addressed_form` **and wording** excluded) adds **no** second obligation.
+  - **per-pair K** (`per_pair_reengagement_cap`=2): the edge can create an obligation at most K times/day
+    across discharge cycles; (K+1)th blocked. A *different speaker* = a different edge = fresh.
+- [ ] `speech_recency(today) -> {agent: turns_since_spoke}` — **derived** (`current_seq − last_spoke_seq`,
+      ∞ if silent). A `passed` marker advances `last_spoke` too. Feeds proactive only; never demotes a
+      reactive obligation.
+- [ ] `rank_proactive(candidates, recency, seed) -> ranked` — **role-blind: recency + seeded-random
+      ONLY.** (Private-info/centrality dropped — see log; investigator reveal is a strategic *agent*
+      decision, not a scheduling one.) Seed = `(session_id, day, seq)`.
+- [ ] `select_next(today, survivors, game_config, seed) -> Decision` — **reactive-first → proactive →
+      terminate**:
+  - reactive non-empty → highest-priority obligated agent (order: recency-of-address; question-vs-
+    accusation is a Phase-2 tiebreak, not now).
+  - reactive empty → top proactive candidate **not in the current trailing-pass streak** (the role node
+    may set `pass_turn`).
+  - **TERMINATE** when: the trailing `proactive_budget`(=3) utterances are **all passes** (P distinct
+    agents declined in a row); OR `utterance_cap(survivors)` real utterances reached; OR no eligible
+    speaker. **A pass = a hidden `DayChannel(passed=True)` marker, NOT a no-append** (so the stateless
+    scheduler can see it; any *real* utterance resets the pass streak).
+  - **opener**: day start is just the first quiet cycle (same rule); `opener_floor`=1 is the practical
+    minimum unless P agents decline.
+
+**Acceptance** (unit tests, synthetic transcripts, **no LLM**): A questions B ⇒ B reactive (owes answer);
+B responds to A ⇒ cleared; restated accusation while open ⇒ no fresh obligation; (K+1)th `(A→B)` ⇒ no
+obligation; `C→B` ⇒ fresh (different edge); reactive non-empty ⇒ no proactive; reactive empty ⇒ 1
+proactive (ranked + seeded); `proactive_budget` consecutive passes ⇒ terminate; any real utterance resets
+the streak; `utterance_cap` real utterances ⇒ terminate.
 
 ---
 
@@ -122,26 +139,38 @@ Stage 2 (reactive obligations + budget-capped ranked proactive). There is no Sta
 ## Stage 4 — Graph rewiring (`SCHEDULE` node + self-loop)
 *Implements: Point 1 (self-looping subgraph). Replaces `PREPARE_ROUND`/`fan_out`/`COLLECT`/`check_round`.*
 
-- [ ] New `SCHEDULE` node: recompute pressure/eligibility (Stage 2 pure fns), pick speaker **or**
-      terminate, write `{next_speaker, firing_reason, gating_mode}` to state.
+> **Design closed 2026-06-03** (log "Point 3 prelude"). Key wiring facts: scheduler is stateless →
+> **no new shared `DayGraphState` field** (the decision is consumed immediately by the routing edge);
+> `firing_reason` rides the transient `Send` payload (tracing copy → Langfuse span). **SCHEDULE owns ALL
+> termination** (the role node always loops back).
+
+- [ ] New `SCHEDULE` node: run `select_next` (Stage 2 pure fns over `day_channel`); emit the decision
+      (consumed by `route_speaker`). Log per-turn scores + chosen + reason to the Langfuse span.
 - [ ] `route_speaker` conditional edge: **single `Send`** to the chosen existing role node
       (`villager_discuss`/… `Agents/agents.py:878-939`), reusing per-speaker payload construction
-      (`fan_out_day` logic, `Agents/nodes.py:88-176`) — one `Send` instead of N. On terminate →
-      `SUMMARIZE_DAY_DISCUSSION`.
-- [ ] Role node loops back to `SCHEDULE`. Build the day graph accordingly (`Agents/graphs/day.py:29-72`).
+      (`fan_out_day` logic, `Agents/nodes.py:88-176`) — one `Send` instead of N, **plus `firing_reason`
+      in the payload**. On terminate → `SUMMARIZE_DAY_DISCUSSION`.
+- [ ] Role node **always** loops back to `SCHEDULE` (plain edge — *not* a `Command`-to-SUMMARIZE branch;
+      passes are visible to SCHEDULE so it decides termination). Build the day graph accordingly
+      (`Agents/graphs/day.py:29-72`).
+- [ ] **`recursion_limit`** at the day-graph invoke (`Agents/graphs/parent.py:28,37`): derive from the
+      cap → `game_config.discussion_recursion_limit(len(survivors))` (=2·cap+10) so the graceful cap
+      fires before `GraphRecursionError`. Interim hardcoded `100` is safe ≤15 players.
 - [ ] **Voting nodes untouched** (already simultaneous/blind).
-- [ ] Day-start: night announcement already appended by `night_resolution`; trigger the opener floor.
-- ✅ **proactive-silence bookkeeping — NO LONGER NEEDED** (Smoke 4). With the novelty gate removed, a
-      selected proactive candidate **always speaks** (the budget+ranking already chose them); there's
-      no `already_said` self-silence and so no re-pick/re-spend problem. The transient "tried" set is
-      dropped.
-- ⚠️ **CONFIRM role-node gating flag (simplified).** `gating_mode` now only distinguishes the
-      *firing-reason brief* (reactive: "answer player_X" / "defend player_X" vs proactive: "share a new
-      read") passed to `_run_memory_informed_action` (`Agents/agents.py:655`). **No self-silence path** —
-      neither mode can abort; both always emit a message.
+- [ ] Day-start: night announcement already appended by `night_resolution`; first SCHEDULE cycle is the
+      opener (quiet cycle → proactive path → `opener_floor`).
+- ✅ **proactive silence — RECORDED, not suppressed** (revised 2026-06-03). A proactive pick **may**
+      `pass_turn`; the role node then appends a **hidden `DayChannel(passed=True)`** marker (empty
+      message, no targets) and loops to SCHEDULE. SCHEDULE counts trailing passes → terminate at
+      `proactive_budget` consecutive. No transient state, no re-pick logic. Reactive picks never pass.
+- [ ] **Role-node firing-reason brief.** `firing_reason` (reactive: "answer player_X" / "defend against
+      player_X" vs proactive: "share a new read") passed via the `Send` payload to
+      `_run_memory_informed_action` (`Agents/agents.py:655`). Reactive turns force `pass_turn=False`;
+      only proactive turns may pass.
 
 **Acceptance:** a day runs sequentially, one speaker per cycle; per-utterance node boundaries show as
-separate Langfuse spans; discussion converges or hits the cap; vote still parallel/blind.
+separate Langfuse spans; a quiet stretch of `proactive_budget` passes terminates; cap is the backstop;
+vote still parallel/blind.
 
 ---
 
@@ -163,12 +192,15 @@ consistent with the message text (regex cross-check); piled-on agents *defend* r
 ## Stage 6 — Termination + caps
 *Implements: Point 5.*
 
-- [ ] Convergence: after each utterance, recompute eligibility; terminate when the **reactive queue is
-      empty AND the proactive budget for this quiet stretch is spent** (no novelty check — Smoke 4).
-- [ ] Global cap: max utterances/day (rough default ~2–3× surviving players). Per-pair K (Stage 2).
+- [ ] Convergence (revised 2026-06-03, folded into `select_next`): terminate when the **trailing
+      `proactive_budget`(=3) utterances are all `passed` markers** (P distinct agents declined in a row);
+      any real utterance resets the streak. No novelty check (Smoke 4).
+- [ ] Global cap (backstop): `game_config.utterance_cap(survivors)` = `max(6, ceil(3.0·survivors))` real
+      utterances (passes excluded). Per-pair K=2 (Stage 2).
 
-**Acceptance:** ping-pong stress test (two mutual accusers) terminates without hitting the global cap
-in the pure-repetition case; quiet day ⇒ short discussion seeded by the opener floor.
+**Acceptance:** ping-pong stress test (two mutual accusers) terminates via per-pair-K + freshness without
+hitting the global cap in the pure-repetition case; quiet day ⇒ short discussion ended by P consecutive
+passes.
 
 ---
 
