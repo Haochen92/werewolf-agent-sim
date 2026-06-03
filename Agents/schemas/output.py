@@ -20,6 +20,9 @@ class DayDiscussOutput(BaseModel):
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
     )
+    pass_turn: bool = Field(
+        description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
+    )
     message: str
     updated_strategy: str
     addressed_targets: list[AddressedTarget] = Field(

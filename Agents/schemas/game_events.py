@@ -25,6 +25,7 @@ class DayChannel(BaseModel):
     player: str
     message: str
     addressed_targets: list[AddressedTarget] = Field(default_factory=list)
+    passed: bool = Field(default=False, description="True = proactive pass marker (hidden, not counted).")
 
 
 class DaySummary(BaseModel):
