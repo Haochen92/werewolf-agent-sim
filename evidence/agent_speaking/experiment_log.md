@@ -780,8 +780,9 @@ not the same "occurs at most twice" rule:
   the address — *even reworded / "new angle"* — creates **no second obligation**. The key
   `(speaker→target, stance)` ignores wording *by design* (so no LLM is needed to judge "new angle?").
   Stops A from spamming to pile pressure.
-- **Per-pair K = cap on *total re-engagements* of a directed pair across the day.** After B *discharges*
-  and A comes back, that's a *new* fire — allowed, but only up to K. The (K+1)th A→B creates no obligation.
+- **Per-pair K = cap on re-engagements of a directed pair within a *consecutive burst*.** After B
+  *discharges* and A comes back, that's a *new* fire — allowed, but only up to K. The (K+1)th A→B creates
+  no obligation **unless the pair has cooled** (see cooldown below; revised 2026-06-04 from total-per-day).
 
 Edge lifecycle (A→B accusation, K=2):
 ```
@@ -790,7 +791,9 @@ A repeats (B silent) → ignored           (freshness: open dup)
 B defends            → discharged
 A re-accuses B       → B obligated again  (fire 2)
 B defends
-A re-accuses B       → BLOCKED            (K=2 reached)
+A re-accuses B       → BLOCKED            (K=2 reached — consecutively)
+  …M utterances elsewhere, pair untouched → cycles reset to 0…
+A re-accuses B       → B obligated again  (fire 1 of a fresh burst)
 ```
 **New info from a *different* player is a *different* edge:** `C→B accusation` has its own key + own
 K-count → fresh obligation on B regardless of A's history. New player ↔ same target = new pressure.
@@ -853,3 +856,32 @@ While wiring point 3 a fragility in the locked "**budget=1, pass=terminate, no r
 `discussion_recursion_limit(n)=2·cap+10` helpers (8p→cap 24/limit 58; 15p→45/100). `recursion_limit` must
 exceed worst-case super-steps so the graceful cap fires before `GraphRecursionError`; derive it from the
 cap at the day-graph invoke (Stage 4 wiring; interim hardcoded 100 is safe ≤15p).
+
+### K-cap made consecutive, not total-per-day — `reengagement_cooldown` (M) added (2026-06-04)
+
+While grounding `build_reactive_queue` against the `Balance` record (`{open_seq, cycles, last_touch_seq}`),
+a property of the locked K=2 surfaced: it counted **total opens per day**, so an exhausted `(A→B)` edge
+stayed dead for the rest of the day — even after the conversation had fully moved on. The escape route I
+first offered (an exhausted topic can still re-engage via the **proactive** tier) **does not hold up** and
+is retired: proactive is role-blind recency+random, so the chance of re-picking *both* the re-accuser
+**and** the responder for a *specific* pair is low. Proactive keeps the *room* alive; it does **not**
+reliably reunite a *pair*. So total-per-day K leaned on a valve too leaky to carry it.
+
+Distinction that matters (raised twice in review): the real goal is to kill **consecutive** ping-pong, not
+to permanently retire a topic. Within-day legitimate re-engagement is driven by **role claims /
+counter-claims** (the technique we *want* to grow), so demand for it is low now but pointed straight at it;
+cross-day re-engagement was never blocked (K is day-scoped).
+
+**Decision — make K a *consecutive* cap via a cooldown reset (chosen over total-per-day + measure-later).**
+A directed pair's `cycles` resets to 0 once it has sat **M utterances untouched** (no open *or* close on
+that pair). Inside a burst (no M-gap) `cycles` still accrues and caps at K=2 → consecutive ping-pong dies;
+only a genuine lull reopens it. Picked over deferring because it's ~2 lines in `build_reactive_queue`, the
+window is **principled not guessed** (`M ≈ survivors` = "once a full table has spoken"), and it future-proofs
+the role-claim dynamics. Cost: one extra `Balance` field (`last_touch_seq`, stamped on **both** open and
+close) + one config knob.
+
+**Config landed** (`game_config.py`, my part): `reengagement_cooldown_multiplier=1.0` →
+`reengagement_cooldown(n)=ceil(multiplier·n)` (N=9→M=9, N=15→M=15). Consume in `build_reactive_queue`:
+`if this_seq - last_touch_seq >= reengagement_cooldown(num_survivors): cycles = 0` **before** the normal
+freshness/K/open checks. The earlier "proactive valve backstops blocked re-engagement" justification is
+**superseded** by this; the daily reset remains the secondary backstop.

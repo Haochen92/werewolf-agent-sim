@@ -92,8 +92,13 @@ Four pure fns of *(today's `day_channel` + within-day-immutable game state)*:
     that target.
   - **freshness**: while an edge `(speaker→target, stance)` is *open* (target hasn't discharged), a
     restatement (`addressed_form` **and wording** excluded) adds **no** second obligation.
-  - **per-pair K** (`per_pair_reengagement_cap`=2): the edge can create an obligation at most K times/day
-    across discharge cycles; (K+1)th blocked. A *different speaker* = a different edge = fresh.
+  - **per-pair K** (`per_pair_reengagement_cap`=2): the edge can create an obligation at most K times *per
+    consecutive burst*; (K+1)th blocked. A *different speaker* = a different edge = fresh.
+  - **cooldown reset** (`reengagement_cooldown(n)=ceil(multiplier·n)`, M≈survivors): K is **consecutive,
+    not total-per-day** — if a pair sits M utterances *untouched* (no open *or* close), its `cycles` resets
+    to 0 so a cooled feud may reopen once the room has moved on. Suggested `Balance` record per pair:
+    `{open_seq, cycles, last_touch_seq}`; stamp `last_touch_seq` on **both** open and close; apply the
+    reset guard *before* the freshness/K/open checks. (2026-06-04; retires the proactive-valve backstop.)
 - [ ] `speech_recency(today) -> {agent: turns_since_spoke}` — **derived** (`current_seq − last_spoke_seq`,
       ∞ if silent). A `passed` marker advances `last_spoke` too. Feeds proactive only; never demotes a
       reactive obligation.
