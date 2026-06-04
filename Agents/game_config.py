@@ -37,6 +37,11 @@ class GameConfig(BaseModel):
     per_pair_reengagement_cap: int = Field(default=2, ge=1)
     # K: a directed (speaker -> target, stance) edge can create an obligation at most
     # K times/day (escalation cap). Distinct from the open-edge freshness dedup.
+    reengagement_cooldown_multiplier: float = Field(default=3, gt=0)
+    # M = ceil(multiplier * surviving players). Once a directed pair has gone M
+    # utterances untouched, its K cycle-count resets to 0 so a cooled feud can reopen
+    # after the room has moved on. Throttles CONSECUTIVE ping-pong (K caps a burst)
+    # without permanently killing a topic for the day; default ~one full table.
     proactive_budget: int = Field(default=3, ge=1)
     # terminate once this many DISTINCT proactive picks pass (decline the floor) in a
     # row on a quiet cycle; any real utterance resets the streak.
@@ -62,6 +67,10 @@ class GameConfig(BaseModel):
             self.min_discussion_utterances,
             ceil(self.discussion_utterance_multiplier * num_survivors),
         )
+
+    def reengagement_cooldown(self, num_survivors: int) -> int:
+        """M: utterances a directed pair must sit untouched before its K resets."""
+        return ceil(self.reengagement_cooldown_multiplier * num_survivors)
 
     def discussion_recursion_limit(self, num_survivors: int) -> int:
         """LangGraph recursion_limit for the SCHEDULE self-loop.
