@@ -11,6 +11,7 @@ from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
     DayVote,
+    FiringReason,
     InvestigatorResult,
     WolfChannel,
 )
@@ -44,11 +45,17 @@ from Agents.schemas.output import (
     SituationSummary,
     WolfNightDiscussOutput,
 )
+from Agents.schemas.scheduler import (
+    Balance,
+    Decision,
+    ReactiveItem,
+)
 
 
 __all__ = [
     "ActionPhase",
     "AddressedTarget",
+    "Balance",
     "CandidateRelevance",
     "ComputedGameMetrics",
     "DedupCandidate",
@@ -60,9 +67,11 @@ __all__ = [
     "DaySummaryOutput",
     "DayVote",
     "DayVoteOutput",
+    "Decision",
     "EvalCase",
     "EvalPrivateContext",
     "ExtractionCase",
+    "FiringReason",
     "GameOutcome",
     "GameStrategyOutput",
     "GraphContext",
@@ -72,6 +81,7 @@ __all__ = [
     "Metrics",
     "NightResolutionMetric",
     "Observation",
+    "ReactiveItem",
     "RerankResult",
     "RetrievedObservation",
     "RetrievedStrategyPoint",

@@ -19,6 +19,16 @@ class AddressedTarget(BaseModel):
     )
 
 
+class FiringReason(BaseModel):
+    tier: Literal["reactive", "proactive"] = Field(
+        description="reactive=turn forced by an open obligation; proactive=scheduler-initiated on a quiet cycle.",
+    )
+    owes: list[str] = Field(
+        default_factory=list,
+        description="Creditors the speaker owes a response to (reactive only). Empty for proactive.",
+    )
+
+
 class DayChannel(BaseModel):
     day: int
     seq: int
@@ -26,6 +36,10 @@ class DayChannel(BaseModel):
     message: str
     addressed_targets: list[AddressedTarget] = Field(default_factory=list)
     passed: bool = Field(default=False, description="True = proactive pass marker (hidden, not counted).")
+    firing_reason: FiringReason | None = Field(
+        default=None,
+        description="Scheduler trace for why this turn fired; observability only, hidden from agents. None for non-scheduler (e.g. legacy/human) messages.",
+    )
 
 
 class DaySummary(BaseModel):
