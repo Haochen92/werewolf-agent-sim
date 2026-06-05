@@ -242,26 +242,33 @@ def _run_agent(
         adopted_indices = getattr(result, "adopted_strategy_keys", []) or []
 
         if output_key == "day_channel":
-            message = result.message.strip() if result.message else None
-            if not message or message.lower() == "null":
-                output = {}
-                if strategy_update:
-                    output["agent_strategies"] = {player_id: strategy_update}
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
-                return output if output else None
             current_day = payload.get("current_day", 1)
-            output = {
-                "day_channel": [
-                    DayChannel(
-                        day=current_day,
-                        seq=sum(1 for m in payload.get("day_channel", []) if m.day == current_day),
-                        player=player_id,
-                        message=message,
-                        addressed_targets=getattr(result, "addressed_targets", []),
-                    )
-                ]
-            }
+            firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
+            seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
+
+            if getattr(result, "pass_turn", False):
+                # Proactive decline -> hidden pass marker (the stateless scheduler reads it).
+                entry = DayChannel(
+                    day=current_day, seq=seq, player=player_id,
+                    message="", passed=True, firing_reason=firing_reason,
+                )
+            else:
+                message = result.message.strip() if result.message else None
+                if not message or message.lower() == "null":
+                    output = {}
+                    if strategy_update:
+                        output["agent_strategies"] = {player_id: strategy_update}
+                    if adopted_indices:
+                        output["_adopted_strategy_keys"] = adopted_indices
+                    return output if output else None
+                entry = DayChannel(
+                    day=current_day, seq=seq, player=player_id,
+                    message=message,
+                    addressed_targets=getattr(result, "addressed_targets", []),
+                    firing_reason=firing_reason,
+                )
+
+            output = {"day_channel": [entry]}
             if strategy_update:
                 output["agent_strategies"] = {player_id: strategy_update}
             if adopted_indices:
