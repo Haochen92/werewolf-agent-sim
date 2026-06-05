@@ -246,7 +246,12 @@ def _run_agent(
             firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
             seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
 
-            if getattr(result, "pass_turn", False):
+            # Reactive picks must answer: a reactive pass wouldn't discharge the obligation,
+            # so the scheduler would just re-pick them. Honor pass_turn only when not reactive.
+            is_reactive = firing_reason is not None and firing_reason.tier == "reactive"
+            pass_turn = getattr(result, "pass_turn", False) and not is_reactive
+
+            if pass_turn:
                 # Proactive decline -> hidden pass marker (the stateless scheduler reads it).
                 entry = DayChannel(
                     day=current_day, seq=seq, player=player_id,

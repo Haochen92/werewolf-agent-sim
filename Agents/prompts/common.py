@@ -37,13 +37,14 @@ Avoid formal or legalistic phrasing — say "you still haven't answered" not
 
 
 DISCUSSION_SILENCE_RULE = """
-Silence rule (From Round 2 Onwards):
-Default to staying silent. Speak ONLY if you have at least one of:
-1. You have a new concrete observation not yet discussed.
-2. You need to defend yourself against a NEW accusation (not a repeated one).
-3. You have a change in your suspicion with new reasoning.
-4. Role-specific private information that makes speaking strategically necessary.
-If none apply, return message = null.
+Silence rule:
+If you were directly addressed (asked a question or accused), you MUST respond this turn:
+set pass_turn=false and answer or defend.
+Otherwise, speak only if you have at least one of:
+1. A new concrete observation not yet discussed.
+2. A change in your suspicion with new reasoning.
+3. Role-specific private information that makes speaking strategically necessary.
+If none of those apply, set pass_turn=true to decline this turn.
 Do NOT restate suspicions, repeat appeals for information, or agree without adding new reasoning.
 """
 
@@ -54,14 +55,18 @@ You must respond with a valid JSON.
 When speaking:
 {{
     "adopted_strategy_keys": [1, 3],
+    "pass_turn": false,
     "message": "your discussion message",
-    "updated_strategy": "your updated private strategy note for future turns"
+    "updated_strategy": "your updated private strategy note for future turns",
+    "addressed_targets": [{{"target": "player_2", "addressed_form": "response", "stance": "defense"}}]
 }}
 
-When staying silent:
+When declining to speak (only if you were NOT directly addressed):
 {{
     "adopted_strategy_keys": [],
-    "message": null,
-    "updated_strategy": "your updated private strategy note for future turns"
+    "pass_turn": true,
+    "message": "",
+    "updated_strategy": "your updated private strategy note for future turns",
+    "addressed_targets": []
 }}
 """
