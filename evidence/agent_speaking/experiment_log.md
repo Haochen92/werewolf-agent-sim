@@ -957,3 +957,36 @@ Compared against an old concurrent-fan-out transcript. The asymmetry is the take
   turns toward convergence, or strengthen the pass prompt. Tune against the A/B gate.
 - **Cleanup (fold into v5, not now):** remove vestigial `current_round` (day path) and `human_player`
   (set None for batch / drop the dead field).
+
+### ⭐ Proactive echo / dogpile — the systematic quality issue (2026-06-04, baseline-transcript analysis)
+
+A clean-scoring memory-off baseline (max_consec=1, dups=0, discharge=1.0 — no domination) revealed a
+*different*, bigger problem on inspection: **low-information echo / dogpiling**, and it is almost entirely
+a **proactive** phenomenon. Tier split in that game: day1 7 proactive / 1 reactive; day2 **23 proactive
+/ 1 reactive**; day3 9/9. Days 1-2 (≈95% proactive) are an agreement pile — five agents in a row saying
+"too early, let's wait," then ~20 turns recycling "watch for forced narratives / lists / moderation" with
+no new info. The agents *narrate it themselves* (seq22 "a stalemate by just agreeing"; seq23 "stuck in a
+cycle of agreeing… which itself is a trap"). Reactive turns, by contrast, are **substantive** — anchored
+to a concrete question/accusation (day 3's voting-block scrutiny).
+
+**Mechanism:** the proactive tier picks *who* speaks (quietest + seed) but nothing about *what*, and has
+**no novelty constraint**. Handed the floor with no obligation and self-authorship optimism (won't pass —
+the same bias Smoke 4 found), an agent echoes/extends whatever's salient → dogpile. This is the gap the
+dropped novelty gate left. (Confirms the user's read: agents harp on a surfaced fact — silence, an
+agreement, a "forced narrative" — and pile on; the piling is proactive.)
+
+**Metric gap:** `max_consecutive` + `verbatim_dups` catch the *re-pick* artifact (domination) but **miss
+semantic echo entirely** — this baseline scored "clean" while being low-value. A semantic
+**information-gain / novelty** measure is needed (LLM judge, or cheap embedding-cosine of each utterance
+vs transcript-so-far).
+
+**Candidate fix (deferred refinement, now justified):** embedding-novelty pass-gate on **proactive**
+turns — embed the draft, cosine vs transcript; too-similar → force a pass. Disinterested by geometry
+(sidesteps the self-judgment failure). Bonus: it also fixes **cap-always-terminates** — on low-material
+days every proactive draft is low-novelty → all pass → trailing-3-passes terminates the day early instead
+of grinding to cap. So the proactive novelty-gate is higher-leverage than the domination guard:
+domination is intermittent + reactive-side; echo is systematic + proactive-side and drags most days.
+
+**Reprioritization:** headline discussion-quality issue = **proactive echo**, not domination. A+B (the
+cheap reactive-discharge fix) is being tested first on the domination/loop case (run with memory, since
+that's where domination showed); the echo fix (proactive embedding-novelty) is the next target.
