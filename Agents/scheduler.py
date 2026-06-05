@@ -18,6 +18,7 @@ def build_reactive_queue(
     day_channel: list[DayChannel],
     per_pair_cap: int,
     reengagement_cooldown: int,
+    valid_players: set[str] | None = None,
 ) -> list[ReactiveItem]:
     """Net out the open obligations from the transcript, grouped by debtor, freshest first.
 
@@ -25,11 +26,18 @@ def build_reactive_queue(
     discharges the speaker's debt to its target, a `question`/`accusation` opens one.
     Freshness skips a re-open while already open; K-cap blocks the (K+1)th open within a
     burst; the cooldown resets the cap once a pair has sat untouched long enough.
+
+    Targets not in valid_players (e.g. "all"/"everyone", or eliminated players) are ignored
+    so they never become an obligation's debtor — only real survivors can be scheduled.
     """
     debt_ledger: defaultdict[tuple[str, str], Balance] = defaultdict(Balance)
 
     for entry in day_channel:
         for target in entry.addressed_targets:
+            # Skip non-player addressees ("all"/"everyone") and dead players: only a real
+            # surviving player can owe/be-owed and therefore be scheduled.
+            if valid_players is not None and target.target not in valid_players:
+                continue
             # Close the speaker's own open debt to this target. (B) Any non-question
             # engagement of the creditor discharges -- a `mention` of who you owe counts,
             # not just a `response` -- so a correctly-aimed turn always clears the debt
@@ -127,6 +135,7 @@ def select_next_speaker(
         day_channel,
         per_pair_cap=game_config.per_pair_reengagement_cap,
         reengagement_cooldown=game_config.reengagement_cooldown(num_survivors),
+        valid_players=set(surviving_players),
     )
     if reactive_queue:
         top = reactive_queue[0]

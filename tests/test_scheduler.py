@@ -217,3 +217,26 @@ def test_no_eligible_when_no_survivors():
     d = select_next_speaker([], [], DEFAULT_GAME_CONFIG, seed=0)
     assert d.terminate is True
     assert d.terminate_reason == "no_eligible"
+
+
+def test_invalid_target_ignored_with_valid_players():
+    # "all" (not a real player) must not become an obligation's debtor; B (valid) does.
+    q = build_reactive_queue(
+        [msg(0, "A", [at("all", "question"), at("B", "question")])],
+        per_pair_cap=2,
+        reengagement_cooldown=99,
+        valid_players={"A", "B", "C"},
+    )
+    assert [(i.agent_id, i.creditors) for i in q] == [("B", ["A"])]
+
+
+def test_select_next_never_picks_non_survivor_target():
+    # Even when an agent addresses "all", select_next must pick a real survivor (no KeyError upstream).
+    d = select_next_speaker(
+        [msg(0, "A", [at("all", "question", "accusation")])],
+        ["A", "B", "C"],
+        DEFAULT_GAME_CONFIG,
+        seed=0,
+    )
+    assert d.terminate is False
+    assert d.speaker in {"A", "B", "C"}  # 'all' never selected
