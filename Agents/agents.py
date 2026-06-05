@@ -131,6 +131,19 @@ def get_llm_summary():
     )
 
 
+@lru_cache(maxsize=1)
+def get_llm_judge():
+    """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking."""
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
+            "minimal",
+        ),
+    )
+
+
 NOVELTY_JUDGE_PROMPT = ChatPromptTemplate.from_messages(
     [
         (
@@ -178,7 +191,7 @@ def judge_proactive_novelty(candidate_message: str, payload: dict[str, Any], cur
         return True
     try:
         result = (
-            NOVELTY_JUDGE_PROMPT | get_llm_summary().with_structured_output(NoveltyJudgment)
+            NOVELTY_JUDGE_PROMPT | get_llm_judge().with_structured_output(NoveltyJudgment)
         ).invoke(
             {
                 "day_channel": format_day_channel(today),
