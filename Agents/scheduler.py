@@ -1,9 +1,18 @@
 from collections import defaultdict
 import random
+import zlib
 
 from Agents.game_config import GameConfig
 from Agents.schemas import Balance, DayChannel, Decision, FiringReason, ReactiveItem
 
+
+def cycle_seed(game_id: str, day: int, cycle: int) -> int:
+    """Deterministic per-cycle seed for proactive ranking.
+
+    Stable within a run (game_id is fixed); replayable across runs if game_id is pinned.
+    Pure (primitives only) so it stays unit-testable with the rest of the scheduler.
+    """
+    return zlib.crc32(f"{game_id}:{day}:{cycle}".encode())
 
 def build_reactive_queue(
     day_channel: list[DayChannel],
@@ -93,14 +102,21 @@ def select_next_speaker(
     surviving_players: list[str],
     game_config: GameConfig,
     seed: int,
+    *,
+    utterance_cap: int | None = None,
 ) -> Decision:
-    """Pick the next speaker (or terminate): cap → reactive → trailing-pass → proactive."""
+    """Pick the next speaker (or terminate): cap → reactive → trailing-pass → proactive.
+
+    utterance_cap overrides the config-derived cap (the caller uses this for the
+    lighter pre-voting-day cap); falls back to game_config.utterance_cap otherwise.
+    """
     num_survivors = len(surviving_players)
     proactive_budget = game_config.proactive_budget
+    cap = utterance_cap if utterance_cap is not None else game_config.utterance_cap(num_survivors)
 
     # 1. Hard cap backstop — real utterances only; pass markers don't count.
     real_utterances = sum(1 for entry in day_channel if not entry.passed)
-    if real_utterances >= game_config.utterance_cap(num_survivors):
+    if real_utterances >= cap:
         return Decision(terminate=True, terminate_reason="cap")
 
     # 2. Open obligations take priority — the obligated agent answers everyone owed.
@@ -126,3 +142,8 @@ def select_next_speaker(
     if not ranked:
         return Decision(terminate=True, terminate_reason="no_eligible")
     return Decision(speaker=ranked[0], firing_reason=FiringReason(tier="proactive"))
+
+
+    
+    
+    
