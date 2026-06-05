@@ -20,11 +20,16 @@ Win conditions:
 - Wolves win when they equal or outnumber villagers.
 
 Game flow:
-- Day: all players discuss up to {max_discussion_rounds_per_day} rounds. The day's discussion ends when {max_discussion_rounds_per_day} rounds are completed,
-    or no players speak for a round, whichever comes first. After discussion, players
-    then vote to eliminate one player. Ties result in no elimination.
+- Day: players discuss one at a time. You speak when you have something to add or are directly
+    addressed, and may pass when you don't. The discussion winds down once players stop having new
+    things to say, and then everyone votes to eliminate one player. A tie results in no elimination.
 - Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
 - Eliminated players' roles are revealed.
+
+What is public vs. hidden:
+- Votes are public and permanent — who voted for whom each day stays on the record.
+- Night actions (kills, heals, investigations) are hidden; only their outcomes are announced.
+- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
 """
 
 
@@ -33,6 +38,10 @@ Speak naturally and conversationally, like you're playing a casual game with fri
 Keep statements short and direct. Don't over-explain your reasoning in a single message.
 Avoid formal or legalistic phrasing — say "you still haven't answered" not
 "your continued avoidance of this specific question makes your deflections increasingly suspicious."
+Avoid canned openers and filler — don't start with "I agree with X that...", "fair point",
+"good point", "classic wolf move", and don't mirror the structure of the message before yours.
+A short reaction is fine; not every turn needs a full paragraph. If you agree with someone, add
+a new reason or a new piece of information rather than just seconding what they said.
 """
 
 
@@ -46,6 +55,10 @@ Otherwise, speak only if you have at least one of:
 3. Role-specific private information that makes speaking strategically necessary.
 If none of those apply, set pass_turn=true to decline this turn.
 Do NOT restate suspicions, repeat appeals for information, or agree without adding new reasoning.
+When there is no concrete information yet, don't manufacture suspicion out of how talkative, quiet,
+aggressive, or cautious someone is — it's acceptable to say there's little to go on. If you want to
+move things forward, prefer information-generating moves: propose a concrete test, point to a
+specific contradiction, or track the voting record once there is one.
 """
 
 
