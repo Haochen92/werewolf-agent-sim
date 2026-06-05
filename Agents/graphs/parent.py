@@ -19,6 +19,7 @@ from Agents.nodes import (
     route_after_wolf_night,
 )
 from Agents.state import OrchestratorGraph
+from Agents.game_config import game_config_from_runnable
 from Agents.memory import store
 from Agents.tracing import GraphContext
 
@@ -34,6 +35,8 @@ def day_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    num_survivors = len(state["surviving_wolves"]) + len(state["surviving_villagers"])
+    game_config = game_config_from_runnable(config)
     result = day_graph_compiled.invoke(
         {
             "agent_strategies": state.get("agent_strategies", {}),
@@ -49,7 +52,8 @@ def day_phase(
             "current_round": 0,
             "day_votes": [],
         },
-        config=_child_config(config),
+        # Bound the SCHEDULE self-loop: derive from the cap so graceful terminate fires first.
+        config={**_child_config(config), "recursion_limit": game_config.discussion_recursion_limit(num_survivors)},
         context=runtime.context,
     )
 
