@@ -75,11 +75,15 @@ class GameConfig(BaseModel):
     def discussion_recursion_limit(self, num_survivors: int) -> int:
         """LangGraph recursion_limit for the SCHEDULE self-loop.
 
-        ~2 super-steps per utterance (SCHEDULE node + role node) plus headroom for
-        the opener, day-summary, and voting tail. Derived from the cap so the graceful
-        cap-termination always fires before an ungraceful GraphRecursionError.
+        Each cycle = 2 super-steps (SCHEDULE node + role node). A cycle may be a real
+        utterance OR a pass marker: passes consume super-steps but do NOT count toward
+        the cap, and up to proactive_budget-1 passes can occur between real utterances
+        before a trailing-pass run terminates the day. Worst case is therefore
+        ~proactive_budget cycles per utterance slot, so size the limit at
+        2 * proactive_budget * cap (+headroom) to guarantee the graceful cap /
+        trailing-pass termination always fires before an ungraceful GraphRecursionError.
         """
-        return 2 * self.utterance_cap(num_survivors) + 10
+        return 2 * self.proactive_budget * self.utterance_cap(num_survivors) + 10
 
 
 DEFAULT_GAME_CONFIG = GameConfig()
