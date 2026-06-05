@@ -885,3 +885,75 @@ close) + one config knob.
 `if this_seq - last_touch_seq >= reengagement_cooldown(num_survivors): cycles = 0` **before** the normal
 freshness/K/open checks. The earlier "proactive valve backstops blocked re-engagement" justification is
 **superseded** by this; the daily reset remains the secondary backstop.
+
+## First end-to-end runs — sequential rewrite VALIDATED + tuning findings (2026-06-04)
+
+Stages 1/2/4/5 built & committed (scheduler primitives, SCHEDULE self-loop graph, firing_reason +
+pass-marker plumbing, pass_turn prompt). First time the loop ran **live** (real LLM, 8-player games) via
+`scripts/run_batch.py` (py3.11 venv). Two smoke games. **Verdict: the rewrite is functionally correct
+and produces good discussion; the one real problem is speaker-fairness under imperfect speech-act labels,
+which is tunable, not architectural.**
+
+### Smoke A — memory OFF (`all_disabled`, no seed/dump) — SUCCESS
+Wolves win, day 3, ~238s, exit 0. Every designed behavior confirmed in vivo:
+- Sequential loop spins & terminates (no `GraphRecursionError`); per-day `seq` resets (one `seq=0`/day);
+  proactive rotation (openers all distinct: 2→6→3→4→7→5); reactive obligations created & discharged.
+- **K-cap bounds ping-pong live:** player_2↔player_8 traded seq 1-4 (2 each way) then stopped — the
+  consecutive K-cap fired exactly as designed.
+- Day-1 cap = N (8 utterances, pre-voting); voting gated (d1 skipped, d2-3 voted); clean cross-day flow.
+
+### Smoke B — memory ON (`all_enabled`, cached seed) — SUCCESS
+Villagers win (correctly lynched the wolf player_8 on d3), day 4, ~495s, exit 0, **0 × 429**.
+- **Seed-cache fix** (see below) loaded `indexed_cache.pkl` (22 namespaces / 432 vectors) → zero embedding
+  calls. The memory pipeline + the new universal payload ran **clean** — this was the one untested seam.
+- **Scheduler is memory-agnostic:** identical *flow* to memory-off (all days cap-terminated,
+  reactive-dominant d2-4). Memory changed *content depth* (cross-day voting-record reasoning, meta-args
+  like "if I were a wolf, why make an obvious outlier vote?"), not *who-speaks-when*.
+
+### Sequential vs concurrent — pairwise read (n=1, directional, NOT a verdict)
+Compared against an old concurrent-fan-out transcript. The asymmetry is the takeaway:
+- **Concurrent's weakness is STRUCTURAL** — parallel generation against a frozen snapshot ⇒ on low-info
+  days every agent says the same thing (day 1: 8 generic openers; day 2: all 8 "fortunate player_1 was
+  saved…"). Unfixable without going sequential. Strength: perfect turn-fairness; decent multi-round debate
+  once a real target exists (day 3).
+- **Sequential's weakness is TUNABLE** — speaker domination (below). Wins decisively on the axis the
+  rewrite targeted: non-redundant, responsive, natural adjacency pairs throughout.
+- **New eval dimension surfaced:** the comparison says the discussion-quality A/B judge must score
+  **turn-distribution fairness**, not just naturalness/redundancy/responsiveness.
+
+### Issues observed (the tuning backlog)
+1. **⭐ Undischarged-obligation → speaker domination → verbatim repetition (the #1 problem).** Seen in
+   BOTH runs. Mechanism: an agent `owes` player_X but every turn `response`s to player_Y (and only
+   `mention`s X), so `(X→agent)` never discharges → it stays the top/sole reactive → re-picked turn after
+   turn. Evidence: memory-off player_7 ×4 consecutive (seq 14-17, owed player_1, kept answering player_4);
+   memory-on **player_3 ×7** on day 3 (seq 9-17, owed player_7, kept answering player_8) — and **seq 14 ==
+   seq 15 verbatim** (the LLM regenerated the identical sentence on near-identical re-pick context). Root
+   cause is the self-labeled speech-act unreliability flagged at Smoke 4, now observed live: (a) form
+   mislabel (responding but tagging `mention`), (b) wrong-creditor discharge (owe A, answer B). K-cap makes
+   it worse by suppressing *competing* obligations so nothing outranks the stuck debtor.
+2. **Pass-termination never fires** — all days in both runs ended by `cap`, never trailing-passes. Heavy
+   reactive churn means you rarely get `proactive_budget` (=3) consecutive *proactive* picks, so the
+   graceful pass-exit never triggers; the cap backstop does all terminating ⇒ discussions always run to the
+   full cap (max cost).
+3. **Vestigial `human_player`** — `initialize_game` always `random.choice`s a "human" even in all-AI
+   batches; the per-payload bool is threaded everywhere but **read by nothing** (no consumer in
+   Agents/scripts). Harmless (no behavior/eval skew), but misleading in traces.
+4. **Seed-cache gap (FIXED this session).** `run_game`'s seed path (`seed_memory_from_config` →
+   `seed_memory_from_json_files_once` → non-cached embedder) ignored the precomputed `indexed_cache.pkl`,
+   so every memory run re-embedded the whole store on startup → embedding-quota 429s. Fix: point
+   `seed_memory_from_config` at `seed_memory_from_json_files_cached` (loads vectors from pkl on a JSON-SHA
+   match, idempotency guard preserved) + run with `--seed-store-dir Agents/memory_stores/v4_deduped_v2`.
+
+### Tuning plan (next; all in the scheduler/eval zone, none architectural)
+- **⭐ "Had-your-turn" guard (priority, near-term).** If a debtor was just picked for an obligation, spoke,
+  but didn't discharge it, don't immediately re-pick it for that *same* obligation (drop/age-out the debt,
+  or de-prioritize a just-spoken debtor). Would have capped player_3 at 1-2 turns and killed the verbatim
+  dup. ~small change in `select_next_speaker`/`build_reactive_queue`.
+- **Phase-1 external speech-act extraction (deeper fix).** Label form/stance from *outside* the agent so a
+  response to the right party actually registers as a discharge — kills both failure modes at the source.
+  These two runs are the concrete evidence it's worth doing.
+- **Pass-vs-reactive interaction** — revisit how trailing-pass termination coexists with heavy reactive
+  traffic (it currently never gets a window). Candidate: count consecutive *non-discharging / low-value*
+  turns toward convergence, or strengthen the pass prompt. Tune against the A/B gate.
+- **Cleanup (fold into v5, not now):** remove vestigial `current_round` (day path) and `human_player`
+  (set None for batch / drop the dead field).
