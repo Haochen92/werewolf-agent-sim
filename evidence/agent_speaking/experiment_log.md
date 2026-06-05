@@ -990,3 +990,43 @@ domination is intermittent + reactive-side; echo is systematic + proactive-side 
 **Reprioritization:** headline discussion-quality issue = **proactive echo**, not domination. A+B (the
 cheap reactive-discharge fix) is being tested first on the domination/loop case (run with memory, since
 that's where domination showed); the echo fix (proactive embedding-novelty) is the next target.
+
+### Tuning results — A+B + proactive novelty gate, validated across 4 games (2026-06-04)
+
+All committed (1ea5c9a..). Three knobs landed + a crash fix; every game stayed clean on domination
+(max-consecutive-speaker=1, verbatim_dups=0). Throwaway harness `scripts/smoke_discussion.py` computes
+the scheduler mechanical-health metrics (NOT agent perf) from the dumped `day_channel`.
+
+- **A+B fixes domination** (commit 5672e22). A = a `firing_reason` brief in the day-discuss prompt
+  ("you were addressed by X — respond"); B = a `mention` of the creditor discharges the debt, not just a
+  `response`. On a churny memory game that previously hit player_3 ×7 + a verbatim dup, A+B gave
+  **max-consec 1, dups 0, discharge 1.0** — the undischarged-obligation re-pick loop is gone. Reactive
+  turns are never gated/passed (forced answer = the accountability that *exposed both wolves* in one game).
+- **Proactive novelty gate** (b9c3b30): a disinterested **external** LLM judge (Smoke-2/3 form, not the
+  failed self-judgment) runs **post-generation on proactive turns only**; low-novelty (echo/restatement)
+  → converted to a hidden pass. Memory-off gate run: day1 8→1, day2 24→9 utterances, and **3 of 4 days
+  terminated by trailing-passes (convergence)** instead of grinding to cap — fixes "cap-always-terminates"
+  too. `opener_floor`=3 (c1c4dc2) protects each day's first 3 real utterances so the gate can't collapse a
+  day to ~1.
+- **Value is variance-dependent.** Echo-heavy games → heavy gating + early termination (cost-*favorable*:
+  fewer expensive generations). Substantive reactive-heavy games → little echo → ~16% gating → the gate is
+  mostly overhead. So it cuts echo *when present* and doesn't over-gag substantive games.
+- **Judge is currently lenient** ("lean novel when uncertain") — gates blatant echo, keeps "agreement +
+  minor reframe". Strictness is a one-line prompt knob; deferred to the A/B judge to calibrate.
+- **Crash fix** (e20eb63): an agent addressing `target="all"` made the scheduler pick `'all'` as speaker →
+  `KeyError state['roles']['all']`. `build_reactive_queue` now filters targets to `valid_players` (real
+  survivors). +2 regression tests (22 green total). Same class as the speech-act-reliability theme.
+- **recursion_limit** made pass-aware (1ea5c9a): `2*proactive_budget*cap+10` (passes burn super-steps
+  without advancing the cap) — old `2*cap+10` crashed with `GraphRecursionError` on pass-heavy days.
+
+**Cost (memory-on + gate):** ~10:35 wall-clock, **+~28% vs no-gate**, ~25 judge calls. Inflated because the
+judge reused `get_llm_summary` (**medium** thinking) — fixed: dedicated `get_llm_judge` at **minimal**
+thinking (commit after e20eb63). Note: memory-OFF gated turns are cheap (situation-summary + retrieval are
+*skipped* when memory disabled); memory-ON gated turns also waste situation-summary + retrieval (the gate is
+post-everything). Exact tokens in Langfuse.
+
+**Status:** sequential rewrite + tuning DONE — domination and proactive-echo both addressed, validated over
+4 live games. Remaining tuning (judge strictness, embedding pre-filter, concurrent multi-game runner) is
+deferred. **NEXT = the discussion-quality A/B gate** (sequential vs concurrent `d7415d0`, one post-hoc judge
+over multiple games, scoring naturalness / redundancy / responsiveness / **turn-fairness**) — the milestone
+that closes Phase A #1 and unblocks the rest of Phase A.
