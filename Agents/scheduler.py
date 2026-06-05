@@ -30,8 +30,11 @@ def build_reactive_queue(
 
     for entry in day_channel:
         for target in entry.addressed_targets:
-            # Close the speaker's own open debt to this target.
-            if target.addressed_form == "response":
+            # Close the speaker's own open debt to this target. (B) Any non-question
+            # engagement of the creditor discharges -- a `mention` of who you owe counts,
+            # not just a `response` -- so a correctly-aimed turn always clears the debt
+            # even when the agent mislabels the form.
+            if target.addressed_form in ("response", "mention"):
                 balance = debt_ledger[(target.target, entry.player)]
                 if balance.open_sequence is not None:
                     balance.cycles += 1

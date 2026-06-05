@@ -36,6 +36,7 @@ who the wolves are and convince others to vote them out.
             "human",
             """
 Day {current_day} discussion.
+{firing_brief}
 
 Surviving players: {surviving_players}
 
@@ -73,6 +74,7 @@ social deduction to help the village identify wolves without exposing your role.
             "human",
             """
 Day {current_day} discussion.
+{firing_brief}
 
 Surviving players: {surviving_players}
 
@@ -111,6 +113,7 @@ and vote the wolves out.
             "human",
             """
 Day {current_day} discussion.
+{firing_brief}
 
 Surviving players: {surviving_players}
 Investigation results: {investigator_results}
@@ -150,6 +153,7 @@ without revealing your own identity.
             "human",
             """
 Day {current_day} discussion.
+{firing_brief}
 Surviving villagers: {surviving_villagers}.
 Surviving allies: {surviving_wolves}.
 
