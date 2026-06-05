@@ -125,7 +125,7 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         current_day, seq, fr.tier, route_decision.speaker, fr.owes,
     )
     role = state["roles"][route_decision.speaker]
-    return build_speaker_send(state, route_decision.speaker, role, fr)
+    return build_speaker_send(state, route_decision.speaker, role, fr, game_config.opener_floor)
     
     
     
@@ -134,6 +134,7 @@ def build_speaker_send(
     speaker_id: str,
     role: str,
     firing_reason: FiringReason,
+    opener_floor: int = 0,
 ) -> Send:
     """Dispatch one speaker's role node with a universal payload.
 
@@ -156,6 +157,7 @@ def build_speaker_send(
             "player_role": role,
             "current_day": state["current_day"],
             "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
+            "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
             "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
             "strategy_points": "",
             "firing_reason": firing_reason,

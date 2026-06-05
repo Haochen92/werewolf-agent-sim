@@ -45,7 +45,10 @@ class GameConfig(BaseModel):
     proactive_budget: int = Field(default=3, ge=1)
     # terminate once this many DISTINCT proactive picks pass (decline the floor) in a
     # row on a quiet cycle; any real utterance resets the streak.
-    opener_floor: int = Field(default=1, ge=0)
+    opener_floor: int = Field(default=3, ge=0)
+    # The day's first `opener_floor` real utterances bypass the proactive novelty gate, so
+    # every day gets a substantive opening before echo-gating (and trailing-pass termination)
+    # can kick in. Prevents the gate from collapsing a low-material day to ~1 utterance.
 
     @model_validator(mode="after")
     def validate_day_order(self) -> "GameConfig":
