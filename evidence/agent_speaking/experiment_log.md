@@ -1027,6 +1027,40 @@ post-everything). Exact tokens in Langfuse.
 
 **Status:** sequential rewrite + tuning DONE — domination and proactive-echo both addressed, validated over
 4 live games. Remaining tuning (judge strictness, embedding pre-filter, concurrent multi-game runner) is
-deferred. **NEXT = the discussion-quality A/B gate** (sequential vs concurrent `d7415d0`, one post-hoc judge
-over multiple games, scoring naturalness / redundancy / responsiveness / **turn-fairness**) — the milestone
-that closes Phase A #1 and unblocks the rest of Phase A.
+deferred.
+
+## ⭐ Discussion-quality A/B gate — PASSED, Phase A #1 CLOSED (2026-06-05)
+
+Full writeup + verdict: **[gate/report.md](gate/report.md)** · rubric [gate/rubric.md](gate/rubric.md) ·
+deterministic metrics [gate/metrics.py](gate/metrics.py) · transcripts `gate/gate_sequential.jsonl`.
+
+**Design change vs the original plan (cheaper, same conclusion).** We did NOT build the concurrent
+multi-game runner or an LLM judge. Reasoning, in order:
+1. The wins are **structural**, not score-deltas — concurrent parroting is architectural (agents fan out
+   *blind to each other* in a round), so it shows in essentially every game; sequential responsiveness is
+   *mechanically forced* by reactive obligations. Structural patterns are reliable even at small N; the LLM
+   judge (and the N needed for a quantitative delta) was overkill for the actual decision.
+2. The concurrent failure mode being model-independent, **existing frozen concurrent games are valid
+   evidence** — no need to spend quota regenerating them. (Frozen-reuse was earlier rejected for a
+   *quantitative* A/B because backend/temp/memory-store aren't recorded; for a *structural* read those
+   pins don't matter. The `concurrent-baseline` tag + `../ww-concurrent` worktree remain if a pinned
+   quantitative pass is ever wanted.)
+3. So the gate collapsed to: re-run only the **sequential** arm (no transcripts existed for the new design)
+   + read matched **concurrent** transcripts from `batch_results/werewolf_flashlite_3_v1*.jsonl`
+   (flash-lite, mem-off + mem-on), hand-judged against the rubric.
+
+**Result.** Sequential clears the bar — adopt it. echo_rate **0.00** (seq, both mem on/off) vs **0.05-0.06**
+(conc, 16 same-round echoes / 8 games, concentrated on day 1); turn-fairness + volume comparable (concurrent
+NOT pathological on domination). Verbatim excerpts in the report: concurrent day-1 = 8 blind near-identical
+openers; concurrent day-3 = 4 blind near-identical accusations/round; sequential = conditioned turns +
+forced reactive answers (`[reactive→owes X]`) + genuine interleaved rebuttal. Win is robust to memory.
+Confidence HIGH on structural dims, LOW on any quantitative delta (N=4/arm). **Closes Phase A #1 → unblocks
+A#2 roles, #3 tracing, #4 night memory, #5 v5 DB.**
+
+**Two harness bugs found + fixed during the gate (commit separately):**
+- `run_batch.py` was **dropping the transcript** — record had no `day_channel`, so nothing to judge. Added
+  `day_channel`/`day_summaries` to the dumped record (the data was always in `outcome.result`).
+- The **runtime retrieval-query embedding** (`store.search` → bare `GoogleGenerativeAIEmbeddings`) had **no
+  retry** (only seeding + dedup-filter did), so a single 429 aborted a mem-on game. Wrapped
+  `create_embeddings` in `_RetryingGoogleGenerativeAIEmbeddings` (exponential backoff, `EMBED_RETRY_*` env).
+  Note: this is the live *query* embed (fresh per-turn situation text), NOT re-seeding — seeding is cached.
