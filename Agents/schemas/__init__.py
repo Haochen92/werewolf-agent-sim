@@ -7,9 +7,11 @@ from Agents.schemas.evaluation import (
     ExtractionCase,
 )
 from Agents.schemas.game_events import (
+    AddressedTarget,
     DayChannel,
     DaySummary,
     DayVote,
+    FiringReason,
     InvestigatorResult,
     WolfChannel,
 )
@@ -40,13 +42,21 @@ from Agents.schemas.output import (
     DayVoteOutput,
     HealerOutput,
     InvestigatorOutput,
+    NoveltyJudgment,
     SituationSummary,
     WolfNightDiscussOutput,
+)
+from Agents.schemas.scheduler import (
+    Balance,
+    Decision,
+    ReactiveItem,
 )
 
 
 __all__ = [
     "ActionPhase",
+    "AddressedTarget",
+    "Balance",
     "CandidateRelevance",
     "ComputedGameMetrics",
     "DedupCandidate",
@@ -58,9 +68,11 @@ __all__ = [
     "DaySummaryOutput",
     "DayVote",
     "DayVoteOutput",
+    "Decision",
     "EvalCase",
     "EvalPrivateContext",
     "ExtractionCase",
+    "FiringReason",
     "GameOutcome",
     "GameStrategyOutput",
     "GraphContext",
@@ -69,7 +81,9 @@ __all__ = [
     "InvestigatorResult",
     "Metrics",
     "NightResolutionMetric",
+    "NoveltyJudgment",
     "Observation",
+    "ReactiveItem",
     "RerankResult",
     "RetrievedObservation",
     "RetrievedStrategyPoint",

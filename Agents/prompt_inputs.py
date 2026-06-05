@@ -14,6 +14,27 @@ from Agents.prompts import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS, SITUATION_
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE
 
 
+def _firing_brief(firing_reason: Any) -> str:
+    """Turn the scheduler's firing_reason into a one-line turn brief for the agent.
+
+    Reactive picks get an explicit 'you were addressed by X, respond' nudge so the agent
+    aims its reply at the right player (and labels it a response → the debt discharges).
+    Proactive / missing reasons add nothing (the silence rule already governs those).
+    """
+    if firing_reason is None:
+        return ""
+    if isinstance(firing_reason, dict):
+        tier, owes = firing_reason.get("tier"), firing_reason.get("owes") or []
+    else:
+        tier, owes = getattr(firing_reason, "tier", None), getattr(firing_reason, "owes", []) or []
+    if tier == "reactive" and owes:
+        return (
+            f"You were directly addressed by {', '.join(owes)}. Respond to them this turn — "
+            "answer their question or defend against their accusation. Do not stay silent."
+        )
+    return ""
+
+
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
     """Format a graph/eval payload into the keys consumed by agent prompts."""
     role = payload.get("player_role", "")
@@ -34,6 +55,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "current_round": current_round,
         "max_discussion_rounds_per_day": max_discussion_rounds,
         "final_discussion_round_notice": final_discussion_round_notice,
+        "firing_brief": _firing_brief(payload.get("firing_reason")),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),

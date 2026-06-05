@@ -506,14 +506,27 @@ def seed_memory_from_config(
             "strategy_points": 0,
             "skipped": True,
         }
+    # Idempotency: seed a given store object only once (batches reuse one store).
+    store_id = id(target_store)
+    if store_id in _SEEDED_STORE_IDS:
+        return {
+            "observations": 0,
+            "strategies": 0,
+            "strategy_points": 0,
+            "skipped": True,
+        }
     observations_path, strategy_points_path = memory_store_paths(
         memory_config.seed_store_dir
     )
-    return seed_memory_from_json_files_once(
+    # Cached loader: loads precomputed vectors from indexed_cache.pkl when the JSON is
+    # unchanged (no embedding API calls); falls back to embedding + writes the cache.
+    counts = seed_memory_from_json_files_cached(
         observations_path=observations_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
+    _SEEDED_STORE_IDS.add(store_id)
+    return {**counts, "skipped": False}
 
 
 def dump_memory_to_json_files(

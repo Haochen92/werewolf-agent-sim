@@ -59,6 +59,7 @@ def build_game_config(
     reranking_config: dict | None = None,
     filtering_config: dict | None = None,
     retrieval_types_config: dict | None = None,
+    game_id: str | None = None,
 ) -> dict:
     memory_config = memory_config or DEFAULT_MEMORY_CONFIG
     reranking_config = reranking_config or DEFAULT_RERANKING_CONFIG
@@ -68,7 +69,8 @@ def build_game_config(
     normalized_memory_persistence_config = normalize_memory_persistence_config(
         memory_persistence_config
     ).model_dump(mode="json")
-    game_id = str(uuid.uuid4())
+    # Pin game_id for reproducible replay (scheduler seed derives from it); random otherwise.
+    game_id = game_id or str(uuid.uuid4())
 
     handler = CallbackHandler()
 

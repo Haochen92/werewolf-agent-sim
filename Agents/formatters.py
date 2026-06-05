@@ -9,11 +9,10 @@ from Agents.schemas.game_events import (
 
 
 def format_day_channel(messages: list[DayChannel]) -> str:
-    if not messages:
+    visible = [m for m in messages if not m.passed]
+    if not visible:
         return "No messages yet."
-    return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.player}: {m.message}" for m in messages
-    )
+    return "\n".join(f"{m.player}: {m.message}" for m in visible)
 
 
 def format_day_channel_for_day(messages: list[DayChannel], current_day: int) -> str:
@@ -50,11 +49,12 @@ def format_investigator_results(results: list[InvestigatorResult]) -> str:
     )
 
 def format_day_channel_postgame(messages: list[DayChannel], roles: dict[str, str]) -> str:
-    if not messages:
+    visible = [m for m in messages if not m.passed]
+    if not visible:
         return "No messages yet."
     return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
-        for m in messages
+        f"[Day {m.day}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
+        for m in visible
     )
 
 

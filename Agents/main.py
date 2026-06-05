@@ -121,7 +121,7 @@ def main():
     print(f"Surviving villagers: {result['surviving_villagers']}")
 
     for msg in result["day_channel"]:
-        print(f"[Day {msg.day}, Round {msg.round}] {msg.player}: {msg.message}")
+        print(f"[Day {msg.day} · #{msg.seq}] {msg.player}: {msg.message}")
 
 
 if __name__ == "__main__":

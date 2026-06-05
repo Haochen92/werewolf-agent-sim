@@ -9,7 +9,7 @@ from langgraph.runtime import Runtime
 from langgraph.types import Send
 
 from Agents.game_config import game_config_from_runnable
-from Agents.schemas.game_events import DayChannel, DaySummary, InvestigatorResult
+from Agents.schemas import DayChannel, DaySummary, InvestigatorResult, FiringReason
 from Agents.state import (
     DayGraphState,
     OrchestratorGraph,
@@ -23,6 +23,9 @@ from Agents.extraction import (
     extract_postgame,
     format_extraction_inputs,
 )
+
+from Agents.scheduler import cycle_seed, select_next_speaker
+
 from Agents.schemas.evaluation import ExtractionCase
 from Agents.memory_deduplication import (
     run_downstream_dedup,
@@ -81,9 +84,86 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
         "winner": None,
     }
 
+def day_scheduler(state: DayGraphState):
+    """An no-op node that serves as a central return point for route_speaker nodes to return to if not termination"""
+    return {}
+    
+    
+def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Literal["SUMMARIZE_DAY_DISCUSSION"]:
+    game_config = game_config_from_runnable(config)
+    current_day = state.get("current_day", 1)
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    current_day_discussion = [
+        m for m in state.get("day_channel", [])
+        if m.day == current_day and m.player != "game_master"
+    ]
 
-def prepare_round(state: DayGraphState):
-    return {"current_round": state.get("current_round", 0) + 1}
+    # Pre-voting days get a lighter cap (~one round = N); regular days use the config cap.
+    num_survivors = len(surviving_players)
+    cap = num_survivors if current_day < game_config.first_voting_day else game_config.utterance_cap(num_survivors)
+    game_id = (config.get("configurable", {}) if config else {}).get("game_id", "")
+    seed = cycle_seed(game_id, current_day, len(current_day_discussion))
+
+    route_decision = select_next_speaker(
+        day_channel=current_day_discussion,
+        surviving_players=surviving_players,
+        game_config=game_config,
+        seed=seed,
+        utterance_cap=cap,
+    )
+
+    seq = len(current_day_discussion)
+    if route_decision.terminate:
+        logger.info(
+            "[schedule] day=%d seq=%d terminate=%s", current_day, seq, route_decision.terminate_reason,
+        )
+        return "SUMMARIZE_DAY_DISCUSSION"
+
+    fr = route_decision.firing_reason
+    logger.info(
+        "[schedule] day=%d seq=%d tier=%s speaker=%s owes=%s",
+        current_day, seq, fr.tier, route_decision.speaker, fr.owes,
+    )
+    role = state["roles"][route_decision.speaker]
+    return build_speaker_send(state, route_decision.speaker, role, fr, game_config.opener_floor)
+    
+    
+    
+def build_speaker_send(
+    state: DayGraphState,
+    speaker_id: str,
+    role: str,
+    firing_reason: FiringReason,
+    opener_floor: int = 0,
+) -> Send:
+    """Dispatch one speaker's role node with a universal payload.
+
+    Every role gets the same superset of fields; each role node reads only the
+    subset it needs (LangGraph ignores extra keys on a Send payload). This replaces
+    the old per-role fan-out branching.
+    """
+    surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
+    return Send(
+        f"{role}_discuss",
+        {
+            "human_player": speaker_id == state["human_player"],
+            "day_channel": state["day_channel"],
+            "day_summaries": state.get("day_summaries", []),
+            "surviving_players": surviving_players,
+            "surviving_wolves": state["surviving_wolves"],
+            "surviving_villagers": state["surviving_villagers"],
+            "investigator_results": state.get("investigator_results", []),
+            "player_id": speaker_id,
+            "player_role": role,
+            "current_day": state["current_day"],
+            "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
+            "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
+            "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
+            "strategy_points": "",
+            "firing_reason": firing_reason,
+        },
+    )
+
 
 def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
     concurrent_nodes = []
@@ -172,38 +252,8 @@ def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
 
     return concurrent_nodes
 
-def fan_out_discuss(state: DayGraphState):
-    return fan_out_day(state, "discuss")
-
-
 def fan_out_vote(state: DayGraphState):
     return fan_out_day(state, "vote")
-
-
-def collect_discussion(state: DayGraphState):
-    return {}
-
-
-def check_round(
-    state: DayGraphState,
-    config: RunnableConfig,
-) -> Literal["PREPARE_ROUND", "SUMMARIZE_DAY_DISCUSSION"]:
-    game_config = game_config_from_runnable(config)
-    if state["current_day"] < game_config.first_voting_day:
-        return "SUMMARIZE_DAY_DISCUSSION"
-
-    # Check if anyone spoke this round
-    current_round_messages = [
-        m for m in state["day_channel"]
-        if m.day == state["current_day"] and m.round == state["current_round"]
-    ]
-    if not current_round_messages:
-        return "SUMMARIZE_DAY_DISCUSSION"
-
-    if state["current_round"] >= game_config.max_discussion_rounds_per_day:
-        return "SUMMARIZE_DAY_DISCUSSION"
-
-    return "PREPARE_ROUND"
 
 
 def _serialize_day_summary(result: DaySummaryOutput) -> str:
@@ -400,7 +450,7 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=0,
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -429,7 +479,7 @@ Player {voted_player} has been voted out and was a {state['roles'][voted_player]
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=state.get("current_round", 1),
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -450,7 +500,7 @@ It's a tie between players {candidates}. No one is voted out this day."""
         "day_channel": [
             DayChannel(
                 day=current_day,
-                round=state.get("current_round", 0),
+                seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                 player="game_master",
                 message=message,
             )
@@ -516,7 +566,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=state.get("current_round", 0),
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -540,7 +590,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
             "day_channel": [
                 DayChannel(
                     day=current_day,
-                    round=state.get("current_round", 0),
+                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
                     player="game_master",
                     message=message,
                 )
@@ -590,7 +640,7 @@ def end_game(state: OrchestratorGraph):
         "day_channel": [
             DayChannel(
                 day=state.get("current_day", 1),
-                round=0,
+                seq=sum(1 for m in state["day_channel"] if m.day == state.get("current_day", 1)),
                 player="game_master",
                 message=f"Game over! The {winner} have won!",
             )

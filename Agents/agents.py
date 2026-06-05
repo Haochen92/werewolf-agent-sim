@@ -58,6 +58,7 @@ from Agents.schemas import (
     EvalPrivateContext,
     HealerOutput,
     InvestigatorOutput,
+    NoveltyJudgment,
     SituationSummary,
     WolfNightDiscussOutput,
 )
@@ -128,6 +129,81 @@ def get_llm_summary():
             DEFAULT_SUMMARY_THINKING_LEVEL,
         ),
     )
+
+
+@lru_cache(maxsize=1)
+def get_llm_judge():
+    """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking."""
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
+            "minimal",
+        ),
+    )
+
+
+NOVELTY_JUDGE_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """You judge whether a new message in an ongoing Werewolf day discussion adds NEW substance.
+
+NOVEL (novel=true) — it introduces at least one of:
+- a new argument, observation, or piece of evidence not already raised,
+- a new or changed suspicion, or a concrete proposal/question that moves things forward,
+- a direct response to a specific player (answering or defending).
+
+NOT NOVEL (novel=false) — it merely:
+- restates or agrees with a point already made,
+- echoes the general sentiment ("let's be cautious", "watch for X") without adding anything,
+- reinforces an existing accusation with no new angle or evidence.
+
+Lean toward novel=true when genuinely uncertain; only gate clear restatement/echo.""",
+        ),
+        (
+            "human",
+            """Discussion so far:
+{day_channel}
+
+New message from {player_id}:
+"{candidate_message}"
+
+Does this add new substance, or is it restatement/echo?""",
+        ),
+    ]
+)
+
+
+def judge_proactive_novelty(candidate_message: str, payload: dict[str, Any], current_day: int) -> bool:
+    """External novelty judge for a PROACTIVE utterance. True = keep, False = gate to a pass.
+
+    Disinterested third-party judge (not self-assessment — the form Smoke 2/3 validated).
+    Fails open (True) on the opener (nothing to echo yet) or any judge error, so the gate
+    never silences a legitimate turn due to its own failure.
+    """
+    today = [
+        m for m in payload.get("day_channel", [])
+        if m.day == current_day and m.player != "game_master" and not getattr(m, "passed", False)
+    ]
+    if not today:
+        return True
+    try:
+        result = (
+            NOVELTY_JUDGE_PROMPT | get_llm_judge().with_structured_output(NoveltyJudgment)
+        ).invoke(
+            {
+                "day_channel": format_day_channel(today),
+                "candidate_message": candidate_message,
+                "player_id": payload.get("player_id", ""),
+            },
+            config={"run_name": f"novelty_judge_{payload.get('player_id', '')}"},
+        )
+        return bool(result.novel)
+    except Exception as exc:
+        logger.warning(f"novelty judge failed: {exc}; defaulting to novel")
+        return True
 
 
 @lru_cache(maxsize=1)
@@ -242,24 +318,55 @@ def _run_agent(
         adopted_indices = getattr(result, "adopted_strategy_keys", []) or []
 
         if output_key == "day_channel":
-            message = result.message.strip() if result.message else None
-            if not message or message.lower() == "null":
-                output = {}
-                if strategy_update:
-                    output["agent_strategies"] = {player_id: strategy_update}
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
-                return output if output else None
-            output = {
-                "day_channel": [
-                    DayChannel(
-                        day=payload.get("current_day", 1),
-                        round=payload.get("current_round", 1),
-                        player=player_id,
-                        message=message,
+            current_day = payload.get("current_day", 1)
+            firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
+            seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
+
+            # Reactive picks must answer: a reactive pass wouldn't discharge the obligation,
+            # so the scheduler would just re-pick them. Honor pass_turn only when not reactive.
+            is_reactive = firing_reason is not None and firing_reason.tier == "reactive"
+            pass_turn = getattr(result, "pass_turn", False) and not is_reactive
+
+            if pass_turn:
+                # Proactive decline -> hidden pass marker (the stateless scheduler reads it).
+                entry = DayChannel(
+                    day=current_day, seq=seq, player=player_id,
+                    message="", passed=True, firing_reason=firing_reason,
+                )
+            else:
+                message = result.message.strip() if result.message else None
+                if not message or message.lower() == "null":
+                    output = {}
+                    if strategy_update:
+                        output["agent_strategies"] = {player_id: strategy_update}
+                    if adopted_indices:
+                        output["_adopted_strategy_keys"] = adopted_indices
+                    return output if output else None
+                # Proactive novelty gate: a low-novelty (echo/restatement) proactive turn is
+                # converted to a hidden pass. Reactive turns are never gated (accountability),
+                # and the day's first `opener_floor` real utterances bypass the gate so every
+                # day gets a substantive opening before echo-gating engages.
+                is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
+                today_real = sum(
+                    1 for m in payload.get("day_channel", [])
+                    if m.day == current_day and m.player != "game_master" and not getattr(m, "passed", False)
+                )
+                past_opener_floor = today_real >= payload.get("opener_floor", 0)
+                if (is_proactive and past_opener_floor
+                        and not judge_proactive_novelty(message, payload, current_day)):
+                    entry = DayChannel(
+                        day=current_day, seq=seq, player=player_id,
+                        message="", passed=True, firing_reason=firing_reason,
                     )
-                ]
-            }
+                else:
+                    entry = DayChannel(
+                        day=current_day, seq=seq, player=player_id,
+                        message=message,
+                        addressed_targets=getattr(result, "addressed_targets", []),
+                        firing_reason=firing_reason,
+                    )
+
+            output = {"day_channel": [entry]}
             if strategy_update:
                 output["agent_strategies"] = {player_id: strategy_update}
             if adopted_indices:

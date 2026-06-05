@@ -1,14 +1,30 @@
 # Sequential Day Discussion (Agent Speaking Coherence)
 
-> **⏩ READING GUIDE / CURRENT STATE (updated 2026-05-31). Start here if picking this up fresh.**
-> Goal: replace the concurrent (everyone-speaks-once-per-round, generated in parallel against a
-> frozen transcript) day-discussion model with a **sequential, scheduler-driven** one, so the
-> conversation reads naturally (turn-taking, adjacency, tapering) while fairness is enforced only
-> at the vote. Full design + phased build plan is in **`plan.md`** (verbatim from the design
-> discussion). This log records (1) a grounding pass over the current codebase, (2) the analysis
-> of the plan against that code — what's already done, the real tensions — and (3) the **three
-> open decisions to resolve before building Phase 0**. **Status: design captured, codebase mapped,
-> no implementation started.** Resume at "Open decisions for Phase 0" at the bottom.
+> **⏩ READING GUIDE / CURRENT STATE (updated 2026-06-03). Start here if picking this up fresh.**
+> Goal: replace the concurrent (everyone-speaks-once-per-round, parallel against a frozen transcript)
+> day discussion with a **sequential, scheduler-driven** one — natural turn-taking, fairness only at
+> the vote.
+>
+> **THE AUTHORITATIVE BUILD SPEC IS `phase0_build_checklist.md`** (kept aligned to the final design).
+> This log is the chronological *reasoning trail* — later entries supersede earlier ones. **Final
+> design state (2026-06-03):**
+> - **Model:** stateless **reactive/proactive** scheduler (the earlier *weighted-score* framing and
+>   the *folded LLM novelty gate* are BOTH dropped — see "Smoke test 4" and "Stage 2 design pass").
+> - **4 pure primitives:** `build_reactive_queue` (grouped by obligated agent; freshness on open
+>   `(speaker→target,stance)`; per-pair K=2) · `speech_recency` (derived) · `rank_proactive`
+>   (**ROLE-BLIND: recency + seeded-random only** — private-info AND centrality dropped) · `select_next`.
+>   *(Earlier names PressureCalculator/DebtTracker and any private-info/centrality/budget-1 mentions are
+>   superseded.)*
+> - **Silence/termination:** structural (unscheduled = silent); `pass_turn` valve on proactive →
+>   hidden `DayChannel(passed=True)` marker; **proactive_budget=3**, terminate on 3 trailing passes,
+>   cap=3×N. **No LLM mechanism left to validate.**
+> - **Built so far:** Stage 1 schema committed (831b908..c021ce4); scheduler params in `game_config.py`
+>   (c25a675). **Next = BUILD (human-owned):** Stage 1 follow-ups (`DayChannel.passed`+`pass_turn`,
+>   display trim) → Stage 2 primitives → Stage 4 graph rewire → Stage 5 prompts.
+> - **The most current detail lives in the dated 2026-06-03 sections near the bottom** ("Stage 2 design
+>   pass", "pass_turn valve", "parameters", "Private-info dropped to zero", "Point 3 prelude"). The
+>   "Locked decisions (Points 1-5)" and "Phase 0 — DESIGN VALIDATED & CLOSED" sections are the *earlier*
+>   trail and are superseded where they conflict (esp. anything about novelty gating or a weighted score).
 
 ## Motivation
 
@@ -92,6 +108,12 @@ Mapped the existing implementation so the plan's deltas are concrete:
 
 ### Proposed Phase 0 shape (concrete)
 
+> ⚠️ **Partially superseded by "Locked decisions" (Point 1).** The single opaque `RUN_DISCUSSION`
+> while-loop node below was replaced by a *self-looping subgraph* (per-utterance node boundaries);
+> "repurpose `round`" was rejected (add `seq` instead); the generation-prompt gate removal is
+> nuanced (only the `return null` is removed, the situation-summary novelty gate stays and moves
+> into Phase 0). Read the Locked section for the current design.
+
 - `Agents/discussion/scheduler.py` — `RUN_DISCUSSION` loop: recompute pressure → eligibility →
   tiered pick → dispatch existing pipeline → append → repeat until convergence or cap.
 - `PressureCalculator` + `DebtTracker` over `day_channel`, keyed on the (repurposed) utterance
@@ -103,14 +125,942 @@ Mapped the existing implementation so the plan's deltas are concrete:
   to `DayDiscussOutput`.
 - Day graph: replace the 4-node fan-out with the single `RUN_DISCUSSION` node. **Leave voting alone.**
 
-## Open decisions for Phase 0 (resolve before building — RESUME HERE)
+## Locked decisions — point-by-point review (2026-06-01)
 
-1. **Folder name** — this folder is currently `agent_speaking/`; considered alternative
-   `sequential_discussion/` (the defining change is the sequential scheduler). Rename is trivial.
-2. **Pressure inputs** — accept amendment #2 (structured speech-act fields from the generator) vs.
-   the plan's free-text keyword matching. *Recommendation: speech-act fields.*
-3. **Phase 0 seeding** — add a deterministic per-day opener seed vs. accept short reactive Day-2+
-   discussions as the trigger-signal for Phase 2. *Recommendation: minimal day-start seed (cheap
-   insurance against dead discussions).*
+Walking the five tensions one at a time, locking each before moving on. **Point 1 (graph
+architecture)** and the **silence-gate/novelty** question under it are locked below. Points 2–5
+pending — next is **Point 2 (speech-act fields)**.
 
-(Recommendations above are the assistant's; not yet confirmed with the user. Continuing afresh next session.)
+### Point 1 — graph architecture: self-looping scheduler, NOT a single opaque node
+
+*Supersedes old "tension #1" and the single-`RUN_DISCUSSION`-node idea in "Proposed Phase 0 shape".*
+
+- **Self-looping subgraph**, not one opaque while-loop node. Topology:
+  `SCHEDULE (new node) → [route_speaker conditional] → exactly one of
+  {villager,healer,wolf,investigator}_discuss (single Send) → back to SCHEDULE`; `route_speaker`
+  routes to `SUMMARIZE_DAY_DISCUSSION` on terminate. **Voting nodes unchanged.**
+- **Why self-looping, not opaque node:** a LangGraph checkpointer snapshots at *node boundaries*.
+  One opaque node = whole-discussion granularity → mid-discussion reconnect and per-utterance
+  `.stream()` would need hand-rolled persistence/emission, and `interrupt()` inside a looping node
+  re-executes side effects on resume. Per-utterance nodes give durable reconnect, per-utterance
+  streaming, and clean `interrupt()` at boundaries — all **drop-in later, no redesign**. Grounding
+  confirmed the codebase currently uses `.invoke()` only (no `.stream()`, no `interrupt()`, no
+  checkpointer — only a vector `store`), so nothing breaks now and the door stays open.
+- **Scheduler is stateless between turns.** Pressure / debt / quiet-nudge are pure functions of the
+  accumulated `day_channel` (+ speech-act fields). The checkpointed transcript fully determines the
+  next speaker → resume = reload transcript, recompute, continue. Seeded-random tiebreak must seed
+  off a stable key (e.g. `(game_id, day, seq)`) for reproducible resume.
+- **Reuse / low blast radius:** the conditional edge emits a **single `Send`** to the existing role
+  node (Send works for one target). Existing `villager_discuss`/… wrappers + per-speaker payload
+  construction reused verbatim — send one instead of N. `SCHEDULE` writes `{next_speaker,
+  firing_reason}`; role node reads via the Send payload.
+- **Keep role nodes (not a generic node).** Role prompts stay role-specific either way; the choice
+  is only graph topology + Langfuse span naming. Role nodes are *lower* blast radius (reuse
+  wrappers) and give role-labeled spans.
+- **Dynamic, not static round-robin.** Re-rank after every utterance; terminate on convergence/cap.
+  Some agents speak many times, some zero. "Everyone exactly once" is explicitly NOT a goal (the
+  day-start seed is the only place openers are deliberately primed).
+- **`round` as control flow → gone**; loop uses a monotonic `seq` counter + eligibility recompute.
+  (The `round` *field* itself is **dropped** — see Point 4 below.)
+- **Feature branch.** Do the whole redesign on a branch off `main`; incremental commits inside it
+  (schema → scheduler → graph rewiring → prompt edits) so it can be kept/dropped as a unit and
+  steps stay revertable. Revertability comes from commit hygiene, not the commit message.
+
+### Silence gate / novelty (resolved under Point 1 — ⚠️ SUPERSEDED 2026-06-02 by Smoke test 4)
+
+> The "keep the situation-summary novelty gate" decision below was **falsified** when we tested the
+> folded config (Smoke test 4): self-judged novelty doesn't discriminate. The novelty gate is
+> **dropped**; silence is now deterministic (reactive obligations + budget-capped ranked proactive).
+> Read Smoke test 4 for the replacement. The text below is kept as the reasoning trail.
+
+- **Two gates, only one removed.** (1) Upstream **novelty gate** driven by the situation summary's
+  emitted labels (`already-said` / `borderline` / `new`) — **KEPT**; it decides whether the agent
+  speaks. (2) The `return message=null` instruction in the **generation** prompt — **REMOVED**
+  (redundant double self-judgment after the decision is already made upstream). "Remove the gate"
+  in plan §3.5 means only (2).
+- **Novelty gate pulled into Phase 0** (was Phase 2 in the plan). It is fundamental to how speaking
+  is decided, not an optional add-on. This also **dissolves the under-talking risk (old tension
+  #3)** — there is a proactive path from day one.
+- **Gate applies to proactive candidates only.** Pressure-driven speakers (Rule 2 —
+  questioned/accused) bypass it and always speak. This keeps `SCHEDULE` deterministic/LLM-free; the
+  situation-summary + novelty check live inside the speaker node, which for a proactive candidate
+  may return *silent* and flag itself so `SCHEDULE` doesn't immediately re-pick it until the
+  transcript advances.
+- **Phase 0 novelty mechanism = LLM labels as currently designed** — folded into the situation
+  summary, computed against the transcript (so it sees raw dialogue). **No bi-encoder in Phase 0**
+  (avoids a second blind spot + another free parameter that would confound scheduler tuning).
+
+### Deferred (write-down now, build post-sequential)
+
+- **Encoder-based novelty gate** as a cheaper cross-check / eventual replacement for the LLM labels:
+  tune a dedicated **observer cross-encoder** + a **strategy_points (situation-to-situation)
+  encoder** under fine-tuning project 2, repurposing the reranker's situation-to-situation
+  strategy_points relabelling. Rationale: barely-distinguishable situation → same retrieval → same
+  action ≈ "nothing new."
+  - **Caveat its eval MUST check:** summary-vs-prior-summary similarity is **lossy** — novelty can
+    live in a dialogue nuance the situation summary dropped, which the agent itself would act on. So
+    encoder-similarity risks **false `already-said`**. The LLM labels see the transcript directly,
+    so they don't share this blind spot. Eval question: does encoder-similarity produce false
+    `already-said` relative to the transcript-aware LLM labels?
+  - Use a **bi-encoder / embedding cosine** for the sim-sim comparison — NOT the current reranker CE
+    as-is (trained for situation→strategy *relevance*, wrong objective). The **dedup classifier is
+    NOT the reuse target** (D/K-bias; it compares situation+action / whole-context for auto-dedup —
+    different granularity).
+
+## Smoke test — flash-lite speech-act capability (2026-06-01)
+
+Ran to decide Point 2: model-emitted tiered speech-acts vs. plain string matching. Script:
+`smoke_act_fields.py`; per-case rows: `smoke_act_results.jsonl` (both colocated here).
+
+**Method.** Replayed the production `day_discussion` chain (Vertex flash-lite, temp 1.0) on 30 frozen
+`phase1_adoption_v2` cases with `visible_discussion >= 2` (so there's context to address), under 3
+output schemas: **baseline** `DayDiscussOutput`, **flat** (+`act` enum), **nested**
+(+`addressed: list[{target, act}]`). Auto-metrics: structured-output validity; nested target
+self-consistency (model `addressed` vs `[Pp]layer\s*_?\d+` regex on its own message); flat model-act
+vs a "?"/keyword heuristic act. Plus a manual read of all act disagreements.
+
+**Results.**
+- **Validity: 30/30 (100%) in ALL three conditions** — incl. nested object-list. The flash-lite
+  nested-object fear was unfounded; validity does not constrain schema shape. (n=30, temp 1.0,
+  one sample each — confirm at scale, but 90/90 is strong.)
+- **Targets: 27/27 addressed targets grounded in the model's own message, 0 hallucinated.** Model
+  self-report ≈ regex reliability, and can catch indirect/role refs regex misses → regex demoted to
+  a cross-check, not the source.
+- **Act: model beats string-matching decisively.** 63% agreement with the heuristic, but **all 11
+  disagreements favored the model** (manual read; not a blind judge): heuristic systematically
+  under-reads accusations — accusatory questions ("…why did you defend a wolf?") it files as
+  `question`; keyword-missed accusations ("…you keep trying to pivot…") it files as `reference`.
+  Both errors are the costly direction for tiering (under-pressuring the accused). Model act dist
+  {accusation 19, question 6, none 5}; heuristic {question 11, accusation 8, reference 6, none 5}.
+
+**Decision → Point 2 (LOCKED 2026-06-01 — ⚠️ SUPERSEDED 2026-06-02 by the 2-D revision below).**
+Adopt **model-emitted `addressed: list[{target, act}]`** (nested, all-required, `act` enum incl.
+`none`), folded into the generation call (zero added cost). Reject pure string-match (mislabels
+intent ~1/3 of the time, systematically). Regex kept only as an eval-time consistency monitor.
+Ping-pong damping: dedupe pressure by `(speaker→target, act)` within window. Human messages still
+need extraction (Phase 1). **Residuals to validate at scale:** accusation over-labeling (model never
+used `reference`, 19/30 accusation — needs a blind-judged larger sample); validity at larger N;
+indirect-reference handling. → *The accusation-over-labeling residual turned out to be the headline
+finding: the 1-D enum is structurally lossy. See the revision.*
+
+## Smoke test 1b — 1-D `act` is lossy → **2-D `(form, stance)` (REVISED, LOCKED 2026-06-02)**
+
+Re-opened Point 2 on a build-time question (is a 4-way `act` enum too subtle?) and a content audit
+the original run hadn't done: reading each message *against* its label, not just the label
+distribution. Scripts/results colocated: `smoke_act_2d.py` + `smoke_act_2d_results.jsonl`,
+`smoke_act_2d_distribution.py` + `smoke_act_2d_distribution_results.jsonl`.
+
+**Finding 1 — the 1-D label is *under-determined*, not inaccurate.** Reading the 25 nested messages
+against their labels: nearly every werewolf utterance is *simultaneously* a question (by form) and an
+accusation (by stance) — e.g. "Player 1, why are you burying the voting record? That's what a wolf
+would do." Forcing one `act` makes the model coin-flip on *which true aspect* to report (hence the
+~even 13 question / 12 accusation split, and `reference` only ever on the *secondary* target). `act`
+collapses two orthogonal axes. This is why the "accusation over-labeling" residual appeared.
+
+**Finding 2 — two axes, both reliably emitted.** Decoupled into `address_form ∈
+{question, response, mention}` (does it demand a reply?) × `stance ∈
+{accusation, defense, agreement, neutral}` (valence). flash-lite self-emit (24 cases): **100% valid,
+0 hallucination.** Both axes vary; the joint shows they're independent.
+
+**Finding 3 — stance is NOT accusation-dominated (the tier-1-flood worry).** The first self-emit run
+looked all-accusation, but that was a **sampling artifact** — first-24 = an endgame cluster.
+Labelling 48 REAL `agent_message`s **stratified across `round`** (71 engagements):
+
+| | values |
+|---|---|
+| form | mention 41 (58%), question 18 (25%), response 12 (17%) |
+| stance | accusation 38 (54%), neutral 20 (28%), defense 9 (13%), agreement 4 (6%) |
+| per-round stance arc | r1: neutral 7 / acc 4 / def 1 → r2: neu 7 / acc 9 / agr 3 / def 3 → r3: acc 12 / def 3 / neu 2 → r4: acc 13 / neu 4 / def 2 / agr 1 |
+
+Discussion **opens exploratory (mention×neutral), heats into a hunt** — matching the P3 "day-start
+has no pressure" lock. Joint dist (independence proof): mention×neutral 19, question×accusation 17,
+mention×accusation 11, response×accusation 10, mention×defense 8, mention×agreement 3,
+question×neutral 1, response×defense 1, response×agreement 1. Labels eyeball as accurate
+("rally around player_1"→mention/defense; "I agree with player_8"→mention/agreement).
+
+**Tier-1 flood resolved.** tier-1 = `form==question OR stance==accusation` = union **≈ 39/71 (55%)**,
+NOT everyone; the other **~45% are low-pressure mentions** (`mention` × {neutral, defense, agreement})
+that must *not* force a turn. The fields genuinely discriminate; the flood only appears if you sample
+endgame, which is *supposed* to be a hunt.
+
+**Decision → Point 2 REVISED (LOCKED 2026-06-02).** Replace the 1-D `act` with **two fields**:
+```
+AddressedTarget { target: str,
+                  address_form: 'question' | 'response' | 'mention',          # scheduler-primary
+                  stance:       'accusation' | 'defense' | 'agreement' | 'neutral' }  # brief + tracing
+```
+All-required; `addressed: list[AddressedTarget]` required (empty list = addressed nobody; **no
+`none`**, the old enum value is dropped). Folded into the generation call (zero added cost). Regex
+stays an eval-time cross-check only. **Scheduler mapping (feeds Stage 2):** tier-1 (owes a turn) =
+`form==question` ∨ `stance==accusation`; **discharge** (closes a loop → debt relief / freshness) =
+`form==response`; **low-pressure** (no forced turn) = `form==mention` ∧ `stance ∈ {neutral, defense,
+agreement}`. **Freshness dedup keys on `(speaker→target, stance)` — form EXCLUDED** (the axes aren't
+orthogonal: a re-accusation rephrased statement→question must not read as "fresh"; questions create
+fresh response-obligation per ask, their looping bounded by per-pair max-K + global cap, not freshness).
+`stance` is scheduler-secondary (accusation→"defend" brief; agreement≈neutral for obligation) but
+kept for the firing-reason brief + coalition/defense **tracing**. **Residuals:** at-scale validity of the 2-field structure;
+`response`/`mention` rare in endgame slices (well-represented early); same blind-judge-at-scale caveat.
+
+## Smoke test 2 — flash-lite novelty-label capability (2026-06-01)
+
+Validates the OTHER load-bearing Phase-0 LLM mechanism (the novelty gate carries the proactive path,
+seeding, and redundancy-collapse). Script: `smoke_novelty.py`; rows: `smoke_novelty_results.jsonl`.
+
+**v1 was confounded — and the confound was instructive.** First design judged a real (longest)
+transcript message as "new vs the full transcript that contains it," expecting `already_said`; got
+65%. Inspection showed the model was *right*: long messages are multi-point ("repeats the save
+sentiment **but** introduces a new angle: who targeted player_2"), and the gate's job is "does this
+add anything new," not "is this text present." So labeling restate-plus-new-angle `new` is correct.
+Lesson: the clean test is *generated* candidates with polar ground truth.
+
+**v2 method.** flash-lite (Vertex, **temp 0** = capability ceiling) on 20 transcripts (≥5 non-gm
+msgs). Two generated probes, conditioned on the real transcript: **pure restatement** (agree/restate
+an existing point, add nothing → GT `already_said`) and **genuinely new** (introduce a suspicion/
+observation absent from the discussion → GT `new`).
+
+**v2 results — clean separation, both directions:**
+- pure restatement → `already_said`: **20/20 (100%), 0 false-new** (no redundancy leaks)
+- genuinely new → `new`: **20/20 (100%), 0 false-already_said** (no over-suppression)
+
+**Verdict → novelty gate GREEN for Phase 0** on the must-not-fail directions. **Caveats / build-time
+residuals (NOT design blockers):** (1) **borderline untested** — model used `borderline` 0× because
+candidates were polar; the restate-plus-marginal-angle middle (the reason for 3 levels) and its
+calibration remain open; (2) **permissive lean** — v1 shows errors go toward `new` (let people speak
+→ redundancy-leak, bounded by speaker cap + debt), not toward silence; (3) **temp-0 ceiling +
+standalone-vs-folded** — production folds labels into the situation-summary call at game temp 1.0;
+real reliability ≤ this, needs a folded check at build.
+
+## Smoke test 3 — temp 0 vs temp 1.0 for the novelty gate (2026-06-01)
+
+Question raised: should the situation summary (which will carry the folded novelty labels) run at
+temp 0? Test: candidates fixed (generated at temp 0), each judged at temp 0 (1 sample) and temp 1.0
+(k=3) to measure accuracy **and** label instability. Script: `smoke_novelty_temp.py`; rows:
+`smoke_novelty_temp_results.jsonl`.
+
+**Result: temp made NO difference.** Both probes: temp0 20/20, temp1 majority 20/20, temp1 per-sample
+60/60, **temp1 instability 0/20 flips**. flash-lite is confident enough that temp 1.0 doesn't perturb
+the label.
+
+**Decision: do NOT change the summary temp.** (a) My a-priori "classification calibrates better at
+low temp" isn't supported — there's no instability to fix; (b) this **closes the folded/temp-1.0
+residual** — the gate is reliable at *production* temp 1.0 on clear cases, so no temp change is needed
+for Phase 0; (c) temp would only matter on *borderline* cases (untested, and they route to the cap
+anyway); (d) the real low-temp argument was always the free-text **RAG query** stability, NOT the
+labels — that's a separate untested question, not blocking, and not worth churning the retrieval
+distribution speculatively. **Keep summary at game temp; generation stays at game temp too.**
+
+## Smoke test 4 — folded novelty gate FAILS → silence-rule REDESIGN (2026-06-02)
+
+The biggest design change of the workstream. Smoke tests 2–3 validated the novelty label as a
+**standalone judge** (fixed external candidate, disinterested). The silence-gate lock then assumed we
+could **fold** that label into the situation-summary call (zero extra cost) and gate proactive speech
+on it. Before building Stage 3 we tested the *folded* config — the actual production shape — and it
+does not hold. Scripts/results colocated: `smoke_situation_novelty.py` +
+`smoke_situation_novelty_results.jsonl`.
+
+**What we tested.** (1) **Drift** — old schema (situations only) vs new schema (situations + novelty),
+same cases, temp 0 to isolate the schema effect, with old-vs-old @temp 1.0 as the sampling-noise
+floor. (2) **Novelty accuracy** — a paired A/B per case: `NEW` = transcript as-is (the agent's point is
+fresh); `REPEATED` = inject a *paraphrase* of the agent's real message attributed to another player
+(their point is now on the table). A working gate shifts the label toward `repeated` when injected.
+
+**Results.**
+- **Drift:** old-vs-new @temp0 cosine **0.976** (min 0.962) vs old-vs-old @temp1 floor **0.997**.
+  Adding the fields perturbs the situations *slightly more than sampling noise* — substantively fine,
+  but not free.
+- **Variant A — situation-anchored (the locked schema):** `NEW` → repeated 10 / new 2; `REPEATED` →
+  repeated 11 / new 1; injection shift **1/12**. It labels ~everything `repeated` regardless of
+  freshness — because it judges the **situation recap**, and a mid-game recap is definitionally "a
+  continuation of the established discussion" (the model's own reasoning). Would silence almost
+  everyone.
+- **Variant B — contribution-anchored (a `intended_contribution` draft field, hypothesis fix):**
+  `NEW` → new 12/12; `REPEATED` → new 12/12; shift **0/12**. Fails the *opposite* way — when the agent
+  both **picks** its contribution and **judges** its novelty, it is optimistically sure its own point
+  is new, even with a paraphrase of it sitting in the transcript.
+
+**Diagnosis.** Self-judged novelty is biased in both framings (state-recap pessimism / self-authorship
+optimism). The standalone smoke worked only because the candidate was **fixed + external** and the
+judge **disinterested**. Folding the judgment into the agent's own generation destroys that.
+
+**Candidate solutions evaluated.**
+1. *Folded self-label* (the locked design) — **broken** (above). 0 extra calls but useless.
+2. *Per-turn disinterested judge on a folded draft* — draft rides the situation summary (free); a
+   separate small judge call rates it. +1 *cheap* call per proactive candidate, partly self-funding
+   (silencing skips the generation call). No staleness. Untested.
+3. *Two-list / wave batch + disinterested judge* (the double-buffer idea) — one judge per wave + cross-
+   candidate dedup, but needs draft calls at swap (live situations run later) and adds bounded
+   staleness. Real payoff is dedup, not cost.
+4. *Embedding similarity on a folded draft* — embed the 1-line draft, cosine vs transcript (embeddings
+   already computed for retrieval). **0 extra LLM calls**, disinterested by geometry. The deferred
+   encoder plan, as a simple threshold. Untested.
+5. *No novelty detection at all — ranked-heuristic proactive opportunity* (CHOSEN). Reframe:
+   **reactive = message-created obligation; proactive = scheduler-created opportunity.** Proactive
+   candidates do **not** prove novelty; we just cap the number of opportunities and rank by cheap
+   deterministic signals.
+
+**DECISION (LOCKED 2026-06-02) — drop the novelty gate; adopt #5.** It sidesteps all three problems at
+once (broken self-novelty, call cost, staleness) by removing the mechanism that caused them, and trades
+"prove novelty" for "limit opportunities + cheap ranking." Concretely:
+- **Reactive path** — deterministic queue of *undischarged* obligations over a window: addressed with
+  `form==question` → owes an answer; `stance==accusation` → owes a defense. Cleared when answered
+  (`form==response` toward the asker). No LLM.
+- **Proactive path** — fires **only when the reactive queue is empty** (a quiet cycle), budget-capped
+  (Phase 0 = **1**), candidate ranked by three cheap deterministic heuristics: (a) **has unrevealed
+  private info** (heavy weight, *not* a strict first-sort — a guaranteed slot would be a power-role
+  tell, see P3), (b) **hasn't spoken recently** (the locked `DebtTracker`), (c) **suspicion-graph
+  centrality among players NOT already in the reactive queue** (uses the locked `addressed_targets`
+  edges; restrict to non-targeted to avoid double-counting reactive). Seeded-random tiebreak.
+- **Load-bearing dependency:** the anti-ping-pong caps (per-pair-K + freshness) are what guarantee the
+  reactive queue *drains* so proactive can ever fire — otherwise continuous accusations starve it.
+- **Drop** the `novelty`/`novelty_reasoning` fields from `SituationSummary`. Situation summary +
+  generation stay **live per-turn** (no staleness).
+
+**Virtue:** Phase 0 now has **no fragile LLM mechanism left to validate** — reactive and proactive are
+both deterministic, unit-testable in Stage 2. We removed the one piece we couldn't make reliable.
+
+**Future refinements (deferred, add only if run logs show proactive redundancy the budget+content-
+discipline didn't contain):** embedding-similarity novelty (#4, 0 extra calls — the natural first add);
+then the heavier deferred heuristics (stance-vs-majority, strategy-profile "push", info-value); and
+cross-candidate dedup via the wave/batch judge (#3) if two agents pile the same point. The standalone
+novelty label (smokes 2–3) remains valid as a *disinterested external* judge — it's only the *folded
+self-judgment* that failed, so it could return in form #2/#3 later.
+
+## Phase 0 — DESIGN VALIDATED & CLOSED (2026-06-01; novelty gate REVISED 2026-06-02 — see Smoke 4)
+
+> **Build from `phase0_build_checklist.md`** — the consolidated, dependency-ordered build sequence
+> (Stage 0 branch → 1 schema → 2 scheduler primitives incl. proactive ranking → 4 graph rewiring →
+> 5 prompts → 6 termination; **Stage 3 novelty gate is REMOVED — see Smoke 4**), each with touchpoints
+> + acceptance criteria. Remaining ⚠️ CONFIRM
+> build-time details: role-node gating flag (proactive vs reactive). (Message nullability
+> RESOLVED 2026-06-02 → `message: str` required. Point 2 speech-acts REVISED to 2-D — see smoke 1b.)
+
+All 5 tensions locked. Smoke tests (4 runs): speech-acts 100% valid + beats string-match (revised to
+2-D, smoke 1b); standalone novelty 100% clean separation + temp-robust (smokes 2–3); **but the
+*folded* novelty gate FAILED (smoke 4) → the silence rule was redesigned: no novelty detection,
+deterministic reactive obligations + budget-capped ranked proactive opportunity (see Smoke test 4).**
+Phase 0 is design-complete and — after dropping the folded gate — has **no fragile LLM mechanism left
+to validate**; reactive + proactive are both deterministic. Build it on the feature branch. Remaining
+build-time residuals (NOT design blockers): speech-act accusation over-labeling at scale (resolved by
+2-D, watch validity@scale); **proactive redundancy** — OBSERVE in runs; if the budget-cap +
+content-discipline don't contain it, add embedding-similarity novelty (smoke 4 future refinement #4,
+0 extra calls). Optional free-text RAG-query stability vs temp (separate, not blocking). Summary &
+generation both stay at game temp (smoke test 3).
+
+### After Phase 0 (roadmap map)
+
+**Within this workstream** (plan §4.4, re-mapped since novelty moved into Phase 0):
+1. **Build Phase 0** on the feature branch (schema → scheduler → graph rewiring → prompt edits).
+2. **Discussion-quality gate** — the go/no-go: does sequential read better than concurrent
+   (turn-taking, adjacency, less redundancy, tapering) + how much is generation reduced? Method =
+   **worktree-on-tag**, NOT a config flag (concurrent is structurally divergent + won't survive to
+   production — see versioning policy in CLAUDE.md / [[reference-variant-versioning-policy]]): tag the
+   pre-merge concurrent baseline, `git worktree` it, generate fresh games on the same seeds in both,
+   then judge both transcript sets with ONE judge (post-hoc) + diff call counts. Fresh-generation A/B,
+   not a frozen replay.
+3. **Phase 1 — human integration** (floor offers, timers, addressed-signal, pacing) + **human
+   speech-act extraction** (the one spot self-report doesn't apply).
+4. **Phase 2 — novelty (deferred refinement, only if logs show proactive redundancy)**: embedding-
+   similarity novelty (0 extra LLM calls — Smoke 4), then heavier deferred proactive heuristics
+   (stance-vs-majority, strategy-push, info-value) + cross-candidate dedup. The folded LLM novelty
+   gate is NOT revisited (falsified, Smoke 4).
+5. **Phase 3 — voice/persona** (prompting; persona/voice firewall, §5).
+6. **Phase 4 — style fine-tune** (optional; only if drift test shows voice decay).
+
+**Within the ship roadmap:** this is **Phase A #1**, goes first, with the discussion-quality gate
+before the rest. Closing it unblocks parked Phase A items — **+roles** (Role Set decision is parked
+behind this), **consolidated tracing**, **night memory**, **v5 DB** (fold `round→seq` here). Phase A
+gates **Phase B** (label-once-on-v5) → **Phase C** (win-rate A/B) → **ship**.
+
+## Open decisions (still to resolve, in review order)
+
+- **Folder name** — currently `agent_speaking/`; alternative `sequential_discussion/`. Cosmetic;
+  rename trivial. Not blocking.
+- **Point 2 — speech-act fields** — ✅ **LOCKED (REVISED 2026-06-02 to 2-D; see Smoke test 1b).**
+  Model-emitted nested `addressed: list[AddressedTarget]`, all-required, `addressed` required (empty
+  list = nobody). Each target carries **two** fields: `address_form ∈ {question, response, mention}`
+  (scheduler-primary) × `stance ∈ {accusation, defense, agreement, neutral}` (brief + tracing). The
+  old 1-D `act` enum (incl. `none`) is **dropped** — it conflated two orthogonal axes and forced a
+  lossy coin-flip (audit + stratified real-message distribution proved it). Regex = eval cross-check
+  only; ping-pong dedup by `(speaker→target, stance)` (form excluded); human extraction deferred to Phase 1.
+  Scheduler mapping: tier-1 = `form==question ∨ stance==accusation`; discharge = `form==response`;
+  low-pressure = `form==mention ∧ stance≠accusation`. Residuals: at-scale validity of the 2-field
+  structure; blind-judge-at-scale.
+- **Point 3 — Phase 0 seeding** — ✅ **LOCKED (2026-06-01).** At day start there is *no* pressure
+  (mention-based; on a kill night the named player is dead) — the `game_master` night announcement
+  (`nodes.py:504-551`) is the *topic* in-transcript, not a pressure source. The opening is carried
+  by the **proactive novelty path** (day-scoped → the first candidate passes the gate naturally),
+  plus a **1-utterance forced-opener floor** that bypasses the gate for the day's first utterance,
+  to prevent zero-discussion days. Opener chosen **seeded-random**; **investigator-fresh-result is a
+  priority *boost*, not a guaranteed first slot** (masks the "first speaker = power role" tell) and
+  is still novelty-gated (optional reveal). **No** special pressure injected from the announcement
+  or the saved player — the organic loop surfaces focal points. **Most agents may speak zero times
+  on a quiet day — intended; "everyone speaks ≥once" is the old flat model and explicitly rejected.**
+  Discussion length self-regulates by day eventfulness.
+  - **Opener-floor count = 1 for now; escalate to 2–3 IF** the validation hook shows discussions
+    dying too fast (1–2 utterances). Other tunables: investigator boost magnitude, proactive cap (1–2/cycle).
+  - **Validation hook:** in the first Phase 0 runs, measure *discussion length vs day eventfulness*
+    — does it cascade (smoke-test openers were nearly all addressing/accusatory → likely) or die at
+    1–2 utterances? That metric drives the 1→2–3 escalation.
+- **Point 4 — `round` field handling** — ✅ **LOCKED (2026-06-01). DROP `round`, add `seq`.** Earlier
+  hedge ("keep benign for eval-data compat") reversed: the eval data / memory store / tracing that
+  `round` is load-bearing for are *themselves* being rebuilt in Phase A (v5 DB, +roles, regenerated
+  golds — context-eval already deferred to "label once on v5"), so preserving a vestigial field for
+  soon-to-be-regenerated artifacts is cruft.
+  - **New schema:** `DayChannel(day, seq, player, message, addressed)`. `seq` = monotonic **per-day**
+    utterance index, paired `(day, seq)` mirroring old `(day, round)`, **stored explicitly** (stable
+    per-utterance key for the new tracing; reproducible `(game_id, day, seq)` seed for the
+    seeded-random opener on resume).
+  - **Low-risk to drop:** `round` had no semantic role in a sequential model; legacy frozen sets
+    still load (Pydantic v2 ignores unknown fields → old `round` is just dropped, situation cache
+    key changes shape = cache miss, not error); other consumers (`StrategyAdoption.round`,
+    `EvalResult.round`, batch readers) are being regenerated anyway.
+  - **Coordination:** fold `round→seq` into the broader Phase A schema/tracing migration so
+    output/log/trace schemas move in one coherent pass. On the sequential branch: change
+    `DayChannel` + day-path consumers (formatter, scheduler, termination logic); let
+    `StrategyAdoption`/`EvalResult`/tracing ride the v5 migration. **At implementation: enumerate
+    every `.round` reader first** so nothing silently breaks.
+- **Point 5 — ping-pong / termination** — ✅ **LOCKED (2026-06-01).** Frame: **two paths to the
+  floor** — *reactive* (addressed → tier-1, *fresh* triggers only) and *proactive* (novelty-gated,
+  capped 1–2/cycle; third-party "I want to weigh in on A-vs-C" lives here, via Rule 1/3 new
+  content; pure agreement suppressed by content discipline).
+  - **Terminate** on convergence (recompute → no fresh pressure **and** proactive novelty exhausted)
+    or global cap.
+  - **Ping-pong:** *pure repetition* killed by the freshness check (restated `(speaker→target, act)`
+    = no fresh tier-1 trigger). *Genuine escalation* (new angle each time) is **NOT** bounded by debt
+    — **correcting an earlier error: debt is barred from demoting out of tier-1, so it cannot stop a
+    mutual back-and-forth.** The only deterministic lever is a **per-pair max-K re-engagement cap**
+    (≈2, tunable): after K `(A→B)` re-triggers in the window, further mutual triggers stop creating
+    tier-1, letting quiet-nudge rotate the floor. Global cap is the final backstop.
+  - **Reconciles tier-1 inviolability:** "always answer a direct question" = answer a *fresh* address
+    **once**, not the same opponent infinitely; ≥K re-engagements yield the floor.
+  - Deferred to Phase 2: thread-relevance weighting of proactive-candidate selection if third-party
+    interventions get under-surfaced.
+  - Tunables (all later): per-pair K, global cap, recency window, debt magnitude, quiet-nudge.
+
+## Phase 0 design — COMPLETE (2026-06-01); remaining = build tasks + one validation
+
+All 5 architectural tensions locked (Points 1–5 above) plus the two-gate/novelty decisions. What
+remains is **not open design** — it's implementation spec (flows directly from the locks) and
+parameter tuning (explicitly deferred):
+
+- **Build-spec tasks** (follow from decisions, no new decision needed): exact generation-prompt edits
+  (drop `DISCUSSION_SILENCE_RULE` null-return, keep content discipline, consume `brief`); add
+  speech-act fields to `DayDiscussOutput`; `DayChannel` `round→seq` + day-path consumers; the
+  `SCHEDULE` node + `route_speaker` single-`Send` wiring; PressureCalculator / DebtTracker /
+  EligibilityGate as pure functions of the transcript; per-turn score function (strict tiers,
+  random breaks ties within a tier); firing-reason brief wording.
+- **⚠️ One validation gap before build:** we smoke-tested **speech-act** reliability but **NOT** the
+  **novelty-label** reliability (already-said / borderline / new) that the proactive path + seeding +
+  redundancy-collapse now depend on (the gate was pulled into Phase 0). The plan *asserts* weak
+  models are reliable at this grounded reading task, but it's unvalidated. **Recommend a parallel
+  novelty-label smoke test** (same frozen-context approach) before committing it as load-bearing.
+- **Sequencing:** feature branch off `main`; incremental commits (schema → scheduler → graph
+  rewiring → prompt edits). Fold `round→seq` output/trace-schema changes into the broader Phase A
+  v5 migration.
+
+## Stage 2 design pass — selection model reconciliation + queue data shape (2026-06-03)
+
+Pre-build alignment for the scheduler primitives. Stage 1 schema + downstream integration are committed
+(feature-branch, 5 commits, `concurrent-baseline` tag @ d7415d0); this pass settles *how* the pure-fn
+scheduler selects a speaker before any code. No LLM, no smoke test needed — this is logic, unit-testable
+in Stage 2. Two things resolved: (1) which selection model, (2) the queue's data shape.
+
+### Decision: reactive/proactive model (drop the vestigial weighted score)
+
+The checklist carried **two** selection models layered from two eras, and they're incompatible as
+written: an **old unified weighted score** (`pressure + intent − debt + quiet_nudge + seeded_random`,
+strict tiers, pick max — predates Smoke 4) and the **Smoke-4 reactive/proactive** model (a deterministic
+obligation queue that bypasses scoring; proactive ranking only on quiet cycles). The weighted score is a
+**vestige** — once Smoke 4 made reactive obligations a hard gate, a blended per-agent score has nothing
+left to do (you owe a turn or you don't; the `intent` term never had a source). Comparison on the four
+axes that matter here:
+
+| Axis | Weighted score | Reactive/proactive (CHOSEN) |
+|---|---|---|
+| Natural-sounding | Weaker — a direct question can hang unanswered if another agent out-scores the addressee → reads as people talking past each other. | **Stronger** — encodes turn-taking "adjacency pairs" (question→answer, accusation→defense are near-obligatory); being addressed forces you to the front. |
+| Dynamic strategy on latest state | Fully dynamic | **Identical** — both recompute from `day_channel` each turn; the agent's situation/reasoning is generated at **dispatch time** in both. This axis does **not** differentiate. |
+| LLM cost | — | **Identical — zero.** Both are pure functions over the transcript; the only call is the chosen speaker's generation. Total-utterance count (hence cost) is a function of the **termination rule**, not the selection model. |
+| Other | Tuning hell (interacting weights); "why did X speak?" = "the sum"; cannot *guarantee* a question is answered; hard to unit-test. | More rigid (proactive rationed to budget/quiet-cycle) — but that rationing **is** the feature, and it's explainable + unit-testable. |
+
+**LOCKED: reactive/proactive.** It wins on naturalness + testability, ties on dynamism + cost; its only
+"cost" (rationed proactive creativity) is the mechanism that stops everyone speaking at once. The unified
+weighted score and the `intent` term are **dropped**. This also collapses the primitive set — there is no
+single blended score; selection is (a) an obligation queue + (b) a proactive ranking run only when the
+queue is empty.
+
+### Queue data shape (resolved here; dictates the Stage-2 types)
+
+1. **Obligations are per-`addressed_target`, not per-message.** A `DayChannel` carries a *list* of
+   targets, so one message both **discharges** and **creates**: e.g. B's reply `[{A, response, defense},
+   {C, mention, accusation}]` clears B's debt to A *and* puts C on the hook. We iterate targets; each one
+   independently discharges (`addressed_form==response` toward someone the speaker owed) or creates
+   (`question`→owes-answer, `accusation`→owes-defense). This per-target rule **is** the ping-pong engine
+   (a "response" that counter-accuses keeps the thread alive) — intended; bounded by freshness + K.
+2. **The reactive queue is keyed by the *obligated agent*, obligations grouped.** B appears **once**,
+   carrying the set `owes=[{from:A,kind:answer},{from:C,kind:answer}]`. When B is scheduled the
+   `firing_reason` brief is *"A and C both questioned you — address them"* → **B answers both in one
+   turn**, discharging all open obligations toward the people he addresses. Grouping doubles as natural
+   dedup (no N separate turns for N accusers).
+3. **Empty `addressed_targets` = inert for scheduling.** "Anyone have clues?" / an opening read addresses
+   nobody → creates **no** obligation (a room-question shouldn't force one specific answerer — that would
+   flood). It's a valid proactive/broadcast utterance; if nobody bites it dies, like a rhetorical
+   question. No schema change. The proactive "lane" is **not** a pre-populated queue — when the reactive
+   queue is empty the selector ranks all eligible non-owing agents **on demand** and takes the top 1.
+4. **Stateless = one transcript pass scores *all* agents (not N per-agent scans).** Each SCHEDULE cycle
+   does a single `O(messages)` pass over today's `day_channel` that simultaneously fills, for every
+   agent, `last_spoke_seq` (→ recency = `current_seq − last_spoke_seq`, ∞ if silent) and the obligation
+   set. ~9 players × ~25 msgs = microseconds, zero LLM. "Stateless" means *derive the whole picture from
+   the transcript each cycle*, not *one agent at a time* — there is no mutable per-turn counter dict to
+   desync on resume. Fully assertable in unit tests with hand-built transcripts.
+
+### Confirmed sub-decisions
+
+- **Proactive ranking = recency + private-info weight + small seeded-random tiebreak.** Private-info is a
+  *weight*, never a strict first-sort (a guaranteed slot is a power-role tell — P3). **Centrality
+  (accusation-graph in-degree) is DROPPED for Phase 0** — most abstract of the three signals, mild
+  over-engineering for a first cut. *Future refinement:* if run logs show proactive picks wandering off
+  the live controversy, add accusation-graph centrality among non-reactive players.
+- **K=2 is per *directed pair* (A→B), not per agent** — bounds total A→B re-engagements in the window;
+  a hot A↔B feud re-engages ~2 rounds each way, then freshness + K starve it and proactive takes over.
+- **Same accusation, different angle — handled by freshness, not K.** The freshness key
+  `(speaker→target, stance)` excludes `addressed_form` *and wording* → a rephrased re-accusation has the
+  **same key** → creates **no fresh obligation** → the target is not forced to re-defend, *by
+  construction* (the angle is irrelevant because the key ignores content). K=2 is the harder backstop.
+  **Honest residual:** freshness stops a repeat from *obligating* anyone, but can't stop an agent from
+  being *proactively* picked and choosing to restate — that leak is owned by the content-discipline
+  prompt now, and by the deferred embedding-novelty (0 extra calls, Smoke 4 #4) later if logs show it.
+- **Silence rule, restated post-Smoke-4:** silence is now **structural, not self-selected** — if the
+  scheduler doesn't pick you, that's your silence (most agents speak 0× on a quiet day — P3, intended).
+  When a role node runs, the agent **always** speaks (`message: str`, no null). Split cleanly into two
+  deterministic non-LLM pieces: *who speaks* = scheduler; *quality of what they say* = the
+  content-discipline prompt (kept; only the `return null` instruction is removed in Stage 5).
+
+**Net (as of this subsection — SUPERSEDED below):** primitives (1) `build_reactive_queue`,
+(2) `speech_recency`, (3) `rank_proactive` (recency + private-info + seeded random), (4) `select_next`
+(reactive-first → budget-1 proactive → opener-floor → terminate). ⚠️ **Two of these were revised LATER
+the same day:** `rank_proactive` became **role-blind (recency + seeded-random; private-info dropped)**
+— see "Private-info dropped to zero"; and budget-1/pass-terminate became **proactive_budget=3 + pass
+recorded as a marker** — see "Point 3 prelude". Read those two sections for the final shape.
+
+### Alternative weighed: "naive sequential round-robin" (rejected for production; kept as an A/B arm)
+
+A simpler midpoint between concurrent and the scheduler surfaced: keep generation **sequential against a
+live transcript** (drop `fan_out_day`, loop the existing role nodes), but pick the next speaker by
+**fixed seat order**, keep the **existing self-selected silence rule** to thin dialogue, and terminate on
+total-dialogue / token cap. No scheduler primitives.
+
+- **What it fixes:** concurrent's worst flaw — the frozen-snapshot redundancy (N agents reacting to the
+  same stale transcript → simultaneous duplicate accusations). Live sequential generation removes it, and
+  it's cheap to build. This is the bulk of concurrent's quality gap.
+- **Order advantage — not eliminated, and mis-axised.** Self-silence lets a seat *yield*, never
+  *preempt*: P1 holds right-of-first-refusal every cycle, so low-index seats keep an agenda-setting
+  advantage whenever they use it. Worse, it **mis-orders by urgency** — an accused P2 can't respond until
+  their slot returns, while un-accused P3..P7 speak first. Priority is keyed on an **arbitrary** axis
+  (seat index) where the natural one is conversational relevance. Reactive/proactive replaces seat- with
+  relevance-priority and uses seeded-random only for genuine ties.
+- **Disqualifier for production:** it **retains the self-selected silence rule — the exact mechanism
+  Smoke 4 falsified.** "Do I have something new to add?" *is* the self-judged-novelty call that didn't
+  discriminate, so its termination + redundancy control sit on the broken primitive (self-authorship
+  optimism → nobody passes → runs to the token cap with filler).
+- **Cost:** worst per useful utterance — every seat's turn is an LLM call **even on a pass** (a null is
+  still a call), and it can't parallelize. Ranking: reactive/proactive (1 call/utterance, never a
+  non-speaker) < concurrent (parallel fan-out) < naive round-robin (wasted pass-calls, serial).
+- **Disposition:** rejected as the production model; **kept as an optional third arm in the
+  discussion-quality A/B** (worktree-on-tag, like concurrent). It's the clean ablation isolating
+  *sequential generation* (concurrent→naive) from *smart scheduling* (naive→reactive/proactive) — if the
+  scheduler barely beats naive-sequential there, the complexity isn't paying off.
+
+### Scheduler state: stateless recompute vs stateful incremental (chose stateless)
+
+The scheduler can either (a) **recompute** its view (per-agent recency + grouped obligations) from
+`day_channel` on every SCHEDULE cycle, or (b) keep **stateful** dicts in graph state and mutate them
+after each utterance (set last-spoke, add/clear obligations). At our scale — N=9, U≈22 utterances/day —
+stateless is ~O(U²)≈500 pure-Python ops/day vs the corrected stateful ~O(N·U)≈200 (store *absolute* seq
+for recency, don't sweep +1 each turn). Both are microseconds, dwarfed by the ~U LLM calls at seconds
+each. **Compute is not the deciding axis.**
+
+We chose **stateless**, and the honest tally is **2 wins, not 3** — "resume-safety" and "no-drift" are
+the *same* property wearing two hats (derived state desyncing from the source of truth). The two
+independent wins:
+1. **Correct-by-construction** — a fresh scan can't disagree with the transcript; the dangerous half of
+   stateful, the in-place obligation mutation that *never self-heals* if one update is missed, simply
+   doesn't exist.
+2. **Trivially-valid test fixtures** — a unit test hand-builds a `day_channel` and asserts the pick; no
+   replaying an update sequence to reach a state first.
+
+We're trading a **zero-weight con** (the O(U²) scan) for two **nonzero pros** — not a close call. (The
+stateful cons aren't uniform: recency-via-absolute-seq is low-risk/monotonic; obligation-via-mutation is
+the whole danger. If perf ever forced a migration you'd move recency first and leave obligations as a
+fresh scan — but going *half*-stateful at this scale just buys back a desync surface for a win we don't
+need.)
+
+**The verdict is load-bearing on one assumption: `day_channel` (plus within-day-immutable game state)
+fully determines scheduling state.** Verified for Phase 0:
+- Every obligation is **created and discharged inside `day_channel`** (`question`/`accusation`/`response`
+  in `addressed_targets`). **Known exception:** the **human player's speech-acts are not extracted yet**
+  (deferred to Phase 1) → a human turn carries no `addressed_targets`, so for *human* games the
+  transcript is not sufficient and stateless would silently miss it. **Phase 0 is all-agent → holds**;
+  the one break is already on the Phase-1 list.
+- **Recency** derives from `day_channel`. **Private-info/centrality** inputs read from **game state**
+  (`investigator_results`, roles, survivors) which is **set at night, never mutated during discussion** —
+  a read-only source-of-truth input, *not* a desync-prone cache. So sufficiency = "`day_channel` +
+  within-day-immutable state," and the second half can't drift.
+- The `game_master` night announcement is a non-player `day_channel` entry → filtered (never an obligated
+  agent or candidate).
+
+**No-regret:** ship stateless as the reference. If scale ever makes the scan hot (it won't until U is in
+the thousands, or LLM cost stops dominating), the stateful incremental drops in *and stateless stays as
+the oracle to validate it against*. We never pay the desync/test tax until forced, and even then keep the
+source-of-truth check. Not a 3–0-and-free call — **2–0 on the weight that matters, contingent on
+`day_channel` sufficiency (verified for Phase 0), cheaply reversible if scale ever changes.**
+
+(Consequence settled here: with `pass_turn` as the explicit terminate signal, the scheduler no longer
+needs to know whether the *previous* utterance was reactive or proactive — that was a relic of the old
+barren-inference termination rule. `firing_reason` is therefore **tracing-only** (Langfuse span metadata)
++ the transient `Send`-payload **brief** to the speaking node; it is **not** added to `DayGraphState` and
+**not** persisted on the `DayChannel` record.)
+
+### The `pass_turn` valve — bounded silence on the proactive path (2026-06-03)
+
+Re-introduces a *scoped* silence option that the Smoke-4 "drop the null" decision had removed wholesale.
+The distinction that makes this safe: **Smoke 4 falsified the structured novelty *label*** (folded
+`repeated/borderline/new` classification), **not** the lightweight "say nothing if you'd only restate"
+valve (the original concurrent silence rule). Re-introducing the *valve* is not resurrecting the
+falsified mechanism. Three constraints:
+- **Proactive-only.** A *reactive* speaker owes a turn (was questioned/accused) → always speaks. The
+  valve applies solely to the one proactive pick on a quiet cycle — exactly the "don't force a selected
+  agent to speak when they genuinely have nothing fresh" case.
+- **`pass_turn: bool` (required), not `message: str | None`.** A nullable message re-triggers the
+  flash-lite nullable-field JSON gotcha that drove `message: str`. An all-required boolean sidesteps it;
+  proactive prompt says "set `pass_turn=true` if you'd only restate," reactive turns always emit
+  `pass_turn=false`.
+- **A proactive pass = the terminate signal.** The top-ranked proactive candidate is, by the ranking,
+  the agent most likely to have something fresh; if even they pass, the quiet cycle is dry → **terminate,
+  no re-pick** (kills the re-pick/re-spend complexity). This *replaces* the old fuzzy "barren-utterance"
+  termination inference and removes its need to know the previous utterance's mode.
+
+**Honest caveat (Smoke 4):** self-authorship optimism means the agent will *under*-use the pass (often
+convinces itself it has something), so this is a **weak** filter — but cheap (no extra call, just a flag)
+and it yields a *cleaner* convergence signal than inference. The **global cap is the backstop** for the
+optimism case (agent emits filler instead of passing → cap stops it).
+
+### DayChannel storage vs display — decouple, trim the biggest token source (2026-06-03)
+
+The Pydantic model is *storage*; the formatter is *display* — already decoupled, so this is formatter-only,
+state untouched.
+- **`addressed_targets` already never render** (`format_day_channel` emits only `[Day · #seq] player:
+  message`) → no clutter today. They stay in state (scheduler reads them; optionally handed to the
+  speaker as the `firing_reason` brief). No change needed.
+- **Drop `seq` from all display** — zero semantic value to the LLM, ordering implicit in the list.
+- **Drop `day` from the agent-facing transcript** — verified the live transcript an agent reads is
+  **today-only** (`prompt_inputs.py` → `format_day_channel_for_day`; prior days arrive compressed via
+  `format_day_summaries`), so per-line `[Day X]` is pure redundancy → render once as a header. Keep `day`
+  in the postgame/summary formatters (they genuinely span days).
+- Agent-facing render becomes `player_id: message` lines. Trims ~10–12 chars × ~U lines × every agent
+  call off the largest token source. Lands as a Stage-1 follow-up / Stage-5 polish.
+
+### Stage 2 parameters — LOCKED defaults (2026-06-03)
+
+- **Freshness/recency window = all of today.** Obligations are day-scoped; the `(speaker→target, stance)`
+  key handles repetition without a sliding window.
+- **Per-pair K = 2** — a *test* starting value (deliberately conservative to expose whether genuine
+  disputes truncate; one-line bump to 3 if logs show real arguments cut short).
+- **Global cap = 3×N surviving players, floored ~6.** This is the *hard backstop, not the target*
+  (`pass_turn` does the real termination), so bias it generous enough to never truncate a legitimately
+  active day; raising 2.5→3 is low-risk since it only bites in the optimism/escalation failure mode.
+- **Seeded-random source = `(session_id, day, seq)`** — `session_id` from `RunnableConfig`, `day`+`seq`
+  from state; reproducible (resume + clean A/B replay) and varies per utterance (no single agent wins
+  every tie). No new state.
+
+#### Freshness vs per-pair-K — they are TWO different mechanisms (clarified; the common muddle)
+
+Both live only in `build_reactive_queue` (obligation *creation*), never in the proactive path. They are
+not the same "occurs at most twice" rule:
+- **Freshness = no double-counting an *open* edge.** While B still owes A (hasn't responded), A repeating
+  the address — *even reworded / "new angle"* — creates **no second obligation**. The key
+  `(speaker→target, stance)` ignores wording *by design* (so no LLM is needed to judge "new angle?").
+  Stops A from spamming to pile pressure.
+- **Per-pair K = cap on re-engagements of a directed pair within a *consecutive burst*.** After B
+  *discharges* and A comes back, that's a *new* fire — allowed, but only up to K. The (K+1)th A→B creates
+  no obligation **unless the pair has cooled** (see cooldown below; revised 2026-06-04 from total-per-day).
+
+Edge lifecycle (A→B accusation, K=2):
+```
+A accuses B          → B obligated       (fire 1)
+A repeats (B silent) → ignored           (freshness: open dup)
+B defends            → discharged
+A re-accuses B       → B obligated again  (fire 2)
+B defends
+A re-accuses B       → BLOCKED            (K=2 reached — consecutively)
+  …M utterances elsewhere, pair untouched → cycles reset to 0…
+A re-accuses B       → B obligated again  (fire 1 of a fresh burst)
+```
+**New info from a *different* player is a *different* edge:** `C→B accusation` has its own key + own
+K-count → fresh obligation on B regardless of A's history. New player ↔ same target = new pressure.
+
+### Private-info dropped to zero for Phase 0 — scheduler is role-blind (2026-06-03)
+
+5b collapsed under scrutiny: **healer info is ~worthless to volunteer** (a save surfaces as "no one
+died"); **SK / vigilante (future roles) have no shareable info**; so the boost would *only ever* apply to
+the **investigator** — one role, a genuine power-role tell, and no clean way to do it subtly. Applying the
+same logic that dropped centrality: **leave private-info out of Phase 0.** **Proactive ranking = recency +
+seeded-random only; the scheduler is role-blind.** Consequences:
+- The investigator's reveal becomes a **strategic *agent* decision** (prompt/strategy/situation), not a
+  scheduling one — where reveal-timing belongs. The scheduler just doesn't *suppress* them; they get
+  proactive turns via recency rotation + the opener floor and decide whether to reveal when they speak.
+- **The power-role tell disappears** (no scheduler signal to infer) — solves "how to boost subtly" by
+  removing the mechanism. **Future-proof:** role-blind needs no change when SK/vigilante land.
+- *Future refinement (only if logs show valuable investigator info chronically not reaching the table):*
+  small weight-not-sort boost, only-with-result, random-diluted.
+
+**Observation (separate workstream, not Phase 0):** current games lack advanced techniques (no
+role-claim demands / counter-claims). Sequential generation *helps the substrate* (a role-claim demand
+can now actually land and be answered, which the frozen-snapshot model couldn't do), but the dynamics
+themselves are driven by **more power roles** (role expansion), **strategy injection** (memory/strategy
+system), and **human-introduced dynamics** — not the scheduler. This reinforces the role-blind decision:
+claim/reveal behaviour should emerge from strategy + prompting, not be hard-wired into who-speaks-next.
+
+**Stage 2 design CLOSED.** Primitives: `build_reactive_queue` (per-target discharge/create, grouped by
+obligated agent, freshness + per-pair-K=2), `speech_recency` (derived), `rank_proactive` (recency +
+seeded-random, role-blind), `select_next` (reactive-first → 1 proactive w/ `pass_turn` → opener-floor=1 →
+terminate; cap 3×N). All pure functions of `day_channel` + within-day-immutable state; unit-testable, no
+LLM. Next: point 3 — LangGraph wiring (SCHEDULE node + single-`Send` self-loop).
+
+### Point 3 prelude — proactive budget revised (1 → P), passes recorded in `day_channel` (2026-06-03)
+
+While wiring point 3 a fragility in the locked "**budget=1, pass=terminate, no re-pick**" rule surfaced:
+**one** agent's pass would end the whole day even if other agents had a thread to open. Revised:
+
+- **Proactive budget P (default 3, was 1).** On a quiet cycle, give up to P *distinct* proactive picks
+  the floor; **terminate only when P of them pass in a row.** Stronger convergence signal (several agents
+  independently have nothing) than one decline.
+- **A pass is recorded as a hidden `DayChannel` marker (`passed=True`, empty message, no targets)** —
+  *not* "no append." This is the key move: the stateless scheduler can only react to what's in
+  `day_channel`, so the pass must live there. Effects: (a) SCHEDULE counts trailing passes for
+  termination; (b) the passer's recency advances → next pick rotates to a *different* agent; (c) inert for
+  obligations (empty targets); (d) formatter skips it (not shown to agents); (e) excluded from the
+  utterance cap (only real utterances count). **Statelessness preserved/reinforced** — `day_channel`
+  stays the single source of truth; a pass is now a first-class (if hidden) conversational event.
+- **Revised termination:** terminate when the **trailing `proactive_budget` utterances are all passes**;
+  *any* real utterance resets the streak. Global cap (3×N) is the backstop. This **supersedes** the
+  budget-1/pass-terminate and the older "barren-utterance inference" rules.
+- **Wiring simplification (vs the earlier `Command`-to-SUMMARIZE-on-pass idea):** because passes are now
+  visible to SCHEDULE, the role node **always loops back to SCHEDULE** (plain edge) and **SCHEDULE owns
+  all termination** (cap | trailing-P-passes | no eligible speaker). One owner for the stop decision.
+- **Schema implication (human-owned):** `DayChannel` gains `passed: bool = False`; `DayDiscussOutput`
+  `pass_turn` maps into it. Reactive speakers always emit `pass_turn=False`, so a pass-marker
+  unambiguously means a *proactive* decline → trailing-pass counting is clean.
+
+**Config landed** (`game_config.py`): `discussion_utterance_multiplier=3.0`, `min_discussion_utterances=6`,
+`per_pair_reengagement_cap=2`, `proactive_budget=3`, `opener_floor=1`, plus `utterance_cap(n)` and
+`discussion_recursion_limit(n)=2·cap+10` helpers (8p→cap 24/limit 58; 15p→45/100). `recursion_limit` must
+exceed worst-case super-steps so the graceful cap fires before `GraphRecursionError`; derive it from the
+cap at the day-graph invoke (Stage 4 wiring; interim hardcoded 100 is safe ≤15p).
+
+### K-cap made consecutive, not total-per-day — `reengagement_cooldown` (M) added (2026-06-04)
+
+While grounding `build_reactive_queue` against the `Balance` record (`{open_seq, cycles, last_touch_seq}`),
+a property of the locked K=2 surfaced: it counted **total opens per day**, so an exhausted `(A→B)` edge
+stayed dead for the rest of the day — even after the conversation had fully moved on. The escape route I
+first offered (an exhausted topic can still re-engage via the **proactive** tier) **does not hold up** and
+is retired: proactive is role-blind recency+random, so the chance of re-picking *both* the re-accuser
+**and** the responder for a *specific* pair is low. Proactive keeps the *room* alive; it does **not**
+reliably reunite a *pair*. So total-per-day K leaned on a valve too leaky to carry it.
+
+Distinction that matters (raised twice in review): the real goal is to kill **consecutive** ping-pong, not
+to permanently retire a topic. Within-day legitimate re-engagement is driven by **role claims /
+counter-claims** (the technique we *want* to grow), so demand for it is low now but pointed straight at it;
+cross-day re-engagement was never blocked (K is day-scoped).
+
+**Decision — make K a *consecutive* cap via a cooldown reset (chosen over total-per-day + measure-later).**
+A directed pair's `cycles` resets to 0 once it has sat **M utterances untouched** (no open *or* close on
+that pair). Inside a burst (no M-gap) `cycles` still accrues and caps at K=2 → consecutive ping-pong dies;
+only a genuine lull reopens it. Picked over deferring because it's ~2 lines in `build_reactive_queue`, the
+window is **principled not guessed** (`M ≈ survivors` = "once a full table has spoken"), and it future-proofs
+the role-claim dynamics. Cost: one extra `Balance` field (`last_touch_seq`, stamped on **both** open and
+close) + one config knob.
+
+**Config landed** (`game_config.py`, my part): `reengagement_cooldown_multiplier=1.0` →
+`reengagement_cooldown(n)=ceil(multiplier·n)` (N=9→M=9, N=15→M=15). Consume in `build_reactive_queue`:
+`if this_seq - last_touch_seq >= reengagement_cooldown(num_survivors): cycles = 0` **before** the normal
+freshness/K/open checks. The earlier "proactive valve backstops blocked re-engagement" justification is
+**superseded** by this; the daily reset remains the secondary backstop.
+
+## First end-to-end runs — sequential rewrite VALIDATED + tuning findings (2026-06-04)
+
+Stages 1/2/4/5 built & committed (scheduler primitives, SCHEDULE self-loop graph, firing_reason +
+pass-marker plumbing, pass_turn prompt). First time the loop ran **live** (real LLM, 8-player games) via
+`scripts/run_batch.py` (py3.11 venv). Two smoke games. **Verdict: the rewrite is functionally correct
+and produces good discussion; the one real problem is speaker-fairness under imperfect speech-act labels,
+which is tunable, not architectural.**
+
+### Smoke A — memory OFF (`all_disabled`, no seed/dump) — SUCCESS
+Wolves win, day 3, ~238s, exit 0. Every designed behavior confirmed in vivo:
+- Sequential loop spins & terminates (no `GraphRecursionError`); per-day `seq` resets (one `seq=0`/day);
+  proactive rotation (openers all distinct: 2→6→3→4→7→5); reactive obligations created & discharged.
+- **K-cap bounds ping-pong live:** player_2↔player_8 traded seq 1-4 (2 each way) then stopped — the
+  consecutive K-cap fired exactly as designed.
+- Day-1 cap = N (8 utterances, pre-voting); voting gated (d1 skipped, d2-3 voted); clean cross-day flow.
+
+### Smoke B — memory ON (`all_enabled`, cached seed) — SUCCESS
+Villagers win (correctly lynched the wolf player_8 on d3), day 4, ~495s, exit 0, **0 × 429**.
+- **Seed-cache fix** (see below) loaded `indexed_cache.pkl` (22 namespaces / 432 vectors) → zero embedding
+  calls. The memory pipeline + the new universal payload ran **clean** — this was the one untested seam.
+- **Scheduler is memory-agnostic:** identical *flow* to memory-off (all days cap-terminated,
+  reactive-dominant d2-4). Memory changed *content depth* (cross-day voting-record reasoning, meta-args
+  like "if I were a wolf, why make an obvious outlier vote?"), not *who-speaks-when*.
+
+### Sequential vs concurrent — pairwise read (n=1, directional, NOT a verdict)
+Compared against an old concurrent-fan-out transcript. The asymmetry is the takeaway:
+- **Concurrent's weakness is STRUCTURAL** — parallel generation against a frozen snapshot ⇒ on low-info
+  days every agent says the same thing (day 1: 8 generic openers; day 2: all 8 "fortunate player_1 was
+  saved…"). Unfixable without going sequential. Strength: perfect turn-fairness; decent multi-round debate
+  once a real target exists (day 3).
+- **Sequential's weakness is TUNABLE** — speaker domination (below). Wins decisively on the axis the
+  rewrite targeted: non-redundant, responsive, natural adjacency pairs throughout.
+- **New eval dimension surfaced:** the comparison says the discussion-quality A/B judge must score
+  **turn-distribution fairness**, not just naturalness/redundancy/responsiveness.
+
+### Issues observed (the tuning backlog)
+1. **⭐ Undischarged-obligation → speaker domination → verbatim repetition (the #1 problem).** Seen in
+   BOTH runs. Mechanism: an agent `owes` player_X but every turn `response`s to player_Y (and only
+   `mention`s X), so `(X→agent)` never discharges → it stays the top/sole reactive → re-picked turn after
+   turn. Evidence: memory-off player_7 ×4 consecutive (seq 14-17, owed player_1, kept answering player_4);
+   memory-on **player_3 ×7** on day 3 (seq 9-17, owed player_7, kept answering player_8) — and **seq 14 ==
+   seq 15 verbatim** (the LLM regenerated the identical sentence on near-identical re-pick context). Root
+   cause is the self-labeled speech-act unreliability flagged at Smoke 4, now observed live: (a) form
+   mislabel (responding but tagging `mention`), (b) wrong-creditor discharge (owe A, answer B). K-cap makes
+   it worse by suppressing *competing* obligations so nothing outranks the stuck debtor.
+2. **Pass-termination never fires** — all days in both runs ended by `cap`, never trailing-passes. Heavy
+   reactive churn means you rarely get `proactive_budget` (=3) consecutive *proactive* picks, so the
+   graceful pass-exit never triggers; the cap backstop does all terminating ⇒ discussions always run to the
+   full cap (max cost).
+3. **Vestigial `human_player`** — `initialize_game` always `random.choice`s a "human" even in all-AI
+   batches; the per-payload bool is threaded everywhere but **read by nothing** (no consumer in
+   Agents/scripts). Harmless (no behavior/eval skew), but misleading in traces.
+4. **Seed-cache gap (FIXED this session).** `run_game`'s seed path (`seed_memory_from_config` →
+   `seed_memory_from_json_files_once` → non-cached embedder) ignored the precomputed `indexed_cache.pkl`,
+   so every memory run re-embedded the whole store on startup → embedding-quota 429s. Fix: point
+   `seed_memory_from_config` at `seed_memory_from_json_files_cached` (loads vectors from pkl on a JSON-SHA
+   match, idempotency guard preserved) + run with `--seed-store-dir Agents/memory_stores/v4_deduped_v2`.
+
+### Tuning plan (next; all in the scheduler/eval zone, none architectural)
+- **⭐ "Had-your-turn" guard (priority, near-term).** If a debtor was just picked for an obligation, spoke,
+  but didn't discharge it, don't immediately re-pick it for that *same* obligation (drop/age-out the debt,
+  or de-prioritize a just-spoken debtor). Would have capped player_3 at 1-2 turns and killed the verbatim
+  dup. ~small change in `select_next_speaker`/`build_reactive_queue`.
+- **Phase-1 external speech-act extraction (deeper fix).** Label form/stance from *outside* the agent so a
+  response to the right party actually registers as a discharge — kills both failure modes at the source.
+  These two runs are the concrete evidence it's worth doing.
+- **Pass-vs-reactive interaction** — revisit how trailing-pass termination coexists with heavy reactive
+  traffic (it currently never gets a window). Candidate: count consecutive *non-discharging / low-value*
+  turns toward convergence, or strengthen the pass prompt. Tune against the A/B gate.
+- **Cleanup (fold into v5, not now):** remove vestigial `current_round` (day path) and `human_player`
+  (set None for batch / drop the dead field).
+
+### ⭐ Proactive echo / dogpile — the systematic quality issue (2026-06-04, baseline-transcript analysis)
+
+A clean-scoring memory-off baseline (max_consec=1, dups=0, discharge=1.0 — no domination) revealed a
+*different*, bigger problem on inspection: **low-information echo / dogpiling**, and it is almost entirely
+a **proactive** phenomenon. Tier split in that game: day1 7 proactive / 1 reactive; day2 **23 proactive
+/ 1 reactive**; day3 9/9. Days 1-2 (≈95% proactive) are an agreement pile — five agents in a row saying
+"too early, let's wait," then ~20 turns recycling "watch for forced narratives / lists / moderation" with
+no new info. The agents *narrate it themselves* (seq22 "a stalemate by just agreeing"; seq23 "stuck in a
+cycle of agreeing… which itself is a trap"). Reactive turns, by contrast, are **substantive** — anchored
+to a concrete question/accusation (day 3's voting-block scrutiny).
+
+**Mechanism:** the proactive tier picks *who* speaks (quietest + seed) but nothing about *what*, and has
+**no novelty constraint**. Handed the floor with no obligation and self-authorship optimism (won't pass —
+the same bias Smoke 4 found), an agent echoes/extends whatever's salient → dogpile. This is the gap the
+dropped novelty gate left. (Confirms the user's read: agents harp on a surfaced fact — silence, an
+agreement, a "forced narrative" — and pile on; the piling is proactive.)
+
+**Metric gap:** `max_consecutive` + `verbatim_dups` catch the *re-pick* artifact (domination) but **miss
+semantic echo entirely** — this baseline scored "clean" while being low-value. A semantic
+**information-gain / novelty** measure is needed (LLM judge, or cheap embedding-cosine of each utterance
+vs transcript-so-far).
+
+**Candidate fix (deferred refinement, now justified):** embedding-novelty pass-gate on **proactive**
+turns — embed the draft, cosine vs transcript; too-similar → force a pass. Disinterested by geometry
+(sidesteps the self-judgment failure). Bonus: it also fixes **cap-always-terminates** — on low-material
+days every proactive draft is low-novelty → all pass → trailing-3-passes terminates the day early instead
+of grinding to cap. So the proactive novelty-gate is higher-leverage than the domination guard:
+domination is intermittent + reactive-side; echo is systematic + proactive-side and drags most days.
+
+**Reprioritization:** headline discussion-quality issue = **proactive echo**, not domination. A+B (the
+cheap reactive-discharge fix) is being tested first on the domination/loop case (run with memory, since
+that's where domination showed); the echo fix (proactive embedding-novelty) is the next target.
+
+### Tuning results — A+B + proactive novelty gate, validated across 4 games (2026-06-04)
+
+All committed (1ea5c9a..). Three knobs landed + a crash fix; every game stayed clean on domination
+(max-consecutive-speaker=1, verbatim_dups=0). Throwaway harness `scripts/smoke_discussion.py` computes
+the scheduler mechanical-health metrics (NOT agent perf) from the dumped `day_channel`.
+
+- **A+B fixes domination** (commit 5672e22). A = a `firing_reason` brief in the day-discuss prompt
+  ("you were addressed by X — respond"); B = a `mention` of the creditor discharges the debt, not just a
+  `response`. On a churny memory game that previously hit player_3 ×7 + a verbatim dup, A+B gave
+  **max-consec 1, dups 0, discharge 1.0** — the undischarged-obligation re-pick loop is gone. Reactive
+  turns are never gated/passed (forced answer = the accountability that *exposed both wolves* in one game).
+- **Proactive novelty gate** (b9c3b30): a disinterested **external** LLM judge (Smoke-2/3 form, not the
+  failed self-judgment) runs **post-generation on proactive turns only**; low-novelty (echo/restatement)
+  → converted to a hidden pass. Memory-off gate run: day1 8→1, day2 24→9 utterances, and **3 of 4 days
+  terminated by trailing-passes (convergence)** instead of grinding to cap — fixes "cap-always-terminates"
+  too. `opener_floor`=3 (c1c4dc2) protects each day's first 3 real utterances so the gate can't collapse a
+  day to ~1.
+- **Value is variance-dependent.** Echo-heavy games → heavy gating + early termination (cost-*favorable*:
+  fewer expensive generations). Substantive reactive-heavy games → little echo → ~16% gating → the gate is
+  mostly overhead. So it cuts echo *when present* and doesn't over-gag substantive games.
+- **Judge is currently lenient** ("lean novel when uncertain") — gates blatant echo, keeps "agreement +
+  minor reframe". Strictness is a one-line prompt knob; deferred to the A/B judge to calibrate.
+- **Crash fix** (e20eb63): an agent addressing `target="all"` made the scheduler pick `'all'` as speaker →
+  `KeyError state['roles']['all']`. `build_reactive_queue` now filters targets to `valid_players` (real
+  survivors). +2 regression tests (22 green total). Same class as the speech-act-reliability theme.
+- **recursion_limit** made pass-aware (1ea5c9a): `2*proactive_budget*cap+10` (passes burn super-steps
+  without advancing the cap) — old `2*cap+10` crashed with `GraphRecursionError` on pass-heavy days.
+
+**Cost (memory-on + gate):** ~10:35 wall-clock, **+~28% vs no-gate**, ~25 judge calls. Inflated because the
+judge reused `get_llm_summary` (**medium** thinking) — fixed: dedicated `get_llm_judge` at **minimal**
+thinking (commit after e20eb63). Note: memory-OFF gated turns are cheap (situation-summary + retrieval are
+*skipped* when memory disabled); memory-ON gated turns also waste situation-summary + retrieval (the gate is
+post-everything). Exact tokens in Langfuse.
+
+**Status:** sequential rewrite + tuning DONE — domination and proactive-echo both addressed, validated over
+4 live games. Remaining tuning (judge strictness, embedding pre-filter, concurrent multi-game runner) is
+deferred.
+
+## ⭐ Discussion-quality A/B gate — PASSED, Phase A #1 CLOSED (2026-06-05)
+
+Full writeup + verdict: **[gate/report.md](gate/report.md)** · rubric [gate/rubric.md](gate/rubric.md) ·
+deterministic metrics [gate/metrics.py](gate/metrics.py) · transcripts `gate/gate_sequential.jsonl`.
+
+**Design change vs the original plan (cheaper, same conclusion).** We did NOT build the concurrent
+multi-game runner or an LLM judge. Reasoning, in order:
+1. The wins are **structural**, not score-deltas — concurrent parroting is architectural (agents fan out
+   *blind to each other* in a round), so it shows in essentially every game; sequential responsiveness is
+   *mechanically forced* by reactive obligations. Structural patterns are reliable even at small N; the LLM
+   judge (and the N needed for a quantitative delta) was overkill for the actual decision.
+2. The concurrent failure mode being model-independent, **existing frozen concurrent games are valid
+   evidence** — no need to spend quota regenerating them. (Frozen-reuse was earlier rejected for a
+   *quantitative* A/B because backend/temp/memory-store aren't recorded; for a *structural* read those
+   pins don't matter. The `concurrent-baseline` tag + `../ww-concurrent` worktree remain if a pinned
+   quantitative pass is ever wanted.)
+3. So the gate collapsed to: re-run only the **sequential** arm (no transcripts existed for the new design)
+   + read matched **concurrent** transcripts from `batch_results/werewolf_flashlite_3_v1*.jsonl`
+   (flash-lite, mem-off + mem-on), hand-judged against the rubric.
+
+**Result.** Sequential clears the bar — adopt it. echo_rate **0.00** (seq, both mem on/off) vs **0.05-0.06**
+(conc, 16 same-round echoes / 8 games, concentrated on day 1); turn-fairness + volume comparable (concurrent
+NOT pathological on domination). Verbatim excerpts in the report: concurrent day-1 = 8 blind near-identical
+openers; concurrent day-3 = 4 blind near-identical accusations/round; sequential = conditioned turns +
+forced reactive answers (`[reactive→owes X]`) + genuine interleaved rebuttal. Win is robust to memory.
+Confidence HIGH on structural dims, LOW on any quantitative delta (N=4/arm). **Closes Phase A #1 → unblocks
+A#2 roles, #3 tracing, #4 night memory, #5 v5 DB.**
+
+**Two harness bugs found + fixed during the gate (commit separately):**
+- `run_batch.py` was **dropping the transcript** — record had no `day_channel`, so nothing to judge. Added
+  `day_channel`/`day_summaries` to the dumped record (the data was always in `outcome.result`).
+- The **runtime retrieval-query embedding** (`store.search` → bare `GoogleGenerativeAIEmbeddings`) had **no
+  retry** (only seeding + dedup-filter did), so a single 429 aborted a mem-on game. Wrapped
+  `create_embeddings` in `_RetryingGoogleGenerativeAIEmbeddings` (exponential backoff, `EMBED_RETRY_*` env).
+  Note: this is the live *query* embed (fresh per-turn situation text), NOT re-seeding — seeding is cached.

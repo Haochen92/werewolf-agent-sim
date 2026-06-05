@@ -93,7 +93,7 @@ def _legacy_visible_discussion(
     return [
         DayChannel(
             day=day,
-            round=round_num,
+            seq=0,  # single synthetic message per legacy trace; round_num retained in signature
             player="legacy_trace",
             message=value,
         )

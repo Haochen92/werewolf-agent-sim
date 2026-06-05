@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from Agents.schemas.game_events import AddressedTarget
+
 
 class WolfNightDiscussOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
@@ -18,8 +20,14 @@ class DayDiscussOutput(BaseModel):
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
     )
-    message: str | None
+    pass_turn: bool = Field(
+        description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
+    )
+    message: str
     updated_strategy: str
+    addressed_targets: list[AddressedTarget] = Field(
+        description="List of targets addressed in the discussion. Empty list if none.",
+    )
 
 
 class DayVoteOutput(BaseModel):
@@ -178,8 +186,19 @@ class SituationSummary(BaseModel):
         ),
         min_length=1,
         max_length=2,
-    )
+    )    
 
     @property
     def composed_situations(self) -> list[str]:
         return [s.composed for s in self.situations]
+
+
+class NoveltyJudgment(BaseModel):
+    novel: bool = Field(
+        description=(
+            "True if the message adds a new argument, observation, piece of evidence, "
+            "a changed suspicion, or a direct response to a specific player. False if it "
+            "merely restates or agrees with points already made (echo/reinforcement)."
+        ),
+    )
+    reason: str = Field(description="One-sentence justification.")
