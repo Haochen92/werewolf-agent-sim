@@ -405,6 +405,8 @@ def run_batch(args: argparse.Namespace) -> int:
                 "surviving_villagers": result.get("surviving_villagers"),
                 "roles": result.get("roles"),
                 "investigator_results": result.get("investigator_results"),
+                "day_channel": result.get("day_channel"),
+                "day_summaries": result.get("day_summaries"),
                 "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
             }
             write_record(results_path, record)
