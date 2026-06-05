@@ -191,3 +191,14 @@ class SituationSummary(BaseModel):
     @property
     def composed_situations(self) -> list[str]:
         return [s.composed for s in self.situations]
+
+
+class NoveltyJudgment(BaseModel):
+    novel: bool = Field(
+        description=(
+            "True if the message adds a new argument, observation, piece of evidence, "
+            "a changed suspicion, or a direct response to a specific player. False if it "
+            "merely restates or agrees with points already made (echo/reinforcement)."
+        ),
+    )
+    reason: str = Field(description="One-sentence justification.")

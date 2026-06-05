@@ -42,6 +42,7 @@ from Agents.schemas.output import (
     DayVoteOutput,
     HealerOutput,
     InvestigatorOutput,
+    NoveltyJudgment,
     SituationSummary,
     WolfNightDiscussOutput,
 )
@@ -80,6 +81,7 @@ __all__ = [
     "InvestigatorResult",
     "Metrics",
     "NightResolutionMetric",
+    "NoveltyJudgment",
     "Observation",
     "ReactiveItem",
     "RerankResult",
