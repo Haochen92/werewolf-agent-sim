@@ -96,7 +96,14 @@ prompt_log: list[dict] = []
 
 DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
-DEFAULT_PRO_BACKUP_MODEL = "gemini-pro-latest"
+DEFAULT_PRO_MODEL = "gemini-2.5-pro"
+# Pinned (was the floating alias "gemini-pro-latest", which Google retargets
+# silently — a reproducibility hazard for the extraction pipeline that
+# conditions gold labels). gemini-3.5-flash: stable GA, pro-comparable quality,
+# and a different model family/quota pool than the primary, so it remains a
+# genuine fallback. (3.1-pro-preview rejected: preview tier = no SLA +
+# retirement risk.)
+DEFAULT_PRO_BACKUP_MODEL = "gemini-3.5-flash"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
 
 
@@ -221,7 +228,7 @@ def judge_proactive_novelty(candidate_message: str, payload: dict[str, Any], cur
 @lru_cache(maxsize=1)
 def get_llm_pro():
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_MODEL", "gemini-2.5-pro"),
+        os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
     )
 
