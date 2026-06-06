@@ -216,6 +216,14 @@ HD-2D), not retro-authentic.
   (werewolf reading is phone-shaped), add PWA manifest later for home-screen install + push.
   Native only earns its cost post-MVP (push-driven retention, IAP, store discovery).
 
+**Process model (no Redis):** single asyncio process (FastAPI/uvicorn) — game orchestrator and
+SSE handlers share one event loop; per-game broadcast = in-memory asyncio queues. **Durability =
+the event log itself** (append to SQLite/JSONL as emitted); reconnect = `Last-Event-ID` →
+replay-since-cursor from the log. Redis exists to fan events out ACROSS processes — irrelevant at
+one box + capped concurrency; if ever multi-process, Postgres LISTEN/NOTIFY or Redis pub/sub
+slots behind the same event schema. Caveat: long-lived SSE + serverless timeouts don't mix —
+fine on own box/VPS.
+
 **Meta-observation worth keeping:** the backend architecture keeps making frontend decisions —
 the novelty gate decides no-token-streaming, the stateless scheduler decided human turn-taking,
 the batch pipeline decided the daily puzzle is near-free. When a frontend question feels open,
@@ -326,7 +334,19 @@ info only), maintains role predictions; "voting" = suspicion ranking. No generat
 - Funnel gradient: ghost games (unlimited, free) → daily puzzle (curated, social) → live seat
   (capped) → BYOK (unlimited, their key). Ghost mode = the guest default experience.
 
-## 12. Backend touchpoints to keep in mind (no action yet)
+## 12. Build phasing + effort estimate (agent-assisted, part-time; discussed 2026-06-06)
+
+| Phase | Scope | Backend coupling | Estimate |
+|---|---|---|---|
+| **F1** | Ghost mode + replay theater + daily puzzle: export script (batch records → static event-log JSON) + SPA (progressive dialogue, guesses, X-ray reveal) + curation cron | **Zero — reads frozen artifacts; safe to build TODAY, can't conflict with Phase A/B/C** | ~2–3 weekends; ~80% of portfolio value |
+| **F2** | MVP score + autopsy screen (proxies exist + one LLM prose call) | Minimal | Days |
+| **F3** | Live human game: human-input node, turn timer, raised-hand, SSE emitter, OAuth/sessions, worker queue | **Deep (graph + scheduler) — WAIT FOR v5 rebuild** or the integration gets rebuilt | ~3–4 weeks; time goes to reconnect/timeout/pacing edge cases, not typing |
+| Art | Pixel assets | None | Timebox; ship F1 with placeholders |
+
+Agent assistance compresses typing, not decisions/integration-debugging/playtesting. Total to
+full MVP ≈ 6–8 part-time weeks; shareable artifact in ~3 weekends.
+
+## 13. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
