@@ -236,11 +236,22 @@ def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[
     player_id = payload.get("player_id", "")
     if output_key == "wolf_channel":
         targets = payload.get("surviving_villagers", [])
-    elif output_key in {"day_votes", "healer_target", "investigator_target"}:
+    elif output_key in {
+        "day_votes",
+        "healer_target",
+        "investigator_target",
+        "serial_killer_target",
+        "vigilante_target",
+    }:
         targets = payload.get("surviving_players", [])
     else:
         return []
-    return [target for target in targets if target != player_id]
+    valid = [target for target in targets if target != player_id]
+    # Relaxed voting: "abstain" is a sentinel target that competes in the tally; an
+    # abstain plurality (or tie) yields no lynch. Dropped on a forced day.
+    if output_key == "day_votes" and payload.get("allow_abstain"):
+        valid.append("abstain")
+    return valid
 
 
 def _target_field_for_output_key(output_key: str) -> str | None:

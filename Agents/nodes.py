@@ -174,95 +174,60 @@ def build_speaker_send(
     )
 
 
-def fan_out_day(state: DayGraphState, phase: Literal["discuss", "vote"]):
+# Roles with day discuss/vote nodes registered in the day graph. SK + vigilante are
+# added alongside their nodes (Commit 7); until then they must not be dispatched.
+_DAY_ACTING_ROLES = {"villager", "wolf", "healer", "investigator"}
+
+
+def fan_out_day(
+    state: DayGraphState,
+    phase: Literal["discuss", "vote"],
+    allow_abstain: bool = False,
+):
     concurrent_nodes = []
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
     strategies = state.get("agent_strategies", {})
 
+    def base_payload(player: str, role: str, is_human: bool) -> dict:
+        return {
+            "human_player": is_human,
+            "day_channel": state["day_channel"],
+            "day_summaries": state.get("day_summaries", []),
+            "surviving_players": surviving_players,
+            "player_id": player,
+            "player_role": role,
+            "current_round": state["current_round"],
+            "current_day": state["current_day"],
+            "previous_strategy": strategies.get(player, ""),
+            "strategy_points": "",
+            "allow_abstain": allow_abstain,
+        }
+
     for player in surviving_players:
         role = state["roles"][player]
         is_human = player == state["human_player"]
+        if role not in _DAY_ACTING_ROLES:
+            continue
 
-        if role == "villager":
-            concurrent_nodes.append(
-                Send(
-                    f"villager_{phase}",
-                    {
-                        "human_player": is_human,
-                        "day_channel": state["day_channel"],
-                        "day_summaries": state.get("day_summaries", []),
-                        "surviving_players": surviving_players,
-                        "player_id": player,
-                        "player_role": role,
-                        "current_round": state["current_round"],
-                        "current_day": state["current_day"],
-                        "previous_strategy": strategies.get(player, ""),
-                        "strategy_points": "",
-                    },
-                )
-            )
-        elif role == "healer":
-            concurrent_nodes.append(
-                Send(
-                    f"healer_{phase}",
-                    {
-                        "human_player": is_human,
-                        "day_channel": state["day_channel"],
-                        "day_summaries": state.get("day_summaries", []),
-                        "surviving_players": surviving_players,
-                        "player_id": player,
-                        "player_role": role,
-                        "current_round": state["current_round"],
-                        "current_day": state["current_day"],
-                        "previous_strategy": strategies.get(player, ""),
-                        "strategy_points": "",
-                    },
-                )
-            )
-        elif role == "wolf":
-            concurrent_nodes.append(
-                Send(
-                    f"wolf_{phase}",
-                    {
-                        "human_player": is_human,
-                        "day_channel": state["day_channel"],
-                        "day_summaries": state.get("day_summaries", []),
-                        "surviving_players": surviving_players,
-                        "surviving_wolves": state["surviving_wolves"],
-                        "surviving_villagers": state["surviving_villagers"],
-                        "player_id": player,
-                        "player_role": role,
-                        "current_round": state["current_round"],
-                        "current_day": state["current_day"],
-                        "previous_strategy": strategies.get(player, ""),
-                        "strategy_points": "",
-                    },
-                )
-            )
+        payload = base_payload(player, role, is_human)
+        if role == "wolf":
+            payload["surviving_wolves"] = state["surviving_wolves"]
+            payload["surviving_villagers"] = state["surviving_villagers"]
         elif role == "investigator":
-            concurrent_nodes.append(
-                Send(
-                    f"investigator_{phase}",
-                    {
-                        "human_player": is_human,
-                        "day_channel": state["day_channel"],
-                        "day_summaries": state.get("day_summaries", []),
-                        "surviving_players": surviving_players,
-                        "investigator_results": state["investigator_results"],
-                        "player_id": player,
-                        "player_role": role,
-                        "current_round": state["current_round"],
-                        "current_day": state["current_day"],
-                        "previous_strategy": strategies.get(player, ""),
-                        "strategy_points": "",
-                    },
-                )
-            )
+            payload["investigator_results"] = state["investigator_results"]
+
+        concurrent_nodes.append(Send(f"{role}_{phase}", payload))
 
     return concurrent_nodes
 
-def fan_out_vote(state: DayGraphState):
-    return fan_out_day(state, "vote")
+
+def fan_out_vote(state: DayGraphState, config: RunnableConfig):
+    game_config = game_config_from_runnable(config)
+    allow_abstain = (
+        game_config.abstain_enabled
+        and state.get("no_lynch_streak", 0) < game_config.no_lynch_force_after
+    )
+    return fan_out_day(state, "vote", allow_abstain)
 
 
 def _serialize_day_summary(result: DaySummaryOutput) -> str:
@@ -439,13 +404,19 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     vote_counts = Counter(vote.votee for vote in day_votes)
     max_votes = max(vote_counts.values(), default=0)
     candidates = [player for player, votes in vote_counts.items() if votes == max_votes]
-    voted_player = candidates[0] if len(candidates) == 1 else None
+    plurality = candidates[0] if len(candidates) == 1 else None
+    # A real lynch only when the unique plurality is a player; an "abstain" plurality (or
+    # a tie, or no votes) is a no-lynch day.
+    lynched = plurality if (plurality and plurality != "abstain") else None
+
+    prev_streak = state.get("no_lynch_streak", 0)
+    no_lynch_streak = 0 if lynched else prev_streak + 1
 
     metric = DayResolutionMetric(
         day=current_day,
         votes=[vote.model_dump() for vote in day_votes],
-        voted_player=voted_player,
-        voted_player_role=state["roles"].get(voted_player) if voted_player else None,
+        voted_player=lynched,
+        voted_player_role=state["roles"].get(lynched) if lynched else None,
         vote_counts=dict(vote_counts),
         tied_players=candidates if len(candidates) > 1 else [],
         no_vote=not bool(day_votes),
@@ -457,37 +428,22 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     ) as span:
         span.update(metadata=metric.model_dump())
 
-    if not day_votes:
-        message = f"Day {current_day}: No vote was held today."
-        return {
-            "day_channel": [
-                DayChannel(
-                    day=current_day,
-                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
-                    player="game_master",
-                    message=message,
-                )
-            ],
-            "day_summaries": [
-                DaySummary(day=current_day, summary=message)
-            ],
-        }
-
     vote_summary = "\n".join(f"  {v.voter} voted for {v.votee}" for v in day_votes)
 
-    if voted_player:
+    if lynched:
         message = f"""
 Here's the vote result for day {current_day}:
 {vote_summary}
-Player {voted_player} has been voted out and was a {state['roles'][voted_player]}.
+Player {lynched} has been voted out and was a {state['roles'][lynched]}.
 """
         state_update = {
-            "voted_player": voted_player,
+            "voted_player": lynched,
+            "no_lynch_streak": no_lynch_streak,
             "surviving_wolves": [
-                p for p in state["surviving_wolves"] if p != voted_player
+                p for p in state["surviving_wolves"] if p != lynched
             ],
             "surviving_villagers": [
-                p for p in state["surviving_villagers"] if p != voted_player
+                p for p in state["surviving_villagers"] if p != lynched
             ],
             "day_channel": [
                 DayChannel(
@@ -501,15 +457,23 @@ Player {voted_player} has been voted out and was a {state['roles'][voted_player]
                 DaySummary(day=current_day, summary=message)
             ],
         }
-
-        _nullify_special_roles(state_update, voted_player, state)
+        _nullify_special_roles(state_update, lynched, state)
         return state_update
 
+    # No lynch: no votes, an abstain plurality, or a tie.
+    if not day_votes:
+        outcome = "No vote was held today; no one is eliminated."
+    elif plurality == "abstain":
+        outcome = "The village chose to abstain. No one is eliminated today."
+    else:
+        outcome = f"It's a tie between {candidates}. No one is voted out this day."
     message = f"""
 Here's the vote result for day {current_day}:
 {vote_summary}
-It's a tie between players {candidates}. No one is voted out this day."""
+{outcome}"""
     return {
+        "voted_player": None,
+        "no_lynch_streak": no_lynch_streak,
         "day_channel": [
             DayChannel(
                 day=current_day,

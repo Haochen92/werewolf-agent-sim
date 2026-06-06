@@ -175,11 +175,12 @@ Based on the discussion, try to speak like a villager. Do NOT reveal your allies
 DAY_VOTE_SYSTEM_SUFFIX = """
 You are {player_id}, a {player_role}.
 You are now at the end of the current day of discussion. Vote to eliminate a player you suspect is a wolf.
-You must vote from one of the surviving players.
+You must vote from one of the surviving players, or "abstain" when it is offered.
 You cannot vote for yourself.
+{abstain_instruction}
 
 You must respond with a valid JSON:
-{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note"}}
+{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """
 
 
@@ -291,9 +292,11 @@ You cannot vote for yourself.
 Avoid voting for your wolf allies by default, unless refusing to join an overwhelming majority against a clearly doomed ally would expose you.
 Try to vote in a way that does not raise suspicion about your identity;
 usually target a villager, but preserve your cover by voting for a wolf ally when the village consensus is decisive to vote out that exposed wolf ally.
+You may also vote "abstain" when it is offered (an abstain plurality means no elimination) — blending with an abstaining village can be good cover, and a no-lynch day costs the village a chance to find a wolf.
+{abstain_instruction}
 
 You must respond with a valid JSON:
-{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note"}}
+{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
             ),
         ),

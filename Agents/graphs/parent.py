@@ -49,6 +49,7 @@ def day_phase(
             "surviving_players": state["surviving_wolves"] + state["surviving_villagers"],
             "surviving_wolves": state["surviving_wolves"],
             "surviving_villagers": state["surviving_villagers"],
+            "no_lynch_streak": state.get("no_lynch_streak", 0),
             "current_round": 0,
             "day_votes": [],
         },
