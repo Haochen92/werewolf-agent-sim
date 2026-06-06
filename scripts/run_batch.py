@@ -338,6 +338,13 @@ def run_batch(args: argparse.Namespace) -> int:
         return 0
 
     from Agents.main import run_game
+    from Agents.run_fingerprint import runtime_fingerprint
+
+    # Resolved once per batch: code/prompt versions, model IDs, params, backend.
+    # Makes each JSONL record self-describing — a record is only comparable to
+    # another if their bundles match (model, prompts, backend, ...).
+    fingerprint = runtime_fingerprint()
+    print(f"Runtime fingerprint: {fingerprint}")
 
     print(f"Writing JSONL results to: {results_path}")
     failures = 0
@@ -371,6 +378,7 @@ def run_batch(args: argparse.Namespace) -> int:
             duration_seconds = perf_counter() - started_timer
             record = {
                 "status": "success",
+                "runtime_fingerprint": fingerprint,
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "reranking_config": reranking_config,
@@ -404,6 +412,7 @@ def run_batch(args: argparse.Namespace) -> int:
             duration_seconds = perf_counter() - started_timer
             record = {
                 "status": "error",
+                "runtime_fingerprint": fingerprint,
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "reranking_config": reranking_config,
