@@ -96,3 +96,77 @@ $PY scripts/run_batch.py --configs all_enabled \
   v5 cut.
 
 Artifacts: `evidence/tracing/smoke_*.log`, `batch_results/nighteval_*.jsonl`.
+
+---
+
+# Tracing-sufficiency audit (2026-06-06)
+
+## Goal
+
+Beyond "is the night gap closed", verify a game **emits everything OTHER eval forms need** — not just
+the win-rate A/B but the LLM-judge and fine-tuning consumers. Method (agreed): map the production
+eval pipeline (`evaluation/`) → catalog the experiments in `evidence/` (done + planned + v5-rerun) →
+find where a consumer needs data the trace doesn't carry.
+
+## The contract
+
+Every eval consumer reads **Langfuse-as-truth via a frozen "case" embedded in a span output**, never
+raw game state: `EvalCase` (`agent_action_eval_*`) → summary/retrieval/application/pipeline judges +
+reranker/agent-dialogue fine-tuning; `ExtractionCase` (`postgame_extraction_*`) → extraction judge;
+`DedupCase` (`dedup_*`) → dedup judge + dedup-classifier FT. So sufficiency = *is the case a consumer
+needs actually emitted, and does it carry every field?*
+
+## Gaps found (consumer → missing emission)
+
+| # | Gap | Consumer | Class | Verdict |
+|---|-----|----------|-------|---------|
+| 1 | Wolf night-discussion emits no `EvalCase` (parallel structure ≠ reactive/proactive pattern) | application/pipeline; wolf-night memory | prompt-touching | **deferred — needs discussion** |
+| 2 | Pre-rerank candidate pool not captured (`EvalCase` had only the final top-k) | reranker FT; retrieval judge | plumbing | **DONE** |
+| 3 | Day-summary not case-buildable (judge was standalone; in-game summary emitted no freezable span) | day_summary judge | plumbing | **DONE** |
+| 4 | No store/config provenance on a frozen case (joinable to the trace, but not self-describing — the effectiveness study's confound) | effectiveness A/B; retrieval replay | plumbing | **DONE** |
+| 5 | `run_batch` computed-metrics + night-decision dump | metrics monotonicity; Phase C | plumbing | ready, deferred (no batch imminent) |
+
+Well-covered (no change): day discuss/vote cases, single-target night actions (just shipped),
+extraction, per-extraction dedup, agent-dialogue distillation context (reconstructable from `EvalCase`).
+
+## Implementation (#2–#4, pure plumbing, freeze-safe — no agent-facing prompt change)
+
+Lean/composable: one shared `retrieval_meta` dict in `_enrich_payload_with_memory` feeds **both** the
+day- and night-action `EvalCase` builders, so #2+#4 land once at the seam + once per builder. The
+day-summary case mirrors the existing `ExtractionCase` emit→builder→record path exactly.
+
+- **#2** `EvalCase.candidate_observations` / `candidate_strategy_points` — the wide pool snapshotted
+  *before* filter/rerank, with embedding scores. Only when wide retrieval runs (rerank or filter on);
+  empty otherwise (then `retrieved_*` IS the pool — keeps cases lean).
+- **#3** `DaySummaryCase` + `summarize_day_discussion` emits a `day_summary_eval_*` span; builder
+  `evaluation/data/day_summary_cases.py`, `fetch_day_summary_cases`, `DaySummaryDatasetRecord`. The
+  existing `run_day_summary_judge(raw_discussion, summary, day)` consumes it verbatim.
+- **#4** `EvalProvenance{store_dir, reranking_enabled, filtering_enabled}` on every `EvalCase`, read
+  from config at emit time → frozen datasets are self-describing (same idea as `run_batch`'s
+  `runtime_fingerprint`; model/prompt/backend stay game-level, git-versioned).
+
+## Verification
+
+Offline behavioral (stubbed retrieval/rerank + LLM): candidate snapshot pool=3/final=1 with scores
+preserved; empty on no-wide-retrieval; skip-path carries new keys; provenance across object/dict/
+missing config; day-summary span emits a valid `DaySummaryCase`, node still returns the summary.
+
+**Live smoke** (`run_batch --configs all_enabled --filtering filter_enabled --seed-store-dir
+Agents/memory_stores/v4_deduped_v2 --no-memory-dump`; winner=serial_killer, day 4). Seeding the
+**serialized store** (`indexed_cache.pkl`, SHA-validated) loaded pre-computed vectors — no seed-time
+re-embed (the JSON path's embedding storm). Queried the live trace:
+- **#3:** 4 `DaySummaryCase`s (days 1–4), each `raw_discussion` + `summary` + `model_used`.
+- **#4:** **72/72** eval cases carry `provenance.store_dir='Agents/memory_stores/v4_deduped_v2'`,
+  rerank=False, filter=True.
+- **#2:** **46/72** carry the pool (others = day-1 skips + empty SK/vig namespaces): e.g.
+  `cand_obs=10 → final_obs=3`, `cand_sp=10 → final_sp=3`.
+
+## Status & deferred
+
+- ✅ #2–#4 implemented + live-verified. Freeze-safe (no agent prompt change).
+- ⏭ **#1 wolf-night `EvalCase`** — emission-only vs full memory-context; needs discussion.
+- ⏭ **#5 `run_batch` dump** — ready; lands before the Phase C batch.
+
+Durable evidence: Langfuse session `tracing_audit_smoke2_all_enabled` (the trace is the source of
+truth; the numbers above were queried from it). The local smoke `.jsonl`/`.log` were transient
+verification scratch and were not retained.
