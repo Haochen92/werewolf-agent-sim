@@ -247,7 +247,50 @@ signal only after scale. Nothing in Phases A–C changes.** Ranked by value-per-
 Near-term fine-tunes (dedup classifier, CE) are retrieval-infra — human signal irrelevant to
 them. Option-preservers to build in: per-phase guess schema, consent sentence, the §8 event log.
 
-## 10. Backend touchpoints to keep in mind (no action yet)
+## 10. Daily puzzle implementation + cost & scale posture (discussed 2026-06-06)
+
+### Puzzle implementation sketch
+
+- **Unit = one full game, revealed day-by-day, PUBLIC channel only**: puzzle player is a "ghost
+  villager" — sees exactly `day_channel` (discussion/votes/deaths), never night internals. Fair
+  (same info the village had), length-bounded, maps 1:1 to existing serialization. Guess
+  checkpoints at day boundaries, earliness-weighted score.
+- **Source = fresh daily batch generation** (~$0.3/day ≈ $9/mo content factory), NOT store pulls.
+  Generate 3–5 candidates, auto-curate via the metrics pipeline (close outcome, late wolf
+  detection, vote churn — blowouts are boring puzzles). `batch_results/` = launch backfill.
+- **Guess-the-human mode = crowdsourced Turing test**: some days include a recorded human seat,
+  some don't; "no human here" is a valid guess → human-detection rate vs chance = longitudinal
+  "do agents talk like people" metric, improving for free. Needs consent line + username
+  anonymization. Caveat: measures STYLE indistinguishability, not play quality.
+
+### Cost posture
+
+- Per-game: ~$0.4 today → ~$0.2–0.3 after cache/optimization (cache reorder is v5-gated, see
+  prompt-cache debt). Human games slightly cheaper (one seat = no LLM calls).
+- **Deferred extraction for human games**: snapshot inputs, skip inline extraction (dump-gate
+  plumbing exists), nightly scheduled extraction of SELECTED games — which unlocks the **Gemini
+  Batch API 50% discount**. Serving cost decoupled from learning cost.
+- **Tiered affordability**: (1) puzzle + replay theater = unlimited/free (static JSON + CDN,
+  ~$0.30/day total — serves 95% of portfolio viewers incl. recruiters); (2) live games capped
+  5–10/day (≤$2.50/day worst case; scarcity is thematic — village seats are limited); (3) BYOK
+  escape hatch for technical visitors (never store keys; proxy per-request or client-side).
+- **Free-API options rejected**: Gemini free tier = top-up at best (few games/day; training-data
+  terms); NVIDIA NIM rejected ON PRINCIPLE not just uptime — eval story (memory content, proxies,
+  win rates) is Gemini-conditioned; never compare across backends → serving on a different model
+  means the product is no longer the thing that was evaluated. Worst-case budget ~$50–80/mo.
+
+### Scale posture ("the server is a waiting room, not a factory")
+
+- All model compute is API-hosted; a live game = async orchestration awaiting Gemini, KB of
+  state, ~zero CPU. Only local compute = CE reranker (ONNX, top-k=10, ms on CPU). Current 24GB
+  box orchestrates hundreds of concurrent games; SSE = thousands of connections per box.
+- Real ceilings in order: (1) **API RPM/TPM quota** — game-worker queue with max-concurrency
+  matched to quota budget (batch-runner pattern); "table's full, next game in N min" =
+  thematic backpressure; (2) **cost** — the daily cap IS the autoscaler; (3) infra a distant
+  third ($10–20/mo VPS when outgrowing the home box). The thing that scales with users (puzzle)
+  is static-file CDN ≈ $0; the expensive thing (live games) is capped by policy.
+
+## 11. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
