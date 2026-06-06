@@ -17,7 +17,7 @@ from Agents.state import (
 )
 
 from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
-from Agents.schemas import DaySummaryOutput
+from Agents.schemas import DaySummaryCase, DaySummaryOutput
 from Agents.extraction import (
     build_extraction_prompt,
     extract_postgame,
@@ -295,25 +295,64 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     from Agents.agents import get_llm_summary
     from Agents.formatters import format_day_channel
 
+    # The day summary runs in BOTH memory arms (it's pre-memory), so freeze it
+    # as a judgeable case (#3). ``raw_discussion`` matches what the day-summary
+    # judge consumes; ``round`` carries the message seq (sequential discussion
+    # has no per-round notion). The span nests under the game trace, so
+    # ``trace_id`` alone lets the builder reattach it (``game_id`` is convenience).
+    raw_discussion = [
+        {"player": m.player, "round": m.seq, "message": m.message}
+        for m in current_day_messages
+    ]
+    game_id = state.get("game_id", "") or ""
+    span_name = f"day_summary_eval_{game_id}_day_{current_day}"
+
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
         situation_standards=SITUATION_STANDARDS,
     )
-    for attempt in range(max_retries + 1):
-        try:
-            result = get_llm_summary().with_structured_output(DaySummaryOutput).invoke(prompt)
-            summary = _serialize_day_summary(result)
-            break
-        except Exception as exc:
-            logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
-            if attempt < max_retries:
-                continue
-            logger.error(
-                f"Day discussion summary failed all retries for day {current_day}, "
-                "using fallback"
-            )
-            summary = format_day_channel(current_day_messages)
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={"day": current_day, "raw_discussion": raw_discussion},
+        metadata={"eval_schema": "day_summary_case_v1"},
+    ) as summary_span:
+        model_used = ""
+        for attempt in range(max_retries + 1):
+            try:
+                llm = get_llm_summary()
+                result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
+                summary = _serialize_day_summary(result)
+                model_used = getattr(llm, "model", "") or ""
+                break
+            except Exception as exc:
+                logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
+                if attempt < max_retries:
+                    continue
+                logger.error(
+                    f"Day discussion summary failed all retries for day {current_day}, "
+                    "using fallback"
+                )
+                summary = format_day_channel(current_day_messages)
+
+        day_summary_case = DaySummaryCase(
+            span_name=span_name,
+            game_id=game_id,
+            day=current_day,
+            raw_discussion=raw_discussion,
+            summary=summary,
+            model_used=model_used,
+        )
+        summary_span.update(
+            output={"day_summary_case": day_summary_case.model_dump(mode="json")},
+            metadata={
+                "eval_schema": day_summary_case.schema_version,
+                "day": current_day,
+                "message_count": len(raw_discussion),
+                "model_used": model_used,
+            },
+        )
 
     return {"day_summaries": [DaySummary(day=current_day, summary=summary)]}
 
