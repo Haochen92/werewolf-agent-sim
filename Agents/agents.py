@@ -478,12 +478,50 @@ def _run_agent(
             logger.warning(f"Investigator targeted invalid player: {result.investigator_target}")
             continue
 
+        if output_key == "serial_killer_target":
+            validated = _validate_target(
+                result.serial_killer_target,
+                valid_targets,
+                player_id,
+            )
+            if validated:
+                output = {"serial_killer_target": validated}
+                if strategy_update:
+                    output["updated_strategy"] = strategy_update
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
+                return output
+            logger.warning(f"Serial killer targeted invalid player: {result.serial_killer_target}")
+            continue
+
+        if output_key == "vigilante_target":
+            # "hold_fire" is a valid sentinel target (the vigilante banks the bullet).
+            validated = _validate_target(
+                result.vigilante_target,
+                valid_targets,
+                player_id,
+            )
+            if validated:
+                output = {"vigilante_target": validated}
+                if strategy_update:
+                    output["updated_strategy"] = strategy_update
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
+                return output
+            logger.warning(f"Vigilante targeted invalid player: {result.vigilante_target}")
+            continue
+
     # All retries exhausted — random fallback
     logger.error(f"{player_id} failed all retries, using random fallback")
     if output_key == "day_votes":
         fallback = random.choice(valid_targets)
         return {"day_votes": [DayVote(voter=player_id, votee=fallback)]}
-    if output_key in ("healer_target", "investigator_target"):
+    if output_key in (
+        "healer_target",
+        "investigator_target",
+        "serial_killer_target",
+        "vigilante_target",
+    ):
         fallback = random.choice(valid_targets)
         return {output_key: fallback}
     if output_key == "wolf_channel":

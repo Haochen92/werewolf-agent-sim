@@ -67,6 +67,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "max_discussion_rounds_per_day": max_discussion_rounds,
         "final_discussion_round_notice": final_discussion_round_notice,
         "abstain_instruction": abstain_instruction,
+        "vigilante_bullets": payload.get("vigilante_bullets", 0),
         "firing_brief": _firing_brief(payload.get("firing_reason")),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
