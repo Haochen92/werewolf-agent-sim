@@ -32,6 +32,7 @@ You must respond with a valid JSON:
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 """,
+                NIGHT_ACTION_MEMORY_CONTEXT,
             ),
         ),
         (
