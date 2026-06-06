@@ -1104,6 +1104,136 @@ def _run_memory_informed_action(
     return result
 
 
+def _run_memory_informed_night_action(
+    payload: dict[str, Any],
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    prompt_template: ChatPromptTemplate,
+    output_schema: type[BaseModel],
+    output_key: str,
+) -> dict[str, Any] | None:
+    """Night counterpart of ``_run_memory_informed_action`` for single-target roles.
+
+    A night action selects a target instead of producing a message/vote, so the
+    eval case carries ``agent_night_action`` rather than ``agent_message``/
+    ``agent_vote``. Retrieval, adoption bookkeeping, and the eval span are
+    otherwise identical to the day path (and gated by the same ``memory_config``).
+    """
+    player_id = payload["player_id"]
+    role = payload["player_role"]
+    day = payload["current_day"]
+    round_num = payload.get("current_round", 0)
+    action_phase = "night_action"
+
+    span_name = (
+        f"agent_action_eval_{player_id}"
+        f"_day_{day}_round_{round_num}_{action_phase}"
+    )
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={
+            "player_id": player_id,
+            "player_role": role,
+            "day": day,
+            "round": round_num,
+            "action_phase": action_phase,
+            "previous_strategy": payload.get("previous_strategy", "") or "",
+            "day_summaries": format_day_summaries(
+                payload.get("day_summaries", []),
+                before_day=day,
+            ),
+            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+            "investigator_results": format_investigator_results(
+                payload.get("investigator_results", [])
+            ),
+            "vigilante_results": payload.get("vigilante_results", []),
+            "surviving_players": payload.get("surviving_players", []),
+        },
+        metadata={
+            "eval_schema": "retrieval_action_v1",
+            "retrieval_top_k": 3,
+        },
+    ) as eval_span:
+        enriched_payload, retrieval_meta = _enrich_payload_with_memory(
+            payload,
+            config,
+            runtime,
+            action_phase,
+        )
+        result = _run_agent(
+            enriched_payload,
+            prompt_template,
+            output_schema,
+            output_key,
+        )
+
+        raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
+            _process_strategy_adoption(
+                result,
+                enriched_payload,
+                runtime,
+                player_id=player_id,
+                role=role,
+                action_phase=action_phase,
+                day=day,
+                round_num=round_num,
+            )
+        )
+
+        applied_game_update: dict[str, Any] | None = None
+        target: str | None = None
+        updated_strategy = ""
+        if result:
+            applied_game_update = {}
+            target = result.get(output_key)
+            applied_game_update[output_key] = target
+            updated_strategy = result.get("updated_strategy", "") or ""
+            if strategy_adoptions:
+                result["strategy_adoptions"] = strategy_adoptions
+
+        eval_case = EvalCase(
+            span_name=span_name,
+            player_id=player_id,
+            player_role=role,
+            day=day,
+            round=round_num,
+            action_phase=action_phase,
+            visible_discussion=[],
+            private_context=_build_eval_private_context(payload, day),
+            memory_enabled=retrieval_meta["memory_enabled"],
+            retrieval_skipped_reason=retrieval_meta["retrieval_skipped_reason"],
+            situations=retrieval_meta["situations"],
+            retrieved_observations=retrieval_meta["retrieved_observations"],
+            retrieved_strategy_points=retrieval_meta["retrieved_strategy_points"],
+            agent_night_action=NightAction(role=role, target=target),
+            updated_strategy=updated_strategy,
+            adopted_strategy_keys=raw_adopted_indices,
+            adopted_strategy_store_keys=adopted_store_keys,
+        )
+
+        eval_span.update(
+            output={
+                "eval_case": eval_case.model_dump(mode="json"),
+                "applied_game_update": applied_game_update,
+            },
+            metadata={
+                "eval_schema": eval_case.schema_version,
+                "retrieval_top_k": 3,
+                "memory_enabled": eval_case.memory_enabled,
+                "retrieval_skipped_reason": eval_case.retrieval_skipped_reason,
+                "action_phase": eval_case.action_phase,
+                "player_id": eval_case.player_id,
+                "player_role": eval_case.player_role,
+                "day": eval_case.day,
+                "round": eval_case.round,
+                "adopted_count": len(adopted_store_keys),
+            },
+        )
+
+    return result
+
+
 def villager_discuss(
     payload: VillagerDayState,
     config: RunnableConfig,
@@ -1302,21 +1432,43 @@ def wolf_night_discuss(payload: WolfNightState):
     )
 
 
-def healer_act(payload: HealerNightGraph):
-    return _run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
-
-
-def investigator_act(payload: InvestigatorNightGraph):
-    return _run_agent(
-        payload, INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"
+def healer_act(
+    payload: HealerNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime, HEALER_NIGHT, HealerOutput, "healer_target"
     )
 
 
-def serial_killer_act(payload: SerialKillerNightGraph):
-    return _run_agent(
-        payload, SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target"
+def investigator_act(
+    payload: InvestigatorNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime,
+        INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target",
     )
 
 
-def vigilante_act(payload: VigilanteNightGraph):
-    return _run_agent(payload, VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target")
+def serial_killer_act(
+    payload: SerialKillerNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime,
+        SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target",
+    )
+
+
+def vigilante_act(
+    payload: VigilanteNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime, VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target"
+    )
