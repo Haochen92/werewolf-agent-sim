@@ -174,9 +174,15 @@ def build_speaker_send(
     )
 
 
-# Roles with day discuss/vote nodes registered in the day graph. SK + vigilante are
-# added alongside their nodes (Commit 7); until then they must not be dispatched.
-_DAY_ACTING_ROLES = {"villager", "wolf", "healer", "investigator"}
+# Roles with day discuss/vote nodes registered in the day graph.
+_DAY_ACTING_ROLES = {
+    "villager",
+    "wolf",
+    "healer",
+    "investigator",
+    "serial_killer",
+    "vigilante",
+}
 
 
 def fan_out_day(

@@ -11,6 +11,8 @@ from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT, DAY_VOTE_MEMORY
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
     INVESTIGATOR_CORE_STRATEGY,
+    SERIAL_KILLER_CORE_STRATEGY,
+    VIGILANTE_CORE_STRATEGY,
     VILLAGER_CORE_STRATEGY,
     WOLF_CORE_STRATEGY,
 )
@@ -172,6 +174,84 @@ Based on the discussion, try to speak like a villager. Do NOT reveal your allies
 )
 
 
+SERIAL_KILLER_DAY_DISCUSS = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                SERIAL_KILLER_CORE_STRATEGY,
+                """
+You are {player_id}, the {player_role}.
+You are playing alone against everyone. During the day, pose as an ordinary villager:
+join the hunt for the wolves, deflect suspicion from yourself, and never reveal that you
+are the serial killer. You can be voted out, so blending in is survival.
+""",
+                TONE_INSTRUCTION,
+                DAY_DISCUSS_RESPONSE_FORMAT,
+            ),
+        ),
+        (
+            "human",
+            """
+Day {current_day} discussion.
+{firing_brief}
+
+Surviving players: {surviving_players}
+
+== Previous days summary ==
+{day_summaries}
+
+== Today's discussion ==
+{day_channel}
+=========================
+"""
+            + DAY_DISCUSSION_MEMORY_CONTEXT
+            + DISCUSSION_SILENCE_RULE,
+        ),
+    ]
+)
+
+
+VIGILANTE_DAY_DISCUSS = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                VIGILANTE_CORE_STRATEGY,
+                """
+You are {player_id}, the {player_role}.
+You are on the village's side. During the day, speak as an ordinary villager and protect
+your cover — do not reveal that you can shoot at night. Use reasoning and social deduction
+to help find the wolves.
+""",
+                TONE_INSTRUCTION,
+                DAY_DISCUSS_RESPONSE_FORMAT,
+            ),
+        ),
+        (
+            "human",
+            """
+Day {current_day} discussion.
+{firing_brief}
+
+Surviving players: {surviving_players}
+
+== Previous days summary ==
+{day_summaries}
+
+== Today's discussion ==
+{day_channel}
+=========================
+"""
+            + DAY_DISCUSSION_MEMORY_CONTEXT
+            + DISCUSSION_SILENCE_RULE,
+        ),
+    ]
+)
+
+
 DAY_VOTE_SYSTEM_SUFFIX = """
 You are {player_id}, a {player_role}.
 You are now at the end of the current day of discussion. Vote to eliminate a player you suspect is a wolf.
@@ -316,6 +396,68 @@ Known surviving wolves: {surviving_wolves}
 
 """ + DAY_VOTE_MEMORY_CONTEXT + """
 Cast your vote. Choose the target that best preserves your cover.""",
+        ),
+    ]
+)
+
+
+SERIAL_KILLER_DAY_VOTE = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                SERIAL_KILLER_CORE_STRATEGY,
+                DAY_VOTE_SYSTEM_SUFFIX,
+            ),
+        ),
+        (
+            "human",
+            """Day {current_day}. Time to vote!
+
+Here are the surviving players: {surviving_players}
+
+== Previous days summary ==
+{day_summaries}
+
+=== Today's discussion ===
+{day_channel}
+=================================
+
+""" + DAY_VOTE_MEMORY_CONTEXT + """
+Cast your vote. Vote in the way that best deflects suspicion from you and removes a threat to your survival.
+""",
+        ),
+    ]
+)
+
+
+VIGILANTE_DAY_VOTE = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                VIGILANTE_CORE_STRATEGY,
+                DAY_VOTE_SYSTEM_SUFFIX,
+            ),
+        ),
+        (
+            "human",
+            """Day {current_day}. Time to vote!
+
+Here are the surviving players: {surviving_players}
+
+== Previous days summary ==
+{day_summaries}
+
+=== Today's discussion ===
+{day_channel}
+=================================
+
+""" + DAY_VOTE_MEMORY_CONTEXT + """
+Cast your vote. Choose the player you find most suspicious.
+""",
         ),
     ]
 )

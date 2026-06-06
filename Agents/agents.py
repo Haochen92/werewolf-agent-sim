@@ -42,7 +42,11 @@ from Agents.prompts import (
     INVESTIGATOR_DAY_VOTE,
     INVESTIGATOR_NIGHT,
     INVESTIGATOR_SITUATION_SUMMARY,
+    SERIAL_KILLER_DAY_DISCUSS,
+    SERIAL_KILLER_DAY_VOTE,
     SERIAL_KILLER_NIGHT,
+    VIGILANTE_DAY_DISCUSS,
+    VIGILANTE_DAY_VOTE,
     VIGILANTE_NIGHT,
     VILLAGER_SITUATION_SUMMARY,
     VILLAGER_DAY_DISCUSS,
@@ -1130,6 +1134,70 @@ def investigator_vote(
         runtime,
         "day_vote",
         INVESTIGATOR_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
+
+
+def serial_killer_discuss(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        SERIAL_KILLER_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
+
+
+def vigilante_discuss(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        VIGILANTE_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
+
+
+def serial_killer_vote(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_vote",
+        SERIAL_KILLER_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
+
+
+def vigilante_vote(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_vote",
+        VIGILANTE_DAY_VOTE,
         DayVoteOutput,
         "day_votes",
     )
