@@ -346,6 +346,15 @@ info only), maintains role predictions; "voting" = suspicion ranking. No generat
 Agent assistance compresses typing, not decisions/integration-debugging/playtesting. Total to
 full MVP ≈ 6–8 part-time weeks; shareable artifact in ~3 weekends.
 
+**Concurrency decision (2026-06-06): once Phase C win-rate A/B is proven, frontend runs in
+parallel with the fine-tuning + labelling experiments.** Disjoint surfaces (frontend never
+touches the frozen prompt surface or labelled corpus); fine-tuning/labelling cadence (Modal
+waits, labelling sessions) interleaves with frontend gaps; **Phase C's A/B batch = F1's launch
+content library** (largest v5 game corpus); replay viewer doubles as labelling-inspection tool.
+Guards: F3 behind a flag so experiment batches run an identical code path (fingerprint + leak
+checks prove non-interference); displacement risk named — labelling is tedious, frontend is fun:
+experiments get prime hours, frontend gets the gaps, split decided up front.
+
 ## 13. Multi-human tables (5 humans + agents) — discussed 2026-06-06
 
 **Status: deferred consideration, NOT planned work.** HITL is unimplemented (like every frontend
