@@ -5,7 +5,11 @@ import uuid
 from dotenv import load_dotenv
 from langgraph.store.base import BaseStore
 from langgraph.store.memory import InMemoryStore
-from Agents.llm_factory import create_embeddings
+from Agents.llm_factory import (
+    DEFAULT_EMBEDDING_DIMS,
+    DEFAULT_EMBEDDING_MODEL,
+    create_embeddings,
+)
 
 from Agents.prompts import RERANK_PROMPT
 from Agents.schemas import (
@@ -104,13 +108,13 @@ def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: st
 
 
 embeddings = create_embeddings(
-    "gemini-embedding-001",
-    output_dimensionality=1536,
+    DEFAULT_EMBEDDING_MODEL,
+    output_dimensionality=DEFAULT_EMBEDDING_DIMS,
 )
 
 store = InMemoryStore(
     index={
-        "dims": 1536,
+        "dims": DEFAULT_EMBEDDING_DIMS,
         "embed": embeddings,
         "fields": ["situation"],
     }
