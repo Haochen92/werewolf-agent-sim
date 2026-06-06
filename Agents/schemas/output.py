@@ -127,6 +127,24 @@ class InvestigatorOutput(BaseModel):
     updated_strategy: str
 
 
+class SerialKillerOutput(BaseModel):
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    serial_killer_target: str
+    updated_strategy: str
+
+
+class VigilanteOutput(BaseModel):
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    vigilante_target: str
+    updated_strategy: str
+
+
 class SituationEntry(BaseModel):
     situation: str = Field(
         description=(

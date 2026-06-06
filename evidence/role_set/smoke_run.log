@@ -1,0 +1,10 @@
+/home/ubuntu/.cache/pypoetry/virtualenvs/werewolf-game-v7lKgM40-py3.11/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Planned runs: 1
+- roleset_smoke3_all_disabled_001: session=roleset_smoke3_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
+Writing JSONL results to: evidence/role_set/smoke_run.jsonl
+Running roleset_smoke3_all_disabled_001 in session roleset_smoke3_all_disabled
+Completed roleset_smoke3_all_disabled_001: winner=serial_killer day=4
+Batch complete: 1 succeeded, 0 failed

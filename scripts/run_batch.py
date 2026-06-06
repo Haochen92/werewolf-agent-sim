@@ -20,7 +20,7 @@ if str(REPO_ROOT) not in sys.path:
 load_dotenv(REPO_ROOT / ".env")
 
 
-ROLES = ("wolf", "villager", "healer", "investigator")
+ROLES = ("wolf", "villager", "healer", "investigator", "serial_killer", "vigilante")
 
 
 def role_config(*enabled_roles: str) -> dict[str, bool]:

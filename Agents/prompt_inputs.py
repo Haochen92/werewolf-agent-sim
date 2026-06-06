@@ -48,6 +48,17 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         if current_round >= max_discussion_rounds
         else ""
     )
+    if payload.get("allow_abstain"):
+        abstain_instruction = (
+            'You may vote "abstain" if you have no one you can justify eliminating yet — '
+            "an abstain plurality means no one is eliminated today. Only abstain when "
+            "holding off genuinely beats a guess; a wrong elimination is costly, but so is "
+            "letting the killers act another night unchecked."
+        )
+    else:
+        abstain_instruction = (
+            "Abstaining is not available today — you must vote for a surviving player."
+        )
     return {
         "player_id": payload.get("player_id", ""),
         "player_role": role,
@@ -55,6 +66,8 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "current_round": current_round,
         "max_discussion_rounds_per_day": max_discussion_rounds,
         "final_discussion_round_notice": final_discussion_round_notice,
+        "abstain_instruction": abstain_instruction,
+        "vigilante_bullets": payload.get("vigilante_bullets", 0),
         "firing_brief": _firing_brief(payload.get("firing_reason")),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
@@ -70,6 +83,10 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
         "investigator_results": format_investigator_results(
             payload.get("investigator_results", [])
+        ),
+        "vigilante_results": (
+            "\n".join(payload.get("vigilante_results", []))
+            or "Nothing learned from your shots yet."
         ),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": (

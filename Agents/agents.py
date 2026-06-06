@@ -42,6 +42,14 @@ from Agents.prompts import (
     INVESTIGATOR_DAY_VOTE,
     INVESTIGATOR_NIGHT,
     INVESTIGATOR_SITUATION_SUMMARY,
+    SERIAL_KILLER_DAY_DISCUSS,
+    SERIAL_KILLER_DAY_VOTE,
+    SERIAL_KILLER_NIGHT,
+    SERIAL_KILLER_SITUATION_SUMMARY,
+    VIGILANTE_DAY_DISCUSS,
+    VIGILANTE_DAY_VOTE,
+    VIGILANTE_NIGHT,
+    VIGILANTE_SITUATION_SUMMARY,
     VILLAGER_SITUATION_SUMMARY,
     VILLAGER_DAY_DISCUSS,
     VILLAGER_DAY_VOTE,
@@ -59,7 +67,9 @@ from Agents.schemas import (
     HealerOutput,
     InvestigatorOutput,
     NoveltyJudgment,
+    SerialKillerOutput,
     SituationSummary,
+    VigilanteOutput,
     WolfNightDiscussOutput,
 )
 from Agents.schemas.game_events import (
@@ -73,6 +83,8 @@ from Agents.state import (
     HealerNightGraph,
     InvestigatorDayState,
     InvestigatorNightGraph,
+    SerialKillerNightGraph,
+    VigilanteNightGraph,
     VillagerDayState,
     WolfDayState,
     WolfNightState,
@@ -236,17 +248,36 @@ def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[
     player_id = payload.get("player_id", "")
     if output_key == "wolf_channel":
         targets = payload.get("surviving_villagers", [])
-    elif output_key in {"day_votes", "healer_target", "investigator_target"}:
+    elif output_key in {
+        "day_votes",
+        "healer_target",
+        "investigator_target",
+        "serial_killer_target",
+        "vigilante_target",
+    }:
         targets = payload.get("surviving_players", [])
     else:
         return []
-    return [target for target in targets if target != player_id]
+    valid = [target for target in targets if target != player_id]
+    # Relaxed voting: "abstain" is a sentinel target that competes in the tally; an
+    # abstain plurality (or tie) yields no lynch. Dropped on a forced day.
+    if output_key == "day_votes" and payload.get("allow_abstain"):
+        valid.append("abstain")
+    # The vigilante may hold fire to save a bullet (the SK is compulsive — no sentinel).
+    if output_key == "vigilante_target":
+        valid.append("hold_fire")
+    return valid
 
 
 def _target_field_for_output_key(output_key: str) -> str | None:
     if output_key in {"day_votes", "wolf_channel"}:
         return "vote_target"
-    if output_key in {"healer_target", "investigator_target"}:
+    if output_key in {
+        "healer_target",
+        "investigator_target",
+        "serial_killer_target",
+        "vigilante_target",
+    }:
         return output_key
     return None
 
@@ -447,12 +478,50 @@ def _run_agent(
             logger.warning(f"Investigator targeted invalid player: {result.investigator_target}")
             continue
 
+        if output_key == "serial_killer_target":
+            validated = _validate_target(
+                result.serial_killer_target,
+                valid_targets,
+                player_id,
+            )
+            if validated:
+                output = {"serial_killer_target": validated}
+                if strategy_update:
+                    output["updated_strategy"] = strategy_update
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
+                return output
+            logger.warning(f"Serial killer targeted invalid player: {result.serial_killer_target}")
+            continue
+
+        if output_key == "vigilante_target":
+            # "hold_fire" is a valid sentinel target (the vigilante banks the bullet).
+            validated = _validate_target(
+                result.vigilante_target,
+                valid_targets,
+                player_id,
+            )
+            if validated:
+                output = {"vigilante_target": validated}
+                if strategy_update:
+                    output["updated_strategy"] = strategy_update
+                if adopted_indices:
+                    output["_adopted_strategy_keys"] = adopted_indices
+                return output
+            logger.warning(f"Vigilante targeted invalid player: {result.vigilante_target}")
+            continue
+
     # All retries exhausted — random fallback
     logger.error(f"{player_id} failed all retries, using random fallback")
     if output_key == "day_votes":
         fallback = random.choice(valid_targets)
         return {"day_votes": [DayVote(voter=player_id, votee=fallback)]}
-    if output_key in ("healer_target", "investigator_target"):
+    if output_key in (
+        "healer_target",
+        "investigator_target",
+        "serial_killer_target",
+        "vigilante_target",
+    ):
         fallback = random.choice(valid_targets)
         return {output_key: fallback}
     if output_key == "wolf_channel":
@@ -481,6 +550,8 @@ def _generate_situations_for_agent(
         "healer": HEALER_SITUATION_SUMMARY,
         "investigator": INVESTIGATOR_SITUATION_SUMMARY,
         "wolf": WOLF_SITUATION_SUMMARY,
+        "serial_killer": SERIAL_KILLER_SITUATION_SUMMARY,
+        "vigilante": VIGILANTE_SITUATION_SUMMARY,
     }.get(role, VILLAGER_SITUATION_SUMMARY)
     chain = prompt_template | get_llm().with_structured_output(SituationSummary)
 
@@ -1110,6 +1181,70 @@ def investigator_vote(
     )
 
 
+def serial_killer_discuss(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        SERIAL_KILLER_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
+
+
+def vigilante_discuss(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        VIGILANTE_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    )
+
+
+def serial_killer_vote(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_vote",
+        SERIAL_KILLER_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
+
+
+def vigilante_vote(
+    payload: VillagerDayState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_vote",
+        VIGILANTE_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    )
+
+
 def wolf_night_discuss(payload: WolfNightState):
     return _run_agent(
         payload, WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel"
@@ -1124,3 +1259,13 @@ def investigator_act(payload: InvestigatorNightGraph):
     return _run_agent(
         payload, INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"
     )
+
+
+def serial_killer_act(payload: SerialKillerNightGraph):
+    return _run_agent(
+        payload, SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target"
+    )
+
+
+def vigilante_act(payload: VigilanteNightGraph):
+    return _run_agent(payload, VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target")

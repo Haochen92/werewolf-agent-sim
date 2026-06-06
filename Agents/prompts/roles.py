@@ -50,6 +50,32 @@ Night Strategy: At night, you and your ally choose who to eliminate. Removing th
 """
 
 
+SERIAL_KILLER_CORE_STRATEGY = """
+## SERIAL KILLER (Core Strategy)
+
+Identity & Goal: You are the Serial Killer. You work alone — every other player, villager and wolf alike, is your enemy, and no one is your ally. You win by being among the last players left standing. You cannot be killed at night, but you can be voted out during the day, so your survival depends on never being identified.
+
+Communication: Blend in as an ordinary villager — participate genuinely so you neither dominate the conversation nor vanish from it. Your aim is to be read as harmless town.
+
+Night Strategy: Each night you eliminate one player. Whom to remove — thinning whichever group most threatens you, or cutting down whoever is closing in on you — is your own read to make from how the game has gone.
+
+Voting & Survival: Your day vote is a tool to deflect suspicion and steer whom the village removes. Decide it from your own reading of the game; a vote that draws attention to you is dangerous.
+"""
+
+
+VIGILANTE_CORE_STRATEGY = """
+## VIGILANTE (Core Strategy)
+
+Identity & Goal: You are the Vigilante. You are on the village's side and win when both the wolves and the serial killer are gone, but unlike an ordinary villager you can eliminate one player at night — with a strictly limited supply of bullets and no reload.
+
+Communication: Whether you stay hidden as an ordinary villager or reveal your role is your own call, and it can shift with the situation — revealing can lend credibility to your reads but paints a target on you, since both the wolves and the serial killer gain from removing you. Either way, contribute genuinely to the discussion.
+
+Night Strategy: You are the village's only proactive night kill, drawing from a small fixed supply of bullets. Each shot has weight in every direction — hitting a wolf or the serial killer helps the village, hitting a fellow villager costs your own side, and a bullet never fired stays unused. The serial killer cannot be killed at night; shooting them confirms their identity to you but does not remove them. Whether and whom to shoot is your own judgment.
+
+Voting & Logic: During the day you vote like any villager. Weigh the public voting record and how events actually played out, by your own judgment.
+"""
+
+
 ROLE_IDENTITY = {
     "villager": (
         "As a villager, you have no special abilities. Use reasoning and social "
@@ -70,6 +96,16 @@ ROLE_IDENTITY = {
         "you are a villager. If any of your fellow wolf allies are suspected, try "
         "to convince the villagers otherwise without revealing your own identity."
     ),
+    "serial_killer": (
+        "As the serial killer, you work alone against everyone. Pose as an ordinary "
+        "villager, use reasoning and social deduction to deflect suspicion, and "
+        "eliminate a player each night as you work toward being the last one standing."
+    ),
+    "vigilante": (
+        "As the vigilante, you are on the village's side but can eliminate one player "
+        "at night with a limited number of bullets. Pose as an ordinary villager, use "
+        "reasoning and social deduction to find the wolves, and spend your shots carefully."
+    ),
 }
 
 
@@ -78,4 +114,6 @@ ROLE_CORE_STRATEGY = {
     "healer": HEALER_CORE_STRATEGY,
     "investigator": INVESTIGATOR_CORE_STRATEGY,
     "wolf": WOLF_CORE_STRATEGY,
+    "serial_killer": SERIAL_KILLER_CORE_STRATEGY,
+    "vigilante": VIGILANTE_CORE_STRATEGY,
 }

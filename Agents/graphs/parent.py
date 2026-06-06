@@ -5,6 +5,8 @@ from langgraph.runtime import Runtime
 from Agents.graphs.day import day_graph_compiled
 from Agents.graphs.healer import healer_graph_compiled
 from Agents.graphs.investigator import investigator_graph_compiled
+from Agents.graphs.serial_killer import serial_killer_graph_compiled
+from Agents.graphs.vigilante import vigilante_graph_compiled
 from Agents.graphs.wolf_night import wolf_night_graph_compiled
 from Agents.nodes import (
     check_game_end_day,
@@ -12,10 +14,13 @@ from Agents.nodes import (
     day_resolution,
     end_game,
     initialize_game,
-    night_resolution,
+    night_finalize,
+    night_kill_resolution,
     one_more_day,
     post_game_analysis,
     route_after_healer_night,
+    route_after_kill_resolution,
+    route_after_serial_killer_night,
     route_after_wolf_night,
 )
 from Agents.state import OrchestratorGraph
@@ -46,9 +51,11 @@ def day_phase(
             "roles": state["roles"],
             "human_player": state["human_player"],
             "investigator_results": state.get("investigator_results", []),
+            "vigilante_results": state.get("vigilante_results", []),
             "surviving_players": state["surviving_wolves"] + state["surviving_villagers"],
             "surviving_wolves": state["surviving_wolves"],
             "surviving_villagers": state["surviving_villagers"],
+            "no_lynch_streak": state.get("no_lynch_streak", 0),
             "current_round": 0,
             "day_votes": [],
         },
@@ -159,6 +166,76 @@ def investigator_night_phase(
     return updates
 
 
+def serial_killer_night_phase(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    result = serial_killer_graph_compiled.invoke(
+        {
+            "previous_strategy": state.get("agent_strategies", {}).get(state["serial_killer_player"], ""),
+            "strategy_points": "",
+            "day_channel": state.get("day_channel", []),
+            "day_summaries": state.get("day_summaries", []),
+            "surviving_players": [
+                p
+                for p in state["surviving_wolves"] + state["surviving_villagers"]
+                if p != state["serial_killer_player"]
+            ],
+            "player_id": state["serial_killer_player"],
+            "player_role": "serial_killer",
+            "human_player": state["serial_killer_player"] == state["human_player"],
+        },
+        config=_child_config(config),
+        context=runtime.context,
+    )
+
+    updates = {"serial_killer_target": result.get("serial_killer_target")}
+    if result.get("updated_strategy"):
+        updates["agent_strategies"] = {
+            state["serial_killer_player"]: result["updated_strategy"]
+        }
+
+    return updates
+
+
+def vigilante_night_phase(
+    state: OrchestratorGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    result = vigilante_graph_compiled.invoke(
+        {
+            "previous_strategy": state.get("agent_strategies", {}).get(state["vigilante_player"], ""),
+            "strategy_points": "",
+            "day_channel": state.get("day_channel", []),
+            "day_summaries": state.get("day_summaries", []),
+            "surviving_players": [
+                p
+                for p in state["surviving_wolves"] + state["surviving_villagers"]
+                if p != state["vigilante_player"]
+            ],
+            "vigilante_bullets": state.get("vigilante_bullets", 0),
+            "vigilante_results": state.get("vigilante_results", []),
+            "player_id": state["vigilante_player"],
+            "player_role": "vigilante",
+            "human_player": state["vigilante_player"] == state["human_player"],
+        },
+        config=_child_config(config),
+        context=runtime.context,
+    )
+
+    target = result.get("vigilante_target")
+    # "hold_fire" is the no-shot sentinel — normalize to None so resolution skips it.
+    updates = {"vigilante_target": None if target == "hold_fire" else target}
+    if result.get("updated_strategy"):
+        updates["agent_strategies"] = {
+            state["vigilante_player"]: result["updated_strategy"]
+        }
+
+    return updates
+
+
 def build_parent_graph():
     parent_graph = StateGraph(OrchestratorGraph, context_schema=GraphContext)
 
@@ -167,8 +244,11 @@ def build_parent_graph():
     parent_graph.add_node("DAY_RESOLUTION", day_resolution)
     parent_graph.add_node("WOLF_NIGHT_PHASE", wolf_night_phase)
     parent_graph.add_node("HEALER_NIGHT_PHASE", healer_night_phase)
+    parent_graph.add_node("SERIAL_KILLER_NIGHT_PHASE", serial_killer_night_phase)
     parent_graph.add_node("INVESTIGATOR_NIGHT_PHASE", investigator_night_phase)
-    parent_graph.add_node("NIGHT_RESOLUTION", night_resolution)
+    parent_graph.add_node("VIGILANTE_NIGHT_PHASE", vigilante_night_phase)
+    parent_graph.add_node("KILL_RESOLUTION", night_kill_resolution)
+    parent_graph.add_node("NIGHT_FINALIZE", night_finalize)
     parent_graph.add_node("ONE_MORE_DAY", one_more_day)
     parent_graph.add_node("END_GAME", end_game)
     parent_graph.add_node("POST_GAME_ANALYSIS", post_game_analysis)
@@ -179,8 +259,11 @@ def build_parent_graph():
     parent_graph.add_conditional_edges("DAY_RESOLUTION", check_game_end_day)
     parent_graph.add_conditional_edges("WOLF_NIGHT_PHASE", route_after_wolf_night)
     parent_graph.add_conditional_edges("HEALER_NIGHT_PHASE", route_after_healer_night)
-    parent_graph.add_conditional_edges("NIGHT_RESOLUTION", check_game_end_night)
-    parent_graph.add_edge("INVESTIGATOR_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    parent_graph.add_conditional_edges("SERIAL_KILLER_NIGHT_PHASE", route_after_serial_killer_night)
+    parent_graph.add_edge("VIGILANTE_NIGHT_PHASE", "KILL_RESOLUTION")
+    parent_graph.add_conditional_edges("KILL_RESOLUTION", route_after_kill_resolution)
+    parent_graph.add_edge("INVESTIGATOR_NIGHT_PHASE", "NIGHT_FINALIZE")
+    parent_graph.add_conditional_edges("NIGHT_FINALIZE", check_game_end_night)
     parent_graph.add_edge("ONE_MORE_DAY", "DAY_PHASE")
     parent_graph.add_edge("END_GAME", "POST_GAME_ANALYSIS")
     parent_graph.add_edge("POST_GAME_ANALYSIS", END)

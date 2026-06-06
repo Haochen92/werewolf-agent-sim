@@ -24,13 +24,18 @@ def _safe_div(numerator: int, denominator: int) -> float | None:
 
 def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
     roles = result["roles"]
+    # surviving_villagers is the non-wolf bucket (town + the solo SK + vigilante).
     survivors = result["surviving_wolves"] + result["surviving_villagers"]
 
-    healer_id = next(p for p, r in roles.items() if r == "healer")
-    investigator_id = next(p for p, r in roles.items() if r == "investigator")
+    def _role_id(role: str) -> str | None:
+        return next((p for p, r in roles.items() if r == role), None)
+
+    healer_id = _role_id("healer")
+    investigator_id = _role_id("investigator")
 
     # --- Tier 1: straight from final state ---
-    winner = result["winner"]
+    # winner is "villagers"/"wolves"/"serial_killer", or None for a max_days draw.
+    winner = result.get("winner") or "draw"
     game_length = result["current_day"]
 
     # --- Tier 2: single pass over day resolutions ---
@@ -155,12 +160,17 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
 
     # --- Tier 5: power role exit methods ---
 
-    def _exit_method(player_id: str) -> str:
+    def _exit_method(player_id: str | None) -> str:
+        if player_id is None:
+            return "absent"
         if player_id in survivors:
             return "survived"
         for day in metrics.day_resolutions:
             if day.voted_player == player_id:
                 return "voted_out"
+        # Catch-all for a night death. NOTE: with the SK/vigilante added, this is no
+        # longer wolf-exclusive — per-killer night attribution is deferred to the dense
+        # per-role metrics pass; the legacy label is kept to avoid breaking downstream.
         return "killed_by_wolves"
 
     return BaseGameMetrics(
