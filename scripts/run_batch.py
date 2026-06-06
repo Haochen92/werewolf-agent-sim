@@ -337,8 +337,10 @@ def run_batch(args: argparse.Namespace) -> int:
     if args.dry_run:
         return 0
 
+    from Agents.agents import prompt_log
     from Agents.main import run_game
     from Agents.run_fingerprint import runtime_fingerprint
+    from tests.leak_test import run_leak_tests
 
     # Resolved once per batch: code/prompt versions, model IDs, params, backend.
     # Makes each JSONL record self-describing — a record is only comparable to
@@ -349,6 +351,7 @@ def run_batch(args: argparse.Namespace) -> int:
     print(f"Writing JSONL results to: {results_path}")
     failures = 0
     started_runs = 0
+    leak_games = 0
 
     for planned_run_index, (config_name, run_index) in enumerate(planned_runs):
         started_runs += 1
@@ -376,6 +379,16 @@ def run_batch(args: argparse.Namespace) -> int:
             )
             result = outcome.result
             duration_seconds = perf_counter() - started_timer
+            # run_game clears prompt_log at start, so the global holds exactly
+            # this game's prompts. Leaks are recorded (not raised) so the game
+            # result is preserved; the batch still exits non-zero on any leak.
+            leaks = run_leak_tests(prompt_log, result.get("roles") or {})
+            if leaks:
+                leak_games += 1
+                print(
+                    f"LEAK DETECTED in {current_run_id}: {len(leaks)} leak(s)",
+                    file=sys.stderr,
+                )
             record = {
                 "status": "success",
                 "runtime_fingerprint": fingerprint,
@@ -401,6 +414,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 "day_channel": result.get("day_channel"),
                 "day_summaries": result.get("day_summaries"),
                 "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
+                "leak_check": {"passed": not leaks, "leaks": leaks},
             }
             write_record(results_path, record)
             print(
@@ -448,8 +462,10 @@ def run_batch(args: argparse.Namespace) -> int:
     summary = f"Batch complete: {successes} succeeded, {failures} failed"
     if not_started:
         summary += f", {not_started} not started"
+    if leak_games:
+        summary += f", {leak_games} game(s) WITH PRIVATE-INFO LEAKS"
     print(summary)
-    return 1 if failures else 0
+    return 1 if failures or leak_games else 0
 
 
 def main() -> None:
