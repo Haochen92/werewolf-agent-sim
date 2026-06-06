@@ -524,25 +524,83 @@ It's a tie between players {candidates}. No one is voted out this day."""
     }
 
 
+# Public death-announcement flavor per attacker: (verb, subject phrase). Reveals the
+# attacker TYPE (so the town learns an SK/vigilante exists once they act) but never the
+# attacker's identity.
+_ATTACK_FLAVOR = {
+    "wolves": ("killed", "the wolves"),
+    "serial_killer": ("stabbed", "the serial killer"),
+    "vigilante": ("shot", "the vigilante"),
+}
+
+
+def _join(items: list[str]) -> str:
+    if len(items) <= 1:
+        return items[0] if items else ""
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
 def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
+    current_day = state.get("current_day", 1)
     wolves_target = state.get("wolves_kill_target")
     healer_target = state.get("healer_target")
-    current_day = state.get("current_day", 1)
     investigator_target = state.get("investigator_target")
-    kill_successful = bool(wolves_target and wolves_target != healer_target)
+    serial_killer_target = state.get("serial_killer_target")
+    vigilante_target = state.get("vigilante_target")
+    sk_player = state.get("serial_killer_player")
+
+    roles = state["roles"]
+    wolves_before, town_before, sk_before = _faction_counts(state)
+
+    # Who attacked whom this night (a target may be hit by more than one killer).
+    attacks_on: dict[str, list[str]] = {}
+    for target, attacker in (
+        (wolves_target, "wolves"),
+        (serial_killer_target, "serial_killer"),
+        (vigilante_target, "vigilante"),
+    ):
+        if target:
+            attacks_on.setdefault(target, []).append(attacker)
+
+    # Resolve protection + SK night-immunity once over the whole set. A player attacked
+    # by multiple killers still dies at most once; the immune SK never dies at night and
+    # such whiffs are SILENT (announcing them would out the SK).
+    def _resolved(target: str) -> str:
+        if target == sk_player:
+            return "immune"  # silent whiff
+        if target == healer_target:
+            return "saved"
+        return "killed"
+
+    outcomes = {t: _resolved(t) for t in attacks_on}
+    deaths = sorted(t for t, o in outcomes.items() if o == "killed")
+
+    kill_successful = bool(wolves_target and wolves_target in deaths)
     healer_saved = bool(wolves_target and wolves_target == healer_target)
+    serial_killer_kill_landed = bool(serial_killer_target and serial_killer_target in deaths)
+    vigilante_kill_landed = bool(vigilante_target and vigilante_target in deaths)
 
     metric = NightResolutionMetric(
         day=current_day,
         wolves_target=wolves_target,
-        wolf_target_role=state["roles"].get(wolves_target) if wolves_target else None,
+        wolf_target_role=roles.get(wolves_target) if wolves_target else None,
         healer_target=healer_target,
         investigator_target=investigator_target,
         investigator_target_role=(
-            state["roles"].get(investigator_target) if investigator_target else None
+            roles.get(investigator_target) if investigator_target else None
         ),
         kill_successful=kill_successful,
         healer_saved=healer_saved,
+        serial_killer_target=serial_killer_target,
+        serial_killer_target_role=roles.get(serial_killer_target) if serial_killer_target else None,
+        vigilante_target=vigilante_target,
+        vigilante_target_role=roles.get(vigilante_target) if vigilante_target else None,
+        serial_killer_kill_landed=serial_killer_kill_landed,
+        vigilante_kill_landed=vigilante_kill_landed,
+        deaths=deaths,
+        wolves_before=wolves_before,
+        town_before=town_before,
+        sk_before=sk_before,
     )
     runtime.context["metrics"].night_resolutions.append(metric)
     with langfuse.start_as_current_observation(
@@ -551,7 +609,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     ) as span:
         span.update(metadata=metric.model_dump())
 
-    investigated_role = state["roles"].get(investigator_target, "unknown")
+    investigated_role = roles.get(investigator_target, "unknown")
     investigator_update = (
         [
             InvestigatorResult(
@@ -564,56 +622,53 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         else []
     )
 
-    if kill_successful:
-        surviving_villagers = [
-            player for player in state["surviving_villagers"] if player != wolves_target
+    state_update: dict = {"investigator_results": investigator_update}
+
+    # The vigilante spends a bullet whenever it takes a shot, even if healed or whiffed.
+    if vigilante_target:
+        state_update["vigilante_bullets"] = max(0, state.get("vigilante_bullets", 0) - 1)
+
+    lines: list[str] = []
+    announced_save = False
+    for target in sorted(attacks_on):
+        outcome = outcomes[target]
+        if outcome == "immune":
+            continue  # silent
+        attackers = attacks_on[target]
+        phrase = _join([_ATTACK_FLAVOR[a][1] for a in attackers])
+        if outcome == "saved":
+            # Use a neutral verb so it doesn't read as "killed ... but saved".
+            lines.append(f"{target} was attacked by {phrase} but was saved by the healer!")
+            announced_save = True
+        else:  # killed
+            verb = _ATTACK_FLAVOR[attackers[0]][0] if len(attackers) == 1 else "attacked"
+            lines.append(
+                f"{target} was {verb} by {phrase} last night. They were a {roles[target]}."
+            )
+            _nullify_special_roles(state_update, target, state)
+
+    if not deaths and not announced_save:
+        lines.append("No one died last night.")
+
+    if deaths:
+        state_update["surviving_wolves"] = [
+            p for p in state["surviving_wolves"] if p not in deaths
         ]
-        message = (
-            f"{wolves_target} was killed by the wolves last night. "
-            f"They were a {state['roles'][wolves_target]}."
+        state_update["surviving_villagers"] = [
+            p for p in state["surviving_villagers"] if p not in deaths
+        ]
+
+    message = f"Night of day {current_day}: " + " ".join(lines)
+    state_update["day_channel"] = [
+        DayChannel(
+            day=current_day,
+            seq=sum(1 for m in state["day_channel"] if m.day == current_day),
+            player="game_master",
+            message=message,
         )
-
-        state_update = {
-            "surviving_villagers": surviving_villagers,
-            "investigator_results": investigator_update,
-            "day_channel": [
-                DayChannel(
-                    day=current_day,
-                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
-                    player="game_master",
-                    message=message,
-                )
-            ],
-            "day_summaries": [
-                DaySummary(day=current_day, summary=message)
-            ],
-        }
-
-        _nullify_special_roles(state_update, wolves_target, state)
-
-        return state_update
-
-    if healer_saved:
-        message = (
-            f"{wolves_target} was targeted by the wolves last night, "
-            "but was saved by the healer!"
-        )
-        return {
-            "investigator_results": investigator_update,
-            "day_channel": [
-                DayChannel(
-                    day=current_day,
-                    seq=sum(1 for m in state["day_channel"] if m.day == current_day),
-                    player="game_master",
-                    message=message,
-                )
-            ],
-            "day_summaries": [
-                DaySummary(day=current_day, summary=message)
-            ],
-        }
-
-    return {"investigator_results": investigator_update} if investigator_update else {}
+    ]
+    state_update["day_summaries"] = [DaySummary(day=current_day, summary=message)]
+    return state_update
 
 
 def one_more_day(state: OrchestratorGraph):
@@ -623,6 +678,8 @@ def one_more_day(state: OrchestratorGraph):
         "wolves_kill_target": None,
         "healer_target": None,
         "investigator_target": None,
+        "serial_killer_target": None,
+        "vigilante_target": None,
         "voted_player": None,
     }
 

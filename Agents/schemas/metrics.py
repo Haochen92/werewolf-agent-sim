@@ -30,6 +30,19 @@ class NightResolutionMetric(BaseModel):
     investigator_target_role: str | None
     kill_successful: bool
     healer_saved: bool
+    serial_killer_target: str | None = None
+    serial_killer_target_role: str | None = None
+    vigilante_target: str | None = None
+    vigilante_target_role: str | None = None
+    # Resolved at the night-resolution node (single source of truth for heal + SK
+    # night-immunity), so downstream metrics never re-derive the kill rules.
+    serial_killer_kill_landed: bool = False
+    vigilante_kill_landed: bool = False
+    deaths: list[str] = Field(default_factory=list)
+    # Faction sizes entering the night (after any day lynch, before night deaths).
+    wolves_before: int = 0
+    town_before: int = 0
+    sk_before: int = 0
 
 
 class Metrics(BaseModel):
