@@ -139,6 +139,17 @@ The tier list (§2) is the idea inventory; this is the agreed minimal product lo
 5. **(OAuth'd) personal board**: win rate per role, game history. Trivially derived from the
    existing batch-record schema.
 
+**Human turn-taking (decided in discussion):** reactive preserved symmetrically (human
+obligations enter `build_reactive_queue` like any agent's, same per-pair K=2; turn timer, timeout
+plays `pass_turn` so an AFK human degrades to passes and the day still terminates). Proactive =
+**raised-hand preemption**: a standing toggle, checked by `select_next` before `rank_proactive`
+when no reactive obligations pend — raised → human speaks (consumes from the same P=3 budget);
+not raised → agents proceed. No blocking "want to speak?" prompts. Honest privilege granted: the
+human is guaranteed access to their full proactive budget while agents face the recency+seeded
+lottery — bounded by the same P, a scheduling privilege not a volume/information one. Novelty
+gate exempts the human (it exists to stop agent echo; never bounce a human message). Scheduler
+stays stateless — raised-hand flag is one more per-recompute input, no new state.
+
 **Explicitly cut from MVP:** live spectator mode (replay covers it), agents-remember-you
 (unproven value vs. real namespace/isolation/cold-start cost — revisit only if retention becomes
 the problem), seasons/flywheel UI (post-fine-tune story), prediction overlays, coach mode.
