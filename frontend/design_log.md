@@ -221,7 +221,33 @@ the novelty gate decides no-token-streaming, the stateless scheduler decided hum
 the batch pipeline decided the daily puzzle is near-free. When a frontend question feels open,
 first check which existing backend invariant already answers it.
 
-## 9. Backend touchpoints to keep in mind (no action yet)
+## 9. Human involvement as model-feedback signal (discussed 2026-06-06)
+
+Question: can human players feed model tuning? **Verdict: evaluation signal first, training
+signal only after scale. Nothing in Phases A–C changes.** Ranked by value-per-cost:
+
+1. **⭐ Daily puzzle = labelling machine (eval-grade, the real win).** Same-seed puzzle → N humans
+   read ONE transcript with per-phase guesses → aggregate = **timestamped human-suspicion curve
+   per agent per speech** ("after Marcus's day-2 speech, suspicion 30%→70%"). Per-speech
+   deception-quality labels no LLM judge can give (judges miss this — known limitation), at
+   scale, free, zero consent friction (agent-only transcripts). Feeds: (a) **proxy validation**
+   — proxy-vs-human-suspicion as a second monotonicity check alongside proxy-vs-win; (b) later,
+   preference pairs (suspicion-lowering vs -raising speeches) for a deception-quality model —
+   same training shape as the CE reranker, new signal. **Schema requirement NOW: record guesses
+   keyed (game_id, phase, guesser), not just final score.**
+2. **Live human games = headline eval metric, not a dataset.** "Deception rate vs humans" is the
+   real benchmark + distribution-shift detector vs self-play overfit; but sparse at MVP scale,
+   noisy (human skill variance), hard credit assignment. Dashboard number only.
+3. **Explicit post-game ratings** ("most human-like?", MVP vote): one screen, doubles as
+   engagement, weak-but-free baseline against the deterministic MVP score. Never load-bearing.
+4. **Human utterances → extraction pipeline (agents learn from humans): defer, don't foreclose.**
+   Most flywheel-shaped, most fraught (quality variance, trolls). **Consent line in TOS from day
+   one** ("gameplay may be used to improve the agents") — one sentence now, painful retrofit.
+
+Near-term fine-tunes (dedup classifier, CE) are retrieval-infra — human signal irrelevant to
+them. Option-preservers to build in: per-phase guess schema, consent sentence, the §8 event log.
+
+## 10. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
