@@ -290,7 +290,43 @@ them. Option-preservers to build in: per-phase guess schema, consent sentence, t
   third ($10–20/mo VPS when outgrowing the home box). The thing that scales with users (puzzle)
   is static-file CDN ≈ $0; the expensive thing (live games) is capped by policy.
 
-## 11. Backend touchpoints to keep in mind (no action yet)
+## 11. Rigor boundary + ghost mode (discussed 2026-06-06)
+
+### The rigor boundary (research vs fun-production)
+
+Decision: the PORTFOLIO CLAIM ("memory improves play, measured") is made and frozen under the
+pinned Gemini config; after that, production-for-fun relaxes — BYOK with any backend (various
+integrations, incl. NVIDIA NIM) is allowed with a disclaimer ("not the evaluated configuration").
+A minor end-of-project model comparison closes the loop ("same agents on other backends" as a
+chapter, not a confound). This supersedes §8's blanket NIM rejection — that argument applies to
+the EVAL phase only.
+
+- Mechanically already supported: `runtime_fingerprint` stamps backend+model into every record →
+  "evaluated configuration" vs "exhibition mode" is a FILTER, not new infra. UI labels it;
+  leaderboards/eval dashboards filter to canonical config.
+- **The one guardrail: foreign-backend games are READ-ONLY on the memory store.** Retrieval
+  during exhibition games = fine; extraction writing back = memory-store contamination right
+  before fine-tuning on accumulated memory. `extraction_enabled = (backend == canonical)`.
+  Cheap now, unrecoverable later.
+
+### Ghost mode (free playable replays — zero LLM calls)
+
+Human takes a VILLAGER seat in an already-completed game: reads `day_channel` day-by-day (public
+info only), maintains role predictions; "voting" = suspicion ranking. No generation at all.
+
+- **Beat-the-ghost scoring** (turns the non-interventional gap INTO the game): you replaced a
+  specific seat → benchmark your daily suspicion ranking against what that agent actually voted;
+  endgame: "the villager you replaced voted out the investigator day 2; you had the wolf at #1."
+  Side product: a human-vs-agent deduction benchmark feeding §9's eval story.
+- Villager-only v1 for timeline validity (their night is a no-op). Investigator ghost is half
+  possible (results derivable from frozen roles) but forks the discussion timeline — parked.
+- **Serve from replay artifacts (§8 event-log format / batch records) as static JSON + CDN — NOT
+  Langfuse** (trace store: auth-coupled, rate-limited, not a serving API; it's the offline source
+  replay files are built from).
+- Funnel gradient: ghost games (unlimited, free) → daily puzzle (curated, social) → live seat
+  (capped) → BYOK (unlimited, their key). Ghost mode = the guest default experience.
+
+## 12. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
