@@ -414,6 +414,9 @@ def run_batch(args: argparse.Namespace) -> int:
                 "day_channel": result.get("day_channel"),
                 "day_summaries": result.get("day_summaries"),
                 "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
+                # Per-night decisions (targets, deaths, kill-landed) for offline
+                # inspection — the derived proxies live in computed_metrics.
+                "night_resolutions": (outcome.raw_metrics or {}).get("night_resolutions"),
                 "leak_check": {"passed": not leaks, "leaks": leaks},
             }
             write_record(results_path, record)

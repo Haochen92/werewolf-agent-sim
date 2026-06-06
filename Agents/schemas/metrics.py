@@ -188,3 +188,7 @@ class ComputedGameMetrics(DerivedGameMetrics):
 class GameOutcome:
     result: dict
     game_metrics: ComputedGameMetrics
+    # Raw per-decision accumulators (day_resolutions + night_resolutions) as a
+    # json-safe dict, so a batch record can dump the per-night decisions (targets,
+    # deaths, kill-landed) — not just the derived proxies in game_metrics.
+    raw_metrics: dict | None = None
