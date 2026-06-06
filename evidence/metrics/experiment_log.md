@@ -31,20 +31,93 @@ This work is **v2**, a refinement — not a from-scratch build. The history matt
   monotonic in skill. v2 keeps v1's mechanical, fully-objective backbone and sharpens it; it does NOT
   discard v1 or chase a per-decision determinism the system can't honestly support (see discussion).
 
+## How v1 came to be — provenance & rationale
+
+No design log was ever written for v1; the rationale below is reconstructed from git history
+(`1cd5ed7 "Add: runtime memory metrics for evaluation"`, `a299ee2 "Fix: measure wolf blending…"`,
+`67e22c3 "Make metrics robust for 3 factions…"`; judge commits `eb23f72`, `50403f5`, `bf9490a`,
+`c07dff7`…) and the code itself. Two design pillars:
+
+### Pillar 1 — the LLM-as-judge pipeline (subjective by nature), aimed at "did memory help?"
+The judge suite (`evaluation/judges/`) measures the thing win rate can't see directly: **was the
+memory useful for *this decision*** — `retrieval_relevance` (were the pulled memories on-point),
+`strategy_application` (did the agent actually use them), `action_quality`, `grounding`,
+`summary_quality`. Aggregated across memory-on turns, this is the qualitative read of memory
+effectiveness, complementing the win-rate A/B.
+
+**Why it's subjective — concretely:** the judge is *itself an LLM* scoring free-text on a 1–5 rubric.
+So a score depends on (a) the judge model + prompt phrasing + temperature, (b) the judge's own
+interpretation with no ground-truth anchor, (c) the backend — Vertex vs Google AI give different
+outputs at temp 0 ([[feedback-vertex-backend-affects-scores]]), and (d) known blind spots — our own
+finding is that the judge **misses information gain** ([[feedback-llm-judge-limitations]]), plus the
+usual verbosity/leniency/position biases. It's reproducible only approximately. That subjectivity is
+exactly why v1 *also* shipped the deterministic metrics, and why v2 leans on them.
+
+### Pillar 2 — the deterministic metrics: "score whatever we can extract mechanically"
+`compute_metrics.py` was built bottom-up from what the game emits with **zero LLM**: votes, revealed
+roles, deaths (`Day/NightResolutionMetric`). **Normalization is already present** — every
+`DerivedGameMetric` is a *rate*, normalized by **opportunity** (the denominator), not a raw count:
+e.g. `investigator_accuracy = wolves_found / investigations`, `healer_save_rate = saves /
+nights_alive`, `wolf_steering_rate = steered / mislynch_days`. So v1 already de-noises by opportunity;
+what it does *not* do is normalize by **information/difficulty** (uncertainty). That — not "no
+normalization" — is the precise gap v2 targets.
+
+## Accurate limitations (re-checked against `Agents/prompts/roles.py` + the gameplay changes)
+
+The game changed since v1's metrics were written: **voting is now optional** (abstain / plurality, no
+forced lynch) and there is a **third faction** (night-immune serial killer + town vigilante). Checking
+each metric against the *actual* current roles, some limitations are **real and concrete**, and one of
+my earlier critiques was **exaggerated**:
+
+**Real & concrete (gameplay-change-induced staleness — verified in code, not yet fixed):**
+- **`mislynches` / `correct_elimination_rate` don't credit lynching the SK.** `mislynches` counts any
+  `voted_player_role != "wolf"` ([compute_metrics.py:50](Agents/compute_metrics.py#L50)) and
+  `correct_elimination_rate = wolf_eliminations / total` only counts `role == "wolf"`. But the SK
+  **can only be removed by a day vote** (roles.py:56) — lynching it is the village's single most
+  important day-objective against that faction, yet it scores as a *mislynch*. "Correct" should be
+  `role in {wolf, serial_killer}` from the town's perspective.
+- **`investigator_accuracy` ignores SK discovery and mismodels the role's objective.** It counts only
+  `investigator_target_role == "wolf"` ([compute_metrics.py:74](Agents/compute_metrics.py#L74)), but
+  the investigator's stated job (roles.py:21) *also* values **clearing a townie** (narrows the pool)
+  and, post-3-faction, **finding the SK** — neither is credited, so a deliberate, skillful
+  town-clear or SK-find reads as a "miss."
+- **`_exit_method` mislabels SK/vigilante night kills as `"killed_by_wolves"`**
+  ([compute_metrics.py:171-174](Agents/compute_metrics.py#L171)) — acknowledged in an in-code comment;
+  per-killer attribution deferred to the dense per-role pass.
+
+**Exaggerated in my first pass (correcting for accuracy):**
+- **`healer_save_rate` is NOT "pure luck."** It's luck-laden but **monotonic in skill**: a healer that
+  reads threats well (roles.py:8) protects likely targets and saves more over many games. It's a
+  *valid* proxy — exactly the kind v2 keeps and verifies via proxy-vs-win, not one to discard.
+  (Three factions make it noisier — two night killers now — but not invalid.)
+
+**New gaps from optional voting (not bugs, but incompleteness):**
+- A **strategic abstain** (good play under uncertainty) is invisible: it just shrinks
+  `total_eliminations`, neither rewarded nor penalized. Vote-quality is now an incomplete picture, and
+  the lynch-rate denominators are smaller → noisier at low N.
+
+**Net:** the headline v1 weakness for our purposes is **not** the outcome-vs-decision-quality
+philosophy — it's that the 3-faction + optional-voting changes left several metrics **semantically
+stale** (SK-lynch and SK-discovery uncredited, killer attribution wrong). Those are concrete and
+fixable in v2 and matter more than the luck critique.
+
 ## Audit of existing metrics (2026-06-06) — this is v1
 
 Two **fully separate** families. (Full catalog with file:line in the session record; condensed here.)
 
 ### Family 1 — deterministic game/role metrics (`Agents/compute_metrics.py`, `schemas/metrics.py`)
-**100% mechanical (votes, revealed roles, deaths) — zero LLM, fully objective. BUT entirely
-outcome-based, zero uncertainty-normalization.** They measure *what happened* (luck included):
+**100% mechanical (votes, revealed roles, deaths) — zero LLM, fully objective. Already normalized by
+OPPORTUNITY (rates, not raw counts), but NOT by information/difficulty (uncertainty), and
+outcome-based.** They measure *what happened* (luck included, but mostly monotonic in skill — see
+"Accurate limitations" above for which are stale vs valid):
 - `BaseGameMetrics`: winner, game_length, mislynches, wolf_eliminations, healer_save_count,
   healer/investigator_nights_alive + exit_method, investigator_wolves_found, power_roles_killed,
   wolf_power_role_target_nights, mislynch/wolf-elim day breakdowns (steered/blended/dissented).
 - `DerivedGameMetrics` (rates): `correct_elimination_rate` (wolf lynches / lynches),
-  `healer_save_rate` (saves / nights — **pure luck**: did wolves happen to target the protected
-  player), `investigator_accuracy` (wolves_found / investigations — a forced late 1-of-2 guess scores
-  = an early skillful read), `wolf_steering/blending/dissent_rate`, `wolf_power_role_targeting_rate`.
+  `healer_save_rate` (saves / nights — luck-laden but monotonic-in-skill, a *valid* proxy),
+  `investigator_accuracy` (wolves_found / investigations — stale: ignores town-clears and SK-finds),
+  `wolf_steering/blending/dissent_rate`, `wolf_power_role_targeting_rate`. See "Accurate limitations"
+  for which are stale (SK-related) vs valid-but-luck-laden.
 
 ### Family 2 — LLM judges (`evaluation/judges/`, `evaluation/core/schemas.py`)
 **Decision-quality-oriented and partially uncertainty-aware, BUT subjective (LLM), scoped to the
