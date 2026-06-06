@@ -31,6 +31,28 @@ This work is **v2**, a refinement — not a from-scratch build. The history matt
   monotonic in skill. v2 keeps v1's mechanical, fully-objective backbone and sharpens it; it does NOT
   discard v1 or chase a per-decision determinism the system can't honestly support (see discussion).
 
+## Lineage — this extends the v1 memory-effectiveness study
+
+`evidence/memory_system/effectiveness/report.md` is the prior, **v1-era** memory-effectiveness study
+(2 batches × ~91 games). It already established the headline — **memory works but is
+configuration-dependent** (Batch A villager win 70%→97% all-enabled; Batch B the "same" condition
+74%→73%) — and it already specifies the **authoritative paired/seeded A/B statistical design**
+(within-pair variance cancellation `Var(on−off)=Var(on)+Var(off)−2·Cov`, **McNemar** for win/loss,
+paired-t/Wilcoxon for dense metrics, full seedability incl. the scheduler tie-break). We **defer to
+that report** for the A/B statistics — this log does not re-derive them.
+
+That study, however, is the **old game**: 8 players, 2 factions, forced voting, v3/v4 stores. Its
+metrics (`correct_elimination_rate`, `healer_save_rate`, `investigator_accuracy`, `wolf_blending_rate`,
+`mislynches`) are exactly the ones this v2 work finds **stale for the rebuilt 9-player / 3-faction /
+optional-voting game**. So v2 is the proper extension: (a) make that basket **faction-correct** (wolf+SK),
+(b) **de-luck** it (lift-over-random, town/friendly-fire save split, opportunity denominators not
+`game_length`), (c) **add dense per-role proxies for the new roles** (SK survival gradient, vigilante
+shot quality) — the old study has none, (d) add **proxy-vs-win validation** (drop non-monotonic proxies).
+This basket feeds that report's "What's Next" validation batch — now **Phase C on v5**, post-rebuild.
+
+(NB: this log's metric **v0/v1/v2** versioning is a different axis from the effectiveness report's memory-
+*system* **Phase 0/1/2** (monolithic → RAG → namespace refinement) — don't conflate them.)
+
 ## How v1 came to be — provenance & rationale
 
 No design log was ever written for v1; the rationale below is reconstructed from git history
@@ -190,8 +212,126 @@ Explicitly accept the basket is luck-laden-but-monotonic rather than feigning a 
 determinism the system can't honestly support. A richer decision-quality layer, if ever wanted, is a
 **post-hoc eval-side judge done AFTER labelling** — never an output-path change.
 
-## Next step
+## v2 metric set — enumeration (PROPOSED 2026-06-06, pending review → then lock → then implement)
 
-Inventory the existing proxies; classify each by (de-luckable? both-arm-symmetric? plausibly
-monotonic?); run the **proxy-vs-win correlation** on available games to decide which to keep and
-whether the basket is strong enough. All post-hoc query — no frozen-pipeline changes.
+**Cross-cutting rules** (apply to every row; stated once):
+- **Both-arm:** all deterministic metrics are both-arm-symmetric ✅ (mechanical). The **LLM judges are
+  memory-on-only → NOT A/B-comparison metrics**; demoted to *diagnostic* + Phase B labelling.
+- **De-luck:** condition the denominator on *opportunity*, not existence.
+- **Monotonicity:** correlate each kept proxy with its faction's **win**; drop those that don't move.
+
+Verdict legend: KEEP / FIX / DROP / ADD. Type: D=deterministic, J=LLM-judge.
+
+### Village / outcome
+| Metric | Verdict | Type | Note / de-luck |
+|---|---|---|---|
+| `winner` (per-faction win) | KEEP | D | The headline + the monotonicity anchor for everything else. Variance handled by N + paired/seeded games. |
+| `correct_elimination_rate` | **FIX** | D | STALE: only counts wolf lynches. Fix → numerator = lynches of role∈{wolf, **serial_killer**} (both are kill-worthy from town's view; SK can *only* die by day-vote). Denominator stays total eliminations (opportunity). |
+| `mislynches` | **FIX** | D | STALE: counts role≠wolf, so SK/vigilante lynches read as mislynches. Fix → mislynch = a **town member** lynched (role∉{wolf, serial_killer}). Lynching the SK is NOT a mislynch. |
+| `serial_killer_lynched` | **ADD** | D | Was the SK removed by day-vote (the only way). Key village success vs the 3rd faction. |
+| `game_length`, `tie_count`, `no_vote_count`, `total_eliminations` | KEEP | D | Descriptive/context (decisiveness, esp. under optional voting). Not skill proxies on their own. |
+
+### Healer
+A "save" = `healer_target` was attacked (∈ {wolves_target, sk_target, vigilante_target}) and survived
+(not in `deaths`). With 3 factions a save is **not unconditionally good** — classify by the **faction
+of the saved player**. Denominator = `healer_action_nights` (every action-night has live attack
+pressure, since wolves/SK always attack — so action-nights is already opportunity-normalized; ruling 3).
+Replaces the wolf-only `healer_saved` flag ([nodes.py:561](Agents/nodes.py#L561)), which undercounts
+SK/vigilante intercepts.
+| Metric | Verdict | Type | Note |
+|---|---|---|---|
+| `healer_save_rate` (overall) | KEEP+**fix** | D | any save / action-nights. The current flag is wolf-only → undercount. |
+| `healer_town_save_rate` | **ADD** | D | saved player is **town** / action-nights. The **good-play / read-overlap** signal (healer's threat model matched a real attack on an ally). |
+| `healer_friendly_fire_save_rate` | **ADD** | D | saved player is a **wolf** / action-nights. The **error** signal (protected an enemy). Anti-correlate with village win. |
+| `healer_wolf_block_rate` | KEEP (legacy meaning) | D | saved from a **wolf** attack specifically (= the old `healer_saved`). |
+| `healer_exit_method` | **FIX** | D | Attribution fix (killed_by_wolves/sk/vigilante vs survived/voted_out). |
+| protect-targeting decision-quality | (none) | — | A "predicted kill-target" reference is infeasible deterministically; the town/friendly-fire save split is the read-overlap proxy. |
+
+### Investigator
+| Metric | Verdict | Type | Note / de-luck |
+|---|---|---|---|
+| `investigator_threat_find_rate` | **FIX** (was `investigator_accuracy`) | D | STALE: counted only role=="wolf". Fix → **lift over random** = (wolf+SK finds / investigations) ÷ chance-rate, where chance = `threats_alive / investigable_alive` per night (from `wolves_before`/`town_before`/`sk_before`). De-lucks for pool composition (a late-game threat-rich pool makes hits "free"). Keep a separate `investigator_wolf_find_rate` (wolf discovery has different tactical value than SK). Town-clears are legit info-gain but fuzzy to credit deterministically — known undercount, flagged. |
+| `investigator_found_wolf_day` | KEEP | D | Earliness proxy (earlier → better); intent = first-threat-find (incl. SK). |
+| `investigator_investigations_total` | KEEP | D | Denominator. |
+| `investigator_exit_method` | **FIX** | D | Attribution fix. |
+
+### Wolves (already mostly decision/behavior proxies — relatively well-served)
+| Metric | Verdict | Type | Note / de-luck |
+|---|---|---|---|
+| `wolf_power_role_targeting_rate` | KEEP+**fix denom** | D | Targeting *choice* (de-lucked from heal/immunity). STALE denominator: currently `/ wolf_kill_nights_total` (= night count ≈ `game_length`, an outcome). Fix → `/ nights a power role was alive & targetable` (opportunity), not game length. |
+| `wolf_steering_rate` | KEEP+**fix denom** | D | Uses the stale mislynch_days def → apply the town-only mislynch fix to the denominator. |
+| `wolf_blending_rate` / `wolf_dissent_rate` | KEEP | D | Social-discipline behavior proxies (vote with the lynched ally = cover). |
+| `power_roles_killed_by_wolves`, `wolf_killed_{healer,investigator}_day` | KEEP | D | Wolf-specific outcome/context (correctly wolf-scoped). |
+
+### Serial Killer (NEW faction — no metrics today; the A/B headline subject)
+| Metric | Verdict | Type | Note / de-luck |
+|---|---|---|---|
+| `sk_survival_nights` / `sk_exit_method` | **ADD** | D | SK wins *by* surviving → survival length is the core dense proxy (near-definitional monotonicity = high-fidelity, low-variance signal for the A/B). |
+| `sk_kills_landed` | **ADD** | D | Field-thinning; near-always lands so low-discrimination → context, not headline. Rate = /nights-alive. |
+| `sk_lynched` | **ADD** | D | = `serial_killer_lynched` above (village's success / SK's failure). |
+| kill-target quality ("thin the threat closing in") | (none) | — | Social → infeasible deterministic; possible judge later. |
+
+### Vigilante (NEW — well-served deterministically; we know shot targets' true roles)
+| Metric | Verdict | Type | Note / de-luck |
+|---|---|---|---|
+| `vigilante_correct_shot_rate` | **ADD** | D | Shots hitting a threat (role∈{wolf, serial_killer}) / shots taken. The key spend-quality proxy. (Shooting the immune SK = correct target — confirms it — even though no kill.) |
+| `vigilante_friendly_fire` | **ADD** | D | Shots hitting town / shots taken. The error proxy (anti-correlate with village win). |
+| `vigilante_shots_taken`, `bullets_unused_at_death`, `vigilante_exit_method` | **ADD** | D | Aggression/waste/exit context. |
+
+### Cross-role — Votes (the chosen first scope)
+| Metric | Verdict | Type | Note / de-luck |
+|---|---|---|---|
+| `town_vote_accuracy` | **ADD** | D | Per town-agent, fraction of real (non-abstain) votes hitting a threat (wolf/SK), aggregated per role. The realized "vote" proxy — **luck-laden but monotonic** (the deterministic uncertainty-weight we wanted isn't capturable; rely on N + monotonicity). |
+| wolf vote quality | — | D | Already covered by `wolf_steering/blending_rate` (don't double-count). |
+
+### LLM judges (all of `evaluation/judges/`)
+| Verdict | Type | Note |
+|---|---|---|
+| KEEP as **DIAGNOSTIC**, **DROP from the A/B-comparison basket** | J | Memory-on-only (need situations/retrieval) → not both-arm. Use to diagnose *why* memory helped + as Phase B label targets. action_quality/grounding/day_summary judges *could* run both arms but are subjective → supplementary only, never the primary dense signal. |
+
+## Why dense, de-lucked proxies — the variance argument (the backbone of the claim)
+
+The headline (faction **win**) is ~1 bit per game → **high variance** → an underpowered test needs
+hundreds of games to detect a moderate win-rate lift (the roadmap's underpowered-gate lesson). **Dense**
+proxies produce many observations *per game* — per-night healer intercepts, per-vote accuracy,
+per-investigation lift, the SK **survival-nights gradient** (gradation even among losses) — so their
+per-game variance is far lower and the memory effect is detectable at feasible N. **That is the whole
+reason to de-luck + densify rather than lean on win rate alone.**
+
+### Statistical analysis plan
+The **A/B design itself (paired/seeded, McNemar, paired-t/Wilcoxon, variance cancellation, seedability)
+is specified in `evidence/memory_system/effectiveness/report.md` — defer to it, not re-derived here.**
+What this metrics work adds on the **proxy side**:
+- Report **effect sizes** + **bootstrap CIs** for each de-lucked proxy across the paired games (not just
+  means); the per-pair *difference* is the unit (per the report's pairing).
+- **Validate every proxy by its correlation with faction win** on the same corpus; **drop** non-movers /
+  ambiguous ones before they enter the basket. (This validation step is the v2 addition — the old study
+  reported proxies without it.)
+
+### Claim framing — probabilistic triangulation, not deterministic proof
+We cannot deterministically score individual decisions from current logs, and we don't claim to. The
+defensible claim is conditional: *across repeated games, the memory arm improved faction outcomes **and**
+shifted several independent, monotonic, role-relevant proxies in strategically expected directions
+(town eliminates more enemies / fewer allies; healers intercept more real attacks on allies;
+investigators find enemies above chance; vigilantes spend shots on enemies; wolves target higher-value
+enemies while keeping cover) → memory **likely** improved play, subject to hidden-role variance and game
+stochasticity.* Win rate alone is too noisy; one proxy is too indirect; **several independent proxies
+moving together is the strong story** (triangulation).
+
+## Open judgment calls — RESOLVED 2026-06-06
+1. ✅ Correct-elimination = **wolf + SK** (town metric). Clean 3-way: `wolf_elimination_rate` /
+   `anti_town_elimination_rate` (wolf+SK) / `town_mislynch_rate`.
+2. ✅ Investigator → **lift-over-random** threat-find-rate (wolf+SK), keep `wolf_find_rate` separate; no
+   town-clear credit (known undercount, flagged).
+3. ✅ Healer denominator = **action-nights** (attacks always happen → already opportunity-normalized);
+   split into overall / town-save / friendly-fire-save / wolf-block.
+4. ✅ **Keep `town_vote_accuracy`** (dense per-vote complement; luck-laden-monotonic).
+5. ✅ Judges = **diagnostic + frozen-set extraction**, out of the A/B-comparison basket. (Deterministic
+   first for *scoring*; judges help *curate* the frozen eval set from traces — a tracing requirement.)
+6. ✅ SK = **survival-nights gradient** (not the binary win); vigilante = raw shot counts
+   (`num_evil_shot` / `num_friendly_fire` / holds / bullets-unused), not-shooting never penalized.
+
+## Next step (after the above is locked)
+One implementation pass for all KEEP-with-de-luck / FIX / ADD items (the attribution fix is already
+drafted, uncommitted — folds in here), then ONE verification batch + the proxy-vs-win correlation to
+confirm monotonicity and basket strength. All post-hoc-queryable — no frozen-pipeline / prompt changes.
