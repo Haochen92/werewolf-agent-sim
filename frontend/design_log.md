@@ -115,7 +115,35 @@ result is external evidence *for* the memory build: the gap it documents is the 
 closes. Roadmap extension (separate story, noted for the narrative): fine-tuned model trained on
 accumulated memory data — the data flywheel.
 
-## 6. Backend touchpoints to keep in mind (no action yet)
+## 6. MVP scope v0.1 (discussion 2026-06-06 — owner's cut, supersedes tier list as the concrete plan)
+
+The tier list (§2) is the idea inventory; this is the agreed minimal product loop:
+
+1. **Login: OAuth or continue-as-guest.** Guests get the full game *including* the replay; only
+   persistence (stats, history) requires OAuth. The sign-in prompt goes on the post-game screen
+   ("save this game and your stats?") — highest-conversion moment, zero friction before game 1.
+2. **Play**: human in one seat, sees exactly the information surface their role's agent would see
+   — **except memory**. Dialogue appears like a normal werewolf game; make decisions on your turn.
+   - The memory asymmetry is the *premise*, not a gap: "you're the rookie at a table of veterans."
+     Memory-on/off doubles as a difficulty knob later (easy = memory-off agents; future coach
+     mode = human gets retrieval too — the existing flag, no new machinery).
+3. **Endgame reveal → X-ray replay**: trace what each agent was thinking/retrieving at each point.
+   Endgame-only replay deliberately: no live-spoiler problem, no streaming-thoughts infra (replay
+   reads completed artifacts), and the unlock lands at peak curiosity ("the SK was WHO?").
+   Loser's autopsy converts frustration into engagement.
+4. **Post-game MVP score**: deterministic score from the de-lucked outcome proxies already built
+   for the metrics work (`evidence/metrics/` — the eval pipeline doubles as the fun layer) +
+   one cheap LLM call for flavor commentary. For fun, not rigorous — but the number has a real
+   methodology, the LLM only writes prose. (botmafia has "postgame autopsies"; the methodology is
+   the edge.)
+5. **(OAuth'd) personal board**: win rate per role, game history. Trivially derived from the
+   existing batch-record schema.
+
+**Explicitly cut from MVP:** live spectator mode (replay covers it), agents-remember-you
+(unproven value vs. real namespace/isolation/cold-start cost — revisit only if retention becomes
+the problem), seasons/flywheel UI (post-fine-tune story), prediction overlays, coach mode.
+
+## 7. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
