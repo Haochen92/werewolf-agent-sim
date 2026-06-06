@@ -59,6 +59,26 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 """
 
 
+NIGHT_ACTION_MEMORY_CONTEXT = """
+Relevant observations: (These are specific, detailed observations from past games that are relevant to your night decision):
+{retrieved_observations}
+
+Dynamic strategy points (strategies from past games relevant to your current situation):
+{strategy_points}
+
+{adoption_instruction}
+
+Adaptive Strategic thinking:
+    You have a private strategy note from your previous turns:
+    {previous_strategy}
+
+    Update your strategy notes based on new information and relevant observations. If your current
+    approach resembles a pattern that led to a bad outcome, adjust. You can reference dynamic strategy
+    points to refine your target choice, but do not apply rigidly. Keep your strategy notes concise
+    (3-5 sentences). This is private and will not be shared with other players.
+"""
+
+
 SITUATION_ROLE_LENS = {
     "wolf": "Also note: which villager is most dangerous to leave alive, and whether the pressure on your team could be redirected.",
     "villager": "Also note: who is being evasive, voting inconsistencies, and unresolved accusations.",
