@@ -90,7 +90,32 @@ visual thesis of the whole project.
 artifacts. Zero new game code, maximum "nobody else can show this" factor — and it doubles as a
 debugging/inspection tool for Phase B labelling, so it isn't even scope creep.
 
-## 5. Backend touchpoints to keep in mind (no action yet)
+## 5. Competitive landscape (researched 2026-06-06)
+
+Question asked: does a productionized mafia/werewolf game where humans play against actual LLM
+agents exist? **Answer: no.** Verified by web search 2026-06-06 (US-only search; can't see behind
+waitlists; small mobile apps may not advertise LLM use).
+
+| Bucket | Who | Status |
+|---|---|---|
+| Near-product (the only one) | [AI Mafia / botmafia.games](https://botmafia.games/) | **Waitlist-only.** 30+ roles, cognitive-bias personalities, TTS theater mode, 35-model leaderboard. **No agent memory/learning anywhere** (site, repo, docs). Strong evidence it's a solo side project by [guzus](https://github.com/guzus) (same OpenRouter stack + leaderboard concept as [guzus/llm-mafia-game](https://github.com/guzus/llm-mafia-game), 52★; repo roadmap says "Human vs LLMs 3D Mafia Game"; dev's main work is prediction-market tooling). Leaderboard page doesn't server-render. |
+| Agent-vs-agent spectator/benchmark | [werewolf.foaster.ai](https://werewolf.foaster.ai/), mafia.opennumbers.xyz ([Tom's Hardware](https://www.tomshardware.com/tech-industry/artificial-intelligence/ai-bots-can-now-play-mafia-with-each-other-and-almost-all-of-them-are-terrible-at-it), [Gigazine](https://gigazine.net/gsc_news/en/20250310-llm-mafia-game-competition/)), [mafiabench](https://github.com/nickslevine/mafiabench) | Humans watch, don't play. Headline third-party finding: naive stateless LLMs are *bad* at mafia. |
+| Research demos / OSS hobby | [MetaGPT werewolf](https://werewolf.deepwisdom.ai/) (`add_human=True` flag), [wolfcha](https://github.com/oil-oil/wolfcha), [hiper2d](https://github.com/hiper2d/werewolf-ai-party-game), [niveck/LLMafia](https://github.com/niveck/LLMafia) (the one *research* agent playing vs humans, async) | Not products. |
+
+Cross-game memory exists **only in papers** (Tsinghua experience-pool / [ICML 2024 strategic
+werewolf](https://dl.acm.org/doi/10.5555/3692070.3694355)) — research mechanisms evaluated once,
+never shipped, and none with an eval harness measuring whether memory helps.
+
+**Moat statement** (sharper than §1's): not just "watch AIs deceive each other" but **"AIs that
+got *better* at deceiving since last week — and you can inspect why."** Three empty lanes at
+once: (a) human-vs-LLM play is ~vacant (one waitlisted stateless solo project), (b) measured
+episodic memory exists nowhere in products, (c) observability/X-ray exists nowhere at all
+(botmafia's theater mode shows speech, not minds). The third-party "LLMs are terrible at mafia"
+result is external evidence *for* the memory build: the gap it documents is the gap this project
+closes. Roadmap extension (separate story, noted for the narrative): fine-tuned model trained on
+accumulated memory data — the data flywheel.
+
+## 6. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
