@@ -41,9 +41,6 @@ class GameConfig(BaseModel):
     max_days: int = Field(default=12, ge=1)
     # Pure cost backstop — night kills end games far sooner. At the cap the winner is
     # decided by surviving-faction size (tie -> draw).
-    max_discussion_rounds_per_day: int = Field(default=4, ge=1)
-    # ^ legacy (concurrent round model); still read by the interim check_round + prompt_inputs
-    #   until the SCHEDULE-node rewrite (Stage 4) removes round-based control.
 
     # --- Sequential discussion scheduler (Phase 0) -------------------------------
     # All deterministic, pure-function knobs; tune later. See evidence/agent_speaking/.

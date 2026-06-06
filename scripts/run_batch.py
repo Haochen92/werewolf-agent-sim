@@ -108,15 +108,6 @@ def parse_args() -> argparse.Namespace:
         help="Number of games to run for each selected memory config.",
     )
     parser.add_argument(
-        "--max-discussion-rounds-per-day",
-        type=int,
-        default=None,
-        help=(
-            "Maximum public discussion rounds before each day vote. "
-            "Defaults to the game config value."
-        ),
-    )
-    parser.add_argument(
         "--session-prefix",
         default=None,
         help="Prefix for Langfuse session IDs. Defaults to batch timestamp.",
@@ -299,21 +290,15 @@ def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, A
     return config
 
 
-def game_config_from_args(args: argparse.Namespace) -> dict[str, Any] | None:
-    if args.max_discussion_rounds_per_day is None:
-        return None
-    return {
-        "max_discussion_rounds_per_day": args.max_discussion_rounds_per_day,
-    }
-
-
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
     reranking_config = RERANKING_CONFIGS[args.reranking]
     filtering_config = FILTERING_CONFIGS[args.filtering]
     retrieval_types_config = RETRIEVAL_TYPES_CONFIGS[args.retrieval_types]
-    game_config = game_config_from_args(args)
+    # No game-config CLI overrides currently; games use the defaults. The general
+    # game_config seam is kept (recorded + passed to run_game) for future overrides.
+    game_config = None
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
     )
