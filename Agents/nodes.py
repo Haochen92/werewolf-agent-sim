@@ -145,34 +145,38 @@ def build_speaker_send(
     firing_reason: FiringReason,
     opener_floor: int = 0,
 ) -> Send:
-    """Dispatch one speaker's role node with a universal payload.
+    """Dispatch one speaker's role node with a common payload + role-gated private fields.
 
-    Every role gets the same superset of fields; each role node reads only the
-    subset it needs (LangGraph ignores extra keys on a Send payload). This replaces
-    the old per-role fan-out branching.
+    Private fields (wolf roster, investigator results, vigilante results) are only
+    attached to the role they belong to, mirroring fan_out_day. They must NOT ride
+    along in a universal superset: _run_agent builds the prompt-input dict straight
+    from this payload, so extra private keys reach every role's prompt input and are
+    one template edit away from leaking (tests/leak_test.py guards this invariant).
+    This replaces the old per-role fan-out branching.
     """
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
-    return Send(
-        f"{role}_discuss",
-        {
-            "human_player": speaker_id == state["human_player"],
-            "day_channel": state["day_channel"],
-            "day_summaries": state.get("day_summaries", []),
-            "surviving_players": surviving_players,
-            "surviving_wolves": state["surviving_wolves"],
-            "surviving_villagers": state["surviving_villagers"],
-            "investigator_results": state.get("investigator_results", []),
-            "vigilante_results": state.get("vigilante_results", []),
-            "player_id": speaker_id,
-            "player_role": role,
-            "current_day": state["current_day"],
-            "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
-            "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
-            "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
-            "strategy_points": "",
-            "firing_reason": firing_reason,
-        },
-    )
+    payload = {
+        "human_player": speaker_id == state["human_player"],
+        "day_channel": state["day_channel"],
+        "day_summaries": state.get("day_summaries", []),
+        "surviving_players": surviving_players,
+        "player_id": speaker_id,
+        "player_role": role,
+        "current_day": state["current_day"],
+        "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
+        "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
+        "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
+        "strategy_points": "",
+        "firing_reason": firing_reason,
+    }
+    if role == "wolf":
+        payload["surviving_wolves"] = state["surviving_wolves"]
+        payload["surviving_villagers"] = state["surviving_villagers"]
+    elif role == "investigator":
+        payload["investigator_results"] = state.get("investigator_results", [])
+    elif role == "vigilante":
+        payload["vigilante_results"] = state.get("vigilante_results", [])
+    return Send(f"{role}_discuss", payload)
 
 
 # Roles with day discuss/vote nodes registered in the day graph.
@@ -208,7 +212,6 @@ def fan_out_day(
             "previous_strategy": strategies.get(player, ""),
             "strategy_points": "",
             "allow_abstain": allow_abstain,
-            "vigilante_results": state.get("vigilante_results", []),
         }
 
     for player in surviving_players:
@@ -223,6 +226,8 @@ def fan_out_day(
             payload["surviving_villagers"] = state["surviving_villagers"]
         elif role == "investigator":
             payload["investigator_results"] = state["investigator_results"]
+        elif role == "vigilante":
+            payload["vigilante_results"] = state.get("vigilante_results", [])
 
         concurrent_nodes.append(Send(f"{role}_{phase}", payload))
 
