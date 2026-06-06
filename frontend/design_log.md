@@ -193,7 +193,7 @@ HD-2D), not retro-authentic.
 - **Parked (dangerous-but-tempting)**: human "last will" on death (Town of Salem) — a game-RULE
   change requiring agent prompt edits → crosses the frozen prompt surface; post-v5 only.
 
-## 8. Connection / view / platform posture (discussed 2026-06-06)
+## 8. Architectural concerns: connection / view / platform (discussed 2026-06-06)
 
 - **Stream EVENTS, not tokens.** Messages post whole after generation, preceded by a typing
   indicator. Three reasons token-streaming is actively wrong here: (a) the **novelty gate vetoes
@@ -215,6 +215,11 @@ HD-2D), not retro-authentic.
   and iteration; recruiters click URLs, not TestFlight invites. Build **mobile-first responsive**
   (werewolf reading is phone-shaped), add PWA manifest later for home-screen install + push.
   Native only earns its cost post-MVP (push-driven retention, IAP, store discovery).
+
+**Meta-observation worth keeping:** the backend architecture keeps making frontend decisions —
+the novelty gate decides no-token-streaming, the stateless scheduler decided human turn-taking,
+the batch pipeline decided the daily puzzle is near-free. When a frontend question feels open,
+first check which existing backend invariant already answers it.
 
 ## 9. Backend touchpoints to keep in mind (no action yet)
 
