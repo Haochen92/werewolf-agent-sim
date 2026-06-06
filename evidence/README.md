@@ -40,6 +40,15 @@ Quality of what goes into the memory store and what queries are generated at ret
 | [quality](extraction/quality/report.md) | n=48 | May 24-26 | Multi-phase: judge comparison, per-role, model comparison |
 | [situation_summary](extraction/situation_summary/report.md) | n=15 | May 24 | 4-model comparison for situation summary generation |
 
+### [metrics/](metrics/) — Evaluation Metrics
+
+How we score per-role *play performance* (the key driver of the memory-system impact measurement).
+Distinct from the judges in other folders, which score the memory pipeline itself.
+
+| Experiment | Sample | Date | Status |
+|---|---|---|---|
+| [experiment_log](metrics/experiment_log.md) | — | Jun 6 | Design discussion: audit + proxy-basket decision (per-role decision-quality is not deterministically feasible; use de-lucked, monotonicity-verified outcome proxies) |
+
 ### [memory_system/](memory_system/) — Memory System Impact
 
 End-to-end measurements of whether and how episodic memory helps gameplay.

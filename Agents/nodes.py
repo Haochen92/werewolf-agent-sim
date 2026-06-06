@@ -17,7 +17,7 @@ from Agents.state import (
 )
 
 from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
-from Agents.schemas import DaySummaryOutput
+from Agents.schemas import DaySummaryCase, DaySummaryOutput
 from Agents.extraction import (
     build_extraction_prompt,
     extract_postgame,
@@ -145,34 +145,38 @@ def build_speaker_send(
     firing_reason: FiringReason,
     opener_floor: int = 0,
 ) -> Send:
-    """Dispatch one speaker's role node with a universal payload.
+    """Dispatch one speaker's role node with a common payload + role-gated private fields.
 
-    Every role gets the same superset of fields; each role node reads only the
-    subset it needs (LangGraph ignores extra keys on a Send payload). This replaces
-    the old per-role fan-out branching.
+    Private fields (wolf roster, investigator results, vigilante results) are only
+    attached to the role they belong to, mirroring fan_out_day. They must NOT ride
+    along in a universal superset: _run_agent builds the prompt-input dict straight
+    from this payload, so extra private keys reach every role's prompt input and are
+    one template edit away from leaking (tests/leak_test.py guards this invariant).
+    This replaces the old per-role fan-out branching.
     """
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
-    return Send(
-        f"{role}_discuss",
-        {
-            "human_player": speaker_id == state["human_player"],
-            "day_channel": state["day_channel"],
-            "day_summaries": state.get("day_summaries", []),
-            "surviving_players": surviving_players,
-            "surviving_wolves": state["surviving_wolves"],
-            "surviving_villagers": state["surviving_villagers"],
-            "investigator_results": state.get("investigator_results", []),
-            "vigilante_results": state.get("vigilante_results", []),
-            "player_id": speaker_id,
-            "player_role": role,
-            "current_day": state["current_day"],
-            "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
-            "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
-            "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
-            "strategy_points": "",
-            "firing_reason": firing_reason,
-        },
-    )
+    payload = {
+        "human_player": speaker_id == state["human_player"],
+        "day_channel": state["day_channel"],
+        "day_summaries": state.get("day_summaries", []),
+        "surviving_players": surviving_players,
+        "player_id": speaker_id,
+        "player_role": role,
+        "current_day": state["current_day"],
+        "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
+        "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
+        "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
+        "strategy_points": "",
+        "firing_reason": firing_reason,
+    }
+    if role == "wolf":
+        payload["surviving_wolves"] = state["surviving_wolves"]
+        payload["surviving_villagers"] = state["surviving_villagers"]
+    elif role == "investigator":
+        payload["investigator_results"] = state.get("investigator_results", [])
+    elif role == "vigilante":
+        payload["vigilante_results"] = state.get("vigilante_results", [])
+    return Send(f"{role}_discuss", payload)
 
 
 # Roles with day discuss/vote nodes registered in the day graph.
@@ -208,7 +212,6 @@ def fan_out_day(
             "previous_strategy": strategies.get(player, ""),
             "strategy_points": "",
             "allow_abstain": allow_abstain,
-            "vigilante_results": state.get("vigilante_results", []),
         }
 
     for player in surviving_players:
@@ -223,6 +226,8 @@ def fan_out_day(
             payload["surviving_villagers"] = state["surviving_villagers"]
         elif role == "investigator":
             payload["investigator_results"] = state["investigator_results"]
+        elif role == "vigilante":
+            payload["vigilante_results"] = state.get("vigilante_results", [])
 
         concurrent_nodes.append(Send(f"{role}_{phase}", payload))
 
@@ -295,25 +300,64 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     from Agents.agents import get_llm_summary
     from Agents.formatters import format_day_channel
 
+    # The day summary runs in BOTH memory arms (it's pre-memory), so freeze it
+    # as a judgeable case (#3). ``raw_discussion`` matches what the day-summary
+    # judge consumes; ``round`` carries the message seq (sequential discussion
+    # has no per-round notion). The span nests under the game trace, so
+    # ``trace_id`` alone lets the builder reattach it (``game_id`` is convenience).
+    raw_discussion = [
+        {"player": m.player, "round": m.seq, "message": m.message}
+        for m in current_day_messages
+    ]
+    game_id = state.get("game_id", "") or ""
+    span_name = f"day_summary_eval_{game_id}_day_{current_day}"
+
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
         situation_standards=SITUATION_STANDARDS,
     )
-    for attempt in range(max_retries + 1):
-        try:
-            result = get_llm_summary().with_structured_output(DaySummaryOutput).invoke(prompt)
-            summary = _serialize_day_summary(result)
-            break
-        except Exception as exc:
-            logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
-            if attempt < max_retries:
-                continue
-            logger.error(
-                f"Day discussion summary failed all retries for day {current_day}, "
-                "using fallback"
-            )
-            summary = format_day_channel(current_day_messages)
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={"day": current_day, "raw_discussion": raw_discussion},
+        metadata={"eval_schema": "day_summary_case_v1"},
+    ) as summary_span:
+        model_used = ""
+        for attempt in range(max_retries + 1):
+            try:
+                llm = get_llm_summary()
+                result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
+                summary = _serialize_day_summary(result)
+                model_used = getattr(llm, "model", "") or ""
+                break
+            except Exception as exc:
+                logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
+                if attempt < max_retries:
+                    continue
+                logger.error(
+                    f"Day discussion summary failed all retries for day {current_day}, "
+                    "using fallback"
+                )
+                summary = format_day_channel(current_day_messages)
+
+        day_summary_case = DaySummaryCase(
+            span_name=span_name,
+            game_id=game_id,
+            day=current_day,
+            raw_discussion=raw_discussion,
+            summary=summary,
+            model_used=model_used,
+        )
+        summary_span.update(
+            output={"day_summary_case": day_summary_case.model_dump(mode="json")},
+            metadata={
+                "eval_schema": day_summary_case.schema_version,
+                "day": current_day,
+                "message_count": len(raw_discussion),
+                "model_used": model_used,
+            },
+        )
 
     return {"day_summaries": [DaySummary(day=current_day, summary=summary)]}
 
@@ -865,6 +909,15 @@ def post_game_analysis(
     if store is None:
         raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
 
+    # Extraction exists to write memory. When dumping is off, the extracted
+    # observations/strategies are deduped into the ephemeral runtime store and then
+    # discarded with it — so the (expensive) extraction LLM call is pure waste.
+    # Skip the whole post-game pipeline in no-dump runs.
+    memory_persistence_config = memory_persistence_config_from_runnable(config)
+    if not memory_persistence_config.dump_enabled:
+        logger.info("Memory dump disabled; skipping post-game extraction.")
+        return {}
+
     configurable = config.get("configurable", {}) if config else {}
     game_id = str(
         configurable.get("game_id")
@@ -960,7 +1013,6 @@ def post_game_analysis(
         f"{strategy_dedup_stats.auto_discarded} auto-discarded"
     )
 
-    memory_persistence_config = memory_persistence_config_from_runnable(config)
     dump_memory_to_json_files_from_config(
         memory_persistence_config,
         target_store=store,

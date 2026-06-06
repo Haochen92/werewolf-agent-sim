@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 from Agents.prompts.common import GAME_PREAMBLE, build_system_prompt
+from Agents.prompts.memory import NIGHT_ACTION_MEMORY_CONTEXT
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
     INVESTIGATOR_CORE_STRATEGY,
@@ -31,6 +32,7 @@ You must respond with a valid JSON:
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 """,
+                NIGHT_ACTION_MEMORY_CONTEXT,
             ),
         ),
         (
@@ -72,6 +74,7 @@ Choose wisely based on who you think the wolves might target.
 You must respond with a valid JSON:
 {{"healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
+                NIGHT_ACTION_MEMORY_CONTEXT,
             ),
         ),
         (
@@ -109,6 +112,7 @@ The result will be revealed to you at the start of the next day.
 You must respond with a valid JSON:
 {{"investigator_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
+                NIGHT_ACTION_MEMORY_CONTEXT,
             ),
         ),
         (
@@ -147,6 +151,7 @@ Choose your target based on who most threatens your survival or your path to bei
 You must respond with a valid JSON:
 {{"serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
+                NIGHT_ACTION_MEMORY_CONTEXT,
             ),
         ),
         (
@@ -192,6 +197,7 @@ What you have learned from your past shots:
 You must respond with a valid JSON:
 {{"vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
+                NIGHT_ACTION_MEMORY_CONTEXT,
             ),
         ),
         (

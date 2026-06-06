@@ -1,0 +1,206 @@
+/home/ubuntu/.cache/pypoetry/virtualenvs/werewolf-game-v7lKgM40-py3.11/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.10s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.12s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.01s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.77s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.18690228462219238)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.81s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.84s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.64s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.48915576934814453)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.02s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.07s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.81s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.66s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.5019855499267578)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.99s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.61s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.3698246479034424)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.10s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.73s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.13409900665283203)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.13s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.64s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.19135642051696777)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.04s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.76s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.14412474632263184)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.02s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.86s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.81s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.3075129985809326)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.96s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.90s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.10014986991882324)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.02s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.80s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.80s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.36211585998535156)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.04s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.06s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 4.0s (attempt 3/5): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.12s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.02s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.19s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.16s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.89s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.76s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.32268524169921875)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.92s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.81s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.93s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.22871184349060059)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.08s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.06s.
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+Failed to export span batch due to timeout, max retries or shutdown.
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+Planned runs: 1
+- leakwire_smoke_all_disabled_001: session=leakwire_smoke_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Runtime fingerprint: {'git_commit': 'f5d43a94446f6157458a8e30b8891a2f2a8c976f', 'git_dirty': True, 'prompt_bundle_hash': 'f2183cbab31d0534', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-2.5-pro', 'pro_backup_model': 'gemini-3.5-flash', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/batch_results/leakwire_smoke.jsonl
+Running leakwire_smoke_all_disabled_001 in session leakwire_smoke_all_disabled
+=== Running Leak Tests ===
+LEAK: player_2 (healer) received surviving_wolves: player_4, player_5
+LEAK: player_2 (healer) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_8 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_8 (villager) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_3 (vigilante) received surviving_wolves: player_4, player_5
+LEAK: player_3 (vigilante) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_3 (vigilante) received surviving_wolves: player_4, player_5
+LEAK: player_3 (vigilante) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_3 (vigilante) received surviving_wolves: player_4, player_5
+LEAK: player_3 (vigilante) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_9 (investigator) received surviving_wolves: player_4, player_5
+LEAK: player_9 (investigator) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_7 (villager) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_1 (serial_killer) received surviving_wolves: player_4, player_5
+LEAK: player_1 (serial_killer) received wolf identities: player_4, player_5
+LEAK: player_6 (villager) received surviving_wolves: player_4, player_5
+LEAK: player_6 (villager) received wolf identities: player_4, player_5
+LEAK: player_7 (villager) received investigator_results
+LEAK: player_5 (wolf) received investigator_results
+LEAK: player_6 (villager) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_4 (wolf) received investigator_results
+LEAK: player_3 (vigilante) received investigator_results
+LEAK: player_7 (villager) received investigator_results
+LEAK: player_5 (wolf) received investigator_results
+LEAK: player_6 (villager) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_4 (wolf) received investigator_results
+LEAK: player_3 (vigilante) received investigator_results
+LEAK: player_7 (villager) received investigator_results
+LEAK: player_5 (wolf) received investigator_results
+LEAK: player_4 (wolf) received investigator_results
+LEAK: player_7 (villager) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_5 (wolf) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_6 (villager) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_4 (wolf) received investigator_results
+LEAK: player_7 (villager) received investigator_results
+LEAK: player_6 (villager) received investigator_resultsLEAK DETECTED in leakwire_smoke_all_disabled_001: 109 leak(s)
+
+LEAK: player_5 (wolf) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_4 (wolf) received investigator_results
+LEAK: player_7 (villager) received investigator_results
+LEAK: player_6 (villager) received investigator_results
+LEAK: player_5 (wolf) received investigator_results
+LEAK: player_1 (serial_killer) received investigator_results
+LEAK: player_6 (villager) received investigator_results
+=== Leak Tests Complete ===
+Completed leakwire_smoke_all_disabled_001: winner=serial_killer day=3
+Batch complete: 1 succeeded, 0 failed, 1 game(s) WITH PRIVATE-INFO LEAKS

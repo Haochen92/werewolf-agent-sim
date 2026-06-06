@@ -108,7 +108,11 @@ def run_game(
         push_scores_to_langfuse(game_metrics, root.trace_id, session_id)
 
     flush()
-    return GameOutcome(result=result, game_metrics=game_metrics)
+    return GameOutcome(
+        result=result,
+        game_metrics=game_metrics,
+        raw_metrics=metrics.model_dump(mode="json"),
+    )
 
 def main():
     load_dotenv()

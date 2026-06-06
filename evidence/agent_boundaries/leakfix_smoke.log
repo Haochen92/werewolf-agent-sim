@@ -1,0 +1,98 @@
+/home/ubuntu/.cache/pypoetry/virtualenvs/werewolf-game-v7lKgM40-py3.11/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.06s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.96s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.06s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.81s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.11036252975463867)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.82s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.87s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.2867140769958496)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.12s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.93s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.70s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.3398706912994385)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.82s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 2.03s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.1254434585571289)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.16s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.68s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.1302804946899414)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.07s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.92s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.84s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.21182823181152344)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.10s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.17s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.19s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.12s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.80s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.05503201484680176)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.10s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.61s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.26055455207824707)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.88s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.07s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.65s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.2598555088043213)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.87s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.87s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.77s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.3348355293273926)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.15s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.81s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.88s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.2587292194366455)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.00s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.13s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.18s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.70s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.0589451789855957)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.82s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.83s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.06s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.64s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.2850067615509033)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.98s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.65s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.34656524658203125)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.09s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.89s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.001691579818725586)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 0.81s.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.60s.
+Failed to export span batch code: None, reason: HTTPConnectionPool(host='localhost', port=3300): Read timed out. (read timeout=0.5676679611206055)
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.11s.
+Failed to export span batch due to timeout, max retries or shutdown.
+Transient error Internal Server Error encountered while exporting span batch, retrying in 1.02s.
+Failed to export span batch due to timeout, max retries or shutdown.
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+API error occurred: Internal server error occurred. For help, please contact support: https://langfuse.com/support
+Planned runs: 1
+- leakfix_smoke_all_disabled_001: session=leakfix_smoke_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Runtime fingerprint: {'git_commit': 'c58e5c8df97d4c1b28c4b6e5b24590576d7925f7', 'git_dirty': True, 'prompt_bundle_hash': 'f2183cbab31d0534', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-2.5-pro', 'pro_backup_model': 'gemini-3.5-flash', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/batch_results/leakfix_smoke.jsonl
+Running leakfix_smoke_all_disabled_001 in session leakfix_smoke_all_disabled
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed leakfix_smoke_all_disabled_001: winner=wolves day=4
+Batch complete: 1 succeeded, 0 failed
+EXIT: 0

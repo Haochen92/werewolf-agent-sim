@@ -13,7 +13,6 @@ from pydantic import BaseModel, create_model
 from Agents.llm_factory import create_chat_model
 
 from Agents.tracing import GraphContext, langfuse
-from Agents.game_config import game_config_from_runnable
 
 from Agents.formatters import (
     format_day_channel,
@@ -64,8 +63,10 @@ from Agents.schemas import (
     DayVoteOutput,
     EvalCase,
     EvalPrivateContext,
+    EvalProvenance,
     HealerOutput,
     InvestigatorOutput,
+    NightAction,
     NoveltyJudgment,
     SerialKillerOutput,
     SituationSummary,
@@ -96,7 +97,14 @@ prompt_log: list[dict] = []
 
 DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
-DEFAULT_PRO_BACKUP_MODEL = "gemini-pro-latest"
+DEFAULT_PRO_MODEL = "gemini-2.5-pro"
+# Pinned (was the floating alias "gemini-pro-latest", which Google retargets
+# silently — a reproducibility hazard for the extraction pipeline that
+# conditions gold labels). gemini-3.5-flash: stable GA, pro-comparable quality,
+# and a different model family/quota pool than the primary, so it remains a
+# genuine fallback. (3.1-pro-preview rejected: preview tier = no SLA +
+# retirement risk.)
+DEFAULT_PRO_BACKUP_MODEL = "gemini-3.5-flash"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
 
 
@@ -221,7 +229,7 @@ def judge_proactive_novelty(candidate_message: str, payload: dict[str, Any], cur
 @lru_cache(maxsize=1)
 def get_llm_pro():
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_MODEL", "gemini-2.5-pro"),
+        os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
     )
 
@@ -614,6 +622,22 @@ def _retrieval_type_enabled(config: RunnableConfig, memory_kind: str) -> bool:
     return bool(retrieval_types_config.get(memory_kind, True))
 
 
+def _store_dir_from_config(config: RunnableConfig) -> str:
+    """The seeded store directory = the store identity (provenance gap #4).
+
+    Lives on ``memory_persistence_config`` in the runnable config (a
+    ``MemoryPersistenceConfig`` or a plain dict, depending on call site).
+    """
+    configurable = (config or {}).get("configurable", {}) or {}
+    mpc = configurable.get("memory_persistence_config")
+    if mpc is None:
+        return ""
+    seed = getattr(mpc, "seed_store_dir", None)
+    if seed is None and isinstance(mpc, dict):
+        seed = mpc.get("seed_store_dir")
+    return str(seed) if seed else ""
+
+
 def _enrich_payload_with_memory(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
@@ -622,6 +646,7 @@ def _enrich_payload_with_memory(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     enriched_payload = dict(payload)
 
+    store_dir = _store_dir_from_config(config)
     active_store = runtime.store
     skip_reason = None
     if payload["current_day"] == 1:
@@ -643,6 +668,11 @@ def _enrich_payload_with_memory(
             "situations": [],
             "retrieved_observations": [],
             "retrieved_strategy_points": [],
+            "candidate_observations": [],
+            "candidate_strategy_points": [],
+            "store_dir": store_dir,
+            "reranking_enabled": False,
+            "filtering_enabled": False,
             "num_situations": 0,
             "num_observations": 0,
             "num_strategy_points": 0,
@@ -715,6 +745,21 @@ def _enrich_payload_with_memory(
             "observations": len(retrieved_observations),
             "strategy_points": len(retrieved_strategy_points),
         }
+
+        # Snapshot the wide candidate pool exactly as embedding search surfaced
+        # it — before filtering/reranking narrows and reorders — so reranker
+        # training and retrieval eval can see what entered the rerank. Only when
+        # a wide retrieval ran; otherwise top-k IS the pool and ``retrieved_*``
+        # already carries it (kept empty here to keep cases lean).
+        candidate_observations_json: list[dict[str, Any]] = []
+        candidate_strategy_points_json: list[dict[str, Any]] = []
+        if needs_wide_retrieval:
+            candidate_observations_json = [
+                item.model_dump(mode="json") for item in retrieved_observations
+            ]
+            candidate_strategy_points_json = [
+                item.model_dump(mode="json") for item in retrieved_strategy_points
+            ]
 
         if filtering:
             retrieved_observations = sorted(
@@ -791,6 +836,8 @@ def _enrich_payload_with_memory(
             output={
                 "retrieved_observations": retrieved_observations_json,
                 "retrieved_strategy_points": retrieved_strategy_points_json,
+                "candidate_observations": candidate_observations_json,
+                "candidate_strategy_points": candidate_strategy_points_json,
             },
             metadata={
                 "num_situations": len(situations),
@@ -804,6 +851,8 @@ def _enrich_payload_with_memory(
                 "filtering_enabled": filtering,
                 "pre_filter_candidates": pre_filter_counts,
                 "post_filter_candidates": post_filter_counts,
+                "num_candidate_observations": len(candidate_observations_json),
+                "num_candidate_strategy_points": len(candidate_strategy_points_json),
             }
         )
 
@@ -823,11 +872,109 @@ def _enrich_payload_with_memory(
         "situations": situations,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,
+        "candidate_observations": candidate_observations_json,
+        "candidate_strategy_points": candidate_strategy_points_json,
+        "store_dir": store_dir,
         "strategy_point_index_map": strategy_point_index_map,
         "num_situations": len(situations),
         "num_observations": len(retrieved_observations),
         "num_strategy_points": len(retrieved_strategy_points),
     }
+
+
+def _process_strategy_adoption(
+    result: dict[str, Any] | None,
+    enriched_payload: dict[str, Any],
+    runtime: Runtime[GraphContext],
+    *,
+    player_id: str,
+    role: str,
+    action_phase: str,
+    day: int,
+    round_num: int,
+) -> tuple[list[int], list[str], list[StrategyAdoption]]:
+    """Record which retrieved strategy points were surfaced and adopted.
+
+    Bumps ``retrieved_count`` on every surfaced point and ``used_count`` on the
+    adopted ones, and returns ``(raw_adopted_indices, adopted_store_keys,
+    strategy_adoptions)``. Shared by the day and night memory-informed paths.
+    Mutates ``result`` by popping the ``_adopted_strategy_keys`` marker.
+    """
+    index_map = enriched_payload.get("strategy_point_index_map", {})
+    raw_adopted_indices: list[int] = []
+    adopted_store_keys: list[str] = []
+    strategy_adoptions: list[StrategyAdoption] = []
+
+    if not (result and index_map):
+        return raw_adopted_indices, adopted_store_keys, strategy_adoptions
+
+    raw_adopted_indices = result.pop("_adopted_strategy_keys", [])
+    sp_namespace = ("strategy_points", role, action_phase)
+    active_store = runtime.store
+    if active_store is None:
+        return raw_adopted_indices, adopted_store_keys, strategy_adoptions
+
+    for key in index_map.values():
+        item = active_store.get(sp_namespace, key)
+        if item is not None:
+            value = dict(item.value)
+            value["retrieved_count"] = value.get("retrieved_count", 0) + 1
+            active_store.put(sp_namespace, key, value, index=False)
+
+    for idx in raw_adopted_indices:
+        key = index_map.get(idx)
+        if key is None:
+            logger.warning(
+                f"Hallucinated adoption index {idx} from {player_id} "
+                f"(day={day}, round={round_num}, phase={action_phase}, "
+                f"valid=[1..{len(index_map)}]), skipping"
+            )
+            continue
+        adopted_store_keys.append(key)
+        item = active_store.get(sp_namespace, key)
+        if item is not None:
+            value = dict(item.value)
+            value["used_count"] = value.get("used_count", 0) + 1
+            active_store.put(sp_namespace, key, value, index=False)
+
+    strategy_adoptions = [
+        StrategyAdoption(
+            strategy_key=key,
+            player_id=player_id,
+            role=role,
+            day=day,
+            round=round_num,
+            action_phase=action_phase,
+        )
+        for key in adopted_store_keys
+    ]
+    return raw_adopted_indices, adopted_store_keys, strategy_adoptions
+
+
+def _build_eval_private_context(
+    payload: dict[str, Any],
+    day: int,
+) -> EvalPrivateContext:
+    """Snapshot the private context an agent acted on, for the eval case.
+
+    Reads everything via ``.get`` so it works for both day payloads (which carry
+    faction-split survivor lists) and night payloads (flat ``surviving_players``,
+    plus ``vigilante_results`` for the vigilante).
+    """
+    return EvalPrivateContext(
+        previous_strategy=payload.get("previous_strategy", "") or "",
+        day_summaries=[
+            summary
+            for summary in payload.get("day_summaries", [])
+            if summary.day < day
+        ],
+        wolf_channel=payload.get("wolf_channel", []),
+        investigator_results=payload.get("investigator_results", []),
+        vigilante_results=payload.get("vigilante_results", []),
+        surviving_players=payload.get("surviving_players", []),
+        surviving_wolves=payload.get("surviving_wolves", []),
+        surviving_villagers=payload.get("surviving_villagers", []),
+    )
 
 
 def _run_memory_informed_action(
@@ -843,11 +990,7 @@ def _run_memory_informed_action(
     role = payload["player_role"]
     day = payload["current_day"]
     round_num = payload["current_round"]
-    game_config = game_config_from_runnable(config)
     prompt_payload = dict(payload)
-    prompt_payload["max_discussion_rounds_per_day"] = (
-        game_config.max_discussion_rounds_per_day
-    )
 
     recent_messages = [message for message in payload["day_channel"] if message.day == day]
     visible_discussion = (
@@ -902,51 +1045,18 @@ def _run_memory_informed_action(
         )
 
         # --- Adoption processing ---
-        index_map = enriched_payload.get("strategy_point_index_map", {})
-        raw_adopted_indices = []
-        adopted_store_keys: list[str] = []
-        strategy_adoptions: list[StrategyAdoption] = []
-
-        if result and index_map:
-            raw_adopted_indices = result.pop("_adopted_strategy_keys", [])
-            sp_namespace = ("strategy_points", role, action_phase)
-            active_store = runtime.store
-
-            if active_store is not None:
-                for key in index_map.values():
-                    item = active_store.get(sp_namespace, key)
-                    if item is not None:
-                        value = dict(item.value)
-                        value["retrieved_count"] = value.get("retrieved_count", 0) + 1
-                        active_store.put(sp_namespace, key, value, index=False)
-
-                for idx in raw_adopted_indices:
-                    key = index_map.get(idx)
-                    if key is None:
-                        logger.warning(
-                            f"Hallucinated adoption index {idx} from {player_id} "
-                            f"(day={day}, round={round_num}, phase={action_phase}, "
-                            f"valid=[1..{len(index_map)}]), skipping"
-                        )
-                        continue
-                    adopted_store_keys.append(key)
-                    item = active_store.get(sp_namespace, key)
-                    if item is not None:
-                        value = dict(item.value)
-                        value["used_count"] = value.get("used_count", 0) + 1
-                        active_store.put(sp_namespace, key, value, index=False)
-
-                strategy_adoptions = [
-                    StrategyAdoption(
-                        strategy_key=key,
-                        player_id=player_id,
-                        role=role,
-                        day=day,
-                        round=round_num,
-                        action_phase=action_phase,
-                    )
-                    for key in adopted_store_keys
-                ]
+        raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
+            _process_strategy_adoption(
+                result,
+                enriched_payload,
+                runtime,
+                player_id=player_id,
+                role=role,
+                action_phase=action_phase,
+                day=day,
+                round_num=round_num,
+            )
+        )
 
         # --- Process output for graph state ---
         applied_output = None
@@ -1006,26 +1116,177 @@ def _run_memory_informed_action(
             round=round_num,
             action_phase=action_phase,
             visible_discussion=recent_messages,
-            private_context=EvalPrivateContext(
-                previous_strategy=payload.get("previous_strategy", "") or "",
-                day_summaries=[
-                    summary
-                    for summary in payload.get("day_summaries", [])
-                    if summary.day < day
-                ],
-                wolf_channel=payload.get("wolf_channel", []),
-                investigator_results=payload.get("investigator_results", []),
-                surviving_players=payload.get("surviving_players", []),
-                surviving_wolves=payload.get("surviving_wolves", []),
-                surviving_villagers=payload.get("surviving_villagers", []),
-            ),
+            private_context=_build_eval_private_context(payload, day),
             memory_enabled=retrieval_meta["memory_enabled"],
             retrieval_skipped_reason=retrieval_meta["retrieval_skipped_reason"],
             situations=retrieval_meta["situations"],
             retrieved_observations=retrieval_meta["retrieved_observations"],
             retrieved_strategy_points=retrieval_meta["retrieved_strategy_points"],
+            candidate_observations=retrieval_meta["candidate_observations"],
+            candidate_strategy_points=retrieval_meta["candidate_strategy_points"],
+            provenance=EvalProvenance(
+                store_dir=retrieval_meta["store_dir"],
+                reranking_enabled=retrieval_meta["reranking_enabled"],
+                filtering_enabled=retrieval_meta["filtering_enabled"],
+            ),
             agent_message=agent_message,
             agent_vote=agent_vote,
+            updated_strategy=updated_strategy,
+            adopted_strategy_keys=raw_adopted_indices,
+            adopted_strategy_store_keys=adopted_store_keys,
+        )
+
+        eval_span.update(
+            output={
+                "eval_case": eval_case.model_dump(mode="json"),
+                "applied_game_update": applied_game_update,
+            },
+            metadata={
+                "eval_schema": eval_case.schema_version,
+                "retrieval_top_k": 3,
+                "memory_enabled": eval_case.memory_enabled,
+                "retrieval_skipped_reason": eval_case.retrieval_skipped_reason,
+                "action_phase": eval_case.action_phase,
+                "player_id": eval_case.player_id,
+                "player_role": eval_case.player_role,
+                "day": eval_case.day,
+                "round": eval_case.round,
+                "adopted_count": len(adopted_store_keys),
+            },
+        )
+
+    return result
+
+
+def _run_memory_informed_night_action(
+    payload: dict[str, Any],
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+    prompt_template: ChatPromptTemplate,
+    output_schema: type[BaseModel],
+    output_key: str,
+) -> dict[str, Any] | None:
+    """Night counterpart of ``_run_memory_informed_action`` for single-target roles.
+
+    A night action selects a target instead of producing a message/vote, so the
+    eval case carries ``agent_night_action`` rather than ``agent_message``/
+    ``agent_vote``. Retrieval, adoption bookkeeping, and the eval span are
+    otherwise identical to the day path (and gated by the same ``memory_config``).
+    """
+    player_id = payload["player_id"]
+    role = payload["player_role"]
+    day = payload["current_day"]
+    round_num = payload.get("current_round", 0)
+    action_phase = "night_action"
+
+    span_name = (
+        f"agent_action_eval_{player_id}"
+        f"_day_{day}_round_{round_num}_{action_phase}"
+    )
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=span_name,
+        input={
+            "player_id": player_id,
+            "player_role": role,
+            "day": day,
+            "round": round_num,
+            "action_phase": action_phase,
+            "previous_strategy": payload.get("previous_strategy", "") or "",
+            "day_summaries": format_day_summaries(
+                payload.get("day_summaries", []),
+                before_day=day,
+            ),
+            "wolf_channel": format_wolf_channel(payload.get("wolf_channel", [])),
+            "investigator_results": format_investigator_results(
+                payload.get("investigator_results", [])
+            ),
+            "vigilante_results": payload.get("vigilante_results", []),
+            "surviving_players": payload.get("surviving_players", []),
+        },
+        metadata={
+            "eval_schema": "retrieval_action_v1",
+            "retrieval_top_k": 3,
+        },
+    ) as eval_span:
+        enriched_payload, retrieval_meta = _enrich_payload_with_memory(
+            payload,
+            config,
+            runtime,
+            action_phase,
+        )
+        result = _run_agent(
+            enriched_payload,
+            prompt_template,
+            output_schema,
+            output_key,
+        )
+
+        raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
+            _process_strategy_adoption(
+                result,
+                enriched_payload,
+                runtime,
+                player_id=player_id,
+                role=role,
+                action_phase=action_phase,
+                day=day,
+                round_num=round_num,
+            )
+        )
+
+        applied_game_update: dict[str, Any] | None = None
+        target: str | None = None
+        updated_strategy = ""
+        if result:
+            applied_game_update = {}
+            if output_key == "wolf_channel":
+                # Wolf night is a discussion turn that carries a kill vote; the
+                # decision we evaluate is this wolf's vote. The turn produces a
+                # WolfChannel (message + vote) and folds its strategy update into
+                # agent_strategies (not a flat updated_strategy), so unpack both.
+                messages = result.get("wolf_channel", [])
+                applied_game_update["wolf_channel"] = messages
+                if messages:
+                    first = messages[0]
+                    target = (
+                        first.get("vote") if isinstance(first, dict)
+                        else getattr(first, "vote", None)
+                    )
+                strategies = result.get("agent_strategies", {})
+                if isinstance(strategies, dict):
+                    updated_strategy = strategies.get(player_id, "") or ""
+                if updated_strategy:
+                    applied_game_update["agent_strategies"] = strategies
+            else:
+                target = result.get(output_key)
+                applied_game_update[output_key] = target
+                updated_strategy = result.get("updated_strategy", "") or ""
+            if strategy_adoptions:
+                result["strategy_adoptions"] = strategy_adoptions
+
+        eval_case = EvalCase(
+            span_name=span_name,
+            player_id=player_id,
+            player_role=role,
+            day=day,
+            round=round_num,
+            action_phase=action_phase,
+            visible_discussion=[],
+            private_context=_build_eval_private_context(payload, day),
+            memory_enabled=retrieval_meta["memory_enabled"],
+            retrieval_skipped_reason=retrieval_meta["retrieval_skipped_reason"],
+            situations=retrieval_meta["situations"],
+            retrieved_observations=retrieval_meta["retrieved_observations"],
+            retrieved_strategy_points=retrieval_meta["retrieved_strategy_points"],
+            candidate_observations=retrieval_meta["candidate_observations"],
+            candidate_strategy_points=retrieval_meta["candidate_strategy_points"],
+            provenance=EvalProvenance(
+                store_dir=retrieval_meta["store_dir"],
+                reranking_enabled=retrieval_meta["reranking_enabled"],
+                filtering_enabled=retrieval_meta["filtering_enabled"],
+            ),
+            agent_night_action=NightAction(role=role, target=target),
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
@@ -1245,27 +1506,59 @@ def vigilante_vote(
     )
 
 
-def wolf_night_discuss(payload: WolfNightState):
-    return _run_agent(
-        payload, WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel"
+def wolf_night_discuss(
+    payload: WolfNightState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    # Wolf night is the one multi-agent night action (a parallel discussion), but
+    # each wolf's turn is still a single memory-informed decision — its kill vote.
+    # Route it through the same night path as the single-target roles so it does
+    # flag-gated retrieval and emits an EvalCase (action_phase "night_action"),
+    # making wolf-night decisions part of the eval/memory sample.
+    return _run_memory_informed_night_action(
+        payload, config, runtime,
+        WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel",
     )
 
 
-def healer_act(payload: HealerNightGraph):
-    return _run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
-
-
-def investigator_act(payload: InvestigatorNightGraph):
-    return _run_agent(
-        payload, INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"
+def healer_act(
+    payload: HealerNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime, HEALER_NIGHT, HealerOutput, "healer_target"
     )
 
 
-def serial_killer_act(payload: SerialKillerNightGraph):
-    return _run_agent(
-        payload, SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target"
+def investigator_act(
+    payload: InvestigatorNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime,
+        INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target",
     )
 
 
-def vigilante_act(payload: VigilanteNightGraph):
-    return _run_agent(payload, VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target")
+def serial_killer_act(
+    payload: SerialKillerNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime,
+        SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target",
+    )
+
+
+def vigilante_act(
+    payload: VigilanteNightGraph,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return _run_memory_informed_night_action(
+        payload, config, runtime, VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target"
+    )

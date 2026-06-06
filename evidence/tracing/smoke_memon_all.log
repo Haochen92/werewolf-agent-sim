@@ -1,0 +1,10 @@
+/home/ubuntu/.cache/pypoetry/virtualenvs/werewolf-game-v7lKgM40-py3.11/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Planned runs: 1
+- nighteval_memon_all_all_enabled_001: session=nighteval_memon_all_all_enabled {'wolf': True, 'villager': True, 'healer': True, 'investigator': True, 'serial_killer': True, 'vigilante': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': False, 'seed_store_dir': 'Agents/memory_stores/v4_deduped'}
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/batch_results/nighteval_memon_all.jsonl
+Running nighteval_memon_all_all_enabled_001 in session nighteval_memon_all_all_enabled
+Completed nighteval_memon_all_all_enabled_001: winner=serial_killer day=5
+Batch complete: 1 succeeded, 0 failed

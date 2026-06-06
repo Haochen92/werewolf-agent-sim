@@ -1,3 +1,14 @@
+"""Private-information leak checks for live game transcripts.
+
+NOT pytest unit tests: these checkers need a live game's ``prompt_log``
+(the global populated in ``Agents.agents``) plus the role assignment, and
+they return leak lists instead of asserting. Drive them through
+``run_leak_tests(prompt_log, roles)`` after ``run_game(...)`` — see
+``exercise_7_minimal.ipynb``. Functions are named ``check_*`` (not
+``test_*``) precisely so pytest's collector skips them; renaming them back
+re-breaks the full suite with fixture errors.
+"""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -5,6 +16,7 @@ from typing import Any
 
 NO_WOLF_MESSAGES = "No messages yet."
 NO_INVESTIGATIONS = "No investigations yet."
+NO_VIGILANTE_RESULTS = "Nothing learned from your shots yet."
 
 
 def _record_leak(leaks: list[str], message: str) -> None:
@@ -12,7 +24,7 @@ def _record_leak(leaks: list[str], message: str) -> None:
     print(message)
 
 
-def test_wolf_identity_isolation(
+def check_wolf_identity_isolation(
     prompt_log: list[dict[str, Any]], roles: dict[str, str]
 ) -> list[str]:
     """Wolf names should only appear in wolf agents' private prompt fields."""
@@ -44,7 +56,7 @@ def test_wolf_identity_isolation(
     return leaks
 
 
-def test_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
+def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
     """Wolf channel should only appear in wolf night prompts."""
     leaks: list[str] = []
     for entry in prompt_log:
@@ -62,7 +74,7 @@ def test_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
     return leaks
 
 
-def test_investigator_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
+def check_investigator_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
     """Investigation results should only appear in investigator prompts."""
     leaks: list[str] = []
     for entry in prompt_log:
@@ -80,7 +92,7 @@ def test_investigator_results_isolation(prompt_log: list[dict[str, Any]]) -> lis
     return leaks
 
 
-def test_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
+def check_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
     """Healer target should never be included in prompt input."""
     leaks: list[str] = []
     for entry in prompt_log:
@@ -94,7 +106,25 @@ def test_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
     return leaks
 
 
-def test_eliminated_players_excluded(
+def check_vigilante_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
+    """Vigilante shot feedback (SK confirmations) should only appear in vigilante prompts."""
+    leaks: list[str] = []
+    for entry in prompt_log:
+        if entry["player_role"] == "vigilante":
+            continue
+
+        results = entry["prompt_input"].get("vigilante_results", "")
+        if results and results != NO_VIGILANTE_RESULTS:
+            _record_leak(
+                leaks,
+                f"LEAK: {entry['player_id']} ({entry['player_role']}) "
+                "received vigilante_results",
+            )
+
+    return leaks
+
+
+def check_eliminated_players_excluded(
     prompt_log: list[dict[str, Any]], eliminated_players: Iterable[str]
 ) -> list[str]:
     """Eliminated players should receive no prompts after their elimination day."""
@@ -129,11 +159,12 @@ def run_leak_tests(
 ) -> list[str]:
     print("=== Running Leak Tests ===")
     leaks = [
-        *test_wolf_identity_isolation(prompt_log, roles),
-        *test_wolf_channel_isolation(prompt_log),
-        *test_investigator_results_isolation(prompt_log),
-        *test_healer_target_absent(prompt_log),
-        *test_eliminated_players_excluded(prompt_log, eliminated_players),
+        *check_wolf_identity_isolation(prompt_log, roles),
+        *check_wolf_channel_isolation(prompt_log),
+        *check_investigator_results_isolation(prompt_log),
+        *check_vigilante_results_isolation(prompt_log),
+        *check_healer_target_absent(prompt_log),
+        *check_eliminated_players_excluded(prompt_log, eliminated_players),
     ]
     print("=== Leak Tests Complete ===")
     return leaks

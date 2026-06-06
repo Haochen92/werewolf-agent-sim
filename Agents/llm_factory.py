@@ -49,6 +49,13 @@ _MODEL_CACHE_LOCK = threading.Lock()
 
 _DEFAULT_VERTEX_LOCATION = "global"
 
+# Canonical embedding config. The vector store index is only valid for the
+# embedding model/dims it was built with, so these are part of the runtime
+# fingerprint (Agents/run_fingerprint.py) and referenced by consumers instead
+# of being re-hardcoded.
+DEFAULT_EMBEDDING_MODEL = "gemini-embedding-001"
+DEFAULT_EMBEDDING_DIMS = 1536
+
 THINKING_LEVEL_TO_BUDGET: dict[str, int] = {
     "minimal": 128,
     "low": 1024,
@@ -299,7 +306,7 @@ class _RetryingGoogleGenerativeAIEmbeddings(GoogleGenerativeAIEmbeddings):
 
 
 def create_embeddings(
-    model: str = "gemini-embedding-001",
+    model: str = DEFAULT_EMBEDDING_MODEL,
     *,
     output_dimensionality: int | None = None,
 ) -> GoogleGenerativeAIEmbeddings:

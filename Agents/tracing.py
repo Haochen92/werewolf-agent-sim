@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import Any
 
@@ -6,6 +7,7 @@ from langfuse.langchain import CallbackHandler
 
 from Agents.game_config import game_config_dict
 from Agents.memory_persistence import normalize_memory_persistence_config
+from Agents.run_fingerprint import git_revision, runtime_fingerprint
 from Agents.schemas.metrics import (  # noqa: F401 — re-exported for backward compat
     DayResolutionMetric,
     GraphContext,
@@ -13,6 +15,12 @@ from Agents.schemas.metrics import (  # noqa: F401 — re-exported for backward 
     NightResolutionMetric,
 )
 
+
+# Stamp every trace with the code version via Langfuse's first-class `release`
+# field (filterable in the UI). Must be set before the first get_client() —
+# the OTel resource is created once per process. setdefault keeps an explicit
+# LANGFUSE_RELEASE override working.
+os.environ.setdefault("LANGFUSE_RELEASE", git_revision()["git_commit"])
 
 langfuse = get_client()
 
@@ -77,6 +85,9 @@ def build_game_config(
     return {
         "callbacks": [handler],
         "recursion_limit": 100,
+        # Lands in trace metadata: the exact (code, prompts, models, params,
+        # backend) bundle this game ran with. See Agents/run_fingerprint.py.
+        "metadata": {"runtime_fingerprint": runtime_fingerprint()},
         "configurable": {
             "game_id": game_id,
             "memory_config": memory_config,

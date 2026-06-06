@@ -108,15 +108,6 @@ def parse_args() -> argparse.Namespace:
         help="Number of games to run for each selected memory config.",
     )
     parser.add_argument(
-        "--max-discussion-rounds-per-day",
-        type=int,
-        default=None,
-        help=(
-            "Maximum public discussion rounds before each day vote. "
-            "Defaults to the game config value."
-        ),
-    )
-    parser.add_argument(
         "--session-prefix",
         default=None,
         help="Prefix for Langfuse session IDs. Defaults to batch timestamp.",
@@ -299,21 +290,15 @@ def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, A
     return config
 
 
-def game_config_from_args(args: argparse.Namespace) -> dict[str, Any] | None:
-    if args.max_discussion_rounds_per_day is None:
-        return None
-    return {
-        "max_discussion_rounds_per_day": args.max_discussion_rounds_per_day,
-    }
-
-
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
     reranking_config = RERANKING_CONFIGS[args.reranking]
     filtering_config = FILTERING_CONFIGS[args.filtering]
     retrieval_types_config = RETRIEVAL_TYPES_CONFIGS[args.retrieval_types]
-    game_config = game_config_from_args(args)
+    # No game-config CLI overrides currently; games use the defaults. The general
+    # game_config seam is kept (recorded + passed to run_game) for future overrides.
+    game_config = None
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
     )
@@ -352,11 +337,21 @@ def run_batch(args: argparse.Namespace) -> int:
     if args.dry_run:
         return 0
 
+    from Agents.agents import prompt_log
     from Agents.main import run_game
+    from Agents.run_fingerprint import runtime_fingerprint
+    from tests.leak_test import run_leak_tests
+
+    # Resolved once per batch: code/prompt versions, model IDs, params, backend.
+    # Makes each JSONL record self-describing — a record is only comparable to
+    # another if their bundles match (model, prompts, backend, ...).
+    fingerprint = runtime_fingerprint()
+    print(f"Runtime fingerprint: {fingerprint}")
 
     print(f"Writing JSONL results to: {results_path}")
     failures = 0
     started_runs = 0
+    leak_games = 0
 
     for planned_run_index, (config_name, run_index) in enumerate(planned_runs):
         started_runs += 1
@@ -384,8 +379,19 @@ def run_batch(args: argparse.Namespace) -> int:
             )
             result = outcome.result
             duration_seconds = perf_counter() - started_timer
+            # run_game clears prompt_log at start, so the global holds exactly
+            # this game's prompts. Leaks are recorded (not raised) so the game
+            # result is preserved; the batch still exits non-zero on any leak.
+            leaks = run_leak_tests(prompt_log, result.get("roles") or {})
+            if leaks:
+                leak_games += 1
+                print(
+                    f"LEAK DETECTED in {current_run_id}: {len(leaks)} leak(s)",
+                    file=sys.stderr,
+                )
             record = {
                 "status": "success",
+                "runtime_fingerprint": fingerprint,
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "reranking_config": reranking_config,
@@ -408,6 +414,12 @@ def run_batch(args: argparse.Namespace) -> int:
                 "day_channel": result.get("day_channel"),
                 "day_summaries": result.get("day_summaries"),
                 "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
+                # Raw per-decision accumulators for offline inspection — day votes
+                # (counts, ties, no-lynch) and night targets/deaths/kill-landed.
+                # The derived proxies live in computed_metrics.
+                "day_resolutions": (outcome.raw_metrics or {}).get("day_resolutions"),
+                "night_resolutions": (outcome.raw_metrics or {}).get("night_resolutions"),
+                "leak_check": {"passed": not leaks, "leaks": leaks},
             }
             write_record(results_path, record)
             print(
@@ -419,6 +431,7 @@ def run_batch(args: argparse.Namespace) -> int:
             duration_seconds = perf_counter() - started_timer
             record = {
                 "status": "error",
+                "runtime_fingerprint": fingerprint,
                 "config_name": config_name,
                 "memory_config": memory_config,
                 "reranking_config": reranking_config,
@@ -454,8 +467,10 @@ def run_batch(args: argparse.Namespace) -> int:
     summary = f"Batch complete: {successes} succeeded, {failures} failed"
     if not_started:
         summary += f", {not_started} not started"
+    if leak_games:
+        summary += f", {leak_games} game(s) WITH PRIVATE-INFO LEAKS"
     print(summary)
-    return 1 if failures else 0
+    return 1 if failures or leak_games else 0
 
 
 def main() -> None:
