@@ -865,6 +865,15 @@ def post_game_analysis(
     if store is None:
         raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
 
+    # Extraction exists to write memory. When dumping is off, the extracted
+    # observations/strategies are deduped into the ephemeral runtime store and then
+    # discarded with it — so the (expensive) extraction LLM call is pure waste.
+    # Skip the whole post-game pipeline in no-dump runs.
+    memory_persistence_config = memory_persistence_config_from_runnable(config)
+    if not memory_persistence_config.dump_enabled:
+        logger.info("Memory dump disabled; skipping post-game extraction.")
+        return {}
+
     configurable = config.get("configurable", {}) if config else {}
     game_id = str(
         configurable.get("game_id")
@@ -960,7 +969,6 @@ def post_game_analysis(
         f"{strategy_dedup_stats.auto_discarded} auto-discarded"
     )
 
-    memory_persistence_config = memory_persistence_config_from_runnable(config)
     dump_memory_to_json_files_from_config(
         memory_persistence_config,
         target_store=store,
