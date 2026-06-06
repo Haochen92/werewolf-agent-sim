@@ -16,6 +16,7 @@ from typing import Any
 
 NO_WOLF_MESSAGES = "No messages yet."
 NO_INVESTIGATIONS = "No investigations yet."
+NO_VIGILANTE_RESULTS = "Nothing learned from your shots yet."
 
 
 def _record_leak(leaks: list[str], message: str) -> None:
@@ -105,6 +106,24 @@ def check_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
     return leaks
 
 
+def check_vigilante_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
+    """Vigilante shot feedback (SK confirmations) should only appear in vigilante prompts."""
+    leaks: list[str] = []
+    for entry in prompt_log:
+        if entry["player_role"] == "vigilante":
+            continue
+
+        results = entry["prompt_input"].get("vigilante_results", "")
+        if results and results != NO_VIGILANTE_RESULTS:
+            _record_leak(
+                leaks,
+                f"LEAK: {entry['player_id']} ({entry['player_role']}) "
+                "received vigilante_results",
+            )
+
+    return leaks
+
+
 def check_eliminated_players_excluded(
     prompt_log: list[dict[str, Any]], eliminated_players: Iterable[str]
 ) -> list[str]:
@@ -143,6 +162,7 @@ def run_leak_tests(
         *check_wolf_identity_isolation(prompt_log, roles),
         *check_wolf_channel_isolation(prompt_log),
         *check_investigator_results_isolation(prompt_log),
+        *check_vigilante_results_isolation(prompt_log),
         *check_healer_target_absent(prompt_log),
         *check_eliminated_players_excluded(prompt_log, eliminated_players),
     ]
