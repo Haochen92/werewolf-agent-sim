@@ -154,7 +154,69 @@ stays stateless — raised-hand flag is one more per-recompute input, no new sta
 (unproven value vs. real namespace/isolation/cold-start cost — revisit only if retention becomes
 the problem), seasons/flywheel UI (post-fine-tune story), prediction overlays, coach mode.
 
-## 7. Backend touchpoints to keep in mind (no action yet)
+## 7. Brainstorm round 2 (2026-06-06): art direction + feature annex (unshortlisted ideas)
+
+### Art direction: pixel art — viable with two hard rules
+
+Fear of "pixel art might not look good" is about the wrong variant (16×16 sprites + pixel fonts —
+that WOULD hurt a reading-heavy game). The proven formula for dialogue games is **Coffee Talk /
+VA-11 Hall-A style**: large detailed pixel portraits + moody lighting + **clean modern font for
+all dialogue text**. Hi-bit (big canvas, rich palette, modern lighting over pixels — Eastward /
+HD-2D), not retro-authentic.
+
+- Hard rules: portraits big; dialogue font clean (pixel fonts for chrome/titles only).
+- Werewolf-native wins: day/night palette swaps are trivially beautiful in pixel art; kill
+  cinematics cheap (silhouette, few frames) and **attacker-typed deaths already in the data** →
+  distinct wolf/SK/vigilante kill animations; dead players' portraits desaturate.
+- Strategic: pixel-gen AI constrained to one palette reads *intentional*, dodging the AI-slop
+  look (botmafia's weakness); solo-buildable visual consistency.
+- Séance-noir thesis survives: pixel tavern + amber pooled light; X-ray layer becomes
+  green-phosphor CRT terminal aesthetic — pixel-native machine-world contrast.
+
+### Feature annex
+
+- **⭐ Daily deduction puzzle (standout idea)**: one agent-only batch game published per day, same
+  seed for everyone; players read the transcript phase-by-phase and lock guesses (wolves? SK?);
+  scored by how early you call it; emoji-grid share (Wordle loop). Near-zero marginal cost (one
+  game serves unlimited players — batch pipeline as content factory); is the replay theater WITH
+  a game loop; shippable BEFORE the human-seat MVP; post-guess reveal = the X-ray replay served
+  daily.
+- **Vote matrix**: who-voted-whom grid per day — pure `day_channel` parse; the veteran's view.
+- **Mention graph**: who's talking about whom — already computed by the scheduler's reactive
+  queue; render as a live web, watch suspicion converge.
+- **Achievements**: "survived to day 5 as SK", "won without being mentioned", "called the wolf
+  day 1" — all derivable from batch records.
+- **Play of the game**: MVP-score pipeline picks the pivotal turn; replay deep-links to it.
+- **Pacing controls**: staged thinking delays (typing indicator → beat → message), always
+  skippable — LLM latency becomes suspense if staged, frustration if not.
+- **Tutorial table**: first guest game vs memory-off agents, villager role, phase tooltips.
+- **Parked (dangerous-but-tempting)**: human "last will" on death (Town of Salem) — a game-RULE
+  change requiring agent prompt edits → crosses the frozen prompt surface; post-v5 only.
+
+## 8. Connection / view / platform posture (discussed 2026-06-06)
+
+- **Stream EVENTS, not tokens.** Messages post whole after generation, preceded by a typing
+  indicator. Three reasons token-streaming is actively wrong here: (a) the **novelty gate vetoes
+  proactive speeches post-generation** — a token-streamed speech can be rejected after the client
+  has shown half of it; (b) agent speech is embedded in structured output, not a bare text
+  stream; (c) fiction break — players post whole messages, assistants stream tokens; streaming
+  reads as "chatbot", typing-indicator-then-message reads as "player". Latency masking job goes
+  to staged pacing (above).
+- **Game = append-only event log** (speech_posted, vote_cast, phase_changed, typing_on/off,
+  death, reveal), client holds a cursor. This buys: trivial reconnect (replay since cursor),
+  spectator = same stream, and **the event log IS the replay artifact** — replay theater reads
+  the same format. Decide the event schema once, transport is swappable.
+- **Transport: SSE + POST for MVP** (server→client dominates; client acts only on its turn —
+  raise-hand toggle, speech, vote as plain POSTs). SSE auto-reconnects, no WS infra, works
+  serverless. WebSocket is a fine later swap if needed (the event schema doesn't change);
+  not required by this traffic pattern.
+- **Web app, decisively — not native mobile.** Zero install friction (guest mode synergy: click
+  link → playing); daily-puzzle share links need the web anyway; no app-store review between you
+  and iteration; recruiters click URLs, not TestFlight invites. Build **mobile-first responsive**
+  (werewolf reading is phone-shaped), add PWA manifest later for home-screen install + push.
+  Native only earns its cost post-MVP (push-driven retention, IAP, store discovery).
+
+## 9. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
