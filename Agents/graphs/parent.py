@@ -14,11 +14,12 @@ from Agents.nodes import (
     day_resolution,
     end_game,
     initialize_game,
-    night_resolution,
+    night_finalize,
+    night_kill_resolution,
     one_more_day,
     post_game_analysis,
     route_after_healer_night,
-    route_after_investigator_night,
+    route_after_kill_resolution,
     route_after_serial_killer_night,
     route_after_wolf_night,
 )
@@ -244,7 +245,8 @@ def build_parent_graph():
     parent_graph.add_node("SERIAL_KILLER_NIGHT_PHASE", serial_killer_night_phase)
     parent_graph.add_node("INVESTIGATOR_NIGHT_PHASE", investigator_night_phase)
     parent_graph.add_node("VIGILANTE_NIGHT_PHASE", vigilante_night_phase)
-    parent_graph.add_node("NIGHT_RESOLUTION", night_resolution)
+    parent_graph.add_node("KILL_RESOLUTION", night_kill_resolution)
+    parent_graph.add_node("NIGHT_FINALIZE", night_finalize)
     parent_graph.add_node("ONE_MORE_DAY", one_more_day)
     parent_graph.add_node("END_GAME", end_game)
     parent_graph.add_node("POST_GAME_ANALYSIS", post_game_analysis)
@@ -256,9 +258,10 @@ def build_parent_graph():
     parent_graph.add_conditional_edges("WOLF_NIGHT_PHASE", route_after_wolf_night)
     parent_graph.add_conditional_edges("HEALER_NIGHT_PHASE", route_after_healer_night)
     parent_graph.add_conditional_edges("SERIAL_KILLER_NIGHT_PHASE", route_after_serial_killer_night)
-    parent_graph.add_conditional_edges("INVESTIGATOR_NIGHT_PHASE", route_after_investigator_night)
-    parent_graph.add_edge("VIGILANTE_NIGHT_PHASE", "NIGHT_RESOLUTION")
-    parent_graph.add_conditional_edges("NIGHT_RESOLUTION", check_game_end_night)
+    parent_graph.add_edge("VIGILANTE_NIGHT_PHASE", "KILL_RESOLUTION")
+    parent_graph.add_conditional_edges("KILL_RESOLUTION", route_after_kill_resolution)
+    parent_graph.add_edge("INVESTIGATOR_NIGHT_PHASE", "NIGHT_FINALIZE")
+    parent_graph.add_conditional_edges("NIGHT_FINALIZE", check_game_end_night)
     parent_graph.add_edge("ONE_MORE_DAY", "DAY_PHASE")
     parent_graph.add_edge("END_GAME", "POST_GAME_ANALYSIS")
     parent_graph.add_edge("POST_GAME_ANALYSIS", END)
