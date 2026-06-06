@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, model_validator
 class GameConfig(BaseModel):
     initial_roles: list[str] = Field(
         default_factory=lambda: [
-            "villager",
+            # Lean-eval casting (Phase A #2): 9 players, 3 factions.
             "villager",
             "villager",
             "villager",
@@ -17,12 +17,30 @@ class GameConfig(BaseModel):
             "wolf",
             "healer",
             "investigator",
+            "vigilante",
+            "serial_killer",
         ],
         min_length=1,
     )
     player_id_prefix: str = Field(default="player", min_length=1)
     starting_day: int = Field(default=1, ge=1)
     first_voting_day: int = Field(default=2, ge=1)
+
+    # --- Role / faction rules (Phase A #2) ---------------------------------------
+    vigilante_bullets: int = Field(default=2, ge=0)
+    # Town-side night kills the vigilante may attempt over the whole game. A shot is
+    # spent on the attempt (even if healed or whiffed on the night-immune SK).
+
+    # --- Relaxed / optional voting (Phase A #2) ----------------------------------
+    abstain_enabled: bool = Field(default=True)
+    # When true, "abstain" is a valid day-vote target; an abstain plurality (or a tie)
+    # yields no lynch instead of forcing one.
+    no_lynch_force_after: int = Field(default=2, ge=1)
+    # K: after this many consecutive no-lynch days, the next day drops "abstain" from
+    # valid targets (a forced day) so the daytime cannot go permanently toothless.
+    max_days: int = Field(default=12, ge=1)
+    # Pure cost backstop — night kills end games far sooner. At the cap the winner is
+    # decided by surviving-faction size (tie -> draw).
     max_discussion_rounds_per_day: int = Field(default=4, ge=1)
     # ^ legacy (concurrent round model); still read by the interim check_round + prompt_inputs
     #   until the SCHEDULE-node rewrite (Stage 4) removes round-based control.
