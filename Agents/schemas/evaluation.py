@@ -20,9 +20,22 @@ class EvalPrivateContext(BaseModel):
     day_summaries: list[DaySummary] = Field(default_factory=list)
     wolf_channel: list[WolfChannel] = Field(default_factory=list)
     investigator_results: list[InvestigatorResult] = Field(default_factory=list)
+    vigilante_results: list[str] = Field(default_factory=list)
     surviving_players: list[str] = Field(default_factory=list)
     surviving_wolves: list[str] = Field(default_factory=list)
     surviving_villagers: list[str] = Field(default_factory=list)
+
+
+class NightAction(BaseModel):
+    """A single-target night decision (heal / investigate / kill / shoot).
+
+    The day eval case captures a message or a vote; a night action is a target
+    selection instead, so it gets its own field on the eval case. ``target`` is
+    ``None`` for a no-op (e.g. the vigilante banking its bullet).
+    """
+
+    role: str
+    target: str | None = None
 
 
 class EvalCase(BaseModel):
@@ -44,6 +57,7 @@ class EvalCase(BaseModel):
     retrieved_strategy_points: list[RetrievedStrategyPoint] = Field(default_factory=list)
     agent_message: DayChannel | None = None
     agent_vote: DayVote | None = None
+    agent_night_action: NightAction | None = None
     updated_strategy: str = ""
     adopted_strategy_keys: list[int] = Field(default_factory=list)
     adopted_strategy_store_keys: list[str] = Field(default_factory=list)

@@ -5,6 +5,7 @@ from Agents.schemas.evaluation import (
     EvalCase,
     EvalPrivateContext,
     ExtractionCase,
+    NightAction,
 )
 from Agents.schemas.game_events import (
     AddressedTarget,
@@ -73,6 +74,7 @@ __all__ = [
     "Decision",
     "EvalCase",
     "EvalPrivateContext",
+    "NightAction",
     "ExtractionCase",
     "FiringReason",
     "GameOutcome",
