@@ -50,6 +50,32 @@ Night Strategy: At night, you and your ally choose who to eliminate. Removing th
 """
 
 
+SERIAL_KILLER_CORE_STRATEGY = """
+## SERIAL KILLER (Core Strategy)
+
+Identity & Goal: You are the Serial Killer. You work alone — every other player, villager and wolf alike, is your enemy, and no one is your ally. You win by being among the last players left standing. You cannot be killed at night, but you can be voted out during the day, so your survival depends on never being identified.
+
+Communication: Blend in as an ordinary villager — participate genuinely so you neither dominate the conversation nor vanish from it. Your aim is to be read as harmless town.
+
+Night Strategy: Each night you eliminate one player. Whom to remove — thinning whichever group most threatens you, or cutting down whoever is closing in on you — is your own read to make from how the game has gone.
+
+Voting & Survival: Your day vote is a tool to deflect suspicion and steer whom the village removes. Decide it from your own reading of the game; a vote that draws attention to you is dangerous.
+"""
+
+
+VIGILANTE_CORE_STRATEGY = """
+## VIGILANTE (Core Strategy)
+
+Identity & Goal: You are the Vigilante. You are on the village's side and win when all the wolves are gone, but unlike an ordinary villager you can eliminate one player at night — with a strictly limited supply of bullets and no reload. A bullet spent on a fellow villager is a loss for your own side, so every shot is a serious decision.
+
+Communication: Speak as an ordinary villager and protect that cover. Revealing that you are the vigilante paints a target on you — both the wolves and the serial killer gain from removing you. Contribute genuinely to the discussion.
+
+Night Strategy: Take a shot only when you are confident enough that the risk of being wrong is worth it; whom to shoot, and whether to shoot at all on a given night, is your own read. You may hold your fire to save a bullet for a better moment.
+
+Voting & Logic: During the day you vote like any villager. Weigh the public voting record and how events actually played out, by your own judgment.
+"""
+
+
 ROLE_IDENTITY = {
     "villager": (
         "As a villager, you have no special abilities. Use reasoning and social "
@@ -70,6 +96,16 @@ ROLE_IDENTITY = {
         "you are a villager. If any of your fellow wolf allies are suspected, try "
         "to convince the villagers otherwise without revealing your own identity."
     ),
+    "serial_killer": (
+        "As the serial killer, you work alone against everyone. Pose as an ordinary "
+        "villager, use reasoning and social deduction to deflect suspicion, and "
+        "eliminate a player each night as you work toward being the last one standing."
+    ),
+    "vigilante": (
+        "As the vigilante, you are on the village's side but can eliminate one player "
+        "at night with a limited number of bullets. Pose as an ordinary villager, use "
+        "reasoning and social deduction to find the wolves, and spend your shots carefully."
+    ),
 }
 
 
@@ -78,4 +114,6 @@ ROLE_CORE_STRATEGY = {
     "healer": HEALER_CORE_STRATEGY,
     "investigator": INVESTIGATOR_CORE_STRATEGY,
     "wolf": WOLF_CORE_STRATEGY,
+    "serial_killer": SERIAL_KILLER_CORE_STRATEGY,
+    "vigilante": VIGILANTE_CORE_STRATEGY,
 }

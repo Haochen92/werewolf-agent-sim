@@ -4,6 +4,8 @@ from Agents.prompts.common import GAME_PREAMBLE, build_system_prompt
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
     INVESTIGATOR_CORE_STRATEGY,
+    SERIAL_KILLER_CORE_STRATEGY,
+    VIGILANTE_CORE_STRATEGY,
     WOLF_CORE_STRATEGY,
 )
 
@@ -124,6 +126,81 @@ Your past investigation results: {investigator_results}
 =========================
 
 Choose a player to investigate tonight.""",
+        ),
+    ]
+)
+
+
+SERIAL_KILLER_NIGHT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                SERIAL_KILLER_CORE_STRATEGY,
+                """
+You are {player_id}, a {player_role}.
+Each night, you eliminate one player. You may target anyone still alive except yourself.
+You are immune to being killed at night, but you can still be voted out during the day.
+Choose your target based on who most threatens your survival or your path to being the last one standing.
+
+You must respond with a valid JSON:
+{{"serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+""",
+            ),
+        ),
+        (
+            "human",
+            """Night of Day {current_day}.
+
+Surviving players you can target: {surviving_players}
+
+=== Day summaries ===
+{day_summaries}
+
+=== Today's day discussion ===
+{day_channel}
+=========================
+
+Choose a player to eliminate tonight.""",
+        ),
+    ]
+)
+
+
+VIGILANTE_NIGHT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                VIGILANTE_CORE_STRATEGY,
+                """
+You are {player_id}, a {player_role}.
+At night you may shoot one player you believe is an enemy of the village, or hold your fire.
+You have a strictly limited number of bullets for the whole game and cannot reload, so a shot is a serious commitment — and a bullet spent on a fellow villager is a loss for your side.
+To take a shot, set "vigilante_target" to a surviving player (not yourself). To hold your fire and save the bullet, set "vigilante_target" to "hold_fire".
+
+You must respond with a valid JSON:
+{{"vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
+""",
+            ),
+        ),
+        (
+            "human",
+            """Night of Day {current_day}.
+
+You have {vigilante_bullets} bullet(s) remaining.
+Surviving players you could shoot: {surviving_players}
+
+=== Day summaries ===
+{day_summaries}
+
+=== Today's day discussion ===
+{day_channel}
+=========================
+
+Decide whether to take a shot tonight, and at whom.""",
         ),
     ]
 )

@@ -648,22 +648,71 @@ def one_more_day(state: OrchestratorGraph):
     }
 
 
+# Night phases run in a fixed order, each skipped if its actor is absent. Resolution is
+# joint at NIGHT_RESOLUTION, so the order does not affect outcomes:
+#   wolves -> healer -> serial killer -> investigator -> vigilante -> resolution
+def _vigilante_can_act(state: OrchestratorGraph) -> bool:
+    return bool(state.get("vigilante_player")) and state.get("vigilante_bullets", 0) > 0
+
+
+def _next_night_phase(state: OrchestratorGraph, after: str) -> str:
+    order = [
+        ("wolves", "WOLF_NIGHT_PHASE"),
+        ("healer", "HEALER_NIGHT_PHASE"),
+        ("serial_killer", "SERIAL_KILLER_NIGHT_PHASE"),
+        ("investigator", "INVESTIGATOR_NIGHT_PHASE"),
+        ("vigilante", "VIGILANTE_NIGHT_PHASE"),
+    ]
+    present = {
+        "healer": bool(state.get("healer_player")),
+        "serial_killer": bool(state.get("serial_killer_player")),
+        "investigator": bool(state.get("investigator_player")),
+        "vigilante": _vigilante_can_act(state),
+    }
+    start = next(i for i, (key, _) in enumerate(order) if key == after) + 1
+    for key, node in order[start:]:
+        if present.get(key):
+            return node
+    return "NIGHT_RESOLUTION"
+
+
 def route_after_wolf_night(
     state: OrchestratorGraph,
-) -> Literal["HEALER_NIGHT_PHASE", "INVESTIGATOR_NIGHT_PHASE", "NIGHT_RESOLUTION"]:
-    if state.get("healer_player"):
-        return "HEALER_NIGHT_PHASE"
-    if state.get("investigator_player"):
-        return "INVESTIGATOR_NIGHT_PHASE"
-    return "NIGHT_RESOLUTION"
+) -> Literal[
+    "HEALER_NIGHT_PHASE",
+    "SERIAL_KILLER_NIGHT_PHASE",
+    "INVESTIGATOR_NIGHT_PHASE",
+    "VIGILANTE_NIGHT_PHASE",
+    "NIGHT_RESOLUTION",
+]:
+    return _next_night_phase(state, "wolves")
 
 
 def route_after_healer_night(
     state: OrchestratorGraph,
-) -> Literal["INVESTIGATOR_NIGHT_PHASE", "NIGHT_RESOLUTION"]:
-    if state.get("investigator_player"):
-        return "INVESTIGATOR_NIGHT_PHASE"
-    return "NIGHT_RESOLUTION"
+) -> Literal[
+    "SERIAL_KILLER_NIGHT_PHASE",
+    "INVESTIGATOR_NIGHT_PHASE",
+    "VIGILANTE_NIGHT_PHASE",
+    "NIGHT_RESOLUTION",
+]:
+    return _next_night_phase(state, "healer")
+
+
+def route_after_serial_killer_night(
+    state: OrchestratorGraph,
+) -> Literal[
+    "INVESTIGATOR_NIGHT_PHASE",
+    "VIGILANTE_NIGHT_PHASE",
+    "NIGHT_RESOLUTION",
+]:
+    return _next_night_phase(state, "serial_killer")
+
+
+def route_after_investigator_night(
+    state: OrchestratorGraph,
+) -> Literal["VIGILANTE_NIGHT_PHASE", "NIGHT_RESOLUTION"]:
+    return _next_night_phase(state, "investigator")
 
 
 def _faction_counts(state: OrchestratorGraph) -> tuple[int, int, int]:

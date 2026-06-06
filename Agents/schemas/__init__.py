@@ -43,7 +43,9 @@ from Agents.schemas.output import (
     HealerOutput,
     InvestigatorOutput,
     NoveltyJudgment,
+    SerialKillerOutput,
     SituationSummary,
+    VigilanteOutput,
     WolfNightDiscussOutput,
 )
 from Agents.schemas.scheduler import (
@@ -84,6 +86,8 @@ __all__ = [
     "NoveltyJudgment",
     "Observation",
     "ReactiveItem",
+    "SerialKillerOutput",
+    "VigilanteOutput",
     "RerankResult",
     "RetrievedObservation",
     "RetrievedStrategyPoint",

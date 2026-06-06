@@ -42,6 +42,8 @@ from Agents.prompts import (
     INVESTIGATOR_DAY_VOTE,
     INVESTIGATOR_NIGHT,
     INVESTIGATOR_SITUATION_SUMMARY,
+    SERIAL_KILLER_NIGHT,
+    VIGILANTE_NIGHT,
     VILLAGER_SITUATION_SUMMARY,
     VILLAGER_DAY_DISCUSS,
     VILLAGER_DAY_VOTE,
@@ -59,7 +61,9 @@ from Agents.schemas import (
     HealerOutput,
     InvestigatorOutput,
     NoveltyJudgment,
+    SerialKillerOutput,
     SituationSummary,
+    VigilanteOutput,
     WolfNightDiscussOutput,
 )
 from Agents.schemas.game_events import (
@@ -73,6 +77,8 @@ from Agents.state import (
     HealerNightGraph,
     InvestigatorDayState,
     InvestigatorNightGraph,
+    SerialKillerNightGraph,
+    VigilanteNightGraph,
     VillagerDayState,
     WolfDayState,
     WolfNightState,
@@ -251,13 +257,21 @@ def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[
     # abstain plurality (or tie) yields no lynch. Dropped on a forced day.
     if output_key == "day_votes" and payload.get("allow_abstain"):
         valid.append("abstain")
+    # The vigilante may hold fire to save a bullet (the SK is compulsive — no sentinel).
+    if output_key == "vigilante_target":
+        valid.append("hold_fire")
     return valid
 
 
 def _target_field_for_output_key(output_key: str) -> str | None:
     if output_key in {"day_votes", "wolf_channel"}:
         return "vote_target"
-    if output_key in {"healer_target", "investigator_target"}:
+    if output_key in {
+        "healer_target",
+        "investigator_target",
+        "serial_killer_target",
+        "vigilante_target",
+    }:
         return output_key
     return None
 
@@ -1135,3 +1149,13 @@ def investigator_act(payload: InvestigatorNightGraph):
     return _run_agent(
         payload, INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"
     )
+
+
+def serial_killer_act(payload: SerialKillerNightGraph):
+    return _run_agent(
+        payload, SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target"
+    )
+
+
+def vigilante_act(payload: VigilanteNightGraph):
+    return _run_agent(payload, VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target")
