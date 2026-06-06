@@ -25,15 +25,24 @@ class OrchestratorGraph(TypedDict, total=False):
     human_player: str
     healer_player: str | None
     investigator_player: str | None
+    serial_killer_player: str | None
+    vigilante_player: str | None
 
     wolves_kill_target: str | None
     healer_target: str | None
     investigator_target: str | None
+    serial_killer_target: str | None
+    vigilante_target: str | None
+    vigilante_bullets: int
 
     investigator_results: Annotated[list[InvestigatorResult], add]
     day_votes: list[DayVote]
     voted_player: str | None
+    no_lynch_streak: int
 
+    # The solo serial killer has no allies, so there is no "surviving SK" list to be
+    # aware of (unlike surviving_wolves). It lives in surviving_villagers (the non-wolf
+    # bucket) for discussion/targeting; serial_killer_player tracks whether it is alive.
     surviving_wolves: list[str]
     surviving_villagers: list[str]
 
@@ -58,6 +67,7 @@ class DayGraphState(TypedDict, total=False):
 
     surviving_villagers: list[str]
     surviving_wolves: list[str]
+    no_lynch_streak: int
 
     current_round: int
 
@@ -182,3 +192,32 @@ class HealerNightGraph(TypedDict, total=False):
     previous_strategy: str
     updated_strategy: str | None
     healer_target: str | None
+
+
+class SerialKillerNightGraph(TypedDict, total=False):
+    day_channel: list[DayChannel]
+    day_summaries: list[DaySummary]
+    surviving_players: list[str]
+    strategy_points: str
+    player_id: str
+    player_role: str
+    human_player: bool
+
+    previous_strategy: str
+    updated_strategy: str | None
+    serial_killer_target: str | None
+
+
+class VigilanteNightGraph(TypedDict, total=False):
+    day_channel: list[DayChannel]
+    day_summaries: list[DaySummary]
+    surviving_players: list[str]
+    strategy_points: str
+    player_id: str
+    player_role: str
+    human_player: bool
+    vigilante_bullets: int
+
+    previous_strategy: str
+    updated_strategy: str | None
+    vigilante_target: str | None
