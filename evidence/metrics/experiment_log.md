@@ -331,7 +331,20 @@ moving together is the strong story** (triangulation).
 6. ✅ SK = **survival-nights gradient** (not the binary win); vigilante = raw shot counts
    (`num_evil_shot` / `num_friendly_fire` / holds / bullets-unused), not-shooting never penalized.
 
-## Next step (after the above is locked)
-One implementation pass for all KEEP-with-de-luck / FIX / ADD items (the attribution fix is already
-drafted, uncommitted — folds in here), then ONE verification batch + the proxy-vs-win correlation to
-confirm monotonicity and basket strength. All post-hoc-queryable — no frozen-pipeline / prompt changes.
+## Implementation status
+
+**✅ IMPLEMENTED 2026-06-06 (commit `93b1137`).** `compute_metrics.py` + `schemas/metrics.py` rewritten
+to the v2 set; `analyze_batch.py` metric lists synced. Verified: 25/25 unit assertions + a clean live
+memory-off game (SK-lynch credited → `correct_elimination_rate 1.0`; healer save family incl. a non-wolf
+block; investigator `lift 2.43`; vigilante friendly-fire captured; SK survival gradient; per-vote
+`town_vote_accuracy`). All computed post-hoc from existing trace fields — **no node/prompt changes**, so
+it works on existing traces too. **DEFERRED (post-MVP, downstream):** per-killer night attribution
+(`who-killed-who` / `deaths_attributed` / killer-resolved `exit_method`) — drafted once then reverted;
+`exit_method` currently returns generic `killed_at_night` (no false `killed_by_wolves`).
+
+## Next step — tracing-sufficiency audit
+Verify a game emits everything the OTHER evaluation forms need: (1) **LLM-as-judge completeness** — does
+each eval span already carry all judge inputs (situations, visible discussion, private context, retrieved
+memory+scores, action, adoption)? (2) **fine-tuning / "make it work better" experiments** — pre-rerank
+candidate pools, store snapshots, intermediate decisions. Then the proxy-vs-win monotonicity correlation
+(needs a real batch) confirms basket strength.
