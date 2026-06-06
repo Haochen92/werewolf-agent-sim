@@ -93,11 +93,14 @@ def wolf_night_phase(
         context=runtime.context,
     )
 
-    return {
+    updates = {
         "wolf_channel": result["wolf_channel"][len(state.get("wolf_channel", [])):],
         "wolves_kill_target": result.get("wolves_kill_target"),
         "agent_strategies": result.get("agent_strategies", {}),
     }
+    if result.get("strategy_adoptions"):
+        updates["strategy_adoptions"] = result["strategy_adoptions"]
+    return updates
 
 
 def healer_night_phase(

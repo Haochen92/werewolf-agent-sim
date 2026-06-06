@@ -140,6 +140,10 @@ class WolfNightGraph(TypedDict, total=False):
     surviving_wolves: list[str]
     surviving_villagers: list[str]
     agent_strategies: Annotated[dict[str, str], merge_strategies]
+    # Per-wolf memory adoptions from the (parallel) night discussion accumulate
+    # here, then wolf_night_phase bubbles them to the orchestrator — matching the
+    # single-target night roles.
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
 
     human_player: str
 
