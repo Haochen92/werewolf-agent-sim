@@ -6,7 +6,12 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from Agents.schemas.evaluation import DedupCase, EvalCase, ExtractionCase
+from Agents.schemas.evaluation import (
+    DaySummaryCase,
+    DedupCase,
+    EvalCase,
+    ExtractionCase,
+)
 
 
 class EvalDatasetRecord(BaseModel):
@@ -127,6 +132,68 @@ def read_extraction_dataset(path: Path) -> list[ExtractionDatasetRecord]:
 
 def write_extraction_dataset(
     path: Path, records: list[ExtractionDatasetRecord]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as file:
+        for record in records:
+            file.write(record.model_dump_json() + "\n")
+
+
+# ---------------------------------------------------------------------------
+# Day-summary dataset records
+# ---------------------------------------------------------------------------
+
+
+class DaySummaryDatasetRecord(BaseModel):
+    eval_set_id: str
+    case_id: str
+    trace_id: str
+    observation_id: str
+    span_name: str
+    game_id: str
+    day: int
+    created_from: str | None = None
+    day_summary_case: DaySummaryCase
+
+
+def day_summary_record_from_case(
+    case: DaySummaryCase,
+    eval_set_id: str,
+    created_from: str | None = None,
+) -> DaySummaryDatasetRecord:
+    return DaySummaryDatasetRecord(
+        eval_set_id=eval_set_id,
+        case_id=f"{case.trace_id}:{case.observation_id}",
+        trace_id=case.trace_id,
+        observation_id=case.observation_id,
+        span_name=case.span_name,
+        game_id=case.game_id,
+        day=case.day,
+        created_from=created_from,
+        day_summary_case=case,
+    )
+
+
+def read_day_summary_dataset(path: Path) -> list[DaySummaryDatasetRecord]:
+    records: list[DaySummaryDatasetRecord] = []
+    with path.open(encoding="utf-8") as file:
+        for line_number, line in enumerate(file, 1):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                records.append(
+                    DaySummaryDatasetRecord.model_validate_json(stripped)
+                )
+            except Exception as exc:
+                raise ValueError(
+                    f"Invalid day-summary record on line {line_number} of {path}: {exc}"
+                ) from exc
+    return records
+
+
+def write_day_summary_dataset(
+    path: Path, records: list[DaySummaryDatasetRecord]
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as file:

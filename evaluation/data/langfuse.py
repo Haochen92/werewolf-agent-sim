@@ -27,8 +27,14 @@ load_project_env()
 
 from langfuse import get_client  # noqa: E402
 
-from Agents.schemas.evaluation import DedupCase, EvalCase, ExtractionCase  # noqa: E402
+from Agents.schemas.evaluation import (  # noqa: E402
+    DaySummaryCase,
+    DedupCase,
+    EvalCase,
+    ExtractionCase,
+)
 from evaluation.data.cases import eval_case_from_span  # noqa: E402
+from evaluation.data.day_summary_cases import day_summary_case_from_span  # noqa: E402
 from evaluation.data.dedup_cases import dedup_case_from_span  # noqa: E402
 from evaluation.data.extraction_cases import extraction_case_from_span  # noqa: E402
 
@@ -46,6 +52,7 @@ EVAL_VERSION = "retrieval_judge_v2"
 ACTION_EVAL_SPAN_PREFIX = "agent_action_eval_"
 EXTRACTION_SPAN_PREFIX = "postgame_extraction_"
 DEDUP_SPAN_PREFIX = "dedup_"
+DAY_SUMMARY_SPAN_PREFIX = "day_summary_eval_"
 
 # The four score dimensions the judge produces for each eval span.
 SCORE_NAMES = [
@@ -370,6 +377,20 @@ def fetch_dedup_cases(trace_id: str) -> list[DedupCase]:
     cases: list[DedupCase] = []
     for span in spans:
         case = dedup_case_from_span(span)
+        if case:
+            cases.append(case)
+    return cases
+
+
+def fetch_day_summary_cases(trace_id: str) -> list[DaySummaryCase]:
+    """Build DaySummaryCase objects from day-summary spans in a trace."""
+    observations = _fetch_all_observations(trace_id)
+    spans = _filter_spans_by_prefix(
+        observations, trace_id, DAY_SUMMARY_SPAN_PREFIX, "day_summary"
+    )
+    cases: list[DaySummaryCase] = []
+    for span in spans:
+        case = day_summary_case_from_span(span)
         if case:
             cases.append(case)
     return cases
