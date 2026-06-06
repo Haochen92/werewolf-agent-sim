@@ -1240,9 +1240,28 @@ def _run_memory_informed_night_action(
         updated_strategy = ""
         if result:
             applied_game_update = {}
-            target = result.get(output_key)
-            applied_game_update[output_key] = target
-            updated_strategy = result.get("updated_strategy", "") or ""
+            if output_key == "wolf_channel":
+                # Wolf night is a discussion turn that carries a kill vote; the
+                # decision we evaluate is this wolf's vote. The turn produces a
+                # WolfChannel (message + vote) and folds its strategy update into
+                # agent_strategies (not a flat updated_strategy), so unpack both.
+                messages = result.get("wolf_channel", [])
+                applied_game_update["wolf_channel"] = messages
+                if messages:
+                    first = messages[0]
+                    target = (
+                        first.get("vote") if isinstance(first, dict)
+                        else getattr(first, "vote", None)
+                    )
+                strategies = result.get("agent_strategies", {})
+                if isinstance(strategies, dict):
+                    updated_strategy = strategies.get(player_id, "") or ""
+                if updated_strategy:
+                    applied_game_update["agent_strategies"] = strategies
+            else:
+                target = result.get(output_key)
+                applied_game_update[output_key] = target
+                updated_strategy = result.get("updated_strategy", "") or ""
             if strategy_adoptions:
                 result["strategy_adoptions"] = strategy_adoptions
 
@@ -1487,9 +1506,19 @@ def vigilante_vote(
     )
 
 
-def wolf_night_discuss(payload: WolfNightState):
-    return _run_agent(
-        payload, WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel"
+def wolf_night_discuss(
+    payload: WolfNightState,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    # Wolf night is the one multi-agent night action (a parallel discussion), but
+    # each wolf's turn is still a single memory-informed decision — its kill vote.
+    # Route it through the same night path as the single-target roles so it does
+    # flag-gated retrieval and emits an EvalCase (action_phase "night_action"),
+    # making wolf-night decisions part of the eval/memory sample.
+    return _run_memory_informed_night_action(
+        payload, config, runtime,
+        WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel",
     )
 
 
