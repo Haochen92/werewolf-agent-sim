@@ -58,12 +58,15 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
 
     random.shuffle(roles)
     assigned_roles = dict(zip(characters, roles, strict=True))
-    healer_player = [
-        player for player, role in assigned_roles.items() if role == "healer"
-    ][0]
-    investigator_player = [
-        player for player, role in assigned_roles.items() if role == "investigator"
-    ][0]
+
+    def _first_with_role(role: str) -> str | None:
+        players = [p for p, r in assigned_roles.items() if r == role]
+        return players[0] if players else None
+
+    healer_player = _first_with_role("healer")
+    investigator_player = _first_with_role("investigator")
+    serial_killer_player = _first_with_role("serial_killer")
+    vigilante_player = _first_with_role("vigilante")
     return {
         "day_channel": [],
         "day_summaries": [],
@@ -72,6 +75,8 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
         "surviving_wolves": [
             player for player, role in assigned_roles.items() if role == "wolf"
         ],
+        # Non-wolf bucket: town (villager/healer/investigator/vigilante) AND the solo
+        # serial killer. Factional standing is read off the *_player markers, not this list.
         "surviving_villagers": [
             player for player, role in assigned_roles.items() if role != "wolf"
         ],
@@ -79,6 +84,10 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
         "human_player": human_player,
         "healer_player": healer_player,
         "investigator_player": investigator_player,
+        "serial_killer_player": serial_killer_player,
+        "vigilante_player": vigilante_player,
+        "vigilante_bullets": game_config.vigilante_bullets,
+        "no_lynch_streak": 0,
         "investigator_results": [],
         "day_votes": [],
         "winner": None,
@@ -414,10 +423,14 @@ def _nullify_special_roles(
     player: str,
     state: OrchestratorGraph,
 ) -> None:
-    if player == state["healer_player"]:
+    if player == state.get("healer_player"):
         state_update["healer_player"] = None
-    if player == state["investigator_player"]:
+    if player == state.get("investigator_player"):
         state_update["investigator_player"] = None
+    if player == state.get("serial_killer_player"):
+        state_update["serial_killer_player"] = None
+    if player == state.get("vigilante_player"):
+        state_update["vigilante_player"] = None
 
 
 def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
@@ -632,8 +645,60 @@ def route_after_healer_night(
     return "NIGHT_RESOLUTION"
 
 
-def end_game(state: OrchestratorGraph):
-    winner = "villagers" if not state["surviving_wolves"] else "wolves"
+def _faction_counts(state: OrchestratorGraph) -> tuple[int, int, int]:
+    """Return (wolves, town, serial_killer) survivor counts.
+
+    surviving_villagers is the non-wolf bucket (town + the solo SK). Town excludes the
+    SK, whose aliveness is tracked by the serial_killer_player marker.
+    """
+    wolves = len(state.get("surviving_wolves", []))
+    non_wolf = len(state.get("surviving_villagers", []))
+    sk = 1 if state.get("serial_killer_player") else 0
+    town = non_wolf - sk
+    return wolves, town, sk
+
+
+def determine_winner(state: OrchestratorGraph) -> str | None:
+    """The locked 3-faction terminal rule; None means the game continues.
+
+    Order matters. W=wolves, T=town, S=serial killer (0/1).
+    - TOWN  : W==0 and S==0
+    - SK    : S==1 and (T+W) <= 1  (night-immune + a guaranteed kill ⇒ can't lose; a
+              1v1 day vote ties ⇒ no lynch, so declaring here is correct)
+    - WOLVES: S==0 and W >= T      (classic parity, only once the SK wildcard is gone)
+    """
+    wolves, town, sk = _faction_counts(state)
+    if wolves == 0 and sk == 0:
+        return "villagers"
+    if sk == 1 and (town + wolves) <= 1:
+        return "serial_killer"
+    if sk == 0 and wolves >= town:
+        return "wolves"
+    return None
+
+
+def _max_days_winner(state: OrchestratorGraph) -> str | None:
+    """Cost-backstop tiebreak: the largest surviving faction wins; a tie is a draw."""
+    wolves, town, sk = _faction_counts(state)
+    tally = {"villagers": town, "wolves": wolves, "serial_killer": sk}
+    top = max(tally.values())
+    leaders = [faction for faction, count in tally.items() if count == top]
+    return leaders[0] if len(leaders) == 1 else None
+
+
+_WINNER_MESSAGE = {
+    "villagers": "Game over! The villagers have won!",
+    "wolves": "Game over! The wolves have won!",
+    "serial_killer": "Game over! The serial killer has won!",
+    None: "Game over! The day limit was reached — the game ends in a draw.",
+}
+
+
+def end_game(state: OrchestratorGraph, config: RunnableConfig):
+    game_config = game_config_from_runnable(config)
+    winner = determine_winner(state)
+    if winner is None and state.get("current_day", 1) >= game_config.max_days:
+        winner = _max_days_winner(state)
 
     return {
         "winner": winner,
@@ -642,7 +707,7 @@ def end_game(state: OrchestratorGraph):
                 day=state.get("current_day", 1),
                 seq=sum(1 for m in state["day_channel"] if m.day == state.get("current_day", 1)),
                 player="game_master",
-                message=f"Game over! The {winner} have won!",
+                message=_WINNER_MESSAGE.get(winner, _WINNER_MESSAGE[None]),
             )
         ],
     }
@@ -650,20 +715,24 @@ def end_game(state: OrchestratorGraph):
 
 def check_game_end_day(
     state: OrchestratorGraph,
+    config: RunnableConfig,
 ) -> Literal["END_GAME", "WOLF_NIGHT_PHASE"]:
-    if not state["surviving_wolves"]:
+    game_config = game_config_from_runnable(config)
+    if determine_winner(state) is not None:
         return "END_GAME"
-    if len(state["surviving_wolves"]) >= len(state["surviving_villagers"]):
+    if state.get("current_day", 1) >= game_config.max_days:
         return "END_GAME"
     return "WOLF_NIGHT_PHASE"
 
 
 def check_game_end_night(
     state: OrchestratorGraph,
+    config: RunnableConfig,
 ) -> Literal["END_GAME", "ONE_MORE_DAY"]:
-    if not state["surviving_wolves"]:
+    game_config = game_config_from_runnable(config)
+    if determine_winner(state) is not None:
         return "END_GAME"
-    if len(state["surviving_wolves"]) >= len(state["surviving_villagers"]):
+    if state.get("current_day", 1) >= game_config.max_days:
         return "END_GAME"
     return "ONE_MORE_DAY"
 
