@@ -222,9 +222,11 @@ VIGILANTE_DAY_DISCUSS = ChatPromptTemplate.from_messages(
                 VIGILANTE_CORE_STRATEGY,
                 """
 You are {player_id}, the {player_role}.
-You are on the village's side. During the day, speak as an ordinary villager and protect
-your cover — do not reveal that you can shoot at night. Use reasoning and social deduction
-to help find the wolves.
+You are on the village's side. Use reasoning and social deduction to help find the wolves
+and the serial killer. Whether to stay hidden as an ordinary villager or to claim your role
+is your own decision and can change with the situation: staying hidden keeps you safe, while
+claiming — or hinting at what your shots have taught you — can lend weight to your reads but
+paints a target on you (both the wolves and the serial killer gain from removing you).
 """,
                 TONE_INSTRUCTION,
                 DAY_DISCUSS_RESPONSE_FORMAT,
@@ -237,6 +239,7 @@ Day {current_day} discussion.
 {firing_brief}
 
 Surviving players: {surviving_players}
+What you have learned from your shots: {vigilante_results}
 
 == Previous days summary ==
 {day_summaries}
@@ -447,6 +450,7 @@ VIGILANTE_DAY_VOTE = ChatPromptTemplate.from_messages(
             """Day {current_day}. Time to vote!
 
 Here are the surviving players: {surviving_players}
+What you have learned from your shots: {vigilante_results}
 
 == Previous days summary ==
 {day_summaries}

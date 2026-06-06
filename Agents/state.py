@@ -36,6 +36,9 @@ class OrchestratorGraph(TypedDict, total=False):
     vigilante_bullets: int
 
     investigator_results: Annotated[list[InvestigatorResult], add]
+    # Private notes the vigilante learns from its own shots (e.g. discovering an immune
+    # target is the serial killer). Siloed to the vigilante, like investigator_results.
+    vigilante_results: Annotated[list[str], add]
     day_votes: list[DayVote]
     voted_player: str | None
     no_lynch_streak: int
@@ -64,6 +67,7 @@ class DayGraphState(TypedDict, total=False):
 
     investigator_player: str | None
     investigator_results: list[InvestigatorResult]
+    vigilante_results: list[str]
 
     surviving_villagers: list[str]
     surviving_wolves: list[str]
@@ -217,6 +221,7 @@ class VigilanteNightGraph(TypedDict, total=False):
     player_role: str
     human_player: bool
     vigilante_bullets: int
+    vigilante_results: list[str]
 
     previous_strategy: str
     updated_strategy: str | None

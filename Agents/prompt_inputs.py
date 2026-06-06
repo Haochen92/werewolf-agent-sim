@@ -84,6 +84,10 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "investigator_results": format_investigator_results(
             payload.get("investigator_results", [])
         ),
+        "vigilante_results": (
+            "\n".join(payload.get("vigilante_results", []))
+            or "Nothing learned from your shots yet."
+        ),
         "previous_strategy": payload.get("previous_strategy", ""),
         "strategy_points": (
             strategy_points

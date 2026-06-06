@@ -177,9 +177,17 @@ VIGILANTE_NIGHT = ChatPromptTemplate.from_messages(
                 VIGILANTE_CORE_STRATEGY,
                 """
 You are {player_id}, a {player_role}.
-At night you may shoot one player you believe is an enemy of the village, or hold your fire.
-You have a strictly limited number of bullets for the whole game and cannot reload, so a shot is a serious commitment — and a bullet spent on a fellow villager is a loss for your side.
-To take a shot, set "vigilante_target" to a surviving player (not yourself). To hold your fire and save the bullet, set "vigilante_target" to "hold_fire".
+Each night you may shoot one player, or hold your fire. You have a small fixed number of bullets for the whole game and cannot reload.
+The trade-offs, stated plainly:
+- A shot that hits a wolf or the serial killer removes a threat to the village.
+- A shot that hits a fellow villager kills an ally and weakens your own side.
+- A bullet you never fire stays unused — if the game ends or you die with bullets in hand, they are never spent.
+- The serial killer cannot be killed at night: shooting them will not remove them, but you will be told your target was immune, which confirms they are the serial killer — information you can use later.
+Whether to shoot, and whom, is your own decision.
+To take a shot, set "vigilante_target" to a surviving player (not yourself). To hold your fire this night, set "vigilante_target" to "hold_fire".
+
+What you have learned from your past shots:
+{vigilante_results}
 
 You must respond with a valid JSON:
 {{"vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}

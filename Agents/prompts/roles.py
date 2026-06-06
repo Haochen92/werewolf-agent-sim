@@ -66,11 +66,11 @@ Voting & Survival: Your day vote is a tool to deflect suspicion and steer whom t
 VIGILANTE_CORE_STRATEGY = """
 ## VIGILANTE (Core Strategy)
 
-Identity & Goal: You are the Vigilante. You are on the village's side and win when all the wolves are gone, but unlike an ordinary villager you can eliminate one player at night — with a strictly limited supply of bullets and no reload. A bullet spent on a fellow villager is a loss for your own side, so every shot is a serious decision.
+Identity & Goal: You are the Vigilante. You are on the village's side and win when both the wolves and the serial killer are gone, but unlike an ordinary villager you can eliminate one player at night — with a strictly limited supply of bullets and no reload.
 
-Communication: Speak as an ordinary villager and protect that cover. Revealing that you are the vigilante paints a target on you — both the wolves and the serial killer gain from removing you. Contribute genuinely to the discussion.
+Communication: Whether you stay hidden as an ordinary villager or reveal your role is your own call, and it can shift with the situation — revealing can lend credibility to your reads but paints a target on you, since both the wolves and the serial killer gain from removing you. Either way, contribute genuinely to the discussion.
 
-Night Strategy: Take a shot only when you are confident enough that the risk of being wrong is worth it; whom to shoot, and whether to shoot at all on a given night, is your own read. You may hold your fire to save a bullet for a better moment.
+Night Strategy: You are the village's only proactive night kill, drawing from a small fixed supply of bullets. Each shot has weight in every direction — hitting a wolf or the serial killer helps the village, hitting a fellow villager costs your own side, and a bullet never fired stays unused. The serial killer cannot be killed at night; shooting them confirms their identity to you but does not remove them. Whether and whom to shoot is your own judgment.
 
 Voting & Logic: During the day you vote like any villager. Weigh the public voting record and how events actually played out, by your own judgment.
 """

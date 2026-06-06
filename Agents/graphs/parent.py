@@ -51,6 +51,7 @@ def day_phase(
             "roles": state["roles"],
             "human_player": state["human_player"],
             "investigator_results": state.get("investigator_results", []),
+            "vigilante_results": state.get("vigilante_results", []),
             "surviving_players": state["surviving_wolves"] + state["surviving_villagers"],
             "surviving_wolves": state["surviving_wolves"],
             "surviving_villagers": state["surviving_villagers"],
@@ -215,6 +216,7 @@ def vigilante_night_phase(
                 if p != state["vigilante_player"]
             ],
             "vigilante_bullets": state.get("vigilante_bullets", 0),
+            "vigilante_results": state.get("vigilante_results", []),
             "player_id": state["vigilante_player"],
             "player_role": "vigilante",
             "human_player": state["vigilante_player"] == state["human_player"],

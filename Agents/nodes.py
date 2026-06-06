@@ -162,6 +162,7 @@ def build_speaker_send(
             "surviving_wolves": state["surviving_wolves"],
             "surviving_villagers": state["surviving_villagers"],
             "investigator_results": state.get("investigator_results", []),
+            "vigilante_results": state.get("vigilante_results", []),
             "player_id": speaker_id,
             "player_role": role,
             "current_day": state["current_day"],
@@ -207,6 +208,7 @@ def fan_out_day(
             "previous_strategy": strategies.get(player, ""),
             "strategy_points": "",
             "allow_abstain": allow_abstain,
+            "vigilante_results": state.get("vigilante_results", []),
         }
 
     for player in surviving_players:
@@ -588,6 +590,15 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
     # The vigilante spends a bullet whenever it takes a shot, even if healed or whiffed.
     if vigilante_target:
         state_update["vigilante_bullets"] = max(0, state.get("vigilante_bullets", 0) - 1)
+
+    # A shot at the night-immune target (the SK) doesn't kill, but the vigilante learns
+    # the target was immune — a private, reliable confirmation of the serial killer.
+    # (A shot stopped by a heal does NOT trigger this, so there is no false positive.)
+    if vigilante_target and outcomes.get(vigilante_target) == "immune":
+        state_update["vigilante_results"] = [
+            f"Night of day {current_day}: you shot {vigilante_target}, but they were unharmed "
+            f"— immune to night kills, which confirms {vigilante_target} is the serial killer."
+        ]
 
     lines: list[str] = []
     announced_save = False
