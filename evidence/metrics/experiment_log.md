@@ -15,7 +15,23 @@ Beyond win rate, we want **per-role scores** that:
    time (info-starved spot → near-coinflip → low weight; info-rich spot → choosing against the
    evidence is a real, heavily-weighted error). Process-vs-outcome, à la decision theory/poker.
 
-## Audit of existing metrics (2026-06-06)
+## Metric versioning (v0 → v1 → v2)
+
+This work is **v2**, a refinement — not a from-scratch build. The history matters:
+
+- **v0 — nothing logged.** Early games ran but emitted no structured metrics. Impact could only be
+  eyeballed; there was no quantitative signal at all.
+- **v1 — the CURRENT eval (the proxy + judge suite below).** Forming this was itself substantial
+  progress: deciding *what* to count, building the per-game accumulators (`DayResolutionMetric` /
+  `NightResolutionMetric`), the derived rates, and the LLM-judge rubrics. v1 took us from "measure
+  nothing" to a working, repeatable proxy basket + memory-pipeline judges. The proxies it defined are
+  the foundation we build on — the audit below is a critique *of a real artifact*, not of a blank slate.
+- **v2 — this workstream: refine the DETERMINISTIC scores.** De-luck the v1 outcome proxies (condition
+  on opportunity), make uncertainty-awareness explicit where feasible, and verify each proxy is
+  monotonic in skill. v2 keeps v1's mechanical, fully-objective backbone and sharpens it; it does NOT
+  discard v1 or chase a per-decision determinism the system can't honestly support (see discussion).
+
+## Audit of existing metrics (2026-06-06) — this is v1
 
 Two **fully separate** families. (Full catalog with file:line in the session record; condensed here.)
 
