@@ -109,6 +109,8 @@ def healer_night_phase(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["healer_player"], ""),
             "strategy_points": "",
+            "current_day": state["current_day"],
+            "current_round": 0,
             "day_channel": state.get("day_channel", []),
             "day_summaries": state.get("day_summaries", []),
             "surviving_players": [
@@ -128,6 +130,8 @@ def healer_night_phase(
         updates["agent_strategies"] = {
             state["healer_player"]: result["updated_strategy"]
         }
+    if result.get("strategy_adoptions"):
+        updates["strategy_adoptions"] = result["strategy_adoptions"]
 
     return updates
 
@@ -141,6 +145,8 @@ def investigator_night_phase(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["investigator_player"], ""),
             "strategy_points": "",
+            "current_day": state["current_day"],
+            "current_round": 0,
             "day_channel": state.get("day_channel", []),
             "day_summaries": state.get("day_summaries", []),
             "investigator_results": state.get("investigator_results", []),
@@ -162,6 +168,8 @@ def investigator_night_phase(
         updates["agent_strategies"] = {
             state["investigator_player"]: result["updated_strategy"]
         }
+    if result.get("strategy_adoptions"):
+        updates["strategy_adoptions"] = result["strategy_adoptions"]
 
     return updates
 
@@ -175,6 +183,8 @@ def serial_killer_night_phase(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["serial_killer_player"], ""),
             "strategy_points": "",
+            "current_day": state["current_day"],
+            "current_round": 0,
             "day_channel": state.get("day_channel", []),
             "day_summaries": state.get("day_summaries", []),
             "surviving_players": [
@@ -195,6 +205,8 @@ def serial_killer_night_phase(
         updates["agent_strategies"] = {
             state["serial_killer_player"]: result["updated_strategy"]
         }
+    if result.get("strategy_adoptions"):
+        updates["strategy_adoptions"] = result["strategy_adoptions"]
 
     return updates
 
@@ -208,6 +220,8 @@ def vigilante_night_phase(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["vigilante_player"], ""),
             "strategy_points": "",
+            "current_day": state["current_day"],
+            "current_round": 0,
             "day_channel": state.get("day_channel", []),
             "day_summaries": state.get("day_summaries", []),
             "surviving_players": [
@@ -232,6 +246,8 @@ def vigilante_night_phase(
         updates["agent_strategies"] = {
             state["vigilante_player"]: result["updated_strategy"]
         }
+    if result.get("strategy_adoptions"):
+        updates["strategy_adoptions"] = result["strategy_adoptions"]
 
     return updates
 

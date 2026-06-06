@@ -173,11 +173,14 @@ class InvestigatorNightGraph(TypedDict, total=False):
 
     investigator_results: list[InvestigatorResult]
     strategy_points: str
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
 
     surviving_players: list[str]
     player_id: str
     player_role: str
 
+    current_day: int
+    current_round: int
     previous_strategy: str
     updated_strategy: str | None
     human_player: bool
@@ -189,10 +192,13 @@ class HealerNightGraph(TypedDict, total=False):
     day_summaries: list[DaySummary]
     surviving_players: list[str]
     strategy_points: str
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
     player_id: str
     player_role: str
     human_player: bool
 
+    current_day: int
+    current_round: int
     previous_strategy: str
     updated_strategy: str | None
     healer_target: str | None
@@ -203,10 +209,13 @@ class SerialKillerNightGraph(TypedDict, total=False):
     day_summaries: list[DaySummary]
     surviving_players: list[str]
     strategy_points: str
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
     player_id: str
     player_role: str
     human_player: bool
 
+    current_day: int
+    current_round: int
     previous_strategy: str
     updated_strategy: str | None
     serial_killer_target: str | None
@@ -217,12 +226,15 @@ class VigilanteNightGraph(TypedDict, total=False):
     day_summaries: list[DaySummary]
     surviving_players: list[str]
     strategy_points: str
+    strategy_adoptions: Annotated[list[StrategyAdoption], add]
     player_id: str
     player_role: str
     human_player: bool
     vigilante_bullets: int
     vigilante_results: list[str]
 
+    current_day: int
+    current_round: int
     previous_strategy: str
     updated_strategy: str | None
     vigilante_target: str | None
