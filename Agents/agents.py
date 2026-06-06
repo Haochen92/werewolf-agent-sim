@@ -63,6 +63,7 @@ from Agents.schemas import (
     DayVoteOutput,
     EvalCase,
     EvalPrivateContext,
+    EvalProvenance,
     HealerOutput,
     InvestigatorOutput,
     NightAction,
@@ -621,6 +622,22 @@ def _retrieval_type_enabled(config: RunnableConfig, memory_kind: str) -> bool:
     return bool(retrieval_types_config.get(memory_kind, True))
 
 
+def _store_dir_from_config(config: RunnableConfig) -> str:
+    """The seeded store directory = the store identity (provenance gap #4).
+
+    Lives on ``memory_persistence_config`` in the runnable config (a
+    ``MemoryPersistenceConfig`` or a plain dict, depending on call site).
+    """
+    configurable = (config or {}).get("configurable", {}) or {}
+    mpc = configurable.get("memory_persistence_config")
+    if mpc is None:
+        return ""
+    seed = getattr(mpc, "seed_store_dir", None)
+    if seed is None and isinstance(mpc, dict):
+        seed = mpc.get("seed_store_dir")
+    return str(seed) if seed else ""
+
+
 def _enrich_payload_with_memory(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
@@ -629,6 +646,7 @@ def _enrich_payload_with_memory(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     enriched_payload = dict(payload)
 
+    store_dir = _store_dir_from_config(config)
     active_store = runtime.store
     skip_reason = None
     if payload["current_day"] == 1:
@@ -650,6 +668,11 @@ def _enrich_payload_with_memory(
             "situations": [],
             "retrieved_observations": [],
             "retrieved_strategy_points": [],
+            "candidate_observations": [],
+            "candidate_strategy_points": [],
+            "store_dir": store_dir,
+            "reranking_enabled": False,
+            "filtering_enabled": False,
             "num_situations": 0,
             "num_observations": 0,
             "num_strategy_points": 0,
@@ -722,6 +745,21 @@ def _enrich_payload_with_memory(
             "observations": len(retrieved_observations),
             "strategy_points": len(retrieved_strategy_points),
         }
+
+        # Snapshot the wide candidate pool exactly as embedding search surfaced
+        # it — before filtering/reranking narrows and reorders — so reranker
+        # training and retrieval eval can see what entered the rerank. Only when
+        # a wide retrieval ran; otherwise top-k IS the pool and ``retrieved_*``
+        # already carries it (kept empty here to keep cases lean).
+        candidate_observations_json: list[dict[str, Any]] = []
+        candidate_strategy_points_json: list[dict[str, Any]] = []
+        if needs_wide_retrieval:
+            candidate_observations_json = [
+                item.model_dump(mode="json") for item in retrieved_observations
+            ]
+            candidate_strategy_points_json = [
+                item.model_dump(mode="json") for item in retrieved_strategy_points
+            ]
 
         if filtering:
             retrieved_observations = sorted(
@@ -798,6 +836,8 @@ def _enrich_payload_with_memory(
             output={
                 "retrieved_observations": retrieved_observations_json,
                 "retrieved_strategy_points": retrieved_strategy_points_json,
+                "candidate_observations": candidate_observations_json,
+                "candidate_strategy_points": candidate_strategy_points_json,
             },
             metadata={
                 "num_situations": len(situations),
@@ -811,6 +851,8 @@ def _enrich_payload_with_memory(
                 "filtering_enabled": filtering,
                 "pre_filter_candidates": pre_filter_counts,
                 "post_filter_candidates": post_filter_counts,
+                "num_candidate_observations": len(candidate_observations_json),
+                "num_candidate_strategy_points": len(candidate_strategy_points_json),
             }
         )
 
@@ -830,6 +872,9 @@ def _enrich_payload_with_memory(
         "situations": situations,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,
+        "candidate_observations": candidate_observations_json,
+        "candidate_strategy_points": candidate_strategy_points_json,
+        "store_dir": store_dir,
         "strategy_point_index_map": strategy_point_index_map,
         "num_situations": len(situations),
         "num_observations": len(retrieved_observations),
@@ -1077,6 +1122,13 @@ def _run_memory_informed_action(
             situations=retrieval_meta["situations"],
             retrieved_observations=retrieval_meta["retrieved_observations"],
             retrieved_strategy_points=retrieval_meta["retrieved_strategy_points"],
+            candidate_observations=retrieval_meta["candidate_observations"],
+            candidate_strategy_points=retrieval_meta["candidate_strategy_points"],
+            provenance=EvalProvenance(
+                store_dir=retrieval_meta["store_dir"],
+                reranking_enabled=retrieval_meta["reranking_enabled"],
+                filtering_enabled=retrieval_meta["filtering_enabled"],
+            ),
             agent_message=agent_message,
             agent_vote=agent_vote,
             updated_strategy=updated_strategy,
@@ -1208,6 +1260,13 @@ def _run_memory_informed_night_action(
             situations=retrieval_meta["situations"],
             retrieved_observations=retrieval_meta["retrieved_observations"],
             retrieved_strategy_points=retrieval_meta["retrieved_strategy_points"],
+            candidate_observations=retrieval_meta["candidate_observations"],
+            candidate_strategy_points=retrieval_meta["candidate_strategy_points"],
+            provenance=EvalProvenance(
+                store_dir=retrieval_meta["store_dir"],
+                reranking_enabled=retrieval_meta["reranking_enabled"],
+                filtering_enabled=retrieval_meta["filtering_enabled"],
+            ),
             agent_night_action=NightAction(role=role, target=target),
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
