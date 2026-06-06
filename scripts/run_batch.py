@@ -414,8 +414,10 @@ def run_batch(args: argparse.Namespace) -> int:
                 "day_channel": result.get("day_channel"),
                 "day_summaries": result.get("day_summaries"),
                 "computed_metrics": outcome.game_metrics.model_dump(mode="json"),
-                # Per-night decisions (targets, deaths, kill-landed) for offline
-                # inspection — the derived proxies live in computed_metrics.
+                # Raw per-decision accumulators for offline inspection — day votes
+                # (counts, ties, no-lynch) and night targets/deaths/kill-landed.
+                # The derived proxies live in computed_metrics.
+                "day_resolutions": (outcome.raw_metrics or {}).get("day_resolutions"),
                 "night_resolutions": (outcome.raw_metrics or {}).get("night_resolutions"),
                 "leak_check": {"passed": not leaks, "leaks": leaks},
             }

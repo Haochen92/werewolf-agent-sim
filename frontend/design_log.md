@@ -346,7 +346,36 @@ info only), maintains role predictions; "voting" = suspicion ranking. No generat
 Agent assistance compresses typing, not decisions/integration-debugging/playtesting. Total to
 full MVP ≈ 6–8 part-time weeks; shareable artifact in ~3 weekends.
 
-## 13. Backend touchpoints to keep in mind (no action yet)
+## 13. Multi-human tables (5 humans + agents) — discussed 2026-06-06
+
+**Status: deferred consideration, NOT planned work.** HITL is unimplemented (like every frontend
+decision here); concurrent-human coordination is a design input to revisit *when implementing
+HITL* — and the entire HITL track itself waits until the Phase B/C experiments prove (or
+disprove) whether memory works. Recorded now only so the F3-era architecture choices below
+aren't accidentally foreclosed.
+
+**Infra verdict: non-problem.** 5 SSE connections, same event log/process model; every human seat
+is an agent NOT run → a 5-human 9-seat game ≈ half the LLM spend. Infra-adjacent sharpening:
+event stream must be **role-filtered per recipient** (human wolf sees wolf events) — same
+invariant as payload gating, extended to the event layer, needed even at 1 human; multi-human
+just makes it N views.
+
+**The three real (design) problems:**
+1. *Turn arbitration* — small: FIFO on raise-time for competing human hands; pacing shifts (every
+   reactive obligation now waits on a person → turn timers become core mechanic, not AFK guard).
+2. *Synchronous presence* — lobby, invite links, ready-up, reconnect grace, desertion policy.
+   Killer card: **deserter's seat inherited by an agent natively** — the agents ARE the
+   bot-replacement system other party games build badly.
+3. *Mixed human/agent night channels* — the genuinely new chunk: human wolf chats in
+   `wolf_channel` with agent wolves (real-time chat phase + its own turn semantics); night-action
+   pickers for human power roles are easy, the channel is the work.
+
+**Sequencing: single-human F3 first; multi-human = F4 (+1–2 weeks, mostly lobby + night chat).**
+Two F3 choices to make as-if-F4-exists (zero cost now): per-player role-filtered event streams
+(never a single "the human's" stream), and lobby/seat abstraction with human count as a variable.
+Friends-via-invite-link only at first → defers all moderation/trust questions.
+
+## 14. Backend touchpoints to keep in mind (no action yet)
 
 - Replay reads from batch JSONL + `day_channel`/`day_summaries` — keep those fields stable in
   v5 record schemas.
