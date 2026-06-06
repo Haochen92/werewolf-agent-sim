@@ -26,23 +26,46 @@ if str(REPO_ROOT) not in sys.path:
 
 
 RATE_METRICS = [
+    # Town (faction-aware: wolf+SK are both enemies)
     "correct_elimination_rate",
+    "wolf_elimination_rate",
+    "town_mislynch_rate",
+    "town_vote_accuracy",
+    # Healer (save family — town-save is the good signal, friendly-fire the error)
     "healer_save_rate",
-    "investigator_accuracy",
+    "healer_town_save_rate",
+    "healer_friendly_fire_save_rate",
+    "healer_wolf_block_rate",
+    # Investigator (lift de-lucks for pool composition)
+    "investigator_threat_find_rate",
+    "investigator_threat_find_lift",
+    "investigator_wolf_find_rate",
+    # Wolves
     "wolf_steering_rate",
     "wolf_blending_rate",
     "wolf_dissent_rate",
     "wolf_power_role_targeting_rate",
+    # Vigilante
+    "vigilante_correct_shot_rate",
 ]
 
 NUMERIC_METRICS = [
     "game_length",
     "mislynches",
+    "serial_killer_lynched",
     "healer_save_count",
     "investigator_wolves_found",
     "power_roles_killed_by_wolves",
     "tie_count",
     "no_vote_count",
+    # Serial killer (survival is the dense proxy)
+    "sk_nights_survived",
+    "sk_kills_landed",
+    # Vigilante (raw shot counts; holds not penalized)
+    "vigilante_shots_taken",
+    "vigilante_evil_shots",
+    "vigilante_friendly_fire_shots",
+    "vigilante_bullets_unused",
 ]
 
 NULLABLE_NUMERIC_METRICS = [
@@ -55,6 +78,8 @@ CATEGORICAL_METRICS = [
     "winner",
     "healer_exit_method",
     "investigator_exit_method",
+    "sk_exit_method",
+    "vigilante_exit_method",
 ]
 
 
