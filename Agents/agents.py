@@ -45,9 +45,11 @@ from Agents.prompts import (
     SERIAL_KILLER_DAY_DISCUSS,
     SERIAL_KILLER_DAY_VOTE,
     SERIAL_KILLER_NIGHT,
+    SERIAL_KILLER_SITUATION_SUMMARY,
     VIGILANTE_DAY_DISCUSS,
     VIGILANTE_DAY_VOTE,
     VIGILANTE_NIGHT,
+    VIGILANTE_SITUATION_SUMMARY,
     VILLAGER_SITUATION_SUMMARY,
     VILLAGER_DAY_DISCUSS,
     VILLAGER_DAY_VOTE,
@@ -510,6 +512,8 @@ def _generate_situations_for_agent(
         "healer": HEALER_SITUATION_SUMMARY,
         "investigator": INVESTIGATOR_SITUATION_SUMMARY,
         "wolf": WOLF_SITUATION_SUMMARY,
+        "serial_killer": SERIAL_KILLER_SITUATION_SUMMARY,
+        "vigilante": VIGILANTE_SITUATION_SUMMARY,
     }.get(role, VILLAGER_SITUATION_SUMMARY)
     chain = prompt_template | get_llm().with_structured_output(SituationSummary)
 

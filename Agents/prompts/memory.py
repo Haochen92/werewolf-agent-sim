@@ -64,6 +64,8 @@ SITUATION_ROLE_LENS = {
     "villager": "Also note: who is being evasive, voting inconsistencies, and unresolved accusations.",
     "healer": "Also note: who most needs protection, whether your activity level risks exposing you, and whether it's time to claim.",
     "investigator": "Lead with how your private findings relate to the public narrative — do they confirm, contradict, or add nothing new? Also note whether your communication style is marking you as a power role.",
+    "serial_killer": "Also note: who most threatens your survival (whether by closing in on you or by being a strong player), whether suspicion is drifting toward you, and how the wolf-vs-village fight is shaping the field you must outlast.",
+    "vigilante": "Also note: whether you have a target worth spending a scarce bullet on and how confident you are, whether holding fire is wiser, and whether your behavior risks exposing you as a power role.",
 }
 
 
@@ -224,6 +226,50 @@ Today's public discussion:
 
 Wolf night chat visible to you:
 {wolf_channel}
+"""
+            + SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)
+
+
+SERIAL_KILLER_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving players: {surviving_players}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
+"""
+            + SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)
+
+
+VIGILANTE_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving players: {surviving_players}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
 """
             + SITUATION_SUMMARY_SUFFIX,
         )
