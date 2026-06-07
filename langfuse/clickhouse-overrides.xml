@@ -1,0 +1,28 @@
+<!-- ClickHouse config override for the Langfuse stack.
+     Mounted at /etc/clickhouse-server/config.d/zz-overrides.xml (see docker-compose.yml).
+     Stock ClickHouse self-instrumentation was ~94% of disk usage (trace_log 3.5G,
+     text_log 3.2G, ...) vs ~570MB of actual Langfuse data, and trace-level console
+     logging produced a 32G unbounded Docker stdout log (2026-06-07 disk-full incident).
+     Langfuse only uses default.* tables; everything disabled here is system.* diagnostics
+     about ClickHouse itself. Re-enable temporarily by deleting a remove="1" line if CH
+     performance ever needs debugging. -->
+<clickhouse>
+    <!-- console/file log: warnings+errors only (default is `trace`) -->
+    <logger>
+        <level>warning</level>
+        <console>1</console>
+    </logger>
+    <!-- disable ClickHouse self-instrumentation tables -->
+    <trace_log remove="1"/>
+    <text_log remove="1"/>
+    <metric_log remove="1"/>
+    <asynchronous_metric_log remove="1"/>
+    <histogram_metric_log remove="1"/>
+    <part_log remove="1"/>
+    <processors_profile_log remove="1"/>
+    <opentelemetry_span_log remove="1"/>
+    <!-- keep query_log (occasionally useful to see Langfuse's SQL) but short -->
+    <query_log>
+        <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
+    </query_log>
+</clickhouse>

@@ -103,6 +103,9 @@ services:
     image: docker.io/clickhouse/clickhouse-server
     restart: unless-stopped
     user: "101:101"
+    # backstop only — with self-instrumentation disabled (see overrides) CH should
+    # stay well under this; prevents a future runaway from eating host memory
+    mem_limit: 2g
     environment:
       CLICKHOUSE_DB: default
       CLICKHOUSE_USER: ${CLICKHOUSE_USER:-clickhouse}
@@ -111,6 +114,7 @@ services:
     volumes:
       - langfuse_clickhouse_data:/var/lib/clickhouse
       - langfuse_clickhouse_logs:/var/log/clickhouse-server
+      - ./langfuse/clickhouse-overrides.xml:/etc/clickhouse-server/config.d/zz-overrides.xml:ro
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
       interval: 5s
