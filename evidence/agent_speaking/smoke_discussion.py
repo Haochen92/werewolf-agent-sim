@@ -87,7 +87,7 @@ def run_game_and_dump(out_path: Path, memory: bool = False) -> list[dict]:
         mpc = {
             "seed_enabled": True,
             "dump_enabled": False,
-            "seed_store_dir": "Agents/memory_stores/v4_deduped_v2",  # cached vectors -> no re-embed
+            "seed_store_dir": "memory_stores/v4_deduped_v2",  # cached vectors -> no re-embed
         }
     else:
         memory_config = {r: False for r in ROLES}

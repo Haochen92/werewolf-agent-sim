@@ -3,8 +3,8 @@
   "snapshots": [
     {
       "label": "v2",
-      "observations_path": "Agents/memory_stores/v2/observations.json",
-      "strategy_points_path": "Agents/memory_stores/v2/strategy_points.json"
+      "observations_path": "memory_stores/v2/observations.json",
+      "strategy_points_path": "memory_stores/v2/strategy_points.json"
     }
   ],
   "summary": {

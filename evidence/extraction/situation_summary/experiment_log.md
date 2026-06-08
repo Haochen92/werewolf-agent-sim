@@ -83,8 +83,8 @@ Sample: 15-20 cases stratified across 4 roles. Namespace sizes are manageable
 | Artifact | Path | SHA-256 (prefix) |
 |---|---|---|
 | Dataset | `eval_sets/v4_filtering_eval.jsonl` | `c13c8511f095` |
-| Observations store | `Agents/memory_stores/v4_deduped_v2/observations.json` | `33d9ad3ea4f2` |
-| Strategy points store | `Agents/memory_stores/v4_deduped_v2/strategy_points.json` | `91cd6e244b9b` |
+| Observations store | `memory_stores/v4_deduped_v2/observations.json` | `33d9ad3ea4f2` |
+| Strategy points store | `memory_stores/v4_deduped_v2/strategy_points.json` | `91cd6e244b9b` |
 
 Store: v4_deduped_v2 (194 observations, 205 strategy points, 11 namespaces).
 Golden labels are only valid against these exact artifact versions.

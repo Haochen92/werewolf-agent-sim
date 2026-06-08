@@ -38,7 +38,7 @@ GOLDEN_LABELS_PATH = (
     / "situation_summary"
     / "retrieval_golden_labels.json"
 )
-STORE_DIR = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2"
+STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"
 EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
 
 

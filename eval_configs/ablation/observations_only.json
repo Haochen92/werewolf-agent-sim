@@ -4,8 +4,8 @@
   "snapshots": [
     {
       "label": "observations_only",
-      "observations_path": "Agents/memory_stores/v4_deduped/observations.json",
-      "strategy_points_path": "Agents/memory_stores/v4_deduped/empty.json"
+      "observations_path": "memory_stores/v4_deduped/observations.json",
+      "strategy_points_path": "memory_stores/v4_deduped/empty.json"
     }
   ],
   "top_k": 3,

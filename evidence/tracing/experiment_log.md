@@ -62,11 +62,11 @@ $PY scripts/run_batch.py --configs all_disabled --runs-per-config 1 \
     --no-memory-seed --no-memory-dump --session-prefix nighteval_memoff
 # 2) memory-on, healer+investigator seeded from a populated store
 $PY scripts/run_batch.py --configs specials_only \
-    --seed-store-dir Agents/memory_stores/v4_deduped --no-memory-dump \
+    --seed-store-dir memory_stores/v4_deduped --no-memory-dump \
     --session-prefix nighteval_memon
 # 3) memory-on, ALL roles — the night-immune SK guarantees day>=2 night actions
 $PY scripts/run_batch.py --configs all_enabled \
-    --seed-store-dir Agents/memory_stores/v4_deduped --no-memory-dump \
+    --seed-store-dir memory_stores/v4_deduped --no-memory-dump \
     --session-prefix nighteval_memon_all
 ```
 
@@ -152,11 +152,11 @@ preserved; empty on no-wide-retrieval; skip-path carries new keys; provenance ac
 missing config; day-summary span emits a valid `DaySummaryCase`, node still returns the summary.
 
 **Live smoke** (`run_batch --configs all_enabled --filtering filter_enabled --seed-store-dir
-Agents/memory_stores/v4_deduped_v2 --no-memory-dump`; winner=serial_killer, day 4). Seeding the
+memory_stores/v4_deduped_v2 --no-memory-dump`; winner=serial_killer, day 4). Seeding the
 **serialized store** (`indexed_cache.pkl`, SHA-validated) loaded pre-computed vectors — no seed-time
 re-embed (the JSON path's embedding storm). Queried the live trace:
 - **#3:** 4 `DaySummaryCase`s (days 1–4), each `raw_discussion` + `summary` + `model_used`.
-- **#4:** **72/72** eval cases carry `provenance.store_dir='Agents/memory_stores/v4_deduped_v2'`,
+- **#4:** **72/72** eval cases carry `provenance.store_dir='memory_stores/v4_deduped_v2'`,
   rerank=False, filter=True.
 - **#2:** **46/72** carry the pool (others = day-1 skips + empty SK/vig namespaces): e.g.
   `cand_obs=10 → final_obs=3`, `cand_sp=10 → final_sp=3`.

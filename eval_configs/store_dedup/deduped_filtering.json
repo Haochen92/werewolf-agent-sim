@@ -3,8 +3,8 @@
   "snapshots": [
     {
       "label": "v4_deduped",
-      "observations_path": "Agents/memory_stores/v4_deduped/observations.json",
-      "strategy_points_path": "Agents/memory_stores/v4_deduped/strategy_points.json"
+      "observations_path": "memory_stores/v4_deduped/observations.json",
+      "strategy_points_path": "memory_stores/v4_deduped/strategy_points.json"
     }
   ],
   "pipelines": [

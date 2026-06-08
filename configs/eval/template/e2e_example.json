@@ -3,8 +3,8 @@
   "snapshots": [
     {
       "label": "v1_post_dedup",
-      "observations_path": "Agents/memory_stores/v1_post_dedup/observations.json",
-      "strategy_points_path": "Agents/memory_stores/v1_post_dedup/strategy_points.json"
+      "observations_path": "memory_stores/v1_post_dedup/observations.json",
+      "strategy_points_path": "memory_stores/v1_post_dedup/strategy_points.json"
     }
   ],
   "summary": {

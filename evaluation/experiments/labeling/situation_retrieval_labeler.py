@@ -62,7 +62,7 @@ from evaluation.core.settings import REPO_ROOT
 from evaluation.data.datasets import EvalDatasetRecord, read_eval_dataset
 
 EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
-STORE_DIR = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2"
+STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"
 GOLDEN_LABELS_PATH = (
     REPO_ROOT
     / "evidence"
@@ -117,7 +117,7 @@ def load_labels() -> dict:
                     "cases": 40,
                 },
                 "memory_store": {
-                    "path": "Agents/memory_stores/v4_deduped_v2/",
+                    "path": "memory_stores/v4_deduped_v2/",
                     "observations_sha256": _compute_sha256(
                         STORE_DIR / "observations.json"
                     ),

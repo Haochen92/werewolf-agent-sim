@@ -146,8 +146,8 @@ The v3 prompts are far more conservative — anti-over-merge calibration, BEFORE
 ## Code References
 
 - `Agents/memory_batch_deduplication.py` — batch dedup pipeline, cluster size cap, two-pass support
-- `Agents/memory_stores/v4_deduped/` — v0-prompt deduped store (320 items)
-- `Agents/memory_stores/v4_deduped_v2/` — v3-prompt deduped store (432 items)
+- `memory_stores/v4_deduped/` — v0-prompt deduped store (320 items)
+- `memory_stores/v4_deduped_v2/` — v3-prompt deduped store (432 items)
 - `eval_configs/store_dedup/store_dedup_comparison.json` — phase 1 eval config (n=5)
 - `eval_configs/store_dedup/dedup_v2_comparison.json` — phase 2 eval config (n=39)
 - `eval_results/retrieval_eval_20260526_174803.jsonl` — phase 2 raw results

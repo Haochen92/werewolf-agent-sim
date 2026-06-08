@@ -322,7 +322,7 @@ Ran the two-pass pipeline (v3 default prompt) on `v4_deduped_v2` — a store tha
 
 **The pipeline is not idempotent.** A second run removed another 45 items (10.4% of the store).
 
-Stored at `Agents/memory_stores/v2_idempotency` for comparison. Report at `eval_results/store_dedup/v2_idempotency_report.json`.
+Stored at `memory_stores/v2_idempotency` for comparison. Report at `eval_results/store_dedup/v2_idempotency_report.json`.
 
 ### Analysis of second-pass changes
 

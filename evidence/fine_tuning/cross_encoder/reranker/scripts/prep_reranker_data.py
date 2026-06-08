@@ -19,8 +19,8 @@ GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
     / "retrieval_golden_labels.json"
 )
-OBS_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "observations.json"
-SP_STORE = REPO_ROOT / "Agents" / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
+OBS_STORE = REPO_ROOT / "memory_stores" / "v4_deduped_v2" / "observations.json"
+SP_STORE = REPO_ROOT / "memory_stores" / "v4_deduped_v2" / "strategy_points.json"
 OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "training_data"
 SPLIT_PATH = OUTPUT_DIR / "reranker_split.json"
 

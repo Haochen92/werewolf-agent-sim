@@ -9,26 +9,26 @@ into a JSONL dataset — no Langfuse dependency.
 Usage:
     # Single model run:
     poetry run python evidence/fine_tuning/dedup_classifier/generate_dedup_cases.py \
-        --store-dir Agents/memory_stores/v4_deduped_v2 \
+        --store-dir memory_stores/v4_deduped_v2 \
         --extraction-files evidence/extraction/quality/model_comparison/gemini-3.5-flash_*.jsonl \
         --output evidence/fine_tuning/dedup_classifier/cases_flash35.jsonl \
         --model gemini-3.5-flash
 
     # Run 3 models in parallel for multi-model agreement labeling:
     poetry run python evidence/fine_tuning/dedup_classifier/generate_dedup_cases.py \
-        --store-dir Agents/memory_stores/v4_deduped_v2 \
+        --store-dir memory_stores/v4_deduped_v2 \
         --extraction-files evidence/extraction/quality/model_comparison/gemini-3.5-flash_*.jsonl \
         --output evidence/fine_tuning/dedup_classifier/cases_flash35.jsonl \
         --model gemini-3.5-flash &
 
     poetry run python evidence/fine_tuning/dedup_classifier/generate_dedup_cases.py \
-        --store-dir Agents/memory_stores/v4_deduped_v2 \
+        --store-dir memory_stores/v4_deduped_v2 \
         --extraction-files evidence/extraction/quality/model_comparison/gemini-3.5-flash_*.jsonl \
         --output evidence/fine_tuning/dedup_classifier/cases_flashlite.jsonl \
         --model gemini-3.1-flash-lite --thinking-level low &
 
     poetry run python evidence/fine_tuning/dedup_classifier/generate_dedup_cases.py \
-        --store-dir Agents/memory_stores/v4_deduped_v2 \
+        --store-dir memory_stores/v4_deduped_v2 \
         --extraction-files evidence/extraction/quality/model_comparison/gemini-3.5-flash_*.jsonl \
         --output evidence/fine_tuning/dedup_classifier/cases_flash25.jsonl \
         --model gemini-2.5-flash &
@@ -215,7 +215,7 @@ def main():
         "--store-dir",
         type=Path,
         required=True,
-        help="Memory store directory to seed from (e.g. Agents/memory_stores/v4_deduped_v2)",
+        help="Memory store directory to seed from (e.g. memory_stores/v4_deduped_v2)",
     )
     parser.add_argument(
         "--extraction-files",

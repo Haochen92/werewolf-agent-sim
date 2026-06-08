@@ -942,7 +942,7 @@ Compared against an old concurrent-fan-out transcript. The asymmetry is the take
    `seed_memory_from_json_files_once` → non-cached embedder) ignored the precomputed `indexed_cache.pkl`,
    so every memory run re-embedded the whole store on startup → embedding-quota 429s. Fix: point
    `seed_memory_from_config` at `seed_memory_from_json_files_cached` (loads vectors from pkl on a JSON-SHA
-   match, idempotency guard preserved) + run with `--seed-store-dir Agents/memory_stores/v4_deduped_v2`.
+   match, idempotency guard preserved) + run with `--seed-store-dir memory_stores/v4_deduped_v2`.
 
 ### Tuning plan (next; all in the scheduler/eval zone, none architectural)
 - **⭐ "Had-your-turn" guard (priority, near-term).** If a debtor was just picked for an obligation, spoke,

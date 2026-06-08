@@ -14,7 +14,7 @@ The memory system went through three distinct phases:
 
 The earliest version extracted "learnings" from postgame transcripts and accumulated them into a single strategy document per role. This strategy was injected as a system prompt at game start. Over 10+ iterations, visual inspection of dialogue transcripts showed increasing gameplay sophistication — agents developed more nuanced discussion patterns, better deception (wolves), and more targeted investigations.
 
-The limitation was overfitting. A single monolithic strategy accumulated every lesson from every game, including edge cases and contradictory advice. Recent games dominated the strategy text, and agents would rigidly follow advice that applied to a specific prior situation but not the current one. The strategy archive (`Agents/memory_stores/old_strateg_archive/strategies.json`) contains 228 strategy items across 4 role namespaces — the accumulated output of this phase.
+The limitation was overfitting. A single monolithic strategy accumulated every lesson from every game, including edge cases and contradictory advice. Recent games dominated the strategy text, and agents would rigidly follow advice that applied to a specific prior situation but not the current one. The strategy archive (`memory_stores/old_strateg_archive/strategies.json`) contains 228 strategy items across 4 role namespaces — the accumulated output of this phase.
 
 ### Phase 1 — Modular RAG (Observations + Strategy Points)
 

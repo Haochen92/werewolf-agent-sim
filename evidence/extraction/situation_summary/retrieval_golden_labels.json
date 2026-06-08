@@ -10,7 +10,7 @@
       "cases": 40
     },
     "memory_store": {
-      "path": "Agents/memory_stores/v4_deduped_v2/",
+      "path": "memory_stores/v4_deduped_v2/",
       "observations_sha256": "33d9ad3ea4f2",
       "strategy_points_sha256": "91cd6e244b9b",
       "observations_count": 194,

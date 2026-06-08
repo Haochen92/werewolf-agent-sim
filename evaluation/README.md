@@ -60,7 +60,7 @@ Live code should not import from `evaluation/archive`.
 Memory snapshots used by normal graph runs and retrieval experiments live in:
 
 ```text
-Agents/memory_stores/
+memory_stores/
   v1_pre_dedup/
   v1_post_dedup/
   v2/
@@ -76,7 +76,7 @@ poetry run python scripts/run_batch.py \
   --configs all_disabled wolf_only all_enabled \
   --runs-per-config 15 \
   --session-prefix v2_fresh_memory_001 \
-  --memory-store-dir Agents/memory_stores/v2
+  --memory-store-dir memory_stores/v2
 ```
 
 For a batch that should continue learning from an existing store, use
@@ -270,8 +270,8 @@ Example config:
   "snapshots": [
     {
       "label": "v1_post_dedup",
-      "observations_path": "Agents/memory_stores/v1_post_dedup/observations.json",
-      "strategy_points_path": "Agents/memory_stores/v1_post_dedup/strategy_points.json"
+      "observations_path": "memory_stores/v1_post_dedup/observations.json",
+      "strategy_points_path": "memory_stores/v1_post_dedup/strategy_points.json"
     }
   ],
   "top_k": 3,
@@ -370,8 +370,8 @@ Example config:
   "snapshots": [
     {
       "label": "v1_post_dedup",
-      "observations_path": "Agents/memory_stores/v1_post_dedup/observations.json",
-      "strategy_points_path": "Agents/memory_stores/v1_post_dedup/strategy_points.json"
+      "observations_path": "memory_stores/v1_post_dedup/observations.json",
+      "strategy_points_path": "memory_stores/v1_post_dedup/strategy_points.json"
     }
   ],
   "summary": {

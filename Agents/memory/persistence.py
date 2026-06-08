@@ -17,7 +17,12 @@ from Agents.memory.core import store
 
 logger = logging.getLogger(__name__)
 
-MEMORY_STORES_DIR = Path(__file__).resolve().parent / "memory_stores"
+# Repo-root data directory (sibling of eval_sets/, models/, batch_results/), NOT
+# inside the Agents/ code package. Anchored to the repo root (parents[2] =
+# .../Agents/memory/persistence.py -> repo root) so it survives file moves —
+# unlike the former __file__.parent form, which silently broke when this module
+# moved into the memory/ subpackage.
+MEMORY_STORES_DIR = Path(__file__).resolve().parents[2] / "memory_stores"
 DEFAULT_MEMORY_STORE_DIR = MEMORY_STORES_DIR / "v1_post_dedup"
 OBSERVATIONS_FILE_NAME = "observations.json"
 STRATEGY_POINTS_FILE_NAME = "strategy_points.json"

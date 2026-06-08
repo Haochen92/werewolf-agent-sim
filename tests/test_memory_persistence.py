@@ -138,5 +138,31 @@ class MemoryPersistenceTests(unittest.TestCase):
         self.assertEqual(2, len(store.put_calls))
 
 
+class SeedStorePathTests(unittest.TestCase):
+    """Guard the seed-store path constants against silent drift.
+
+    MEMORY_STORES_DIR is a path constant (no import-time existence check), so a
+    wrong-but-valid path is invisible to the import-sweep and to ruff — exactly
+    how a file move once silently repointed it at a nonexistent dir. These pin
+    the resolved location to a real directory.
+    """
+
+    def test_memory_stores_dir_exists(self) -> None:
+        from Agents.memory.persistence import MEMORY_STORES_DIR
+
+        self.assertTrue(
+            MEMORY_STORES_DIR.exists(),
+            f"MEMORY_STORES_DIR {MEMORY_STORES_DIR} does not exist — seed-store path drifted",
+        )
+
+    def test_default_memory_store_dir_exists(self) -> None:
+        from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
+
+        self.assertTrue(
+            DEFAULT_MEMORY_STORE_DIR.exists(),
+            f"DEFAULT_MEMORY_STORE_DIR {DEFAULT_MEMORY_STORE_DIR} does not exist",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
