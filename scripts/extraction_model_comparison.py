@@ -16,7 +16,6 @@ load_dotenv()
 from Agents.llm_factory import create_chat_model
 
 from Agents.extraction import build_extraction_prompt, build_role_extraction_prompt
-from Agents.prompts import SITUATION_STANDARDS, EPISTEMIC_STATUS_RULE
 from Agents.schemas import GameStrategyOutput
 from evaluation.data.datasets import read_extraction_dataset
 

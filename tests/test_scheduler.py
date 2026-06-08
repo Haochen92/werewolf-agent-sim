@@ -7,7 +7,7 @@ select_next_speaker flow (cap -> reactive -> trailing-pass -> proactive).
 """
 from __future__ import annotations
 
-from Agents.game_config import DEFAULT_GAME_CONFIG, GameConfig
+from Agents.game_config import DEFAULT_GAME_CONFIG
 from Agents.schemas import AddressedTarget, DayChannel
 from Agents.nodes.scheduler import (
     build_reactive_queue,

@@ -5,7 +5,6 @@ the voter module, using the adapter for key normalization and output formatting.
 """
 from __future__ import annotations
 
-import glob
 import json
 from collections import Counter
 from pathlib import Path

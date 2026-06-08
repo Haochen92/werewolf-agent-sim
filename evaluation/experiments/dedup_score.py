@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path

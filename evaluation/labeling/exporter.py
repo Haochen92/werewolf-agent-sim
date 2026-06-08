@@ -5,9 +5,8 @@ ready to paste into a chat interface for human labeling.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 from evaluation.labeling.base import LabelingAdapter, LabelItem
 from evaluation.labeling.config import ExportConfig

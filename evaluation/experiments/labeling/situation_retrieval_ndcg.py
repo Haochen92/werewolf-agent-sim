@@ -28,7 +28,6 @@ import argparse
 import json
 import math
 from collections import defaultdict
-from pathlib import Path
 
 from evaluation.core.settings import REPO_ROOT
 

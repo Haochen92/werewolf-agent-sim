@@ -11,7 +11,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from evaluation.labeling.base import LabelingAdapter, LabelItem, LabelResult
+from evaluation.labeling.base import LabelingAdapter, LabelItem
 from evaluation.labeling.config import ModelSpec
 
 
