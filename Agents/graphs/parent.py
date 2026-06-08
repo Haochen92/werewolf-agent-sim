@@ -3,11 +3,11 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.runtime import Runtime
 
 from Agents.graphs.day import day_graph_compiled
-from Agents.graphs.healer import healer_graph_compiled
-from Agents.graphs.investigator import investigator_graph_compiled
-from Agents.graphs.serial_killer import serial_killer_graph_compiled
-from Agents.graphs.vigilante import vigilante_graph_compiled
-from Agents.graphs.wolf_night import wolf_night_graph_compiled
+from Agents.graphs.night.healer import healer_graph_compiled
+from Agents.graphs.night.investigator import investigator_graph_compiled
+from Agents.graphs.night.serial_killer import serial_killer_graph_compiled
+from Agents.graphs.night.vigilante import vigilante_graph_compiled
+from Agents.graphs.night.wolf import wolf_night_graph_compiled
 from Agents.nodes import (
     check_game_end_day,
     check_game_end_night,
