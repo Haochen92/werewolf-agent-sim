@@ -27,7 +27,7 @@ from unittest.mock import patch
 
 import pytest
 
-from Agents.nodes import (
+from Agents.graphs.nodes import (
     _faction_counts,
     _max_days_winner,
     _nullify_special_roles,
@@ -226,7 +226,7 @@ def _lynch_state(sk_alive: bool) -> dict:
 
 
 def test_lynching_sk_clears_marker_and_bucket_together():
-    with patch("Agents.nodes.langfuse", _fake_langfuse()):
+    with patch("Agents.graphs.nodes.langfuse", _fake_langfuse()):
         update = day_resolution(_lynch_state(sk_alive=True), _lynch_runtime())
 
     # The two halves of the invariant move as one: marker -> None AND the SK
@@ -240,7 +240,7 @@ def test_winner_resolves_after_sk_lynch():
     # Before the lynch: W=1 >= town=1 but SK alive -> game continues.
     assert determine_winner(_lynch_state(sk_alive=True)) is None
 
-    with patch("Agents.nodes.langfuse", _fake_langfuse()):
+    with patch("Agents.graphs.nodes.langfuse", _fake_langfuse()):
         update = day_resolution(_lynch_state(sk_alive=True), _lynch_runtime())
 
     # Apply the resolution's update, then re-resolve: SK gone, W=1 >= town=1

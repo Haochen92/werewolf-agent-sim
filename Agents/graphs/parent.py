@@ -8,7 +8,7 @@ from Agents.graphs.investigator import investigator_graph_compiled
 from Agents.graphs.serial_killer import serial_killer_graph_compiled
 from Agents.graphs.vigilante import vigilante_graph_compiled
 from Agents.graphs.wolf_night import wolf_night_graph_compiled
-from Agents.nodes import (
+from Agents.graphs.nodes import (
     check_game_end_day,
     check_game_end_night,
     day_resolution,
@@ -23,7 +23,7 @@ from Agents.nodes import (
     route_after_serial_killer_night,
     route_after_wolf_night,
 )
-from Agents.state import OrchestratorGraph
+from Agents.graphs.state import OrchestratorGraph
 from Agents.game_config import game_config_from_runnable
 from Agents.memory import store
 from Agents.tracing import GraphContext

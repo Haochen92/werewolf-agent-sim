@@ -13,7 +13,7 @@ from Agents.formatters import (
 )
 from Agents.prompts import EPISTEMIC_STATUS_RULE, POSTGAME_EXTRACTION_PROMPT, ROLE_EXTRACTION_PROMPT, SITUATION_STANDARDS
 from Agents.schemas import GameStrategyOutput
-from Agents.state import OrchestratorGraph
+from Agents.graphs.state import OrchestratorGraph
 
 logger = getLogger(__name__)
 

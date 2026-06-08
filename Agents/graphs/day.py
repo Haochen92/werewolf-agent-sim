@@ -15,7 +15,7 @@ from Agents.agents import (
     wolf_discuss,
     wolf_vote,
 )
-from Agents.nodes import (
+from Agents.graphs.nodes import (
     collect_votes,
     fan_out_vote,
     day_scheduler,
@@ -24,7 +24,7 @@ from Agents.nodes import (
     summarize_day_discussion,
     route_speaker
 )
-from Agents.state import DayGraphState
+from Agents.graphs.state import DayGraphState
 from Agents.tracing import GraphContext
 
 
