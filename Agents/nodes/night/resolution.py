@@ -48,6 +48,7 @@ _ATTACK_FLAVOR = {
 
 
 def _join(items: list[str]) -> str:
+    """Join names into an English list: "a", "a and b", "a, b and c"."""
     if len(items) <= 1:
         return items[0] if items else ""
     return ", ".join(items[:-1]) + " and " + items[-1]
@@ -226,10 +227,14 @@ def night_finalize(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
 
 
 def _vigilante_can_act(state: OrchestratorGraph) -> bool:
+    """True iff a living vigilante still has a bullet — gates whether its phase runs."""
     return bool(state.get("vigilante_player")) and state.get("vigilante_bullets", 0) > 0
 
 
 def _next_night_phase(state: OrchestratorGraph, after: str) -> str:
+    """Shared night router: the next present actor's phase after `after`, in the fixed
+    group-1 order (wolves → healer → SK → vigilante), skipping absent/spent actors;
+    falls through to KILL_RESOLUTION when none remain."""
     order = [
         ("wolves", "WOLF_NIGHT_PHASE"),
         ("healer", "HEALER_NIGHT_PHASE"),
@@ -256,6 +261,7 @@ def route_after_wolf_night(
     "VIGILANTE_NIGHT_PHASE",
     "KILL_RESOLUTION",
 ]:
+    """Route out of the wolf phase to the next present group-1 actor."""
     return _next_night_phase(state, "wolves")
 
 
@@ -266,20 +272,22 @@ def route_after_healer_night(
     "VIGILANTE_NIGHT_PHASE",
     "KILL_RESOLUTION",
 ]:
+    """Route out of the healer phase to the next present group-1 actor."""
     return _next_night_phase(state, "healer")
 
 
 def route_after_serial_killer_night(
     state: OrchestratorGraph,
 ) -> Literal["VIGILANTE_NIGHT_PHASE", "KILL_RESOLUTION"]:
+    """Route out of the serial-killer phase to the next present group-1 actor."""
     return _next_night_phase(state, "serial_killer")
 
 
 def route_after_kill_resolution(
     state: OrchestratorGraph,
 ) -> Literal["INVESTIGATOR_NIGHT_PHASE", "NIGHT_FINALIZE"]:
-    # Skip the investigator if the game is already decided by the night's kills, or if the
-    # investigator did not survive the night (its result would be moot either way).
+    """Group-2 gate: run the investigator only if the game is still undecided and the
+    investigator survived the night's kills — otherwise its result is moot, so finalize."""
     if determine_winner(state) is not None:
         return "NIGHT_FINALIZE"
     if state.get("investigator_player"):

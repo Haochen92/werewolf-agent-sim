@@ -1,3 +1,11 @@
+"""Day-phase control flow: scheduling speakers, fanning out votes, summarizing the day.
+
+Discussion is sequential — route_speaker is the scheduler hop that picks the next
+speaker (or ends discussion) and the graph self-loops back through day_scheduler.
+Voting is concurrent — fan_out_vote dispatches every survivor's vote node at once.
+The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
+"""
+
 from logging import getLogger as _getLogger
 logger = _getLogger(__name__)
 
@@ -22,13 +30,21 @@ from Agents.tracing import (
     langfuse,
 )
 
-# Day actor nodes (thin wrappers over the shared runtime engine).
 def day_scheduler(state: DayGraphState):
-    """An no-op node that serves as a central return point for route_speaker nodes to return to if not termination"""
+    """No-op hub node: the fixed return point every speaker self-loops back to, so
+    route_speaker can re-run from one place until discussion terminates."""
     return {}
-    
-    
+
+
 def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Literal["SUMMARIZE_DAY_DISCUSSION"]:
+    """The scheduler hop: pick the next speaker from the day so far, or end discussion.
+
+    Recomputes from day_channel (the scheduler is stateless), applies a lighter
+    one-round cap on pre-voting days, seeds the speaker choice deterministically
+    (game_id, day, utterances-so-far) and delegates ranking to select_next_speaker.
+    Returns SUMMARIZE_DAY_DISCUSSION on terminate, else a Send to the chosen
+    speaker's role node.
+    """
     game_config = game_config_from_runnable(config)
     current_day = state.get("current_day", 1)
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
@@ -125,6 +141,12 @@ def fan_out_day(
     phase: Literal["discuss", "vote"],
     allow_abstain: bool = False,
 ):
+    """Build a concurrent Send to every surviving acting player's {role}_{phase} node.
+
+    The shared fan-out used for voting (discussion now goes one speaker at a time
+    via route_speaker). Same role-gated private-field rule as build_speaker_send:
+    wolf roster / investigator / vigilante results attach only to their own role.
+    """
     concurrent_nodes = []
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
     strategies = state.get("agent_strategies", {})
@@ -165,6 +187,8 @@ def fan_out_day(
 
 
 def fan_out_vote(state: DayGraphState, config: RunnableConfig):
+    """Router from START_VOTING: fan every survivor out to their vote node. Abstain is
+    offered only while abstain is enabled and the no-lynch streak is under the force cap."""
     game_config = game_config_from_runnable(config)
     allow_abstain = (
         game_config.abstain_enabled
@@ -174,6 +198,8 @@ def fan_out_vote(state: DayGraphState, config: RunnableConfig):
 
 
 def _serialize_day_summary(result: DaySummaryOutput) -> str:
+    """Flatten the structured day-summary output (accusations, role claims, alliances,
+    village dynamics) into the plain-text block stored as the DaySummary."""
     parts = []
 
     if result.accusations:
@@ -219,6 +245,13 @@ def _serialize_day_summary(result: DaySummaryOutput) -> str:
 
 
 def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
+    """Summarize the day's discussion into a DaySummary, and freeze it as a judgeable case.
+
+    Reads this day's non-game_master messages (no-op if none); calls the summary LLM
+    with a retry, falling back to the raw formatted channel on repeated failure. Runs
+    in BOTH memory arms (it's pre-memory), so it emits a DaySummaryCase span for the
+    day-summary judge. Writes day_summaries.
+    """
     current_day = state.get("current_day", 1)
     current_day_messages = [
         message for message in state.get("day_channel", [])
@@ -296,6 +329,8 @@ def route_after_day_summary(
     state: DayGraphState,
     config: RunnableConfig,
 ) -> Literal["START_VOTING", "__end__"]:
+    """Router after the summary: end the day with no vote on pre-voting days, else
+    proceed to START_VOTING."""
     game_config = game_config_from_runnable(config)
     if state["current_day"] < game_config.first_voting_day:
         return END
@@ -303,10 +338,12 @@ def route_after_day_summary(
 
 
 def start_voting(state: DayGraphState):
+    """No-op entry node for the voting phase (the fan-out happens on its out-edge)."""
     return {}
 
 
 def collect_votes(state: DayGraphState):
+    """No-op barrier node where the fanned-out vote nodes rejoin before day resolution."""
     return {}
 
 

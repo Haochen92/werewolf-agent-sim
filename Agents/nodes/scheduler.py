@@ -1,3 +1,11 @@
+"""Sequential-discussion speaker selection — the pure core behind route_speaker.
+
+Stateless: every decision is recomputed from the day_channel transcript, so it is
+deterministic (seeded) and unit-testable in isolation. select_next_speaker is the
+entry point; it layers cap → reactive obligations → trailing-pass termination →
+proactive ranking. Kept free of graph/LLM deps on purpose (test_scheduler.py).
+"""
+
 from collections import defaultdict
 import random
 import zlib
