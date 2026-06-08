@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from Agents.llm_factory import create_chat_model
-from Agents.memory_batch_deduplication import (
+from Agents.memory.batch_deduplication import (
     ObservationBatchDedupOutput,
     StrategyBatchDedupOutput,
 )

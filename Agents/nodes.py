@@ -27,11 +27,11 @@ from Agents.extraction import (
 from Agents.scheduler import cycle_seed, select_next_speaker
 
 from Agents.schemas.evaluation import ExtractionCase
-from Agents.memory_deduplication import (
+from Agents.memory.deduplication import (
     run_downstream_dedup,
     run_observation_downstream_dedup,
 )
-from Agents.memory_persistence import (
+from Agents.memory.persistence import (
     dump_memory_to_json_files_from_config,
     memory_persistence_config_from_runnable,
     run_batch_dedup_from_config,

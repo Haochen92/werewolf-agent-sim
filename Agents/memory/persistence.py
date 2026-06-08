@@ -14,7 +14,7 @@ from langgraph.store.base import BaseStore, Item, PutOp
 from pydantic import BaseModel
 
 from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
-from Agents.memory import store
+from Agents.memory.core import store
 
 logger = logging.getLogger(__name__)
 
@@ -610,7 +610,7 @@ def run_batch_dedup_from_config(
     Must be called AFTER dump_memory_to_json_files_from_config so the JSON
     files reflect the latest state including newly extracted entries.
     """
-    from Agents.memory_batch_deduplication import (
+    from Agents.memory.batch_deduplication import (
         TwoPassConfig,
         run_batch_memory_dedup,
     )

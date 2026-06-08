@@ -38,12 +38,12 @@ from Agents.memory import (  # noqa: E402
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
-from Agents.reranker import (  # noqa: E402
+from Agents.memory.reranker import (  # noqa: E402
     RERANK_TOP_K,
     rerank_observations,
     rerank_strategy_points,
 )
-from Agents.retrieval_filters import cap_per_situation, dedup_gate, embed_texts, mmr_filter  # noqa: E402
+from Agents.memory.retrieval_filters import cap_per_situation, dedup_gate, embed_texts, mmr_filter  # noqa: E402
 from evaluation.core.formatters import (  # noqa: E402
     format_eval_retrieved_observations,
     format_eval_retrieved_strategy_points,

@@ -93,7 +93,7 @@ def main() -> None:
         retrieve_observations_for_agent,
         retrieve_strategy_points_for_agent,
     )
-    from Agents.memory_persistence import seed_memory_from_json_files_cached
+    from Agents.memory.persistence import seed_memory_from_json_files_cached
     from evaluation.components.situation_summary import run_situation_summary_variant
     from evaluation.core.config_schema import VariantConfig
     from evaluation.data.datasets import read_eval_dataset

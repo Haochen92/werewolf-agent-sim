@@ -17,7 +17,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import Agents.memory_deduplication as dedup
+import Agents.memory.deduplication as dedup
 
 
 def patch_sims(monkeypatch, sims):

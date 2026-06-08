@@ -55,7 +55,7 @@ from Agents.memory import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
-from Agents.memory_persistence import seed_memory_from_json_files_cached
+from Agents.memory.persistence import seed_memory_from_json_files_cached
 from Agents.prompts import SITUATION_ROLE_LENS, SITUATION_STANDARDS
 from Agents.schemas.evaluation import EvalCase
 from evaluation.core.settings import REPO_ROOT

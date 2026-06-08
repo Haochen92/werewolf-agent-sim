@@ -82,7 +82,7 @@ def _ensure_store():
     if _store_seeded:
         return
     from Agents.memory import store as memory_store
-    from Agents.memory_persistence import seed_memory_from_json_files_cached
+    from Agents.memory.persistence import seed_memory_from_json_files_cached
 
     seed_memory_from_json_files_cached(
         observations_path=STORE_DIR / "observations.json",

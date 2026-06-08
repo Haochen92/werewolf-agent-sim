@@ -26,7 +26,7 @@ import os
 from Agents.llm_factory import create_chat_model
 from pydantic import BaseModel
 
-from Agents.memory_deduplication import (
+from Agents.memory.deduplication import (
     ObservationDedupDecisionOutput,
     StrategyDedupDecisionOutput,
 )

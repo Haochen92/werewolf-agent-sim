@@ -5,7 +5,7 @@ from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
 from Agents.game_config import GameConfig
 from Agents.graphs.parent import parent_graph_compiled
 from Agents.memory import store
-from Agents.memory_persistence import (
+from Agents.memory.persistence import (
     MemoryPersistenceConfig,
     seed_memory_from_config,
 )

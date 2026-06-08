@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 from typing import Any
 
-from Agents.memory_batch_deduplication import _put_memory_with_retries
-from Agents.memory_persistence import (
+from Agents.memory.batch_deduplication import _put_memory_with_retries
+from Agents.memory.persistence import (
     _batch_with_retries,
     seed_memory_from_json_files,
 )

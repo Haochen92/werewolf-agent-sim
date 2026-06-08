@@ -6,7 +6,7 @@ from langfuse import get_client
 from langfuse.langchain import CallbackHandler
 
 from Agents.game_config import game_config_dict
-from Agents.memory_persistence import normalize_memory_persistence_config
+from Agents.memory.persistence import normalize_memory_persistence_config
 from Agents.run_fingerprint import git_revision, runtime_fingerprint
 from Agents.schemas.metrics import (  # noqa: F401 — re-exported for backward compat
     DayResolutionMetric,

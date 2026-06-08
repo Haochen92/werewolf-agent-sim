@@ -38,7 +38,7 @@ import numpy as np
 
 from Agents.llm_factory import create_embeddings
 from Agents.memory import embeddings as embedding_model
-from Agents.retrieval_filters import cosine_similarity, embed_texts
+from Agents.memory.retrieval_filters import cosine_similarity, embed_texts
 from evaluation.data.datasets import (
     AutoDedupRecord,
     read_auto_dedup_dataset,
