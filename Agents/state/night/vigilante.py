@@ -1,9 +1,16 @@
+"""Vigilante night-graph state (single-actor; see state/night/healer.py for the shape)."""
+
 from operator import add
 from typing import Annotated, TypedDict
 
 from Agents.schemas.game_events import DayChannel, DaySummary
 from Agents.schemas.memory import StrategyAdoption
+
+
 class VigilanteNightGraph(TypedDict, total=False):
+    """Single-actor night state (see state/night/healer.py) + private vigilante_bullets/results;
+    the act node outputs vigilante_target ("hold_fire" or a player) + updated_strategy."""
+
     day_channel: list[DayChannel]
     day_summaries: list[DaySummary]
     surviving_players: list[str]

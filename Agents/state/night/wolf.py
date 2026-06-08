@@ -1,3 +1,6 @@
+"""Wolf-night state: the subgraph channel (WolfNightGraph) + the per-wolf Send payload
+(WolfNightState). The wolf night is the only multi-agent night, so it has both, like the day."""
+
 from operator import add
 from typing import Annotated, TypedDict
 
@@ -7,6 +10,9 @@ from Agents.state.reducers import merge_strategies
 
 
 class WolfNightGraph(TypedDict, total=False):
+    """Working state of the wolf-night loop: wolf_channel accumulates across rounds,
+    current_round tracks the 2-round discuss->vote, wolves_kill_target is set once resolved."""
+
     day_channel: list[DayChannel]
     day_summaries: list[DaySummary]
     wolf_channel: Annotated[list[WolfChannel], add]
@@ -27,6 +33,8 @@ class WolfNightGraph(TypedDict, total=False):
 
 
 class WolfNightState(TypedDict):
+    """Payload delivered to each surviving wolf's discuss Send (one per wolf, in parallel)."""
+
     day_channel: list[DayChannel]
     day_summaries: list[DaySummary]
     wolf_channel: list[WolfChannel]

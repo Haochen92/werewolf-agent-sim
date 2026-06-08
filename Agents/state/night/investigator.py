@@ -1,3 +1,5 @@
+"""Investigator night-graph state (single-actor; see state/night/healer.py for the shape)."""
+
 from operator import add
 from typing import Annotated, TypedDict
 
@@ -6,6 +8,9 @@ from Agents.schemas.memory import StrategyAdoption
 
 
 class InvestigatorNightGraph(TypedDict, total=False):
+    """Single-actor night state + the private investigator_results it reasons from; the act node
+    outputs investigator_target (+ updated_strategy)."""
+
     day_channel: list[DayChannel]
     day_summaries: list[DaySummary]
 
