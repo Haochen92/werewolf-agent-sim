@@ -1,3 +1,13 @@
+"""Structured-output schemas the game/judge models emit (via with_structured_output).
+
+⚠️ MODEL-VISIBLE / FROZEN. Every class docstring and Field(description=...) here is serialized into
+the JSON schema sent to the model, so it is part of the generation contract that conditions outputs
+(and the Phase B gold labels). Do NOT add class docstrings or edit/add field descriptions without a
+prompt-freeze review — that changes what the model sees. Document with `#` comments (never
+serialized) instead; defer descriptive edits to the v5 prompt-unfreeze. The same rule covers
+AddressedTarget (game_events.py), which is embedded in DayDiscussOutput.
+"""
+
 from __future__ import annotations
 
 from pydantic import BaseModel, Field

@@ -1,3 +1,11 @@
+"""Pydantic schemas, grouped by concern (re-exported flat for convenience).
+
+output.py + the extraction/rerank models in memory.py are MODEL-VISIBLE structured-output contracts
+(frozen — their schema is sent to the model); game_events / scheduler / metrics / evaluation and the
+store/retrieval models in memory.py are internal records (state / tracing / storage), never sent to a
+model.
+"""
+
 from Agents.constants import ActionPhase
 from Agents.schemas.evaluation import (
     DaySummaryCase,

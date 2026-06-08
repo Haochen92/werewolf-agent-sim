@@ -1,3 +1,11 @@
+"""Eval-case schemas: frozen, self-describing records of each decision the pipeline makes.
+
+Storage/tracing artifacts (serialized to Langfuse spans + frozen datasets), NOT structured-output
+schemas — they are never sent to a model, so they carry full docstrings/field descriptions freely.
+Each case bundles everything needed to re-judge a decision offline; ``schema_version`` gates format
+migrations across runs.
+"""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -16,6 +24,9 @@ from Agents.schemas.memory import RetrievedObservation, RetrievedStrategyPoint
 
 
 class EvalPrivateContext(BaseModel):
+    """The role-private information set an agent could see at decision time (beyond the public
+    channel); embedded in EvalCase so a frozen case reproduces exactly what the agent knew."""
+
     previous_strategy: str = ""
     day_summaries: list[DaySummary] = Field(default_factory=list)
     wolf_channel: list[WolfChannel] = Field(default_factory=list)
@@ -55,6 +66,10 @@ class EvalProvenance(BaseModel):
 
 
 class EvalCase(BaseModel):
+    """One frozen agent-decision case (day message / vote / night action), self-contained for
+    offline judging: the visible discussion + private context (the information set), the retrieval
+    (final picks + the pre-rerank candidate pool), provenance, and the agent's actual output."""
+
     schema_version: str = "eval_case_v2"
     trace_id: str = ""
     observation_id: str = ""
@@ -97,6 +112,9 @@ class EvalCase(BaseModel):
 
 
 class ExtractionCase(BaseModel):
+    """A frozen post-game extraction decision: the full-game inputs (discussions, strategy notes,
+    outcome) plus the observations/strategy points extracted from them, judgeable offline."""
+
     schema_version: str = "extraction_case_v1"
     trace_id: str = ""
     observation_id: str = ""
@@ -117,6 +135,9 @@ class ExtractionCase(BaseModel):
 
 
 class DedupCandidate(BaseModel):
+    """One existing-store entry weighed against a new entry during dedup (its similarity + the
+    fields the decision saw)."""
+
     candidate_number: int
     key: str = ""
     similarity: float = 0.0
@@ -128,6 +149,9 @@ class DedupCandidate(BaseModel):
 
 
 class DedupCase(BaseModel):
+    """A frozen dedup decision: the new entry, the candidate pool it was compared against, and the
+    verdict (auto-threshold or model), with the similarity scores that drove it."""
+
     schema_version: str = "dedup_case_v1"
     trace_id: str = ""
     observation_id: str = ""

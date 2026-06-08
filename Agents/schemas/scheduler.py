@@ -1,3 +1,10 @@
+"""Pure data types for the sequential-discussion scheduler (Agents.nodes.scheduler).
+
+Internal only: the scheduler is deterministic Python with no LLM, so these never reach a model.
+Balance is the per-directed-pair obligation ledger entry; ReactiveItem groups one debtor's open
+obligations into a single turn; Decision is the scheduler's per-cycle verdict.
+"""
+
 from pydantic import BaseModel, Field
 from typing import Literal
 
@@ -5,6 +12,8 @@ from Agents.schemas.game_events import FiringReason
 
 
 class Balance(BaseModel):
+    """One directed (creditor->debtor) obligation in the reactive ledger; see build_reactive_queue."""
+
     cycles: int = Field(
         default=0,
         description="Completed open->discharge cycles for this directed (creditor->debtor) pair; the K-cap counter. Blocks the (K+1)th open within a burst; reset by the cooldown.",
@@ -20,6 +29,8 @@ class Balance(BaseModel):
 
 
 class ReactiveItem(BaseModel):
+    """A debtor's netted-out open obligations for one turn (it answers all creditors at once)."""
+
     agent_id: str = Field(
         description="The obligated agent (debtor); answers all its creditors in one grouped turn.",
     )
@@ -32,6 +43,8 @@ class ReactiveItem(BaseModel):
 
 
 class Decision(BaseModel):
+    """The scheduler's per-cycle verdict: fire `speaker` with `firing_reason`, or `terminate`."""
+
     terminate: bool = Field(
         default=False,
         description="True = end the discussion this cycle; no speaker fires.",

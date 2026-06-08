@@ -1,3 +1,14 @@
+"""Memory-pipeline data models: extraction/rerank OUTPUTS plus store/retrieval records.
+
+⚠️ MODEL-VISIBLE / FROZEN — Observation, StrategyPoint, GameStrategyOutput (post-game extraction
+output) and CandidateRelevance, RerankResult (reranker output). Their class docstrings and
+Field(description=...) are serialized into the schema sent to the model, so they condition outputs
+and the Phase B gold labels; do NOT add docstrings or edit descriptions without a prompt-freeze
+review. The rest — StoredStrategy / StoredObservation / StoredStrategyPoint / StrategyAdoption /
+RetrievedObservation / RetrievedStrategyPoint — are internal store / retrieval / state records
+(never sent to a model) and are documented freely.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -15,6 +26,8 @@ def _compose_situation(
     consensus_texture: str | None,
     agent_exposure: str | None,
 ) -> str:
+    """Fold the dimensional fields into one searchable situation string (used for embedding /
+    retrieval matching); optional dimensions are appended only when present."""
     parts = [situation]
     parts.append(f"Information landscape: {information_landscape}")
     parts.append(f"Game phase: {game_phase}")
@@ -225,12 +238,17 @@ class GameStrategyOutput(BaseModel):
 
 
 class StoredStrategy(BaseModel):
+    """A stored free-text strategy record (game_id + content + creation time)."""
+
     game_id: Optional[str] = ""
     content: str
     created_at: datetime
 
 
 class StoredObservation(BaseModel):
+    """A deduped observation as persisted in the store: the composed situation + approach/outcome,
+    with observation_count growing as duplicates merge into it."""
+
     observation_count: int
     last_observed: datetime
     game_id: Optional[str] = ""
@@ -240,6 +258,9 @@ class StoredObservation(BaseModel):
 
 
 class StoredStrategyPoint(BaseModel):
+    """A deduped strategy point as persisted: situation + action, plus usage counters
+    (retrieved/used and positive/neutral/negative outcome tallies) for impact analysis."""
+
     observation_count: int
     last_observed: datetime
     game_id: Optional[str] = ""
@@ -253,6 +274,9 @@ class StoredStrategyPoint(BaseModel):
 
 
 class StrategyAdoption(BaseModel):
+    """Record that an agent adopted a specific stored strategy at a decision point
+    (player/role/day/round/phase) — feeds adoption + memory-impact tracking."""
+
     strategy_key: str
     player_id: str
     role: str
@@ -262,6 +286,9 @@ class StrategyAdoption(BaseModel):
 
 
 class RetrievedObservation(BaseModel):
+    """A store observation returned by retrieval: the stored record + which situation it matched +
+    its similarity score (None if not scored)."""
+
     key: str
     observation: StoredObservation
     matched_situation: str
@@ -269,6 +296,9 @@ class RetrievedObservation(BaseModel):
 
 
 class RetrievedStrategyPoint(BaseModel):
+    """A store strategy point returned by retrieval: the stored record + matched situation +
+    score (None if not scored)."""
+
     key: str
     strategy_point: StoredStrategyPoint
     matched_situation: str

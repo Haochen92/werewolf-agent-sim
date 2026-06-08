@@ -1,3 +1,11 @@
+"""Metric models: raw per-decision accumulators, the derived per-game proxies, and the public
+analysis artifact.
+
+All internal — serialized to batch records / tracing, never sent to a model. The decision-quality
+proxy design (de-lucked, opportunity-normalized rates; win rate stays headline) is documented in
+evidence/metrics/. Field-level meaning is kept in inline comments next to each count.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,6 +20,8 @@ from pydantic import BaseModel, Field
 
 
 class DayResolutionMetric(BaseModel):
+    """Raw record of one day's vote resolution: who was lynched, the counts, ties, no-vote."""
+
     day: int
     votes: list[dict[str, str]]
     voted_player: str | None
@@ -22,6 +32,9 @@ class DayResolutionMetric(BaseModel):
 
 
 class NightResolutionMetric(BaseModel):
+    """Raw record of one night's resolution (targets, deaths, kill-landed flags). Built at the
+    night-resolution node — the single source of truth for heal + SK night-immunity rules."""
+
     day: int
     wolves_target: str | None
     wolf_target_role: str | None
@@ -46,11 +59,15 @@ class NightResolutionMetric(BaseModel):
 
 
 class Metrics(BaseModel):
+    """Per-game accumulator of the day + night resolution records (lives on GraphContext)."""
+
     day_resolutions: list[DayResolutionMetric] = Field(default_factory=list)
     night_resolutions: list[NightResolutionMetric] = Field(default_factory=list)
 
 
 class GraphContext(TypedDict):
+    """Runtime context threaded through the graph; carries the live Metrics accumulator."""
+
     metrics: Metrics
 
 
@@ -60,6 +77,9 @@ class GraphContext(TypedDict):
 
 
 class BaseGameMetrics(BaseModel):
+    """Raw per-game counts derived from the resolutions — numerators plus their opportunity
+    denominators — before any rates are taken. Per-field meaning in the inline comments below."""
+
     winner: str
     game_length: int
 
@@ -125,6 +145,9 @@ class BaseGameMetrics(BaseModel):
 
 
 class DerivedGameMetrics(BaseModel):
+    """Rate/ratio proxies computed from BaseGameMetrics (de-lucked where noted). Each is None when
+    its denominator is zero (the role never had the opportunity), so absence != zero performance."""
+
     # Town (faction-aware; "correct" credits the SK-lynch)
     correct_elimination_rate: float | None = None   # anti-town (wolf+SK) / total eliminations
     wolf_elimination_rate: float | None = None
@@ -154,6 +177,9 @@ class DerivedGameMetrics(BaseModel):
 
 
 class ComputedGameMetrics(DerivedGameMetrics):
+    """The self-contained per-game analysis artifact: the derived rates plus the raw counts they
+    were computed from, so a record is interpretable without re-deriving."""
+
     winner: str
     game_length: int
     # Town
@@ -186,6 +212,9 @@ class ComputedGameMetrics(DerivedGameMetrics):
 
 @dataclass
 class GameOutcome:
+    """A finished game's bundle: the raw result dict, the computed metrics, and (optionally) the
+    raw per-decision accumulators for re-derivation downstream."""
+
     result: dict
     game_metrics: ComputedGameMetrics
     # Raw per-decision accumulators (day_resolutions + night_resolutions) as a
