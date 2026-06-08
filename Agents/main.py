@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-from Agents.nodes import prompt_log
+from Agents.engine import prompt_log
 from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
 from Agents.game_config import GameConfig
 from Agents.graphs.parent import parent_graph_compiled

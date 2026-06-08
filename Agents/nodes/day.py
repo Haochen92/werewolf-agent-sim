@@ -25,7 +25,7 @@ from Agents.tracing import (
 )
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
-from Agents.nodes.runtime import _run_memory_informed_action
+from Agents.engine import _run_memory_informed_action
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,

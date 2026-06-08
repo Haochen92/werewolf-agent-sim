@@ -1,7 +1,7 @@
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
-from Agents.nodes.runtime import _run_memory_informed_night_action
+from Agents.engine import _run_memory_informed_night_action
 from Agents.prompts import INVESTIGATOR_NIGHT
 from Agents.schemas import InvestigatorOutput
 from Agents.state import InvestigatorNightGraph

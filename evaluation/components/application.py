@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from Agents.nodes import _run_agent
+from Agents.engine import _run_agent
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
