@@ -5,7 +5,6 @@ import json
 import logging
 import pickle
 import time
-from collections import defaultdict
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
