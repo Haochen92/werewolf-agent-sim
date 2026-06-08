@@ -1,3 +1,12 @@
+"""Day subgraph topology: sequential discussion, then concurrent voting.
+
+Discussion is one-speaker-at-a-time: SCHEDULE picks the next speaker (route_speaker) and each
+``{role}_discuss`` node loops straight back to SCHEDULE, until route_speaker terminates to
+SUMMARIZE_DAY_DISCUSSION. Voting is concurrent: START_VOTING fans every survivor out to its
+``{role}_vote`` node (fan_out_vote) and COLLECT_VOTES is the rejoin barrier. The node *bodies*
+live in Agents.nodes (day/actors.py + day/flow.py); this file is wiring only.
+"""
+
 from langgraph.graph import END, START, StateGraph
 
 from Agents.memory import store
@@ -29,6 +38,9 @@ from Agents.tracing import GraphContext
 
 
 def build_day_graph():
+    """Wire the day topology: START -> SCHEDULE -(route_speaker)-> a {role}_discuss node (which
+    loops back to SCHEDULE) | SUMMARIZE_DAY_DISCUSSION -(route_after_day_summary)-> START_VOTING
+    | END; START_VOTING fans out to the {role}_vote nodes -> COLLECT_VOTES -> END."""
     day_graph = StateGraph(DayGraphState, context_schema=GraphContext)
 
     day_graph.add_node("SCHEDULE", day_scheduler)

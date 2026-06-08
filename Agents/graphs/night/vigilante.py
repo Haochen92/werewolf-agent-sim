@@ -1,3 +1,9 @@
+"""Vigilante night subgraph: a one-node graph (START -> vigilante_act -> END).
+
+Single-actor night role (see graphs/night/healer.py); the act node lives in
+Agents.nodes.night.vigilante.
+"""
+
 from langgraph.graph import END, START, StateGraph
 
 from Agents.nodes import vigilante_act

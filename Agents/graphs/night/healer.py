@@ -1,3 +1,10 @@
+"""Healer night subgraph: a one-node graph (START -> healer_act -> END).
+
+Single-actor night roles each get their own trivial subgraph so a role can later grow its own
+flow without disturbing the others; the act node (a make_night_act_node binding) lives in
+Agents.nodes.night.healer.
+"""
+
 from langgraph.graph import END, START, StateGraph
 
 from Agents.nodes import healer_act

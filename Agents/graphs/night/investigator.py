@@ -1,3 +1,9 @@
+"""Investigator night subgraph: a one-node graph (START -> investigator_act -> END).
+
+Single-actor night role (see graphs/night/healer.py); the act node lives in
+Agents.nodes.night.investigator.
+"""
+
 from langgraph.graph import END, START, StateGraph
 
 from Agents.nodes import investigator_act

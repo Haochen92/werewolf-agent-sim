@@ -1,3 +1,17 @@
+"""Top-level game orchestration graph: the day<->night cycle that drives a whole game.
+
+Each phase is a *subgraph* compiled elsewhere (day; wolf/healer/investigator/serial-killer/
+vigilante night). The ``*_phase`` wrappers here invoke that subgraph with a payload built from
+orchestrator state, then fold the subgraph's result back as a state delta. Channel/summary
+fields are returned as the *newly appended slice only*: the subgraph receives the running list
+and returns the grown list, so we diff against what we sent (``result[...][len(sent):]``) and
+let the orchestrator's reducer append once instead of duplicating the whole history.
+
+build_parent_graph wires the phases into the day -> resolution -> night-groups -> resolution ->
+(next day | end) loop; the per-night-actor routing and termination live in the ``route_after_*``
+and ``check_game_end_*`` functions imported from Agents.nodes.
+"""
+
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from langgraph.runtime import Runtime
@@ -30,6 +44,11 @@ from Agents.tracing import GraphContext
 
 
 def _child_config(config: RunnableConfig) -> RunnableConfig:
+    """Inherit the parent config but guarantee a recursion_limit for the subgraph.
+
+    Subgraphs self-loop (the day scheduler, the wolf-night rounds), so they need their own
+    budget; callers may override the default (day_phase sets a cap-derived limit).
+    """
     child_config = dict(config) if config else {}
     child_config.setdefault("recursion_limit", 100)
     return child_config
@@ -40,6 +59,14 @@ def day_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Run the day subgraph (sequential discussion + voting) and fold its delta back.
+
+    Reads rosters / strategies / channels / results from orchestrator state to seed the day
+    subgraph, and caps the discussion self-loop via discussion_recursion_limit(survivors) so the
+    scheduler's graceful terminate fires before the hard recursion limit. Returns only what the
+    day *added* — channel/summary entries sliced past what we sent — plus votes, strategy
+    updates, and adoptions.
+    """
     num_survivors = len(state["surviving_wolves"]) + len(state["surviving_villagers"])
     game_config = game_config_from_runnable(config)
     result = day_graph_compiled.invoke(
@@ -78,6 +105,11 @@ def wolf_night_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Run the wolf-night subgraph (multi-wolf discussion -> kill vote) and fold its delta back.
+
+    Seeds the subgraph with the wolf channel + both rosters; returns the newly appended
+    wolf-channel slice, the agreed wolves_kill_target, and any strategy/adoption delta.
+    """
     result = wolf_night_graph_compiled.invoke(
         {
             "agent_strategies": state.get("agent_strategies", {}),
@@ -108,6 +140,13 @@ def healer_night_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Run the healer night subgraph: the healer picks one player to protect.
+
+    Single-actor night pattern (shared by healer/investigator/serial_killer/vigilante): read the
+    role's player marker (healer_player) + shared night context, offer every *other* survivor as
+    a target, invoke the role subgraph, and write the role's target (healer_target) plus any
+    strategy/adoption delta.
+    """
     result = healer_graph_compiled.invoke(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["healer_player"], ""),
@@ -144,6 +183,8 @@ def investigator_night_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Single-actor night phase (see healer_night_phase): the investigator learns one player's
+    true role; reads investigator_player + prior results, writes investigator_target."""
     result = investigator_graph_compiled.invoke(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["investigator_player"], ""),
@@ -182,6 +223,8 @@ def serial_killer_night_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Single-actor night phase (see healer_night_phase): the serial killer picks a kill target;
+    reads serial_killer_player, writes serial_killer_target."""
     result = serial_killer_graph_compiled.invoke(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["serial_killer_player"], ""),
@@ -219,6 +262,11 @@ def vigilante_night_phase(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Single-actor night phase (see healer_night_phase): the vigilante may shoot or hold fire.
+
+    Reads vigilante_player + remaining bullets/results; "hold_fire" is normalized to None on the
+    way out (see below) so resolution skips a non-shot. Writes vigilante_target.
+    """
     result = vigilante_graph_compiled.invoke(
         {
             "previous_strategy": state.get("agent_strategies", {}).get(state["vigilante_player"], ""),
@@ -256,6 +304,15 @@ def vigilante_night_phase(
 
 
 def build_parent_graph():
+    """Wire the orchestration topology.
+
+    START -> INITIALIZE_GAME -> DAY_PHASE -> DAY_RESOLUTION -> (check_game_end_day: END_GAME |
+    the first present night phase). Night runs as two groups: group 1 (wolves -> healer ->
+    serial_killer -> vigilante) routes actor-to-actor via route_after_* down to KILL_RESOLUTION;
+    group 2 is the investigator after kills resolve, gated by route_after_kill_resolution, then
+    NIGHT_FINALIZE. NIGHT_FINALIZE -> (check_game_end_night: ONE_MORE_DAY -> DAY_PHASE | END_GAME).
+    END_GAME -> POST_GAME_ANALYSIS -> END.
+    """
     parent_graph = StateGraph(OrchestratorGraph, context_schema=GraphContext)
 
     parent_graph.add_node("INITIALIZE_GAME", initialize_game)

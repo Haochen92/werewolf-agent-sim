@@ -1,3 +1,9 @@
+"""Serial-killer night subgraph: a one-node graph (START -> serial_killer_act -> END).
+
+Single-actor night role (see graphs/night/healer.py); the act node lives in
+Agents.nodes.night.serial_killer.
+"""
+
 from langgraph.graph import END, START, StateGraph
 
 from Agents.nodes import serial_killer_act

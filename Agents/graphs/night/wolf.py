@@ -1,3 +1,10 @@
+"""Wolf-night subgraph: the 2-round discussion -> kill-vote loop (the only multi-agent night).
+
+START -> PREPARE_WOLF_NIGHT -(wolf_fan_out: every surviving wolf in parallel)-> WOLF_NIGHT_DISCUSS
+-> COLLECT_WOLF_NIGHT_DISCUSSION -(check_night_end: loop back to PREPARE_WOLF_NIGHT until a kill
+target is set, else END). Node bodies live in Agents.nodes (night/wolf.py).
+"""
+
 from langgraph.graph import START, StateGraph
 
 from Agents.nodes import wolf_night_discuss
