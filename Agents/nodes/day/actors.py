@@ -1,16 +1,7 @@
-from logging import getLogger as _getLogger
-logger = _getLogger(__name__)
-
-
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
-
-
-
-from Agents.tracing import (
-    GraphContext,
-)
+from Agents.tracing import GraphContext
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
 from Agents.engine import _run_memory_informed_action
@@ -30,195 +21,64 @@ from Agents.prompts import (
 )
 from Agents.schemas import DayDiscussOutput, DayVoteOutput
 from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
-def villager_discuss(
-    payload: VillagerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_discussion",
-        VILLAGER_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    )
 
 
-def healer_discuss(
-    payload: HealerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_discussion",
-        HEALER_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    )
+# Every role's day-discuss / day-vote node makes the identical call into the
+# shared engine — only the prompt differs (the state-type hint is cosmetic). The
+# nodes are reached via Send(f"{role}_discuss", payload) / Send(f"{role}_vote",
+# payload) with an explicitly-built payload, so the first-arg annotation is
+# documentation, not input filtering. So we build them from one factory per phase
+# rather than hand-repeating 12 near-identical bodies. Adding a role = one line.
+def _make_discuss_node(prompt: str, state_type=VillagerDayState):
+    def discuss(
+        payload: state_type,
+        config: RunnableConfig,
+        runtime: Runtime[GraphContext],
+    ):
+        return _run_memory_informed_action(
+            payload,
+            config,
+            runtime,
+            "day_discussion",
+            prompt,
+            DayDiscussOutput,
+            "day_channel",
+        )
+
+    return discuss
 
 
-def wolf_discuss(
-    payload: WolfDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_discussion",
-        WOLF_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    )
+def _make_vote_node(prompt: str, state_type=VillagerDayState):
+    def vote(
+        payload: state_type,
+        config: RunnableConfig,
+        runtime: Runtime[GraphContext],
+    ):
+        return _run_memory_informed_action(
+            payload,
+            config,
+            runtime,
+            "day_vote",
+            prompt,
+            DayVoteOutput,
+            "day_votes",
+        )
+
+    return vote
 
 
-def investigator_discuss(
-    payload: InvestigatorDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_discussion",
-        INVESTIGATOR_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    )
+# Discussion nodes per role.
+villager_discuss = _make_discuss_node(VILLAGER_DAY_DISCUSS, VillagerDayState)
+healer_discuss = _make_discuss_node(HEALER_DAY_DISCUSS, HealerDayState)
+wolf_discuss = _make_discuss_node(WOLF_DAY_DISCUSS, WolfDayState)
+investigator_discuss = _make_discuss_node(INVESTIGATOR_DAY_DISCUSS, InvestigatorDayState)
+serial_killer_discuss = _make_discuss_node(SERIAL_KILLER_DAY_DISCUSS)  # uses VillagerDayState
+vigilante_discuss = _make_discuss_node(VIGILANTE_DAY_DISCUSS)  # uses VillagerDayState
 
-
-def villager_vote(
-    payload: VillagerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_vote",
-        VILLAGER_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    )
-
-
-def healer_vote(
-    payload: HealerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_vote",
-        HEALER_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    )
-
-
-def wolf_vote(
-    payload: WolfDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_vote",
-        WOLF_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    )
-
-
-def investigator_vote(
-    payload: InvestigatorDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_vote",
-        INVESTIGATOR_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    )
-
-
-def serial_killer_discuss(
-    payload: VillagerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_discussion",
-        SERIAL_KILLER_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    )
-
-
-def vigilante_discuss(
-    payload: VillagerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_discussion",
-        VIGILANTE_DAY_DISCUSS,
-        DayDiscussOutput,
-        "day_channel",
-    )
-
-
-def serial_killer_vote(
-    payload: VillagerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_vote",
-        SERIAL_KILLER_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    )
-
-
-def vigilante_vote(
-    payload: VillagerDayState,
-    config: RunnableConfig,
-    runtime: Runtime[GraphContext],
-):
-    return _run_memory_informed_action(
-        payload,
-        config,
-        runtime,
-        "day_vote",
-        VIGILANTE_DAY_VOTE,
-        DayVoteOutput,
-        "day_votes",
-    )
-
-
+# Vote nodes per role.
+villager_vote = _make_vote_node(VILLAGER_DAY_VOTE, VillagerDayState)
+healer_vote = _make_vote_node(HEALER_DAY_VOTE, HealerDayState)
+wolf_vote = _make_vote_node(WOLF_DAY_VOTE, WolfDayState)
+investigator_vote = _make_vote_node(INVESTIGATOR_DAY_VOTE, InvestigatorDayState)
+serial_killer_vote = _make_vote_node(SERIAL_KILLER_DAY_VOTE)  # uses VillagerDayState
+vigilante_vote = _make_vote_node(VIGILANTE_DAY_VOTE)  # uses VillagerDayState
