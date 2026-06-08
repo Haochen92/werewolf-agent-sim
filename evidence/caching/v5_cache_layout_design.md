@@ -64,6 +64,47 @@ precedes the human turn and ends in role-specific text. If gameplay caching is p
 Night phase is a secondary candidate: the COMPLETED day channel is static and reused by all ~6–8 night
 actors → clears the ≥2-reuse bar without checkpointing, if the prefix ≥4,096 and role is in the tail.
 
+## Cache mechanics — what explicit caching can and can't do (API-verified)
+
+- **Caches are content-immutable.** `caches.update` only takes `ttl`/`expire_time`; there is no append.
+  To cache a longer prefix you `create` a NEW cache, re-charged at **full input rate for the whole
+  region** (no cache-on-cache discount). Per-MESSAGE re-caching of the growing channel is therefore
+  quadratic (`create` cost ≈ `m·T²/2` at 100%) and self-defeating.
+- **One cache per request.** `GenerateContentConfig.cached_content` is a single `str`; `Part` has no
+  inline cache-ref. You cannot feed an append-only *list* of caches. Deeper reason: a transformer
+  KV-cache is position/context-dependent — a block's KV is valid only if everything before it is exactly
+  what was present when it was computed, so a cache is always a true running **prefix**, never a
+  stackable segment. **True append-only incremental caching is *implicit* caching's job** (the provider
+  holds the running KV) — explicit cannot replicate it. That capability is exactly what we lost when
+  implicit measured dead here.
+- **⟹ Rule: only ever cache content that is FROZEN at the moment you cache it.** Never a moving target.
+  Two freeze-points:
+  1. **Frozen prior-days transcript** — recreate ONE rolling prefix-cache at each day boundary (once/day,
+     amortized over that day's reads). This is the "append-only list" idea in practice: one cache covering
+     all frozen days, re-snapshotted when a day freezes.
+  2. **The current turn's fixed context** — cache once per turn, read by the ~2–3 memory-pipeline calls
+     that share it.
+  The live within-day channel between freeze-points stays UNCACHED (full price). Don't chase it.
+
+### Per-turn (intra-pipeline) reuse — the most robust gameplay lever
+Memory-enabled play fires ~2–3 calls per agent-turn on the SAME fixed game state: situation-summary →
+generation → novelty-gate (novelty proactive-only). Caching the turn's context once and reading it 2–3×:
+- no append / no re-creation problem (context is frozen for the turn); calls are ms apart (no TTL/eviction
+  risk) — the cleanest case.
+- saving on the shared prefix: N=2 → 40%, N=3 → 57% (`90% − 100%/N`). Over 20+ turns it compounds.
+- **requires the 2–3 prompts to share a byte-identical leading block** → context-first layout across the
+  call *types* (layout (c) generalized). Today they're separate templates with different opening
+  instructions, so the prefix isn't shared yet. VERIFY the situation-summary prompt carries enough shared
+  context to clear 4,096 (it may use a trimmed slice for the retrieval query).
+
+### Forward-compat: one layout serves both mechanisms
+Structure every prompt append-only / stable→volatile:
+`[preamble → rules → frozen prior-days transcript → today channel] ‖ [role → private → memory → firing_brief → task]`.
+- **Explicit (now):** snapshot-cacheable per-turn (2–3× reuse) and per-day (frozen transcript).
+- **Implicit (if it returns for flash-lite):** the same shape yields automatic incremental prefix reuse —
+  including the live-channel append — with zero harness change.
+Build the append-only layout ONCE; explicit harvests what it can today, implicit harvests the rest later.
+
 ## Conclusion 2 — extraction IS the lever, via EXPLICIT caching (conditional on per-role extraction)
 
 Why explicit caching was rejected before (Claim 2 of the prior analysis) — and why none of it applies
@@ -110,8 +151,21 @@ perspective-last. Both are v5 items; extraction prompts are in the frozen set
   - [ ] restructure `ROLE_EXTRACTION_PROMPT` transcript-first / perspective-last (output-validate — it's a real prompt change behind the freeze; do it as part of v5 generation).
   - [ ] wire `client.caches.create` once per game (TTL ≈ minutes, covers the N role calls) + pass `cached_content` through `create_chat_model` (it already forwards kwargs); delete the cache after.
   - [ ] confirm transcripts clear 4,096 (they do at 10k+; trivially true).
-- [ ] **Gameplay caching decision (gated on Phase C game count):** if pursued → layout (c) (role/private/
-      memory to tail) + identity-late output-validation + per-game prefix-checkpoint cache lifecycle
-      (create at 4,096 crossing, reuse for the rest of the day, delete) + night-phase shared-day-channel cache.
-      If NOT pursued → finalize day/night on quality/legibility only; (c) is a one-line factory reorder later.
+- [ ] **Adopt the append-only / stable→volatile layout** across ALL prompt types (gameplay day/night +
+      the situation-summary / generation / novelty-gate pipeline): `[preamble → rules → frozen prior-days
+      transcript → today channel] ‖ [role → private → memory → firing_brief → task]`. This single layout
+      enables explicit per-turn + per-day caching now AND automatic implicit reuse if it returns. Output-
+      affecting (freeze) → validate as part of v5 generation.
+- [ ] **Gameplay caching decision (gated on Phase C game count):** if pursued →
+  - [ ] **per-turn (do first — best ROI):** cache the turn's fixed context once, read by the 2–3
+        memory-pipeline calls (situation/generation/novelty). Verify they share ≥4,096 identical leading bytes.
+  - [ ] **per-day:** one rolling prefix-cache of the frozen prior-days transcript, recreated at each day
+        boundary, reused across the day; live channel left uncached. (NOT per-message — that's quadratic.)
+  - [ ] night-phase: cache the completed-day channel shared by the ~6–8 night actors.
+  - [ ] identity-late output-validation for layout (c).
+  - If NOT pursued → still adopt the append-only layout (forward-compat for implicit); skip the cache lifecycle code.
+- [ ] **Day-summary experiment (enabled by caching):** caching makes a full verbatim transcript ≈ cost-
+      neutral vs summarizing, so the cost reason to summarize falls away → A/B "full transcript (no
+      day-summary) vs summary" on reasoning quality. Note the couplings before removing: `summarize_day_discussion`
+      emits the `DaySummaryCase` judge signal and `day_summaries` feed memory extraction (frozen set → v5).
 - [ ] Report per-arm `cached_content_token_count` in cost accounting if explicit caching lands.
