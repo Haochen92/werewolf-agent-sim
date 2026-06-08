@@ -8,7 +8,7 @@ from Agents.graphs.nodes import (
     prepare_wolf_night,
     wolf_fan_out,
 )
-from Agents.graphs.state import WolfNightGraph
+from Agents.state import WolfNightGraph
 from Agents.tracing import GraphContext
 
 

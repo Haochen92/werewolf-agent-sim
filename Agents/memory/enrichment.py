@@ -41,7 +41,7 @@ from Agents.prompts import (
     WOLF_SITUATION_SUMMARY,
 )
 from Agents.schemas import SituationSummary
-from Agents.graphs.state import (
+from Agents.state import (
     HealerDayState,
     InvestigatorDayState,
     VillagerDayState,

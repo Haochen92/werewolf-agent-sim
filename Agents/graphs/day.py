@@ -24,7 +24,7 @@ from Agents.graphs.nodes import (
     summarize_day_discussion,
     route_speaker
 )
-from Agents.graphs.state import DayGraphState
+from Agents.state import DayGraphState
 from Agents.tracing import GraphContext
 
 

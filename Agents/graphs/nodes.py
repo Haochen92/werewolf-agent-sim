@@ -10,7 +10,7 @@ from langgraph.types import Send
 
 from Agents.game_config import game_config_from_runnable
 from Agents.schemas import DayChannel, DaySummary, InvestigatorResult, FiringReason
-from Agents.graphs.state import (
+from Agents.state import (
     DayGraphState,
     OrchestratorGraph,
     WolfNightGraph,

@@ -2,7 +2,7 @@ from langgraph.graph import END, START, StateGraph
 
 from Agents.agents import investigator_act
 from Agents.memory import store
-from Agents.graphs.state import InvestigatorNightGraph
+from Agents.state import InvestigatorNightGraph
 from Agents.tracing import GraphContext
 
 

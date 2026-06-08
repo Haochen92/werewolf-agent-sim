@@ -59,7 +59,7 @@ from Agents.schemas.game_events import (
     WolfChannel,
 )
 from Agents.schemas.memory import StrategyAdoption
-from Agents.graphs.state import (
+from Agents.state import (
     HealerDayState,
     HealerNightGraph,
     InvestigatorDayState,

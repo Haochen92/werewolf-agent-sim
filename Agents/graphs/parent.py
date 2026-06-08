@@ -23,7 +23,7 @@ from Agents.graphs.nodes import (
     route_after_serial_killer_night,
     route_after_wolf_night,
 )
-from Agents.graphs.state import OrchestratorGraph
+from Agents.state import OrchestratorGraph
 from Agents.game_config import game_config_from_runnable
 from Agents.memory import store
 from Agents.tracing import GraphContext
