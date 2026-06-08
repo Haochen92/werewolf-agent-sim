@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from Agents.agents import (
+from Agents.memory.enrichment import (
     _enrich_payload_with_memory,
     _filtering_enabled_for_role,
     _memory_enabled_for_role,
