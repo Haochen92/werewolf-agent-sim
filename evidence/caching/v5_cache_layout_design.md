@@ -16,7 +16,8 @@ backend = Vertex (project default, location `global`) — the exact game config.
 
 | question | measured result |
 |---|---|
-| Does **implicit** caching fire? | **No.** 15,007-token *identical* prefix, sent 4× back-to-back, and again warmed + 20 s delay + 3 probes → `input_token_details.cache_read = 0` every single call. The field is wired correctly (it surfaces, reads 0). Matches the production finding (2/600 gens, 0.4%). |
+| Does **implicit** caching fire (flash-lite)? | **No.** 15,007-token *identical* prefix, sent 4× back-to-back, and again warmed + 20 s delay + 3 probes → `input_token_details.cache_read = 0` every single call. The field is wired correctly (it surfaces, reads 0). Matches the production finding (2/600 gens, 0.4%). |
+| Does **implicit** caching fire (**2.5-Flash**)? | **Yes, but flaky/partial** ([probe_implicit_25flash.py](probe_implicit_25flash.py)). ~8.7k identical prefix → `cache_read = 4085` on ~2 of 11 calls, 0 otherwise; nothing at 1.7k/2.7k/**5k** (so 2,048 doc-min is necessary-not-sufficient; Vertex caches in ~4k blocks). Opportunistic, ~one 4k block — not a reliable lever. Real-game day-discuss prompts are only ~4.2–5.3k total (prefix < that), so even on 2.5-Flash gameplay would rarely clear it until late days. |
 | Does **explicit** caching fire? | **Yes, cleanly.** Created a `CachedContent` of 15,001 tok; a `generate_content` referencing it billed `cached_content_token_count = 15,001` of `prompt_token_count = 15,005`. |
 | **Explicit-cache minimum** | **4,096 tokens** — API-enforced, verbatim: *"The cached content is of N tokens. The minimum token count to start caching is 4096."* (rejects every create below it). |
 | Cached-token price | 10% of input (90% off), per Vertex docs for 2.5+ models. |
