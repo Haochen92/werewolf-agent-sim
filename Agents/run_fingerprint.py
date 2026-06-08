@@ -73,22 +73,20 @@ def prompt_bundle_hash() -> str:
 def runtime_fingerprint() -> dict:
     """Resolve the full generation bundle from env vars + factory defaults.
 
-    Mirrors exactly how the model factories in ``Agents.agents`` resolve their
-    configuration (same env vars, same defaults, imported constants) so the
-    stamp can't drift from the behavior. Imports are lazy: ``agents`` is heavy
-    and ``tracing`` must stay import-light.
+    Mirrors exactly how the model factories in ``Agents.llm_factory`` resolve
+    their configuration (same env vars, same defaults, imported constants) so the
+    stamp can't drift from the behavior. The import is lazy to keep ``tracing``
+    (which calls this) import-light.
     """
-    from Agents.agents import (
+    from Agents.llm_factory import (
+        DEFAULT_EMBEDDING_DIMS,
+        DEFAULT_EMBEDDING_MODEL,
         DEFAULT_GAME_MODEL,
         DEFAULT_GAME_THINKING_LEVEL,
         DEFAULT_PRO_BACKUP_MODEL,
         DEFAULT_PRO_MODEL,
         DEFAULT_SUMMARY_THINKING_LEVEL,
         _thinking_level_from_env,
-    )
-    from Agents.llm_factory import (
-        DEFAULT_EMBEDDING_DIMS,
-        DEFAULT_EMBEDDING_MODEL,
         _use_vertex,
     )
 

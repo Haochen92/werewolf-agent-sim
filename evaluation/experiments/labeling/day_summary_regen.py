@@ -109,7 +109,7 @@ def generate_summary(
     if model:
         llm = create_chat_model(model, temperature=1.0, thinking_level=thinking_level)
     else:
-        from Agents.agents import get_llm
+        from Agents.llm_factory import get_llm
         llm = get_llm()
 
     result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)

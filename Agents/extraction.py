@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from logging import getLogger
 
-from Agents.agents import get_llm_pro, get_llm_pro_backup
+from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.formatters import (
     format_day_channel_postgame,
     format_investigator_results,

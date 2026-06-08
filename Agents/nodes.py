@@ -297,7 +297,7 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     if not current_day_messages:
         return {}
 
-    from Agents.agents import get_llm_summary
+    from Agents.llm_factory import get_llm_summary
     from Agents.formatters import format_day_channel
 
     # The day summary runs in BOTH memory arms (it's pre-memory), so freeze it

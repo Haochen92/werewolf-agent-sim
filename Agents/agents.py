@@ -1,5 +1,3 @@
-import os
-from functools import lru_cache
 from logging import getLogger
 from typing import Any, Literal
 import random
@@ -10,7 +8,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 from pydantic import BaseModel, create_model
 
-from Agents.llm_factory import create_chat_model
+from Agents.llm_factory import get_llm, get_llm_judge
 
 from Agents.tracing import GraphContext, langfuse
 
@@ -95,74 +93,6 @@ load_dotenv()
 logger = getLogger(__name__)
 prompt_log: list[dict] = []
 
-DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
-DEFAULT_GAME_THINKING_LEVEL = "minimal"
-DEFAULT_PRO_MODEL = "gemini-2.5-pro"
-# Pinned (was the floating alias "gemini-pro-latest", which Google retargets
-# silently — a reproducibility hazard for the extraction pipeline that
-# conditions gold labels). gemini-3.5-flash: stable GA, pro-comparable quality,
-# and a different model family/quota pool than the primary, so it remains a
-# genuine fallback. (3.1-pro-preview rejected: preview tier = no SLA +
-# retirement risk.)
-DEFAULT_PRO_BACKUP_MODEL = "gemini-3.5-flash"
-VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
-
-
-def _thinking_level_from_env(
-    env_var: str,
-    default: str | None = None,
-) -> str | None:
-    value = os.getenv(env_var, default)
-    if value is None:
-        return None
-
-    normalized = value.strip().lower()
-    if normalized in {"", "none", "default"}:
-        return None
-    if normalized not in VALID_THINKING_LEVELS:
-        valid = ", ".join(sorted(VALID_THINKING_LEVELS))
-        raise ValueError(f"{env_var} must be one of: {valid}")
-    return normalized
-
-
-@lru_cache(maxsize=1)
-def get_llm():
-    return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_THINKING_LEVEL",
-            DEFAULT_GAME_THINKING_LEVEL,
-        ),
-    )
-
-DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
-
-
-@lru_cache(maxsize=1)
-def get_llm_summary():
-    return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
-            DEFAULT_SUMMARY_THINKING_LEVEL,
-        ),
-    )
-
-
-@lru_cache(maxsize=1)
-def get_llm_judge():
-    """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking."""
-    return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
-            "minimal",
-        ),
-    )
-
 
 NOVELTY_JUDGE_PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -224,25 +154,6 @@ def judge_proactive_novelty(candidate_message: str, payload: dict[str, Any], cur
     except Exception as exc:
         logger.warning(f"novelty judge failed: {exc}; defaulting to novel")
         return True
-
-
-@lru_cache(maxsize=1)
-def get_llm_pro():
-    return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL),
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-    )
-
-
-@lru_cache(maxsize=1)
-def get_llm_pro_backup():
-    return create_chat_model(
-        os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL),
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_PRO_BACKUP_THINKING_LEVEL",
-        ),
-    )
 
 
 def _validate_target(target: str, valid_targets: list[str], player_id: str) -> str | None:

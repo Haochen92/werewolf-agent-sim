@@ -175,7 +175,7 @@ def _apply_pipeline(
             )
 
     if pipeline.reranking:
-        from Agents.agents import get_llm
+        from Agents.llm_factory import get_llm
         llm = get_llm()
         observations = rerank_observations(llm, situations, observations)
         strategy_points = rerank_strategy_points(llm, situations, strategy_points)
