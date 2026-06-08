@@ -1,15 +1,19 @@
-"""Graph node functions, grouped by phase (split from graphs/nodes.py + agents.py).
+"""Graph node functions + routers, grouped by phase.
 
-day.py        — day-discussion/vote flow nodes + per-role day actor nodes
+day/flow.py     — day discussion/vote control flow (scheduler hop, routers, fan-out, summary)
+day/actors.py   — per-role day discuss/vote nodes, built from two factories
 orchestrator.py — game setup, day resolution, winner/terminal logic, postgame
-runtime.py    — the shared actor execution engine (_run_agent, memory-informed
-                actions, the proactive-novelty gate) + prompt_log
-scheduler.py  — sequential-discussion speaker ranking
-night/<role>.py — each role's night action node
+scheduler.py    — sequential-discussion speaker ranking
+night/<role>.py — each role's night action node (single-actor roles are one-line
+                  bindings over night/factory.py:make_night_act_node)
+night/wolf.py   — the multi-node wolf night discussion flow
 night/resolution.py — cross-role night kill resolution + routing
 
-Everything is re-exported here so the historical `from Agents.nodes import X`
-(and the former Agents.nodes / Agents.nodes call sites) resolve unchanged.
+The shared actor execution engine itself (_run_agent, the memory-informed
+actions, the proactive-novelty gate) lives in Agents.engine, not here — these
+are only the graph nodes that call into it.
+
+Everything is re-exported here so `from Agents.nodes import X` resolves unchanged.
 """
 
 from Agents.nodes.scheduler import (  # noqa: F401
