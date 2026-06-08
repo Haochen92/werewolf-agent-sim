@@ -1,3 +1,12 @@
+"""Orchestrator graph nodes: the game's spine outside the day/night sub-graphs.
+
+Owns the OrchestratorGraph state shape and the nodes that bracket each cycle —
+game setup, day-vote resolution, the day/night advance, the terminal/winner
+logic, and the post-game memory pipeline. The day and night phases themselves
+live in their own sub-graphs (nodes/day/, nodes/night/); this module wires the
+transitions between them and decides when the game ends.
+"""
+
 from logging import getLogger as _getLogger
 logger = _getLogger(__name__)
 
@@ -39,7 +48,17 @@ from Agents.tracing import (
 )
 
 
+# --- Game setup --------------------------------------------------------------
+
 def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
+    """Set up a fresh game and return the initial OrchestratorGraph state.
+
+    Assigns and shuffles roles, then seeds the two-layer survivor model: the
+    survivor *buckets* (surviving_wolves, surviving_villagers = the non-wolf
+    bucket of town + the solo SK) and the per-role *markers* (healer_player, …,
+    serial_killer_player) that the rest of the game reads role-aliveness off.
+    human_player is chosen but vestigial — eval runs have no human player.
+    """
     game_config = game_config_from_runnable(config)
     # Initialize roles and players
     roles = game_config.initial_roles.copy()
@@ -87,11 +106,22 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
 
 
 
+# --- Death bookkeeping (shared by day + night resolution) --------------------
+
 def _nullify_special_roles(
     state_update: dict,
     player: str,
     state: OrchestratorGraph,
 ) -> None:
+    """Clear the special-role marker(s) held by a player who just died.
+
+    The *_player markers are the source of truth for a special role's aliveness:
+    _faction_counts reads serial_killer_player to count the SK, and night routing
+    skips a role whose marker is None. Removing a dead player from the survivor
+    buckets does NOT touch the markers, so both death paths — day_resolution
+    (lynch) and night_kill_resolution — call this to keep the two layers in sync.
+    Mutates state_update in place.
+    """
     if player == state.get("healer_player"):
         state_update["healer_player"] = None
     if player == state.get("investigator_player"):
@@ -102,7 +132,17 @@ def _nullify_special_roles(
         state_update["vigilante_player"] = None
 
 
+# --- Day resolution ----------------------------------------------------------
+
 def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
+    """Resolve the day's vote into a lynch (or a no-lynch) and announce it.
+
+    A real lynch needs a unique, non-"abstain" plurality; a tie, an abstain
+    plurality, or no votes is a no-lynch day (which bumps no_lynch_streak). On a
+    lynch: removes the player from both survivor buckets, nullifies any
+    special-role marker they held, and writes a game_master message + day
+    summary. Records a DayResolutionMetric span on every path.
+    """
     current_day = state.get("current_day", 1)
     day_votes = state.get("day_votes", [])
     vote_counts = Counter(vote.votee for vote in day_votes)
@@ -194,7 +234,11 @@ Here's the vote result for day {current_day}:
 
 
 
+# --- Day/night advance -------------------------------------------------------
+
 def one_more_day(state: OrchestratorGraph):
+    """Advance to the next day: bump current_day and clear the day's votes and all
+    night-action targets so the new cycle starts from a clean slate."""
     return {
         "current_day": state.get("current_day", 1) + 1,
         "day_votes": [],
@@ -207,15 +251,7 @@ def one_more_day(state: OrchestratorGraph):
     }
 
 
-# The night runs in two groups (see the two-group model). GROUP 1 — all the killers plus
-# the healer — acts first, because their choices determine who dies; phases are skipped
-# only when their actor is absent, and the group ends at KILL_RESOLUTION:
-#   wolves -> healer -> serial killer -> vigilante -> KILL_RESOLUTION
-# GROUP 2 — the pure-information investigator — runs AFTER kills resolve, and only if it
-# survived the night (and the game is not already decided): a dead investigator's result
-# is moot, so its phase is skipped to save the call. NIGHT_FINALIZE then records the
-# investigation and emits the night's single metric span.
-
+# --- Terminal conditions & winner --------------------------------------------
 
 def _faction_counts(state: OrchestratorGraph) -> tuple[int, int, int]:
     """Return (wolves, town, serial_killer) survivor counts.
@@ -267,6 +303,12 @@ _WINNER_MESSAGE = {
 
 
 def end_game(state: OrchestratorGraph, config: RunnableConfig):
+    """Terminal node: compute the winner and announce it.
+
+    Uses determine_winner; if still undecided when the day limit is hit, falls
+    back to _max_days_winner (largest surviving faction, draw on a tie). Writes
+    winner + a game_master announcement.
+    """
     game_config = game_config_from_runnable(config)
     winner = determine_winner(state)
     if winner is None and state.get("current_day", 1) >= game_config.max_days:
@@ -289,6 +331,8 @@ def check_game_end_day(
     state: OrchestratorGraph,
     config: RunnableConfig,
 ) -> Literal["END_GAME", "WOLF_NIGHT_PHASE"]:
+    """Router after the day phase: END_GAME if a faction has won or the day limit
+    is reached, otherwise proceed into the wolf night phase."""
     game_config = game_config_from_runnable(config)
     if determine_winner(state) is not None:
         return "END_GAME"
@@ -301,6 +345,8 @@ def check_game_end_night(
     state: OrchestratorGraph,
     config: RunnableConfig,
 ) -> Literal["END_GAME", "ONE_MORE_DAY"]:
+    """Router after the night phase: END_GAME if a faction has won or the day
+    limit is reached, otherwise ONE_MORE_DAY."""
     game_config = game_config_from_runnable(config)
     if determine_winner(state) is not None:
         return "END_GAME"
@@ -310,19 +356,26 @@ def check_game_end_night(
 
 
 
+# --- Post-game memory pipeline -----------------------------------------------
+
 def post_game_analysis(
     state: OrchestratorGraph,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
+    """Extract observations/strategy points from the finished game and persist them.
+
+    No-op when memory dumping is disabled: the extracted memories would be deduped
+    into the ephemeral runtime store and discarded with it, so the (expensive)
+    extraction LLM call would be pure waste. Otherwise: extract → trace an
+    ExtractionCase span → downstream-dedup into the store → dump to JSON →
+    batch-dedup. This is what seeds the next memory-store version.
+    """
     store = runtime.store
     if store is None:
         raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
 
-    # Extraction exists to write memory. When dumping is off, the extracted
-    # observations/strategies are deduped into the ephemeral runtime store and then
-    # discarded with it — so the (expensive) extraction LLM call is pure waste.
-    # Skip the whole post-game pipeline in no-dump runs.
+    # Skip the whole pipeline in no-dump runs (see docstring: extraction would be wasted).
     memory_persistence_config = memory_persistence_config_from_runnable(config)
     if not memory_persistence_config.dump_enabled:
         logger.info("Memory dump disabled; skipping post-game extraction.")

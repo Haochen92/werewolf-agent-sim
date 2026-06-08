@@ -1,3 +1,18 @@
+"""Cross-role night resolution: turns the roles' individual night actions into deaths.
+
+The night runs in two groups. GROUP 1 — all the killers plus the healer — acts
+first, because their choices determine who dies; a phase is skipped only when its
+actor is absent, and the group ends at KILL_RESOLUTION:
+
+    wolves -> healer -> serial killer -> vigilante -> KILL_RESOLUTION
+
+GROUP 2 — the pure-information investigator — runs AFTER kills resolve, and only
+if it survived the night (and the game is not already decided): a dead
+investigator's result is moot, so its phase is skipped to save the call.
+NIGHT_FINALIZE then records the investigation and emits the night's single metric
+span (one span carrying both kill and investigation data).
+"""
+
 from typing import Literal
 
 from langgraph.runtime import Runtime
