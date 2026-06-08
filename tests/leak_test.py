@@ -1,7 +1,7 @@
 """Private-information leak checks for live game transcripts.
 
 NOT pytest unit tests: these checkers need a live game's ``prompt_log``
-(the global populated in ``Agents.agents``) plus the role assignment, and
+(the global populated in ``Agents.nodes``) plus the role assignment, and
 they return leak lists instead of asserting. Drive them through
 ``run_leak_tests(prompt_log, roles)`` after ``run_game(...)`` — see
 ``exercise_7_minimal.ipynb``. Functions are named ``check_*`` (not

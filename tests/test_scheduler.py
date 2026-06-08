@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from Agents.game_config import DEFAULT_GAME_CONFIG, GameConfig
 from Agents.schemas import AddressedTarget, DayChannel
-from Agents.graphs.scheduler import (
+from Agents.nodes.scheduler import (
     build_reactive_queue,
     rank_proactive,
     select_next_speaker,

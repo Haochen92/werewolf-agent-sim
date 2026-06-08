@@ -1,8 +1,8 @@
 from langgraph.graph import START, StateGraph
 
-from Agents.agents import wolf_night_discuss
+from Agents.nodes import wolf_night_discuss
 from Agents.memory import store
-from Agents.graphs.nodes import (
+from Agents.nodes import (
     check_night_end,
     collect_wolf_night_discussion,
     prepare_wolf_night,

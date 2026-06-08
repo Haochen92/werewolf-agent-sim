@@ -1,7 +1,7 @@
 from langgraph.graph import END, START, StateGraph
 
 from Agents.memory import store
-from Agents.agents import (
+from Agents.nodes import (
     healer_discuss,
     healer_vote,
     investigator_discuss,
@@ -15,7 +15,7 @@ from Agents.agents import (
     wolf_discuss,
     wolf_vote,
 )
-from Agents.graphs.nodes import (
+from Agents.nodes import (
     collect_votes,
     fan_out_vote,
     day_scheduler,

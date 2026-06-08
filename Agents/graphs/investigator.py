@@ -1,6 +1,6 @@
 from langgraph.graph import END, START, StateGraph
 
-from Agents.agents import investigator_act
+from Agents.nodes import investigator_act
 from Agents.memory import store
 from Agents.state import InvestigatorNightGraph
 from Agents.tracing import GraphContext

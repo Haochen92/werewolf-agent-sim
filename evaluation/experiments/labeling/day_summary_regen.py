@@ -104,7 +104,7 @@ def generate_summary(
         situation_standards=SITUATION_STANDARDS,
     )
 
-    from Agents.graphs.nodes import _serialize_day_summary
+    from Agents.nodes import _serialize_day_summary
 
     if model:
         llm = create_chat_model(model, temperature=1.0, thinking_level=thinking_level)

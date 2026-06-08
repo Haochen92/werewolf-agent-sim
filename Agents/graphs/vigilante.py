@@ -1,6 +1,6 @@
 from langgraph.graph import END, START, StateGraph
 
-from Agents.agents import vigilante_act
+from Agents.nodes import vigilante_act
 from Agents.memory import store
 from Agents.state import VigilanteNightGraph
 from Agents.tracing import GraphContext

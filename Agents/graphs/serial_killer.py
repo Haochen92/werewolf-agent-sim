@@ -1,6 +1,6 @@
 from langgraph.graph import END, START, StateGraph
 
-from Agents.agents import serial_killer_act
+from Agents.nodes import serial_killer_act
 from Agents.memory import store
 from Agents.state import SerialKillerNightGraph
 from Agents.tracing import GraphContext

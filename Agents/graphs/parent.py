@@ -8,7 +8,7 @@ from Agents.graphs.investigator import investigator_graph_compiled
 from Agents.graphs.serial_killer import serial_killer_graph_compiled
 from Agents.graphs.vigilante import vigilante_graph_compiled
 from Agents.graphs.wolf_night import wolf_night_graph_compiled
-from Agents.graphs.nodes import (
+from Agents.nodes import (
     check_game_end_day,
     check_game_end_night,
     day_resolution,
