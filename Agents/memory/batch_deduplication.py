@@ -14,7 +14,7 @@ import numpy as np
 from dotenv import load_dotenv
 from Agents.llm_factory import create_chat_model, create_embeddings
 from langgraph.store.base import BaseStore
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
 from Agents.memory.core import store
@@ -40,7 +40,6 @@ from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-MemoryKind = Literal["observations", "strategy_points"]
 ClusterMode = Literal["bounded", "connected", "agglomerative"]
 LinkageMethod = Literal["complete", "average"]
 
@@ -115,97 +114,19 @@ class TwoPassConfig(BaseModel):
     verify_thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL or None
 
 
-class StrategyBatchOperation(BaseModel):
-    action: Literal["DISCARD", "KEEP"]
-    reasoning: str
-    source_keys: list[str] = Field(
-        description="Entry numbers in this cluster that the operation applies to",
-        min_length=1,
-    )
-    survivor_key: str | None = Field(
-        default=None,
-        description="Entry number to preserve for DISCARD",
-    )
-    merged_situation: str | None = Field(
-        default=None,
-        description=(
-            "Optional improved situation text for the survivor. "
-            "Use only when combining elements from multiple entries."
-        ),
-    )
-    merged_action: str | None = Field(
-        default=None,
-        description=(
-            "Optional improved action text for the survivor. "
-            "Use only when combining elements from multiple entries."
-        ),
-    )
-
-
-class ObservationBatchOperation(BaseModel):
-    action: Literal["DISCARD", "MERGE", "KEEP"]
-    reasoning: str
-    source_keys: list[str] = Field(
-        description="Entry numbers in this cluster that the operation applies to",
-        min_length=1,
-    )
-    survivor_key: str | None = Field(
-        default=None,
-        description="Entry number to preserve for DISCARD or MERGE",
-    )
-    merged_situation: str | None = Field(
-        default=None,
-        description="Merged situation text for MERGE",
-    )
-    merged_approach: str | None = Field(
-        default=None,
-        description="Merged approach with all tactics and counts for MERGE",
-    )
-    merged_outcome: str | None = Field(
-        default=None,
-        description="Merged outcome for MERGE",
-    )
-
-
-class StrategyBatchDedupOutput(BaseModel):
-    operations: list[StrategyBatchOperation]
-
-
-class ObservationBatchDedupOutput(BaseModel):
-    operations: list[ObservationBatchOperation]
-
-
-class NamespaceStats(BaseModel):
-    memory_kind: MemoryKind
-    role: str
-    items: int = 0
-    clusters: int = 0
-    processed_clusters: int = 0
-    skipped_clusters: int = 0
-    operations: int = 0
-    discarded: int = 0
-    replaced: int = 0
-    differentiated: int = 0
-    merged: int = 0
-    kept: int = 0
-    failed: int = 0
-    dry_run: bool = True
-
-
-class ClusterPreview(BaseModel):
-    memory_kind: MemoryKind
-    role: str
-    size: int
-    keys: list[str]
-    previews: list[str]
-
-
-class BatchDedupReport(BaseModel):
-    apply: bool
-    seed_store_dir: str
-    dump_store_dir: str
-    stats: list[NamespaceStats] = Field(default_factory=list)
-    clusters: list[ClusterPreview] = Field(default_factory=list)
+# Batch dedup schemas + the MemoryKind alias moved to Agents.memory.batch_schemas (re-exported
+# here so existing 'from Agents.memory.batch_deduplication import ...' call sites keep resolving).
+# TwoPassConfig stays above because it defaults to this module's env-driven config constants.
+from Agents.memory.batch_schemas import (  # noqa: E402
+    BatchDedupReport,
+    ClusterPreview,
+    MemoryKind,
+    NamespaceStats,
+    ObservationBatchDedupOutput,
+    ObservationBatchOperation,
+    StrategyBatchDedupOutput,
+    StrategyBatchOperation,
+)
 
 
 def _langfuse_handler():
