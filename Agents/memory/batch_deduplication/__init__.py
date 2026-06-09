@@ -65,11 +65,10 @@ from .operations import (
     _remap_operation_keys,
     _validate_source_keys,
 )
+from .cli import _parse_args, main
 from .orchestration import (
-    _parse_args,
     dedup_namespace,
     inspect_namespace_clusters,
-    main,
     run_batch_memory_dedup,
 )
 from .resolution import (
