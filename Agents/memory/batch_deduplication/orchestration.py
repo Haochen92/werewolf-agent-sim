@@ -9,14 +9,12 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from pathlib import Path
 
 from langgraph.store.base import BaseStore
 
 from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
 from Agents.memory.store import store
 from Agents.memory.persistence import (
-    DEFAULT_MEMORY_STORE_DIR,
     dump_memory_to_json_files,
     memory_store_paths,
     seed_memory_from_json_files,
@@ -24,13 +22,8 @@ from Agents.memory.persistence import (
 
 from .clustering import _build_clusters, _fetch_namespace_items
 from .config import (
+    BatchDedupRunConfig,
     ClusterMode,
-    DEFAULT_BATCH_EMBEDDING_DIMS,
-    DEFAULT_BATCH_EMBEDDING_MODEL,
-    DEFAULT_BATCH_MODEL,
-    DEFAULT_BATCH_SIMILARITY_THRESHOLD,
-    DEFAULT_BATCH_THINKING_LEVEL,
-    DEFAULT_MAX_CLUSTER_SIZE,
     DEDUP_TIMESTAMP_FILE,
     LinkageMethod,
     TwoPassConfig,
@@ -50,31 +43,31 @@ logger = logging.getLogger(__name__)
 
 
 def run_batch_memory_dedup(
+    config: BatchDedupRunConfig,
     *,
     target_store: BaseStore = store,
-    seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR,
-    dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR,
-    memory_kinds: list[MemoryKind] | None = None,
-    selected_roles: list[str] | None = None,
-    apply: bool = False,
-    similarity_threshold: float = DEFAULT_BATCH_SIMILARITY_THRESHOLD,
-    search_limit: int = 10,
-    cluster_mode: ClusterMode = "bounded",
-    max_cluster_size: int = DEFAULT_MAX_CLUSTER_SIZE,
-    linkage_method: LinkageMethod = "complete",
-    embedding_model: str = DEFAULT_BATCH_EMBEDDING_MODEL,
-    embedding_dims: int = DEFAULT_BATCH_EMBEDDING_DIMS,
-    model: str = DEFAULT_BATCH_MODEL,
-    thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL,
-    max_clusters: int | None = None,
-    incremental: bool = False,
-    cluster_report_only: bool = False,
-    preview_chars: int = 160,
-    two_pass: TwoPassConfig | None = None,
-    prompt_variant: str = "default",
 ) -> BatchDedupReport:
-    memory_kinds = memory_kinds or ["observations", "strategy_points"]
-    selected_roles = selected_roles or list(roles)
+    # Explode the run config into locals once; the sweep below reads them directly.
+    seed_store_dir = config.seed_store_dir
+    dump_store_dir = config.dump_store_dir
+    apply = config.apply
+    similarity_threshold = config.similarity_threshold
+    search_limit = config.search_limit
+    cluster_mode = config.cluster_mode
+    max_cluster_size = config.max_cluster_size
+    linkage_method = config.linkage_method
+    embedding_model = config.embedding_model
+    embedding_dims = config.embedding_dims
+    model = config.model
+    thinking_level = config.thinking_level
+    max_clusters = config.max_clusters
+    incremental = config.incremental
+    cluster_report_only = config.cluster_report_only
+    preview_chars = config.preview_chars
+    two_pass = config.two_pass
+    prompt_variant = config.prompt_variant
+    memory_kinds = config.memory_kinds or ["observations", "strategy_points"]
+    selected_roles = config.selected_roles or list(roles)
 
     observations_path, strategy_points_path = memory_store_paths(seed_store_dir)
     seed_memory_from_json_files(

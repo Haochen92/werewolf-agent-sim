@@ -27,6 +27,7 @@ from .clustering import (
     _seed_sort_key,
 )
 from .config import (
+    BatchDedupRunConfig,
     ClusterMode,
     DEDUP_TIMESTAMP_FILE,
     DEFAULT_BATCH_EMBEDDING_DIMS,
@@ -105,6 +106,7 @@ __all__ = [
     "StrategyBatchDedupOutput",
     "StrategyBatchOperation",
     # config
+    "BatchDedupRunConfig",
     "ClusterMode",
     "DEDUP_TIMESTAMP_FILE",
     "DEFAULT_BATCH_EMBEDDING_DIMS",

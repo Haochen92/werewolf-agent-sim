@@ -50,6 +50,7 @@ def run_batch_dedup_from_config(
     files reflect the latest state including newly extracted entries.
     """
     from Agents.memory.batch_deduplication import (
+        BatchDedupRunConfig,
         TwoPassConfig,
         run_batch_memory_dedup,
     )
@@ -70,8 +71,7 @@ def run_batch_dedup_from_config(
             verify_thinking_level=dedup_cfg.verify_thinking_level,
         )
 
-    report = run_batch_memory_dedup(
-        target_store=target_store,
+    run_config = BatchDedupRunConfig(
         seed_store_dir=store_dir,
         dump_store_dir=store_dir,
         apply=True,
@@ -79,6 +79,7 @@ def run_batch_dedup_from_config(
         two_pass=two_pass,
         prompt_variant=dedup_cfg.prompt_variant,
     )
+    report = run_batch_memory_dedup(run_config, target_store=target_store)
     return report.model_dump(mode="json")
 
 

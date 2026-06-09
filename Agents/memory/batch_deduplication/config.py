@@ -8,11 +8,15 @@ env-driven constants resolve before anything imports them.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
 from Agents.llm_factory import create_chat_model
+from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
 from pydantic import BaseModel
+
+from .schemas import MemoryKind
 
 load_dotenv()
 
@@ -52,6 +56,44 @@ class TwoPassConfig(BaseModel):
     triage_thinking_level: str | None = DEFAULT_TRIAGE_THINKING_LEVEL
     verify_model: str = DEFAULT_BATCH_MODEL
     verify_thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL or None
+
+
+class BatchDedupRunConfig(BaseModel):
+    """The full parameter surface for one ``run_batch_memory_dedup`` invocation — the runner's
+    config object that every adapter builds.
+
+    cli.py builds it from argparse; the post-game pipeline (``persistence.dump``) builds it from its
+    own ``persistence.config.BatchDedupConfig`` gate. That gate is deliberately the small graph-facing
+    on/off subset (enabled + which models); this is the complete run spec (I/O dirs, clustering,
+    embedding, resolution, run-mode). Field defaults mirror the module constants above — i.e. the
+    previous ``run_batch_memory_dedup`` keyword defaults, verbatim, so the reshape is behaviour-neutral.
+    """
+
+    # I/O — the seed/dump store directories (provenance = store identity).
+    seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
+    dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
+    # Selection — None means "all kinds / all roles".
+    memory_kinds: list[MemoryKind] | None = None
+    selected_roles: list[str] | None = None
+    # Clustering.
+    similarity_threshold: float = DEFAULT_BATCH_SIMILARITY_THRESHOLD
+    search_limit: int = 10
+    cluster_mode: ClusterMode = "bounded"
+    max_cluster_size: int = DEFAULT_MAX_CLUSTER_SIZE
+    linkage_method: LinkageMethod = "complete"
+    embedding_model: str = DEFAULT_BATCH_EMBEDDING_MODEL
+    embedding_dims: int = DEFAULT_BATCH_EMBEDDING_DIMS
+    max_clusters: int | None = None
+    # Resolution — single-pass model + optional two-pass escalation.
+    model: str = DEFAULT_BATCH_MODEL
+    thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL
+    two_pass: TwoPassConfig | None = None
+    prompt_variant: str = "default"
+    # Run mode.
+    apply: bool = False
+    incremental: bool = False
+    cluster_report_only: bool = False
+    preview_chars: int = 160
 
 
 def _langfuse_handler():

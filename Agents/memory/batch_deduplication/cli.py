@@ -16,6 +16,7 @@ from Agents.constants import roles
 from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
 
 from .config import (
+    BatchDedupRunConfig,
     DEFAULT_BATCH_EMBEDDING_DIMS,
     DEFAULT_BATCH_EMBEDDING_MODEL,
     DEFAULT_BATCH_MODEL,
@@ -33,9 +34,6 @@ from .resolution import _OBS_PROMPT_VARIANTS
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = _parse_args()
-    seed_store_dir = args.seed_store_dir or args.store_dir
-    dump_store_dir = args.dump_store_dir or args.store_dir
-    thinking_level = args.thinking_level or None
 
     two_pass_config = None
     if args.two_pass:
@@ -46,9 +44,9 @@ def main() -> int:
             verify_thinking_level=args.verify_thinking_level or None,
         )
 
-    report = run_batch_memory_dedup(
-        seed_store_dir=seed_store_dir,
-        dump_store_dir=dump_store_dir,
+    config = BatchDedupRunConfig(
+        seed_store_dir=args.seed_store_dir or args.store_dir,
+        dump_store_dir=args.dump_store_dir or args.store_dir,
         memory_kinds=args.types,
         selected_roles=args.roles,
         apply=args.apply,
@@ -60,7 +58,7 @@ def main() -> int:
         embedding_model=args.embedding_model,
         embedding_dims=args.embedding_dims,
         model=args.model,
-        thinking_level=thinking_level,
+        thinking_level=args.thinking_level or None,
         max_clusters=args.max_clusters,
         cluster_report_only=args.cluster_report_only,
         preview_chars=args.preview_chars,
@@ -68,6 +66,8 @@ def main() -> int:
         prompt_variant=args.prompt_variant,
         incremental=args.incremental,
     )
+
+    report = run_batch_memory_dedup(config)
     report_json = json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True)
     if args.report_path:
         args.report_path.parent.mkdir(parents=True, exist_ok=True)
