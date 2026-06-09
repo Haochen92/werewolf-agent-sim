@@ -86,12 +86,12 @@ class EvalCase(BaseModel):
     situations: list[str] = Field(default_factory=list)
     retrieved_observations: list[RetrievedObservation] = Field(default_factory=list)
     retrieved_strategy_points: list[RetrievedStrategyPoint] = Field(default_factory=list)
-    # Pre-rerank candidate pool: the wide retrieval set as embedding search
-    # surfaced it, BEFORE filtering/reranking narrowed and reordered it (with
-    # per-item embedding scores). Reranker training + retrieval eval need the
-    # candidates that entered reranking, not just the final top-k. Empty when no
-    # wide retrieval ran (no rerank/filter) — then ``retrieved_*`` IS the pool.
     candidate_observations: list[RetrievedObservation] = Field(default_factory=list)
+    """Pre-rerank candidate pool: the wide retrieval set as embedding search
+    surfaced it, BEFORE filtering/reranking narrowed and reordered it (with
+    per-item embedding scores). Reranker training + retrieval eval need the
+    candidates that entered reranking, not just the final top-k. Empty when no
+    wide retrieval ran (no rerank/filter) — then ``retrieved_*`` IS the pool."""
     candidate_strategy_points: list[RetrievedStrategyPoint] = Field(default_factory=list)
     provenance: EvalProvenance = Field(default_factory=EvalProvenance)
     agent_message: DayChannel | None = None

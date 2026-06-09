@@ -262,15 +262,21 @@ class StoredStrategyPoint(BaseModel):
     (retrieved/used and positive/neutral/negative outcome tallies) for impact analysis."""
 
     observation_count: int
+    """How many source strategy points deduped into this stored record."""
     last_observed: datetime
     game_id: Optional[str] = ""
     situation: str
     action: str
     retrieved_count: int = 0
+    """Times this point was returned by retrieval (denominator for impact)."""
     used_count: int = 0
+    """Times an agent actually adopted it after retrieval."""
     positive_count: int = 0
+    """Adoptions whose game outcome was scored positive."""
     neutral_count: int = 0
+    """Adoptions whose game outcome was scored neutral."""
     negative_count: int = 0
+    """Adoptions whose game outcome was scored negative."""
 
 
 class StrategyAdoption(BaseModel):
