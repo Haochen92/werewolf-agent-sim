@@ -37,7 +37,15 @@ from Agents.nodes import (
     route_after_serial_killer_night,
     route_after_wolf_night,
 )
-from Agents.state import OrchestratorGraph
+from Agents.state import (
+    DayGraphState,
+    HealerNightGraph,
+    InvestigatorNightGraph,
+    OrchestratorGraph,
+    SerialKillerNightGraph,
+    VigilanteNightGraph,
+    WolfNightGraph,
+)
 from Agents.game_config import game_config_from_runnable
 from Agents.memory import store
 from Agents.tracing import GraphContext
@@ -69,23 +77,23 @@ def day_phase(
     """
     num_survivors = len(state["surviving_wolves"]) + len(state["surviving_villagers"])
     game_config = game_config_from_runnable(config)
+    payload: DayGraphState = {
+        "agent_strategies": state.get("agent_strategies", {}),
+        "current_day": state["current_day"],
+        "day_channel": state.get("day_channel", []),
+        "day_summaries": state.get("day_summaries", []),
+        "roles": state["roles"],
+        "human_player": state["human_player"],
+        "investigator_results": state.get("investigator_results", []),
+        "vigilante_results": state.get("vigilante_results", []),
+        "surviving_villagers": state["surviving_villagers"],
+        "surviving_wolves": state["surviving_wolves"],
+        "no_lynch_streak": state.get("no_lynch_streak", 0),
+        "current_round": 0,
+        "day_votes": [],
+    }
     result = day_graph_compiled.invoke(
-        {
-            "agent_strategies": state.get("agent_strategies", {}),
-            "current_day": state["current_day"],
-            "day_channel": state.get("day_channel", []),
-            "day_summaries": state.get("day_summaries", []),
-            "roles": state["roles"],
-            "human_player": state["human_player"],
-            "investigator_results": state.get("investigator_results", []),
-            "vigilante_results": state.get("vigilante_results", []),
-            "surviving_players": state["surviving_wolves"] + state["surviving_villagers"],
-            "surviving_wolves": state["surviving_wolves"],
-            "surviving_villagers": state["surviving_villagers"],
-            "no_lynch_streak": state.get("no_lynch_streak", 0),
-            "current_round": 0,
-            "day_votes": [],
-        },
+        payload,
         # Bound the SCHEDULE self-loop: derive from the cap so graceful terminate fires first.
         config={**_child_config(config), "recursion_limit": game_config.discussion_recursion_limit(num_survivors)},
         context=runtime.context,
@@ -110,17 +118,18 @@ def wolf_night_phase(
     Seeds the subgraph with the wolf channel + both rosters; returns the newly appended
     wolf-channel slice, the agreed wolves_kill_target, and any strategy/adoption delta.
     """
+    payload: WolfNightGraph = {
+        "agent_strategies": state.get("agent_strategies", {}),
+        "day_channel": state.get("day_channel", []),
+        "day_summaries": state.get("day_summaries", []),
+        "wolf_channel": state.get("wolf_channel", []),
+        "surviving_villagers": state["surviving_villagers"],
+        "surviving_wolves": state["surviving_wolves"],
+        "human_player": state["human_player"],
+        "current_day": state["current_day"],
+    }
     result = wolf_night_graph_compiled.invoke(
-        {
-            "agent_strategies": state.get("agent_strategies", {}),
-            "day_channel": state.get("day_channel", []),
-            "day_summaries": state.get("day_summaries", []),
-            "wolf_channel": state.get("wolf_channel", []),
-            "surviving_villagers": state["surviving_villagers"],
-            "surviving_wolves": state["surviving_wolves"],
-            "human_player": state["human_player"],
-            "current_day": state["current_day"],
-        },
+        payload,
         config=_child_config(config),
         context=runtime.context,
     )
@@ -147,30 +156,33 @@ def healer_night_phase(
     a target, invoke the role subgraph, and write the role's target (healer_target) plus any
     strategy/adoption delta.
     """
+    healer = state["healer_player"]
+    assert healer is not None  # routing only enters this phase while the healer is alive
+    payload: HealerNightGraph = {
+        "previous_strategy": state.get("agent_strategies", {}).get(healer, ""),
+        "strategy_points": "",
+        "current_day": state["current_day"],
+        "current_round": 0,
+        "day_channel": state.get("day_channel", []),
+        "day_summaries": state.get("day_summaries", []),
+        "surviving_players": [
+            p
+            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            if p != healer
+        ],
+        "player_id": healer,
+        "player_role": "healer",
+        "human_player": healer == state["human_player"],
+    }
     result = healer_graph_compiled.invoke(
-        {
-            "previous_strategy": state.get("agent_strategies", {}).get(state["healer_player"], ""),
-            "strategy_points": "",
-            "current_day": state["current_day"],
-            "current_round": 0,
-            "day_channel": state.get("day_channel", []),
-            "day_summaries": state.get("day_summaries", []),
-            "surviving_players": [
-                p
-                for p in state["surviving_wolves"] + state["surviving_villagers"]
-                if p != state["healer_player"]
-            ],
-            "player_id": state["healer_player"],
-            "player_role": "healer",
-            "human_player": state["healer_player"] == state["human_player"],
-        },
+        payload,
         config=_child_config(config),
         context=runtime.context,
     )
     updates = {"healer_target": result.get("healer_target")}
     if result.get("updated_strategy"):
         updates["agent_strategies"] = {
-            state["healer_player"]: result["updated_strategy"]
+            healer: result["updated_strategy"]
         }
     if result.get("strategy_adoptions"):
         updates["strategy_adoptions"] = result["strategy_adoptions"]
@@ -185,24 +197,27 @@ def investigator_night_phase(
 ):
     """Single-actor night phase (see healer_night_phase): the investigator learns one player's
     true role; reads investigator_player + prior results, writes investigator_target."""
+    investigator = state["investigator_player"]
+    assert investigator is not None  # routing only enters this phase while the investigator is alive
+    payload: InvestigatorNightGraph = {
+        "previous_strategy": state.get("agent_strategies", {}).get(investigator, ""),
+        "strategy_points": "",
+        "current_day": state["current_day"],
+        "current_round": 0,
+        "day_channel": state.get("day_channel", []),
+        "day_summaries": state.get("day_summaries", []),
+        "investigator_results": state.get("investigator_results", []),
+        "surviving_players": [
+            p
+            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            if p != investigator
+        ],
+        "player_id": investigator,
+        "player_role": "investigator",
+        "human_player": investigator == state["human_player"],
+    }
     result = investigator_graph_compiled.invoke(
-        {
-            "previous_strategy": state.get("agent_strategies", {}).get(state["investigator_player"], ""),
-            "strategy_points": "",
-            "current_day": state["current_day"],
-            "current_round": 0,
-            "day_channel": state.get("day_channel", []),
-            "day_summaries": state.get("day_summaries", []),
-            "investigator_results": state.get("investigator_results", []),
-            "surviving_players": [
-                p
-                for p in state["surviving_wolves"] + state["surviving_villagers"]
-                if p != state["investigator_player"]
-            ],
-            "player_id": state["investigator_player"],
-            "player_role": "investigator",
-            "human_player": state["investigator_player"] == state["human_player"],
-        },
+        payload,
         config=_child_config(config),
         context=runtime.context,
     )
@@ -210,7 +225,7 @@ def investigator_night_phase(
     updates = {"investigator_target": result.get("investigator_target")}
     if result.get("updated_strategy"):
         updates["agent_strategies"] = {
-            state["investigator_player"]: result["updated_strategy"]
+            investigator: result["updated_strategy"]
         }
     if result.get("strategy_adoptions"):
         updates["strategy_adoptions"] = result["strategy_adoptions"]
@@ -225,23 +240,26 @@ def serial_killer_night_phase(
 ):
     """Single-actor night phase (see healer_night_phase): the serial killer picks a kill target;
     reads serial_killer_player, writes serial_killer_target."""
+    serial_killer = state["serial_killer_player"]
+    assert serial_killer is not None  # routing only enters this phase while the serial killer is alive
+    payload: SerialKillerNightGraph = {
+        "previous_strategy": state.get("agent_strategies", {}).get(serial_killer, ""),
+        "strategy_points": "",
+        "current_day": state["current_day"],
+        "current_round": 0,
+        "day_channel": state.get("day_channel", []),
+        "day_summaries": state.get("day_summaries", []),
+        "surviving_players": [
+            p
+            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            if p != serial_killer
+        ],
+        "player_id": serial_killer,
+        "player_role": "serial_killer",
+        "human_player": serial_killer == state["human_player"],
+    }
     result = serial_killer_graph_compiled.invoke(
-        {
-            "previous_strategy": state.get("agent_strategies", {}).get(state["serial_killer_player"], ""),
-            "strategy_points": "",
-            "current_day": state["current_day"],
-            "current_round": 0,
-            "day_channel": state.get("day_channel", []),
-            "day_summaries": state.get("day_summaries", []),
-            "surviving_players": [
-                p
-                for p in state["surviving_wolves"] + state["surviving_villagers"]
-                if p != state["serial_killer_player"]
-            ],
-            "player_id": state["serial_killer_player"],
-            "player_role": "serial_killer",
-            "human_player": state["serial_killer_player"] == state["human_player"],
-        },
+        payload,
         config=_child_config(config),
         context=runtime.context,
     )
@@ -249,7 +267,7 @@ def serial_killer_night_phase(
     updates = {"serial_killer_target": result.get("serial_killer_target")}
     if result.get("updated_strategy"):
         updates["agent_strategies"] = {
-            state["serial_killer_player"]: result["updated_strategy"]
+            serial_killer: result["updated_strategy"]
         }
     if result.get("strategy_adoptions"):
         updates["strategy_adoptions"] = result["strategy_adoptions"]
@@ -267,25 +285,28 @@ def vigilante_night_phase(
     Reads vigilante_player + remaining bullets/results; "hold_fire" is normalized to None on the
     way out (see below) so resolution skips a non-shot. Writes vigilante_target.
     """
+    vigilante = state["vigilante_player"]
+    assert vigilante is not None  # routing only enters this phase while the vigilante is alive
+    payload: VigilanteNightGraph = {
+        "previous_strategy": state.get("agent_strategies", {}).get(vigilante, ""),
+        "strategy_points": "",
+        "current_day": state["current_day"],
+        "current_round": 0,
+        "day_channel": state.get("day_channel", []),
+        "day_summaries": state.get("day_summaries", []),
+        "surviving_players": [
+            p
+            for p in state["surviving_wolves"] + state["surviving_villagers"]
+            if p != vigilante
+        ],
+        "vigilante_bullets": state.get("vigilante_bullets", 0),
+        "vigilante_results": state.get("vigilante_results", []),
+        "player_id": vigilante,
+        "player_role": "vigilante",
+        "human_player": vigilante == state["human_player"],
+    }
     result = vigilante_graph_compiled.invoke(
-        {
-            "previous_strategy": state.get("agent_strategies", {}).get(state["vigilante_player"], ""),
-            "strategy_points": "",
-            "current_day": state["current_day"],
-            "current_round": 0,
-            "day_channel": state.get("day_channel", []),
-            "day_summaries": state.get("day_summaries", []),
-            "surviving_players": [
-                p
-                for p in state["surviving_wolves"] + state["surviving_villagers"]
-                if p != state["vigilante_player"]
-            ],
-            "vigilante_bullets": state.get("vigilante_bullets", 0),
-            "vigilante_results": state.get("vigilante_results", []),
-            "player_id": state["vigilante_player"],
-            "player_role": "vigilante",
-            "human_player": state["vigilante_player"] == state["human_player"],
-        },
+        payload,
         config=_child_config(config),
         context=runtime.context,
     )
@@ -295,7 +316,7 @@ def vigilante_night_phase(
     updates = {"vigilante_target": None if target == "hold_fire" else target}
     if result.get("updated_strategy"):
         updates["agent_strategies"] = {
-            state["vigilante_player"]: result["updated_strategy"]
+            vigilante: result["updated_strategy"]
         }
     if result.get("strategy_adoptions"):
         updates["strategy_adoptions"] = result["strategy_adoptions"]

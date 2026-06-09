@@ -5,6 +5,22 @@
 - Always use `poetry run` to execute Python commands (e.g. `poetry run python -c "..."`, `poetry run pytest`).
 - Do not use bare `python` or `pip` — the project uses Poetry for dependency management.
 
+## Schema / State Field Docs (IDE hover)
+
+Field-level docs on `Agents/schemas/` and `Agents/state/` use **attribute docstrings** (a bare
+`"""..."""` on the line AFTER the field) — Pylance surfaces these on hover; `#` comments and
+`Field(description=)` are NOT surfaced. **`use_attribute_docstrings` stays FALSE** (never set it),
+so Pydantic ignores docstrings and they can never reach a model. The rule: **docstrings are for
+humans, `Field(description=)` is for the model — they never cross.**
+
+- TypedDict states + internal Pydantic schemas → attribute docstrings (internal schemas drop the
+  now-unused `Field(description=)`; keep `Field(default_factory=...)` for mutable defaults).
+- **Model-visible / FROZEN** (`output.py`; extraction/rerank models in `memory.py`; `AddressedTarget`)
+  → keep `Field(description=)`; **NEVER add a class docstring** (it folds into the JSON schema sent to
+  the model → leaks). The doc style itself marks the leak boundary.
+- `typeCheckingMode` stays **off** — hover/autocomplete don't need it, and `basic` mode surfaces a
+  large LangGraph `add_node`-stub error floor on this codebase (not worth it as a gate).
+
 ## Commit Patterns
 
 - When committing, break changes into incremental commits in logical dependency order — commit the foundation first, then what builds on it.
