@@ -15,7 +15,7 @@ from Agents.formatters import (
     format_investigator_results,
     format_wolf_channel,
 )
-from Agents.memory.enrichment import _enrich_payload_with_memory
+from Agents.memory.enrichment import enrich_payload_with_memory
 from Agents.schemas import (
     EvalCase,
     EvalProvenance,
@@ -91,7 +91,7 @@ def _run_memory_informed_action(
             "retrieval_top_k": 3,
         },
     ) as eval_span:
-        enriched_payload, retrieval_meta = _enrich_payload_with_memory(
+        enriched_payload, retrieval_meta = enrich_payload_with_memory(
             prompt_payload,
             config,
             runtime,
@@ -269,7 +269,7 @@ def _run_memory_informed_night_action(
             "retrieval_top_k": 3,
         },
     ) as eval_span:
-        enriched_payload, retrieval_meta = _enrich_payload_with_memory(
+        enriched_payload, retrieval_meta = enrich_payload_with_memory(
             payload,
             config,
             runtime,

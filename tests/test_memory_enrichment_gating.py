@@ -7,7 +7,7 @@ path looks identical either way. So we pin every config-routing default and the
 skip-precedence of the day-1 / no-store / role-off gate.
 
 Pure functions over a config dict, plus the early-return skip path of
-``_enrich_payload_with_memory`` (which returns BEFORE any retrieval/langfuse, so
+``enrich_payload_with_memory`` (which returns BEFORE any retrieval/langfuse, so
 a SimpleNamespace runtime is all the plumbing it needs).
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 
 from Agents.memory.enrichment import (
-    _enrich_payload_with_memory,
+    enrich_payload_with_memory,
     _filtering_enabled_for_role,
     _memory_enabled_for_role,
     _reranking_enabled_for_memory_kind,
@@ -110,7 +110,7 @@ def test_store_dir_empty_when_seed_missing():
     assert _store_dir_from_config(config) == ""
 
 
-# --- _enrich_payload_with_memory: the skip gate -----------------------------
+# --- enrich_payload_with_memory: the skip gate -----------------------------
 
 def payload(day: int, role: str = "villager") -> dict:
     return {
@@ -127,7 +127,7 @@ def runtime(store):
 
 
 def enrich(day, role="villager", store=object(), config=None):
-    return _enrich_payload_with_memory(
+    return enrich_payload_with_memory(
         payload(day, role),
         config if config is not None else cfg(),
         runtime(store),

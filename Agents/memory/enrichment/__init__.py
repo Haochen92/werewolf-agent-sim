@@ -18,10 +18,10 @@ from .gating import (
     _store_dir_from_config,
 )
 from .situation_agent import _generate_situations_for_agent
-from .pipeline import _enrich_payload_with_memory
+from .pipeline import enrich_payload_with_memory
 
 __all__ = [
-    "_enrich_payload_with_memory",
+    "enrich_payload_with_memory",
     "_generate_situations_for_agent",
     "_filtering_enabled_for_role",
     "_memory_enabled_for_role",

@@ -5,7 +5,7 @@ per-role/per-kind gating from the runnable config, retrieves observations and
 strategy points, optionally filters (dedup/MMR) and reranks them, and returns the
 enriched payload plus a retrieval-metadata dict for the eval/trace record.
 
-``_enrich_payload_with_memory`` is the whole flow top-to-bottom; the helpers below it
+``enrich_payload_with_memory`` is the whole flow top-to-bottom; the helpers below it
 (skip check → retrieve → snapshot → filter → rerank) are the per-step detail.
 """
 from __future__ import annotations
@@ -48,7 +48,7 @@ from Agents.tracing import GraphContext, langfuse
 logger = getLogger(__name__)
 
 
-def _enrich_payload_with_memory(
+def enrich_payload_with_memory(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
