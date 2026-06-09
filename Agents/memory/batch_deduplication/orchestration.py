@@ -68,126 +68,201 @@ _OBS_PROMPT_VARIANTS = {
 logger = logging.getLogger(__name__)
 
 
-def _call_cluster_llm(
-    memory_kind: MemoryKind,
-    role: str,
-    action_phase: str,
-    entries: str,
-    index_to_key: dict[str, str],
-    model: str,
-    thinking_level: str | None,
+def main() -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    args = _parse_args()
+    seed_store_dir = args.seed_store_dir or args.store_dir
+    dump_store_dir = args.dump_store_dir or args.store_dir
+    thinking_level = args.thinking_level or None
+
+    two_pass_config = None
+    if args.two_pass:
+        two_pass_config = TwoPassConfig(
+            triage_model=args.triage_model,
+            triage_thinking_level=args.triage_thinking_level or None,
+            verify_model=args.verify_model,
+            verify_thinking_level=args.verify_thinking_level or None,
+        )
+
+    report = run_batch_memory_dedup(
+        seed_store_dir=seed_store_dir,
+        dump_store_dir=dump_store_dir,
+        memory_kinds=args.types,
+        selected_roles=args.roles,
+        apply=args.apply,
+        similarity_threshold=args.similarity_threshold,
+        search_limit=args.search_limit,
+        cluster_mode=args.cluster_mode,
+        max_cluster_size=args.max_cluster_size,
+        linkage_method=args.linkage,
+        embedding_model=args.embedding_model,
+        embedding_dims=args.embedding_dims,
+        model=args.model,
+        thinking_level=thinking_level,
+        max_clusters=args.max_clusters,
+        cluster_report_only=args.cluster_report_only,
+        preview_chars=args.preview_chars,
+        two_pass=two_pass_config,
+        prompt_variant=args.prompt_variant,
+        incremental=args.incremental,
+    )
+    report_json = json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True)
+    if args.report_path:
+        args.report_path.parent.mkdir(parents=True, exist_ok=True)
+        args.report_path.write_text(report_json + "\n", encoding="utf-8")
+    print(report_json)
+    return 0
+
+
+def run_batch_memory_dedup(
+    *,
+    target_store: BaseStore = store,
+    seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR,
+    dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR,
+    memory_kinds: list[MemoryKind] | None = None,
+    selected_roles: list[str] | None = None,
+    apply: bool = False,
+    similarity_threshold: float = DEFAULT_BATCH_SIMILARITY_THRESHOLD,
+    search_limit: int = 10,
+    cluster_mode: ClusterMode = "bounded",
+    max_cluster_size: int = DEFAULT_MAX_CLUSTER_SIZE,
+    linkage_method: LinkageMethod = "complete",
+    embedding_model: str = DEFAULT_BATCH_EMBEDDING_MODEL,
+    embedding_dims: int = DEFAULT_BATCH_EMBEDDING_DIMS,
+    model: str = DEFAULT_BATCH_MODEL,
+    thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL,
+    max_clusters: int | None = None,
+    incremental: bool = False,
+    cluster_report_only: bool = False,
+    preview_chars: int = 160,
+    two_pass: TwoPassConfig | None = None,
     prompt_variant: str = "default",
-) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
-    llm = _get_batch_llm(model, thinking_level)
-    if memory_kind == "strategy_points":
-        prompt = BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT.format(
-            role=role,
-            action_phase=action_phase,
-            entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        )
-        output_schema = StrategyBatchDedupOutput
-        run_name = "batch_dedup_strategy_points"
-    else:
-        obs_prompt_template = _OBS_PROMPT_VARIANTS.get(
-            prompt_variant, BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
-        )
-        prompt = obs_prompt_template.format(
-            role=role,
-            action_phase=action_phase,
-            entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-        )
-        output_schema = ObservationBatchDedupOutput
-        run_name = "batch_dedup_observations"
+) -> BatchDedupReport:
+    memory_kinds = memory_kinds or ["observations", "strategy_points"]
+    selected_roles = selected_roles or list(roles)
 
-    result = llm.with_structured_output(output_schema).invoke(
-        [{"role": "user", "content": prompt}],
-        config={"run_name": run_name, "callbacks": [_langfuse_handler()]},
-    )
-    if isinstance(result, output_schema):
-        pass
-    elif isinstance(result, dict):
-        result = output_schema.model_validate(result)
-    else:
-        raise TypeError(f"Unexpected batch dedup result type: {type(result)!r}")
-
-    for op in result.operations:
-        _remap_operation_keys(op, index_to_key)
-    return result
-
-
-def _two_pass_cluster_dedup(
-    memory_kind: MemoryKind,
-    role: str,
-    action_phase: str,
-    live_cluster_keys: list[str],
-    items_by_key: dict[str, Any],
-    two_pass: TwoPassConfig,
-) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
-    """Run two-pass dedup on a single cluster.
-
-    Pass 1: triage model classifies all entries.
-    Pass 2: verify model re-evaluates only MERGE-flagged entries.
-    Returns a combined output with trusted + verified operations.
-    """
-    entries, index_to_key = _format_cluster_entries(
-        memory_kind, live_cluster_keys, items_by_key,
+    observations_path, strategy_points_path = memory_store_paths(seed_store_dir)
+    seed_memory_from_json_files(
+        observations_path=observations_path,
+        strategy_points_path=strategy_points_path,
+        target_store=target_store,
     )
 
-    triage_result = _call_cluster_llm(
-        memory_kind, role, action_phase, entries, index_to_key,
-        model=two_pass.triage_model,
-        thinking_level=two_pass.triage_thinking_level,
-    )
-
-    trusted_ops = []
-    merge_keys: set[str] = set()
-
-    for op in triage_result.operations:
-        if op.action == "MERGE":
-            merge_keys.update(op.source_keys)
+    new_keys: set[str] | None = None
+    if incremental:
+        last_dedup = _read_last_dedup_at(seed_store_dir)
+        if last_dedup is None:
+            logger.info("Incremental: no previous dedup timestamp found, processing all entries")
         else:
-            trusted_ops.append(op)
+            new_keys = _collect_new_keys(seed_store_dir, last_dedup)
+            logger.info(
+                "Incremental: %d new keys since %s",
+                len(new_keys), last_dedup.isoformat(),
+            )
+            if not new_keys:
+                logger.info("Incremental: no new entries, nothing to do")
+                return BatchDedupReport(
+                    apply=apply,
+                    seed_store_dir=str(seed_store_dir),
+                    dump_store_dir=str(dump_store_dir),
+                )
 
-    if not merge_keys:
-        return triage_result
-
-    logger.info(
-        "Two-pass: triage flagged %d keys as MERGE in cluster of %d, "
-        "escalating to verify model",
-        len(merge_keys), len(live_cluster_keys),
+    report = BatchDedupReport(
+        apply=apply,
+        seed_store_dir=str(seed_store_dir),
+        dump_store_dir=str(dump_store_dir),
     )
 
-    verify_keys = [k for k in live_cluster_keys if k in merge_keys]
-    if len(verify_keys) < 2:
-        for op in triage_result.operations:
-            if op.action == "MERGE":
-                op.action = "KEEP"
-                op.merged_situation = None
-                op.survivor_key = None
-                if hasattr(op, "merged_approach"):
-                    op.merged_approach = None
-                if hasattr(op, "merged_outcome"):
-                    op.merged_outcome = None
-                if hasattr(op, "merged_action"):
-                    op.merged_action = None
-        return triage_result
+    for memory_kind in memory_kinds:
+        for role in selected_roles:
+            role_phases = VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
+            for action_phase in role_phases:
+                if cluster_report_only:
+                    try:
+                        stats, cluster_previews = inspect_namespace_clusters(
+                            target_store,
+                            memory_kind,
+                            role,
+                            action_phase,
+                            similarity_threshold=similarity_threshold,
+                            search_limit=search_limit,
+                            cluster_mode=cluster_mode,
+                            max_cluster_size=max_cluster_size,
+                            linkage_method=linkage_method,
+                            embedding_model=embedding_model,
+                            embedding_dims=embedding_dims,
+                            max_clusters=max_clusters,
+                            preview_chars=preview_chars,
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "Batch dedup inspection failed for namespace=%s role=%s phase=%s: %s",
+                            memory_kind,
+                            role,
+                            action_phase,
+                            exc,
+                        )
+                        stats = NamespaceStats(
+                            memory_kind=memory_kind,
+                            role=role,
+                            failed=1,
+                            dry_run=True,
+                        )
+                        cluster_previews = []
+                    report.stats.append(stats)
+                    report.clusters.extend(cluster_previews)
+                    continue
 
-    verify_entries, verify_index_to_key = _format_cluster_entries(
-        memory_kind, verify_keys, items_by_key,
-    )
-    verify_result = _call_cluster_llm(
-        memory_kind, role, action_phase, verify_entries, verify_index_to_key,
-        model=two_pass.verify_model,
-        thinking_level=two_pass.verify_thinking_level,
-    )
+                try:
+                    stats = dedup_namespace(
+                        target_store,
+                        memory_kind,
+                        role,
+                        action_phase,
+                        apply=apply,
+                        similarity_threshold=similarity_threshold,
+                        search_limit=search_limit,
+                        cluster_mode=cluster_mode,
+                        max_cluster_size=max_cluster_size,
+                        linkage_method=linkage_method,
+                        embedding_model=embedding_model,
+                        embedding_dims=embedding_dims,
+                        model=model,
+                        thinking_level=thinking_level,
+                        max_clusters=max_clusters,
+                        two_pass=two_pass,
+                        prompt_variant=prompt_variant,
+                        new_keys=new_keys,
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "Batch dedup namespace failed for namespace=%s role=%s phase=%s: %s",
+                        memory_kind,
+                        role,
+                        action_phase,
+                        exc,
+                    )
+                    stats = NamespaceStats(
+                        memory_kind=memory_kind,
+                        role=role,
+                        failed=1,
+                        dry_run=not apply,
+                    )
+                report.stats.append(stats)
 
-    all_ops = trusted_ops + list(verify_result.operations)
-    if memory_kind == "strategy_points":
-        return StrategyBatchDedupOutput(operations=all_ops)
-    return ObservationBatchDedupOutput(operations=all_ops)
+    if apply:
+        observations_dump_path, strategy_points_dump_path = memory_store_paths(
+            dump_store_dir
+        )
+        dump_memory_to_json_files(
+            observations_path=observations_dump_path,
+            strategy_points_path=strategy_points_dump_path,
+            target_store=target_store,
+        )
+        _write_last_dedup_at(dump_store_dir)
+        logger.info("Wrote dedup timestamp to %s", dump_store_dir / DEDUP_TIMESTAMP_FILE)
+
+    return report
 
 
 def dedup_namespace(
@@ -409,155 +484,126 @@ def inspect_namespace_clusters(
     return stats, previews
 
 
-def run_batch_memory_dedup(
-    *,
-    target_store: BaseStore = store,
-    seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR,
-    dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR,
-    memory_kinds: list[MemoryKind] | None = None,
-    selected_roles: list[str] | None = None,
-    apply: bool = False,
-    similarity_threshold: float = DEFAULT_BATCH_SIMILARITY_THRESHOLD,
-    search_limit: int = 10,
-    cluster_mode: ClusterMode = "bounded",
-    max_cluster_size: int = DEFAULT_MAX_CLUSTER_SIZE,
-    linkage_method: LinkageMethod = "complete",
-    embedding_model: str = DEFAULT_BATCH_EMBEDDING_MODEL,
-    embedding_dims: int = DEFAULT_BATCH_EMBEDDING_DIMS,
-    model: str = DEFAULT_BATCH_MODEL,
-    thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL,
-    max_clusters: int | None = None,
-    incremental: bool = False,
-    cluster_report_only: bool = False,
-    preview_chars: int = 160,
-    two_pass: TwoPassConfig | None = None,
-    prompt_variant: str = "default",
-) -> BatchDedupReport:
-    memory_kinds = memory_kinds or ["observations", "strategy_points"]
-    selected_roles = selected_roles or list(roles)
+def _two_pass_cluster_dedup(
+    memory_kind: MemoryKind,
+    role: str,
+    action_phase: str,
+    live_cluster_keys: list[str],
+    items_by_key: dict[str, Any],
+    two_pass: TwoPassConfig,
+) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
+    """Run two-pass dedup on a single cluster.
 
-    observations_path, strategy_points_path = memory_store_paths(seed_store_dir)
-    seed_memory_from_json_files(
-        observations_path=observations_path,
-        strategy_points_path=strategy_points_path,
-        target_store=target_store,
+    Pass 1: triage model classifies all entries.
+    Pass 2: verify model re-evaluates only MERGE-flagged entries.
+    Returns a combined output with trusted + verified operations.
+    """
+    entries, index_to_key = _format_cluster_entries(
+        memory_kind, live_cluster_keys, items_by_key,
     )
 
-    new_keys: set[str] | None = None
-    if incremental:
-        last_dedup = _read_last_dedup_at(seed_store_dir)
-        if last_dedup is None:
-            logger.info("Incremental: no previous dedup timestamp found, processing all entries")
+    triage_result = _call_cluster_llm(
+        memory_kind, role, action_phase, entries, index_to_key,
+        model=two_pass.triage_model,
+        thinking_level=two_pass.triage_thinking_level,
+    )
+
+    trusted_ops = []
+    merge_keys: set[str] = set()
+
+    for op in triage_result.operations:
+        if op.action == "MERGE":
+            merge_keys.update(op.source_keys)
         else:
-            new_keys = _collect_new_keys(seed_store_dir, last_dedup)
-            logger.info(
-                "Incremental: %d new keys since %s",
-                len(new_keys), last_dedup.isoformat(),
-            )
-            if not new_keys:
-                logger.info("Incremental: no new entries, nothing to do")
-                return BatchDedupReport(
-                    apply=apply,
-                    seed_store_dir=str(seed_store_dir),
-                    dump_store_dir=str(dump_store_dir),
-                )
+            trusted_ops.append(op)
 
-    report = BatchDedupReport(
-        apply=apply,
-        seed_store_dir=str(seed_store_dir),
-        dump_store_dir=str(dump_store_dir),
+    if not merge_keys:
+        return triage_result
+
+    logger.info(
+        "Two-pass: triage flagged %d keys as MERGE in cluster of %d, "
+        "escalating to verify model",
+        len(merge_keys), len(live_cluster_keys),
     )
 
-    for memory_kind in memory_kinds:
-        for role in selected_roles:
-            role_phases = VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
-            for action_phase in role_phases:
-                if cluster_report_only:
-                    try:
-                        stats, cluster_previews = inspect_namespace_clusters(
-                            target_store,
-                            memory_kind,
-                            role,
-                            action_phase,
-                            similarity_threshold=similarity_threshold,
-                            search_limit=search_limit,
-                            cluster_mode=cluster_mode,
-                            max_cluster_size=max_cluster_size,
-                            linkage_method=linkage_method,
-                            embedding_model=embedding_model,
-                            embedding_dims=embedding_dims,
-                            max_clusters=max_clusters,
-                            preview_chars=preview_chars,
-                        )
-                    except Exception as exc:
-                        logger.warning(
-                            "Batch dedup inspection failed for namespace=%s role=%s phase=%s: %s",
-                            memory_kind,
-                            role,
-                            action_phase,
-                            exc,
-                        )
-                        stats = NamespaceStats(
-                            memory_kind=memory_kind,
-                            role=role,
-                            failed=1,
-                            dry_run=True,
-                        )
-                        cluster_previews = []
-                    report.stats.append(stats)
-                    report.clusters.extend(cluster_previews)
-                    continue
+    verify_keys = [k for k in live_cluster_keys if k in merge_keys]
+    if len(verify_keys) < 2:
+        for op in triage_result.operations:
+            if op.action == "MERGE":
+                op.action = "KEEP"
+                op.merged_situation = None
+                op.survivor_key = None
+                if hasattr(op, "merged_approach"):
+                    op.merged_approach = None
+                if hasattr(op, "merged_outcome"):
+                    op.merged_outcome = None
+                if hasattr(op, "merged_action"):
+                    op.merged_action = None
+        return triage_result
 
-                try:
-                    stats = dedup_namespace(
-                        target_store,
-                        memory_kind,
-                        role,
-                        action_phase,
-                        apply=apply,
-                        similarity_threshold=similarity_threshold,
-                        search_limit=search_limit,
-                        cluster_mode=cluster_mode,
-                        max_cluster_size=max_cluster_size,
-                        linkage_method=linkage_method,
-                        embedding_model=embedding_model,
-                        embedding_dims=embedding_dims,
-                        model=model,
-                        thinking_level=thinking_level,
-                        max_clusters=max_clusters,
-                        two_pass=two_pass,
-                        prompt_variant=prompt_variant,
-                        new_keys=new_keys,
-                    )
-                except Exception as exc:
-                    logger.warning(
-                        "Batch dedup namespace failed for namespace=%s role=%s phase=%s: %s",
-                        memory_kind,
-                        role,
-                        action_phase,
-                        exc,
-                    )
-                    stats = NamespaceStats(
-                        memory_kind=memory_kind,
-                        role=role,
-                        failed=1,
-                        dry_run=not apply,
-                    )
-                report.stats.append(stats)
+    verify_entries, verify_index_to_key = _format_cluster_entries(
+        memory_kind, verify_keys, items_by_key,
+    )
+    verify_result = _call_cluster_llm(
+        memory_kind, role, action_phase, verify_entries, verify_index_to_key,
+        model=two_pass.verify_model,
+        thinking_level=two_pass.verify_thinking_level,
+    )
 
-    if apply:
-        observations_dump_path, strategy_points_dump_path = memory_store_paths(
-            dump_store_dir
+    all_ops = trusted_ops + list(verify_result.operations)
+    if memory_kind == "strategy_points":
+        return StrategyBatchDedupOutput(operations=all_ops)
+    return ObservationBatchDedupOutput(operations=all_ops)
+
+
+def _call_cluster_llm(
+    memory_kind: MemoryKind,
+    role: str,
+    action_phase: str,
+    entries: str,
+    index_to_key: dict[str, str],
+    model: str,
+    thinking_level: str | None,
+    prompt_variant: str = "default",
+) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
+    llm = _get_batch_llm(model, thinking_level)
+    if memory_kind == "strategy_points":
+        prompt = BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT.format(
+            role=role,
+            action_phase=action_phase,
+            entries=entries,
+            situation_standards=SITUATION_STANDARDS,
+            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
         )
-        dump_memory_to_json_files(
-            observations_path=observations_dump_path,
-            strategy_points_path=strategy_points_dump_path,
-            target_store=target_store,
+        output_schema = StrategyBatchDedupOutput
+        run_name = "batch_dedup_strategy_points"
+    else:
+        obs_prompt_template = _OBS_PROMPT_VARIANTS.get(
+            prompt_variant, BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
         )
-        _write_last_dedup_at(dump_store_dir)
-        logger.info("Wrote dedup timestamp to %s", dump_store_dir / DEDUP_TIMESTAMP_FILE)
+        prompt = obs_prompt_template.format(
+            role=role,
+            action_phase=action_phase,
+            entries=entries,
+            situation_standards=SITUATION_STANDARDS,
+        )
+        output_schema = ObservationBatchDedupOutput
+        run_name = "batch_dedup_observations"
 
-    return report
+    result = llm.with_structured_output(output_schema).invoke(
+        [{"role": "user", "content": prompt}],
+        config={"run_name": run_name, "callbacks": [_langfuse_handler()]},
+    )
+    if isinstance(result, output_schema):
+        pass
+    elif isinstance(result, dict):
+        result = output_schema.model_validate(result)
+    else:
+        raise TypeError(f"Unexpected batch dedup result type: {type(result)!r}")
+
+    for op in result.operations:
+        _remap_operation_keys(op, index_to_key)
+    return result
 
 
 def _parse_args() -> argparse.Namespace:
@@ -716,52 +762,6 @@ def _parse_args() -> argparse.Namespace:
         help="Optional JSON report path.",
     )
     return parser.parse_args()
-
-
-def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    args = _parse_args()
-    seed_store_dir = args.seed_store_dir or args.store_dir
-    dump_store_dir = args.dump_store_dir or args.store_dir
-    thinking_level = args.thinking_level or None
-
-    two_pass_config = None
-    if args.two_pass:
-        two_pass_config = TwoPassConfig(
-            triage_model=args.triage_model,
-            triage_thinking_level=args.triage_thinking_level or None,
-            verify_model=args.verify_model,
-            verify_thinking_level=args.verify_thinking_level or None,
-        )
-
-    report = run_batch_memory_dedup(
-        seed_store_dir=seed_store_dir,
-        dump_store_dir=dump_store_dir,
-        memory_kinds=args.types,
-        selected_roles=args.roles,
-        apply=args.apply,
-        similarity_threshold=args.similarity_threshold,
-        search_limit=args.search_limit,
-        cluster_mode=args.cluster_mode,
-        max_cluster_size=args.max_cluster_size,
-        linkage_method=args.linkage,
-        embedding_model=args.embedding_model,
-        embedding_dims=args.embedding_dims,
-        model=args.model,
-        thinking_level=thinking_level,
-        max_clusters=args.max_clusters,
-        cluster_report_only=args.cluster_report_only,
-        preview_chars=args.preview_chars,
-        two_pass=two_pass_config,
-        prompt_variant=args.prompt_variant,
-        incremental=args.incremental,
-    )
-    report_json = json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True)
-    if args.report_path:
-        args.report_path.parent.mkdir(parents=True, exist_ok=True)
-        args.report_path.write_text(report_json + "\n", encoding="utf-8")
-    print(report_json)
-    return 0
 
 
 if __name__ == "__main__":

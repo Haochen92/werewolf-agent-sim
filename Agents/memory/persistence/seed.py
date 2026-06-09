@@ -20,38 +20,66 @@ from .retries import _batch_with_retries
 from .serialization import _read_json, _snapshot_namespaces, _snapshot_value
 
 
-def seed_memory_from_json_files_cached(
+def seed_memory_from_config(
+    config: MemoryPersistenceConfig | dict[str, Any] | None = None,
+    target_store: BaseStore = store,
+) -> dict[str, int | bool]:
+    """Seed the memory store once using a memory persistence config."""
+    memory_config = normalize_memory_persistence_config(config)
+    if not memory_config.seed_enabled:
+        return {
+            "observations": 0,
+            "strategies": 0,
+            "strategy_points": 0,
+            "skipped": True,
+        }
+    # Idempotency: seed a given store object only once (batches reuse one store).
+    store_id = id(target_store)
+    if store_id in _SEEDED_STORE_IDS:
+        return {
+            "observations": 0,
+            "strategies": 0,
+            "strategy_points": 0,
+            "skipped": True,
+        }
+    observations_path, strategy_points_path = memory_store_paths(
+        memory_config.seed_store_dir
+    )
+    # Cached loader: loads precomputed vectors from indexed_cache.pkl when the JSON is
+    # unchanged (no embedding API calls); falls back to embedding + writes the cache.
+    counts = seed_memory_from_json_files_cached(
+        observations_path=observations_path,
+        strategy_points_path=strategy_points_path,
+        target_store=target_store,
+    )
+    _SEEDED_STORE_IDS.add(store_id)
+    return {**counts, "skipped": False}
+
+
+def seed_memory_from_json_files_once(
     observations_path: str | Path | None = None,
     strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
-    cache_dir: str | Path | None = None,
-) -> dict[str, Any]:
-    """Seed the store from cache if available, otherwise from API + save cache."""
-    default_observations, default_strategy_points = memory_store_paths(
-        DEFAULT_MEMORY_STORE_DIR
-    )
-    observations_path = Path(observations_path or default_observations)
-    strategy_points_path = Path(strategy_points_path or default_strategy_points)
-
-    if cache_dir is None:
-        cache_dir = observations_path.parent
-    cache_path = Path(cache_dir) / INDEXED_CACHE_FILE_NAME
-
-    if load_indexed_store_cache(
-        cache_path, target_store, observations_path, strategy_points_path
-    ):
-        return {"from_cache": True}
+) -> dict[str, int | bool]:
+    store_id = id(target_store)
+    if store_id in _SEEDED_STORE_IDS:
+        return {
+            "observations": 0,
+            "strategies": 0,
+            "strategy_points": 0,
+            "skipped": True,
+        }
 
     counts = seed_memory_from_json_files(
         observations_path=observations_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
-
-    save_indexed_store_cache(
-        target_store, cache_path, observations_path, strategy_points_path
-    )
-    return {**counts, "from_cache": False}
+    _SEEDED_STORE_IDS.add(store_id)
+    return {
+        **counts,
+        "skipped": False,
+    }
 
 
 def seed_memory_from_json_files(
@@ -114,63 +142,35 @@ def seed_memory_from_json_files(
     return counts
 
 
-def seed_memory_from_json_files_once(
+def seed_memory_from_json_files_cached(
     observations_path: str | Path | None = None,
     strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
-) -> dict[str, int | bool]:
-    store_id = id(target_store)
-    if store_id in _SEEDED_STORE_IDS:
-        return {
-            "observations": 0,
-            "strategies": 0,
-            "strategy_points": 0,
-            "skipped": True,
-        }
+    cache_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    """Seed the store from cache if available, otherwise from API + save cache."""
+    default_observations, default_strategy_points = memory_store_paths(
+        DEFAULT_MEMORY_STORE_DIR
+    )
+    observations_path = Path(observations_path or default_observations)
+    strategy_points_path = Path(strategy_points_path or default_strategy_points)
+
+    if cache_dir is None:
+        cache_dir = observations_path.parent
+    cache_path = Path(cache_dir) / INDEXED_CACHE_FILE_NAME
+
+    if load_indexed_store_cache(
+        cache_path, target_store, observations_path, strategy_points_path
+    ):
+        return {"from_cache": True}
 
     counts = seed_memory_from_json_files(
         observations_path=observations_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
-    _SEEDED_STORE_IDS.add(store_id)
-    return {
-        **counts,
-        "skipped": False,
-    }
 
-
-def seed_memory_from_config(
-    config: MemoryPersistenceConfig | dict[str, Any] | None = None,
-    target_store: BaseStore = store,
-) -> dict[str, int | bool]:
-    """Seed the memory store once using a memory persistence config."""
-    memory_config = normalize_memory_persistence_config(config)
-    if not memory_config.seed_enabled:
-        return {
-            "observations": 0,
-            "strategies": 0,
-            "strategy_points": 0,
-            "skipped": True,
-        }
-    # Idempotency: seed a given store object only once (batches reuse one store).
-    store_id = id(target_store)
-    if store_id in _SEEDED_STORE_IDS:
-        return {
-            "observations": 0,
-            "strategies": 0,
-            "strategy_points": 0,
-            "skipped": True,
-        }
-    observations_path, strategy_points_path = memory_store_paths(
-        memory_config.seed_store_dir
+    save_indexed_store_cache(
+        target_store, cache_path, observations_path, strategy_points_path
     )
-    # Cached loader: loads precomputed vectors from indexed_cache.pkl when the JSON is
-    # unchanged (no embedding API calls); falls back to embedding + writes the cache.
-    counts = seed_memory_from_json_files_cached(
-        observations_path=observations_path,
-        strategy_points_path=strategy_points_path,
-        target_store=target_store,
-    )
-    _SEEDED_STORE_IDS.add(store_id)
-    return {**counts, "skipped": False}
+    return {**counts, "from_cache": False}

@@ -31,6 +31,45 @@ from .store_io import _search_memory_with_retries
 logger = logging.getLogger(__name__)
 
 
+def _build_clusters(
+    target_store: BaseStore,
+    namespace: tuple[str, str],
+    items_by_key: dict[str, Any],
+    threshold: float,
+    search_limit: int,
+    cluster_mode: ClusterMode,
+    max_cluster_size: int,
+    linkage_method: LinkageMethod,
+    embedding_model: str,
+    embedding_dims: int,
+) -> list[list[str]]:
+    if cluster_mode == "connected":
+        return _cluster_items(
+            target_store,
+            namespace,
+            items_by_key,
+            threshold,
+            search_limit,
+        )
+    if cluster_mode == "agglomerative":
+        return _agglomerative_clusters(
+            items_by_key,
+            threshold,
+            linkage_method,
+            max_cluster_size,
+            embedding_model,
+            embedding_dims,
+        )
+    return _bounded_seed_clusters(
+        target_store,
+        namespace,
+        items_by_key,
+        threshold,
+        search_limit,
+        max_cluster_size,
+    )
+
+
 def _fetch_namespace_items(
     target_store: BaseStore,
     namespace: tuple[str, str],
@@ -106,46 +145,6 @@ def _cluster_items(
     return clusters
 
 
-def _parse_datetime_sort_value(value: Any) -> float:
-    if isinstance(value, datetime):
-        return value.timestamp()
-    if isinstance(value, str) and value:
-        try:
-            return datetime.fromisoformat(value).timestamp()
-        except ValueError:
-            return 0.0
-    return 0.0
-
-
-def _observation_count(item: Any) -> int:
-    try:
-        return int(item.value.get("observation_count", 1))
-    except Exception:
-        return 1
-
-
-def _last_observed_sort_value(item: Any) -> float:
-    return _parse_datetime_sort_value(item.value.get("last_observed"))
-
-
-def _seed_sort_key(key: str, items_by_key: dict[str, Any]) -> tuple[int, float, str]:
-    item = items_by_key[key]
-    return (
-        -_observation_count(item),
-        -_last_observed_sort_value(item),
-        key,
-    )
-
-
-def _neighbor_sort_key(item: Any) -> tuple[float, int, float, str]:
-    return (
-        -(item.score or 0.0),
-        -_observation_count(item),
-        -_last_observed_sort_value(item),
-        item.key,
-    )
-
-
 def _bounded_seed_clusters(
     target_store: BaseStore,
     namespace: tuple[str, str],
@@ -195,37 +194,6 @@ def _bounded_seed_clusters(
 
     clusters.sort(key=len, reverse=True)
     return clusters
-
-
-def _get_batch_embeddings(
-    model: str,
-    output_dimensionality: int,
-):
-    return create_embeddings(
-        model,
-        output_dimensionality=output_dimensionality,
-    )
-
-
-def _normalized_embedding_matrix(
-    texts: list[str],
-    embedding_model: str,
-    embedding_dims: int,
-) -> np.ndarray:
-    embeddings = _memory_store_call_with_retries(
-        lambda: _get_batch_embeddings(
-            embedding_model,
-            embedding_dims,
-        ).embed_documents(texts),
-        operation_name="embed_documents",
-        retry_attempts=DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS,
-        retry_initial_delay=DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY,
-        retry_max_delay=DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY,
-    )
-    matrix = np.asarray(embeddings, dtype=np.float32)
-    norms = np.linalg.norm(matrix, axis=1, keepdims=True)
-    matrix = matrix / np.clip(norms, 1e-12, None)
-    return matrix
 
 
 def _agglomerative_clusters(
@@ -283,40 +251,72 @@ def _agglomerative_clusters(
     return clusters
 
 
-def _build_clusters(
-    target_store: BaseStore,
-    namespace: tuple[str, str],
-    items_by_key: dict[str, Any],
-    threshold: float,
-    search_limit: int,
-    cluster_mode: ClusterMode,
-    max_cluster_size: int,
-    linkage_method: LinkageMethod,
+def _normalized_embedding_matrix(
+    texts: list[str],
     embedding_model: str,
     embedding_dims: int,
-) -> list[list[str]]:
-    if cluster_mode == "connected":
-        return _cluster_items(
-            target_store,
-            namespace,
-            items_by_key,
-            threshold,
-            search_limit,
-        )
-    if cluster_mode == "agglomerative":
-        return _agglomerative_clusters(
-            items_by_key,
-            threshold,
-            linkage_method,
-            max_cluster_size,
+) -> np.ndarray:
+    embeddings = _memory_store_call_with_retries(
+        lambda: _get_batch_embeddings(
             embedding_model,
             embedding_dims,
-        )
-    return _bounded_seed_clusters(
-        target_store,
-        namespace,
-        items_by_key,
-        threshold,
-        search_limit,
-        max_cluster_size,
+        ).embed_documents(texts),
+        operation_name="embed_documents",
+        retry_attempts=DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS,
+        retry_initial_delay=DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY,
+        retry_max_delay=DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY,
     )
+    matrix = np.asarray(embeddings, dtype=np.float32)
+    norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+    matrix = matrix / np.clip(norms, 1e-12, None)
+    return matrix
+
+
+def _get_batch_embeddings(
+    model: str,
+    output_dimensionality: int,
+):
+    return create_embeddings(
+        model,
+        output_dimensionality=output_dimensionality,
+    )
+
+
+def _seed_sort_key(key: str, items_by_key: dict[str, Any]) -> tuple[int, float, str]:
+    item = items_by_key[key]
+    return (
+        -_observation_count(item),
+        -_last_observed_sort_value(item),
+        key,
+    )
+
+
+def _neighbor_sort_key(item: Any) -> tuple[float, int, float, str]:
+    return (
+        -(item.score or 0.0),
+        -_observation_count(item),
+        -_last_observed_sort_value(item),
+        item.key,
+    )
+
+
+def _observation_count(item: Any) -> int:
+    try:
+        return int(item.value.get("observation_count", 1))
+    except Exception:
+        return 1
+
+
+def _last_observed_sort_value(item: Any) -> float:
+    return _parse_datetime_sort_value(item.value.get("last_observed"))
+
+
+def _parse_datetime_sort_value(value: Any) -> float:
+    if isinstance(value, datetime):
+        return value.timestamp()
+    if isinstance(value, str) and value:
+        try:
+            return datetime.fromisoformat(value).timestamp()
+        except ValueError:
+            return 0.0
+    return 0.0

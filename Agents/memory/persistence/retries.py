@@ -14,37 +14,6 @@ from .config import (
 logger = logging.getLogger(__name__)
 
 
-def _exception_chain(exc: BaseException) -> list[BaseException]:
-    chain = [exc]
-    seen = {id(exc)}
-    current = exc
-    while True:
-        next_exc = current.__cause__ or current.__context__
-        if next_exc is None or id(next_exc) in seen:
-            return chain
-        chain.append(next_exc)
-        seen.add(id(next_exc))
-        current = next_exc
-
-
-def _is_transient_memory_store_error(exc: BaseException) -> bool:
-    for current in _exception_chain(exc):
-        status_code = getattr(current, "status_code", None)
-        if status_code in _TRANSIENT_MEMORY_STORE_STATUS_CODES:
-            return True
-
-        response = getattr(current, "response", None)
-        response_status = getattr(response, "status_code", None)
-        if response_status in _TRANSIENT_MEMORY_STORE_STATUS_CODES:
-            return True
-
-        message = str(current).lower()
-        if any(marker in message for marker in _TRANSIENT_MEMORY_STORE_ERROR_MARKERS):
-            return True
-
-    return False
-
-
 def _memory_store_call_with_retries(
     call: Callable[[], Any],
     *,
@@ -94,3 +63,34 @@ def _batch_with_retries(
         retry_max_delay=retry_max_delay,
         sleep=sleep,
     )
+
+
+def _is_transient_memory_store_error(exc: BaseException) -> bool:
+    for current in _exception_chain(exc):
+        status_code = getattr(current, "status_code", None)
+        if status_code in _TRANSIENT_MEMORY_STORE_STATUS_CODES:
+            return True
+
+        response = getattr(current, "response", None)
+        response_status = getattr(response, "status_code", None)
+        if response_status in _TRANSIENT_MEMORY_STORE_STATUS_CODES:
+            return True
+
+        message = str(current).lower()
+        if any(marker in message for marker in _TRANSIENT_MEMORY_STORE_ERROR_MARKERS):
+            return True
+
+    return False
+
+
+def _exception_chain(exc: BaseException) -> list[BaseException]:
+    chain = [exc]
+    seen = {id(exc)}
+    current = exc
+    while True:
+        next_exc = current.__cause__ or current.__context__
+        if next_exc is None or id(next_exc) in seen:
+            return chain
+        chain.append(next_exc)
+        seen.add(id(next_exc))
+        current = next_exc

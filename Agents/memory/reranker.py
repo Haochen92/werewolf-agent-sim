@@ -13,17 +13,38 @@ RERANK_TOP_K = 10
 RERANK_KEEP = 3
 
 
-def _format_observation_candidate(obs: RetrievedObservation) -> str:
-    parts = [f"Situation: {obs.observation.situation}"]
-    if obs.observation.approach:
-        parts.append(f"Approach: {obs.observation.approach}")
-    if obs.observation.outcome:
-        parts.append(f"Outcome: {obs.observation.outcome}")
-    return " | ".join(parts)
+def rerank_observations(
+    llm,
+    situations: list[str],
+    observations: list[RetrievedObservation],
+    keep: int = RERANK_KEEP,
+) -> list[RetrievedObservation]:
+    if len(observations) <= keep:
+        return observations
+    candidate_texts = [_format_observation_candidate(o) for o in observations]
+    result = _rerank(llm, situations, candidate_texts)
+    indices = _apply_rerank_scores(
+        result, [o.score for o in observations], keep
+    )
+    return [observations[i] for i in indices]
 
 
-def _format_strategy_point_candidate(sp: RetrievedStrategyPoint) -> str:
-    return sp.strategy_point.situation
+def rerank_strategy_points(
+    llm,
+    situations: list[str],
+    strategy_points: list[RetrievedStrategyPoint],
+    keep: int = RERANK_KEEP,
+) -> list[RetrievedStrategyPoint]:
+    if len(strategy_points) <= keep:
+        return strategy_points
+    candidate_texts = [
+        _format_strategy_point_candidate(sp) for sp in strategy_points
+    ]
+    result = _rerank(llm, situations, candidate_texts)
+    indices = _apply_rerank_scores(
+        result, [sp.score for sp in strategy_points], keep
+    )
+    return [strategy_points[i] for i in indices]
 
 
 def _rerank(
@@ -70,35 +91,14 @@ def _apply_rerank_scores(
     return ranked[:keep]
 
 
-def rerank_observations(
-    llm,
-    situations: list[str],
-    observations: list[RetrievedObservation],
-    keep: int = RERANK_KEEP,
-) -> list[RetrievedObservation]:
-    if len(observations) <= keep:
-        return observations
-    candidate_texts = [_format_observation_candidate(o) for o in observations]
-    result = _rerank(llm, situations, candidate_texts)
-    indices = _apply_rerank_scores(
-        result, [o.score for o in observations], keep
-    )
-    return [observations[i] for i in indices]
+def _format_observation_candidate(obs: RetrievedObservation) -> str:
+    parts = [f"Situation: {obs.observation.situation}"]
+    if obs.observation.approach:
+        parts.append(f"Approach: {obs.observation.approach}")
+    if obs.observation.outcome:
+        parts.append(f"Outcome: {obs.observation.outcome}")
+    return " | ".join(parts)
 
 
-def rerank_strategy_points(
-    llm,
-    situations: list[str],
-    strategy_points: list[RetrievedStrategyPoint],
-    keep: int = RERANK_KEEP,
-) -> list[RetrievedStrategyPoint]:
-    if len(strategy_points) <= keep:
-        return strategy_points
-    candidate_texts = [
-        _format_strategy_point_candidate(sp) for sp in strategy_points
-    ]
-    result = _rerank(llm, situations, candidate_texts)
-    indices = _apply_rerank_scores(
-        result, [sp.score for sp in strategy_points], keep
-    )
-    return [strategy_points[i] for i in indices]
+def _format_strategy_point_candidate(sp: RetrievedStrategyPoint) -> str:
+    return sp.strategy_point.situation

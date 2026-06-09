@@ -21,13 +21,6 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 
-def _item_for_candidate(similar_items: list, candidate: int):
-    index = candidate - 1
-    if 0 <= index < len(similar_items):
-        return similar_items[index]
-    return None
-
-
 def _apply_decision(
     store: BaseStore,
     namespace: tuple[str, ...],
@@ -116,6 +109,13 @@ def _apply_observation_decision(
                 game_id,
             )
             return DedupAction.KEEP
+
+
+def _item_for_candidate(similar_items: list, candidate: int):
+    index = candidate - 1
+    if 0 <= index < len(similar_items):
+        return similar_items[index]
+    return None
 
 
 def _store_new_point(

@@ -17,80 +17,6 @@ from .schemas import ObservationBatchOperation, StrategyBatchOperation
 from .store_io import _put_memory_with_retries
 
 
-def _merged_metadata(
-    source_keys: list[str],
-    items_by_key: dict[str, Any],
-    survivor_key: str,
-) -> dict[str, Any]:
-    source_values = [items_by_key[key].value for key in source_keys if key in items_by_key]
-    survivor_value = items_by_key[survivor_key].value
-    return {
-        "observation_count": sum(
-            int(value.get("observation_count", 1)) for value in source_values
-        ),
-        "last_observed": _latest_timestamp(
-            [value.get("last_observed") for value in source_values]
-        ),
-        "game_id": survivor_value.get("game_id", ""),
-        "retrieved_count": sum(
-            int(value.get("retrieved_count", 0)) for value in source_values
-        ),
-        "used_count": sum(
-            int(value.get("used_count", 0)) for value in source_values
-        ),
-        "positive_count": sum(
-            int(value.get("positive_count", 0)) for value in source_values
-        ),
-        "neutral_count": sum(
-            int(value.get("neutral_count", 0)) for value in source_values
-        ),
-        "negative_count": sum(
-            int(value.get("negative_count", 0)) for value in source_values
-        ),
-    }
-
-
-def _cache_item_value(items_by_key: dict[str, Any], key: str, value: dict[str, Any]) -> None:
-    item = items_by_key.get(key)
-    if item is None:
-        return
-    try:
-        item.value = value
-    except Exception:
-        items_by_key[key] = SimpleNamespace(key=key, value=value)
-
-
-def _validate_source_keys(
-    source_keys: list[str],
-    cluster_key_set: set[str],
-    items_by_key: dict[str, Any],
-) -> list[str]:
-    return [
-        key
-        for key in source_keys
-        if key in cluster_key_set and key in items_by_key
-    ]
-
-
-def _delete_absorbed_keys(
-    target_store: BaseStore,
-    namespace: tuple[str, str],
-    source_keys: list[str],
-    survivor_keys: set[str],
-    items_by_key: dict[str, Any],
-    apply: bool,
-) -> int:
-    deleted = 0
-    for key in source_keys:
-        if key in survivor_keys:
-            continue
-        if apply:
-            target_store.delete(namespace, key)
-            items_by_key.pop(key, None)
-        deleted += 1
-    return deleted
-
-
 def _apply_strategy_operation(
     target_store: BaseStore,
     namespace: tuple[str, ...],
@@ -205,3 +131,77 @@ def _remap_operation_keys(
         operation.survivor_key = index_to_key.get(
             operation.survivor_key, operation.survivor_key,
         )
+
+
+def _merged_metadata(
+    source_keys: list[str],
+    items_by_key: dict[str, Any],
+    survivor_key: str,
+) -> dict[str, Any]:
+    source_values = [items_by_key[key].value for key in source_keys if key in items_by_key]
+    survivor_value = items_by_key[survivor_key].value
+    return {
+        "observation_count": sum(
+            int(value.get("observation_count", 1)) for value in source_values
+        ),
+        "last_observed": _latest_timestamp(
+            [value.get("last_observed") for value in source_values]
+        ),
+        "game_id": survivor_value.get("game_id", ""),
+        "retrieved_count": sum(
+            int(value.get("retrieved_count", 0)) for value in source_values
+        ),
+        "used_count": sum(
+            int(value.get("used_count", 0)) for value in source_values
+        ),
+        "positive_count": sum(
+            int(value.get("positive_count", 0)) for value in source_values
+        ),
+        "neutral_count": sum(
+            int(value.get("neutral_count", 0)) for value in source_values
+        ),
+        "negative_count": sum(
+            int(value.get("negative_count", 0)) for value in source_values
+        ),
+    }
+
+
+def _cache_item_value(items_by_key: dict[str, Any], key: str, value: dict[str, Any]) -> None:
+    item = items_by_key.get(key)
+    if item is None:
+        return
+    try:
+        item.value = value
+    except Exception:
+        items_by_key[key] = SimpleNamespace(key=key, value=value)
+
+
+def _validate_source_keys(
+    source_keys: list[str],
+    cluster_key_set: set[str],
+    items_by_key: dict[str, Any],
+) -> list[str]:
+    return [
+        key
+        for key in source_keys
+        if key in cluster_key_set and key in items_by_key
+    ]
+
+
+def _delete_absorbed_keys(
+    target_store: BaseStore,
+    namespace: tuple[str, str],
+    source_keys: list[str],
+    survivor_keys: set[str],
+    items_by_key: dict[str, Any],
+    apply: bool,
+) -> int:
+    deleted = 0
+    for key in source_keys:
+        if key in survivor_keys:
+            continue
+        if apply:
+            target_store.delete(namespace, key)
+            items_by_key.pop(key, None)
+        deleted += 1
+    return deleted

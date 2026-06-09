@@ -28,6 +28,155 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Batch entry points
+# ---------------------------------------------------------------------------
+
+
+def run_observation_downstream_dedup(
+    store: BaseStore,
+    observations: list[Observation],
+    game_id: str,
+) -> DedupStats:
+    """
+    Run LLM-based dedup for a batch of newly extracted observations.
+
+    For each observation:
+    1. Search for similar existing entries
+    2. If similar entries exist, ask the LLM how to integrate
+    3. Apply the decision to the store
+    4. If the LLM fails after retries, store the observation raw (fail-open)
+
+    Returns a DedupStats summary.
+    """
+    stats = DedupStats()
+
+    for i, observation in enumerate(observations, 1):
+        logger.info(
+            f"Observation dedup [{i}/{len(observations)}] "
+            f"role={observation.perspective} "
+            f"phase={observation.action_phase} "
+            f"situation={observation.situation[:80]}..."
+        )
+
+        result = dedup_single_observation(store, observation, game_id)
+
+        _emit_dedup_span(
+            item_type="observation",
+            perspective=observation.perspective,
+            action_phase=observation.action_phase,
+            index=i,
+            game_id=game_id,
+            new_entry={
+                "situation": observation.composed_situation,
+                "approach": observation.approach,
+                "outcome": observation.outcome,
+            },
+            result=result,
+        )
+
+        if result is None:
+            logger.warning(f"Observation dedup failed for item {i}; storing raw")
+            _store_new_observation(
+                store,
+                ("observations", observation.perspective, observation.action_phase),
+                observation,
+                game_id,
+            )
+            stats.failed += 1
+        elif result.action == DedupAction.KEEP:
+            stats.kept += 1
+            if result.auto:
+                stats.auto_kept += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_kept += 1
+        elif result.action == DedupAction.DISCARD:
+            stats.discarded += 1
+            if result.auto:
+                stats.auto_discarded += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_discarded += 1
+
+    logger.info(
+        f"Observation dedup complete: {stats.kept} kept, "
+        f"{stats.discarded} discarded, "
+        f"{stats.failed} failed, "
+        f"{stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
+        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
+    )
+    return stats
+
+
+def run_downstream_dedup(
+    store: BaseStore,
+    strategy_points: list[StrategyPoint],
+    game_id: str,
+) -> DedupStats:
+    """
+    Run LLM-based dedup for a batch of newly extracted strategy points.
+
+    For each point:
+    1. Search for similar existing entries
+    2. If similar entries exist, ask the LLM how to integrate
+    3. Apply the decision to the store
+    4. If the LLM fails after retries, store the point raw (fail-open)
+
+    Returns a DedupStats summary.
+    """
+    stats = DedupStats()
+
+    for i, point in enumerate(strategy_points, 1):
+        logger.info(
+            f"Dedup [{i}/{len(strategy_points)}] role={point.perspective} "
+            f"phase={point.action_phase} "
+            f"situation={point.situation[:80]}..."
+        )
+
+        result = dedup_single_strategy_point(store, point, game_id)
+
+        _emit_dedup_span(
+            item_type="strategy_point",
+            perspective=point.perspective,
+            action_phase=point.action_phase,
+            index=i,
+            game_id=game_id,
+            new_entry={
+                "situation": point.composed_situation,
+                "action": point.action,
+            },
+            result=result,
+        )
+
+        if result is None:
+            logger.warning(f"Dedup failed for point {i}; storing raw")
+            _store_new_point(
+                store,
+                ("strategy_points", point.perspective, point.action_phase),
+                point,
+                game_id,
+            )
+            stats.failed += 1
+        elif result.action == DedupAction.KEEP:
+            stats.kept += 1
+            if result.auto:
+                stats.auto_kept += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_kept += 1
+        elif result.action == DedupAction.DISCARD:
+            stats.discarded += 1
+            if result.auto:
+                stats.auto_discarded += 1
+                if result.similarity_scores:
+                    stats.embedding_auto_discarded += 1
+
+    logger.info(
+        f"Dedup complete: {stats.kept} kept, {stats.discarded} discarded, "
+        f"{stats.failed} failed, {stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
+        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
+    )
+    return stats
+
+
+# ---------------------------------------------------------------------------
 # Core dedup logic for a single observation
 # ---------------------------------------------------------------------------
 
@@ -224,152 +373,3 @@ def _emit_dedup_span(
         },
     ) as span:
         span.update(output={"dedup_case": dedup_case.model_dump(mode="json")})
-
-
-# ---------------------------------------------------------------------------
-# Batch entry points
-# ---------------------------------------------------------------------------
-
-
-def run_observation_downstream_dedup(
-    store: BaseStore,
-    observations: list[Observation],
-    game_id: str,
-) -> DedupStats:
-    """
-    Run LLM-based dedup for a batch of newly extracted observations.
-
-    For each observation:
-    1. Search for similar existing entries
-    2. If similar entries exist, ask the LLM how to integrate
-    3. Apply the decision to the store
-    4. If the LLM fails after retries, store the observation raw (fail-open)
-
-    Returns a DedupStats summary.
-    """
-    stats = DedupStats()
-
-    for i, observation in enumerate(observations, 1):
-        logger.info(
-            f"Observation dedup [{i}/{len(observations)}] "
-            f"role={observation.perspective} "
-            f"phase={observation.action_phase} "
-            f"situation={observation.situation[:80]}..."
-        )
-
-        result = dedup_single_observation(store, observation, game_id)
-
-        _emit_dedup_span(
-            item_type="observation",
-            perspective=observation.perspective,
-            action_phase=observation.action_phase,
-            index=i,
-            game_id=game_id,
-            new_entry={
-                "situation": observation.composed_situation,
-                "approach": observation.approach,
-                "outcome": observation.outcome,
-            },
-            result=result,
-        )
-
-        if result is None:
-            logger.warning(f"Observation dedup failed for item {i}; storing raw")
-            _store_new_observation(
-                store,
-                ("observations", observation.perspective, observation.action_phase),
-                observation,
-                game_id,
-            )
-            stats.failed += 1
-        elif result.action == DedupAction.KEEP:
-            stats.kept += 1
-            if result.auto:
-                stats.auto_kept += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_kept += 1
-        elif result.action == DedupAction.DISCARD:
-            stats.discarded += 1
-            if result.auto:
-                stats.auto_discarded += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_discarded += 1
-
-    logger.info(
-        f"Observation dedup complete: {stats.kept} kept, "
-        f"{stats.discarded} discarded, "
-        f"{stats.failed} failed, "
-        f"{stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
-        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
-    )
-    return stats
-
-
-def run_downstream_dedup(
-    store: BaseStore,
-    strategy_points: list[StrategyPoint],
-    game_id: str,
-) -> DedupStats:
-    """
-    Run LLM-based dedup for a batch of newly extracted strategy points.
-
-    For each point:
-    1. Search for similar existing entries
-    2. If similar entries exist, ask the LLM how to integrate
-    3. Apply the decision to the store
-    4. If the LLM fails after retries, store the point raw (fail-open)
-
-    Returns a DedupStats summary.
-    """
-    stats = DedupStats()
-
-    for i, point in enumerate(strategy_points, 1):
-        logger.info(
-            f"Dedup [{i}/{len(strategy_points)}] role={point.perspective} "
-            f"phase={point.action_phase} "
-            f"situation={point.situation[:80]}..."
-        )
-
-        result = dedup_single_strategy_point(store, point, game_id)
-
-        _emit_dedup_span(
-            item_type="strategy_point",
-            perspective=point.perspective,
-            action_phase=point.action_phase,
-            index=i,
-            game_id=game_id,
-            new_entry={
-                "situation": point.composed_situation,
-                "action": point.action,
-            },
-            result=result,
-        )
-
-        if result is None:
-            logger.warning(f"Dedup failed for point {i}; storing raw")
-            _store_new_point(
-                store,
-                ("strategy_points", point.perspective, point.action_phase),
-                point,
-                game_id,
-            )
-            stats.failed += 1
-        elif result.action == DedupAction.KEEP:
-            stats.kept += 1
-            if result.auto:
-                stats.auto_kept += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_kept += 1
-        elif result.action == DedupAction.DISCARD:
-            stats.discarded += 1
-            if result.auto:
-                stats.auto_discarded += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_discarded += 1
-
-    logger.info(
-        f"Dedup complete: {stats.kept} kept, {stats.discarded} discarded, "
-        f"{stats.failed} failed, {stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
-        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
-    )
-    return stats
