@@ -63,10 +63,10 @@ class BatchDedupRunConfig(BaseModel):
     config object that every adapter builds.
 
     cli.py builds it from argparse; the post-game pipeline (``persistence.dump``) builds it from its
-    own ``persistence.config.BatchDedupConfig`` gate. That gate is deliberately the small graph-facing
-    on/off subset (enabled + which models); this is the complete run spec (I/O dirs, clustering,
-    embedding, resolution, run-mode). Field defaults mirror the module constants above — i.e. the
-    previous ``run_batch_memory_dedup`` keyword defaults, verbatim, so the reshape is behaviour-neutral.
+    own ``persistence.config.IncrementalDedupConfig`` gate. That gate is deliberately the small
+    graph-facing on/off subset (enabled + which models); this is the complete run spec (I/O dirs,
+    clustering, embedding, resolution, run-mode). Field defaults mirror the module constants above —
+    i.e. the previous ``run_batch_memory_dedup`` keyword defaults, verbatim, so the reshape is neutral.
     """
 
     # I/O — the seed/dump store directories (provenance = store identity).

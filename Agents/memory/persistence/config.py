@@ -36,8 +36,13 @@ _TRANSIENT_MEMORY_STORE_ERROR_MARKERS = (
 )
 
 
-class BatchDedupConfig(BaseModel):
-    """Settings for post-game incremental batch dedup."""
+class IncrementalDedupConfig(BaseModel):
+    """Gate for the post-game *incremental* batch dedup — the routine maintenance pass run from the
+    orchestrator's post-game node (``run_batch_dedup_from_config`` → ``run_batch_memory_dedup`` with
+    ``incremental=True``: only clusters with entries added since the last ``.last_dedup_at`` are
+    touched). This is the small graph-facing subset (on/off + which models); the full run spec is
+    ``batch_deduplication.config.BatchDedupRunConfig``. ``enabled`` defaults False, so the pass is
+    wired but dormant unless a run turns it on. Whole-store dedup is the CLI default instead."""
 
     enabled: bool = False
     two_pass: bool = True
@@ -59,7 +64,7 @@ class MemoryPersistenceConfig(BaseModel):
     dump_enabled: bool = True
     seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
     dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
-    batch_dedup: BatchDedupConfig = BatchDedupConfig()
+    batch_dedup: IncrementalDedupConfig = IncrementalDedupConfig()
 
 
 def normalize_memory_persistence_config(
