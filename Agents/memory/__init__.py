@@ -10,12 +10,11 @@ re-exported here so those call sites are unchanged.
 
 from Agents.memory.core import (
     RETRIEVAL_KEEP_PER_SITUATION,
-    embeddings,
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
-    store,
     store_strategy,
 )
+from Agents.memory.store import embeddings, store
 
 __all__ = [
     "RETRIEVAL_KEEP_PER_SITUATION",

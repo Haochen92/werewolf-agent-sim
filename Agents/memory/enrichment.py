@@ -21,10 +21,10 @@ from langgraph.runtime import Runtime
 from Agents.llm_factory import get_llm
 from Agents.memory.core import (
     RETRIEVAL_KEEP_PER_SITUATION,
-    embeddings as memory_embeddings,
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
+from Agents.memory.store import embeddings as memory_embeddings
 from Agents.memory.reranker import (
     RERANK_TOP_K,
     rerank_observations,

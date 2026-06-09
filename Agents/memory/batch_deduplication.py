@@ -17,7 +17,7 @@ from langgraph.store.base import BaseStore
 from pydantic import BaseModel
 
 from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
-from Agents.memory.core import store
+from Agents.memory.store import store
 from Agents.memory.persistence import (
     DEFAULT_MEMORY_STORE_DIR,
     dump_memory_to_json_files,

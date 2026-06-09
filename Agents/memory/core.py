@@ -1,14 +1,14 @@
+"""Stateless retrieval / storage accessors over a langgraph BaseStore.
+
+These functions take the ``store`` as a parameter (they don't reference the module-level singleton),
+so they're independent of where the store is instantiated — that singleton lives in
+Agents.memory.store. Re-exported from Agents.memory for the common call sites.
+"""
+
 from datetime import datetime
 from logging import getLogger
 
-from dotenv import load_dotenv
 from langgraph.store.base import BaseStore
-from langgraph.store.memory import InMemoryStore
-from Agents.llm_factory import (
-    DEFAULT_EMBEDDING_DIMS,
-    DEFAULT_EMBEDDING_MODEL,
-    create_embeddings,
-)
 
 from Agents.schemas import (
     RetrievedObservation,
@@ -18,13 +18,8 @@ from Agents.schemas import (
     StoredStrategyPoint,
 )
 
-load_dotenv()
-
 logger = getLogger(__name__)
 
-DEDUP_THRESHOLD = 0.90
-RERANK_TOP_K = 10
-RERANK_KEEP = 3
 RETRIEVAL_KEEP_PER_SITUATION = 3
 
 
@@ -102,17 +97,3 @@ def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: st
         )
         store.put(("strategy", role), f"game_{game_id}", stored.model_dump())
         store.put(("strategy", role), "latest", stored.model_dump())
-
-
-embeddings = create_embeddings(
-    DEFAULT_EMBEDDING_MODEL,
-    output_dimensionality=DEFAULT_EMBEDDING_DIMS,
-)
-
-store = InMemoryStore(
-    index={
-        "dims": DEFAULT_EMBEDDING_DIMS,
-        "embed": embeddings,
-        "fields": ["situation"],
-    }
-)

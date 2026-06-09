@@ -17,7 +17,7 @@ from Agents.llm_factory import create_chat_model
 from langgraph.store.base import BaseStore
 from pydantic import BaseModel
 
-from Agents.memory.core import embeddings as _embedding_model
+from Agents.memory.store import embeddings as _embedding_model
 from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, STRATEGY_DEDUP_PROMPT
 from Agents.memory.retrieval_filters import cosine_similarity, embed_texts
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS

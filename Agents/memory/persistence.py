@@ -13,7 +13,7 @@ from langgraph.store.base import BaseStore, Item, PutOp
 from pydantic import BaseModel
 
 from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
-from Agents.memory.core import store
+from Agents.memory.store import store
 
 logger = logging.getLogger(__name__)
 
