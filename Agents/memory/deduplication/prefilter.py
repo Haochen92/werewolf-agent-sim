@@ -6,7 +6,7 @@ import logging
 from typing import Literal
 
 from Agents.memory.store import embeddings as _embedding_model
-from Agents.memory.retrieval_filters import cosine_similarity, embed_texts
+from Agents.memory.vectors import cosine_similarity, embed_texts
 from Agents.schemas import Observation, StrategyPoint
 
 from .config import (

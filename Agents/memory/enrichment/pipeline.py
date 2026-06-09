@@ -28,7 +28,8 @@ from Agents.memory.reranker import (
     rerank_observations,
     rerank_strategy_points,
 )
-from Agents.memory.retrieval_filters import cap_per_situation, dedup_gate, embed_texts, mmr_filter
+from Agents.memory.retrieval_filters import cap_per_situation, dedup_gate, mmr_filter
+from Agents.memory.vectors import embed_texts
 from Agents.memory.enrichment.gating import (
     _filtering_enabled_for_role,
     _memory_enabled_for_role,
