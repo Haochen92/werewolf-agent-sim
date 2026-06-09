@@ -25,7 +25,7 @@ dependencies = [
 
 [project.scripts]
 werewolf-game = "Agents.main:main"
-memory-batch-dedup = "Agents.memory_batch_deduplication:main"
+memory-batch-dedup = "Agents.memory.batch_deduplication:main"
 eval-build-dataset = "evaluation.experiments.dataset_builder:main"
 eval-summary = "evaluation.experiments.summary:main"
 eval-retrieval = "evaluation.experiments.retrieval:main"
