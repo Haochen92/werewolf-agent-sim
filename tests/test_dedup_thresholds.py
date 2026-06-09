@@ -23,8 +23,8 @@ import Agents.memory.deduplication as dedup
 def patch_sims(monkeypatch, sims):
     """Make the prefilter see exactly ``sims`` as per-candidate similarities."""
     vecs = [[0.0]] + [[s] for s in sims]
-    monkeypatch.setattr(dedup, "embed_texts", lambda texts, model: vecs)
-    monkeypatch.setattr(dedup, "cosine_similarity", lambda a, b: b[0])
+    monkeypatch.setattr(dedup.prefilter, "embed_texts", lambda texts, model: vecs)
+    monkeypatch.setattr(dedup.prefilter, "cosine_similarity", lambda a, b: b[0])
 
 
 def sp_candidates(n):
@@ -109,7 +109,7 @@ def test_sp_embedding_failure_falls_through_to_llm(monkeypatch):
     def boom(texts, model):
         raise RuntimeError("embedding backend down")
 
-    monkeypatch.setattr(dedup, "embed_texts", boom)
+    monkeypatch.setattr(dedup.prefilter, "embed_texts", boom)
     point = SimpleNamespace(action="x")
     decision, scores = dedup._embedding_prefilter_strategy_point(point, sp_candidates(1))
     assert decision is None  # never auto-discards on an embedding error
@@ -120,7 +120,7 @@ def test_obs_embedding_failure_falls_through_to_llm(monkeypatch):
     def boom(texts, model):
         raise RuntimeError("embedding backend down")
 
-    monkeypatch.setattr(dedup, "embed_texts", boom)
+    monkeypatch.setattr(dedup.prefilter, "embed_texts", boom)
     observation = SimpleNamespace(composed_situation="s", approach="a", outcome="o")
     decision, scores = dedup._embedding_prefilter_observation(observation, obs_candidates(1))
     assert decision is None

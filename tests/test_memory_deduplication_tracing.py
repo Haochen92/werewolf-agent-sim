@@ -25,7 +25,7 @@ class DedupTracingTests(unittest.TestCase):
         fake_langfuse = Mock()
         fake_langfuse.start_as_current_observation.return_value = context
 
-        with patch("Agents.memory.deduplication.langfuse", fake_langfuse):
+        with patch("Agents.memory.deduplication.pipeline.langfuse", fake_langfuse):
             _emit_dedup_span(
                 item_type="strategy_point",
                 perspective="villager",
