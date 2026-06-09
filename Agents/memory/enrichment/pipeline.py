@@ -17,7 +17,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
 from Agents.llm_factory import get_llm
-from Agents.memory.core import (
+from Agents.memory.retrieval import (
     RETRIEVAL_KEEP_PER_SITUATION,
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,

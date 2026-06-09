@@ -1,12 +1,8 @@
-"""Stateless retrieval / storage accessors over a langgraph BaseStore.
+"""Read accessors over a langgraph BaseStore: retrieve observations / strategy points for an agent.
 
-These functions take the ``store`` as a parameter (they don't reference the module-level singleton),
-so they're independent of where the store is instantiated — that singleton lives in
-Agents.memory.store. Re-exported from Agents.memory for the common call sites.
+Stateless — the store is passed in. Moved out of core.py; re-exported from Agents.memory so the
+common ``from Agents.memory import retrieve_*`` call sites are unchanged.
 """
-
-from datetime import datetime
-from logging import getLogger
 
 from langgraph.store.base import BaseStore
 
@@ -14,11 +10,8 @@ from Agents.schemas import (
     RetrievedObservation,
     RetrievedStrategyPoint,
     StoredObservation,
-    StoredStrategy,
     StoredStrategyPoint,
 )
-
-logger = getLogger(__name__)
 
 RETRIEVAL_KEEP_PER_SITUATION = 3
 
@@ -86,14 +79,3 @@ def retrieve_strategy_points_for_agent(
             continue
 
     return list(retrieved_by_key.values())
-
-
-def store_strategy(store: BaseStore, new_strategies: dict[str, str], game_id: str = ""):
-    for role, strategy in new_strategies.items():
-        stored = StoredStrategy(
-            game_id=game_id,
-            content=strategy,
-            created_at=datetime.now(),
-        )
-        store.put(("strategy", role), f"game_{game_id}", stored.model_dump())
-        store.put(("strategy", role), "latest", stored.model_dump())

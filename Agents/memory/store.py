@@ -2,7 +2,7 @@
 
 Module-level singletons used across the memory pipeline and the graphs. Isolated in their own
 module so the import-time instantiation (creating the embeddings client + the indexed store) is
-separated from the stateless retrieval accessors in Agents.memory.core. Re-exported from
+separated from the stateless retrieval accessors in Agents.memory.retrieval. Re-exported from
 Agents.memory, so the common ``from Agents.memory import store`` call sites are unchanged.
 """
 
