@@ -30,12 +30,12 @@ from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
     BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
 )
+from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 _OBS_PROMPT_VARIANTS = {
     "default": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
     "lite": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
 }
-from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 load_dotenv()
 logger = logging.getLogger(__name__)
