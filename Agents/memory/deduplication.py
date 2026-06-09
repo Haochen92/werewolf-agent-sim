@@ -11,12 +11,11 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Annotated, Literal
+from typing import Literal
 
 from Agents.llm_factory import create_chat_model
 from langgraph.store.base import BaseStore
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from Agents.memory.core import embeddings as _embedding_model
 from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, STRATEGY_DEDUP_PROMPT
@@ -46,103 +45,19 @@ OBS_CONTENT_DISCARD_THRESHOLD = 0.96
 OBS_CONTENT_KEEP_THRESHOLD = 0.935
 
 
-# ---------------------------------------------------------------------------
-# Schemas — strategy point dedup (unchanged structure)
-# ---------------------------------------------------------------------------
-
-
-class StrategyDiscard(BaseModel):
-    decision: Literal["D", "DISCARD"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-    duplicate_of_candidate: int = Field(
-        ge=1,
-        description="The 1-based candidate number of the existing entry this duplicates",
-    )
-
-
-class StrategyKeep(BaseModel):
-    decision: Literal["K", "KEEP"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-
-
-class StrategyDedupDecisionOutput(BaseModel):
-    result: Annotated[
-        StrategyDiscard | StrategyKeep,
-        Field(discriminator="decision"),
-    ]
-
-
-# ---------------------------------------------------------------------------
-# Schemas — observation dedup (structured situation/approach/outcome)
-# ---------------------------------------------------------------------------
-
-
-class ObservationDiscard(BaseModel):
-    decision: Literal["D", "DISCARD"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-    duplicate_of_candidate: int = Field(
-        ge=1,
-        description="The 1-based candidate number of the existing observation this duplicates",
-    )
-
-
-class ObservationKeep(BaseModel):
-    decision: Literal["K", "KEEP"]
-    reasoning: str = Field(
-        description="2-3 sentences explaining the decision",
-    )
-
-
-class ObservationDedupDecisionOutput(BaseModel):
-    result: Annotated[
-        ObservationDiscard
-        | ObservationKeep,
-        Field(discriminator="decision"),
-    ]
-
-
-# ---------------------------------------------------------------------------
-# Common schemas
-# ---------------------------------------------------------------------------
-
-
-class DedupAction(str, Enum):
-    """Compact dedup outcome label for stats and return values."""
-
-    DISCARD = "A"
-    REPLACE = "B"
-    DIFFERENTIATE = "C"
-    KEEP = "D"
-
-
-class DedupResult(BaseModel):
-    """Internal result with enough detail to separate auto and LLM paths."""
-
-    action: DedupAction
-    auto: bool = False
-    candidates: list[dict] = Field(default_factory=list)
-    decision_detail: dict | None = None
-    similarity_scores: dict[str, float] | None = None
-
-
-class DedupStats(BaseModel):
-    """Summary of dedup outcomes for a batch of memory entries."""
-
-    kept: int = 0
-    discarded: int = 0
-    replaced: int = 0
-    differentiated: int = 0
-    failed: int = 0  # Fell back to raw storage
-    auto_kept: int = 0
-    auto_discarded: int = 0
-    embedding_auto_kept: int = 0
-    embedding_auto_discarded: int = 0
+# Schemas moved to Agents.memory.dedup_schemas (re-exported here so existing
+# `from Agents.memory.deduplication import DedupResult` etc. keep resolving).
+from Agents.memory.dedup_schemas import (  # noqa: E402
+    DedupAction,
+    DedupResult,
+    DedupStats,
+    ObservationDedupDecisionOutput,
+    ObservationDiscard,
+    ObservationKeep,
+    StrategyDedupDecisionOutput,
+    StrategyDiscard,
+    StrategyKeep,
+)
 
 
 # ---------------------------------------------------------------------------
