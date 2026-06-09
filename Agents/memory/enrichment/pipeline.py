@@ -1,12 +1,13 @@
 """Memory-enrichment orchestrator — the read-side pipeline.
 
-Given an agent's day/night payload, generates retrieval situations, applies the
-per-role/per-kind gating from the runnable config, retrieves observations and
-strategy points, optionally filters (dedup/MMR) and reranks them, and returns the
-enriched payload plus a retrieval-metadata dict for the eval/trace record.
+Given an agent's day/night payload, gating produces a RetrievalPlan (what to do this turn); the
+pipeline then generates situations, retrieves observations + strategy points, optionally filters
+(dedup/MMR) and reranks, caps, and returns the enriched payload plus a retrieval-metadata dict for
+the eval/trace record. The pipeline owns the single retriever span; the stage helpers below it stay
+pure (trace-free).
 
 ``enrich_payload_with_memory`` is the whole flow top-to-bottom; the helpers below it
-(skip check → retrieve → snapshot → filter → rerank) are the per-step detail.
+(skip metadata → retrieve → snapshot → filter → rerank) are the per-step detail.
 """
 from __future__ import annotations
 
@@ -22,7 +23,6 @@ from Agents.memory.retrieval import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
-from Agents.memory.store import embeddings as memory_embeddings
 from Agents.memory.reranker import (
     RERANK_TOP_K,
     rerank_observations,
@@ -30,13 +30,8 @@ from Agents.memory.reranker import (
 )
 from Agents.memory.retrieval_filters import cap_per_situation, dedup_gate, mmr_filter
 from Agents.memory.vectors import embed_texts
-from Agents.memory.enrichment.gating import (
-    _filtering_enabled_for_role,
-    _memory_enabled_for_role,
-    _reranking_enabled_for_memory_kind,
-    _retrieval_type_enabled,
-    _store_dir_from_config,
-)
+from Agents.memory.store import embeddings as memory_embeddings
+from Agents.memory.enrichment.gating import retrieval_plan
 from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
 from Agents.state import (
     HealerDayState,
@@ -56,32 +51,16 @@ def enrich_payload_with_memory(
     action_phase: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     enriched_payload = dict(payload)
-    store_dir = _store_dir_from_config(config)
     active_store = runtime.store
+    plan = retrieval_plan(config, payload, active_store)
 
-    skip_reason = _skip_reason(payload, config, active_store)
-    if skip_reason:
+    if plan.skip_reason:
         enriched_payload["retrieved_observations"] = []
         enriched_payload["strategy_points"] = payload.get("strategy_points", [])
-        return enriched_payload, _skipped_metadata(store_dir, skip_reason)
+        return enriched_payload, _skipped_metadata(plan.store_dir, plan.skip_reason)
 
     situations = _generate_situations_for_agent(payload)
-    retrieve_observations = _retrieval_type_enabled(config, "observations")
-    retrieve_strategy = _retrieval_type_enabled(config, "strategy_points")
-    observation_reranking = _reranking_enabled_for_memory_kind(
-        config,
-        payload["player_role"],
-        "observations",
-    )
-    strategy_point_reranking = _reranking_enabled_for_memory_kind(
-        config,
-        payload["player_role"],
-        "strategy_points",
-    )
-    reranking = observation_reranking or strategy_point_reranking
-    filtering = _filtering_enabled_for_role(config, payload["player_role"])
-    needs_wide_retrieval = reranking or filtering
-    retrieval_top_k = RERANK_TOP_K if needs_wide_retrieval else 3
+    retrieval_top_k = RERANK_TOP_K if plan.needs_wide_retrieval else 3
 
     with langfuse.start_as_current_observation(
         as_type="retriever",
@@ -96,12 +75,12 @@ def enrich_payload_with_memory(
             "current_day": payload["current_day"],
             "current_round": payload["current_round"],
             "action_phase": action_phase,
-            "retrieve_observations": retrieve_observations,
-            "retrieve_strategy_points": retrieve_strategy,
-            "reranking_enabled": reranking,
-            "observation_reranking_enabled": observation_reranking,
-            "strategy_point_reranking_enabled": strategy_point_reranking,
-            "filtering_enabled": filtering,
+            "retrieve_observations": plan.retrieve_observations,
+            "retrieve_strategy_points": plan.retrieve_strategy,
+            "reranking_enabled": plan.reranking,
+            "observation_reranking_enabled": plan.observation_reranking,
+            "strategy_point_reranking_enabled": plan.strategy_point_reranking,
+            "filtering_enabled": plan.filtering,
             "retrieval_top_k": retrieval_top_k,
         },
     ) as span:
@@ -111,8 +90,8 @@ def enrich_payload_with_memory(
             action_phase,
             situations,
             retrieval_top_k,
-            retrieve_observations,
-            retrieve_strategy,
+            plan.retrieve_observations,
+            plan.retrieve_strategy,
         )
 
         pre_filter_counts = {
@@ -121,12 +100,12 @@ def enrich_payload_with_memory(
         }
 
         candidate_observations_json, candidate_strategy_points_json = _snapshot_candidates(
-            needs_wide_retrieval,
+            plan.needs_wide_retrieval,
             retrieved_observations,
             retrieved_strategy_points,
         )
 
-        if filtering:
+        if plan.filtering:
             retrieved_observations, retrieved_strategy_points = _apply_filtering(
                 retrieved_observations,
                 retrieved_strategy_points,
@@ -141,8 +120,8 @@ def enrich_payload_with_memory(
             retrieved_observations,
             retrieved_strategy_points,
             situations,
-            observation_reranking,
-            strategy_point_reranking,
+            plan.observation_reranking,
+            plan.strategy_point_reranking,
         )
 
         retrieved_observations = cap_per_situation(
@@ -177,10 +156,10 @@ def enrich_payload_with_memory(
                 "num_strategy_points": len(retrieved_strategy_points),
                 "observation_scores": [item.score for item in retrieved_observations],
                 "strategy_point_scores": [item.score for item in retrieved_strategy_points],
-                "reranking_enabled": reranking,
-                "observation_reranking_enabled": observation_reranking,
-                "strategy_point_reranking_enabled": strategy_point_reranking,
-                "filtering_enabled": filtering,
+                "reranking_enabled": plan.reranking,
+                "observation_reranking_enabled": plan.observation_reranking,
+                "strategy_point_reranking_enabled": plan.strategy_point_reranking,
+                "filtering_enabled": plan.filtering,
                 "pre_filter_candidates": pre_filter_counts,
                 "post_filter_candidates": post_filter_counts,
                 "num_candidate_observations": len(candidate_observations_json),
@@ -197,37 +176,21 @@ def enrich_payload_with_memory(
     return enriched_payload, {
         "memory_enabled": True,
         "retrieval_skipped_reason": None,
-        "reranking_enabled": reranking,
-        "observation_reranking_enabled": observation_reranking,
-        "strategy_point_reranking_enabled": strategy_point_reranking,
-        "filtering_enabled": filtering,
+        "reranking_enabled": plan.reranking,
+        "observation_reranking_enabled": plan.observation_reranking,
+        "strategy_point_reranking_enabled": plan.strategy_point_reranking,
+        "filtering_enabled": plan.filtering,
         "situations": situations,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,
         "candidate_observations": candidate_observations_json,
         "candidate_strategy_points": candidate_strategy_points_json,
-        "store_dir": store_dir,
+        "store_dir": plan.store_dir,
         "strategy_point_index_map": strategy_point_index_map,
         "num_situations": len(situations),
         "num_observations": len(retrieved_observations),
         "num_strategy_points": len(retrieved_strategy_points),
     }
-
-
-def _skip_reason(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
-    config: RunnableConfig,
-    active_store: Any,
-) -> str | None:
-    """Why retrieval is skipped for this turn — day-1 cold start, no store, or role gated off —
-    or None if memory should run."""
-    if payload["current_day"] == 1:
-        return "day_1"
-    if active_store is None:
-        return "no_store"
-    if not _memory_enabled_for_role(config, payload["player_role"]):
-        return "memory_disabled_for_role"
-    return None
 
 
 def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:

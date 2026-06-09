@@ -1,4 +1,4 @@
-"""Unit tests for memory-enrichment gating (Agents/agents.py).
+"""Unit tests for memory-enrichment gating (Agents/memory/enrichment/gating.py).
 
 This is the Phase C independent variable. The danger these tests guard against is
 not a crash but a *silent* mis-gate: the "memory-on" arm secretly running with
@@ -23,6 +23,7 @@ from Agents.memory.enrichment import (
     _retrieval_type_enabled,
     _store_dir_from_config,
 )
+from Agents.memory.enrichment.gating import retrieval_plan
 
 
 def cfg(**configurable) -> dict:
@@ -170,3 +171,52 @@ def test_no_store_beats_role_off():
     config = cfg(memory_config={"villager": False})
     _, meta = enrich(day=2, store=None, config=config)
     assert meta["retrieval_skipped_reason"] == "no_store"
+
+
+# --- retrieval_plan: the policy object the pipeline executes ------------------
+
+def plan(day=2, role="villager", store=object(), config=None):
+    return retrieval_plan(config if config is not None else cfg(), payload(day, role), store)
+
+
+def test_plan_defaults_proceed_retrieve_all_no_rerank_no_filter():
+    p = plan()
+    assert p.skip_reason is None
+    assert p.retrieve_observations is True and p.retrieve_strategy is True
+    assert p.observation_reranking is False and p.strategy_point_reranking is False
+    assert p.reranking is False and p.filtering is False
+    assert p.needs_wide_retrieval is False
+    assert p.store_dir == ""
+
+
+def test_plan_skip_reasons_match_gate():
+    assert plan(day=1).skip_reason == "day_1"
+    assert plan(day=2, store=None).skip_reason == "no_store"
+    assert plan(
+        day=2, config=cfg(memory_config={"villager": False})
+    ).skip_reason == "memory_disabled_for_role"
+
+
+def test_plan_reranking_sets_wide_retrieval():
+    p = plan(config=cfg(reranking_config={"observations": {"villager": True}}))
+    assert p.observation_reranking is True
+    assert p.reranking is True
+    assert p.needs_wide_retrieval is True
+
+
+def test_plan_filtering_sets_wide_retrieval():
+    p = plan(config=cfg(filtering_config={"villager": True}))
+    assert p.filtering is True
+    assert p.reranking is False
+    assert p.needs_wide_retrieval is True
+
+
+def test_plan_retrieval_type_off_propagates():
+    p = plan(config=cfg(retrieval_types_config={"observations": False}))
+    assert p.retrieve_observations is False
+    assert p.retrieve_strategy is True
+
+
+def test_plan_store_dir_propagates():
+    p = plan(config=cfg(memory_persistence_config={"seed_store_dir": "/seeds/v5"}))
+    assert p.store_dir == "/seeds/v5"
