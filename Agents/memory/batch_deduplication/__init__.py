@@ -66,14 +66,16 @@ from .operations import (
     _validate_source_keys,
 )
 from .orchestration import (
-    _OBS_PROMPT_VARIANTS,
-    _call_cluster_llm,
     _parse_args,
-    _two_pass_cluster_dedup,
     dedup_namespace,
     inspect_namespace_clusters,
     main,
     run_batch_memory_dedup,
+)
+from .resolution import (
+    _OBS_PROMPT_VARIANTS,
+    _call_cluster_llm,
+    _two_pass_cluster_dedup,
 )
 from .schemas import (
     BatchDedupReport,

@@ -12,7 +12,6 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
 
 from langgraph.store.base import BaseStore
 
@@ -24,12 +23,6 @@ from Agents.memory.persistence import (
     memory_store_paths,
     seed_memory_from_json_files,
 )
-from Agents.prompts.dedup import (
-    BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
-    BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
-    BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
-)
-from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 from .clustering import _build_clusters, _fetch_namespace_items
 from .config import (
@@ -45,25 +38,21 @@ from .config import (
     DEDUP_TIMESTAMP_FILE,
     LinkageMethod,
     TwoPassConfig,
-    _get_batch_llm,
-    _langfuse_handler,
 )
 from .formatting import _cluster_preview, _format_cluster_entries
 from .incremental import _collect_new_keys, _read_last_dedup_at, _write_last_dedup_at
-from .operations import _apply_observation_operation, _apply_strategy_operation, _remap_operation_keys
+from .operations import _apply_observation_operation, _apply_strategy_operation
+from .resolution import (
+    _OBS_PROMPT_VARIANTS,
+    _call_cluster_llm,
+    _two_pass_cluster_dedup,
+)
 from .schemas import (
     BatchDedupReport,
     ClusterPreview,
     MemoryKind,
     NamespaceStats,
-    ObservationBatchDedupOutput,
-    StrategyBatchDedupOutput,
 )
-
-_OBS_PROMPT_VARIANTS = {
-    "default": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
-    "lite": BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
-}
 
 logger = logging.getLogger(__name__)
 
@@ -482,128 +471,6 @@ def inspect_namespace_clusters(
         for cluster_keys in clusters
     ]
     return stats, previews
-
-
-def _two_pass_cluster_dedup(
-    memory_kind: MemoryKind,
-    role: str,
-    action_phase: str,
-    live_cluster_keys: list[str],
-    items_by_key: dict[str, Any],
-    two_pass: TwoPassConfig,
-) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
-    """Run two-pass dedup on a single cluster.
-
-    Pass 1: triage model classifies all entries.
-    Pass 2: verify model re-evaluates only MERGE-flagged entries.
-    Returns a combined output with trusted + verified operations.
-    """
-    entries, index_to_key = _format_cluster_entries(
-        memory_kind, live_cluster_keys, items_by_key,
-    )
-
-    triage_result = _call_cluster_llm(
-        memory_kind, role, action_phase, entries, index_to_key,
-        model=two_pass.triage_model,
-        thinking_level=two_pass.triage_thinking_level,
-    )
-
-    trusted_ops = []
-    merge_keys: set[str] = set()
-
-    for op in triage_result.operations:
-        if op.action == "MERGE":
-            merge_keys.update(op.source_keys)
-        else:
-            trusted_ops.append(op)
-
-    if not merge_keys:
-        return triage_result
-
-    logger.info(
-        "Two-pass: triage flagged %d keys as MERGE in cluster of %d, "
-        "escalating to verify model",
-        len(merge_keys), len(live_cluster_keys),
-    )
-
-    verify_keys = [k for k in live_cluster_keys if k in merge_keys]
-    if len(verify_keys) < 2:
-        for op in triage_result.operations:
-            if op.action == "MERGE":
-                op.action = "KEEP"
-                op.merged_situation = None
-                op.survivor_key = None
-                if hasattr(op, "merged_approach"):
-                    op.merged_approach = None
-                if hasattr(op, "merged_outcome"):
-                    op.merged_outcome = None
-                if hasattr(op, "merged_action"):
-                    op.merged_action = None
-        return triage_result
-
-    verify_entries, verify_index_to_key = _format_cluster_entries(
-        memory_kind, verify_keys, items_by_key,
-    )
-    verify_result = _call_cluster_llm(
-        memory_kind, role, action_phase, verify_entries, verify_index_to_key,
-        model=two_pass.verify_model,
-        thinking_level=two_pass.verify_thinking_level,
-    )
-
-    all_ops = trusted_ops + list(verify_result.operations)
-    if memory_kind == "strategy_points":
-        return StrategyBatchDedupOutput(operations=all_ops)
-    return ObservationBatchDedupOutput(operations=all_ops)
-
-
-def _call_cluster_llm(
-    memory_kind: MemoryKind,
-    role: str,
-    action_phase: str,
-    entries: str,
-    index_to_key: dict[str, str],
-    model: str,
-    thinking_level: str | None,
-    prompt_variant: str = "default",
-) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
-    llm = _get_batch_llm(model, thinking_level)
-    if memory_kind == "strategy_points":
-        prompt = BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT.format(
-            role=role,
-            action_phase=action_phase,
-            entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
-        )
-        output_schema = StrategyBatchDedupOutput
-        run_name = "batch_dedup_strategy_points"
-    else:
-        obs_prompt_template = _OBS_PROMPT_VARIANTS.get(
-            prompt_variant, BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
-        )
-        prompt = obs_prompt_template.format(
-            role=role,
-            action_phase=action_phase,
-            entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-        )
-        output_schema = ObservationBatchDedupOutput
-        run_name = "batch_dedup_observations"
-
-    result = llm.with_structured_output(output_schema).invoke(
-        [{"role": "user", "content": prompt}],
-        config={"run_name": run_name, "callbacks": [_langfuse_handler()]},
-    )
-    if isinstance(result, output_schema):
-        pass
-    elif isinstance(result, dict):
-        result = output_schema.model_validate(result)
-    else:
-        raise TypeError(f"Unexpected batch dedup result type: {type(result)!r}")
-
-    for op in result.operations:
-        _remap_operation_keys(op, index_to_key)
-    return result
 
 
 def _parse_args() -> argparse.Namespace:
