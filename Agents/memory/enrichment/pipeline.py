@@ -1,14 +1,9 @@
-"""Memory enrichment for agent payloads — the read-side of the memory system.
+"""Memory-enrichment orchestrator — the read-side pipeline.
 
-Extracted from agents.py during the pre-v5 refactor (structure_audit.md group B).
 Given an agent's day/night payload, generates retrieval situations, applies the
 per-role/per-kind gating from the runnable config, retrieves observations and
 strategy points, optionally filters (dedup/MMR) and reranks them, and returns the
 enriched payload plus a retrieval-metadata dict for the eval/trace record.
-
-The gating helpers (`_memory_enabled_for_role`, `_retrieval_type_enabled`, …) are
-the Phase C independent variable and are covered by
-tests/test_memory_enrichment_gating.py.
 """
 from __future__ import annotations
 
@@ -31,16 +26,14 @@ from Agents.memory.reranker import (
     rerank_strategy_points,
 )
 from Agents.memory.retrieval_filters import cap_per_situation, dedup_gate, embed_texts, mmr_filter
-from Agents.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
-from Agents.prompts import (
-    HEALER_SITUATION_SUMMARY,
-    INVESTIGATOR_SITUATION_SUMMARY,
-    SERIAL_KILLER_SITUATION_SUMMARY,
-    VIGILANTE_SITUATION_SUMMARY,
-    VILLAGER_SITUATION_SUMMARY,
-    WOLF_SITUATION_SUMMARY,
+from Agents.memory.enrichment.gating import (
+    _filtering_enabled_for_role,
+    _memory_enabled_for_role,
+    _reranking_enabled_for_memory_kind,
+    _retrieval_type_enabled,
+    _store_dir_from_config,
 )
-from Agents.schemas import SituationSummary
+from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
 from Agents.state import (
     HealerDayState,
     InvestigatorDayState,
@@ -50,99 +43,6 @@ from Agents.state import (
 from Agents.tracing import GraphContext, langfuse
 
 logger = getLogger(__name__)
-
-
-def _generate_situations_for_agent(
-    payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
-    max_retries: int = 1,
-) -> list[str]:
-    player_id = payload["player_id"]
-    role = payload["player_role"]
-    current_day = payload["current_day"]
-    current_round = payload["current_round"]
-    prompt_template = {
-        "villager": VILLAGER_SITUATION_SUMMARY,
-        "healer": HEALER_SITUATION_SUMMARY,
-        "investigator": INVESTIGATOR_SITUATION_SUMMARY,
-        "wolf": WOLF_SITUATION_SUMMARY,
-        "serial_killer": SERIAL_KILLER_SITUATION_SUMMARY,
-        "vigilante": VIGILANTE_SITUATION_SUMMARY,
-    }.get(role, VILLAGER_SITUATION_SUMMARY)
-    chain = prompt_template | get_llm().with_structured_output(SituationSummary)
-
-    for attempt in range(max_retries + 1):
-        try:
-            result = chain.invoke(
-                _build_agent_prompt_input(payload),
-                config={
-                    "run_name": (
-                        f"situation_summary_{role}_day_{current_day}_round_{current_round}"
-                    )
-                },
-            )
-            return result.composed_situations
-        except Exception as e:
-            logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")
-            if attempt < max_retries:
-                continue
-            break
-
-    logger.error(f"{player_id} situation summary failed all retries, using fallback")
-    return [f"Day {current_day} as {role}, round {current_round}"]
-
-
-def _memory_enabled_for_role(config: RunnableConfig, role: str) -> bool:
-    configurable = config.get("configurable", {}) if config else {}
-    memory_config = configurable.get("memory_config")
-    if not isinstance(memory_config, dict):
-        return True
-    return bool(memory_config.get(role, False))
-
-
-def _reranking_enabled_for_memory_kind(
-    config: RunnableConfig,
-    role: str,
-    memory_kind: str,
-) -> bool:
-    configurable = config.get("configurable", {}) if config else {}
-    reranking_config = configurable.get("reranking_config")
-    if not isinstance(reranking_config, dict):
-        return False
-    if isinstance(reranking_config.get(memory_kind), dict):
-        return bool(reranking_config[memory_kind].get(role, False))
-    return False
-
-
-def _filtering_enabled_for_role(config: RunnableConfig, role: str) -> bool:
-    configurable = config.get("configurable", {}) if config else {}
-    filtering_config = configurable.get("filtering_config")
-    if not isinstance(filtering_config, dict):
-        return False
-    return bool(filtering_config.get(role, False))
-
-
-def _retrieval_type_enabled(config: RunnableConfig, memory_kind: str) -> bool:
-    configurable = config.get("configurable", {}) if config else {}
-    retrieval_types_config = configurable.get("retrieval_types_config")
-    if not isinstance(retrieval_types_config, dict):
-        return True
-    return bool(retrieval_types_config.get(memory_kind, True))
-
-
-def _store_dir_from_config(config: RunnableConfig) -> str:
-    """The seeded store directory = the store identity (provenance gap #4).
-
-    Lives on ``memory_persistence_config`` in the runnable config (a
-    ``MemoryPersistenceConfig`` or a plain dict, depending on call site).
-    """
-    configurable = (config or {}).get("configurable", {}) or {}
-    mpc = configurable.get("memory_persistence_config")
-    if mpc is None:
-        return ""
-    seed = getattr(mpc, "seed_store_dir", None)
-    if seed is None and isinstance(mpc, dict):
-        seed = mpc.get("seed_store_dir")
-    return str(seed) if seed else ""
 
 
 def _enrich_payload_with_memory(
