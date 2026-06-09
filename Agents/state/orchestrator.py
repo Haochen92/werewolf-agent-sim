@@ -27,43 +27,71 @@ class OrchestratorGraph(TypedDict, total=False):
 
     # Accumulating transcripts/records (the `add` reducer appends across phases).
     day_channel: Annotated[list[DayChannel], add]
+    """Public day-discussion transcript; accumulates across all days."""
     day_summaries: Annotated[list[DaySummary], add]
+    """One condensed summary per completed day, carried into later days."""
     wolf_channel: Annotated[list[WolfChannel], add]
+    """Wolf-night discussion + kill-vote transcript; accumulates across nights."""
     strategy_adoptions: Annotated[list[StrategyAdoption], add]
+    """Records of agents adopting a retrieved strategy point (tracing/eval)."""
 
     # Cast & identity.
-    agent_strategies: dict[str, str]  # player_id -> private strategy note
-    roles: dict[str, str]             # player_id -> true role
+    agent_strategies: dict[str, str]
+    """player_id -> that agent's private strategy note."""
+    roles: dict[str, str]
+    """player_id -> true role (ground truth; never shown to other agents)."""
     human_player: str
+    """player_id of the human seat, or "" when fully agent-played."""
     # Role markers: source of truth for special-role aliveness (None once that player dies).
     healer_player: str | None
+    """Healer's player_id while alive; None once dead/absent."""
     investigator_player: str | None
+    """Investigator's player_id while alive; None once dead/absent."""
     serial_killer_player: str | None
+    """Serial killer's player_id while alive; None once dead/absent."""
     vigilante_player: str | None
+    """Vigilante's player_id while alive; None once dead/absent."""
 
     # Tonight's chosen targets (reset each night; None = no action / not present).
     wolves_kill_target: str | None
+    """Tonight's wolf kill target; None if no kill resolved."""
     healer_target: str | None
+    """Player the healer protects tonight; None if no protection."""
     investigator_target: str | None
+    """Player the investigator probes tonight; None if no probe."""
     serial_killer_target: str | None
+    """Player the serial killer strikes tonight; None if no strike."""
     vigilante_target: str | None
+    """Player the vigilante shoots tonight; None if holding fire."""
     vigilante_bullets: int
+    """Remaining vigilante shots (starts at 2)."""
 
     investigator_results: Annotated[list[InvestigatorResult], add]
+    """Private investigation outcomes, siloed to the investigator."""
     # Private notes the vigilante learns from its own shots (e.g. discovering an immune
     # target is the serial killer). Siloed to the vigilante, like investigator_results.
     vigilante_results: Annotated[list[str], add]
+    """Private notes the vigilante learns from its shots (e.g. an immune target = the
+    serial killer). Siloed to the vigilante, like investigator_results."""
     # Day outcome.
     day_votes: list[DayVote]
+    """This day's recorded votes (public, permanent)."""
     voted_player: str | None
-    no_lynch_streak: int  # consecutive no-elimination days (forces abstain off past a cap)
+    """Player eliminated by today's vote; None on a no-lynch day."""
+    no_lynch_streak: int
+    """Consecutive no-elimination days; forces abstain off past a cap."""
 
     # The solo serial killer has no allies, so there is no "surviving SK" list to be
     # aware of (unlike surviving_wolves). It lives in surviving_villagers (the non-wolf
     # bucket) for discussion/targeting; serial_killer_player tracks whether it is alive.
     surviving_wolves: list[str]
+    """Living wolves — the wolf-visible ally roster."""
     surviving_villagers: list[str]
+    """Living non-wolves (includes the solo serial killer) for discussion/targeting."""
 
     current_day: int
+    """1-based current game day."""
     current_round: int
-    winner: str | None  # set once a faction wins; None while the game is live
+    """Discussion round within the current day."""
+    winner: str | None
+    """Winning faction once decided; None while the game is live."""
