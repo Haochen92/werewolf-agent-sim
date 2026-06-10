@@ -3,9 +3,16 @@
 
 ### Motivation
 
-Per-role extraction produces 2-3x more items than single-pass extraction (4 LLM calls per game x 4-8 items each), which overwhelms the LLM dedup pipeline. The existing dedup flow uses only situation embedding similarity from InMemoryStore search: items below `DEDUP_SIMILARITY_THRESHOLD` (0.55) bypass dedup entirely, and everything above gets an LLM call. This is wasteful — many cases are obvious duplicates or obviously novel, and the LLM call adds latency and cost without changing the outcome.
+Per-role extraction produces 2-3x more items than single-pass extraction (4 LLM calls per game x 4-8 items each), which overwhelms the LLM dedup pipeline.
 
-The idea: add a content-aware embedding pre-filter that compares more than just situation similarity. For strategy points, embed and compare the **action** field. For observations, embed and compare the **full content** (situation + approach + outcome concatenated). Use these similarities to make deterministic keep/discard decisions before LLM fallback.
+The existing dedup flow keyed every decision off a single number — the InMemoryStore search score on the **situation** embedding:
+- Below `DEDUP_SIMILARITY_THRESHOLD` (0.55): no similar entry found, store as new (bypass dedup entirely).
+- At or above a high `DEDUP_THRESHOLD` on the top hit's search score: auto-discard as a near-duplicate, no LLM.
+- In between: hand to the LLM.
+
+This had two weaknesses. First, the only deterministic short-circuit was at the discard end — clearly-*novel* entries (low-but-above-0.55 similarity) still paid for an LLM call that only ever said "keep." Second, the auto-discard rode the *situation* search score alone, which conflates same-situation with same-prescription: two entries can share a situation yet recommend opposite actions.
+
+The idea: replace that single-threshold situation auto-discard with a content-aware embedding pre-filter that (a) decides on a more discriminating field, and (b) short-circuits at *both* ends. For strategy points, embed and compare the **action** field. For observations, embed and compare the **full content** (situation + approach + outcome concatenated). Use these similarities to make deterministic keep *and* discard decisions before LLM fallback. (The 0.55 search-score filter stays as the candidate-gathering net feeding the LLM; only the auto-decision layer changes.)
 
 ### Design
 
