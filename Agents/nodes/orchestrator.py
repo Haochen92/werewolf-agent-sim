@@ -33,7 +33,7 @@ from Agents.extraction import (
 
 from Agents.schemas.evaluation import ExtractionCase
 from Agents.memory.deduplication import (
-    run_downstream_dedup,
+    run_downstream_strategy_dedup,
     run_observation_downstream_dedup,
 )
 from Agents.memory.persistence import (
@@ -452,7 +452,7 @@ def post_game_analysis(
         extracted_observations.observations,
         game_id,
     )
-    strategy_dedup_stats = run_downstream_dedup(
+    strategy_dedup_stats = run_downstream_strategy_dedup(
         store,
         extracted_observations.strategy_points,
         game_id,

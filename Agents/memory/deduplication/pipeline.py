@@ -2,8 +2,8 @@
 
 Observations and strategy points run the identical pipeline — search → threshold filter →
 embedding prefilter → LLM fallback → apply — differing only in their per-kind operations,
-so both flows share one core (``_dedup_single`` / ``_run_dedup_batch``) parameterised by a
-``_DedupKind`` binding.
+so both flows share one core (``_dedup_single_memory`` / ``_dedup_memory_items``) parameterised
+by a ``_DedupKind`` binding.
 """
 
 from __future__ import annotations
@@ -115,10 +115,10 @@ def run_observation_downstream_dedup(
 
     Returns a DedupStats summary.
     """
-    return _run_dedup_batch(store, observations, game_id, _OBSERVATION_KIND)
+    return _dedup_memory_items(store, observations, game_id, _OBSERVATION_KIND)
 
 
-def run_downstream_dedup(
+def run_downstream_strategy_dedup(
     store: BaseStore,
     strategy_points: list[StrategyPoint],
     game_id: str,
@@ -134,10 +134,10 @@ def run_downstream_dedup(
 
     Returns a DedupStats summary.
     """
-    return _run_dedup_batch(store, strategy_points, game_id, _STRATEGY_POINT_KIND)
+    return _dedup_memory_items(store, strategy_points, game_id, _STRATEGY_POINT_KIND)
 
 
-def _run_dedup_batch(
+def _dedup_memory_items(
     store: BaseStore,
     items: list[Observation] | list[StrategyPoint],
     game_id: str,
@@ -153,7 +153,7 @@ def _run_dedup_batch(
             f"situation={item.situation[:80]}..."
         )
 
-        result = _dedup_single(store, item, game_id, kind)
+        result = _dedup_single_memory(store, item, game_id, kind)
 
         _emit_dedup_span(
             item_type=kind.item_type,
@@ -218,7 +218,7 @@ def dedup_single_observation(
 
     Returns the decision taken, or None if dedup failed (observation stored raw).
     """
-    return _dedup_single(store, observation, game_id, _OBSERVATION_KIND)
+    return _dedup_single_memory(store, observation, game_id, _OBSERVATION_KIND)
 
 
 def dedup_single_strategy_point(
@@ -232,10 +232,10 @@ def dedup_single_strategy_point(
 
     Returns the decision taken, or None if dedup failed (point stored raw).
     """
-    return _dedup_single(store, point, game_id, _STRATEGY_POINT_KIND)
+    return _dedup_single_memory(store, point, game_id, _STRATEGY_POINT_KIND)
 
 
-def _dedup_single(
+def _dedup_single_memory(
     store: BaseStore,
     item: Observation | StrategyPoint,
     game_id: str,

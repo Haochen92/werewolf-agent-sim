@@ -57,7 +57,7 @@ from .pipeline import (
     _emit_dedup_span,
     dedup_single_observation,
     dedup_single_strategy_point,
-    run_downstream_dedup,
+    run_downstream_strategy_dedup,
     run_observation_downstream_dedup,
 )
 
@@ -107,6 +107,6 @@ __all__ = [
     "_emit_dedup_span",
     "dedup_single_observation",
     "dedup_single_strategy_point",
-    "run_downstream_dedup",
+    "run_downstream_strategy_dedup",
     "run_observation_downstream_dedup",
 ]
