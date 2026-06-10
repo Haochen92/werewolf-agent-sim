@@ -32,7 +32,8 @@ from Agents.state import (
     WolfDayState,
 )
 from Agents.engine.agent import _run_agent
-from Agents.engine.eval import _build_eval_private_context, _process_strategy_adoption
+from Agents.engine.adoption import _process_strategy_adoption
+from Agents.engine.eval import _build_eval_private_context
 
 logger = getLogger(__name__)
 
