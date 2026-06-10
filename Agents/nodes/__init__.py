@@ -3,23 +3,18 @@
 day/flow.py     — day discussion/vote control flow (scheduler hop, routers, fan-out, summary)
 day/actors.py   — per-role day discuss/vote nodes, built from two factories
 orchestrator.py — game setup, day resolution, winner/terminal logic, postgame
-scheduler.py    — sequential-discussion speaker ranking
 night/<role>.py — each role's night action node (single-actor roles are one-line
                   bindings over night/factory.py:make_night_act_node)
 night/wolf.py   — the multi-node wolf night discussion flow
 night/resolution.py — cross-role night kill resolution + routing
 
-The shared actor execution engine itself (_run_agent, the memory-informed
+The turn system itself (speaker scheduling, _run_agent, the memory-informed
 actions, the proactive-novelty gate) lives in Agents.turn, not here — these
 are only the graph nodes that call into it.
 
 Everything is re-exported here so `from Agents.nodes import X` resolves unchanged.
 """
 
-from Agents.nodes.scheduler import (  # noqa: F401
-    cycle_seed,
-    select_next_speaker,
-)
 from Agents.nodes.orchestrator import (  # noqa: F401
     _faction_counts,
     _max_days_winner,

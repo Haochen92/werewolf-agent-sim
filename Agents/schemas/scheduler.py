@@ -1,4 +1,4 @@
-"""Pure data types for the sequential-discussion scheduler (Agents.nodes.scheduler).
+"""Pure data types for the sequential-discussion scheduler (Agents.turn.scheduler).
 
 Internal only: the scheduler is deterministic Python with no LLM, so these never reach a model.
 Balance is the per-directed-pair obligation ledger entry; ReactiveItem groups one debtor's open

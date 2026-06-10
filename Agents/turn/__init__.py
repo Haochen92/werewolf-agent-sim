@@ -1,15 +1,21 @@
-"""The agent-decision engine — how an actor node makes a memory-informed decision.
+"""The turn system — who gets the turn, and how it executes.
 
-Extracted from the old runtime.py (which was 100% non-graph-node helpers). The
-actor nodes in Agents/nodes/ call into this; nothing here is a LangGraph node.
+The graph nodes in Agents/nodes/ are pure wiring; they delegate every agent turn
+here. Two halves, connected only by data (`firing_reason` rides the Send):
 
-  agent.py    — _run_agent: the core LLM call (dynamic target enum, retry, the
-                proactive-novelty gate) + prompt_log (leak-test capture)
-  actions.py  — _run_memory_informed_action / _night_action: enrich-then-act wrappers
-  action_space.py — legal-target computation + dynamic target-enum schema
-  novelty_agent.py — the proactive-novelty gate (judge llm.invoke + prompt)
-  eval.py     — EvalCase private-context snapshot
-  adoption.py — strategy-adoption store write-back (retrieved/used counts)
+WHO (policy — day discussion only; votes and night actions are fan-out, so there
+is nothing to schedule):
+  scheduler.py — speaker selection: reactive obligations, proactive ranking,
+                 pass-based termination. Pure functions, no LLM.
+
+HOW (the execution pipeline: enrich → decide → record — all actions, day + night):
+  actions.py       — _run_memory_informed_action / _night_action: the pipeline
+  agent.py         — _run_agent: the decision llm.invoke (retry, pass handling)
+                     + prompt_log (leak-test capture)
+  action_space.py  — legal-move enforcement (valid targets + dynamic target enum)
+  novelty_agent.py — the proactive-novelty speak-gate (judge llm.invoke + prompt)
+  adoption.py      — record: strategy-adoption store write-back (memory impact)
+  eval.py          — record: EvalCase private-context snapshot
 """
 
 from Agents.turn.actions import (  # noqa: F401
@@ -18,3 +24,9 @@ from Agents.turn.actions import (  # noqa: F401
 )
 from Agents.turn.agent import _run_agent, prompt_log  # noqa: F401
 from Agents.turn.novelty_agent import NOVELTY_JUDGE_PROMPT, judge_proactive_novelty  # noqa: F401
+from Agents.turn.scheduler import (  # noqa: F401
+    build_reactive_queue,
+    cycle_seed,
+    rank_proactive,
+    select_next_speaker,
+)

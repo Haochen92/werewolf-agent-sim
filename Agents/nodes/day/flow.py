@@ -24,7 +24,7 @@ from Agents.state import (
 from Agents.schemas import DaySummaryCase
 
 from Agents.nodes.day.summary_agent import run_day_summary_agent
-from Agents.nodes.scheduler import cycle_seed, select_next_speaker
+from Agents.turn.scheduler import cycle_seed, select_next_speaker
 
 from Agents.tracing import (
     langfuse,
