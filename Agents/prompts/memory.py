@@ -80,7 +80,7 @@ Adaptive Strategic thinking:
 
 
 SITUATION_ROLE_LENS = {
-    "wolf": "Also note: which villager is most dangerous to leave alive, and whether the pressure on your team could be redirected.",
+    "wolf": "Also note: which other player is most dangerous to leave alive — whether a strong villager or the serial killer as a rival faction competing for the win — and whether the pressure on your team could be redirected.",
     "villager": "Also note: who is being evasive, voting inconsistencies, and unresolved accusations.",
     "healer": "Also note: who most needs protection, whether your activity level risks exposing you, and whether it's time to claim.",
     "investigator": "Lead with how your private findings relate to the public narrative — do they confirm, contradict, or add nothing new? Also note whether your communication style is marking you as a power role.",
