@@ -16,7 +16,7 @@ from Agents.schemas.evaluation import ExtractionCase
 from evaluation.data.datasets import read_extraction_dataset
 from evaluation.judges.extraction import run_extraction_judge
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+from evaluation.core.settings import REPO_ROOT
 
 
 def main():
@@ -48,7 +48,7 @@ def main():
     print("", flush=True)
 
     # Output file
-    out_dir = REPO_ROOT / "evidence" / "extraction_quality" / "model_comparison"
+    out_dir = REPO_ROOT / "evidence" / "extraction" / "quality" / "model_comparison"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_file = out_dir / f"judge_{judge_model}_{timestamp}.jsonl"
 

@@ -16,7 +16,7 @@ from Agents.schemas.evaluation import ExtractionCase
 from evaluation.data.datasets import read_extraction_dataset
 from evaluation.judges.per_role_extraction import run_per_role_extraction_judge
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+from evaluation.core.settings import REPO_ROOT
 DIMS = [
     "specificity", "epistemic_compliance", "grounding", "coverage",
     "diversity", "perspective_compliance", "strategy_depth", "novelty",
@@ -49,7 +49,7 @@ def main():
     print(f"Total cases to judge: {len(extraction_results)}", flush=True)
     print("", flush=True)
 
-    out_dir = REPO_ROOT / "evidence" / "extraction_quality" / "model_comparison"
+    out_dir = REPO_ROOT / "evidence" / "extraction" / "quality" / "model_comparison"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_file = out_dir / f"per_role_judge_{judge_model}_{timestamp}.jsonl"
 

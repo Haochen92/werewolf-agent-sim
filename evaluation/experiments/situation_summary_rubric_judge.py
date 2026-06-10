@@ -20,9 +20,9 @@ from evaluation.core.schemas import SituationSummaryScores
 from evaluation.data.datasets import read_eval_dataset
 from evaluation.judges.prompts import SUMMARY_RUBRIC_SYSTEM_PROMPT, SUMMARY_RUBRIC_USER_PROMPT
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+from evaluation.core.settings import REPO_ROOT
 DATASET_PATH = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
-OUTPUT_DIR = REPO_ROOT / "evidence" / "situation_summary_quality" / "model_comparison"
+OUTPUT_DIR = REPO_ROOT / "evidence" / "extraction" / "situation_summary" / "model_comparison"
 
 JUDGE_MODEL = "gemini-3.1-pro-preview"
 

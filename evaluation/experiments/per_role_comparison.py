@@ -18,7 +18,7 @@ from evaluation.data.datasets import read_extraction_dataset
 from evaluation.judges.per_role_extraction import filter_items_by_role
 from evaluation.judges.pairwise_extraction import run_pairwise_extraction_judge
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+from evaluation.core.settings import REPO_ROOT
 ROLES = ["wolf", "villager", "healer", "investigator"]
 DIMS = [
     "specificity", "epistemic_compliance", "grounding", "coverage",
@@ -71,7 +71,7 @@ def main():
     print(f"Total comparisons: {len(common_games)} games x {len(ROLES)} roles x {len(pairs)} pairs = {len(common_games)*len(ROLES)*len(pairs)}", flush=True)
     print("", flush=True)
 
-    out_dir = REPO_ROOT / "evidence" / "extraction_quality" / "model_comparison"
+    out_dir = REPO_ROOT / "evidence" / "extraction" / "quality" / "model_comparison"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_file = out_dir / f"comparison_{judge_model}_{timestamp}.jsonl"
 

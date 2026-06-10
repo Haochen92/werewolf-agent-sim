@@ -19,7 +19,7 @@ from Agents.memory.extraction import build_extraction_prompt, build_role_extract
 from Agents.schemas import GameStrategyOutput
 from evaluation.data.datasets import read_extraction_dataset
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+from evaluation.core.settings import REPO_ROOT
 PLAYER_ID_RE = re.compile(r"player_\d+")
 ROLES = ["wolf", "villager", "healer", "investigator"]
 
@@ -227,7 +227,7 @@ def main():
         print(format_samples(all_observations, all_strategy_points), flush=True)
 
     # Save results
-    out_dir = REPO_ROOT / "evidence" / "extraction_quality" / "model_comparison"
+    out_dir = REPO_ROOT / "evidence" / "extraction" / "quality" / "model_comparison"
     out_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     suffix = "_per-role" if per_role else ""
