@@ -23,7 +23,7 @@ from Agents.memory.retrieval import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
-from Agents.memory.reranker import (
+from Agents.memory.rerank_agent import (
     RERANK_TOP_K,
     rerank_observations,
     rerank_strategy_points,

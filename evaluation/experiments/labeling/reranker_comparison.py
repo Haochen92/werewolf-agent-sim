@@ -115,7 +115,7 @@ def _load_memory_texts() -> dict[str, dict]:
 # ---------------------------------------------------------------------------
 
 def _format_obs_text(fields: dict) -> str:
-    """Same as Agents/reranker.py:_format_observation_candidate."""
+    """Same as Agents/memory/rerank_agent.py:_format_observation_candidate."""
     parts = [f"Situation: {fields['situation']}"]
     if fields.get("approach"):
         parts.append(f"Approach: {fields['approach']}")
@@ -125,7 +125,7 @@ def _format_obs_text(fields: dict) -> str:
 
 
 def _format_sp_text(fields: dict) -> str:
-    """Same as Agents/reranker.py:_format_strategy_point_candidate."""
+    """Same as Agents/memory/rerank_agent.py:_format_strategy_point_candidate."""
     return fields["situation"]
 
 

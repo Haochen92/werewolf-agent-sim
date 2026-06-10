@@ -1,3 +1,7 @@
+"""Rerank agent: the `llm.invoke` (in `_rerank`) that reorders retrieved candidates by relevance,
+plus the candidate formatting and score-merge helpers that wrap it. Falls back to bi-encoder order
+on any LLM failure."""
+
 from logging import getLogger
 
 from Agents.prompts import RERANK_PROMPT
