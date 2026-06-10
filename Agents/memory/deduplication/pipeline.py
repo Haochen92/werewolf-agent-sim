@@ -1,9 +1,15 @@
 """Per-item dedup orchestration, Langfuse span emission, and batch entry points.
 
-Observations and strategy points run the identical pipeline — search → threshold filter →
-embedding prefilter → LLM fallback → apply — differing only in their per-kind operations,
-so both flows share one core (``_dedup_single_memory`` / ``_dedup_memory_items``) parameterised
-by a ``_DedupKind`` binding.
+## Steps (per item, in _dedup_single_memory):
+1. Search the store for the DEDUP_TOP_N most similar existing entries, using the new item's situation text as the query.
+2. Threshold filter — keep only hits scoring ≥ DEDUP_SIMILARITY_THRESHOLD. If nothing clears it, the item is clearly novel: store it, return auto-KEEP. No LLM involved.
+3. Similarity prefilter (the per-kind discard/keep cutoffs in config.py) — currently a static
+   bi-encoder: cosine of independently embedded texts (prefilter.py). If the top match is extremely
+   similar, it's an obvious duplicate: bump the existing entry's counts, return auto-DISCARD. If
+   similarity is low enough, obviously novel: store, auto-KEEP. Both skip the LLM. (A fine-tuned
+   cross-encoder is the planned swap-in here — see the fine-tuning plan — not yet wired in.)
+4. LLM fallback — only the ambiguous middle band reaches here. The LLM decides keep or discard; apply_decision writes the outcome to the store. (Merge lives in the offline batch_deduplication module, not here.)
+5. Fail-open — if the LLM errors out after retries, return None; the batch loop stores the item raw rather than losing a memory.
 """
 
 from __future__ import annotations
