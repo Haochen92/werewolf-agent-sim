@@ -39,24 +39,24 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import uuid
 from collections import Counter
 from pathlib import Path
 
 from langgraph.store.memory import InMemoryStore
 
-import Agents.memory_deduplication as dedup_module
-from Agents.llm_factory import create_embeddings
-from Agents.memory_deduplication import (
+from Agents.llm_factory import DEFAULT_DEDUP_MODEL, create_embeddings
+from Agents.memory.deduplication import (
     DEDUP_SIMILARITY_THRESHOLD,
     DEDUP_TOP_N,
-    _call_dedup_llm,
-    _call_observation_dedup_llm,
+    _dedup_agent,
     _embedding_prefilter_observation,
     _embedding_prefilter_strategy_point,
+    _observation_dedup_agent,
     _serialize_candidates,
 )
-from Agents.memory_persistence import seed_memory_from_config
+from Agents.memory.persistence import seed_memory_from_config
 from Agents.schemas.memory import Observation, StrategyPoint
 
 logging.basicConfig(
@@ -145,9 +145,9 @@ def _dedup_without_store_mutation(
 
     # LLM decision required
     if item_type == "observation":
-        decision = _call_observation_dedup_llm(entry, similar)
+        decision = _observation_dedup_agent(entry, similar)
     else:
-        decision = _call_dedup_llm(entry, similar)
+        decision = _dedup_agent(entry, similar)
 
     if decision is None:
         return None
@@ -257,12 +257,13 @@ def main():
     )
     args = parser.parse_args()
 
+    # get_llm_dedup() reads these env vars (uncached), so set them before any dedup call.
     if args.model:
         logger.info(f"Overriding dedup model: {args.model}")
-        dedup_module.DEDUP_MODEL = args.model
+        os.environ["DEDUP_MODEL"] = args.model
     if args.thinking_level is not None:
         logger.info(f"Overriding thinking level: {args.thinking_level}")
-        dedup_module.DEDUP_THINKING_LEVEL = args.thinking_level
+        os.environ["DEDUP_THINKING_LEVEL"] = args.thinking_level
 
     # Create a fresh store (not the global singleton)
     logger.info(f"Seeding fresh store from {args.store_dir}")
@@ -302,7 +303,7 @@ def main():
 
             result["game_id"] = game_id
             result["case_index"] = i - 1
-            result["dedup_model"] = args.model or dedup_module.DEDUP_MODEL
+            result["dedup_model"] = args.model or os.getenv("DEDUP_MODEL", DEFAULT_DEDUP_MODEL)
             out.write(json.dumps(result) + "\n")
 
             decision = result["decision"]
