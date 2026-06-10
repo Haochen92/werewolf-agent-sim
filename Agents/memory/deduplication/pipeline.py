@@ -95,7 +95,7 @@ _STRATEGY_POINT_KIND = _DedupKind(
     apply_decision=_apply_decision,
     store_new=_store_new_point,
     update_auto_duplicate=lambda store, namespace, top_item, item: (
-        _update_auto_duplicate(store, namespace, top_item.key, top_item, item)
+        _update_auto_duplicate(store, namespace, top_item.key, top_item)
     ),
 )
 

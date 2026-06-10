@@ -192,11 +192,16 @@ def _update_auto_duplicate(
     namespace: tuple[str, ...],
     key: str,
     item,
-    point: StrategyPoint,
 ) -> None:
-    """Apply the high-confidence strategy-point dedup behavior."""
+    """Bump an existing strategy point's count for the prefilter auto-DISCARD path.
+
+    Strategy twin of ``_update_auto_observation_duplicate``: roundtrips through
+    ``StoredStrategyPoint`` and increments the count, keeping the existing entry's
+    content untouched. DISCARD means the new point is redundant, so its action is
+    dropped rather than written over the old one — matching the LLM-DISCARD bump in
+    ``_apply_decision``.
+    """
     stored_point = StoredStrategyPoint.model_validate(item.value)
     stored_point.observation_count += 1
     stored_point.last_observed = datetime.now()
-    stored_point.action = point.action
     store.put(namespace, key, stored_point.model_dump())
