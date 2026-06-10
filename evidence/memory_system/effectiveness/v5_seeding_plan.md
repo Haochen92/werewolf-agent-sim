@@ -86,6 +86,38 @@ extraction and traces the ExtractionCase, then skips dedup/dump/batch-dedup when
 off. Prompt-freeze-safe (pure dump-gate plumbing). Used for the post-change end-to-end
 verification game before committing to the 30-game batch.
 
+## Cost (measured, verification game) + the decouple refinement
+
+One end-to-end memory-off game (day 5): **play $0.1995** (flash-lite 3.1, Langfuse-priced,
+207 calls) **+ extraction $0.333** (2.5-pro, 6 roles, 98.9% input cached) = **≈$0.53**. Cache
+cut extraction *input* ~73% but extraction is **output-bound** (31k out × $10/1M = ~78% of
+extraction), so net cache saving is **~16% of extraction (~$0.066/game)** — caching neutralizes
+the per-role *input* multiplication; output is the price of the quality upgrade. Extraction is
+**62% of the game cost**. (Caveat: re-measured from the saved record, which omits
+`wolf_channel`/strategy notes → input slightly under-counted; output faithful.)
+
+**Refinement — decouple store-build from baseline.** Extraction doesn't affect *play*, so an
+extraction-off memory-off game is a valid baseline point. So: run **N_store extraction-ON 2.5-pro
+games** (`all_disabled`, dump ON) to build `v5.0` (store quality matters → keep 2.5-pro, not
+flash-lite — a weak store risks a false-negative "memory doesn't work"), then **pad the baseline
+with extraction-OFF games** (`all_disabled --no-memory-dump`, ~$0.20 each). Baseline = all
+memory-off games. A/B + ablation run extraction-OFF (they read the store). No new code — existing
+run_batch invocations.
+
+**N_store — don't fix a priori; watch saturation.** Fixed casting + memory-off games being more
+self-similar → store saturates fast and dedup absorbs recurrence. Run extraction-on games in
+batches of ~5, count deduped store items after each, **stop at the knee (<~10% growth / 5 games)**
+— estimate ~15–20 (≈200–300 deduped items, in range of the old 300–522 stores). ~15 store + pad
+to ~30 memory-off ≈ **$11**, a bigger baseline for less than the flat-30.
+
+## Instrumentation fixes made this session
+- **Extraction tracing restored**: the concurrent fan-out ran in ThreadPool workers where
+  contextvars (langchain callback + Langfuse span) don't propagate → per-role generations were
+  untraced (cost hidden). Fixed via `copy_context().run` per worker (output-neutral).
+- **Dedup stats in the record**: per-game `DedupStats` (was log-only) now rides
+  `Metrics.dedup_stats` → `raw_metrics` → the batch record `dedup_stats` field → per-game
+  absorption / saturation is queryable without Langfuse.
+
 ## Order of operations
 
 1. Seedability fix (engine-level) + extract-without-dump flag. ✅ small, prompt-neutral.
