@@ -10,6 +10,7 @@ Two entry points share one primary→backup fallback core:
 
 from __future__ import annotations
 
+import contextvars
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -152,7 +153,15 @@ def extract_postgame_per_role(
 
     try:
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            futures = {pool.submit(_one, role): role for role in roles}
+            # contextvars (langchain's ambient RunnableConfig callbacks AND the active
+            # Langfuse/OTEL span) don't auto-propagate into worker threads, which would
+            # silently drop tracing of the per-role calls — the span survives but its
+            # child generations vanish. Snapshot the submitting thread's context and run
+            # each worker inside it so the generations nest under the extraction span.
+            futures = {
+                pool.submit(contextvars.copy_context().run, _one, role): role
+                for role in roles
+            }
             for future in as_completed(futures):
                 role = futures[future]
                 try:
