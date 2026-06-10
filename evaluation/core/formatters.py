@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from Agents.prompts.formatters import (
+from Agents.prompts.prompt_formatters import (
     format_day_summaries,
     format_investigator_results,
     format_wolf_channel,

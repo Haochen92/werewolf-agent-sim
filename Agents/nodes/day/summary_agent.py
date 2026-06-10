@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from logging import getLogger
 
-from Agents.prompts.formatters import format_day_channel
+from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.llm_factory import get_llm_summary
 from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
 from Agents.schemas import DaySummaryOutput

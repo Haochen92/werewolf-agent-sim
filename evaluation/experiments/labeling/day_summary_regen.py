@@ -11,7 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
-from Agents.prompts.formatters import format_day_channel
+from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
 from Agents.schemas import DaySummaryOutput
 from Agents.schemas.game_events import DayChannel

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from logging import getLogger
 
-from Agents.prompts.formatters import (
+from Agents.prompts.prompt_formatters import (
     format_day_channel_postgame,
     format_investigator_results,
     format_roles,

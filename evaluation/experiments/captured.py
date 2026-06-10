@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from Agents.prompts.formatters import format_agent_action
+from Agents.prompts.prompt_formatters import format_agent_action
 from evaluation.core.config_schema import CapturedEvaluationConfig
 from evaluation.core.io import write_jsonl
 from evaluation.core.settings import REPO_ROOT, load_project_env

@@ -7,7 +7,7 @@ import json
 from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
-from Agents.prompts.formatters import format_agent_action, format_day_channel
+from Agents.prompts.prompt_formatters import format_agent_action, format_day_channel
 from Agents.schemas.evaluation import EvalCase
 from evaluation.core.io import message_content_text, strip_json_fences
 from evaluation.core.schemas import ApplicationScores

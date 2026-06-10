@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from Agents.prompts.formatters import format_agent_action
+from Agents.prompts.prompt_formatters import format_agent_action
 from Agents.memory import retrieve_observations_for_agent, retrieve_strategy_points_for_agent
 from Agents.schemas.evaluation import EvalCase
 from evaluation.components.application import (

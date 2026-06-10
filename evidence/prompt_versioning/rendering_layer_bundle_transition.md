@@ -39,3 +39,12 @@ the hash going forward. The fingerprint's definition of "prompt surface" now mat
 Records (batch JSONL, trace metadata) stamped before this commit carry `9d82636a7697d4a6`;
 after, `be56dd2794d31e77`. A bundle-hash difference **across this boundary alone** does not
 indicate a prompt change. Within either side, the hash behaves as before.
+
+## Addendum (same day): formatters.py renamed prompt_formatters.py
+
+Immediately after the fold, `prompts/formatters.py` was renamed `prompts/prompt_formatters.py`
+(symmetry with `prompt_inputs.py`). The bundle hash includes file *names*, so this is a second
+content-neutral bump: `be56dd2794d31e77` → **`7a8542224196ca0e`** (file bytes unchanged; only
+the hashed name changed). `7a8542224196ca0e` is the stable post-transition hash. No game was
+generated between the two intermediate hashes, so in practice stamped records jump straight
+from `9d82636a7697d4a6` to `7a8542224196ca0e`.
