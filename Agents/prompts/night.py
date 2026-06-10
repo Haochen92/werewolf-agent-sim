@@ -64,9 +64,9 @@ HEALER_NIGHT = _night_template(
     HEALER_CORE_STRATEGY,
     """
 You are {player_id}, a {player_role}.
-Each night, you may protect one player from being eliminated by the wolves.
+Each night, you may protect one player from being eliminated at night — your protection blocks a kill from either the wolves or the serial killer.
 You cannot protect yourself.
-Choose wisely based on who you think the wolves might target.
+Choose wisely based on who you think the wolves or the serial killer might target.
 
 You must respond with a valid JSON:
 {{"healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
