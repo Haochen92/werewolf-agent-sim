@@ -431,6 +431,9 @@ def run_batch(args: argparse.Namespace) -> int:
                 # The derived proxies live in computed_metrics.
                 "day_resolutions": (outcome.raw_metrics or {}).get("day_resolutions"),
                 "night_resolutions": (outcome.raw_metrics or {}).get("night_resolutions"),
+                # Per-game memory dedup outcomes (absorption rate / store saturation);
+                # empty {} for extraction-off / no-dump games.
+                "dedup_stats": (outcome.raw_metrics or {}).get("dedup_stats"),
                 "leak_check": {"passed": not leaks, "leaks": leaks},
             }
             write_record(results_path, record)

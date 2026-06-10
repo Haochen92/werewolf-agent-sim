@@ -487,23 +487,26 @@ def post_game_analysis(
         extracted_observations.strategy_points,
         game_id,
     )
+    # Record the dedup outcomes on the live Metrics accumulator so they ride
+    # raw_metrics into the batch record (not just the ephemeral log) — per-game
+    # absorption is the store-saturation signal during seeding.
+    runtime.context["metrics"].dedup_stats = {
+        "observations": observation_dedup_stats.model_dump(mode="json"),
+        "strategy_points": strategy_dedup_stats.model_dump(mode="json"),
+    }
     logger.info(
-        f"Observation dedup stats: {observation_dedup_stats.kept} kept, "
-        f"{observation_dedup_stats.discarded} discarded, "
-        f"{observation_dedup_stats.replaced} replaced, "
-        f"{observation_dedup_stats.differentiated} differentiated, "
-        f"{observation_dedup_stats.failed} failed, "
-        f"{observation_dedup_stats.auto_kept} auto-kept, "
-        f"{observation_dedup_stats.auto_discarded} auto-discarded"
-    )
-    logger.info(
-        f"Strategy dedup stats: {strategy_dedup_stats.kept} kept, "
-        f"{strategy_dedup_stats.discarded} discarded, "
-        f"{strategy_dedup_stats.replaced} replaced, "
-        f"{strategy_dedup_stats.differentiated} differentiated, "
-        f"{strategy_dedup_stats.failed} failed, "
-        f"{strategy_dedup_stats.auto_kept} auto-kept, "
-        f"{strategy_dedup_stats.auto_discarded} auto-discarded"
+        "Observation dedup: %s kept, %s discarded, %s replaced, %s differentiated, "
+        "%s failed, %s auto-kept, %s auto-discarded | Strategy dedup: %s kept, "
+        "%s discarded, %s replaced, %s differentiated, %s failed, %s auto-kept, "
+        "%s auto-discarded",
+        observation_dedup_stats.kept, observation_dedup_stats.discarded,
+        observation_dedup_stats.replaced, observation_dedup_stats.differentiated,
+        observation_dedup_stats.failed, observation_dedup_stats.auto_kept,
+        observation_dedup_stats.auto_discarded,
+        strategy_dedup_stats.kept, strategy_dedup_stats.discarded,
+        strategy_dedup_stats.replaced, strategy_dedup_stats.differentiated,
+        strategy_dedup_stats.failed, strategy_dedup_stats.auto_kept,
+        strategy_dedup_stats.auto_discarded,
     )
 
     dump_memory_to_json_files_from_config(

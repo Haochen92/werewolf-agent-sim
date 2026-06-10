@@ -9,7 +9,7 @@ evidence/metrics/. Field-level meaning is kept in inline comments next to each c
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from pydantic import BaseModel, Field
 
@@ -63,6 +63,11 @@ class Metrics(BaseModel):
 
     day_resolutions: list[DayResolutionMetric] = Field(default_factory=list)
     night_resolutions: list[NightResolutionMetric] = Field(default_factory=list)
+    # Post-game memory-pipeline dedup outcomes, keyed by item type
+    # ("observations" / "strategy_points") -> DedupStats dump. Populated only when
+    # extraction persists (dump on); empty for extraction-off / no-dump games. Lets
+    # a seeding batch track per-game absorption (store saturation) from the record.
+    dedup_stats: dict[str, Any] = Field(default_factory=dict)
 
 
 class GraphContext(TypedDict):
