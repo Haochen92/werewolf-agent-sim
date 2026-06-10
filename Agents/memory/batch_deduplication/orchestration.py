@@ -21,13 +21,7 @@ from Agents.memory.persistence import (
 )
 
 from .clustering import _build_clusters, _fetch_namespace_items
-from .config import (
-    BatchDedupRunConfig,
-    ClusterMode,
-    DEDUP_TIMESTAMP_FILE,
-    LinkageMethod,
-    TwoPassConfig,
-)
+from .config import BatchDedupRunConfig, DEDUP_TIMESTAMP_FILE
 from .formatting import _cluster_preview, _format_cluster_entries
 from .incremental import _collect_new_keys, _read_last_dedup_at, _write_last_dedup_at
 from .operations import _apply_observation_operation, _apply_strategy_operation
@@ -47,80 +41,45 @@ def run_batch_memory_dedup(
     *,
     target_store: BaseStore = store,
 ) -> BatchDedupReport:
-    # Explode the run config into locals once; the sweep below reads them directly.
-    seed_store_dir = config.seed_store_dir
-    dump_store_dir = config.dump_store_dir
-    apply = config.apply
-    similarity_threshold = config.similarity_threshold
-    search_limit = config.search_limit
-    cluster_mode = config.cluster_mode
-    max_cluster_size = config.max_cluster_size
-    linkage_method = config.linkage_method
-    embedding_model = config.embedding_model
-    embedding_dims = config.embedding_dims
-    model = config.model
-    thinking_level = config.thinking_level
-    max_clusters = config.max_clusters
-    incremental = config.incremental
-    cluster_report_only = config.cluster_report_only
-    preview_chars = config.preview_chars
-    two_pass = config.two_pass
-    prompt_variant = config.prompt_variant
     memory_kinds = config.memory_kinds or ["observations", "strategy_points"]
     selected_roles = config.selected_roles or list(roles)
 
-    observations_path, strategy_points_path = memory_store_paths(seed_store_dir)
+    observations_path, strategy_points_path = memory_store_paths(config.seed_store_dir)
     seed_memory_from_json_files(
         observations_path=observations_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
     )
 
+    report = BatchDedupReport(
+        apply=config.apply,
+        seed_store_dir=str(config.seed_store_dir),
+        dump_store_dir=str(config.dump_store_dir),
+    )
+
     new_keys: set[str] | None = None
-    if incremental:
-        last_dedup = _read_last_dedup_at(seed_store_dir)
+    if config.incremental:
+        last_dedup = _read_last_dedup_at(config.seed_store_dir)
         if last_dedup is None:
             logger.info("Incremental: no previous dedup timestamp found, processing all entries")
         else:
-            new_keys = _collect_new_keys(seed_store_dir, last_dedup)
+            new_keys = _collect_new_keys(config.seed_store_dir, last_dedup)
             logger.info(
                 "Incremental: %d new keys since %s",
                 len(new_keys), last_dedup.isoformat(),
             )
             if not new_keys:
                 logger.info("Incremental: no new entries, nothing to do")
-                return BatchDedupReport(
-                    apply=apply,
-                    seed_store_dir=str(seed_store_dir),
-                    dump_store_dir=str(dump_store_dir),
-                )
-
-    report = BatchDedupReport(
-        apply=apply,
-        seed_store_dir=str(seed_store_dir),
-        dump_store_dir=str(dump_store_dir),
-    )
+                return report
 
     for memory_kind in memory_kinds:
         for role in selected_roles:
             role_phases = VALID_ACTION_PHASES_BY_ROLE.get(role, ACTION_PHASES)
             for action_phase in role_phases:
-                if cluster_report_only:
+                if config.cluster_report_only:
                     try:
                         stats, cluster_previews = inspect_namespace_clusters(
-                            target_store,
-                            memory_kind,
-                            role,
-                            action_phase,
-                            similarity_threshold=similarity_threshold,
-                            search_limit=search_limit,
-                            cluster_mode=cluster_mode,
-                            max_cluster_size=max_cluster_size,
-                            linkage_method=linkage_method,
-                            embedding_model=embedding_model,
-                            embedding_dims=embedding_dims,
-                            max_clusters=max_clusters,
-                            preview_chars=preview_chars,
+                            target_store, memory_kind, role, action_phase, config,
                         )
                     except Exception as exc:
                         logger.warning(
@@ -143,23 +102,7 @@ def run_batch_memory_dedup(
 
                 try:
                     stats = dedup_namespace(
-                        target_store,
-                        memory_kind,
-                        role,
-                        action_phase,
-                        apply=apply,
-                        similarity_threshold=similarity_threshold,
-                        search_limit=search_limit,
-                        cluster_mode=cluster_mode,
-                        max_cluster_size=max_cluster_size,
-                        linkage_method=linkage_method,
-                        embedding_model=embedding_model,
-                        embedding_dims=embedding_dims,
-                        model=model,
-                        thinking_level=thinking_level,
-                        max_clusters=max_clusters,
-                        two_pass=two_pass,
-                        prompt_variant=prompt_variant,
+                        target_store, memory_kind, role, action_phase, config,
                         new_keys=new_keys,
                     )
                 except Exception as exc:
@@ -174,21 +117,23 @@ def run_batch_memory_dedup(
                         memory_kind=memory_kind,
                         role=role,
                         failed=1,
-                        dry_run=not apply,
+                        dry_run=not config.apply,
                     )
                 report.stats.append(stats)
 
-    if apply:
+    if config.apply:
         observations_dump_path, strategy_points_dump_path = memory_store_paths(
-            dump_store_dir
+            config.dump_store_dir
         )
         dump_memory_to_json_files(
             observations_path=observations_dump_path,
             strategy_points_path=strategy_points_dump_path,
             target_store=target_store,
         )
-        _write_last_dedup_at(dump_store_dir)
-        logger.info("Wrote dedup timestamp to %s", dump_store_dir / DEDUP_TIMESTAMP_FILE)
+        _write_last_dedup_at(config.dump_store_dir)
+        logger.info(
+            "Wrote dedup timestamp to %s", config.dump_store_dir / DEDUP_TIMESTAMP_FILE
+        )
 
     return report
 
@@ -198,38 +143,12 @@ def dedup_namespace(
     memory_kind: MemoryKind,
     role: str,
     action_phase: str,
+    config: BatchDedupRunConfig,
     *,
-    apply: bool,
-    similarity_threshold: float,
-    search_limit: int,
-    model: str,
-    thinking_level: str | None,
-    cluster_mode: ClusterMode,
-    max_cluster_size: int,
-    linkage_method: LinkageMethod,
-    embedding_model: str,
-    embedding_dims: int,
-    max_clusters: int | None = None,
-    two_pass: TwoPassConfig | None = None,
-    prompt_variant: str = "default",
     new_keys: set[str] | None = None,
 ) -> NamespaceStats:
     namespace = (memory_kind, role, action_phase)
-    items_by_key = _fetch_namespace_items(target_store, namespace)
-    clusters = _build_clusters(
-        target_store,
-        namespace,
-        items_by_key,
-        similarity_threshold,
-        search_limit,
-        cluster_mode,
-        max_cluster_size,
-        linkage_method,
-        embedding_model,
-        embedding_dims,
-    )
-    if max_clusters is not None:
-        clusters = clusters[:max_clusters]
+    items_by_key, clusters = _collect_namespace_clusters(target_store, namespace, config)
 
     if new_keys is not None:
         total_before = len(clusters)
@@ -241,19 +160,14 @@ def dedup_namespace(
                 skipped_incremental, memory_kind, role, len(clusters),
             )
 
-    if clusters:
-        sizes = [len(c) for c in clusters]
-        logger.info(
-            "Clusters for %s/%s: %d clusters, sizes=%s",
-            memory_kind, role, len(clusters), sorted(sizes, reverse=True),
-        )
+    _log_cluster_sizes(memory_kind, role, clusters)
 
     stats = NamespaceStats(
         memory_kind=memory_kind,
         role=role,
         items=len(items_by_key),
         clusters=len(clusters),
-        dry_run=not apply,
+        dry_run=not config.apply,
     )
 
     for cluster_keys in clusters:
@@ -263,14 +177,14 @@ def dedup_namespace(
             continue
 
         try:
-            if two_pass is not None:
+            if config.two_pass is not None:
                 result = _two_pass_cluster_dedup(
                     memory_kind,
                     role,
                     action_phase,
                     live_cluster_keys,
                     items_by_key,
-                    two_pass,
+                    config.two_pass,
                 )
             else:
                 entries, index_to_key = _format_cluster_entries(
@@ -282,9 +196,9 @@ def dedup_namespace(
                     action_phase,
                     entries,
                     index_to_key,
-                    model,
-                    thinking_level,
-                    prompt_variant=prompt_variant,
+                    config.model,
+                    config.thinking_level,
+                    prompt_variant=config.prompt_variant,
                 )
         except Exception as exc:
             logger.warning(
@@ -297,59 +211,74 @@ def dedup_namespace(
             stats.failed += 1
             continue
 
-        cluster_key_set = set(live_cluster_keys)
-        operation_results: dict[str, int] = defaultdict(int)
-        operations = result.operations
-        for operation in operations:
-            try:
-                if memory_kind == "strategy_points":
-                    status, deleted = _apply_strategy_operation(
-                        target_store,
-                        namespace,
-                        operation,
-                        cluster_key_set,
-                        items_by_key,
-                        apply,
-                    )
-                else:
-                    status, deleted = _apply_observation_operation(
-                        target_store,
-                        namespace,
-                        operation,
-                        cluster_key_set,
-                        items_by_key,
-                        apply,
-                    )
-            except Exception as exc:
-                logger.warning(
-                    "Batch dedup apply failed for namespace=%s role=%s "
-                    "operation=%s: %s",
-                    memory_kind,
-                    role,
-                    operation.action,
-                    exc,
-                )
-                status, deleted = "failed", 0
-            operation_results[status] += 1
-            if status in {"discarded", "merged"}:
-                stats.operations += 1
-                stats.discarded += deleted if status == "discarded" else 0
-                stats.merged += deleted if status == "merged" else 0
-            elif status == "kept":
-                stats.kept += 1
-            else:
-                stats.failed += 1
-
-        logger.info(
-            "Batch dedup namespace=%s role=%s cluster_size=%s results=%s",
-            memory_kind,
-            role,
-            len(live_cluster_keys),
-            dict(operation_results),
+        _apply_cluster_operations(
+            target_store,
+            namespace,
+            result.operations,
+            live_cluster_keys,
+            items_by_key,
+            config.apply,
+            stats,
         )
         stats.processed_clusters += 1
 
     return stats
+
+
+def _apply_cluster_operations(
+    target_store: BaseStore,
+    namespace: tuple[str, str, str],
+    operations,
+    live_cluster_keys: list[str],
+    items_by_key: dict,
+    apply: bool,
+    stats: NamespaceStats,
+) -> None:
+    memory_kind, role, _ = namespace
+    apply_operation = (
+        _apply_strategy_operation
+        if memory_kind == "strategy_points"
+        else _apply_observation_operation
+    )
+    cluster_key_set = set(live_cluster_keys)
+    operation_results: dict[str, int] = defaultdict(int)
+    for operation in operations:
+        try:
+            status, deleted = apply_operation(
+                target_store,
+                namespace,
+                operation,
+                cluster_key_set,
+                items_by_key,
+                apply,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Batch dedup apply failed for namespace=%s role=%s "
+                "operation=%s: %s",
+                memory_kind,
+                role,
+                operation.action,
+                exc,
+            )
+            status, deleted = "failed", 0
+        operation_results[status] += 1
+        if status in {"discarded", "merged"}:
+            stats.operations += 1
+            stats.discarded += deleted if status == "discarded" else 0
+            stats.merged += deleted if status == "merged" else 0
+        elif status == "kept":
+            stats.kept += 1
+        else:
+            stats.failed += 1
+
+    logger.info(
+        "Batch dedup namespace=%s role=%s cluster_size=%s results=%s",
+        memory_kind,
+        role,
+        len(live_cluster_keys),
+        dict(operation_results),
+    )
 
 
 def inspect_namespace_clusters(
@@ -357,40 +286,11 @@ def inspect_namespace_clusters(
     memory_kind: MemoryKind,
     role: str,
     action_phase: str,
-    *,
-    similarity_threshold: float,
-    search_limit: int,
-    cluster_mode: ClusterMode,
-    max_cluster_size: int,
-    linkage_method: LinkageMethod,
-    embedding_model: str,
-    embedding_dims: int,
-    max_clusters: int | None = None,
-    preview_chars: int = 160,
+    config: BatchDedupRunConfig,
 ) -> tuple[NamespaceStats, list[ClusterPreview]]:
     namespace = (memory_kind, role, action_phase)
-    items_by_key = _fetch_namespace_items(target_store, namespace)
-    clusters = _build_clusters(
-        target_store,
-        namespace,
-        items_by_key,
-        similarity_threshold,
-        search_limit,
-        cluster_mode,
-        max_cluster_size,
-        linkage_method,
-        embedding_model,
-        embedding_dims,
-    )
-    if max_clusters is not None:
-        clusters = clusters[:max_clusters]
-
-    if clusters:
-        sizes = [len(c) for c in clusters]
-        logger.info(
-            "Clusters for %s/%s: %d clusters, sizes=%s",
-            memory_kind, role, len(clusters), sorted(sizes, reverse=True),
-        )
+    items_by_key, clusters = _collect_namespace_clusters(target_store, namespace, config)
+    _log_cluster_sizes(memory_kind, role, clusters)
 
     stats = NamespaceStats(
         memory_kind=memory_kind,
@@ -405,8 +305,30 @@ def inspect_namespace_clusters(
             role,
             cluster_keys,
             items_by_key,
-            preview_chars,
+            config.preview_chars,
         )
         for cluster_keys in clusters
     ]
     return stats, previews
+
+
+def _collect_namespace_clusters(
+    target_store: BaseStore,
+    namespace: tuple[str, str, str],
+    config: BatchDedupRunConfig,
+) -> tuple[dict, list[list[str]]]:
+    items_by_key = _fetch_namespace_items(target_store, namespace)
+    clusters = _build_clusters(target_store, namespace, items_by_key, config)
+    if config.max_clusters is not None:
+        clusters = clusters[: config.max_clusters]
+    return items_by_key, clusters
+
+
+def _log_cluster_sizes(memory_kind: MemoryKind, role: str, clusters: list[list[str]]) -> None:
+    if not clusters:
+        return
+    sizes = [len(c) for c in clusters]
+    logger.info(
+        "Clusters for %s/%s: %d clusters, sizes=%s",
+        memory_kind, role, len(clusters), sorted(sizes, reverse=True),
+    )

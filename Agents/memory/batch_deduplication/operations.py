@@ -19,7 +19,7 @@ from .store_io import _put_memory_with_retries
 
 def _apply_strategy_operation(
     target_store: BaseStore,
-    namespace: tuple[str, ...],
+    namespace: tuple[str, str, str],
     operation: StrategyBatchOperation,
     cluster_key_set: set[str],
     items_by_key: dict[str, Any],
@@ -67,7 +67,7 @@ def _apply_strategy_operation(
 
 def _apply_observation_operation(
     target_store: BaseStore,
-    namespace: tuple[str, ...],
+    namespace: tuple[str, str, str],
     operation: ObservationBatchOperation,
     cluster_key_set: set[str],
     items_by_key: dict[str, Any],
@@ -190,7 +190,7 @@ def _validate_source_keys(
 
 def _delete_absorbed_keys(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
     source_keys: list[str],
     survivor_keys: set[str],
     items_by_key: dict[str, Any],

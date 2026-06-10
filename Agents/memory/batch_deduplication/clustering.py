@@ -20,7 +20,7 @@ from langgraph.store.base import BaseStore
 from Agents.memory.persistence import _memory_store_call_with_retries
 
 from .config import (
-    ClusterMode,
+    BatchDedupRunConfig,
     DEFAULT_MEMORY_STORE_RETRY_ATTEMPTS,
     DEFAULT_MEMORY_STORE_RETRY_INITIAL_DELAY,
     DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY,
@@ -33,46 +33,40 @@ logger = logging.getLogger(__name__)
 
 def _build_clusters(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
     items_by_key: dict[str, Any],
-    threshold: float,
-    search_limit: int,
-    cluster_mode: ClusterMode,
-    max_cluster_size: int,
-    linkage_method: LinkageMethod,
-    embedding_model: str,
-    embedding_dims: int,
+    config: BatchDedupRunConfig,
 ) -> list[list[str]]:
-    if cluster_mode == "connected":
+    if config.cluster_mode == "connected":
         return _cluster_items(
             target_store,
             namespace,
             items_by_key,
-            threshold,
-            search_limit,
+            config.similarity_threshold,
+            config.search_limit,
         )
-    if cluster_mode == "agglomerative":
+    if config.cluster_mode == "agglomerative":
         return _agglomerative_clusters(
             items_by_key,
-            threshold,
-            linkage_method,
-            max_cluster_size,
-            embedding_model,
-            embedding_dims,
+            config.similarity_threshold,
+            config.linkage_method,
+            config.max_cluster_size,
+            config.embedding_model,
+            config.embedding_dims,
         )
     return _bounded_seed_clusters(
         target_store,
         namespace,
         items_by_key,
-        threshold,
-        search_limit,
-        max_cluster_size,
+        config.similarity_threshold,
+        config.search_limit,
+        config.max_cluster_size,
     )
 
 
 def _fetch_namespace_items(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
 ) -> dict[str, Any]:
     items: dict[str, Any] = {}
     offset = 0
@@ -97,7 +91,7 @@ def _fetch_namespace_items(
 
 def _cluster_items(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
     items_by_key: dict[str, Any],
     threshold: float,
     search_limit: int,
@@ -147,7 +141,7 @@ def _cluster_items(
 
 def _bounded_seed_clusters(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
     items_by_key: dict[str, Any],
     threshold: float,
     search_limit: int,

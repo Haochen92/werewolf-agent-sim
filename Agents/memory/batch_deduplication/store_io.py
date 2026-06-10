@@ -21,7 +21,7 @@ from .config import (
 
 def _put_memory_with_retries(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
     key: str,
     value: dict[str, Any],
 ) -> None:
@@ -36,7 +36,7 @@ def _put_memory_with_retries(
 
 def _search_memory_with_retries(
     target_store: BaseStore,
-    namespace: tuple[str, str],
+    namespace: tuple[str, str, str],
     *,
     query: str | None,
     limit: int,
