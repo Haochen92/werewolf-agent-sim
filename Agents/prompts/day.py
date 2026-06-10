@@ -132,8 +132,6 @@ VILLAGER_DAY_DISCUSS = _discuss_template(
     VILLAGER_CORE_STRATEGY,
     """
 You are {player_id}, a {player_role}.
-As a villager, you have no special abilities. Use reasoning and social deduction to figure out
-who the wolves and the serial killer are and convince others to vote them out.
 """,
     """
 Surviving players: {surviving_players}
@@ -145,8 +143,7 @@ HEALER_DAY_DISCUSS = _discuss_template(
     HEALER_CORE_STRATEGY,
     """
 You are {player_id}, the {player_role}.
-During the day, speak as a normal villager while protecting your cover. Use reasoning and
-social deduction to help the village identify the wolves and the serial killer without exposing your role.
+During the day, speak as a normal villager while protecting your cover.
 """,
     """
 Surviving players: {surviving_players}
@@ -159,8 +156,6 @@ INVESTIGATOR_DAY_DISCUSS = _discuss_template(
     """
 You are {player_id}, the {player_role}.
 As the investigator, you can use your investigation result to guide your decision.
-Use reasoning and social deduction to figure out who the wolves and the serial killer are,
-convince others, and vote out the village's enemies.
 """,
     """
 Surviving players: {surviving_players}
@@ -203,8 +198,7 @@ VIGILANTE_DAY_DISCUSS = _discuss_template(
     VIGILANTE_CORE_STRATEGY,
     """
 You are {player_id}, the {player_role}.
-You are on the village's side. Use reasoning and social deduction to help find the wolves
-and the serial killer. Whether to stay hidden as an ordinary villager or to claim your role
+You are on the village's side. Whether to stay hidden as an ordinary villager or to claim your role
 is your own decision and can change with the situation: staying hidden keeps you safe, while
 claiming — or hinting at what your shots have taught you — can lend weight to your reads but
 paints a target on you (both the wolves and the serial killer gain from removing you).

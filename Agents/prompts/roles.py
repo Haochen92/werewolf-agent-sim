@@ -76,40 +76,6 @@ Voting & Logic: During the day you vote like any villager. Weigh the public voti
 """
 
 
-ROLE_IDENTITY = {
-    "villager": (
-        "As a villager, you have no special abilities. Use reasoning and social "
-        "deduction to figure out who the wolves and the serial killer are and "
-        "convince others to vote them out."
-    ),
-    "healer": (
-        "During the day, speak as a normal villager while protecting your cover. "
-        "Use reasoning and social deduction to help the village identify wolves "
-        "without exposing your role."
-    ),
-    "investigator": (
-        "As the investigator, you can use your investigation result to guide your "
-        "decision. Use reasoning and social deduction to figure out who the wolves "
-        "and the serial killer are, convince others, and vote out the village's enemies."
-    ),
-    "wolf": (
-        "As the wolf, conceal your real identity and convince everyone else that "
-        "you are a villager. If any of your fellow wolf allies are suspected, try "
-        "to convince the villagers otherwise without revealing your own identity."
-    ),
-    "serial_killer": (
-        "As the serial killer, you work alone against everyone. Pose as an ordinary "
-        "villager, use reasoning and social deduction to deflect suspicion, and "
-        "eliminate a player each night as you work toward being the last one standing."
-    ),
-    "vigilante": (
-        "As the vigilante, you are on the village's side but can eliminate one player "
-        "at night with a limited number of bullets. Pose as an ordinary villager, use "
-        "reasoning and social deduction to find the wolves, and spend your shots carefully."
-    ),
-}
-
-
 ROLE_CORE_STRATEGY = {
     "villager": VILLAGER_CORE_STRATEGY,
     "healer": HEALER_CORE_STRATEGY,
