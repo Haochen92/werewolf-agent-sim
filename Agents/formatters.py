@@ -73,15 +73,6 @@ def format_roles(roles: dict[str, str]) -> str:
     return "\n".join(f"{player}: {role}" for player, role in roles.items())
 
 
-def format_initial_strategies(initial_strategies: dict[str, str]) -> str:
-    if not initial_strategies:
-        return "No initial strategies recorded."
-    return "\n".join(
-        f"{role.capitalize()}: {strategy}"
-        for role, strategy in initial_strategies.items()
-    )
-
-
 def format_retrieved_observations(observations: list[RetrievedObservation]) -> str:
     if not observations:
         return "No past observations available."
