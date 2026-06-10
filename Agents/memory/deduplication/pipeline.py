@@ -1,8 +1,16 @@
-"""Per-item dedup orchestration, Langfuse span emission, and batch entry points."""
+"""Per-item dedup orchestration, Langfuse span emission, and batch entry points.
+
+Observations and strategy points run the identical pipeline — search → threshold filter →
+embedding prefilter → LLM fallback → apply — differing only in their per-kind operations,
+so both flows share one core (``_dedup_single`` / ``_run_dedup_batch``) parameterised by a
+``_DedupKind`` binding.
+"""
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
+from typing import Any, Callable
 
 from langgraph.store.base import BaseStore
 
@@ -28,6 +36,65 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Per-kind bindings
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _DedupKind:
+    """The per-kind operations the shared pipeline is parameterised over."""
+
+    item_type: str
+    memory_kind: str
+    log_label: str
+    fail_noun: str
+    new_entry: Callable[[Any], dict]
+    prefilter: Callable[..., Any]
+    call_llm: Callable[..., Any]
+    apply_decision: Callable[..., Any]
+    store_new: Callable[..., Any]
+    update_auto_duplicate: Callable[..., Any]
+
+
+_OBSERVATION_KIND = _DedupKind(
+    item_type="observation",
+    memory_kind="observations",
+    log_label="Observation dedup",
+    fail_noun="item",
+    new_entry=lambda o: {
+        "situation": o.composed_situation,
+        "approach": o.approach,
+        "outcome": o.outcome,
+    },
+    prefilter=_embedding_prefilter_observation,
+    call_llm=_call_observation_dedup_llm,
+    apply_decision=_apply_observation_decision,
+    store_new=_store_new_observation,
+    update_auto_duplicate=lambda store, namespace, top_item, item: (
+        _update_auto_observation_duplicate(store, namespace, top_item.key, top_item)
+    ),
+)
+
+_STRATEGY_POINT_KIND = _DedupKind(
+    item_type="strategy_point",
+    memory_kind="strategy_points",
+    log_label="Dedup",
+    fail_noun="point",
+    new_entry=lambda p: {
+        "situation": p.composed_situation,
+        "action": p.action,
+    },
+    prefilter=_embedding_prefilter_strategy_point,
+    call_llm=_call_dedup_llm,
+    apply_decision=_apply_decision,
+    store_new=_store_new_point,
+    update_auto_duplicate=lambda store, namespace, top_item, item: (
+        _update_auto_duplicate(store, namespace, top_item.key, top_item, item)
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
 # Batch entry points
 # ---------------------------------------------------------------------------
 
@@ -48,62 +115,7 @@ def run_observation_downstream_dedup(
 
     Returns a DedupStats summary.
     """
-    stats = DedupStats()
-
-    for i, observation in enumerate(observations, 1):
-        logger.info(
-            f"Observation dedup [{i}/{len(observations)}] "
-            f"role={observation.perspective} "
-            f"phase={observation.action_phase} "
-            f"situation={observation.situation[:80]}..."
-        )
-
-        result = dedup_single_observation(store, observation, game_id)
-
-        _emit_dedup_span(
-            item_type="observation",
-            perspective=observation.perspective,
-            action_phase=observation.action_phase,
-            index=i,
-            game_id=game_id,
-            new_entry={
-                "situation": observation.composed_situation,
-                "approach": observation.approach,
-                "outcome": observation.outcome,
-            },
-            result=result,
-        )
-
-        if result is None:
-            logger.warning(f"Observation dedup failed for item {i}; storing raw")
-            _store_new_observation(
-                store,
-                ("observations", observation.perspective, observation.action_phase),
-                observation,
-                game_id,
-            )
-            stats.failed += 1
-        elif result.action == DedupAction.KEEP:
-            stats.kept += 1
-            if result.auto:
-                stats.auto_kept += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_kept += 1
-        elif result.action == DedupAction.DISCARD:
-            stats.discarded += 1
-            if result.auto:
-                stats.auto_discarded += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_discarded += 1
-
-    logger.info(
-        f"Observation dedup complete: {stats.kept} kept, "
-        f"{stats.discarded} discarded, "
-        f"{stats.failed} failed, "
-        f"{stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
-        f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
-    )
-    return stats
+    return _run_dedup_batch(store, observations, game_id, _OBSERVATION_KIND)
 
 
 def run_downstream_dedup(
@@ -122,62 +134,76 @@ def run_downstream_dedup(
 
     Returns a DedupStats summary.
     """
+    return _run_dedup_batch(store, strategy_points, game_id, _STRATEGY_POINT_KIND)
+
+
+def _run_dedup_batch(
+    store: BaseStore,
+    items: list[Observation] | list[StrategyPoint],
+    game_id: str,
+    kind: _DedupKind,
+) -> DedupStats:
     stats = DedupStats()
 
-    for i, point in enumerate(strategy_points, 1):
+    for i, item in enumerate(items, 1):
         logger.info(
-            f"Dedup [{i}/{len(strategy_points)}] role={point.perspective} "
-            f"phase={point.action_phase} "
-            f"situation={point.situation[:80]}..."
+            f"{kind.log_label} [{i}/{len(items)}] "
+            f"role={item.perspective} "
+            f"phase={item.action_phase} "
+            f"situation={item.situation[:80]}..."
         )
 
-        result = dedup_single_strategy_point(store, point, game_id)
+        result = _dedup_single(store, item, game_id, kind)
 
         _emit_dedup_span(
-            item_type="strategy_point",
-            perspective=point.perspective,
-            action_phase=point.action_phase,
+            item_type=kind.item_type,
+            perspective=item.perspective,
+            action_phase=item.action_phase,
             index=i,
             game_id=game_id,
-            new_entry={
-                "situation": point.composed_situation,
-                "action": point.action,
-            },
+            new_entry=kind.new_entry(item),
             result=result,
         )
 
         if result is None:
-            logger.warning(f"Dedup failed for point {i}; storing raw")
-            _store_new_point(
+            logger.warning(f"{kind.log_label} failed for {kind.fail_noun} {i}; storing raw")
+            kind.store_new(
                 store,
-                ("strategy_points", point.perspective, point.action_phase),
-                point,
+                (kind.memory_kind, item.perspective, item.action_phase),
+                item,
                 game_id,
             )
             stats.failed += 1
-        elif result.action == DedupAction.KEEP:
-            stats.kept += 1
-            if result.auto:
-                stats.auto_kept += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_kept += 1
-        elif result.action == DedupAction.DISCARD:
-            stats.discarded += 1
-            if result.auto:
-                stats.auto_discarded += 1
-                if result.similarity_scores:
-                    stats.embedding_auto_discarded += 1
+        else:
+            _tally_result(stats, result)
 
     logger.info(
-        f"Dedup complete: {stats.kept} kept, {stats.discarded} discarded, "
-        f"{stats.failed} failed, {stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
+        f"{kind.log_label} complete: {stats.kept} kept, "
+        f"{stats.discarded} discarded, "
+        f"{stats.failed} failed, "
+        f"{stats.auto_kept} auto-kept ({stats.embedding_auto_kept} embedding), "
         f"{stats.auto_discarded} auto-discarded ({stats.embedding_auto_discarded} embedding)"
     )
     return stats
 
 
+def _tally_result(stats: DedupStats, result: DedupResult) -> None:
+    if result.action == DedupAction.KEEP:
+        stats.kept += 1
+        if result.auto:
+            stats.auto_kept += 1
+            if result.similarity_scores:
+                stats.embedding_auto_kept += 1
+    elif result.action == DedupAction.DISCARD:
+        stats.discarded += 1
+        if result.auto:
+            stats.auto_discarded += 1
+            if result.similarity_scores:
+                stats.embedding_auto_discarded += 1
+
+
 # ---------------------------------------------------------------------------
-# Core dedup logic for a single observation
+# Core dedup logic for a single item
 # ---------------------------------------------------------------------------
 
 
@@ -192,70 +218,7 @@ def dedup_single_observation(
 
     Returns the decision taken, or None if dedup failed (observation stored raw).
     """
-    namespace = ("observations", observation.perspective, observation.action_phase)
-
-    all_similar = store.search(
-        namespace,
-        query=observation.composed_situation,
-        limit=DEDUP_TOP_N,
-    )
-
-    candidates = _serialize_candidates(all_similar) if all_similar else []
-
-    similar = [
-        item
-        for item in all_similar
-        if item.score and item.score >= DEDUP_SIMILARITY_THRESHOLD
-    ]
-
-    if not similar:
-        _store_new_observation(store, namespace, observation, game_id)
-        return DedupResult(
-            action=DedupAction.KEEP, auto=True, candidates=candidates,
-        )
-
-    prefilter_decision, sim_scores = _embedding_prefilter_observation(
-        observation, similar,
-    )
-
-    if prefilter_decision == "discard":
-        top_item = similar[0]
-        _update_auto_observation_duplicate(store, namespace, top_item.key, top_item)
-        return DedupResult(
-            action=DedupAction.DISCARD, auto=True, candidates=candidates,
-            similarity_scores=sim_scores,
-        )
-
-    if prefilter_decision == "keep":
-        _store_new_observation(store, namespace, observation, game_id)
-        return DedupResult(
-            action=DedupAction.KEEP, auto=True, candidates=candidates,
-            similarity_scores=sim_scores,
-        )
-
-    decision = _call_observation_dedup_llm(observation, similar)
-    if decision is None:
-        return None
-
-    action = _apply_observation_decision(
-        store,
-        namespace,
-        observation,
-        similar,
-        decision,
-        game_id,
-    )
-    return DedupResult(
-        action=action,
-        candidates=_serialize_candidates(similar),
-        decision_detail=decision.model_dump(mode="json"),
-        similarity_scores=sim_scores,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Core dedup logic for a single strategy point
-# ---------------------------------------------------------------------------
+    return _dedup_single(store, observation, game_id, _OBSERVATION_KIND)
 
 
 def dedup_single_strategy_point(
@@ -269,52 +232,60 @@ def dedup_single_strategy_point(
 
     Returns the decision taken, or None if dedup failed (point stored raw).
     """
-    namespace = ("strategy_points", point.perspective, point.action_phase)
+    return _dedup_single(store, point, game_id, _STRATEGY_POINT_KIND)
+
+
+def _dedup_single(
+    store: BaseStore,
+    item: Observation | StrategyPoint,
+    game_id: str,
+    kind: _DedupKind,
+) -> DedupResult | None:
+    namespace = (kind.memory_kind, item.perspective, item.action_phase)
 
     all_similar = store.search(
         namespace,
-        query=point.composed_situation,
+        query=item.composed_situation,
         limit=DEDUP_TOP_N,
     )
 
     candidates = _serialize_candidates(all_similar) if all_similar else []
 
     similar = [
-        item
-        for item in all_similar
-        if item.score and item.score >= DEDUP_SIMILARITY_THRESHOLD
+        candidate
+        for candidate in all_similar
+        if candidate.score and candidate.score >= DEDUP_SIMILARITY_THRESHOLD
     ]
 
     if not similar:
-        _store_new_point(store, namespace, point, game_id)
+        kind.store_new(store, namespace, item, game_id)
         return DedupResult(
             action=DedupAction.KEEP, auto=True, candidates=candidates,
         )
 
-    prefilter_decision, sim_scores = _embedding_prefilter_strategy_point(
-        point, similar,
-    )
+    prefilter_decision, sim_scores = kind.prefilter(item, similar)
 
     if prefilter_decision == "discard":
-        top_item = similar[0]
-        _update_auto_duplicate(store, namespace, top_item.key, top_item, point)
+        kind.update_auto_duplicate(store, namespace, similar[0], item)
         return DedupResult(
             action=DedupAction.DISCARD, auto=True, candidates=candidates,
             similarity_scores=sim_scores,
         )
 
     if prefilter_decision == "keep":
-        _store_new_point(store, namespace, point, game_id)
+        kind.store_new(store, namespace, item, game_id)
         return DedupResult(
             action=DedupAction.KEEP, auto=True, candidates=candidates,
             similarity_scores=sim_scores,
         )
 
-    decision = _call_dedup_llm(point, similar)
+    decision = kind.call_llm(item, similar)
     if decision is None:
         return None
 
-    action = _apply_decision(store, namespace, point, similar, decision, game_id)
+    action = kind.apply_decision(store, namespace, item, similar, decision, game_id)
+    # The auto paths report every search hit; here only the above-threshold
+    # candidates the LLM actually saw.
     return DedupResult(
         action=action,
         candidates=_serialize_candidates(similar),
