@@ -25,7 +25,7 @@ from .config import BatchDedupRunConfig, DEDUP_TIMESTAMP_FILE
 from .formatting import _cluster_preview, _format_cluster_entries
 from .incremental import _collect_new_keys, _read_last_dedup_at, _write_last_dedup_at
 from .operations import _apply_observation_operation, _apply_strategy_operation
-from .resolution import _call_cluster_llm, _two_pass_cluster_dedup
+from .cluster_agent import _cluster_agent, _two_pass_cluster_dedup
 from .schemas import (
     BatchDedupReport,
     ClusterPreview,
@@ -190,7 +190,7 @@ def dedup_namespace(
                 entries, index_to_key = _format_cluster_entries(
                     memory_kind, live_cluster_keys, items_by_key,
                 )
-                result = _call_cluster_llm(
+                result = _cluster_agent(
                     memory_kind,
                     role,
                     action_phase,

@@ -28,7 +28,7 @@ from .config import (
     TwoPassConfig,
 )
 from .orchestration import run_batch_memory_dedup
-from .resolution import _OBS_PROMPT_VARIANTS
+from .cluster_agent import _OBS_PROMPT_VARIANTS
 
 
 def main() -> int:

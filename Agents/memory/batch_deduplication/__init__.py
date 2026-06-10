@@ -68,9 +68,9 @@ from .orchestration import (
     inspect_namespace_clusters,
     run_batch_memory_dedup,
 )
-from .resolution import (
+from .cluster_agent import (
     _OBS_PROMPT_VARIANTS,
-    _call_cluster_llm,
+    _cluster_agent,
     _langfuse_handler,
     _two_pass_cluster_dedup,
 )
@@ -151,9 +151,9 @@ __all__ = [
     "_remap_operation_keys",
     "_resolve_survivor",
     "_validate_source_keys",
-    # resolution
+    # cluster_agent
     "_OBS_PROMPT_VARIANTS",
-    "_call_cluster_llm",
+    "_cluster_agent",
     "_langfuse_handler",
     "_two_pass_cluster_dedup",
     # orchestration + cli

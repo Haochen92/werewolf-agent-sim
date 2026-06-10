@@ -1,4 +1,4 @@
-"""LLM resolution of a single near-duplicate cluster.
+"""Cluster agent: the `llm.invoke` that resolves a single near-duplicate cluster.
 
 Given one cluster's formatted entries, calls the batch-dedup model (with the role/phase-appropriate
 prompt + schema) and remaps the returned operation keys back to store keys. ``_two_pass_cluster_dedup``
@@ -57,7 +57,7 @@ def _two_pass_cluster_dedup(
         memory_kind, live_cluster_keys, items_by_key,
     )
 
-    triage_result = _call_cluster_llm(
+    triage_result = _cluster_agent(
         memory_kind, role, action_phase, entries, index_to_key,
         model=two_pass.triage_model,
         thinking_level=two_pass.triage_thinking_level,
@@ -91,7 +91,7 @@ def _two_pass_cluster_dedup(
     verify_entries, verify_index_to_key = _format_cluster_entries(
         memory_kind, verify_keys, items_by_key,
     )
-    verify_result = _call_cluster_llm(
+    verify_result = _cluster_agent(
         memory_kind, role, action_phase, verify_entries, verify_index_to_key,
         model=two_pass.verify_model,
         thinking_level=two_pass.verify_thinking_level,
@@ -103,7 +103,7 @@ def _two_pass_cluster_dedup(
     return ObservationBatchDedupOutput(operations=all_ops)
 
 
-def _call_cluster_llm(
+def _cluster_agent(
     memory_kind: MemoryKind,
     role: str,
     action_phase: str,
