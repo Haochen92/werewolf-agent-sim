@@ -139,6 +139,13 @@ game), not strategy tuning — recorded here because they affect the validity of
    removable competitor. **Measuring the SK floor under the old bias would have over-credited
    SK strength** — so this had to precede the baseline. (Pre-fix seeding attempts discarded.)
 
+*Smoke checkpoint (not a measurement):* one post-overhaul game ran clean end-to-end —
+villagers won d5, leak-check passed, play coherent, and the SK was reasoned about across all
+roles (investigator, villager, healer included), confirming the de-bias renders correctly
+in-engine. This is a single uncontrolled game, so no engagement figure is cited as evidence;
+the de-bias effect is quantified for free by the 30-game off-memory seeding batch below
+(SK-vote / engagement distribution at N=30).
+
 ## Order of operations
 
 1. Seedability fix (engine-level) + extract-without-dump flag. ✅ small, prompt-neutral.
