@@ -203,6 +203,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Disable postgame memory snapshot dumps.",
     )
+    parser.add_argument(
+        "--extract-without-dump",
+        action="store_true",
+        help=(
+            "Run (and trace) postgame extraction even when --no-memory-dump is set, "
+            "but skip persistence. For measuring per-role fan-out + cache cost on a "
+            "throwaway game without writing to the store."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -273,6 +282,7 @@ def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, A
             args.dump_store_dir,
             args.no_memory_seed,
             args.no_memory_dump,
+            args.extract_without_dump,
         )
     ):
         return None
@@ -283,6 +293,8 @@ def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, A
         "seed_enabled": not args.no_memory_seed,
         "dump_enabled": not args.no_memory_dump,
     }
+    if args.extract_without_dump:
+        config["extraction"] = {"extract_without_dump": True}
     if seed_store_dir:
         config["seed_store_dir"] = str(seed_store_dir)
     if dump_store_dir:

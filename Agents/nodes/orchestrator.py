@@ -11,6 +11,7 @@ from logging import getLogger as _getLogger
 logger = _getLogger(__name__)
 
 import random
+import zlib
 from collections import Counter
 from typing import Literal
 from datetime import datetime
@@ -62,14 +63,22 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     human_player is chosen but vestigial — eval runs have no human player.
     """
     game_config = game_config_from_runnable(config)
-    # Initialize roles and players
+    # Role assignment is seeded off game_id — the single master seed (the scheduler's
+    # turn-order tie-break already derives from it via cycle_seed). A unique uuid4
+    # game_id per game keeps draws varied; pinning the same game_id across two runs
+    # reproduces the role draw — the initial-condition parity the paired memory A/B
+    # needs. No game_id (e.g. a bare unit test) → unseeded, preserving prior behaviour.
+    configurable = config.get("configurable", {}) if config else {}
+    game_id = configurable.get("game_id") or ""
+    rng = random.Random(zlib.crc32(game_id.encode())) if game_id else random.Random()
+
     roles = game_config.initial_roles.copy()
     characters = [
         f"{game_config.player_id_prefix}_{i}" for i in range(1, len(roles) + 1)
     ]
-    human_player = random.choice(characters)
+    human_player = rng.choice(characters)
 
-    random.shuffle(roles)
+    rng.shuffle(roles)
     assigned_roles = dict(zip(characters, roles, strict=True))
 
     def _first_with_role(role: str) -> str | None:
@@ -377,9 +386,14 @@ def post_game_analysis(
     if store is None:
         raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
 
-    # Skip the whole pipeline in no-dump runs (see docstring: extraction would be wasted).
     memory_persistence_config = memory_persistence_config_from_runnable(config)
-    if not memory_persistence_config.dump_enabled:
+    extraction_config = memory_persistence_config.extraction
+    persist = memory_persistence_config.dump_enabled
+    # A no-dump run normally skips extraction entirely (the memories would be deduped
+    # into the ephemeral runtime store and discarded — the LLM cost is pure waste).
+    # extract_without_dump overrides that: run + trace extraction (e.g. to measure the
+    # per-role fan-out + cache cost) but skip persistence below.
+    if not persist and not extraction_config.extract_without_dump:
         logger.info("Memory dump disabled; skipping post-game extraction.")
         return {}
 
@@ -391,7 +405,6 @@ def post_game_analysis(
 
     # Format once, use for both the LLM prompt and the trace span.
     extraction_inputs = format_extraction_inputs(state)
-    extraction_config = memory_persistence_config.extraction
 
     span_name = f"postgame_extraction_{game_id}"
     with langfuse.start_as_current_observation(
@@ -452,6 +465,13 @@ def post_game_analysis(
 
     if not result:
         logger.warning("No observations extracted from post-game analysis.")
+        return {}
+
+    if not persist:
+        logger.info(
+            "Extraction ran (traced for measurement); skipping persistence "
+            "because memory dump is disabled."
+        )
         return {}
 
     extracted_observations = result.output

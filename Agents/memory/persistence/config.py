@@ -69,6 +69,10 @@ class ExtractionConfig(BaseModel):
     per_role: bool = True
     cache_prefix: bool = True
     max_workers: int = 6
+    extract_without_dump: bool = False
+    # When dump is OFF, normally extraction is skipped (wasted cost). Set this to run +
+    # trace extraction anyway WITHOUT persisting — for measuring per-role fan-out + cache
+    # cost on a throwaway game.
 
 
 class MemoryPersistenceConfig(BaseModel):
