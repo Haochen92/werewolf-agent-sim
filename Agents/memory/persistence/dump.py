@@ -6,7 +6,7 @@ from typing import Any
 
 from langgraph.store.base import BaseStore
 
-from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
 from Agents.memory.store import store
 
 from .config import (

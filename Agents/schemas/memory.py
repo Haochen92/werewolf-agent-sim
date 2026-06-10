@@ -16,7 +16,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from Agents.constants import ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
 
 
 def _compose_situation(

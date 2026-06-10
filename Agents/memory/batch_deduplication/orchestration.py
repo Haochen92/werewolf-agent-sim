@@ -12,7 +12,7 @@ from collections import defaultdict
 
 from langgraph.store.base import BaseStore
 
-from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
+from Agents.schemas.roles import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE, roles
 from Agents.memory.store import store
 from Agents.memory.persistence import (
     dump_memory_to_json_files,

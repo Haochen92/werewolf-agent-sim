@@ -6,7 +6,7 @@ store/retrieval models in memory.py are internal records (state / tracing / stor
 model.
 """
 
-from Agents.constants import ActionPhase
+from Agents.schemas.roles import ActionPhase
 from Agents.schemas.evaluation import (
     DaySummaryCase,
     DedupCandidate,

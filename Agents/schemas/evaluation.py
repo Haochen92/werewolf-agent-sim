@@ -12,7 +12,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from Agents.constants import ActionPhase
+from Agents.schemas.roles import ActionPhase
 from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,

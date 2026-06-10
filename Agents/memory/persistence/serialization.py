@@ -9,7 +9,7 @@ from typing import Any
 from langgraph.store.base import BaseStore
 from pydantic import BaseModel
 
-from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE
+from Agents.schemas.roles import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE
 
 
 def _json_safe(value: Any) -> Any:

@@ -12,7 +12,7 @@ import json
 import logging
 from pathlib import Path
 
-from Agents.constants import roles
+from Agents.schemas.roles import roles
 from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
 
 from .config import (

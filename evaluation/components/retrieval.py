@@ -11,7 +11,7 @@ from typing import Any
 from langgraph.store.base import PutOp
 from langgraph.store.memory import InMemoryStore
 
-from Agents.constants import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE
+from Agents.schemas.roles import ACTION_PHASES, VALID_ACTION_PHASES_BY_ROLE
 from Agents.memory import embeddings
 from evaluation.core.schemas import RetrievalScores
 

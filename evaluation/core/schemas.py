@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from Agents.constants import ActionPhase
+from Agents.schemas.roles import ActionPhase
 from pydantic import BaseModel, Field, field_validator
 
 AttributionDirection = Literal["over", "under", "accurate"]
