@@ -15,7 +15,7 @@ from Agents.schemas.game_events import (
     DayVote,
     WolfChannel,
 )
-from Agents.engine.novelty import judge_proactive_novelty
+from Agents.engine.novelty_agent import judge_proactive_novelty
 from Agents.engine.targets import (
     _valid_targets_for_action,
     _validate_target,
