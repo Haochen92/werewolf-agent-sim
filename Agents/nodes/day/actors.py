@@ -4,7 +4,7 @@ from langgraph.runtime import Runtime
 from Agents.tracing import GraphContext
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
-from Agents.engine import _run_memory_informed_action
+from Agents.turn import _run_memory_informed_action
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,

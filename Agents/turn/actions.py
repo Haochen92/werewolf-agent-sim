@@ -31,9 +31,9 @@ from Agents.state import (
     VillagerDayState,
     WolfDayState,
 )
-from Agents.engine.agent import _run_agent
-from Agents.engine.adoption import _process_strategy_adoption
-from Agents.engine.eval import _build_eval_private_context
+from Agents.turn.agent import _run_agent
+from Agents.turn.adoption import _process_strategy_adoption
+from Agents.turn.eval import _build_eval_private_context
 
 logger = getLogger(__name__)
 

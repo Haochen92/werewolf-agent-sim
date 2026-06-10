@@ -12,9 +12,9 @@ actor nodes in Agents/nodes/ call into this; nothing here is a LangGraph node.
   adoption.py — strategy-adoption store write-back (retrieved/used counts)
 """
 
-from Agents.engine.actions import (  # noqa: F401
+from Agents.turn.actions import (  # noqa: F401
     _run_memory_informed_action,
     _run_memory_informed_night_action,
 )
-from Agents.engine.agent import _run_agent, prompt_log  # noqa: F401
-from Agents.engine.novelty_agent import NOVELTY_JUDGE_PROMPT, judge_proactive_novelty  # noqa: F401
+from Agents.turn.agent import _run_agent, prompt_log  # noqa: F401
+from Agents.turn.novelty_agent import NOVELTY_JUDGE_PROMPT, judge_proactive_novelty  # noqa: F401

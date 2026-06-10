@@ -10,7 +10,7 @@ night/wolf.py   — the multi-node wolf night discussion flow
 night/resolution.py — cross-role night kill resolution + routing
 
 The shared actor execution engine itself (_run_agent, the memory-informed
-actions, the proactive-novelty gate) lives in Agents.engine, not here — these
+actions, the proactive-novelty gate) lives in Agents.turn, not here — these
 are only the graph nodes that call into it.
 
 Everything is re-exported here so `from Agents.nodes import X` resolves unchanged.

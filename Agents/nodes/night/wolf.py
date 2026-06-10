@@ -26,7 +26,7 @@ from Agents.tracing import (
     GraphContext,
 )
 
-from Agents.engine import _run_memory_informed_night_action
+from Agents.turn import _run_memory_informed_night_action
 from Agents.prompts import WOLF_NIGHT_DISCUSS
 from Agents.schemas import WolfNightDiscussOutput
 from Agents.state import WolfNightState

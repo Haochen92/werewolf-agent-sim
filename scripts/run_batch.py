@@ -337,7 +337,7 @@ def run_batch(args: argparse.Namespace) -> int:
     if args.dry_run:
         return 0
 
-    from Agents.engine import prompt_log
+    from Agents.turn import prompt_log
     from Agents.main import run_game
     from Agents.run_fingerprint import runtime_fingerprint
     from tests.leak_test import run_leak_tests
