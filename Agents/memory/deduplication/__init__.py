@@ -45,10 +45,10 @@ from .store_ops import (
     _update_auto_duplicate,
     _update_auto_observation_duplicate,
 )
-from .llm import (
-    _call_dedup_llm,
-    _call_observation_dedup_llm,
+from .dedup_agent import (
     _candidate_validation_error,
+    _dedup_agent,
+    _observation_dedup_agent,
 )
 from .pipeline import (
     _emit_dedup_span,
@@ -93,10 +93,10 @@ __all__ = [
     "_store_new_point",
     "_update_auto_duplicate",
     "_update_auto_observation_duplicate",
-    # llm
-    "_call_dedup_llm",
-    "_call_observation_dedup_llm",
+    # dedup_agent
     "_candidate_validation_error",
+    "_dedup_agent",
+    "_observation_dedup_agent",
     # pipeline
     "_emit_dedup_span",
     "dedup_single_observation",

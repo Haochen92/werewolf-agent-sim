@@ -1,4 +1,5 @@
-"""Structured-output LLM calls (with retry/validation) for observation and strategy dedup."""
+"""Dedup agent: the structured-output `llm.invoke` calls (with retry/validation) that decide
+keep/discard for one observation or strategy point against its similar candidates."""
 
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 
-def _call_dedup_llm(
+def _dedup_agent(
     point: StrategyPoint,
     similar_items: list,
 ) -> StrategyDiscard | StrategyKeep | None:
@@ -89,7 +90,7 @@ def _call_dedup_llm(
     return None
 
 
-def _call_observation_dedup_llm(
+def _observation_dedup_agent(
     observation: Observation,
     similar_items: list,
 ) -> ObservationDiscard | ObservationKeep | None:

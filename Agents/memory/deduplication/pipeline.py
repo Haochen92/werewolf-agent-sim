@@ -26,7 +26,7 @@ from Agents.tracing import langfuse
 
 from .config import DEDUP_SIMILARITY_THRESHOLD, DEDUP_TOP_N
 from .formatting import _serialize_candidates
-from .llm import _call_dedup_llm, _call_observation_dedup_llm
+from .dedup_agent import _dedup_agent, _observation_dedup_agent
 from .prefilter import _embedding_prefilter_observation, _embedding_prefilter_strategy_point
 from .schemas import DedupAction, DedupResult, DedupStats
 from .store_ops import (
@@ -73,7 +73,7 @@ _OBSERVATION_KIND = _DedupKind(
         "outcome": o.outcome,
     },
     prefilter=_embedding_prefilter_observation,
-    call_llm=_call_observation_dedup_llm,
+    call_llm=_observation_dedup_agent,
     apply_decision=_apply_observation_decision,
     store_new=_store_new_observation,
     update_auto_duplicate=lambda store, namespace, top_item, item: (
@@ -91,7 +91,7 @@ _STRATEGY_POINT_KIND = _DedupKind(
         "action": p.action,
     },
     prefilter=_embedding_prefilter_strategy_point,
-    call_llm=_call_dedup_llm,
+    call_llm=_dedup_agent,
     apply_decision=_apply_decision,
     store_new=_store_new_point,
     update_auto_duplicate=lambda store, namespace, top_item, item: (
