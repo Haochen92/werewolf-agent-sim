@@ -1,0 +1,19 @@
+/home/ubuntu/.cache/pypoetry/virtualenvs/werewolf-game-v7lKgM40-py3.11/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Failed batch_20260605_084133_all_enabled_001: Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+Planned runs: 4
+- batch_20260605_084133_all_disabled_001: session=batch_20260605_084133_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}
+- batch_20260605_084133_all_disabled_002: session=batch_20260605_084133_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}
+- batch_20260605_084133_all_enabled_001: session=batch_20260605_084133_all_enabled {'wolf': True, 'villager': True, 'healer': True, 'investigator': True}
+- batch_20260605_084133_all_enabled_002: session=batch_20260605_084133_all_enabled {'wolf': True, 'villager': True, 'healer': True, 'investigator': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': False, 'seed_store_dir': 'Agents/memory_stores/v4_deduped_v2'}
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/evidence/agent_speaking/gate/gate_sequential.jsonl
+Running batch_20260605_084133_all_disabled_001 in session batch_20260605_084133_all_disabled
+Completed batch_20260605_084133_all_disabled_001: winner=villagers day=4
+Running batch_20260605_084133_all_disabled_002 in session batch_20260605_084133_all_disabled
+Completed batch_20260605_084133_all_disabled_002: winner=wolves day=3
+Running batch_20260605_084133_all_enabled_001 in session batch_20260605_084133_all_enabled
+Running batch_20260605_084133_all_enabled_002 in session batch_20260605_084133_all_enabled
+Completed batch_20260605_084133_all_enabled_002: winner=villagers day=5
+Batch complete: 3 succeeded, 1 failed

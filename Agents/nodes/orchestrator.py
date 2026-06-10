@@ -34,7 +34,7 @@ from Agents.extraction import (
 from Agents.schemas.evaluation import ExtractionCase
 from Agents.memory.deduplication import (
     run_downstream_strategy_dedup,
-    run_observation_downstream_dedup,
+    run_downstream_observation_dedup,
 )
 from Agents.memory.persistence import (
     dump_memory_to_json_files_from_config,
@@ -447,7 +447,7 @@ def post_game_analysis(
     extracted_observations = result.output
 
     # Store observations and strategies in memory with downstream dedup.
-    observation_dedup_stats = run_observation_downstream_dedup(
+    observation_dedup_stats = run_downstream_observation_dedup(
         store,
         extracted_observations.observations,
         game_id,

@@ -99,7 +99,7 @@ _STRATEGY_POINT_KIND = _DedupKind(
 # ---------------------------------------------------------------------------
 
 
-def run_observation_downstream_dedup(
+def run_downstream_observation_dedup(
     store: BaseStore,
     observations: list[Observation],
     game_id: str,
