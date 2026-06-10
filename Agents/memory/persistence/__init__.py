@@ -4,6 +4,7 @@ from .config import (
     MEMORY_STORES_DIR,
     OBSERVATIONS_FILE_NAME,
     STRATEGY_POINTS_FILE_NAME,
+    ExtractionConfig,
     IncrementalDedupConfig,
     MemoryPersistenceConfig,
     _SEEDED_STORE_IDS,
@@ -56,6 +57,7 @@ __all__ = [
     "_TRANSIENT_MEMORY_STORE_STATUS_CODES",
     "_TRANSIENT_MEMORY_STORE_ERROR_MARKERS",
     # config — schemas + helpers
+    "ExtractionConfig",
     "IncrementalDedupConfig",
     "MemoryPersistenceConfig",
     "normalize_memory_persistence_config",

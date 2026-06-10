@@ -26,7 +26,9 @@ from Agents.state import (
 
 from Agents.memory.extraction import (
     build_extraction_prompt,
+    build_role_extraction_prefix,
     extract_postgame,
+    extract_postgame_per_role,
     format_extraction_inputs,
 )
 
@@ -389,7 +391,7 @@ def post_game_analysis(
 
     # Format once, use for both the LLM prompt and the trace span.
     extraction_inputs = format_extraction_inputs(state)
-    prompt = build_extraction_prompt(extraction_inputs)
+    extraction_config = memory_persistence_config.extraction
 
     span_name = f"postgame_extraction_{game_id}"
     with langfuse.start_as_current_observation(
@@ -403,7 +405,13 @@ def post_game_analysis(
         },
         metadata={"eval_schema": "extraction_case_v1"},
     ) as extraction_span:
-        result = extract_postgame(prompt)
+        if extraction_config.per_role:
+            prefix = build_role_extraction_prefix(extraction_inputs)
+            result = extract_postgame_per_role(
+                prefix, max_workers=extraction_config.max_workers
+            )
+        else:
+            result = extract_postgame(build_extraction_prompt(extraction_inputs))
 
         if result:
             extracted_observations_output = result.output

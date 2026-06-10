@@ -15,14 +15,21 @@ from .inputs import (
     build_role_extraction_tail,
     format_extraction_inputs,
 )
-from .extraction_agent import ExtractionResult, extract_postgame
+from .extraction_agent import (
+    EXTRACTION_ROLES,
+    ExtractionResult,
+    extract_postgame,
+    extract_postgame_per_role,
+)
 
 __all__ = [
+    "EXTRACTION_ROLES",
     "ExtractionResult",
     "build_extraction_prompt",
     "build_role_extraction_prefix",
     "build_role_extraction_prompt",
     "build_role_extraction_tail",
     "extract_postgame",
+    "extract_postgame_per_role",
     "format_extraction_inputs",
 ]

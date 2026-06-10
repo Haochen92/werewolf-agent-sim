@@ -53,6 +53,21 @@ class IncrementalDedupConfig(BaseModel):
     prompt_variant: str = "default"
 
 
+class ExtractionConfig(BaseModel):
+    """How post-game extraction runs (the v5 lever).
+
+    ``per_role`` (default, the v5 way) fans the extraction out over the six roles
+    in concurrent LLM calls, each sharing one byte-identical role-neutral prefix —
+    the unit that explicit prefix caching reuses across the six calls. The old
+    single-shot path (one all-roles prompt) is kept runnable for A/B by setting
+    ``per_role=False``. ``cache_prefix`` is wired in a later step (Vertex context
+    caching of that shared prefix); harmless until then.
+    """
+
+    per_role: bool = True
+    max_workers: int = 6
+
+
 class MemoryPersistenceConfig(BaseModel):
     """Seed/dump settings for the process-global LangGraph memory store.
 
@@ -65,6 +80,7 @@ class MemoryPersistenceConfig(BaseModel):
     seed_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
     dump_store_dir: Path = DEFAULT_MEMORY_STORE_DIR
     batch_dedup: IncrementalDedupConfig = IncrementalDedupConfig()
+    extraction: ExtractionConfig = ExtractionConfig()
 
 
 def normalize_memory_persistence_config(
