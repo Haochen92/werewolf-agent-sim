@@ -233,15 +233,23 @@ Extract 4-8 principles per role. Focus on:
 """
 
 
-ROLE_EXTRACTION_PROMPT = """
-You are a {role} analyst reviewing this completed Werewolf game. Your goal is
-to extract lessons specifically for the {role} agent — what worked, what failed,
-and what the {role} should do differently in future games.
+# Per-role extraction, split for caching: a role-NEUTRAL prefix (the big shared
+# mass — rules, standards, the full transcript, field definitions) that is
+# byte-identical across all role fan-out calls, so it can be cached once per game
+# and reused; followed by a tiny role-lock TAIL that names the role. The prefix
+# is formatted ONCE (no role placeholder → single braces, no double-format hack).
+# build_role_extraction_prompt composes prefix + tail for the non-cached path.
+
+ROLE_EXTRACTION_PREFIX = """
+You are an expert strategic analyst reviewing this completed Werewolf game. You
+will extract lessons for ONE specific role — named at the very end of these
+instructions. Everything below describes HOW to extract; the final line says FOR
+WHOM. Read it all, then apply it exclusively to the assigned role.
 
 GAME RULES:
-{{game_rules}}
+{game_rules}
 
-{{situation_standards}}
+{situation_standards}
 
 ACTION PHASES:
 Each observation and strategy point must be tagged with the game phase it
@@ -266,28 +274,28 @@ day_discussion.
 GAME DATA:
 
 PLAYERS AND ROLES:
-{{formatted_roles}}
+{formatted_roles}
 
 FULL GAME DISCUSSIONS:
-{{formatted_discussions}}
+{formatted_discussions}
 
 FINAL STRATEGY NOTES:
-{{formatted_strategy_notes}}
+{formatted_strategy_notes}
 
 PREVIOUS ROLE STRATEGIES:
-{{formatted_previous_strategies}}
+{formatted_previous_strategies}
 
-GAME OUTCOME: {{game_outcome}}
+GAME OUTCOME: {game_outcome}
 
 ---
 
 TASK 1: OBSERVATION EXTRACTION
 
-Analyze the full game from the {role}'s perspective and extract key
+Analyze the full game from the assigned role's perspective and extract key
 observations — patterns, mistakes, and pivotal moments that would help the
-{role} agent play better in future games. These observations are FACTS about
-what happened, written from a post-game omniscient perspective. You know all
-roles, all private actions, and all outcomes. They serve as episodic memory
+assigned role's agent play better in future games. These observations are FACTS
+about what happened, written from a post-game omniscient perspective. You know
+all roles, all private actions, and all outcomes. They serve as episodic memory
 retrieved via semantic search in future games.
 
 NAMING RULE: Never use player IDs (player_1, player_2, etc.). Always refer to
@@ -316,23 +324,24 @@ Each observation has structured fields:
 - agent_exposure (optional): The agent's position — driving the push, aligned
   with consensus, under indirect scrutiny, or primary target. What is the
   basis. Only include if relevant to the situation.
-- approach: What the {role} did in that situation. 1-2 sentences.
+- approach: What the assigned role did in that situation. 1-2 sentences.
 - outcome: What resulted — how others responded and the downstream
   consequences. 1-2 sentences.
 
 Guidelines:
-- Every observation must use perspective="{role}". All narrative fields
-  (situation, approach, outcome) must be written from the {role}'s perspective.
-- approach must describe what the {role} DID or FAILED TO DO — not what the
-  opposing side did. If the key lesson is about something that happened TO the
-  {role}, reframe as what the {role} did that led to that outcome.
+- Every observation must be written from the assigned role's perspective. All
+  narrative fields (situation, approach, outcome) must be from that perspective.
+- approach must describe what the assigned role DID or FAILED TO DO — not what
+  the opposing side did. If the key lesson is about something that happened TO
+  the assigned role, reframe as what the assigned role did that led to that
+  outcome.
 - Each field should be 1-2 sentences. Keep the total observation concise.
 - Assign each observation an action_phase — the phase where this lesson
   would be applied.
 - Look for multi-day patterns — causal chains and strategic sequences, not
   just single-day events.
-- Extract 4-8 observations that cover the game's key dynamics for the {role}
-  across the relevant action phases.
+- Extract 4-8 observations that cover the game's key dynamics for the assigned
+  role across the relevant action phases.
 
 ---
 
@@ -345,14 +354,14 @@ the situational specificity.
 
 For each principle:
 
-{{epistemic_status_rule}}
+{epistemic_status_rule}
 
 **situation**: A "When..." or "If..." clause describing the core game dynamic
 this principle applies to. Do not embed dimensional context here; use the
 dedicated dimensional fields below. Do not include recommended actions,
 conditional strategy, or advice — those belong in the action field.
 Strategy points are retrieved during gameplay — the situation must be
-recognizable from the {role}'s perspective when other players' true
+recognizable from the assigned role's perspective when other players' true
 roles are unknown. Strictly follow the epistemic status rule above.
 
 **information_landscape** (required): What evidence exists and what type —
@@ -373,13 +382,11 @@ the basis. Only include if relevant to the situation.
 
 **action**: The concrete recommended action, including WHY it works in this
 specific context. The action should capture a learned nuance, not restate
-common-sense fundamentals. This field may refer to the {role}, since
+common-sense fundamentals. This field may refer to the assigned role, since
 the agent reading it knows their own role. Include conditional branches here
 if the situation implies different responses for different findings.
 
 **action_phase**: The game phase where this principle would be applied.
-
-Every principle must use perspective="{role}".
 
 DERIVATION RULE: Each strategy point should trace to one or more of your Task 1
 observations. If you find yourself writing a strategy point that doesn't connect
@@ -395,8 +402,20 @@ QUALITY BAR — what to include vs. exclude:
 - INCLUDE principles that capture non-obvious mechanisms — why a tactic works
   given specific information availability, consensus texture, or agent exposure.
 - INCLUDE principles that refine previous strategies with new nuance.
+"""
 
-Extract 4-8 principles for the {role}. Focus on:
+
+ROLE_EXTRACTION_TAIL = """
+---
+
+ASSIGNED ROLE: {role}
+
+Apply everything above EXCLUSIVELY to the {role}. Every observation and every
+strategy point you produce must use perspective="{role}", and every narrative
+field must be written from the {role}'s own actions and position — never from
+another role's point of view. Do not produce any items for other roles.
+
+Extract 4-8 observations and 4-8 strategy points for the {role}. Focus on:
 - What the {role} did right that should be repeated
 - What the {role} did wrong that should be avoided
 - Novel situations that produced a clear lesson for the {role}

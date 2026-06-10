@@ -10,7 +10,9 @@ split used elsewhere:
 
 from .inputs import (
     build_extraction_prompt,
+    build_role_extraction_prefix,
     build_role_extraction_prompt,
+    build_role_extraction_tail,
     format_extraction_inputs,
 )
 from .extraction_agent import ExtractionResult, extract_postgame
@@ -18,7 +20,9 @@ from .extraction_agent import ExtractionResult, extract_postgame
 __all__ = [
     "ExtractionResult",
     "build_extraction_prompt",
+    "build_role_extraction_prefix",
     "build_role_extraction_prompt",
+    "build_role_extraction_tail",
     "extract_postgame",
     "format_extraction_inputs",
 ]

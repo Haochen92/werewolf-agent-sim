@@ -15,7 +15,14 @@ from Agents.prompts.prompt_formatters import (
     format_strategy_notes_postgame,
     format_wolf_channel,
 )
-from Agents.prompts import EPISTEMIC_STATUS_RULE, GAME_RULES, POSTGAME_EXTRACTION_PROMPT, ROLE_EXTRACTION_PROMPT, SITUATION_STANDARDS
+from Agents.prompts import (
+    EPISTEMIC_STATUS_RULE,
+    GAME_RULES,
+    POSTGAME_EXTRACTION_PROMPT,
+    ROLE_EXTRACTION_PREFIX,
+    ROLE_EXTRACTION_TAIL,
+    SITUATION_STANDARDS,
+)
 from Agents.state import OrchestratorGraph
 
 logger = getLogger(__name__)
@@ -65,12 +72,24 @@ def build_extraction_prompt(inputs: dict[str, str]) -> str:
     )
 
 
-def build_role_extraction_prompt(inputs: dict[str, str], role: str) -> str:
-    """Build a role-specific extraction prompt from pre-formatted inputs."""
-    role_prompt = ROLE_EXTRACTION_PROMPT.format(role=role)
-    return role_prompt.format(
+def build_role_extraction_prefix(inputs: dict[str, str]) -> str:
+    """Build the role-NEUTRAL extraction prefix (rules + standards + full game
+    data + field definitions). Byte-identical across all roles, so it is the unit
+    cached once per game and reused by every role fan-out call."""
+    return ROLE_EXTRACTION_PREFIX.format(
         situation_standards=SITUATION_STANDARDS,
         epistemic_status_rule=EPISTEMIC_STATUS_RULE,
         game_rules=GAME_RULES,
         **inputs,
     )
+
+
+def build_role_extraction_tail(role: str) -> str:
+    """Build the tiny per-role lock appended after the cached prefix."""
+    return ROLE_EXTRACTION_TAIL.format(role=role)
+
+
+def build_role_extraction_prompt(inputs: dict[str, str], role: str) -> str:
+    """Build the full role-specific extraction prompt (prefix + tail) as one
+    string — the non-cached path (backup model, experiments)."""
+    return build_role_extraction_prefix(inputs) + build_role_extraction_tail(role)
