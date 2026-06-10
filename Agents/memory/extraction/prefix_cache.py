@@ -7,9 +7,14 @@ re-sending the whole thing — the real cost lever for per-role extraction.
 Vertex-specific and ENTIRELY best-effort: any failure (non-vertex backend, below
 the cache token minimum, a region that doesn't support caching, auth) returns
 None / no-ops, and the caller falls back to the full uncached prompt. Caching must
-never break extraction. Context caching is also not supported on the ``global``
-endpoint, so this pins its own region (default us-central1), distinct from the
-``VERTEX_LOCATION`` the game itself runs in.
+never break extraction.
+
+Region: the cache lives in the SAME location the game runs in (``VERTEX_LOCATION``,
+default ``global``) so the cached 2.5-pro call routes like every other call.
+Context caching + cache hits were verified live on both ``global`` and
+``us-central1`` (cache_read ~97% either way), so no region pin is needed; an
+optional ``EXTRACTION_CACHE_LOCATION`` override stays as an escape hatch if a
+future region quirk ever needs one.
 """
 
 from __future__ import annotations
@@ -19,11 +24,10 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import Any
 
-from Agents.llm_factory.backends import _use_vertex
+from Agents.llm_factory.backends import _DEFAULT_VERTEX_LOCATION, _use_vertex
 
 logger = getLogger(__name__)
 
-DEFAULT_EXTRACTION_CACHE_LOCATION = "us-central1"
 DEFAULT_EXTRACTION_CACHE_TTL_SECONDS = 900
 
 
@@ -65,8 +69,12 @@ def create_prefix_cache(
         logger.info("Extraction prefix caching skipped: backend is not Vertex.")
         return None
 
-    location = location or os.getenv(
-        "EXTRACTION_CACHE_LOCATION", DEFAULT_EXTRACTION_CACHE_LOCATION
+    # Same region as the rest of the game by default (verified to cache-hit on
+    # global); EXTRACTION_CACHE_LOCATION is an optional pin if ever needed.
+    location = (
+        location
+        or os.getenv("EXTRACTION_CACHE_LOCATION")
+        or os.getenv("VERTEX_LOCATION", _DEFAULT_VERTEX_LOCATION)
     )
     ttl_seconds = ttl_seconds or DEFAULT_EXTRACTION_CACHE_TTL_SECONDS
     temperature = float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0"))
