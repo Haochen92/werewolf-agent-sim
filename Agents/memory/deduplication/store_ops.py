@@ -1,4 +1,27 @@
-"""Store mutations applying dedup decisions: new-entry writes and duplicate-count bumps."""
+"""Store mutations that apply a dedup decision to the LangGraph store.
+
+Every function here is reached from one caller — ``_dedup_single_memory`` in
+pipeline.py — through the ``_DedupKind`` binding, which resolves to three entry
+points (each with a strategy-point and an observation variant), one per outcome
+the pipeline can land on:
+
+    pipeline outcome                  strategy variant         observation variant
+    --------------------------------  -----------------------  --------------------------------
+    KEEP (novel / prefilter-keep)     _store_new_point         _store_new_observation
+    auto-DISCARD (prefilter sure)     _update_auto_duplicate   _update_auto_observation_duplicate
+    LLM band (keep|discard verdict)   _apply_decision          _apply_observation_decision
+
+``_apply_*`` is the only branching entry: it dispatches the LLM verdict, reusing
+``_store_new_*`` for KEEP (and the stale-candidate fallback) and a bump for
+DISCARD. ``_item_for_candidate`` maps the LLM's 1-based candidate number back to a
+store item.
+
+Two bump mechanisms coexist and are NOT interchangeable: the auto-DISCARD path
+roundtrips the stored value through the ``Stored*`` pydantic model (so missing
+fields take model defaults), while the LLM-DISCARD path mutates the raw stored
+dict in place (preserving whatever fields were there). Per-function notes flag
+where that bites.
+"""
 
 from __future__ import annotations
 
@@ -29,7 +52,13 @@ def _apply_decision(
     decision: StrategyDiscard | StrategyKeep,
     game_id: str,
 ) -> DedupAction:
-    """Apply the LLM's dedup decision to the store."""
+    """Apply the LLM's strategy-point verdict — the ambiguous-middle entry point.
+
+    DISCARD bumps the named candidate's entry in place (the inline ``store.put``
+    below preserves its existing ``action``) or, if the candidate index is stale,
+    falls back to ``_store_new_point``. KEEP writes the point as a new entry — the
+    inline write here duplicates ``_store_new_point``. Returns the DedupAction taken.
+    """
 
     match decision:
         case StrategyDiscard(duplicate_of_candidate=candidate):
@@ -87,7 +116,12 @@ def _apply_observation_decision(
     decision: ObservationDiscard | ObservationKeep,
     game_id: str,
 ) -> DedupAction:
-    """Apply the LLM's observation dedup decision to the store."""
+    """Apply the LLM's observation verdict — the ambiguous-middle entry point.
+
+    Observation twin of ``_apply_decision``. DISCARD bumps the named candidate via
+    ``_bump_observation_count`` (raw-dict mutation), or stores new if the index is
+    stale. KEEP stores the observation new. Returns the DedupAction taken.
+    """
 
     match decision:
         case ObservationDiscard(duplicate_of_candidate=candidate):
@@ -112,6 +146,12 @@ def _apply_observation_decision(
 
 
 def _item_for_candidate(similar_items: list, candidate: int):
+    """Map the LLM's 1-based candidate number back to its store item, or None.
+
+    The LLM sees candidates numbered from 1 in prompt order; this resolves that to
+    the matching search hit. Out of range means the LLM named a candidate that
+    isn't there — ``_apply_*`` treats that as "store the item new".
+    """
     index = candidate - 1
     if 0 <= index < len(similar_items):
         return similar_items[index]
@@ -124,7 +164,12 @@ def _store_new_point(
     point: StrategyPoint,
     game_id: str,
 ) -> None:
-    """Store a strategy point as-is with no dedup modifications."""
+    """Write a strategy point as a brand-new entry under a fresh uuid (the KEEP path).
+
+    Reached for a novel point (no similar / prefilter-keep / LLM KEEP) and as the
+    fallback when an LLM DISCARD names a candidate that no longer exists. Counters
+    start at zero.
+    """
     stored = {
         "situation": point.composed_situation,
         "action": point.action,
@@ -145,15 +190,16 @@ def _store_new_observation(
     namespace: tuple[str, ...],
     observation: Observation,
     game_id: str,
-    situation: str | None = None,
-    approach: str | None = None,
-    outcome: str | None = None,
 ) -> None:
-    """Store an observation as-is with no dedup modifications."""
+    """Write an observation as a brand-new entry under a fresh uuid (the KEEP path).
+
+    Observation twin of ``_store_new_point`` (same triggers): stores the
+    observation as-is with usage counters at zero.
+    """
     stored = {
-        "situation": situation or observation.composed_situation,
-        "approach": approach or observation.approach,
-        "outcome": outcome or observation.outcome,
+        "situation": observation.composed_situation,
+        "approach": observation.approach,
+        "outcome": observation.outcome,
         "observation_count": 1,
         "last_observed": datetime.now().isoformat(),
         "game_id": game_id,
@@ -167,7 +213,13 @@ def _bump_observation_count(
     key: str,
     item,
 ) -> None:
-    """Increment observation count on an existing entry."""
+    """Bump an existing observation's count by mutating the raw stored dict.
+
+    The LLM-DISCARD bump for observations (called from ``_apply_observation_decision``).
+    Preserves every existing field and touches only ``observation_count`` /
+    ``last_observed``. Raw-dict counterpart to ``_update_auto_observation_duplicate``,
+    which instead roundtrips through the pydantic model.
+    """
     value = dict(item.value)
     value["observation_count"] = value.get("observation_count", 1) + 1
     value["last_observed"] = datetime.now().isoformat()
@@ -180,7 +232,14 @@ def _update_auto_observation_duplicate(
     key: str,
     item,
 ) -> None:
-    """Apply the high-confidence observation dedup behavior."""
+    """Bump an existing observation's count for the prefilter auto-DISCARD path.
+
+    Reached only when the embedding prefilter is confident the new observation
+    duplicates the top match. Roundtrips through ``StoredObservation`` (missing
+    fields take model defaults), then increments the count. Pydantic counterpart to
+    ``_bump_observation_count``; differs only in mechanism, so they are not
+    interchangeable.
+    """
     stored_observation = StoredObservation.model_validate(item.value)
     stored_observation.observation_count += 1
     stored_observation.last_observed = datetime.now()
