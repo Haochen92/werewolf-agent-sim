@@ -154,7 +154,7 @@ Example config using one exact Langfuse session ID:
 Save it as:
 
 ```text
-configs/eval/build_from_session.json
+eval_configs/build_from_session.json
 ```
 
 Exactly one source must be set:
@@ -165,7 +165,7 @@ Exactly one source must be set:
 - `trace_ids`: use exact Langfuse trace IDs directly.
 - `batch_results`: read session IDs from a local `run_batch` JSONL output file, then fetch traces from Langfuse.
 
-Template configs are available in `configs/eval/template/`:
+Template configs are available in `eval_configs/template/`:
 
 ```text
 application_example.json
@@ -188,7 +188,7 @@ summary_pairwise_example.json
 Run:
 
 ```bash
-poetry run eval-build-dataset --config configs/eval/build_from_session.json
+poetry run eval-build-dataset --config eval_configs/build_from_session.json
 ```
 
 This writes:
@@ -202,8 +202,8 @@ The JSONL dataset is the stable input for all replay experiments.
 
 ## Config Files
 
-Experiments are config-first. Put runnable configs under `configs/eval/`.
-Starter templates live under `configs/eval/template/`.
+Experiments are config-first. Put runnable configs under `eval_configs/`.
+Starter templates live under `eval_configs/template/`.
 
 Paths are resolved relative to the current working directory, so run commands
 from the repository root.
@@ -249,10 +249,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-summary --config configs/eval/summary_flash_vs_lite.json
+poetry run eval-summary --config eval_configs/summary_flash_vs_lite.json
 ```
 
-Template: `configs/eval/template/summary_flash_vs_lite.json`.
+Template: `eval_configs/template/summary_flash_vs_lite.json`.
 
 Output includes the baseline and candidate summaries, judge winner, confidence,
 brief reasoning, cost estimates, and candidate cost savings.
@@ -286,10 +286,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-retrieval --config configs/eval/retrieval_memory_snapshot.json
+poetry run eval-retrieval --config eval_configs/retrieval_memory_snapshot.json
 ```
 
-Template: `configs/eval/template/retrieval_example.json`.
+Template: `eval_configs/template/retrieval_example.json`.
 
 This replays retrieval for both observations and strategy points. If `judge` is
 true, the LLM judge scores relevance, redundancy, unique idea count, and
@@ -321,10 +321,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-application --config configs/eval/application_captured.json
+poetry run eval-application --config eval_configs/application_captured.json
 ```
 
-Template: `configs/eval/template/application_example.json`.
+Template: `eval_configs/template/application_example.json`.
 
 This reruns the production discussion/vote prompt and optionally judges action
 quality and strategy application.
@@ -349,10 +349,10 @@ Example config:
 Run:
 
 ```bash
-poetry run python -m evaluation.experiments.captured --config configs/eval/captured_v2_memory.json
+poetry run python -m evaluation.experiments.captured --config eval_configs/captured_v2_memory.json
 ```
 
-Template: `configs/eval/template/captured_example.json`.
+Template: `eval_configs/template/captured_example.json`.
 
 ### E2E Turn Replay
 
@@ -392,10 +392,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-e2e --config configs/eval/e2e_memory_snapshot.json
+poetry run eval-e2e --config eval_configs/e2e_memory_snapshot.json
 ```
 
-Template: `configs/eval/template/e2e_example.json`.
+Template: `eval_configs/template/e2e_example.json`.
 
 This is the closest eval to the full episodic memory system, but still at the
 single-turn replay level rather than full-game replay.
