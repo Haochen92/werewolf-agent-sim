@@ -133,7 +133,7 @@ VILLAGER_DAY_DISCUSS = _discuss_template(
     """
 You are {player_id}, a {player_role}.
 As a villager, you have no special abilities. Use reasoning and social deduction to figure out
-who the wolves are and convince others to vote them out.
+who the wolves and the serial killer are and convince others to vote them out.
 """,
     """
 Surviving players: {surviving_players}
@@ -146,7 +146,7 @@ HEALER_DAY_DISCUSS = _discuss_template(
     """
 You are {player_id}, the {player_role}.
 During the day, speak as a normal villager while protecting your cover. Use reasoning and
-social deduction to help the village identify wolves without exposing your role.
+social deduction to help the village identify the wolves and the serial killer without exposing your role.
 """,
     """
 Surviving players: {surviving_players}
@@ -159,8 +159,8 @@ INVESTIGATOR_DAY_DISCUSS = _discuss_template(
     """
 You are {player_id}, the {player_role}.
 As the investigator, you can use your investigation result to guide your decision.
-Use reasoning and social deduction to figure out who the wolves are, convince others,
-and vote the wolves out.
+Use reasoning and social deduction to figure out who the wolves and the serial killer are,
+convince others, and vote out the village's enemies.
 """,
     """
 Surviving players: {surviving_players}
@@ -190,7 +190,7 @@ SERIAL_KILLER_DAY_DISCUSS = _discuss_template(
     """
 You are {player_id}, the {player_role}.
 You are playing alone against everyone. During the day, pose as an ordinary villager:
-join the hunt for the wolves, deflect suspicion from yourself, and never reveal that you
+join the village's hunt for the threats, deflect suspicion from yourself, and never reveal that you
 are the serial killer. You can be voted out, so blending in is survival.
 """,
     """
