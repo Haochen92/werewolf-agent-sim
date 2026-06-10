@@ -51,7 +51,7 @@ experiment-record begins."
 |---|---|---|
 | `evaluation/` | authoritative eval **code** | one canonical runner per eval kind — what v5 runs on. `scripts/` keeps only generation entry + ops, never reusable eval logic. |
 | `evidence/<experiment>/` | the **record** | narrative + data artifacts + a **pointer** back to the code that produced it. Store the pointer, never a copy of the function. |
-| `eval_configs/ eval_sets/ eval_results/ batch_results/` | pipeline **I/O** | the conveyor belt between the two; see the *Data plane* section in `evaluation/README.md`. |
+| `evaluation/config/ evaluation/frozen_eval_sets/ evaluation/eval_results/ batch_results/` | pipeline **I/O** | the conveyor belt between the two; see the *Data plane* section in `evaluation/README.md`. |
 
 The pointer is not aspirational: the provenance manifest's `runtime_fingerprint` (git SHA) + embedded
 config *is* the back-reference from an evidence artifact to the exact `evaluation/` code and version

@@ -62,7 +62,7 @@ journey. (Full data-flow + folder taxonomy: the **Data plane** section in `evalu
   (`experiment_log.md` / `report.md`) + data artifacts + a POINTER back to the `evaluation/` code that
   produced it. The provenance manifest's `runtime_fingerprint` (git SHA) + embedded config IS that
   pointer — **store the pointer, not a copy of the function.**
-- **The live data plane** (`eval_configs/ eval_sets/ eval_results/ batch_results/`) is just pipeline
+- **The live data plane** (`evaluation/config/ evaluation/frozen_eval_sets/ evaluation/eval_results/ batch_results/`) is just pipeline
   I/O between them.
 
 **Lifecycle.** *Explore* → a thin runner in `evaluation/experiments/` from the start (reusing

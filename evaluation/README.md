@@ -9,7 +9,7 @@ The intended workflow is:
 2. Use Langfuse spans from those games to build a frozen local eval dataset.
 3. Replay specific parts of the memory pipeline from the frozen dataset.
 4. Optionally use an LLM judge to score the replayed outputs.
-5. Write JSONL results under `eval_results/`.
+5. Write JSONL results under `evaluation/eval_results/`.
 
 The evaluation module does not rerun whole games. It replays individual frozen
 agent turns.
@@ -46,16 +46,20 @@ Each `EvalCase` represents one agent turn and includes:
 ## Structure
 
 ```text
-evaluation/
-  core/          config schemas, result schemas, IO, formatting, costs, settings
-  data/          Langfuse fetching, EvalCase conversion, dataset sampling
-  components/    replay adapters for summary, retrieval, and action stages
-  judges/        judge prompts and LLM judge wrappers
-  experiments/   command-line experiment entrypoints
-  archive/       old eval code kept for auditing only
+evaluation/                the eval subsystem (code + its data)
+  src/                     the code:
+    core/        config schemas, result schemas, IO, formatting, costs, settings
+    data/        Langfuse fetching, EvalCase conversion, dataset sampling
+    components/  replay adapters for summary, retrieval, and action stages
+    judges/      judge prompts and LLM judge wrappers
+    experiments/ command-line experiment entrypoints
+    archive/     old eval code kept for auditing only
+  config/                  experiment configs (domain subfolders + template/)
+  frozen_eval_sets/        frozen replay datasets + gold labels
+  eval_results/            judge / gold-label scores (gitignored scratch)
 ```
 
-Live code should not import from `evaluation/archive`.
+Live code should not import from `evaluation/src/archive`.
 
 Memory snapshots used by normal graph runs and retrieval experiments live in:
 
@@ -85,30 +89,31 @@ arguments.
 
 ## Data plane
 
-The eval pipeline reads and writes four top-level data folders. They are stages
-of one flow, not duplicates:
+The eval pipeline reads and writes four data folders — three nested under
+`evaluation/`, plus `batch_results/` at the repo root (generation output). They are
+stages of one flow, not duplicates:
 
 ```text
 scripts/run_batch.py ─→ batch_results/<session_prefix>.jsonl   (game-run log; filename = Langfuse session link)
         │                  records self-stamped with runtime_fingerprint + configs
         ▼
-eval-build-* CLIs freeze Langfuse traces ─→ eval_sets/<id>.jsonl  (+ <id>.manifest.json sidecar)
+eval-build-* CLIs freeze Langfuse traces ─→ evaluation/frozen_eval_sets/<id>.jsonl  (+ <id>.manifest.json sidecar)
         ▼
-eval-* runners (--config eval_configs/<domain>/<name>.json) ─→ eval_results/…  (judge or gold-label scores)
+eval-* runners (--config evaluation/config/<domain>/<name>.json) ─→ evaluation/eval_results/…  (judge or gold-label scores)
 ```
 
 | Folder | Role | Git |
 |---|---|---|
-| `eval_configs/` | experiment configs, grouped by domain subfolder (+ `template/`) | tracked |
-| `eval_sets/` | frozen replay datasets + gold labels | tracked |
-| `eval_results/` | judge / gold-label scores | gitignored (scratch) |
+| `evaluation/config/` | experiment configs, grouped by domain subfolder (+ `template/`) | tracked |
+| `evaluation/frozen_eval_sets/` | frozen replay datasets + gold labels | tracked |
+| `evaluation/eval_results/` | judge / gold-label scores | gitignored (scratch) |
 | `batch_results/` | per-game run logs (link games → Langfuse traces) | gitignored |
 
-`configs/` no longer exists — experiment configs have one home, `eval_configs/`.
+`configs/` no longer exists — experiment configs have one home, `evaluation/config/`.
 Code-level config stays in modules (`Agents/game_config.py`, per-package
 `config.py`, `llm_factory` model constants); there is no central code-config folder.
 
-**Domain taxonomy.** `eval_configs/`, `eval_sets/`, and `eval_results/` share one
+**Domain taxonomy.** `evaluation/config/`, `evaluation/frozen_eval_sets/`, and `evaluation/eval_results/` share one
 subfolder vocabulary — *config asks the question, eval_set is the exam, eval_result
 is the grade; same domain name at each stage.* A domain gets a subfolder in a stage
 once it holds ≥2 artifacts there; single shared datasets (e.g. `v4_filtering_eval`,
@@ -133,7 +138,7 @@ never renamed — `batch_results` filenames are Langfuse session prefixes, and
 `evidence/` reports cite names.
 
 **Labels.** Gold-label files used by deterministic evals live with their sets in
-`eval_sets/`. Labelling *process* artifacts (multi-model votes, manual exports from
+`evaluation/frozen_eval_sets/`. Labelling *process* artifacts (multi-model votes, manual exports from
 `evaluation/labeling/`) and experiment-frozen golds live in `evidence/<experiment>/`,
 which keeps its own self-contained convention and is not part of this taxonomy.
 
@@ -145,7 +150,7 @@ which keeps its own self-contained convention and is not part of this taxonomy.
 here; `evidence/<experiment>/` holds the narrative + artifacts + a provenance
 pointer back to the code that produced it — never its own copy of the function.
 One-off studies (e.g. the model-comparison runners) write their outputs into
-`evidence/<experiment>/`, not `eval_results/`. The full layer rule + the
+`evidence/<experiment>/`, not `evaluation/eval_results/`. The full layer rule + the
 explore→graduate→supersede lifecycle is in **CLAUDE.md → Eval Architecture**.
 
 ## Components, Judges, And Experiments
@@ -211,7 +216,7 @@ Example config using one exact Langfuse session ID:
   "per_role_per_phase": 1,
   "max_samples": 40,
   "seed": 0,
-  "output": "eval_sets/memory_eval_from_session_001.jsonl",
+  "output": "evaluation/frozen_eval_sets/memory_eval_from_session_001.jsonl",
   "overwrite": false
 }
 ```
@@ -219,7 +224,7 @@ Example config using one exact Langfuse session ID:
 Save it as:
 
 ```text
-eval_configs/build_from_session.json
+evaluation/config/build_from_session.json
 ```
 
 Exactly one source must be set:
@@ -230,7 +235,7 @@ Exactly one source must be set:
 - `trace_ids`: use exact Langfuse trace IDs directly.
 - `batch_results`: read session IDs from a local `run_batch` JSONL output file, then fetch traces from Langfuse.
 
-Template configs are available in `eval_configs/template/`:
+Template configs are available in `evaluation/config/template/`:
 
 ```text
 application_example.json
@@ -253,22 +258,22 @@ summary_pairwise_example.json
 Run:
 
 ```bash
-poetry run eval-build-dataset --config eval_configs/build_from_session.json
+poetry run eval-build-dataset --config evaluation/config/build_from_session.json
 ```
 
 This writes:
 
 ```text
-eval_sets/memory_eval_from_session_001.jsonl
-eval_sets/memory_eval_from_session_001.manifest.json
+evaluation/frozen_eval_sets/memory_eval_from_session_001.jsonl
+evaluation/frozen_eval_sets/memory_eval_from_session_001.manifest.json
 ```
 
 The JSONL dataset is the stable input for all replay experiments.
 
 ## Config Files
 
-Experiments are config-first. Put runnable configs under `eval_configs/`.
-Starter templates live under `eval_configs/template/`.
+Experiments are config-first. Put runnable configs under `evaluation/config/`.
+Starter templates live under `evaluation/config/template/`.
 
 Paths are resolved relative to the current working directory, so run commands
 from the repository root.
@@ -286,7 +291,7 @@ Example config:
 {
   "experiment_id": "summary_flash_vs_lite",
   "component": "situation_summary",
-  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
   "alternate_order": true,
   "baseline": {
     "label": "flash_current",
@@ -314,10 +319,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-summary --config eval_configs/summary_flash_vs_lite.json
+poetry run eval-summary --config evaluation/config/summary_flash_vs_lite.json
 ```
 
-Template: `eval_configs/template/summary_flash_vs_lite.json`.
+Template: `evaluation/config/template/summary_flash_vs_lite.json`.
 
 Output includes the baseline and candidate summaries, judge winner, confidence,
 brief reasoning, cost estimates, and candidate cost savings.
@@ -331,7 +336,7 @@ Example config:
 
 ```json
 {
-  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
   "snapshots": [
     {
       "label": "v1_post_dedup",
@@ -351,10 +356,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-retrieval --config eval_configs/retrieval_memory_snapshot.json
+poetry run eval-retrieval --config evaluation/config/retrieval_memory_snapshot.json
 ```
 
-Template: `eval_configs/template/retrieval_example.json`.
+Template: `evaluation/config/template/retrieval_example.json`.
 
 This replays retrieval for both observations and strategy points. If `judge` is
 true, the LLM judge scores relevance, redundancy, unique idea count, and
@@ -369,7 +374,7 @@ Example config:
 
 ```json
 {
-  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
   "memory_mode": "captured",
   "max_samples": 20,
   "judge": true,
@@ -386,10 +391,10 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-application --config eval_configs/application_captured.json
+poetry run eval-application --config evaluation/config/application_captured.json
 ```
 
-Template: `eval_configs/template/application_example.json`.
+Template: `evaluation/config/template/application_example.json`.
 
 This reruns the production discussion/vote prompt and optionally judges action
 quality and strategy application.
@@ -404,7 +409,7 @@ Example config:
 
 ```json
 {
-  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
   "max_samples": 20,
   "judge_model": "gemini-2.5-pro",
   "sleep_seconds": 1.0
@@ -414,10 +419,10 @@ Example config:
 Run:
 
 ```bash
-poetry run python -m evaluation.experiments.captured --config eval_configs/captured_v2_memory.json
+poetry run python -m evaluation.experiments.captured --config evaluation/config/captured_v2_memory.json
 ```
 
-Template: `eval_configs/template/captured_example.json`.
+Template: `evaluation/config/template/captured_example.json`.
 
 ### E2E Turn Replay
 
@@ -431,7 +436,7 @@ Example config:
 
 ```json
 {
-  "dataset": "eval_sets/memory_eval_001.jsonl",
+  "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
   "snapshots": [
     {
       "label": "v1_post_dedup",
@@ -457,17 +462,17 @@ Example config:
 Run:
 
 ```bash
-poetry run eval-e2e --config eval_configs/e2e_memory_snapshot.json
+poetry run eval-e2e --config evaluation/config/e2e_memory_snapshot.json
 ```
 
-Template: `eval_configs/template/e2e_example.json`.
+Template: `evaluation/config/template/e2e_example.json`.
 
 This is the closest eval to the full episodic memory system, but still at the
 single-turn replay level rather than full-game replay.
 
 ## Outputs
 
-Experiment outputs are JSONL files under `eval_results/` unless an explicit
+Experiment outputs are JSONL files under `evaluation/eval_results/` unless an explicit
 `output` path is provided in the config.
 
 Each line is one replayed case or one replayed case/snapshot/item-type

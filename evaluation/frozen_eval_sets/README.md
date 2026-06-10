@@ -1,4 +1,4 @@
-# eval_sets/
+# evaluation/frozen_eval_sets/
 
 Frozen replay datasets and gold labels (tracked). Built by the `eval-build-*`
 CLIs from Langfuse traces; consumed by the `eval-*` runners.
@@ -7,5 +7,5 @@ CLIs from Langfuse traces; consumed by the `eval-*` runners.
   at root. New artifacts: `<purpose>_vN.jsonl` + a `<id>.manifest.json` sidecar.
 - `legacy/` holds concluded-era relics (names untouched, still citable).
 
-See the **Data plane** section in [`../evaluation/README.md`](../evaluation/README.md)
+See the **Data plane** section in [`../README.md`](../README.md)
 for the full convention (taxonomy, manifest/lineage, naming, legacy policy).

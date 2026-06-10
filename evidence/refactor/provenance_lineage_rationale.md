@@ -3,7 +3,7 @@
 **Date:** 2026-06-10
 **Status:** Design rationale for the eval data-plane reorg (Wave 2). Not yet implemented. Companion
 to [structure_audit.md](structure_audit.md) and the plan in `.claude/plans/`.
-**Scope:** the *live* eval plane — `batch_results/`, `eval_sets/`, `eval_results/`. Not `evidence/`
+**Scope:** the *live* eval plane — `batch_results/`, `evaluation/frozen_eval_sets/`, `evaluation/eval_results/`. Not `evidence/`
 (which keeps its self-contained experiment-folder convention).
 
 ---
@@ -69,7 +69,7 @@ without it.
 
 ### Rung 1 — a manifest that references inputs **by path**
 
-Sidecar/embedded: `{ "input": "eval_sets/dedup_v2_sampled.jsonl", "config": {…} }`
+Sidecar/embedded: `{ "input": "evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl", "config": {…} }`
 
 - **Pro:** names shrink to `<purpose>_vN`; the full config + model + git SHA live in structured
   metadata instead of the name. Already a large win for readability and completeness.
@@ -80,7 +80,7 @@ Sidecar/embedded: `{ "input": "eval_sets/dedup_v2_sampled.jsonl", "config": {…
 
 ### Rung 2 — reference inputs **by content hash** (the core trick)
 
-`{ "inputs": [{"path": "eval_sets/dedup/sampled_v2.jsonl", "sha256": "c13c…", "count": 130}] }`
+`{ "inputs": [{"path": "evaluation/frozen_eval_sets/dedup/sampled_v2.jsonl", "sha256": "c13c…", "count": 130}] }`
 
 - The path stays (human-findable); the **sha256 is the actual link.** To check a result is still
   valid: re-hash the file at that path and compare. Match → the result genuinely describes this
@@ -140,7 +140,7 @@ It's tempting to call hash-linkage "reproducible." Precisely:
 Reproducibility needs three things provenance alone doesn't guarantee:
 
 1. **Inputs preserved, not just hashed.** A hash identifies a file you no longer have. We already
-   track `eval_sets/` in git on purpose ([structure_audit.md](structure_audit.md) §1) — so inputs
+   track `evaluation/frozen_eval_sets/` in git on purpose ([structure_audit.md](structure_audit.md) §1) — so inputs
    *are* kept; the hash makes that durable rather than assumed.
 2. **Environment pinned.** Model IDs, backend, temperature, prompt bundle, git SHA — all already in
    `runtime_fingerprint` ([[project-prompt-versioning-fingerprint]]).
@@ -160,9 +160,9 @@ nondeterminism, not our bookkeeping, is the floor on byte-identity.
 ## 5. How we implement it here
 
 - **Hybrid embed vs sidecar — driven by whether the artifact has a JSON envelope.**
-  - `eval_results/*.json` (single object) and `batch_results` records → **embed** top-level keys.
+  - `evaluation/eval_results/*.json` (single object) and `batch_results` records → **embed** top-level keys.
     `batch_results` already does this; results just join the pattern.
-  - `eval_sets/*.jsonl` (N line-records, **no envelope**) → **sidecar** `<id>.manifest.json`. A
+  - `evaluation/frozen_eval_sets/*.jsonl` (N line-records, **no envelope**) → **sidecar** `<id>.manifest.json`. A
     header-line embed would force every reader to skip line 0 — a silent-corruption footgun across
     ~10 read-sites — for no gain. The sidecar leaves readers untouched and is already the
     convention (the 8 existing `.manifest.json`).
