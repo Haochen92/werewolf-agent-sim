@@ -32,37 +32,24 @@ def _apply_strategy_operation(
     )
     if not source_keys:
         return "failed", 0
-
     if operation.action == "KEEP":
         return "kept", 0
+    if operation.action != "DISCARD":
+        return "failed", 0
 
-    if operation.action == "DISCARD":
-        survivor_key = operation.survivor_key or source_keys[0]
-        if survivor_key not in source_keys or survivor_key not in items_by_key:
-            return "failed", 0
-        survivor_value = dict(items_by_key[survivor_key].value)
-        metadata = _merged_metadata(source_keys, items_by_key, survivor_key)
-        situation = operation.merged_situation or survivor_value.get("situation", "")
-        action = operation.merged_action or survivor_value.get("action", "")
-        value = {
-            "situation": situation,
-            "action": action,
-            **metadata,
-        }
-        if apply:
-            _put_memory_with_retries(target_store, namespace, survivor_key, value)
-            _cache_item_value(items_by_key, survivor_key, value)
-        deleted = _delete_absorbed_keys(
-            target_store,
-            namespace,
-            source_keys,
-            {survivor_key},
-            items_by_key,
-            apply,
-        )
-        return "discarded", deleted
-
-    return "failed", 0
+    survivor_key = _resolve_survivor(operation, source_keys, items_by_key)
+    if survivor_key is None:
+        return "failed", 0
+    survivor_value = items_by_key[survivor_key].value
+    value = {
+        "situation": operation.merged_situation or survivor_value.get("situation", ""),
+        "action": operation.merged_action or survivor_value.get("action", ""),
+        **_merged_metadata(source_keys, items_by_key, survivor_key),
+    }
+    deleted = _commit_survivor(
+        target_store, namespace, survivor_key, value, source_keys, items_by_key, apply,
+    )
+    return "discarded", deleted
 
 
 def _apply_observation_operation(
@@ -80,43 +67,67 @@ def _apply_observation_operation(
     )
     if not source_keys:
         return "failed", 0
-
     if operation.action == "KEEP":
         return "kept", 0
+    if operation.action not in {"DISCARD", "MERGE"}:
+        return "failed", 0
 
-    if operation.action in {"DISCARD", "MERGE"}:
-        survivor_key = operation.survivor_key or source_keys[0]
-        if survivor_key not in source_keys or survivor_key not in items_by_key:
-            return "failed", 0
-        survivor_value = dict(items_by_key[survivor_key].value)
-        metadata = _merged_metadata(source_keys, items_by_key, survivor_key)
-        situation = survivor_value.get("situation", "")
-        approach = survivor_value.get("approach", "")
-        outcome = survivor_value.get("outcome", "")
-        if operation.action == "MERGE":
-            situation = operation.merged_situation or situation
-            approach = operation.merged_approach or approach
-            outcome = operation.merged_outcome or outcome
-        value = {
-            "situation": situation,
-            "approach": approach,
-            "outcome": outcome,
-            **metadata,
-        }
-        if apply:
-            _put_memory_with_retries(target_store, namespace, survivor_key, value)
-            _cache_item_value(items_by_key, survivor_key, value)
-        deleted = _delete_absorbed_keys(
-            target_store,
-            namespace,
-            source_keys,
-            {survivor_key},
-            items_by_key,
-            apply,
-        )
-        return ("discarded" if operation.action == "DISCARD" else "merged", deleted)
+    survivor_key = _resolve_survivor(operation, source_keys, items_by_key)
+    if survivor_key is None:
+        return "failed", 0
+    survivor_value = items_by_key[survivor_key].value
+    situation = survivor_value.get("situation", "")
+    approach = survivor_value.get("approach", "")
+    outcome = survivor_value.get("outcome", "")
+    if operation.action == "MERGE":
+        situation = operation.merged_situation or situation
+        approach = operation.merged_approach or approach
+        outcome = operation.merged_outcome or outcome
+    value = {
+        "situation": situation,
+        "approach": approach,
+        "outcome": outcome,
+        **_merged_metadata(source_keys, items_by_key, survivor_key),
+    }
+    deleted = _commit_survivor(
+        target_store, namespace, survivor_key, value, source_keys, items_by_key, apply,
+    )
+    return ("discarded" if operation.action == "DISCARD" else "merged"), deleted
 
-    return "failed", 0
+
+def _resolve_survivor(
+    operation: StrategyBatchOperation | ObservationBatchOperation,
+    source_keys: list[str],
+    items_by_key: dict[str, Any],
+) -> str | None:
+    """The entry that absorbs the cluster: the LLM's pick, defaulting to the first source key."""
+    survivor_key = operation.survivor_key or source_keys[0]
+    if survivor_key not in source_keys or survivor_key not in items_by_key:
+        return None
+    return survivor_key
+
+
+def _commit_survivor(
+    target_store: BaseStore,
+    namespace: tuple[str, str, str],
+    survivor_key: str,
+    value: dict[str, Any],
+    source_keys: list[str],
+    items_by_key: dict[str, Any],
+    apply: bool,
+) -> int:
+    """Write the survivor's merged value and delete the absorbed entries (dry-run: count only)."""
+    if apply:
+        _put_memory_with_retries(target_store, namespace, survivor_key, value)
+        _cache_item_value(items_by_key, survivor_key, value)
+    return _delete_absorbed_keys(
+        target_store,
+        namespace,
+        source_keys,
+        {survivor_key},
+        items_by_key,
+        apply,
+    )
 
 
 def _remap_operation_keys(
