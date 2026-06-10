@@ -61,7 +61,13 @@ def prompt_bundle_hash() -> str:
     """SHA-256 over the prompt modules (sorted), truncated to 16 hex chars.
 
     This is the prompt surface as content: it changes whenever any prompt text
-    changes, including uncommitted edits the git SHA alone would miss.
+    changes, including uncommitted edits the git SHA alone would miss. The glob
+    covers all of ``Agents/prompts/``, so the bundle spans both the prompt
+    *strings* and the *rendering layer* (formatters.py / prompt_inputs.py) that
+    assembles them into model-visible text — a formatter edit changes what the
+    model sees and correctly bumps this hash. (Records stamped before the
+    rendering layer joined the bundle, 2026-06-10, carry the older hash purely
+    from the smaller glob, not a prompt change — see evidence/prompt_versioning/.)
     """
     digest = hashlib.sha256()
     for path in sorted(_PROMPTS_DIR.glob("*.py")):

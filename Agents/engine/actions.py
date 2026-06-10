@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from Agents.tracing import GraphContext, langfuse
 
-from Agents.formatters import (
+from Agents.prompts.formatters import (
     format_day_channel,
     format_day_summaries,
     format_investigator_results,

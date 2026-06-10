@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from Agents.llm_factory import get_llm_judge
 
 
-from Agents.formatters import (
+from Agents.prompts.formatters import (
     format_day_channel,
 )
 from Agents.schemas import (

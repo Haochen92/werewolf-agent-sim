@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from Agents.llm_factory import get_llm
 
 
-from Agents.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
+from Agents.prompts.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
 from Agents.schemas.game_events import (
     DayChannel,
     DayVote,

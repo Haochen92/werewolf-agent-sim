@@ -45,7 +45,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from Agents.formatters import (
+from Agents.prompts.formatters import (
     format_day_channel_for_day,
     format_day_summaries,
     format_investigator_results,

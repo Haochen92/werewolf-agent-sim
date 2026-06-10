@@ -7,7 +7,7 @@ import time
 from logging import getLogger
 from typing import Any
 
-from Agents.formatters import format_day_channel
+from Agents.prompts.formatters import format_day_channel
 from evaluation.components.situation_summary import make_google_llm
 from evaluation.core.costs import estimate_cost_from_usage_metadata
 from evaluation.core.config_schema import JudgeConfig

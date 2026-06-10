@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from Agents.formatters import (
+from Agents.prompts.formatters import (
     format_day_channel_for_day,
     format_day_summaries,
     format_investigator_results,
@@ -10,8 +10,11 @@ from Agents.formatters import (
     format_strategy_points,
     format_wolf_channel,
 )
-from Agents.prompts import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS, SITUATION_STANDARDS
-from Agents.prompts.standards import EPISTEMIC_STATUS_RULE
+# Source from the concrete submodules, not the Agents.prompts package __init__:
+# this module now lives *inside* that package, so importing from its __init__
+# would be a back-edge (cycle risk during package init).
+from Agents.prompts.memory import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS
+from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
 
 def _firing_brief(firing_reason: Any) -> str:

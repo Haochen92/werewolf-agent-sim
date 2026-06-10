@@ -11,7 +11,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from Agents.formatters import (
+from Agents.prompts.formatters import (
     format_agent_action,
     format_day_channel,
 )

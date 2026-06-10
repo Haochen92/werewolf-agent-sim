@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from Agents.formatters import (
+from Agents.prompts.formatters import (
     format_day_channel_for_day,
     format_day_summaries,
     format_investigator_results,

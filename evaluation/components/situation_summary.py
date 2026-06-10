@@ -11,7 +11,7 @@ from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
 from Agents.llm_factory import create_chat_model
 
-from Agents.prompt_inputs import build_agent_prompt_input
+from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.prompts import (
     HEALER_SITUATION_SUMMARY,
     INVESTIGATOR_SITUATION_SUMMARY,

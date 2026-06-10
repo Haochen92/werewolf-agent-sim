@@ -14,7 +14,7 @@ load_dotenv()
 
 from Agents.llm_factory import create_chat_model
 
-from Agents.formatters import format_day_channel
+from Agents.prompts.formatters import format_day_channel
 from evaluation.core.formatters import format_eval_private_context, format_eval_situations
 from evaluation.core.schemas import SituationSummaryScores
 from evaluation.data.datasets import read_eval_dataset
