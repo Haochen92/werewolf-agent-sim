@@ -58,10 +58,12 @@ _VOTE_TRANSCRIPT = """
 """
 
 
-# Voting system suffix shared by every village-aligned + SK role (wolf overrides it).
+# Voting system suffix shared by the village-aligned roles (villager, healer,
+# investigator, vigilante). The wolf and the serial killer each have their own vote
+# system block — their win conditions make "remove an anti-village threat" wrong.
 DAY_VOTE_SYSTEM_SUFFIX = """
 You are {player_id}, a {player_role}.
-You are now at the end of the current day of discussion. Vote to eliminate a player you suspect is a wolf.
+You are now at the end of the current day of discussion. Vote to eliminate the player you believe is most likely to be a threat to the village — a wolf or the serial killer.
 You must vote from one of the surviving players, or "abstain" when it is offered.
 You cannot vote for yourself.
 {abstain_instruction}
@@ -250,8 +252,7 @@ You are {player_id}, a {player_role}.
 You are now voting to eliminate a player.
 You cannot vote for yourself.
 Avoid voting for your wolf allies by default, unless refusing to join an overwhelming majority against a clearly doomed ally would expose you.
-Try to vote in a way that does not raise suspicion about your identity;
-usually target a villager, but preserve your cover by voting for a wolf ally when the village consensus is decisive to vote out that exposed wolf ally.
+Try to vote in a way that does not raise suspicion about your identity. The serial killer is also your enemy — if it is exposed, or looks likely to survive into an endgame where it threatens your win, helping the village remove it can be worth a vote. Otherwise target a villager, but preserve your cover by voting for a wolf ally when the village consensus is decisive to vote out that exposed wolf ally.
 You may also vote "abstain" when it is offered (an abstain plurality means no elimination) — blending with an abstaining village can be good cover, and a no-lynch day costs the village a chance to find a wolf.
 {abstain_instruction}
 
@@ -265,7 +266,21 @@ You must respond with a valid JSON:
 SERIAL_KILLER_DAY_VOTE = _vote_template(
     "Here are the surviving players: {surviving_players}\n",
     "\nCast your vote. Vote in the way that best deflects suspicion from you and removes a threat to your survival.\n",
-    core_strategy=SERIAL_KILLER_CORE_STRATEGY,
+    system=build_system_prompt(
+        GAME_PREAMBLE,
+        SERIAL_KILLER_CORE_STRATEGY,
+        """
+You are {player_id}, a {player_role}.
+You are now voting to eliminate a player. You work alone — every wolf and villager is your enemy, and you win by being among the last left standing.
+You cannot vote for yourself.
+Vote to remove whoever most threatens your survival — usually whoever is closing in on you, or a strong player who could organize the others against you — while casting your vote in a way that keeps you read as ordinary town and never hints that you are the serial killer.
+You may also vote "abstain" when it is offered (an abstain plurality means no elimination) — blending with an abstaining village can be good cover.
+{abstain_instruction}
+
+You must respond with a valid JSON:
+{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+""",
+    ),
 )
 
 
