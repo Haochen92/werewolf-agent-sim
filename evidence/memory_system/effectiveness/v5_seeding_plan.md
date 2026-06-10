@@ -146,6 +146,44 @@ in-engine. This is a single uncontrolled game, so no engagement figure is cited 
 the de-bias effect is quantified for free by the 30-game off-memory seeding batch below
 (SK-vote / engagement distribution at N=30).
 
+## Generational seeding (v5_1+) — design + serialization
+
+A *second-order, exploratory* track distinct from the Phase C A/B: **does memory compound
+across generations?** Build a store from **memory-ON** play and ask whether it beats the
+memory-off-built `v5_0`. Keep these separate in your head:
+
+- **Phase C "does memory work" A/B does NOT use v5_1.** Both arms share the *same* seed
+  (`v5_0`): memory-on reads it, memory-off reads nothing. `v5_0` is built memory-OFF *on
+  purpose* so the seed/baseline is unbiased — a memory-on-built store would confound it.
+- **v5_1 = a store built by memory-ON games** that read `v5_0` and dump forward. Different
+  question (compounding / self-improvement), different artifact. Don't let it replace `v5_0`
+  as the A/B seed.
+
+**Store layout decision — separate dirs per generation, NOT in-place growth.** Run each
+generation as:
+
+```
+--seed-store-dir v5_0  --dump-store-dir v5_1     # memory-ON games; v5_1 = v5_0 ∪ new
+--seed-store-dir v5_1  --dump-store-dir v5_2     # next generation, etc.
+```
+
+The dump already carries the whole store forward — `dump_memory_to_json_files`
+(`persistence/dump.py`) serializes the *entire in-memory store*, and at dump time that store
+is `loaded seed ∪ new extractions` (`persistence/seed.py` loads the seed dir into the same
+global store extraction writes to). So **`v5_1` is complete and self-contained**, and `v5_0`
+is never mutated. Copy-pasting `v5_0`→`v5_1` first is redundant; in-place growth is rejected
+— it destroys the immutable baseline + the lineage, and there is **no store-rebuild-from-record
+harness** (rebuilding = re-running the expensive games), so immutable per-generation snapshots
+are the only cheap way back to any prior state.
+
+**Serialization (why re-seeding isn't re-paid).** Two layers already exist: the JSON snapshot
+is the serialized store *content*; `indexed_cache.pkl` is the serialized embedding *vectors*.
+On load, if the JSON is unchanged, vectors load from the pickle → **zero embedding API calls**
+(`seed_memory_from_json_files_cached`). So the rule is: **the moment a generation stops
+seeding, freeze it and switch downstream runs to consumption mode** — `--seed-store-dir
+<frozen vN> --no-memory-dump`: no extraction (the ~62%-of-cost part), no re-embedding, only
+play cost. The expensive build is paid once per generation, then frozen.
+
 ## Order of operations
 
 1. Seedability fix (engine-level) + extract-without-dump flag. ✅ small, prompt-neutral.
