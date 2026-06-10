@@ -1,9 +1,7 @@
 DAY_SUMMARY_PROMPT = """You are a game analyst for a Werewolf game. Extract a structured summary of today's public discussion.
 
 GAME CONTEXT:
-- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
-- Eliminated players' roles are revealed on death.
-- The Game Master announces wolf kills and healer saves, but NOT investigation results.
+{game_rules}
 
 {situation_standards}
 
@@ -28,15 +26,7 @@ POSTGAME_EXTRACTION_PROMPT = """
 You are an expert strategic analyst for a game of Werewolf.
 
 GAME RULES:
-- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
-- Wolves know each other and secretly eliminate one villager per night
-- Healer can protect one player from elimination each night (cannot protect themselves)
-- Investigator can reveal one player's role each night, results are private
-- Day: all players discuss (up to 4 rounds), then vote to eliminate one player. Ties result in no elimination.
-- Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
-- Villagers win when all wolves are eliminated. Wolves win when they equal or outnumber villagers.
-- Eliminated players' roles are revealed.
-- The Game Master only announces eliminations from voting, wolf kills, and healer saves — NOT investigation results.
+{game_rules}
 
 {situation_standards}
 
@@ -249,15 +239,7 @@ to extract lessons specifically for the {role} agent — what worked, what faile
 and what the {role} should do differently in future games.
 
 GAME RULES:
-- 8 players: 4 Villagers, 2 Wolves, 1 Healer, 1 Investigator
-- Wolves know each other and secretly eliminate one villager per night
-- Healer can protect one player from elimination each night (cannot protect themselves)
-- Investigator can reveal one player's role each night, results are private
-- Day: all players discuss (up to 4 rounds), then vote to eliminate one player. Ties result in no elimination.
-- Night: wolves choose a target, healer may protect someone, investigator may investigate someone.
-- Villagers win when all wolves are eliminated. Wolves win when they equal or outnumber villagers.
-- Eliminated players' roles are revealed.
-- The Game Master only announces eliminations from voting, wolf kills, and healer saves — NOT investigation results.
+{{game_rules}}
 
 {{situation_standards}}
 

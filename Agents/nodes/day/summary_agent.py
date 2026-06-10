@@ -10,7 +10,7 @@ from logging import getLogger
 
 from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.llm_factory import get_llm_summary
-from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
+from Agents.prompts import DAY_SUMMARY_PROMPT, GAME_RULES, SITUATION_STANDARDS
 from Agents.schemas import DaySummaryOutput
 
 logger = getLogger(__name__)
@@ -30,6 +30,7 @@ def run_day_summary_agent(
         current_day=current_day,
         day_channel=format_day_channel(current_day_messages),
         situation_standards=SITUATION_STANDARDS,
+        game_rules=GAME_RULES,
     )
     for attempt in range(max_retries + 1):
         try:

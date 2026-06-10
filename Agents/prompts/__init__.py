@@ -2,6 +2,7 @@ from Agents.prompts.common import (
     DAY_DISCUSS_RESPONSE_FORMAT,
     DISCUSSION_SILENCE_RULE,
     GAME_PREAMBLE,
+    GAME_RULES,
     TONE_INSTRUCTION,
     build_system_prompt,
 )
@@ -71,6 +72,7 @@ __all__ = [
     "DAY_VOTE_SYSTEM_SUFFIX",
     "DISCUSSION_SILENCE_RULE",
     "GAME_PREAMBLE",
+    "GAME_RULES",
     "HEALER_CORE_STRATEGY",
     "HEALER_DAY_DISCUSS",
     "HEALER_DAY_VOTE",

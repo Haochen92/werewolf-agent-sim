@@ -3,10 +3,12 @@ def build_system_prompt(*sections: str) -> str:
     return "\n\n".join(section.strip() for section in sections)
 
 
-GAME_PREAMBLE = """You are playing a game of Werewolf with 9 players. The role line-up below is
-public knowledge — everyone knows these roles are in the game, but not who holds them.
-
-Team composition (three sides):
+# Canonical game rules — the single source of truth for the role line-up, abilities,
+# win conditions, and flow. Composed into GAME_PREAMBLE (play prompt) AND the
+# extraction-family prompts (postgame / per-role / day-summary) so the rules can never
+# drift between copies. Person-neutral facts; keep it free of `{}` (it is passed as a
+# .format() value). When the game design changes, edit HERE only.
+GAME_RULES = """Team composition (three sides):
 - 3 Villagers (no special abilities)
 - 2 Wolves (know each other, secretly kill one player each night) — they win as a team
 - 1 Healer (each night may protect one player from being killed; cannot protect themselves) — village side
@@ -38,8 +40,17 @@ Game flow:
 What is public vs. hidden:
 - Votes are public and permanent — who voted for whom each day stays on the record.
 - Night actions (who killed, healed, investigated, or shot whom) are hidden; only the outcomes are announced.
-- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
-"""
+- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role."""
+
+
+# Play-side preamble = a second-person intro + the canonical rules. Reconstructed to be
+# byte-identical to the prior literal (verified by sha256) — the rules text did not change.
+GAME_PREAMBLE = (
+    "You are playing a game of Werewolf with 9 players. The role line-up below is\n"
+    "public knowledge — everyone knows these roles are in the game, but not who holds them.\n\n"
+    + GAME_RULES
+    + "\n"
+)
 
 
 TONE_INSTRUCTION = """
