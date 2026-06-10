@@ -21,9 +21,9 @@ from Agents.state import (
     DayGraphState,
 )
 
-from Agents.prompts import DAY_SUMMARY_PROMPT, SITUATION_STANDARDS
-from Agents.schemas import DaySummaryCase, DaySummaryOutput
+from Agents.schemas import DaySummaryCase
 
+from Agents.nodes.day.summary_agent import run_day_summary_agent
 from Agents.nodes.scheduler import cycle_seed, select_next_speaker
 
 from Agents.tracing import (
@@ -197,53 +197,6 @@ def fan_out_vote(state: DayGraphState, config: RunnableConfig):
     return fan_out_day(state, "vote", allow_abstain)
 
 
-def _serialize_day_summary(result: DaySummaryOutput) -> str:
-    """Flatten the structured day-summary output (accusations, role claims, alliances,
-    village dynamics) into the plain-text block stored as the DaySummary."""
-    parts = []
-
-    if result.accusations:
-        acc_parts = []
-        for a in result.accusations:
-            accusers = ", ".join(a.accusers)
-            entry = (
-                f"{accusers} accused {a.target} of {a.reasoning} "
-                f"(evidence type: {a.evidence_type})"
-            )
-            if a.defense:
-                entry += f"; {a.target} defended by {a.defense}"
-            acc_parts.append(entry)
-        parts.append("Key accusations and defenses: " + " | ".join(acc_parts))
-    else:
-        parts.append("Key accusations and defenses: None.")
-
-    if result.role_claims:
-        claims = [
-            f"{c.player} claimed {c.claimed_role} ({c.evidence})"
-            for c in result.role_claims
-        ]
-        parts.append("Role claims: " + "; ".join(claims))
-    else:
-        parts.append("Role claims: None.")
-
-    if result.alliances:
-        blocs = [
-            f"{', '.join(a.players)} aligned based on {a.basis}"
-            for a in result.alliances
-        ]
-        parts.append("Alliances and blocs: " + "; ".join(blocs))
-    else:
-        parts.append("Alliances and blocs: None.")
-
-    vd = result.village_dynamics
-    parts.append(
-        f"Village dynamics: {vd.information_landscape} "
-        f"{vd.consensus} {vd.drivers}"
-    )
-
-    return "\n".join(parts)
-
-
 def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     """Summarize the day's discussion into a DaySummary, and freeze it as a judgeable case.
 
@@ -260,9 +213,6 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     if not current_day_messages:
         return {}
 
-    from Agents.llm_factory import get_llm_summary
-    from Agents.formatters import format_day_channel
-
     # The day summary runs in BOTH memory arms (it's pre-memory), so freeze it
     # as a judgeable case (#3). ``raw_discussion`` matches what the day-summary
     # judge consumes; ``round`` carries the message seq (sequential discussion
@@ -275,34 +225,15 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
     game_id = state.get("game_id", "") or ""
     span_name = f"day_summary_eval_{game_id}_day_{current_day}"
 
-    prompt = DAY_SUMMARY_PROMPT.format(
-        current_day=current_day,
-        day_channel=format_day_channel(current_day_messages),
-        situation_standards=SITUATION_STANDARDS,
-    )
     with langfuse.start_as_current_observation(
         as_type="span",
         name=span_name,
         input={"day": current_day, "raw_discussion": raw_discussion},
         metadata={"eval_schema": "day_summary_case_v1"},
     ) as summary_span:
-        model_used = ""
-        for attempt in range(max_retries + 1):
-            try:
-                llm = get_llm_summary()
-                result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
-                summary = _serialize_day_summary(result)
-                model_used = getattr(llm, "model", "") or ""
-                break
-            except Exception as exc:
-                logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
-                if attempt < max_retries:
-                    continue
-                logger.error(
-                    f"Day discussion summary failed all retries for day {current_day}, "
-                    "using fallback"
-                )
-                summary = format_day_channel(current_day_messages)
+        summary, model_used = run_day_summary_agent(
+            current_day, current_day_messages, max_retries,
+        )
 
         day_summary_case = DaySummaryCase(
             span_name=span_name,
