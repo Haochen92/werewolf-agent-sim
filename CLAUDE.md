@@ -49,3 +49,34 @@ designs for free; this is about *running* them, not preserving them.)
   GENERATION harness — the variants ARE the generation harness and are supposed to differ. Judge both
   output sets with ONE judge (from main), post-hoc, pinning everything except the design
   (model/backend/temp/seeds/N). Structural redesigns are a fresh-generation A/B, not a frozen replay.
+
+## Eval Architecture (`evaluation/` = code · `evidence/` = record · data plane = I/O)
+
+Three layers, one rule each — keeps the authoritative pipeline clean while preserving the iteration
+journey. (Full data-flow + folder taxonomy: the **Data plane** section in `evaluation/README.md`.)
+
+- **`evaluation/` is the single home for authoritative eval CODE** — one canonical runner per eval
+  kind; this is what v5 runs on. `scripts/` holds ONLY generation entry (`run_batch`, `analyze_batch`)
+  + one-off ops — never reusable eval logic.
+- **`evidence/<experiment>/` is the RECORD, never a home for code.** Narrative
+  (`experiment_log.md` / `report.md`) + data artifacts + a POINTER back to the `evaluation/` code that
+  produced it. The provenance manifest's `runtime_fingerprint` (git SHA) + embedded config IS that
+  pointer — **store the pointer, not a copy of the function.**
+- **The live data plane** (`eval_configs/ eval_sets/ eval_results/ batch_results/`) is just pipeline
+  I/O between them.
+
+**Lifecycle.** *Explore* → a thin runner in `evaluation/experiments/` from the start (reusing
+`components/`/`judges/`), output to `evidence/<experiment>/`. *Graduate* (becomes the v5 way) → runner
+goes config-driven + canonical, README names it, evidence folder points at it. *Supersede* → delete
+the old runner (git history keeps it) OR keep it runnable per the Versioning Design Variants policy
+above; the old evidence folder is untouched. **The journey is told by records + git history, not by
+live dead code** — so `evaluation/` stays clean/singular while the portfolio narrative lives in the
+dated `evidence/` folders and commits.
+
+**Existing `evidence/` (pre-standard): FREEZE, don't retrofit.** The accumulated archive is the honest
+journey — *including* any study code embedded in it, which is itself a dated artifact of how the eval
+was done then. Do NOT bulk-hoist old study code into `evaluation/` (it would pollute the authoritative
+pipeline with superseded methods AND erase the record). Promote ONLY code that is still the *current*
+authoritative method (rare — `evaluation/` is already mature). Graduation is JUST-IN-TIME: when a
+study's method becomes part of v5, its code moves to `evaluation/` as part of building v5, and its
+evidence folder gets a one-line "graduated to `evaluation/X`" note. No bulk sweep, no upfront audit.

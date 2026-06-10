@@ -141,6 +141,13 @@ which keeps its own self-contained convention and is not part of this taxonomy.
 (`run_batch`, `analyze_batch`) and one-off ops; reusable eval logic lives in
 `evaluation/` as a config-driven runner.
 
+**evaluation/ (code) vs evidence/ (record).** Authoritative eval code lives only
+here; `evidence/<experiment>/` holds the narrative + artifacts + a provenance
+pointer back to the code that produced it — never its own copy of the function.
+One-off studies (e.g. the model-comparison runners) write their outputs into
+`evidence/<experiment>/`, not `eval_results/`. The full layer rule + the
+explore→graduate→supersede lifecycle is in **CLAUDE.md → Eval Architecture**.
+
 ## Components, Judges, And Experiments
 
 The evaluation code is split by responsibility:
