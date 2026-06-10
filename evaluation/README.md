@@ -83,6 +83,64 @@ For a batch that should continue learning from an existing store, use
 `--memory-store-dir` or separate `--seed-store-dir` and `--dump-store-dir`
 arguments.
 
+## Data plane
+
+The eval pipeline reads and writes four top-level data folders. They are stages
+of one flow, not duplicates:
+
+```text
+scripts/run_batch.py ─→ batch_results/<session_prefix>.jsonl   (game-run log; filename = Langfuse session link)
+        │                  records self-stamped with runtime_fingerprint + configs
+        ▼
+eval-build-* CLIs freeze Langfuse traces ─→ eval_sets/<id>.jsonl  (+ <id>.manifest.json sidecar)
+        ▼
+eval-* runners (--config eval_configs/<domain>/<name>.json) ─→ eval_results/…  (judge or gold-label scores)
+```
+
+| Folder | Role | Git |
+|---|---|---|
+| `eval_configs/` | experiment configs, grouped by domain subfolder (+ `template/`) | tracked |
+| `eval_sets/` | frozen replay datasets + gold labels | tracked |
+| `eval_results/` | judge / gold-label scores | gitignored (scratch) |
+| `batch_results/` | per-game run logs (link games → Langfuse traces) | gitignored |
+
+`configs/` no longer exists — experiment configs have one home, `eval_configs/`.
+Code-level config stays in modules (`Agents/game_config.py`, per-package
+`config.py`, `llm_factory` model constants); there is no central code-config folder.
+
+**Domain taxonomy.** `eval_configs/`, `eval_sets/`, and `eval_results/` share one
+subfolder vocabulary — *config asks the question, eval_set is the exam, eval_result
+is the grade; same domain name at each stage.* A domain gets a subfolder in a stage
+once it holds ≥2 artifacts there; single shared datasets (e.g. `v4_filtering_eval`,
+used across reranking / filtering / store_dedup) stay at the folder root.
+`batch_results/` is **flat** — games are domain-agnostic inputs and the filename is
+the Langfuse session link.
+
+**Naming + lineage.** Forward standard for *new* artifacts: short names
+`<domain>/<purpose>_vN.{jsonl,json}` — metadata does **not** go in the filename.
+Lineage rides a manifest instead: embedded top-level keys for JSON-object artifacts
+(`eval_results`, `batch_results`), a `<id>.manifest.json` **sidecar** for
+envelope-less JSONL `eval_sets`. Inputs are referenced by content hash
+(`{path, sha256, count}`) so staleness is detectable, forming a chain
+result → eval_set → batch run. Rationale + the staged design:
+[`evidence/refactor/provenance_lineage_rationale.md`](../evidence/refactor/provenance_lineage_rationale.md).
+(The manifest writer is forward-looking — legacy artifacts keep their original names
+and missing lineage.)
+
+**Legacy.** Concluded-era artifacts live in a `legacy/` subfolder of their data
+folder, names untouched (still citable for the writeup). Existing data files are
+never renamed — `batch_results` filenames are Langfuse session prefixes, and
+`evidence/` reports cite names.
+
+**Labels.** Gold-label files used by deterministic evals live with their sets in
+`eval_sets/`. Labelling *process* artifacts (multi-model votes, manual exports from
+`evaluation/labeling/`) and experiment-frozen golds live in `evidence/<experiment>/`,
+which keeps its own self-contained convention and is not part of this taxonomy.
+
+**scripts/ vs evaluation/.** `scripts/` holds only generation entry points
+(`run_batch`, `analyze_batch`) and one-off ops; reusable eval logic lives in
+`evaluation/` as a config-driven runner.
+
 ## Components, Judges, And Experiments
 
 The evaluation code is split by responsibility:
