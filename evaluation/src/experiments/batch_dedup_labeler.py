@@ -11,19 +11,19 @@ Usage::
 
     # Show a specific cluster
     poetry run python -m evaluation.experiments.batch_dedup_labeler \\
-        show --source eval_sets/batch_dedup_clusters_v4.json --cluster 0
+        show --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json --cluster 0
 
     # Show all small clusters (size <= 5)
     poetry run python -m evaluation.experiments.batch_dedup_labeler \\
-        show --source eval_sets/batch_dedup_clusters_v4.json --max-size 5
+        show --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json --max-size 5
 
     # Sample clusters for labeling (target ~120 items)
     poetry run python -m evaluation.experiments.batch_dedup_labeler \\
-        sample --source eval_sets/batch_dedup_clusters_v4.json --target-items 120
+        sample --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json --target-items 120
 
     # Show labeling progress
     poetry run python -m evaluation.experiments.batch_dedup_labeler \\
-        progress --labels eval_sets/batch_dedup_golden_labels.json
+        progress --labels evaluation/frozen_eval_sets/batch_dedup_golden_labels.json
 """
 
 from __future__ import annotations
@@ -227,8 +227,8 @@ def parse_args() -> argparse.Namespace:
     samp.add_argument("--seed", type=int, default=42)
 
     prog = sub.add_parser("progress", help="Show labeling progress")
-    prog.add_argument("--source", type=Path, default=REPO_ROOT / "eval_sets" / "batch_dedup_clusters_v4.json")
-    prog.add_argument("--labels", type=Path, default=REPO_ROOT / "eval_sets" / "batch_dedup_golden_labels.json")
+    prog.add_argument("--source", type=Path, default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_clusters_v4.json")
+    prog.add_argument("--labels", type=Path, default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_golden_labels.json")
 
     return parser.parse_args()
 

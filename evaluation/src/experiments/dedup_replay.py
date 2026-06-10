@@ -7,7 +7,7 @@ The output can be judged directly by ``dedup_eval.py``.
 Usage::
 
     poetry run python -m evaluation.experiments.dedup_replay \\
-        --source eval_sets/dedup_v1.jsonl \\
+        --source evaluation/frozen_eval_sets/dedup_v1.jsonl \\
         --model gemini-3.5-flash \\
         --max-cases 15
 """
@@ -167,7 +167,7 @@ def output_path(args: argparse.Namespace, model: str) -> Path:
         return Path(args.output)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_model = model.replace("/", "_").replace(".", "_")
-    return REPO_ROOT / "eval_sets" / f"dedup_replay_{safe_model}_{timestamp}.jsonl"
+    return REPO_ROOT / "evaluation" / "frozen_eval_sets" / f"dedup_replay_{safe_model}_{timestamp}.jsonl"
 
 
 def parse_args() -> argparse.Namespace:

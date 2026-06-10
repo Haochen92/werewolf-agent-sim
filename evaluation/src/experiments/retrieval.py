@@ -78,7 +78,7 @@ def output_path(requested: Path | None) -> Path:
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return REPO_ROOT / "eval_results" / f"retrieval_eval_{timestamp}.jsonl"
+    return REPO_ROOT / "evaluation" / "eval_results" / f"retrieval_eval_{timestamp}.jsonl"
 
 
 def summarize_records(records: list[dict[str, Any]]) -> None:

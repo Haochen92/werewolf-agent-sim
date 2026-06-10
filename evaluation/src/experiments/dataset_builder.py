@@ -101,7 +101,7 @@ def build_dataset_records(config: DatasetBuildConfig) -> list[EvalDatasetRecord]
 
 def default_output_path(eval_set_id: str) -> Path:
     """Return the default JSONL dataset path for an eval set ID."""
-    return REPO_ROOT / "eval_sets" / f"{eval_set_id}.jsonl"
+    return REPO_ROOT / "evaluation" / "frozen_eval_sets" / f"{eval_set_id}.jsonl"
 
 
 def parse_args() -> argparse.Namespace:

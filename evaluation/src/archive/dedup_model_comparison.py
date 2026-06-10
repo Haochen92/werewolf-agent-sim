@@ -6,8 +6,8 @@ comparison table with overall accuracy and per-label recall.
 Usage::
 
     poetry run python scripts/dedup_model_comparison.py
-    poetry run python scripts/dedup_model_comparison.py --pattern "eval_sets/dedup_v2_replay_*v7*.jsonl"
-    poetry run python scripts/dedup_model_comparison.py --golden eval_sets/dedup_v2_golden_labels.json
+    poetry run python scripts/dedup_model_comparison.py --pattern "evaluation/frozen_eval_sets/dedup_v2_replay_*v7*.jsonl"
+    poetry run python scripts/dedup_model_comparison.py --golden evaluation/frozen_eval_sets/dedup_v2_golden_labels.json
 """
 
 from __future__ import annotations
@@ -25,13 +25,13 @@ def main() -> None:
     )
     parser.add_argument(
         "--pattern",
-        default="eval_sets/dedup_v2_replay_*.jsonl",
+        default="evaluation/frozen_eval_sets/dedup_v2_replay_*.jsonl",
         help="Glob pattern for replay JSONL files.",
     )
     parser.add_argument(
         "--golden",
         type=Path,
-        default=Path("eval_sets/dedup_v2_golden_labels.json"),
+        default=Path("evaluation/frozen_eval_sets/dedup_v2_golden_labels.json"),
         help="Golden labels JSON file.",
     )
     parser.add_argument(

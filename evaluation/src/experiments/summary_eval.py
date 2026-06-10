@@ -9,11 +9,11 @@ Usage::
 
     # Judge captured situations
     poetry run python -m evaluation.experiments.summary_eval \\
-        --config eval_configs/summary/captured.json
+        --config evaluation/config/summary/captured.json
 
     # Replay with a different model, then judge
     poetry run python -m evaluation.experiments.summary_eval \\
-        --config eval_configs/summary/replay_flash35.json
+        --config evaluation/config/summary/replay_flash35.json
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ def output_path(requested: Path | None) -> Path:
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return REPO_ROOT / "eval_results" / f"summary_eval_{timestamp}.jsonl"
+    return REPO_ROOT / "evaluation" / "eval_results" / f"summary_eval_{timestamp}.jsonl"
 
 
 def parse_args() -> argparse.Namespace:

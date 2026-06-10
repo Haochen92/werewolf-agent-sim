@@ -17,8 +17,8 @@ from Agents.schemas import DaySummaryOutput
 from Agents.schemas.game_events import DayChannel
 
 EVAL_SETS = [
-    Path("eval_sets/v4_filtering_eval.jsonl"),
-    Path("eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl"),
+    Path("evaluation/frozen_eval_sets/v4_filtering_eval.jsonl"),
+    Path("evaluation/frozen_eval_sets/v2_memory_wolfs_only_all_enabled_all_enabled.jsonl"),
 ]
 OUTPUT = Path("evidence/extraction/day_summary/regen_comparison.json")
 

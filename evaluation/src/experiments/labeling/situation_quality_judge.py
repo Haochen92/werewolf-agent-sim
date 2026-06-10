@@ -32,7 +32,7 @@ from evaluation.src.core.settings import REPO_ROOT, load_project_env
 
 load_project_env()
 
-EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
+EVAL_DATASET = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "v4_filtering_eval.jsonl"
 DEFAULT_REGEN = (
     REPO_ROOT
     / "evidence"

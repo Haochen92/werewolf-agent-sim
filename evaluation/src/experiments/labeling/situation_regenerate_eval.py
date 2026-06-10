@@ -39,7 +39,7 @@ GOLDEN_LABELS_PATH = (
     / "retrieval_golden_labels.json"
 )
 STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"
-EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
+EVAL_DATASET = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "v4_filtering_eval.jsonl"
 
 
 def dcg_at_k(relevances: list[int], k: int) -> float:

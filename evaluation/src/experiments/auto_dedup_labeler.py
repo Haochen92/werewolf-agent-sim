@@ -7,13 +7,13 @@ with eval_auto_dedup.py calibration.
 Usage::
 
     poetry run python -m evaluation.experiments.auto_dedup_labeler \
-        --dataset eval_sets/auto_dedup_v1_cross_game.jsonl \
+        --dataset evaluation/frozen_eval_sets/auto_dedup_v1_cross_game.jsonl \
         --output evidence/auto_dedup/cross_game_golden_labels.json \
         --model gemini-2.5-pro
 
     # Resume from a partial run (reads existing output and skips labeled cases)
     poetry run python -m evaluation.experiments.auto_dedup_labeler \
-        --dataset eval_sets/auto_dedup_v1_cross_game.jsonl \
+        --dataset evaluation/frozen_eval_sets/auto_dedup_v1_cross_game.jsonl \
         --output evidence/auto_dedup/cross_game_golden_labels.json \
         --model gemini-2.5-pro --resume
 """

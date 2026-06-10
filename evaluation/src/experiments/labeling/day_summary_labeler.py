@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from textwrap import dedent
 
-EVAL_SET = Path("eval_sets/v4_filtering_eval.jsonl")
+EVAL_SET = Path("evaluation/frozen_eval_sets/v4_filtering_eval.jsonl")
 LABELS_OUTPUT = Path("evidence/extraction/day_summary/quality_labels.json")
 
 INFORMATION_CATEGORIES = [

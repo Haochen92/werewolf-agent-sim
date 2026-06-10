@@ -43,7 +43,7 @@ dist/
 
 
 # Large JSON files
-eval_results/
+evaluation/eval_results/
 batch_results/
 
 # Model weights live under /models/ (download from Modal volume instead).

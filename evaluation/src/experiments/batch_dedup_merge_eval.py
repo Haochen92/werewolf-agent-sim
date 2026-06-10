@@ -8,7 +8,7 @@ Usage::
 
     poetry run python -m evaluation.experiments.batch_dedup_merge_eval \
         --result evidence/batch_dedup_golden_eval/eval_gemini_3.5_flash_20260526_132829.json \
-        --source eval_sets/batch_dedup_clusters_v4.json \
+        --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json \
         --judge-model gemini-2.5-pro
 """
 
@@ -89,7 +89,7 @@ def main() -> None:
     parser.add_argument("--result", type=Path, required=True,
                         help="Eval result JSON from batch_dedup_eval.py")
     parser.add_argument("--source", type=Path,
-                        default=REPO_ROOT / "eval_sets" / "batch_dedup_clusters_v4.json")
+                        default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_clusters_v4.json")
     parser.add_argument("--judge-model", default="gemini-2.5-pro")
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()

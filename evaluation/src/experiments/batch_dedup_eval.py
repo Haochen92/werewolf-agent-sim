@@ -8,8 +8,8 @@ Usage::
 
     poetry run python -m evaluation.experiments.batch_dedup_eval \
         --model gemini-3.5-flash --thinking medium \
-        --source eval_sets/batch_dedup_clusters_v4.json \
-        --labels eval_sets/batch_dedup_golden_labels.json
+        --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json \
+        --labels evaluation/frozen_eval_sets/batch_dedup_golden_labels.json
 """
 
 from __future__ import annotations
@@ -396,8 +396,8 @@ def main() -> None:
     parser.add_argument("--triage-thinking", default="medium")
     parser.add_argument("--verify-model", default="gemini-2.5-pro")
     parser.add_argument("--verify-thinking", default=None)
-    parser.add_argument("--source", type=Path, default=REPO_ROOT / "eval_sets" / "batch_dedup_clusters_v4.json")
-    parser.add_argument("--labels", type=Path, default=REPO_ROOT / "eval_sets" / "batch_dedup_golden_labels.json")
+    parser.add_argument("--source", type=Path, default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_clusters_v4.json")
+    parser.add_argument("--labels", type=Path, default=REPO_ROOT / "evaluation" / "frozen_eval_sets" / "batch_dedup_golden_labels.json")
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--prompt-variant", default="default",
                         choices=list(PROMPT_VARIANTS.keys()),

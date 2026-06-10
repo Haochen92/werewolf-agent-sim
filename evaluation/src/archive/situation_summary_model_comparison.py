@@ -50,7 +50,7 @@ JUDGE_CONFIG = JudgeConfig(
 def main():
     num_cases = int(sys.argv[1]) if len(sys.argv) > 1 else 15
 
-    dataset_path = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
+    dataset_path = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "v4_filtering_eval.jsonl"
     records = read_eval_dataset(dataset_path)[:num_cases]
 
     print(f"Cases: {num_cases}", flush=True)

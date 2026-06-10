@@ -8,7 +8,7 @@ a specified model, and writes a new dataset in the same
 Usage::
 
     poetry run python -m evaluation.experiments.extraction_replay \\
-        --source eval_sets/extraction_v1.jsonl \\
+        --source evaluation/frozen_eval_sets/extraction_v1.jsonl \\
         --model gemini-3.5-flash \\
         --max-games 10
 """
@@ -76,7 +76,7 @@ def output_path(args: argparse.Namespace, model: str) -> Path:
         return Path(args.output)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_model = model.replace("/", "_").replace(".", "_")
-    return REPO_ROOT / "eval_sets" / f"extraction_replay_{safe_model}_{timestamp}.jsonl"
+    return REPO_ROOT / "evaluation" / "frozen_eval_sets" / f"extraction_replay_{safe_model}_{timestamp}.jsonl"
 
 
 def parse_args() -> argparse.Namespace:
@@ -92,7 +92,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--start-offset", type=int, default=0,
                         help="Skip first N games.")
     parser.add_argument("--output", type=Path, default=None,
-                        help="Output JSONL path (default: auto-named in eval_sets/).")
+                        help="Output JSONL path (default: auto-named in evaluation/frozen_eval_sets/).")
     parser.add_argument("--eval-set-id", type=str, default=None,
                         help="Override eval_set_id (default: replay_{model}).")
     parser.add_argument("--temperature", type=float, default=0.0)

@@ -8,7 +8,7 @@ needed to calibrate the auto-keep boundary.
 Usage::
 
     poetry run python -m evaluation.experiments.auto_dedup_dataset_builder \
-        --config eval_configs/dedup/auto_dedup_build_v1.json
+        --config evaluation/config/dedup/auto_dedup_build_v1.json
 
 Example config::
 
@@ -23,7 +23,7 @@ Example config::
         "top_n": 5,
         "min_similarity": 0.0,
         "seed": 42,
-        "output": "eval_sets/auto_dedup_v1.jsonl"
+        "output": "evaluation/frozen_eval_sets/auto_dedup_v1.jsonl"
     }
 """
 
@@ -284,7 +284,7 @@ def main() -> None:
         args.config.read_text(encoding="utf-8"),
     )
 
-    out_path = config.output or Path(f"eval_sets/{config.eval_set_id}.jsonl")
+    out_path = config.output or Path(f"evaluation/frozen_eval_sets/{config.eval_set_id}.jsonl")
     if out_path.exists() and not config.overwrite:
         raise FileExistsError(
             f"Dataset already exists: {out_path}. Set overwrite=true to replace."

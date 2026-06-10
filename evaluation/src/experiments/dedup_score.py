@@ -7,13 +7,13 @@ schemes — auto-detects which scheme the dataset uses.
 Usage::
 
     poetry run python -m evaluation.experiments.dedup_score \
-        --dataset eval_sets/dedup_v2_sampled.jsonl \
-        --golden eval_sets/dedup_v2_golden_labels.json
+        --dataset evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl \
+        --golden evaluation/frozen_eval_sets/dedup_v2_golden_labels.json
 
     poetry run python -m evaluation.experiments.dedup_score \
-        --dataset eval_sets/dedup_replay_gemini_20260525.jsonl \
-        --golden eval_sets/dedup_v2_golden_labels.json \
-        --output eval_results/dedup_score_gemini.json
+        --dataset evaluation/frozen_eval_sets/dedup_replay_gemini_20260525.jsonl \
+        --golden evaluation/frozen_eval_sets/dedup_v2_golden_labels.json \
+        --output evaluation/eval_results/dedup_score_gemini.json
 """
 
 from __future__ import annotations

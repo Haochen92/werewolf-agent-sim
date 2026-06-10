@@ -21,7 +21,7 @@ from evaluation.src.data.datasets import read_eval_dataset
 from evaluation.src.judges.prompts import SUMMARY_RUBRIC_SYSTEM_PROMPT, SUMMARY_RUBRIC_USER_PROMPT
 
 from evaluation.src.core.settings import REPO_ROOT
-DATASET_PATH = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
+DATASET_PATH = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "v4_filtering_eval.jsonl"
 OUTPUT_DIR = REPO_ROOT / "evidence" / "extraction" / "situation_summary" / "model_comparison"
 
 JUDGE_MODEL = "gemini-3.1-pro-preview"

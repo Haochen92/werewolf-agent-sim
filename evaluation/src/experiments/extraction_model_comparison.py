@@ -120,7 +120,7 @@ def main():
     config = MODEL_CONFIGS[model_key]
     llm = create_chat_model(**config)
 
-    dataset_path = REPO_ROOT / "eval_sets" / "extraction_v1.jsonl"
+    dataset_path = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "extraction_v1.jsonl"
     all_records = read_extraction_dataset(dataset_path)
     records = all_records[start_offset : start_offset + num_games]
 

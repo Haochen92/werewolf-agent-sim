@@ -43,7 +43,7 @@ def result_output_path(requested: Path | None, experiment_id: str) -> Path:
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return REPO_ROOT / "eval_results" / f"{experiment_id}_{timestamp}.jsonl"
+    return REPO_ROOT / "evaluation" / "eval_results" / f"{experiment_id}_{timestamp}.jsonl"
 
 
 def ordered_outputs(

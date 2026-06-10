@@ -28,7 +28,7 @@ def main():
     extraction_files = [Path(p) for p in sys.argv[2:]]
 
     # Load original dataset for game inputs (discussions, roles, etc.)
-    dataset_path = REPO_ROOT / "eval_sets" / "extraction_v1.jsonl"
+    dataset_path = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "extraction_v1.jsonl"
     original_records = read_extraction_dataset(dataset_path)
     game_inputs = {}
     for record in original_records:

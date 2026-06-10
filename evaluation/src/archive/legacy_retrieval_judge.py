@@ -133,7 +133,7 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help=(
             "JSONL output path for per-sample results. "
-            "Defaults to eval_results/<timestamp>.jsonl."
+            "Defaults to evaluation/eval_results/<timestamp>.jsonl."
         ),
     )
     parser.add_argument(
@@ -160,7 +160,7 @@ def results_output_path(requested: Path | None) -> Path:
     if requested:
         return requested
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return REPO_ROOT / "eval_results" / f"eval_{timestamp}.jsonl"
+    return REPO_ROOT / "evaluation" / "eval_results" / f"eval_{timestamp}.jsonl"
 
 
 def summarize_results(results: list[EvalResult], model: str) -> None:

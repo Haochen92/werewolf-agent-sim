@@ -83,7 +83,7 @@ def build_records(
 
 
 def default_output_path(eval_set_id: str) -> Path:
-    return REPO_ROOT / "eval_sets" / f"{eval_set_id}.jsonl"
+    return REPO_ROOT / "evaluation" / "frozen_eval_sets" / f"{eval_set_id}.jsonl"
 
 
 def write_manifest(
