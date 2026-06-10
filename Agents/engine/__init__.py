@@ -6,9 +6,10 @@ actor nodes in Agents/nodes/ call into this; nothing here is a LangGraph node.
   agent.py    — _run_agent: the core LLM call (dynamic target enum, retry, the
                 proactive-novelty gate) + prompt_log (leak-test capture)
   actions.py  — _run_memory_informed_action / _night_action: enrich-then-act wrappers
-  targets.py  — valid-target computation + dynamic target-enum schema
+  action_space.py — legal-target computation + dynamic target-enum schema
   novelty_agent.py — the proactive-novelty gate (judge llm.invoke + prompt)
-  eval.py     — EvalCase private-context + strategy-adoption capture
+  eval.py     — EvalCase private-context snapshot
+  adoption.py — strategy-adoption store write-back (retrieved/used counts)
 """
 
 from Agents.engine.actions import (  # noqa: F401

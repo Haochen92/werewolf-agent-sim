@@ -1,8 +1,16 @@
+"""Legal-move enforcement for an agent action.
+
+Two halves of one concern — keep the LLM inside the game's rules:
+  - ``_valid_targets_for_action`` / ``_validate_target`` compute who is a legal
+    target for an ``output_key`` (surviving players/villagers, plus the
+    ``abstain`` and ``hold_fire`` sentinels) and check a chosen target.
+  - ``_with_dynamic_target_enum`` rewrites the output schema so the target field
+    is a ``Literal[valid_targets]`` the model structurally cannot violate.
+"""
+
 from typing import Any, Literal
 
 from pydantic import BaseModel, create_model
-
-
 
 
 def _validate_target(target: str, valid_targets: list[str], player_id: str) -> str | None:

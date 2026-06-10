@@ -16,7 +16,7 @@ from Agents.schemas.game_events import (
     WolfChannel,
 )
 from Agents.engine.novelty_agent import judge_proactive_novelty
-from Agents.engine.targets import (
+from Agents.engine.action_space import (
     _valid_targets_for_action,
     _validate_target,
     _with_dynamic_target_enum,
