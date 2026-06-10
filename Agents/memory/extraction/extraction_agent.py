@@ -10,14 +10,16 @@ Two entry points share one primary→backup fallback core:
 
 from __future__ import annotations
 
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from logging import getLogger
 
-from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
+from Agents.llm_factory import DEFAULT_PRO_MODEL, get_llm_pro, get_llm_pro_backup
 from Agents.schemas import GameStrategyOutput
 
 from .inputs import build_role_extraction_tail
+from .prefix_cache import create_prefix_cache
 
 logger = getLogger(__name__)
 
@@ -57,22 +59,14 @@ def _invoke_extraction_model(llm, prompt: str, run_name: str) -> GameStrategyOut
     raise TypeError(f"Unexpected post-game extraction result type: {type(result)!r}")
 
 
-def _invoke_with_fallback(
-    prompt: str,
-    run_name: str,
-    max_retries: int,
-    backup_max_retries: int,
-) -> ExtractionResult | None:
-    """Run the extraction call on primary → backup with per-model retries.
+def _invoke_attempts(attempts, run_name: str) -> ExtractionResult | None:
+    """Try each (label, llm, prompt, retries) attempt in order; first success wins.
 
-    Returns an ExtractionResult (output + model label) or None if every attempt
-    on both models fails.
+    Each attempt is its own model + prompt so the primary can be a cache-bound
+    model invoked with the tail only while the backup re-sends the full prompt.
+    Returns an ExtractionResult (output + label) or None if all attempts fail.
     """
-    models = (
-        ("primary", get_llm_pro(), max_retries),
-        ("backup", get_llm_pro_backup(), backup_max_retries),
-    )
-    for label, llm, retries in models:
+    for label, llm, prompt, retries in attempts:
         for attempt in range(retries + 1):
             try:
                 output = _invoke_extraction_model(llm, prompt, f"{run_name}_{label}")
@@ -100,9 +94,11 @@ def extract_postgame(
     Returns an ExtractionResult with the output and model label, or None if
     all attempts fail.
     """
-    return _invoke_with_fallback(
-        prompt, "postgame_extraction", max_retries, backup_max_retries
+    attempts = (
+        ("primary", get_llm_pro(), prompt, max_retries),
+        ("backup", get_llm_pro_backup(), prompt, backup_max_retries),
     )
+    return _invoke_attempts(attempts, "postgame_extraction")
 
 
 def extract_postgame_per_role(
@@ -111,6 +107,7 @@ def extract_postgame_per_role(
     max_workers: int = 6,
     max_retries: int = 2,
     backup_max_retries: int = 2,
+    cache_prefix: bool = False,
 ) -> ExtractionResult | None:
     """Fan the extraction out over `roles`, concurrently, then merge.
 
@@ -120,28 +117,55 @@ def extract_postgame_per_role(
     fails entirely is dropped (partial extraction beats none); the merged output
     concatenates observations and strategy points in `roles` order. Returns None
     only if every role failed.
+
+    With `cache_prefix`, the shared prefix is created as a Vertex context cache
+    once up front (so the concurrent calls all hit it rather than racing an
+    implicit cache); each role's PRIMARY call then sends only its tail against the
+    cache-bound model, while the BACKUP re-sends the full prompt (it runs on a
+    different model that can't share the cache). If cache creation is unavailable
+    or fails, this transparently falls back to the full uncached prompt.
     """
+    cache = None
+    if cache_prefix:
+        model_id = os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL)
+        cache = create_prefix_cache(prefix, model_id=model_id)
+
     role_outputs: dict[str, GameStrategyOutput] = {}
     role_models: dict[str, str] = {}
 
     def _one(role: str) -> ExtractionResult | None:
-        prompt = prefix + build_role_extraction_tail(role)
-        return _invoke_with_fallback(
-            prompt, f"postgame_extraction_{role}", max_retries, backup_max_retries
-        )
+        tail = build_role_extraction_tail(role)
+        full = prefix + tail
+        if cache is not None:
+            # Primary: cached prefix + tail only. Backup: full prompt (no cache —
+            # different model). Tag primary so cache hits are visible in model_used.
+            attempts = (
+                ("primary_cached", cache.model, tail, max_retries),
+                ("backup", get_llm_pro_backup(), full, backup_max_retries),
+            )
+        else:
+            attempts = (
+                ("primary", get_llm_pro(), full, max_retries),
+                ("backup", get_llm_pro_backup(), full, backup_max_retries),
+            )
+        return _invoke_attempts(attempts, f"postgame_extraction_{role}")
 
-    with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futures = {pool.submit(_one, role): role for role in roles}
-        for future in as_completed(futures):
-            role = futures[future]
-            try:
-                res = future.result()
-            except Exception as e:  # defensive — _one already swallows call errors
-                logger.warning("Per-role extraction crashed for %s: %s", role, e)
-                res = None
-            if res is not None:
-                role_outputs[role] = res.output
-                role_models[role] = res.model_used
+    try:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = {pool.submit(_one, role): role for role in roles}
+            for future in as_completed(futures):
+                role = futures[future]
+                try:
+                    res = future.result()
+                except Exception as e:  # defensive — _one already swallows call errors
+                    logger.warning("Per-role extraction crashed for %s: %s", role, e)
+                    res = None
+                if res is not None:
+                    role_outputs[role] = res.output
+                    role_models[role] = res.model_used
+    finally:
+        if cache is not None:
+            cache.delete()
 
     missing = [r for r in roles if r not in role_outputs]
     if missing:

@@ -408,7 +408,9 @@ def post_game_analysis(
         if extraction_config.per_role:
             prefix = build_role_extraction_prefix(extraction_inputs)
             result = extract_postgame_per_role(
-                prefix, max_workers=extraction_config.max_workers
+                prefix,
+                max_workers=extraction_config.max_workers,
+                cache_prefix=extraction_config.cache_prefix,
             )
         else:
             result = extract_postgame(build_extraction_prompt(extraction_inputs))

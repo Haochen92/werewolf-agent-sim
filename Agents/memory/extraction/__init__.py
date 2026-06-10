@@ -21,10 +21,13 @@ from .extraction_agent import (
     extract_postgame,
     extract_postgame_per_role,
 )
+from .prefix_cache import PrefixCache, create_prefix_cache
 
 __all__ = [
     "EXTRACTION_ROLES",
     "ExtractionResult",
+    "PrefixCache",
+    "create_prefix_cache",
     "build_extraction_prompt",
     "build_role_extraction_prefix",
     "build_role_extraction_prompt",

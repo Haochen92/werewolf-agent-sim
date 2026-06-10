@@ -60,11 +60,14 @@ class ExtractionConfig(BaseModel):
     in concurrent LLM calls, each sharing one byte-identical role-neutral prefix —
     the unit that explicit prefix caching reuses across the six calls. The old
     single-shot path (one all-roles prompt) is kept runnable for A/B by setting
-    ``per_role=False``. ``cache_prefix`` is wired in a later step (Vertex context
-    caching of that shared prefix); harmless until then.
+    ``per_role=False``. ``cache_prefix`` creates a Vertex context cache from that
+    shared prefix so the concurrent calls hit it instead of re-sending it; it is
+    best-effort (falls back to the full uncached prompt) and only applies when
+    ``per_role`` is on.
     """
 
     per_role: bool = True
+    cache_prefix: bool = True
     max_workers: int = 6
 
 
