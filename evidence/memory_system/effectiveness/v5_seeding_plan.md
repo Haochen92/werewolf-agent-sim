@@ -118,6 +118,27 @@ to ~30 memory-off ≈ **$11**, a bigger baseline for less than the flat-30.
   `Metrics.dedup_stats` → `raw_metrics` → the batch record `dedup_stats` field → per-game
   absorption / saturation is queryable without Langfuse.
 
+## Foundation prompt cleanup before the baseline (why the v5.0 baseline is trustworthy)
+
+Two pre-baseline fixes, both *faction-correctness* (4-role-era leftovers in a 3-faction
+game), not strategy tuning — recorded here because they affect the validity of the SK-floor
+/ memory-lift measurements:
+
+1. **Role framing** (commit b9594e3): villager + investigator play prompts only mentioned
+   "the wolves"; now name "the wolves and the serial killer" (town wins only when both are
+   gone; the investigator's reveal surfaces the SK). Empirically the *players* already
+   tracked the SK via the GM's announced kills, so this is defensibility, not a fix to
+   broken play.
+2. **⭐Day-vote de-bias** (commit 017940e) — a real **measurement confound**: the shared
+   `DAY_VOTE_SYSTEM_SUFFIX` told *every* town role to "vote to eliminate a player you
+   suspect is **a wolf**", and the SK *inherited the same suffix*. So town day-votes were
+   systematically steered toward wolves and away from the SK (also a lynch-only threat) →
+   the SK ate fewer votes, survived longer, and its apparent floor was **inflated by a
+   prompt artifact, not structure**. Fixed: town targets "a wolf or the serial killer"; SK
+   gets its own solo-objective vote system (no inherited wolf-hunt); wolf treats the SK as a
+   removable competitor. **Measuring the SK floor under the old bias would have over-credited
+   SK strength** — so this had to precede the baseline. (Pre-fix seeding attempts discarded.)
+
 ## Order of operations
 
 1. Seedability fix (engine-level) + extract-without-dump flag. ✅ small, prompt-neutral.
