@@ -1,26 +1,16 @@
 """Store mutations that apply a dedup decision to the LangGraph store.
 
-Every function here is reached from one caller — ``_dedup_single_memory`` in
-pipeline.py — through the ``_DedupKind`` binding, which resolves to three entry
-points (each with a strategy-point and an observation variant), one per outcome
-the pipeline can land on:
+Three entry points, each with a strategy and an observation variant, one per
+outcome ``pipeline._dedup_single_memory`` reaches (via the ``_DedupKind`` binding):
 
-    pipeline outcome                  strategy variant         observation variant
-    --------------------------------  -----------------------  --------------------------------
-    KEEP (novel / prefilter-keep)     _store_new_point         _store_new_observation
-    auto-DISCARD (prefilter sure)     _update_auto_duplicate   _update_auto_observation_duplicate
-    LLM band (keep|discard verdict)   _apply_decision          _apply_observation_decision
+    pipeline outcome                strategy variant          observation variant
+    ------------------------------  ------------------------  ----------------------------------
+    KEEP (novel / prefilter-keep)   _store_new_point          _store_new_observation
+    auto-DISCARD (prefilter sure)   _update_auto_duplicate    _update_auto_observation_duplicate
+    LLM band (keep|discard)         _apply_strategy_decision  _apply_observation_decision
 
-``_apply_*`` is the only branching entry: it dispatches the LLM verdict, reusing
-``_store_new_*`` for KEEP (and the stale-candidate fallback) and a bump for
-DISCARD. ``_item_for_candidate`` maps the LLM's 1-based candidate number back to a
-store item.
-
-Two bump mechanisms coexist and are NOT interchangeable: the auto-DISCARD path
-roundtrips the stored value through the ``Stored*`` pydantic model (so missing
-fields take model defaults), while the LLM-DISCARD path mutates the raw stored
-dict in place (preserving whatever fields were there). Per-function notes flag
-where that bites.
+``_apply_*`` is the only branching entry; ``_item_for_candidate`` and the bumps
+are its helpers. Per-function docstrings cover the behaviour.
 """
 
 from __future__ import annotations
@@ -44,7 +34,7 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 
-def _apply_decision(
+def _apply_strategy_decision(
     store: BaseStore,
     namespace: tuple[str, ...],
     point: StrategyPoint,
@@ -118,7 +108,7 @@ def _apply_observation_decision(
 ) -> DedupAction:
     """Apply the LLM's observation verdict — the ambiguous-middle entry point.
 
-    Observation twin of ``_apply_decision``. DISCARD bumps the named candidate via
+    Observation twin of ``_apply_strategy_decision``. DISCARD bumps the named candidate via
     ``_bump_observation_count`` (raw-dict mutation), or stores new if the index is
     stale. KEEP stores the observation new. Returns the DedupAction taken.
     """
@@ -258,7 +248,7 @@ def _update_auto_duplicate(
     ``StoredStrategyPoint`` and increments the count, keeping the existing entry's
     content untouched. DISCARD means the new point is redundant, so its action is
     dropped rather than written over the old one — matching the LLM-DISCARD bump in
-    ``_apply_decision``.
+    ``_apply_strategy_decision``.
     """
     stored_point = StoredStrategyPoint.model_validate(item.value)
     stored_point.observation_count += 1

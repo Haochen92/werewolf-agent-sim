@@ -30,8 +30,8 @@ from .dedup_agent import _dedup_agent, _observation_dedup_agent
 from .prefilter import _embedding_prefilter_observation, _embedding_prefilter_strategy_point
 from .schemas import DedupAction, DedupResult, DedupStats
 from .store_ops import (
-    _apply_decision,
     _apply_observation_decision,
+    _apply_strategy_decision,
     _store_new_observation,
     _store_new_point,
     _update_auto_duplicate,
@@ -92,7 +92,7 @@ _STRATEGY_POINT_KIND = _DedupKind(
     },
     prefilter=_embedding_prefilter_strategy_point,
     call_llm=_dedup_agent,
-    apply_decision=_apply_decision,
+    apply_decision=_apply_strategy_decision,
     store_new=_store_new_point,
     update_auto_duplicate=lambda store, namespace, top_item, item: (
         _update_auto_duplicate(store, namespace, top_item.key, top_item)

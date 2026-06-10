@@ -36,8 +36,8 @@ from .prefilter import (
     _embedding_prefilter_strategy_point,
 )
 from .store_ops import (
-    _apply_decision,
     _apply_observation_decision,
+    _apply_strategy_decision,
     _bump_observation_count,
     _item_for_candidate,
     _store_new_observation,
@@ -85,8 +85,8 @@ __all__ = [
     "_embedding_prefilter_observation",
     "_embedding_prefilter_strategy_point",
     # store_ops
-    "_apply_decision",
     "_apply_observation_decision",
+    "_apply_strategy_decision",
     "_bump_observation_count",
     "_item_for_candidate",
     "_store_new_observation",
