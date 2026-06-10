@@ -10,6 +10,29 @@ Each report covers one experiment or feature segment of the project. Multiple re
 
 ---
 
+## Document Types
+
+Not every report is a measured experiment. Three shapes recur — pick the one that fits and use its
+skeleton. The Core Principle above and the Tone rules below apply to all three.
+
+- **Experiment report** (the default; full structure below). You ran variants and measured an
+  outcome. Motivation → Design/Hypothesis → Iterations → Evaluation Setup → Results → Decision →
+  Lessons → What's Next → Artifacts.
+- **Decision / design record.** You made an architectural or methodological choice, not a
+  measurement — there is no dataset or results table, and forcing one is filler. Skeleton: *the
+  tension* (the gap or conflict) → *the principle / design* → *alternatives considered and rejected,
+  with reasons* → *the decision and its named tradeoff* → *Lessons*. The rejected alternatives are
+  the most valuable part; they are where the judgment shows. (Examples: the structure audit, the
+  provenance rationale, and the eval-architecture record, all in `evidence/refactor/`.)
+- **Negative / non-feasibility finding.** You investigated and concluded *don't*, or *can't*. This is
+  first-class, not a failed experiment — rejecting an approach with rigor is as portfolio-worthy as
+  adopting one, and disproportionately convincing. Skeleton: *what you wanted to measure or build* →
+  *why it looked feasible* → *what the investigation showed* → *the call (drop / defer / use a proxy)
+  and why* → *Lessons*, stating what would change the verdict. (Example: concluding that deterministic
+  decision-quality scoring isn't feasible, and substituting de-lucked outcome proxies.)
+
+---
+
 ## Structure
 
 ### 1. Motivation (short)
@@ -30,6 +53,11 @@ For each iteration beyond the first:
 
 Do not present iterations as a flat list of "Version 1 / Version 2 / Version 3." Each version should flow from the previous one's findings.
 
+This flow-from-the-previous rule fits **prompt or parameter tuning**, where the versions form a
+chain. A **structural one-shot redesign** (a graph, schema, or pipeline rewrite judged by a single
+post-hoc A/B per the variant-versioning policy in `CLAUDE.md`) is *not* a chain — report it as one
+design decision and its A/B, not a forced v1→v2→v3 progression. Two shapes, both valid.
+
 ### 4. Evaluation Setup
 
 How you measured. Keep this factual and concise — dataset size, judge model, metrics, any diagnostics added mid-experiment. If you added a metric partway through (e.g., attribution direction), explain what prompted the addition.
@@ -41,6 +69,11 @@ Present data, then interpret it. For every table or comparison:
 - State the headline finding in one sentence before the table
 - After the table, address anything surprising or counterintuitive
 - If an outlier or confound affected results, identify it and show results both ways
+- State the sample size (N) with the result, and **separate direction from magnitude**. At small N,
+  "memory-on won 4 of 4" is a *direction* you can believe and a *magnitude* you cannot — say which
+  you are claiming. Mark confidence honestly (e.g. *high-direction / low-magnitude, N=4*) rather than
+  implying a precision the sample can't support. Small-N over-claiming is this project's most likely
+  failure mode; the headline metric stays the win rate, with proxies and N qualifying it.
 
 Do not let tables speak for themselves. The reader should never have to infer what a table means.
 
@@ -73,6 +106,13 @@ What does this experiment enable or block? If the next step depends on a conditi
 ### 9. Artifacts
 
 Table of files produced (eval sets, results, configs). Keep it factual.
+
+**Stamp the provenance.** Record the lineage that produced the results — the git SHA /
+`runtime_fingerprint`, the config, and the input datasets (by name, ideally by content hash). A
+number a reader cannot trace back to the commit and config that made it is not reproducible, and the
+report is where that pointer naturally lives. This is the same back-reference the eval-architecture
+convention requires of every record — see `CLAUDE.md → Eval Architecture` and
+`evidence/refactor/provenance_lineage_rationale.md`.
 
 **Co-locate artifacts with the report.** All files that support the report — eval sets, eval results, eval configs — should live in the same `evidence/<experiment>/` folder alongside the report. This keeps the experiment self-contained and reviewable without hunting across directories. When artifacts are generated elsewhere (e.g., `eval_results/`), move them into the evidence folder and clean up the originals.
 
@@ -114,3 +154,6 @@ Table of files produced (eval sets, results, configs). Keep it factual.
 - [ ] Are lessons stated as transferable principles with evidence?
 - [ ] Is impact framed honestly (metrics if available, capability unlocked if not)?
 - [ ] Would a reader who skips the tables still understand the narrative from the prose?
+- [ ] Did you pick the right document type (experiment / decision record / negative finding)?
+- [ ] Is the provenance stamped (commit / fingerprint / config) so results are traceable?
+- [ ] Is N stated, and direction separated from magnitude where the sample is small?
