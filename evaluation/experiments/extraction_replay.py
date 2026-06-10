@@ -24,7 +24,7 @@ from pathlib import Path
 
 from Agents.llm_factory import create_chat_model
 
-from Agents.extraction import build_extraction_prompt
+from Agents.memory.extraction import build_extraction_prompt
 from Agents.schemas import GameStrategyOutput
 from Agents.schemas.evaluation import ExtractionCase
 from evaluation.core.io import write_jsonl

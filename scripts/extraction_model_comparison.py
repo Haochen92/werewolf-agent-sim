@@ -15,7 +15,7 @@ load_dotenv()
 
 from Agents.llm_factory import create_chat_model
 
-from Agents.extraction import build_extraction_prompt, build_role_extraction_prompt
+from Agents.memory.extraction import build_extraction_prompt, build_role_extraction_prompt
 from Agents.schemas import GameStrategyOutput
 from evaluation.data.datasets import read_extraction_dataset
 

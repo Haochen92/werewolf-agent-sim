@@ -24,11 +24,11 @@ from Agents.state import (
     OrchestratorGraph,
 )
 
-from Agents.extraction import (
+from Agents.memory.extraction import (
     build_extraction_prompt,
+    extract_postgame,
     format_extraction_inputs,
 )
-from Agents.extraction_agent import extract_postgame
 
 
 from Agents.schemas.evaluation import ExtractionCase
