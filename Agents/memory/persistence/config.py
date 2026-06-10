@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-# Repo-root data directory (sibling of eval_sets/, models/, batch_results/), NOT
+# Repo-root data directory (sibling of models/, batch_results/, evaluation/), NOT
 # inside the Agents/ code package. Anchored to the repo root (parents[3] =
 # .../Agents/memory/persistence/<file>.py -> repo root) so it survives file moves —
 # unlike the former __file__.parent form, which silently broke when this module
