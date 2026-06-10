@@ -250,24 +250,19 @@ def write_manifest(
             "mean_sim": round(sum(sims) / len(sims), 4) if sims else 0,
         }
 
-    manifest = {
-        "eval_set_id": config.eval_set_id,
-        "created_at": datetime.now().isoformat(),
-        "extraction_files": [str(p) for p in config.extraction_files],
-        "store_files": [str(p) for p in config.store_files],
-        "top_n": config.top_n,
-        "min_similarity": config.min_similarity,
-        "case_count": len(records),
-        "per_type": sim_ranges,
-        "seed": config.seed,
-        "max_samples": config.max_samples,
-    }
-    manifest_path = path.with_suffix(".manifest.json")
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2) + "\n",
-        encoding="utf-8",
+    # Config (eval_set_id, top_n, min_similarity, seed, ...) is embedded; the
+    # extraction/store files this build read are content-hashed as inputs (real
+    # local provenance); the per-type similarity ranges ride in `extra`.
+    from evaluation.src.core.manifest import write_sidecar
+
+    sidecar = write_sidecar(
+        path,
+        config=config,
+        case_count=len(records),
+        inputs=[*config.extraction_files, *config.store_files],
+        extra={"per_type": sim_ranges},
     )
-    print(f"Wrote manifest to {manifest_path}")
+    print(f"Wrote manifest to {sidecar}")
 
 
 def parse_args() -> argparse.Namespace:

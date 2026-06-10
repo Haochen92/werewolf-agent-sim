@@ -91,20 +91,15 @@ def write_manifest(
     records: list[ExtractionDatasetRecord],
     config: ExtractionDatasetBuildConfig,
 ) -> None:
-    manifest = {
-        "eval_set_id": config.eval_set_id,
-        "created_at": datetime.now().isoformat(),
-        "created_from": config.created_from,
-        "dataset_path": str(path),
-        "case_count": len(records),
-        "seed": config.seed,
-        "max_games": config.max_games,
-        "max_samples": config.max_samples,
-    }
-    manifest_path = path.with_suffix(".manifest.json")
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    # Sampling knobs ride inside the embedded config; provenance (git, config
+    # hash) is added by the writer.
+    from evaluation.src.core.manifest import write_sidecar
+
+    write_sidecar(
+        path,
+        config=config,
+        created_from=config.created_from,
+        case_count=len(records),
     )
 
 

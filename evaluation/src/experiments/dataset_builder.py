@@ -122,22 +122,18 @@ def write_manifest(
     records: list[EvalDatasetRecord],
     config: DatasetBuildConfig,
 ) -> None:
-    """Write a small sidecar file describing how the dataset was sampled."""
-    manifest = {
-        "eval_set_id": config.eval_set_id,
-        "created_at": datetime.now().isoformat(),
-        "created_from": config.created_from,
-        "dataset_path": str(path),
-        "case_count": len(records),
-        "seed": config.seed,
-        "max_games": config.max_games,
-        "per_role_per_phase": config.per_role_per_phase,
-        "max_samples": config.max_samples,
-    }
-    manifest_path = path.with_suffix(".manifest.json")
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    """Write the provenance sidecar (git, embedded config, input hashes).
+
+    The sampling knobs (seed, max_games, per_role_per_phase, max_samples) ride
+    inside the embedded config rather than being hand-copied.
+    """
+    from evaluation.src.core.manifest import write_sidecar
+
+    write_sidecar(
+        path,
+        config=config,
+        created_from=config.created_from,
+        case_count=len(records),
     )
 
 
