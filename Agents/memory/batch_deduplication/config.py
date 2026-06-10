@@ -1,8 +1,8 @@
-"""Module-level config constants + singletons for the batch (cluster) dedup pipeline.
+"""Config for the batch (cluster) dedup pipeline.
 
 Env-driven defaults, the cluster-mode/linkage type aliases, TwoPassConfig (which defaults to
-these constants), and the LLM/Langfuse factory helpers. ``load_dotenv()`` runs here so the
-env-driven constants resolve before anything imports them.
+these constants), and the full run spec (BatchDedupRunConfig). ``load_dotenv()`` runs here so
+the env-driven constants resolve before anything imports them.
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
-from Agents.llm_factory import create_chat_model
 from Agents.memory.persistence import DEFAULT_MEMORY_STORE_DIR
 from pydantic import BaseModel
 
@@ -94,16 +93,3 @@ class BatchDedupRunConfig(BaseModel):
     incremental: bool = False
     cluster_report_only: bool = False
     preview_chars: int = 160
-
-
-def _langfuse_handler():
-    from langfuse.langchain import CallbackHandler
-    return CallbackHandler()
-
-
-def _get_batch_llm(model: str, thinking_level: str | None):
-    return create_chat_model(
-        model,
-        temperature=0.0,
-        thinking_level=thinking_level,
-    )

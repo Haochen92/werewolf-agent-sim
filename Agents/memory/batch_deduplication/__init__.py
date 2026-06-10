@@ -8,10 +8,6 @@ clustering, formatting, operations, store I/O, incremental bookkeeping, orchestr
 public is re-exported here so ``from Agents.memory.batch_deduplication import X`` keeps resolving.
 """
 
-import logging
-
-from dotenv import load_dotenv
-
 from .clustering import (
     _agglomerative_clusters,
     _bounded_seed_clusters,
@@ -43,8 +39,6 @@ from .config import (
     DEFAULT_TRIAGE_THINKING_LEVEL,
     LinkageMethod,
     TwoPassConfig,
-    _get_batch_llm,
-    _langfuse_handler,
 )
 from .formatting import (
     _cluster_preview,
@@ -61,9 +55,11 @@ from .operations import (
     _apply_observation_operation,
     _apply_strategy_operation,
     _cache_item_value,
+    _commit_survivor,
     _delete_absorbed_keys,
     _merged_metadata,
     _remap_operation_keys,
+    _resolve_survivor,
     _validate_source_keys,
 )
 from .cli import _parse_args, main
@@ -75,6 +71,8 @@ from .orchestration import (
 from .resolution import (
     _OBS_PROMPT_VARIANTS,
     _call_cluster_llm,
+    _get_batch_llm,
+    _langfuse_handler,
     _two_pass_cluster_dedup,
 )
 from .schemas import (
@@ -91,9 +89,6 @@ from .store_io import (
     _put_memory_with_retries,
     _search_memory_with_retries,
 )
-
-load_dotenv()
-logger = logging.getLogger(__name__)
 
 __all__ = [
     # schemas
@@ -122,8 +117,6 @@ __all__ = [
     "DEFAULT_TRIAGE_THINKING_LEVEL",
     "LinkageMethod",
     "TwoPassConfig",
-    "_get_batch_llm",
-    "_langfuse_handler",
     # incremental
     "_collect_new_keys",
     "_read_last_dedup_at",
@@ -153,15 +146,20 @@ __all__ = [
     "_apply_observation_operation",
     "_apply_strategy_operation",
     "_cache_item_value",
+    "_commit_survivor",
     "_delete_absorbed_keys",
     "_merged_metadata",
     "_remap_operation_keys",
+    "_resolve_survivor",
     "_validate_source_keys",
-    # orchestration
+    # resolution
     "_OBS_PROMPT_VARIANTS",
     "_call_cluster_llm",
-    "_parse_args",
+    "_get_batch_llm",
+    "_langfuse_handler",
     "_two_pass_cluster_dedup",
+    # orchestration + cli
+    "_parse_args",
     "dedup_namespace",
     "inspect_namespace_clusters",
     "main",

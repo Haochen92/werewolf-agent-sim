@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from Agents.llm_factory import create_chat_model
 from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
@@ -19,13 +20,15 @@ from Agents.prompts.dedup import (
 )
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 
-from .config import TwoPassConfig, _get_batch_llm, _langfuse_handler
+from .config import TwoPassConfig
 from .formatting import _format_cluster_entries
 from .operations import _remap_operation_keys
 from .schemas import (
     MemoryKind,
     ObservationBatchDedupOutput,
+    ObservationBatchOperation,
     StrategyBatchDedupOutput,
+    StrategyBatchOperation,
 )
 
 _OBS_PROMPT_VARIANTS = {
@@ -82,15 +85,7 @@ def _two_pass_cluster_dedup(
     if len(verify_keys) < 2:
         for op in triage_result.operations:
             if op.action == "MERGE":
-                op.action = "KEEP"
-                op.merged_situation = None
-                op.survivor_key = None
-                if hasattr(op, "merged_approach"):
-                    op.merged_approach = None
-                if hasattr(op, "merged_outcome"):
-                    op.merged_outcome = None
-                if hasattr(op, "merged_action"):
-                    op.merged_action = None
+                _downgrade_merge_to_keep(op)
         return triage_result
 
     verify_entries, verify_index_to_key = _format_cluster_entries(
@@ -146,13 +141,35 @@ def _call_cluster_llm(
         [{"role": "user", "content": prompt}],
         config={"run_name": run_name, "callbacks": [_langfuse_handler()]},
     )
-    if isinstance(result, output_schema):
-        pass
-    elif isinstance(result, dict):
+    if isinstance(result, dict):
         result = output_schema.model_validate(result)
-    else:
+    elif not isinstance(result, output_schema):
         raise TypeError(f"Unexpected batch dedup result type: {type(result)!r}")
 
     for op in result.operations:
         _remap_operation_keys(op, index_to_key)
     return result
+
+
+def _downgrade_merge_to_keep(
+    op: StrategyBatchOperation | ObservationBatchOperation,
+) -> None:
+    """Turn a MERGE the verify pass can't act on into a plain KEEP, clearing all merge text."""
+    op.action = "KEEP"
+    op.survivor_key = None
+    for field in ("merged_situation", "merged_action", "merged_approach", "merged_outcome"):
+        if hasattr(op, field):
+            setattr(op, field, None)
+
+
+def _langfuse_handler():
+    from langfuse.langchain import CallbackHandler
+    return CallbackHandler()
+
+
+def _get_batch_llm(model: str, thinking_level: str | None):
+    return create_chat_model(
+        model,
+        temperature=0.0,
+        thinking_level=thinking_level,
+    )
