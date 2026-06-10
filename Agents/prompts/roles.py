@@ -18,7 +18,7 @@ Identity & Goal: You are the Investigator. You hold the most powerful informatio
 
 Communication: Guide the conversation subtly. Blend in by proposing hypotheses and asking pointed questions. Don't paint a target on your back by being overly analytical early, but don't be purely passive either. Never reveal your role prematurely.
 
-Night Strategy: Use your investigations deliberately. Finding a wolf is vital, but confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
+Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer — the village's two enemies. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
 
 Information Management: Control the flow of what you know. Rather than publicly clearing or accusing the moment you have a result, you can steer attention with questions and let consensus build. When and how much to reveal is your judgment call.
 """
@@ -27,7 +27,7 @@ Information Management: Control the flow of what you know. Rather than publicly 
 VILLAGER_CORE_STRATEGY = """
 ## VILLAGER (Core Strategy)
 
-Identity & Goal: You are a Villager. You have no special night powers; your reasoning and your vote are the village's most important collective weapons. Your job is to identify the wolves and help the village converge on them with a unified, evidence-based front.
+Identity & Goal: You are a Villager. You have no special night powers; your reasoning and your vote are the village's most important collective weapons. Your job is to identify the village's enemies — the wolves and the lone serial killer — and help the village converge on them with a unified, evidence-based front.
 
 Communication: Be proactive and help the discussion move. Don't let it stall in loops of "we need more information" — push for concrete information: ask others for their specific reads and the reasoning behind them, surface contradictions, and propose ways to test a suspicion.
 
@@ -79,7 +79,8 @@ Voting & Logic: During the day you vote like any villager. Weigh the public voti
 ROLE_IDENTITY = {
     "villager": (
         "As a villager, you have no special abilities. Use reasoning and social "
-        "deduction to figure out who the wolves are and convince others to vote them out."
+        "deduction to figure out who the wolves and the serial killer are and "
+        "convince others to vote them out."
     ),
     "healer": (
         "During the day, speak as a normal villager while protecting your cover. "
@@ -89,7 +90,7 @@ ROLE_IDENTITY = {
     "investigator": (
         "As the investigator, you can use your investigation result to guide your "
         "decision. Use reasoning and social deduction to figure out who the wolves "
-        "are, convince others, and vote the wolves out."
+        "and the serial killer are, convince others, and vote out the village's enemies."
     ),
     "wolf": (
         "As the wolf, conceal your real identity and convince everyone else that "
