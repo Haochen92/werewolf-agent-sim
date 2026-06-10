@@ -71,7 +71,6 @@ from .orchestration import (
 from .resolution import (
     _OBS_PROMPT_VARIANTS,
     _call_cluster_llm,
-    _get_batch_llm,
     _langfuse_handler,
     _two_pass_cluster_dedup,
 )
@@ -155,7 +154,6 @@ __all__ = [
     # resolution
     "_OBS_PROMPT_VARIANTS",
     "_call_cluster_llm",
-    "_get_batch_llm",
     "_langfuse_handler",
     "_two_pass_cluster_dedup",
     # orchestration + cli

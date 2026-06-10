@@ -248,6 +248,9 @@ DEFAULT_PRO_MODEL = "gemini-2.5-pro"
 # genuine fallback. (3.1-pro-preview rejected: preview tier = no SLA +
 # retirement risk.)
 DEFAULT_PRO_BACKUP_MODEL = "gemini-3.5-flash"
+# Per-item downstream dedup — fixed cheap model (overridable via DEDUP_MODEL env).
+DEFAULT_DEDUP_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_DEDUP_THINKING_LEVEL = "low"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
 
 
@@ -321,6 +324,29 @@ def get_llm_pro_backup():
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_PRO_BACKUP_THINKING_LEVEL",
         ),
+    )
+
+
+def get_llm_dedup():
+    """Cheap, deterministic model for the per-item downstream dedup agent."""
+    return create_chat_model(
+        os.getenv("DEDUP_MODEL", DEFAULT_DEDUP_MODEL),
+        temperature=0.0,
+        thinking_level=_thinking_level_from_env(
+            "DEDUP_THINKING_LEVEL",
+            DEFAULT_DEDUP_THINKING_LEVEL,
+        ),
+    )
+
+
+def get_llm_batch_dedup(model: str, thinking_level: str | None):
+    """Deterministic model for the batch (cluster) dedup agent. Model/thinking are
+    per-run choices (single-pass model, or two-pass triage/verify), so the caller
+    passes them; the factory owns only the temperature=0 dedup policy."""
+    return create_chat_model(
+        model,
+        temperature=0.0,
+        thinking_level=thinking_level,
     )
 
 

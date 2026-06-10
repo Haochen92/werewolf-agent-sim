@@ -6,11 +6,12 @@ import logging
 
 from pydantic import BaseModel
 
+from Agents.llm_factory import get_llm_dedup
 from Agents.prompts.dedup import OBSERVATION_DEDUP_PROMPT, STRATEGY_DEDUP_PROMPT
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas import Observation, StrategyPoint
 
-from .config import DEDUP_MAX_RETRIES, _get_dedup_llm
+from .config import DEDUP_MAX_RETRIES
 from .formatting import _format_existing_entries, _format_existing_observations
 from .schemas import (
     ObservationDedupDecisionOutput,
@@ -40,7 +41,7 @@ def _call_dedup_llm(
         existing_entries=_format_existing_entries(similar_items),
     )
 
-    llm = _get_dedup_llm()
+    llm = get_llm_dedup()
     last_error = None
 
     for attempt in range(DEDUP_MAX_RETRIES + 1):
@@ -103,7 +104,7 @@ def _call_observation_dedup_llm(
         existing_entries=_format_existing_observations(similar_items),
     )
 
-    llm = _get_dedup_llm()
+    llm = get_llm_dedup()
     last_error = None
 
     for attempt in range(DEDUP_MAX_RETRIES + 1):

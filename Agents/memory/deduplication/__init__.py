@@ -19,15 +19,12 @@ from .schemas import (
 )
 from .config import (
     DEDUP_MAX_RETRIES,
-    DEDUP_MODEL,
     DEDUP_SIMILARITY_THRESHOLD,
-    DEDUP_THINKING_LEVEL,
     DEDUP_TOP_N,
     OBS_CONTENT_DISCARD_THRESHOLD,
     OBS_CONTENT_KEEP_THRESHOLD,
     SP_ACTION_DISCARD_THRESHOLD,
     SP_ACTION_KEEP_THRESHOLD,
-    _get_dedup_llm,
 )
 from .formatting import (
     _format_existing_entries,
@@ -74,15 +71,12 @@ __all__ = [
     "StrategyKeep",
     # config
     "DEDUP_MAX_RETRIES",
-    "DEDUP_MODEL",
     "DEDUP_SIMILARITY_THRESHOLD",
-    "DEDUP_THINKING_LEVEL",
     "DEDUP_TOP_N",
     "OBS_CONTENT_DISCARD_THRESHOLD",
     "OBS_CONTENT_KEEP_THRESHOLD",
     "SP_ACTION_DISCARD_THRESHOLD",
     "SP_ACTION_KEEP_THRESHOLD",
-    "_get_dedup_llm",
     # formatting
     "_format_existing_entries",
     "_format_existing_observations",

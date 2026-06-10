@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from Agents.llm_factory import create_chat_model
+from Agents.llm_factory import get_llm_batch_dedup
 from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT,
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
@@ -113,7 +113,7 @@ def _call_cluster_llm(
     thinking_level: str | None,
     prompt_variant: str = "default",
 ) -> StrategyBatchDedupOutput | ObservationBatchDedupOutput:
-    llm = _get_batch_llm(model, thinking_level)
+    llm = get_llm_batch_dedup(model, thinking_level)
     if memory_kind == "strategy_points":
         prompt = BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT.format(
             role=role,
@@ -165,11 +165,3 @@ def _downgrade_merge_to_keep(
 def _langfuse_handler():
     from langfuse.langchain import CallbackHandler
     return CallbackHandler()
-
-
-def _get_batch_llm(model: str, thinking_level: str | None):
-    return create_chat_model(
-        model,
-        temperature=0.0,
-        thinking_level=thinking_level,
-    )
