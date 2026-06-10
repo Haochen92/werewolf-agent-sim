@@ -176,6 +176,16 @@ is never mutated. Copy-pasting `v5_0`→`v5_1` first is redundant; in-place grow
 harness** (rebuilding = re-running the expensive games), so immutable per-generation snapshots
 are the only cheap way back to any prior state.
 
+**Finalization before freezing (per generation).** Seeding batches dedup *incrementally*
+(non-convergent — `evidence/dedup/incremental_convergence.md`), so before a generation is
+frozen it gets **one whole-store dedup pass** (`scripts/dedup_memory_store.py --apply
+--two-pass`, tuned-default thresholds) to converge it. That pass is **destructive and
+in-place**, and there is no rebuild-from-record harness, so **snapshot the raw store first**:
+`cp -r memory_stores/v5_0 memory_stores/v5_0_raw` (captures JSON + `indexed_cache.pkl`), then
+dedup `v5_0` in place. Same for every later generation (`v5_1`→`v5_1_raw`, …). The `*_raw`
+copy is the untouched pre-dedup fallback — re-runnable with different thresholds if the pass
+over-merges.
+
 **Serialization (why re-seeding isn't re-paid).** Two layers already exist: the JSON snapshot
 is the serialized store *content*; `indexed_cache.pkl` is the serialized embedding *vectors*.
 On load, if the JSON is unchanged, vectors load from the pickle → **zero embedding API calls**
