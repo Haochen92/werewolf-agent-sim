@@ -84,7 +84,7 @@ from .schemas import (
     StrategyBatchDedupOutput,
     StrategyBatchOperation,
 )
-from .store_io import (
+from .store_retry import (
     _put_memory_with_retries,
     _search_memory_with_retries,
 )
@@ -120,7 +120,7 @@ __all__ = [
     "_collect_new_keys",
     "_read_last_dedup_at",
     "_write_last_dedup_at",
-    # store_io
+    # store_retry
     "_put_memory_with_retries",
     "_search_memory_with_retries",
     # clustering

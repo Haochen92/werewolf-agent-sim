@@ -14,7 +14,7 @@ from langgraph.store.base import BaseStore
 
 from .formatting import _latest_timestamp
 from .schemas import ObservationBatchOperation, StrategyBatchOperation
-from .store_io import _put_memory_with_retries
+from .store_retry import _put_memory_with_retries
 
 
 def _apply_strategy_operation(

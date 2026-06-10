@@ -1,7 +1,11 @@
-"""Retrying wrappers around the memory store's put/search operations.
+"""Retrying wrappers around the memory store's put/search operations (batch-only).
 
 Both delegate to persistence's ``_memory_store_call_with_retries`` with this package's retry
-constants, so transient store/embedding errors are absorbed at the call site.
+constants. Embedding calls already self-retry inside the embeddings object (llm_factory's
+``_RetryingGoogleGenerativeAIEmbeddings``), so this outer wrapper is a *batch-completion*
+safety seam: an offline sweep does thousands of store calls and is expensive to restart, so a
+transient that escapes the inner retry shouldn't abort the whole run. The per-game path skips
+this layer on purpose — it fails open (store raw) rather than risk stalling a live game.
 """
 
 from __future__ import annotations

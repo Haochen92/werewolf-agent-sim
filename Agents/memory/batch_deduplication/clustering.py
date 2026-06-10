@@ -26,7 +26,7 @@ from .config import (
     DEFAULT_MEMORY_STORE_RETRY_MAX_DELAY,
     LinkageMethod,
 )
-from .store_io import _search_memory_with_retries
+from .store_retry import _search_memory_with_retries
 
 logger = logging.getLogger(__name__)
 
