@@ -9,6 +9,7 @@ from Agents.memory.persistence import (
     MemoryPersistenceConfig,
     seed_memory_from_config,
 )
+from Agents.observability import EvalCaseSink
 from Agents.schemas.metrics import GameOutcome
 from Agents.tracing import (
     Metrics,
@@ -56,6 +57,7 @@ def run_game(
         "memory_persistence_config"
     ]
     metrics = Metrics()
+    eval_sink = EvalCaseSink()
     initial_state = {key: value.copy() for key, value in INITIAL_STATE.items()}
 
     prompt_log.clear()
@@ -86,7 +88,7 @@ def run_game(
             result = parent_graph_compiled.invoke(
                 initial_state,
                 config=config,
-                context={"metrics": metrics},
+                context={"metrics": metrics, "eval_sink": eval_sink},
             )
         except Exception as exc:
             error_output = {
@@ -114,6 +116,9 @@ def run_game(
         result=result,
         game_metrics=game_metrics,
         raw_metrics=metrics.model_dump(mode="json"),
+        game_id=game_id,
+        trace_id=root.trace_id,
+        eval_records=eval_sink.records,
     )
 
 def main():

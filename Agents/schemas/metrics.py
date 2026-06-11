@@ -9,9 +9,11 @@ evidence/metrics/. Field-level meaning is kept in inline comments next to each c
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from pydantic import BaseModel, Field
+
+from Agents.observability.case_sink import EvalCaseSink
 
 
 # ---------------------------------------------------------------------------
@@ -74,6 +76,10 @@ class GraphContext(TypedDict):
     """Runtime context threaded through the graph; carries the live Metrics accumulator."""
 
     metrics: Metrics
+    eval_sink: NotRequired[EvalCaseSink]
+    """Local eval-case accumulator (the tee beside the Langfuse span dump).
+    NotRequired + ``.get()``-accessed everywhere so contexts built without it
+    (tests, ad-hoc invokes) keep working; emission is then Langfuse-only."""
 
 
 # ---------------------------------------------------------------------------
@@ -226,3 +232,10 @@ class GameOutcome:
     # json-safe dict, so a batch record can dump the per-night decisions (targets,
     # deaths, kill-landed) — not just the derived proxies in game_metrics.
     raw_metrics: dict | None = None
+    game_id: str = ""
+    """The game's pinned id (scheduler seed source; also keys the eval-case sidecar)."""
+    trace_id: str = ""
+    """Langfuse trace id of the game's root span — links the batch record to the trace."""
+    eval_records: list[dict] | None = None
+    """Locally-emitted eval cases as normalized span dicts (see
+    Agents.observability.case_sink); run_batch persists them as a per-game sidecar."""

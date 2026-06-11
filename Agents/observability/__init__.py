@@ -5,6 +5,7 @@ client (that side effect lives in ``Agents.tracing``), so evaluation code can
 import span names and the case sink without touching tracing globals.
 """
 
+from Agents.observability.case_sink import EvalCaseSink, freeze_case
 from Agents.observability.span_names import (
     ACTION_EVAL_SPAN_PREFIX,
     DAY_SUMMARY_SPAN_PREFIX,
@@ -24,6 +25,8 @@ __all__ = [
     "DEDUP_LLM_RUN_NAMES",
     "DEDUP_SPAN_PREFIX",
     "EXTRACTION_SPAN_PREFIX",
+    "EvalCaseSink",
+    "freeze_case",
     "action_eval_span_name",
     "day_summary_span_name",
     "dedup_span_name",
