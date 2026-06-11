@@ -231,11 +231,13 @@ has the full inputs the batch JSONL drops). ⚠️2026-06-11 readiness check: ga
 pull returns full 38k-char inputs; `extraction_builder` with `session_prefix: "v5_seed_b"` finds all
 20 v5_0 traces) BUT the bulk pull hits a Langfuse **422** — `fetch_extraction_cases` →
 `_fetch_all_observations` over-fetches ALL of a heavy game's spans (per-trace result too large;
-short games work, long games 422 → it's result size, NOT a whole-table scan; date-bounding does
-NOT help since games are same-date + the trace's own span count is the cost). **Fix before the bulk
-frozen-set build:** name-scope the fetch — pull only the `postgame_extraction_*` span server-side
-(`get_many` `name`/`filter`), not all spans (`evaluation/src/data/langfuse.py`). Local-hosted
-Langfuse = no rate limits. Target output:
+short games work, long games 422 → `get_many` is a paginated table-query whose cost scales with
+offset+table, NOT a whole-table scan; date-bounding does NOT help). **Fix (verified):** switch
+`_fetch_all_observations` (`evaluation/src/data/langfuse.py`) from paginated `observations.get_many`
+to a single `api.trace.get(trace_id).observations` point-lookup — returns the whole trace in one call
+(1333 obs/235 span-types on a trace that 422'd), no pagination, and PRESERVES fetch-any-span (beats
+name-scoping). Durable companion: emit eval cases locally at game-time (the original "emit→select"
+intent; currently Langfuse-only). Local-hosted Langfuse = no rate limits. Target output:
 `evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl`. **⭐GATE BEFORE BUILDING:** thin buckets are low-VOLUME
 not low-variety (the investigator/day_vote points are diverse) → augmentation helps ONLY IF the
 general extraction under-extracted that namespace. Validate cheaply first: focused re-extraction on
