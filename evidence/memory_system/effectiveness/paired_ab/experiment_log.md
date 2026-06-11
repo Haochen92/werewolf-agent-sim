@@ -15,6 +15,28 @@ baseline in the current epoch (`ab_baseline_recovered.jsonl`, `recovered_ids.jso
 proxies at N=30. The original baseline + `seed_set.json` recovered winners are no longer
 used for the comparison.
 
+### Can we pin or detect the drift? (investigation 2026-06-11)
+
+Probed whether `gemini-3.1-flash-lite` alias drift is preventable/detectable:
+
+- **Not pinnable.** Vertex `models.list()` shows only `gemini-3.1-flash-lite` (alias) and
+  `gemini-3.1-flash-lite-preview` (a preview — *less* stable) for this generation. No dated
+  snapshot (no `-001`) exists to pin to, unlike older gens (`gemini-2.0-flash-lite-001`
+  does exist). So Google can repoint the alias silently and we can't freeze it.
+- **Not detectable from responses.** The served `model_version` (both langchain
+  `response_metadata` and the raw `google.genai` response) just echoes the alias
+  `gemini-3.1-flash-lite` — no underlying snapshot id. So there's nothing extra to log in
+  `runtime_fingerprint` that would surface drift; the fingerprint's `game_model` already
+  records the alias, and that's all Vertex exposes.
+- **What the fingerprint DOES catch:** backend (`llm_backend`: vertex/google) and region
+  (`vertex_location`). Those changes are visible; alias-snapshot drift is not.
+
+**Consequences / standing rules:** (1) same-epoch fresh baseline is mandatory for any A/B —
+never pair against historical-epoch outcomes; (2) optional active guard = a temp-0 canary
+prompt set run alongside batches, watched for output-distribution shift (temp=1.0 can't
+separate drift from variance); (3) revisit pinning once Google ships a dated
+`gemini-3.1-flash-lite-NNN` snapshot.
+
 ## Design
 
 Per-role memory ablation on the frozen **v5_0** store (consumption mode), paired on a
