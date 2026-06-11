@@ -1,15 +1,17 @@
-"""Paired memory A/B analysis — McNemar win-rate + validated-proxy comparison.
+"""Paired memory A/B analysis — full: off / raw / reranked / all-on + called-shot scoring.
 
 Reuses evaluation/src/core/stats.py (binomial_ci, mcnemar_exact, wilcoxon_paired).
 
-All baseline games are run FRESH in the SAME epoch as the arms. The original
-baseline was a different epoch — model drift / variance shifted its win
-distribution (Fisher p=0.0028 vs the fresh baseline), so it is NOT used here.
-Every baseline game carries game_id + winner + computed_metrics, so both win and
-proxies pair on game_id (identical role draw, verified).
+All baseline games are run FRESH in the SAME epoch as the arms (the original baseline
+was a different model epoch — Fisher p=0.0028 — so it is NOT used). Every game (baseline
+and arm) carries game_id + winner + computed_metrics, and every arm uses the same 30
+game_ids, so EVERY comparison pairs on game_id (identical role draw, verified).
 
-Win-rate: paired McNemar over matched game_ids. Proxies (monotonicity-validated
-basket only): paired delta + Wilcoxon signed-rank on the same matched pairs.
+Conditions: raw arms (rerank off), reranked arms (--reranking observations), raw all-on.
+Win rate is reported but underpowered; the powered signal is the monotonicity-validated
+proxy basket (chosen independently, before any A/B result). The reranked/all-on arms are
+scored against the PRE-REGISTERED called shots (see experiment_log.md) — confirmatory if a
+called shot hits, otherwise exploratory.
 """
 
 from __future__ import annotations
@@ -24,96 +26,114 @@ sys.path.insert(0, str(REPO))
 from evaluation.src.core.stats import binomial_ci, mcnemar_exact, wilcoxon_paired  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-ARMS = {
-    "wolf_only": ("wolves", REPO / "batch_results/ab_arms_wolf.jsonl"),
-    "serial_killer_only": ("serial_killer", REPO / "batch_results/ab_arms_sk.jsonl"),
-    "town_only": ("villagers", REPO / "batch_results/ab_arms_town.jsonl"),
-}
-# Same-epoch fresh baseline = 10 fresh + 20 recovered-id reruns (both current epoch).
-BASELINE_FILES = [
-    REPO / "batch_results/ab_baseline.jsonl",
-    REPO / "batch_results/ab_baseline_recovered.jsonl",
-]
+BR = REPO / "batch_results"
 
-# Validated proxies (evidence/metrics/proxy_win_monotonicity.md). Sign = expected
-# direction vs the town/villager win; sk_nights_survived keyed to SK. Investigator
-# rate proxies are intentionally EXCLUDED (failed monotonicity).
-VALIDATED_PROXIES = [
-    ("town_vote_accuracy", "+"),
-    ("town_mislynch_rate", "-"),
-    ("mislynches", "-"),
-    ("correct_elimination_rate", "+"),
-    ("serial_killer_lynched", "+"),
-    ("sk_nights_survived", "+"),
-    ("healer_town_save_rate", "+"),
-    ("vigilante_friendly_fire_shots", "-"),
-]
+BASELINE_FILES = [BR / "ab_baseline.jsonl", BR / "ab_baseline_recovered.jsonl"]
+FACTION = {"wolf_only": "wolves", "serial_killer_only": "serial_killer", "town_only": "villagers"}
+RAW = {"wolf_only": BR / "ab_arms_wolf.jsonl", "serial_killer_only": BR / "ab_arms_sk.jsonl",
+       "town_only": BR / "ab_arms_town.jsonl"}
+RERANK = {"wolf_only": BR / "ab_rr_wolf.jsonl", "serial_killer_only": BR / "ab_rr_sk.jsonl",
+          "town_only": BR / "ab_rr_town.jsonl"}
+ALLON = BR / "ab_allon.jsonl"
+
+VALIDATED = [("town_vote_accuracy", "+"), ("town_mislynch_rate", "-"), ("mislynches", "-"),
+             ("correct_elimination_rate", "+"), ("serial_killer_lynched", "+"),
+             ("sk_nights_survived", "+"), ("healer_town_save_rate", "+"),
+             ("vigilante_friendly_fire_shots", "-")]
 
 
-def load(path: Path) -> list[dict]:
-    if not path.exists():
+def load(path):
+    if not Path(path).exists():
         return []
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    return [json.loads(x) for x in Path(path).read_text().splitlines() if x.strip()]
 
 
-def main() -> int:
-    baseline = {
-        r["game_id"]: r
-        for f in BASELINE_FILES
-        for r in load(f)
-        if r.get("game_id")
-    }
+def by_gid(records):
+    return {r["game_id"]: r for r in records if r.get("game_id")}
 
-    lines = ["# Paired memory A/B — results", ""]
-    lines.append(
-        f"Same-epoch fresh baseline: {len(baseline)} games (game_id-matched, full proxies).\n"
-    )
 
-    for arm, (faction, path) in ARMS.items():
-        arm_recs = [r for r in load(path) if r.get("game_id") in baseline]
-        if not arm_recs:
-            lines.append(f"## {arm} — no matched games yet\n")
+def metric(rec, k):
+    return (rec.get("computed_metrics") or {}).get(k)
+
+
+def arm_vs_baseline(label, faction, arm_recs, baseline, lines):
+    """Paired off(baseline) vs on(arm) by game_id: McNemar win + validated-proxy Wilcoxon."""
+    arm = [r for r in arm_recs if r.get("game_id") in baseline]
+    if not arm:
+        lines.append(f"### {label}: no matched games yet\n"); return
+    off = [int(baseline[r["game_id"]].get("winner") == faction) for r in arm]
+    on = [int(r.get("winner") == faction) for r in arm]
+    n = len(on)
+    mc = mcnemar_exact(off, on)
+    oc, nc = binomial_ci(sum(off), n), binomial_ci(sum(on), n)
+    lines.append(f"### {label} (faction={faction}), N={n}")
+    lines.append(f"- win: off {sum(off)/n:.0%}[{oc[0]:.0%},{oc[1]:.0%}] -> on {sum(on)/n:.0%}"
+                 f"[{nc[0]:.0%},{nc[1]:.0%}] (Δ{(sum(on)-sum(off))/n:+.0%}, McNemar p={mc.p_value:.3f})")
+    for p, sign in VALIDATED:
+        ov, nv = [], []
+        for r in arm:
+            a = metric(baseline[r["game_id"]], p); b = metric(r, p)
+            if a is not None and b is not None:
+                ov.append(a); nv.append(b)
+        if len(nv) < 3:
             continue
+        _, wp = wilcoxon_paired(ov, nv)
+        star = " *" if wp < 0.05 else ""
+        lines.append(f"  - {p} ({sign}): {sum(ov)/len(ov):.3f} -> {sum(nv)/len(nv):.3f} "
+                     f"(Δ{(sum(nv)-sum(ov))/len(nv):+.3f}, p={wp:.3f}){star}")
+    lines.append("")
 
-        off_win = [int(baseline[r["game_id"]].get("winner") == faction) for r in arm_recs]
-        on_win = [int(r.get("winner") == faction) for r in arm_recs]
-        n = len(on_win)
-        on_rate, off_rate = sum(on_win) / n, sum(off_win) / n
-        on_ci, off_ci = binomial_ci(sum(on_win), n), binomial_ci(sum(off_win), n)
-        mc = mcnemar_exact(off_win, on_win)
 
-        lines.append(f"## {arm} (faction = {faction}), N_paired = {n}\n")
-        lines.append(
-            f"- **Win rate:** off {off_rate:.0%} [{off_ci[0]:.0%},{off_ci[1]:.0%}] -> "
-            f"on {on_rate:.0%} [{on_ci[0]:.0%},{on_ci[1]:.0%}] (delta {on_rate-off_rate:+.0%})"
-        )
-        lines.append(
-            f"- **McNemar (paired):** b(off-only)={mc.b_off_only}, c(on-only)={mc.c_on_only}, "
-            f"discordant={mc.b_off_only + mc.c_on_only}, **p={mc.p_value:.3f}**"
-        )
+def called_shot_rerank(label, raw_recs, rr_recs, proxies, predict, lines):
+    """Paired raw-arm vs reranked-arm on the same game_ids: did reranking shift the proxy?"""
+    raw_g, rr_g = by_gid(raw_recs), by_gid(rr_recs)
+    common = sorted(set(raw_g) & set(rr_g))
+    lines.append(f"### {label} — paired raw vs reranked, N={len(common)} (predict: {predict})")
+    if len(common) < 3:
+        lines.append("  (insufficient matched games)\n"); return
+    for p in proxies:
+        rv, kv = [], []
+        for g in common:
+            a = metric(raw_g[g], p); b = metric(rr_g[g], p)
+            if a is not None and b is not None:
+                rv.append(a); kv.append(b)
+        if len(kv) < 3:
+            continue
+        _, wp = wilcoxon_paired(rv, kv)
+        d = (sum(kv) - sum(rv)) / len(kv)
+        lines.append(f"  - {p}: raw {sum(rv)/len(rv):.3f} -> rerank {sum(kv)/len(kv):.3f} "
+                     f"(Δ{d:+.3f}, Wilcoxon p={wp:.3f})")
+    lines.append("")
 
-        lines.append("- **Validated proxies (paired off->on mean, Wilcoxon p):**")
-        for proxy, sign in VALIDATED_PROXIES:
-            off_vals, on_vals = [], []
-            for r in arm_recs:
-                ov = baseline[r["game_id"]].get("computed_metrics", {}).get(proxy)
-                nv = (r.get("computed_metrics") or {}).get(proxy)
-                if ov is not None and nv is not None:
-                    off_vals.append(ov)
-                    on_vals.append(nv)
-            if len(on_vals) < 3:
-                continue
-            om, am = sum(off_vals) / len(off_vals), sum(on_vals) / len(on_vals)
-            _, w_p = wilcoxon_paired(off_vals, on_vals)
-            lines.append(
-                f"  - `{proxy}` ({sign}): off {om:.3f} -> on {am:.3f} "
-                f"(delta {am-om:+.3f}, Wilcoxon p={w_p:.3f}, n={len(on_vals)})"
-            )
-        lines.append("")
+
+def main():
+    baseline = by_gid([r for f in BASELINE_FILES for r in load(f)])
+    L = ["# Paired memory A/B — FULL report", "",
+         f"Same-epoch baseline: {len(baseline)} games. * = Wilcoxon p<0.05 (uncorrected; "
+         f"Bonferroni over the ≤3 pre-registered primaries = 0.017).", ""]
+
+    L.append("## RAW arms (rerank off) — off vs on")
+    for cfg, fac in FACTION.items():
+        arm_vs_baseline(f"raw {cfg}", fac, load(RAW[cfg]), baseline, L)
+
+    L.append("## RERANKED arms (observations reranking) — off vs on")
+    for cfg, fac in FACTION.items():
+        arm_vs_baseline(f"rerank {cfg}", fac, load(RERANK[cfg]), baseline, L)
+
+    L.append("## ALL-ON arm (all roles, raw) — off vs on")
+    arm_vs_baseline("all_enabled", "villagers", load(ALLON), baseline, L)
+
+    L.append("## PRE-REGISTERED CALLED SHOTS")
+    called_shot_rerank("rerank-town", load(RAW["town_only"]), load(RERANK["town_only"]),
+                       ["town_vote_accuracy"], "town_vote_accuracy UP vs raw", L)
+    called_shot_rerank("rerank-wolf", load(RAW["wolf_only"]), load(RERANK["wolf_only"]),
+                       ["town_vote_accuracy", "mislynches"], "town detection DOWN vs raw", L)
+    L.append("### all-on — predict NO town collapse vs baseline (contra pilot)")
+    L.append("  (see ALL-ON arm above: villager win + town_vote_accuracy vs baseline)\n")
 
     out = HERE / "report.md"
-    out.write_text("\n".join(lines))
-    print("\n".join(lines))
+    out.write_text("\n".join(L))
+    print("\n".join(L))
     print(f"\nWritten to {out}")
     return 0
 
