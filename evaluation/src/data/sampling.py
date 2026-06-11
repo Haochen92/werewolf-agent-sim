@@ -34,8 +34,10 @@ def sample_cases(
     """
     buckets: dict[tuple[str, str, str, str], list[EvalCase]] = {}
 
+    memory_disabled_dropped = 0
     for case in cases:
         if not case.memory_enabled:
+            memory_disabled_dropped += 1
             continue
         if games_to_sample and case.trace_id not in games_to_sample:
             continue
@@ -50,6 +52,13 @@ def sample_cases(
             (case.trace_id, case.player_role, phase, case.action_phase),
             [],
         ).append(case)
+
+    if memory_disabled_dropped:
+        print(
+            f"Note: dropped {memory_disabled_dropped} memory-disabled case(s) — "
+            "this sampler feeds the memory-pipeline evals, which need retrieval "
+            "context to judge (memory-off games yield 0 samples by design)."
+        )
 
     rng = random.Random(seed)
     samples_by_bucket: list[list[EvalCase]] = []
