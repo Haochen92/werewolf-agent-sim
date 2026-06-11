@@ -194,6 +194,24 @@ seeding, freeze it and switch downstream runs to consumption mode** — `--seed-
 <frozen vN> --no-memory-dump`: no extraction (the ~62%-of-cost part), no re-embedding, only
 play cost. The expensive build is paid once per generation, then frozen.
 
+## Future work — end-state replay extraction (decouple play from store-build)
+
+Today each seeding game does double duty (play = baseline + extraction = store), so building
+the store re-pays the full play cost every time. A **replay-to-store** pipeline would decouple
+them: persist each game's frozen end-state, then `format_extraction_inputs(state)` → per-role
+extraction → dedup → dump — i.e. the orchestrator's `postgame_extraction` path fed from a saved
+state instead of a live runtime. Payoffs: (1) cheap extraction iteration (no replay of *play*);
+(2) **closes the store-rebuild-from-record gap** (currently "re-run games to rebuild" — there is
+no real rebuild harness; `evaluation/src/experiments/extraction_replay.py` is the old
+single-prompt eval method with no store dump); (3) cleanly separates baseline-generation from
+store-building per the eval-layer architecture. **Prerequisite = data persistence:** the batch
+record must capture the *complete* extraction inputs — today it stores `day_channel` /
+`day_summaries` / `*_resolutions` / `investigator_results` / `roles` but **NOT `wolf_channel` or
+the strategy notes** (extraction needs the wolves' night reasoning). The replay runner itself is
+thin (reuse the orchestrator path). **Prompt-freeze-safe** — it changes where extraction inputs
+come from, not the extraction prompt (same category as `extract_without_dump`). Deferred, not
+blocking the v5 seeding/baseline.
+
 ## Order of operations
 
 1. Seedability fix (engine-level) + extract-without-dump flag. ✅ small, prompt-neutral.
