@@ -1,0 +1,25 @@
+{
+  "artifact": "evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl",
+  "case_count": 20,
+  "config": {
+    "batch_results": null,
+    "created_from": "v5_seed_b",
+    "eval_set_id": "extraction_v5_0",
+    "local_results": null,
+    "max_games": 0,
+    "max_samples": 0,
+    "output": "evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl",
+    "overwrite": true,
+    "seed": 0,
+    "session_id": null,
+    "session_ids": null,
+    "session_prefix": "v5_seed_b",
+    "trace_ids": null
+  },
+  "config_sha256": "596b2263df55de4e50fa37f4fa756114f74d156bef249d536aa737aa37d44464",
+  "created_at": "2026-06-11T04:39:13.786745",
+  "created_from": "v5_seed_b",
+  "git_commit": "e43ca9a7877b118317b5630029a532e9136ecc06",
+  "git_dirty": false,
+  "inputs": []
+}

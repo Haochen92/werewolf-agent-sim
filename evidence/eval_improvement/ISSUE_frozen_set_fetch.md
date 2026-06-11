@@ -1,4 +1,4 @@
-# ISSUE: Frozen-set builders 422 on heavy traces (Langfuse fetch) — open, 2026-06-11
+# ISSUE: Frozen-set builders 422 on heavy traces (Langfuse fetch) — RESOLVED 2026-06-11
 
 ## Summary
 Building a frozen eval set from Langfuse (`extraction_builder.py` and the dedup / day-summary /
@@ -104,3 +104,50 @@ per-builder call-site change. Fiddlier than the primary fix; secondary by design
 - Constraints: all of the above is **data/plumbing only — prompt-freeze-neutral** (no model-visible
   prompt changes).
 ```
+
+## Resolution (2026-06-11)
+
+Both fixes shipped on `main` (moved this doc from `evaluation/src/data/` here as the dated record).
+
+**Commits** (incremental, dependency order):
+- `0a90214` span-name single source of truth: `Agents/observability/span_names.py` (producers +
+  eval reader import it; both prefix collisions named in code + tests).
+- `0cf73d2` local eval-case sink: `EvalCaseSink` + `freeze_case` (stamps real
+  trace_id/observation_id; local record = the read-side's normalized span dict, so converters
+  apply verbatim to either source).
+- `ffc2a80` tee at all 5 emission sites (day/night EvalCase, DaySummaryCase, ExtractionCase,
+  DedupCase — sink threaded into the dedup pipeline as a parameter).
+- `53dee2f` run_batch per-game sidecar `batch_results/eval_cases/<session_id>/<game_id>.jsonl`
+  + record fields game_id / trace_id / eval_cases_path / eval_case_count.
+- `12b7a28` builders gain the `local_results` source (`evaluation/src/data/local_cases.py`,
+  exactly-one-source validation, manifest input hash-chain to the batch run).
+- `e43ca9a` Langfuse read rework: deleted `_fetch_all_observations` (the 422); now
+  `trace.get` enumerate → name-scoped `get_many` (full output), with a batched
+  server-side prefix-filter fast path + per-name fallback; generic `fetch_spans` keeps the
+  mine-any-span retroactive capability; extraction parent selected structurally; dedup LLM run
+  names excluded up front.
+
+**Acceptance (all criteria from this doc met):**
+- `extraction_v5_0.jsonl` built from all 20 `v5_seed_b*` games, **zero 422**;
+  every record's `formatted_discussions` full-length (min 20,416 / max 43,477 chars).
+  Config: `evaluation/config/extraction/build_extraction_v5_0.json`; manifest sidecar written.
+- The issue's repro session (`v5_seed_b1_all_disabled`, previously 3 ok / 2 × 422): all 5
+  traces fetch, 25–38 KB content each.
+- Dedup builder smoke on the same session: 270 cases / 5 games, zero 422. Action-eval builder
+  smoke: 239 candidate cases fetched from 2 heavy games — the batched filter fast path was
+  accepted by the live self-hosted server (no fallback triggered). (“Sampled 0” is the
+  pre-existing sampler dropping memory_enabled=False cases — these games are memory-off.)
+- Primary path: throwaway game `sidecar_smoke_001` (SK win, day 5) → 148-case sidecar
+  written (143 action evals + 5 day summaries), batch record carries game_id / trace_id /
+  eval_cases_path / eval_case_count; local-source build reads all cases with no Langfuse
+  call, and the local vs Langfuse copies have IDENTICAL (trace_id, observation_id) sets —
+  case identity is source-independent, judge score push-back works on either.
+
+**Post-acceptance hardening found live:** the SDK's ~5s default read timeout is too tight for
+`trace.get` on a fresh heavy trace (measured ~7s on 1,439 obs) → `enumerate_observations` now
+passes an explicit 120s `RequestOptions` timeout.
+
+**Follow-up noted (pre-existing, NOT fixed — changes emitted span names):** day-summary span
+names carry an empty game_id slot (`day_summary_eval__day_5`) because `day/flow.py` reads
+`game_id` from graph state where it is unset (it lives in config.configurable). Harmless to
+both read paths (prefix-matched; identity comes from trace_id/observation_id).

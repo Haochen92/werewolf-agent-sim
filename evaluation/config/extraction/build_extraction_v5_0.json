@@ -1,0 +1,9 @@
+{
+  "eval_set_id": "extraction_v5_0",
+  "session_prefix": "v5_seed_b",
+  "created_from": "v5_seed_b",
+  "max_games": 0,
+  "max_samples": 0,
+  "output": "evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl",
+  "overwrite": true
+}

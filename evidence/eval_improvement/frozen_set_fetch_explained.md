@@ -1,8 +1,8 @@
 # Eval improvement: why we emit eval cases locally instead of re-fetching from Langfuse (plain version)
 
 A plain-English companion to the fix plan and the technical issue record. For the implementation
-detail see `evaluation/src/data/ISSUE_frozen_set_fetch.md` (root cause + acceptance criteria) and the
-build plan; this doc is the *why*, written to be read by anyone.
+detail see [`ISSUE_frozen_set_fetch.md`](ISSUE_frozen_set_fetch.md) (root cause + acceptance
+criteria + resolution, colocated here); this doc is the *why*, written to be read by anyone.
 
 ## The setup (analogy)
 Every game writes a big **diary** (the Langfuse "trace") — ~1,300 entries (one per agent action, LLM
