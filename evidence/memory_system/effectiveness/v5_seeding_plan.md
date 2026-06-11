@@ -227,7 +227,13 @@ loop + `ExtractionCase`/`ExtractionDatasetRecord`. **3 gaps:** (1) the (role,pha
 schema; (2) wire it to DUMP into the store (replay only writes a judging dataset); (3) a **v5_0
 frozen dataset** built from the v5_0 games' Langfuse `ExtractionCase` spans (`extraction_v1.jsonl`
 is STALE — old 8p/4-role, no SK/vigilante/wolf_channel; the builder exists, re-point it; Langfuse
-has the full inputs the batch JSONL drops). **⭐GATE BEFORE BUILDING:** thin buckets are low-VOLUME
+has the full inputs the batch JSONL drops). ⚠️2026-06-11 readiness check: gate PASSES (single-trace
+pull returns full 38k-char inputs; `extraction_builder` with `session_prefix: "v5_seed_b"` finds all
+20 v5_0 traces) BUT the bulk pull hits a Langfuse **422** — `fetch_extraction_cases` →
+`_fetch_all_observations` → `observations.get_many` needs a date-range/pagination filter on large
+result sets. **Small fix before the bulk frozen-set build:** add date-range/pagination to the fetch
+helper (`evaluation/src/data/langfuse.py`). Local-hosted Langfuse = no rate limits. Target output:
+`evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl`. **⭐GATE BEFORE BUILDING:** thin buckets are low-VOLUME
 not low-variety (the investigator/day_vote points are diverse) → augmentation helps ONLY IF the
 general extraction under-extracted that namespace. Validate cheaply first: focused re-extraction on
 2-3 v5_0 games, check for DISTINCT post-dedup new items vs the existing set. Duplicates → general
