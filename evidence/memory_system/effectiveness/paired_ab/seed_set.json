@@ -1,0 +1,129 @@
+{
+  "description": "Paired memory-A/B shared seed set. 20 recovered baseline game_ids (with recorded baseline winner) + 10 fresh. Pin across arms for McNemar.",
+  "recovered": [
+    {
+      "game_id": "fa79dc3b-22d7-48c2-a478-7ea1dac1aab7",
+      "baseline_winner": "serial_killer"
+    },
+    {
+      "game_id": "4999832f-8523-46fd-900f-dbf9e3bee8b4",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "e51e6b3b-bccf-4292-9a31-dcc6cd0f8924",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "84d383f5-5ed4-490f-9123-b7161b5a84f5",
+      "baseline_winner": "serial_killer"
+    },
+    {
+      "game_id": "5b02ced6-6a74-45b5-a4ab-129abcb5d673",
+      "baseline_winner": "serial_killer"
+    },
+    {
+      "game_id": "f417aab8-64ec-4132-800a-f656ef747b9a",
+      "baseline_winner": "wolves"
+    },
+    {
+      "game_id": "22e2fd88-29d2-43d3-8792-7b60166a963a",
+      "baseline_winner": "serial_killer"
+    },
+    {
+      "game_id": "7e03c370-952c-45e4-a0db-66da52a568b9",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "e1952ffc-8313-4136-9f2b-d96c04370114",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "007c471a-9e3b-485d-b434-e10bbf4c98eb",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "a52b691a-8813-45d2-9b66-8ffb8c4853ea",
+      "baseline_winner": "serial_killer"
+    },
+    {
+      "game_id": "c83608a1-e4a3-4f0d-85f1-a55c05441ec2",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "7b2bc9f6-ec67-43be-ab75-5ed206d67f0c",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "fc60cb02-f9f4-4882-aefa-bd645d3878ab",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "69f8d21c-22a1-4b5f-8ef2-c8293eb8a492",
+      "baseline_winner": "serial_killer"
+    },
+    {
+      "game_id": "536dbe22-55c5-4a4c-b218-cac685ebc920",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "8d74c59f-2a36-4d96-b39a-867e2fe06f67",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "abed0d08-f166-4517-ab0c-435e2ca78472",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "b79d8a55-2cfc-44ca-a28b-eee2ba50cd77",
+      "baseline_winner": "villagers"
+    },
+    {
+      "game_id": "a31e31e9-a142-4b08-bd21-ebe7a7972ff8",
+      "baseline_winner": "serial_killer"
+    }
+  ],
+  "fresh_game_ids": [
+    "c7c04db2-799c-4933-a369-3c7816a74fac",
+    "8dd49b2e-b809-4d7d-8d92-28d41ef6877d",
+    "d75ed6b5-cafe-4cfc-8547-d1fa910db0b7",
+    "469c2351-bfe8-4afc-bef8-0af1374df550",
+    "5042eda6-efe0-4b2b-89da-c098ac937e13",
+    "bb63a21a-664b-41f2-a2c4-00e5e57b2667",
+    "f74b9d8e-a2e3-4b9c-8b03-b61cec8d5c13",
+    "9f1546dd-7ab0-46e7-b4f0-69f86dbd080e",
+    "7bf51028-4a6f-42fb-8371-24540d29d18d",
+    "0a62ce53-3a7c-4d0a-b831-a972834fa794"
+  ],
+  "all_game_ids": [
+    "fa79dc3b-22d7-48c2-a478-7ea1dac1aab7",
+    "4999832f-8523-46fd-900f-dbf9e3bee8b4",
+    "e51e6b3b-bccf-4292-9a31-dcc6cd0f8924",
+    "84d383f5-5ed4-490f-9123-b7161b5a84f5",
+    "5b02ced6-6a74-45b5-a4ab-129abcb5d673",
+    "f417aab8-64ec-4132-800a-f656ef747b9a",
+    "22e2fd88-29d2-43d3-8792-7b60166a963a",
+    "7e03c370-952c-45e4-a0db-66da52a568b9",
+    "e1952ffc-8313-4136-9f2b-d96c04370114",
+    "007c471a-9e3b-485d-b434-e10bbf4c98eb",
+    "a52b691a-8813-45d2-9b66-8ffb8c4853ea",
+    "c83608a1-e4a3-4f0d-85f1-a55c05441ec2",
+    "7b2bc9f6-ec67-43be-ab75-5ed206d67f0c",
+    "fc60cb02-f9f4-4882-aefa-bd645d3878ab",
+    "69f8d21c-22a1-4b5f-8ef2-c8293eb8a492",
+    "536dbe22-55c5-4a4c-b218-cac685ebc920",
+    "8d74c59f-2a36-4d96-b39a-867e2fe06f67",
+    "abed0d08-f166-4517-ab0c-435e2ca78472",
+    "b79d8a55-2cfc-44ca-a28b-eee2ba50cd77",
+    "a31e31e9-a142-4b08-bd21-ebe7a7972ff8",
+    "c7c04db2-799c-4933-a369-3c7816a74fac",
+    "8dd49b2e-b809-4d7d-8d92-28d41ef6877d",
+    "d75ed6b5-cafe-4cfc-8547-d1fa910db0b7",
+    "469c2351-bfe8-4afc-bef8-0af1374df550",
+    "5042eda6-efe0-4b2b-89da-c098ac937e13",
+    "bb63a21a-664b-41f2-a2c4-00e5e57b2667",
+    "f74b9d8e-a2e3-4b9c-8b03-b61cec8d5c13",
+    "9f1546dd-7ab0-46e7-b4f0-69f86dbd080e",
+    "7bf51028-4a6f-42fb-8371-24540d29d18d",
+    "0a62ce53-3a7c-4d0a-b831-a972834fa794"
+  ]
+}
