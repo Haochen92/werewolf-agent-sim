@@ -109,6 +109,16 @@ def parse_args() -> argparse.Namespace:
         help="Number of games to run for each selected memory config.",
     )
     parser.add_argument(
+        "--game-ids-file",
+        default=None,
+        help=(
+            "JSON file: a list of game_ids (or an object with a 'game_ids' key). "
+            "Pins the per-game seed so every selected config plays the SAME role "
+            "draws — the paired A/B design. Overrides --runs-per-config to the "
+            "length of the list."
+        ),
+    )
+    parser.add_argument(
         "--session-prefix",
         default=None,
         help="Prefix for Langfuse session IDs. Defaults to batch timestamp.",
@@ -322,6 +332,26 @@ def memory_persistence_config_from_args(args: argparse.Namespace) -> dict[str, A
     return config
 
 
+def load_game_ids(path: str | None) -> list[str] | None:
+    """Load a pinned seed set (list of game_ids) for the paired A/B.
+
+    Accepts a JSON list, or an object with a ``game_ids`` key. Returns None when no
+    file is given — each game then mints a fresh uuid4 (the default). Pinning the
+    same ids across configs makes every arm play identical role draws.
+    """
+    if not path:
+        return None
+    data = json.loads(Path(path).read_text())
+    game_ids = data["game_ids"] if isinstance(data, dict) else data
+    if not isinstance(game_ids, list) or not all(isinstance(g, str) for g in game_ids):
+        raise SystemExit(
+            f"--game-ids-file must be a JSON list of strings (or {{'game_ids': [...]}}): {path}"
+        )
+    if len(set(game_ids)) != len(game_ids):
+        raise SystemExit("--game-ids-file contains duplicate game_ids")
+    return game_ids
+
+
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
@@ -331,6 +361,8 @@ def run_batch(args: argparse.Namespace) -> int:
     # No game-config CLI overrides currently; games use the defaults. The general
     # game_config seam is kept (recorded + passed to run_game) for future overrides.
     game_config = None
+    game_ids = load_game_ids(args.game_ids_file)
+    runs_per_config = len(game_ids) if game_ids else args.runs_per_config
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
     )
@@ -339,8 +371,13 @@ def run_batch(args: argparse.Namespace) -> int:
     planned_runs = [
         (config_name, run_index)
         for config_name in config_names
-        for run_index in range(1, args.runs_per_config + 1)
+        for run_index in range(1, runs_per_config + 1)
     ]
+    if game_ids:
+        print(
+            f"Seed set: pinning {len(game_ids)} game_ids across "
+            f"{len(config_names)} config(s) — paired (run_index i → game_ids[i-1])."
+        )
 
     print(f"Planned runs: {len(planned_runs)}")
     for config_name, run_index in planned_runs:
@@ -399,6 +436,7 @@ def run_batch(args: argparse.Namespace) -> int:
         started_timer = perf_counter()
         print(f"Running {current_run_id} in session {session_id}")
 
+        game_id = game_ids[run_index - 1] if game_ids else None
         try:
             outcome = run_game(
                 memory_config=memory_config,
@@ -408,6 +446,7 @@ def run_batch(args: argparse.Namespace) -> int:
                 reranking_config=reranking_config,
                 filtering_config=filtering_config,
                 retrieval_types_config=retrieval_types_config,
+                game_id=game_id,
             )
             result = outcome.result
             duration_seconds = perf_counter() - started_timer
