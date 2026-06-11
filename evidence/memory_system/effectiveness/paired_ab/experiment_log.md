@@ -82,6 +82,29 @@ eval plumbing changed) → pairing arm games against the recorded baseline outco
      --session-prefix ab_arms --output batch_results/ab_arms.jsonl
    ```
 
+## ⭐ Pre-registration — reranked-arm predictions (written 2026-06-11, BEFORE any reranked game completed; reranked arms at 0/30 at commit time)
+
+Calling the shots before the data, to avoid the multiple-comparisons trap (~5 arms × ~8 proxies
+≈ 40 tests → expect ~2 false positives at p<0.05 even if memory does nothing; the pilot's
+"70%→97% proven" was the best of 6 cells and did NOT replicate).
+
+- **PRIMARY endpoint = ONE validated proxy per arm (NOT win rate).** Win rate is underpowered at
+  N=30 (~1 bit/game), so it is demoted to a directional co-read: reported, but a flat win rate is
+  "underpowered," not "refuted." The powered primaries are the monotonicity-validated proxies
+  (chosen by the INDEPENDENT proxy-monotonicity check, before any A/B result).
+- **Called shots — reranked-observation arms (each vs its RAW counterpart):**
+  - `rerank-town` (the strong bet) — PRIMARY `town_vote_accuracy`. PREDICT reranked-town > raw-town
+    (sharper retrieval → less diluted town reasoning). Flat → raw retrieval was already adequate.
+  - `rerank-wolf` — H: low raw-retrieval precision was the bottleneck. PRIMARY `town_vote_accuracy` /
+    `mislynches`; PREDICT town detection DROPS vs raw-wolf (sharper wolf memory → wolves hide
+    better). Win rate = underpowered headline. Flat → content, not precision, is the limit.
+  - `rerank-sk` — exploratory (no strong prior); no called shot.
+- **Decision rule:** a called shot that hits = confirmatory evidence. Any OTHER metric that lights
+  up = exploratory lead ("needs its own follow-up"), not a conclusion. p-values uncorrected AND with
+  a Bonferroni note over the pre-specified primaries (≤3 tests). The raw arms already ran, so their
+  proxy hits inherit the validated-basket protection but are reported with the multiplicity
+  caveat — not as called shots.
+
 ## Analysis
 
 Per arm, pair each of the 30 arm games to its baseline by `game_id`: the 20 recovered ids
