@@ -95,9 +95,13 @@ stages of one flow, not duplicates:
 
 ```text
 scripts/run_batch.py ─→ batch_results/<session_prefix>.jsonl   (game-run log; filename = Langfuse session link)
-        │                  records self-stamped with runtime_fingerprint + configs
+        │                  records self-stamped with runtime_fingerprint + configs + game_id/trace_id
+        │              ─→ batch_results/eval_cases/<session_id>/<game_id>.jsonl   (per-game eval-case sidecar;
+        │                  record carries the pointer in eval_cases_path)
         ▼
-eval-build-* CLIs freeze Langfuse traces ─→ evaluation/frozen_eval_sets/<id>.jsonl  (+ <id>.manifest.json sidecar)
+eval-build-* CLIs freeze cases ─→ evaluation/frozen_eval_sets/<id>.jsonl  (+ <id>.manifest.json sidecar)
+        │   source = local sidecars (config key `local_results`, preferred — no Langfuse read)
+        │   or Langfuse traces (session/trace configs, for games predating local emission)
         ▼
 eval-* runners (--config evaluation/config/<domain>/<name>.json) ─→ evaluation/eval_results/…  (judge or gold-label scores)
 ```
@@ -118,8 +122,10 @@ subfolder vocabulary — *config asks the question, eval_set is the exam, eval_r
 is the grade; same domain name at each stage.* A domain gets a subfolder in a stage
 once it holds ≥2 artifacts there; single shared datasets (e.g. `v4_filtering_eval`,
 used across reranking / filtering / store_dedup) stay at the folder root.
-`batch_results/` is **flat** — games are domain-agnostic inputs and the filename is
-the Langfuse session link.
+`batch_results/` is **flat** for the batch logs — games are domain-agnostic inputs and
+the filename is the Langfuse session link. The one subtree is `batch_results/eval_cases/`:
+per-game eval-case sidecars keyed by the same session-id convention, written once per
+game (overwrite-safe; immune to the appended-JSONL footgun).
 
 **Naming + lineage.** Forward standard for *new* artifacts: short names
 `<domain>/<purpose>_vN.{jsonl,json}` — metadata does **not** go in the filename.

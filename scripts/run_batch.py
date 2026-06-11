@@ -239,6 +239,25 @@ def write_record(path: Path, record: dict[str, Any]) -> None:
         file.write(json.dumps(json_safe(record), sort_keys=True) + "\n")
 
 
+def write_eval_cases_sidecar(
+    session_id: str, game_id: str, eval_records: list[dict] | None
+) -> Path | None:
+    """Persist a game's locally-emitted eval cases (normalized span dicts) as a
+    per-game sidecar the frozen-set builders read directly — no Langfuse fetch.
+
+    One file per game, overwritten if present: game_id is a fresh uuid4 per run,
+    so unlike the appended batch JSONL a cancelled rerun can't leave stale cruft.
+    """
+    if not eval_records:
+        return None
+    path = REPO_ROOT / "batch_results" / "eval_cases" / session_id / f"{game_id}.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as file:
+        for eval_record in eval_records:
+            file.write(json.dumps(json_safe(eval_record), sort_keys=True) + "\n")
+    return path
+
+
 def is_quota_exhaustion_error(exc: Exception) -> bool:
     error_text = repr(exc)
     return "RESOURCE_EXHAUSTED" in error_text or "Quota exceeded" in error_text
@@ -401,6 +420,9 @@ def run_batch(args: argparse.Namespace) -> int:
                     f"LEAK DETECTED in {current_run_id}: {len(leaks)} leak(s)",
                     file=sys.stderr,
                 )
+            eval_cases_path = write_eval_cases_sidecar(
+                session_id, outcome.game_id, outcome.eval_records
+            )
             record = {
                 "status": "success",
                 "runtime_fingerprint": fingerprint,
@@ -435,6 +457,16 @@ def run_batch(args: argparse.Namespace) -> int:
                 # empty {} for extraction-off / no-dump games.
                 "dedup_stats": (outcome.raw_metrics or {}).get("dedup_stats"),
                 "leak_check": {"passed": not leaks, "leaks": leaks},
+                # Record→trace link + the per-game eval-case sidecar pointer
+                # (repo-relative); builders follow it instead of fetching Langfuse.
+                "game_id": outcome.game_id,
+                "trace_id": outcome.trace_id,
+                "eval_cases_path": (
+                    str(eval_cases_path.relative_to(REPO_ROOT))
+                    if eval_cases_path
+                    else None
+                ),
+                "eval_case_count": len(outcome.eval_records or []),
             }
             write_record(results_path, record)
             print(
