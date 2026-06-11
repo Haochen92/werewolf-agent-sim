@@ -1,0 +1,38 @@
+{
+  "investigator/day_vote": {
+    "candidates": {
+      "observations": 70,
+      "strategy_points": 71
+    },
+    "observations": {
+      "kept": 45,
+      "discarded": 25,
+      "replaced": 0,
+      "differentiated": 0,
+      "failed": 0,
+      "auto_kept": 20,
+      "auto_discarded": 8,
+      "embedding_auto_kept": 20,
+      "embedding_auto_discarded": 8
+    },
+    "strategy_points": {
+      "kept": 53,
+      "discarded": 18,
+      "replaced": 0,
+      "differentiated": 0,
+      "failed": 0,
+      "auto_kept": 1,
+      "auto_discarded": 1,
+      "embedding_auto_kept": 1,
+      "embedding_auto_discarded": 1
+    },
+    "before": {
+      "observations": 12,
+      "strategy_points": 6
+    },
+    "after": {
+      "observations": 57,
+      "strategy_points": 59
+    }
+  }
+}

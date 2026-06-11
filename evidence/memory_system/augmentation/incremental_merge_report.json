@@ -1,0 +1,46 @@
+{
+  "investigator/day_vote": {
+    "observations": {
+      "base": 12,
+      "augmented_online_kept": 57,
+      "new_keys": 45,
+      "stats": {
+        "memory_kind": "observations",
+        "role": "investigator",
+        "items": 57,
+        "clusters": 10,
+        "processed_clusters": 10,
+        "skipped_clusters": 0,
+        "operations": 2,
+        "discarded": 0,
+        "replaced": 0,
+        "differentiated": 0,
+        "merged": 3,
+        "kept": 17,
+        "failed": 0,
+        "dry_run": true
+      }
+    },
+    "strategy_points": {
+      "base": 6,
+      "augmented_online_kept": 59,
+      "new_keys": 53,
+      "stats": {
+        "memory_kind": "strategy_points",
+        "role": "investigator",
+        "items": 59,
+        "clusters": 10,
+        "processed_clusters": 10,
+        "skipped_clusters": 0,
+        "operations": 5,
+        "discarded": 5,
+        "replaced": 0,
+        "differentiated": 0,
+        "merged": 0,
+        "kept": 41,
+        "failed": 0,
+        "dry_run": true
+      }
+    }
+  }
+}
