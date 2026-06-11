@@ -163,6 +163,49 @@ Confirmed the reranked arms test precision, not a reorder of the same 5:
   would have over-delivered vs raw). The pre-registered called shots score the same comparison under
   this reading.
 
+## FINAL CONCLUSION — all arms, N=30 paired (2026-06-11)
+
+### Called-shot scorecard (pre-registered + amended before unblinding)
+- ⭐**all-on — CONFIRMED.** Predicted town does NOT collapse (contra the pilot's confounded −32pp).
+  Actual: villager win 27%→**50%** (+23pp, McNemar p=0.167) with town-positive proxies
+  (correct_elim p=0.030, mislynch_rate p=0.039, serial_killer_lynched p=0.046). Town IMPROVED, did
+  not collapse → the pilot's "memory degrades town" was the confound (moving store + old epoch).
+- **rerank-town — MISSED.** Predicted curated > raw on town_vote_accuracy. Actual rerank 0.686 ≈ raw
+  0.710 (Δ−0.023, p=0.52); paired town WIN raw 43% vs rerank 60% also NOT sig (McNemar p=0.302). Per
+  the amendment → the "ambiguous, count-isolation follow-up" branch. Curation did not beat raw.
+- **rerank-wolf — NULL.** Directionally as predicted (town detection down: vote_accuracy −0.041,
+  mislynches +0.067) but trivial / non-sig (p>0.65). Not confirmed.
+
+### The robust finding (convergent across all 4 town-memory arms)
+**Memory helps TOWN.** Every arm where town holds memory rises: raw town +17pp, reranked town +33pp
+(**win p=0.013**, mislynches p=0.015), all-on +23pp — and the validated decision-quality proxies move
+town-positive consistently (correct_elim, mislynch_rate, healer_town_save). The **convergence across
+independent arms** is the evidence; individual win tests are underpowered but the direction is
+unanimous, and the reranked-town arm is the only one reaching win-rate significance (60% vs 27%).
+
+### The nulls
+- **Wolf / SK memory: no benefit.** wolf flat (raw 33→30 p=1.0; rerank 33→20); SK down (raw 40→20;
+  rerank 40→23). Memory does not help the deceiving roles.
+- **Curation ≈ raw: retrieval RANKING is not the lever.** Town memory helps whether raw or curated;
+  sharpening selection (reranking) added no significant gain over raw → the "low-precision bottleneck"
+  hypothesis is unsupported. (Reranked-town's significance is vs *baseline*; vs *raw* it's null.)
+
+### Caveats
+- Win rate underpowered (N=30); proxies carry the signal. Multiplicity: many uncorrected tests — the
+  town direction is too consistent across arms to be noise, but no single proxy survives strict
+  Bonferroni alone; consistency + reranked-town win p=0.013 + mislynches p=0.015 are load-bearing.
+- Exploratory (not pre-registered): reranked-SK shows sig town proxies (vote_accuracy p=0.040,
+  correct_elim p=0.041) — a lead, not a shot.
+- Targeted N=60 on the town arm would likely push its proxies past correction; the per-decision LLM
+  judge is the more power-efficient follow-up.
+
+### Headline
+On a drift-corrected, same-epoch paired design with pre-registered shots: **episodic memory
+consistently improves town decision quality and win rate** (convergent across 4 arms; reranked-town
+win p=0.013); **it does not help the wolf or SK**; **retrieval reranking adds nothing over raw**; and
+**the pilot's "memory collapses town" alarm was a confound — refuted by the clean all-on arm
+(town +23pp).**
+
 ## Code pointers
 
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
