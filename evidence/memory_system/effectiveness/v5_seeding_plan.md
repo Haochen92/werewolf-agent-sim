@@ -212,6 +212,30 @@ thin (reuse the orchestrator path). **Prompt-freeze-safe** — it changes where 
 come from, not the extraction prompt (same category as `extract_without_dump`). Deferred, not
 blocking the v5 seeding/baseline.
 
+**Refinement — per-(role,phase) augmentation to deepen v5_0's thin buckets (no new games).** A
+specialization aimed at v5_0's structural floor (e.g. `strategy_points/investigator/day_vote` ≈ 6):
+a `namespace_augmentation_agent` (new module under `Agents/memory/extraction/`, `*_agent.py`
+convention) with a prompt parameterized by the **`(role, action_phase)` pair** — NOT memory_type,
+since observations + strategy points are related and co-extracted in one call (fills both
+`observations/(role,phase)` and `strategy_points/(role,phase)`). Re-extract **v5_0's own 20
+memory-off games** (frozen inputs), targeting one pair, "dig deep," narrow output → dump
+genuinely-new items back into v5_0. ⭐**Methodological win:** v5_0 becomes deep AND unbiased
+(still memory-off-built) → fixes the clean A/B seed directly, so v5_1 is no longer needed as a depth
+hedge (reverts to the separate "does memory compound?" study). **~70% reuse:**
+`extraction_replay.py` already replays `build_extraction_prompt` over a frozen dataset; reuse its
+loop + `ExtractionCase`/`ExtractionDatasetRecord`. **3 gaps:** (1) the (role,phase) prompt + narrow
+schema; (2) wire it to DUMP into the store (replay only writes a judging dataset); (3) a **v5_0
+frozen dataset** built from the v5_0 games' Langfuse `ExtractionCase` spans (`extraction_v1.jsonl`
+is STALE — old 8p/4-role, no SK/vigilante/wolf_channel; the builder exists, re-point it; Langfuse
+has the full inputs the batch JSONL drops). **⭐GATE BEFORE BUILDING:** thin buckets are low-VOLUME
+not low-variety (the investigator/day_vote points are diverse) → augmentation helps ONLY IF the
+general extraction under-extracted that namespace. Validate cheaply first: focused re-extraction on
+2-3 v5_0 games, check for DISTINCT post-dedup new items vs the existing set. Duplicates → general
+pass already covers it → skip (genuinely volume-bound). Win (if real) = across-games accumulation,
+dedup-gated — NOT per-game squeezing (~3 vote-events/game → padding the prompt would invent).
+Prompt-freeze: a new extraction prompt that adds to v5_0 = part of the frozen v5 definition →
+validate + freeze before labelling.
+
 ## Order of operations
 
 1. Seedability fix (engine-level) + extract-without-dump flag. ✅ small, prompt-neutral.
