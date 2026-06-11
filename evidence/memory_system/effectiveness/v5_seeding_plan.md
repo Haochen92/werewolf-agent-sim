@@ -239,7 +239,8 @@ with offset+table). The Langfuse read path is **fiddly** (verified, after two wr
 (PRIMARY — the original "emit→select" intent; currently Langfuse-only) → builder reads local files,
 no Langfuse read path.** Langfuse-read stays the SECONDARY retroactive-mining path (trace.get
 enumerate → name-scoped `get_many` on the PARENT span). Local-hosted Langfuse = no rate limits. Target output:
-`evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl`. **⭐GATE BEFORE BUILDING:** thin buckets are low-VOLUME
+`evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl`. **(Eval-infra concern, not seeding —
+full write-up + generalizable pattern: `evidence/eval_improvement/frozen_set_fetch_explained.md`.)** **⭐GATE BEFORE BUILDING:** thin buckets are low-VOLUME
 not low-variety (the investigator/day_vote points are diverse) → augmentation helps ONLY IF the
 general extraction under-extracted that namespace. Validate cheaply first: focused re-extraction on
 2-3 v5_0 games, check for DISTINCT post-dedup new items vs the existing set. Duplicates → general
