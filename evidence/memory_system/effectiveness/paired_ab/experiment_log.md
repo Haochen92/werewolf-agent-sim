@@ -142,6 +142,19 @@ Same-epoch baseline (villagers 27% / SK 40% / wolves 33%). Numbers in `report.md
   consistent, with a directional +17pp win); no detectable benefit to wolf or SK. The reranked and
   all-on arms (pre-registered above) test the precision hypothesis and the interaction/replication.
 
+## Reranker validity check (2026-06-11, while reranked arms running)
+
+Confirmed the reranked arms test precision, not a reorder of the same 5:
+- Pool IS wide: `RERANK_TOP_K=10`; measured pre-rerank `candidate_observations` mean **10.8**
+  (max 19) per wolf decision → reranker picks the best ~3 from ~11.
+- Count: `RERANK_KEEP=3` → reranked delivers **3.0** obs/decision; raw delivers **3.44** (its
+  top_k=5 collapses post-dedup). So the reranked arm = a **CURATION treatment**: sharper selection
+  (best ~3 of ~11) PLUS a marginally tighter set. These move together and directly probe the
+  retrieval-overload/clutter hypothesis — "does a tighter, higher-quality top-set beat raw retrieval"
+  — which is also the deployment-realistic lever. NOT a 5-vs-3 confound (counts are close; keep=5
+  would have over-delivered vs raw). The pre-registered called shots score the same comparison under
+  this reading.
+
 ## Code pointers
 
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
