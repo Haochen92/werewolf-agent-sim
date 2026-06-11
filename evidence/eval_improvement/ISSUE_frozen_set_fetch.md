@@ -147,7 +147,10 @@ Both fixes shipped on `main` (moved this doc from `evaluation/src/data/` here as
 `trace.get` on a fresh heavy trace (measured ~7s on 1,439 obs) → `enumerate_observations` now
 passes an explicit 120s `RequestOptions` timeout.
 
-**Follow-up noted (pre-existing, NOT fixed — changes emitted span names):** day-summary span
-names carry an empty game_id slot (`day_summary_eval__day_5`) because `day/flow.py` reads
-`game_id` from graph state where it is unset (it lives in config.configurable). Harmless to
-both read paths (prefix-matched; identity comes from trace_id/observation_id).
+**Follow-up FIXED same day:** day-summary span names carried an empty game_id slot
+(`day_summary_eval__day_5`) because `day/flow.py` read `game_id` from graph state where it is
+unset (it lives in config.configurable, where the orchestrator reads it). Fixed for all future
+games; pre-fix games (incl. the v5 seed batch, already run) keep the empty slot — join those via
+trace_id, which is the identity anyway. Also: the sampler's silent drop of memory_enabled=False
+cases now prints an explanatory note (behavior unchanged — memory-off turns have no retrieval
+context for the memory-pipeline evals to judge).

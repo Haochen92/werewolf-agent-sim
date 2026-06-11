@@ -202,6 +202,7 @@ def fan_out_vote(state: DayGraphState, config: RunnableConfig):
 
 def summarize_day_discussion(
     state: DayGraphState,
+    config: RunnableConfig,
     runtime: Runtime[GraphContext],
     max_retries: int = 1,
 ):
@@ -229,7 +230,11 @@ def summarize_day_discussion(
         {"player": m.player, "round": m.seq, "message": m.message}
         for m in current_day_messages
     ]
-    game_id = state.get("game_id", "") or ""
+    # game_id lives in config.configurable (pinned by build_game_config), not in
+    # graph state — reading state here left the span name + case with an empty
+    # game_id slot for every pre-2026-06-11 game (join those via trace_id).
+    configurable = config.get("configurable", {}) if config else {}
+    game_id = str(configurable.get("game_id") or "")
     span_name = day_summary_span_name(game_id, current_day)
 
     with langfuse.start_as_current_observation(
