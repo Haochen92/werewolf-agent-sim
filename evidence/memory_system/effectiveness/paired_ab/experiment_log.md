@@ -121,6 +121,27 @@ pair against `seed_set.json` recorded winners; the 10 fresh ids pair against the
 run. McNemar on the arm's faction win (wolf-faction for wolf_only, SK for serial_killer_only,
 town for town_only) + the validated de-lucked proxies. Reuse `evaluation/src/core/stats.py`.
 
+## Raw results — N=30 paired, FINAL (2026-06-11)
+
+Same-epoch baseline (villagers 27% / SK 40% / wolves 33%). Numbers in `report.md`.
+
+- **town_only:** villager win 27%→43% (+17pp, McNemar p=0.27, underpowered). Validated proxies move
+  together, several significant: `correct_elimination_rate` +0.17 (p=0.028), `town_mislynch_rate`
+  −0.17 (p=0.036), `healer_town_save_rate` +0.23 (p=0.005), `town_vote_accuracy` +0.15 (p=0.053).
+  ⭐Cleanest positive: town memory improves town decision quality.
+- **wolf_only:** wolf win FLAT 33%→30% (p=1.000) — no evidence memory helps wolves; the pilot's
+  "wolf memory is powerful" does NOT replicate. Town proxies nominally up (mislynch p=0.042).
+- **serial_killer_only:** SK win 40%→20% (p=0.146, suggestive-not-sig); SK memory didn't help SK.
+- **Cross-arm pattern + multiplicity:** town decision-quality proxies improve in ALL arms; ~7 of 24
+  tests p<0.05 vs ~1.2 expected by chance → a real signal exists, but NO single hit survives
+  Bonferroni (0.05/24 = 0.002) — the town arm's CONSISTENCY (4 directional hits) is the strongest
+  evidence, not any one p. Diagnosed: retrieval works (~3.4 obs/decision), store not dup-cluttered
+  (0% near-dups) but semantically dense → low raw-retrieval precision is the leading suspect for the
+  weak/absent evil-arm effects. Win rate underpowered in every arm (the proxies carry the signal).
+- **Headline (raw):** memory helps TOWN decision quality (multiple validated proxies significant,
+  consistent, with a directional +17pp win); no detectable benefit to wolf or SK. The reranked and
+  all-on arms (pre-registered above) test the precision hypothesis and the interaction/replication.
+
 ## Code pointers
 
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
