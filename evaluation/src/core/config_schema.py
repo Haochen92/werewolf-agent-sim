@@ -32,7 +32,7 @@ class JudgeConfig(BaseModel):
 
 
 class DatasetBuildConfig(BaseModel):
-    """Config for freezing Langfuse game traces into a local eval dataset."""
+    """Config for freezing game traces into a local eval dataset."""
 
     eval_set_id: str
     session_prefix: str | None = None
@@ -40,6 +40,10 @@ class DatasetBuildConfig(BaseModel):
     session_ids: list[str] | None = None
     batch_results: Path | None = None
     trace_ids: list[str] | None = None
+    local_results: Path | None = None
+    """run_batch JSONL whose per-game ``eval_cases_path`` sidecars supply the
+    cases LOCALLY (no Langfuse read). Preferred source for games run after
+    local emission landed; the other five sources fetch from Langfuse."""
     created_from: str | None = None
     max_games: int = Field(default=5, ge=0)
     per_role_per_phase: int = Field(default=1, ge=1)
@@ -50,20 +54,7 @@ class DatasetBuildConfig(BaseModel):
 
     @model_validator(mode="after")
     def require_one_source(self) -> "DatasetBuildConfig":
-        """Ensure the dataset has exactly one Langfuse trace source."""
-        sources = [
-            self.session_prefix,
-            self.session_id,
-            self.session_ids,
-            self.batch_results,
-            self.trace_ids,
-        ]
-        provided_count = sum(source not in (None, "", []) for source in sources)
-        if provided_count != 1:
-            raise ValueError(
-                "Exactly one of session_prefix, session_id, session_ids, "
-                "batch_results, or trace_ids must be set."
-            )
+        _require_one_case_source(self)
         return self
 
 
@@ -204,19 +195,21 @@ class E2EExperimentConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _require_one_langfuse_source(model: BaseModel) -> None:
+def _require_one_case_source(model: BaseModel) -> None:
+    """Exactly one case source: five Langfuse routes or the local-sidecar route."""
     sources = [
         getattr(model, "session_prefix", None),
         getattr(model, "session_id", None),
         getattr(model, "session_ids", None),
         getattr(model, "batch_results", None),
         getattr(model, "trace_ids", None),
+        getattr(model, "local_results", None),
     ]
     provided_count = sum(source not in (None, "", []) for source in sources)
     if provided_count != 1:
         raise ValueError(
             "Exactly one of session_prefix, session_id, session_ids, "
-            "batch_results, or trace_ids must be set."
+            "batch_results, trace_ids, or local_results must be set."
         )
 
 
@@ -229,6 +222,9 @@ class ExtractionDatasetBuildConfig(BaseModel):
     session_ids: list[str] | None = None
     batch_results: Path | None = None
     trace_ids: list[str] | None = None
+    local_results: Path | None = None
+    """run_batch JSONL whose per-game sidecars supply the cases locally
+    (no Langfuse read); see DatasetBuildConfig.local_results."""
     created_from: str | None = None
     max_games: int = Field(default=5, ge=0)
     max_samples: int = Field(default=40, ge=0)
@@ -238,7 +234,7 @@ class ExtractionDatasetBuildConfig(BaseModel):
 
     @model_validator(mode="after")
     def require_one_source(self) -> "ExtractionDatasetBuildConfig":
-        _require_one_langfuse_source(self)
+        _require_one_case_source(self)
         return self
 
 
@@ -251,6 +247,9 @@ class DedupDatasetBuildConfig(BaseModel):
     session_ids: list[str] | None = None
     batch_results: Path | None = None
     trace_ids: list[str] | None = None
+    local_results: Path | None = None
+    """run_batch JSONL whose per-game sidecars supply the cases locally
+    (no Langfuse read); see DatasetBuildConfig.local_results."""
     created_from: str | None = None
     max_games: int = Field(default=5, ge=0)
     max_samples: int = Field(default=40, ge=0)
@@ -261,7 +260,7 @@ class DedupDatasetBuildConfig(BaseModel):
 
     @model_validator(mode="after")
     def require_one_source(self) -> "DedupDatasetBuildConfig":
-        _require_one_langfuse_source(self)
+        _require_one_case_source(self)
         return self
 
 

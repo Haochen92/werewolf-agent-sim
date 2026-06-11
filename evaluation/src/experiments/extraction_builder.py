@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
-from datetime import datetime
 from pathlib import Path
 
 from evaluation.src.core.config_schema import ExtractionDatasetBuildConfig
@@ -21,6 +19,7 @@ from evaluation.src.data.langfuse import (
     fetch_trace_ids_for_session_prefix,
     read_session_ids_from_batch_results,
 )
+from evaluation.src.data.local_cases import LocalCaseSource
 
 load_project_env()
 
@@ -55,7 +54,8 @@ def select_games(trace_ids: list[str], max_games: int) -> list[str]:
 def build_records(
     config: ExtractionDatasetBuildConfig,
 ) -> list[ExtractionDatasetRecord]:
-    trace_ids = resolve_trace_ids(config)
+    local = LocalCaseSource(config.local_results) if config.local_results else None
+    trace_ids = local.trace_ids() if local else resolve_trace_ids(config)
     if not trace_ids:
         return []
 
@@ -64,7 +64,11 @@ def build_records(
 
     records: list[ExtractionDatasetRecord] = []
     for trace_id in games:
-        cases = fetch_extraction_cases(trace_id)
+        cases = (
+            local.extraction_cases(trace_id)
+            if local
+            else fetch_extraction_cases(trace_id)
+        )
         for case in cases:
             records.append(
                 extraction_record_from_case(
@@ -100,6 +104,8 @@ def write_manifest(
         config=config,
         created_from=config.created_from,
         case_count=len(records),
+        # Local builds get a content-hashed input chain back to the batch run.
+        inputs=[config.local_results] if config.local_results else (),
     )
 
 

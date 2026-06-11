@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
-from datetime import datetime
 from pathlib import Path
 
 from Agents.schemas.evaluation import EvalCase
@@ -18,6 +16,7 @@ from evaluation.src.data.langfuse import (
     fetch_trace_ids_for_session_prefix,
     read_session_ids_from_batch_results,
 )
+from evaluation.src.data.local_cases import LocalCaseSource
 from evaluation.src.data.sampling import sample_cases
 
 
@@ -56,27 +55,32 @@ def select_games(trace_ids: list[str], max_games: int) -> list[str]:
 
 def fetch_cases_for_games(
     trace_ids: list[str],
+    fetch=fetch_eval_cases,
 ) -> tuple[list[EvalCase], dict[str, int]]:
     """Fetch eval cases and per-game lengths for the selected traces."""
     cases: list[EvalCase] = []
     game_lengths: dict[str, int] = {}
     for trace_id in trace_ids:
-        game_cases = fetch_eval_cases(trace_id)
+        game_cases = fetch(trace_id)
         cases.extend(game_cases)
         game_lengths[trace_id] = max((case.day for case in game_cases), default=1)
     return cases, game_lengths
 
 
 def build_dataset_records(config: DatasetBuildConfig) -> list[EvalDatasetRecord]:
-    """Fetch Langfuse traces once and freeze sampled EvalCase payloads locally."""
-    trace_ids = resolve_trace_ids(config)
+    """Resolve the case source once and freeze sampled EvalCase payloads locally."""
+    local = LocalCaseSource(config.local_results) if config.local_results else None
+    trace_ids = local.trace_ids() if local else resolve_trace_ids(config)
     if not trace_ids:
         return []
 
     games_to_sample = select_games(trace_ids, config.max_games)
     print(f"Found {len(trace_ids)} traces; sampling from {len(games_to_sample)} games.")
 
-    cases, game_lengths = fetch_cases_for_games(games_to_sample)
+    cases, game_lengths = fetch_cases_for_games(
+        games_to_sample,
+        fetch=local.eval_cases if local else fetch_eval_cases,
+    )
     print(f"Found {len(cases)} candidate eval cases.")
 
     sampled = sample_cases(
@@ -134,6 +138,8 @@ def write_manifest(
         config=config,
         created_from=config.created_from,
         case_count=len(records),
+        # Local builds get a content-hashed input chain back to the batch run.
+        inputs=[config.local_results] if config.local_results else (),
     )
 
 
