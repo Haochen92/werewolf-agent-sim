@@ -58,6 +58,25 @@ The no-memory baseline is consistent across batches, giving confidence that game
 | Wolf only | 87.1% (27/31) | 83.3% (25/30) |
 | All enabled | **96.7%** (29/30) | 73.3% (22/30) |
 
+#### Statistical tests (Fisher exact vs own-batch no-memory baseline, 95% Clopper–Pearson CIs)
+
+Regenerated from the colocated JSONLs by `regenerate_stats.py` — no hand-typed statistics.
+
+| Comparison | Rates (95% CI) | Fisher p |
+|---|---|---|
+| A all-enabled vs no-memory | 96.7% [82.8, 99.9] vs 70.0% [50.6, 85.3] | **0.0122** |
+| A wolf-only vs no-memory | 87.1% [70.2, 96.4] vs 70.0% [50.6, 85.3] | 0.1271 |
+| B all-enabled vs no-memory | 73.3% [54.1, 87.7] vs 74.2% [55.4, 88.1] | 1.0000 |
+| B wolf-only vs no-memory | 83.3% [65.3, 94.4] vs 74.2% [55.4, 88.1] | 0.5339 |
+| Baselines A vs B | 70.0% vs 74.2% | 0.7802 |
+| All-enabled A vs B | 96.7% vs 73.3% | **0.0257** |
+
+Only the Batch A all-enabled lift (and the A-vs-B regression on that same condition) is
+individually significant. **Multiplicity caveat:** the 96.7% is the best cell of six
+condition-batch comparisons run on this question; under a Bonferroni-style correction p=0.012
+is borderline rather than decisive. It is treated below as strong-but-single-batch evidence,
+not proof.
+
 ### Gameplay Metrics (Batch B only — computed_metrics available)
 
 | Metric | No Memory | Wolf Only | All Enabled |
@@ -72,7 +91,7 @@ The no-memory baseline is consistent across batches, giving confidence that game
 
 ### Memory can produce dramatic improvement
 
-Batch A's all-enabled condition (96.7% villager win rate vs 70% baseline) is the strongest evidence that episodic memory works. A 27 percentage point improvement at n=30 is not noise — it means villagers went from losing roughly 1 in 3 games to losing 1 in 30. The memory system gave villagers a decisive advantage when configured correctly.
+Batch A's all-enabled condition (96.7% villager win rate vs 70% baseline, Fisher p=0.012) is the strongest evidence that episodic memory works — villagers went from losing roughly 1 in 3 games to losing 1 in 30. The effect is large and individually significant, but it is a single 30-game batch and the best cell of six comparisons (see the multiplicity caveat above), so it establishes that memory *can* deliver this lift, not that it reliably does.
 
 ### Configuration sensitivity is the dominant factor
 
@@ -84,9 +103,9 @@ The two differences between batches:
 
 Either or both could explain the regression. The v4 store has more items competing for retrieval slots, potentially flooding agents with less relevant memories. Action_phase namespace segregation reduces the retrieval pool per query, which could eliminate useful cross-phase memories that help villagers connect patterns across discussion and voting.
 
-### Wolf memory is consistently powerful
+### Wolf memory consistently improves blending (a proxy effect, not a proven win-rate effect)
 
-Across both batches, giving wolves memory dramatically improved their blending rate (12% → 48%) without changing the villager win rate direction. Wolves with memory learn to mimic villager discussion patterns and avoid behavioral tells. This effect is robust to store/namespace configuration — wolves benefit regardless.
+Across both batches, giving wolves memory dramatically improved their blending rate (12% → 48%) — wolves with memory learn to mimic villager discussion patterns and avoid behavioral tells, and this proxy effect is robust to store/namespace configuration. The win-rate deltas in the wolf-only condition, however, are **not individually significant** (A: p=0.13; B: p=0.53) and even point the *wrong* way for wolves (villager win rate rose). The defensible claim is behavioral: memory reliably changes how wolves play (blending), while its effect on wolf *outcomes* is unresolved at this sample size.
 
 ### Villager benefit is configuration-dependent
 
@@ -102,9 +121,9 @@ In Batch A, villagers with memory dominated (96.7%). In Batch B, villagers with 
 
 ## Decision
 
-Memory effectiveness is proven — the question is not "does it work?" but "what configuration makes it work?" The Batch A result (70% → 97%) establishes the ceiling. The Batch B result (74% → 73%) establishes that bad configuration can lose the entire benefit.
+Memory can move outcomes by large margins (Batch A: 70% → 97%, Fisher p=0.012), but the effect is **configuration-sensitive and unreplicated**: the same condition produced no effect in Batch B (p=1.0), the two batches confound store version with namespace granularity, and the Batch A result is the best cell of six comparisons (multiplicity caveat above). On the rebuilt v5 system, the interim pilot (`v5_baseline_proxy_analysis.md`) currently points the *opposite* way for town — under uncurated retrieval, memory-on villagers win less (p=0.04). So the honest status is: memory demonstrably changes outcomes; whether the current configuration helps, hurts, or is neutral is an open question that the paired A/B below is designed to decide.
 
-The priority is not more evidence that memory works. It's running a batch with the current configuration to determine where it falls between these two bounds.
+The Batch A result establishes the ceiling; Batch B establishes that configuration can lose the entire benefit; the v5 pilot suggests raw retrieval can invert it. The priority is the paired, seeded A/B on the current configuration — that is the deciding experiment, not more unpaired batches.
 
 ## Statistical Design for the Validation Batch — Paired / Seeded Games
 
@@ -142,6 +161,7 @@ All artifacts are co-located in `evidence/memory_system/effectiveness/`.
 
 | File | Description |
 |------|-------------|
+| `regenerate_stats.py` | Recomputes every p-value/CI in this report and the v5 pilot from the JSONLs (uses `evaluation/src/core/stats.py`) |
 | `batch_results/werewolf_flashlite_3_v1.jsonl` | Batch A: no_memory (30) + wolf_only (31), v3_deduped store |
 | `batch_results/werewolf_flashlite_3_v1_deduped.jsonl` | Batch A: all_enabled (30), v3_deduped store |
 | `batch_results/v4_action_phase_v2.jsonl` | Batch B: no_memory (31+), v4 store with action_phase |
