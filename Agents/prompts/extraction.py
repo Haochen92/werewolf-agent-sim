@@ -422,6 +422,45 @@ Extract 4-8 observations and 4-8 strategy points for the {role}. Focus on:
 """
 
 
+# Namespace-augmentation tail: a SHARPER lock than ROLE_EXTRACTION_TAIL — it pins
+# BOTH the role AND a single action phase, used to re-mine a finished game for a
+# specific (role, action_phase) memory namespace that the whole-game extraction
+# under-produced (rare phases like day_vote / night_action get few items because
+# a single pass spreads its budget across the whole game). Shares the same cached
+# ROLE_EXTRACTION_PREFIX, so it is just a different tail. {phase_definition} is
+# the one-line meaning of the assigned phase, injected so the model needn't infer
+# it from the phase list above.
+
+ROLE_PHASE_EXTRACTION_TAIL = """
+---
+
+ASSIGNED ROLE: {role}
+ASSIGNED ACTION PHASE: {phase}
+
+{phase_definition}
+
+Apply everything above EXCLUSIVELY to the {role} AND EXCLUSIVELY to the {phase}
+action phase. Every observation and every strategy point you produce MUST set
+perspective="{role}" and action_phase="{phase}". Produce NOTHING for any other
+role, and NOTHING for any other action phase — items tagged with a different
+role or phase will be discarded.
+
+This is a focused deep pass on a single, narrow slice of the game. Be EXHAUSTIVE
+within that slice: surface every distinct lesson the {role} could draw from its
+{phase} decisions in this game, including subtle ones that a whole-game pass
+would skip — but still respect the QUALITY BAR above (no common-sense
+fundamentals, no vague situations, no actions without a reason). Each item must
+be a genuinely DISTINCT lesson; do not pad with near-restatements of the same
+point.
+
+Extract as many distinct, quality-bar-passing observations and strategy points
+as the game genuinely supports for the {role} in the {phase} phase. Focus on:
+- What the {role} did right in {phase} that should be repeated
+- What the {role} did wrong in {phase} that should be avoided
+- Novel {phase} situations that produced a clear lesson for the {role}
+"""
+
+
 # Archived version
 
 ARCHIVED_POSTGAME_EXTRACTION_PROMPT = """
