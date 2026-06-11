@@ -30,6 +30,7 @@ from langfuse import get_client  # noqa: E402
 from Agents.observability import (  # noqa: E402
     ACTION_EVAL_SPAN_PREFIX,
     DAY_SUMMARY_SPAN_PREFIX,
+    DEDUP_LLM_RUN_NAMES,
     DEDUP_SPAN_PREFIX,
     EXTRACTION_SPAN_PREFIX,
 )
@@ -246,156 +247,228 @@ def fetch_trace_ids_for_session_prefix(session_prefix: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-#  Layer 3 — Observations: fetch, filter, convert
+#  Layer 3 — Observations: enumerate, fetch full rows scoped by name, convert
+#
+# Fetching EVERY observation of a trace (paged get_many with only trace_id)
+# is a table-query whose cost scales with the trace's span volume — Langfuse's
+# query-cost guard 422s on heavy games. The read path therefore splits in two:
+#   1. trace.get(trace_id) — cheap full ENUMERATION (ids/names/types), but it
+#      TRUNCATES large output fields, so it can never supply case content.
+#   2. get_many(trace_id=..., name=<exact>) — full output, tiny result set.
+# A batched fast path pushes the prefix filter server-side via the JSON
+# `filter` param when many names are wanted; any ApiError falls back to the
+# guaranteed per-name loop.
 # ---------------------------------------------------------------------------
 
+# Above this many distinct target names, try one batched prefix query before
+# falling back to per-name fetches (action-eval spans run 150-300 per game).
+_BATCHED_FETCH_THRESHOLD = 10
 
-def _fetch_all_observations(trace_id: str, limit: int = 100) -> list[Any]:
-    """Page through the Langfuse API and return all observations for a trace."""
+
+def enumerate_observations(trace_id: str) -> list[dict[str, Any]]:
+    """Enumerate all observations of a trace (id/name/type/parent) — no 422.
+
+    Uses ``trace.get``, which embeds every observation in one response but
+    truncates large ``output`` fields — enumeration only, never case content.
+    """
     api = _require_langfuse_api()
-    all_observations: list[Any] = []
-    page = 1
+    trace = api.trace.get(trace_id)
+    return [
+        {
+            "id": _field(obs, "id"),
+            "name": _field(obs, "name"),
+            "type": _field(obs, "type"),
+            "parent_observation_id": _field(obs, "parent_observation_id"),
+        }
+        for obs in (_field(trace, "observations") or [])
+    ]
 
+
+def _normalize_observation(obs: Any, trace_id: str, kind: str) -> dict[str, Any]:
+    """Normalize an API observation to the plain span-dict shape the converters
+    (and the local sidecar records) use."""
+    return {
+        "kind": kind,
+        "id": _field(obs, "id"),
+        "name": _field(obs, "name"),
+        "trace_id": trace_id,
+        "parent_observation_id": _field(obs, "parent_observation_id"),
+        "metadata": _field(obs, "metadata") or {},
+        "input": _field(obs, "input"),
+        "output": _field(obs, "output"),
+    }
+
+
+def _fetch_full_observations_by_name(
+    trace_id: str, name: str, limit: int = 10
+) -> list[Any]:
+    """Fetch full observations (un-truncated output) for one exact name.
+
+    ``get_many``'s ``name`` filter is exact-match server-side, so the result is
+    1-few rows — cheap enough to never trip the query-cost guard.
+    """
+    api = _require_langfuse_api()
+    rows: list[Any] = []
+    page = 1
     while True:
         observations = api.observations.get_many(
-            trace_id=trace_id, page=page, limit=limit
+            trace_id=trace_id, name=name, page=page, limit=limit
         )
         data = _field(observations, "data", [])
         if not data:
             break
-
-        all_observations.extend(data)
-
+        rows.extend(data)
         if len(data) < limit:
             break
         page += 1
+    return rows
 
-    return all_observations
 
+def _fetch_full_spans_batched(
+    trace_id: str, prefix: str, limit: int = 20
+) -> list[Any] | None:
+    """One paged query for all SPANs matching a name prefix, or None to signal
+    the caller to fall back to per-name fetches.
 
-def _filter_eval_spans(
-    observations: list[Any],
-    trace_id: str,
-) -> list[dict[str, Any]]:
-    """Keep only agent_action_eval_* observations, normalized to plain dicts."""
-    spans: list[dict[str, Any]] = []
-    for obs in observations:
-        name = _field(obs, "name")
-        if name and name.startswith(ACTION_EVAL_SPAN_PREFIX):
-            spans.append(
-                {
-                    "kind": "agent_action_eval",
-                    "id": _field(obs, "id"),
-                    "name": name,
-                    "trace_id": trace_id,
-                    "parent_observation_id": _field(obs, "parent_observation_id"),
-                    "metadata": _field(obs, "metadata") or {},
-                    "input": _field(obs, "input"),
-                    "output": _field(obs, "output"),
-                }
+    Pushes the prefix filter server-side via the JSON ``filter`` param (which
+    supersedes query params, so traceId rides inside it too; the plain
+    trace_id kwarg stays as a belt-and-braces scope if a server build ignores
+    ``filter``). Small pages — rows carry heavy outputs. Server support is
+    version-dependent: any ApiError → None → per-name loop.
+    """
+    api = _require_langfuse_api()
+    filter_json = json.dumps(
+        [
+            {"type": "string", "column": "traceId", "operator": "=", "value": trace_id},
+            {"type": "string", "column": "name", "operator": "starts with", "value": prefix},
+            {"type": "string", "column": "type", "operator": "=", "value": "SPAN"},
+        ]
+    )
+    rows: list[Any] = []
+    page = 1
+    try:
+        while True:
+            observations = api.observations.get_many(
+                trace_id=trace_id, filter=filter_json, page=page, limit=limit
             )
-    return spans
+            data = _field(observations, "data", [])
+            if not data:
+                break
+            rows.extend(data)
+            if len(data) < limit:
+                break
+            page += 1
+    except Exception as exc:  # ApiError, or any transport hiccup → fall back
+        print(f"Batched span fetch unavailable ({exc!r}); falling back to per-name.")
+        return None
+    return rows
 
 
-def fetch_agent_action_eval_spans(trace_id: str) -> list[dict[str, Any]]:
-    """Fetch structured agent_action_eval observations for a trace."""
-    observations = _fetch_all_observations(trace_id)
-    return _filter_eval_spans(observations, trace_id)
+def fetch_spans(
+    trace_id: str,
+    *,
+    prefix: str | None = None,
+    names: list[str] | None = None,
+    exclude_names: frozenset[str] = frozenset(),
+    kind: str = "span",
+) -> list[dict[str, Any]]:
+    """Fetch full span dicts for a trace, scoped by name prefix or exact names.
+
+    The generic retroactive reader: ANY span (eval-case-wrapped or not) can be
+    mined from Langfuse by prefix without ever fetch-all-ing a heavy trace.
+    Resolution: enumerate (when *names* not given) → drop *exclude_names* →
+    batched prefix fetch when many targets, else per-name → normalize, keeping
+    only the resolved target names (also guards the batched path client-side).
+    """
+    if names is None:
+        if prefix is None:
+            raise ValueError("fetch_spans requires a prefix or explicit names.")
+        names = [
+            obs["name"]
+            for obs in enumerate_observations(trace_id)
+            if obs["name"] and obs["name"].startswith(prefix)
+        ]
+    wanted = [
+        name
+        for name in _dedupe_preserving_order([n for n in names if n])
+        if name not in exclude_names
+    ]
+    if not wanted:
+        return []
+
+    rows: list[Any] | None = None
+    if prefix is not None and len(wanted) > _BATCHED_FETCH_THRESHOLD:
+        rows = _fetch_full_spans_batched(trace_id, prefix)
+    if rows is None:
+        rows = []
+        for name in wanted:
+            rows.extend(_fetch_full_observations_by_name(trace_id, name))
+
+    wanted_set = set(wanted)
+    return [
+        _normalize_observation(obs, trace_id, kind)
+        for obs in rows
+        if _field(obs, "name") in wanted_set
+    ]
 
 
-def _build_eval_cases(spans: list[dict[str, Any]]) -> list[EvalCase]:
-    """Convert span dicts into EvalCase objects, skipping invalid ones."""
-    cases: list[EvalCase] = []
-    for span in spans:
-        case = eval_case_from_span(span)
-        if case:
-            cases.append(case)
-    return cases
-
-
-def fetch_observations_and_build_eval_cases(trace_id: str) -> list[EvalCase]:
-    """Fetch all observations for a trace, filter to eval spans, and convert to EvalCases."""
-    observations = _fetch_all_observations(trace_id)
-    spans = _filter_eval_spans(observations, trace_id)
-    return _build_eval_cases(spans)
+def _cases_from_spans(spans: list[dict[str, Any]], converter: Any) -> list[Any]:
+    """Convert span dicts via *converter*, dropping non-case spans (None)."""
+    return [case for case in map(converter, spans) if case]
 
 
 def fetch_eval_cases(trace_id: str) -> list[EvalCase]:
     """Build EvalCase objects from every eval span in a trace."""
-    return fetch_observations_and_build_eval_cases(trace_id)
-
-
-# ---------------------------------------------------------------------------
-# Layer 3b — Extraction and dedup span extraction
-# ---------------------------------------------------------------------------
-
-
-def _filter_spans_by_prefix(
-    observations: list[Any],
-    trace_id: str,
-    prefix: str,
-    kind: str,
-) -> list[dict[str, Any]]:
-    """Keep only observations whose name starts with *prefix*."""
-    spans: list[dict[str, Any]] = []
-    for obs in observations:
-        name = _field(obs, "name")
-        if name and name.startswith(prefix):
-            spans.append(
-                {
-                    "kind": kind,
-                    "id": _field(obs, "id"),
-                    "name": name,
-                    "trace_id": trace_id,
-                    "parent_observation_id": _field(obs, "parent_observation_id"),
-                    "metadata": _field(obs, "metadata") or {},
-                    "input": _field(obs, "input"),
-                    "output": _field(obs, "output"),
-                }
-            )
-    return spans
+    spans = fetch_spans(
+        trace_id, prefix=ACTION_EVAL_SPAN_PREFIX, kind="agent_action_eval"
+    )
+    return _cases_from_spans(spans, eval_case_from_span)
 
 
 def fetch_extraction_cases(trace_id: str) -> list[ExtractionCase]:
-    """Build ExtractionCase objects from extraction spans in a trace."""
-    observations = _fetch_all_observations(trace_id)
-    spans = _filter_spans_by_prefix(
-        observations, trace_id, EXTRACTION_SPAN_PREFIX, "postgame_extraction"
-    )
-    cases: list[ExtractionCase] = []
-    for span in spans:
-        case = extraction_case_from_span(span)
-        if case:
-            cases.append(case)
-    return cases
+    """Build ExtractionCase objects from extraction spans in a trace.
+
+    The per-role child LLM runs share the parent case-span's name prefix (see
+    Agents.observability.span_names), so prefix candidates are narrowed
+    STRUCTURALLY: the parent is the candidate whose own parent is not itself a
+    candidate. Normally exactly one fetch per trace.
+    """
+    candidates = [
+        obs
+        for obs in enumerate_observations(trace_id)
+        if obs["name"] and obs["name"].startswith(EXTRACTION_SPAN_PREFIX)
+    ]
+    candidate_ids = {obs["id"] for obs in candidates}
+    parent_names = [
+        obs["name"]
+        for obs in candidates
+        if obs["parent_observation_id"] not in candidate_ids
+    ]
+    spans = fetch_spans(trace_id, names=parent_names, kind="postgame_extraction")
+    return _cases_from_spans(spans, extraction_case_from_span)
 
 
 def fetch_dedup_cases(trace_id: str) -> list[DedupCase]:
-    """Build DedupCase objects from dedup spans in a trace."""
-    observations = _fetch_all_observations(trace_id)
-    spans = _filter_spans_by_prefix(
-        observations, trace_id, DEDUP_SPAN_PREFIX, "dedup"
+    """Build DedupCase objects from dedup spans in a trace.
+
+    The dedup LLM runs match the prefix but carry no case — excluded by name
+    up front so their (potentially many) full rows are never fetched.
+    """
+    spans = fetch_spans(
+        trace_id,
+        prefix=DEDUP_SPAN_PREFIX,
+        exclude_names=DEDUP_LLM_RUN_NAMES,
+        kind="dedup",
     )
-    cases: list[DedupCase] = []
-    for span in spans:
-        case = dedup_case_from_span(span)
-        if case:
-            cases.append(case)
-    return cases
+    return _cases_from_spans(spans, dedup_case_from_span)
 
 
 def fetch_day_summary_cases(trace_id: str) -> list[DaySummaryCase]:
     """Build DaySummaryCase objects from day-summary spans in a trace."""
-    observations = _fetch_all_observations(trace_id)
-    spans = _filter_spans_by_prefix(
-        observations, trace_id, DAY_SUMMARY_SPAN_PREFIX, "day_summary"
+    spans = fetch_spans(
+        trace_id, prefix=DAY_SUMMARY_SPAN_PREFIX, kind="day_summary"
     )
-    cases: list[DaySummaryCase] = []
-    for span in spans:
-        case = day_summary_case_from_span(span)
-        if case:
-            cases.append(case)
-    return cases
+    return _cases_from_spans(spans, day_summary_case_from_span)
 
 
 # ---------------------------------------------------------------------------
