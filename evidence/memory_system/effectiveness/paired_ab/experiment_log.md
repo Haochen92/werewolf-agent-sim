@@ -99,6 +99,15 @@ Calling the shots before the data, to avoid the multiple-comparisons trap (~5 ar
     `mislynches`; PREDICT town detection DROPS vs raw-wolf (sharper wolf memory → wolves hide
     better). Win rate = underpowered headline. Flat → content, not precision, is the limit.
   - `rerank-sk` — exploratory (no strong prior); no called shot.
+- **Called shot — raw all-on arm (`all_enabled`, no reranker), vs the same-epoch baseline:**
+  - H (derived from the isolation arms): town memory *helped* town and evil memory *didn't help*
+    evil, so if effects compose additively, all-on leaves town **neutral-to-better** — which
+    CONTRADICTS the pilot's confounded "all-on → town collapses −32pp, wolves flip to 40%."
+    PRIMARY `town_vote_accuracy` + villager win rate. **PREDICT all-on does NOT replicate the pilot's
+    town collapse: town proxies/win hold or improve vs baseline.** If town instead collapses → a
+    destructive interaction the isolation arms can't see (and the pilot effect is real, not just the
+    confound). This is the clean same-epoch replication test of the finding that started the whole
+    investigation.
 - **Decision rule:** a called shot that hits = confirmatory evidence. Any OTHER metric that lights
   up = exploratory lead ("needs its own follow-up"), not a conclusion. p-values uncorrected AND with
   a Bonferroni note over the pre-specified primaries (≤3 tests). The raw arms already ran, so their
