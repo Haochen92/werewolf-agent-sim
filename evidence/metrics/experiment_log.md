@@ -348,3 +348,15 @@ each eval span already carry all judge inputs (situations, visible discussion, p
 memory+scores, action, adoption)? (2) **fine-tuning / "make it work better" experiments** — pre-rerank
 candidate pools, store snapshots, intermediate decisions. Then the proxy-vs-win monotonicity correlation
 (needs a real batch) confirms basket strength.
+
+## Monotonicity validation — DONE 2026-06-11
+
+The deferred proxy-vs-win correlation check ran on the existing v5 games (30 memory-off +
+20 memory-on, zero new games): point-biserial per proxy vs own-faction win, pooled + OFF-only.
+Full table + read: `proxy_win_monotonicity.md` (regenerate via `proxy_win_monotonicity.py`,
+which uses `evaluation/src/core/stats.py`). Headline: the town decision-quality basket
+(`town_vote_accuracy`, `correct_elimination_rate`, `mislynches`, `serial_killer_lynched`) is
+strongly validated (|r|≈0.55–0.65, p<0.01, both views) — use it to power the Phase C A/B. The
+investigator rate proxies are NOT validated (~zero or wrong-sign; `investigator_found_wolf_day`
+significantly backwards, plausibly game-length confounded). Wolf social proxies are underpowered
+on v5 (degenerate sub-Ns), not invalidated.
