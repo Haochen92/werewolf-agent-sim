@@ -1,7 +1,19 @@
 # Paired memory A/B — run playbook
 
-**Status: NOT RUN YET.** Harness + seed set are ready; this folder is the design +
-playbook + (later) results. Arm plan is discussion-only per the user.
+**Status: RUNNING (2026-06-11).** Baseline + 3 arms launched, parallel, 0 errors/429s.
+
+## ⭐ Epoch-shift finding — baseline re-run fresh (2026-06-11)
+
+The 10 fresh baseline games came back **villagers 10% / SK 60% / wolves 30%**, vs the
+original 30 baseline's **67% / 27% / 7%** (Fisher **p=0.0028**) — a systematic shift
+(town down, SK up), despite byte-identical play prompts and no game-rule/scheduler code
+change since the baseline commit `b9756960`. Most likely cause: `gemini-3.1-flash-lite`
+model drift (Vertex-side) or small-N variance. Either way the original-epoch baselines
+can't serve as the off-control. **Fix:** re-run the 20 recovered `game_id`s as fresh
+baseline in the current epoch (`ab_baseline_recovered.jsonl`, `recovered_ids.json`) so all
+30 baselines are same-epoch AND carry full `computed_metrics` → clean paired win **and**
+proxies at N=30. The original baseline + `seed_set.json` recovered winners are no longer
+used for the comparison.
 
 ## Design
 
