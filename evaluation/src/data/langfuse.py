@@ -264,6 +264,11 @@ def fetch_trace_ids_for_session_prefix(session_prefix: str) -> list[str]:
 # falling back to per-name fetches (action-eval spans run 150-300 per game).
 _BATCHED_FETCH_THRESHOLD = 10
 
+# trace.get serializes the whole trace (1000+ observations on a heavy game) in
+# one response — measured ~7s on a fresh trace, over the SDK's ~5s default read
+# timeout. Generous explicit timeout; the query itself is cheap (no 422).
+_ENUMERATE_TIMEOUT_SECONDS = 120
+
 
 def enumerate_observations(trace_id: str) -> list[dict[str, Any]]:
     """Enumerate all observations of a trace (id/name/type/parent) — no 422.
@@ -271,8 +276,13 @@ def enumerate_observations(trace_id: str) -> list[dict[str, Any]]:
     Uses ``trace.get``, which embeds every observation in one response but
     truncates large ``output`` fields — enumeration only, never case content.
     """
+    from langfuse.api.core import RequestOptions
+
     api = _require_langfuse_api()
-    trace = api.trace.get(trace_id)
+    trace = api.trace.get(
+        trace_id,
+        request_options=RequestOptions(timeout_in_seconds=_ENUMERATE_TIMEOUT_SECONDS),
+    )
     return [
         {
             "id": _field(obs, "id"),
