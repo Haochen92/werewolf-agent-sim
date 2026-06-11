@@ -24,6 +24,7 @@ from Agents.state import (
 from Agents.schemas import DaySummaryCase
 
 from Agents.nodes.day.summary_agent import run_day_summary_agent
+from Agents.observability import day_summary_span_name
 from Agents.turn.scheduler import cycle_seed, select_next_speaker
 
 from Agents.tracing import (
@@ -223,7 +224,7 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
         for m in current_day_messages
     ]
     game_id = state.get("game_id", "") or ""
-    span_name = f"day_summary_eval_{game_id}_day_{current_day}"
+    span_name = day_summary_span_name(game_id, current_day)
 
     with langfuse.start_as_current_observation(
         as_type="span",

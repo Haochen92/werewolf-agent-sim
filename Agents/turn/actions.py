@@ -16,6 +16,7 @@ from Agents.prompts.prompt_formatters import (
     format_wolf_channel,
 )
 from Agents.memory.enrichment import enrich_payload_with_memory
+from Agents.observability import action_eval_span_name
 from Agents.schemas import (
     EvalCase,
     EvalProvenance,
@@ -60,10 +61,7 @@ def _run_memory_informed_action(
         else "No events yet today."
     )
 
-    span_name = (
-        f"agent_action_eval_{player_id}"
-        f"_day_{day}_round_{round_num}_{action_phase}"
-    )
+    span_name = action_eval_span_name(player_id, day, round_num, action_phase)
     with langfuse.start_as_current_observation(
         as_type="span",
         name=span_name,
@@ -240,10 +238,7 @@ def _run_memory_informed_night_action(
     round_num = payload.get("current_round", 0)
     action_phase = "night_action"
 
-    span_name = (
-        f"agent_action_eval_{player_id}"
-        f"_day_{day}_round_{round_num}_{action_phase}"
-    )
+    span_name = action_eval_span_name(player_id, day, round_num, action_phase)
     with langfuse.start_as_current_observation(
         as_type="span",
         name=span_name,

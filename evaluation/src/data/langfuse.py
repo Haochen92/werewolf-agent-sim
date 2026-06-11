@@ -27,6 +27,12 @@ load_project_env()
 
 from langfuse import get_client  # noqa: E402
 
+from Agents.observability import (  # noqa: E402
+    ACTION_EVAL_SPAN_PREFIX,
+    DAY_SUMMARY_SPAN_PREFIX,
+    DEDUP_SPAN_PREFIX,
+    EXTRACTION_SPAN_PREFIX,
+)
 from Agents.schemas.evaluation import (  # noqa: E402
     DaySummaryCase,
     DedupCase,
@@ -47,12 +53,8 @@ from evaluation.src.data.extraction_cases import extraction_case_from_span  # no
 # be distinguished in Langfuse dashboards.
 EVAL_VERSION = "retrieval_judge_v2"
 
-# Observation names that start with this prefix are treated as evaluation
-# spans (i.e. they contain the input/output data a judge should score).
-ACTION_EVAL_SPAN_PREFIX = "agent_action_eval_"
-EXTRACTION_SPAN_PREFIX = "postgame_extraction_"
-DEDUP_SPAN_PREFIX = "dedup_"
-DAY_SUMMARY_SPAN_PREFIX = "day_summary_eval_"
+# The span-name prefixes that mark evaluation spans are shared with the
+# producers via Agents.observability (imported above) — single source of truth.
 
 # The four score dimensions the judge produces for each eval span.
 SCORE_NAMES = [

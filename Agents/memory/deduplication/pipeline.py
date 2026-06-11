@@ -20,6 +20,7 @@ from typing import Any, Callable
 
 from langgraph.store.base import BaseStore
 
+from Agents.observability import dedup_span_name
 from Agents.schemas import Observation, StrategyPoint
 from Agents.schemas.evaluation import DedupCase, DedupCandidate
 from Agents.tracing import langfuse
@@ -315,7 +316,7 @@ def _emit_dedup_span(
     result: DedupResult | None,
 ) -> None:
     """Emit a Langfuse span capturing one dedup decision for later eval."""
-    span_name = f"dedup_{item_type}_{perspective}_{action_phase}_{index}"
+    span_name = dedup_span_name(item_type, perspective, action_phase, index)
     decision = result.action.value if result else "failed"
     auto = result.auto if result else False
 

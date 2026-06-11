@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from logging import getLogger
 
 from Agents.llm_factory import DEFAULT_PRO_MODEL, get_llm_pro, get_llm_pro_backup
+from Agents.observability import extraction_role_run_name
 from Agents.schemas import GameStrategyOutput
 
 from .inputs import build_role_extraction_tail
@@ -149,7 +150,7 @@ def extract_postgame_per_role(
                 ("primary", get_llm_pro(), full, max_retries),
                 ("backup", get_llm_pro_backup(), full, backup_max_retries),
             )
-        return _invoke_attempts(attempts, f"postgame_extraction_{role}")
+        return _invoke_attempts(attempts, extraction_role_run_name(role))
 
     try:
         with ThreadPoolExecutor(max_workers=max_workers) as pool:

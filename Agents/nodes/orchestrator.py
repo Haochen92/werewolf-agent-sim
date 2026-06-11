@@ -34,6 +34,7 @@ from Agents.memory.extraction import (
 )
 
 
+from Agents.observability import extraction_span_name
 from Agents.schemas.evaluation import ExtractionCase
 from Agents.memory.deduplication import (
     run_downstream_strategy_dedup,
@@ -406,7 +407,7 @@ def post_game_analysis(
     # Format once, use for both the LLM prompt and the trace span.
     extraction_inputs = format_extraction_inputs(state)
 
-    span_name = f"postgame_extraction_{game_id}"
+    span_name = extraction_span_name(game_id)
     with langfuse.start_as_current_observation(
         as_type="span",
         name=span_name,
