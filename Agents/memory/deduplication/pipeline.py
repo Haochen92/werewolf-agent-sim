@@ -20,7 +20,7 @@ from typing import Any, Callable
 
 from langgraph.store.base import BaseStore
 
-from Agents.observability import dedup_span_name
+from Agents.observability import EvalCaseSink, dedup_span_name, freeze_case
 from Agents.schemas import Observation, StrategyPoint
 from Agents.schemas.evaluation import DedupCase, DedupCandidate
 from Agents.tracing import langfuse
@@ -110,6 +110,7 @@ def run_downstream_observation_dedup(
     store: BaseStore,
     observations: list[Observation],
     game_id: str,
+    sink: EvalCaseSink | None = None,
 ) -> DedupStats:
     """
     Run LLM-based dedup for a batch of newly extracted observations.
@@ -120,15 +121,18 @@ def run_downstream_observation_dedup(
     3. Apply the decision to the store
     4. If the LLM fails after retries, store the observation raw (fail-open)
 
-    Returns a DedupStats summary.
+    Returns a DedupStats summary. The pipeline runs below the graph runtime,
+    so the in-game caller threads its eval-case *sink* in; offline callers
+    (tests, labeling adapters) omit it and emit to Langfuse only.
     """
-    return _dedup_memory_items(store, observations, game_id, _OBSERVATION_KIND)
+    return _dedup_memory_items(store, observations, game_id, _OBSERVATION_KIND, sink)
 
 
 def run_downstream_strategy_dedup(
     store: BaseStore,
     strategy_points: list[StrategyPoint],
     game_id: str,
+    sink: EvalCaseSink | None = None,
 ) -> DedupStats:
     """
     Run LLM-based dedup for a batch of newly extracted strategy points.
@@ -139,9 +143,10 @@ def run_downstream_strategy_dedup(
     3. Apply the decision to the store
     4. If the LLM fails after retries, store the point raw (fail-open)
 
-    Returns a DedupStats summary.
+    Returns a DedupStats summary. (Same *sink* contract as the observation
+    entry point above.)
     """
-    return _dedup_memory_items(store, strategy_points, game_id, _STRATEGY_POINT_KIND)
+    return _dedup_memory_items(store, strategy_points, game_id, _STRATEGY_POINT_KIND, sink)
 
 
 def _dedup_memory_items(
@@ -149,6 +154,7 @@ def _dedup_memory_items(
     items: list[Observation] | list[StrategyPoint],
     game_id: str,
     kind: _DedupKind,
+    sink: EvalCaseSink | None = None,
 ) -> DedupStats:
     stats = DedupStats()
 
@@ -170,6 +176,7 @@ def _dedup_memory_items(
             game_id=game_id,
             new_entry=kind.new_entry(item),
             result=result,
+            sink=sink,
         )
 
         if result is None:
@@ -314,8 +321,10 @@ def _emit_dedup_span(
     game_id: str,
     new_entry: dict,
     result: DedupResult | None,
+    sink: EvalCaseSink | None = None,
 ) -> None:
-    """Emit a Langfuse span capturing one dedup decision for later eval."""
+    """Emit a Langfuse span capturing one dedup decision for later eval,
+    teeing the case to the local *sink* when one is threaded in."""
     span_name = dedup_span_name(item_type, perspective, action_phase, index)
     decision = result.action.value if result else "failed"
     auto = result.auto if result else False
@@ -350,4 +359,14 @@ def _emit_dedup_span(
             "candidate_count": len(dedup_case.candidates),
         },
     ) as span:
-        span.update(output={"dedup_case": dedup_case.model_dump(mode="json")})
+        span.update(
+            output={
+                "dedup_case": freeze_case(
+                    span,
+                    dedup_case,
+                    kind="dedup",
+                    case_key="dedup_case",
+                    sink=sink,
+                ),
+            }
+        )

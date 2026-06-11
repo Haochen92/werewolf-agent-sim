@@ -34,7 +34,7 @@ from Agents.memory.extraction import (
 )
 
 
-from Agents.observability import extraction_span_name
+from Agents.observability import extraction_span_name, freeze_case
 from Agents.schemas.evaluation import ExtractionCase
 from Agents.memory.deduplication import (
     run_downstream_strategy_dedup,
@@ -450,7 +450,13 @@ def post_game_analysis(
             )
             extraction_span.update(
                 output={
-                    "extraction_case": extraction_case.model_dump(mode="json"),
+                    "extraction_case": freeze_case(
+                        extraction_span,
+                        extraction_case,
+                        kind="postgame_extraction",
+                        case_key="extraction_case",
+                        sink=runtime.context.get("eval_sink"),
+                    ),
                 },
                 metadata={
                     "eval_schema": extraction_case.schema_version,
@@ -482,11 +488,13 @@ def post_game_analysis(
         store,
         extracted_observations.observations,
         game_id,
+        sink=runtime.context.get("eval_sink"),
     )
     strategy_dedup_stats = run_downstream_strategy_dedup(
         store,
         extracted_observations.strategy_points,
         game_id,
+        sink=runtime.context.get("eval_sink"),
     )
     # Record the dedup outcomes on the live Metrics accumulator so they ride
     # raw_metrics into the batch record (not just the ephemeral log) — per-game

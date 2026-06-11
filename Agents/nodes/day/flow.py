@@ -13,6 +13,7 @@ from typing import Literal
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
+from langgraph.runtime import Runtime
 from langgraph.types import Send
 
 from Agents.game_config import game_config_from_runnable
@@ -24,10 +25,11 @@ from Agents.state import (
 from Agents.schemas import DaySummaryCase
 
 from Agents.nodes.day.summary_agent import run_day_summary_agent
-from Agents.observability import day_summary_span_name
+from Agents.observability import day_summary_span_name, freeze_case
 from Agents.turn.scheduler import cycle_seed, select_next_speaker
 
 from Agents.tracing import (
+    GraphContext,
     langfuse,
 )
 
@@ -198,7 +200,11 @@ def fan_out_vote(state: DayGraphState, config: RunnableConfig):
     return fan_out_day(state, "vote", allow_abstain)
 
 
-def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
+def summarize_day_discussion(
+    state: DayGraphState,
+    runtime: Runtime[GraphContext],
+    max_retries: int = 1,
+):
     """Summarize the day's discussion into a DaySummary, and freeze it as a judgeable case.
 
     Reads this day's non-game_master messages (no-op if none); calls the summary LLM
@@ -245,7 +251,15 @@ def summarize_day_discussion(state: DayGraphState, max_retries: int = 1):
             model_used=model_used,
         )
         summary_span.update(
-            output={"day_summary_case": day_summary_case.model_dump(mode="json")},
+            output={
+                "day_summary_case": freeze_case(
+                    summary_span,
+                    day_summary_case,
+                    kind="day_summary",
+                    case_key="day_summary_case",
+                    sink=runtime.context.get("eval_sink"),
+                ),
+            },
             metadata={
                 "eval_schema": day_summary_case.schema_version,
                 "day": current_day,

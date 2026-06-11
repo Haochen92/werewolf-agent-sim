@@ -16,7 +16,7 @@ from Agents.prompts.prompt_formatters import (
     format_wolf_channel,
 )
 from Agents.memory.enrichment import enrich_payload_with_memory
-from Agents.observability import action_eval_span_name
+from Agents.observability import action_eval_span_name, freeze_case
 from Agents.schemas import (
     EvalCase,
     EvalProvenance,
@@ -197,7 +197,13 @@ def _run_memory_informed_action(
 
         eval_span.update(
             output={
-                "eval_case": eval_case.model_dump(mode="json"),
+                "eval_case": freeze_case(
+                    eval_span,
+                    eval_case,
+                    kind="agent_action_eval",
+                    case_key="eval_case",
+                    sink=runtime.context.get("eval_sink"),
+                ),
                 "applied_game_update": applied_game_update,
             },
             metadata={
@@ -350,7 +356,13 @@ def _run_memory_informed_night_action(
 
         eval_span.update(
             output={
-                "eval_case": eval_case.model_dump(mode="json"),
+                "eval_case": freeze_case(
+                    eval_span,
+                    eval_case,
+                    kind="agent_action_eval",
+                    case_key="eval_case",
+                    sink=runtime.context.get("eval_sink"),
+                ),
                 "applied_game_update": applied_game_update,
             },
             metadata={
