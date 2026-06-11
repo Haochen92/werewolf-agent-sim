@@ -43,10 +43,11 @@ MEMORY_CONFIGS = {
     "all_disabled": role_config(),
     "all_enabled": role_config(*ROLES),
     "wolf_only": role_config("wolf"),
+    "serial_killer_only": role_config("serial_killer"),
     "villager_only": role_config("villager"),
     "healer_only": role_config("healer"),
     "investigator_only": role_config("investigator"),
-    "town_only": role_config("villager", "healer", "investigator"),
+    "town_only": role_config("villager", "healer", "investigator", "vigilante"),
     "specials_only": role_config("healer", "investigator"),
 }
 
