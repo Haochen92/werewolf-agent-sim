@@ -99,6 +99,14 @@ Calling the shots before the data, to avoid the multiple-comparisons trap (~5 ar
     `mislynches`; PREDICT town detection DROPS vs raw-wolf (sharper wolf memory → wolves hide
     better). Win rate = underpowered headline. Flat → content, not precision, is the limit.
   - `rerank-sk` — exploratory (no strong prior); no called shot.
+  - **⭐AMENDMENT (written before scoring the full N=30 reranked results):** the reranked arms are a
+    BUNDLE — reranked-top-3 (curation) vs raw-top-5. Interpretation rule fixed now: a **POSITIVE**
+    reranked result = the *curation bundle* wins (conservative — claims the bundle, not "precision"
+    specifically; and it wins DESPITE v4's count prior that cap=5 ≥ cap=3, so the tighter set is a
+    slight handicap). A **NEGATIVE/null** result = AMBIGUOUS (selection-neutral OR the tighter count
+    hurt) → named follow-up: **raw cap=3 vs reranked keep=3** (equal count) to isolate selection from
+    count. Justified by the CONFIG (`RERANK_KEEP=3`, a setup fact), not outcomes; partial N=6
+    reranked numbers were glimpsed in an analyzer smoke-test, full N=30 unscored at amend time.
 - **Called shot — raw all-on arm (`all_enabled`, no reranker), vs the same-epoch baseline:**
   - H (derived from the isolation arms): town memory *helped* town and evil memory *didn't help*
     evil, so if effects compose additively, all-on leaves town **neutral-to-better** — which
