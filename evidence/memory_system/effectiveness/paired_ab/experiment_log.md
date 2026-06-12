@@ -560,13 +560,45 @@ investigator survival → checks land deeper into wolf-depleted games, so the ra
 itself falls (0.250 off → 0.208–0.228 on). Per-check LIFT over random is flat-to-up
 (+0.110 off vs +0.094 raw / +0.243 rr / +0.160 all-on), check volume rises (1.67→~2.1/game), and
 **distinct wolves identified per game rises** (0.60 → 0.63 raw / 0.90 rr / 0.83 all-on) — total
-information delivered to town is UP. Same trap family as kill-timing and conditioned blending
+information delivered to town is UP. Threat-find (wolf OR SK) is stronger still: per-check rate
+flat-to-up even UNADJUSTED (0.500→0.508/0.597/0.554 — the probe's 0.56→0.46 was per-game,
+exposure-diluted), lift up in EVERY memory arm (+0.123→+0.163/+0.253/+0.209), distinct threats/game
+0.83→0.97/1.20/1.20. Same trap family as kill-timing and conditioned blending
 (survival/length-confounded rates). → Verdict: **no town analog of the wolf/SK harm**; all three town
 power roles benefit or hold. AMENDS follow-up (1) above: significance-test the *lift*, not the raw
 rate — a raw-rate Wilcoxon would confirm an artifact. The qualitative social-read-targeting read
 stands (it's about target choice, not the rate metric) but loses its quantitative backing; keep
 follow-up (2) as a Phase B audit item, not a known regression. Caveat: ~50–65 checks per arm →
 SE on lift ~±0.07; this refutes the regression, it doesn't establish the rr improvement.
+
+## ⭐⭐ FINAL — net-horizon arms scored, N=30 both (2026-06-12, `report_nethorizon.md`)
+
+Scored against the pre-registration. Decisive contrast = nethorizon vs the v5_0-RAW arm (same
+retrieval/seeds → isolates the outcome framing).
+
+- **SK — framing-gap prediction SUPPORTED.** vs raw: `sk_lynched` 0.80→**0.63** (−17pp), win 20%→**37%**
+  (+17pp). Net-horizon REMOVES the SK harm; vs baseline it lands ~even (0.63 vs 0.60; 37% vs 40%) →
+  neutralizes the harm to memory-off level, does NOT exceed it. (My N=18 "slightly above baseline" was
+  a small-N wobble that firmed up — flagged at the time.)
+- **Wolf — adherence-gap prediction SUPPORTED.** vs raw: `unconditioned_blending` 0.639→0.668 (Δ+0.03,
+  p=0.75) = FLAT; still far below baseline 0.851 (Δ−0.164, p=0.064 → the harm PERSISTS);
+  `wolf_elimination_rate` slightly worse. Framing did NOT fix the wolf. Power-targeting preserved
+  (night gain intact).
+- ⭐**DIFFERENTIAL CONFIRMED (directionally):** SK moved (lynched −17pp, win +17pp); wolf barely
+  (blending +0.03). Exactly the pre-registered call — net-horizon fixes the FRAMING-gap role (SK), not
+  the ADHERENCE-gap role (wolf). The wolf/SK split is internally consistent.
+- ⚠️**ALL NONSIG at N=30** (every proxy + win p>0.06; win underpowered by design). These are
+  DIRECTIONAL confirmations of a prediction made BEFORE the data, NOT proven effects. The strength is
+  the matched direction + internal consistency, not any p-value.
+
+**Adoption (per the pre-reg "adopt-if-win before Phase B labels"):** net-horizon is a **Pareto-safe
+improvement** — directionally HELPS the SK (removes harm), does NOT hurt the wolf (blending +0.03,
+power-targeting preserved), and is the more *principled* extraction (leading with the net end-of-game
+verdict is correct on its own terms, independent of the arm). ⭐RECOMMEND adopting it as the v5 default
+extraction framing BEFORE Phase B labels are minted (obs rerank uses full entries → outcome wording is
+label-visible → adopt-then-label, never mix). The wolf's residual harm is the named Phase B
+**application-adherence** item (injection-layer: make the agent WEIGH the net verdict vs its
+in-the-moment read), NOT another extraction change. Decision is the user's (directional evidence).
 
 ## Code pointers
 
