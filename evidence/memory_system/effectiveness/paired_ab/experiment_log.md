@@ -525,10 +525,15 @@ estimates — NOT significance-tested; the per-role proxies are the unvalidated 
 - **Healer — clear benefit:** survival 23%→40%, night-killed 73%→43%, town_save_rate 0.37→0.60.
 - **Vigilante — clear benefit:** survival 20%→43%, night-killed 63%→40%, correct_shot 0.50→0.65,
   friendly_fire 0.33→0.27.
-- **Investigator — the OUTLIER (memory may HURT its core job):** mislynched less (voted-out 40%→27%)
-  and survives slightly more, BUT investigation accuracy DROPPED — wolf_find 0.43→0.33, threat_find
-  0.56→0.46. The town analog of the wolf/SK pattern: memory changed its behavior in a way that hurt
-  its core function even while the faction won (healer+vig gains + town-collective coordination mask it).
+- **Investigator — the OUTLIER, but the MOST TENTATIVE read:** its CLEAN signals are actually fine —
+  mislynched less (voted-out 40%→27%), survives slightly more (13%→23%), night-killed ~flat. The ONLY
+  negative is `wolf_find` 0.43→0.33 / `threat_find` 0.56→0.46 — and that is precisely the MESSIEST
+  proxy (find-rate / `found_wolf_day` already FAILED monotonicity earlier; investigators die fast → few
+  investigations/game → high variance). So "memory hurts the investigator" rests on the one signal we
+  trust least; the find-rate drop could be noise. What's more robust is the QUALITATIVE mechanism
+  (social-read targeting whiffing on engaged town) — but that's 5 decisions. NET: a flagged LEAD, the
+  weakest of the three per-role reads; healer/vig benefits rest on cleaner signals (survival,
+  night-killed, validated save-rate) and are firm.
 
 **Investigator mechanism (qualitative, 5 night-2 target choices, 3 hit / 2 whiff):** target selection
 is SOCIAL-READ driven, not information-driven — "investigate the player most vocal against my claim /
@@ -549,12 +554,26 @@ survival) — though net-horizon won't obviously help target SELECTION, so this 
 injection-layer "weigh information value over social reads" item; (3) per-role breakdown should be a
 STANDARD cut in future town arms, not just the faction aggregate — the aggregate masked it here.
 
+**⭐Investigator find-rate drop = DENOMINATOR ARTIFACT (2026-06-12, `diagnose_investigator_confound.py`):**
+the probe's raw wolf-find drop (0.43→0.33) doesn't survive luck adjustment. Town memory doubles
+investigator survival → checks land deeper into wolf-depleted games, so the random-check expectation
+itself falls (0.250 off → 0.208–0.228 on). Per-check LIFT over random is flat-to-up
+(+0.110 off vs +0.094 raw / +0.243 rr / +0.160 all-on), check volume rises (1.67→~2.1/game), and
+**distinct wolves identified per game rises** (0.60 → 0.63 raw / 0.90 rr / 0.83 all-on) — total
+information delivered to town is UP. Same trap family as kill-timing and conditioned blending
+(survival/length-confounded rates). → Verdict: **no town analog of the wolf/SK harm**; all three town
+power roles benefit or hold. AMENDS follow-up (1) above: significance-test the *lift*, not the raw
+rate — a raw-rate Wilcoxon would confirm an artifact. The qualitative social-read-targeting read
+stands (it's about target choice, not the rate metric) but loses its quantitative backing; keep
+follow-up (2) as a Phase B audit item, not a known regression. Caveat: ~50–65 checks per arm →
+SE on lift ~±0.07; this refutes the regression, it doesn't establish the rr improvement.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py`, `situation_sim.py`, design `nethorizon_design.md`;
   schema `Agents/schemas/memory.py` (Observation outcome split), prompt `Agents/prompts/extraction.py`.
 - Echo read: `echo_read.py` (+ `echo_read_decisions.json`); diagnostics `diagnose_wolf_sk_proxies.py`
-  / `diagnose_wolf_blending.py`.
+  / `diagnose_wolf_blending.py` / `diagnose_investigator_confound.py`.
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
   `build_game_config` → `initialize_game` (role draw `crc32(game_id)`).
 - Seed-set generator: `scripts/make_ab_seed_set.py`.
