@@ -670,6 +670,29 @@ asymmetric early stopping: halting a regression in its pre-registered FAIL direc
 not p-hunting a positive. If net-first fails town, adopt it **per-namespace** (wolf/SK net-first, town keeps
 old framing — role namespaces independent, store already split), not globally.
 
+## ⭐ Town collapse — (a)-vs-(b) echo read (2026-06-12, N=12 nh games, outcome-blind)
+
+`town_echo_read.py` distinguishes the two shapes of the 0.559≈0.560 collapse: (a) net-first memories
+became UNUSABLE → town ignores them → effectively memory-off; (b) town still FOLLOWS them but the
+rewritten guidance is worse. Echo = fraction of a town agent's `updated_strategy` words drawn from its
+`retrieved_observations`, paired at game level on the 12 games nh_town has finished, with a
+shuffled-memory floor to subtract generic-vocabulary overlap.
+
+**Verdict = predominantly (b), NOT (a).** Echo held: raw 0.341 → nh 0.327 on the stable/actionable
+content, 0.377 → 0.375 on the full entry; retrieval volume identical (3.2 vs 3.3). Above the shuffle
+floor (0.28), genuine engagement is raw +0.057 → nh +0.048 — nh keeps **84%** of raw's real lift, far
+from the collapse-to-floor that (a) predicts. So the −40pp / −0.36-vote-accuracy is **active
+misdirection, not memory-off**: town still consumes the memories, but net-first demotes the concrete
+tactical "what worked today" lead — exactly the signal town correctly acts on at the day vote — in
+favor of an abstract end-of-game verdict, so the lesson absorbed is less vote-actionable. (Faint (a)
+tint: engagement softened ~16%; crude lexical metric, re-run at N=20/30.)
+
+**Why this nails per-namespace adoption.** The immediate-first tactical lead is the *same* field that
+HELPS town (who genuinely act on the day's read) and HURTS deceivers (who over-credit a maneuver that
+cost the game). Net-first helps wolf/SK by demoting that lead and hurts town by demoting it — the two
+factions want OPPOSITE outcome framings. So the fix is not "make net-first more actionable for town";
+town wants immediate-first. → wolf/SK net-first, town immediate-first, namespaces independent.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
