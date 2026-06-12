@@ -206,6 +206,60 @@ win p=0.013); **it does not help the wolf or SK**; **retrieval reranking adds no
 **the pilot's "memory collapses town" alarm was a confound — refuted by the clean all-on arm
 (town +23pp).**
 
+## Interpreting the wolf/SK null — diagnostic ladder (2026-06-12, not yet run)
+
+The town-helps / deception-doesn't split is the surprising result, so before "fixing" the wolf arm we
+scope WHY. Two free checks already narrow it:
+- **Store volume is NOT town-biased.** wolf 80 obs + 66 strategy points, SK 79 + 68 — same scale as
+  villager. "Town-biased in volume" is weak.
+- **Wolf content IS genuine deception craft**, not town diagnostics in disguise (sampled e.g. "don't
+  just deny — counter-claim or frame a third player to redirect the village"). "Wolf memories are town
+  knowledge relabeled" is weak.
+
+That leaves four candidate layers — and critically, **"no measured effect" ≠ "no effect."** Our
+validated proxy basket is town-centric by construction (wolf social proxies failed validation, win is
+underpowered at N=30 — see [[project-metrics]]), so we may lack an instrument that could even SEE a
+wolf gain. The ladder therefore starts at the measurement layer, not the memory system. Free → paid:
+
+1. **Validate a wolf/SK instrument on data we already own (FREE, do first).** We now have 240 games —
+   ~5× the original proxy-validation corpus. Re-run monotonicity for deception-side candidates: wolf
+   survival days, day-of-first-wolf-lynch, votes-attracted-while-alive, kill-target quality (power-role
+   hit rate), SK survival. If none correlate with wolf wins even at N=240 → honest conclusion is "we
+   currently cannot measure wolf skill" and any fix arm is premature. If one validates → that is the
+   pre-registerable primary metric for a wolf arm.
+2. **Role-scoped retrieval-precision audit (FREE, from the A/B's own logs).** Pull wolf/SK decision
+   points (incl. WOLF-NIGHT kill-vote + SK night cases) from `batch_results/eval_cases/`, memory-on
+   arms; eyeball top-5 on-point rate split by role (same method as the store-wide ~1/6 density check).
+   Deception situations are more game-specific, so the embedder may generalize worse → a plausible
+   retrieval gap. If wolf retrieves comparably to town, move on.
+3. **Application audit, exploiting the paired design (CHEAP).** For decisions where a relevant memory
+   WAS in context: does the wolf's reasoning use it, and does its action differ from the paired
+   memory-off game at the same decision point? ~20–30 manual reads, OR scope the parked per-decision
+   LLM judge to wolf/SK arms only — the narrow case where that judge earns its cost (a few dollars).
+4. **Harm-channel check (FREE, from `raw_metrics` dumps).** SK 40→20 is a HARM signature, not an
+   absence signature. Paired on-vs-off: do memory-on wolves/SK die earlier? If yes, memory is creating
+   tells / inducing bolder play — a different (and more interesting) problem than "memory ignored."
+
+**Fix mapping (freeze-aware).**
+- Retrieval gap → freeze-safe config levers ONLY: per-role `top_k`, namespace scoping, pool width.
+  Retrieval/rerank prompt re-tunes are frozen until Phase B.
+- Content thinness/genericness (if step 2 shows wolf memories systematically off-point) → the
+  **namespace-augmentation pipeline is already built and parked** ([[project-namespace-augmentation]]);
+  re-mining frozen games with frozen prompts is freeze-safe.
+- Application gap (memory in context, ignored) → injection-prompt territory = FROZEN → named Phase B
+  item, not a now-fix.
+- Harm channel → that's a RESULT, not a bug. Write it up.
+- Only then: one pre-registered wolf arm with the chosen fix, same seeds, current epoch window (~$18),
+  primary = the proxy validated in step 1.
+
+**The mechanistic prior (hold onto this).** The default hypothesis assumes memory leverage is
+role-symmetric; mechanistically it probably isn't. Town plays an INFERENCE game — accumulated
+cross-game patterns compound. Wolf/SK day play is GENERATIVE deception (in-the-moment execution
+quality) and the night kill is a small action space dominated by within-game info (whoever claimed
+investigator dies). If the ladder bottoms out at "memories are relevant, retrieved, read, and STILL
+don't move decisions," then **"memory helps reasoning, not deception"** is the real finding — and with
+a diagnosed mechanism behind it, that is a stronger portfolio result than a forced positive.
+
 ## Code pointers
 
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
