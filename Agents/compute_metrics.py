@@ -176,6 +176,7 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
     # --- Wolf voting behavior (steering measured on TOWN mislynch days only) ---
     mislynch_days_total = mislynch_days_steered = 0
     wolf_elim_days_total = wolf_elim_days_blended = wolf_elim_days_dissented = 0
+    wolf_blend_votes_aligned = wolf_blend_votes_total = 0
     for day in metrics.day_resolutions:
         if day.voted_player is None:
             continue
@@ -184,6 +185,18 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
             continue
         aligned = sum(1 for v in wolf_votes if v["votee"] == day.voted_player)
         majority_wolves_aligned = aligned > len(wolf_votes) / 2
+
+        # Unconditioned blending (vote-level, ALL lynch days — not just wolf-elim days):
+        # does each living wolf's vote align with the day's eventual lynch? Excludes the wolf
+        # being lynched (he can't blend with his own removal). The conditioned wolf_blending_rate
+        # below only samples wolf-elim days (disaster states) and is structurally blind to a wolf
+        # who blends and is never caught; this is the validated day-camouflage proxy.
+        for v in wolf_votes:
+            if v["voter"] == day.voted_player:
+                continue
+            wolf_blend_votes_total += 1
+            if v["votee"] == day.voted_player:
+                wolf_blend_votes_aligned += 1
 
         if day.voted_player_role in TOWN_ROLES:
             mislynch_days_total += 1
@@ -279,6 +292,8 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         wolf_elim_days_total=wolf_elim_days_total,
         wolf_elim_days_blended=wolf_elim_days_blended,
         wolf_elim_days_dissented=wolf_elim_days_dissented,
+        wolf_blend_votes_aligned=wolf_blend_votes_aligned,
+        wolf_blend_votes_total=wolf_blend_votes_total,
         sk_nights_survived=sk_nights_survived,
         sk_kills_landed=sk_kills_landed,
         sk_exit_method=_sk_exit_method(),
@@ -311,6 +326,7 @@ def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
         investigator_wolf_find_rate=_safe_div(base.investigator_wolf_finds, base.investigator_investigations_total),
         wolf_steering_rate=_safe_div(base.mislynch_days_steered, base.mislynch_days_total),
         wolf_blending_rate=_safe_div(base.wolf_elim_days_blended, base.wolf_elim_days_total),
+        wolf_unconditioned_blending_rate=_safe_div(base.wolf_blend_votes_aligned, base.wolf_blend_votes_total),
         wolf_dissent_rate=_safe_div(base.wolf_elim_days_dissented, base.wolf_elim_days_total),
         wolf_power_role_targeting_rate=_safe_div(base.wolf_power_target_nights, base.power_role_alive_nights),
         vigilante_correct_shot_rate=_safe_div(base.vigilante_evil_shots, base.vigilante_shots_taken),
@@ -337,6 +353,8 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         power_roles_killed_by_wolves=base.power_roles_killed_by_wolves,
         wolf_killed_healer_day=base.wolf_killed_healer_day,
         wolf_killed_investigator_day=base.wolf_killed_investigator_day,
+        wolf_blend_votes_aligned=base.wolf_blend_votes_aligned,
+        wolf_blend_votes_total=base.wolf_blend_votes_total,
         sk_nights_survived=base.sk_nights_survived,
         sk_exit_method=base.sk_exit_method,
         sk_kills_landed=base.sk_kills_landed,

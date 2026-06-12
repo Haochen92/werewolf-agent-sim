@@ -140,6 +140,8 @@ class BaseGameMetrics(BaseModel):
     wolf_elim_days_total: int
     wolf_elim_days_blended: int
     wolf_elim_days_dissented: int
+    wolf_blend_votes_aligned: int   # living wolf votes aligned w/ the day's lynch, ALL lynch days
+    wolf_blend_votes_total: int      # all living wolf votes on lynch days (excl. self being lynched)
 
     # Serial killer — survival is the core (dense) proxy; SK wins by outlasting.
     sk_nights_survived: int
@@ -175,7 +177,8 @@ class DerivedGameMetrics(BaseModel):
     investigator_wolf_find_rate: float | None = None
     # Wolves
     wolf_steering_rate: float | None = None
-    wolf_blending_rate: float | None = None
+    wolf_blending_rate: float | None = None              # conditioned on wolf-elim days (disaster-state only)
+    wolf_unconditioned_blending_rate: float | None = None  # all lynch days — the validated camouflage proxy
     wolf_dissent_rate: float | None = None
     wolf_power_role_targeting_rate: float | None = None
     # Vigilante
@@ -209,6 +212,8 @@ class ComputedGameMetrics(DerivedGameMetrics):
     power_roles_killed_by_wolves: int
     wolf_killed_healer_day: int | None = None
     wolf_killed_investigator_day: int | None = None
+    wolf_blend_votes_aligned: int = 0   # numerator of wolf_unconditioned_blending_rate
+    wolf_blend_votes_total: int = 0      # denominator (0 -> rate is None); carry it to filter low-sample games
     # Serial killer
     sk_nights_survived: int
     sk_exit_method: str
