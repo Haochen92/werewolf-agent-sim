@@ -260,6 +260,56 @@ investigator dies). If the ladder bottoms out at "memories are relevant, retriev
 don't move decisions," then **"memory helps reasoning, not deception"** is the real finding — and with
 a diagnosed mechanism behind it, that is a stronger portfolio result than a forced positive.
 
+### Diagnostic results (2026-06-12 — steps 1 & 4 run; all exploratory, post-hoc cuts)
+
+Scripts colocated here: `diagnose_wolf_sk_proxies.py` (ladder steps 1+4) and
+`diagnose_wolf_blending.py` (the blending follow-up). Read-only over `batch_results/ab_*.jsonl`.
+Pooling gotcha encoded in both: arms SHARE game_ids with baseline (the pairing key) — dedupe by
+(arm, game_id), never by game_id alone.
+
+**Step 1 — proxy revalidation at N=240** (~5× the original n=50 corpus, wolves now win ~30% not 7%):
+
+- `wolf_power_role_targeting_rate` **VALIDATES** (+0.18 p=0.006 pooled; +0.35 p=0.060
+  baseline-only, same sign) — the first validated wolf proxy.
+- `sk_nights_survived` re-validates strongly (+0.48 p<0.001 n=240).
+- Stock `wolf_blending_rate`/`dissent_rate`: no longer degenerate, just ~0 at n=100 — but see the
+  blending follow-up below: the stock definition is the artifact, not the concept.
+- `wolf_steering_rate` trends wrong-sign pooled (−0.14 p=0.081); `wolf_killed_healer_day` /
+  `wolf_killed_investigator_day` WRONG SIGN (+0.60 p=0.025 sig. baseline) — kill-TIMING metrics
+  are game-length-confounded, the same trap as `investigator_found_wolf_day`. Excluded.
+
+**Step 4 — SK harm channel = day-social, not night-targeting.** SK-mem-on (arms_sk+rr_sk, n=60)
+vs no-SK-no-town-mem (baseline+arms_wolf+rr_wolf, n=90 — pool chosen to dodge the town-skill
+confound on lynchings): night survival UNCHANGED (3.32 vs 3.43) and kills similar, but
+`sk_exit_method` shifts **lynched 63%→78%** (Fisher p=0.070). SK wins ≡ survived count, so
++lynchings = −wins. Memory isn't degrading SK's night game; it's making the SK detectable by day.
+
+**The two-edged sword (wolf).** Memory improves the validated night skill — power_targeting 0.459
+baseline → 0.544 raw-wolf / 0.511 rr-wolf, with arms_town (wolves memory-free) at 0.448 as a clean
+negative control — while detectability rises in the same arms: `wolf_elim_rate` 0.227 → 0.292 /
+0.340, with town memory-free, so the wolves are leaking rather than town hunting better.
+
+**Blending follow-up (user's qualitative pushback — vindicated).** The stock blending metric is
+conditioned on wolf-elimination days (`compute_metrics.py`): a game where wolves blend perfectly
+and are never caught contributes ZERO observations — it samples disaster states exclusively, so
+its null cannot refute "blending matters." Measured UNCONDITIONED (fraction of a living wolf's
+votes aligned with the day's lynch, all lynch days, from raw `day_resolutions`):
+
+- **Validates vs wolf win:** r=+0.43 p=0.024 baseline-only; +0.20 p=0.003 pooled n=220.
+- **Micro-mechanism confirmed** ("dissent to protect a piled partner → removed next day"):
+  dissenting wolf lynched next day **49%** (32/65) vs **31%** (11/35) when blended.
+- **The leak is visible in the vote record:** wolf-memory arms blend WORSE — baseline 0.838 →
+  arms_wolf 0.643 / rr_wolf 0.649. Working hypothesis: memory content prescribes ACTION
+  (counter-claim, frame, protect) and shifts wolves from camouflage to active maneuvering, which
+  town reads. Anomalies kept honest: allon=0.761 (wolves also hold memory there — possible
+  town-memory interaction) and a general dip across ALL arms vs baseline (some environment noise).
+
+**Consequences.** (a) The night-only-memory arm now has a sharp pre-registerable behavioral
+prediction: unconditioned blending returns to ~baseline while power_targeting stays elevated.
+(b) Unconditioned blending is a candidate for promotion into `compute_metrics` (measurement-only,
+freeze-safe). (c) Day-strategy-point arms for deceivers are the RISKY variant under this
+mechanism (more action-prescribing content on the leaking surface); SP-at-night is the safe test.
+
 ## Code pointers
 
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
