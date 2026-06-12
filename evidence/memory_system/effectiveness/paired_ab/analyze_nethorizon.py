@@ -98,12 +98,17 @@ def main():
     baseline = load("ab_baseline.jsonl", "ab_baseline_recovered.jsonl")
     raw_wolf, nh_wolf = load("ab_arms_wolf.jsonl"), load("ab_nh_wolf.jsonl")
     raw_sk, nh_sk = load("ab_arms_sk.jsonl"), load("ab_nh_sk.jsonl")
+    raw_town, nh_town = load("ab_arms_town.jsonl"), load("ab_nh_town.jsonl")
 
     WOLF = [("unconditioned_blending", "+", unconditioned_blend),
             ("wolf_elimination_rate", "-", lambda r: cm(r, "wolf_elimination_rate")),
             ("wolf_power_role_targeting_rate", "+", lambda r: cm(r, "wolf_power_role_targeting_rate"))]
     SK = [("sk_lynched", "-", sk_lynched),
           ("sk_nights_survived", "+", lambda r: cm(r, "sk_nights_survived"))]
+    TOWN = [("town_vote_accuracy", "+", lambda r: cm(r, "town_vote_accuracy")),
+            ("town_mislynch_rate", "-", lambda r: cm(r, "town_mislynch_rate")),
+            ("correct_elimination_rate", "+", lambda r: cm(r, "correct_elimination_rate")),
+            ("mislynches", "-", lambda r: cm(r, "mislynches"))]
 
     L = ["# Net-horizon arms — scored vs pre-registration", "",
          "* = Wilcoxon p<0.05 (uncorrected). PRIMARY wolf proxy = unconditioned_blending; the decisive",
@@ -114,6 +119,9 @@ def main():
     L.append("## SERIAL KILLER")
     paired("nh_sk vs v5_0-RAW sk  (DECISIVE)", nh_sk, raw_sk, "serial_killer", SK, L)
     paired("nh_sk vs same-epoch baseline (off)", nh_sk, baseline, "serial_killer", SK, L)
+    L.append("## TOWN (REGRESSION — null = PASS; the validated basket must HOLD vs old-framing town)")
+    paired("nh_town vs v5_0-RAW town  (REGRESSION — does net-first disturb town?)", nh_town, raw_town, "villagers", TOWN, L)
+    paired("nh_town vs same-epoch baseline (off)", nh_town, baseline, "villagers", TOWN, L)
 
     out = HERE / "report_nethorizon.md"
     out.write_text("\n".join(L))
