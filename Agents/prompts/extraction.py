@@ -104,12 +104,19 @@ Each observation has structured fields:
   with consensus, under indirect scrutiny, or primary target. What is the
   basis. Only include if relevant to the situation.
 - approach: What the agent(s) did in that situation. 1-2 sentences.
-- outcome: What resulted — how others responded and the downstream
-  consequences. 1-2 sentences.
+- impact_on_final_game_outcome: The NET effect of the approach on this role's
+  win condition, judged from the END of the game (you know the final result).
+  An action that helped in the moment but contributed to this role's later
+  elimination or the faction's loss is a NET NEGATIVE — say so, and name the
+  causal chain. If genuinely untraceable, write 'unclear' and why. 1-2 sentences.
+- immediate_response: How others responded in the moment — the immediate effect,
+  before the longer-term consequence. 1 sentence.
+- net_verdict: One word — positive, negative, mixed, or unclear — the net effect
+  on the role's win condition. Use 'unclear' honestly; do not force a guess.
 
 PERSPECTIVE RULE:
-Each observation is assigned to a specific role. ALL THREE narrative fields
-(situation, approach, outcome) must be written from that role's perspective:
+Each observation is assigned to a specific role. The narrative fields
+(situation, approach, and the outcome fields) must be written from that role's perspective:
 - situation: What that role is facing or must respond to.
 - approach: What that role DID or FAILED TO DO — not what the opposing
   side did. If the key lesson is about something that happened TO the
@@ -117,7 +124,9 @@ Each observation is assigned to a specific role. ALL THREE narrative fields
   what the role did that led to that outcome (e.g., "The Investigator
   had been highly visible after orchestrating the previous day's vote,
   making them a predictable target").
-- outcome: The consequences from that role's perspective.
+- impact_on_final_game_outcome / immediate_response: the consequences from that
+  role's perspective — the net effect on the role's win condition (judged at game
+  end) stated first, the immediate response second.
 
 If you find the approach describing the opposing side's actions ("The
 wolves identified..." in an Investigator observation), you have the
@@ -325,12 +334,19 @@ Each observation has structured fields:
   with consensus, under indirect scrutiny, or primary target. What is the
   basis. Only include if relevant to the situation.
 - approach: What the assigned role did in that situation. 1-2 sentences.
-- outcome: What resulted — how others responded and the downstream
-  consequences. 1-2 sentences.
+- impact_on_final_game_outcome: The NET effect of the approach on the assigned
+  role's win condition, judged from the END of the game (you know the final
+  result). An action that helped in the moment but contributed to the role's
+  later elimination or the faction's loss is a NET NEGATIVE — say so, and name
+  the causal chain. If genuinely untraceable, write 'unclear' and why. 1-2 sentences.
+- immediate_response: How others responded in the moment — the immediate effect,
+  before the longer-term consequence. 1 sentence.
+- net_verdict: One word — positive, negative, mixed, or unclear — the net effect
+  on the role's win condition. Use 'unclear' honestly; do not force a guess.
 
 Guidelines:
 - Every observation must be written from the assigned role's perspective. All
-  narrative fields (situation, approach, outcome) must be from that perspective.
+  narrative fields (situation, approach, and the outcome fields) must be from that perspective.
 - approach must describe what the assigned role DID or FAILED TO DO — not what
   the opposing side did. If the key lesson is about something that happened TO
   the assigned role, reframe as what the assigned role did that led to that
