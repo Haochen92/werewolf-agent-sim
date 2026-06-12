@@ -486,6 +486,36 @@ addressable population is the SURVIVING-wolf linked-fate gambles like player_5 �
 effect, not a flip. Walking into Phase B with "memory correct + retrieved but under-weighted at
 decision time" is a far stronger position than "wolf null, unclear why."
 
+## ⭐ SK harm mechanism + the wolf/SK DIFFERENTIAL prediction (qualitative, raw SK arm, 2026-06-12)
+
+Why memory hurts the SK *net*-negative (vs flat for the wolf). Read of 5 lynched-SK games in the raw
+arm (`ab_arms_sk`, SK lynched in 24/30):
+
+- **What the SK retrieves:** a recurring theme of ACTIVE anti-investigator maneuvering modeled as
+  skilled play — "expressed skepticism toward the Investigator's claim and voted for them," "sowed
+  doubt, framed it as reckless," "blended into the chorus of suspicion against the investigator,"
+  "actively discredited the wolf's reasoning, labeled it 'noise'." Several success-framed ("eliminated
+  a major threat," "blended perfectly").
+- **Why that's poison for the SK specifically:** solo + night-immune → its ONLY death is a day-lynch,
+  and the investigator is its existential threat (a check confirms it). So any active visibility —
+  especially attacking the investigator — draws exactly the attention that kills it. One retrieved
+  memory says it outright: "…contributed to a tie… However, it put the serial killer on the
+  investigator's and vigilante's radar, directly leading to their elimination." The SK's optimal play
+  is near-total passivity; memory pushes it toward activity (the same agency-induction as wolves,
+  landing on the role least able to afford being seen).
+- **The asymmetry (why SK net-negative, wolf flat):** WOLF = memory helps the night (power-targeting)
+  AND hurts the day → offset → flat. SK = night already maxed (immune; survival unchanged 3.4→3.3,
+  memory can't improve it) → NO offsetting gain → pure day-detectability harm → net-negative.
+
+⭐**DIFFERENTIAL PREDICTION (falsifiable, for the running nethorizon arms):** the two failures have
+DIFFERENT causes, so net-horizon should hit them differently. WOLF = an ADHERENCE gap (it overrode a
+correct, well-framed memory — see player_5) → framing alone is the wrong lever → expect LITTLE
+movement. SK = a FRAMING gap (its memories OVER-CREDIT active anti-investigator plays that actually
+lead to lynching) → net-first reframing surfaces "active play → drew attention → lynched" → **expect
+MORE movement on the SK arm than the wolf arm.** If the nethorizon SK lynched-rate drops while wolf
+blending stays flat, this differential is confirmed; if both stay flat, the lever is application-layer
+for BOTH (→ Phase B adherence work covers SK too). (Caveat: 5 decisions, qualitative, raw arm.)
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py`, `situation_sim.py`, design `nethorizon_design.md`;
