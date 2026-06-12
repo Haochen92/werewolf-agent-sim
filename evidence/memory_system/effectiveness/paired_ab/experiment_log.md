@@ -396,8 +396,45 @@ power_targeting stays elevated, wolf win directional. SK: `sk_exit_method` lynch
 baseline, survival/win directional. (SK echo read is a separate day_discussion-content cut — the
 solo SK has no vote-pile to blend with — flagged as a lighter secondary, not a build blocker.)
 
+## `v5_0_nethorizon` BUILT + validity diagnostic CLEAN (2026-06-12)
+
+The net-horizon treatment is implemented (commits e7494fe schema / 8ac5adc prompt) and the variant
+store is built. Build: `scripts/build_nethorizon_store.py` — full offline re-extraction of the 20
+frozen v5_0 games with the net-first outcome framing, then the SAME downstream dedup, into a fresh
+store. ⭐**Scoped to wolf + serial_killer only** (user cost call): the `wolf_only`/`serial_killer_only`
+arms only ever retrieve their own role's namespace, so re-extracting the 4 town roles would be unread
+waste → 40 pro calls, not 120. (A town/all-on nethorizon arm, if ever wanted, extracts the rest
+incrementally.)
+
+- **Store comparable to v5_0:** wolf+SK obs 164 (v5_0 159); per-namespace counts within normal
+  extraction variance (e.g. wolf/day_vote 26→21, wolf/night_action 25→34). 142 strategy points.
+- **The fix is on-disk** (stored `outcome` = the net-first `@computed_field`, verbatim): outcomes now
+  LEAD with the verdict. ×137 reading-fix — wolf/day_vote "Mixed. …bought one more day… but the
+  investigator identified them… leading to the wolves' loss." ×75 recording-fix — "Unclear. …However
+  it was the Day-2 vote, not this one, that led to their demise, making the net impact hard to
+  trace." (honest 'unclear' instead of a forced false positive).
+- **net_verdict distribution** (n=164): positive 69 / negative 66 / mixed 27 / **unclear 2 (1.2%)**.
+  The ~42% negative is the treatment working — costs the old success-first framing buried are now
+  surfaced; the low unclear-rate is a clean extraction-reliability read. `source_game_winner` +
+  `role_faction_won` stamped on all 164 (objective join; soft-signal only).
+- **Validity diagnostic (NON-BLOCKING) — `situation_sim.py`:** per (role,phase) bucket, cross-store
+  situation-embedding nearest-neighbour vs v5_0's own within-store density floor (v5_0 and nethorizon
+  are both fresh stochastic extractions, so the floor IS the noise model). Result: **cross-store NN
+  0.934 ≥ within-v5 floor 0.922 in EVERY namespace** → nethorizon situations land as close to v5_0 as
+  v5_0 entries are to each other → NO systematic situation drift from the outcome reframing →
+  retrieval is comparable and a paired arm isolates the framing. (Embeddings stay situation-only by
+  construction, so the reframed outcome cannot enter the embedded text — invariant held.)
+
+⭐**NEXT (paused for review before the paid step):** pre-register + run the wolf and SK arms on
+`memory_stores/v5_0_nethorizon`, same 30-id seed set, in-epoch, observations-only, top_k=5,
+`--no-memory-dump` — identical to the paired A/B treatment, swapping ONLY the store. Wolf primary =
+`wolf_unconditioned_blending_rate` (predict recovery toward 0.84 vs wolf-mem 0.64); key contrast = vs
+the v5_0 raw-memory wolf arm (framing vs no-fix, same retrieval). ~$6–8/arm.
+
 ## Code pointers
 
+- Net-horizon: `scripts/build_nethorizon_store.py`, `situation_sim.py`, design `nethorizon_design.md`;
+  schema `Agents/schemas/memory.py` (Observation outcome split), prompt `Agents/prompts/extraction.py`.
 - Echo read: `echo_read.py` (+ `echo_read_decisions.json`); diagnostics `diagnose_wolf_sk_proxies.py`
   / `diagnose_wolf_blending.py`.
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
