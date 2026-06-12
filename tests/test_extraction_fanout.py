@@ -34,7 +34,8 @@ def _fake_invoke(_llm, prompt: str, _run_name: str) -> GameStrategyOutput:
     role = prompt.rsplit("ASSIGNED ROLE: ", 1)[1].split("\n", 1)[0].strip()
     obs = Observation(
         perspective=role, action_phase="day_vote", situation="s",
-        information_landscape="il", game_phase="early", approach="a", outcome="o",
+        information_landscape="il", game_phase="early", approach="a",
+        impact_on_final_game_outcome="net o", immediate_response="imm", net_verdict="positive",
     )
     sp = StrategyPoint(
         perspective=role, action_phase="day_vote", situation="When x",

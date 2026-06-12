@@ -12,9 +12,9 @@ RetrievedObservation / RetrievedStrategyPoint — are internal store / retrieval
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
 from Agents.schemas.roles import ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
 
@@ -38,11 +38,22 @@ def _compose_situation(
     return " ".join(parts)
 
 
+def _compose_outcome(impact_on_final_game_outcome: str, immediate_response: str | None) -> str:
+    """Fold the two outcome halves into one stored string, NET EFFECT FIRST so a skimming reader
+    absorbs the end-of-game verdict before the immediate effect — the myopic-framing fix (extraction
+    led with the immediate result and buried the deferred cost in a trailing clause). See
+    evidence/memory_system/effectiveness/paired_ab/nethorizon_design.md."""
+    parts = [impact_on_final_game_outcome]
+    if immediate_response:
+        parts.append(immediate_response)
+    return " ".join(parts)
+
+
 class Observation(BaseModel):
     perspective: str = Field(
         description=(
             "The role this observation is most useful for: wolf, villager, "
-            "healer, or investigator"
+            "healer, investigator, vigilante, or serial_killer"
         )
     )
     action_phase: ActionPhase = Field(
@@ -96,12 +107,37 @@ class Observation(BaseModel):
             "1-2 sentences."
         )
     )
-    outcome: str = Field(
+    impact_on_final_game_outcome: str = Field(
         description=(
-            "What resulted — how others responded and the downstream "
-            "consequences. May reveal actual roles. 1-2 sentences."
+            "The NET effect of this approach on THIS role's win condition, judged "
+            "from the END of the game (you know the final result). An action that "
+            "helped in the moment but contributed to this role's later elimination "
+            "or the faction's loss is a NET NEGATIVE — say so explicitly and name "
+            "the causal chain (what it led to). If the net effect is genuinely "
+            "untraceable, write 'unclear' and why. May reveal actual roles. 1-2 sentences."
         )
     )
+    immediate_response: str = Field(
+        description=(
+            "How others responded in the moment — the immediate, same- or next-turn "
+            "effect, before the longer-term consequence. 1 sentence."
+        )
+    )
+    net_verdict: Literal["positive", "negative", "mixed", "unclear"] = Field(
+        description=(
+            "This approach's net effect on the role's win condition in one word: "
+            "positive, negative, mixed, or unclear. Use 'unclear' honestly when the "
+            "game does not let you trace the consequence — do not force a guess."
+        )
+    )
+
+    @computed_field
+    @property
+    def outcome(self) -> str:
+        """Stored outcome string, NET EFFECT FIRST then immediate response. Computed (not a
+        model field) so it stays out of the extraction schema sent to the model while every
+        downstream `.outcome` reader (dedup / store write / prefilter) keeps working unchanged."""
+        return _compose_outcome(self.impact_on_final_game_outcome, self.immediate_response)
 
     @property
     def composed_situation(self) -> str:
@@ -136,7 +172,7 @@ class StrategyPoint(BaseModel):
     perspective: str = Field(
         description=(
             "The role this strategy point is most useful for: wolf, villager, "
-            "healer, or investigator"
+            "healer, investigator, vigilante, or serial_killer"
         )
     )
     action_phase: ActionPhase = Field(
@@ -255,6 +291,15 @@ class StoredObservation(BaseModel):
     situation: str
     approach: str = ""
     outcome: str = ""
+    net_verdict: str = ""
+    """Extraction's one-word net judgment (positive/negative/mixed/unclear); metadata only — not
+    embedded, not injected to the agent. Its unclear-rate doubles as an extraction-reliability metric.
+    Empty on legacy entries written before the net-horizon schema."""
+    source_game_winner: Optional[str] = None
+    """Objective game_id -> batch-record winner join, stamped at build/dump time (no LLM). Soft
+    analysis / rerank signal ONLY — never a hard filter (the role winning != the action being good)."""
+    role_faction_won: Optional[bool] = None
+    """Whether this observation's perspective-role shared the winning faction in its source game."""
 
 
 class StoredStrategyPoint(BaseModel):

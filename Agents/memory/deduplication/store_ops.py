@@ -190,6 +190,7 @@ def _store_new_observation(
         "situation": observation.composed_situation,
         "approach": observation.approach,
         "outcome": observation.outcome,
+        "net_verdict": getattr(observation, "net_verdict", ""),
         "observation_count": 1,
         "last_observed": datetime.now().isoformat(),
         "game_id": game_id,
