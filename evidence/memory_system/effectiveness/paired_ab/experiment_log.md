@@ -779,6 +779,61 @@ INVERSION (town worst→best). VARIANCE FLOOR (two same-epoch off runs, paired N
 mid-evening re-switch (both runs stably elevated). CEILING implication: memory's "helps town" case was
 measured on a model BAD at town that no longer exists; on the strong model town is already at 51-53% off.
 
+## ⭐⭐ Phase B MEMORY-CONTENT DESIGN — defusing the anti-aggression bias (2026-06-12; discuss next)
+
+The headline mechanism (above) is a *chain*; each link is a place to cut it. Stating the chain first so
+each lever maps to a specific failure point:
+
+```
+(1) extraction over-samples "active player drove -> got targeted -> died -> Negative"   [survivorship bias]
+(2) single-game outcome label = read x action x luck                                     [punishes good unlucky plays]
+(3) net-first puts the verdict FIRST -> reads as "don't do this"                          [anchoring]
+(4) every agent retrieves a variant -> table-wide passivity                              [aggregation]
+(5) passivity hands the game to the blending SK                                           [outcome]
+```
+
+**ROOT FIX — label lessons by the READ, not the OUTCOME (cuts links 1-3 at once).** Re-aim extraction
+to answer "what was the discriminating variable — when does this work vs fail?" rather than "did it win?".
+The stored lesson becomes a CONDITIONAL:
+> "Driving hard accusations works WHEN you hold a concrete lead; it gets you killed WHEN you're flailing
+> in an info vacuum with nothing to show."
+This single change defuses three links simultaneously: not survivorship-biased (not crediting the death),
+not luck-contaminated (judges the read, not the result), and no flat "Negative" to anchor on. It converts
+the anti-aggression blanket into a conditional the agent can check against the live board. The deepest
+lever; build Phase B memory-content around it. (Cost: harder/more subjective extraction; prompt-freeze =
+Phase B carve-out; needs a fresh golden set on read-conditioned entries.)
+
+**CALIBRATION FIX — rate over instances, not a single verdict (cuts link 4).** Where an outcome signal is
+kept, aggregate it ("net-positive 6/10 across games") so one unlucky death can't dominate. Already half-
+designed (the batch-merge rate-aggregation); needs store DENSITY + count-merge (not replace). Pairs with
+the incremental-dedup convergence fix (freeze old, count not re-litigate).
+
+**SURVIVORSHIP FIX — extract the cost of INACTION (cuts link 1 directly).** Passive deaths are real but
+untraceable ("town dithered -> SK won slowly"), so they're under-extracted and the corpus tilts anti-
+aggression. Prompt extraction to trace "what did NOT happening cost?" so "passivity also loses" is
+represented and the ledger balances.
+
+**STRUCTURAL FIXES (cut link 3; already in the bug bundle).** De-emphasize the verdict at display,
+situation-first, non-rigid scaffold at the VOTE (it's missing there), reason-before-act schema reorder.
+Supporting, NOT sufficient alone — discussion already has the non-rigid scaffold and agents followed
+rigidly anyway, so verdict-first framing overpowers the caveat.
+
+**CHEAP STRATEGIC HEDGE — town may not need outcome-memory at all.** The win-rate flip says town wins
+51-53% with NO memory on the strong model. If town outcome-memory's best case is ~neutral and its failure
+mode is the passivity collapse, the frugal move is: DON'T feed town outcome-verdict observations; reserve
+verdict-memory for where it directionally HELPED (SK night mechanics). The per-namespace split already
+lets us do this at CONFIG level — so test the hedge FIRST: if it holds, it's a flag, not a re-extraction.
+Principle: memory earns its place where the model is WEAK; on a model already strong at deduction it may
+be pure downside.
+
+**RECOMMENDATION.** Phase B memory-content thesis = read-conditioned lessons (root) + rate-calibration
+(link 4); structural fixes as support; per-namespace "town may not need outcome-memory" as the cheap hedge
+to test first. All prompt-freeze => slots under the regeneration protocol (bundle -> freeze -> pin model
+-> regenerate once with start+end canaries). OPEN FOR DISCUSSION: (a) is read-conditioned extraction
+reliable enough to label a golden set on, or does it just move the subjectivity?; (b) does the hedge
+(town no outcome-memory) need the cancelled epoch-B immediate-first arm to justify, or does the ceiling
++ mechanism already carry it?; (c) sequencing — hedge (config, cheap) before or after the root re-extract?
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
