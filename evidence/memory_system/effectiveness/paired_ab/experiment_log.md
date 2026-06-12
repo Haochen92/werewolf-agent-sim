@@ -310,8 +310,96 @@ prediction: unconditioned blending returns to ~baseline while power_targeting st
 freeze-safe). (c) Day-strategy-point arms for deceivers are the RISKY variant under this
 mechanism (more action-prescribing content on the leaking surface); SP-at-night is the safe test.
 
+## Mechanism refinement → the MYOPIC-FRAMING hypothesis (2026-06-12)
+
+The "two-edged sword" left one question open: *why* does memory shift wolves from camouflage to
+maneuvering? The chain that narrowed it (each step a read over the A/B sidecars + store):
+
+1. **"Was the prescriptive content even retrieved?"** (user challenge). Wolf *observations* are NOT
+   prescriptive — they are episodic situation/approach/outcome records, balanced polarity. So the
+   leak isn't "memory tells wolves to attack."
+2. **Approach-imitation vs outcome-learning.** The `approach` fields are a catalog of active
+   maneuvers (discredit investigator, protest vote, force tie). If agents integrated OUTCOMES,
+   blending should have *risen* (most active-defense precedents end badly) — it FELL. First
+   hypothesis: agency induction (imitate the *form* of precedents, not the lesson).
+3. **Namespace scoping retracted the crude cuts** (user re-cut). Retrieval at `day_vote` is
+   namespace-scoped (926/926 from observations/wolf/day_vote); a keyword "active/passive" classifier
+   mislabels (bussing tagged "active") and a dose-response is non-monotonic = situation ENDOGENEITY
+   (retrieval reflects situation severity — can't read causation off it). What SURVIVED: exposure is
+   concentrated (top-8 entries = 72% of retrievals), and **the two most-retrieved DISSENT precedents
+   are SUCCESS-FRAMED AT FACE VALUE** — ×137 "voted for the accusing investigator… helped us survive
+   the day's vote. However… permanent record used later"; ×75 tie-force "protected both wolves…
+   chaos to exploit" (pure positive, no cost recorded).
+4. **→ MYOPIC OUTCOME FRAMING.** Extraction credits the immediate result in the lead clause and
+   defers the cost to a subordinate "However…"; a skimming agent absorbs the headline verb-phrase
+   (action → survival) and under-weights the trailing concession. Two distinct failure modes:
+   ×137-type = a *reading* failure (cost IS recorded but in the weak clause); ×75-type = a
+   *recording* failure (cost never traced — extractor stopped at the next-day effect, or N=1 it
+   genuinely never backfired). They need different fixes — net-first composition repairs ×137,
+   a required end-of-game verdict repairs ×75.
+
+## The net-horizon fix (AGREED design, delegated build — `v5_0_nethorizon`)
+
+Freeze-clean because it is a **config-flag store variant** (default `v5_0` untouched, frozen) and
+**not a play-prompt change** (extraction runs post-game; no game-generation epoch shift). Shape:
+
+- **Extraction schema** (`Agents/schemas/memory.py` `Observation`, model-visible @ :41): `outcome`
+  (:99) → two REQUIRED fields, `impact_on_final_game_outcome` (declared FIRST; `Field(description=)`
+  = the end-of-game judgment rule: net effect on this role's win condition; helped-today-but-led-to-
+  elimination = NET NEGATIVE, say so; untraceable → "unclear" + why; name the causal chain) +
+  `immediate_response`. New `composed_outcome` @property, NET-FIRST, mirroring `composed_situation`
+  (:106) → single stored `outcome` string → StoredObservation schema UNCHANGED, zero downstream
+  ripple. Reading order = composition order.
+- **Prompt** (`Agents/prompts/extraction.py`): the outcome bullet lives in THREE live spots — :107,
+  the per-role block :328 (the v5 path: `ROLE_EXTRACTION_PREFIX`+`TAIL` @ :408), :522 — all change,
+  plus matching `Field(description=)` and the PERSPECTIVE-RULE lines that name `outcome`.
+- **Metadata (NOT injected):** `net_verdict` enum (positive/negative/mixed/unclear; its unclear-rate
+  = a free extraction-reliability metric; "unclear" is a first-class value, honoring genuine N=1
+  ambiguity rather than forcing a false positive). `source_game_winner` (+ `role_faction_won`) =
+  objective game_id→batch-winner join at dump time, no LLM, soft-signal only, NEVER a hard filter.
+- **Validity invariant:** embeddings stay SITUATION-ONLY → retrieval byte-identical between `v5_0`
+  and the variant → outcome framing is the only difference. Gate: situation/approach embedding-sim
+  vs v5_0 ≈ 1.0. One re-extraction pass produces ALL roles → one store serves the wolf AND SK arms.
+
+## Step-3 ECHO READ — the free gate (2026-06-12, RESULT) — PASSED → build warranted
+
+Decisive pre-build test: on memory-on wolf decisions that DISSENT (vote off the day's eventual
+lynch — the behavior the unconditioned-blending finding ties to next-day removal), does the wolf's
+private `updated_strategy` ECHO a retrieved precedent? If not, framing isn't the lever and the
+variant build is skipped (fall back to night-only). Pure local read — arm sidecars
+(`retrieved_observations` + `updated_strategy`) joined to batch `day_resolutions`, baseline tagged
+per game_id+day. Script: `echo_read.py`; full detail: `echo_read_decisions.json`.
+
+- **47** dissent wolf `day_vote` decisions with retrieval (arms_wolf + rr_wolf); **22** are PAIRED
+  FLIPS (baseline blended that same game_id+day → memory-on wolf dissented) = the causal-suspect set.
+- **Retrieved precedents** at these flips are dominated by the success-framed dissent/bussing cluster
+  (vote-own-partner-to-look-correct, vote-the-accusing-investigator, protest-vote, force-tie), scores
+  0.80–0.87 — the ×137/×75 family.
+- **The `updated_strategy` echoes the precedent's approach-class** in the clear majority: vote the
+  vocal accuser / suspicion-driver, distance from partner, keep the village divided, deflect pressure.
+- **Cost-blindness is UNIFORM** (the key finding): in 0/22 does the wolf reason about the permanent
+  voting-record cost that the retrieved outcome encodes in its trailing clause. #19/#22 are the loop
+  caught live — the anti-investigator-record cost has ALREADY materialized ("my vote against the
+  investigator is now a major liability") and the wolf dissents AGAIN.
+- **#17 is confirmatory-by-counter-example:** the one precedent framed as an UNAMBIGUOUS failure
+  ("early aggressive votes → exposure of wolves") produced the correct read — the wolf ABSTAINED to
+  blend, citing it. When framing leads with the cost, the agent reads the cost. That is the fix's
+  mechanism, observed prospectively.
+- **Honest limit:** wolves are usually under scrutiny at these moments, so voting the accuser is also
+  a rational in-situ move; the read shows thematic echo + uniform cost-blindness, NOT isolated
+  causation (situation endogeneity). The `v5_0_nethorizon` paired A/B is the decisive causal test.
+
+**Decision:** gate PASSED (dissents echo; cost-clause ignored; #17 shows reframing flips behavior) →
+**proceed to the variant build + pre-registered wolf and SK arms.** Predictions (pre-registered):
+wolf primary = unconditioned blending recovers toward 0.84; secondaries wolf_elim_rate → ~0.227,
+power_targeting stays elevated, wolf win directional. SK: `sk_exit_method` lynched-rate back toward
+baseline, survival/win directional. (SK echo read is a separate day_discussion-content cut — the
+solo SK has no vote-pile to blend with — flagged as a lighter secondary, not a build blocker.)
+
 ## Code pointers
 
+- Echo read: `echo_read.py` (+ `echo_read_decisions.json`); diagnostics `diagnose_wolf_sk_proxies.py`
+  / `diagnose_wolf_blending.py`.
 - Seed pinning: `scripts/run_batch.py --game-ids-file` → `run_game(game_id=…)` →
   `build_game_config` → `initialize_game` (role draw `crc32(game_id)`).
 - Seed-set generator: `scripts/make_ab_seed_set.py`.
