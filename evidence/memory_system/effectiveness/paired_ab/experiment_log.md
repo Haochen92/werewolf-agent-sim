@@ -834,6 +834,40 @@ reliable enough to label a golden set on, or does it just move the subjectivity?
 (town no outcome-memory) need the cancelled epoch-B immediate-first arm to justify, or does the ceiling
 + mechanism already carry it?; (c) sequencing — hedge (config, cheap) before or after the root re-extract?
 
+## ⭐⭐ PHASE A TOWN-REGRESSION — CONCLUSION (2026-06-12, superseded-by-drift, not completed)
+
+The town regression did NOT resolve as a clean number — it was overtaken by a methodology finding, which
+is the honest outcome to record:
+
+1. **The cross-day comparison was confounded by a large overnight model drift.** nh_town (06-12) was
+   being read against raw_town (06-11). A canary (10 no-mem games on the baseline seeds, today) caught it:
+   off-baseline town_vote_accuracy 0.560 -> 0.699 (+0.14), villager WIN 27% -> 51% (faction-ranking
+   inversion), confirmed real (≈2.5× the same-epoch variance floor; metric-definition artifact ruled out).
+   So the -0.36/-0.22 "regression" was treatment + up-to-25h of drift, blended in unknown proportion.
+2. **The clean same-epoch three-way was launched then DELIBERATELY STOPPED.** off (canary, done) +
+   immediate-first raw_town + net-first nh_town, all 06-12, same 30 seeds. Stopped at 4/30 each by mutual
+   decision once the decision-pipeline bugs surfaced: the numbers would be DOUBLE-superseded (measured on a
+   known-broken pipeline — vote-before-reasoning schema bug + permissive memory-application structure — AND
+   destined for the post-Phase-B pinned regeneration). Paying for them was negative-value.
+3. **The verdict therefore rests on DIRECTION + MECHANISM, not a p-value** — which is sufficient because no
+   decision rides on the magnitude:
+   - *Direction:* within epoch-B (timestamp-partitioned, N=18 clean nh games), net-first town sat ~0.56,
+     BELOW the same-epoch memory-off baseline (~0.70-0.77). Net-first doesn't just erase the town benefit;
+     it pulls town below no-memory.
+   - *Mechanism (the real finding):* net-first instills a table-wide ANTI-AGGRESSION bias (survivorship-
+     biased corpus + luck-contaminated verdict + verdict-first anchoring) that town follows in discussion,
+     going collectively passive and handing games to the blending SK. See the headline-mechanism section.
+   - *Adoption decision (stable either way):* town keeps immediate-first framing — OR, per the cheap hedge,
+     gets NO outcome-memory at all (it wins 51-53% memory-off on the strong model). Per-namespace, config-
+     level. Net-first stays for SK (directionally helped). The PRECISE magnitude is deferred to the post-
+     Phase-B pinned regeneration; it was never the deliverable.
+
+**What Phase A actually delivered (reframed):** not "net-first costs town X pp" but (a) a quantified drift
++ noise-floor exhibit proving cross-day eval comparisons are dead without model-pinning + same-epoch
+pairing + per-batch canaries; (b) the net-first town mechanism with transcripts; (c) the Phase B bug
+bundle + memory-content design. The journey (regression -> drift discovery -> mechanism -> Phase B design)
+IS the portfolio narrative. **Phase A closed; proceed to Phase B under the regeneration protocol.**
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
