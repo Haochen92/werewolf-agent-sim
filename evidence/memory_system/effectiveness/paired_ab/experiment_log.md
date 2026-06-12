@@ -516,6 +516,39 @@ MORE movement on the SK arm than the wolf arm.** If the nethorizon SK lynched-ra
 blending stays flat, this differential is confirmed; if both stay flat, the lever is application-layer
 for BOTH (→ Phase B adherence work covers SK too). (Caveat: 5 decisions, qualitative, raw arm.)
 
+## ⭐ TOWN per-role breakdown — the INVESTIGATOR is the town's wolf/SK (2026-06-12, descriptive N=30)
+
+The town arm won +17pp as a faction, but that aggregate hides per-role variation. Breaking
+`ab_arms_town` vs same-epoch baseline by individual power role (paired N=30, DESCRIPTIVE point
+estimates — NOT significance-tested; the per-role proxies are the unvalidated noisy ones):
+
+- **Healer — clear benefit:** survival 23%→40%, night-killed 73%→43%, town_save_rate 0.37→0.60.
+- **Vigilante — clear benefit:** survival 20%→43%, night-killed 63%→40%, correct_shot 0.50→0.65,
+  friendly_fire 0.33→0.27.
+- **Investigator — the OUTLIER (memory may HURT its core job):** mislynched less (voted-out 40%→27%)
+  and survives slightly more, BUT investigation accuracy DROPPED — wolf_find 0.43→0.33, threat_find
+  0.56→0.46. The town analog of the wolf/SK pattern: memory changed its behavior in a way that hurt
+  its core function even while the faction won (healer+vig gains + town-collective coordination mask it).
+
+**Investigator mechanism (qualitative, 5 night-2 target choices, 3 hit / 2 whiff):** target selection
+is SOCIAL-READ driven, not information-driven — "investigate the player most vocal against my claim /
+actively steering the group / to fulfil a public promise and earn trust." The 2 whiffs were exactly
+that heuristic landing on engaged TOWN members (a vocal villager, a steering healer). Its retrieved
+memories are dominated by (a) investigator-died-early SURVIVAL anxiety ("my elimination meant I failed
+to help") → pushes trust-building/survival over threat-hunting, and (b) "investigate the vocal/skeptical
+player" precedents — several of which WHIFFED in the memory itself. → agency-induction again: imitating
+a behavioral-heuristic play (social-read targeting) that looks skilled but is noisier than the role's
+baseline, plus survival/trust-management crowding out pure information value. Caveats: 5 decisions,
+noisy unvalidated proxy, and social-read targeting may be near-optimal given how little info an early
+investigator has.
+
+⭐**NAMED FOLLOW-UP (per-role, deferred):** (1) significance-test the investigator find-rate drop at
+N=30 (Wilcoxon) — promote from descriptive if it survives; (2) the investigator is a candidate for the
+SAME Phase B adherence/framing work as wolf/SK (its memories over-weight social-read targeting +
+survival) — though net-horizon won't obviously help target SELECTION, so this is more likely an
+injection-layer "weigh information value over social reads" item; (3) per-role breakdown should be a
+STANDARD cut in future town arms, not just the faction aggregate — the aggregate masked it here.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py`, `situation_sim.py`, design `nethorizon_design.md`;
