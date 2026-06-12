@@ -646,6 +646,30 @@ is unaffected — it composes outcome to one string, no merge). New merge logic:
   compares on the right dimensions. Needs a FRESH golden merge set on net-horizon entries (old set is
   pre-split-schema, OOD).
 
+## ⭐ Town regression — drift adjudication + pre-registered interim stop (2026-06-12, BEFORE N=20)
+
+**Logged before the data to keep the stop honest.** The town regression (`ab_nh_town` vs `ab_arms_town`)
+showed a large early FAIL signal at N=10 — paired, same game_ids: villager win 70%→30%, town_vote_accuracy
+0.917→0.559, mislynch 0.150→0.475, correct_elim 0.850→0.525 (4/4 basket proxies wrong-way). But the two
+arms are **cross-day** (raw `ab_arms_town` 06-11 13:11, `ab_nh_town` 06-12) — fingerprints show identical
+model IDs (`gemini-3.1-flash-lite` / `gemini-2.5-pro`) but a ~25h gap can't exclude silent server-side
+drift under the same ID. (The N=10 raw side is also a lucky strong subset: 0.917/70% vs the raw arm's true
+0.710/43% → the −0.36 is inflated and will shrink as the raw side regresses to mean.)
+
+**Drift gate (must pass FIRST):** canary `ab_canary_0612` = 10 no-memory `all_disabled` games on the exact
+`ab_baseline` seeds, today's epoch. Memory-off → isolates pure model drift. Clean (`town_vote_accuracy`
+≈ 0.560, villager win ≈ ab_baseline) → no drift, regression real, yesterday's raw stays a valid comparator.
+Material move → confound; the whole nh-vs-raw set must re-pair against FRESH same-epoch raw arms (nh arms
+themselves stay — already today's epoch; original 06-11 paired A/B is within-day, untouched).
+
+**Pre-registered interim stop @ N=20:** IF canary clean AND paired `town_vote_accuracy` Δ ≤ −0.10 AND
+≥3/4 basket proxies still wrong-way → **STOP**, conclude net-first FAILS the town regression, report as a
+planned interim stop at **N=20** (never rounded to the pre-registered N=30). ELSE (gap within ~±0.05, or
+proxies mixed) → run full 30 (the ambiguous zone where the last 10 games carry information). Legitimate as
+asymmetric early stopping: halting a regression in its pre-registered FAIL direction at a large effect,
+not p-hunting a positive. If net-first fails town, adopt it **per-namespace** (wolf/SK net-first, town keeps
+old framing — role namespaces independent, store already split), not globally.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
