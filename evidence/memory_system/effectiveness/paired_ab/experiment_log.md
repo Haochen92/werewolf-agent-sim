@@ -745,6 +745,40 @@ arms = methodology exhibit (drift + noise floor) + DIRECTIONAL net-first + MECHA
 superseded by the regeneration, their insights carry forward. ⇒ finish the current run for direction +
 mechanism, do NOT chase significance out of a soon-superseded epoch.
 
+## ⭐⭐ HEADLINE MECHANISM — net-first instills a table-wide ANTI-AGGRESSION bias (2026-06-12, transcripts)
+
+Reading nh_town discussion turns across games 5042eda6 / a31e31e9 / c83608a1 (epoch-B). Town DOES follow
+the memories in discussion — often near-verbatim — and the lesson they follow is the harm:
+
+- **Survivorship bias in the corpus.** The cleanest, most traceable causal chains extraction produces are
+  "active player drove → got targeted → died → **Negative**" (aggressive healer/vigilante/villager killed
+  that night). Passive deaths ("town did nothing → SK won slowly") are LESS traceable → under-extracted.
+  So the corpus is dominated by active-play-punished lessons.
+- **Net-first anchors it.** Verdict-first ("Negative. …killed that night") makes the lesson read as
+  "don't do this." Every town agent independently retrieves a variant and adopts a low-profile / anti-
+  aggression posture in discussion ("stay low-profile", "don't lean on behavioral reads", "don't jump to
+  conclusions"); one vigilante literally passed. Collective passivity → nobody builds the SK case → the
+  blending SK survives and wins (SK won 6/8 worst epoch-B games).
+- **Luck contamination, starkest form.** One retrieved obs: *"their logic was SOUND and forced the
+  Investigator off a poor strategy, BUT marked them as a threat… wolves killed them. Negative."* Good
+  action, unlucky death, net-first credits the OUTCOME → agent learns "don't deploy sound aggressive logic."
+- **Ties to the win-rate flip.** Memory-off, the strong new model wins town 51-53% BY driving deduction
+  natively. Net-first memory is a BRAKE on exactly that aggression → net-first town sits BELOW memory-off.
+  The discussion context even includes the "apply non-rigidly" scaffold and they follow rigidly anyway →
+  verdict-first framing overpowers the caveat.
+
+This is cleaner than the single-vote misdirection: not an occasional wrong target, a SYSTEMIC passivity
+bias. (Illustrative: ~3 games; consistent across them + the SK-win cluster.)
+
+## ⭐ Drift + noise-floor exhibit — FINAL (2026-06-12, canaries N=59 off, memory-off ⇒ bug-independent)
+
+DRIFT (off, baseline 06-11 → today): town_vote_accuracy 0.560 → 0.699 (Δ+0.139 aggregate; +0.13–0.20
+paired); villager WIN 27% → 51% (roughly doubled), SK 40%→24%, wolves 33%→25% — a faction-ranking
+INVERSION (town worst→best). VARIANCE FLOOR (two same-epoch off runs, paired N=29): 0.732 vs 0.676,
+Δ−0.056; per-game sd 0.351. ⇒ drift ≈ 2.5× the run-to-run noise = real model shift, not variance; no
+mid-evening re-switch (both runs stably elevated). CEILING implication: memory's "helps town" case was
+measured on a model BAD at town that no longer exists; on the strong model town is already at 51-53% off.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
