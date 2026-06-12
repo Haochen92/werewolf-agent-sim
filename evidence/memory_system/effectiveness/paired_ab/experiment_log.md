@@ -425,11 +425,23 @@ incrementally.)
   retrieval is comparable and a paired arm isolates the framing. (Embeddings stay situation-only by
   construction, so the reframed outcome cannot enter the embedded text — invariant held.)
 
-⭐**NEXT (paused for review before the paid step):** pre-register + run the wolf and SK arms on
-`memory_stores/v5_0_nethorizon`, same 30-id seed set, in-epoch, observations-only, top_k=5,
-`--no-memory-dump` — identical to the paired A/B treatment, swapping ONLY the store. Wolf primary =
-`wolf_unconditioned_blending_rate` (predict recovery toward 0.84 vs wolf-mem 0.64); key contrast = vs
-the v5_0 raw-memory wolf arm (framing vs no-fix, same retrieval). ~$6–8/arm.
+## ⭐ PRE-REGISTRATION — nethorizon arms (written BEFORE any arm game completed, 2026-06-12)
+
+Both arms on `memory_stores/v5_0_nethorizon`, same 30-id seed set (`arms_game_ids.json`), in-epoch,
+observations-only, top_k=5, rerank/filter disabled, `--no-memory-dump` — identical to the paired-A/B
+treatment, swapping ONLY the store. Outputs `batch_results/ab_nh_wolf.jsonl` / `ab_nh_sk.jsonl`.
+
+- **wolf-nethorizon** — PRIMARY `wolf_unconditioned_blending_rate`. The decisive contrast is **vs the
+  v5_0 raw-memory wolf arm** (`ab_arms_wolf`, same retrieval/seeds): framing-fix vs no-fix. PREDICT
+  blending RECOVERS toward baseline 0.84 from the v5_0-raw 0.64. Secondaries (same contrast):
+  `wolf_elimination_rate` DOWN toward baseline 0.227 (from raw 0.29), `wolf_power_role_targeting_rate`
+  STAYS elevated (the validated night gain must NOT be sacrificed), wolf win directional. Also report
+  vs same-epoch baseline (off). **POSITIVE = net-horizon framing fixed the day leak** (blending up,
+  detectability down, night held). FLAT = framing isn't the lever → night-only arm is next.
+- **sk-nethorizon** — PRIMARY `sk_exit_method` lynched-rate back toward baseline (from the SK-mem 78%),
+  `sk_nights_survived` held, SK win directional. POSITIVE = framing reduces SK day-detectability.
+- Win rate = underpowered directional co-read at N=30 (the proxies carry it). All non-primary cuts
+  exploratory. ~$6–8/arm; arms launched together (read-only on the frozen store → parallel-safe).
 
 ## Code pointers
 
