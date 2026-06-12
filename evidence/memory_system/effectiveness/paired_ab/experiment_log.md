@@ -600,9 +600,56 @@ label-visible → adopt-then-label, never mix). The wolf's residual harm is the 
 **application-adherence** item (injection-layer: make the agent WEIGH the net verdict vs its
 in-the-moment read), NOT another extraction change. Decision is the user's (directional evidence).
 
+## ⭐ TOWN regression (pre-registered) + the all-on scoping rule (2026-06-12)
+
+⭐**Why town needs its own regression:** the nh wolf/SK arms regression-tested the new prompt on stores
+whose content was BROKEN (the harmful framing). Town is the OPPOSITE case — the family that
+demonstrably BENEFITED from the old framing (+17pp) — and nothing has yet tested whether net-first
+framing DISTURBS that benefit. So after extending the store with the 4 town roles (villager,
+investigator, healer, vigilante), run a town regression.
+
+**Pre-registration (REGRESSION check — null = PASS, not a hoped improvement):** `nh_town` on the
+extended `v5_0_nethorizon` vs this epoch's `ab_arms_town` (same seeds, in-epoch; opponents memory-free
+in BOTH, so the only delta is town's rewritten memory content). PRIMARY = the validated town basket
+(`town_vote_accuracy`, `town_mislynch_rate`, `correct_elimination_rate`) HOLDS — does NOT degrade vs
+old-framing town. Per-role secondary: healer/vig benefits hold. A null (≈ ab_arms_town) is a clean
+PASS → the rewrite is safe for town. A drop = net-first disturbs town reasoning → investigate before
+adopting.
+
+⭐**Why NOT all-on for this:** on the new store the SK is fixed and wins more → town wins LESS, so an
+all-on arm masquerades as a town regression when it's actually the SK fix working. All-on CANNOT
+isolate the rewrite's effect on town. All-on has its own reserved slot: the **mandatory freeze-time
+gate** (all-on + fresh baseline, run together, POST dedup-retune — tests the shipped config
+holistically). Optional in-epoch `nh all-on` now (~$9) re-anchors the headline on the new store; if
+run, its pre-registered pass condition is **town proxies holding** — town WIN-rate is ALLOWED to dip
+below the old +23pp, because a functioning SK eats town wins (a dip there is the fix, not a regression).
+
+## ⭐ Phase B item — BATCH-MERGE redesign for the split-outcome schema (2026-06-12)
+
+The net-horizon schema changes what "duplicate" means for the batch-dedup MERGE step (online keep/drop
+is unaffected — it composes outcome to one string, no merge). New merge logic:
+
+- **Merge key becomes `situation + approach + net_verdict`, not situation alone.** Same situation +
+  approach but DIFFERENT net verdict = NOT a duplicate — it's the CONTRAST that teaches "this move
+  works here, fails there." And because retrieval is situation-only, both co-retrieve on the same query
+  → the agent sees both "worked" and "failed" → learns context-dependence. Merging across verdicts
+  would COLLAPSE exactly the signal net-horizon built. (same-ST/diff-LT → keep both; diff-ST/same-LT →
+  likely merge; the verdict dominates.)
+- **Metadata merge** (splits into freeze-safe CODE vs Phase B PROMPT): `observation_count` → SUM;
+  `net_verdict` → only same-verdict entries merge so it's preserved (no "mixed" fudge); `source_game_
+  winner`/`role_faction_won` → a single value is meaningless post-merge → aggregate into a RATE
+  (fraction of merged source-games the role won) = strictly more useful, a soft per-approach
+  success-signal. The aggregation is apply-layer CODE (freeze-safe, specc-able now); the similarity
+  decision is the MERGE PROMPT (the one freeze carve-out, inside the Phase B labelling cycle).
+- **Bonus (helps the documented "merge under-fires on verbose v5 entries"):** feed the merge prompt the
+  STRUCTURED fields (situation/approach/immediate/impact/net_verdict), not the prose blob, so it
+  compares on the right dimensions. Needs a FRESH golden merge set on net-horizon entries (old set is
+  pre-split-schema, OOD).
+
 ## Code pointers
 
-- Net-horizon: `scripts/build_nethorizon_store.py`, `situation_sim.py`, design `nethorizon_design.md`;
+- Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
+  `situation_sim.py`, design `nethorizon_design.md`;
   schema `Agents/schemas/memory.py` (Observation outcome split), prompt `Agents/prompts/extraction.py`.
 - Echo read: `echo_read.py` (+ `echo_read_decisions.json`); diagnostics `diagnose_wolf_sk_proxies.py`
   / `diagnose_wolf_blending.py` / `diagnose_investigator_confound.py`.

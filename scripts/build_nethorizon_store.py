@@ -29,7 +29,11 @@ from Agents.memory.extraction import (
     extraction_inputs_from_frozen_case,
 )
 from Agents.memory.extraction.extraction_agent import extract_postgame_per_role
-from Agents.memory.persistence import dump_memory_to_json_files, memory_store_paths
+from Agents.memory.persistence import (
+    dump_memory_to_json_files,
+    memory_store_paths,
+    seed_memory_from_json_files_cached,
+)
 from Agents.memory.store import store
 
 DEFAULT_SOURCE = "evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl"
@@ -101,17 +105,28 @@ def main() -> int:
                     help="roles to re-extract (default: the two arms' roles only — the other "
                          "roles' entries would never be retrieved by the wolf/SK arms)")
     ap.add_argument("--max-games", type=int, default=None)
+    ap.add_argument("--seed-from", default=None,
+                    help="seed the store from this existing nethorizon dir BEFORE extracting --roles "
+                         "(to ADD roles to an existing store; --output-store-dir may be the same dir). "
+                         "Role namespaces are independent, so existing roles are preserved untouched.")
     args = ap.parse_args()
 
     out_dir = Path(args.output_store_dir)
-    if out_dir.exists() and any(out_dir.iterdir()):
+    if not args.seed_from and out_dir.exists() and any(out_dir.iterdir()):
         raise SystemExit(f"{out_dir} exists and is non-empty — refusing to overwrite. Remove it first.")
+
+    if args.seed_from:
+        sfrom = Path(args.seed_from)
+        sobs, ssp = memory_store_paths(sfrom)
+        print(f"Seeding store from {sfrom} (preserving its existing role namespaces)...")
+        seed_memory_from_json_files_cached(observations_path=sobs, strategy_points_path=ssp,
+                                           target_store=store, cache_dir=sfrom)
 
     cases = load_cases(Path(args.source))
     if args.max_games:
         cases = cases[: args.max_games]
     winner_by_game = {c.get("game_id"): c.get("game_outcome") for c in cases if c.get("game_id")}
-    print(f"Re-extracting {len(cases)} games (net-horizon framing) into a fresh store...")
+    print(f"Re-extracting {len(cases)} games (net-horizon framing), roles={args.roles}...")
 
     for i, case in enumerate(cases, 1):
         gid = case.get("game_id") or f"nethorizon_{i}"
