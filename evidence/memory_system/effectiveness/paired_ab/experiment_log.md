@@ -443,6 +443,49 @@ treatment, swapping ONLY the store. Outputs `batch_results/ab_nh_wolf.jsonl` / `
 - Win rate = underpowered directional co-read at N=30 (the proxies carry it). All non-primary cuts
   exploratory. ~$6–8/arm; arms launched together (read-only on the frozen store → parallel-safe).
 
+## ⭐ NAMED PHASE B FOLLOW-UP — the application-ADHERENCE lever (from the live-arm qualitative read)
+
+While the arms ran (N=8), a qualitative trace surfaced the mechanism behind a possibly-flat wolf
+result — and it is NOT in extraction. Worked case (game 22e2fd88, surviving wolf player_5, day-3
+no-buss decision; player_7 the partner being lynched):
+
+- **Retrieval was excellent** — 3 on-point memories (score 0.82–0.85), matched-situation near-identical
+  to his query ("Investigator claim accuses my wolf ally, lynch pressure").
+- **Framing was correct** — TWO led with "Negative: voting against the Investigator became the evidence
+  that got the wolf lynched"; one even named the right play ("rather than join the majority to lynch
+  their own partner and solidify their cover…" = BUSS); a third gave a Positive alternative (force a
+  tie).
+- **He did the warned-against move anyway** — voted the Investigator to defend player_7: *"if I don't
+  support player_7 I'll be outed once he's eliminated… my only chance to survive."* In-the-moment
+  linked-fate read OVERRODE the cross-game lesson. (Lynched day 5.)
+
+⭐**Diagnosis: this is an ADHERENCE gap, not a retrieval or framing gap.** The memory was correct,
+retrieved, and well-framed, and still under-weighted at decision time. → The lever is the
+APPLICATION / injection layer, which is Phase B (agent-visible = prompt-freeze).
+
+**Reframe (important): the target is CALIBRATION, not OBEDIENCE.** player_5's gamble was rational-ish;
+tuning toward "always heed the precedent" would just recreate approach-imitation (copy the move
+instead of weighing it). The goal = make the agent WEIGH the retrieved net-outcome vs its situational
+read ("survives-today-but-leaves-a-record usually loses"), not obey.
+
+**Net-horizon is the PRECONDITION, not a competitor:** you can't tune an agent to heed a verdict that
+is itself myopic. This experiment makes the lesson correct/front-loaded; Phase B makes the agent act
+on it. So a flat blending result here does NOT waste the build — it sets up the adherence work.
+
+**Phase B experiments (named):** (1) injection-prompt A/B at decision time — current "here are relevant
+observations" vs "+ explicit weigh-the-net-outcome guidance"; paired arms, validated proxies, same
+machinery. (2) ⭐**the `net_verdict`-injection arm** — we STORE positive/negative/mixed/unclear as
+metadata but do NOT inject it (the design reserved this as a separate follow-up); surface the one-word
+flag and test whether it moves adherence more than buried prose. (3) fallback = fine-tune the
+application model on good-adherence examples (parked fine-tuning Project).
+
+**Guards:** injection prompts are agent-visible → self-inflicted epoch → fresh same-epoch baselines +
+pre-registration + validated primary. ⭐**Ceiling honesty:** cornered/doomed wolves (e.g. player_7) are
+unfixable by any prompt AND are already excluded from the blending metric (perspective rule); the
+addressable population is the SURVIVING-wolf linked-fate gambles like player_5 → expect a partial
+effect, not a flip. Walking into Phase B with "memory correct + retrieved but under-weighted at
+decision time" is a far stronger position than "wolf null, unclear why."
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py`, `situation_sim.py`, design `nethorizon_design.md`;
