@@ -90,6 +90,7 @@ def build_dataset_records(config: DatasetBuildConfig) -> list[EvalDatasetRecord]
         per_role_per_phase=config.per_role_per_phase,
         max_samples=config.max_samples or None,
         seed=config.seed,
+        action_phases=config.action_phases,
     )
     print(f"Sampled {len(sampled)} cases for local dataset.")
 

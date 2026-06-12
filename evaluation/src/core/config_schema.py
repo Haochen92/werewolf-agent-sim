@@ -49,6 +49,11 @@ class DatasetBuildConfig(BaseModel):
     per_role_per_phase: int = Field(default=1, ge=1)
     max_samples: int = Field(default=40, ge=0)
     seed: int = 0
+    action_phases: list[str] | None = None
+    """Which action phases are eligible for sampling. None → day-only
+    ("day_discussion", "day_vote"). Add "night_action" to include night
+    decisions (wolf kill-vote, healer, investigator, SK, vigilante) — in scope
+    for Phase B labeling on v5."""
     output: Path | None = None
     overwrite: bool = False
 
