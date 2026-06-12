@@ -693,6 +693,58 @@ cost the game). Net-first helps wolf/SK by demoting that lead and hurts town by 
 factions want OPPOSITE outcome framings. So the fix is not "make net-first more actionable for town";
 town wants immediate-first. → wolf/SK net-first, town immediate-first, namespaces independent.
 
+## ⭐⭐ Phase B workstream — decision-pipeline + memory-application bugs (2026-06-12, FROZEN until current runs finish)
+
+Surfaced while reading the worst epoch-B nh_town games (SK wins 6/8; town lynches its own power roles).
+All FROZEN (epoch-breaking) — fix as ONE Phase B bundle, then regenerate the whole corpus on a pinned
+model (see regeneration protocol below). None of these confound the net-first verdict (all uniform
+across arms); they're the *enabling substrate* + measurement-quality leaks.
+
+**A. Vote-before-reasoning schema-order bug (HIGH leverage, ~1-line fix).** `DayVoteOutput` (and
+healer/investigator/SK/discuss outputs in `Agents/schemas/output.py`) declare the action target
+(`vote_target` / `*_target`) BEFORE `updated_strategy`. Structured output emits fields in order → the
+model commits the vote FIRST, then writes reasoning → `updated_strategy` is post-hoc rationalization
+that can contradict the already-cast vote. Smoking gun: game 5042eda6 day4 player_9 (investigator)
+emitted `vote_target=player_8` then reasoned "player_6 must be the enemy… I'll vote player_6" — vote
+already locked on the healer. Mismatch rate UNIFORM across arms (off 7% / immediate 2% / net-first 4%,
+heuristic upper bound) → harness bug, not memory. But it CONCENTRATES on hard/close decisions (where
+snap≠considered) — the ones that decide games. Fix = reorder reasoning BEFORE target ("reason then
+answer"). FROZEN: `output.py` is MODEL-VISIBLE; reorder changes the schema the model sees = new epoch.
+
+**B. Memory-application prompt structure (`Agents/prompts/memory.py`).** Three structural pushes toward
+over-/mis-adoption, uniform across stores:
+- *Vote gets the thinnest scaffold.* `DAY_DISCUSSION_/NIGHT_ACTION_MEMORY_CONTEXT` end with "Update your
+  strategy… if your approach resembles a bad-outcome pattern, adjust… **do not apply rigidly**."
+  `DAY_VOTE_MEMORY_CONTEXT` DROPS all of it (day.py:123 adds none either) → the decisive action gets the
+  least critical framing.
+- *Authoritative framing, no analogy check.* Every block asserts the memories are "relevant to the
+  current situation" with no instruction to verify the past actors map onto the current players →
+  invites surface pattern-match + role inversion (the player_4 lynch: town applied "consensus-breaking
+  saved the SK" by lynching the one player actually hunting the SK).
+- *Observations have NO usage instruction.* `adoption_instruction` governs `adopted_strategy_keys` =
+  strategy_points only (empty in obs-only arms). The OBSERVATIONS — the whole payload here — are dumped
+  as authoritative facts with zero weighing framework. Suspicion also carries discussion→vote via
+  `previous_strategy` (turn/actions.py:257). Fixes: add the non-rigid/verify scaffold to vote; give
+  observations a critical-usage rule; add a lightweight "which current player maps to this, does it
+  hold?" analogy step.
+
+**C. Observation-validity = the conceptual root (drives the lesson schema).** An observation's outcome
+label is `read × action × luck`. The canary per-game sd=0.35 IS that luck term measured: a single
+game's outcome is ~35% noise → a lesson labeled by one game's outcome is mostly recording luck, and
+situation-retrieval surfacing two opposite-labeled obs is the data honestly reflecting variance through
+a single-sample lens ("conflicting lessons" is not a bug). ⇒ (1) lessons must be conditioned on the
+READ ("consensus is right WHEN built on verified info"), not the outcome; (2) calibrate over instances
+(rate-aggregation, already in the batch-merge design) not single verdicts. Net-first backfires because
+it leads with the outcome verdict — the MOST luck-contaminated field — and demotes the read.
+
+**D. Regeneration protocol (post-Phase-B).** Phase B = a stack of epoch-breakers (A+B + possibly content
+framing). Don't measure piecemeal vs tonight. Bundle all → freeze → **pin a dated model snapshot**
+(tonight's lesson: rolling alias drifted +0.24 overnight) → regenerate the whole corpus ONCE in one
+stable window with a **canary at start AND end** to prove no mid-regeneration drift. Tonight's epoch-B
+arms = methodology exhibit (drift + noise floor) + DIRECTIONAL net-first + MECHANISM; their numbers are
+superseded by the regeneration, their insights carry forward. ⇒ finish the current run for direction +
+mechanism, do NOT chase significance out of a soon-superseded epoch.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),
