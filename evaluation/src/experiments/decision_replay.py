@@ -679,6 +679,67 @@ def run_reorder_test(
     }
 
 
+def run_reorder_adoption(
+    batch_path: Path,
+    n: int = 40,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    judge_model: str = DEFAULT_ADHERENCE_JUDGE_MODEL,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Did reason-first actually raise memory CONSIDERATION/adoption (the
+    mechanism step 2's outcome read assumes)? Replay the STORED arm under
+    {vote-first, reason-first}, capture the agent's reasoning, judge adherence.
+    If reason-first lifts applied/followed and drops ignored, the reorder
+    strengthened the memory->action connection."""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
+    schemas = {"vote_first": None, "reason_first": DayVoteOutputReasonFirst}
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        out = {}
+        for sname, sch in schemas.items():
+            votee, updated = _replay_vote(
+                case, case.retrieved_observations, allow, schema_override=sch
+            )
+            jcase = application_case_for_judge(
+                case,
+                agent_message=None,
+                agent_vote=DayVote(voter=case.player_id, votee=votee or "abstain"),
+                updated_strategy=updated,
+            )
+            out[sname] = judge_decision_adherence(jcase, model=judge_model)
+        return out
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    app = {s: Counter() for s in schemas}
+    follow = {s: Counter() for s in schemas}
+    nmem = {s: 0 for s in schemas}
+    for out in results:
+        for s in schemas:
+            adh = out[s]
+            if adh is None:
+                continue
+            for r in adh.per_memory:
+                nmem[s] += 1
+                app[s][r.application] += 1
+                follow[s][r.action_followed] += 1
+
+    by_schema = {}
+    for s in schemas:
+        k = nmem[s] or 1
+        by_schema[s] = {
+            "n_memories": nmem[s],
+            "applied": round(app[s]["applied"] / k, 3),
+            "ignored": round(app[s]["ignored"] / k, 3),
+            "followed": round(follow[s]["followed"] / k, 3),
+            "contradicted": round(follow[s]["contradicted"] / k, 3),
+        }
+    return {"batch": batch_path.name, "n_decisions": len(cases), "by_schema": by_schema}
+
+
 def run_adherence_scan(
     batch_path: Path,
     n: int = 40,
@@ -770,6 +831,13 @@ def main() -> None:
         "schema x memory off vs stored (tests the reason-before-act fix)",
     )
     ap.add_argument(
+        "--reorder-adoption",
+        type=int,
+        default=0,
+        help="judge adoption under vote-first vs reason-first (did reorder raise "
+        "memory consideration?)",
+    )
+    ap.add_argument(
         "--judge",
         action="store_true",
         help="with --causal, also label adherence on the stored arm",
@@ -807,6 +875,8 @@ def main() -> None:
         print(json.dumps(run_adherence_scan(args.batch, n=args.adherence_scan, min_day=args.min_day, roles=roles), indent=2))
     elif args.reorder:
         print(json.dumps(run_reorder_test(args.batch, n=args.reorder, min_day=args.min_day, roles=roles), indent=2))
+    elif args.reorder_adoption:
+        print(json.dumps(run_reorder_adoption(args.batch, n=args.reorder_adoption, min_day=args.min_day, roles=roles), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
 

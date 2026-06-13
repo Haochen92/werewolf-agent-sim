@@ -166,7 +166,15 @@ reason-first emits updated_strategy BEFORE vote_target. Stable:
 - reason-first: off **0.26** (baseline lift −0.14, stable) → stored 0.11 (memory ≈ −0.15).
 - DiD = **−0.10**: memory is MORE negative under reason-first, not less.
 
-⇒ Hypothesis (reorder reveals helpful memory) NOT supported here — with caveats: (1) only HALF the fix
+**Adoption check (validates the mechanism, N=40):** reason-first genuinely RAISED memory consideration —
+applied 0.44→0.51, ignored 0.52→**0.45**, followed 0.61→0.67, contradicted 0.22→0.19 (all four shift toward
+more adoption). So the worse outcome is NOT merely reasoning-degrades-baseline: the connection really
+strengthened AND that made decisions worse ⇒ more consideration of net-first memory → worse decisions,
+confirming the content is harmful. Cross-checked across measures: the JUDGE shows adoption ↑ (reading the
+now-upfront, less-post-hoc reasoning), the JUDGE-FREE outcome shows quality ↓ — they agree.
+
+⇒ Hypothesis (reorder reveals helpful memory) NOT supported — and now VALIDATED as a content problem, not
+a connection one — with caveats: (1) only HALF the fix
 (reorder, no adoption scaffold) and a WEAK reorder (the strategy NOTE, not a clean "reason about this vote"
 step); (2) the net-first (harmful-content) store; (3) day-3 (prompt-covered). **The real signal flips the
 priority:** forcing the connection makes the net-first memory drag the vote DOWN → the agent's ignoring was

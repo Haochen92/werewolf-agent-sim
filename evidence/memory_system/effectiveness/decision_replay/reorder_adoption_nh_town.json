@@ -1,0 +1,20 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 40,
+  "by_schema": {
+    "vote_first": {
+      "n_memories": 130,
+      "applied": 0.438,
+      "ignored": 0.523,
+      "followed": 0.608,
+      "contradicted": 0.215
+    },
+    "reason_first": {
+      "n_memories": 130,
+      "applied": 0.508,
+      "ignored": 0.446,
+      "followed": 0.669,
+      "contradicted": 0.185
+    }
+  }
+}
