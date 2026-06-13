@@ -26,21 +26,51 @@ from math import comb
 from pathlib import Path
 from typing import Any
 
+from Agents.prompts import (
+    HEALER_NIGHT,
+    INVESTIGATOR_NIGHT,
+    SERIAL_KILLER_NIGHT,
+    VIGILANTE_NIGHT,
+    WOLF_NIGHT_DISCUSS,
+)
 from Agents.schemas import DayVote
 from Agents.schemas.evaluation import EvalCase
+from Agents.schemas.output import (
+    HealerOutput,
+    InvestigatorOutput,
+    SerialKillerOutput,
+    VigilanteOutput,
+    WolfNightDiscussOutput,
+)
+from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.turn import _run_agent
 from evaluation.src.components.application import (
     action_spec_for,
     application_case_for_judge,
+    run_application_action,
 )
 from evaluation.src.components.decision_scoring import (
     REPLAYABLE_TOWN_ROLES,
+    THREAT_ROLES,
     allow_abstain_for,
+    score_night_target,
     score_vote,
 )
+
+# Night-action spec map (role -> prompt, output schema, output_key) mirroring
+# application.ACTION_SPECS for the day. _run_agent already handles these night
+# output_keys; the wolf kill rides the wolf_channel vote field.
+NIGHT_SPECS: dict[str, tuple[Any, Any, str]] = {
+    "wolf": (WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel"),
+    "serial_killer": (SERIAL_KILLER_NIGHT, SerialKillerOutput, "serial_killer_target"),
+    "healer": (HEALER_NIGHT, HealerOutput, "healer_target"),
+    "investigator": (INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"),
+    "vigilante": (VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target"),
+}
 from evaluation.src.components.memory_adherence import (
     DEFAULT_ADHERENCE_JUDGE_MODEL,
     judge_decision_adherence,
+    judge_discussion_stance,
     summarize_adherence,
 )
 from evaluation.src.components.situation_summary import eval_case_to_agent_payload
@@ -69,12 +99,14 @@ def load_game_index(batch_path: Path) -> dict[str, dict[str, Any]]:
     return index
 
 
-def iter_town_vote_cases(
-    batch_path: Path, roles: frozenset[str] = REPLAYABLE_TOWN_ROLES
+def iter_cases(
+    batch_path: Path,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    phase: str = "day_vote",
 ) -> Iterator[tuple[EvalCase, dict[str, Any]]]:
-    """Yield (case, game_info) for every replay-able day_vote decision with
-    retrieved memory in the batch, for the given roles — the unit the screen
-    scores. Defaults to the town roles; pass {'wolf'} for the deceiver day-vote."""
+    """Yield (case, game_info) for every replay-able decision in the given phase
+    with retrieved memory, for the given roles — the unit the screen scores.
+    phase='day_vote' (default) or 'night_action'; roles default to town."""
     source = LocalCaseSource(batch_path)
     index = load_game_index(batch_path)
     for tid in source.trace_ids():
@@ -82,7 +114,7 @@ def iter_town_vote_cases(
         if not game:
             continue
         for case in source.eval_cases(tid):
-            if case.action_phase != "day_vote":
+            if case.action_phase != phase:
                 continue
             if case.player_role not in roles:
                 continue
@@ -100,7 +132,7 @@ def _abstained_on_day(day: int, day_resolutions: list[dict]) -> bool:
 
 def run_observational(batch_path: Path) -> dict[str, Any]:
     """Score recorded town votes against truth + validate abstain recovery."""
-    cases = list(iter_town_vote_cases(batch_path))
+    cases = list(iter_cases(batch_path))
     n = len(cases)
     hits = mislynch = abstain = allow_false = 0
     by_role: Counter[str] = Counter()
@@ -154,7 +186,7 @@ def run_adherence_smoke(
 ) -> None:
     """Judge adherence on a few recorded day>=min_day decisions and print the
     memories + labels side by side, so the rubric can be eyeballed cheaply."""
-    cases = [(c, g) for c, g in iter_town_vote_cases(batch_path) if c.day >= min_day]
+    cases = [(c, g) for c, g in iter_cases(batch_path) if c.day >= min_day]
     take = min(n, len(cases))
     print(f"{len(cases)} eligible (day>={min_day}); judging first {take} with {model}\n")
     for case, game in cases[:n]:
@@ -220,11 +252,12 @@ def _select_diverse(
     min_day: int,
     max_day: int = 999,
     roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    phase: str = "day_vote",
 ) -> list[tuple[EvalCase, dict[str, Any]]]:
-    """Pick ~n decisions in [min_day, max_day] for the given roles, spread ACROSS
-    games (round-robin), so a sample isn't dominated by one game's decisions."""
+    """Pick ~n decisions in [min_day, max_day] for the given roles+phase, spread
+    ACROSS games (round-robin), so a sample isn't dominated by one game."""
     by_game: OrderedDict[str, list[tuple[EvalCase, dict[str, Any]]]] = OrderedDict()
-    for case, game in iter_town_vote_cases(batch_path, roles):
+    for case, game in iter_cases(batch_path, roles, phase):
         if case.day < min_day or case.day > max_day:
             continue
         by_game.setdefault(str(game["game_id"]), []).append((case, game))
@@ -367,6 +400,192 @@ def run_causal(
     }
 
 
+def _replay_night(
+    case: EvalCase, retrieved_observations: list[Any], prompt_template: Any | None = None
+) -> str | None:
+    """Regenerate one night target with a swapped memory block. The wolf kill
+    rides the wolf_channel vote field; other roles return their *_target directly."""
+    payload = eval_case_to_agent_payload(case)
+    payload["retrieved_observations"] = retrieved_observations
+    payload["strategy_points"] = []
+    prompt, schema, output_key = NIGHT_SPECS[case.player_role]
+    result = _run_agent(payload, prompt_template or prompt, schema, output_key)
+    if not result:
+        return None
+    if output_key == "wolf_channel":
+        wc = result.get("wolf_channel", [])
+        return wc[0].vote if wc else None
+    return result.get(output_key)
+
+
+def run_night_causal(
+    batch_path: Path,
+    n: int = 60,
+    roles: frozenset[str] = frozenset({"wolf"}),
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Night-kill screen: replay each night target memory-off vs as-stored in one
+    sitting, score against true roles. For deceivers (wolf/SK) the metric is
+    POWER-TARGETING — did the kill land on a town power role (investigator/healer/
+    vigilante), the A/B's wolf night proxy — paired by decision."""
+    cases = _select_diverse(batch_path, n, 1, 999, roles, phase="night_action")
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        row: dict[str, Any] = {
+            "game": str(game["game_id"])[:8],
+            "role": case.player_role,
+            "day": case.day,
+            "recorded_target": (
+                case.agent_night_action.target if case.agent_night_action else None
+            ),
+        }
+        outs = {}
+        for arm in ("off", "stored"):
+            retrieved = [] if arm == "off" else case.retrieved_observations
+            o = score_night_target(_replay_night(case, retrieved), game["roles"])
+            outs[arm] = o
+            row[arm] = {"target": o.target, "role": o.target_role, "power": o.hit_power}
+        return row, outs["off"], outs["stored"]
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    agg = {a: Counter() for a in ("off", "stored")}
+    power_more = power_less = failed = 0
+    rows: list[dict[str, Any]] = []
+    for row, off, stored in results:
+        rows.append(row)
+        if row["off"]["target"] is None or row["stored"]["target"] is None:
+            failed += 1
+            continue
+        for arm, o in (("off", off), ("stored", stored)):
+            agg[arm]["n"] += 1
+            agg[arm]["power"] += o.hit_power
+            agg[arm]["threat"] += o.hit_threat
+            agg[arm]["town"] += o.hit_town
+        if stored.hit_power and not off.hit_power:
+            power_more += 1
+        elif off.hit_power and not stored.hit_power:
+            power_less += 1
+
+    def rate(a: str, k: str) -> float | None:
+        return round(agg[a][k] / agg[a]["n"], 3) if agg[a]["n"] else None
+
+    summary = {
+        a: {"n": agg[a]["n"], "power_targeting": rate(a, "power"), "hit_threat": rate(a, "threat"), "hit_town": rate(a, "town")}
+        for a in ("off", "stored")
+    }
+    p_off, p_st = summary["off"]["power_targeting"], summary["stored"]["power_targeting"]
+    return {
+        "batch": batch_path.name,
+        "phase": "night_action",
+        "roles": sorted(roles),
+        "n_decisions": len(cases),
+        "n_failed": failed,
+        "arms": summary,
+        "stored_minus_off_power_targeting": (
+            round(p_st - p_off, 3) if p_off is not None and p_st is not None else None
+        ),
+        "power_discordant": {
+            "memory_more_power": power_more,
+            "memory_less_power": power_less,
+            "mcnemar_p": round(mcnemar_p(power_more, power_less), 4),
+        },
+        "rows": rows,
+    }
+
+
+PASSIVE_STANCES = frozenset({"passive_or_hedging", "defensive_only"})
+
+
+def run_discussion_causal(
+    batch_path: Path,
+    n: int = 60,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    judge_model: str = "gemini-2.5-flash",
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Discussion screen: replay each town day_discussion turn memory-off vs
+    as-stored, score the regenerated turn's stance (outcome-blind). Probes the
+    anti-aggression hypothesis at the single-turn level — does memory make town
+    more passive / less likely to name a real threat on the SAME board?"""
+    cases = _select_diverse(batch_path, n, 1, 999, roles, phase="day_discussion")
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        day_ctx = format_day_channel(case.visible_discussion)
+        row: dict[str, Any] = {
+            "game": str(game["game_id"])[:8], "role": case.player_role, "day": case.day
+        }
+        outs = {}
+        for arm in ("off", "stored"):
+            retrieved = [] if arm == "off" else case.retrieved_observations
+            _, agent_message, _, _ = run_application_action(
+                case, retrieved_observations=retrieved, strategy_points=[]
+            )
+            msg = agent_message.message if agent_message else ""
+            stance = judge_discussion_stance(
+                msg, day_ctx, case.player_id, case.day, model=judge_model
+            )
+            accused = stance.accused_player if stance else None
+            outs[arm] = {
+                "stance": stance.stance if stance else None,
+                "accused": accused,
+                "accused_role": game["roles"].get(accused) if accused else None,
+                "silent": not (msg or "").strip(),
+            }
+            row[arm] = outs[arm]
+        return row, outs["off"], outs["stored"]
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    agg = {a: Counter() for a in ("off", "stored")}
+    passive_more = passive_less = 0
+    rows: list[dict[str, Any]] = []
+    for row, off, stored in results:
+        rows.append(row)
+        for arm, o in (("off", off), ("stored", stored)):
+            if o["stance"] is None:
+                continue
+            agg[arm]["n"] += 1
+            agg[arm]["passive"] += o["stance"] in PASSIVE_STANCES or o["silent"]
+            agg[arm]["drives"] += o["stance"] == "drives_suspicion"
+            agg[arm]["accuses_threat"] += o["accused_role"] in THREAT_ROLES
+            agg[arm]["silent"] += bool(o["silent"])
+        if off["stance"] and stored["stance"]:
+            op = off["stance"] in PASSIVE_STANCES or off["silent"]
+            sp = stored["stance"] in PASSIVE_STANCES or stored["silent"]
+            if sp and not op:
+                passive_more += 1
+            elif op and not sp:
+                passive_less += 1
+
+    def rate(a: str, k: str) -> float | None:
+        return round(agg[a][k] / agg[a]["n"], 3) if agg[a]["n"] else None
+
+    summary = {
+        a: {"n": agg[a]["n"], "passive": rate(a, "passive"), "drives_suspicion": rate(a, "drives"), "accuses_threat": rate(a, "accuses_threat"), "silent": rate(a, "silent")}
+        for a in ("off", "stored")
+    }
+    p_off, p_st = summary["off"]["passive"], summary["stored"]["passive"]
+    return {
+        "batch": batch_path.name,
+        "phase": "day_discussion",
+        "roles": sorted(roles),
+        "n_decisions": len(cases),
+        "arms": summary,
+        "stored_minus_off_passive": (
+            round(p_st - p_off, 3) if p_off is not None and p_st is not None else None
+        ),
+        "passive_discordant": {
+            "memory_more_passive": passive_more,
+            "memory_less_passive": passive_less,
+            "mcnemar_p": round(mcnemar_p(passive_more, passive_less), 4),
+        },
+        "rows": rows,
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Decision-replay screen.")
     ap.add_argument(
@@ -383,7 +602,20 @@ def main() -> None:
         "--causal",
         type=int,
         default=0,
-        help="causal replay on N decisions: memory off vs as-stored, paired",
+        help="causal day-vote replay on N decisions: memory off vs as-stored, paired",
+    )
+    ap.add_argument(
+        "--night",
+        type=int,
+        default=0,
+        help="causal night-action replay on N decisions (power-targeting metric); "
+        "use with --roles wolf or --roles serial_killer",
+    )
+    ap.add_argument(
+        "--discussion",
+        type=int,
+        default=0,
+        help="causal day_discussion replay on N town turns (passivity / threat-naming)",
     )
     ap.add_argument(
         "--judge",
@@ -415,6 +647,10 @@ def main() -> None:
             roles=roles,
         )
         print(json.dumps(report, indent=2))
+    elif args.night:
+        print(json.dumps(run_night_causal(args.batch, n=args.night, roles=roles), indent=2))
+    elif args.discussion:
+        print(json.dumps(run_discussion_causal(args.batch, n=args.discussion, roles=roles), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
 

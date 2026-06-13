@@ -154,6 +154,78 @@ def judge_decision_adherence(
             return None
 
 
+class DiscussionStance(BaseModel):
+    """Outcome-blind read of one regenerated town discussion turn — the
+    anti-aggression probe: did memory make the turn more passive / less likely to
+    name a real threat, on the same board?"""
+
+    stance: Literal[
+        "drives_suspicion", "supports_suspicion", "passive_or_hedging", "defensive_only"
+    ] = Field(
+        description=(
+            "drives_suspicion: makes a concrete new accusation/read against a "
+            "specific player; supports_suspicion: backs an existing accusation; "
+            "passive_or_hedging: no concrete read, asks-for-info, or general "
+            "caution; defensive_only: only defends self / deflects."
+        )
+    )
+    accused_player: str | None = Field(
+        default=None,
+        description="The player_id this turn concretely accuses or reads as a threat, if any; else null.",
+    )
+
+
+_STANCE_SYSTEM = """You classify ONE town player's single discussion turn in a Werewolf game. Judge only the turn's STANCE — how assertively it pushes the hunt — never whether it's correct, and you are not told any roles or the outcome.
+
+stance:
+- drives_suspicion: makes a concrete NEW accusation or suspicion read against a specific player.
+- supports_suspicion: backs/echoes an existing accusation without adding a new target.
+- passive_or_hedging: no concrete read — asks for information, counsels caution/patience, or speaks in generalities.
+- defensive_only: only defends itself or deflects, no read on anyone else.
+
+accused_player: the exact player_id (e.g. player_4) the turn concretely accuses or reads as a threat, or null if none."""
+
+_STANCE_USER = """Discussion so far (day {day}):
+{day_channel}
+
+The turn to classify (spoken by {player_id}):
+{message}
+
+Classify this turn's stance and the player it accuses (if any)."""
+
+
+def judge_discussion_stance(
+    message: str,
+    day_channel_text: str,
+    player_id: str,
+    day: int,
+    *,
+    model: str = "gemini-2.5-flash",
+    max_retries: int = 1,
+) -> DiscussionStance | None:
+    """Classify a regenerated discussion turn's assertiveness (outcome-blind)."""
+    if not message or not message.strip():
+        return DiscussionStance(stance="passive_or_hedging", accused_player=None)
+    user = _STANCE_USER.format(
+        day=day, day_channel=day_channel_text, player_id=player_id, message=message
+    )
+    llm = create_chat_model(model).with_structured_output(DiscussionStance)
+    for attempt in range(max_retries + 1):
+        try:
+            return llm.invoke(
+                [
+                    {"role": "system", "content": _STANCE_SYSTEM},
+                    {"role": "user", "content": user},
+                ],
+                config={"run_name": f"discussion_stance_{player_id}_day_{day}"},
+            )
+        except Exception as exc:  # noqa: BLE001 - judge is best-effort
+            if attempt < max_retries:
+                continue
+            print(f"  discussion-stance judge failed: {exc}", flush=True)
+            return None
+
+
 def summarize_adherence(result: DecisionAdherence) -> dict[str, float | int]:
     """Code-side rollups over the per-memory labels (the model is never asked
     for these)."""

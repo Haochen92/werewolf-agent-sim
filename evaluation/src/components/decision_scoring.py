@@ -21,6 +21,10 @@ from Agents.game_config import GameConfig
 # so a town vote that lands on either role is the correct decision.
 THREAT_ROLES = frozenset({"wolf", "serial_killer"})
 
+# Town's high-value roles — what a deceiver night-kill most wants to remove and
+# what the A/B's wolf "power_targeting" proxy measures.
+POWER_ROLES = frozenset({"investigator", "healer", "vigilante"})
+
 # Town roles whose day_vote the replay harness can regenerate today — i.e. the
 # roles present in evaluation.src.components.application.ACTION_SPECS for
 # ("<role>", "day_vote"). Vigilante/serial_killer lack a vote spec there.
@@ -90,3 +94,32 @@ def allow_abstain_for(
     cfg = config or GameConfig()
     streak = no_lynch_streak_before(day, list(day_resolutions))
     return cfg.abstain_enabled and streak < cfg.no_lynch_force_after
+
+
+@dataclass(frozen=True)
+class NightOutcome:
+    """The objective read on one night target, scored against the game's roles."""
+
+    target: str | None
+    target_role: str | None
+    hit_power: bool
+    """Targeted a town power role (investigator/healer/vigilante) — the deceiver
+    night proxy: removing town's tools is the high-value wolf/SK kill."""
+    hit_threat: bool
+    """Targeted a wolf or the serial killer — the good investigator/vigilante hit."""
+    hit_town: bool
+    """Targeted any town player."""
+
+
+def score_night_target(target: str | None, roles: Mapping[str, str]) -> NightOutcome:
+    """Score one night target against ground-truth roles. ``hold_fire`` / no-op
+    targets (the vigilante banking a bullet) are neither power nor threat hits."""
+    is_noop = target in (None, "hold_fire", "abstain")
+    role = None if is_noop else roles.get(target)
+    return NightOutcome(
+        target=target,
+        target_role=role,
+        hit_power=role in POWER_ROLES,
+        hit_threat=role in THREAT_ROLES,
+        hit_town=role is not None and role not in THREAT_ROLES,
+    )
