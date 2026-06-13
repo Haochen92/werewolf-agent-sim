@@ -93,6 +93,29 @@ class DayVoteOutputReasonFirst(BaseModel):
     vote_target: str
 
 
+class DayVoteOutputMemoryLinked(BaseModel):
+    """Reason-before-act with an explicit memory-LINKING step: the reasoning field
+    (kept named updated_strategy so the live extractor + the adherence judge read
+    it unchanged) is emitted FIRST and its description forces the agent to connect
+    the retrieved memories to THIS vote before committing. Aim is to maximize
+    memory consideration, not the score. Replay input only."""
+
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    updated_strategy: str = Field(
+        description=(
+            "Before you vote, reason about THIS vote: go through the retrieved "
+            "memories one by one, decide which actually apply to the current "
+            "players and situation, and state explicitly how each changes (or does "
+            "not change) who you should vote for. Make the link between the "
+            "memories and your final choice explicit; if none apply, say so and why."
+        )
+    )
+    vote_target: str
+
+
 def load_game_index(batch_path: Path) -> dict[str, dict[str, Any]]:
     """Map trace_id -> the ground truth a vote is scored against (roles +
     day_resolutions for abstain recovery), read straight from the batch records."""
@@ -620,7 +643,11 @@ def run_reorder_test(
     not vote-first, the schema order was suppressing the memory->vote connection
     and the prior nulls were an adoption artifact, not a content verdict."""
     cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
-    schemas = {"vote_first": None, "reason_first": DayVoteOutputReasonFirst}
+    schemas = {
+        "vote_first": None,
+        "reason_first": DayVoteOutputReasonFirst,
+        "memory_linked": DayVoteOutputMemoryLinked,
+    }
 
     def one(case: EvalCase, game: dict[str, Any]):
         allow = allow_abstain_for(case.day, game["day_resolutions"])
@@ -663,19 +690,26 @@ def run_reorder_test(
             if off_nv is not None and st_nv is not None
             else None,
         }
-    me_r, me_v = by_schema["reason_first"]["memory_effect"], by_schema["vote_first"]["memory_effect"]
-    off_r, off_v = nv("reason_first", "off"), nv("vote_first", "off")
+    off_v, me_v = nv("vote_first", "off"), by_schema["vote_first"]["memory_effect"]
+    vs_vote_first = {}
+    for s in schemas:
+        if s == "vote_first":
+            continue
+        off_s, me_s = nv(s, "off"), by_schema[s]["memory_effect"]
+        vs_vote_first[s] = {
+            "baseline_lift": round(off_s - off_v, 3)
+            if off_s is not None and off_v is not None
+            else None,
+            "did_memory_effect": round(me_s - me_v, 3)
+            if me_s is not None and me_v is not None
+            else None,
+        }
     return {
         "batch": batch_path.name,
         "n_decisions": len(cases),
         "n_failed": failed,
         "by_schema": by_schema,
-        "reasoning_baseline_lift": round(off_r - off_v, 3)
-        if off_r is not None and off_v is not None
-        else None,
-        "did_memory_effect_reason_minus_vote": round(me_r - me_v, 3)
-        if me_r is not None and me_v is not None
-        else None,
+        "vs_vote_first": vs_vote_first,
     }
 
 
@@ -693,7 +727,11 @@ def run_reorder_adoption(
     If reason-first lifts applied/followed and drops ignored, the reorder
     strengthened the memory->action connection."""
     cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
-    schemas = {"vote_first": None, "reason_first": DayVoteOutputReasonFirst}
+    schemas = {
+        "vote_first": None,
+        "reason_first": DayVoteOutputReasonFirst,
+        "memory_linked": DayVoteOutputMemoryLinked,
+    }
 
     def one(case: EvalCase, game: dict[str, Any]):
         allow = allow_abstain_for(case.day, game["day_resolutions"])
