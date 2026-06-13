@@ -1,0 +1,877 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 20,
+  "day": 3,
+  "planted_memory_situation": "In the final-three scenario against the serial killer, the investigator's and healer's roles were publicly known and confirmed by game events. The investigator made a definitive accusation against the serial killer, who ",
+  "n_decisions_emitting_verdicts": 20,
+  "planted_verdict_dist": {
+    "does_not_apply": 13,
+    "fully_applies": 2,
+    "not_mentioned": 3,
+    "partly_applies": 2
+  },
+  "rejection_rate": 0.65,
+  "engaged_as_applicable": 0.2,
+  "vote_accuracy": {
+    "structured_applicability_with_plant": 0.55,
+    "vote_first_with_plant": 0.7,
+    "vote_first_clean_baseline": 0.75
+  },
+  "rows": [
+    {
+      "game": "fa79dc3b",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The current game state has already passed the point where an investigator's role is unknown, and the village has already successfully elimin"
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "This observation deals with a split village and a credible investigator accusation, which does not match our current situation where the inv"
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "The current goal is to identify a potential wolf or serial killer based on patterns, and this observation highlights the danger of falling f"
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not in the final-three endgame yet, and there is no confirmed investigator role left to rely on."
+        }
+      ],
+      "reasoning": "With the investigator, vigilante, and one wolf (player 7) gone, the remaining pool is small. I need to focus on the voting records from Day 2 to identify who was most aligned with player 7's behavior or who has been most effective at sowing confusion. Player 6's points about checking who validated 7 are sound. I will vote for player 2 based on their persistent, potentially diversionary focus on 'early' vote timing which matches the pattern of a wolf trying to direct the village's scrutiny away f",
+      "vote_sm_plant": {
+        "v": "player_2",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_2",
+        "hit": false
+      },
+      "vote_base_clean": {
+        "v": "player_2",
+        "hit": false
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The current game is not as early stage as the scenario described, and we have already successfully eliminated a confirmed evil role (the Ser"
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "The current situation involves a player already confirmed to have been targeted by the wolves (Player 3) rather than a simple unverified acc"
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "While we are looking for a wolf, the investigator has not yet provided a definitive result, making a consensus on a specific target harder t"
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not yet in the final three, and we do not have a confirmed investigator result to act upon."
+        }
+      ],
+      "reasoning": "Continue to press Player 3 to share their investigation findings. With the serial killer gone, the village must prioritize information over vague behavioral patterns to avoid losing more players to wolves. If no definitive info is provided by Player 3, I will focus on voting for the player who showed the most inconsistent voting behavior during the Serial Killer elimination.",
+      "vote_sm_plant": {
+        "v": "abstain",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_7",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_7",
+        "hit": true
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "This memory pertains to a situation with a confirmed investigator, which we currently lack."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "The wolves have not been eliminated in this game; we are still identifying the second wolf."
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "We are currently in a mid-game situation where identifying the second wolf and serial killer is critical, and we must avoid being distracted"
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We do not have a confirmed investigator to guide our vote in this final-three-like scenario."
+        }
+      ],
+      "reasoning": "Continue focusing on the voting record. Player 8 and player 6 both aligned with the known wolf, player 1, on the vigilante elimination. Between them, player 8 was the most vocal. I will target player 8 to pressure the most likely remaining wolf, or at least break the defensive alliance between these two, while remaining vigilant for the serial killer's subtle influence.",
+      "vote_sm_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_8",
+        "hit": true
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The situation matches our current state of being in a critical endgame where every vote counts, but we lack the confirmed role information t"
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "The current game does not have confirmed wolf eliminations and we are not in the stage where the village is hunting the serial killer after "
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "This scenario assumes the existence of confirmed roles to guide the vote, which we do not have."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "This scenario assumes the existence of confirmed roles to guide the vote, which we do not have."
+        }
+      ],
+      "reasoning": "With no confirmed information, I must identify which player, player_8 or player_4, used the momentum of the Day 2 lynch most aggressively to clear a power role. Both voted against the vigilante, and while they justify it as anti-disruption, the outcome directly favored the night-killers. I will target player_8 as they were one of the primary drivers of the discussion throughout the game, which potentially aligns with a manipulative role trying to control the narrative.",
+      "vote_sm_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_8",
+        "hit": true
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "investigator",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "fully_applies",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "My current situation involves a clear role investigation result, not a guess based on social momentum."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "I am not acting in a way that contributes to a tie; I am pushing for a decisive elimination based on concrete information."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "My vote is based on an investigation result identifying the serial killer, not on a misinterpretation of a vigilante's confession."
+        },
+        {
+          "i": 4,
+          "verdict": "fully_applies",
+          "why": "I have used my investigation to identify the serial killer and am using this definitive information to unify the village vote, which is the "
+        }
+      ],
+      "reasoning": "Maintain my claim as the Investigator. The investigation results are absolute; continue to pressure the village to eliminate player 7 as the serial killer based on the evidence provided.",
+      "vote_sm_plant": {
+        "v": "player_7",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_7",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_7",
+        "hit": true
+      }
+    },
+    {
+      "game": "f417aab8",
+      "role": "healer",
+      "day": 3,
+      "n_real_memories": 5,
+      "n_verdicts": 6,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The current game state does not have a confirmed investigator or a deadlock situation that would warrant an abstention."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "The vigilante is already eliminated, making this memory irrelevant to the current phase."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "We are not in an information-rich endgame with two confirmed wolves gone; one wolf remains and the serial killer is active."
+        },
+        {
+          "i": 4,
+          "verdict": "partly_applies",
+          "why": "The village is currently scrutinizing voting records and past bandwagons, which aligns with the concern of appearing part of a mistaken majo"
+        },
+        {
+          "i": 5,
+          "verdict": "does_not_apply",
+          "why": "I am not currently the primary target of the village."
+        },
+        {
+          "i": 6,
+          "verdict": "does_not_apply",
+          "why": "There is no confirmed investigator role left in the game to provide definitive information."
+        }
+      ],
+      "reasoning": "As the Healer, my priority is survival while keeping the village on track. I need to deflect suspicion regarding my previous vote for the vigilante by emphasizing the chaos of the situation. Player 1 has been very active in steering the narrative, which could be a distraction tactic typical of a wolf or serial killer. I will vote for Player 1 to test their defensive reaction and shift focus away from my own voting record, while maintaining a cooperative appearance.",
+      "vote_sm_plant": {
+        "v": "player_1",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_8",
+        "hit": true
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "healer",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 1,
+      "planted_verdict": "not_mentioned",
+      "all_verdicts": [
+        {
+          "i": 2,
+          "verdict": "fully_applies",
+          "why": "Like this past game, we are in an information-starved early phase where abstention has been the norm and contributed to dangerous stagnation"
+        }
+      ],
+      "reasoning": "The village is at a critical juncture; continued stagnation is lethal. I will transition from the previous cautious abstention to actively participating in the vote to break the gridlock. I am targeting player_9, not because they are definitely the threat, but because their aggressive push to force a vote on a specific player (player_4) based on 'caution' is a common wolf tactic to initiate a mislynch on a fellow villager. This moves the village forward while drawing attention away from my own r",
+      "vote_sm_plant": {
+        "v": "player_9",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_9",
+        "hit": false
+      },
+      "vote_base_clean": {
+        "v": "player_9",
+        "hit": false
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "investigator",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The current game is not about an investigator staying passive but about actively using role information."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "I am not looking to force a tie or engage in deadlock, but rather to eliminate a confirmed threat."
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "I have already claimed and am pushing for a lynch, which aligns with the risk mentioned here but is the only logical path given my role."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not in an endgame scenario, but an early mid-game push."
+        }
+      ],
+      "reasoning": "Continue to pressure the confirmed target. My identity is already public, and hiding is no longer an option. The survival of the village depends on eliminating identified threats regardless of the short-term target on my back.",
+      "vote_sm_plant": {
+        "v": "player_7",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_7",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_7",
+        "hit": true
+      }
+    },
+    {
+      "game": "e1952ffc",
+      "role": "investigator",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The current situation does not involve an abstention strategy, but rather using hard investigation data to secure a vote."
+        },
+        {
+          "i": 2,
+          "verdict": "partly_applies",
+          "why": "This warns against premature exposure; I will vote for the wolf I identified without revealing my role as investigator."
+        },
+        {
+          "i": 3,
+          "verdict": "fully_applies",
+          "why": "I have identified a wolf (player_8) and must now lead the consensus to remove them based on this information."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not in the endgame."
+        }
+      ],
+      "reasoning": "I have identified player_8 as a wolf through my investigation. My current strategy is to push for their elimination without explicitly revealing my role as the investigator to avoid becoming a target. I will leverage the existing frustration with abstention to steer the group's vote toward player_8, framing it as a necessary action after the vigilante's death.",
+      "vote_sm_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_8",
+        "hit": true
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The situation of an investigator being eliminated while the village is information-starved and debating behavioral patterns closely mirrors "
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "We do not yet have a clear plurality forming against a known evil role or a wolf-led bloc identified; this is a preventative vote."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "We are not in the endgame with confirmed roles; the current state is still early/mid-game with no roles confirmed."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "There are no confirmed power roles or verified findings to act upon today."
+        }
+      ],
+      "reasoning": "Given the lack of concrete evidence and the loss of the investigator, I must avoid being baited into impulsive votes based on the 'voting record' of those who actually participated when everyone else abstained. I will observe who is now aggressively building narratives to capitalize on the investigator's death and seek to identify a potential killer based on consistent patterns of manipulation rather than just past participation.",
+      "vote_sm_plant": {
+        "v": "player_5",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_5",
+        "hit": false
+      },
+      "vote_base_clean": {
+        "v": "player_5",
+        "hit": false
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 5,
+      "n_verdicts": 6,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The village is currently information-starved and debating between conflicting behavioral theories rather than hard evidence, similar to the "
+        },
+        {
+          "i": 2,
+          "verdict": "partly_applies",
+          "why": "The current debate over Player 7's intentions is becoming a circular, heated argument that risks stalling the village and distracting from o"
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "We do not have a credible, confirmed Investigator providing information to act upon."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "The current situation does not involve a villager who has been targeted by killers being the primary focus of the debate."
+        },
+        {
+          "i": 5,
+          "verdict": "does_not_apply",
+          "why": "We have not eliminated both wolves yet, and the primary suspect is not acting like a rogue investigator."
+        },
+        {
+          "i": 6,
+          "verdict": "does_not_apply",
+          "why": "We are not in a final-three scenario with a confirmed Investigator."
+        }
+      ],
+      "reasoning": "I will shift focus away from the circular logic regarding Player 7's Day 2 vote. Since Player 7's vote for Player 6 actually broke the consensus and increased their personal risk, I suspect it is being used by other players as a convenient, albeit flawed, focal point for suspicion. I will pivot toward scrutinizing Player 4, who is aggressively pushing a 'closed loop' argument against Player 7, which may be a calculated attempt to direct the village's vote toward a non-wolf target.",
+      "vote_sm_plant": {
+        "v": "player_4",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_4",
+        "hit": false
+      },
+      "vote_base_clean": {
+        "v": "player_4",
+        "hit": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The current situation mirrors the risk of mislynching due to circular arguments and frustration, although we have already lost the investiga"
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "Abstaining is no longer a viable strategy given how few players remain and the need to eliminate threats before the wolves outnumber us."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "There is no investigator or verified roles remaining to guide our vote."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not in a final-three scenario with confirmed roles, making this precedent inapplicable."
+        }
+      ],
+      "reasoning": "The village is dangerously low on numbers. My focus shifts from abstract suspicion of 'narrative control' to identifying the most likely wolf. Player 7 has been vocally defensive and is trying to cast doubt on a past unanimous vote, which is a common tactic to sow discord. I will prioritize eliminating players who actively attempt to distract from finding current threats.",
+      "vote_sm_plant": {
+        "v": "player_6",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_2",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_2",
+        "hit": true
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The danger of abstaining and stalling is clear; however, we lack any definitive evidence or roles to base a lynch on, making it a high-risk "
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "There is no unverified investigator claim driving the current suspicion."
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "While abstaining has helped keep the village numbers intact, the current consensus is that inaction is now actively aiding the wolves and th"
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not in the endgame nor do we have confirmed role information."
+        }
+      ],
+      "reasoning": "The village must move past the 'wait and see' consensus as it has become a shelter for the wolves and the serial killer. Since player_2 was a primary driver of the initial procedural strategy that led to two days of no action, I will focus my suspicion on them for effectively stalling the village's efforts. I will vote to break the cycle of abstention even though the evidence is behavioral rather than role-based.",
+      "vote_sm_plant": {
+        "v": "player_2",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_2",
+        "hit": false
+      },
+      "vote_base_clean": {
+        "v": "player_4",
+        "hit": true
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 6,
+      "n_verdicts": 3,
+      "planted_verdict": "not_mentioned",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The danger of abstention and stalling is clear; however, the current situation requires a targeted vote rather than an abstention to break t"
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "The pattern of wolf alliances and voting behavior makes player_5 a highly suspicious target given their proximity to the known wolf player_8"
+        },
+        {
+          "i": 4,
+          "verdict": "partly_applies",
+          "why": "This underscores the importance of identifying and eliminating suspicious candidates rather than letting wolves hide through diversionary ta"
+        }
+      ],
+      "reasoning": "Prioritize identifying the remaining wolf by analyzing the voting record of Day 2, specifically targeting those who were aligned with the known wolf, player_8. Since the investigator is dead, the village must use the existing voting patterns as the primary evidence to narrow down the suspects. Player_5's persistent, coordinated procedural pushing with a confirmed wolf is the most significant behavioral lead currently available, necessitating a vote for them to eliminate a potential wolf threat.",
+      "vote_sm_plant": {
+        "v": "player_5",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_5",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_5",
+        "hit": true
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "investigator",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "partly_applies",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "It highlights the risk of abstaining during key votes, which supports my need to participate actively today."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "This is not the endgame and I am the investigator holding results, not just guessing based on consensus."
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "It emphasizes the danger of being the primary driver of a failed vote, warning me to build consensus rather than just pushing."
+        },
+        {
+          "i": 4,
+          "verdict": "partly_applies",
+          "why": "It confirms that trust in role-based investigation results is the best path to victory."
+        }
+      ],
+      "reasoning": "I have identified player_8 as a wolf via investigation. Since I am the investigator, my priority is to leverage this information. I will shift from defensive debate to pushing for player_8's elimination by presenting the case based on my investigation results, rather than just behavioral arguments. I must remain cautious of my exposure but acknowledge that holding this information further increases risk if I am killed before revealing it.",
+      "vote_sm_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_8",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_8",
+        "hit": true
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The circular argument between player 5 and player 6 mirrors the situation where interpersonal conflict masks the true threat, and I must avo"
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "We do not have any confirmed information or role-based evidence to act on, unlike the endgame scenario described."
+        },
+        {
+          "i": 3,
+          "verdict": "fully_applies",
+          "why": "With five players remaining, failing to eliminate a threat or splitting the vote is a critical risk, and the conflict between 5 and 6 is a c"
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "This is not the final-three scenario with confirmed roles."
+        }
+      ],
+      "reasoning": "The conflict between player 5 and player 6 is likely a distraction meant to prevent the village from analyzing the remaining players. Since I have no concrete evidence against either, and blindly picking a side could lead to a catastrophic misfire, I will vote to abstain to avoid contributing to a potential village-harming elimination while observing who forces the vote.",
+      "vote_sm_plant": {
+        "v": "abstain",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_6",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_6",
+        "hit": true
+      }
+    },
+    {
+      "game": "8d74c59f",
+      "role": "investigator",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "fully_applies",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The game is not in the endgame stage and I have definitive role information on the serial killer, unlike the ambiguous situation described."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "I am not choosing to abstain; I am leveraging my private investigation result to make a decisive elimination."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "I am not causing a tie or misreading a player; I am acting on confirmed information to remove a confirmed threat."
+        },
+        {
+          "i": 4,
+          "verdict": "fully_applies",
+          "why": "I am following the principle of trusting concrete role-based findings over defensive behavioral arguments to eliminate the serial killer."
+        }
+      ],
+      "reasoning": "As the Investigator, I have identified player_2 as the Serial Killer. I will no longer hide this information or allow the village to remain in a deadlock. I will disclose my findings to guide the vote toward player_2 to ensure the most dangerous threat to the village is removed immediately.",
+      "vote_sm_plant": {
+        "v": "player_2",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_2",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_2",
+        "hit": true
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "investigator",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "partly_applies",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "does_not_apply",
+          "why": "The current game is not in a state of deadlock and we have successfully identified an evil player through my investigation result."
+        },
+        {
+          "i": 2,
+          "verdict": "does_not_apply",
+          "why": "I am not choosing to abstain; I am actively pushing for the elimination of a confirmed wolf."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "I am the investigator who has identified a wolf, and I am pushing for their elimination rather than acting passively."
+        },
+        {
+          "i": 4,
+          "verdict": "partly_applies",
+          "why": "I am leveraging my role as the investigator to drive a consensus against a known wolf, similar to the logic of trusting role-based informati"
+        }
+      ],
+      "reasoning": "I have revealed my investigation result on player_1 as a wolf. My survival is secondary to ensuring the village acts on this hard information. I must continue to press for player_1's elimination and ignore their attempts to frame my disclosure as suspicious, as they are clearly trying to sow doubt to save themselves.",
+      "vote_sm_plant": {
+        "v": "player_1",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_1",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_1",
+        "hit": true
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 4,
+      "planted_verdict": "does_not_apply",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "Like the scenario, we are cautious after losing an investigator, but we now have confirmed evidence (a wolf identified) which necessitates b"
+        },
+        {
+          "i": 2,
+          "verdict": "partly_applies",
+          "why": "Reflecting on the risks of inaction, I am choosing not to abstain today to ensure we move forward with the limited information we have."
+        },
+        {
+          "i": 3,
+          "verdict": "does_not_apply",
+          "why": "We do not have a proven investigator alive currently to confirm a lead, so we must rely on behavioral analysis."
+        },
+        {
+          "i": 4,
+          "verdict": "does_not_apply",
+          "why": "We are not in the endgame with confirmed power roles, so we cannot yet rely on definitive role-based findings."
+        }
+      ],
+      "reasoning": "Shift from total caution to active voting; use the confirmation of player_8 as a wolf to evaluate the remaining players' past interactions and rhetorical patterns, prioritizing the elimination of those who showed suspicious alignment or deflected early scrutiny.",
+      "vote_sm_plant": {
+        "v": "player_6",
+        "hit": true
+      },
+      "vote_ctrl_plant": {
+        "v": "player_6",
+        "hit": true
+      },
+      "vote_base_clean": {
+        "v": "player_6",
+        "hit": true
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "villager",
+      "day": 3,
+      "n_real_memories": 3,
+      "n_verdicts": 3,
+      "planted_verdict": "not_mentioned",
+      "all_verdicts": [
+        {
+          "i": 1,
+          "verdict": "partly_applies",
+          "why": "The current village is experiencing intense infighting and circular arguments similar to this observation, which we must avoid to prevent fu"
+        },
+        {
+          "i": 2,
+          "verdict": "fully_applies",
+          "why": "We are currently paralyzed by an 'observation protocol' that has already cost us our investigator and healer; we must break this cycle of ab"
+        },
+        {
+          "i": 3,
+          "verdict": "partly_applies",
+          "why": "This underscores the danger of the 'abstain' strategy; while caution is good, it has clearly played into the hands of the wolves and the ser"
+        }
+      ],
+      "reasoning": "I will shift my focus from debating behavioral patterns to identifying the player most likely to be a wolf or serial killer based on their efforts to maintain the status quo. Since our inaction has been the primary driver of our losses, I will vote for player_9, who has been a consistent proponent of the 'observation protocol' and has actively deflected scrutiny away from the inactivity that has doomed the village.",
+      "vote_sm_plant": {
+        "v": "player_9",
+        "hit": false
+      },
+      "vote_ctrl_plant": {
+        "v": "player_9",
+        "hit": false
+      },
+      "vote_base_clean": {
+        "v": "player_9",
+        "hit": false
+      }
+    }
+  ]
+}

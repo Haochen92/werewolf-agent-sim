@@ -280,6 +280,47 @@ BAD content — the synced reasoning faithfully delivers the net-first memory's 
   (reorder) but only matters on GOOD content. Consistent throughout with the paired A/B (immediate-first
   content helped town; net-first content is the problem).
 
+## ⭐⭐ Applicability CAPABILITY probe — can flash-lite reason about WHICH memory applies? (2026-06-13)
+
+Gate before any extraction/dimension redesign: if the game model can't reason about a memory's
+applicability even when asked, richer dimensions are wasted. Forced-structured schema
+(`DayVoteOutputStructuredApplicability`: one applies/partly/does-not verdict PER memory, emitted BEFORE the
+vote; captured via a DIRECT chain call since `_run_agent`'s mapping drops unknown fields;
+`adopted_strategy_keys` dropped as vestigial — observations aren't index-numbered in the prompt, only
+strategy points are). Inject one clearly-mismatched ENDGAME (final-three vs SK) memory into N=20 mid-game
+(day-3) town decisions; judge-FREE (the model self-reports each verdict).
+
+**Delivery matters.** The lightweight version (the instruction in the `updated_strategy` field DESCRIPTION,
+like memory-linked) FAILED — flash-lite reverted to its terse 3-5 sentence note, no per-memory assessment.
+The FORCED structured field unlocks it. ⇒ the earlier "can't reason about applicability" read was a
+DELIVERY failure, not a capability one.
+
+**Capability = YES, and nuanced** (N=20):
+- planted endgame memory rejected **13/20 `does_not_apply`**, on the NUMBERS ground ("we are still at 5
+  players, not final-three") — the discriminator `game_phase` is too coarse to carry.
+- the 2 `fully_applies` on the plant are CORRECT, not errors: both investigators-with-confirmed-info marked
+  the SITUATION not-matching but the LESSON ("trust confirmed role info over defensive arguments")
+  transferable ⇒ flash-lite separates **situation-match from lesson-transfer**.
+- not rubber-stamping the real memories: 35 `does_not_apply` / 23 `partly` / 4 `fully` across real retrievals.
+- ⚠️ reliability gap: 3/20 emitted FEWER verdicts than memories (7 memories → 3 verdicts) — "one row per
+  memory" degrades as the memory count grows on flash-lite.
+
+**But reasoning through applicability HURTS the vote** (suggestive, n=20): clean baseline **0.75** →
+vote-first+plant **0.70** (plant ~inert) → structured-applicability+plant **0.55**. Mechanism = over-caution
+→ abstaining: (a) correctly down-weighting memories leaves LESS to act on → abstain (4999832f: baseline hit
+a wolf, applicability arm abstained); (b) even when it flags the anti-passivity lesson `fully_applies`, it
+OVERRIDES with caution and abstains anyway (536dbe22). SAME passivity mechanism as the town anti-aggression /
+reorder / memory-linked degradation — the deliberation faithfully transmits the cautious net-first
+"avoid/negative" content (19/28 entries `negative`) into the vote as passivity.
+
+⇒ **Capability is NOT the gate; the gate is that deliberating over CAUTIOUS content makes flash-lite passive.**
+The lever stays CONTENT — specifically content that yields ACTION when reasoned about (the role-horizon point:
+villagers want immediate-actionable framing, not net-outcome "avoid the mislynch"). Dimension/extraction work
+is GREEN-LIT (the agent CAN use richer dimensions); the target is sharpened (kill the cautious bias). Caveats:
+vote-hurt = n=20 / temp 1.0 / ~4 decisions (directional, consistent with every prior reorder finding); the
+capability finding is the robust part. Artifacts: `applicability_probe_nh_town.json`; the 28 source entries
+the dimension design + plant were drawn from are frozen at `content_pilot/source_entries.json`.
+
 ## Conclusions
 
 At the individual **vote** level, net-first town memory is **neutral-to-helpful** (null day-3+,
