@@ -1445,6 +1445,158 @@ def run_applicability_probe(
     }
 
 
+class _ImmediateRewrite(BaseModel):
+    rewritten: str = Field(
+        description="The outcome re-emphasized toward the IMMEDIATE consequence, using only facts "
+        "already present in the original."
+    )
+
+
+_IMMEDIATE_REWRITE_PROMPT = """Rewrite this Werewolf memory's OUTCOME so it leads with the IMMEDIATE consequence of the move — what happened that same night or on the very next step — and de-emphasizes the eventual game result (who ultimately won or lost). Use ONLY facts already stated in the text; do NOT add new players, roles, or events, and do not invent a consequence. Keep it to 1-2 sentences in the same neutral, factual voice.
+
+OUTCOME:
+{outcome}"""
+
+
+def _immediate_rewrite(outcome: str, model: str = "gemini-2.5-flash") -> str:
+    """Re-emphasize an outcome toward its immediate consequence (the role-horizon
+    framing), holding the facts. Returns the original unchanged on failure."""
+    if not outcome or not outcome.strip():
+        return outcome
+    llm = create_chat_model(model).with_structured_output(_ImmediateRewrite)
+    try:
+        r = llm.invoke(
+            [{"role": "user", "content": _IMMEDIATE_REWRITE_PROMPT.format(outcome=outcome)}],
+            config={"run_name": "immediate_rewrite"},
+        )
+        return (r.rewritten or outcome).strip()
+    except Exception:  # noqa: BLE001 - best-effort
+        return outcome
+
+
+def run_framing_rewrite_screen(
+    batch_path: Path,
+    n: int = 40,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    rewrite_model: str = "gemini-2.5-flash",
+    audit_path: Path | None = None,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Cheap framing fact-check (no store rebuild): hold the retrieved ENTRIES fixed and
+    vary ONLY the outcome FRAMING. Rewrite each net-first outcome toward its immediate
+    consequence (re-emphasis, no new facts — only the outcome is shown to the agent), then
+    replay each town day-vote under off / net (as-stored) / immediate (rewritten), paired
+    on the same board. Scored on net-value (hit +1 / mislynch -1 / abstain 0) so
+    situation-appropriate caution is credited, plus an abstain decomposition keyed on
+    whether a threat was findable (the memory-OFF arm hit one). Tests whether immediate
+    emphasis relieves the net-first content's blanket caution. NOTE: a synthetic reframe of
+    the net entries, not the real immediate-first store — a directional screen."""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles, "day_vote")
+
+    # Rewrite each DISTINCT outcome once (dedup across decisions), in parallel.
+    distinct = {
+        o
+        for case, _ in cases
+        for item in (case.retrieved_observations or [])
+        if (o := getattr(item.observation, "outcome", "") or "")
+    }
+    outcomes = sorted(distinct)
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rewrites = list(ex.map(lambda o: _immediate_rewrite(o, rewrite_model), outcomes))
+    rewrite_map = dict(zip(outcomes, rewrites))
+    if audit_path:
+        audit_path.write_text(
+            json.dumps(
+                [{"net": o, "immediate": rewrite_map[o]} for o in outcomes], indent=2
+            )
+        )
+
+    def swap(observations: list[Any]) -> list[Any]:
+        out = []
+        for item in observations or []:
+            o = getattr(item.observation, "outcome", "") or ""
+            new_o = rewrite_map.get(o)
+            if new_o and new_o != o:
+                new_obs = item.observation.model_copy(update={"outcome": new_o})
+                out.append(item.model_copy(update={"observation": new_obs}))
+            else:
+                out.append(item)
+        return out
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        roles_map = game["roles"]
+        real = list(case.retrieved_observations or [])
+        arms = {"off": [], "net": real, "immediate": swap(real)}
+        out = {}
+        for arm, retrieved in arms.items():
+            votee, _ = _replay_vote(case, retrieved, allow)
+            out[arm] = score_vote(votee, roles_map)
+        return out
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    def netval(o: Any) -> int:
+        return 1 if o.hit_threat else (-1 if o.is_town_mislynch else 0)
+
+    arms = ("off", "net", "immediate")
+    agg = {a: Counter() for a in arms}
+    nv = {a: [0, 0] for a in arms}  # [sum, n]
+    imm_better = imm_worse = 0
+    for res in results:
+        off_findable = res["off"].hit_threat  # a threat was findable from the board alone
+        for a in arms:
+            o = res[a]
+            agg[a]["n"] += 1
+            agg[a]["hit"] += o.hit_threat
+            agg[a]["mislynch"] += o.is_town_mislynch
+            agg[a]["abstain"] += o.is_abstain
+            if o.is_abstain:
+                agg[a]["abstain_gave_up_threat" if off_findable else "abstain_defensible"] += 1
+            nv[a][0] += netval(o)
+            nv[a][1] += 1
+        di, dn = netval(res["immediate"]), netval(res["net"])
+        if di > dn:
+            imm_better += 1
+        elif di < dn:
+            imm_worse += 1
+
+    def rate(a: str, k: str) -> float | None:
+        return round(agg[a][k] / agg[a]["n"], 3) if agg[a]["n"] else None
+
+    summary = {
+        a: {
+            "n": agg[a]["n"],
+            "net_value": round(nv[a][0] / nv[a][1], 3) if nv[a][1] else None,
+            "hit": rate(a, "hit"),
+            "mislynch": rate(a, "mislynch"),
+            "abstain": rate(a, "abstain"),
+            "abstain_gave_up_threat": agg[a]["abstain_gave_up_threat"],
+            "abstain_defensible": agg[a]["abstain_defensible"],
+        }
+        for a in arms
+    }
+    return {
+        "batch": batch_path.name,
+        "n_decisions": len(cases),
+        "n_distinct_outcomes_rewritten": len(outcomes),
+        "arms": summary,
+        "immediate_minus_net_net_value": (
+            round(summary["immediate"]["net_value"] - summary["net"]["net_value"], 3)
+            if summary["immediate"]["net_value"] is not None
+            and summary["net"]["net_value"] is not None
+            else None
+        ),
+        "paired_immediate_vs_net": {
+            "immediate_better": imm_better,
+            "immediate_worse": imm_worse,
+            "mcnemar_p": round(mcnemar_p(imm_worse, imm_better), 4),
+        },
+    }
+
+
 def run_adherence_scan(
     batch_path: Path,
     n: int = 40,
@@ -1575,6 +1727,14 @@ def main() -> None:
         "it out as not-applicable (rejection rate + reasoning to read by hand)?",
     )
     ap.add_argument(
+        "--framing",
+        type=int,
+        default=0,
+        help="framing fact-check: hold the retrieved entries fixed, rewrite each "
+        "outcome net->immediate, replay N town day-votes off/net/immediate, paired "
+        "(net-value + abstain decomposition)",
+    )
+    ap.add_argument(
         "--judge",
         action="store_true",
         help="with --causal, also label adherence on the stored arm",
@@ -1622,6 +1782,11 @@ def main() -> None:
         print(json.dumps(run_coherence_test(args.batch, n=args.coherence, min_day=args.min_day, roles=roles), indent=2))
     elif args.applicability:
         print(json.dumps(run_applicability_probe(args.batch, n=args.applicability, day=args.min_day), indent=2))
+    elif args.framing:
+        print(json.dumps(run_framing_rewrite_screen(
+            args.batch, n=args.framing, min_day=args.min_day, roles=roles,
+            audit_path=Path("evidence/memory_system/effectiveness/decision_replay/content_pilot/immediate_rewrites.json"),
+        ), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
 
