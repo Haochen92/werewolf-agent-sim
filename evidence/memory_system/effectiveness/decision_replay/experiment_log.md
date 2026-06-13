@@ -148,6 +148,33 @@ SCREEN, not the verdict: the compounded magnitude needs a clean game-level repla
 epoch, paired seeds, memory on-vs-off from the start). Everything below this line is the pre-revision
 per-screen detail; read it through this stratified lens.
 
+## ⭐⭐ Adoption confound + reorder test — does the agent even FOLLOW the memory? (2026-06-13)
+
+The outcome nulls conflate "memory content unhelpful" with "agent didn't follow the memory." Both tested:
+
+**Step 1 — adherence scan** (40 recorded town day≥3 decisions, 130 memories judged): **59% IGNORED**, 39%
+applied, 1.5% overrode. Action aligned 61% / contradicted 20% / NA 19% — but 61%-followed overstates
+adoption (77% of memories say "avoid"; default cautious play coincidentally aligns). ⚠️ Judge caveat
+(user's catch): the judge reads the agent's STATED reasoning — post-hoc under the vote-first bug — so it
+measures STATED engagement, not actual influence, could be primed by the rationalization, and does NOT
+judge whether ignoring was CORRECT. The judge-FREE measure is the outcome flip rate (~12–16% of votes
+change off→stored); it agrees (low influence). ⇒ the nulls are heavily contaminated by non-adoption.
+
+**Step 2 — judge-free reorder 2×2** (3×N=100): {vote-first, reason-first schema} × {memory off, stored};
+reason-first emits updated_strategy BEFORE vote_target. Stable:
+- vote-first: off 0.40 → stored 0.35 (memory ≈ −0.05, reproduces day-3 null).
+- reason-first: off **0.26** (baseline lift −0.14, stable) → stored 0.11 (memory ≈ −0.15).
+- DiD = **−0.10**: memory is MORE negative under reason-first, not less.
+
+⇒ Hypothesis (reorder reveals helpful memory) NOT supported here — with caveats: (1) only HALF the fix
+(reorder, no adoption scaffold) and a WEAK reorder (the strategy NOTE, not a clean "reason about this vote"
+step); (2) the net-first (harmful-content) store; (3) day-3 (prompt-covered). **The real signal flips the
+priority:** forcing the connection makes the net-first memory drag the vote DOWN → the agent's ignoring was
+partly PROTECTIVE (not letting bad memory override a decent gut read). So CONTENT is the bottleneck, not
+connection — wiring the agent to follow BAD memory is worse than ignoring it. Order: content-first
+(read-conditioned lessons) THEN connection (proper reason+scaffold), tested on GOOD content. Consistent
+with the paired A/B (immediate-first content HELPED town +17/+23pp; net-first content is the problem).
+
 ## Conclusions
 
 At the individual **vote** level, net-first town memory is **neutral-to-helpful** (null day-3+,

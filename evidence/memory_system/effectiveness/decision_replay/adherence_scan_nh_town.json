@@ -1,0 +1,23 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions_judged": 40,
+  "n_memories_labeled": 130,
+  "application": {
+    "ignored": 77,
+    "applied": 51,
+    "overrode_with_reason": 2
+  },
+  "action_followed": {
+    "followed": 79,
+    "not_applicable": 25,
+    "contradicted": 26
+  },
+  "implied_direction": {
+    "avoid": 100,
+    "ambiguous": 15,
+    "repeat": 15
+  },
+  "pct_applied": 0.392,
+  "pct_overrode": 0.015,
+  "pct_ignored": 0.592
+}

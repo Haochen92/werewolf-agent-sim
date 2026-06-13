@@ -1,0 +1,19 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 100,
+  "n_failed": 0,
+  "by_schema": {
+    "vote_first": {
+      "off_netvalue": 0.4,
+      "stored_netvalue": 0.35,
+      "memory_effect": -0.05
+    },
+    "reason_first": {
+      "off_netvalue": 0.2,
+      "stored_netvalue": 0.11,
+      "memory_effect": -0.09
+    }
+  },
+  "reasoning_baseline_lift": -0.2,
+  "did_memory_effect_reason_minus_vote": -0.04
+}
