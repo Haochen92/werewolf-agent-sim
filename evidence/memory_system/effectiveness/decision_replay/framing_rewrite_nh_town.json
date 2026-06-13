@@ -1,0 +1,40 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 40,
+  "n_distinct_outcomes_rewritten": 31,
+  "arms": {
+    "off": {
+      "n": 40,
+      "net_value": 0.4,
+      "hit": 0.7,
+      "mislynch": 0.3,
+      "abstain": 0.0,
+      "abstain_gave_up_threat": 0,
+      "abstain_defensible": 0
+    },
+    "net": {
+      "n": 40,
+      "net_value": 0.35,
+      "hit": 0.675,
+      "mislynch": 0.325,
+      "abstain": 0.0,
+      "abstain_gave_up_threat": 0,
+      "abstain_defensible": 0
+    },
+    "immediate": {
+      "n": 40,
+      "net_value": 0.375,
+      "hit": 0.675,
+      "mislynch": 0.3,
+      "abstain": 0.025,
+      "abstain_gave_up_threat": 1,
+      "abstain_defensible": 0
+    }
+  },
+  "immediate_minus_net_net_value": 0.025,
+  "paired_immediate_vs_net": {
+    "immediate_better": 4,
+    "immediate_worse": 3,
+    "mcnemar_p": 1.0
+  }
+}
