@@ -1,0 +1,1052 @@
+{
+  "batch": "ab_nh_wolf.jsonl",
+  "n_decisions": 60,
+  "n_failed": 0,
+  "arms": {
+    "off": {
+      "n": 60,
+      "accuracy": 0.217,
+      "mislynch": 0.783,
+      "abstain": 0.0
+    },
+    "stored": {
+      "n": 60,
+      "accuracy": 0.3,
+      "mislynch": 0.7,
+      "abstain": 0.0
+    }
+  },
+  "stored_minus_off_accuracy": 0.083,
+  "discordant": {
+    "memory_hurt": 3,
+    "memory_helped": 8,
+    "mcnemar_p": 0.2266
+  },
+  "abstain_discordant": {
+    "memory_induced_abstain": 0,
+    "memory_removed_abstain": 0,
+    "mcnemar_p": 1.0
+  },
+  "rows": [
+    {
+      "game": "fa79dc3b",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_4",
+        "role": "healer",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "healer",
+        "hit": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_7",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_7",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_7",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_8",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_8",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_8",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_4",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "wolf",
+        "hit": true
+      }
+    },
+    {
+      "game": "f417aab8",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_9",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_5",
+        "role": "vigilante",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "vigilante",
+        "hit": false
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_3",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_3",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_3",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_8",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_8",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "e1952ffc",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_3",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_3",
+        "role": "healer",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_3",
+        "role": "healer",
+        "hit": false
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_2",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_4",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_7",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_3",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_8",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_3",
+        "role": "healer",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_3",
+        "role": "healer",
+        "hit": false
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "8d74c59f",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_7",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_2",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_1",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_1",
+        "role": "vigilante",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_9",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_7",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "c7c04db2",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_7",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "healer",
+        "hit": false
+      }
+    },
+    {
+      "game": "469c2351",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "5042eda6",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "bb63a21a",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "wolf",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "wolf",
+        "hit": true
+      }
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "9f1546dd",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_2",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "7bf51028",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_4",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "0a62ce53",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_1",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_1",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "fa79dc3b",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_3",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_3",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_4",
+        "role": "healer",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "healer",
+        "hit": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_7",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_7",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_7",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_5",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_1",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_1",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_3",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_3",
+        "role": "wolf",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_3",
+        "role": "wolf",
+        "hit": true
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_3",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_3",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_3",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_8",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_2",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_7",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_1",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_1",
+        "role": "healer",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_1",
+        "role": "healer",
+        "hit": false
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_6",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_2",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_1",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_1",
+        "role": "vigilante",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_1",
+        "role": "vigilante",
+        "hit": false
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_7",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "c7c04db2",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "serial_killer",
+        "hit": true
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_6",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_3",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "469c2351",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_6",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "5042eda6",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_6",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_4",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_6",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "bb63a21a",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_5",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "investigator",
+        "hit": false
+      }
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_4",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "9f1546dd",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_2",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "7bf51028",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_5",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_4",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "0a62ce53",
+      "role": "wolf",
+      "day": 3,
+      "recorded_vote": "player_9",
+      "allow_abstain": false,
+      "off": {
+        "vote": "player_5",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_9",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_1",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_1",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_1",
+        "role": "villager",
+        "hit": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_2",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_2",
+        "role": "villager",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_5",
+        "role": "serial_killer",
+        "hit": true
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "wolf",
+      "day": 4,
+      "recorded_vote": "player_4",
+      "allow_abstain": true,
+      "off": {
+        "vote": "player_4",
+        "role": "investigator",
+        "hit": false
+      },
+      "stored": {
+        "vote": "player_4",
+        "role": "investigator",
+        "hit": false
+      }
+    }
+  ]
+}

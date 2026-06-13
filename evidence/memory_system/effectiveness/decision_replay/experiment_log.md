@@ -1,0 +1,114 @@
+# Decision-replay screen — off-policy causal eval of memory at the decision level
+
+Status: **active record** (2026-06-13). A cheap, drift-immune screen that asks, per frozen decision,
+"does swapping ONLY the memory block change what the agent decides, and toward the right answer?" —
+the causal counterpart to the echo-read and a pre-filter for the expensive game-replay A/B.
+
+## Why this exists
+
+The game-replay town finding (memory → ~−40pp win, −22pp vote acc) was confounded by overnight model
+drift + an un-merged-store volume effect, and the win signal sits under ~0.35 of per-game role-luck.
+Decision replay isolates the memory's effect: freeze one decision, swap only the retrieved-memory
+block, regenerate just that decision, score it against ground-truth roles. Paired at the decision
+(role-luck cancels), drift-immune in one sitting, and the target is memory-independent.
+
+## Method / harness
+
+- **Replay = fresh generation.** For each arm (memory off / as-stored / framing variant) the decision's
+  context is frozen (board, transcript, private info from the eval-case) but the memory block is
+  swapped and the vote is **regenerated live** by the game model. Scored on the fresh vote, never the
+  recorded one. Model = `gemini-3.1-flash-lite` @ temp 1.0 — the SAME model+temp the games used
+  (verified in both batches' `runtime_fingerprint`). temp 1.0 ⇒ genuine resampling ⇒ run 3× and pool.
+- **Outcome scoring is mechanical, no LLM** (`decision_scoring.py`): town-correct vote = votee ∈
+  {wolf, serial_killer}. Decision *value* = hit(+1) − mislynch(−1), abstain neutral(0). `allow_abstain`
+  is reconstructed from `day_resolutions` exactly as `fan_out_vote` computes it (the harness otherwise
+  defaults it off, which would strip a real choice — 70/354 day-3 cases were correctly abstain-forced).
+- **Adherence judge** (`memory_adherence.py`, gemini-2.5-pro, outcome-blind, verdict-aware): per-memory
+  followed/contradicted/NA + applied/overrode/ignored. Built + validated on 3 cases; NOT yet run at
+  scale (every result below is judge-free mechanical scoring).
+- **Reuses**: `evaluation/src/components/application.py` (`run_application_action`, `action_spec_for`),
+  `situation_summary.eval_case_to_agent_payload`, `data/local_cases.LocalCaseSource`. Driver:
+  `evaluation/src/experiments/decision_replay.py` (parallel, McNemar/sign tests, `--causal --roles
+  --min-day --max-day --judge`).
+
+## Findings
+
+**1. Town day-3+ : NULL.** net-first off net=+0.367 → stored +0.361, Δ=−0.006; 9 improved / 11 worsened /
+160 tied (180 paired), sign p=0.82. (The first N=20 read of −0.10 was small-N noise — 4 flips; it
+vanished at N=180. The screen killed its own false signal.)
+
+**2. Town day-2 : memory HELPS (+0.078), once scored correctly.** Raw abstain effect is huge — memory
+raises day-2 abstaining 0.58→0.71, McNemar p≈3×10⁻⁶ (23 induced / 1 removed). But day-2 is
+info-starved: when no-memory town votes it hits a threat only 41% of the time, so a day-2 vote is
+usually a mislynch. Decomposing the 23 induced abstains by whether a threat was findable (off-arm):
+**20 GOOD** (off would have mislynched → memory correctly held back) vs **3 BAD** (a real threat was
+findable, memory abstained anyway). With abstain scored neutral, net value goes off=−0.072 →
+stored=+0.006 (Δ+0.078): memory cuts the mislynch rate 0.244→0.144. So the day-2 "passivity" is mostly
+*correct caution*, not harm — the earlier "harm" read was the hit-rate metric scoring a good abstain
+as a mislynch.
+
+**3. Framing (net-first vs immediate-first) : NOT significant at the vote level.** Cross-batch (old
+store `ab_arms_town`/`v5_0` immediate-first vs `ab_nh_town`/`v5_0_nethorizon` net-first). Immediate-first
+day-3 Δ=+0.066 looks like a lift but sign p=0.19, per-run unstable [+0.22, −0.08, +0.07], 14 improved /
+7 worsened. Also confounded: off-baselines differ (0.278 vs 0.367 → old-store boards are simply harder),
+so the gap mixes framing with board-difficulty headroom. ⇒ Framing doesn't reliably move the day-vote;
+the clean test is the paired framing arm (same boards, reframe the same entries), blocked only because
+eval-cases store the composed outcome, not the split halves.
+
+**4. Wolf day-vote : NULL on productivity, but coarse.** Wolves vote a non-wolf ~95% in both arms
+(self-incriminate ~4-5%); paired wolf-value sign p=1.0 (1/2/177). BUT memory flips the wolf's *target*
+37% (vs town's 11%) — it reshuffles which non-wolf, never the productive/self-incriminate split. The
+productivity metric is blind to cover/blending, which is the actual wolf day-harm (A/B: memory-on
+wolves get lynched more). So this null is on the wrong instrument for deceivers.
+
+## ⭐ Unifying principle — the screen measures memory's MARGINAL value over the base prompt
+
+Every null and lift falls out of one rule: **memory helps where the base prompt is THIN and is null where
+the prompt is already comprehensive** — and extraction is *built* this way, explicitly excluding
+"common-sense fundamentals the base strategy already covers" (`extraction.py:203`).
+
+- wolf day-vote → NULL because `WOLF_CORE_STRATEGY` (`roles.py:47`) hard-codes the key heuristic:
+  "Blend your vote with the village majority… a dissenting 'protest vote' leaves a permanent, suspicious
+  record" (+ the ally-cover and abstain-cover lines in the wolf vote prompt, `day.py:249-250`). Nothing
+  left for memory to add → null by construction, NOT evidence memory is useless for wolves.
+- town day-3 vote → null (info-rich voting is standard play, prompt-covered).
+- town day-2 vote → HELPS (+0.078): early-game abstain judgment is thin in the prompt → memory adds it.
+- deceiver night kill → HELPS (A/B power-targeting): targeting is not spelled out → memory adds it.
+
+⇒ The nulls are memory correctly NOT duplicating the prompt; the lifts are memory filling gaps. A
+day-vote null is therefore uninformative about a role's memory value when the prompt already covers that
+decision — look where the prompt is thin (night targeting; early-game judgment).
+
+## Conclusions
+
+At the individual **vote** level, net-first town memory is **neutral-to-helpful** (null day-3+,
+beneficial day-2 caution), and framing doesn't reliably move it. Therefore the game-replay town
+collapse is **not in the vote decisions** — it is either (a) the **discussion trajectory** (where
+yesterday's anti-aggression transcripts lived; off-policy vote-replay structurally can't see it), or
+(b) **mostly the drift/volume confound**. Wolf day-vote is null on the coarse productivity metric; the
+real deceiver signal is at **night** (power-targeting, where the A/B found wolf memory HELPS).
+
+## Caveats
+
+- **Off-policy / myopic**: boards were generated under memory-on; the regenerated decision can't
+  propagate. Valid as a *local* decision screen, not a trajectory/win measure.
+- **temp 1.0 noise** ⇒ all results are 3×60 pooled with paired sign/McNemar tests; single runs swing.
+- **Dedup asymmetry is minor**: stores `v5_0_raw` 445 / `v5_0` 431 / `v5_0_nethorizon` 461 town-incl;
+  but villager/day_vote = 30 entries in ALL three, so the vote screen's dominant namespace is
+  dedup-matched. The board-difficulty confound (finding 3) is the larger one.
+
+## Open frontiers (need harness build)
+
+- **Night-kill replay (deceivers)**: wire night nodes into the replay (different path than `_run_agent`;
+  SK + night actions absent from `ACTION_SPECS`). Score wolf kills vs town-power-role targeting, SK
+  targets vs survival relevance. This is where the A/B located the deceiver effect.
+- **Town discussion screen**: the likely home of the town harm. No clean role-lookup target → needs a
+  judge/proxy (does memory make town's discussion less likely to name/build the real threat).
+
+## Artifacts / pointers
+
+- Driver `evaluation/src/experiments/decision_replay.py`; scorers `evaluation/src/components/
+  decision_scoring.py` + `memory_adherence.py`.
+- Runs: `causal_nh_town_run{1,2,3}.json` (day3+), `causal_nh_town_day2_run*` (day2),
+  `causal_arms_town_run*` (old-store day3+), `causal_nh_wolf_run*` (wolf day3+),
+  `causal_smoke_nh_town.json` (N=20 noise exhibit).
