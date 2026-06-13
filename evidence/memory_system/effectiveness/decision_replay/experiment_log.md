@@ -116,11 +116,25 @@ effects:
 ⇒ Memory HELPS town where the base prompt is thin and the decision is hard (early caution + endgame),
 and is null in standard mid-game. The marginal-value principle holds — but stratified, not pooled.
 
-**Reconciles "compounded did something / isolated shows little":** where the isolated effect is non-null
-it is POSITIVE (memory helps town); the game-replay said memory HURT town (−40pp). Opposite signs ⇒ the
-game-replay harm was the drift confound (town memory-off win 27%→51% across epochs), NOT memory. So
-"null everywhere" was over-claimed: memory is not inert — it moves ~1-in-7 decisions (replay fidelity:
-stored matches recorded 87–93%, vs 84–88% off-vs-stored agreement) and helps at the hard ones.
+**⭐ CONVERGENCE with the clean paired A/B (the correction that settles it).** The "−40pp town harm" I
+kept citing was the NET-HORIZON epoch-B regression — the DRIFT-confounded cross-day arm — NOT a clean
+game-level result. The clean game-level test already exists: the **paired A/B** (`paired_ab/`, N=30,
+same-epoch baseline, same seeds, memory on-vs-off, FULL games) showed town memory **HELPS** — villager
+win 27%→43% (+17pp) town_only, 27%→50% (+23pp) all-on — and wolf/SK **null**. So two independent methods
+converge:
+
+| | paired A/B (whole-game) | decision-replay (per-decision) |
+| town | +17 / +23pp (helps) | +0.078 day-2, +0.117 endgame (helps) |
+| wolf/SK | null | null |
+
+⇒ Town memory helps, wolf/SK null, by BOTH a full-game paired test and a drift-immune per-decision test.
+Both CONTRADICT the −40pp net-horizon regression, confirming it was drift. The decision-replay's role is
+therefore CONVERGENT VALIDATION + mechanism (helps where the prompt is thin; null where heuristics are
+hard-coded), NOT "a screen that says we need a game-level run" — we already have that run. Memory is not
+inert: it moves ~1-in-7 decisions (replay fidelity: stored matches recorded 87–93% vs 84–88% off-vs-stored).
+Residual is POWER not existence: the paired A/B win cell was underpowered (p=0.27 / 0.167; significance
+came from proxies) and pre-drift — an N≈60 same-epoch re-run on today's model would tighten the magnitude,
+but the direction is settled by the convergence.
 
 **Threats checked:** sampling (mattered — stratify, don't pool); power (CIs ±5–9pp → nulls = "no LARGE
 effect", not zero); replay fidelity (0.87–0.93, faithful). **Threats open:** off-policy — both arms run
