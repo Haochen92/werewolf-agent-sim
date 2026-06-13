@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import Counter, OrderedDict
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
@@ -42,6 +43,7 @@ from Agents.schemas.output import (
     VigilanteOutput,
     WolfNightDiscussOutput,
 )
+from Agents.llm_factory import create_chat_model
 from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.turn import _run_agent
 from evaluation.src.components.application import (
@@ -778,6 +780,471 @@ def run_reorder_adoption(
     return {"batch": batch_path.name, "n_decisions": len(cases), "by_schema": by_schema}
 
 
+# Judge-FREE engagement read (reuses the paired_ab echo logic): how much of the
+# agent's post-retrieval reasoning is drawn from the words of the memory it was
+# given. Every prior "did it engage the memory" number came from the adherence
+# judge (which reads STATED reasoning and may agree with the agent); this is the
+# first measure that needs no LLM to score.
+_ECHO_STOP = set(
+    """the a an and or but if then else of to in on at by for with from as is are was were be been
+    being this that these those it its their they them he she his her you your we our i my me will would can
+    could should may might must do does did not no yes so very more most much many few both all any each
+    other some such than too then once here there when where which who whom what how why into out up down off
+    over under again further about against between through during before after above below their them having
+    have has had your yours ourselves a's able about above according""".split()
+)
+
+
+def _echo_toks(s: str | None) -> set[str]:
+    if not s:
+        return set()
+    return {w for w in re.findall(r"[a-z]{4,}", s.lower()) if w not in _ECHO_STOP}
+
+
+def _echo(reasoning: str | None, mem_text: str) -> float | None:
+    """Fraction of the reasoning's distinctive (>=4-char, non-stopword) tokens that
+    also appear in the memory text; None if the reasoning has no scorable tokens."""
+    s, m = _echo_toks(reasoning), _echo_toks(mem_text)
+    return (len(s & m) / len(s)) if s else None
+
+
+def _mem_text(case: EvalCase) -> str:
+    """The stable/actionable text of a decision's retrieved memory (each entry's
+    approach + situation) — what the reasoning would echo if it actually engaged
+    the memory. Outcome wording is excluded (it changes across framings)."""
+    bag: list[str] = []
+    for item in case.retrieved_observations or []:
+        obs = item.observation
+        bag.append(getattr(obs, "approach", "") or "")
+        bag.append(getattr(obs, "situation", "") or "")
+    return " ".join(bag)
+
+
+def run_echo_consideration(
+    batch_path: Path,
+    n: int = 150,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Judge-FREE engagement screen. Replay the STORED arm under each of the three
+    schemas {vote-first, reason-first, memory-linked} and measure how much of the
+    regenerated reasoning is drawn from the retrieved memory (echo), ABOVE a
+    shuffled-memory floor (the same reasoning scored against a foreign decision's
+    memory). The floor is taken per-schema and per-decision, so it cancels verbosity:
+    a longer memory-flavored note overlaps ANY memory, and only echo-above-floor
+    isolates genuine drawing-on. Paired by decision -> does the memory-LINKED wording
+    make the reasoning engage the memory more than plain vote-first, with no judge?"""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
+    schemas = {
+        "vote_first": None,
+        "reason_first": DayVoteOutputReasonFirst,
+        "memory_linked": DayVoteOutputMemoryLinked,
+    }
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        reasonings = {}
+        for sname, sch in schemas.items():
+            _, updated = _replay_vote(
+                case, case.retrieved_observations, allow, schema_override=sch
+            )
+            reasonings[sname] = updated
+        return {"mem": _mem_text(case), "reasonings": reasonings}
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    # Per decision i, per schema s: own-memory echo and the foreign-memory floor
+    # (same reasoning vs decision (i+k)'s memory). per_dec[s][i] = own - floor keeps
+    # it paired so the schema-vs-schema deltas align on the same decisions.
+    mems = [r["mem"] for r in results]
+    k = len(results) // 3 or 1
+    own_by: dict[str, list[float]] = {s: [] for s in schemas}
+    floor_by: dict[str, list[float]] = {s: [] for s in schemas}
+    per_dec: dict[str, dict[int, float]] = {s: {} for s in schemas}
+    for i, r in enumerate(results):
+        foreign = mems[(i + k) % len(mems)] if mems else ""
+        for s in schemas:
+            own = _echo(r["reasonings"][s], r["mem"])
+            flo = _echo(r["reasonings"][s], foreign)
+            if own is not None:
+                own_by[s].append(own)
+            if flo is not None:
+                floor_by[s].append(flo)
+            if own is not None and flo is not None:
+                per_dec[s][i] = own - flo
+
+    avg = lambda xs: round(sum(xs) / len(xs), 4) if xs else None  # noqa: E731
+    by_schema = {
+        s: {
+            "n": len(per_dec[s]),
+            "echo": avg(own_by[s]),
+            "shuffle_floor": avg(floor_by[s]),
+            "echo_above_floor": avg(list(per_dec[s].values())),
+        }
+        for s in schemas
+    }
+    vf = per_dec["vote_first"]
+    vs_vote_first = {}
+    for s in schemas:
+        if s == "vote_first":
+            continue
+        paired = [per_dec[s][i] - vf[i] for i in per_dec[s] if i in vf]
+        vs_vote_first[s] = {
+            "n_paired": len(paired),
+            "delta_echo_above_floor": avg(paired),
+        }
+    return {
+        "batch": batch_path.name,
+        "n_decisions": len(cases),
+        "by_schema": by_schema,
+        "engagement_vs_vote_first": vs_vote_first,
+    }
+
+
+def run_echo_judge_validation(
+    batch_path: Path,
+    n: int = 40,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    judge_model: str = DEFAULT_ADHERENCE_JUDGE_MODEL,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Does the judge-free echo agree with the adherence JUDGE? Replay each decision
+    once (production vote-first schema), then score the SAME regenerated action two
+    ways: echo (lexical draw-on) and the judge's per-memory applied/overrode/ignored.
+    If they agree, judge-engaged decisions carry higher echo than judge-ignored ones.
+    Each row also keeps the memory + reasoning + the judge's per-memory evidence, so
+    the JUDGE'S OWN accuracy can be read by hand (echo can't validate the judge — only
+    a human can say whether 'applied' was the right call on a given reasoning)."""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles)
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        votee, updated = _replay_vote(case, case.retrieved_observations, allow)
+        mem = _mem_text(case)
+        echo_own = _echo(updated, mem)
+        jcase = application_case_for_judge(
+            case,
+            agent_message=None,
+            agent_vote=DayVote(voter=case.player_id, votee=votee or "abstain"),
+            updated_strategy=updated,
+        )
+        adh = judge_decision_adherence(jcase, model=judge_model)
+        labels = [
+            {
+                "application": r.application,
+                "action_followed": r.action_followed,
+                "implied_direction": r.implied_direction,
+                "evidence": r.evidence,
+            }
+            for r in (adh.per_memory if adh else [])
+        ]
+        nmem = len(labels)
+        applied = sum(la["application"] == "applied" for la in labels)
+        overrode = sum(la["application"] == "overrode_with_reason" for la in labels)
+        ignored = sum(la["application"] == "ignored" for la in labels)
+        return {
+            "game": str(game["game_id"])[:8],
+            "role": case.player_role,
+            "day": case.day,
+            "echo": round(echo_own, 4) if echo_own is not None else None,
+            "n_mem": nmem,
+            "frac_applied": round(applied / nmem, 3) if nmem else None,
+            "frac_engaged": round((applied + overrode) / nmem, 3) if nmem else None,
+            "frac_ignored": round(ignored / nmem, 3) if nmem else None,
+            "vote": votee,
+            "mem_text": mem[:500],
+            "reasoning": (updated or "")[:500],
+            "labels": labels,
+        }
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    scored = [r for r in rows if r["echo"] is not None and r["frac_engaged"] is not None]
+    engaged = [r["echo"] for r in scored if r["frac_engaged"] >= 0.5]
+    ign = [r["echo"] for r in scored if r["frac_ignored"] is not None and r["frac_ignored"] > 0.5]
+    mean = lambda xs: round(sum(xs) / len(xs), 4) if xs else None  # noqa: E731
+    rho = pval = None
+    try:  # rank correlation of echo vs judge engagement, if scipy is present
+        from scipy.stats import spearmanr
+
+        es = [r["echo"] for r in scored]
+        fs = [r["frac_engaged"] for r in scored]
+        if len(es) >= 5:
+            rs = spearmanr(es, fs)
+            rho, pval = round(float(rs.statistic), 3), round(float(rs.pvalue), 4)
+    except Exception:  # noqa: BLE001 - correlation is a nice-to-have
+        pass
+    return {
+        "batch": batch_path.name,
+        "n_decisions": len(rows),
+        "n_scored": len(scored),
+        "echo_when_judge_engaged": {"n": len(engaged), "mean_echo": mean(engaged)},
+        "echo_when_judge_ignored": {"n": len(ign), "mean_echo": mean(ign)},
+        "spearman_echo_vs_frac_engaged": {"rho": rho, "p": pval},
+        "rows": rows,
+    }
+
+
+_GRID_CONDITIONS = [
+    ("off / vote-first", "off", None),
+    ("stored / vote-first", "stored", None),
+    ("stored / reason-first", "stored", DayVoteOutputReasonFirst),
+    ("stored / memory-linked", "stored", DayVoteOutputMemoryLinked),
+]
+
+
+def _find_case(
+    batch_path: Path, game_prefix: str, role: str, day: int, mem_substr: str
+) -> tuple[EvalCase | None, dict[str, Any] | None]:
+    """Locate ONE frozen decision by game-id prefix + role + day, disambiguating
+    same-game/same-role/same-day villagers by a substring of their retrieved memory
+    (the memory is frozen on the case, so this is deterministic)."""
+    for case, game in iter_cases(batch_path, frozenset({role}), "day_vote"):
+        if (
+            str(game["game_id"]).startswith(game_prefix)
+            and case.day == day
+            and mem_substr in _mem_text(case)
+        ):
+            return case, game
+    return None, None
+
+
+def replay_condition_grid(
+    batch_path: Path,
+    specs: list[tuple[str, str, int, str]],
+    samples: int = 3,
+    max_workers: int = 6,
+) -> list[dict[str, Any]]:
+    """For each named decision, replay it under {memory off, memory on x vote-first /
+    reason-first / memory-linked} and capture BOTH the final vote and the reasoning,
+    sampling each condition `samples` times (temp 1.0 -> a single draw is noisy). Shows
+    whether reordering the schema lets the memory actually reach the VOTE, not just the
+    words — and keeps the recorded (original-game) vote+reasoning as the reference."""
+    out: list[dict[str, Any]] = []
+    for game_prefix, role, day, mem_substr in specs:
+        case, game = _find_case(batch_path, game_prefix, role, day, mem_substr)
+        if case is None:
+            out.append({"spec": [game_prefix, role, day], "error": "not found"})
+            continue
+        roles = game["roles"]
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        tasks = [
+            (ci, arm, sch)
+            for ci, (_, arm, sch) in enumerate(_GRID_CONDITIONS)
+            for _ in range(samples)
+        ]
+
+        def run_task(t: tuple[int, str, Any]):
+            ci, arm, sch = t
+            retrieved = [] if arm == "off" else case.retrieved_observations
+            votee, updated = _replay_vote(case, retrieved, allow, schema_override=sch)
+            return ci, votee, updated
+
+        with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            results = list(ex.map(run_task, tasks))
+        by_ci: dict[int, list[tuple[str | None, str]]] = {}
+        for ci, votee, updated in results:
+            by_ci.setdefault(ci, []).append((votee, updated))
+
+        conditions = []
+        for ci, (label, _, _) in enumerate(_GRID_CONDITIONS):
+            draws = by_ci.get(ci, [])
+            conditions.append(
+                {
+                    "label": label,
+                    "votes": [
+                        {"votee": v, "role": roles.get(v) if v else None} for v, _ in draws
+                    ],
+                    "reasoning_sample": draws[0][1] if draws else "",
+                }
+            )
+        out.append(
+            {
+                "game": game_prefix,
+                "role": role,
+                "day": day,
+                "player_id": case.player_id,
+                "allow_abstain": allow,
+                "threats": sorted(p for p, r in roles.items() if r in THREAT_ROLES),
+                "recorded": {
+                    "votee": case.agent_vote.votee if case.agent_vote else None,
+                    "role": roles.get(case.agent_vote.votee) if case.agent_vote else None,
+                    "reasoning": case.updated_strategy,
+                },
+                "conditions": conditions,
+            }
+        )
+    return out
+
+
+class VoteReasoningCoherence(BaseModel):
+    """The single choice a reasoning note CONCLUDES on, read blind to the actual vote."""
+
+    stated_choice: str = Field(
+        description="Exactly one of: a player_id the note concludes to vote for; "
+        "'abstain' if it concludes to vote for no one; 'unclear' if it weighs options "
+        "without committing to one."
+    )
+    quote: str = Field(
+        description="The clause that states the choice; empty string if unclear."
+    )
+
+
+_COH_SYSTEM = """You read a Werewolf player's PRIVATE reasoning note, written around a day-phase vote, and report the SINGLE choice the reasoning CONCLUDES on. Output exactly one of:
+- a player_id (e.g. player_6) - if the note concludes the writer should vote for that player;
+- abstain - if it concludes the writer should vote for no one / hold;
+- unclear - if it weighs suspects without committing to one.
+
+Judge ONLY what the note concludes. You are NOT told who they actually voted for - do not infer from who seems most guilty. Look for the committing statement, e.g. 'I will vote for X', 'I will target X', 'I am voting X', 'I will abstain'. If the note discusses several suspects but never lands on one, that is unclear."""
+
+_COH_USER = """Players in this game: {players}
+Abstain available this vote: {allow}
+
+Reasoning note:
+{reasoning}
+
+Which single choice does this note CONCLUDE on?"""
+
+
+def _norm_choice(x: str | None) -> str:
+    """Normalize a vote/stated choice to a comparable token (player_N / abstain / unclear)."""
+    if not x:
+        return "unclear"
+    t = x.strip().lower().replace("player ", "player_").replace(" ", "")
+    return t or "unclear"
+
+
+def _judge_coherence(
+    reasoning: str | None,
+    players: list[str],
+    allow_abstain: bool,
+    model: str = "gemini-2.5-flash",
+) -> tuple[str, str]:
+    """Return (stated_choice, quote): which choice the reasoning concludes on, blind
+    to the real vote. Empty/blank reasoning -> ('unclear', '')."""
+    if not reasoning or not reasoning.strip():
+        return "unclear", ""
+    user = _COH_USER.format(
+        players=", ".join(players),
+        allow="yes" if allow_abstain else "no",
+        reasoning=reasoning,
+    )
+    llm = create_chat_model(model).with_structured_output(VoteReasoningCoherence)
+    try:
+        r = llm.invoke(
+            [
+                {"role": "system", "content": _COH_SYSTEM},
+                {"role": "user", "content": user},
+            ],
+            config={"run_name": "coherence_judge"},
+        )
+        return (r.stated_choice or "unclear").strip(), r.quote or ""
+    except Exception:  # noqa: BLE001 - judge is best-effort
+        return "unclear", ""
+
+
+def run_coherence_test(
+    batch_path: Path,
+    n: int = 40,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    judge_model: str = "gemini-2.5-flash",
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Does reordering SYNCHRONIZE the vote with the reasoning? Replay each decision
+    (memory on) under {vote-first, reason-first, memory-linked}; a judge reads ONLY the
+    reasoning and reports the choice it concludes on; compare to the real vote ->
+    synced / desync / unclear. The reason-first synced rate is the key number: it is the
+    fraction of decisions where the channel memory->reasoning->vote is intact (a low rate
+    means the agent deliberates then gut-votes anyway, so even GOOD memory won't reach the
+    vote). vote-first is the reference (its reasoning is written after the vote)."""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
+    schemas = {
+        "vote_first": None,
+        "reason_first": DayVoteOutputReasonFirst,
+        "memory_linked": DayVoteOutputMemoryLinked,
+    }
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        players = sorted(game["roles"].keys())
+        by_schema = {}
+        for sname, sch in schemas.items():
+            votee, updated = _replay_vote(
+                case, case.retrieved_observations, allow, schema_override=sch
+            )
+            stated, quote = _judge_coherence(updated, players, allow, model=judge_model)
+            by_schema[sname] = {
+                "vote": votee,
+                "stated": stated,
+                "quote": quote,
+                "reasoning": updated,
+            }
+        return {
+            "game": str(game["game_id"])[:8],
+            "role": case.player_role,
+            "day": case.day,
+            "allow_abstain": allow,
+            "by_schema": by_schema,
+        }
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    def classify(d: dict[str, Any]) -> str:
+        stated = _norm_choice(d["stated"])
+        if stated == "unclear":
+            return "unclear"
+        return "synced" if stated == _norm_choice(d["vote"]) else "desync"
+
+    agg = {s: Counter() for s in schemas}
+    desync_examples: list[dict[str, Any]] = []
+    for row in rows:
+        for s in schemas:
+            d = row["by_schema"][s]
+            if d["vote"] is None:
+                agg[s]["failed"] += 1
+                continue
+            verdict = classify(d)
+            agg[s][verdict] += 1
+            agg[s]["n"] += 1
+            if verdict == "desync" and len(desync_examples) < 15:
+                desync_examples.append(
+                    {
+                        "game": row["game"],
+                        "schema": s,
+                        "role": row["role"],
+                        "voted": d["vote"],
+                        "reasoning_concluded": d["stated"],
+                        "quote": (d["quote"] or "")[:160],
+                        "reasoning": (d["reasoning"] or "")[:320],
+                    }
+                )
+
+    def rate(s: str, k: str) -> float | None:
+        return round(agg[s][k] / agg[s]["n"], 3) if agg[s]["n"] else None
+
+    by_schema = {
+        s: {
+            "n": agg[s]["n"],
+            "synced": rate(s, "synced"),
+            "desync": rate(s, "desync"),
+            "unclear": rate(s, "unclear"),
+        }
+        for s in schemas
+    }
+    return {
+        "batch": batch_path.name,
+        "n_decisions": len(cases),
+        "by_schema": by_schema,
+        "desync_examples": desync_examples,
+    }
+
+
 def run_adherence_scan(
     batch_path: Path,
     n: int = 40,
@@ -876,6 +1343,30 @@ def main() -> None:
         "memory consideration?)",
     )
     ap.add_argument(
+        "--echo",
+        type=int,
+        default=0,
+        help="judge-FREE engagement: replay N decisions under vote-first vs "
+        "reason-first vs memory-linked, measure how much each schema's reasoning "
+        "draws on the retrieved memory (echo above a shuffled-memory floor)",
+    )
+    ap.add_argument(
+        "--echo-validate",
+        type=int,
+        default=0,
+        help="validate echo against the adherence judge on N replayed decisions: "
+        "does echo agree with applied/ignored, and is the judge itself accurate "
+        "(rows keep memory+reasoning+judge evidence to read by hand)",
+    )
+    ap.add_argument(
+        "--coherence",
+        type=int,
+        default=0,
+        help="does reordering SYNC vote with reasoning? Replay N decisions under "
+        "vote-first/reason-first/memory-linked; judge reads the reasoning blind and "
+        "its concluded choice is compared to the real vote (synced/desync/unclear)",
+    )
+    ap.add_argument(
         "--judge",
         action="store_true",
         help="with --causal, also label adherence on the stored arm",
@@ -915,6 +1406,12 @@ def main() -> None:
         print(json.dumps(run_reorder_test(args.batch, n=args.reorder, min_day=args.min_day, roles=roles), indent=2))
     elif args.reorder_adoption:
         print(json.dumps(run_reorder_adoption(args.batch, n=args.reorder_adoption, min_day=args.min_day, roles=roles), indent=2))
+    elif args.echo:
+        print(json.dumps(run_echo_consideration(args.batch, n=args.echo, min_day=args.min_day, roles=roles), indent=2))
+    elif args.echo_validate:
+        print(json.dumps(run_echo_judge_validation(args.batch, n=args.echo_validate, min_day=args.min_day, roles=roles, judge_model=args.model), indent=2))
+    elif args.coherence:
+        print(json.dumps(run_coherence_test(args.batch, n=args.coherence, min_day=args.min_day, roles=roles), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
 
