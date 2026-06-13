@@ -1,0 +1,44 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 40,
+  "by_schema": {
+    "vote_first": {
+      "n": 40,
+      "synced": 0.75,
+      "desync": 0.0,
+      "unclear": 0.25
+    },
+    "reason_first": {
+      "n": 40,
+      "synced": 0.875,
+      "desync": 0.025,
+      "unclear": 0.1
+    },
+    "memory_linked": {
+      "n": 40,
+      "synced": 0.925,
+      "desync": 0.025,
+      "unclear": 0.05
+    }
+  },
+  "desync_examples": [
+    {
+      "game": "7e03c370",
+      "schema": "reason_first",
+      "role": "villager",
+      "voted": "player_5",
+      "reasoning_concluded": "abstain",
+      "quote": "I will vote to abstain to avoid being manipulated by either side of this conflict.",
+      "reasoning": "Player 5's claim to be the Investigator is high-risk, especially since they haven't provided any evidence or timing for their investigation. While it's possible they are the Investigator, it is also a common tactic for wolves or the serial killer to create confusion or force a mislynch on an innocent player. With no in"
+    },
+    {
+      "game": "7e03c370",
+      "schema": "memory_linked",
+      "role": "villager",
+      "voted": "player_7",
+      "reasoning_concluded": "abstain",
+      "quote": "I will vote to abstain",
+      "reasoning": "The situation involves an unverified investigator claim regarding player_7. Given the high risk of a mislynch and the lack of evidence supporting player_5's claim, I need to remain skeptical of such impulsive role reveals. I will vote to abstain because an unverified claim, especially one causing such intense division,"
+    }
+  ]
+}

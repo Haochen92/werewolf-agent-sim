@@ -1,0 +1,457 @@
+[
+  {
+    "game": "22e2fd88",
+    "role": "healer",
+    "day": 3,
+    "player_id": "player_2",
+    "allow_abstain": false,
+    "threats": [
+      "player_5",
+      "player_7",
+      "player_8"
+    ],
+    "recorded": {
+      "votee": "player_9",
+      "role": "villager",
+      "reasoning": "The village is currently stuck in a cycle of circular reasoning and mutual suspicion following the loss of the investigator. Player 9's aggressive attempt to force a nomination on player 4 using weak, meta-game justifications stands out as an attempt to create a mislynch and generate chaos. By targeting player 9, I am breaking the trend of abstention while focusing on the player who is most actively trying to manipulate the voting process, which is a common trait among the serial killer or wolves looking to misdirect the village's first real action."
+    },
+    "conditions": [
+      {
+        "label": "off / vote-first",
+        "votes": [
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "The village needs to break the stalemate to avoid being picked off. While I want to stay under the radar, player_9's attempt to force a vote on player_4 for a collective decision (previous abstention) feels like a manufactured 'first target' strategy often used by wolves to initiate a mislynch. I am voting for player_9 to force a reaction and break the stagnation while appearing to act on the consensus to stop abstaining."
+      },
+      {
+        "label": "stored / vote-first",
+        "votes": [
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "The game has reached a critical stage where stagnation must end. Player 9 has been the most aggressive in steering the discussion toward specific targets without providing a strong logical foundation, which is a common behavior for wolves or the serial killer trying to manufacture a mislynch early on. By nominating player 9, I am fulfilling the village's need to act while testing their reaction to pressure, without making it appear as though I am solely following an easy consensus."
+      },
+      {
+        "label": "stored / reason-first",
+        "votes": [
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "The village is at a critical juncture after losing the investigator. My priority as the healer is to remain alive to protect key players while avoiding a mislynch that would play into the hands of the wolves or the serial killer. Since player 9 has been the most aggressive in pushing for a specific target\u2014initially pressuring player 4\u2014they are potentially a wolf trying to direct the village toward a mislynch or a serial killer looking to sow chaos. By voting for player 9, I am initiating the necessary shift away from total abstention, while also focusing on the player whose behavior has been the most disruptive to village consensus."
+      },
+      {
+        "label": "stored / memory-linked",
+        "votes": [
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "The game has reached a critical stage where further abstention is playing into the hands of the wolves and the serial killer. Since we are flying blind without the investigator, I need to break the cycle. I will vote for player_9, not necessarily because they are definitively the wolf, but because their aggressive push to nominate player_4 based on thin justifications for past behavior is the most likely attempt to manufacture a mislynch or cause internal division, which is a common tactic for evil roles. This move forces a break from the status quo while appearing to be an active, logical contribution to the village."
+      }
+    ]
+  },
+  {
+    "game": "b79d8a55",
+    "role": "villager",
+    "day": 3,
+    "player_id": "player_5",
+    "allow_abstain": false,
+    "threats": [
+      "player_6",
+      "player_8",
+      "player_9"
+    ],
+    "recorded": {
+      "votee": "player_6",
+      "role": "wolf",
+      "reasoning": "Player 6 was extremely quick to push for total passivity and abstention on day two. While the village was collectively cautious, being the most vocal proponent of a strategy that ultimately benefited the wolves (by preventing a potential elimination of player 8 or an investigation-led target) is a behavioral red flag. I am prioritizing this behavioral pattern over purely neutral voting records to identify the accomplice."
+    },
+    "conditions": [
+      {
+        "label": "off / vote-first",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "Given that player_8 was a wolf and the village has been stuck in a deadlock, I am focusing on player_6. While the caution was universal, player_6's early and persistent advocacy for complete passivity feels like a strategic effort to prevent the identification of the wolf pair. Since player_8 is now confirmed, anyone who actively maintained the status quo is highly suspicious."
+      },
+      {
+        "label": "stored / vote-first",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "Player 6 was identified as pushing aggressively for abstention on Day 2, which effectively paralyzed the village and allowed the wolf (player 8) to survive and eliminate our investigator. While the consensus for abstention was general, targeting those who actively framed passivity as the only option is the most logical next step to narrow down the remaining threats."
+      },
+      {
+        "label": "stored / reason-first",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "With player_8 confirmed as a wolf, the focus shifts to identifying their patterns of interaction. Since the investigator is dead, I must pivot from extreme caution to active deduction. Player 6's early and persistent push for total abstention on day two, while superficially cautious, now appears as a potential effort to protect the wolf faction by preventing early lynching. I will target player 6 for elimination as the most likely candidate for a wolf accomplice who used the cover of 'consensus' to minimize the village's information gain."
+      },
+      {
+        "label": "stored / memory-linked",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "With one wolf identified and the investigator eliminated, I must move away from the cautious inaction that defined the first two days. Since the consensus for abstention was a strategic mistake that played into the hands of the evils, I am shifting focus to analyze which players are most desperate to deflect attention or maintain current suspicions. Player 6 has been singled out for being quick to endorse passivity, and while that is not proof of guilt, it provides a starting point for evaluation against the behavior of others who also championed the status quo. I will target player 6 to test their defensive posture and see if it yields further clues about their potential role."
+      }
+    ]
+  },
+  {
+    "game": "e51e6b3b",
+    "role": "villager",
+    "day": 3,
+    "player_id": "player_3",
+    "allow_abstain": true,
+    "threats": [
+      "player_1",
+      "player_5",
+      "player_8"
+    ],
+    "recorded": {
+      "votee": "player_8",
+      "role": "wolf",
+      "reasoning": "The suspicion lies heavily on players 6 and 8, who both aggressively pushed for the elimination of our vigilante, player 9. While they claim to have been avoiding chaos, their voting pattern aligned perfectly with the known wolf, player 1. Player 8 was particularly vocal, and given the serial killer's presence, removing someone who was actively coordinating or echoing wolf behavior is a necessary step to stabilize the village. I will target player 8 as the most likely wolf candidate remaining."
+    },
+    "conditions": [
+      {
+        "label": "off / vote-first",
+        "votes": [
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "Player 8 and Player 6 both voted against the vigilante alongside a known wolf (player 1). Player 8 was particularly vocal and aggressive in that push, which mirrors the behavior of a wolf attempting to eliminate a threat to their team under the guise of 'maintaining order'. Given the limited pool, isolating the loudest voice that aligned with a confirmed wolf is the most logical path for the village to identify the remaining wolf."
+      },
+      {
+        "label": "stored / vote-first",
+        "votes": [
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "The suspicion remains highest on player_8 and player_6 due to their coordinated, early push against the vigilante alongside a known wolf. Between the two, player_8 has been the most vocal in justifying that elimination as a defense against 'chaos,' which matches the tactical narrative often used by wolves to eliminate town threats. Given the necessity of removing wolf threats while the serial killer remains, targeting the player who led the charge against our vigilante is the most evidence-backed move available."
+      },
+      {
+        "label": "stored / reason-first",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "villager"
+          },
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_8",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "The suspicion falls heavily on player_6 and player_8 due to their active role in the removal of the vigilante, paralleling the behavior of the known wolf, player_1. While they claim to act against 'chaos', their arguments are strikingly similar to standard wolf defensive tactics to remove key threats. I will target player_6 as they were particularly insistent on framing their vote against the vigilante as a rational, objective decision, which effectively mirrors the 'analytical' cover often used by wolves to maintain plausible deniability. I am choosing to vote to eliminate player_6 to break the pattern of defensive rhetoric that shielded the wolf team in previous rounds."
+      },
+      {
+        "label": "stored / memory-linked",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "villager"
+          },
+          {
+            "votee": "player_6",
+            "role": "villager"
+          },
+          {
+            "votee": "player_6",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "The vigilante was killed by the wolves, and player_1 (a wolf) was eliminated. My focus is now on identifying the remaining wolf and the serial killer. Both player_6 and player_8 voted for the vigilante, mirroring the behavior of the known wolf, player_1. While they claim it was to stop disruption, the alignment with a wolf's agenda is too close to ignore. Between the two, player_6's defensive shift in logic and attempts to redirect attention suggest they might be the wolf or the serial killer attempting to survive by sowing confusion. I will vote for player_6 to test this."
+      }
+    ]
+  },
+  {
+    "game": "fa79dc3b",
+    "role": "villager",
+    "day": 3,
+    "player_id": "player_2",
+    "allow_abstain": true,
+    "threats": [
+      "player_1",
+      "player_6",
+      "player_7"
+    ],
+    "recorded": {
+      "votee": "player_9",
+      "role": "villager",
+      "reasoning": "Player 7 was a confirmed wolf who voted for the investigator early. Players who were pushing for the investigator's elimination most aggressively (player 3, player 9) were essentially aligned with the wolf's strategy of eliminating the investigator to preserve their own status. Between 3 and 9, player 9's persistent attempts to shift the focus to 'early interaction patterns' seems like a tactical diversion now that we know player 7's status. I will target player 9 as the most likely remaining wolf or serial killer based on their aggressive, deflective narrative building."
+    },
+    "conditions": [
+      {
+        "label": "off / vote-first",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "serial_killer"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_6",
+            "role": "serial_killer"
+          }
+        ],
+        "reasoning_sample": "Player 7 (Wolf) voted early for the Investigator, suggesting a deliberate attempt to blend in with the village. Player 6 has been consistently trying to shift the focus toward complex meta-analysis of 'early interactions' and 'coordination' rather than the objective voting record, which is a common tactic to obscure simple evidence. With the Vigilante, Investigator, and one Wolf confirmed out, I am prioritizing eliminating those who obfuscate the clear voting data. I suspect player 6 is the remaining wolf partner."
+      },
+      {
+        "label": "stored / vote-first",
+        "votes": [
+          {
+            "votee": "player_6",
+            "role": "serial_killer"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "With the Investigator and Vigilante gone, and one wolf (player 7) identified, the remaining wolf is likely someone who strategically blended into the consensus on day 2. Player 6's commentary on day 3 focuses heavily on analyzing the 'narrative' and the 'why' of player 7's votes rather than the raw data, which feels like a deflection strategy meant to keep the village searching for complex patterns instead of looking at direct voting ties. I am targeting player 6 to test their defensive alignment."
+      },
+      {
+        "label": "stored / reason-first",
+        "votes": [
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_3",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "Player 7 was a revealed wolf who voted for the investigator early. The goal is to identify who was most closely aligned with player 7's rhetoric or who might have been their partner. Player 9 has been consistently pushing for a meta-analysis of early-game interactions to find coordination. I will monitor the voting patterns closely while continuing to push for identifying the remaining wolf or the serial killer."
+      },
+      {
+        "label": "stored / memory-linked",
+        "votes": [
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          },
+          {
+            "votee": "player_9",
+            "role": "villager"
+          }
+        ],
+        "reasoning_sample": "The investigation of player_7, a known wolf, is the key. They voted for player_5 early in the day, likely to establish credibility after player_5's erratic behavior became a target. I am focusing on player_9 as they are heavily focused on redirecting attention toward specific 'early-game' interactions instead of taking a concrete stance, mirroring defensive maneuvers I've seen before to create ambiguity."
+      }
+    ]
+  },
+  {
+    "game": "7e03c370",
+    "role": "villager",
+    "day": 3,
+    "player_id": "player_1",
+    "allow_abstain": false,
+    "threats": [
+      "player_2",
+      "player_6",
+      "player_7"
+    ],
+    "recorded": {
+      "votee": "player_7",
+      "role": "wolf",
+      "reasoning": "Player 5 has claimed to be the investigator and identified player 7 as a wolf. While this is a high-risk claim, the danger of leaving a wolf unchecked while we are being hunted by two factions outweighs the risk of a potential mislynch. I am choosing to trust the investigator's claim to build momentum and eliminate a confirmed threat."
+    },
+    "conditions": [
+      {
+        "label": "off / vote-first",
+        "votes": [
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "Player 5 has made a high-stakes claim of being the investigator. While risky, failing to act on a potential investigation result in a 9-player game against two factions is often more dangerous than the risk of a false accusation. I will vote for player_7 to test player_5's claim, as the alternative of total inaction allows the wolves and serial killer to continue picking us off. I am prepared to reassess player 5's credibility tomorrow based on the night's outcome."
+      },
+      {
+        "label": "stored / vote-first",
+        "votes": [
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "Player 5's claim, while high-risk, is the only actionable intelligence available in an otherwise information-starved environment. In past scenarios where a claimed Investigator was ignored, the village suffered; where they were trusted, the village gained crucial momentum. Given the dual-faction threat and the lack of other leads, I will prioritize acting on this information to eliminate a potential threat rather than remaining in a cycle of inaction that benefits the killers."
+      },
+      {
+        "label": "stored / reason-first",
+        "votes": [
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_5",
+            "role": "investigator"
+          },
+          {
+            "votee": "player_5",
+            "role": "investigator"
+          }
+        ],
+        "reasoning_sample": "Player 5's aggressive, unverified 'Investigator' claim feels high-risk and potentially disruptive, but player 7's defensive posture is also characteristic of someone under pressure. Given the lack of corroborating evidence for player 5's claim, I will prioritize maintaining village cohesion while keeping a close eye on the outcome of this accusation. I have decided to vote for player 7 to test the claim, as a failed accusation will clearly identify player 5's potential for manipulation, whereas a success removes a wolf."
+      },
+      {
+        "label": "stored / memory-linked",
+        "votes": [
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_7",
+            "role": "wolf"
+          },
+          {
+            "votee": "player_6",
+            "role": "wolf"
+          }
+        ],
+        "reasoning_sample": "The claim by player_5 that they are the Investigator is extremely risky. In an information-starved game, such a claim is either the game-winning move or a calculated bait by a wolf/serial killer to force a mislynch on a villager. Because player_5 refused to detail their investigation logic or role, and given the high danger of mislynching, I will vote to abstain. My strategy is to observe if player_5 is attacked tonight; if they survive and were telling the truth, the wolves will likely target them or the healer will protect them, providing more data for tomorrow."
+      }
+    ]
+  }
+]

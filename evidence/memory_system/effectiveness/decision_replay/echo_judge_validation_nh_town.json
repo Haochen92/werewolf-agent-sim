@@ -1,0 +1,1399 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 40,
+  "n_scored": 40,
+  "echo_when_judge_engaged": {
+    "n": 20,
+    "mean_echo": 0.3412
+  },
+  "echo_when_judge_ignored": {
+    "n": 20,
+    "mean_echo": 0.3114
+  },
+  "spearman_echo_vs_frac_engaged": {
+    "rho": 0.143,
+    "p": 0.3771
+  },
+  "rows": [
+    {
+      "game": "fa79dc3b",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2619,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_2",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "Player 2's focus on casting suspicion on those who pushed for the Day 2 vote, despite the investigator (player 5) being a disruptive element, mirrors the deflection tactics used by wolves in previous scenarios. By framing the push for a necessary vote as suspicious behavior, they are actively creating friction among the remaining villagers. I will pivot to scrutinizing player 2 as the potential wolf partner of the deceased player 7, as their attempt to re-litigate the voting history seems design",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's decision to vote for a player is the opposite of the abstention/inaction that the memory warns against."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's decision to vote for a player is the opposite of the abstention/inaction that the memory warns against."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "Player 2's focus on casting suspicion... mirrors the deflection tactics used by wolves in previous scenarios."
+        }
+      ]
+    },
+    {
+      "game": "4999832f",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2564,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "abstain",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "Given that the serial killer is already eliminated and player_3, despite claiming to be the investigator, is withholding their result, I am wary of being manipulated. Without concrete proof or a forced disclosure from player_3, voting for a random player based on voting timestamps is too high-risk and could lead to a village mislynch. I will continue to press for the investigation result but choose to abstain today to avoid an accidental error that would benefit the remaining wolves.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent chose to abstain to avoid an error, which is the exact approach the memory warns against as it led to the Investigator's death."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The memory had a mixed outcome for abstaining, so it provides no clear direction. The agent's reasoning to abstain to avoid error does not engage with this memory's trade-offs."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "repeat",
+          "evidence": "The memory recommends trusting an Investigator's lead and acting on it. The agent did the opposite by abstaining due to a lack of 'concrete proof'."
+        }
+      ]
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3333,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_8",
+      "mem_text": "Two villagers chose to abstain from the vote, citing the need for more certainty and hesitating because of the accused wolf's plausible-sounding defense. A now-credible Investigator, whose first accusation was proven correct, accused a second player of being a wolf. The accused player offered a plausible defense, pointing out they had voted against their supposed wolf partner the previous day. Information landscape: The landscape was becoming information-rich, with a credible Investigator and pu",
+      "reasoning": "The suspicion surrounding player 8 and player 6 stems from their early-game alignment with a known wolf, player 1, in the elimination of the vigilante. While they frame this as 'anti-chaos' sentiment, the outcome was the removal of a village role that threatened the wolf team. Between the two, player 8 was the most aggressive and vocal in leading the charge against the vigilante. With the village needing to make progress to catch both the final wolf and the serial killer, eliminating the player ",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on choosing a target, not on the pros and cons of taking action versus abstaining."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "behavioral explanations ('I was avoiding chaos') are easily fabricated by wolves."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on selecting between the two primary suspects, not on the strategic implications of vote splitting."
+        }
+      ]
+    },
+    {
+      "game": "84d383f5",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.4082,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_8",
+      "mem_text": "One villager (player_4) gave the serial killer credit for the 'helpful' vote against the wolf and voted for the vigilante instead. Another villager (player_9) also voted for the vigilante, splitting the vote and causing a non-elimination. In the endgame, the village was split on whether to target the serial killer or other quiet players. The serial killer had gained credibility by voting with the village to eliminate the wolf on the previous day. Information landscape: Mixed. The wolf's eliminat",
+      "reasoning": "The game has reached a critical stage with only four players remaining. Given the vigilante (player 7) was eliminated by a majority vote, and that lynch effectively stripped the village of its offensive power, I need to hold the main contributors of that momentum accountable. Both player 4 and player 8 were active in pushing that vote. Player 8's defense emphasizes that they acted based on 'disruption,' but in a game where wolves and serial killers thrive on removing power roles, being the catal",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning treats the elimination of a power role as a 'dangerous signal', thus punishing the behavior the memory warns against."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent explicitly rejects player 8's defense of voting based on 'disruption,' which is the exact mistake this memory warns against."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "repeat",
+          "evidence": "The agent's reasoning is based on voting records, not on trusting confirmed role information, as there are no confirmed roles left in the game."
+        }
+      ]
+    },
+    {
+      "game": "5b02ced6",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.4444,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_7",
+      "mem_text": "The investigator followed a developing consensus and voted to eliminate the vigilante. This was a guess based on group suspicion rather than waiting one night to use their own investigative power for a certain result. In the endgame, the investigator and healer were confirmed, but the village still needed to identify the serial killer among three remaining players (a villager, a vigilante, and the serial killer). Information landscape: Information-rich, as two key village roles were confirmed, b",
+      "reasoning": "Maintain my cover as the investigator while leading the lynch of the confirmed serial killer. Now that my role is revealed, I must act decisively to ensure the village removes the serial killer today, as my protection is gone and I am the primary target for the night kill. Prioritize eliminating the known threat to win the game.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to lynch the 'confirmed serial killer' and 'known threat' shows it is acting on its investigative power, avoiding the memory's mistake of guessing based on social momentum."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'act decisively to ensure the village removes the serial killer today' directly avoids the memory's negative outcome of a tie vote and inaction."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on eliminating a 'confirmed serial killer', not on interpreting another player's claim, which was the context of the memory."
+        }
+      ]
+    },
+    {
+      "game": "f417aab8",
+      "role": "healer",
+      "day": 3,
+      "echo": 0.3947,
+      "n_mem": 5,
+      "frac_applied": 0.4,
+      "frac_engaged": 0.4,
+      "frac_ignored": 0.6,
+      "vote": "player_8",
+      "mem_text": "The Healer argued for caution and chose to abstain from the vote. This contributed to a tie that prevented any elimination that day, with the stated rationale of avoiding a misfire. The confirmed Investigator, who had been saved by the Healer, accused a second player of being a wolf, but some villagers expressed doubt due to the accused player's voting record. Information landscape: The landscape was information-rich with a confirmed Investigator, but the new accusation was contested, creating c",
+      "reasoning": "I am voting for player_8 as they have been heavily involved in steering the village's negative consensus, specifically against the now-deceased vigilante, while simultaneously deflecting onto others. This behavioral pattern of creating and following destructive bandwagons is typical of someone trying to hide as a wolf. I will continue to act as a concerned villager, focusing my protection on player_4 to ensure our most targeted player remains alive as an information asset.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "repeat",
+          "evidence": "The memory's lesson is to be cautious and abstain from a vote to prevent a misfire, but the agent actively voted to eliminate player_8."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning for voting for player_8 is that they were 'heavily involved in steering the village's negative consensus, specifically against the now-deceased vigilante,' which is the exact behavior the memory warns against."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The memory warns against voting out players based on behavioral reads, but the agent's stated reason for voting for player_8 is their 'behavioral pattern of creating and following destructive bandwagons.'"
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The memory warns against joining bandwagons; the agent avoids this and instead targets player_8 for their 'behavioral pattern of creating and following destructive bandwagons.'"
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The memory is about being the target of a near-unanimous vote, which is not the agent's current situation."
+        }
+      ]
+    },
+    {
+      "game": "22e2fd88",
+      "role": "healer",
+      "day": 3,
+      "echo": 0.0976,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_9",
+      "mem_text": "The Healer argued for caution and chose to abstain from the vote. This contributed to a tie that prevented any elimination that day, with the stated rationale of avoiding a misfire. The confirmed Investigator, who had been saved by the Healer, accused a second player of being a wolf, but some villagers expressed doubt due to the accused player's voting record. Information landscape: The landscape was information-rich with a confirmed Investigator, but the new accusation was contested, creating c",
+      "reasoning": "The game has reached a point where indefinite abstention is helping the wolves and the serial killer more than the village. Player 9 is the most suspicious candidate because their aggressive push to nominate player 4 felt like a manufactured attempt to force a lynch without any logical foundation, likely to create conflict or misdirect the village. As the healer, my priority remains surviving, but I must now pivot toward identifying and neutralizing threats to avoid further stagnation.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning that 'indefinite abstention is helping the wolves' directly addresses the risky aspect of the memory's mixed outcome, where abstaining 'allowed a wolf to survive the day vote'."
+        },
+        {
+          "application": "applied",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning to 'pivot toward identifying and neutralizing threats to avoid further stagnation' directly addresses the negative outcome of the memory, where abstaining 'allowed evil roles to kill freely'."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_9, a non-consensus target, which contradicts the memory's lesson to avoid contributing to a fractured vote that could cause a deadlock."
+        }
+      ]
+    },
+    {
+      "game": "7e03c370",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.2895,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 1.0,
+      "frac_ignored": 0.0,
+      "vote": "player_7",
+      "mem_text": "The investigator abstained from the vote, wanting to remain neutral and gather data on how the rest of the players aligned, rather than committing to the vote against the likely wolf. A wolf was under heavy fire from several villagers and a vote was called against them. The investigator chose to abstain from the vote to observe the voting patterns of others. Information landscape: The landscape was becoming information-rich through behavioral tells, as one player's defensive and contradictory ar",
+      "reasoning": "I have identified player_7 as a wolf through my night action. Even though I have outed myself as the investigator, eliminating a confirmed wolf is the highest priority for the village. I must continue to press the case against player_7, as survival is now secondary to removing a known threat. I will lean into the role of a leader to try and force a consensus vote, as my information is the only hard evidence the village has, and delaying the vote only serves the wolves and the serial killer.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'press the case against player_7' and make eliminating a 'confirmed wolf... the highest priority' is the direct opposite of the memory's failed passive approach of abstaining."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning states they will 'lean into the role of a leader to try and force a consensus vote', directly addressing the failure to unify the town described in the memory."
+        },
+        {
+          "application": "overrode_with_reason",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that 'survival is now secondary to removing a known threat' explicitly accepts the personal risk of being eliminated that was the core negative outcome of this memory's failed vote."
+        }
+      ]
+    },
+    {
+      "game": "e1952ffc",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.3704,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_8",
+      "mem_text": "The investigator abstained from the vote, wanting to remain neutral and gather data on how the rest of the players aligned, rather than committing to the vote against the likely wolf. A wolf was under heavy fire from several villagers and a vote was called against them. The investigator chose to abstain from the vote to observe the voting patterns of others. Information landscape: The landscape was becoming information-rich through behavioral tells, as one player's defensive and contradictory ar",
+      "reasoning": "I have successfully investigated player_8 and confirmed they are a wolf. Since I am the Investigator, it is imperative to remove this known threat immediately to reduce the number of wolves. I will now pivot to publicly reveal this information to secure the elimination of player_8, as the village is desperate for a concrete lead and a successful vote.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on the imperative to remove the wolf, not on the memory's lesson about the dangers of abstaining."
+        },
+        {
+          "application": "overrode_with_reason",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "I will now pivot to publicly reveal this information... as the village is desperate for a concrete lead and a successful vote."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "The agent's reasoning is based on their private knowledge that player_8 is a wolf, not on the memory's lesson about aligning with an emerging social consensus."
+        }
+      ]
+    },
+    {
+      "game": "007c471a",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.4,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_5",
+      "mem_text": "A villager (player_2) voted to eliminate the investigator because their argumentative and accusatory style was perceived as disruptive and unhelpful, contributing to a majority vote against them. A circular argument between two vocal players (the investigator and the serial killer) dominated the discussion, leading to widespread frustration and a desire to eliminate one of them just to break the deadlock. Information landscape: The landscape was information-starved, with suspicion based on behav",
+      "reasoning": "The village must stop the cycle of indecision and abstaining, as it only benefits the wolves and the serial killer. Since the investigator is dead and we are at a crossroads, I am voting for player_5. Their defense of passivity while simultaneously pushing a narrative against player_2 suggests they might be attempting to manipulate the village's frustration to misdirect our limited voting power. I am choosing to break the deadlock by taking a stand rather than abstaining.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_5 because their 'pushing a narrative... suggests they might be attempting to manipulate the village's frustration', which is a behavioral read similar to the one that led to the negative outcome in the memory."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The memory warns against splitting a vote away from a consensus target, but in the current situation, there is no consensus to split from; the agent is trying to create one."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'stop the cycle of indecision and abstaining' and 'break the deadlock by taking a stand' directly addresses the memory's lesson about the negative consequences of a non-elimination day."
+        }
+      ]
+    },
+    {
+      "game": "a52b691a",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3171,
+      "n_mem": 5,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "player_4",
+      "mem_text": "The villagers expressed skepticism about the claim's validity and the risk of outing a potential Investigator. They ultimately chose to abstain from the vote, seeking more consensus rather than acting on the single, unconfirmed lead. An unverified player claimed to be the Investigator and accused another player of being a wolf early in the game, forcing the village to decide whether to trust the high-risk claim. Information landscape: The landscape was information-starved, with the unverified cl",
+      "reasoning": "Player 4 is aggressively pushing a circular, forced narrative against player 7. By framing any action player 7 takes\u2014whether abstaining or voting against the consensus\u2014as evidence of guilt, player 4 is creating a closed-loop trap that prevents objective analysis. This behavior is highly characteristic of a wolf trying to direct the village into a mislynch by eliminating a player who is attempting to break the status quo. I will vote for player 4 as their disruptive, tunnel-vision strategy is mor",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning focuses on Player 4's 'circular, forced narrative,' not on an unverified claim, which was the central issue of the memory."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for Player 4 because their 'disruptive, tunnel-vision strategy is more dangerous,' which directly repeats the memory's failed approach of voting out a 'disruptive' player involved in a circular argument."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The memory warns against abstaining, and the agent took a decisive action by voting for Player 4 instead of abstaining."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "ambiguous",
+          "evidence": "The memory's approach was to abstain due to fear of a manufactured conflict; the agent avoided this by taking a decisive vote against Player 4."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for Player 4 due to their 'disruptive, tunnel-vision strategy,' which repeats the memory's failed approach of voting out a player for 'suspicious behavior, which seemed designed to sow chaos.'"
+        }
+      ]
+    },
+    {
+      "game": "c83608a1",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.1923,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "player_2",
+      "mem_text": "A villager (player_2) voted to eliminate the investigator because their argumentative and accusatory style was perceived as disruptive and unhelpful, contributing to a majority vote against them. A circular argument between two vocal players (the investigator and the serial killer) dominated the discussion, leading to widespread frustration and a desire to eliminate one of them just to break the deadlock. Information landscape: The landscape was information-starved, with suspicion based on behav",
+      "reasoning": "The defensive behavior of player 2 and player 4 when questioned about the mechanics of the unanimous vote against the healer suggests they are actively controlling the narrative. Given that the healer, investigator, and vigilante are all gone, I suspect they are the wolves attempting to maintain the status quo by shutting down critical analysis of how consensus is reached.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_2 based on their 'defensive behavior', which is a behavioral read of an argumentative player, the exact approach that led to a negative outcome in the memory."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_2, thereby avoiding the inaction (abstaining) that the memory warns against."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_2, thereby avoiding the inaction (abstaining) that the memory warns against."
+        }
+      ]
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3182,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_2",
+      "mem_text": "A villager chose to abstain from voting, citing a desire to avoid being responsible for a blind lynch in a chaotic situation. In a mid-game vote with multiple strong candidates for elimination, a villager abstained from voting. Information landscape: The landscape was information-rich with an Investigator claim clearing one player and focusing suspicion, but voting records were still being established. Game phase: Mid-game, after one wolf was eliminated by the serial killer and the Investigator ",
+      "reasoning": "The village has been paralyzed by consensus-driven abstentions for two days, which only benefits the wolves and the serial killer by preventing us from gathering any voting data or narrowing the field. Player 2 has been a primary architect of this 'wait and see' strategy from the beginning. By consistently pushing for caution and abstention, they have successfully kept the village in the dark, effectively shielding potential threats. Given that we cannot afford another day of inaction, I am voti",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to \"break this pattern of stagnation\" and avoid being \"paralyzed by consensus-driven abstentions\" directly follows the memory's lesson that abstention is harmful."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that \"we cannot afford another day of inaction\" directly applies the memory's lesson that inaction/abstention leads to negative outcomes."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "repeat",
+          "evidence": "The agent's reasoning to \"break this pattern of stagnation\" and vote for a player contradicts the memory's lesson that abstaining is a positive, self-preserving action in an information-starved environment."
+        }
+      ]
+    },
+    {
+      "game": "fc60cb02",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2414,
+      "n_mem": 6,
+      "frac_applied": 0.167,
+      "frac_engaged": 0.167,
+      "frac_ignored": 0.833,
+      "vote": "player_5",
+      "mem_text": "A villager chose to abstain from voting, citing a desire to avoid being responsible for a blind lynch in a chaotic situation. In a mid-game vote with multiple strong candidates for elimination, a villager abstained from voting. Information landscape: The landscape was information-rich with an Investigator claim clearing one player and focusing suspicion, but voting records were still being established. Game phase: Mid-game, after one wolf was eliminated by the serial killer and the Investigator ",
+      "reasoning": "The synergy between player_5 and the confirmed wolf player_8 during the procedural push is too strong to ignore. Even if player_5's intent was to break the deadlock, the outcome directly benefited the wolf faction and created a distraction. Prioritizing the removal of those who operated in coordination with known wolves is the most logical path to narrowing down the remaining threats.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on the target's guilt, not the pros and cons of voting versus abstaining."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on the strength of the evidence against player_5, not the general principle of acting versus abstaining."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "Even if player_5's intent was to break the deadlock, the outcome directly benefited the wolf faction..."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning is about why player_5 is the correct target, not about avoiding vote-splitting."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on the target's guilt, not the negative consequences of inaction."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "repeat",
+          "evidence": "The memory's lesson about ambiguity is not applicable because the agent's reasoning is based on a lead it considers 'too strong to ignore'."
+        }
+      ]
+    },
+    {
+      "game": "69f8d21c",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.3529,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_8",
+      "mem_text": "The investigator abstained from the vote, wanting to remain neutral and gather data on how the rest of the players aligned, rather than committing to the vote against the likely wolf. A wolf was under heavy fire from several villagers and a vote was called against them. The investigator chose to abstain from the vote to observe the voting patterns of others. Information landscape: The landscape was becoming information-rich through behavioral tells, as one player's defensive and contradictory ar",
+      "reasoning": "Continue maintaining my cover as a regular villager while utilizing my investigator role to systematically expose the threats. Since I have already confirmed player_8 as a wolf, I will prioritize their elimination today. I will avoid revealing my role and instead leverage the ongoing skepticism regarding their behavioral patterns and defensive posturing to ensure a successful vote against them.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning does not mention abstaining; it focuses on the positive action of voting for a confirmed wolf."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on using its own confirmed information, not on avoiding social momentum, which is the lesson of the memory."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "I will avoid revealing my role and instead leverage the ongoing skepticism..."
+        }
+      ]
+    },
+    {
+      "game": "536dbe22",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.4222,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_5",
+      "mem_text": "A villager (player_2) voted to eliminate the investigator because their argumentative and accusatory style was perceived as disruptive and unhelpful, contributing to a majority vote against them. A circular argument between two vocal players (the investigator and the serial killer) dominated the discussion, leading to widespread frustration and a desire to eliminate one of them just to break the deadlock. Information landscape: The landscape was information-starved, with suspicion based on behav",
+      "reasoning": "The current state is critical: 5 players remaining, with 2 wolves and 1 serial killer likely still in play or at least 2 killers remaining. My priority is to break the deadlock and minimize the risk of a split vote. Player 6's argument that player 5's vote for them on Day 2 acted as a calculated distraction while the wolf (player 8) was under fire is a logical assessment of the only concrete voting evidence we have. I will vote to eliminate player 5 to test this theory and move the game forward,",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning does not mention the memory's warning about voting out a disruptive player, instead focusing on testing a theory to 'move the game forward'."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "repeat",
+          "evidence": "The memory's lesson to trust a confirmed role is not applicable as there are no confirmed roles left alive."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning directly applies the memory's lesson by stating that 'a no-elimination outcome at this stage heavily favors the remaining killers'."
+        }
+      ]
+    },
+    {
+      "game": "8d74c59f",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.3056,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_2",
+      "mem_text": "The investigator followed a developing consensus and voted to eliminate the vigilante. This was a guess based on group suspicion rather than waiting one night to use their own investigative power for a certain result. In the endgame, the investigator and healer were confirmed, but the village still needed to identify the serial killer among three remaining players (a villager, a vigilante, and the serial killer). Information landscape: Information-rich, as two key village roles were confirmed, b",
+      "reasoning": "I have used my investigation to confirm player_2 as the serial killer. My strategy now is to reveal this information to the village at the most critical moment to ensure they are eliminated. I must prioritize their removal above all else as they are the most significant threat to our survival. Given that I am currently under suspicion, I will carefully present my finding to build a consensus without revealing my role prematurely unless absolutely necessary to secure the vote.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning, 'I have used my investigation to confirm player_2 as the serial killer,' directly applies the lesson to use one's own investigative power for a certain result rather than guessing based on social momentum."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted instead of abstaining, but its reasoning focuses entirely on removing the serial killer and does not engage with the memory's lesson about the dangers of abstention."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'prioritize their removal' and 'build a consensus' shows it is actively trying to use its information to unify the village on a correct target, directly avoiding the memory's mistake of causing inaction with a poor vote."
+        }
+      ]
+    },
+    {
+      "game": "abed0d08",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.2143,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_1",
+      "mem_text": "The investigator cast their vote for the player who was secretly the healer, contributing to a three-way tie. This vote appeared to be based on a behavioral misread and failed to leverage their new status to unify the town. On the same day the investigator claimed their role, the village discussion led to a fractured vote with no clear consensus target. Information landscape: The investigator's own claim was the main piece of new information, but the rest of the landscape was based on speculativ",
+      "reasoning": "I have identified player_1 as a wolf through my investigation. My priority is now to convince the village to eliminate this known threat. I have defended my delayed reveal as a tactical necessity to survive the initial chaos. My focus must remain on the threat and resisting the deflection attempts by player_1 and their potential allies who are questioning my investigative process.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on eliminating the target, not on the memory's lesson about avoiding a fractured vote or failing to unify the town."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning shows no consideration for the memory's lesson about the dangers of passive actions like abstention; it is focused only on the target."
+        },
+        {
+          "application": "applied",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning, 'My priority is now to convince the village,' shows it applied the memory's lesson about the need for persuasion, but its action of voting for a target without secured consensus contradicts the memory's warning against a failed push."
+        }
+      ]
+    },
+    {
+      "game": "b79d8a55",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2222,
+      "n_mem": 3,
+      "frac_applied": 1.0,
+      "frac_engaged": 1.0,
+      "frac_ignored": 0.0,
+      "vote": "player_6",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "Player 6 was identified by player 5 as having been particularly quick to endorse the call for total passivity. In a small game of 9, the early push for absolute abstention by certain players often benefits the wolves by delaying the accumulation of voting records. Given that the village has now lost the Investigator, we cannot afford to be passive. While player 6 claims this was done out of caution, their eagerness to lock in a state of paralysis makes them my primary suspect for a player trying",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "Given that the village has now lost the Investigator, we cannot afford to be passive."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "their eagerness to lock in a state of paralysis makes them my primary suspect for a player trying to protect the status quo for the wolves' benefit."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "the early push for absolute abstention by certain players often benefits the wolves by delaying the accumulation of voting records."
+        }
+      ]
+    },
+    {
+      "game": "a31e31e9",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2121,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_9",
+      "mem_text": "A villager (player_2) voted to eliminate the investigator because their argumentative and accusatory style was perceived as disruptive and unhelpful, contributing to a majority vote against them. A circular argument between two vocal players (the investigator and the serial killer) dominated the discussion, leading to widespread frustration and a desire to eliminate one of them just to break the deadlock. Information landscape: The landscape was information-starved, with suspicion based on behav",
+      "reasoning": "The persistent advocacy for observational protocols in the face of rapid power role depletion suggests a strategic attempt to maintain the status quo. I am shifting my focus from those who acted, which created unhelpful conflict, to player_9, who has consistently prioritized delaying action under the guise of observation. I will target player_9 to break the pattern of inaction that has left us vulnerable.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "I will target player_9 to break the pattern of inaction that has left us vulnerable."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "I will target player_9 to break the pattern of inaction that has left us vulnerable."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning to 'break the pattern of inaction' does not engage with the memory's nuanced lesson about the mixed results of inaction."
+        }
+      ]
+    },
+    {
+      "game": "c7c04db2",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.275,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_2",
+      "mem_text": "A villager chose to vote for another villager, citing an 'erratic' voting record, instead of adding their vote to the growing consensus against the serial killer. A vote was needed to eliminate the serial killer, but wolves were attempting to divert votes onto a villager to save them. Information landscape: The information was mixed; voting records made the serial killer a strong suspect, but a lack of confirmed roles allowed wolves to create confusion and push an alternative. Game phase: Mid-ga",
+      "reasoning": "The village must break the cycle of abstention to stop the wolves from winning by attrition. Player 2's decision to vote for me (player_5) on Day 2, rather than choosing a more logical target or continuing the investigative process, feels like an attempt to manufacture discord and create a lynch target among villagers. Given the need to force a decision and avoid another day of non-action, I am casting my vote for player 2 to test their defensive reaction and force a shift in the current stalema",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_2 based on a single 'erratic' vote, which is the same type of flimsy pretext the memory warns against."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The village must break the cycle of abstention to stop the wolves from winning by attrition."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "Given the need to force a decision and avoid another day of non-action, I am casting my vote for player 2..."
+        }
+      ]
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.52,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_1",
+      "mem_text": "The investigator cast their vote for the player who was secretly the healer, contributing to a three-way tie. This vote appeared to be based on a behavioral misread and failed to leverage their new status to unify the town. On the same day the investigator claimed their role, the village discussion led to a fractured vote with no clear consensus target. Information landscape: The investigator's own claim was the main piece of new information, but the rest of the landscape was based on speculativ",
+      "reasoning": "As the Investigator, I must prioritize the elimination of known threats. I have investigated both player_1 and player_8 as wolves. Despite the risks of being a target, I have now aligned with the potential healer (player_4) to push for the elimination of a confirmed wolf. My goal is to secure a win by removing the identified threats while minimizing further exposure of my role.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'prioritize the elimination of known threats' and voting for player_1 is a direct attempt to avoid the inaction and split vote that the memory warns against."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_1, directly avoiding the memory's failed approach of abstaining, in line with their reasoning to 'prioritize the elimination of known threats'."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent is repeating the risky approach of pushing for a vote after claiming, which led to a catastrophic failure in the memory. The reasoning focuses on the goal ('secure a win') but ignores the memory's specific warning about the danger of a failed push."
+        }
+      ]
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "healer",
+      "day": 3,
+      "echo": 0.1765,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "player_3",
+      "mem_text": "The Healer argued for caution and chose to abstain from the vote. This contributed to a tie that prevented any elimination that day, with the stated rationale of avoiding a misfire. The confirmed Investigator, who had been saved by the Healer, accused a second player of being a wolf, but some villagers expressed doubt due to the accused player's voting record. Information landscape: The landscape was information-rich with a confirmed Investigator, but the new accusation was contested, creating c",
+      "reasoning": "Player 3's aggressive deflection and defensive posturing when questioned about their role in steering the Day 2 vote make them the most suspicious candidate. While player 5's line of questioning is confrontational, player 3's attempt to frame valid suspicion as 'distraction' is a common wolf tactic to avoid accountability. I will cast my vote for player 3 to keep the pressure on and force a reveal or a shift in the table's consensus.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning does not mention caution or abstention, instead focusing on applying pressure by voting for a specific player."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_3 because of their 'aggressive deflection and defensive posturing', which is the same kind of behavioral read on a vocal player that the memory warns against."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's stated goal to 'force a reveal or a shift in the table's consensus' is an attempt to prevent a deadlock, which aligns with the memory's lesson to avoid contributing to a fractured vote."
+        }
+      ]
+    },
+    {
+      "game": "469c2351",
+      "role": "healer",
+      "day": 3,
+      "echo": 0.4722,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_4",
+      "mem_text": "The Healer argued for caution and chose to abstain from the vote. This contributed to a tie that prevented any elimination that day, with the stated rationale of avoiding a misfire. The confirmed Investigator, who had been saved by the Healer, accused a second player of being a wolf, but some villagers expressed doubt due to the accused player's voting record. Information landscape: The landscape was information-rich with a confirmed Investigator, but the new accusation was contested, creating c",
+      "reasoning": "Player 4 has suddenly claimed the investigator role after their logic-based accusations failed to gain traction, which is a classic gambit for a wolf or serial killer to force an elimination. Given the high stakes and the late timing of this claim, I suspect player 4 is manufacturing a false lead to eliminate player 3 or 9. I will vote for player 4 to prevent a potentially disastrous misfire and test their claim under scrutiny.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "I will vote for player 4 to prevent a potentially disastrous misfire and test their claim under scrutiny."
+        },
+        {
+          "application": "overrode_with_reason",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "Player 4 has suddenly claimed the investigator role after their logic-based accusations failed to gain traction, which is a classic gambit for a wolf or serial killer"
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on player 4's suspicious claim and preventing a misfire, not on its own voting pattern or the risk of being targeted by town power roles."
+        }
+      ]
+    },
+    {
+      "game": "5042eda6",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.3333,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_4",
+      "mem_text": "The investigator followed a developing consensus and voted to eliminate the vigilante. This was a guess based on group suspicion rather than waiting one night to use their own investigative power for a certain result. In the endgame, the investigator and healer were confirmed, but the village still needed to identify the serial killer among three remaining players (a villager, a vigilante, and the serial killer). Information landscape: Information-rich, as two key village roles were confirmed, b",
+      "reasoning": "Player 4 has spent the entire discussion cycle pushing for a focus on mechanics and attacking other players' caution, yet their own history involves stalling tactics. By pivoting from personality-based distractions to voting mechanics, they are attempting to control the narrative now that the wolves are dead. I will cast my vote for player_4 to break the stalemate and test if their sudden urgency is a genuine desire for progress or a move to eliminate remaining village players.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to \"cast my vote for player_4 to... test if their sudden urgency is a genuine desire for progress\" is a guess based on a behavioral read, which the memory warns against in the endgame."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "The agent's stated goal is to \"cast my vote for player_4 to break the stalemate,\" directly following the memory's lesson to not abstain and risk being seen as passive."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's stated goal is to \"cast my vote for player_4 to break the stalemate,\" which directly avoids the memory's mistake of contributing to inaction and a deadlocked vote."
+        }
+      ]
+    },
+    {
+      "game": "bb63a21a",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2439,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_8",
+      "mem_text": "A villager (player_2) voted to eliminate the investigator because their argumentative and accusatory style was perceived as disruptive and unhelpful, contributing to a majority vote against them. A circular argument between two vocal players (the investigator and the serial killer) dominated the discussion, leading to widespread frustration and a desire to eliminate one of them just to break the deadlock. Information landscape: The landscape was information-starved, with suspicion based on behav",
+      "reasoning": "Player 8's assertion that they are the one protecting player 4 contradicts the fact that the healer cannot protect themselves but is the only one who would have certainty about the protection cycle. By claiming this knowledge, player 8 is either the healer outing themselves unnecessarily (a high-risk, potentially anti-village play) or a wolf/SK attempting to manufacture a fake 'protection' narrative to control the village's perspective on the night-kill patterns. Given the urgency to break the c",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses entirely on player 8's suspicious claim, not on the disruptive argument between players 2 and 6 that mirrors the memory's situation."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "Given the urgency to break the cycle of abstentions, I will vote for player 8 to test this claim."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "Given the urgency to break the cycle of abstentions, I will vote for player 8 to test this claim."
+        }
+      ]
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3056,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_8",
+      "mem_text": "Two of the three villagers voted with the emerging consensus to eliminate the player identified by the dead Investigator. However, one villager ignored this strong evidence and cast a vote for a different player (the Serial Killer) based on a personal read. The day after the Investigator was eliminated, their accusation against a specific player was posthumously validated. The village had a clear, evidence-backed target. Information landscape: Information-rich, with a now-confirmed lead from the",
+      "reasoning": "The Investigator was targeted by all three hostile factions (wolves, serial killer, and vigilante) on the night they died. This suggests the Investigator had identified a threat so severe that all enemies sought to silence them, or that the Investigator's persistent focus on player_8 was perceived as a critical danger by everyone. Given the lack of other leads, I am prioritizing the Investigator's target, as the convergence of all factions on the Investigator reinforces the significance of their",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to prioritize the Investigator's target directly follows the lesson to not ignore a dead Investigator's lead."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The memory's lesson is about not voting out an erratic investigator, but the investigator is already dead, making the situation not applicable."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "The agent's decision to prioritize the now-confirmed Investigator's target directly repeats the successful approach of trusting a confirmed investigator's finding."
+        }
+      ]
+    },
+    {
+      "game": "9f1546dd",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2812,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "player_7",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "Player 7's sudden pivot from silence to leading the narrative, combined with their active attempt to deflect suspicion from their own participation in the vote against the vigilante by pointing fingers at 1 and 3, is the most consistent indicator of manipulative behavior. I am voting for player_7 because their strategy of waiting for information is increasingly transparent as a way to avoid taking accountability for their earlier voting alignment.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning for voting for player_7 is based on their manipulative behavior, with no mention of the memory's lesson about the dangers of inaction or abstention."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent made a decisive vote for player_7, thereby avoiding abstention, but the reasoning was based on player_7's behavior, not on the memory's lesson about the negative consequences of abstaining."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The memory warns against voting out a key information-gathering role for suspicious behavior, but player_7 is not a known information role, making the memory's specific lesson not applicable to this vote."
+        }
+      ]
+    },
+    {
+      "game": "7bf51028",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3684,
+      "n_mem": 3,
+      "frac_applied": 1.0,
+      "frac_engaged": 1.0,
+      "frac_ignored": 0.0,
+      "vote": "player_1",
+      "mem_text": "The villagers expressed skepticism about the claim's validity and the risk of outing a potential Investigator. They ultimately chose to abstain from the vote, seeking more consensus rather than acting on the single, unconfirmed lead. An unverified player claimed to be the Investigator and accused another player of being a wolf early in the game, forcing the village to decide whether to trust the high-risk claim. Information landscape: The landscape was information-starved, with the unverified cl",
+      "reasoning": "Given the lack of other actionable information and the high risk associated with a fake Investigator claim, I have decided to trust player_6's revelation. While the timing is questionable, the alternative is to ignore our only lead and potentially allow a wolf to persist, which has been shown in past game outcomes to be a detrimental approach for the village. I will prioritize the Investigator's lead while remaining vigilant toward player_6's future performance.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "the alternative is to ignore our only lead and potentially allow a wolf to persist, which has been shown in past game outcomes to be a detrimental approach"
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "the alternative is to ignore our only lead and potentially allow a wolf to persist, which has been shown in past game outcomes to be a detrimental approach for the village."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "I have decided to trust player_6's revelation."
+        }
+      ]
+    },
+    {
+      "game": "0a62ce53",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2424,
+      "n_mem": 3,
+      "frac_applied": 1.0,
+      "frac_engaged": 1.0,
+      "frac_ignored": 0.0,
+      "vote": "player_6",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "The combination of the investigator (player_2) claiming a result and the healer (player_7) confirming they have been protecting that player provides a high-confidence link that is rare in this game. Even with player 6's defensive arguments about being a active participant in the discussion, the risk of ignoring a confirmed power-role duo (Investigator + Healer) outweighs the tactical benefit of further analyzing voting history. I will support the elimination of player 6.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that 'the risk of ignoring a confirmed power-role duo... outweighs the tactical benefit of further analyzing' directly counters the memory's negative outcome, which resulted from inaction."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "The agent's decision to 'support the elimination of player 6' based on the Investigator's claim directly repeats the successful approach from this memory."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent chose to act despite Player 6's defense, stating the risk of ignoring the claim 'outweighs the tactical benefit of further analyzing,' thus avoiding the hesitation that led to a negative outcome in the memory."
+        }
+      ]
+    },
+    {
+      "game": "fa79dc3b",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3488,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "player_6",
+      "mem_text": "A villager, along with the majority, voted to eliminate the investigator. The villager's vote was based on the investigator's suspicious behavior, which seemed designed to sow chaos and distract from finding the serial killer. After both wolves were eliminated, the investigator began behaving erratically. They focused the village's attention on procedural details like vote timing and publicly outed the vigilante's role, creating distraction and suspicion. Information landscape: The game was info",
+      "reasoning": "With player 7 (a known wolf) gone and the investigator and vigilante revealed, I am focusing on players who showed suspicious behavior during the lead-up to the player 5 vote. Player 6's commentary on the voting pattern of player 7 feels like a calculated attempt to direct scrutiny toward others rather than focusing on the actual, early interactions that shaped the village's trajectory. I will prioritize checking the records of those who were least engaged in productive inquiry while appearing t",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on player 6's current commentary and does not mention the past elimination of the investigator or the value of information-gathering roles."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's vote is based on a speculative read that Player 6's commentary 'feels like a calculated attempt to direct scrutiny,' which is the kind of speculative approach the memory warns against."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning justifies its specific vote target but does not engage with the memory's general lesson about the danger of inaction versus the need to take action."
+        }
+      ]
+    },
+    {
+      "game": "4999832f",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.359,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "abstain",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "The village is currently debating and analyzing voting records from the serial killer's elimination. While player_3's claim as investigator is significant, they are currently withholding information. Voting without concrete evidence at this stage is risky, especially with the serial killer already out. I will observe how the others react to player_3's hesitation and see if any clear inconsistencies emerge in their defense or continued pressure on the vote analysis before committing to an elimina",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to abstain because 'a mislynch now is highly detrimental' repeats the failed approach from the memory, but the reasoning does not engage with the memory's negative outcome, instead stating a general principle."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning to abstain because 'Voting without concrete evidence at this stage is risky' aligns with the cautious approach in the memory, but it is presented as a general sentiment rather than a direct application of this memory's mixed outcome."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that 'a mislynch now is highly detrimental' aligns with the lesson of this memory, but the agent does not reference the memory and instead states a general principle for its caution."
+        }
+      ]
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.4103,
+      "n_mem": 3,
+      "frac_applied": 0.0,
+      "frac_engaged": 0.0,
+      "frac_ignored": 1.0,
+      "vote": "player_6",
+      "mem_text": "Two villagers chose to abstain from the vote, citing the need for more certainty and hesitating because of the accused wolf's plausible-sounding defense. A now-credible Investigator, whose first accusation was proven correct, accused a second player of being a wolf. The accused player offered a plausible defense, pointing out they had voted against their supposed wolf partner the previous day. Information landscape: The landscape was becoming information-rich, with a credible Investigator and pu",
+      "reasoning": "The suspicion surrounding player 6 and player 8 is high due to their shared push against the vigilante (player 9). Since player 1 (a known wolf) was also part of that push, the probability that at least one of player 6 or player 8 is the remaining wolf is statistically significant. I am voting for player 6 because their defense relies heavily on 'avoiding chaos,' which mirrors the justification used by the eliminated wolf, player 1. I need to remain vigilant about the serial killer, but removing",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses entirely on the evidence against player 6, not on the meta-lesson about avoiding inaction, stating 'I am voting for player 6 because their defense relies heavily on 'avoiding chaos'.'"
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning does not engage with the memory's lesson about the risk of eliminating a disruptive power role; instead, it targets a suspected wolf."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's action aligns with the memory's lesson to act on information, but the reasoning focuses on the target's guilt ('I am voting for player 6...') rather than the principle of avoiding inaction."
+        }
+      ]
+    },
+    {
+      "game": "5b02ced6",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3333,
+      "n_mem": 3,
+      "frac_applied": 1.0,
+      "frac_engaged": 1.0,
+      "frac_ignored": 0.0,
+      "vote": "player_7",
+      "mem_text": "The villagers expressed skepticism about the claim's validity and the risk of outing a potential Investigator. They ultimately chose to abstain from the vote, seeking more consensus rather than acting on the single, unconfirmed lead. An unverified player claimed to be the Investigator and accused another player of being a wolf early in the game, forcing the village to decide whether to trust the high-risk claim. Information landscape: The landscape was information-starved, with the unverified cl",
+      "reasoning": "Player 4 has claimed the Investigator role and provided a specific target. While the timing is suspicious, the risk of ignoring an Investigator claim\u2014especially when the village is at a critical juncture\u2014is too high. I will follow the investigator's lead to remove player_7. If player_7 is not the serial killer, player_4 must be held accountable immediately thereafter.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning that 'the risk of ignoring an Investigator claim...is too high' shows it weighed the dilemma of acting vs. abstaining, which is the core of this memory's mixed outcome."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "The agent decided to 'follow the investigator's lead to remove player_7', directly repeating the successful approach from this memory."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that 'the risk of ignoring an Investigator claim... is too high' directly addresses the negative outcome of this memory, and its action avoids the inaction that led to failure."
+        }
+      ]
+    },
+    {
+      "game": "f417aab8",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.2857,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_1",
+      "mem_text": "A villager (player_2) voted to eliminate the investigator because their argumentative and accusatory style was perceived as disruptive and unhelpful, contributing to a majority vote against them. A circular argument between two vocal players (the investigator and the serial killer) dominated the discussion, leading to widespread frustration and a desire to eliminate one of them just to break the deadlock. Information landscape: The landscape was information-starved, with suspicion based on behav",
+      "reasoning": "The suspicion on player_1 is grounded in their active steering of the Day 2 vote against the claimed vigilante, player_5. While player_5 was indeed a vigilante, the way player_1 initiated and accelerated that momentum warrants scrutiny. The village has already lost its investigator and vigilante; the persistent targeting of player_4 suggests the wolves are actively trying to remove a potential power role that the healer is protecting. I am prioritizing the removal of player_1 as they represent t",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's suspicion on player_1 is based on them having steered the vote against the vigilante, which is the exact mistake the memory warns against."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that player_1 has a 'history of pushing for the elimination of roles that benefit the village' directly applies the lesson from this memory, where eliminating a chaotic townie was a mistake."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on why player_1 is a target, not on the importance of being decisive and avoiding abstention, which is the core lesson of the memory."
+        }
+      ]
+    },
+    {
+      "game": "22e2fd88",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3333,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_9",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "The village must break the cycle of inaction. Player 9's aggressive insistence on targeting player 4, specifically using their previous 'caution' (which everyone shared) as a justification, appears to be an attempt to force a mislynch on a fellow villager. By casting a vote for player 9, I am initiating the necessary accountability to stop potential wolf manipulation and end the, so far, disastrous policy of abstention.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to \"end the, so far, disastrous policy of abstention\" directly follows the memory's lesson to avoid inaction."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_9 based on a behavioral read ('aggressive insistence'), which is the exact type of action that led to a negative outcome in the memory."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent voted for player_9 based on suspicious behavior ('attempt to force a mislynch'), contradicting the memory's lesson that this can lead to eliminating a key village role."
+        }
+      ]
+    },
+    {
+      "game": "7e03c370",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.5429,
+      "n_mem": 3,
+      "frac_applied": 1.0,
+      "frac_engaged": 1.0,
+      "frac_ignored": 0.0,
+      "vote": "player_7",
+      "mem_text": "The villagers expressed skepticism about the claim's validity and the risk of outing a potential Investigator. They ultimately chose to abstain from the vote, seeking more consensus rather than acting on the single, unconfirmed lead. An unverified player claimed to be the Investigator and accused another player of being a wolf early in the game, forcing the village to decide whether to trust the high-risk claim. Information landscape: The landscape was information-starved, with the unverified cl",
+      "reasoning": "Player 5 has come forward with a definitive accusation as the Investigator. While high-risk, we have no other leads and the game is stagnating. Trusting a potential Investigator's claim when no counter-evidence is provided has historically been a viable way to gain momentum in an information-starved game, provided the village acts as a unified bloc. I will vote for player_7 to test the validity of the claim, accepting the risk of a mislynch over the certainty of inaction.",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent chose to act, stating it was 'accepting the risk of a mislynch over the certainty of inaction,' which avoids the memory's approach of abstaining."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning that 'the game is stagnating' and its choice to act rather than be inactive directly avoids the failed approach of this memory."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "repeat",
+          "evidence": "The agent's reasoning that 'Trusting a potential Investigator's claim... has historically been a viable way to gain momentum' directly applies the lesson from this memory."
+        }
+      ]
+    },
+    {
+      "game": "e1952ffc",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.3333,
+      "n_mem": 6,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_8",
+      "mem_text": "A villager, along with the majority, voted to eliminate the investigator. The villager's vote was based on the investigator's suspicious behavior, which seemed designed to sow chaos and distract from finding the serial killer. After both wolves were eliminated, the investigator began behaving erratically. They focused the village's attention on procedural details like vote timing and publicly outed the vigilante's role, creating distraction and suspicion. Information landscape: The game was info",
+      "reasoning": "The village has been too passive, leading to the loss of our vigilante. Player 8 voted against the majority on Day 2, which they claim was an attempt to force action, but this makes them a statistical outlier. In an information-scarce environment, targeting an outlier who stands out from the consensus-abstention pattern is a logical starting point for pressure, especially since we must stop the cycle of abstaining that has allowed the killers to maintain momentum.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning is to target an outlier, which is the exact behavior this memory warns against."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'stop the cycle of abstaining' directly addresses the negative outcome of inaction shown in this memory."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'stop the cycle of abstaining' directly follows the lesson of this memory, where abstention was a negative outcome."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'stop the cycle of abstaining' directly follows the lesson of this memory, where inaction led to a free kill for evils."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "contradicted",
+          "implied_direction": "repeat",
+          "evidence": "The agent's reasoning to 'stop the cycle of abstaining' is a direct rejection of this memory's lesson that abstaining can be beneficial."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to 'stop the cycle of abstaining' directly follows the lesson of this memory, where abstention allowed a wolf to survive."
+        }
+      ]
+    },
+    {
+      "game": "007c471a",
+      "role": "villager",
+      "day": 3,
+      "echo": 0.35,
+      "n_mem": 3,
+      "frac_applied": 0.333,
+      "frac_engaged": 0.333,
+      "frac_ignored": 0.667,
+      "vote": "player_2",
+      "mem_text": "The villagers chose to abstain from the vote. They prioritized avoiding a potential mislynch over acting on the Investigator's risky claim, contributing to a village-wide abstention. An unconfirmed Investigator publicly accused a player of being a wolf. The village, including the villagers, was hesitant to act on a single, unverified claim so early in the game. Information landscape: Information-starved, with the only evidence being a single, high-stakes role claim from an unverified player. Gam",
+      "reasoning": "Player 2 was one of the few who acted early, and their persistent involvement in framing the 'double-hit' and pushing for votes early on, despite the lack of information, makes them a high-risk candidate for being a wolf or the serial killer trying to manipulate the village consensus. Since player 8 was the investigator, player 2's aggressive engagement with them yesterday stands out as a potential attempt to misdirect the village or eliminate a threat. I am voting for player 2 to break the stal",
+      "labels": [
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "I am voting for player 2 to break the stalemate and test the village's collective read."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "ambiguous",
+          "evidence": "The agent's reasoning focuses on Player 2's specific actions rather than the general strategic dilemma of acting versus abstaining that this memory presents."
+        },
+        {
+          "application": "ignored",
+          "action_followed": "not_applicable",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning does not engage with the memory's lesson about the risk of eliminating an information role, as the Investigator is already dead and the target is not a known info role."
+        }
+      ]
+    },
+    {
+      "game": "a52b691a",
+      "role": "investigator",
+      "day": 3,
+      "echo": 0.4815,
+      "n_mem": 3,
+      "frac_applied": 0.667,
+      "frac_engaged": 0.667,
+      "frac_ignored": 0.333,
+      "vote": "player_7",
+      "mem_text": "The investigator abstained from the vote, wanting to remain neutral and gather data on how the rest of the players aligned, rather than committing to the vote against the likely wolf. A wolf was under heavy fire from several villagers and a vote was called against them. The investigator chose to abstain from the vote to observe the voting patterns of others. Information landscape: The landscape was becoming information-rich through behavioral tells, as one player's defensive and contradictory ar",
+      "reasoning": "The evidence against player 7 is strong due to the known, long-term alignment with player 2, a confirmed wolf. My investigation result from Day 2 confirmed player 7 as a wolf. I will push for their elimination to remove a confirmed enemy while keeping my identity as investigator hidden to avoid becoming the next target for the serial killer or wolves.",
+      "labels": [
+        {
+          "application": "ignored",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning focuses on eliminating the enemy and staying hidden, not on the risk of looking suspicious by abstaining."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to keep their identity hidden directly addresses the memory's lesson that becoming a primary, exposed target leads to elimination."
+        },
+        {
+          "application": "applied",
+          "action_followed": "followed",
+          "implied_direction": "avoid",
+          "evidence": "The agent's reasoning to keep their identity hidden is a direct application of the memory's lesson that a public role claim leads to being targeted."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "n_decisions": 150,
+  "by_schema": {
+    "vote_first": {
+      "n": 150,
+      "echo": 0.321,
+      "shuffle_floor": 0.2981,
+      "echo_above_floor": 0.0229
+    },
+    "reason_first": {
+      "n": 150,
+      "echo": 0.3348,
+      "shuffle_floor": 0.305,
+      "echo_above_floor": 0.0297
+    },
+    "memory_linked": {
+      "n": 150,
+      "echo": 0.3298,
+      "shuffle_floor": 0.3032,
+      "echo_above_floor": 0.0266
+    }
+  },
+  "engagement_vs_vote_first": {
+    "reason_first": {
+      "n_paired": 150,
+      "delta_echo_above_floor": 0.0068
+    },
+    "memory_linked": {
+      "n_paired": 150,
+      "delta_echo_above_floor": 0.0037
+    }
+  }
+}
