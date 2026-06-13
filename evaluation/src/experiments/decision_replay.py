@@ -75,6 +75,22 @@ from evaluation.src.components.memory_adherence import (
 )
 from evaluation.src.components.situation_summary import eval_case_to_agent_payload
 from evaluation.src.data.local_cases import LocalCaseSource
+from pydantic import BaseModel, Field
+
+
+class DayVoteOutputReasonFirst(BaseModel):
+    """Experimental reason-before-act variant of DayVoteOutput: updated_strategy
+    (the reasoning, where injected memory gets integrated) is emitted BEFORE
+    vote_target, so the model thinks before committing the vote instead of
+    snap-voting then rationalizing. Field semantics match production; only the
+    ORDER differs. Used as a replay input, never written to production."""
+
+    adopted_strategy_keys: list[int] = Field(
+        default_factory=list,
+        description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    updated_strategy: str
+    vote_target: str
 
 
 def load_game_index(batch_path: Path) -> dict[str, dict[str, Any]]:
@@ -226,17 +242,22 @@ def _replay_vote(
     retrieved_observations: list[Any],
     allow_abstain: bool,
     prompt_template: Any | None = None,
+    schema_override: Any | None = None,
 ) -> tuple[str | None, str]:
     """Regenerate one vote with a swapped memory block and the correct abstain
-    choice set. Returns (votee, replayed updated_strategy). The prompt can be
-    overridden too (a prompt-variant arm); default is the role's live template."""
+    choice set. Returns (votee, replayed updated_strategy). prompt_template and
+    schema_override let an arm vary the prompt or the output schema (e.g. the
+    reason-first DayVoteOutput); defaults are the role's live template + schema."""
     payload = eval_case_to_agent_payload(case)
     payload["retrieved_observations"] = retrieved_observations
     payload["strategy_points"] = []
     payload["allow_abstain"] = allow_abstain
     spec = action_spec_for(case)
     result = _run_agent(
-        payload, prompt_template or spec.prompt_template, spec.output_schema, spec.output_key
+        payload,
+        prompt_template or spec.prompt_template,
+        schema_override or spec.output_schema,
+        spec.output_key,
     )
     if not result:
         return None, ""
@@ -586,6 +607,123 @@ def run_discussion_causal(
     }
 
 
+def run_reorder_test(
+    batch_path: Path,
+    n: int = 60,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Judge-FREE 2x2 causal test of the vote-before-reasoning fix: replay each
+    decision under {vote-first schema, reason-first schema} x {memory off, stored}.
+    If the memory effect (stored - off net value) appears under reason-first but
+    not vote-first, the schema order was suppressing the memory->vote connection
+    and the prior nulls were an adoption artifact, not a content verdict."""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
+    schemas = {"vote_first": None, "reason_first": DayVoteOutputReasonFirst}
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        outc, votees = {}, {}
+        for sname, sch in schemas.items():
+            for arm in ("off", "stored"):
+                retrieved = [] if arm == "off" else case.retrieved_observations
+                votee, _ = _replay_vote(case, retrieved, allow, schema_override=sch)
+                votees[(sname, arm)] = votee
+                outc[(sname, arm)] = score_vote(votee, game["roles"])
+        return outc, votees
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    def netval(o: Any) -> int:
+        return 1 if o.hit_threat else (-1 if o.is_town_mislynch else 0)
+
+    agg = {(s, a): [0, 0] for s in schemas for a in ("off", "stored")}  # [sum, n]
+    failed = 0
+    for outc, votees in results:
+        if any(v is None for v in votees.values()):  # drop a decision if any arm failed
+            failed += 1
+            continue
+        for key, o in outc.items():
+            agg[key][0] += netval(o)
+            agg[key][1] += 1
+
+    def nv(s: str, a: str) -> float | None:
+        total, k = agg[(s, a)]
+        return round(total / k, 3) if k else None
+
+    by_schema = {}
+    for s in schemas:
+        off_nv, st_nv = nv(s, "off"), nv(s, "stored")
+        by_schema[s] = {
+            "off_netvalue": off_nv,
+            "stored_netvalue": st_nv,
+            "memory_effect": round(st_nv - off_nv, 3)
+            if off_nv is not None and st_nv is not None
+            else None,
+        }
+    me_r, me_v = by_schema["reason_first"]["memory_effect"], by_schema["vote_first"]["memory_effect"]
+    off_r, off_v = nv("reason_first", "off"), nv("vote_first", "off")
+    return {
+        "batch": batch_path.name,
+        "n_decisions": len(cases),
+        "n_failed": failed,
+        "by_schema": by_schema,
+        "reasoning_baseline_lift": round(off_r - off_v, 3)
+        if off_r is not None and off_v is not None
+        else None,
+        "did_memory_effect_reason_minus_vote": round(me_r - me_v, 3)
+        if me_r is not None and me_v is not None
+        else None,
+    }
+
+
+def run_adherence_scan(
+    batch_path: Path,
+    n: int = 40,
+    min_day: int = 3,
+    roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    judge_model: str = DEFAULT_ADHERENCE_JUDGE_MODEL,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """Judge adherence on N RECORDED town decisions (no replay) and aggregate the
+    labels — answers 'did the agent actually follow the injected memory?', to
+    separate a memory-content null from a memory-not-adopted null. Each case
+    already carries the agent's real vote + reasoning + the memory it was given."""
+    cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = [
+            f.result()
+            for f in [ex.submit(judge_decision_adherence, c, model=judge_model) for c, _ in cases]
+        ]
+    app: Counter[str] = Counter()
+    follow: Counter[str] = Counter()
+    direction: Counter[str] = Counter()
+    n_dec = n_mem = 0
+    for adh in results:
+        if adh is None:
+            continue
+        n_dec += 1
+        for r in adh.per_memory:
+            n_mem += 1
+            app[r.application] += 1
+            follow[r.action_followed] += 1
+            direction[r.implied_direction] += 1
+    pct = lambda k: round(app[k] / n_mem, 3) if n_mem else None  # noqa: E731
+    return {
+        "batch": batch_path.name,
+        "n_decisions_judged": n_dec,
+        "n_memories_labeled": n_mem,
+        "application": dict(app),
+        "action_followed": dict(follow),
+        "implied_direction": dict(direction),
+        "pct_applied": pct("applied"),
+        "pct_overrode": pct("overrode_with_reason"),
+        "pct_ignored": pct("ignored"),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Decision-replay screen.")
     ap.add_argument(
@@ -616,6 +754,20 @@ def main() -> None:
         type=int,
         default=0,
         help="causal day_discussion replay on N town turns (passivity / threat-naming)",
+    )
+    ap.add_argument(
+        "--adherence-scan",
+        type=int,
+        default=0,
+        help="judge adherence on N RECORDED decisions and aggregate (did the "
+        "agent follow the memory?) — no replay",
+    )
+    ap.add_argument(
+        "--reorder",
+        type=int,
+        default=0,
+        help="judge-free 2x2: replay N decisions under vote-first vs reason-first "
+        "schema x memory off vs stored (tests the reason-before-act fix)",
     )
     ap.add_argument(
         "--judge",
@@ -651,6 +803,10 @@ def main() -> None:
         print(json.dumps(run_night_causal(args.batch, n=args.night, roles=roles), indent=2))
     elif args.discussion:
         print(json.dumps(run_discussion_causal(args.batch, n=args.discussion, roles=roles), indent=2))
+    elif args.adherence_scan:
+        print(json.dumps(run_adherence_scan(args.batch, n=args.adherence_scan, min_day=args.min_day, roles=roles), indent=2))
+    elif args.reorder:
+        print(json.dumps(run_reorder_test(args.batch, n=args.reorder, min_day=args.min_day, roles=roles), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
 
