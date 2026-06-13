@@ -321,6 +321,35 @@ vote-hurt = n=20 / temp 1.0 / ~4 decisions (directional, consistent with every p
 capability finding is the robust part. Artifacts: `applicability_probe_nh_town.json`; the 28 source entries
 the dimension design + plant were drawn from are frozen at `content_pilot/source_entries.json`.
 
+## ⭐ Framing fact-check — outcome-horizon reframe is NULL at the vote level (2026-06-13)
+
+Cheapest test of the role-horizon hypothesis (do villagers want immediate-actionable framing over
+net-outcome framing?) WITHOUT a store rebuild: hold the retrieved ENTRIES fixed, rewrite ONLY each
+net-first `outcome` toward its immediate consequence (re-emphasis, no new facts — and only `outcome` is
+shown to the agent, not `net_verdict`). Re-retrieving from the real immediate store would pull DIFFERENT
+entries per board (the stores were extracted separately) — confounding framing with which-entries; the
+rewrite holds entries fixed and varies framing alone → cleaner isolation, cheaper. Rewrites verified
+faithful by hand (lead with the night/next-step result, drop "contributed to the village's loss"; no
+invention). `run_framing_rewrite_screen` (`--framing`): replay off / net / immediate paired, net-value
+(hit +1 / mislynch −1 / abstain 0) + abstain decomposition.
+
+N=40 day≥3 town: off 0.40 / net 0.35 / immediate 0.375 net-value; **immediate−net = +0.025, paired 4/3,
+McNemar p=1.0 → NULL.** Reframing "you lost the game" → "the wolf survived that night" does NOT move the
+vote, because BOTH framings still say avoid/abstain UNCONDITIONALLY — neither carries WHEN this board
+warrants action vs caution. Framing can't carry the condition; only situation-conditioned content can.
+
+Two corollaries: (1) **the over-caution is a DELIBERATION artifact, not a content one** — abstain ~0 across
+ALL plain vote-first arms (off 0.0 / net 0.0 / immediate 0.025), so the abstaining that tanked the
+applicability probe (0.75→0.55) came from the FORCED reasoning-first schema, not the cautious content;
+plain vote-first snap-votes. (2) the day-3 prompt-ceiling null reproduces (memory of either framing ≈ off).
+
+⇒ The whole ladder of CHEAP levers is now closed and all point one way: reorder/memory-link (null
+engagement, can hurt), force-applicability (capability real, hurts via deliberation), outcome-horizon
+reframe (null). The ONLY untested lever is **situation-CONDITIONING** — content encoding when act-vs-abstain
+is right — which needs the extraction/situation-summary change. Ruling out everything cheaper has earned
+that step. Caveats: day≥3 (mostly prompt-ceiling zone), synthetic reframe (faithful, not the real immediate
+store), n=40. Artifacts: `framing_rewrite_nh_town.json`, `content_pilot/immediate_rewrites.json` (audit).
+
 ## Conclusions
 
 At the individual **vote** level, net-first town memory is **neutral-to-helpful** (null day-3+,
