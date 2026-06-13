@@ -369,6 +369,28 @@ yesterday's anti-aggression transcripts lived; off-policy vote-replay structural
 (b) **mostly the drift/volume confound**. Wolf day-vote is null on the coarse productivity metric; the
 real deceiver signal is at **night** (power-targeting, where the A/B found wolf memory HELPS).
 
+## ⭐ "Agent ignores memory" — three distinct axes, do NOT conflate (clarification 2026-06-13)
+
+The "59% ignored" finding is easy to overstate as "the agent can't use memory." It measures ONE of
+three separate things; the high numbers and the low numbers measure DIFFERENT axes:
+
+- **Coherence — vote↔reasoning = 92.5%** (memory-linked schema, section D). The vote follows whatever
+  the *reasoning* concluded. This does NOT say the reasoning engaged the memory — a coherent vote can
+  follow reasoning that never drew on the retrieved lesson.
+- **Capability — can it reason accept/reject = YES** (forced applicability probe, rejection_rate 1.0,
+  grounded in numbers). But FORCED (structured field, non-production) and forcing it HURT the vote
+  (0.75→0.55, over-caution). Proves it *can*, not that it *does*. ("Capability ≠ adoption.")
+- **Engagement — does the reasoning actually draw on the memory = LOW.** Adherence 59% ignored; echo
+  genuine ≈ null; judge-adoption ~0.46–0.48 even reordered (noisy); causal vote-flip ~12–16% (the
+  judge-free gold — only that fraction of votes actually changes when memory is added/removed).
+
+So coherence is HIGH, engagement is LOW, capability exists only when FORCED — all simultaneously true.
+⭐ **Worst-case caveat (the honest mitigation):** the 59% was measured at **day≥3** (prompt-ceiling
+zone, memory ≈ no-memory anyway) on the **net-first (harmful) store** — close to the worst case for
+engagement. Much of that "ignoring" is the agent CORRECTLY refusing bad lessons (the synthesis called
+it *protective*). **"Good content × reordered schema" is therefore an UNTESTED cell, not a foregone
+null** — a point slightly FOR running one cheap screen before writing off the dimension work.
+
 ## Caveats
 
 - **Off-policy / myopic**: boards were generated under memory-on; the regenerated decision can't
