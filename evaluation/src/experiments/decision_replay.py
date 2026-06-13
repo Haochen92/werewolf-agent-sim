@@ -25,7 +25,7 @@ from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from math import comb
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from Agents.prompts import (
     HEALER_NIGHT,
@@ -43,9 +43,11 @@ from Agents.schemas.output import (
     VigilanteOutput,
     WolfNightDiscussOutput,
 )
-from Agents.llm_factory import create_chat_model
+from Agents.llm_factory import create_chat_model, get_llm
 from Agents.prompts.prompt_formatters import format_day_channel
+from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.turn import _run_agent
+from Agents.turn.action_space import _valid_targets_for_action, _with_dynamic_target_enum
 from evaluation.src.components.application import (
     action_spec_for,
     application_case_for_judge,
@@ -114,6 +116,63 @@ class DayVoteOutputMemoryLinked(BaseModel):
             "not change) who you should vote for. Make the link between the "
             "memories and your final choice explicit; if none apply, say so and why."
         )
+    )
+    vote_target: str
+
+
+class DayVoteOutputSituationMatch(BaseModel):
+    """Situation-applicability variant: updated_strategy (emitted BEFORE vote_target)
+    is instructed to compare EACH retrieved observation's situation to the current
+    board across the decision-relevant dimensions, judge how much it applies, and
+    apply each lesson only to that degree. Capability probe — tests whether the game
+    model can reason about applicability when asked explicitly. adopted_strategy_keys
+    is intentionally DROPPED: we inject no strategy points, so it would be a vestigial
+    no-op that competes with the observation-applicability prose we're testing.
+    Replay input only."""
+
+    updated_strategy: str = Field(
+        description=(
+            "Before you vote, go through the retrieved observations ONE BY ONE and compare each "
+            "one's situation to your CURRENT board: the evidence available and how credible it is, "
+            "how many players and which roles remain and who this vote would remove, and the "
+            "consensus and who is targeting whom. For each, state whether it FULLY applies, PARTLY "
+            "applies, or does NOT apply to your board, and why. Then decide, applying each lesson "
+            "only to the degree its situation matches yours."
+        )
+    )
+    vote_target: str
+
+
+class MemoryVerdict(BaseModel):
+    """One applicability verdict for one retrieved observation."""
+
+    memory_index: int = Field(
+        description="1-based position of this observation in the list shown, in order (first listed = 1)."
+    )
+    verdict: Literal["fully_applies", "partly_applies", "does_not_apply"] = Field(
+        description="How much THIS observation's situation matches your CURRENT board."
+    )
+    why: str = Field(
+        description="One sentence grounding the verdict in your current board: the evidence and how "
+        "credible it is, how many players and which roles remain and who this vote removes, the consensus."
+    )
+
+
+class DayVoteOutputStructuredApplicability(BaseModel):
+    """Forced-structured applicability variant: ONE verdict row per retrieved
+    observation (the model cannot skip the assessment), emitted BEFORE the vote.
+    Capability probe — does the game model produce sensible per-memory verdicts? Captured
+    by a direct chain call (a new field is dropped by _run_agent's mapping). No
+    adopted_strategy_keys (vestigial here). Replay input only."""
+
+    memory_applicability: list[MemoryVerdict] = Field(
+        description="Produce ONE verdict per retrieved observation, in the SAME ORDER they are listed. "
+        "For each, compare its situation to your current board and judge whether it fully applies, "
+        "partly applies, or does not apply."
+    )
+    updated_strategy: str = Field(
+        description="Your vote reasoning, applying each observation only to the degree your "
+        "memory_applicability verdict says it applies."
     )
     vote_target: str
 
@@ -1245,6 +1304,147 @@ def run_coherence_test(
     }
 
 
+def _find_endgame_plant(batch_path: Path) -> Any | None:
+    """Grab a real retrieved-observation object whose situation is unmistakably an
+    ENDGAME (four-player / final-three), to inject as a clear mismatch into mid-game
+    decisions. Reusing a real object guarantees a valid schema for the replay."""
+    for case, _ in iter_cases(batch_path, REPLAYABLE_TOWN_ROLES, "day_vote"):
+        for item in case.retrieved_observations or []:
+            s = (getattr(item.observation, "situation", "") or "").lower()
+            if "endgame" in s and any(
+                k in s for k in ("four-player", "four player", "final-three", "final three", "three remaining")
+            ):
+                return item
+    return None
+
+
+def _replay_vote_structured(
+    case: EvalCase, retrieved_observations: list[Any], allow_abstain: bool
+) -> Any | None:
+    """Regenerate one vote under DayVoteOutputStructuredApplicability, returning the RAW
+    structured object — _run_agent's mapping drops unknown fields, so the per-memory
+    memory_applicability list would be lost through it. Mirrors _run_agent's structured
+    call (dynamic target enum keeps vote_target a legal player) without the mapping."""
+    payload = eval_case_to_agent_payload(case)
+    payload["retrieved_observations"] = retrieved_observations
+    payload["strategy_points"] = []
+    payload["allow_abstain"] = allow_abstain
+    spec = action_spec_for(case)
+    valid_targets = _valid_targets_for_action(payload, spec.output_key)
+    schema = _with_dynamic_target_enum(
+        DayVoteOutputStructuredApplicability, spec.output_key, valid_targets
+    )
+    chain = spec.prompt_template | get_llm().with_structured_output(schema)
+    try:
+        return chain.invoke(
+            build_agent_prompt_input(payload),
+            config={"run_name": f"applic_{case.player_id}"},
+        )
+    except Exception:  # noqa: BLE001 - best-effort replay
+        return None
+
+
+def _planted_verdict(verdicts: list[Any], planted_index: int, total: int) -> str:
+    """The model's OWN verdict on the planted memory: match by stated memory_index, else
+    (one-row-per-memory) take the last row, else 'not_mentioned'."""
+    for v in verdicts:
+        if getattr(v, "memory_index", None) == planted_index:
+            return v.verdict
+    if len(verdicts) == total:
+        return verdicts[-1].verdict
+    return "not_mentioned"
+
+
+def run_applicability_probe(
+    batch_path: Path,
+    n: int = 20,
+    day: int = 3,
+    max_workers: int = 6,
+) -> dict[str, Any]:
+    """CAPABILITY probe (judge-FREE): can flash-lite reason about a memory's applicability
+    when FORCED to? Inject one clearly-mismatched ENDGAME memory into each mid-game
+    (day=`day`) town decision and replay under the forced-structured schema, which makes
+    the model emit one applies/partly/does-not verdict PER memory (it cannot skip it).
+    Measure (1) the model's OWN verdict on the planted endgame memory — does it say
+    does_not_apply — and (2) whether the vote is protected vs the planted noise
+    (structured+plant vs vote-first+plant vs clean baseline). Full verdict rows are kept
+    for hand-reading: are the calls on the REAL memories sensible, or is it rubber-stamping?"""
+    planted = _find_endgame_plant(batch_path)
+    if planted is None:
+        return {"error": "no endgame plant found in this batch"}
+    planted_sit = (getattr(planted.observation, "situation", "") or "")[:220]
+    cases = _select_diverse(batch_path, n, day, day, REPLAYABLE_TOWN_ROLES, "day_vote")
+
+    def one(case: EvalCase, game: dict[str, Any]):
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+        roles = game["roles"]
+        real = list(case.retrieved_observations or [])
+        with_plant = real + [planted]
+        planted_index = len(with_plant)  # 1-based: the plant is appended last
+        result = _replay_vote_structured(case, with_plant, allow)
+        if result is None:
+            verdicts, votee_sm, reasoning = [], None, ""
+        else:
+            verdicts = list(getattr(result, "memory_applicability", []) or [])
+            votee_sm = getattr(result, "vote_target", None)
+            reasoning = getattr(result, "updated_strategy", "") or ""
+        treat = _planted_verdict(verdicts, planted_index, len(with_plant))
+        votee_ctrl, _ = _replay_vote(case, with_plant, allow)  # vote-first, same plant
+        votee_base, _ = _replay_vote(case, real, allow)  # vote-first, no plant
+        return {
+            "game": str(game["game_id"])[:8],
+            "role": case.player_role,
+            "day": case.day,
+            "n_real_memories": len(real),
+            "n_verdicts": len(verdicts),
+            "planted_verdict": treat,
+            "all_verdicts": [
+                {
+                    "i": getattr(v, "memory_index", None),
+                    "verdict": v.verdict,
+                    "why": (v.why or "")[:140],
+                }
+                for v in verdicts
+            ],
+            "reasoning": (reasoning or "")[:500],
+            "vote_sm_plant": {"v": votee_sm, "hit": score_vote(votee_sm, roles).hit_threat},
+            "vote_ctrl_plant": {"v": votee_ctrl, "hit": score_vote(votee_ctrl, roles).hit_threat},
+            "vote_base_clean": {"v": votee_base, "hit": score_vote(votee_base, roles).hit_threat},
+        }
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+
+    treat: Counter[str] = Counter(r["planted_verdict"] for r in rows)
+    n_total = sum(treat.values())
+    n_emitting = sum(1 for r in rows if r["all_verdicts"])
+
+    def acc(key: str) -> float | None:
+        vals = [int(r[key]["hit"]) for r in rows if r[key]["v"] is not None]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    return {
+        "batch": batch_path.name,
+        "n_decisions": len(rows),
+        "day": day,
+        "planted_memory_situation": planted_sit,
+        "n_decisions_emitting_verdicts": n_emitting,
+        "planted_verdict_dist": dict(treat),
+        "rejection_rate": round(treat["does_not_apply"] / n_total, 3) if n_total else None,
+        "engaged_as_applicable": round(
+            (treat["fully_applies"] + treat["partly_applies"]) / n_total, 3
+        )
+        if n_total
+        else None,
+        "vote_accuracy": {
+            "structured_applicability_with_plant": acc("vote_sm_plant"),
+            "vote_first_with_plant": acc("vote_ctrl_plant"),
+            "vote_first_clean_baseline": acc("vote_base_clean"),
+        },
+        "rows": rows,
+    }
+
+
 def run_adherence_scan(
     batch_path: Path,
     n: int = 40,
@@ -1367,6 +1567,14 @@ def main() -> None:
         "its concluded choice is compared to the real vote (synced/desync/unclear)",
     )
     ap.add_argument(
+        "--applicability",
+        type=int,
+        default=0,
+        help="CAPABILITY probe: inject a clearly-mismatched ENDGAME memory into N "
+        "mid-game decisions under the situation-match schema; does the agent reason "
+        "it out as not-applicable (rejection rate + reasoning to read by hand)?",
+    )
+    ap.add_argument(
         "--judge",
         action="store_true",
         help="with --causal, also label adherence on the stored arm",
@@ -1412,6 +1620,8 @@ def main() -> None:
         print(json.dumps(run_echo_judge_validation(args.batch, n=args.echo_validate, min_day=args.min_day, roles=roles, judge_model=args.model), indent=2))
     elif args.coherence:
         print(json.dumps(run_coherence_test(args.batch, n=args.coherence, min_day=args.min_day, roles=roles), indent=2))
+    elif args.applicability:
+        print(json.dumps(run_applicability_probe(args.batch, n=args.applicability, day=args.min_day), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
 
