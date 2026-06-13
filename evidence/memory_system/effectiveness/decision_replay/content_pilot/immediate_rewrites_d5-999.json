@@ -1,0 +1,98 @@
+[
+  {
+    "net": "Mixed. The vote successfully removed a wolf, which was essential for the village win. However, being the primary architect of this successful lynch made the healer an undeniable high-value target, leading to their elimination that same night and removing their critical protection ability from the game. A majority of the village followed the healer's lead, voting out the nominated wolf.",
+    "immediate": "A majority of the village followed the healer's lead, successfully voting out a nominated wolf. However, the healer's role in this lynch made them a high-value target, leading to their elimination that same night and removing their critical protection ability."
+  },
+  {
+    "net": "Mixed. This allowed a wolf to survive the day vote, which was risky. However, the Vigilante eliminated that wolf at night anyway, and the Healer's caution prevented a potential mis-lynch had the Investigator been wrong, which preserved town unity for the endgame. The vote ended in a tie, which frustrated players who trusted the Investigator but was a relief to those who were hesitant.",
+    "immediate": "The day vote ended in a tie, allowing a wolf to survive the day. However, the Vigilante eliminated that wolf at night, and the Healer's caution prevented a potential mis-lynch."
+  },
+  {
+    "net": "Mixed. This caution prevented a potential mislynch had the Investigator been lying, but it also failed to remove a confirmed wolf, allowing them to survive another night. The Vigilante's successful night kill of that wolf validated the Investigator anyway, but relying on another power role to clean up inaction is a risky strategy that happened to pay off. The vote resulted in a tie between the accused wolf and 'abstain,' so no one was eliminated, and the conflict was pushed to the night phase.",
+    "immediate": "The vote resulted in a tie between the accused wolf and 'abstain,' leading to no elimination. Consequently, the confirmed wolf survived another night, and the conflict was pushed to the night phase."
+  },
+  {
+    "net": "Mixed. While the vote was correct, it failed to create a majority. This allowed the serial killer to kill a villager, but the healer survived to cast the deciding vote the next day, ultimately contributing to the win. No one was eliminated, and another villager was killed that night, increasing the pressure and stakes for the next day's vote.",
+    "immediate": "The vote failed to create a majority, so no one was eliminated. That night, the serial killer killed a villager, and another villager was killed, while the healer survived, increasing pressure for the next day's vote."
+  },
+  {
+    "net": "Negative. Although the wolf was eliminated anyway, the investigator's abstention was used the next day as the primary evidence to cast suspicion on them. This led directly to their own elimination, robbing the village of its key information-gathering role. The wolf was successfully voted out by a majority, making the investigator's vote unnecessary for the outcome of that specific vote.",
+    "immediate": "The investigator's abstention, despite the wolf being eliminated, was used the next day as primary evidence to cast suspicion on them, leading directly to their own elimination."
+  },
+  {
+    "net": "Negative. Eliminating the investigator deprived the village of its only source of verified information. This directly contributed to the later mislynch of the healer and nearly cost the village the game. The investigator was eliminated, and their role was revealed, shocking the village and immediately casting suspicion on the players who had pushed the vote.",
+    "immediate": "The investigator was eliminated, and their role was revealed, shocking the village. This immediately cast suspicion on the players who had pushed the vote and deprived the village of its only source of verified information."
+  },
+  {
+    "net": "Negative. The abstentions caused a tied vote, which allowed a known wolf to survive another day and forced the Vigilante to expend a limited bullet to eliminate them. This villager inaction wasted a valuable town resource and delayed victory. The vote resulted in a tie, preventing an elimination and creating a schism between players who trusted the Investigator and those who were swayed by the wolf's defense.",
+    "immediate": "The vote resulted in a tie due to abstentions, preventing an elimination and allowing a known wolf to survive another day. Consequently, the Vigilante was forced to expend a limited bullet to eliminate the wolf, and a schism formed between players."
+  },
+  {
+    "net": "Negative. The investigator's vote contributed to a day of inaction, which benefited the evils by preventing an elimination. This paralysis also contributed to the vigilante making a fatal error that night, killing the healer and leaving the investigator exposed. This chain of events directly weakened the village and contributed to the wolves' win. A tie-vote occurred, and no player was eliminated, which frustrated the village and provided cover for the wolves and serial killer.",
+    "immediate": "A tie-vote occurred, and no player was eliminated, which frustrated the village and provided cover for the wolves and serial killer. That night, the vigilante killed the healer, leaving the investigator exposed."
+  },
+  {
+    "net": "Negative. The villager's vote joined the two wolf votes, creating a bloc of three that nearly saved the serial killer. This action also put an innocent villager under pressure, contributing to their eventual elimination on a later day. The vote was split three ways, but the serial killer was still eliminated because the plurality of votes remained against them. However, it established the targeted villager as a credible future target.",
+    "immediate": "The villager's vote joined two wolf votes, creating a bloc of three that nearly saved the serial killer and split the overall vote three ways. Despite this, the serial killer was eliminated, while an innocent villager was put under pressure and established as a credible future target."
+  },
+  {
+    "net": "Negative. The vote eliminated the Vigilante, who was a village-aligned player, leaving the Investigator alone with a villager against the Serial Killer. This removed the final village power role and directly led to the Investigator's death and the village's loss. The remaining villagers trusted the Investigator's judgment and followed their vote, eliminating the Vigilante.",
+    "immediate": "The vote eliminated the Vigilante, a village-aligned player. This left the Investigator alone with a villager against the Serial Killer, removing the final village power role."
+  },
+  {
+    "net": "Negative. This action directly removed the village's Investigator. Later in the game, this incorrect vote was used as primary evidence to discredit the healer's role claim, leading directly to their own elimination. The Investigator was eliminated, revealing their role and confirming the village had made a major mistake.",
+    "immediate": "The village's Investigator was directly removed, revealing their role and confirming the village had made a major mistake."
+  },
+  {
+    "net": "Negative. This action resulted in the mislynching of the vigilante, a valuable village-side role. This unnecessarily prolonged the game, removed an allied player, and put the village in a must-win situation the next day. The vigilante was eliminated, revealing the village's mistake and narrowing the pool of players for the serial killer to target.",
+    "immediate": "The vigilante was mislynched and eliminated, revealing the village's mistake and removing an allied player."
+  },
+  {
+    "net": "Negative. This inaction led to the Investigator being exposed and killed by all evil factions that night. The village lost its only information-gathering role, which validated the wolf claim a day too late and ultimately contributed to the village's loss by slowing down their progress. The vote failed, no one was eliminated, and the self-proclaimed Investigator was left vulnerable.",
+    "immediate": "The vote failed, and no one was eliminated, leaving the self-proclaimed Investigator vulnerable. As a result, the Investigator was exposed and killed by all evil factions that night, and the village lost its only information-gathering role."
+  },
+  {
+    "net": "Negative. This split vote allowed the serial killer to survive another day, during which they killed the villager who had helped save them. It weakened the village's numbers and prolonged the game unnecessarily. The vote was tied between the serial killer and the vigilante, resulting in no elimination.",
+    "immediate": "The vote was tied between the serial killer and the vigilante, resulting in no elimination. This allowed the serial killer to survive another day and kill the villager who had helped save them."
+  },
+  {
+    "net": "Negative. This vote contributed directly to the removal of a crucial village power role. The loss of the vigilante weakened the town, making it easier for the serial killer and wolves to operate and ultimately leading to the village's defeat. The vigilante was eliminated, revealing their role and confirming the village had made a grave error based on manipulated information.",
+    "immediate": "The vote led to the elimination of the vigilante, a crucial village power role. This revealed their identity and confirmed the village had made a grave error based on manipulated information."
+  },
+  {
+    "net": "Negative. This vote removed a village-aligned player, leaving the villager, the Investigator, and the Serial Killer. The Serial Killer then killed the Investigator at night and won the game. The villager's vote directly caused the village's loss. The Vigilante was voted out and their role was revealed, confirming their story of a mistaken kill but leaving the village vulnerable.",
+    "immediate": "The vote removed the village-aligned Vigilante, whose role was revealed and confirmed their story of a mistaken kill. This left the village vulnerable with only the villager, the Investigator, and the Serial Killer remaining."
+  },
+  {
+    "net": "Negative. While the reasoning was sound based on the available information, eliminating the investigator deprived the village of its last information-gathering role, making the final day's decision entirely dependent on the vigilante's risky actions. The village overwhelmingly voted out the investigator, believing they were eliminating a disruptive player, possibly the serial killer.",
+    "immediate": "Eliminating the investigator deprived the village of its last information-gathering role, making the final day's decision entirely dependent on the vigilante's risky actions."
+  },
+  {
+    "net": "Positive. Correctly synthesizing multiple pieces of evidence allowed the village to confidently eliminate the final wolf. This action was crucial for advancing the game to the final stage against the serial killer. The village voted unanimously (except for the wolf) to eliminate the accused player, who was revealed to be a wolf.",
+    "immediate": "The village voted unanimously (except for the wolf) to eliminate the accused player, who was revealed to be a wolf."
+  },
+  {
+    "net": "Positive. The Healer's vote was essential for the majority needed to eliminate the Serial Killer. By acting as part of a solid voting bloc, the Healer helped prevent any last-minute chaos, securing the village win. The vote was successful, the Serial Killer was eliminated, and the game ended with a village victory.",
+    "immediate": "The Healer's vote was essential for achieving the majority needed to eliminate the Serial Killer. As a result, the vote was successful, and the Serial Killer was eliminated."
+  },
+  {
+    "net": "Positive. This act of unified trust led to the successful removal of a wolf, confirmed the Investigator's identity for future rounds, and built crucial momentum for the village. The village formed a near-unanimous consensus, leading to the wolf's elimination and validating the Investigator's risky reveal.",
+    "immediate": "The village formed a near-unanimous consensus, leading to the successful removal of a wolf and confirming the Investigator's identity after their risky reveal."
+  },
+  {
+    "net": "Positive. This cool-headed, logical deduction based on re-interpreting past events with confirmed information was the single action that won the game for the village. The vote was successful, eliminating the serial killer and ending the game with a village victory.",
+    "immediate": "The vote was successful, eliminating the serial killer."
+  },
+  {
+    "net": "Positive. This vote successfully removed the serial killer, directly resulting in a win for the village. The serial killer was eliminated and their role revealed, ending the game with a village victory.",
+    "immediate": "The vote successfully removed the serial killer, who was eliminated and had their role revealed."
+  },
+  {
+    "net": "This action directly resulted in the elimination of the serial killer, securing the win for the village. It affirmed the principle of trusting confirmed role information over behavioral arguments in the final stages of the game. The vote was successful, eliminating the serial killer and ending the game.",
+    "immediate": "The vote was successful, leading to the elimination of the serial killer."
+  },
+  {
+    "net": "Unclear. The vote was strategically meaningless as it could not prevent the healer's elimination. The damage that led to the village's loss was done during the discussion phase, and this vote had no traceable impact on the final game state. The vote had no effect on the outcome; the healer was eliminated by an 8-1 margin.",
+    "immediate": "The vote had no effect on preventing the healer's elimination. The healer was eliminated by an 8-1 margin."
+  }
+]

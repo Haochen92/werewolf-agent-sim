@@ -1478,6 +1478,7 @@ def run_framing_rewrite_screen(
     batch_path: Path,
     n: int = 40,
     min_day: int = 3,
+    max_day: int = 999,
     roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
     rewrite_model: str = "gemini-2.5-flash",
     audit_path: Path | None = None,
@@ -1492,7 +1493,7 @@ def run_framing_rewrite_screen(
     whether a threat was findable (the memory-OFF arm hit one). Tests whether immediate
     emphasis relieves the net-first content's blanket caution. NOTE: a synthetic reframe of
     the net entries, not the real immediate-first store — a directional screen."""
-    cases = _select_diverse(batch_path, n, min_day, 999, roles, "day_vote")
+    cases = _select_diverse(batch_path, n, min_day, max_day, roles, "day_vote")
 
     # Rewrite each DISTINCT outcome once (dedup across decisions), in parallel.
     distinct = {
@@ -1784,8 +1785,10 @@ def main() -> None:
         print(json.dumps(run_applicability_probe(args.batch, n=args.applicability, day=args.min_day), indent=2))
     elif args.framing:
         print(json.dumps(run_framing_rewrite_screen(
-            args.batch, n=args.framing, min_day=args.min_day, roles=roles,
-            audit_path=Path("evidence/memory_system/effectiveness/decision_replay/content_pilot/immediate_rewrites.json"),
+            args.batch, n=args.framing, min_day=args.min_day, max_day=args.max_day, roles=roles,
+            audit_path=Path(
+                f"evidence/memory_system/effectiveness/decision_replay/content_pilot/immediate_rewrites_d{args.min_day}-{args.max_day}.json"
+            ),
         ), indent=2))
     else:
         print(json.dumps(run_observational(args.batch), indent=2))
