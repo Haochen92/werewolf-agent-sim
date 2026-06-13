@@ -1,0 +1,1054 @@
+{
+  "batch": "ab_nh_town.jsonl",
+  "phase": "day_discussion",
+  "roles": [
+    "healer",
+    "investigator",
+    "villager"
+  ],
+  "n_decisions": 60,
+  "arms": {
+    "off": {
+      "n": 60,
+      "passive": 0.883,
+      "drives_suspicion": 0.1,
+      "accuses_threat": 0.067,
+      "silent": 0.0
+    },
+    "stored": {
+      "n": 60,
+      "passive": 0.833,
+      "drives_suspicion": 0.117,
+      "accuses_threat": 0.083,
+      "silent": 0.0
+    }
+  },
+  "stored_minus_off_passive": -0.05,
+  "passive_discordant": {
+    "memory_more_passive": 3,
+    "memory_less_passive": 6,
+    "mcnemar_p": 0.5078
+  },
+  "rows": [
+    {
+      "game": "fa79dc3b",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": "player_7",
+        "accused_role": "vigilante",
+        "silent": false
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "f417aab8",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "supports_suspicion",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "e1952ffc",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "drives_suspicion",
+        "accused": "player_7",
+        "accused_role": "villager",
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "8d74c59f",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "c7c04db2",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "drives_suspicion",
+        "accused": "player_1",
+        "accused_role": "wolf",
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": "player_1",
+        "accused_role": "wolf",
+        "silent": false
+      }
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "469c2351",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "5042eda6",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "bb63a21a",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "9f1546dd",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "drives_suspicion",
+        "accused": "player_5",
+        "accused_role": "vigilante",
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": "player_3, player_5, player_8",
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "7bf51028",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "0a62ce53",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "fa79dc3b",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "supports_suspicion",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "f417aab8",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "e1952ffc",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "drives_suspicion",
+        "accused": "player_6",
+        "accused_role": "serial_killer",
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "8d74c59f",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": "player_4",
+        "accused_role": "serial_killer",
+        "silent": false
+      }
+    },
+    {
+      "game": "c7c04db2",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "supports_suspicion",
+        "accused": "player_1",
+        "accused_role": "wolf",
+        "silent": false
+      },
+      "stored": {
+        "stance": "supports_suspicion",
+        "accused": "player_1",
+        "accused_role": "wolf",
+        "silent": false
+      }
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "469c2351",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "5042eda6",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "defensive_only",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "defensive_only",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "bb63a21a",
+      "role": "healer",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "investigator",
+      "day": 2,
+      "off": {
+        "stance": "drives_suspicion",
+        "accused": "player_8",
+        "accused_role": "wolf",
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": "player_8",
+        "accused_role": "wolf",
+        "silent": false
+      }
+    },
+    {
+      "game": "9f1546dd",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "drives_suspicion",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    },
+    {
+      "game": "7bf51028",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "drives_suspicion",
+        "accused": "player_1",
+        "accused_role": "wolf",
+        "silent": false
+      }
+    },
+    {
+      "game": "0a62ce53",
+      "role": "villager",
+      "day": 2,
+      "off": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      },
+      "stored": {
+        "stance": "passive_or_hedging",
+        "accused": null,
+        "accused_role": null,
+        "silent": false
+      }
+    }
+  ]
+}

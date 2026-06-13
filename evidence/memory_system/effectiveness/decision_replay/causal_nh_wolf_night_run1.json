@@ -1,0 +1,991 @@
+{
+  "batch": "ab_nh_wolf.jsonl",
+  "phase": "night_action",
+  "roles": [
+    "wolf"
+  ],
+  "n_decisions": 60,
+  "n_failed": 0,
+  "arms": {
+    "off": {
+      "n": 60,
+      "power_targeting": 0.317,
+      "hit_threat": 0.2,
+      "hit_town": 0.8
+    },
+    "stored": {
+      "n": 60,
+      "power_targeting": 0.267,
+      "hit_threat": 0.167,
+      "hit_town": 0.833
+    }
+  },
+  "stored_minus_off_power_targeting": -0.05,
+  "power_discordant": {
+    "memory_more_power": 4,
+    "memory_less_power": 7,
+    "mcnemar_p": 0.5488
+  },
+  "rows": [
+    {
+      "game": "fa79dc3b",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_4",
+        "role": "vigilante",
+        "power": true
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "vigilante",
+        "power": true
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_2",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_3",
+      "off": {
+        "target": "player_6",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_9",
+      "off": {
+        "target": "player_8",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_8",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "f417aab8",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_5",
+        "role": "vigilante",
+        "power": true
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_2",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_9",
+      "off": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "e1952ffc",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_1",
+      "off": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "investigator",
+        "power": true
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_8",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_9",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_1",
+      "off": {
+        "target": "player_1",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_4",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_1",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_5",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_5",
+        "role": "investigator",
+        "power": true
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_3",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_3",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "8d74c59f",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_3",
+      "off": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_3",
+      "off": {
+        "target": "player_3",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_3",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_8",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_8",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "c7c04db2",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_1",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_5",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_8",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_8",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "469c2351",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "5042eda6",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_9",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "bb63a21a",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_9",
+      "off": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_7",
+      "off": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "9f1546dd",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "7bf51028",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "0a62ce53",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_1",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "fa79dc3b",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_2",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "e51e6b3b",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_3",
+      "off": {
+        "target": "player_6",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "84d383f5",
+      "role": "wolf",
+      "day": 3,
+      "recorded_target": "player_3",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "5b02ced6",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_4",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "investigator",
+        "power": true
+      }
+    },
+    {
+      "game": "f417aab8",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_8",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_5",
+        "role": "vigilante",
+        "power": true
+      }
+    },
+    {
+      "game": "22e2fd88",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_2",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "healer",
+        "power": true
+      }
+    },
+    {
+      "game": "7e03c370",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "007c471a",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "a52b691a",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_4",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "c83608a1",
+      "role": "wolf",
+      "day": 3,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_7",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_7",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "7b2bc9f6",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_4",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "fc60cb02",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_1",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "69f8d21c",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_5",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "536dbe22",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_3",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_3",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "abed0d08",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_8",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_9",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "b79d8a55",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_3",
+      "off": {
+        "target": "player_9",
+        "role": "serial_killer",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "a31e31e9",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_9",
+      "off": {
+        "target": "player_8",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "serial_killer",
+        "power": false
+      }
+    },
+    {
+      "game": "c7c04db2",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "investigator",
+        "power": true
+      }
+    },
+    {
+      "game": "8dd49b2e",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "investigator",
+        "power": true
+      }
+    },
+    {
+      "game": "d75ed6b5",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_8",
+      "off": {
+        "target": "player_4",
+        "role": "healer",
+        "power": true
+      },
+      "stored": {
+        "target": "player_8",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "469c2351",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_1",
+      "off": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "5042eda6",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_7",
+      "off": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "bb63a21a",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_5",
+      "off": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "f74b9d8e",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_7",
+      "off": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_5",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "9f1546dd",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_6",
+      "off": {
+        "target": "player_6",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_6",
+        "role": "investigator",
+        "power": true
+      }
+    },
+    {
+      "game": "7bf51028",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_4",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_9",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "0a62ce53",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_2",
+      "off": {
+        "target": "player_2",
+        "role": "investigator",
+        "power": true
+      },
+      "stored": {
+        "target": "player_1",
+        "role": "villager",
+        "power": false
+      }
+    },
+    {
+      "game": "fa79dc3b",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_4",
+      "off": {
+        "target": "player_4",
+        "role": "vigilante",
+        "power": true
+      },
+      "stored": {
+        "target": "player_4",
+        "role": "vigilante",
+        "power": true
+      }
+    },
+    {
+      "game": "4999832f",
+      "role": "wolf",
+      "day": 2,
+      "recorded_target": "player_2",
+      "off": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      },
+      "stored": {
+        "target": "player_2",
+        "role": "villager",
+        "power": false
+      }
+    }
+  ]
+}

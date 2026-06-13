@@ -61,6 +61,23 @@ eval-cases store the composed outcome, not the split halves.
 productivity metric is blind to cover/blending, which is the actual wolf day-harm (A/B: memory-on
 wolves get lynched more). So this null is on the wrong instrument for deceivers.
 
+**5. Deceiver NIGHT kills : null (wolf) / n.s. (SK) — the A/B effect does NOT replicate.** Power-targeting
+= the kill landed on a town power role (investigator/healer/vigilante), the A/B's wolf night proxy. Wolf
+night: pooled 0.328→0.328, paired 19 more / 19 less, McNemar p=1.0 (per-run [−0.05, +0.03, +0.02]). SK
+night: 0.333→0.361 (+0.028), 6 more / 1 less, p=0.13 — directional, not significant. The A/B's "wolf
+power_targeting 0.459→0.544" does NOT survive the clean causal contrast (another drift/trajectory
+confound). Same ceiling: `WOLF_CORE_STRATEGY` already says "Removing the village's most effective players
+keeps them disorganized — weigh that against drawing a pattern that points back to you" (`roles.py:49`),
+SK strategy likewise (`roles.py:60`). Night-targeting is hard-coded → memory redundant.
+
+**6. Town DISCUSSION stance : null.** Replay each town day_discussion turn off vs as-stored, classify the
+regenerated turn's stance (outcome-blind judge: drives/supports suspicion vs passive/hedging/defensive).
+Town is ~88% passive in BOTH arms; memory does not raise it (off 0.889 → stored 0.872, paired 9 more / 12
+less passive, McNemar p=0.66), and drives-suspicion (0.094 = 0.094) and accuses-a-threat (0.067 → 0.072)
+are unchanged. The anti-aggression mechanism does NOT appear at the single-turn level — town's high
+passivity is its BASE behavior, not memory-induced, and with no per-turn passivity increase there is
+nothing for a trajectory to compound. The last candidate home for the town harm comes up empty.
+
 ## ⭐ Unifying principle — the screen measures memory's MARGINAL value over the base prompt
 
 Every null and lift falls out of one rule: **memory helps where the base prompt is THIN and is null where
@@ -71,13 +88,51 @@ the prompt is already comprehensive** — and extraction is *built* this way, ex
   "Blend your vote with the village majority… a dissenting 'protest vote' leaves a permanent, suspicious
   record" (+ the ally-cover and abstain-cover lines in the wolf vote prompt, `day.py:249-250`). Nothing
   left for memory to add → null by construction, NOT evidence memory is useless for wolves.
+- wolf/SK night kill → NULL/n.s. because the prompt hard-codes power-targeting too ("Removing the
+  village's most effective players…", `roles.py:49`/`:60`). The A/B's +0.085 was confound.
 - town day-3 vote → null (info-rich voting is standard play, prompt-covered).
 - town day-2 vote → HELPS (+0.078): early-game abstain judgment is thin in the prompt → memory adds it.
-- deceiver night kill → HELPS (A/B power-targeting): targeting is not spelled out → memory adds it.
 
-⇒ The nulls are memory correctly NOT duplicating the prompt; the lifts are memory filling gaps. A
-day-vote null is therefore uninformative about a role's memory value when the prompt already covers that
-decision — look where the prompt is thin (night targeting; early-game judgment).
+⇒ The nulls are memory correctly NOT duplicating the prompt. The base prompts turn out to cover almost
+every decision's key heuristic, so memory's marginal value at the DECISION level is ~null nearly
+everywhere — and the lone clean lift (town day-2) is exactly where the prompt is thin (early-game
+abstain judgment). The game-replay A/B effects (town collapse; wolf power-targeting) largely do NOT
+survive the clean causal contrast → they were mostly drift/trajectory/volume confound. Residual harm,
+if any, can only live in the TRAJECTORY (discussion compounding over a game), which off-policy
+single-decision replay structurally cannot see.
+
+## ⭐⭐ VALIDITY ANALYSIS + REVISED conclusion (2026-06-13, before finalizing)
+
+Stress-testing the "null everywhere" read surfaced a SAMPLING ARTIFACT that revises it. The per-decision
+effect is NOT uniform across game phase — `_select_diverse` round-robins each game's EARLIEST decisions
+first (~2/game at N=60), so the pooled day-3+ number was early-weighted and averaged heterogeneous
+effects:
+
+| town vote stratum | value effect | 95% CI |
+| day-2 (early, info-starved) | **+0.078** | [+0.006, +0.149] — significant |
+| day-3 (mid, info-rich) | −0.006 | null |
+| day≥5 (endgame, high-stakes) | **+0.117** | [−0.008, +0.241] — suggestive |
+
+⇒ Memory HELPS town where the base prompt is thin and the decision is hard (early caution + endgame),
+and is null in standard mid-game. The marginal-value principle holds — but stratified, not pooled.
+
+**Reconciles "compounded did something / isolated shows little":** where the isolated effect is non-null
+it is POSITIVE (memory helps town); the game-replay said memory HURT town (−40pp). Opposite signs ⇒ the
+game-replay harm was the drift confound (town memory-off win 27%→51% across epochs), NOT memory. So
+"null everywhere" was over-claimed: memory is not inert — it moves ~1-in-7 decisions (replay fidelity:
+stored matches recorded 87–93%, vs 84–88% off-vs-stored agreement) and helps at the hard ones.
+
+**Threats checked:** sampling (mattered — stratify, don't pool); power (CIs ±5–9pp → nulls = "no LARGE
+effect", not zero); replay fidelity (0.87–0.93, faithful). **Threats open:** off-policy — both arms run
+on memory-ON boards, so the screen gives per-decision DIRECTION but cannot pin the compounded game-level
+MAGNITUDE; proxy metrics (night power-targeting, the 88%-passive stance judge); retrieval-vs-content;
+single store/model; post-hoc prompt-ceiling.
+
+**Revised verdict:** the screen (a) deflated the confounded game-replay point-estimates and (b) established
+the true per-decision direction = helpful-not-harmful, concentrated where the prompt is thin. It is a
+SCREEN, not the verdict: the compounded magnitude needs a clean game-level replay (pinned model, same
+epoch, paired seeds, memory on-vs-off from the start). Everything below this line is the pre-revision
+per-screen detail; read it through this stratified lens.
 
 ## Conclusions
 
