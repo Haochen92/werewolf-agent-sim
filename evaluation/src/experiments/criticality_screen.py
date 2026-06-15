@@ -173,6 +173,12 @@ def run_screen(
     )
 
     def one(case, game) -> dict[str, Any] | None:
+        try:
+            return _one_inner(case, game)
+        except Exception:  # noqa: BLE001 — a role the replay harness can't handle (e.g. vigilante
+            return None    # day_vote) or a transient failure drops the decision, not the whole run.
+
+    def _one_inner(case, game) -> dict[str, Any] | None:
         pool = pools.get(case.player_role)
         if pool is None or not pool.cands:
             return None  # role has no v6 day store
@@ -351,8 +357,9 @@ def main() -> int:
     )
     ap.add_argument(
         "--roles",
-        default="villager,healer,investigator,vigilante",
-        help="comma-separated town day-voters to screen (each retrieves from its OWN v6 day pool)",
+        default="villager,healer,investigator",
+        help="comma-separated town day-voters to screen (each retrieves from its OWN v6 day pool); "
+        "vigilante day_vote is not supported by the replay harness (REPLAYABLE_TOWN_ROLES)",
     )
     args = ap.parse_args()
     roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
