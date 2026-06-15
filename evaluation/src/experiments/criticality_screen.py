@@ -82,13 +82,21 @@ def iter_villager_day_votes(batch_path: Path):
                 yield case, game
 
 
-def select_spread(batch_path: Path, n: int) -> list[tuple[Any, dict]]:
+def select_spread(
+    batch_path: Path,
+    n: int,
+    held_out_only: bool = False,
+    source_games: set[str] | None = None,
+) -> list[tuple[Any, dict]]:
     """Spread ~n villager day-votes across DAYS first (round-robin over day buckets), then across
     games within a day. Day-balanced because the screen is stratified by day and late-game villager
     votes are scarce (only 3 villagers, some killed by endgame) — a game-first round-robin would fill
     n entirely with day-2 votes and leave the high-criticality stratum empty."""
+    source_games = source_games or set()
     by_day: dict[int, list] = {}
     for case, game in iter_villager_day_votes(batch_path):
+        if held_out_only and str(game["game_id"]) in source_games:
+            continue
         by_day.setdefault(case.day, []).append((case, game))
     days = sorted(by_day)
     picked, depth = [], 0
@@ -114,6 +122,19 @@ def _retrieved(cands: list[StoredObservation], idxs: list[int], query: str) -> l
     ]
 
 
+def load_source_games(source_set: Path | None) -> set[str]:
+    """Game_ids the v6 store was extracted from — decisions in these games are 'in-sample' (same-game
+    memory is excluded at retrieval, but the game still contributed siblings to the store); decisions
+    in any OTHER game are fully held-out (the store never saw them)."""
+    if not source_set or not source_set.exists():
+        return set()
+    return {
+        json.loads(l)["game_id"]
+        for l in source_set.read_text().splitlines()
+        if l.strip()
+    }
+
+
 def run_screen(
     batch_path: Path,
     store_dir: Path,
@@ -123,16 +144,20 @@ def run_screen(
     mu: float = 0.05,
     nu: float = 0.02,
     max_workers: int = 6,
+    source_games: set[str] | None = None,
+    held_out_only: bool = False,
 ) -> dict[str, Any]:
+    source_games = source_games or set()
     cands = load_v6_candidates(store_dir)
     cand_alive = np.array([c.players_alive if c.players_alive is not None else -99 for c in cands])
     cand_dist = np.array([c.distance_to_parity if c.distance_to_parity is not None else -99 for c in cands])
     cand_swing = np.array([1 if c.is_swing else 0 for c in cands])
+    cand_game = np.array([c.game_id or "" for c in cands])
 
     emb = create_embeddings()
     cand_vecs = np.array(emb.embed_documents([c.situation for c in cands]))
 
-    cases = select_spread(batch_path, n)
+    cases = select_spread(batch_path, n, held_out_only=held_out_only, source_games=source_games)
 
     def one(case, game) -> dict[str, Any]:
         roles = game["roles"]
@@ -143,6 +168,9 @@ def run_screen(
         query = " ".join(case.situations)
         qv = np.array(emb.embed_query(query))
         cos = _cosine_matrix(qv, cand_vecs)
+        # Exclude memories mined from THIS decision's own game (a memory from game G knows G's
+        # outcome — production never retrieves same-game memory; the screen must not either).
+        cos = np.where(cand_game == str(game["game_id"]), -1e9, cos)
 
         flat_idx = list(np.argsort(-cos)[:top_k])
         cond = (
@@ -158,7 +186,12 @@ def run_screen(
             "flat": _retrieved(cands, flat_idx, query),
             "cond": _retrieved(cands, cond_idx, query),
         }
-        out = {"day": case.day, "q_alive": q_alive, "q_swing": q_swing}
+        out = {
+            "day": case.day,
+            "q_alive": q_alive,
+            "q_swing": q_swing,
+            "held_out": str(game["game_id"]) not in source_games,
+        }
         for arm, retrieved in arms.items():
             votee, _ = _replay_vote(case, retrieved, allow)
             out[arm] = score_vote(votee, roles)
@@ -226,6 +259,13 @@ def _aggregate(rows, batch_path, store_dir, n, top_k, lam, mu, nu, n_cands) -> d
     for r in rows:
         by_day_rows.setdefault(r["day"], []).append(r)
     by_day = {str(d): summarize(by_day_rows[d]) for d in sorted(by_day_rows)}
+    # held-out subset = decisions whose game never contributed to the store (independent confirmation).
+    held = [r for r in rows if r.get("held_out")]
+    insample = [r for r in rows if not r.get("held_out")]
+    by_holdout = {
+        "held_out": {**summarize(held), "high_criticality": summarize([r for r in held if (r["q_swing"] or r["q_alive"] <= 4)])} if held else {"n": 0},
+        "in_sample": {"n": len(insample)},
+    }
     sig = _verdict(by_stratum)
     return {
         "batch": batch_path.name,
@@ -235,6 +275,7 @@ def _aggregate(rows, batch_path, store_dir, n, top_k, lam, mu, nu, n_cands) -> d
         "params": {"top_k": top_k, "lambda_alive": lam, "mu_swing": mu, "nu_dist": nu},
         "by_stratum": by_stratum,
         "by_day": by_day,
+        "by_holdout": by_holdout,
         "criticality_signature": sig,
     }
 
@@ -272,10 +313,23 @@ def main() -> int:
     ap.add_argument("--lambda-alive", type=float, default=0.06)
     ap.add_argument("--mu-swing", type=float, default=0.05)
     ap.add_argument("--nu-dist", type=float, default=0.02)
+    ap.add_argument(
+        "--source-set",
+        type=Path,
+        default=Path("evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl"),
+        help="the extraction set the v6 store was built from; decisions in OTHER games are held-out",
+    )
+    ap.add_argument(
+        "--held-out-only",
+        action="store_true",
+        help="restrict decisions to games NOT in --source-set (fully held-out; store never saw them)",
+    )
     args = ap.parse_args()
     report = run_screen(
         args.batch, args.store, n=args.n, top_k=args.top_k,
         lam=args.lambda_alive, mu=args.mu_swing, nu=args.nu_dist,
+        source_games=load_source_games(args.source_set),
+        held_out_only=args.held_out_only,
     )
     print(json.dumps(report, indent=2))
     return 0

@@ -2,8 +2,9 @@
 
 **Status:** RUN 2026-06-15. Step 3 of the cheap-first dimension build (spec
 `evidence/phase_b/dimension_schema_build_spec.md` §9). Triage, not a verdict — reads DIRECTION +
-the criticality SIGNATURE + the causal-flip-rate, NOT significance. **Result: GO** (the lever shows
-→ roll the full DAG to the rest of the town faction + re-extract, step 4).
+the criticality SIGNATURE + the causal-flip-rate, NOT significance. **Result: initially GO, then
+DOWNGRADED to HOLD after a same-game-leakage bug was found and fixed — see the ⚠ CORRECTION below.**
+The sections through "Decision" describe the FIRST (contaminated) run; read them through the correction.
 
 ## What was tested
 
@@ -69,6 +70,37 @@ pool is dominated by mid-game entries), and conditioning fixes that. That is the
 GO. Roll the full DAG (the two shared profiles, F/G on wolf·day, the conditioners) and re-extract the
 rest of the roles (spec §9 step 4). The criticality dimension is a real retrieval lever for villagers,
 and its value lives precisely where the schema design predicted — the endgame.
+
+## ⚠ CORRECTION (2026-06-15, same session) — the first GO was contaminated by same-game leakage
+
+The first run (`screen_arms_town_n60.json`) retrieved from ALL 119 v6 candidates including memories
+mined from the SAME game the decision came from — and **20 of ab_arms_town's 30 games ARE the v6
+source games**. A memory from game G knows G's outcome; production never retrieves same-game memory.
+Bug fixed: exclude candidates whose `game_id` == the decision's game. Re-ran:
+
+| read | high-crit cond−flat | mid cond−flat | overall cond / flat / off | note |
+|---|---|---|---|---|
+| n=60, **contaminated** | +0.25 (n=16) | +0.068 | 0.417 / 0.30 / 0.367 | leak inflated endgame |
+| n=90, same-game-excluded (mixed) | +0.087 (n=23) | +0.105 | 0.478 / 0.378 / 0.444 | concentration WASHES OUT |
+| n=82, **held-out games only** (store never saw them) | +0.286 (n=7) | +0.04 | 0.256 / 0.195 / 0.024 | concentration RETURNS, n=7 |
+
+**Honest read:**
+- **Overall conditioning effect is real but small and robust:** cond ≥ flat in every read (+0.04 to
+  +0.10); cond > off everywhere. On the held-out (novel) boards memory matters most — flat 0.195 /
+  cond 0.256 vs off 0.024. Flips are consistently net toward threat (7/2 in both larger runs).
+- **The criticality CONCENTRATION (the schema's core justification) is NOT robustly established.** It
+  is strong in the contaminated run (inflated) and in the clean held-out cut (+0.286) but vanishes in
+  the same-game-excluded in-sample cut (+0.087 ≈ mid +0.105). The high-criticality stratum is
+  **data-starved** (only ~7–23 endgame villager day-votes EXIST — villagers rarely survive to the
+  endgame), and it cannot be cheaply grown: the held-out games are shared across the town batches
+  (same boards), and widening to other town roles IS step 4 itself.
+
+**Revised decision: HOLD, not a clean GO.** The lever is directionally positive but modest, and the
+specific endgame-concentration that motivated pulling criticality out is underpowered. Options before
+committing the full-DAG re-extraction bill: (a) accept the modest overall + held-out signal and roll
+(the mandatory freeze-time regression gate is the backstop); (b) strengthen high-crit N first, which
+requires new games or the town-faction roll (circular); (c) treat the structural asymmetry as the
+finding. The leak-discovery itself is a methodology result worth keeping.
 
 ## Pointers
 
