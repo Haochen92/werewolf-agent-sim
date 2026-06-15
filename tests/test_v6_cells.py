@@ -125,6 +125,20 @@ def test_every_day_night_cell_has_a_driver_horizon():
             assert "DRIVER" in dh and "HORIZON" in dh, f"{r}/{ph} missing driver/horizon"
 
 
+def test_consensus_direction_coercion_against_prose():
+    from Agents.prompts.dimension_guidance import coerce_consensus_direction
+    # fractured prose + directional enum -> coerced to no_clear_direction
+    frac = "The village is fractured with no clear consensus. My position: holding out."
+    assert coerce_consensus_direction(frac, "opposes_my_read") == "no_clear_direction"
+    assert coerce_consensus_direction(frac, "aligns_with_my_read") == "no_clear_direction"
+    # a real consensus -> enum left untouched
+    unified = "A unified consensus is forming around the accused."
+    assert coerce_consensus_direction(unified, "opposes_my_read") == "opposes_my_read"
+    # already no_clear_direction or None -> unchanged
+    assert coerce_consensus_direction(frac, "no_clear_direction") == "no_clear_direction"
+    assert coerce_consensus_direction(frac, None) is None
+
+
 def test_conditioners_on_the_right_roles():
     assert "bullets_left" in M.cell_observation_schema_for("vigilante", "day_vote").model_fields
     assert "ally_revealed" in M.cell_observation_schema_for("wolf", "day_vote").model_fields

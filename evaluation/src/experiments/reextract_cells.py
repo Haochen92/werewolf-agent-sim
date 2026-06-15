@@ -29,7 +29,11 @@ from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
 from Agents.memory.persistence import memory_store_paths
 from Agents.prompts import EPISTEMIC_STATUS_RULE, GAME_RULES
-from Agents.prompts.dimension_guidance import cell_driver_horizon, dimension_menu
+from Agents.prompts.dimension_guidance import (
+    cell_driver_horizon,
+    coerce_consensus_direction,
+    dimension_menu,
+)
 from Agents.prompts.extraction import V6_CELL_EXTRACTION_PROMPT
 from Agents.schemas.memory import StoredObservation, cell_observation_schema_for
 from evaluation.src.core.manifest import build_manifest
@@ -168,7 +172,9 @@ def main() -> int:
                         role_faction_won=faction_won(role, gid),
                         players_alive=o.players_alive, distance_to_parity=o.distance_to_parity,
                         is_swing=o.is_swing,
-                        consensus_direction=getattr(o, "consensus_direction", None),
+                        consensus_direction=coerce_consensus_direction(
+                            o.composed_situation, getattr(o, "consensus_direction", None)
+                        ),
                     ).model_dump(mode="json"),
                 }
                 namespaces.setdefault(ns_key, []).append(entry)
