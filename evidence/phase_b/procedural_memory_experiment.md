@@ -28,6 +28,16 @@ unset), formatted (`format_strategy_points`), injected (DAY/NIGHT memory context
 `used_count` = 0 → not firing in the measured games. **STEP 1 of the experiment = confirm whether the
 A/B config explicitly set `retrieval_types_config={"strategy_points": False}` vs ran-but-never-matched.**
 
+### STEP 1 RESULT (2026-06-15) — EXPLICITLY DISABLED, confirmed
+Every paired-A/B arm batch record carries
+`retrieval_types_config = {"observations": true, "strategy_points": false}`. Cross-checked against the
+eval-case sidecars: across **545 serial_killer cases in `ab_arms_sk`, 0 retrieved strategy_points**
+(486 retrieved observations). So the procedural channel was **config-disabled**, not unmatched — the
+wolf/SK null (and every effectiveness number to date) is an OBSERVATIONS-ONLY result. The
+channel-mismatch premise is therefore live, and the `strategy_points-only` / `both` arms are genuinely
+untested. Proceed to the decision-replay experiment (wolf×day_vote, arms {off · obs-only · sp-only ·
+both}, retrieval→adoption→proxy).
+
 ## Why the structural theory predicts this (not contradicts it)
 Memory's value ∝ how *situational* a role's optimal policy is. Villager policy is situational (depends
 on the exact evidence config) → episodic. Deceiver *routine* (blend, vote with majority, leave no
