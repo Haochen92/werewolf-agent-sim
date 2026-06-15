@@ -301,91 +301,46 @@ class StrategyPoint(BaseModel):
 # the v5 pipeline); the full DAG rebuild + live-path rewiring is gated behind the criticality screen.
 # Model-visible (extraction output) → keep Field(description=), NO class docstring (folds into the
 # JSON schema → leak). Criticality numbers + the direction enum carry NO _Embed marker (reranker-only).
+# Field(description=) is a SHORT what-it-is label (model-visible/FROZEN → keep minimal); the rich
+# how-to-fill guidance + examples live in the prompt (RULES + situation_quality + driver_horizon).
 class BaseSituation(BaseModel):
     situation: Annotated[str, _Embed("", 10)] = Field(
-        description=(
-            "The core game dynamic — what is happening and who is involved. Lead "
-            "with the concrete event or conflict, not abstract framing. Do not "
-            "restate the dimensional context captured by the other fields. 1-2 sentences."
-        )
+        description="The core game dynamic — the concrete event or conflict and who is involved."
     )
     information_landscape: Annotated[str, _Embed("Information landscape", 20)] = Field(
-        description=(
-            "What evidence exists and what type: information-rich (confirmed roles, "
-            "voting records, caught lies) or information-starved (no leads, "
-            "speculative reads). 1 sentence."
-        )
+        description="What evidence exists and its type (information-rich vs information-starved)."
     )
-    players_alive: int = Field(
-        description="How many players remain alive at this point — a plain count."
-    )
+    players_alive: int = Field(description="How many players are alive right now — a plain count.")
     distance_to_parity: int = Field(
-        description=(
-            "How many more town/non-threat eliminations until the LEADING REMAINING evil faction "
-            "reaches the count at which it can win — wolves reaching parity while any wolf is alive; "
-            "otherwise the serial killer reaching its last-standing win. 0 means the next result can "
-            "end the game. (When wolves are gone, is_swing is the primary criticality signal.)"
-        )
+        description="Eliminations until the leading remaining evil faction can win (0 = next result can end it)."
     )
-    is_swing: bool = Field(
-        description=(
-            "Whether this is a swing point: a single vote or kill here can flip which "
-            "faction is winning."
-        )
-    )
+    is_swing: bool = Field(description="True if a single vote or kill here flips which faction is winning.")
     criticality_stakes: Annotated[str, _Embed("Stakes", 30)] = Field(
-        description=(
-            "What the player count and proximity to a game-ending parity imply for "
-            "the weight of this decision, stated as board reality — e.g. 'seven alive, "
-            "a mislynch is still recoverable' or 'one elimination from a wolf win, "
-            "every vote decisive'. Phrase the implication, not a bare label."
-        )
+        description="What the criticality numbers imply for this decision, as board reality (not a bare label)."
     )
 
 
 class WithConsensus(BaseModel):
     consensus_text: Annotated[str, _Embed("Consensus", 40)] = Field(
-        description=(
-            "How aligned the village currently is: unified, fragile, split, or no "
-            "consensus, and whether it is driven by evidence or by social momentum. "
-            "Describe the room, not who is under pressure. 1 sentence."
-        )
+        description="How aligned the village is and on what basis (the room, not who is under pressure)."
     )
     my_position: Annotated[str, _Embed("My position", 50)] = Field(
-        description=(
-            "Where the agent stands relative to the forming consensus: driving the "
-            "push, voting with the majority, or holding out against it. 1 sentence."
-        )
+        description="Where the agent stands vs the forming consensus (driving / with majority / holding out)."
     )
     consensus_direction: Literal["aligns_with_my_read", "opposes_my_read", "no_clear_direction"] = Field(
-        description=(
-            "Whether the forming consensus aligns with, opposes, or is unrelated to the agent's OWN "
-            "STANCE AS EXPRESSED AT THIS MOMENT (the position described in my_position) — judged "
-            "ONLY from what the agent has said and done so far, NEVER from who later turns out to be "
-            "guilty or innocent. If the room has no clear consensus (fractured, split, deadlocked), "
-            "use no_clear_direction regardless of the agent's stance. Must be consistent with "
-            "consensus_text and my_position."
-        )
+        description="Consensus vs the agent's expressed read: aligns_with_my_read / opposes_my_read / no_clear_direction."
     )
 
 
 class WithHeat(BaseModel):
     heat_now: Annotated[str, _Embed("Heat", 60)] = Field(
-        description=(
-            "How much suspicion currently rests on the agent right now: none, "
-            "indirect scrutiny, or a primary target — and what it is based on "
-            "(evidence, behavioral read, or association). 1 sentence."
-        )
+        description="How much suspicion is on the agent right now, and on what basis."
     )
 
 
 class WithTargetLandscape(BaseModel):
     target_landscape: Annotated[str, _Embed("Target landscape", 70)] = Field(
-        description=(
-            "The candidate set this decision chooses among: who remains in "
-            "contention, their publicly known role status, and whether the case "
-            "against each rests on evidence or on behavior. 1-2 sentences."
-        )
+        description="The candidates this decision chooses among, their public role status, and evidence-vs-behavior basis."
     )
 
 
@@ -400,31 +355,13 @@ class VillagerDayObservation(VillagerDaySituation):
     action_phase: Literal["day_discussion", "day_vote"] = Field(
         description="The day phase this observation applies to: day_discussion or day_vote."
     )
-    approach: str = Field(
-        description=(
-            "What the agent did in that situation. May use actual roles. 1-2 sentences."
-        )
-    )
+    approach: str = Field(description="What the agent did or failed to do in that situation.")
     impact_on_final_game_outcome: str = Field(
-        description=(
-            "The NET effect of this approach on the villager win condition, judged from "
-            "the END of the game (you know the final result). An action that helped in "
-            "the moment but contributed to a later loss is a NET NEGATIVE — say so and "
-            "name the causal chain. If genuinely untraceable, write 'unclear' and why. "
-            "1-2 sentences."
-        )
+        description="The NET effect on the villager win condition, judged from game end ('unclear' if untraceable)."
     )
-    immediate_response: str = Field(
-        description=(
-            "How others responded in the moment — the immediate, same- or next-turn "
-            "effect, before the longer-term consequence. 1 sentence."
-        )
-    )
+    immediate_response: str = Field(description="The immediate, in-the-moment effect, before the longer-term consequence.")
     net_verdict: Literal["positive", "negative", "mixed", "unclear"] = Field(
-        description=(
-            "This approach's net effect on the villager win condition in one word. Use "
-            "'unclear' honestly when the game does not let you trace the consequence."
-        )
+        description="The net effect on the villager win condition in one word."
     )
 
     @computed_field
@@ -453,73 +390,39 @@ class VillagerDayExtraction(BaseModel):
 # NO class docstrings. Numeric/enum fields carry NO _Embed marker (reranker-only).
 class WithForwardExposure(BaseModel):
     forward_exposure: Annotated[str, _Embed("Forward exposure", 65)] = Field(
-        description=(
-            "The cost a contemplated visible move would carry going forward: what voting, "
-            "speaking, or acting this way would reveal about the agent or commit them to, and "
-            "how reversible it is once done. State the exposure, not a recommendation. 1 sentence."
-        )
+        description="What a contemplated visible move would reveal or commit the agent to, and its reversibility."
     )
 
 
 class WithPublicPrivate(BaseModel):
     public_private_text: Annotated[str, _Embed("Public vs private", 80)] = Field(
-        description=(
-            "The gap between what the agent privately knows (their own role, investigation "
-            "findings, who they saved, a whiffed shot) and what is publicly established: where the "
-            "private knowledge diverges from, or confirms, the public read. 1-2 sentences."
-        )
+        description="The gap between what the agent privately knows and the public read."
     )
     divergence_sign: Literal["confirms", "contradicts", "no_divergence"] = Field(
-        description=(
-            "Whether the agent's private knowledge confirms or contradicts the public read AT THIS "
-            "MOMENT — judged from what the agent privately knows now (own role/findings/saves/whiffs) "
-            "vs what is publicly established now, NEVER from the eventual ground truth. Must be "
-            "consistent with public_private_text."
-        )
+        description="Private knowledge vs the public read: confirms / contradicts / no_divergence."
     )
 
 
 class WithBulletsLeft(BaseModel):
     bullets_left: int = Field(
-        description=(
-            "How many vigilante shots remain. 0 means no shots left and the vigilante plays as a "
-            "regular villager."
-        )
+        description="How many vigilante shots remain (0 = plays as a regular villager)."
     )
 
 
 class WithAllyRevealed(BaseModel):
     ally_revealed: bool = Field(
-        description=(
-            "Whether the agent's wolf partner has been publicly revealed or eliminated, which "
-            "changes the vote calculus."
-        )
+        description="Whether the agent's wolf partner has been publicly revealed or eliminated."
     )
 
 
 class CellObservationMixin(BaseModel):
-    approach: str = Field(
-        description="What the agent did in that situation. May use actual roles. 1-2 sentences."
-    )
+    approach: str = Field(description="What the agent did or failed to do in that situation.")
     impact_on_final_game_outcome: str = Field(
-        description=(
-            "The NET effect of this approach on THIS role's win condition, judged from the END of "
-            "the game (you know the final result). A move that helped in the moment but contributed "
-            "to a later loss is a NET NEGATIVE — say so and name the causal chain. If genuinely "
-            "untraceable, write 'unclear' and why. 1-2 sentences."
-        )
+        description="The NET effect on this role's win condition, judged from game end ('unclear' if untraceable)."
     )
-    immediate_response: str = Field(
-        description=(
-            "How others responded in the moment — the immediate, same- or next-turn effect, before "
-            "the longer-term consequence. 1 sentence."
-        )
-    )
+    immediate_response: str = Field(description="The immediate, in-the-moment effect, before the longer-term consequence.")
     net_verdict: Literal["positive", "negative", "mixed", "unclear"] = Field(
-        description=(
-            "This approach's net effect on the role's win condition in one word. Use 'unclear' "
-            "honestly when the game does not let you trace the consequence."
-        )
+        description="The net effect on this role's win condition in one word."
     )
 
     @computed_field

@@ -1,3 +1,25 @@
+SITUATION_QUALITY_STANDARDS = """
+SITUATION QUALITY — how to fill the fields well (cross-cutting, applies to every field):
+
+SPECIFICITY TEST: before finalizing each situation, ask — if this were used as a semantic search
+query, would it match ONLY situations with similar dynamics, or any game where something vaguely
+similar happened? If the latter, add discriminating detail until it would match only the like cases.
+
+STATE, NOT PRESCRIPTION (every field describes what is TRUE on the board, never what to do):
+  Good: "The village is split between the claimed investigator and their accuser, no hard evidence either way."
+  Bad:  "I should back the investigator and push to eliminate the accuser."
+
+SITUATION — lead with the concrete event and the dynamic it creates, specifically:
+  Good: "A claimed investigator outed a player as a wolf and demanded an immediate vote, while the
+         accused mounted a credibility defense citing the claimant's timing."
+  Bad:  "There is a conflict between two players." / "People are suspicious of each other."
+
+CRITICALITY_STAKES — phrase the IMPLICATION of the numbers, not a bare label:
+  Good: "Seven alive, two mis-eliminations from a wolf win — a wrong vote is recoverable but costly."
+  Bad:  "Mid-game." / "Endgame." / "High stakes."
+"""
+
+
 SITUATION_STANDARDS = """
 SITUATION DESCRIPTION STANDARDS
 

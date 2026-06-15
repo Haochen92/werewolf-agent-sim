@@ -318,7 +318,10 @@ criticality_stakes as their implication, derived from them. For the direction en
 (consensus_direction, divergence_sign), judge only from what you know/have expressed NOW (never
 hindsight); use no_clear_direction if there is no clear consensus.
 
-Fill in ALL the structured fields your output schema requests (descriptions are authoritative):
+{situation_quality}
+
+Fill in ALL the structured fields your output schema requests (short labels — the rules above govern
+how to fill them well):
 {dimension_menu}
 """
 

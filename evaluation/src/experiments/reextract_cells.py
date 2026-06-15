@@ -29,6 +29,7 @@ from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
 from Agents.memory.persistence import memory_store_paths
 from Agents.prompts import EPISTEMIC_STATUS_RULE, GAME_RULES
+from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
 from Agents.prompts.dimension_guidance import (
     cell_driver_horizon,
     coerce_consensus_direction,
@@ -71,6 +72,7 @@ def _build_prompt(inputs: dict[str, str], role: str, phase_wording: str, rep_pha
         "{role}": role,
         "{phase}": phase_wording,
         "{driver_horizon}": cell_driver_horizon(role, rep_phase),
+        "{situation_quality}": SITUATION_QUALITY_STANDARDS,
         "{dimension_menu}": dimension_menu(cell_schema),
         "{game_rules}": GAME_RULES,
         "{epistemic_status_rule}": EPISTEMIC_STATUS_RULE,

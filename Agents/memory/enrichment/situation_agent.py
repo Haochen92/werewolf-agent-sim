@@ -25,6 +25,7 @@ from Agents.prompts import (
 )
 from Agents.prompts.dimension_guidance import cell_driver_horizon, dimension_menu
 from Agents.prompts.memory import V6_SITUATION_SUMMARY
+from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
 from Agents.schemas import SituationSummary
 from Agents.schemas.memory import cell_situation_schema_for
 from Agents.state import (
@@ -87,6 +88,7 @@ def _generate_situations_for_agent(
         extra = {
             "dimension_menu": dimension_menu(cell_schema),
             "driver_horizon": cell_driver_horizon(role, action_phase),
+            "situation_quality": SITUATION_QUALITY_STANDARDS,
         }
     else:
         prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)

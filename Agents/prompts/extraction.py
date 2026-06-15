@@ -565,8 +565,13 @@ GAME RULES:
 
 {epistemic_status_rule}
 
-NAMING RULE: Never use player IDs (player_1, ...). Refer to players by role (the wolf, the
-investigator, a villager, the healer) or by behavioral descriptors when disambiguating.
+NAMING RULE: Never use player IDs (player_1, player_2, etc.) in ANY field — including when the lesson
+is about WHICH player you targeted at night. Always refer to players by their role (the wolf, the
+investigator, a villager, the healer); when disambiguating multiple players of the same role, use
+behavioral descriptors, at the certainty the epistemic rule allows.
+
+Good: "the wolf who led the early accusation", "the quiet villager you investigated", "the surviving wolf"
+Bad:  "player_2", "you investigated player_5", "a villager (player_3)"
 
 ---
 
@@ -590,6 +595,19 @@ decisions may yield fewer; never pad with near-restatements). Cover DISTINCT sit
 criticality regimes (early/many-alive vs late/near-parity), and different target/consensus/exposure
 textures — not minor variations of one moment. Span the days the game ran. Fill EVERY field below.
 
+EXTRACTION GUIDELINES:
+- Write every field from the {role}'s own perspective. `approach` = what the {role} DID or FAILED TO
+  DO, never what the opposing side did; if the lesson is about something that happened TO the {role},
+  reframe it as what the {role} did that led there.
+- Look for multi-day patterns — causal chains and strategic sequences, not just single-day events.
+- Keep each field concise (1-2 sentences).
+- QUALITY BAR: EXCLUDE common-sense fundamentals the base strategy already covers (e.g. "vote with the
+  majority", "protect important players", "eliminate suspicious players"); EXCLUDE vague situations
+  with no specific game dynamics; INCLUDE pivotal moments and non-obvious mechanisms tied to the
+  dimensions (why a move worked or failed given the information/criticality/consensus/exposure).
+- For day cells, tag each observation by WHEN the lesson applies: day_discussion (what to say, how to
+  argue, reading others, managing suspicion) vs day_vote (vote target, timing, voting to preserve cover).
+
 {driver_horizon}
 
 RULES for the fields (describe board STATE, never prescription):
@@ -601,6 +619,8 @@ RULES for the fields (describe board STATE, never prescription):
 - Direction enums (consensus_direction, divergence_sign): judge ONLY from what is known or expressed
   at THIS moment, NEVER from who later turns out guilty/innocent; if there is no clear consensus, use
   no_clear_direction.
+
+{situation_quality}
 
 Fields to fill (your output schema requests exactly these — descriptions are authoritative):
 {dimension_menu}
