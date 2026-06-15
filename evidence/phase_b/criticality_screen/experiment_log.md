@@ -102,6 +102,42 @@ committing the full-DAG re-extraction bill: (a) accept the modest overall + held
 requires new games or the town-faction roll (circular); (c) treat the structural asymmetry as the
 finding. The leak-discovery itself is a methodology result worth keeping.
 
+## ⚠⚠ TOWN-FACTION held-out screen (2026-06-15) — the lever does NOT replicate; it's within temperature noise
+
+After the full-DAG re-extraction (all roles), re-ran the screen across the town faction
+(villager+healer+investigator, each retrieving from its OWN v6 day pool), held-out games only, n=125,
+same λ. `screen_town_heldout_n125.json`.
+
+| stratum | n | off | flat | cond | cond−flat | flips →/away |
+|---|---|---|---|---|---|---|
+| all | 125 | 0.136 | 0.224 | 0.192 | **−0.032** | 11 / 9 |
+| mid_game | 113 | 0.115 | 0.230 | 0.195 | −0.035 | 9 / 7 |
+| high_criticality | 12 | 0.333 | 0.167 | 0.167 | 0.0 | 2 / 2 |
+| villager (subset) | 82 | 0.049 | 0.171 | 0.134 | **−0.037** | 7 / 5 |
+| healer | 30 | 0.233 | 0.267 | 0.233 | −0.034 | 2 / 3 |
+| investigator | 13 | 0.462 | 0.462 | 0.462 | 0.0 | 2 / 1 |
+
+**The decisive observation: the villager subset SIGN-FLIPPED across two identical runs.** Same data
+(held-out villager day-votes, n=82, same store, same λ): the earlier villager-only run gave cond 0.256
+/ flat 0.195 (**cond−flat +0.061**); this run gives cond 0.134 / flat 0.171 (**cond−flat −0.037**).
+The only thing that changed is the LLM temperature draws (replays at temp 1.0). A ~0.1 swing on n=82
+is ≈1–2 SE — i.e. **the conditioning effect (|cond−flat| ≈ 0.03–0.06) lives inside the temperature
+noise floor of this instrument.** Flips are ~even (11 toward / 9 away → no coherent directional
+benefit), high-criticality concentration is gone (0.0), and overall cond is slightly WORSE than flat.
+
+**Verdict: the criticality-conditioning lever is NOT robustly demonstrated.** The earlier "GO" signals
+(contaminated +0.25; clean held-out +0.286 at n=7) do not survive (a) extension to the town faction
+and (b) a re-run — they were small-N × temperature variance. Honest conclusion: at this model/scale,
+conditioning retrieval on the criticality regime does not reliably improve town day-votes; any effect
+is below the noise floor.
+
+**Consequence for step 4C (live rewiring): do NOT proceed on this basis.** Making v6 the live pipeline
+is a real gameplay change justified by the freeze gate, and the motivating lever is within noise. The
+v6 schema + full store remain a clean asset (better-structured memory, criticality metadata, all
+roles) — keep them — but wiring criticality-conditioning into live retrieval isn't warranted. Reframe:
+*criticality is a faithful situation dimension but not a retrieval lever here*; the open lever is the
+untested PROCEDURAL/deceiver channel (Track B).
+
 ## Pointers
 
 - Run: `screen_arms_town_n60.json`. Code: `evaluation/src/experiments/criticality_screen.py`.

@@ -1,0 +1,436 @@
+{
+  "batch": "ab_arms_town.jsonl",
+  "store": "memory_stores/v6_0",
+  "n_requested": 125,
+  "n_candidates": 328,
+  "params": {
+    "top_k": 5,
+    "lambda_alive": 0.02,
+    "mu_swing": 0.03,
+    "nu_dist": 0.01
+  },
+  "by_stratum": {
+    "all": {
+      "n": 125,
+      "off": {
+        "net_value": 0.136,
+        "accuracy": 0.464
+      },
+      "flat": {
+        "net_value": 0.224,
+        "accuracy": 0.488
+      },
+      "cond": {
+        "net_value": 0.192,
+        "accuracy": 0.504
+      },
+      "cond_minus_flat_netvalue": -0.032,
+      "flip": {
+        "n_valid": 125,
+        "flip_rate": 0.28,
+        "flips_toward_threat": 11,
+        "flips_away_from_threat": 9,
+        "mcnemar_p": 0.8238
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.42,
+        "cond_avg": 4.83
+      }
+    },
+    "mid_game": {
+      "n": 113,
+      "off": {
+        "net_value": 0.115,
+        "accuracy": 0.442
+      },
+      "flat": {
+        "net_value": 0.23,
+        "accuracy": 0.478
+      },
+      "cond": {
+        "net_value": 0.195,
+        "accuracy": 0.496
+      },
+      "cond_minus_flat_netvalue": -0.035,
+      "flip": {
+        "n_valid": 113,
+        "flip_rate": 0.265,
+        "flips_toward_threat": 9,
+        "flips_away_from_threat": 7,
+        "mcnemar_p": 0.8036
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.54,
+        "cond_avg": 4.91
+      }
+    },
+    "high_criticality": {
+      "n": 12,
+      "off": {
+        "net_value": 0.333,
+        "accuracy": 0.667
+      },
+      "flat": {
+        "net_value": 0.167,
+        "accuracy": 0.583
+      },
+      "cond": {
+        "net_value": 0.167,
+        "accuracy": 0.583
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 12,
+        "flip_rate": 0.417,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 2,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.33,
+        "cond_avg": 4.08
+      }
+    }
+  },
+  "by_day": {
+    "2": {
+      "n": 45,
+      "off": {
+        "net_value": -0.156,
+        "accuracy": 0.133
+      },
+      "flat": {
+        "net_value": -0.044,
+        "accuracy": 0.133
+      },
+      "cond": {
+        "net_value": 0.0,
+        "accuracy": 0.244
+      },
+      "cond_minus_flat_netvalue": 0.044,
+      "flip": {
+        "n_valid": 45,
+        "flip_rate": 0.289,
+        "flips_toward_threat": 6,
+        "flips_away_from_threat": 1,
+        "mcnemar_p": 0.125
+      },
+      "same_regime_topk": {
+        "flat_avg": 4.47,
+        "cond_avg": 5.0
+      }
+    },
+    "3": {
+      "n": 36,
+      "off": {
+        "net_value": -0.222,
+        "accuracy": 0.389
+      },
+      "flat": {
+        "net_value": 0.111,
+        "accuracy": 0.556
+      },
+      "cond": {
+        "net_value": -0.111,
+        "accuracy": 0.444
+      },
+      "cond_minus_flat_netvalue": -0.222,
+      "flip": {
+        "n_valid": 36,
+        "flip_rate": 0.333,
+        "flips_toward_threat": 1,
+        "flips_away_from_threat": 5,
+        "mcnemar_p": 0.2188
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.28,
+        "cond_avg": 4.92
+      }
+    },
+    "4": {
+      "n": 20,
+      "off": {
+        "net_value": 0.6,
+        "accuracy": 0.8
+      },
+      "flat": {
+        "net_value": 0.4,
+        "accuracy": 0.7
+      },
+      "cond": {
+        "net_value": 0.5,
+        "accuracy": 0.75
+      },
+      "cond_minus_flat_netvalue": 0.1,
+      "flip": {
+        "n_valid": 20,
+        "flip_rate": 0.25,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 1,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.5,
+        "cond_avg": 4.8
+      }
+    },
+    "5": {
+      "n": 14,
+      "off": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "flat": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 14,
+        "flip_rate": 0.071,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.43,
+        "cond_avg": 4.86
+      }
+    },
+    "6": {
+      "n": 5,
+      "off": {
+        "net_value": 0.2,
+        "accuracy": 0.6
+      },
+      "flat": {
+        "net_value": 0.6,
+        "accuracy": 0.8
+      },
+      "cond": {
+        "net_value": 0.2,
+        "accuracy": 0.6
+      },
+      "cond_minus_flat_netvalue": -0.4,
+      "flip": {
+        "n_valid": 5,
+        "flip_rate": 0.2,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 1,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.0,
+        "cond_avg": 3.8
+      }
+    },
+    "7": {
+      "n": 3,
+      "off": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "flat": {
+        "net_value": -0.333,
+        "accuracy": 0.333
+      },
+      "cond": {
+        "net_value": 0.333,
+        "accuracy": 0.667
+      },
+      "cond_minus_flat_netvalue": 0.666,
+      "flip": {
+        "n_valid": 3,
+        "flip_rate": 1.0,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 1,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 4.0,
+        "cond_avg": 4.33
+      }
+    },
+    "8": {
+      "n": 2,
+      "off": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "flat": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 2,
+        "flip_rate": 0.0,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 1.5,
+        "cond_avg": 3.0
+      }
+    }
+  },
+  "by_role": {
+    "healer": {
+      "n": 30,
+      "off": {
+        "net_value": 0.233,
+        "accuracy": 0.567
+      },
+      "flat": {
+        "net_value": 0.267,
+        "accuracy": 0.533
+      },
+      "cond": {
+        "net_value": 0.233,
+        "accuracy": 0.5
+      },
+      "cond_minus_flat_netvalue": -0.034,
+      "flip": {
+        "n_valid": 30,
+        "flip_rate": 0.267,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 3,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.6,
+        "cond_avg": 4.57
+      }
+    },
+    "investigator": {
+      "n": 13,
+      "off": {
+        "net_value": 0.462,
+        "accuracy": 0.538
+      },
+      "flat": {
+        "net_value": 0.462,
+        "accuracy": 0.615
+      },
+      "cond": {
+        "net_value": 0.462,
+        "accuracy": 0.692
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 13,
+        "flip_rate": 0.385,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 1,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.69,
+        "cond_avg": 4.92
+      }
+    },
+    "villager": {
+      "n": 82,
+      "off": {
+        "net_value": 0.049,
+        "accuracy": 0.415
+      },
+      "flat": {
+        "net_value": 0.171,
+        "accuracy": 0.451
+      },
+      "cond": {
+        "net_value": 0.134,
+        "accuracy": 0.476
+      },
+      "cond_minus_flat_netvalue": -0.037,
+      "flip": {
+        "n_valid": 82,
+        "flip_rate": 0.268,
+        "flips_toward_threat": 7,
+        "flips_away_from_threat": 5,
+        "mcnemar_p": 0.7744
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.68,
+        "cond_avg": 4.91
+      }
+    }
+  },
+  "by_holdout": {
+    "held_out": {
+      "n": 125,
+      "off": {
+        "net_value": 0.136,
+        "accuracy": 0.464
+      },
+      "flat": {
+        "net_value": 0.224,
+        "accuracy": 0.488
+      },
+      "cond": {
+        "net_value": 0.192,
+        "accuracy": 0.504
+      },
+      "cond_minus_flat_netvalue": -0.032,
+      "flip": {
+        "n_valid": 125,
+        "flip_rate": 0.28,
+        "flips_toward_threat": 11,
+        "flips_away_from_threat": 9,
+        "mcnemar_p": 0.8238
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.42,
+        "cond_avg": 4.83
+      },
+      "high_criticality": {
+        "n": 12,
+        "off": {
+          "net_value": 0.333,
+          "accuracy": 0.667
+        },
+        "flat": {
+          "net_value": 0.167,
+          "accuracy": 0.583
+        },
+        "cond": {
+          "net_value": 0.167,
+          "accuracy": 0.583
+        },
+        "cond_minus_flat_netvalue": 0.0,
+        "flip": {
+          "n_valid": 12,
+          "flip_rate": 0.417,
+          "flips_toward_threat": 2,
+          "flips_away_from_threat": 2,
+          "mcnemar_p": 1.0
+        },
+        "same_regime_topk": {
+          "flat_avg": 2.33,
+          "cond_avg": 4.08
+        }
+      }
+    },
+    "in_sample": {
+      "n": 0
+    }
+  },
+  "criticality_signature": {
+    "high_criticality_cond_minus_flat": 0.0,
+    "mid_game_cond_minus_flat": -0.035,
+    "gain_concentrated_in_high_criticality": false,
+    "flip_rate_nontrivial": true,
+    "flips_net_toward_threat": true,
+    "VERDICT": "NO-GO / inconclusive (triage \u2014 read strata + flips by hand)"
+  }
+}

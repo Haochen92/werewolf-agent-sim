@@ -1,0 +1,41 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Traceback (most recent call last):
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/components/application.py", line 68, in action_spec_for
+    return ACTION_SPECS[key]
+           ~~~~~~~~~~~~^^^^^
+KeyError: ('vigilante', 'day_vote')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/experiments/criticality_screen.py", line 370, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/experiments/criticality_screen.py", line 359, in main
+    report = run_screen(
+             ^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/experiments/criticality_screen.py", line 225, in run_screen
+    rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/experiments/criticality_screen.py", line 225, in <listcomp>
+    rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+            ^^^^^^^^^^
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/home/ubuntu/.pyenv/versions/3.11.12/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/experiments/criticality_screen.py", line 213, in one
+    votee, _ = _replay_vote(case, retrieved, allow)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/experiments/decision_replay.py", line 339, in _replay_vote
+    spec = action_spec_for(case)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/werewolf-agent-sim/evaluation/src/components/application.py", line 70, in action_spec_for
+    raise ValueError(
+ValueError: Unsupported application replay role/action: ('vigilante', 'day_vote')
