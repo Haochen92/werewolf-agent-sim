@@ -82,6 +82,32 @@ def test_day_cells_carry_consensus_and_heat_night_cells_do_not():
     assert "heat_now" not in healer_night.model_fields
 
 
+def test_situation_cell_registry_parity_with_observation_cells():
+    for r in roles:
+        for ph in ("day_discussion", "day_vote", "night_action"):
+            sit = M.cell_situation_schema_for(r, ph)
+            obs = M.cell_observation_schema_for(r, ph)
+            assert (sit is None) == (obs is None), f"{r}/{ph} registry parity"
+
+
+@pytest.mark.parametrize("role,phase", [
+    ("villager", "day_vote"), ("wolf", "day_vote"), ("wolf", "night_action"),
+    ("healer", "day_vote"), ("healer", "night_action"), ("vigilante", "day_vote"),
+    ("investigator", "night_action"), ("serial_killer", "day_vote"),
+])
+def test_situation_embed_matches_observation_embed(role, phase):
+    """The live-query situation cell must compose the IDENTICAL embed string as the stored observation
+    cell for the same field values — the symmetry that lets a query match the store."""
+    sit_cls = M.cell_situation_schema_for(role, phase)
+    obs_cls = M.cell_observation_schema_for(role, phase)
+    sit = sit_cls(**{k: v for k, v in _SAMPLE.items() if k in sit_cls.model_fields})
+    okw = {k: v for k, v in _SAMPLE.items() if k in obs_cls.model_fields}
+    okw["perspective"] = typing.get_args(obs_cls.model_fields["perspective"].annotation)[0]
+    okw["action_phase"] = typing.get_args(obs_cls.model_fields["action_phase"].annotation)[0]
+    okw.update(approach="a", impact_on_final_game_outcome="b", immediate_response="c", net_verdict="positive")
+    assert sit.composed_situation == obs_cls(**okw).composed_situation
+
+
 def test_conditioners_on_the_right_roles():
     assert "bullets_left" in M.cell_observation_schema_for("vigilante", "day_vote").model_fields
     assert "ally_revealed" in M.cell_observation_schema_for("wolf", "day_vote").model_fields

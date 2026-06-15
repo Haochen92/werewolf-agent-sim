@@ -633,6 +633,92 @@ def cell_observation_schema_for(role: str, action_phase: str) -> type[BaseModel]
     return _CELL_REGISTRY.get((role, action_phase))
 
 
+# ── Per-cell SITUATION schemas (dims only, no outcome payload) — the LIVE query schema (step 4C). ──
+# Same dimension mixins as the Observation cells, so `compose_situation_embed` produces the IDENTICAL
+# embed string for the same field values — that is the load-bearing symmetry that lets a live query
+# match the stored observations. Model-visible (the situation-summary LLM emits these).
+class _SituationCell(BaseModel):
+    @property
+    def composed_situation(self) -> str:
+        return compose_situation_embed(self)
+
+
+# villager·day situation cell already exists as VillagerDaySituation; give it the composed property.
+class VillagerDaySituationCell(VillagerDaySituation, _SituationCell):
+    pass
+
+
+class PowerDaySituationCell(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, _SituationCell,
+):
+    pass  # healer / investigator day (PowerRoleDay dims)
+
+
+class VigilanteDaySituationCell(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithBulletsLeft, _SituationCell,
+):
+    pass
+
+
+class WolfDaySituationCell(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithAllyRevealed, _SituationCell,
+):
+    pass
+
+
+class SerialKillerDaySituationCell(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, _SituationCell,
+):
+    pass
+
+
+class PowerNightSituationCell(BaseSituation, WithTargetLandscape, _SituationCell):
+    pass  # healer / investigator night (criticality + target)
+
+
+class VigilanteNightSituationCell(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, WithBulletsLeft, _SituationCell
+):
+    pass
+
+
+class DeceiverNightSituationCell(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, _SituationCell
+):
+    pass  # wolf / serial_killer night (criticality + target + forward_exposure)
+
+
+_SITUATION_CELL_REGISTRY: dict[tuple[str, str], type[BaseModel]] = {}
+for _r, _cls in (
+    ("villager", VillagerDaySituationCell),
+    ("healer", PowerDaySituationCell),
+    ("investigator", PowerDaySituationCell),
+    ("vigilante", VigilanteDaySituationCell),
+    ("wolf", WolfDaySituationCell),
+    ("serial_killer", SerialKillerDaySituationCell),
+):
+    _SITUATION_CELL_REGISTRY[(_r, "day_discussion")] = _cls
+    _SITUATION_CELL_REGISTRY[(_r, "day_vote")] = _cls
+for _r, _cls in (
+    ("healer", PowerNightSituationCell),
+    ("investigator", PowerNightSituationCell),
+    ("vigilante", VigilanteNightSituationCell),
+    ("wolf", DeceiverNightSituationCell),
+    ("serial_killer", DeceiverNightSituationCell),
+):
+    _SITUATION_CELL_REGISTRY[(_r, "night_action")] = _cls
+
+
+def cell_situation_schema_for(role: str, action_phase: str) -> type[BaseModel] | None:
+    """The per-cell v6 LIVE-query situation schema (dims only). Mirrors the observation cell's
+    dimensions so query and stored embeddings compose identically."""
+    return _SITUATION_CELL_REGISTRY.get((role, action_phase))
+
+
 class GameStrategyOutput(BaseModel):
     observations: list[Observation] = Field(
         description="Key strategic observations extracted from the full game"
