@@ -477,6 +477,78 @@ as the game genuinely supports for the {role} in the {phase} phase. Focus on:
 """
 
 
+# v6 dimension schema — villager·day cell (cheap-first re-extraction). Self-contained: it describes
+# the NEW dimensional framework (criticality numbers + stakes-as-implication, consensus split, heat,
+# target landscape) and does NOT reuse SITUATION_STANDARDS (which describes the old game_phase/
+# consensus_texture/agent_exposure dimensions). The per-field micro-guidance lives in the
+# VillagerDayObservation Field(description=) — this prompt frames the task + the criticality rule +
+# the descriptive-only (state, not prescription) discipline. Used only by the re-extraction runner
+# (evaluation/src/experiments/reextract_villager_day.py); the live extraction prompts are untouched.
+VILLAGER_DAY_EXTRACTION_PROMPT = """
+You are an expert strategic analyst reviewing this completed Werewolf game. Extract
+episodic-memory lessons for the VILLAGER role, for the DAY phases only (day_discussion and
+day_vote). Each observation is a FACT about what happened, written from a post-game omniscient
+perspective — you know all roles, all private actions, and all outcomes — but it must describe the
+BOARD STATE as it was readable at the moment the lesson applies, in the villager's epistemic voice.
+
+GAME RULES:
+{game_rules}
+
+{epistemic_status_rule}
+
+NAMING RULE: Never use player IDs (player_1, player_2, ...). Refer to players by role (the wolf, the
+investigator, a villager, the healer) or by behavioral descriptors when disambiguating.
+
+---
+
+GAME DATA:
+
+PLAYERS AND ROLES:
+{formatted_roles}
+
+FULL GAME DISCUSSIONS:
+{formatted_discussions}
+
+FINAL STRATEGY NOTES:
+{formatted_strategy_notes}
+
+GAME OUTCOME: {game_outcome}
+
+---
+
+TASK: Extract 6-12 villager day-phase observations from the game's pivotal day moments (discussion
+and vote). Cover DISTINCT day situations — different criticality regimes (early with many alive vs
+late near a game-ending parity), consensus textures, and target landscapes — not minor variations of
+one moment. Span the days the game ran, not just one. Fill EVERY field.
+
+SITUATION DIMENSIONS describe the board STATE only (what is TRUE on the board), with NO
+should/recommend language — the "how to act" is the agent's job, never part of the situation:
+
+- situation: the core dynamic — the concrete event or conflict and who is involved.
+- information_landscape: what evidence exists and its type (information-rich vs information-starved).
+- players_alive / distance_to_parity / is_swing: the EXACT criticality numbers at this moment — how
+  many are alive; how many more eliminations until the leading evil faction reaches a game-ending
+  parity; whether one result here flips which faction is winning. State the true numbers from the board.
+- criticality_stakes: phrase the IMPLICATION of those numbers as board reality (e.g. "seven alive, a
+  mislynch is still recoverable" or "one elimination from a wolf win, every vote decisive"), NOT a
+  bare label like "endgame". Derive it FROM the numbers above so the two can never disagree.
+- consensus_text / my_position / consensus_direction: how aligned the village is and on what basis;
+  where the villager stands relative to that consensus; and whether the consensus aligns with,
+  opposes, or is unrelated to the villager's own read of who the threats are.
+- heat_now: how much suspicion rests on the villager right now, and on what basis.
+- target_landscape: the candidate set this decision chooses among — who remains in contention, their
+  public role status, and whether the case against each rests on evidence or on behavior.
+
+OUTCOME (judged from the END of the game):
+- approach: what the villager DID or failed to do in that situation.
+- impact_on_final_game_outcome: the NET effect on the villager win condition. A move that helped in
+  the moment but contributed to a later loss is a NET NEGATIVE — say so and name the causal chain. If
+  genuinely untraceable, write 'unclear' and why.
+- immediate_response: how others responded in the moment, before the longer-term consequence.
+- net_verdict: one word — positive, negative, mixed, or unclear.
+"""
+
+
 # Archived version
 
 ARCHIVED_POSTGAME_EXTRACTION_PROMPT = """
