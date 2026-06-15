@@ -251,11 +251,16 @@ changes extraction→retrieval→adoption; not a v5 point release).
 
 ## 9. Build order (gate the re-extraction bill behind a signal)
 
-1. `BaseSituation` + `WithConsensus` + `WithHeat` + `WithTargetLandscape` → **villager·day cell only**.
-2. Re-extract that cell.
+1. `BaseSituation` + `WithConsensus` + `WithHeat` + `WithTargetLandscape` → **villager·day cell only**. ✅ DONE (2026-06-15, `Agents/schemas/memory.py`, additive; commit 2b57911).
+2. Re-extract that cell. ✅ DONE — `memory_stores/v6_0`, 119 RAW villager·day obs / 20 games (`evaluation/src/experiments/reextract_villager_day.py`; commit 684f39c).
 3. Screen: criticality-conditioned vs flat, town day-vote, **stratified by day** (falsifiable at day-2),
    paired, one sitting/pinned model, per-stratum, reads direction + causal-flip-rate (not significance).
+   ✅ DONE → **GO**. Signature confirmed: high-criticality cond−flat +0.25 vs mid-game/day-2 ~null;
+   flips 4→threat / 0 away. Full record `criticality_screen/experiment_log.md` (commit 7c00c9d).
 4. Only if the lever shows → roll the full DAG (the two profiles, F/G on wolf·day) + re-extract the rest.
+   **← NOW UNLOCKED by the step-3 GO** (the live-path rewiring deferred in §8b also lands here). A
+   confirmatory second batch / λ-sweep before rolling is optional but cheap; the full build is gated by
+   the mandatory freeze-time regression gate regardless.
 
 Interview frame = the ladder + method (paired/stratified/drift-immune/judge-free; triage not verdict),
 not a big N quoted as proof.
