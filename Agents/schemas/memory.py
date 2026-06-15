@@ -321,9 +321,10 @@ class BaseSituation(BaseModel):
     )
     distance_to_parity: int = Field(
         description=(
-            "How many more eliminations until the leading evil faction reaches the "
-            "player count at which the game can end (parity). 0 means the very next "
-            "result can end the game."
+            "How many more town/non-threat eliminations until the LEADING REMAINING evil faction "
+            "reaches the count at which it can win — wolves reaching parity while any wolf is alive; "
+            "otherwise the serial killer reaching its last-standing win. 0 means the next result can "
+            "end the game. (When wolves are gone, is_swing is the primary criticality signal.)"
         )
     )
     is_swing: bool = Field(
@@ -358,8 +359,12 @@ class WithConsensus(BaseModel):
     )
     consensus_direction: Literal["aligns_with_my_read", "opposes_my_read", "no_clear_direction"] = Field(
         description=(
-            "Whether the consensus direction aligns with, opposes, or is unrelated to "
-            "the agent's own read of who the threats are."
+            "Whether the forming consensus aligns with, opposes, or is unrelated to the agent's OWN "
+            "STANCE AS EXPRESSED AT THIS MOMENT (the position described in my_position) — judged "
+            "ONLY from what the agent has said and done so far, NEVER from who later turns out to be "
+            "guilty or innocent. If the room has no clear consensus (fractured, split, deadlocked), "
+            "use no_clear_direction regardless of the agent's stance. Must be consistent with "
+            "consensus_text and my_position."
         )
     )
 
@@ -466,8 +471,10 @@ class WithPublicPrivate(BaseModel):
     )
     divergence_sign: Literal["confirms", "contradicts", "no_divergence"] = Field(
         description=(
-            "Whether the agent's private knowledge confirms or contradicts the public read, or "
-            "there is no divergence."
+            "Whether the agent's private knowledge confirms or contradicts the public read AT THIS "
+            "MOMENT — judged from what the agent privately knows now (own role/findings/saves/whiffs) "
+            "vs what is publicly established now, NEVER from the eventual ground truth. Must be "
+            "consistent with public_private_text."
         )
     )
 

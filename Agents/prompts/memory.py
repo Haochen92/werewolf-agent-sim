@@ -310,27 +310,16 @@ a semantic-search query to retrieve relevant past lessons, so describe GAME DYNA
 what. Only write a second situation if it is a genuinely independent decision; two views of one
 conflict is one situation.
 
-Fill in ALL the structured fields your output schema requests (the set depends on your role and phase):
-- situation: the core game dynamic (2-3 sentences) — the concrete event or conflict and who is
-  involved. Do not restate the dimensional context captured by the other fields.
-- information_landscape: what evidence exists and its type (information-rich vs starved).
-- players_alive / distance_to_parity / is_swing: the EXACT criticality numbers right now — how many are
-  alive; how many more eliminations until the leading evil faction reaches a game-ending parity;
-  whether one result now flips which faction is winning.
-- criticality_stakes: the IMPLICATION of those numbers as board reality (e.g. "seven alive, a mislynch
-  is still recoverable" or "one elimination from a wolf win, every vote decisive"), derived FROM the
-  numbers so the two cannot disagree.
-- consensus_text / my_position / consensus_direction: how aligned the village is and on what basis;
-  where you stand relative to it; whether it aligns with, opposes, or is unrelated to your own read.
-- heat_now: how much suspicion rests on you right now, and on what basis.
-- target_landscape: the candidate set this decision chooses among — who remains, their public role
-  status, and whether the case against each rests on evidence or behavior.
-- forward_exposure: the cost a contemplated visible move would carry going forward — what it would
-  reveal or commit you to, and how reversible it is.
-- public_private_text / divergence_sign: the gap between what you privately know (your role, findings,
-  who you saved, a whiffed shot) and the public read, and whether it confirms or contradicts.
+{driver_horizon}
 
-Describe board STATE only — no plans, recommendations, or what you should do.
+RULES (describe board STATE, never prescription): every field is what is TRUE right now in your own
+epistemic voice — no plans or recommendations. State exact criticality numbers and phrase
+criticality_stakes as their implication, derived from them. For the direction enums
+(consensus_direction, divergence_sign), judge only from what you know/have expressed NOW (never
+hindsight); use no_clear_direction if there is no clear consensus.
+
+Fill in ALL the structured fields your output schema requests (descriptions are authoritative):
+{dimension_menu}
 """
 
 

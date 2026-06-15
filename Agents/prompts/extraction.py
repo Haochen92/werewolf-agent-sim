@@ -586,41 +586,24 @@ GAME OUTCOME: {game_outcome}
 ---
 
 TASK: Extract 6-12 {role} observations from the game's pivotal {phase} moments (a phase with few
-decisions may yield fewer, but never pad with near-restatements). Cover DISTINCT situations —
-different criticality regimes (early with many alive vs late near a game-ending parity), and
-different target/consensus/exposure textures — not minor variations of one moment. Span the days the
-game ran. Fill EVERY field your output schema requests.
+decisions may yield fewer; never pad with near-restatements). Cover DISTINCT situations — different
+criticality regimes (early/many-alive vs late/near-parity), and different target/consensus/exposure
+textures — not minor variations of one moment. Span the days the game ran. Fill EVERY field below.
 
-SITUATION DIMENSIONS describe the board STATE only (what is TRUE on the board), with NO
-should/recommend language — the "how to act" is never part of the situation:
+{driver_horizon}
 
-- situation: the core dynamic — the concrete event or conflict and who is involved.
-- information_landscape: what evidence exists and its type (information-rich vs information-starved).
-- players_alive / distance_to_parity / is_swing: the EXACT criticality numbers at this moment — how
-  many are alive; how many more eliminations until the leading evil faction reaches a game-ending
-  parity; whether one result here flips which faction is winning. State the true numbers.
-- criticality_stakes: phrase the IMPLICATION of those numbers as board reality (e.g. "seven alive, a
-  mislynch is still recoverable" or "one elimination from a wolf win, every vote decisive"), NOT a
-  bare label. Derive it FROM the numbers so the two can never disagree. If a conditioner applies
-  (vigilante bullets left, wolf partner revealed), fold its implication in too.
-- consensus_text / my_position / consensus_direction: how aligned the village is and on what basis;
-  where the {role} stands relative to it; whether it aligns with, opposes, or is unrelated to the
-  {role}'s own read. (day decisions)
-- heat_now: how much suspicion rests on the {role} right now, and on what basis. (day decisions)
-- target_landscape: the candidate set this decision chooses among — who remains, their public role
-  status, and whether the case against each rests on evidence or behavior.
-- forward_exposure: the cost a contemplated visible move would carry going forward — what it reveals
-  or commits the {role} to, and how reversible it is. (observable acts)
-- public_private_text / divergence_sign: the gap between what the {role} privately knows (own role,
-  findings, save-knowledge, whiff-info) and the public read, and whether it confirms or contradicts.
+RULES for the fields (describe board STATE, never prescription):
+- Every situation field describes what is TRUE on the board at that moment, in the {role}'s epistemic
+  voice — NO should/recommend language; the "how to act" is the agent's job, not part of the situation.
+- Criticality: state the exact numbers AND phrase criticality_stakes as their IMPLICATION, derived
+  FROM the numbers so the two can never disagree (fold in any conditioner — bullets left / partner
+  revealed).
+- Direction enums (consensus_direction, divergence_sign): judge ONLY from what is known or expressed
+  at THIS moment, NEVER from who later turns out guilty/innocent; if there is no clear consensus, use
+  no_clear_direction.
 
-OUTCOME (judged from the END of the game):
-- approach: what the {role} DID or failed to do.
-- impact_on_final_game_outcome: the NET effect on the {role}'s win condition. A move that helped in
-  the moment but contributed to a later loss is a NET NEGATIVE — say so and name the causal chain. If
-  untraceable, write 'unclear' and why.
-- immediate_response: how others responded in the moment, before the longer-term consequence.
-- net_verdict: one word — positive, negative, mixed, or unclear.
+Fields to fill (your output schema requests exactly these — descriptions are authoritative):
+{dimension_menu}
 """
 
 

@@ -108,6 +108,23 @@ def test_situation_embed_matches_observation_embed(role, phase):
     assert sit.composed_situation == obs_cls(**okw).composed_situation
 
 
+@pytest.mark.parametrize("cell", _cells(), ids=lambda c: c.__name__)
+def test_prompt_menu_matches_schema_no_drift(cell):
+    """The generated dimension menu must cover EXACTLY the cell's dimension fields (everything except
+    perspective/action_phase) — the guard that prompt, schema, and embedding can't desync."""
+    from Agents.prompts.dimension_guidance import menu_field_names
+    schema_dims = {n for n in cell.model_fields if n not in ("perspective", "action_phase")}
+    assert menu_field_names(cell) == schema_dims
+
+
+def test_every_day_night_cell_has_a_driver_horizon():
+    from Agents.prompts.dimension_guidance import cell_driver_horizon
+    for r in roles:
+        for ph in VALID_ACTION_PHASES_BY_ROLE[r]:
+            dh = cell_driver_horizon(r, ph)
+            assert "DRIVER" in dh and "HORIZON" in dh, f"{r}/{ph} missing driver/horizon"
+
+
 def test_conditioners_on_the_right_roles():
     assert "bullets_left" in M.cell_observation_schema_for("vigilante", "day_vote").model_fields
     assert "ally_revealed" in M.cell_observation_schema_for("wolf", "day_vote").model_fields

@@ -23,6 +23,7 @@ from Agents.prompts import (
     VILLAGER_SITUATION_SUMMARY,
     WOLF_SITUATION_SUMMARY,
 )
+from Agents.prompts.dimension_guidance import cell_driver_horizon, dimension_menu
 from Agents.prompts.memory import V6_SITUATION_SUMMARY
 from Agents.schemas import SituationSummary
 from Agents.schemas.memory import cell_situation_schema_for
@@ -77,11 +78,16 @@ def _generate_situations_for_agent(
     run_name = f"situation_summary_{role}_{action_phase}_day_{current_day}_round_{current_round}"
 
     cell_schema = cell_situation_schema_for(role, action_phase)
+    extra: dict = {}
     if cell_schema is not None:
         chain = V6_SITUATION_SUMMARY | get_llm().with_structured_output(
             _summary_container(cell_schema)
         )
         compose = lambda r: [s.composed_situation for s in r.situations]  # noqa: E731
+        extra = {
+            "dimension_menu": dimension_menu(cell_schema),
+            "driver_horizon": cell_driver_horizon(role, action_phase),
+        }
     else:
         prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
         chain = prompt_template | get_llm().with_structured_output(SituationSummary)
@@ -90,7 +96,7 @@ def _generate_situations_for_agent(
     for attempt in range(max_retries + 1):
         try:
             result = chain.invoke(
-                _build_agent_prompt_input(payload), config={"run_name": run_name}
+                {**_build_agent_prompt_input(payload), **extra}, config={"run_name": run_name}
             )
             return compose(result)
         except Exception as e:

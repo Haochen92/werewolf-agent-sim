@@ -29,6 +29,7 @@ from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
 from Agents.memory.persistence import memory_store_paths
 from Agents.prompts import EPISTEMIC_STATUS_RULE, GAME_RULES
+from Agents.prompts.dimension_guidance import cell_driver_horizon, dimension_menu
 from Agents.prompts.extraction import V6_CELL_EXTRACTION_PROMPT
 from Agents.schemas.memory import StoredObservation, cell_observation_schema_for
 from evaluation.src.core.manifest import build_manifest
@@ -57,12 +58,16 @@ ROLE_UNITS: dict[str, list[tuple[str, str, str]]] = {
 }
 
 
-def _build_prompt(inputs: dict[str, str], role: str, phase_wording: str) -> str:
-    """Brace-safe placeholder substitution (transcripts can contain literal braces)."""
+def _build_prompt(inputs: dict[str, str], role: str, phase_wording: str, rep_phase: str,
+                  cell_schema: type[BaseModel]) -> str:
+    """Brace-safe placeholder substitution (transcripts can contain literal braces). The dimension
+    menu is GENERATED from the cell schema (single source) and the driver/horizon from the registry."""
     prompt = V6_CELL_EXTRACTION_PROMPT
     for token, value in {
         "{role}": role,
         "{phase}": phase_wording,
+        "{driver_horizon}": cell_driver_horizon(role, rep_phase),
+        "{dimension_menu}": dimension_menu(cell_schema),
         "{game_rules}": GAME_RULES,
         "{epistemic_status_rule}": EPISTEMIC_STATUS_RULE,
         "{formatted_roles}": inputs["formatted_roles"],
@@ -90,7 +95,9 @@ def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries:
     if cell_schema is None:
         return []
     container = _container_for(cell_schema)
-    prompt = _build_prompt(extraction_inputs_from_frozen_case(case), role, phase_wording)
+    prompt = _build_prompt(
+        extraction_inputs_from_frozen_case(case), role, phase_wording, rep_phase, cell_schema
+    )
     run = f"reextract_{role}_{unit[0]}_{str(case.get('game_id',''))[:8]}"
     for label, llm in (("primary", get_llm_pro()), ("backup", get_llm_pro_backup())):
         chain = llm.with_structured_output(container)
