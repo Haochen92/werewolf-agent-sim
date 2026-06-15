@@ -91,11 +91,12 @@ def test_extraction_schema_is_all_required_and_marker_does_not_leak():
     assert "_Embed" not in json.dumps(sch)
 
 
-def test_cell_registry_only_villager_day_is_migrated():
+def test_villager_day_registry():
+    # villager·day maps to VillagerDayObservation; villager has no night cell (full-DAG coverage of
+    # the other roles is asserted in test_v6_cells.py).
     assert cell_observation_schema_for("villager", "day_vote") is VillagerDayObservation
     assert cell_observation_schema_for("villager", "day_discussion") is VillagerDayObservation
     assert cell_observation_schema_for("villager", "night_action") is None
-    assert cell_observation_schema_for("wolf", "day_vote") is None
 
 
 def test_invalid_enums_rejected():
