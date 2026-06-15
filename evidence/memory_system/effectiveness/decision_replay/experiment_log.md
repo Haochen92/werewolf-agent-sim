@@ -424,3 +424,40 @@ null** — a point slightly FOR running one cheap screen before writing off the 
   `echo_judge_validation_nh_town.json` (N=40 echo-vs-judge + judge-accuracy rows),
   `condition_grid_5cases.json` (5 cases × {off,vote-first,reason-first,memory-linked} × 3 draws),
   `coherence_nh_town.json` (N=40 vote↔reasoning sync).
+
+## 2026-06-15 — dimension design CRYSTALLIZED into a build spec (fork #2 chosen)
+
+Stopping-point fork decided: **#2 dimensions-first then freeze**. The full role×phase dimension
+expansion is now written up as a concrete build spec → **`evidence/phase_b/dimension_schema_build_spec.md`**
+(the old→new field mapping, the mixin DAG, per-field embed/enum/numeric markers, composable-prompt
+registry, modules-touched + downstream ripple, cheap-first build order). DESIGN LOCKED, **no code
+written** pending sign-off. Key resolutions captured there (this session's design discussion):
+
+- **Embedding limits drive the ledger.** Bi-encoder = one pooled vector committed before the query →
+  mean-pooling dilutes low-entropy fields, tokenizers aren't magnitude-aware, minimal-pair direction
+  smears. Verdict: embed high-entropy free-text; pull numbers (criticality `players_alive` /
+  `distance_to_parity` / `is_swing`, vigilante `bullets_left`) and minimal-pair signs out to the
+  reranker. These are PARADIGM limits a stronger embedding model can't fix.
+- **`game_phase` → criticality** (3 numerics, role-certainty-encoded), the universal upgrade.
+- **Schema = mixin DAG** (`BaseSituation` + `WithConsensus/WithHeat/WithTargetLandscape/`
+  `WithForwardExposure/WithPublicPrivate`); concrete cells multiply-inherit their profile → F/G
+  written once. **One per-cell `SituationSchema` is the single source of truth** for extraction output
+  + live query output + embedding composition → query/storage compositions cannot diverge (the
+  load-bearing symmetry). `_compose_situation` becomes a generic prefix serializer over `embed=True`
+  fields. Composable PROMPT mirrors it (one guidance fragment per dimension; the `Field(description=)`
+  serves extraction+query, a registry serves dedup) → kills the 3× repeated dimension blob.
+- **Reranker fork frames WHY the structured fields exist:** reasoning-judge does numbers+signs
+  in-model (no fusion); FT-cross-encoder CANNOT (architectural) → needs external `|Δ|` + exact
+  enum-match = the **FT-CE-≈-flash-lite-cheaper USP** (fork-#3, deferred). Build only EXPOSES the
+  fields now. **Recall asymmetry** (the one stage no reranker touches): phrase direction INTO the
+  embedded text so recall isn't sign-blind, but accept criticality recall-invisibility (gate +
+  generous top-k, reranker reasons over the numbers).
+- **4 late ledger corrections folded in:** (1) `my_position` EMBEDS — its 3 values are distinct
+  content, not a minimal pair; (2) `consensus_direction`/`divergence_sign` live in BOTH (phrased into
+  embedded text for recall + enum for rerank), not pulled 100% to the enum; (3) night cells settled by
+  "mixin attaches iff its dimension is a decision input for that cell's action" — no night
+  Consensus/Heat, ForwardExposure only on observable acts (wolf/vig), night PublicPrivate = inv only;
+  (4) `reversibility` → `bullets_left`[int] on the numeric path (binary is near-constant, dropped).
+- **Cheap-first build order:** villager×day_vote only → re-extract that cell → run the criticality
+  screen (stratified by day, falsifiable at day-2) → roll the full DAG only if the lever shows.
+- **Still open:** "mixed"-horizon (inv/vig) outcome order; fork-#3 (FT-CE-fusion USP) go/no-go.
