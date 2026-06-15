@@ -461,3 +461,42 @@ written** pending sign-off. Key resolutions captured there (this session's desig
 - **Cheap-first build order:** villager×day_vote only → re-extract that cell → run the criticality
   screen (stratified by day, falsifiable at day-2) → roll the full DAG only if the lever shows.
 - **Still open:** "mixed"-horizon (inv/vig) outcome order; fork-#3 (FT-CE-fusion USP) go/no-go.
+
+## 2026-06-15 (s2) — first-principles cell-by-cell walkthrough → spec FINALIZED
+
+Re-walked every role×phase from the cell's actual goal (user drove the goals; not mechanical gating).
+Spec rewritten to v2 (`evidence/phase_b/dimension_schema_build_spec.md`). Outcomes:
+
+- **Gate collapsed to (role × {day, night}); 17→11 cells.** `day_discussion`+`day_vote` merge per role
+  — same goal (the discussion is the target-finding process for the vote); the difference is the
+  *action* (payload) + a heavier forward_exposure on the vote (permanent record), carried within the
+  cell, not by a namespace split. Day-vs-night is the validity-breaking gate. Investigator proves it:
+  night cell leanest (pure info-gain E), day cell richest (G+D+F+E, net) — genuinely different decisions.
+- **Horizon resolves PER CELL** by targeting/truth-finding (immediate) vs reveal-timing/concealment
+  (net); the "mixed" bucket DISSOLVED. immediate = villager, healer(both), investigator-night,
+  vigilante(both); net = investigator-day, wolf(both), SK(both). Vigilante locked immediate ("hitting
+  evil is never bad — a wrong shot is a targeting error, not a horizon issue").
+- **Prunes/adds from first principles:** investigator-night −G (gap is a day tool); vigilante-day
+  +conditional-G (a whiffed shot reveals the night-immune SK to the shooter — silent-whiff from the
+  shooter's side); healer-day un-pruned (E/G come back LATE-game via criticality-conditioning, not
+  removable); wolf converged with ZERO changes (the library was designed around the deceiver).
+- **Three cross-cutting rules:**
+  (1) **Conditioners** — `distance_to_parity`/`players_alive` (all), `bullets_left` (vigilante),
+  `ally_revealed` (wolf) — flip whole playbooks, so they get the both-sides treatment (exact→reranker
+  + stakes-IMPLICATION phrased into embed, because a wrong-regime neighbor is the OPPOSITE lesson and
+  recall is the one stage no reranker touches). Criticality revised from "pull fully out" to "numbers
+  →reranker + implication→embed". (2) **Two shared profiles:** `PowerRoleDay` (F-survival driver +
+  villager-voting + role-specific conditional G on save-knowledge/findings/whiff-info) for
+  healer/investigator/vigilante day; `DeceiverConcealment` (F+G as ONE coupled driver + D + E) for
+  wolf/SK. (3) **Descriptive-only situations** — every dimension describes board STATE in the agent's
+  epistemic voice, ZERO should/recommend; the objective function (info-gain/faction-balance/whiff-probe)
+  is PAYLOAD, never a matching field. The old `SITUATION_ROLE_LENS` prose folds into the fields with its
+  prescriptive bleed stripped ("time to claim" → "how exposed my role currently is").
+- **Dimension dispositions (answers "rename or re-allocate?"):** library VALIDATED, not replaced. Only
+  `game_phase`→`criticality` is a true rescope; `consensus_texture` and `agent_exposure` SPLIT (each was
+  compound: consensus→text+my_position+direction-enum; exposure→heat_now+forward_exposure); E/G PROMOTED
+  from prose to fields; `bullets_left`/`ally_revealed` are new small criticality-family conditioners. No
+  new KIND of situation dimension was needed.
+- **Live-path scope flagged:** the situation summarizer is role-keyed today → per-cell makes it
+  phase-aware (a live-runtime change, not extraction-only). Build order unchanged: villager·day first →
+  re-extract that cell → screen → roll the full DAG only if the lever shows.
