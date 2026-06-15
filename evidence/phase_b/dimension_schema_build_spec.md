@@ -224,6 +224,31 @@ fresh re-extraction → new `v5_x`. (5) Leak checks on new G/forward_exposure fi
 
 ---
 
+## 8b. Cheap-first slice — change-NOW vs DEFER decision per affected file (2026-06-15)
+
+The screen is **self-contained** (it computes the query-side criticality deterministically from the
+frozen board and does its own retrieval against `v6_0` — both arms share one embedding + one candidate
+pool, the only delta is criticality conditioning). The re-extraction is a **focused offline runner**
+mirroring `augment_agent.py`. Consequence: the cheap-first slice touches ONLY the schema (additively),
+a scoped re-extraction prompt+runner, and the screen. Every LIVE-path edit in §8 defers to step-4
+("roll the full DAG", after the screen shows the lever). New store name = **`v6_0`** (whole pipeline
+changes extraction→retrieval→adoption; not a v5 point release).
+
+| §8 file | spec change | cheap-first decision | why |
+|---|---|---|---|
+| `schemas/memory.py` | mixin DAG; Observation/StrategyPoint rebuilt; generic compose; role-aware `_compose_outcome` | **PARTIAL NOW (additive)** — add `_Embed`+`compose_situation_embed`, `BaseSituation`+`WithConsensus`/`WithHeat`/`WithTargetLandscape`, `VillagerDayObservation`/`VillagerDayExtraction`, `cell_observation_schema_for`, `StoredObservation` +4 optional v6 fields. **DEFER** replacing legacy `Observation`/`StrategyPoint` + role-aware `_compose_outcome` | additive keeps v5 pipeline + other roles live; villager·day horizon = immediate (screen scores votes directly, no net-first outcome reorder needed) |
+| `schemas/output.py` `SituationEntry` + vote field-order flip | per-cell `SituationSchema`; `updated_strategy` before `vote_target` | **DEFER (both)** | `SituationEntry` is the LIVE query schema — screen self-computes query criticality, doesn't use it. Field-order flip = the *separate* reorder experiment, not the criticality lever |
+| `prompts/extraction.py` + `memory/extraction/inputs.py` | per-cell tail + criticality-as-implication + horizon | **NEW SCOPED NOW** — add a villager·day extraction tail (criticality-as-implication) used ONLY by the re-extraction runner; do NOT edit live `POSTGAME_*`/`ROLE_EXTRACTION_*`; do NOT feed old `SITUATION_STANDARDS` dim prose with the new schema (mismatch) | guidance carried by schema `Field(description=)` (single source); live prompt-freeze preserved |
+| `memory/extraction/extraction_agent.py` | fan-out binds per-cell schema; merge | **DEFER live fan-out** — runner invokes extraction directly with `VillagerDayExtraction` (own thin invoker, mirrors `augment_agent`) | step 4 |
+| `memory/enrichment/situation_agent.py` | live query phase-aware; emits cell schema | **DEFER** | live runtime; screen self-computes query criticality |
+| `prompts/memory.py` | dimension-guidance registry; `SITUATION_ROLE_LENS` fold+delete | **DEFER** | re-extraction guidance lives in schema `Field(description=)`; fold/delete is a live + model-visible edit = step 4 |
+| `prompts/day.py` | vote contract field-order flip | **DEFER** | separate reorder fix, not the criticality lever; live runtime |
+| downstream `_compose_situation` callers (situation_agent, dedup_agent/store_ops/pipeline/prefilter, `SituationEntry.composed`, auto_dedup_dataset_builder, components/situation_summary) | signature ripple | **NO CHANGE NOW** | legacy `_compose_situation` kept intact; v6 uses a *separate* `compose_situation_embed` → zero ripple |
+| dedup thresholds | tuned on old composed string → may drift | **N/A NOW** — `v6_0` written RAW (no production dedup); screen reads retrieval not dedup | rerank≈raw; dedup re-tune = Phase B track 2 |
+| reranker | input shifts but rerank≈raw | **N/A NOW** — screen uses raw obs-only top-k; conditioned arm = screen-local criticality rerank, not the production CE | fork-#3 deferred until after screen |
+| leak checks (`check_*`) | new G/forward_exposure fields | **N/A NOW** — villager·day adds no concealment fields; re-extraction is offline (no live Send payload) | add `check_*` when wiring live (step 4) |
+| tests | schema-shape + guards | **ADD NOW** — villager·day schema-shape test (all-required, numbers-excluded-from-embed, `_Embed` no-leak, embed order) | new code needs a guard; determine_winner/dedup guards untouched |
+
 ## 9. Build order (gate the re-extraction bill behind a signal)
 
 1. `BaseSituation` + `WithConsensus` + `WithHeat` + `WithTargetLandscape` → **villager·day cell only**.
