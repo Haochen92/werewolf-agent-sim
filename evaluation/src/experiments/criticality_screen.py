@@ -34,8 +34,10 @@ from Agents.llm_factory.embeddings import create_embeddings
 from Agents.schemas import RetrievedObservation
 from Agents.schemas.memory import StoredObservation
 from evaluation.src.components.decision_scoring import THREAT_ROLES, allow_abstain_for, score_vote
+from evaluation.src.components.situation_summary import eval_case_to_agent_payload
 from evaluation.src.data.local_cases import LocalCaseSource
 from evaluation.src.experiments.decision_replay import _replay_vote, load_game_index, mcnemar_p
+from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
 
 
 def load_candidates_by_role(store_dir: Path, roles: frozenset[str]) -> dict[str, list[StoredObservation]]:
@@ -163,6 +165,7 @@ def run_screen(
     source_games: set[str] | None = None,
     held_out_only: bool = False,
     roles: frozenset[str] = frozenset({"villager"}),
+    regenerate_query: bool = False,
 ) -> dict[str, Any]:
     source_games = source_games or set()
     emb = create_embeddings()
@@ -187,7 +190,13 @@ def run_screen(
         q_alive, q_dist, q_swing = query_criticality(
             case.private_context.surviving_players, roles_map
         )
-        query = " ".join(case.situations)
+        # Faithful v6 end-to-end: REGENERATE the situation summary under the v6 cell schema (so the
+        # query is composed in the same dimensions as the v6 store). Default reuses the frozen v5
+        # summary (the original, mismatched-base behavior) for comparison.
+        if regenerate_query:
+            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote"))
+        else:
+            query = " ".join(case.situations)
         qv = np.array(emb.embed_query(query))
         cos = _cosine_matrix(qv, pool.vecs)
         # Exclude memories mined from THIS decision's own game (a memory from game G knows G's
@@ -361,6 +370,12 @@ def main() -> int:
         help="comma-separated town day-voters to screen (each retrieves from its OWN v6 day pool); "
         "vigilante day_vote is not supported by the replay harness (REPLAYABLE_TOWN_ROLES)",
     )
+    ap.add_argument(
+        "--regenerate-query",
+        action="store_true",
+        help="regenerate the situation summary under the v6 cell schema (faithful end-to-end v6) "
+        "instead of reusing the frozen v5 summary",
+    )
     args = ap.parse_args()
     roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
     report = run_screen(
@@ -368,6 +383,7 @@ def main() -> int:
         lam=args.lambda_alive, mu=args.mu_swing, nu=args.nu_dist,
         source_games=load_source_games(args.source_set),
         held_out_only=args.held_out_only, roles=roles,
+        regenerate_query=args.regenerate_query,
     )
     print(json.dumps(report, indent=2))
     return 0

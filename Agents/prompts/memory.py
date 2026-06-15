@@ -295,3 +295,70 @@ Today's public discussion:
         )
     ]
 )
+
+
+# ── v6 live situation summary (step 4C) — aligns the live query with the v6 post-game extraction ──
+# Role-agnostic view (each role's payload only populates its own private fields, so this is leak-safe)
+# + a v6 dimensional suffix mirroring the extraction dims. The per-cell situation schema is bound by
+# the caller (with_structured_output), so the model fills only the fields its cell has. Describes board
+# STATE only (Rule 2). Single prompt for all roles/phases; the schema does the tailoring.
+V6_SITUATION_SUMMARY_SUFFIX = """
+{epistemic_status_rule}
+
+Describe 1-2 distinct situations you are currently facing using the structured fields. Each is used as
+a semantic-search query to retrieve relevant past lessons, so describe GAME DYNAMICS, not just who said
+what. Only write a second situation if it is a genuinely independent decision; two views of one
+conflict is one situation.
+
+Fill in ALL the structured fields your output schema requests (the set depends on your role and phase):
+- situation: the core game dynamic (2-3 sentences) — the concrete event or conflict and who is
+  involved. Do not restate the dimensional context captured by the other fields.
+- information_landscape: what evidence exists and its type (information-rich vs starved).
+- players_alive / distance_to_parity / is_swing: the EXACT criticality numbers right now — how many are
+  alive; how many more eliminations until the leading evil faction reaches a game-ending parity;
+  whether one result now flips which faction is winning.
+- criticality_stakes: the IMPLICATION of those numbers as board reality (e.g. "seven alive, a mislynch
+  is still recoverable" or "one elimination from a wolf win, every vote decisive"), derived FROM the
+  numbers so the two cannot disagree.
+- consensus_text / my_position / consensus_direction: how aligned the village is and on what basis;
+  where you stand relative to it; whether it aligns with, opposes, or is unrelated to your own read.
+- heat_now: how much suspicion rests on you right now, and on what basis.
+- target_landscape: the candidate set this decision chooses among — who remains, their public role
+  status, and whether the case against each rests on evidence or behavior.
+- forward_exposure: the cost a contemplated visible move would carry going forward — what it would
+  reveal or commit you to, and how reversible it is.
+- public_private_text / divergence_sign: the gap between what you privately know (your role, findings,
+  who you saved, a whiffed shot) and the public read, and whether it confirms or contradicts.
+
+Describe board STATE only — no plans, recommendations, or what you should do.
+"""
+
+
+V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
+    [
+        (
+            "human",
+            """You are an AI agent playing Werewolf.
+Your role: {player_role}
+Current day: {current_day}, Round: {current_round}
+
+Surviving players: {surviving_players}
+
+Previous days summary:
+{day_summaries}
+
+Today's public discussion:
+{day_channel}
+
+Your private information (only what your role knows):
+Investigation results: {investigator_results}
+Wolf channel: {wolf_channel}
+Vigilante results: {vigilante_results}
+
+Your current strategy note:
+{previous_strategy}
+"""
+            + V6_SITUATION_SUMMARY_SUFFIX,
+        )
+    ]
+)

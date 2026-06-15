@@ -59,7 +59,7 @@ def enrich_payload_with_memory(
         enriched_payload["strategy_points"] = payload.get("strategy_points", [])
         return enriched_payload, _skipped_metadata(plan.store_dir, plan.skip_reason)
 
-    situations = _generate_situations_for_agent(payload)
+    situations = _generate_situations_for_agent(payload, action_phase)
     # Non-reranked cap = 5: the observations-only saturation point measured in
     # evidence/retrieval/capacity_limits (cap=7 regresses action quality below
     # cap=3). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
