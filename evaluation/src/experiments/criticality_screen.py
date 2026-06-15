@@ -38,16 +38,31 @@ from evaluation.src.data.local_cases import LocalCaseSource
 from evaluation.src.experiments.decision_replay import _replay_vote, load_game_index, mcnemar_p
 
 
-def load_v6_candidates(store_dir: Path) -> list[StoredObservation]:
-    """Load the v6 villager·day observations (both day phases — the v6 cell is unified day)."""
+def load_candidates_by_role(store_dir: Path, roles: frozenset[str]) -> dict[str, list[StoredObservation]]:
+    """Per-role v6 DAY candidate pools (both day phases — the v6 day cell is unified; night cells are
+    excluded since day-votes retrieve the day cell). Production retrieves from the decision's own role
+    namespace, so the screen pools per role too."""
     doc = json.loads((store_dir / "observations.json").read_text())
-    out: list[StoredObservation] = []
+    out: dict[str, list[StoredObservation]] = {r: [] for r in roles}
     for key, entries in doc.get("namespaces", {}).items():
-        if not key.startswith("observations/villager/"):
+        _, role, phase = key.split("/")
+        if role not in roles or phase == "night_action":
             continue
         for e in entries:
-            out.append(StoredObservation(**e["value"]))
+            out[role].append(StoredObservation(**e["value"]))
     return out
+
+
+class _RolePool:
+    """Embedded candidate pool for one role (vectors + criticality arrays + game ids)."""
+
+    def __init__(self, cands: list[StoredObservation], emb) -> None:
+        self.cands = cands
+        self.alive = np.array([c.players_alive if c.players_alive is not None else -99 for c in cands])
+        self.dist = np.array([c.distance_to_parity if c.distance_to_parity is not None else -99 for c in cands])
+        self.swing = np.array([1 if c.is_swing else 0 for c in cands])
+        self.game = np.array([c.game_id or "" for c in cands])
+        self.vecs = np.array(emb.embed_documents([c.situation for c in cands])) if cands else np.zeros((0, 1))
 
 
 def query_criticality(surviving_players: list[str], roles: dict[str, str]) -> tuple[int, int, bool]:
@@ -68,9 +83,9 @@ def _cosine_matrix(q: np.ndarray, M: np.ndarray) -> np.ndarray:
     return Mn @ qn
 
 
-def iter_villager_day_votes(batch_path: Path):
-    """Yield (case, game) for every villager day_vote decision in the batch (no requirement that the
-    frozen case carried retrieved memory — the screen retrieves fresh from v6)."""
+def iter_town_day_votes(batch_path: Path, roles: frozenset[str]):
+    """Yield (case, game) for every day_vote decision by one of `roles` in the batch (no requirement
+    that the frozen case carried retrieved memory — the screen retrieves fresh from v6)."""
     source = LocalCaseSource(batch_path)
     index = load_game_index(batch_path)
     for tid in source.trace_ids():
@@ -78,23 +93,24 @@ def iter_villager_day_votes(batch_path: Path):
         if not game:
             continue
         for case in source.eval_cases(tid):
-            if case.action_phase == "day_vote" and case.player_role == "villager" and case.situations:
+            if case.action_phase == "day_vote" and case.player_role in roles and case.situations:
                 yield case, game
 
 
 def select_spread(
     batch_path: Path,
     n: int,
+    roles: frozenset[str],
     held_out_only: bool = False,
     source_games: set[str] | None = None,
 ) -> list[tuple[Any, dict]]:
-    """Spread ~n villager day-votes across DAYS first (round-robin over day buckets), then across
-    games within a day. Day-balanced because the screen is stratified by day and late-game villager
-    votes are scarce (only 3 villagers, some killed by endgame) — a game-first round-robin would fill
-    n entirely with day-2 votes and leave the high-criticality stratum empty."""
+    """Spread ~n town day-votes across DAYS first (round-robin over day buckets), then across games
+    within a day. Day-balanced because the screen is stratified by day and late-game town votes are
+    scarce — a game-first round-robin would fill n entirely with day-2 votes and leave the
+    high-criticality stratum empty."""
     source_games = source_games or set()
     by_day: dict[int, list] = {}
-    for case, game in iter_villager_day_votes(batch_path):
+    for case, game in iter_town_day_votes(batch_path, roles):
         if held_out_only and str(game["game_id"]) in source_games:
             continue
         by_day.setdefault(case.day, []).append((case, game))
@@ -146,68 +162,71 @@ def run_screen(
     max_workers: int = 6,
     source_games: set[str] | None = None,
     held_out_only: bool = False,
+    roles: frozenset[str] = frozenset({"villager"}),
 ) -> dict[str, Any]:
     source_games = source_games or set()
-    cands = load_v6_candidates(store_dir)
-    cand_alive = np.array([c.players_alive if c.players_alive is not None else -99 for c in cands])
-    cand_dist = np.array([c.distance_to_parity if c.distance_to_parity is not None else -99 for c in cands])
-    cand_swing = np.array([1 if c.is_swing else 0 for c in cands])
-    cand_game = np.array([c.game_id or "" for c in cands])
-
     emb = create_embeddings()
-    cand_vecs = np.array(emb.embed_documents([c.situation for c in cands]))
+    pools = {r: _RolePool(c, emb) for r, c in load_candidates_by_role(store_dir, roles).items()}
 
-    cases = select_spread(batch_path, n, held_out_only=held_out_only, source_games=source_games)
+    cases = select_spread(
+        batch_path, n, roles, held_out_only=held_out_only, source_games=source_games
+    )
 
-    def one(case, game) -> dict[str, Any]:
-        roles = game["roles"]
+    def one(case, game) -> dict[str, Any] | None:
+        pool = pools.get(case.player_role)
+        if pool is None or not pool.cands:
+            return None  # role has no v6 day store
+        roles_map = game["roles"]
         allow = allow_abstain_for(case.day, game["day_resolutions"])
         q_alive, q_dist, q_swing = query_criticality(
-            case.private_context.surviving_players, roles
+            case.private_context.surviving_players, roles_map
         )
         query = " ".join(case.situations)
         qv = np.array(emb.embed_query(query))
-        cos = _cosine_matrix(qv, cand_vecs)
+        cos = _cosine_matrix(qv, pool.vecs)
         # Exclude memories mined from THIS decision's own game (a memory from game G knows G's
         # outcome — production never retrieves same-game memory; the screen must not either).
-        cos = np.where(cand_game == str(game["game_id"]), -1e9, cos)
+        cos = np.where(pool.game == str(game["game_id"]), -1e9, cos)
 
         flat_idx = list(np.argsort(-cos)[:top_k])
         cond = (
             cos
-            - lam * np.abs(cand_alive - q_alive)
-            - nu * np.abs(cand_dist - q_dist)
-            + mu * (cand_swing == (1 if q_swing else 0))
+            - lam * np.abs(pool.alive - q_alive)
+            - nu * np.abs(pool.dist - q_dist)
+            + mu * (pool.swing == (1 if q_swing else 0))
         )
         cond_idx = list(np.argsort(-cond)[:top_k])
 
         arms = {
             "off": [],
-            "flat": _retrieved(cands, flat_idx, query),
-            "cond": _retrieved(cands, cond_idx, query),
+            "flat": _retrieved(pool.cands, flat_idx, query),
+            "cond": _retrieved(pool.cands, cond_idx, query),
         }
         out = {
             "day": case.day,
+            "role": case.player_role,
             "q_alive": q_alive,
             "q_swing": q_swing,
             "held_out": str(game["game_id"]) not in source_games,
         }
         for arm, retrieved in arms.items():
             votee, _ = _replay_vote(case, retrieved, allow)
-            out[arm] = score_vote(votee, roles)
+            out[arm] = score_vote(votee, roles_map)
             out[f"{arm}_vote"] = votee
         out["same_regime_in_flat"] = sum(
-            1 for i in flat_idx if abs(int(cand_alive[i]) - q_alive) <= 1
+            1 for i in flat_idx if abs(int(pool.alive[i]) - q_alive) <= 1
         )
         out["same_regime_in_cond"] = sum(
-            1 for i in cond_idx if abs(int(cand_alive[i]) - q_alive) <= 1
+            1 for i in cond_idx if abs(int(pool.alive[i]) - q_alive) <= 1
         )
         return out
 
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+    rows = [r for r in rows if r is not None]
 
-    return _aggregate(rows, batch_path, store_dir, n, top_k, lam, mu, nu, len(cands))
+    n_cands = sum(len(p.cands) for p in pools.values())
+    return _aggregate(rows, batch_path, store_dir, n, top_k, lam, mu, nu, n_cands)
 
 
 def _netval(o: Any) -> int:
@@ -259,6 +278,11 @@ def _aggregate(rows, batch_path, store_dir, n, top_k, lam, mu, nu, n_cands) -> d
     for r in rows:
         by_day_rows.setdefault(r["day"], []).append(r)
     by_day = {str(d): summarize(by_day_rows[d]) for d in sorted(by_day_rows)}
+    # by-role (town faction): does the lever hold beyond villagers?
+    by_role_rows: dict[str, list] = {}
+    for r in rows:
+        by_role_rows.setdefault(r.get("role", "?"), []).append(r)
+    by_role = {role: summarize(by_role_rows[role]) for role in sorted(by_role_rows)}
     # held-out subset = decisions whose game never contributed to the store (independent confirmation).
     held = [r for r in rows if r.get("held_out")]
     insample = [r for r in rows if not r.get("held_out")]
@@ -275,6 +299,7 @@ def _aggregate(rows, batch_path, store_dir, n, top_k, lam, mu, nu, n_cands) -> d
         "params": {"top_k": top_k, "lambda_alive": lam, "mu_swing": mu, "nu_dist": nu},
         "by_stratum": by_stratum,
         "by_day": by_day,
+        "by_role": by_role,
         "by_holdout": by_holdout,
         "criticality_signature": sig,
     }
@@ -324,12 +349,18 @@ def main() -> int:
         action="store_true",
         help="restrict decisions to games NOT in --source-set (fully held-out; store never saw them)",
     )
+    ap.add_argument(
+        "--roles",
+        default="villager,healer,investigator,vigilante",
+        help="comma-separated town day-voters to screen (each retrieves from its OWN v6 day pool)",
+    )
     args = ap.parse_args()
+    roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
     report = run_screen(
         args.batch, args.store, n=args.n, top_k=args.top_k,
         lam=args.lambda_alive, mu=args.mu_swing, nu=args.nu_dist,
         source_games=load_source_games(args.source_set),
-        held_out_only=args.held_out_only,
+        held_out_only=args.held_out_only, roles=roles,
     )
     print(json.dumps(report, indent=2))
     return 0
