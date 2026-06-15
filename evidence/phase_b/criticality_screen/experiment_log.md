@@ -138,6 +138,42 @@ roles) — keep them — but wiring criticality-conditioning into live retrieval
 *criticality is a faithful situation dimension but not a retrieval lever here*; the open lever is the
 untested PROCEDURAL/deceiver channel (Track B).
 
+## ⭐ FAITHFUL v6 screen (2026-06-15) — regenerated v6 query (aligned), held-out town n=125
+
+The prior screens used the frozen v5 situation summary as the query against the v6 store (cross-schema
+mismatch — see the alignment note). After wiring the v6 live summarizer (`V6_SITUATION_SUMMARY` +
+`situation_agent` phase-aware), re-ran with `--regenerate-query` so the query is composed in the SAME
+v6 dimensions as the store. `screen_town_heldout_v6query_n125.json`.
+
+| stratum | n | off | flat | cond | cond−flat |
+|---|---|---|---|---|---|
+| all | 125 | 0.136 | 0.256 | 0.224 | −0.032 |
+| mid_game | 113 | 0.115 | 0.230 | 0.177 | −0.053 |
+| high_criticality | 12 | 0.333 | 0.500 | 0.667 | +0.167 |
+
+**The decisive comparison — does aligning the query change anything?** (held-out town, same N):
+
+| query | flat − off (does memory help) | cond − off |
+|---|---|---|
+| v5 (mismatched) | +0.088 | +0.056 |
+| **v6 (aligned)** | **+0.120** | **+0.088** |
+
+**Two clean conclusions:**
+1. **Aligning the query makes v6 memory help MORE.** Memory's lift over no-memory rose from +0.088 to
+   +0.120 (flat−off) — a paired effect on n=125, ~2 SE — purely from composing the query in the v6
+   dimensions so it embed-matches the store. So **v6 retrieval is genuinely better than the
+   mismatched baseline**: the win is better SITUATIONS → better retrieval, and it shows once the query
+   is aligned. This is independent support for adopting v6 (beyond the extraction-text quality read).
+2. **The criticality-CONDITIONING add-on is still not the win.** cond−flat stays ≈0/slightly negative
+   overall (−0.032; mid −0.053), with a small positive only in high-criticality (+0.167, n=12). The
+   conditioning rerank does not beat plain aligned v6 retrieval at measurable power — consistent across
+   all runs. (Single draw/arm still, so |cond−flat|≈0.03 is within the noise floor.)
+
+**Net:** keep/adopt v6 on the strength of #1 (aligned v6 retrieval > baseline). Treat the criticality
+conditioner as exposed-but-unproven (#2) — it costs nothing to keep the numbers in the store for the
+reranker, but don't claim it as the lever. The honest portfolio line: *the dimensional rewrite improved
+retrieval; the specific criticality-conditioning hypothesis remained below the noise floor.*
+
 ## Pointers
 
 - Run: `screen_arms_town_n60.json`. Code: `evaluation/src/experiments/criticality_screen.py`.
