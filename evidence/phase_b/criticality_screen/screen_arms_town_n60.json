@@ -1,0 +1,294 @@
+{
+  "batch": "ab_arms_town.jsonl",
+  "store": "memory_stores/v6_0",
+  "n_requested": 60,
+  "n_candidates": 119,
+  "params": {
+    "top_k": 5,
+    "lambda_alive": 0.02,
+    "mu_swing": 0.03,
+    "nu_dist": 0.01
+  },
+  "by_stratum": {
+    "all": {
+      "n": 60,
+      "off": {
+        "net_value": 0.367,
+        "accuracy": 0.617
+      },
+      "flat": {
+        "net_value": 0.3,
+        "accuracy": 0.55
+      },
+      "cond": {
+        "net_value": 0.417,
+        "accuracy": 0.617
+      },
+      "cond_minus_flat_netvalue": 0.117,
+      "flip": {
+        "n_valid": 60,
+        "flip_rate": 0.117,
+        "flips_toward_threat": 4,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 0.125
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.8,
+        "cond_avg": 4.88
+      }
+    },
+    "mid_game": {
+      "n": 44,
+      "off": {
+        "net_value": 0.591,
+        "accuracy": 0.705
+      },
+      "flat": {
+        "net_value": 0.5,
+        "accuracy": 0.614
+      },
+      "cond": {
+        "net_value": 0.568,
+        "accuracy": 0.659
+      },
+      "cond_minus_flat_netvalue": 0.068,
+      "flip": {
+        "n_valid": 44,
+        "flip_rate": 0.091,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 0.5
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.89,
+        "cond_avg": 4.95
+      }
+    },
+    "high_criticality": {
+      "n": 16,
+      "off": {
+        "net_value": -0.25,
+        "accuracy": 0.375
+      },
+      "flat": {
+        "net_value": -0.25,
+        "accuracy": 0.375
+      },
+      "cond": {
+        "net_value": 0.0,
+        "accuracy": 0.5
+      },
+      "cond_minus_flat_netvalue": 0.25,
+      "flip": {
+        "n_valid": 16,
+        "flip_rate": 0.188,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 0.5
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.56,
+        "cond_avg": 4.69
+      }
+    }
+  },
+  "by_day": {
+    "2": {
+      "n": 13,
+      "off": {
+        "net_value": 0.385,
+        "accuracy": 0.385
+      },
+      "flat": {
+        "net_value": 0.077,
+        "accuracy": 0.077
+      },
+      "cond": {
+        "net_value": 0.154,
+        "accuracy": 0.154
+      },
+      "cond_minus_flat_netvalue": 0.077,
+      "flip": {
+        "n_valid": 13,
+        "flip_rate": 0.077,
+        "flips_toward_threat": 1,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.46,
+        "cond_avg": 5.0
+      }
+    },
+    "3": {
+      "n": 12,
+      "off": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "flat": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 12,
+        "flip_rate": 0.083,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.08,
+        "cond_avg": 4.92
+      }
+    },
+    "4": {
+      "n": 12,
+      "off": {
+        "net_value": 0.833,
+        "accuracy": 0.917
+      },
+      "flat": {
+        "net_value": 0.5,
+        "accuracy": 0.75
+      },
+      "cond": {
+        "net_value": 0.667,
+        "accuracy": 0.833
+      },
+      "cond_minus_flat_netvalue": 0.167,
+      "flip": {
+        "n_valid": 12,
+        "flip_rate": 0.083,
+        "flips_toward_threat": 1,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.25,
+        "cond_avg": 5.0
+      }
+    },
+    "5": {
+      "n": 12,
+      "off": {
+        "net_value": -0.167,
+        "accuracy": 0.417
+      },
+      "flat": {
+        "net_value": 0.0,
+        "accuracy": 0.5
+      },
+      "cond": {
+        "net_value": 0.0,
+        "accuracy": 0.5
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 12,
+        "flip_rate": 0.167,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.5,
+        "cond_avg": 5.0
+      }
+    },
+    "6": {
+      "n": 6,
+      "off": {
+        "net_value": -0.333,
+        "accuracy": 0.333
+      },
+      "flat": {
+        "net_value": 0.333,
+        "accuracy": 0.667
+      },
+      "cond": {
+        "net_value": 0.333,
+        "accuracy": 0.667
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 6,
+        "flip_rate": 0.0,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 2.0,
+        "cond_avg": 4.33
+      }
+    },
+    "7": {
+      "n": 4,
+      "off": {
+        "net_value": -0.5,
+        "accuracy": 0.25
+      },
+      "flat": {
+        "net_value": -1.0,
+        "accuracy": 0.0
+      },
+      "cond": {
+        "net_value": 0.0,
+        "accuracy": 0.5
+      },
+      "cond_minus_flat_netvalue": 1.0,
+      "flip": {
+        "n_valid": 4,
+        "flip_rate": 0.5,
+        "flips_toward_threat": 2,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 0.5
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.5,
+        "cond_avg": 5.0
+      }
+    },
+    "8": {
+      "n": 1,
+      "off": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "flat": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond": {
+        "net_value": 1.0,
+        "accuracy": 1.0
+      },
+      "cond_minus_flat_netvalue": 0.0,
+      "flip": {
+        "n_valid": 1,
+        "flip_rate": 0.0,
+        "flips_toward_threat": 0,
+        "flips_away_from_threat": 0,
+        "mcnemar_p": 1.0
+      },
+      "same_regime_topk": {
+        "flat_avg": 3.0,
+        "cond_avg": 3.0
+      }
+    }
+  },
+  "criticality_signature": {
+    "high_criticality_cond_minus_flat": 0.25,
+    "mid_game_cond_minus_flat": 0.068,
+    "gain_concentrated_in_high_criticality": true,
+    "flip_rate_nontrivial": true,
+    "flips_net_toward_threat": true,
+    "VERDICT": "GO (lever shows -> roll full DAG)"
+  }
+}
