@@ -442,13 +442,195 @@ class VillagerDayExtraction(BaseModel):
     )
 
 
+# ── Full DAG mixins (step 4) ────────────────────────────────────────────────────────────────
+# Remaining dimension mixins + conditioners + the shared observation payload, so the 11 concrete
+# cells (spec §2 table) compose by multiple inheritance. Model-visible → Field(description=) only,
+# NO class docstrings. Numeric/enum fields carry NO _Embed marker (reranker-only).
+class WithForwardExposure(BaseModel):
+    forward_exposure: Annotated[str, _Embed("Forward exposure", 65)] = Field(
+        description=(
+            "The cost a contemplated visible move would carry going forward: what voting, "
+            "speaking, or acting this way would reveal about the agent or commit them to, and "
+            "how reversible it is once done. State the exposure, not a recommendation. 1 sentence."
+        )
+    )
+
+
+class WithPublicPrivate(BaseModel):
+    public_private_text: Annotated[str, _Embed("Public vs private", 80)] = Field(
+        description=(
+            "The gap between what the agent privately knows (their own role, investigation "
+            "findings, who they saved, a whiffed shot) and what is publicly established: where the "
+            "private knowledge diverges from, or confirms, the public read. 1-2 sentences."
+        )
+    )
+    divergence_sign: Literal["confirms", "contradicts", "no_divergence"] = Field(
+        description=(
+            "Whether the agent's private knowledge confirms or contradicts the public read, or "
+            "there is no divergence."
+        )
+    )
+
+
+class WithBulletsLeft(BaseModel):
+    bullets_left: int = Field(
+        description=(
+            "How many vigilante shots remain. 0 means no shots left and the vigilante plays as a "
+            "regular villager."
+        )
+    )
+
+
+class WithAllyRevealed(BaseModel):
+    ally_revealed: bool = Field(
+        description=(
+            "Whether the agent's wolf partner has been publicly revealed or eliminated, which "
+            "changes the vote calculus."
+        )
+    )
+
+
+class CellObservationMixin(BaseModel):
+    approach: str = Field(
+        description="What the agent did in that situation. May use actual roles. 1-2 sentences."
+    )
+    impact_on_final_game_outcome: str = Field(
+        description=(
+            "The NET effect of this approach on THIS role's win condition, judged from the END of "
+            "the game (you know the final result). A move that helped in the moment but contributed "
+            "to a later loss is a NET NEGATIVE — say so and name the causal chain. If genuinely "
+            "untraceable, write 'unclear' and why. 1-2 sentences."
+        )
+    )
+    immediate_response: str = Field(
+        description=(
+            "How others responded in the moment — the immediate, same- or next-turn effect, before "
+            "the longer-term consequence. 1 sentence."
+        )
+    )
+    net_verdict: Literal["positive", "negative", "mixed", "unclear"] = Field(
+        description=(
+            "This approach's net effect on the role's win condition in one word. Use 'unclear' "
+            "honestly when the game does not let you trace the consequence."
+        )
+    )
+
+    @computed_field
+    @property
+    def outcome(self) -> str:
+        """Stored outcome string, NET EFFECT FIRST then immediate response (see _compose_outcome)."""
+        return _compose_outcome(self.impact_on_final_game_outcome, self.immediate_response)
+
+    @property
+    def composed_situation(self) -> str:
+        return compose_situation_embed(self)
+
+
+# ── Concrete cells (spec §2: 11 cells; day = day_discussion+day_vote merged) ──────────────────
+# Day cells (all carry the villager·day spine: criticality + consensus + heat + target). Power/
+# deceiver day cells add forward_exposure (F) + public_private (G); wolf adds ally_revealed, vig
+# adds bullets_left. Night cells drop consensus/heat (day phenomena) -> criticality + target (+ F on
+# observable kills, + bullets_left for vigilante). VillagerDayObservation above is the villager·day cell.
+_DAY_PHASES = Literal["day_discussion", "day_vote"]
+
+
+class HealerDayObservation(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, CellObservationMixin,
+):
+    perspective: Literal["healer"] = Field(description="The role this observation is for — healer.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class InvestigatorDayObservation(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, CellObservationMixin,
+):
+    perspective: Literal["investigator"] = Field(description="The role this observation is for — investigator.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class VigilanteDayObservation(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithBulletsLeft, CellObservationMixin,
+):
+    perspective: Literal["vigilante"] = Field(description="The role this observation is for — vigilante.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class WolfDayObservation(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithAllyRevealed, CellObservationMixin,
+):
+    perspective: Literal["wolf"] = Field(description="The role this observation is for — wolf.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class SerialKillerDayObservation(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, CellObservationMixin,
+):
+    perspective: Literal["serial_killer"] = Field(description="The role this observation is for — serial_killer.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class HealerNightObservation(BaseSituation, WithTargetLandscape, CellObservationMixin):
+    perspective: Literal["healer"] = Field(description="The role this observation is for — healer.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class InvestigatorNightObservation(BaseSituation, WithTargetLandscape, CellObservationMixin):
+    perspective: Literal["investigator"] = Field(description="The role this observation is for — investigator.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class VigilanteNightObservation(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, WithBulletsLeft, CellObservationMixin
+):
+    perspective: Literal["vigilante"] = Field(description="The role this observation is for — vigilante.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class WolfNightObservation(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, CellObservationMixin
+):
+    perspective: Literal["wolf"] = Field(description="The role this observation is for — wolf.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class SerialKillerNightObservation(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, CellObservationMixin
+):
+    perspective: Literal["serial_killer"] = Field(description="The role this observation is for — serial_killer.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+# (role, action_phase) -> concrete cell schema. Day phases share a cell per role (the v6 merge).
+_CELL_REGISTRY: dict[tuple[str, str], type[BaseModel]] = {}
+for _r, _cls in (
+    ("villager", VillagerDayObservation),
+    ("healer", HealerDayObservation),
+    ("investigator", InvestigatorDayObservation),
+    ("vigilante", VigilanteDayObservation),
+    ("wolf", WolfDayObservation),
+    ("serial_killer", SerialKillerDayObservation),
+):
+    _CELL_REGISTRY[(_r, "day_discussion")] = _cls
+    _CELL_REGISTRY[(_r, "day_vote")] = _cls
+for _r, _cls in (
+    ("healer", HealerNightObservation),
+    ("investigator", InvestigatorNightObservation),
+    ("vigilante", VigilanteNightObservation),
+    ("wolf", WolfNightObservation),
+    ("serial_killer", SerialKillerNightObservation),
+):
+    _CELL_REGISTRY[(_r, "night_action")] = _cls
+
+
 def cell_observation_schema_for(role: str, action_phase: str) -> type[BaseModel] | None:
-    """The per-cell extraction schema for a (role, action_phase), or None if that cell has not
-    been migrated to the v6 dimension schema yet (other roles still use the legacy Observation
-    until the post-screen full-DAG roll)."""
-    if role == "villager" and action_phase in ("day_discussion", "day_vote"):
-        return VillagerDayObservation
-    return None
+    """The per-cell v6 extraction schema for a (role, action_phase), or None for combinations the
+    game has no decision at (e.g. villager night)."""
+    return _CELL_REGISTRY.get((role, action_phase))
 
 
 class GameStrategyOutput(BaseModel):
