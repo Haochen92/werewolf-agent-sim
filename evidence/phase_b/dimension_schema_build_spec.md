@@ -143,6 +143,17 @@ This is the uniform pattern across every pulled-out dimension:
 **The real work is the extraction/situation prompt phrasing criticality as the implication** (embeds)
 while emitting the exact numbers (reranker).
 
+**Derivation — single-source, but LLM-generated (NOT game-state-deterministic).** Earlier draft said
+"compute the numbers from game state" — REVERSED 2026-06-15: (a) a reasoning extractor handles
+numbers/negation reliably (no need to avoid letting it), and (b) post-game extraction **can't pin an
+extracted insight to a specific board-state/phase** — the extractor synthesizes across moments, so
+there is no deterministic moment to stamp `players_alive` from. So the LLM emits the numbers. Keep the
+two representations consistent by deriving the **prose FROM the numbers within the same LLM output**
+(state the numbers, then the implication that follows) — never generate the two independently, or they
+drift ("tense endgame" prose vs `players_alive=7`). The clean **pure-numeric + extracted-negation**
+discipline matters **ONLY for the FT cross-encoder fusion path (fork-#3)** — the default reasoning-judge
+reranker reads the prose+numbers holistically and needs no separate clean extraction.
+
 ---
 
 ## 4. Composable per-cell schema — single source of truth
@@ -224,10 +235,20 @@ fresh re-extraction → new `v5_x`. (5) Leak checks on new G/forward_exposure fi
 Interview frame = the ladder + method (paired/stratified/drift-immune/judge-free; triage not verdict),
 not a big N quoted as proof.
 
-## 10. Open items
-1. **"mixed" outcome order** — DISSOLVED (horizon now resolves per cell, no third bucket).
-2. **Fork-#3 (FT-CE-fusion USP)** — go/no-go DEFERRED to after the screen; build only exposes the fields.
-3. **healer·day G** — keep light (save-knowledge as a late-game reveal asset) vs prune. Lean: keep light.
+## 10. Open items (all resolved 2026-06-15)
+1. **"mixed" outcome order** — DISSOLVED (horizon resolves per cell, no third bucket).
+2. **Fork-#3 (FT-CE-fusion USP)** — **LOCKED: go/no-go decided only AFTER the screen.** Build exposes
+   the fields; the pure-numeric/clean-negation extraction (§3) is needed only if fork-#3 goes.
+3. **healer·day G** — **LOCKED: keep light** (save-knowledge as a late-game reveal asset).
+
+## 10a. Cross-link — the situation schema is also the PROCEDURAL-memory reward signal
+The valenced subset of these dimensions (heat, forward_exposure, standing, parity-progress,
+target-removed — the ones with a good/bad direction; the descriptive dims are context, no valence) is
+the **local reward** for evaluating/weighting `strategy_points` (procedural memory): reward(rule P) =
+**role-signed difference-in-deltas** on the valenced subset between adopters and non-adopters of P in
+matched situations (quasi-causal, no game-outcome attribution). So one schema does triple duty:
+retrieval key + embedding match + reward. Full design + the deceiver-first experiment that gates it →
+`evidence/phase_b/procedural_memory_experiment.md`.
 
 ## 11. Pointers
 - Narrative + walkthrough: `evidence/memory_system/effectiveness/decision_replay/experiment_log.md`.

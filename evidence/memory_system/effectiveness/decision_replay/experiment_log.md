@@ -500,3 +500,33 @@ Spec rewritten to v2 (`evidence/phase_b/dimension_schema_build_spec.md`). Outcom
 - **Live-path scope flagged:** the situation summarizer is role-keyed today → per-cell makes it
   phase-aware (a live-runtime change, not extraction-only). Build order unchanged: villager·day first →
   re-extract that cell → screen → roll the full DAG only if the lever shows.
+
+## 2026-06-15 (s3) — open items locked, criticality-derivation reversed, PROCEDURAL channel found
+
+- **Locks:** fork-#3 (FT-CE-fusion USP) go/no-go decided ONLY after the screen; healer·day G stays
+  light. "mixed" horizon already dissolved.
+- **Criticality derivation REVERSED:** earlier "compute numbers from game-state deterministically" is
+  WRONG — post-game extraction can't pin an insight to a specific board-state/phase, and a reasoning
+  extractor handles numbers/negation fine. So the LLM emits the numbers; derive the prose FROM the
+  numbers within the SAME output (single-source, no drift). Pure-numeric + clean-negation extraction
+  matters ONLY for the FT cross-encoder (fork-#3); the default reasoning-judge reranker reads
+  prose+numbers holistically. (Logged in dimension spec §3.)
+- **⭐⭐PROCEDURAL MEMORY = the untested deceiver channel (new doc `evidence/phase_b/`
+  `procedural_memory_experiment.md`).** The system is TWO-TIER: episodic (`observations`: events+outcomes
+  → inference → villager) + procedural (`strategy_points`: weighted situation→action rules → execution →
+  deceiver). EVERY effectiveness measurement to date (paired A/B, decision-replay screen, wolf/SK
+  diagnosis) used `observations` ONLY → the wolf/SK null is plausibly a CHANNEL MISMATCH, not a ceiling.
+  Verified the procedural channel is fully WIRED but not firing (`retrieve_strategy_points_for_agent`,
+  namespace `("strategy_points",role,phase)`, config-gated default-True, adoption-tracked; SK rules show
+  retrieved/used=0). STEP 1 = confirm the A/B config flag. Cheap deciding experiment = decision-replay on
+  wolf×day_vote, arms {off · obs-only · strategy_points-only · both}, village fixed, per-decision proxies
+  (NOT win-rate), measuring retrieval→adoption→effect. Deceiver-FIRST (cleaner immediate proxies), not
+  -only.
+- **⭐The situation schema does TRIPLE duty:** retrieval key + embedding match + **procedural-memory
+  reward**. reward(rule P) = role-signed difference-in-deltas on the VALENCED dims (heat/forward_exposure/
+  standing/parity-progress/target-removed — descriptive dims have no valence) between adopters and
+  non-adopters of P in matched situations (quasi-causal, no outcome attribution). Makes strategy_points
+  self-weighting → "plays better with time" literal. Tiers: CHEAP=the matched eval (=the deceiver
+  experiment, reuses logged `adopted_strategy_keys`+count fields); MEDIUM=feed utilities into ranking;
+  PARK=exploration/online convergence.
+- Dimension build (villager·day) proceeds in PARALLEL — untouched by the procedural workstream.
