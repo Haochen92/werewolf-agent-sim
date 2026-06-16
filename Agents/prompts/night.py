@@ -69,7 +69,7 @@ You cannot protect yourself.
 Choose wisely based on who you think the wolves or the serial killer might target.
 
 You must respond with a valid JSON:
-{{"memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "Surviving players you can protect: {surviving_players}\n",
     "Choose a player to protect tonight.",
@@ -85,7 +85,7 @@ Use your past results and day discussions to choose your target wisely.
 The result will be revealed to you at the start of the next day.
 
 You must respond with a valid JSON:
-{{"memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "investigator_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"investigator_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "Surviving players: {surviving_players}\nYour past investigation results: {investigator_results}\n",
     "Choose a player to investigate tonight.",
@@ -101,7 +101,7 @@ You are immune to being killed at night, but you can still be voted out during t
 Choose your target based on who most threatens your survival or your path to being the last one standing.
 
 You must respond with a valid JSON:
-{{"memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "Surviving players you can target: {surviving_players}\n",
     "Choose a player to eliminate tonight.",
@@ -125,7 +125,7 @@ What you have learned from your past shots:
 {vigilante_results}
 
 You must respond with a valid JSON:
-{{"memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "You have {vigilante_bullets} bullet(s) remaining.\nSurviving players you could shoot: {surviving_players}\n",
     "Decide whether to take a shot tonight, and at whom.",
@@ -150,6 +150,7 @@ You may only vote for surviving villagers, not yourself or your allies.
 
 You must respond with a valid JSON:
 {{
+    "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
     "message": "your discussion message",
     "vote_target": "exact player_id from the surviving villagers list",

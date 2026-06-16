@@ -16,7 +16,7 @@ from Agents.prompts.prompt_formatters import (
 # Source from the concrete submodules, not the Agents.prompts package __init__:
 # this module now lives *inside* that package, so importing from its __init__
 # would be a back-edge (cycle risk during package init).
-from Agents.prompts.memory import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS
+from Agents.prompts.memory import STRATEGY_VERDICT_INSTRUCTION, SITUATION_ROLE_LENS
 from Agents.prompts.standards import (
     EPISTEMIC_STATUS_RULE,
     SITUATION_QUALITY_STANDARDS,
@@ -116,5 +116,5 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "situation_standards": SITUATION_STANDARDS,
         "epistemic_status_rule": EPISTEMIC_STATUS_RULE,
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
-        "adoption_instruction": ADOPTION_INSTRUCTION,
+        "adoption_instruction": STRATEGY_VERDICT_INSTRUCTION,
     }

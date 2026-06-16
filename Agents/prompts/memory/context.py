@@ -3,10 +3,15 @@ spliced into each day/night prompt, the strategy-adoption instruction, and the p
 applicability instruction (prompt-body delivery that drives full per-memory coverage)."""
 
 
-ADOPTION_INSTRUCTION = """\
-In adopted_strategy_keys, list only strategy points whose advice your action \
-follows (e.g. [1, 3]). Do not list points you read but acted against. An \
-empty list is fine if none of the points match your action."""
+# Prompt-body delivery of the per-strategy-point verdict (the field description stays terse). Like the
+# observation instruction, stating it in the body — not just the schema field — drives the model to
+# cover every numbered strategy point. Brace-free: safe to .format(). Replaces the old binary
+# adopted_strategy_keys instruction with the {follow / override / not_relevant} per-point verdict.
+STRATEGY_VERDICT_INSTRUCTION = """\
+For the numbered strategy points above, output exactly one verdict for EACH in strategy_verdicts, in \
+order — follow (act on its advice), override (its situation holds but you have a better move), or \
+not_relevant (its situation does not hold for your current board) — each with a one-line why. Only \
+'follow' commits you to the advice; an empty list is fine if no strategy points are shown."""
 
 
 # Prompt-body delivery of the per-memory reasoning (the field description stays terse). Stating it in
