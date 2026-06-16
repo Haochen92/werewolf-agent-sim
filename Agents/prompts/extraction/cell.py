@@ -98,16 +98,30 @@ Fields to fill (your output schema requests exactly these — descriptions are a
 """
 
 
-# STUB — strategy-points tail, appended AFTER the observation tail for the dual-extraction path.
-# Not finalized: the SP fields + output schema land with the strategy-points work; this placeholder
-# fixes the shape (prefix + obs tail + sp tail) so the prefix never has to be re-cut later.
+# Strategy-points tail — appended AFTER the observation tail for the dual obs+sp extraction path.
+# An SP is a recurring tactical RULE distilled from the observations above: same situation dims (the
+# rule's IF), a single prescriptive `action` (the THEN), and two coarse classes of that action
+# (direction/honesty) that keep rival moves distinct. {strategy_menu} = the prescriptive fields only
+# (the situation dims are reused identically from the observation tail above).
 CELL_STRATEGY_TAIL = """
 ---
 
-STRATEGY POINTS — derive for: role = {role}, phase = {phase}.   [STUB — not finalized]
+STRATEGY POINTS — derive for: role = {role}, phase = {phase}.
 
-From the {role} observations above, derive prescriptive strategy points for the {phase} phase: reusable
-IF-situation -> THEN-action rules, each anchored to the SAME dimensional situation as the observations
-so it retrieves the same way. (Strategy-point fields/schema are defined with the strategy-points work;
-this tail is a placeholder so the dual-extraction shape is visible.)
+From the {role} observations above, derive 3-8 reusable PRESCRIPTIVE strategy points for the {phase}
+phase — generalized IF-situation -> THEN-action rules. The right grain is a RECURRING TACTICAL PATTERN:
+- NOT a single-game retelling (that is an observation),
+- NOT an overall game/day stance (that is base strategy the agent already has).
+
+Each strategy point reuses the SAME situation dimensions as the observations above — fill them
+IDENTICALLY in kind, so the rule retrieves alongside the observations it generalizes — PLUS these
+prescriptive fields:
+{strategy_menu}
+
+RULES:
+- A strategy point is ALWAYS a positive prescription (something to DO). If the only lesson is "X
+  backfires", that is a negative observation — keep it OUT of the strategy points.
+- Cover DISTINCT moves: points that differ in direction (offensive/defensive/positional) or honesty
+  (honest/deceptive) are different rules, not variations of one. Do not pad with near-restatements.
+- Ground each rule in what actually recurred across the {role} observations, not generic advice.
 """

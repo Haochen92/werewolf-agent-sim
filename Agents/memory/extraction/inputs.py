@@ -29,11 +29,17 @@ from Agents.prompts.extraction.cell import (
     CELL_OBSERVATION_TAIL,
     CELL_STRATEGY_TAIL,
 )
+from Agents.prompts.cell_prompt import dimension_menu
 from Agents.prompts.prompt_inputs import compose_cell_guidance
 from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
+from Agents.schemas.memory import CellStrategyMixin
 from Agents.state import OrchestratorGraph
 
 logger = getLogger(__name__)
+
+# The SP prescriptive payload (direction/honesty/action) is universal — same menu for every cell;
+# the situation dims are reused from the observation tail, so they are NOT re-listed here.
+_STRATEGY_MENU = dimension_menu(CellStrategyMixin)
 
 # One-line meaning of each action phase, injected into the namespace-augment tail
 # so the focused pass anchors on the assigned phase without re-deriving it.
@@ -180,8 +186,9 @@ def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema
 
 
 def build_cell_strategy_tail(role: str, phase: str) -> str:
-    """STUB strategy-points tail for the dual-extraction path (SP fields/schema land with the SP work)."""
-    return CELL_STRATEGY_TAIL.format(role=role, phase=phase)
+    """Strategy-points tail for the dual obs+sp extraction path. Injects the universal SP prescriptive
+    menu (direction/honesty/action); the situation dims are reused from the observation tail above."""
+    return CELL_STRATEGY_TAIL.format(role=role, phase=phase, strategy_menu=_STRATEGY_MENU)
 
 
 def build_cell_extraction_prompt(

@@ -14,7 +14,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any, Literal, Optional
 
-from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
+from pydantic import BaseModel, Field, computed_field, create_model, field_validator, model_validator
 
 from Agents.schemas.roles import ActionPhase, VALID_ACTION_PHASES_BY_ROLE, roles
 
@@ -768,9 +768,25 @@ for _r, _cls in (
 
 def cell_strategy_schema_for(role: str, action_phase: str) -> type[BaseModel] | None:
     """The per-cell v6 strategy-point schema for a (role, action_phase): the cell's situation dims +
-    the universal prescriptive payload (direction/honesty/valence/trigger/action). None where the game
-    has no decision (e.g. villager night)."""
+    the universal prescriptive payload (direction/honesty/action). None where the game has no decision
+    (e.g. villager night)."""
     return _STRATEGY_CELL_REGISTRY.get((role, action_phase))
+
+
+def cell_dual_extraction_schema(role: str, action_phase: str) -> type[BaseModel] | None:
+    """The combined {observations, strategy_points} output schema for the per_run dual-extraction path:
+    the cell's observation list AND its strategy-point list in one structured output. None if either
+    half is missing for the (role, action_phase)."""
+    obs = cell_observation_schema_for(role, action_phase)
+    sp = cell_strategy_schema_for(role, action_phase)
+    if obs is None or sp is None:
+        return None
+    return create_model(
+        f"{obs.__name__}DualExtraction",
+        __base__=BaseModel,
+        observations=(list[obs], Field(description=f"{role} {action_phase} observations (facts about what happened).")),
+        strategy_points=(list[sp], Field(description=f"{role} {action_phase} strategy points (prescriptive rules derived from the observations).")),
+    )
 
 
 class GameStrategyOutput(BaseModel):
@@ -844,6 +860,15 @@ class StoredStrategyPoint(BaseModel):
     game_id: Optional[str] = ""
     situation: str
     action: str
+    direction: Optional[str] = None
+    """v6 SP dedup signature — offensive / defensive / positional (a coarse class of the action). With
+    honesty, partitions the SP store so rival moves in the same situation never merge. None on legacy."""
+    honesty: Optional[str] = None
+    """v6 SP dedup signature — honest / deceptive (a coarse class of the action). None on legacy v5 SPs."""
+    dimensions: dict[str, Any] = Field(default_factory=dict)
+    """v6 full structured record — every field of the source SP cell (situation dims + direction/honesty
+    + action), persisted so dedup can show the structured residual and the reranker can use features.
+    Empty {} on legacy / v5 entries."""
     retrieved_count: int = 0
     """Times this point was returned by retrieval (denominator for impact)."""
     used_count: int = 0

@@ -45,12 +45,30 @@ def test_tail_carries_the_per_cell_variation():
     assert "\n- " in tail            # the dimension menu (bulleted fields)
 
 
-def test_with_sp_appends_the_stub():
+def test_with_sp_appends_strategy_tail():
     schema = cell_observation_schema_for("villager", "day_vote")
     base = build_cell_extraction_prompt(_INPUTS, "villager", "day", "day_vote", schema)
     with_sp = build_cell_extraction_prompt(_INPUTS, "villager", "day", "day_vote", schema, with_sp=True)
     assert len(with_sp) > len(base)
-    assert "STRATEGY POINTS" in with_sp and "STUB" in with_sp
+    assert "STRATEGY POINTS" in with_sp
+    # the SP prescriptive menu (the situation dims are reused from the obs tail, not re-listed)
+    for field in ("- direction:", "- honesty:", "- action:"):
+        assert field in with_sp
+    assert "STUB" not in with_sp
+
+
+def test_dual_extraction_schema_has_both_lists():
+    from Agents.schemas.memory import (
+        cell_dual_extraction_schema,
+        cell_observation_schema_for as obs_for,
+        cell_strategy_schema_for,
+    )
+    dual = cell_dual_extraction_schema("villager", "day_vote")
+    assert set(dual.model_fields) == {"observations", "strategy_points"}
+    # the lists carry the matching cell schemas
+    assert dual.model_fields["observations"].annotation == list[obs_for("villager", "day_vote")]
+    assert dual.model_fields["strategy_points"].annotation == list[cell_strategy_schema_for("villager", "day_vote")]
+    assert cell_dual_extraction_schema("villager", "night_action") is None  # no villager night cell
 
 
 def test_transcript_braces_survive_format():
