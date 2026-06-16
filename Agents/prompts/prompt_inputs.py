@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import BaseModel
+
+from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
 from Agents.prompts.prompt_formatters import (
     format_day_channel_for_day,
     format_day_summaries,
@@ -14,7 +17,24 @@ from Agents.prompts.prompt_formatters import (
 # this module now lives *inside* that package, so importing from its __init__
 # would be a back-edge (cycle risk during package init).
 from Agents.prompts.memory import ADOPTION_INSTRUCTION, SITUATION_ROLE_LENS
-from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
+from Agents.prompts.standards import (
+    EPISTEMIC_STATUS_RULE,
+    SITUATION_QUALITY_STANDARDS,
+    SITUATION_STANDARDS,
+)
+
+
+def compose_cell_guidance(role: str, action_phase: str, schema: type[BaseModel]) -> dict[str, str]:
+    """The aligned v6 per-cell guidance shared by the live query (situation_agent) AND the post-game
+    extraction (reextract_cells): WHICH dims (menu, from the schema) + lead-with/horizon (driver) +
+    the cross-cutting quality bar + the epistemic rule. Both sides compose from THIS one function, so
+    the live query embed-matches the store — the alignment can't silently drift."""
+    return {
+        "dimension_menu": dimension_menu(schema),
+        "driver_horizon": cell_driver_horizon(role, action_phase),
+        "situation_quality": SITUATION_QUALITY_STANDARDS,
+        "epistemic_status_rule": EPISTEMIC_STATUS_RULE,
+    }
 
 
 def _firing_brief(firing_reason: Any) -> str:

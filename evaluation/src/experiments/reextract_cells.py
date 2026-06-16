@@ -28,13 +28,9 @@ from pydantic import BaseModel, Field, create_model
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
 from Agents.memory.persistence import memory_store_paths
-from Agents.prompts import EPISTEMIC_STATUS_RULE, GAME_RULES
-from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
-from Agents.prompts.dimension_guidance import (
-    cell_driver_horizon,
-    coerce_consensus_direction,
-    dimension_menu,
-)
+from Agents.memory.validators import coerce_consensus_direction
+from Agents.prompts import GAME_RULES
+from Agents.prompts.prompt_inputs import compose_cell_guidance
 from Agents.prompts.extraction import V6_CELL_EXTRACTION_PROMPT
 from Agents.schemas.memory import StoredObservation, cell_observation_schema_for
 from evaluation.src.core.manifest import build_manifest
@@ -68,14 +64,15 @@ def _build_prompt(inputs: dict[str, str], role: str, phase_wording: str, rep_pha
     """Brace-safe placeholder substitution (transcripts can contain literal braces). The dimension
     menu is GENERATED from the cell schema (single source) and the driver/horizon from the registry."""
     prompt = V6_CELL_EXTRACTION_PROMPT
+    guidance = compose_cell_guidance(role, rep_phase, cell_schema)
     for token, value in {
         "{role}": role,
         "{phase}": phase_wording,
-        "{driver_horizon}": cell_driver_horizon(role, rep_phase),
-        "{situation_quality}": SITUATION_QUALITY_STANDARDS,
-        "{dimension_menu}": dimension_menu(cell_schema),
+        "{driver_horizon}": guidance["driver_horizon"],
+        "{situation_quality}": guidance["situation_quality"],
+        "{dimension_menu}": guidance["dimension_menu"],
         "{game_rules}": GAME_RULES,
-        "{epistemic_status_rule}": EPISTEMIC_STATUS_RULE,
+        "{epistemic_status_rule}": guidance["epistemic_status_rule"],
         "{formatted_roles}": inputs["formatted_roles"],
         "{formatted_discussions}": inputs["formatted_discussions"],
         "{formatted_strategy_notes}": inputs["formatted_strategy_notes"],

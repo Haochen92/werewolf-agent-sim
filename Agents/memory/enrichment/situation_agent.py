@@ -14,7 +14,10 @@ from logging import getLogger
 from pydantic import BaseModel, Field, create_model
 
 from Agents.llm_factory import get_llm
-from Agents.prompts.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
+from Agents.prompts.prompt_inputs import (
+    build_agent_prompt_input as _build_agent_prompt_input,
+    compose_cell_guidance,
+)
 from Agents.prompts import (
     HEALER_SITUATION_SUMMARY,
     INVESTIGATOR_SITUATION_SUMMARY,
@@ -23,9 +26,7 @@ from Agents.prompts import (
     VILLAGER_SITUATION_SUMMARY,
     WOLF_SITUATION_SUMMARY,
 )
-from Agents.prompts.dimension_guidance import cell_driver_horizon, dimension_menu
 from Agents.prompts.memory import V6_SITUATION_SUMMARY
-from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
 from Agents.schemas import SituationSummary
 from Agents.schemas.memory import cell_situation_schema_for
 from Agents.state import (
@@ -85,11 +86,7 @@ def _generate_situations_for_agent(
             _summary_container(cell_schema)
         )
         compose = lambda r: [s.composed_situation for s in r.situations]  # noqa: E731
-        extra = {
-            "dimension_menu": dimension_menu(cell_schema),
-            "driver_horizon": cell_driver_horizon(role, action_phase),
-            "situation_quality": SITUATION_QUALITY_STANDARDS,
-        }
+        extra = compose_cell_guidance(role, action_phase, cell_schema)
     else:
         prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
         chain = prompt_template | get_llm().with_structured_output(SituationSummary)

@@ -1,13 +1,10 @@
-"""v6 per-cell prompt composition — the single place that turns a cell schema into prompt text.
-
-The alignment rule (spec §4/§5): every surface derives from two sources of truth —
-  1. per-dimension guidance = the `Field(description=)` on each mixin (written once), and
-  2. which dims a cell has = the mixin DAG (`cell_*_schema_for`).
-`dimension_menu` GENERATES the prompt's field list from the cell schema's `Field(description=)`, so the
-extraction prompt, the live-query prompt, the embedding (`compose_situation_embed`), the model schema
-(`with_structured_output`), and the dedup fragments all move together — no hand-maintained dim list can
-drift. The only genuinely per-cell prose is the driver + horizon (spec §2/§6), held in a registry here.
-"""
+"""v6 per-cell PROMPT composition: turn a cell schema into prompt text. Two pieces only —
+the generated dimension menu (WHICH dims, from each mixin Field(description)) and the per-cell
+driver/horizon registry (what to LEAD WITH + outcome ordering). The alignment rule (spec
+sections 4/5): every surface derives from (1) the per-dimension Field(description) and (2) the
+mixin DAG (cell_*_schema_for), so extraction prompt, live-query prompt, embedding, model schema,
+and dedup fragments move together. Data validators (e.g. consensus coercion) live in
+Agents/memory/validators.py, not here."""
 
 from __future__ import annotations
 
@@ -69,26 +66,6 @@ _HORIZON_TEXT = {
         "the immediate effect."
     ),
 }
-
-
-# Prose markers of an unformed consensus — used to validate consensus_direction against the prose
-# (the user's "validate them against each other"): if the room has no consensus, a directional enum is
-# a contradiction (often a hindsight leak), so coerce it to no_clear_direction. Catches the clear
-# cases the prompt rule still misses (~7% residual); subtler hindsight cases need an LLM relabel.
-_NO_CONSENSUS_MARKERS = (
-    "fractured", "no clear consensus", "no consensus", "no real consensus",
-    "deadlock", "splintered", "no consensus has formed",
-)
-
-
-def coerce_consensus_direction(situation_text: str, consensus_direction: str | None) -> str | None:
-    """If the situation prose says there is no consensus but the enum is directional, return
-    no_clear_direction; otherwise return the enum unchanged."""
-    if consensus_direction in ("aligns_with_my_read", "opposes_my_read"):
-        low = (situation_text or "").lower()
-        if any(m in low for m in _NO_CONSENSUS_MARKERS):
-            return "no_clear_direction"
-    return consensus_direction
 
 
 def _phase_group(action_phase: str) -> str:

@@ -112,13 +112,13 @@ def test_situation_embed_matches_observation_embed(role, phase):
 def test_prompt_menu_matches_schema_no_drift(cell):
     """The generated dimension menu must cover EXACTLY the cell's dimension fields (everything except
     perspective/action_phase) — the guard that prompt, schema, and embedding can't desync."""
-    from Agents.prompts.dimension_guidance import menu_field_names
+    from Agents.prompts.cell_prompt import menu_field_names
     schema_dims = {n for n in cell.model_fields if n not in ("perspective", "action_phase")}
     assert menu_field_names(cell) == schema_dims
 
 
 def test_every_day_night_cell_has_a_driver_horizon():
-    from Agents.prompts.dimension_guidance import cell_driver_horizon
+    from Agents.prompts.cell_prompt import cell_driver_horizon
     for r in roles:
         for ph in VALID_ACTION_PHASES_BY_ROLE[r]:
             dh = cell_driver_horizon(r, ph)
@@ -126,7 +126,7 @@ def test_every_day_night_cell_has_a_driver_horizon():
 
 
 def test_consensus_direction_coercion_against_prose():
-    from Agents.prompts.dimension_guidance import coerce_consensus_direction
+    from Agents.memory.validators import coerce_consensus_direction
     # fractured prose + directional enum -> coerced to no_clear_direction
     frac = "The village is fractured with no clear consensus. My position: holding out."
     assert coerce_consensus_direction(frac, "opposes_my_read") == "no_clear_direction"
