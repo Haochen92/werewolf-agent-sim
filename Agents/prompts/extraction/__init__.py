@@ -11,6 +11,7 @@ from Agents.prompts.extraction.archive import (
 from Agents.prompts.extraction.cell import (
     CELL_EXTRACTION_PREFIX,
     CELL_OBSERVATION_TAIL,
+    CELL_SP_SYNTHESIS_PROMPT,
     CELL_STRATEGY_TAIL,
 )
 from Agents.prompts.extraction.day_summary import DAY_SUMMARY_PROMPT
@@ -25,6 +26,7 @@ __all__ = [
     "ARCHIVED_POSTGAME_EXTRACTION_PROMPT",
     "CELL_EXTRACTION_PREFIX",
     "CELL_OBSERVATION_TAIL",
+    "CELL_SP_SYNTHESIS_PROMPT",
     "CELL_STRATEGY_TAIL",
     "DAY_SUMMARY_PROMPT",
     "POSTGAME_EXTRACTION_PROMPT",

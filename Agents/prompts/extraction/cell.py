@@ -125,3 +125,35 @@ RULES:
   (honest/deceptive) are different rules, not variations of one. Do not pad with near-restatements.
 - Ground each rule in what actually recurred across the {role} observations, not generic advice.
 """
+
+
+# Cluster-synthesis prompt (the cluster_synth sp_source). Given ONE cluster of same-situation-regime
+# observations (MIXED outcomes — the gate_key partition drops net_verdict on purpose), synthesize the
+# generalized rule(s) the cluster teaches. Standalone (the cluster IS the input — no game transcript).
+# The outcome SPREAD across the cluster is the weighting: a move that succeeded across many instances is
+# a strong rule; one mostly contradicted becomes the corrective. {dimension_menu} is the FULL SP cell
+# menu (situation dims + direction/honesty/action) — synthesis builds a fresh generalized situation.
+CELL_SP_SYNTHESIS_PROMPT = """
+You are distilling reusable strategy from a completed-game memory store for a Werewolf agent.
+
+Below is a CLUSTER of observations that all share the same situation regime for role = {role},
+phase = {phase}. They are post-game facts (omniscient) with varied outcomes — some moves helped, some
+hurt. Your job: synthesize the GENERALIZED prescriptive rule(s) this cluster teaches.
+
+OBSERVATIONS IN THIS CLUSTER:
+{observations}
+
+TASK: Emit 1-3 strategy points — generalized IF-situation -> THEN-action rules a {role} could apply
+when this regime recurs.
+- Use the outcome SPREAD as weighting: a move that succeeded across many observations is a strong rule;
+  if the cluster mostly shows a move BACKFIRING, the rule is the corrective/opposite (still a positive
+  "do"), not a restatement of the failure.
+- A strategy point is ALWAYS a positive prescription (something to DO). Never emit "don't do X".
+- Emit MORE than one only when the cluster genuinely teaches distinct moves (differing in direction or
+  honesty); a tight single-lesson cluster yields exactly one. Do not pad.
+- Fill the situation dimensions as a GENERALIZED situation representative of the whole cluster (not a
+  copy of one observation), so the rule retrieves for the regime.
+
+Fields to fill (descriptions authoritative):
+{dimension_menu}
+"""
