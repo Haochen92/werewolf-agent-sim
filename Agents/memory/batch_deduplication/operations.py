@@ -24,6 +24,7 @@ def _apply_strategy_operation(
     cluster_key_set: set[str],
     items_by_key: dict[str, Any],
     apply: bool,
+    new_keys: set[str] | None = None,
 ) -> tuple[str, int]:
     source_keys = _validate_source_keys(
         operation.source_keys,
@@ -36,8 +37,10 @@ def _apply_strategy_operation(
         return "kept", 0
     if operation.action != "DISCARD":
         return "failed", 0
+    if _frozen_old_conflict(source_keys, new_keys):
+        return "frozen", 0
 
-    survivor_key = _resolve_survivor(operation, source_keys, items_by_key)
+    survivor_key = _resolve_survivor(operation, source_keys, items_by_key, new_keys)
     if survivor_key is None:
         return "failed", 0
     survivor_value = items_by_key[survivor_key].value
@@ -59,6 +62,7 @@ def _apply_observation_operation(
     cluster_key_set: set[str],
     items_by_key: dict[str, Any],
     apply: bool,
+    new_keys: set[str] | None = None,
 ) -> tuple[str, int]:
     source_keys = _validate_source_keys(
         operation.source_keys,
@@ -71,8 +75,10 @@ def _apply_observation_operation(
         return "kept", 0
     if operation.action not in {"DISCARD", "MERGE"}:
         return "failed", 0
+    if _frozen_old_conflict(source_keys, new_keys):
+        return "frozen", 0
 
-    survivor_key = _resolve_survivor(operation, source_keys, items_by_key)
+    survivor_key = _resolve_survivor(operation, source_keys, items_by_key, new_keys)
     if survivor_key is None:
         return "failed", 0
     survivor_value = items_by_key[survivor_key].value
@@ -99,12 +105,41 @@ def _resolve_survivor(
     operation: StrategyBatchOperation | ObservationBatchOperation,
     source_keys: list[str],
     items_by_key: dict[str, Any],
+    new_keys: set[str] | None = None,
 ) -> str | None:
-    """The entry that absorbs the cluster: the LLM's pick, defaulting to the first source key."""
+    """The entry that absorbs the cluster.
+
+    System-wide (#3, ``new_keys is None``): the LLM's pick, defaulting to the first source key.
+    Incremental freeze-old (#2, ``new_keys`` is a set): an OLD entry (a key created on or before the
+    last incremental cutoff — i.e. not in ``new_keys``) MUST survive, so old lessons are only ever
+    absorbed-INTO, never absorbed-away. With exactly one old key in the cluster it is forced as the
+    survivor; clusters with ≥2 old keys are rejected upstream by ``_frozen_old_conflict``.
+    """
+    if new_keys is not None:
+        old_in_source = [key for key in source_keys if key not in new_keys]
+        if old_in_source:
+            survivor_key = old_in_source[0]
+            return survivor_key if survivor_key in items_by_key else None
     survivor_key = operation.survivor_key or source_keys[0]
     if survivor_key not in source_keys or survivor_key not in items_by_key:
         return None
     return survivor_key
+
+
+def _frozen_old_conflict(
+    source_keys: list[str],
+    new_keys: set[str] | None,
+) -> bool:
+    """True when an incremental op would merge two frozen (old) entries — forbidden.
+
+    Old↔old is never re-litigated in #2: with ≥2 old keys in one operation, applying it would
+    absorb (delete) at least one old entry regardless of which old key survives, so the whole
+    operation is rejected. No-op in system-wide mode (``new_keys is None``).
+    """
+    if new_keys is None:
+        return False
+    old_in_source = [key for key in source_keys if key not in new_keys]
+    return len(old_in_source) >= 2
 
 
 def _commit_survivor(

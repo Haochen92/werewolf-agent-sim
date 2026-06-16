@@ -276,3 +276,107 @@ def test_invalid_survivor_key_fails_without_mutation():
     assert (status, deleted) == ("failed", 0)
     assert store.data == {} and store.deleted == []
     assert "k1" in items  # nothing absorbed
+
+
+# --- operations: incremental freeze-old (#2) --------------------------------
+# new_keys = keys created since the last incremental cutoff (the "new" entries).
+# Anything NOT in new_keys is a frozen "old" entry that may be absorbed-INTO but
+# never absorbed-away. new_keys=None is system-wide (#3) — no freeze at all.
+
+
+def test_freeze_old_forces_old_survivor_over_llm_pick():
+    # old + new cluster; the LLM picked the NEW key as survivor. Freeze-old must
+    # override so the OLD entry survives and the new one is folded into it.
+    store = FakeStore()
+    items = {
+        "old1": _item("old1", situation="s_old", approach="ap_old", outcome="o_old", obs_count=2),
+        "new1": _item("new1", situation="s_new", approach="ap_new", outcome="o_new", obs_count=1),
+    }
+    operation = ObservationBatchOperation(
+        action="MERGE",
+        reasoning="dup",
+        source_keys=["old1", "new1"],
+        survivor_key="new1",  # LLM wants the new one to win
+        merged_situation="S*",
+        merged_approach="A*",
+        merged_outcome="O*",
+    )
+
+    status, deleted = _apply_observation_operation(
+        store, NS, operation, {"old1", "new1"}, items, apply=True, new_keys={"new1"},
+    )
+
+    assert (status, deleted) == ("merged", 1)
+    assert (NS, "old1") in store.data       # old entry survived...
+    assert (NS, "new1") in store.deleted    # ...and the new one was absorbed
+    assert store.data[(NS, "old1")]["observation_count"] == 3  # counts still summed
+
+
+def test_freeze_old_rejects_old_into_old_merge():
+    # Two old entries in one operation → applying it would delete an old lesson
+    # no matter who survives. Reject wholesale, mutate nothing.
+    store = FakeStore()
+    items = {
+        "old1": _item("old1", approach="a1", outcome="o1"),
+        "old2": _item("old2", approach="a2", outcome="o2"),
+        "new1": _item("new1", approach="a3", outcome="o3"),
+    }
+    operation = ObservationBatchOperation(
+        action="MERGE",
+        reasoning="dup",
+        source_keys=["old1", "old2", "new1"],
+        survivor_key="old1",
+    )
+
+    status, deleted = _apply_observation_operation(
+        store, NS, operation, {"old1", "old2", "new1"}, items, apply=True, new_keys={"new1"},
+    )
+
+    assert (status, deleted) == ("frozen", 0)
+    assert store.data == {} and store.deleted == []
+    assert set(items) == {"old1", "old2", "new1"}  # all three preserved
+
+
+def test_freeze_old_allows_new_into_new():
+    # An all-new cluster has no frozen entries — behaves exactly like system-wide.
+    store = FakeStore()
+    items = {
+        "new1": _item("new1", approach="a1", outcome="o1", obs_count=1),
+        "new2": _item("new2", approach="a2", outcome="o2", obs_count=1),
+    }
+    operation = ObservationBatchOperation(
+        action="DISCARD",
+        reasoning="dup",
+        source_keys=["new1", "new2"],
+        survivor_key="new2",
+    )
+
+    status, deleted = _apply_observation_operation(
+        store, NS, operation, {"new1", "new2"}, items, apply=True, new_keys={"new1", "new2"},
+    )
+
+    assert (status, deleted) == ("discarded", 1)
+    assert (NS, "new2") in store.data        # LLM's pick honored when both are new
+    assert (NS, "new1") in store.deleted
+
+
+def test_system_wide_mode_ignores_freeze_and_honors_llm_pick():
+    # new_keys=None → #3 system-wide. No freeze; even an "old-looking" key may be absorbed.
+    store = FakeStore()
+    items = {
+        "k1": _item("k1", approach="a1", outcome="o1"),
+        "k2": _item("k2", approach="a2", outcome="o2"),
+    }
+    operation = ObservationBatchOperation(
+        action="DISCARD",
+        reasoning="dup",
+        source_keys=["k1", "k2"],
+        survivor_key="k2",
+    )
+
+    status, deleted = _apply_observation_operation(
+        store, NS, operation, {"k1", "k2"}, items, apply=True, new_keys=None,
+    )
+
+    assert (status, deleted) == ("discarded", 1)
+    assert (NS, "k1") in store.deleted   # absorbed per the LLM, no freeze interference

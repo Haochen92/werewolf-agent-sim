@@ -92,6 +92,7 @@ class NamespaceStats(BaseModel):
     differentiated: int = 0
     merged: int = 0
     kept: int = 0
+    frozen: int = 0
     failed: int = 0
     dry_run: bool = True
 

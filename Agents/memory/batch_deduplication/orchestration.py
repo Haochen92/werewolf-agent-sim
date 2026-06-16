@@ -219,6 +219,7 @@ def dedup_namespace(
             items_by_key,
             config.apply,
             stats,
+            new_keys=new_keys,
         )
         stats.processed_clusters += 1
 
@@ -233,6 +234,8 @@ def _apply_cluster_operations(
     items_by_key: dict,
     apply: bool,
     stats: NamespaceStats,
+    *,
+    new_keys: set[str] | None = None,
 ) -> None:
     memory_kind, role, _ = namespace
     apply_operation = (
@@ -251,6 +254,7 @@ def _apply_cluster_operations(
                 cluster_key_set,
                 items_by_key,
                 apply,
+                new_keys,
             )
         except Exception as exc:
             logger.warning(
@@ -269,6 +273,8 @@ def _apply_cluster_operations(
             stats.merged += deleted if status == "merged" else 0
         elif status == "kept":
             stats.kept += 1
+        elif status == "frozen":
+            stats.frozen += 1
         else:
             stats.failed += 1
 
