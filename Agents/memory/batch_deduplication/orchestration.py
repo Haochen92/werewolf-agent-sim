@@ -17,7 +17,7 @@ from Agents.memory.store import store
 from Agents.memory.persistence import (
     dump_memory_to_json_files,
     memory_store_paths,
-    seed_memory_from_json_files,
+    seed_memory_from_json_files_cached,
 )
 
 from .clustering import _build_clusters, _fetch_namespace_items
@@ -45,10 +45,15 @@ def run_batch_memory_dedup(
     selected_roles = config.selected_roles or list(roles)
 
     observations_path, strategy_points_path = memory_store_paths(config.seed_store_dir)
-    seed_memory_from_json_files(
+    # Cached seed: reuse seed_store_dir/indexed_cache.pkl (data + embedding vectors, SHA-invalidated)
+    # if present, else embed once and save it — so repeated dedup runs over the same store don't
+    # re-embed the whole thing. The cache reflects the pre-dedup seeded state (saved before dedup
+    # mutates the store); the deduped result is written to dump_store_dir, leaving the cache valid.
+    seed_memory_from_json_files_cached(
         observations_path=observations_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
+        cache_dir=config.seed_store_dir,
     )
 
     report = BatchDedupReport(
