@@ -1,24 +1,26 @@
 from Agents.prompts.common import (
-    DAY_DISCUSS_RESPONSE_FORMAT,
-    DISCUSSION_SILENCE_RULE,
     GAME_PREAMBLE,
     GAME_RULES,
-    TONE_INSTRUCTION,
     build_system_prompt,
 )
-from Agents.prompts.day import (
-    DAY_VOTE_SYSTEM_SUFFIX,
+from Agents.prompts.day_discuss import (
+    DAY_DISCUSS_RESPONSE_FORMAT,
+    DISCUSSION_SILENCE_RULE,
     HEALER_DAY_DISCUSS,
-    HEALER_DAY_VOTE,
     INVESTIGATOR_DAY_DISCUSS,
-    INVESTIGATOR_DAY_VOTE,
     SERIAL_KILLER_DAY_DISCUSS,
-    SERIAL_KILLER_DAY_VOTE,
+    TONE_INSTRUCTION,
     VIGILANTE_DAY_DISCUSS,
-    VIGILANTE_DAY_VOTE,
     VILLAGER_DAY_DISCUSS,
-    VILLAGER_DAY_VOTE,
     WOLF_DAY_DISCUSS,
+)
+from Agents.prompts.day_vote import (
+    DAY_VOTE_SYSTEM_SUFFIX,
+    HEALER_DAY_VOTE,
+    INVESTIGATOR_DAY_VOTE,
+    SERIAL_KILLER_DAY_VOTE,
+    VIGILANTE_DAY_VOTE,
+    VILLAGER_DAY_VOTE,
     WOLF_DAY_VOTE,
 )
 from Agents.prompts.dedup import (

@@ -1,24 +1,17 @@
-"""Day-phase prompt templates: each surviving role's discuss + vote ChatPromptTemplate.
+"""Day-vote prompt templates: each surviving role's elimination-vote ChatPromptTemplate.
 
-Every template is the same scaffold — GAME_PREAMBLE, the role's CORE_STRATEGY, and a
-shared transcript block (previous-day summaries + today's discussion) — wrapped around
-two role-specific pieces: a framing paragraph and the one info line that role is given
-(its private results, or the wolf rosters). Two factories (_discuss_template,
-_vote_template) hold the shared text once so each role is a one-line table entry. Wolf
-is the structural outlier: roster framing + a cover reminder on discuss, and its own
-vote system block, which it passes as overrides.
+Every template is the same scaffold — GAME_PREAMBLE, the role's CORE_STRATEGY, a vote system block,
+and a shared transcript block (previous-day summaries + today's discussion) — wrapped around the one
+info line that role is given (its private results, or the wolf rosters) and a closing "cast your vote"
+instruction. The `_vote_template` factory holds the shared text once so each village-aligned role is a
+one-line table entry; the wolf and the serial killer each pass a fully custom vote system block, since
+their win conditions make "remove an anti-village threat" wrong.
 """
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import (
-    DAY_DISCUSS_RESPONSE_FORMAT,
-    DISCUSSION_SILENCE_RULE,
-    GAME_PREAMBLE,
-    TONE_INSTRUCTION,
-    build_system_prompt,
-)
-from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT, DAY_VOTE_MEMORY_CONTEXT
+from Agents.prompts.common import GAME_PREAMBLE, build_system_prompt
+from Agents.prompts.memory import DAY_VOTE_MEMORY_CONTEXT
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
     INVESTIGATOR_CORE_STRATEGY,
@@ -29,21 +22,7 @@ from Agents.prompts.roles import (
 )
 
 
-# --- Shared transcript framing (identical across roles) ---
-
-_DISCUSS_HEADER = """
-Day {current_day} discussion.
-{firing_brief}
-"""
-
-_DISCUSS_TRANSCRIPT = """
-== Previous days summary ==
-{day_summaries}
-
-== Today's discussion ==
-{day_channel}
-=========================
-"""
+# --- Shared transcript framing ---
 
 _VOTE_HEADER = "Day {current_day}. Time to vote!\n\n"
 
@@ -73,39 +52,7 @@ You must respond with a valid JSON:
 """
 
 
-# --- Factories ---
-
-def _discuss_template(core_strategy, framing, context, *, trailer=""):
-    """Build a day-discussion template from the shared scaffold.
-
-    `framing` is the role's identity/goal paragraph, `context` the info line(s) it gets
-    (surviving players + any private results), `trailer` an optional reminder after the
-    transcript (only the wolf uses it, for the speak-like-a-villager cover note).
-    """
-    return ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                build_system_prompt(
-                    GAME_PREAMBLE,
-                    core_strategy,
-                    framing,
-                    TONE_INSTRUCTION,
-                    DAY_DISCUSS_RESPONSE_FORMAT,
-                ),
-            ),
-            (
-                "human",
-                _DISCUSS_HEADER
-                + context
-                + _DISCUSS_TRANSCRIPT
-                + trailer
-                + DAY_DISCUSSION_MEMORY_CONTEXT
-                + DISCUSSION_SILENCE_RULE,
-            ),
-        ]
-    )
-
+# --- Factory ---
 
 def _vote_template(context, closing, *, core_strategy=None, system=None):
     """Build a day-vote template from the shared scaffold.
@@ -124,90 +71,6 @@ def _vote_template(context, closing, *, core_strategy=None, system=None):
             ),
         ]
     )
-
-
-# --- Discussion templates ---
-
-VILLAGER_DAY_DISCUSS = _discuss_template(
-    VILLAGER_CORE_STRATEGY,
-    """
-You are {player_id}, a {player_role}.
-""",
-    """
-Surviving players: {surviving_players}
-""",
-)
-
-
-HEALER_DAY_DISCUSS = _discuss_template(
-    HEALER_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-During the day, speak as a normal villager while protecting your cover.
-""",
-    """
-Surviving players: {surviving_players}
-""",
-)
-
-
-INVESTIGATOR_DAY_DISCUSS = _discuss_template(
-    INVESTIGATOR_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-As the investigator, you can use your investigation result to guide your decision.
-""",
-    """
-Surviving players: {surviving_players}
-Investigation results: {investigator_results}
-""",
-)
-
-
-WOLF_DAY_DISCUSS = _discuss_template(
-    WOLF_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-As the wolf, conceal your real identity and convince everyone else that you are a villager.
-If any of your fellow wolf allies are suspected, try to convince the villagers otherwise
-without revealing your own identity.
-""",
-    """Surviving villagers: {surviving_villagers}.
-Surviving allies: {surviving_wolves}.
-""",
-    trailer="""Based on the discussion, try to speak like a villager. Do NOT reveal your allies identities.
-""",
-)
-
-
-SERIAL_KILLER_DAY_DISCUSS = _discuss_template(
-    SERIAL_KILLER_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-You are playing alone against everyone. During the day, pose as an ordinary villager:
-join the village's hunt for the threats, deflect suspicion from yourself, and never reveal that you
-are the serial killer. You can be voted out, so blending in is survival.
-""",
-    """
-Surviving players: {surviving_players}
-""",
-)
-
-
-VIGILANTE_DAY_DISCUSS = _discuss_template(
-    VIGILANTE_CORE_STRATEGY,
-    """
-You are {player_id}, the {player_role}.
-You are on the village's side. Whether to stay hidden as an ordinary villager or to claim your role
-is your own decision and can change with the situation: staying hidden keeps you safe, while
-claiming — or hinting at what your shots have taught you — can lend weight to your reads but
-paints a target on you (both the wolves and the serial killer gain from removing you).
-""",
-    """
-Surviving players: {surviving_players}
-What you have learned from your shots: {vigilante_results}
-""",
-)
 
 
 # --- Vote templates ---
