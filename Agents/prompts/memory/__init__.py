@@ -4,6 +4,7 @@ retrieval-query prompts (`situation_summary`), and the rerank prompt (`rerank`).
 """
 
 from Agents.prompts.memory.context import (
+    OBS_STRATEGY_SYNERGY_INSTRUCTION,
     STRATEGY_VERDICT_INSTRUCTION,
     DAY_DISCUSSION_MEMORY_CONTEXT,
     DAY_VOTE_MEMORY_CONTEXT,
@@ -26,6 +27,7 @@ from Agents.prompts.memory.situation_summary import (
 )
 
 __all__ = [
+    "OBS_STRATEGY_SYNERGY_INSTRUCTION",
     "STRATEGY_VERDICT_INSTRUCTION",
     "DAY_DISCUSSION_MEMORY_CONTEXT",
     "DAY_VOTE_MEMORY_CONTEXT",

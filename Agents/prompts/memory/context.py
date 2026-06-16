@@ -14,6 +14,20 @@ not_relevant (its situation does not hold for your current board) — each with 
 'follow' commits you to the advice; an empty list is fine if no strategy points are shown."""
 
 
+# Cross-reference instruction — injected ONLY when BOTH observations and strategy points are shown
+# (the combined "both" retrieval arm). A strategy point is a general rule; an observation is a concrete
+# case. The point is to make obs and SP act synergistically rather than be judged as two independent
+# lists: let the specific evidence in the observations correct the general rule. An obs that contradicts
+# a strategy's premise should produce an `override` verdict, not a blind `follow`. Brace-free: .format-safe.
+OBS_STRATEGY_SYNERGY_INSTRUCTION = """
+You have BOTH observations and strategy points above — cross-check them, do not judge the two lists
+independently. A strategy point is a general rule; the observations are concrete cases. Before you
+follow a strategy, check whether any observation contradicts or refines its premise for THIS board: if
+one does, adjust your move and mark that strategy `override` rather than following it blindly. Let the
+specific evidence in the observations correct the general rule.
+"""
+
+
 # Prompt-body delivery of the per-memory reasoning (the field description stays terse). Stating it in
 # the body — not just the schema field — is what drives flash-lite to cover every memory rather than a
 # scattered subset (forced_schema_screen: coverage 0.27 -> 0.97). Brace-free: safe to .format().
@@ -33,7 +47,7 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 {strategy_points}
 
 {adoption_instruction}
-
+{synergy_instruction}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns:
     {previous_strategy}
@@ -54,6 +68,7 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 {strategy_points}
 
 {adoption_instruction}
+{synergy_instruction}
 """
 
 
@@ -65,7 +80,7 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 {strategy_points}
 
 {adoption_instruction}
-
+{synergy_instruction}
 Adaptive Strategic thinking:
     You have a private strategy note from your previous turns:
     {previous_strategy}

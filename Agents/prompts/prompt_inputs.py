@@ -16,7 +16,11 @@ from Agents.prompts.prompt_formatters import (
 # Source from the concrete submodules, not the Agents.prompts package __init__:
 # this module now lives *inside* that package, so importing from its __init__
 # would be a back-edge (cycle risk during package init).
-from Agents.prompts.memory import STRATEGY_VERDICT_INSTRUCTION, SITUATION_ROLE_LENS
+from Agents.prompts.memory import (
+    OBS_STRATEGY_SYNERGY_INSTRUCTION,
+    STRATEGY_VERDICT_INSTRUCTION,
+    SITUATION_ROLE_LENS,
+)
 from Agents.prompts.standards import (
     EPISTEMIC_STATUS_RULE,
     SITUATION_QUALITY_STANDARDS,
@@ -58,11 +62,27 @@ def _firing_brief(firing_reason: Any) -> str:
     return ""
 
 
+def _retrieved_present(x: Any) -> bool:
+    """True when a retrieved-memory input actually has items: a non-empty list, or a pre-formatted
+    string that isn't the empty-sentinel ("No past observations available." / "No dynamic strategy
+    points available."). Drives the combined-arm synergy instruction (fires only when BOTH present)."""
+    if isinstance(x, str):
+        return bool(x.strip()) and not x.lstrip().startswith("No ")
+    return bool(x)
+
+
 def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
     """Format a graph/eval payload into the keys consumed by agent prompts."""
     role = payload.get("player_role", "")
     retrieved_observations = payload.get("retrieved_observations", [])
     strategy_points = payload.get("strategy_points", [])
+    # Synergy instruction fires ONLY when BOTH memory types are actually present (the combined "both"
+    # arm) — data-driven, so obs-only / sp-only arms get "" and need no config flag.
+    synergy_instruction = (
+        OBS_STRATEGY_SYNERGY_INSTRUCTION
+        if _retrieved_present(retrieved_observations) and _retrieved_present(strategy_points)
+        else ""
+    )
     current_round = payload.get("current_round", 1)
     if payload.get("allow_abstain"):
         abstain_instruction = (
@@ -117,4 +137,5 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "epistemic_status_rule": EPISTEMIC_STATUS_RULE,
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
         "adoption_instruction": STRATEGY_VERDICT_INSTRUCTION,
+        "synergy_instruction": synergy_instruction,
     }
