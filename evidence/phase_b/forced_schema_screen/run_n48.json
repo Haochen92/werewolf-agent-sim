@@ -1,0 +1,88 @@
+{
+  "batch": "ab_arms_town.jsonl",
+  "v5_store": "memory_stores/v5_0",
+  "v6_store": "memory_stores/v6_0",
+  "n_decisions": 48,
+  "n_held_out": 48,
+  "top_k": 5,
+  "epoch_note": "all votes regenerated this run; compare WITHIN run only, not vs prior epochs",
+  "vote_accuracy": {
+    "off": {
+      "n": 48,
+      "accuracy": 0.667,
+      "net_value": 0.458
+    },
+    "v5_plain": {
+      "n": 48,
+      "accuracy": 0.625,
+      "net_value": 0.396
+    },
+    "v6_plain": {
+      "n": 48,
+      "accuracy": 0.604,
+      "net_value": 0.375
+    },
+    "v5_forced": {
+      "n": 48,
+      "accuracy": 0.521,
+      "net_value": 0.229
+    },
+    "v6_forced": {
+      "n": 48,
+      "accuracy": 0.625,
+      "net_value": 0.438
+    }
+  },
+  "forced_minus_plain": {
+    "v5_forced_minus_v5_plain": -0.104,
+    "v6_forced_minus_v6_plain": 0.021
+  },
+  "engagement_forced": {
+    "v5_forced": {
+      "n_decisions": 48,
+      "memories_shown": 240,
+      "verdicts_emitted": 148,
+      "row_reliability": 0.354,
+      "verdict_dist": {
+        "fully_applies": 34,
+        "does_not_apply": 52,
+        "partly_applies": 62
+      },
+      "engaged_as_applicable": 0.649,
+      "rejected_does_not_apply": 0.351
+    },
+    "v6_forced": {
+      "n_decisions": 48,
+      "memories_shown": 240,
+      "verdicts_emitted": 145,
+      "row_reliability": 0.333,
+      "verdict_dist": {
+        "fully_applies": 40,
+        "partly_applies": 61,
+        "does_not_apply": 44
+      },
+      "engaged_as_applicable": 0.697,
+      "rejected_does_not_apply": 0.303
+    }
+  },
+  "paired_flips": {
+    "v6_plain_vs_v5_plain": {
+      "n_paired": 48,
+      "v5_plain>_v6_plain": 4,
+      "v6_plain>_v5_plain": 3,
+      "mcnemar_p": 1.0
+    },
+    "v6_forced_vs_v5_forced": {
+      "n_paired": 48,
+      "v5_forced>_v6_forced": 3,
+      "v6_forced>_v5_forced": 8,
+      "mcnemar_p": 0.2266
+    },
+    "v6_forced_vs_v6_plain": {
+      "n_paired": 48,
+      "v6_plain>_v6_forced": 4,
+      "v6_forced>_v6_plain": 5,
+      "mcnemar_p": 1.0
+    }
+  }
+}

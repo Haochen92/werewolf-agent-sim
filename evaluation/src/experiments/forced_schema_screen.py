@@ -1,0 +1,265 @@
+"""Forced-applicability screen (v6 build) — does forcing per-memory reasoning help the vote on the
+v6 dimensional store where it HURT on the old v5 store, and does it engage the memory more?
+
+Fills the untested cell flagged by the decision-replay log: "good content x forced/reordered schema."
+The original applicability probe (2026-06-13) found forcing one applies/partly/does-not verdict per
+memory HURT the vote (0.75->0.55) and showed high consideration (rejection_rate 1.0) — but that was on
+the cautious net-first v5 store. v6 was built to fix that content. This screen runs BOTH stores under
+BOTH schemas in ONE epoch so the store x schema 2x2 is internally comparable.
+
+EPOCH DISCIPLINE (the load-bearing rule): every vote here is regenerated NOW. Do NOT compare these
+numbers to the 0.75->0.55 / +0.120 from prior runs — the model epoch may have shifted. The valid
+reads are WITHIN this run (v6 vs v5, forced vs plain), where the only delta is the store/schema.
+
+Arms per held-out town day_vote:
+  off        no memory (floor)                  | plain schema
+  v5_plain   retrieve v5_0 (frozen v5 query)    | plain DayVoteOutput
+  v6_plain   retrieve v6_0 (regenerated v6 q)   | plain DayVoteOutput
+  v5_forced  retrieve v5_0 (frozen v5 query)    | forced per-memory verdicts
+  v6_forced  retrieve v6_0 (regenerated v6 q)   | forced per-memory verdicts
+
+Each arm retrieves from its OWN store with its OWN native query (v5 uses the frozen v5 situation
+summary, v6 regenerates under the v6 cell schema — each pipeline is internally matched). Same-game
+memory is excluded from BOTH pools; --held-out-only additionally drops decisions whose game seeded the
+v6 store. Engagement (verdict distribution) is captured for the forced arms only.
+
+  poetry run python evaluation/src/experiments/forced_schema_screen.py \
+      --batch batch_results/ab_arms_town.jsonl --held-out-only --n 24
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from Agents.llm_factory.embeddings import create_embeddings
+from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
+from evaluation.src.components.decision_scoring import allow_abstain_for, score_vote
+from evaluation.src.components.situation_summary import eval_case_to_agent_payload
+from evaluation.src.experiments.criticality_screen import (
+    _RolePool,
+    _cosine_matrix,
+    _retrieved,
+    iter_town_day_votes,
+    load_candidates_by_role,
+    load_source_games,
+    select_spread,
+)
+from evaluation.src.experiments.decision_replay import (
+    _replay_vote,
+    _replay_vote_structured,
+    mcnemar_p,
+)
+
+PLAIN_ARMS = ("off", "v5_plain", "v6_plain")
+FORCED_ARMS = ("v5_forced", "v6_forced")
+
+
+def _topk_idx(query: str, pool: _RolePool, emb, test_gid: str, top_k: int) -> tuple[list[int], np.ndarray]:
+    """Cosine top-k from a pool, excluding memories mined from the decision's own game."""
+    if not pool.cands:
+        return [], np.zeros(0)
+    qv = np.array(emb.embed_query(query))
+    cos = _cosine_matrix(qv, pool.vecs)
+    cos = np.where(pool.game == test_gid, -1e9, cos)  # same-game exclusion (both stores)
+    return list(np.argsort(-cos)[:top_k]), cos
+
+
+def _forced_row(case, retrieved, allow, roles) -> dict[str, Any]:
+    """Run the forced-schema replay, returning the vote outcome + the per-memory verdicts."""
+    result = _replay_vote_structured(case, retrieved, allow)
+    if result is None:
+        return {"votee": None, "hit": None, "net": 0, "verdicts": [], "n_mem": len(retrieved)}
+    verdicts = list(getattr(result, "memory_applicability", []) or [])
+    votee = getattr(result, "vote_target", None)
+    out = score_vote(votee, roles) if votee is not None else None
+    return {
+        "votee": votee,
+        "hit": bool(out.hit_threat) if out else None,
+        "net": (1 if out.hit_threat else (-1 if out.is_town_mislynch else 0)) if out else 0,
+        "verdicts": [getattr(v, "verdict", None) for v in verdicts],
+        "n_mem": len(retrieved),
+    }
+
+
+def _plain_row(case, retrieved, allow, roles) -> dict[str, Any]:
+    votee, _ = _replay_vote(case, retrieved, allow)
+    out = score_vote(votee, roles) if votee is not None else None
+    return {
+        "votee": votee,
+        "hit": bool(out.hit_threat) if out else None,
+        "net": (1 if out.hit_threat else (-1 if out.is_town_mislynch else 0)) if out else 0,
+    }
+
+
+def run_screen(
+    batch_path: Path,
+    v5_store: Path,
+    v6_store: Path,
+    n: int = 24,
+    top_k: int = 5,
+    max_workers: int = 6,
+    source_games: set[str] | None = None,
+    held_out_only: bool = False,
+    roles: frozenset[str] = frozenset({"villager", "healer", "investigator"}),
+) -> dict[str, Any]:
+    source_games = source_games or set()
+    emb = create_embeddings()
+    v5_pools = {r: _RolePool(c, emb) for r, c in load_candidates_by_role(v5_store, roles).items()}
+    v6_pools = {r: _RolePool(c, emb) for r, c in load_candidates_by_role(v6_store, roles).items()}
+    cases = select_spread(batch_path, n, roles, held_out_only=held_out_only, source_games=source_games)
+
+    def one(case, game) -> dict[str, Any] | None:
+        try:
+            return _one_inner(case, game)
+        except Exception:  # noqa: BLE001 — drop a single bad decision, not the run
+            return None
+
+    def _one_inner(case, game) -> dict[str, Any] | None:
+        v5p, v6p = v5_pools.get(case.player_role), v6_pools.get(case.player_role)
+        if not v5p or not v5p.cands or not v6p or not v6p.cands:
+            return None
+        roles_map = game["roles"]
+        gid = str(game["game_id"])
+        allow = allow_abstain_for(case.day, game["day_resolutions"])
+
+        v5_query = " ".join(case.situations)  # frozen v5 situation summary (native to v5 pipeline)
+        v6_query = " ".join(  # regenerated NOW under the v6 cell schema (native to v6 pipeline)
+            _generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote")
+        )
+        v5_idx, _ = _topk_idx(v5_query, v5p, emb, gid, top_k)
+        v6_idx, _ = _topk_idx(v6_query, v6p, emb, gid, top_k)
+        v5_mem = _retrieved(v5p.cands, v5_idx, v5_query)
+        v6_mem = _retrieved(v6p.cands, v6_idx, v6_query)
+
+        row: dict[str, Any] = {"day": case.day, "role": case.player_role,
+                               "held_out": gid not in source_games}
+        row["off"] = _plain_row(case, [], allow, roles_map)
+        row["v5_plain"] = _plain_row(case, v5_mem, allow, roles_map)
+        row["v6_plain"] = _plain_row(case, v6_mem, allow, roles_map)
+        row["v5_forced"] = _forced_row(case, v5_mem, allow, roles_map)
+        row["v6_forced"] = _forced_row(case, v6_mem, allow, roles_map)
+        return row
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+    rows = [r for r in rows if r is not None]
+    return _aggregate(rows, batch_path, v5_store, v6_store, top_k)
+
+
+def _vote_stats(rows, arm) -> dict[str, Any]:
+    hits = [int(r[arm]["hit"]) for r in rows if r[arm]["hit"] is not None]
+    nets = [r[arm]["net"] for r in rows if r[arm]["hit"] is not None]
+    return {
+        "n": len(hits),
+        "accuracy": round(sum(hits) / len(hits), 3) if hits else None,
+        "net_value": round(sum(nets) / len(nets), 3) if nets else None,
+    }
+
+
+def _engagement_stats(rows, arm) -> dict[str, Any]:
+    dist: Counter[str] = Counter()
+    shown = emitted = reliable = ndec = 0
+    for r in rows:
+        f = r[arm]
+        if f["hit"] is None and not f["verdicts"]:
+            continue
+        ndec += 1
+        dist.update(v for v in f["verdicts"] if v)
+        shown += f["n_mem"]
+        emitted += len(f["verdicts"])
+        reliable += int(len(f["verdicts"]) == f["n_mem"] and f["n_mem"] > 0)
+    total = sum(dist.values())
+    applicable = dist.get("fully_applies", 0) + dist.get("partly_applies", 0)
+    return {
+        "n_decisions": ndec,
+        "memories_shown": shown,
+        "verdicts_emitted": emitted,
+        "row_reliability": round(reliable / ndec, 3) if ndec else None,  # 1 verdict per memory
+        "verdict_dist": dict(dist),
+        "engaged_as_applicable": round(applicable / total, 3) if total else None,
+        "rejected_does_not_apply": round(dist.get("does_not_apply", 0) / total, 3) if total else None,
+    }
+
+
+def _paired_flip(rows, arm_a, arm_b) -> dict[str, Any]:
+    """McNemar: does arm_b's vote beat arm_a's? b=a-right/b-wrong, c=a-wrong/b-right."""
+    b = c = both = 0
+    for r in rows:
+        ha, hb = r[arm_a]["hit"], r[arm_b]["hit"]
+        if ha is None or hb is None:
+            continue
+        both += 1
+        if ha and not hb:
+            b += 1
+        elif hb and not ha:
+            c += 1
+    return {"n_paired": both, f"{arm_a}>_{arm_b}": b, f"{arm_b}>_{arm_a}": c,
+            "mcnemar_p": round(mcnemar_p(b, c), 4)}
+
+
+def _aggregate(rows, batch_path, v5_store, v6_store, top_k) -> dict[str, Any]:
+    arms = PLAIN_ARMS + FORCED_ARMS
+    vote = {a: _vote_stats(rows, a) for a in arms}
+    forced_delta = {
+        "v5_forced_minus_v5_plain": (
+            None if vote["v5_forced"]["accuracy"] is None or vote["v5_plain"]["accuracy"] is None
+            else round(vote["v5_forced"]["accuracy"] - vote["v5_plain"]["accuracy"], 3)),
+        "v6_forced_minus_v6_plain": (
+            None if vote["v6_forced"]["accuracy"] is None or vote["v6_plain"]["accuracy"] is None
+            else round(vote["v6_forced"]["accuracy"] - vote["v6_plain"]["accuracy"], 3)),
+    }
+    held = [r for r in rows if r.get("held_out")]
+    return {
+        "batch": batch_path.name,
+        "v5_store": str(v5_store),
+        "v6_store": str(v6_store),
+        "n_decisions": len(rows),
+        "n_held_out": len(held),
+        "top_k": top_k,
+        "epoch_note": "all votes regenerated this run; compare WITHIN run only, not vs prior epochs",
+        "vote_accuracy": vote,
+        "forced_minus_plain": forced_delta,
+        "engagement_forced": {a: _engagement_stats(rows, a) for a in FORCED_ARMS},
+        "paired_flips": {
+            "v6_plain_vs_v5_plain": _paired_flip(rows, "v5_plain", "v6_plain"),
+            "v6_forced_vs_v5_forced": _paired_flip(rows, "v5_forced", "v6_forced"),
+            "v6_forced_vs_v6_plain": _paired_flip(rows, "v6_plain", "v6_forced"),
+        },
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--batch", required=True, type=Path)
+    ap.add_argument("--v5-store", default=Path("memory_stores/v5_0"), type=Path)
+    ap.add_argument("--v6-store", default=Path("memory_stores/v6_0"), type=Path)
+    ap.add_argument("--n", type=int, default=24)
+    ap.add_argument("--top-k", type=int, default=5)
+    ap.add_argument("--roles", default="villager,healer,investigator")
+    ap.add_argument("--source-set", type=Path,
+                    default=Path("evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl"))
+    ap.add_argument("--held-out-only", action="store_true")
+    ap.add_argument("--max-workers", type=int, default=6)
+    args = ap.parse_args()
+    roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
+    report = run_screen(
+        args.batch, args.v5_store, args.v6_store, n=args.n, top_k=args.top_k,
+        max_workers=args.max_workers, source_games=load_source_games(args.source_set),
+        held_out_only=args.held_out_only, roles=roles,
+    )
+    print(json.dumps(report, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
