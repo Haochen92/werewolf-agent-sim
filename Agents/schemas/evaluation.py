@@ -21,6 +21,7 @@ from Agents.schemas.game_events import (
     WolfChannel,
 )
 from Agents.schemas.memory import RetrievedObservation, RetrievedStrategyPoint
+from Agents.schemas.output import MemoryVerdict
 
 
 class EvalPrivateContext(BaseModel):
@@ -100,6 +101,10 @@ class EvalCase(BaseModel):
     updated_strategy: str = ""
     adopted_strategy_keys: list[int] = Field(default_factory=list)
     adopted_strategy_store_keys: list[str] = Field(default_factory=list)
+    memory_applicability: list[MemoryVerdict] = Field(default_factory=list)
+    """The agent's per-observation applicability verdicts (one per retrieved memory it judged),
+    captured from the structured output for offline analysis. Empty when memory was off or none
+    retrieved. See Agents/turn/agent.py (the _memory_applicability carrier)."""
 
     @property
     def game_phase_key(self) -> tuple[str, str, int, ActionPhase]:

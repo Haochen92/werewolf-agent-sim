@@ -80,3 +80,30 @@ def test_memory_verdict_shape():
     assert v.verdict == "partly_applies"
     with pytest.raises(Exception):
         MemoryVerdict(memory_index=1, verdict="maybe", why="x")  # enum-constrained
+
+
+def test_eval_case_captures_memory_applicability_and_roundtrips():
+    from Agents.schemas.evaluation import EvalCase
+
+    ec = EvalCase(
+        player_id="p1", player_role="villager", day=2, round=1,
+        action_phase="day_vote", memory_enabled=True,
+        memory_applicability=[MemoryVerdict(memory_index=1, verdict="does_not_apply", why="x")],
+    )
+    dumped = ec.model_dump(mode="json")
+    assert dumped["memory_applicability"] == [
+        {"memory_index": 1, "verdict": "does_not_apply", "why": "x"}
+    ]
+    assert EvalCase(**dumped).memory_applicability[0].verdict == "does_not_apply"
+
+
+def test_run_agent_carries_memory_applicability_in_every_return():
+    # the _memory_applicability carrier must ride EVERY output branch (mirrors _adopted_strategy_keys)
+    import inspect
+
+    from Agents.turn import agent
+
+    src = inspect.getsource(agent._run_agent)
+    assert src.count('output["_memory_applicability"] = memory_verdicts') == src.count(
+        'output["_adopted_strategy_keys"] = adopted_indices'
+    )

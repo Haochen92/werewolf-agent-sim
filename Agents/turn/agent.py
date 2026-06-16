@@ -67,9 +67,13 @@ def _run_agent(
                 continue
             break
 
-        # Extract strategy and adoption data if present on the result
+        # Extract strategy, adoption, and per-memory verdicts if present on the result. The
+        # _memory_applicability carrier rides the curated output the same way _adopted_strategy_keys
+        # does — _run_agent drops everything off `result` that isn't explicitly carried, and actions.py
+        # reads these carriers into the EvalCase.
         strategy_update = getattr(result, "updated_strategy", None)
         adopted_indices = getattr(result, "adopted_strategy_keys", []) or []
+        memory_verdicts = getattr(result, "memory_applicability", []) or []
 
         if output_key == "day_channel":
             current_day = payload.get("current_day", 1)
@@ -95,6 +99,8 @@ def _run_agent(
                         output["agent_strategies"] = {player_id: strategy_update}
                     if adopted_indices:
                         output["_adopted_strategy_keys"] = adopted_indices
+                    if memory_verdicts:
+                        output["_memory_applicability"] = memory_verdicts
                     return output if output else None
                 # Proactive novelty gate: a low-novelty (echo/restatement) proactive turn is
                 # converted to a hidden pass. Reactive turns are never gated (accountability),
@@ -125,6 +131,8 @@ def _run_agent(
                 output["agent_strategies"] = {player_id: strategy_update}
             if adopted_indices:
                 output["_adopted_strategy_keys"] = adopted_indices
+            if memory_verdicts:
+                output["_memory_applicability"] = memory_verdicts
             return output
 
         if output_key == "day_votes":
@@ -139,6 +147,8 @@ def _run_agent(
                     output["agent_strategies"] = {player_id: strategy_update}
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
+                if memory_verdicts:
+                    output["_memory_applicability"] = memory_verdicts
                 return output
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
@@ -165,6 +175,8 @@ def _run_agent(
                     output["agent_strategies"] = {player_id: strategy_update}
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
+                if memory_verdicts:
+                    output["_memory_applicability"] = memory_verdicts
                 return output
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
@@ -181,6 +193,8 @@ def _run_agent(
                     output["updated_strategy"] = strategy_update
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
+                if memory_verdicts:
+                    output["_memory_applicability"] = memory_verdicts
                 return output
             logger.warning(f"Healer targeted invalid player: {result.healer_target}")
             continue
@@ -197,6 +211,8 @@ def _run_agent(
                     output["updated_strategy"] = strategy_update
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
+                if memory_verdicts:
+                    output["_memory_applicability"] = memory_verdicts
                 return output
             logger.warning(f"Investigator targeted invalid player: {result.investigator_target}")
             continue
@@ -213,6 +229,8 @@ def _run_agent(
                     output["updated_strategy"] = strategy_update
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
+                if memory_verdicts:
+                    output["_memory_applicability"] = memory_verdicts
                 return output
             logger.warning(f"Serial killer targeted invalid player: {result.serial_killer_target}")
             continue
@@ -230,6 +248,8 @@ def _run_agent(
                     output["updated_strategy"] = strategy_update
                 if adopted_indices:
                     output["_adopted_strategy_keys"] = adopted_indices
+                if memory_verdicts:
+                    output["_memory_applicability"] = memory_verdicts
                 return output
             logger.warning(f"Vigilante targeted invalid player: {result.vigilante_target}")
             continue

@@ -193,6 +193,7 @@ def _run_memory_informed_action(
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
+            memory_applicability=(result or {}).get("_memory_applicability", []),
         )
 
         eval_span.update(
@@ -352,6 +353,7 @@ def _run_memory_informed_night_action(
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
+            memory_applicability=(result or {}).get("_memory_applicability", []),
         )
 
         eval_span.update(
