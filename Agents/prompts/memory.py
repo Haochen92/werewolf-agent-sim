@@ -27,10 +27,21 @@ follows (e.g. [1, 3]). Do not list points you read but acted against. An \
 empty list is fine if none of the points match your action."""
 
 
+# Prompt-body delivery of the per-memory reasoning (the field description stays terse). Stating it in
+# the body — not just the schema field — is what drives flash-lite to cover every memory rather than a
+# scattered subset (forced_schema_screen: coverage 0.27 -> 0.97). Brace-free: safe to .format().
+MEMORY_APPLICABILITY_INSTRUCTION = """
+Before you decide, work through the numbered observations above ONE BY ONE: in memory_applicability,
+output exactly one verdict for EACH numbered observation, in order — fully_applies, partly_applies, or
+does_not_apply to your CURRENT board — each with a one-line why. Then act, applying each lesson only to
+the degree its situation matches yours. If no observations are shown above, use an empty list.
+"""
+
+
 DAY_DISCUSSION_MEMORY_CONTEXT = """
 Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
 {retrieved_observations}
-
+""" + MEMORY_APPLICABILITY_INSTRUCTION + """
 Dynamic strategy points (strategies from past games relevant to your current situation):
 {strategy_points}
 
@@ -51,7 +62,7 @@ Adaptive Strategic thinking:
 DAY_VOTE_MEMORY_CONTEXT = """
 Relevant observations: (These are specific, detailed observations from past games that are relevant to the current situation):
 {retrieved_observations}
-
+""" + MEMORY_APPLICABILITY_INSTRUCTION + """
 Dynamic strategy points (strategies from past games relevant to your current situation):
 {strategy_points}
 
@@ -62,7 +73,7 @@ Dynamic strategy points (strategies from past games relevant to your current sit
 NIGHT_ACTION_MEMORY_CONTEXT = """
 Relevant observations: (These are specific, detailed observations from past games that are relevant to your night decision):
 {retrieved_observations}
-
+""" + MEMORY_APPLICABILITY_INSTRUCTION + """
 Dynamic strategy points (strategies from past games relevant to your current situation):
 {strategy_points}
 

@@ -69,7 +69,7 @@ You cannot vote for yourself.
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"adopted_strategy_keys": [1, 3], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """
 
 
@@ -251,7 +251,7 @@ You may also vote "abstain" when it is offered (an abstain plurality means no el
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"adopted_strategy_keys": [1, 3], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
     ),
 )
@@ -272,7 +272,7 @@ You may also vote "abstain" when it is offered (an abstain plurality means no el
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"adopted_strategy_keys": [1, 3], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"adopted_strategy_keys": [1, 3], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
     ),
 )
