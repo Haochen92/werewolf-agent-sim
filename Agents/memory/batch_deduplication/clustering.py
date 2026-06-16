@@ -18,7 +18,7 @@ from Agents.llm_factory import create_embeddings
 from langgraph.store.base import BaseStore
 
 from Agents.memory.persistence import _memory_store_call_with_retries
-from Agents.memory.dedup_gate import batch_partition_key
+from Agents.memory.dedup_gate import partition_key_for
 
 from .config import (
     BatchDedupRunConfig,
@@ -44,19 +44,21 @@ def _build_clusters(
     clustering (legacy / v5 stores)."""
     if not config.gate_enabled:
         return _build_clusters_for_items(target_store, namespace, items_by_key, config)
+    memory_kind = namespace[0]
     clusters: list[list[str]] = []
-    for partition_items in _gate_partitions(items_by_key):
+    for partition_items in _gate_partitions(items_by_key, memory_kind):
         clusters.extend(_build_clusters_for_items(target_store, namespace, partition_items, config))
     clusters.sort(key=len, reverse=True)
     return clusters
 
 
-def _gate_partitions(items_by_key: dict[str, Any]) -> list[dict[str, Any]]:
-    """Group items by the full dedup partition key (gate + pair-checks). Items with no v6 fields
-    (partition None) fall into one 'ungated' group, clustered as before."""
+def _gate_partitions(items_by_key: dict[str, Any], memory_kind: str) -> list[dict[str, Any]]:
+    """Group items by the dedup partition key for this memory kind (obs: gate+pair-checks; SP: the
+    direction/honesty/valence signature). Items with no v6 fields (partition None) fall into one
+    'ungated' group, clustered as before."""
     groups: dict[Any, dict[str, Any]] = defaultdict(dict)
     for key, item in items_by_key.items():
-        groups[batch_partition_key(item.value)][key] = item
+        groups[partition_key_for(memory_kind, item.value)][key] = item
     return list(groups.values())
 
 

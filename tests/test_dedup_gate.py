@@ -7,8 +7,12 @@ from Agents.memory.dedup_gate import (
     batch_partition_key,
     compatible,
     gate_filter,
+    gate_filter_for,
     gate_key,
+    partition_key_for,
     same_verdict,
+    sp_gate_filter,
+    sp_gate_key,
 )
 
 
@@ -76,7 +80,9 @@ def test_gate_partitions_separate_by_full_key():
     def it(verdict):
         return SimpleNamespace(value=_v6(False, 6, "x", verdict) | {
             "info_landscape_class": "info_rich", "exposure_class": "safe"})
-    parts = _gate_partitions({"a": it("positive"), "b": it("positive"), "c": it("negative")})
+    parts = _gate_partitions(
+        {"a": it("positive"), "b": it("positive"), "c": it("negative")}, "observations",
+    )
     assert sorted(len(p) for p in parts) == [1, 2]  # a,b (positive) together; c (negative) apart
 
 
@@ -97,3 +103,42 @@ def test_gate_filter_keeps_only_same_bucket_same_verdict():
     diff_verdict = SimpleNamespace(value=_v6(False, 6, "opposes_my_read", "negative"))
     out = gate_filter(item, [same, diff_bucket, diff_consensus, diff_verdict])
     assert out == [same]
+
+
+# ── strategy-point gate: signature = direction + honesty + valence (situation goes soft) ──
+
+
+def _sp(direction, honesty, valence):
+    return {"direction": direction, "honesty": honesty, "valence": valence}
+
+
+def test_sp_gate_key_none_for_v5_strategy_point():
+    assert sp_gate_key({"situation": "x", "action": "y"}) is None
+
+
+def test_sp_gate_key_signature():
+    assert sp_gate_key(_sp("offensive", "honest", "do")) == ("offensive", "honest", "do")
+
+
+def test_sp_gate_filter_keeps_only_same_signature():
+    # SP does NOT gate on the situation enums — only the move classification. Rival moves in the
+    # same spot (different direction/valence) must NOT be candidates.
+    item = SimpleNamespace(direction="offensive", honesty="honest", valence="do")
+    same = SimpleNamespace(value=_sp("offensive", "honest", "do"))
+    diff_direction = SimpleNamespace(value=_sp("defensive", "honest", "do"))
+    diff_valence = SimpleNamespace(value=_sp("offensive", "honest", "dont"))
+    diff_honesty = SimpleNamespace(value=_sp("offensive", "deceptive", "do"))
+    assert sp_gate_filter(item, [same, diff_direction, diff_valence, diff_honesty]) == [same]
+
+
+def test_kind_dispatch_routes_sp_vs_obs():
+    sp_val = _sp("positional", "deceptive", "do")
+    obs_val = _v6(False, 6, "opposes_my_read", "positive") | {
+        "info_landscape_class": "info_starved", "exposure_class": "safe"}
+    # partition_key_for picks the SP signature for strategy_points, the obs gate+pairchecks otherwise
+    assert partition_key_for("strategy_points", sp_val) == ("positional", "deceptive", "do")
+    assert partition_key_for("observations", obs_val) == batch_partition_key(obs_val)
+    # gate_filter_for routes the per-game candidate filter the same way
+    sp_item = SimpleNamespace(direction="positional", honesty="deceptive", valence="do")
+    sp_other = SimpleNamespace(value=_sp("positional", "deceptive", "dont"))
+    assert gate_filter_for("strategy_points", sp_item, [sp_other]) == []

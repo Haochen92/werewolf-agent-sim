@@ -127,3 +127,43 @@ def gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
         if gate_key(value) == key and compatible(item, value):
             kept.append(c)
     return kept
+
+
+# ── Strategy-point gate ────────────────────────────────────────────────────────
+# An SP's dedup signature is NOT the situation enums (those go SOFT, as similarity within the bucket) —
+# it is the move classification: direction + honesty + valence, within the (role, action_phase) namespace.
+# Two SPs match only if all three agree AND their situations are similar; differ on any one → distinct
+# move (e.g. "pressure the accuser" vs "lay low" in the same spot). The whole signature is the partition,
+# so there are no separate pair-checks. None for a v5 strategy point (no move-classification fields).
+_SP_SIGNATURE_FIELDS = ("direction", "honesty", "valence")
+
+
+def sp_gate_key(sp: Any) -> tuple | None:
+    """SP dedup partition: (direction, honesty, valence). None if the SP carries none of them (v5)."""
+    values = [_read(sp, field) for field in _SP_SIGNATURE_FIELDS]
+    if all(v is None for v in values):
+        return None
+    return tuple(values)
+
+
+def sp_gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
+    """Narrow cosine candidates to the SP's move-classification signature. No-op for v5 SPs."""
+    key = sp_gate_key(item)
+    if key is None:
+        return candidates
+    return [c for c in candidates if sp_gate_key(getattr(c, "value", c)) == key]
+
+
+# ── memory_kind dispatch (one entry point for both the per-game and batch paths) ──
+def partition_key_for(memory_kind: str, value: Any) -> tuple | None:
+    """The batch pre-partition key for a stored value, by memory kind (SP signature vs obs gate+pair-checks)."""
+    if memory_kind == "strategy_points":
+        return sp_gate_key(value)
+    return batch_partition_key(value)
+
+
+def gate_filter_for(memory_kind: str, item: Any, candidates: list[Any]) -> list[Any]:
+    """The per-game candidate gate for an item, by memory kind."""
+    if memory_kind == "strategy_points":
+        return sp_gate_filter(item, candidates)
+    return gate_filter(item, candidates)
