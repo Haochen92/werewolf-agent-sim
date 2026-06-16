@@ -2,7 +2,14 @@
 
 from types import SimpleNamespace
 
-from Agents.memory.dedup_gate import _alive_bucket, compatible, gate_filter, gate_key, same_verdict
+from Agents.memory.dedup_gate import (
+    _alive_bucket,
+    batch_partition_key,
+    compatible,
+    gate_filter,
+    gate_key,
+    same_verdict,
+)
 
 
 def _v6(is_swing, alive, consensus, verdict="positive"):
@@ -54,6 +61,23 @@ def test_gate_filter_applies_pairchecks():
     diff_exposure = SimpleNamespace(value=_v6(False, 6, "opposes_my_read", "positive") | {
         "info_landscape_class": "info_starved", "exposure_class": "exposed"})
     assert gate_filter(item, [ok, diff_landscape, diff_exposure]) == [ok]
+
+
+def test_batch_partition_key_is_gate_plus_pairchecks():
+    v = _v6(False, 6, "opposes_my_read", "positive") | {
+        "info_landscape_class": "info_starved", "exposure_class": "safe"}
+    assert batch_partition_key(v) == (False, "mid", "opposes_my_read", "positive", "info_starved", "safe")
+    assert batch_partition_key({"situation": "x"}) is None  # v5 -> no gating
+
+
+def test_gate_partitions_separate_by_full_key():
+    from Agents.memory.batch_deduplication.clustering import _gate_partitions
+
+    def it(verdict):
+        return SimpleNamespace(value=_v6(False, 6, "x", verdict) | {
+            "info_landscape_class": "info_rich", "exposure_class": "safe"})
+    parts = _gate_partitions({"a": it("positive"), "b": it("positive"), "c": it("negative")})
+    assert sorted(len(p) for p in parts) == [1, 2]  # a,b (positive) together; c (negative) apart
 
 
 def test_gate_filter_is_noop_for_v5_item():

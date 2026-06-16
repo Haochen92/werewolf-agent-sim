@@ -80,6 +80,10 @@ class BatchDedupRunConfig(BaseModel):
     cluster_mode: ClusterMode = "bounded"
     max_cluster_size: int = DEFAULT_MAX_CLUSTER_SIZE
     linkage_method: LinkageMethod = "complete"
+    # v6 structured gate: pre-partition the namespace by the gate key + pair-checks before clustering,
+    # so clusters are homogeneous (no cross-regime/verdict/landscape/exposure merges). Tunable —
+    # turn OFF to fall back to the un-gated global clustering (legacy / v5 stores).
+    gate_enabled: bool = True
     embedding_model: str = DEFAULT_BATCH_EMBEDDING_MODEL
     embedding_dims: int = DEFAULT_BATCH_EMBEDDING_DIMS
     max_clusters: int | None = None

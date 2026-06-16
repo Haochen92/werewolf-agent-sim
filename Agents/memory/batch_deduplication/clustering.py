@@ -18,6 +18,7 @@ from Agents.llm_factory import create_embeddings
 from langgraph.store.base import BaseStore
 
 from Agents.memory.persistence import _memory_store_call_with_retries
+from Agents.memory.dedup_gate import batch_partition_key
 
 from .config import (
     BatchDedupRunConfig,
@@ -32,6 +33,34 @@ logger = logging.getLogger(__name__)
 
 
 def _build_clusters(
+    target_store: BaseStore,
+    namespace: tuple[str, str, str],
+    items_by_key: dict[str, Any],
+    config: BatchDedupRunConfig,
+) -> list[list[str]]:
+    """v6 structured gate (tunable): pre-partition the namespace by the full dedup key (gate regime +
+    pair-checks) so items in different regimes/verdicts/landscapes/exposures NEVER cluster together —
+    every cluster the LLM resolves is homogeneous. gate_enabled=False falls back to the un-gated global
+    clustering (legacy / v5 stores)."""
+    if not config.gate_enabled:
+        return _build_clusters_for_items(target_store, namespace, items_by_key, config)
+    clusters: list[list[str]] = []
+    for partition_items in _gate_partitions(items_by_key):
+        clusters.extend(_build_clusters_for_items(target_store, namespace, partition_items, config))
+    clusters.sort(key=len, reverse=True)
+    return clusters
+
+
+def _gate_partitions(items_by_key: dict[str, Any]) -> list[dict[str, Any]]:
+    """Group items by the full dedup partition key (gate + pair-checks). Items with no v6 fields
+    (partition None) fall into one 'ungated' group, clustered as before."""
+    groups: dict[Any, dict[str, Any]] = defaultdict(dict)
+    for key, item in items_by_key.items():
+        groups[batch_partition_key(item.value)][key] = item
+    return list(groups.values())
+
+
+def _build_clusters_for_items(
     target_store: BaseStore,
     namespace: tuple[str, str, str],
     items_by_key: dict[str, Any],

@@ -71,6 +71,18 @@ def same_verdict(a: Any, b: Any) -> bool:
     return va is None or vb is None or va == vb
 
 
+def batch_partition_key(obs: Any) -> tuple | None:
+    """Full DEDUP partition for the batch / system-wide pass: the gate_key PLUS the pair-check fields,
+    so every cluster the LLM resolves is fully homogeneous (same regime AND same verdict/landscape/
+    exposure). Used to pre-partition before clustering (vs the per-game path, which partitions on
+    gate_key and applies the pair-checks as edge filters — equivalent homogeneity, simpler here).
+    None if the obs has no v6 fields (no gating)."""
+    base = gate_key(obs)
+    if base is None:
+        return None
+    return base + tuple(_read(obs, field) for field in _PAIRCHECK_FIELDS)
+
+
 def gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
     """Narrow cosine candidates to the item's gate bucket AND the hard pair-checks, so dedup only ever
     compares already-homogeneous entries. No-op when the item has no v6 fields (gate_key None).
