@@ -18,7 +18,11 @@ from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
     BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
 )
-from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
+from Agents.prompts.standards import (
+    EPISTEMIC_STATUS_RULE,
+    SITUATION_QUALITY_STANDARDS,
+    SITUATION_STANDARDS,
+)
 
 from .config import TwoPassConfig
 from .formatting import _format_cluster_entries
@@ -132,7 +136,7 @@ def _cluster_agent(
             role=role,
             action_phase=action_phase,
             entries=entries,
-            situation_standards=SITUATION_STANDARDS,
+            situation_quality=SITUATION_QUALITY_STANDARDS,
         )
         output_schema = ObservationBatchDedupOutput
         run_name = "batch_dedup_observations"

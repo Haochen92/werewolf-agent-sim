@@ -359,7 +359,7 @@ Observations have three structured fields:
 - outcome: What resulted — how others responded and the downstream
   consequences.
 
-{situation_standards}
+{situation_quality}
 
 When you rewrite observations, keep each field (situation, approach, outcome)
 as separate coherent text. Use the situation standards above to keep the
@@ -410,17 +410,10 @@ Would a semantic search query matching situation A also retrieve
 situation B? If not, they are different situations — KEEP, even if the
 underlying lesson is similar.
 
-Check these dimensions:
-- Information landscape: information-rich vs information-starved changes
-  which tactics are available. Different evidence types (voting record vs
-  behavioral read vs role claim) change what signal the agent looks for.
-- Consensus texture: unified village vs split village vs no consensus
-  changes the agent's social strategy.
-- Agent exposure: driving the push vs under suspicion changes the agent's
-  risk calculus.
-- Game phase: early vs endgame changes the stakes per action. BUT phase
-  alone does not make situations different if the tactic and available
-  information are the same.
+Judge ONLY from the situation fields shown for each entry — the core event
+and its situational details. Wording or phrasing differences do not make
+situations different; a different core event, a different evidence basis, or
+the agent being in a different position does.
 
 APPROACH — "same" vs "different":
 Two approaches are functionally the same when they point the agent toward
@@ -509,7 +502,7 @@ Observations have three structured fields:
 - outcome: What resulted — how others responded and the downstream
   consequences.
 
-{situation_standards}
+{situation_quality}
 
 When you rewrite observations, keep each field (situation, approach, outcome)
 as separate coherent text. Use the situation standards above to keep the
@@ -554,17 +547,10 @@ Would a semantic search query matching situation A also retrieve
 situation B? If not, they are different situations — KEEP, even if the
 underlying lesson is similar.
 
-Check these dimensions:
-- Information landscape: information-rich vs information-starved changes
-  which tactics are available. Different evidence types (voting record vs
-  behavioral read vs role claim) change what signal the agent looks for.
-- Consensus texture: unified village vs split village vs no consensus
-  changes the agent's social strategy.
-- Agent exposure: driving the push vs under suspicion changes the agent's
-  risk calculus.
-- Game phase: early vs endgame changes the stakes per action. BUT phase
-  alone does not make situations different if the tactic and available
-  information are the same.
+Judge ONLY from the situation fields shown for each entry — the core event
+and its situational details. Wording or phrasing differences do not make
+situations different; a different core event, a different evidence basis, or
+the agent being in a different position does.
 
 APPROACH — "same" vs "different":
 Two approaches are functionally the same when they point the agent toward
