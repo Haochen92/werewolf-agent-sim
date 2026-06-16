@@ -74,17 +74,20 @@ def format_roles(roles: dict[str, str]) -> str:
 
 
 def format_retrieved_observations(observations: list[RetrievedObservation]) -> str:
+    # Number each memory (1-based, in retrieval-relevance order) so a model asked to reason about a
+    # specific memory can reference it by index. Unnumbered, the model cannot reliably track which
+    # observation is which and emits verdicts for an arbitrary partial subset (forced_schema_screen).
     if not observations:
         return "No past observations available."
     lines = []
-    for item in observations:
+    for idx, item in enumerate(observations, 1):
         obs = item.observation
         parts = [f"Situation: {obs.situation}"]
         if obs.approach:
             parts.append(f"Approach: {obs.approach}")
         if obs.outcome:
             parts.append(f"Outcome: {obs.outcome}")
-        lines.append("- " + " | ".join(parts))
+        lines.append(f"{idx}. " + " | ".join(parts))
     return "\n".join(lines)
 
 
