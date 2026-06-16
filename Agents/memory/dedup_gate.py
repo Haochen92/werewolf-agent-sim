@@ -131,15 +131,15 @@ def gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
 
 # ── Strategy-point gate ────────────────────────────────────────────────────────
 # An SP's dedup signature is NOT the situation enums (those go SOFT, as similarity within the bucket) —
-# it is the move classification: direction + honesty + valence, within the (role, action_phase) namespace.
-# Two SPs match only if all three agree AND their situations are similar; differ on any one → distinct
-# move (e.g. "pressure the accuser" vs "lay low" in the same spot). The whole signature is the partition,
-# so there are no separate pair-checks. None for a v5 strategy point (no move-classification fields).
-_SP_SIGNATURE_FIELDS = ("direction", "honesty", "valence")
+# it is the move classification: direction + honesty, within the (role, action_phase) namespace. Two SPs
+# match only if both agree AND their situations are similar; differ on either → distinct move (e.g.
+# "pressure the accuser" [offensive] vs "lay low" [defensive] in the same spot). The whole signature is
+# the partition, so there are no separate pair-checks. None for a v5 strategy point (no classification).
+_SP_SIGNATURE_FIELDS = ("direction", "honesty")
 
 
 def sp_gate_key(sp: Any) -> tuple | None:
-    """SP dedup partition: (direction, honesty, valence). None if the SP carries none of them (v5)."""
+    """SP dedup partition: (direction, honesty). None if the SP carries neither (v5)."""
     values = [_read(sp, field) for field in _SP_SIGNATURE_FIELDS]
     if all(v is None for v in values):
         return None
