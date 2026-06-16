@@ -228,19 +228,16 @@ DECISION RULES:
 BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT = """
 You are cleaning a strategy-point memory database for an AI Werewolf agent.
 The entries below are a candidate similarity cluster from one role and
-action-phase namespace.
+action-phase namespace, already pre-grouped to share the SAME move
+classification (direction and honesty) — so you are judging only whether
+they are the SAME RULE.
 
 Each entry is numbered [1], [2], etc. and has:
-- situation: the situation text used for semantic retrieval
-- action: the recommended action
-- observation_count: how often this memory has been observed
+- situation: the situation text used for semantic retrieval (the rule's IF)
+- action: the recommended move (the rule's THEN)
+- observation_count: how often this point has been observed
 
-{situation_standards}
-
-{epistemic_status_rule}
-
-All situation fields you write or rewrite must conform to the standards and
-epistemic status rule above.
+{situation_quality}
 
 Resolve this cluster into groups using one or more operations. Every operation
 must use one of these action values: DISCARD, KEEP.
@@ -256,9 +253,7 @@ adequately, do not provide merged fields — just output the survivor_key. Only
 provide merged_situation and merged_action when no single entry captures the
 full hypothesis on its own and elements across multiple entries could be
 combined into a stronger version. Use only details present in the source
-entries. Do not add dimensional fields (information landscape, consensus
-texture, agent exposure, game phase) that no source entry contains; only
-reorganize or clarify what is already stated.
+entries; only reorganize or clarify what is already stated.
 
 KEEP — Entries are genuinely distinct and need no changes. Use when entries in
 the cluster represent different hypotheses — different targets, different
@@ -267,23 +262,12 @@ timing, different risk tradeoffs, or different situational scope.
 SITUATION COMPARISON:
 Two situations are functionally the same when a semantic search query
 matching one would also retrieve the other. If not, they are different
-situations — they belong in separate KEEP operations even if the action
-advice is similar.
+situations — separate KEEP operations even if the action advice is similar.
 
-Check these dimensions — if any differs enough that a search query for
-one would not match the other, the situations are different:
-- Information landscape: information-rich vs information-starved changes
-  which tactics are available.
-- Agent exposure: the agent's position — credibility level, whether under
-  suspicion, driving vs observing — changes the available action space.
-  E.g., "confirmed non-wolf with high credibility" vs "general villager
-  under suspicion" are different situations even if the trigger event
-  (post-mislynch) is the same.
-- Consensus texture: unified vs split vs no consensus changes social
-  strategy.
-- Game phase: early vs endgame changes stakes. BUT phase alone does not
-  make situations different if the tactic and available information are
-  the same.
+Judge ONLY from the situation and action text shown for each entry. Wording
+or phrasing differences do not make a rule different; a different target,
+timing, scope, or risk posture does. (Role, phase, direction, and honesty are
+already identical across this cluster — do not re-reason them.)
 
 DECISION TEST:
 For each pair of entries in the cluster, ask: would an agent in the described
