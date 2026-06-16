@@ -110,12 +110,12 @@ def test_eval_case_captures_memory_applicability_and_roundtrips():
 
 
 def test_run_agent_carries_memory_applicability_in_every_return():
-    # the _memory_applicability carrier must ride EVERY output branch (mirrors _adopted_strategy_keys)
+    # the _memory_applicability carrier must ride EVERY output branch (mirrors _strategy_verdicts)
     import inspect
 
     from Agents.turn import agent
 
     src = inspect.getsource(agent._run_agent)
     assert src.count('output["_memory_applicability"] = memory_verdicts') == src.count(
-        'output["_adopted_strategy_keys"] = adopted_indices'
+        'output["_strategy_verdicts"] = strategy_verdicts'
     )

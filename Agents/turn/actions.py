@@ -104,6 +104,8 @@ def _run_memory_informed_action(
         )
 
         # --- Adoption processing ---
+        # Capture the full verdict list for the EvalCase BEFORE adoption pops the carrier off `result`.
+        strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
         raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
             _process_strategy_adoption(
                 result,
@@ -193,6 +195,7 @@ def _run_memory_informed_action(
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
+            strategy_verdicts=strategy_verdicts,
             memory_applicability=(result or {}).get("_memory_applicability", []),
         )
 
@@ -285,6 +288,7 @@ def _run_memory_informed_night_action(
             output_key,
         )
 
+        strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
         raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
             _process_strategy_adoption(
                 result,
@@ -353,6 +357,7 @@ def _run_memory_informed_night_action(
             updated_strategy=updated_strategy,
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
+            strategy_verdicts=strategy_verdicts,
             memory_applicability=(result or {}).get("_memory_applicability", []),
         )
 

@@ -67,12 +67,12 @@ def _run_agent(
                 continue
             break
 
-        # Extract strategy, adoption, and per-memory verdicts if present on the result. The
-        # _memory_applicability carrier rides the curated output the same way _adopted_strategy_keys
-        # does — _run_agent drops everything off `result` that isn't explicitly carried, and actions.py
-        # reads these carriers into the EvalCase.
+        # Extract strategy note + the two per-item verdict lists (strategy points / observations) if
+        # present on the result. The _strategy_verdicts and _memory_applicability carriers ride the
+        # curated output — _run_agent drops everything off `result` that isn't explicitly carried, and
+        # actions.py reads these carriers into the EvalCase (and adoption.py applies the SP verdicts).
         strategy_update = getattr(result, "updated_strategy", None)
-        adopted_indices = getattr(result, "adopted_strategy_keys", []) or []
+        strategy_verdicts = getattr(result, "strategy_verdicts", []) or []
         memory_verdicts = getattr(result, "memory_applicability", []) or []
 
         if output_key == "day_channel":
@@ -97,8 +97,8 @@ def _run_agent(
                     output = {}
                     if strategy_update:
                         output["agent_strategies"] = {player_id: strategy_update}
-                    if adopted_indices:
-                        output["_adopted_strategy_keys"] = adopted_indices
+                    if strategy_verdicts:
+                        output["_strategy_verdicts"] = strategy_verdicts
                     if memory_verdicts:
                         output["_memory_applicability"] = memory_verdicts
                     return output if output else None
@@ -129,8 +129,8 @@ def _run_agent(
             output = {"day_channel": [entry]}
             if strategy_update:
                 output["agent_strategies"] = {player_id: strategy_update}
-            if adopted_indices:
-                output["_adopted_strategy_keys"] = adopted_indices
+            if strategy_verdicts:
+                output["_strategy_verdicts"] = strategy_verdicts
             if memory_verdicts:
                 output["_memory_applicability"] = memory_verdicts
             return output
@@ -145,8 +145,8 @@ def _run_agent(
                 output = {"day_votes": [DayVote(voter=player_id, votee=validated)]}
                 if strategy_update:
                     output["agent_strategies"] = {player_id: strategy_update}
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
+                if strategy_verdicts:
+                    output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
                 return output
@@ -173,8 +173,8 @@ def _run_agent(
                 }
                 if strategy_update:
                     output["agent_strategies"] = {player_id: strategy_update}
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
+                if strategy_verdicts:
+                    output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
                 return output
@@ -191,8 +191,8 @@ def _run_agent(
                 output = {"healer_target": validated}
                 if strategy_update:
                     output["updated_strategy"] = strategy_update
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
+                if strategy_verdicts:
+                    output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
                 return output
@@ -209,8 +209,8 @@ def _run_agent(
                 output = {"investigator_target": validated}
                 if strategy_update:
                     output["updated_strategy"] = strategy_update
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
+                if strategy_verdicts:
+                    output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
                 return output
@@ -227,8 +227,8 @@ def _run_agent(
                 output = {"serial_killer_target": validated}
                 if strategy_update:
                     output["updated_strategy"] = strategy_update
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
+                if strategy_verdicts:
+                    output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
                 return output
@@ -246,8 +246,8 @@ def _run_agent(
                 output = {"vigilante_target": validated}
                 if strategy_update:
                     output["updated_strategy"] = strategy_update
-                if adopted_indices:
-                    output["_adopted_strategy_keys"] = adopted_indices
+                if strategy_verdicts:
+                    output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
                 return output
