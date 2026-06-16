@@ -35,14 +35,20 @@ import sys
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+from pydantic import Field, create_model
+
+from Agents.llm_factory import get_llm
 from Agents.llm_factory.embeddings import create_embeddings
 from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
+from Agents.prompts.prompt_inputs import build_agent_prompt_input
+from Agents.turn.action_space import _valid_targets_for_action, _with_dynamic_target_enum
+from evaluation.src.components.application import action_spec_for
 from evaluation.src.components.decision_scoring import allow_abstain_for, score_vote
 from evaluation.src.components.situation_summary import eval_case_to_agent_payload
 from evaluation.src.experiments.criticality_screen import (
@@ -55,6 +61,8 @@ from evaluation.src.experiments.criticality_screen import (
     select_spread,
 )
 from evaluation.src.experiments.decision_replay import (
+    DayVoteOutputStructuredApplicability,
+    MemoryVerdict,
     _replay_vote,
     _replay_vote_structured,
     mcnemar_p,
@@ -100,6 +108,153 @@ def _plain_row(case, retrieved, allow, roles) -> dict[str, Any]:
         "votee": votee,
         "hit": bool(out.hit_threat) if out else None,
         "net": (1 if out.hit_threat else (-1 if out.is_town_mislynch else 0)) if out else 0,
+    }
+
+
+# ── Variant probe: prompt-limitation vs output-limitation (does delivery fix coverage?) ──
+# The "one verdict per memory" instruction currently lives ONLY in the pydantic field description.
+# (A) promptbody: also state it in the prompt BODY. (B) pin: force the list length = N in the schema.
+# Coverage jumps under (A) => prompt/delivery limit. (B) emits filler (uniform verdicts / duplicate
+# `why`) => output limit; (B) emits real distinct rows => capability was there, delivery was the gate.
+
+_BODY_INSTRUCTION = (
+    "\n\nThe retrieved observations above are numbered 1 to {n}. In `memory_applicability` you MUST "
+    "output exactly one verdict for EACH numbered observation — {n} verdicts, in order, none skipped — "
+    "judging how much each applies to your current board, BEFORE you decide your vote."
+)
+
+
+def _pin_length_schema(schema: type, n: int) -> type:
+    """Subclass the (already target-enum'd) schema, overriding memory_applicability to require exactly
+    n rows. Baked into an Annotated field so the constraint survives (the enum rebuild copies only
+    annotation+default, but a subclass override is preserved)."""
+    return create_model(
+        f"{schema.__name__}_pin{n}",
+        __base__=schema,
+        memory_applicability=(
+            Annotated[list[MemoryVerdict], Field(min_length=n, max_length=n)], ...
+        ),
+    )
+
+
+def _forced_variant(case, retrieved, allow, roles, *, prompt_body: bool, pin_length: bool) -> dict[str, Any]:
+    payload = eval_case_to_agent_payload(case)
+    payload["retrieved_observations"] = retrieved
+    payload["strategy_points"] = []
+    payload["allow_abstain"] = allow
+    spec = action_spec_for(case)
+    n = len(retrieved)
+    schema = _with_dynamic_target_enum(
+        DayVoteOutputStructuredApplicability, spec.output_key,
+        _valid_targets_for_action(payload, spec.output_key),
+    )
+    if pin_length and n > 0:
+        schema = _pin_length_schema(schema, n)
+    blank = {"votee": None, "hit": None, "net": 0, "verdicts": [], "idx": [], "why": [], "n_mem": n}
+    try:
+        messages = spec.prompt_template.invoke(build_agent_prompt_input(payload)).to_messages()
+        if prompt_body:
+            messages[-1].content = messages[-1].content + _BODY_INSTRUCTION.format(n=n)
+        result = get_llm().with_structured_output(schema).invoke(
+            messages, config={"run_name": f"variant_{case.player_id}"}
+        )
+    except Exception:  # noqa: BLE001 — pin can reject (model won't hit N); count as a dropped decision
+        return blank
+    verdicts = list(getattr(result, "memory_applicability", []) or [])
+    votee = getattr(result, "vote_target", None)
+    out = score_vote(votee, roles) if votee is not None else None
+    return {
+        "votee": votee,
+        "hit": bool(out.hit_threat) if out else None,
+        "net": (1 if out.hit_threat else (-1 if out.is_town_mislynch else 0)) if out else 0,
+        "verdicts": [getattr(v, "verdict", None) for v in verdicts],
+        "idx": [getattr(v, "memory_index", None) for v in verdicts],
+        "why": [(getattr(v, "why", "") or "")[:120] for v in verdicts],
+        "n_mem": n,
+    }
+
+
+def _filler_signal(rows, variant) -> dict[str, Any]:
+    """Output-limit tell: when forced to emit N rows, are they real or padding? all-same-verdict and
+    duplicate `why` text both flag filler."""
+    uniform = ndec = 0
+    distinct_ratios = []
+    for r in rows:
+        f = r[variant]
+        v = [x for x in f["verdicts"] if x]
+        if len(v) < 2:
+            continue
+        ndec += 1
+        if len(set(v)) == 1:
+            uniform += 1
+        whys = [w for w in f["why"] if w]
+        if whys:
+            distinct_ratios.append(len(set(whys)) / len(whys))
+    return {
+        "n_multi_verdict": ndec,
+        "all_same_verdict_frac": round(uniform / ndec, 3) if ndec else None,
+        "distinct_why_ratio": round(sum(distinct_ratios) / len(distinct_ratios), 3) if distinct_ratios else None,
+    }
+
+
+def run_variants(
+    batch_path: Path,
+    v6_store: Path,
+    n: int = 60,
+    top_k: int = 5,
+    max_workers: int = 6,
+    source_games: set[str] | None = None,
+    held_out_only: bool = False,
+    roles: frozenset[str] = frozenset({"villager", "healer", "investigator"}),
+) -> dict[str, Any]:
+    """v6-only: compare base / promptbody / pin forced variants on coverage + filler."""
+    source_games = source_games or set()
+    emb = create_embeddings()
+    pools = {r: _RolePool(c, emb) for r, c in load_candidates_by_role(v6_store, roles).items()}
+    cases = select_spread(batch_path, n, roles, held_out_only=held_out_only, source_games=source_games)
+    variants = ("base", "promptbody", "pin")
+    flags = {"base": (False, False), "promptbody": (True, False), "pin": (False, True)}
+
+    def one(case, game) -> dict[str, Any] | None:
+        try:
+            pool = pools.get(case.player_role)
+            if not pool or not pool.cands:
+                return None
+            gid = str(game["game_id"])
+            allow = allow_abstain_for(case.day, game["day_resolutions"])
+            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote"))
+            idx, _ = _topk_idx(query, pool, emb, gid, top_k)
+            mem = _retrieved(pool.cands, idx, query)
+            row: dict[str, Any] = {"n_mem": len(mem), "held_out": gid not in source_games}
+            for v in variants:
+                pb, pin = flags[v]
+                row[v] = _forced_variant(case, mem, allow, game["roles"], prompt_body=pb, pin_length=pin)
+            return row
+        except Exception:  # noqa: BLE001
+            return None
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rows = [f.result() for f in [ex.submit(one, c, g) for c, g in cases]]
+    rows = [r for r in rows if r is not None]
+    return {
+        "mode": "variants (v6 only)",
+        "batch": batch_path.name,
+        "v6_store": str(v6_store),
+        "n_decisions": len(rows),
+        "top_k": top_k,
+        "epoch_note": "within-run only",
+        "by_variant": {
+            v: {
+                "vote": _vote_stats(rows, v),
+                "engagement": _engagement_stats(rows, v, top_k),
+                "filler": _filler_signal(rows, v),
+                "samples": [
+                    {"n_mem": r[v]["n_mem"], "idx": r[v]["idx"], "verdicts": r[v]["verdicts"]}
+                    for r in rows[:8]
+                ],
+            }
+            for v in variants
+        },
     }
 
 
@@ -284,14 +439,19 @@ def main() -> int:
     ap.add_argument("--held-out-only", action="store_true")
     ap.add_argument("--forced-only", action="store_true",
                     help="skip the off/plain arms (cheaper) — for the engagement/rank-coverage analysis")
+    ap.add_argument("--variants", action="store_true",
+                    help="v6-only base/promptbody/pin probe: is partial coverage a prompt or output limit?")
     ap.add_argument("--max-workers", type=int, default=6)
     args = ap.parse_args()
     roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
-    report = run_screen(
-        args.batch, args.v5_store, args.v6_store, n=args.n, top_k=args.top_k,
-        max_workers=args.max_workers, source_games=load_source_games(args.source_set),
-        held_out_only=args.held_out_only, roles=roles, forced_only=args.forced_only,
-    )
+    common = dict(n=args.n, top_k=args.top_k, max_workers=args.max_workers,
+                  source_games=load_source_games(args.source_set),
+                  held_out_only=args.held_out_only, roles=roles)
+    if args.variants:
+        report = run_variants(args.batch, args.v6_store, **common)
+    else:
+        report = run_screen(args.batch, args.v5_store, args.v6_store,
+                            forced_only=args.forced_only, **common)
     print(json.dumps(report, indent=2))
     return 0
 

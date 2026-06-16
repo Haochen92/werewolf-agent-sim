@@ -101,3 +101,32 @@ verdicts to hit the count; (b) **show fewer memories** (top_k=3) so "one each" i
 **stronger model** for this step. The honest status: on flash-lite the forced field gets PARTIAL
 per-memory coverage regardless of numbering — design the migration around partial coverage or change one
 of (a)/(b)/(c).
+
+## Prompt-limit vs output-limit — DECISIVE: it was DELIVERY (2026-06-16, v6-only n=60)
+
+The "one verdict per memory" instruction lived ONLY in the pydantic field description (0% in the prompt
+body). Ran base / promptbody / pin to disambiguate (`run_variants_n60.json`):
+- **base** — instruction in field-desc only: 168/300 verdicts, row_reliability 0.27, ranks 0.48–0.63.
+- **promptbody (A)** — same instruction ALSO stated in the prompt body ("output exactly one verdict for
+  each of the N numbered observations"): **302/300 verdicts, reliability 0.97, every rank 1.0.**
+- **pin (B)** — `memory_applicability` length pinned to N in the schema: **300/300, reliability 1.0.**
+
+**Verdict: PROMPT/DELIVERY limitation, NOT output limitation.** Coverage went 0.27 → 0.97 purely by
+moving the instruction into the prompt body. The model was always capable; it wasn't attending to an
+instruction buried in a structured-output field description (consistent with the prior "delivery matters"
+finding). Both A and B produce **real, distinct** rows — all_same_verdict_frac 0.0, distinct_why_ratio
+1.0 under both — so neither is rubber-stamping/filler. Capability was never the gate.
+
+**Two consequences worth carrying:**
+1. **The earlier engagement metric was optimistically biased by partial coverage.** Under full coverage,
+   engaged_as_applicable drops 0.798 → ~0.55 and `does_not_apply` ~quadruples (34 → 133/134). The
+   memories base SILENTLY SKIPPED were disproportionately the inapplicable ones — so the partial-coverage
+   "v6 engages more (0.697)" read was inflated. The true applicable rate is ~55%; the v6-vs-v5 engagement
+   comparison should be re-run under prompt-body full coverage to be clean.
+2. **Full per-memory coverage does NOT hurt the vote on v6** (acc base 0.617 / promptbody 0.60 / pin 0.65,
+   within noise) — forcing complete reasoning is safe here (contrast v5, where the *content* hurt).
+
+**Production migration takeaway.** Put the per-memory instruction in the PROMPT BODY (the memory-context
+block), not just the added field's description — that alone fixes coverage. Pinning the list length is a
+viable belt-and-suspenders (also full, also non-filler) but the prompt-body line is the lighter touch and
+the natural home. Either lands with the forced-applicability field on `DayVoteOutput`/`DayDiscussOutput`.
