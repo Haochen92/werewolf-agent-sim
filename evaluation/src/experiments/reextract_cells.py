@@ -30,7 +30,12 @@ from Agents.memory.extraction import extraction_inputs_from_frozen_case
 from Agents.memory.extraction.inputs import build_cell_extraction_prompt
 from Agents.memory.persistence import memory_store_paths
 from Agents.memory.validators import coerce_consensus_direction
-from Agents.schemas.memory import StoredObservation, cell_observation_schema_for
+from Agents.schemas.memory import (
+    StoredObservation,
+    StoredStrategyPoint,
+    cell_dual_extraction_schema,
+    cell_observation_schema_for,
+)
 from evaluation.src.core.manifest import build_manifest
 from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
 
@@ -57,14 +62,6 @@ ROLE_UNITS: dict[str, list[tuple[str, str, str]]] = {
 }
 
 
-def _build_prompt(inputs: dict[str, str], role: str, phase_wording: str, rep_phase: str,
-                  cell_schema: type[BaseModel]) -> str:
-    """Compose the prefix/tail cell-extraction prompt = cached role/phase-neutral prefix + per-cell
-    observation tail (the live build_role_extraction_prompt convention). phase_wording is the human
-    {phase} display; rep_phase drives the driver/menu guidance lookup."""
-    return build_cell_extraction_prompt(inputs, role, phase_wording, rep_phase, cell_schema)
-
-
 def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:
     return create_model(
         f"{cell_schema.__name__}Extraction",
@@ -73,16 +70,21 @@ def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:
     )
 
 
-def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries: int):
-    """Re-extract one (game, role, phase-group). Returns list of observation objects (action_phase
-    set by the model within the cell's allowed phases)."""
+def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries: int,
+                 with_sp: bool = False):
+    """Re-extract one (game, role, phase-group). Returns (observations, strategy_points) — the SP list
+    is empty unless with_sp (the per_run dual path). action_phase is set by the model within the cell's
+    allowed phases."""
     _, phase_wording, rep_phase = unit
     cell_schema = cell_observation_schema_for(role, rep_phase)
     if cell_schema is None:
-        return []
-    container = _container_for(cell_schema)
-    prompt = _build_prompt(
-        extraction_inputs_from_frozen_case(case), role, phase_wording, rep_phase, cell_schema
+        return [], []
+    container = (
+        cell_dual_extraction_schema(role, rep_phase) if with_sp else _container_for(cell_schema)
+    )
+    prompt = build_cell_extraction_prompt(
+        extraction_inputs_from_frozen_case(case), role, phase_wording, rep_phase, cell_schema,
+        with_sp=with_sp,
     )
     run = f"reextract_{role}_{unit[0]}_{str(case.get('game_id',''))[:8]}"
     for label, llm in (("primary", get_llm_pro()), ("backup", get_llm_pro_backup())):
@@ -92,10 +94,10 @@ def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries:
                 res = chain.invoke(prompt, config={"run_name": f"{run}_{label}"})
                 if isinstance(res, dict):
                     res = container.model_validate(res)
-                return list(res.observations)
+                return list(res.observations), list(getattr(res, "strategy_points", []))
             except Exception as e:  # noqa: BLE001
                 logger.warning("%s %s attempt %s failed: %s", run, label, attempt + 1, e)
-    return []
+    return [], []
 
 
 def main() -> int:
@@ -107,10 +109,12 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--max-retries", type=int, default=2)
     ap.add_argument("--max-workers", type=int, default=8)
+    ap.add_argument("--with-sp", action="store_true",
+                    help="per_run dual extraction: also derive strategy points into the SP store")
     args = ap.parse_args()
 
     out_dir = Path(args.output_store_dir)
-    obs_path, _ = memory_store_paths(out_dir)
+    obs_path, sp_path = memory_store_paths(out_dir)
     if obs_path.exists() and not args.append:
         raise SystemExit(f"{obs_path} exists — pass --append to add roles, or remove it first.")
 
@@ -128,19 +132,37 @@ def main() -> int:
         namespaces = json.loads(obs_path.read_text()).get("namespaces", {})
         print(f"  appending to existing store ({sum(len(v) for v in namespaces.values())} entries, "
               f"{len(namespaces)} namespaces)", flush=True)
+    sp_namespaces: dict[str, list[dict]] = {}
+    if args.with_sp and args.append and sp_path.exists():
+        sp_namespaces = json.loads(sp_path.read_text()).get("namespaces", {})
 
     def faction_won(role: str, gid: str) -> bool | None:
         w = winners.get(gid)
         return (_FACTION[role] == w) if w else None
 
     counts: dict[str, int] = {}
+    sp_counts: dict[str, int] = {}
     with ThreadPoolExecutor(max_workers=args.max_workers) as pool:
-        futs = {pool.submit(extract_cell, c, role, unit, args.max_retries): (c, role, unit)
+        futs = {pool.submit(extract_cell, c, role, unit, args.max_retries, args.with_sp): (c, role, unit)
                 for c, role, unit in units}
         for fut in as_completed(futs):
             c, role, unit = futs[fut]
             gid = c.get("game_id", "")
-            obs_list = fut.result()
+            obs_list, sp_list = fut.result()
+            for sp in sp_list:
+                sp_ns = f"strategy_points/{role}/{sp.action_phase}"
+                sp_namespaces.setdefault(sp_ns, []).append({
+                    "created_at": now.isoformat(), "key": str(uuid.uuid4()),
+                    "namespace": ["strategy_points", role, sp.action_phase],
+                    "updated_at": now.isoformat(),
+                    "value": StoredStrategyPoint(
+                        observation_count=1, last_observed=now, game_id=gid,
+                        situation=sp.composed_situation, action=sp.action,
+                        direction=sp.direction, honesty=sp.honesty,
+                        dimensions=sp.model_dump(mode="json"),
+                    ).model_dump(mode="json"),
+                })
+                sp_counts[sp_ns] = sp_counts.get(sp_ns, 0) + 1
             for o in obs_list:
                 ns_key = f"observations/{role}/{o.action_phase}"
                 entry = {
@@ -164,7 +186,8 @@ def main() -> int:
                 }
                 namespaces.setdefault(ns_key, []).append(entry)
                 counts[ns_key] = counts.get(ns_key, 0) + 1
-            print(f"  {role}/{unit[0]} game {str(gid)[:8]}: {len(obs_list)} obs", flush=True)
+            sp_note = f" + {len(sp_list)} sp" if args.with_sp else ""
+            print(f"  {role}/{unit[0]} game {str(gid)[:8]}: {len(obs_list)} obs{sp_note}", flush=True)
 
     doc = {
         "description": "v6 full-DAG RAW re-extraction (no dedup). Composed-embed situation + "
@@ -186,6 +209,17 @@ def main() -> int:
     print(f"\nStore now has {total} observations across {len(namespaces)} namespaces:", flush=True)
     for k in sorted(namespaces):
         print(f"  {k}: {len(namespaces[k])}", flush=True)
+
+    if args.with_sp:
+        sp_total = sum(len(v) for v in sp_namespaces.values())
+        sp_path.write_text(json.dumps({
+            "description": "v6 per_run strategy points (RAW, no dedup). Derived per game alongside the "
+                           "observations (dual extraction). Built by reextract_cells.py --with-sp.",
+            "namespaces": sp_namespaces, "schema_version": SCHEMA_VERSION, "updated_at": now.isoformat(),
+        }, indent=2))
+        print(f"\nSP store now has {sp_total} strategy points across {len(sp_namespaces)} namespaces:", flush=True)
+        for k in sorted(sp_namespaces):
+            print(f"  {k}: {len(sp_namespaces[k])}", flush=True)
     return 0
 
 
