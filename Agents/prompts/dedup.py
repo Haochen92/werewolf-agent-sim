@@ -148,20 +148,10 @@ SITUATION — "same" vs "different":
 Decisive test: would a semantic search query matching situation A also
 retrieve situation B? If not, they are different situations — KEEP, even
 if the underlying lesson is similar. An observation only helps the agent
-if it gets retrieved.
-
-Check these dimensions — if any differs enough that a search query for
-one would not match the other, the situations are different:
-- Information landscape: information-rich vs information-starved changes
-  which tactics are available. Different evidence types (voting record vs
-  behavioral read vs role claim) change what signal the agent looks for.
-- Consensus texture: unified village vs split village vs no consensus
-  changes the agent's social strategy.
-- Agent exposure: driving the push vs under suspicion changes the agent's
-  risk calculus.
-- Game phase: early vs endgame changes the stakes per action. BUT phase
-  alone does not make situations different if the tactic and available
-  information are the same.
+if it gets retrieved. Judge ONLY from the situation fields shown above —
+the core event and its situational details. Wording or phrasing differences
+do not make situations different; a different core event, a different
+evidence basis, or the agent being in a different position does.
 
 APPROACH — "same" vs "different":
 Two approaches are functionally the same when they point the agent toward
