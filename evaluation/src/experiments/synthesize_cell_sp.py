@@ -27,7 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
-from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files
+from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files_cached
 from Agents.memory.store import store
 from Agents.memory.strategy_synthesis import cluster_observations_for_synth, synthesize_cluster_sps
 from Agents.schemas.memory import StoredStrategyPoint
@@ -66,12 +66,18 @@ def main() -> int:
     ap.add_argument("--max-workers", type=int, default=8)
     args = ap.parse_args()
 
-    obs_path, obs_sp_path = memory_store_paths(Path(args.obs_store_dir))
+    obs_dir = Path(args.obs_store_dir)
+    obs_path, obs_sp_path = memory_store_paths(obs_dir)
     if not obs_path.exists():
         raise SystemExit(f"{obs_path} not found — build the v6 observation store first.")
-    # obs_sp_path is this store's own SP file (absent for an obs-only store → tolerated); pointing here
-    # rather than None avoids seeding the unrelated global-default SP store into the in-memory store.
-    seed_memory_from_json_files(observations_path=obs_path, strategy_points_path=obs_sp_path, target_store=store)
+    # Cached seed: loads obs_dir/indexed_cache.pkl (data + embedding VECTORS, SHA-invalidated) if present,
+    # else embeds once via the API and SAVES the cache — so every re-run while tuning the SP prompt is
+    # instant instead of re-embedding ~900 obs. obs_sp_path (this store's own SP file) is absent for an
+    # obs-only store → tolerated; avoids seeding the unrelated global-default SP store.
+    seed_memory_from_json_files_cached(
+        observations_path=obs_path, strategy_points_path=obs_sp_path,
+        target_store=store, cache_dir=obs_dir,
+    )
 
     config = BatchDedupRunConfig(
         similarity_threshold=args.similarity_threshold,
