@@ -21,7 +21,7 @@ from Agents.schemas.game_events import (
     WolfChannel,
 )
 from Agents.schemas.memory import RetrievedObservation, RetrievedStrategyPoint
-from Agents.schemas.output import MemoryVerdict
+from Agents.schemas.output import MemoryVerdict, StrategyVerdict
 
 
 class EvalPrivateContext(BaseModel):
@@ -100,7 +100,12 @@ class EvalCase(BaseModel):
     agent_night_action: NightAction | None = None
     updated_strategy: str = ""
     adopted_strategy_keys: list[int] = Field(default_factory=list)
+    """The FOLLOW verdicts' indices (derived from strategy_verdicts) — kept for back-compat analysis."""
     adopted_strategy_store_keys: list[str] = Field(default_factory=list)
+    strategy_verdicts: list[StrategyVerdict] = Field(default_factory=list)
+    """The agent's per-strategy-point verdicts (follow/override/not_relevant, one per retrieved SP it
+    judged), captured from the structured output for offline analysis + the follow-vs-override credit
+    signal. Empty when memory was off or no SPs retrieved. See Agents/turn/agent.py (_strategy_verdicts)."""
     memory_applicability: list[MemoryVerdict] = Field(default_factory=list)
     """The agent's per-observation applicability verdicts (one per retrieved memory it judged),
     captured from the structured output for offline analysis. Empty when memory was off or none

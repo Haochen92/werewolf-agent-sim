@@ -31,10 +31,24 @@ class MemoryVerdict(BaseModel):
     why: str = Field(description="One-line reason, grounded in your current board.")
 
 
+# Per-strategy-point adoption verdict. Emitted BEFORE the action (prospective commitment), like
+# MemoryVerdict. The "one verdict per numbered strategy point" instruction lives in the PROMPT BODY
+# (memory-context block), not here — these descriptions stay terse. Model-visible: no class docstring.
+class StrategyVerdict(BaseModel):
+    strategy_index: int = Field(
+        description="1-based position of the strategy point in the numbered list shown.",
+    )
+    verdict: Literal["follow", "override", "not_relevant"] = Field(
+        description="Your decision on this point for your current board: follow (act on its advice), "
+        "override (its situation holds but you have a better move), or not_relevant (its situation does not hold).",
+    )
+    why: str = Field(description="One-line reason, grounded in your current board.")
+
+
 class WolfNightDiscussOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
@@ -46,9 +60,9 @@ class WolfNightDiscussOutput(BaseModel):
 
 
 class DayDiscussOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
@@ -65,9 +79,9 @@ class DayDiscussOutput(BaseModel):
 
 
 class DayVoteOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
@@ -148,9 +162,9 @@ class DaySummaryOutput(BaseModel):
 
 
 class HealerOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
@@ -161,9 +175,9 @@ class HealerOutput(BaseModel):
 
 
 class InvestigatorOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
@@ -174,9 +188,9 @@ class InvestigatorOutput(BaseModel):
 
 
 class SerialKillerOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
@@ -187,9 +201,9 @@ class SerialKillerOutput(BaseModel):
 
 
 class VigilanteOutput(BaseModel):
-    adopted_strategy_keys: list[int] = Field(
+    strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
-        description="Indices of strategy points whose advice your action follows, empty list if none match",
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
     )
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,

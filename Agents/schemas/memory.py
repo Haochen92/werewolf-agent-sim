@@ -872,7 +872,15 @@ class StoredStrategyPoint(BaseModel):
     retrieved_count: int = 0
     """Times this point was returned by retrieval (denominator for impact)."""
     used_count: int = 0
-    """Times an agent actually adopted it after retrieval."""
+    """Times an agent actually adopted it after retrieval (== follow_count; the follow verdicts)."""
+    follow_count: int = 0
+    """v6 per-SP verdict tally — times the agent FOLLOWED this point (acted on its advice)."""
+    override_count: int = 0
+    """v6 per-SP verdict tally — times the agent saw the point's situation hold but chose a better move."""
+    not_relevant_count: int = 0
+    """v6 per-SP verdict tally — times the point was retrieved but its situation did not hold. The
+    follow-vs-override contrast (at similar boards) is the quasi-A/B credit signal; not_relevant nets out
+    retrieval imprecision. None of these existed on legacy v5 SPs (default 0)."""
     positive_count: int = 0
     """Adoptions whose game outcome was scored positive."""
     neutral_count: int = 0
