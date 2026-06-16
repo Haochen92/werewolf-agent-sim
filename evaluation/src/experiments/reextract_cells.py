@@ -157,6 +157,7 @@ def main() -> int:
                         consensus_direction=coerce_consensus_direction(
                             o.composed_situation, getattr(o, "consensus_direction", None)
                         ),
+                        dimensions=o.model_dump(mode="json"),
                     ).model_dump(mode="json"),
                 }
                 namespaces.setdefault(ns_key, []).append(entry)

@@ -12,7 +12,7 @@ RetrievedObservation / RetrievedStrategyPoint — are internal store / retrieval
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
@@ -677,6 +677,12 @@ class StoredObservation(BaseModel):
     """v6 criticality flag — whether a single result here flips who is winning. Reranker-only. None on legacy."""
     consensus_direction: Optional[str] = None
     """v6 enum — consensus aligns_with / opposes / no_clear_direction vs the agent's read. Reranker-only."""
+    dimensions: dict[str, Any] = Field(default_factory=dict)
+    """v6 full structured record — EVERY field of the source cell observation (the individual free-text
+    dims + numbers + enums + outcome parts), persisted so dedup can show the structured RESIDUAL (the
+    non-gated fields, field-by-field) instead of the prose blob, and the reranker can use structured
+    features. The top-level fields above are the denormalized hot-path subset (embedded `situation`,
+    gate fields). Empty {} on legacy / v5 entries."""
 
 
 class StoredStrategyPoint(BaseModel):
