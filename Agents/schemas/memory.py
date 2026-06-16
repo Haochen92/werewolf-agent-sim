@@ -318,6 +318,15 @@ class BaseSituation(BaseModel):
     criticality_stakes: Annotated[str, _Embed("Stakes", 30)] = Field(
         description="What the criticality numbers imply for this decision, as board reality (not a bare label)."
     )
+    info_landscape_class: Literal["info_rich", "info_starved"] = Field(
+        description="Coarse evidence regime: info_rich (confirmed roles, voting records, caught lies) vs "
+        "info_starved (no hard leads, speculative/behavioral reads). Judge from what is known NOW."
+    )
+    exposure_class: Literal["safe", "exposed"] = Field(
+        description="Coarse standing of the acting role RIGHT NOW: safe (not a suspect, aligned with the "
+        "room, low heat) vs exposed (under suspicion, a primary target, or your role is at risk). Judge "
+        "from what is known/expressed now, never from who later turns out guilty."
+    )
 
 
 class WithConsensus(BaseModel):
@@ -677,6 +686,11 @@ class StoredObservation(BaseModel):
     """v6 criticality flag — whether a single result here flips who is winning. Reranker-only. None on legacy."""
     consensus_direction: Optional[str] = None
     """v6 enum — consensus aligns_with / opposes / no_clear_direction vs the agent's read. Reranker-only."""
+    info_landscape_class: Optional[str] = None
+    """v6 coarse gate enum — info_rich / info_starved. DEDUP pair-check only (different => never a
+    duplicate); soft signal at most for retrieval. None on legacy entries."""
+    exposure_class: Optional[str] = None
+    """v6 coarse gate enum — safe / exposed (the acting role's standing). DEDUP pair-check only. None on legacy."""
     dimensions: dict[str, Any] = Field(default_factory=dict)
     """v6 full structured record — EVERY field of the source cell observation (the individual free-text
     dims + numbers + enums + outcome parts), persisted so dedup can show the structured RESIDUAL (the

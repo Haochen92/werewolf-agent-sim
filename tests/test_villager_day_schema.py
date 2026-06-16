@@ -27,6 +27,8 @@ def _obs(**kw):
         distance_to_parity=2,
         is_swing=False,
         criticality_stakes="Seven alive, a mislynch is still recoverable but data is thin.",
+        info_landscape_class="info_starved",
+        exposure_class="safe",
         consensus_text="Fragile consensus forming around the accused on social momentum.",
         my_position="Holding out, unconvinced by the claim.",
         consensus_direction="opposes_my_read",

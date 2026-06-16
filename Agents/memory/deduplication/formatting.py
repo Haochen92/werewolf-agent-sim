@@ -9,6 +9,7 @@
 # + their prose echoes (criticality_stakes, consensus_text) + routing + the approach/outcome (own slots).
 _SITUATION_HIDE = frozenset({
     "players_alive", "distance_to_parity", "is_swing", "consensus_direction", "net_verdict",
+    "info_landscape_class", "exposure_class",  # coarse gate enums — the gate decides them
     "criticality_stakes", "consensus_text", "perspective", "action_phase",
     "approach", "impact_on_final_game_outcome", "immediate_response", "outcome",
 })

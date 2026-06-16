@@ -45,25 +45,42 @@ def gate_key(obs: Any) -> tuple | None:
     return (bool(is_swing), _alive_bucket(players_alive), consensus_direction)
 
 
+# Hard pair-checks applied WITHIN a gate bucket (DEDUP only — never retrieval): if two obs disagree on
+# any of these, they are never a duplicate (no LLM). Unlike the partition key, pair-checks add precision
+# WITHOUT multiplying buckets, so the genuinely playbook-invalidating dims live here:
+#   net_verdict          — the positive/negative contrast IS the lesson
+#   info_landscape_class — a behavioral-read lesson doesn't transfer to an info-rich board, and vice versa
+#   exposure_class       — safe-in-the-majority vs primary-target is a different playbook
+_PAIRCHECK_FIELDS = ("net_verdict", "info_landscape_class", "exposure_class")
+
+
+def compatible(a: Any, b: Any) -> bool:
+    """Dedup-compatible only if a and b agree on every pair-check field that BOTH carry. A missing field
+    (legacy/v5, or a cell that lacks it) imposes no constraint."""
+    for field in _PAIRCHECK_FIELDS:
+        va, vb = _read(a, field), _read(b, field)
+        if va is not None and vb is not None and va != vb:
+            return False
+    return True
+
+
 def same_verdict(a: Any, b: Any) -> bool:
-    """The verdict-aware rule: observations with DIFFERENT net_verdict are never duplicates (the
-    positive/negative contrast is itself the lesson). Missing verdict (v5) imposes no constraint."""
+    """The verdict-only pair-check (different net_verdict => never a duplicate). Kept for callers/tests
+    that want just the verdict rule; `compatible` is the full pair-check used by the gate."""
     va, vb = _read(a, "net_verdict"), _read(b, "net_verdict")
-    if va is None or vb is None:
-        return True
-    return va == vb
+    return va is None or vb is None or va == vb
 
 
 def gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
-    """Narrow cosine candidates to the item's gate bucket AND same net_verdict, so dedup only ever
+    """Narrow cosine candidates to the item's gate bucket AND the hard pair-checks, so dedup only ever
     compares already-homogeneous entries. No-op when the item has no v6 fields (gate_key None).
-    Candidates are store search-items (read via `.value`) or plain dicts/objects."""
+    Candidates are store search-items (read via `.value`) or plain dicts/objects. DEDUP path only."""
     key = gate_key(item)
     if key is None:
         return candidates
     kept = []
     for c in candidates:
         value = getattr(c, "value", c)
-        if gate_key(value) == key and same_verdict(item, value):
+        if gate_key(value) == key and compatible(item, value):
             kept.append(c)
     return kept

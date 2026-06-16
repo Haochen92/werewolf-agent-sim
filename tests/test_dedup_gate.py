@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from Agents.memory.dedup_gate import _alive_bucket, gate_filter, gate_key, same_verdict
+from Agents.memory.dedup_gate import _alive_bucket, compatible, gate_filter, gate_key, same_verdict
 
 
 def _v6(is_swing, alive, consensus, verdict="positive"):
@@ -31,6 +31,29 @@ def test_same_verdict_rule():
     assert same_verdict(_v6(False, 6, "x", "positive"), _v6(False, 6, "x", "positive"))
     assert not same_verdict(_v6(False, 6, "x", "positive"), _v6(False, 6, "x", "negative"))
     assert same_verdict({"net_verdict": None}, _v6(False, 6, "x"))  # missing -> no constraint
+
+
+def test_compatible_pairchecks():
+    base = {"net_verdict": "positive", "info_landscape_class": "info_starved", "exposure_class": "safe"}
+    assert compatible(base, dict(base))
+    assert not compatible(base, {**base, "net_verdict": "negative"})
+    assert not compatible(base, {**base, "info_landscape_class": "info_rich"})
+    assert not compatible(base, {**base, "exposure_class": "exposed"})
+    assert compatible(base, {"net_verdict": None})  # missing -> no constraint
+
+
+def test_gate_filter_applies_pairchecks():
+    item = SimpleNamespace(
+        is_swing=False, players_alive=6, consensus_direction="opposes_my_read",
+        net_verdict="positive", info_landscape_class="info_starved", exposure_class="safe",
+    )
+    ok = SimpleNamespace(value=_v6(False, 7, "opposes_my_read", "positive") | {
+        "info_landscape_class": "info_starved", "exposure_class": "safe"})
+    diff_landscape = SimpleNamespace(value=_v6(False, 6, "opposes_my_read", "positive") | {
+        "info_landscape_class": "info_rich", "exposure_class": "safe"})
+    diff_exposure = SimpleNamespace(value=_v6(False, 6, "opposes_my_read", "positive") | {
+        "info_landscape_class": "info_starved", "exposure_class": "exposed"})
+    assert gate_filter(item, [ok, diff_landscape, diff_exposure]) == [ok]
 
 
 def test_gate_filter_is_noop_for_v5_item():

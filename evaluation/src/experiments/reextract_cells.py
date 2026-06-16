@@ -157,6 +157,8 @@ def main() -> int:
                         consensus_direction=coerce_consensus_direction(
                             o.composed_situation, getattr(o, "consensus_direction", None)
                         ),
+                        info_landscape_class=getattr(o, "info_landscape_class", None),
+                        exposure_class=getattr(o, "exposure_class", None),
                         dimensions=o.model_dump(mode="json"),
                     ).model_dump(mode="json"),
                 }

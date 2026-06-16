@@ -16,6 +16,7 @@ _SAMPLE = dict(
     information_landscape="one unverified claim, otherwise speculative",
     players_alive=61, distance_to_parity=37, is_swing=True,
     criticality_stakes="few alive, the next result is decisive",
+    info_landscape_class="info_starved", exposure_class="exposed",
     consensus_text="a fragile, splintered room", my_position="standing apart from the push",
     consensus_direction="opposes_my_read", heat_now="no pressure on me",
     target_landscape="two candidates remain, cases purely behavioral",
@@ -25,7 +26,7 @@ _SAMPLE = dict(
     immediate_response="the room followed", net_verdict="positive",
 )
 # distinctive tokens belonging to non-embed (reranker-only) fields — must never be in the embed
-_FORBIDDEN = ["61", "37", "opposes_my_read", "contradicts", "bullets", "ally_revealed"]
+_FORBIDDEN = ["61", "37", "opposes_my_read", "contradicts", "bullets", "ally_revealed", "info_starved"]
 
 
 def _cells():
