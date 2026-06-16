@@ -130,3 +130,26 @@ finding). Both A and B produce **real, distinct** rows — all_same_verdict_frac
 block), not just the added field's description — that alone fixes coverage. Pinning the list length is a
 viable belt-and-suspenders (also full, also non-filler) but the prompt-body line is the lighter touch and
 the natural home. Either lands with the forced-applicability field on `DayVoteOutput`/`DayDiscussOutput`.
+
+## MIGRATION DECISION — locked 2026-06-16 (forced per-memory reasoning → production)
+
+Delivery design settled (no further confirmation run): **prompt-body instruction = primary, terse field
+description.** Length-pinning kept as a hard-guarantee FALLBACK only (backend-dependent on Gemini array
+minItems/maxItems; needs a per-call dynamic schema). Turnkey implementation steps when greenlit (all
+prompt-touching → v6 unfreeze batch, behind the freeze-gate, measured as a v6 arm — NOT a new class name):
+
+1. Add the per-memory verdict field to the EXISTING `DayVoteOutput` and `DayDiscussOutput`
+   (`Agents/schemas/output.py`, FROZEN) — plainly named (`memory_applicability`), **terse**
+   `Field(description=)`, NO class docstring. Do NOT add a parallel `*StructuredApplicability` class.
+2. Promote `MemoryVerdict` out of the eval scaffold (`decision_replay.py`) into `Agents/schemas/`,
+   model-visible, terse descriptions.
+3. Put the actual instruction in the PROMPT BODY — the memory-context block (`DAY_VOTE_MEMORY_CONTEXT` /
+   `DAY_DISCUSSION_MEMORY_CONTEXT`): "the observations above are numbered 1..N; output exactly one
+   verdict for each, in order, before deciding." This is what drove coverage 0.27→0.97; the field
+   description stays a short label.
+4. Plumb the field THROUGH `_run_agent`'s mapping (it currently drops unknown fields — the exact reason
+   the probe bypassed it with a direct chain call). The live `day_votes`/discussion extraction must carry
+   `memory_applicability` through, else it's silently lost.
+5. Memory numbering in `format_retrieved_observations` — already shipped (prerequisite).
+6. Score BOTH vote and engagement at the gate; re-measure the v6-vs-v5 engagement comparison under FULL
+   coverage (the partial-coverage 0.697 was inflated; true applicable ≈0.55).
