@@ -75,10 +75,11 @@ def _topk_idx(query: str, pool: _RolePool, emb, test_gid: str, top_k: int) -> tu
 
 
 def _forced_row(case, retrieved, allow, roles) -> dict[str, Any]:
-    """Run the forced-schema replay, returning the vote outcome + the per-memory verdicts."""
+    """Run the forced-schema replay, returning the vote outcome + the per-memory verdicts (with the
+    model's self-reported 1-based memory_index, so we can test WHICH memories get dropped)."""
     result = _replay_vote_structured(case, retrieved, allow)
     if result is None:
-        return {"votee": None, "hit": None, "net": 0, "verdicts": [], "n_mem": len(retrieved)}
+        return {"votee": None, "hit": None, "net": 0, "verdicts": [], "idx": [], "n_mem": len(retrieved)}
     verdicts = list(getattr(result, "memory_applicability", []) or [])
     votee = getattr(result, "vote_target", None)
     out = score_vote(votee, roles) if votee is not None else None
@@ -87,6 +88,7 @@ def _forced_row(case, retrieved, allow, roles) -> dict[str, Any]:
         "hit": bool(out.hit_threat) if out else None,
         "net": (1 if out.hit_threat else (-1 if out.is_town_mislynch else 0)) if out else 0,
         "verdicts": [getattr(v, "verdict", None) for v in verdicts],
+        "idx": [getattr(v, "memory_index", None) for v in verdicts],
         "n_mem": len(retrieved),
     }
 
@@ -111,6 +113,7 @@ def run_screen(
     source_games: set[str] | None = None,
     held_out_only: bool = False,
     roles: frozenset[str] = frozenset({"villager", "healer", "investigator"}),
+    forced_only: bool = False,
 ) -> dict[str, Any]:
     source_games = source_games or set()
     emb = create_embeddings()
@@ -143,9 +146,10 @@ def run_screen(
 
         row: dict[str, Any] = {"day": case.day, "role": case.player_role,
                                "held_out": gid not in source_games}
-        row["off"] = _plain_row(case, [], allow, roles_map)
-        row["v5_plain"] = _plain_row(case, v5_mem, allow, roles_map)
-        row["v6_plain"] = _plain_row(case, v6_mem, allow, roles_map)
+        if not forced_only:
+            row["off"] = _plain_row(case, [], allow, roles_map)
+            row["v5_plain"] = _plain_row(case, v5_mem, allow, roles_map)
+            row["v6_plain"] = _plain_row(case, v6_mem, allow, roles_map)
         row["v5_forced"] = _forced_row(case, v5_mem, allow, roles_map)
         row["v6_forced"] = _forced_row(case, v6_mem, allow, roles_map)
         return row
@@ -166,7 +170,37 @@ def _vote_stats(rows, arm) -> dict[str, Any]:
     }
 
 
-def _engagement_stats(rows, arm) -> dict[str, Any]:
+def _rank_coverage(rows, arm, top_k) -> dict[str, Any]:
+    """Test the tail-drop hypothesis: memories are injected in descending relevance, so if the model
+    drops the LOW-ranked ones, coverage[rank] should fall as rank grows. coverage[r] = fraction of
+    decisions that had >=r memories where a verdict reporting memory_index==r was emitted. Also: how
+    often the emitted index set is a clean top prefix {1..k} (in-order, no gaps)."""
+    num = [0] * (top_k + 2)
+    den = [0] * (top_k + 2)
+    prefix = ndec = 0
+    samples = []
+    for r in rows:
+        f = r[arm]
+        n = f["n_mem"]
+        if n == 0 and not f["idx"]:
+            continue
+        ndec += 1
+        idxset = {i for i in f["idx"] if isinstance(i, int)}
+        for rank in range(1, min(n, top_k) + 1):
+            den[rank] += 1
+            if rank in idxset:
+                num[rank] += 1
+        k = len(idxset)
+        if idxset and idxset == set(range(1, k + 1)):
+            prefix += 1
+        if len(samples) < 12:
+            samples.append({"n_mem": n, "emitted_idx": sorted(idxset)})
+    cov = {str(rank): round(num[rank] / den[rank], 3) for rank in range(1, top_k + 1) if den[rank]}
+    return {"coverage_by_rank": cov, "clean_top_prefix_fraction": round(prefix / ndec, 3) if ndec else None,
+            "sample_rows": samples}
+
+
+def _engagement_stats(rows, arm, top_k) -> dict[str, Any]:
     dist: Counter[str] = Counter()
     shown = emitted = reliable = ndec = 0
     for r in rows:
@@ -188,6 +222,7 @@ def _engagement_stats(rows, arm) -> dict[str, Any]:
         "verdict_dist": dict(dist),
         "engaged_as_applicable": round(applicable / total, 3) if total else None,
         "rejected_does_not_apply": round(dist.get("does_not_apply", 0) / total, 3) if total else None,
+        "rank_coverage": _rank_coverage(rows, arm, top_k),
     }
 
 
@@ -208,18 +243,11 @@ def _paired_flip(rows, arm_a, arm_b) -> dict[str, Any]:
 
 
 def _aggregate(rows, batch_path, v5_store, v6_store, top_k) -> dict[str, Any]:
-    arms = PLAIN_ARMS + FORCED_ARMS
+    has_plain = bool(rows) and "off" in rows[0]
+    arms = (PLAIN_ARMS + FORCED_ARMS) if has_plain else FORCED_ARMS
     vote = {a: _vote_stats(rows, a) for a in arms}
-    forced_delta = {
-        "v5_forced_minus_v5_plain": (
-            None if vote["v5_forced"]["accuracy"] is None or vote["v5_plain"]["accuracy"] is None
-            else round(vote["v5_forced"]["accuracy"] - vote["v5_plain"]["accuracy"], 3)),
-        "v6_forced_minus_v6_plain": (
-            None if vote["v6_forced"]["accuracy"] is None or vote["v6_plain"]["accuracy"] is None
-            else round(vote["v6_forced"]["accuracy"] - vote["v6_plain"]["accuracy"], 3)),
-    }
     held = [r for r in rows if r.get("held_out")]
-    return {
+    out: dict[str, Any] = {
         "batch": batch_path.name,
         "v5_store": str(v5_store),
         "v6_store": str(v6_store),
@@ -228,14 +256,19 @@ def _aggregate(rows, batch_path, v5_store, v6_store, top_k) -> dict[str, Any]:
         "top_k": top_k,
         "epoch_note": "all votes regenerated this run; compare WITHIN run only, not vs prior epochs",
         "vote_accuracy": vote,
-        "forced_minus_plain": forced_delta,
-        "engagement_forced": {a: _engagement_stats(rows, a) for a in FORCED_ARMS},
-        "paired_flips": {
-            "v6_plain_vs_v5_plain": _paired_flip(rows, "v5_plain", "v6_plain"),
-            "v6_forced_vs_v5_forced": _paired_flip(rows, "v5_forced", "v6_forced"),
-            "v6_forced_vs_v6_plain": _paired_flip(rows, "v6_plain", "v6_forced"),
-        },
+        "engagement_forced": {a: _engagement_stats(rows, a, top_k) for a in FORCED_ARMS},
+        "paired_flips": {"v6_forced_vs_v5_forced": _paired_flip(rows, "v5_forced", "v6_forced")},
     }
+    if has_plain:
+        out["forced_minus_plain"] = {
+            "v5_forced_minus_v5_plain": round(vote["v5_forced"]["accuracy"] - vote["v5_plain"]["accuracy"], 3)
+            if vote["v5_forced"]["accuracy"] is not None and vote["v5_plain"]["accuracy"] is not None else None,
+            "v6_forced_minus_v6_plain": round(vote["v6_forced"]["accuracy"] - vote["v6_plain"]["accuracy"], 3)
+            if vote["v6_forced"]["accuracy"] is not None and vote["v6_plain"]["accuracy"] is not None else None,
+        }
+        out["paired_flips"]["v6_plain_vs_v5_plain"] = _paired_flip(rows, "v5_plain", "v6_plain")
+        out["paired_flips"]["v6_forced_vs_v6_plain"] = _paired_flip(rows, "v6_plain", "v6_forced")
+    return out
 
 
 def main() -> int:
@@ -249,13 +282,15 @@ def main() -> int:
     ap.add_argument("--source-set", type=Path,
                     default=Path("evaluation/frozen_eval_sets/extraction/extraction_v5_0.jsonl"))
     ap.add_argument("--held-out-only", action="store_true")
+    ap.add_argument("--forced-only", action="store_true",
+                    help="skip the off/plain arms (cheaper) — for the engagement/rank-coverage analysis")
     ap.add_argument("--max-workers", type=int, default=6)
     args = ap.parse_args()
     roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
     report = run_screen(
         args.batch, args.v5_store, args.v6_store, n=args.n, top_k=args.top_k,
         max_workers=args.max_workers, source_games=load_source_games(args.source_set),
-        held_out_only=args.held_out_only, roles=roles,
+        held_out_only=args.held_out_only, roles=roles, forced_only=args.forced_only,
     )
     print(json.dumps(report, indent=2))
     return 0

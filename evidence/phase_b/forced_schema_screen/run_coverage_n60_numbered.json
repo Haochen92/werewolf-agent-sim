@@ -1,0 +1,255 @@
+{
+  "batch": "ab_arms_town.jsonl",
+  "v5_store": "memory_stores/v5_0",
+  "v6_store": "memory_stores/v6_0",
+  "n_decisions": 60,
+  "n_held_out": 60,
+  "top_k": 5,
+  "epoch_note": "all votes regenerated this run; compare WITHIN run only, not vs prior epochs",
+  "vote_accuracy": {
+    "v5_forced": {
+      "n": 60,
+      "accuracy": 0.567,
+      "net_value": 0.333
+    },
+    "v6_forced": {
+      "n": 60,
+      "accuracy": 0.7,
+      "net_value": 0.6
+    }
+  },
+  "engagement_forced": {
+    "v5_forced": {
+      "n_decisions": 60,
+      "memories_shown": 300,
+      "verdicts_emitted": 134,
+      "row_reliability": 0.117,
+      "verdict_dist": {
+        "fully_applies": 41,
+        "partly_applies": 68,
+        "does_not_apply": 25
+      },
+      "engaged_as_applicable": 0.813,
+      "rejected_does_not_apply": 0.187,
+      "rank_coverage": {
+        "coverage_by_rank": {
+          "1": 0.533,
+          "2": 0.4,
+          "3": 0.55,
+          "4": 0.383,
+          "5": 0.367
+        },
+        "clean_top_prefix_fraction": 0.217,
+        "sample_rows": [
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              3,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              3
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              3
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              3,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              4
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              3
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              2,
+              4
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              4
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              2,
+              3
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              2,
+              3
+            ]
+          }
+        ]
+      }
+    },
+    "v6_forced": {
+      "n_decisions": 60,
+      "memories_shown": 300,
+      "verdicts_emitted": 164,
+      "row_reliability": 0.233,
+      "verdict_dist": {
+        "partly_applies": 89,
+        "does_not_apply": 31,
+        "fully_applies": 44
+      },
+      "engaged_as_applicable": 0.811,
+      "rejected_does_not_apply": 0.189,
+      "rank_coverage": {
+        "coverage_by_rank": {
+          "1": 0.55,
+          "2": 0.467,
+          "3": 0.583,
+          "4": 0.567,
+          "5": 0.567
+        },
+        "clean_top_prefix_fraction": 0.283,
+        "sample_rows": [
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              3
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              4
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              4,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              3,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              2,
+              4
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              4
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              2
+            ]
+          },
+          {
+            "n_mem": 5,
+            "emitted_idx": [
+              1,
+              3
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paired_flips": {
+    "v6_forced_vs_v5_forced": {
+      "n_paired": 60,
+      "v5_forced>_v6_forced": 1,
+      "v6_forced>_v5_forced": 9,
+      "mcnemar_p": 0.0215
+    }
+  }
+}

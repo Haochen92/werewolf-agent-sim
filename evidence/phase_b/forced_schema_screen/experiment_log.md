@@ -65,3 +65,39 @@ reasoning no longer hurts once the content is v6 (−0.104 on v5 → +0.021 on v
 dramatically" half is **only modestly supported** (engaged 0.649→0.697). Enough signal to carry the
 forced-applicability schema into the freeze-gate as a v6 arm — but score BOTH vote and engagement, and
 fix the one-verdict-per-memory reliability before/at production migration.
+
+## Per-memory coverage: WHY the model under-emits (2026-06-16, n=60 forced-only)
+
+Followed up the reliability gap (one-verdict-per-memory ~0.33). Captured each decision's emitted
+`memory_index` set to test the hypothesis *"it drops the low-ranked tail"* (memories are injected in
+descending relevance). Runs: `run_coverage_n60.json` (unnumbered), `run_coverage_n60_numbered.json`.
+
+**Hypothesis 1 (tail-drop) — REFUTED.** Coverage-by-rank is FLAT, not declining: v6 rank 1→5 =
+0.68/0.50/0.55/0.65/0.52; v5 = 0.63/0.53/0.57/0.45/0.57. Rank 5 is covered as often as rank 2. Emitted
+index sets are scattered arbitrary subsets (`[3]` alone, `[5]` alone, `[1,4]`, `[2,4]`, `[1,3,5]`) — a
+clean top-prefix only 28–38% of the time. So it is NOT deprioritizing the tail; it emits verdicts for a
+*random partial subset*.
+
+**Hypothesis 2 (missing indices → can't track the list) — ALSO REFUTED.** Numbered every injected memory
+`1. … 2. …` in `format_retrieved_observations` (the scattered subsets looked like list-tracking failure).
+Re-ran: coverage did NOT improve — if anything nudged down (within temp-1.0 noise):
+
+| arm | verdicts emitted | row_reliability | clean-prefix |
+|---|---|---|---|
+| v5_forced unnumbered | 165/300 | 0.233 | 0.283 |
+| v5_forced **numbered** | 134/300 | 0.117 | 0.217 |
+| v6_forced unnumbered | 174/300 | 0.333 | 0.383 |
+| v6_forced **numbered** | 164/300 | 0.233 | 0.283 |
+
+Numbering verified present in the prompt, so the null is real. ⇒ **the under-emission is NOT a
+list-tracking / indexing problem.** It is flash-lite simply not adhering to "one verdict per memory" — it
+comments on whichever memories it finds salient and skips the rest, numbered or not.
+
+**What this means for the production migration.** Numbering memories is still a PREREQUISITE for any
+per-memory `memory_index` field (kept), but it is NOT sufficient for coverage. Real coverage levers,
+untested here: (a) **pin the list length in the schema** (dynamic `memory_applicability` with
+min=max=N) so structured-output retry forces N rows — RISK: flash-lite may emit filler/rubber-stamp
+verdicts to hit the count; (b) **show fewer memories** (top_k=3) so "one each" is tractable; (c) a
+**stronger model** for this step. The honest status: on flash-lite the forced field gets PARTIAL
+per-memory coverage regardless of numbering — design the migration around partial coverage or change one
+of (a)/(b)/(c).
