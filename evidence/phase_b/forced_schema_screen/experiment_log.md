@@ -153,3 +153,22 @@ prompt-touching → v6 unfreeze batch, behind the freeze-gate, measured as a v6 
 5. Memory numbering in `format_retrieved_observations` — already shipped (prerequisite).
 6. Score BOTH vote and engagement at the gate; re-measure the v6-vs-v5 engagement comparison under FULL
    coverage (the partial-coverage 0.697 was inflated; true applicable ≈0.55).
+
+## Discussion-phase coverage under the LIVE production schema (2026-06-16, v6 n=40)
+
+After the production migration (memory_applicability on DayDiscussOutput + the body instruction in
+DAY_DISCUSSION_MEMORY_CONTEXT), replayed held-out town day_discussion decisions with v6 memory under the
+LIVE `DayDiscussOutput` (direct chain call — `_run_agent`'s mapping drops the field). `run_discussion_n40.json`.
+
+- **Coverage generalises from vote to discussion: 200/200 verdicts, row_reliability 1.0, every rank 1.0.**
+  The prompt-body delivery works identically in the discussion phase — the unmeasured phase is now measured.
+- **Messages stay natural, not robotic** (34/40 spoke, 6 passed): coherent, varied openers, no template
+  feel — forcing 5 per-memory verdicts before the message did not degrade the message. (The naturalness
+  caveat I flagged for the high-frequency discussion phase does not show at n=40; still worth watching at
+  the gate for cost/latency, since it's 5 extra structured rows per speaking turn.)
+- **engaged_as_applicable 0.86** (vs ~0.55 for votes under full coverage): discussion judges more memory
+  applicable — plausible, since discussion lessons ("what to say / how to read the room") match more
+  boards than a specific vote does. does_not_apply 28/200 = 14%.
+
+⇒ The forced per-memory reasoning is validated across all three decision shapes now: votes (the original
+screen), discussion (here, full coverage + natural messages), and the schema is wired for night too.

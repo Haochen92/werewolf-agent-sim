@@ -1,0 +1,118 @@
+{
+  "mode": "discussion coverage (production DayDiscussOutput, instruction live)",
+  "batch": "ab_arms_town.jsonl",
+  "v6_store": "memory_stores/v6_0",
+  "n_decisions": 40,
+  "n_spoke": 34,
+  "n_passed": 6,
+  "top_k": 5,
+  "coverage": {
+    "n_decisions": 40,
+    "memories_shown": 200,
+    "verdicts_emitted": 200,
+    "row_reliability": 1.0,
+    "verdict_dist": {
+      "partly_applies": 96,
+      "fully_applies": 76,
+      "does_not_apply": 28
+    },
+    "engaged_as_applicable": 0.86,
+    "rank_coverage": {
+      "1": 1.0,
+      "2": 1.0,
+      "3": 1.0,
+      "4": 1.0,
+      "5": 1.0
+    }
+  },
+  "sample_messages": [
+    {
+      "passed": false,
+      "verdicts": [
+        "partly_applies",
+        "partly_applies",
+        "fully_applies",
+        "does_not_apply",
+        "fully_applies"
+      ],
+      "msg": "I agree with the need for caution. Early role claims usually just give the wolves a target list without providing us with any real evidence. Let's see what happens tonight before we force anyone into "
+    },
+    {
+      "passed": false,
+      "verdicts": [
+        "partly_applies",
+        "fully_applies",
+        "fully_applies",
+        "partly_applies",
+        "does_not_apply"
+      ],
+      "msg": "Since we're all in the dark on Day 1, I think it's safest to hold off on any hasty votes. Let's just observe who contributes meaningfully and who just echoes others for now. No reason to rush into a m"
+    },
+    {
+      "passed": false,
+      "verdicts": [
+        "fully_applies",
+        "fully_applies",
+        "partly_applies",
+        "does_not_apply",
+        "fully_applies"
+      ],
+      "msg": "Since we have zero data, I suggest we keep the discussion open but avoid rushing into any votes today. Let's see how the night shakes out and gather information from the first set of kills before poin"
+    },
+    {
+      "passed": false,
+      "verdicts": [
+        "partly_applies",
+        "partly_applies",
+        "partly_applies",
+        "partly_applies",
+        "partly_applies"
+      ],
+      "msg": "I agree that we need to be careful with power roles, but we shouldn't just sit here in total silence. Instead of just talking about strategy, why don't we see if anyone has a preference for who we loo"
+    },
+    {
+      "passed": false,
+      "verdicts": [
+        "partly_applies",
+        "partly_applies",
+        "partly_applies",
+        "partly_applies",
+        "partly_applies"
+      ],
+      "msg": "I agree that we need a way to track contributions. Since we lack concrete leads, perhaps we can each suggest one player whose logic or questions we want to pay closer attention to tomorrow? It might h"
+    },
+    {
+      "passed": false,
+      "verdicts": [
+        "fully_applies",
+        "fully_applies",
+        "does_not_apply",
+        "fully_applies",
+        "fully_applies"
+      ],
+      "msg": "Since it is the first day and we have no information, I suggest we keep things simple for now. Let's just focus on everyone being active so we have something to analyze after tonight's events. Does an"
+    },
+    {
+      "passed": false,
+      "verdicts": [
+        "fully_applies",
+        "partly_applies",
+        "partly_applies",
+        "partly_applies",
+        "does_not_apply"
+      ],
+      "msg": "It is far too early for meaningful accusations, but we should avoid total silence. I suggest we all share a simple observation on the group's flow today to build a baseline for tomorrow, rather than j"
+    },
+    {
+      "passed": true,
+      "verdicts": [
+        "partly_applies",
+        "fully_applies",
+        "partly_applies",
+        "fully_applies",
+        "fully_applies"
+      ],
+      "msg": ""
+    }
+  ]
+}

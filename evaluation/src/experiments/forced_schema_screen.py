@@ -65,8 +65,11 @@ from evaluation.src.experiments.decision_replay import (
     MemoryVerdict,
     _replay_vote,
     _replay_vote_structured,
+    load_game_index,
     mcnemar_p,
 )
+from Agents.schemas.output import DayDiscussOutput
+from evaluation.src.data.local_cases import LocalCaseSource
 
 PLAIN_ARMS = ("off", "v5_plain", "v6_plain")
 FORCED_ARMS = ("v5_forced", "v6_forced")
@@ -258,6 +261,143 @@ def run_variants(
     }
 
 
+# ── Discussion-phase coverage (the production DayDiscussOutput now carries the field natively) ──
+# Validates the day-vote coverage win generalises to discussion (which we never measured). Direct chain
+# call because _run_agent's mapping drops memory_applicability. Also keeps the message to eyeball that
+# forced per-memory reasoning didn't make discussion robotic.
+
+def iter_town_day_discussion(batch_path: Path, roles: frozenset[str]):
+    source = LocalCaseSource(batch_path)
+    index = load_game_index(batch_path)
+    for tid in source.trace_ids():
+        game = index.get(tid)
+        if not game:
+            continue
+        for case in source.eval_cases(tid):
+            if case.action_phase == "day_discussion" and case.player_role in roles:
+                yield case, game
+
+
+def _discussion_row(case, retrieved) -> dict[str, Any]:
+    payload = eval_case_to_agent_payload(case)
+    payload["retrieved_observations"] = retrieved
+    payload["strategy_points"] = []
+    spec = action_spec_for(case)  # (role, day_discussion) -> DayDiscussOutput
+    try:
+        obj = (spec.prompt_template | get_llm().with_structured_output(DayDiscussOutput)).invoke(
+            build_agent_prompt_input(payload), config={"run_name": f"disc_{case.player_id}"}
+        )
+    except Exception:  # noqa: BLE001
+        return {"n_mem": len(retrieved), "idx": [], "verdicts": [], "why": [], "msg": None, "passed": None}
+    v = list(getattr(obj, "memory_applicability", []) or [])
+    return {
+        "n_mem": len(retrieved),
+        "idx": [getattr(x, "memory_index", None) for x in v],
+        "verdicts": [getattr(x, "verdict", None) for x in v],
+        "why": [(getattr(x, "why", "") or "")[:120] for x in v],
+        "msg": (getattr(obj, "message", "") or "")[:200],
+        "passed": getattr(obj, "pass_turn", None),
+    }
+
+
+def run_discussion(
+    batch_path: Path,
+    v6_store: Path,
+    n: int = 40,
+    top_k: int = 5,
+    max_workers: int = 6,
+    source_games: set[str] | None = None,
+    held_out_only: bool = False,
+    roles: frozenset[str] = frozenset({"villager", "healer", "investigator"}),
+) -> dict[str, Any]:
+    source_games = source_games or set()
+    emb = create_embeddings()
+    pools = {r: _RolePool(c, emb) for r, c in load_candidates_by_role(v6_store, roles).items()}
+    # round-robin across games, held-out filter
+    by_game: dict[str, list] = {}
+    for case, game in iter_town_day_discussion(batch_path, roles):
+        gid = str(game["game_id"])
+        if held_out_only and gid in source_games:
+            continue
+        by_game.setdefault(gid, []).append((case, game))
+    picked, depth = [], 0
+    while len(picked) < n and by_game:
+        added = False
+        for pool in by_game.values():
+            if len(pool) > depth:
+                picked.append(pool[depth]); added = True
+                if len(picked) >= n:
+                    break
+        if not added:
+            break
+        depth += 1
+
+    def one(case, game) -> dict[str, Any] | None:
+        try:
+            pool = pools.get(case.player_role)
+            if not pool or not pool.cands:
+                return None
+            gid = str(game["game_id"])
+            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_discussion"))
+            idx, _ = _topk_idx(query, pool, emb, gid, top_k)
+            row = _discussion_row(case, _retrieved(pool.cands, idx, query))
+            row["role"] = case.player_role
+            row["day"] = case.day
+            return row
+        except Exception:  # noqa: BLE001
+            return None
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        rows = [f.result() for f in [ex.submit(one, c, g) for c, g in picked]]
+    rows = [r for r in rows if r is not None]
+    spoke = [r for r in rows if r.get("passed") is False]
+    return {
+        "mode": "discussion coverage (production DayDiscussOutput, instruction live)",
+        "batch": batch_path.name,
+        "v6_store": str(v6_store),
+        "n_decisions": len(rows),
+        "n_spoke": len(spoke),
+        "n_passed": sum(1 for r in rows if r.get("passed") is True),
+        "top_k": top_k,
+        "coverage": _disc_coverage(rows, top_k),
+        "sample_messages": [{"passed": r["passed"], "verdicts": r["verdicts"], "msg": r["msg"]} for r in rows[:8]],
+    }
+
+
+def _disc_coverage(rows, top_k) -> dict[str, Any]:
+    shown = emitted = reliable = ndec = 0
+    dist: Counter[str] = Counter()
+    for r in rows:
+        ndec += 1
+        shown += r["n_mem"]
+        emitted += len(r["verdicts"])
+        dist.update(v for v in r["verdicts"] if v)
+        reliable += int(len(r["verdicts"]) == r["n_mem"] and r["n_mem"] > 0)
+    total = sum(dist.values())
+    return {
+        "n_decisions": ndec,
+        "memories_shown": shown,
+        "verdicts_emitted": emitted,
+        "row_reliability": round(reliable / ndec, 3) if ndec else None,
+        "verdict_dist": dict(dist),
+        "engaged_as_applicable": round((dist.get("fully_applies", 0) + dist.get("partly_applies", 0)) / total, 3) if total else None,
+        "rank_coverage": _disc_rank_cov(rows, top_k),
+    }
+
+
+def _disc_rank_cov(rows, top_k) -> dict[str, Any]:
+    num = [0] * (top_k + 2)
+    den = [0] * (top_k + 2)
+    for r in rows:
+        n = r["n_mem"]
+        idxset = {i for i in r["idx"] if isinstance(i, int)}
+        for rank in range(1, min(n, top_k) + 1):
+            den[rank] += 1
+            if rank in idxset:
+                num[rank] += 1
+    return {str(rk): round(num[rk] / den[rk], 3) for rk in range(1, top_k + 1) if den[rk]}
+
+
 def run_screen(
     batch_path: Path,
     v5_store: Path,
@@ -441,13 +581,17 @@ def main() -> int:
                     help="skip the off/plain arms (cheaper) — for the engagement/rank-coverage analysis")
     ap.add_argument("--variants", action="store_true",
                     help="v6-only base/promptbody/pin probe: is partial coverage a prompt or output limit?")
+    ap.add_argument("--discussion", action="store_true",
+                    help="v6-only day_discussion coverage under the LIVE production DayDiscussOutput")
     ap.add_argument("--max-workers", type=int, default=6)
     args = ap.parse_args()
     roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
     common = dict(n=args.n, top_k=args.top_k, max_workers=args.max_workers,
                   source_games=load_source_games(args.source_set),
                   held_out_only=args.held_out_only, roles=roles)
-    if args.variants:
+    if args.discussion:
+        report = run_discussion(args.batch, args.v6_store, **common)
+    elif args.variants:
         report = run_variants(args.batch, args.v6_store, **common)
     else:
         report = run_screen(args.batch, args.v5_store, args.v6_store,
