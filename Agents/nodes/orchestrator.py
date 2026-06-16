@@ -504,16 +504,13 @@ def post_game_analysis(
         "strategy_points": strategy_dedup_stats.model_dump(mode="json"),
     }
     logger.info(
-        "Observation dedup: %s kept, %s discarded, %s replaced, %s differentiated, "
-        "%s failed, %s auto-kept, %s auto-discarded | Strategy dedup: %s kept, "
-        "%s discarded, %s replaced, %s differentiated, %s failed, %s auto-kept, "
-        "%s auto-discarded",
+        "Observation dedup: %s kept, %s discarded, %s failed, %s auto-kept, "
+        "%s auto-discarded | Strategy dedup: %s kept, %s discarded, %s failed, "
+        "%s auto-kept, %s auto-discarded",
         observation_dedup_stats.kept, observation_dedup_stats.discarded,
-        observation_dedup_stats.replaced, observation_dedup_stats.differentiated,
         observation_dedup_stats.failed, observation_dedup_stats.auto_kept,
         observation_dedup_stats.auto_discarded,
         strategy_dedup_stats.kept, strategy_dedup_stats.discarded,
-        strategy_dedup_stats.replaced, strategy_dedup_stats.differentiated,
         strategy_dedup_stats.failed, strategy_dedup_stats.auto_kept,
         strategy_dedup_stats.auto_discarded,
     )

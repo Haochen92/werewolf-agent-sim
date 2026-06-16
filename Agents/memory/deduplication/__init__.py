@@ -2,8 +2,9 @@
 Downstream per-extraction dedup for memory entries.
 
 After each game's extraction, each new observation or strategy point is compared
-against the most similar existing entries via LLM judgment. The LLM decides
-whether to DISCARD, REPLACE, DIFFERENTIATE, or KEEP the new entry.
+against the most similar existing entries (narrowed by the structured gate) and
+KEEP/DISCARD'd — by the cosine prefilter for the obvious cases, the LLM for the
+ambiguous middle. MERGE (rewriting) lives in the offline system-wide path, not here.
 """
 
 from .schemas import (

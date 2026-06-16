@@ -20,6 +20,7 @@ from typing import Any, Callable
 
 from langgraph.store.base import BaseStore
 
+from Agents.memory.dedup_gate import gate_filter
 from Agents.observability import EvalCaseSink, dedup_span_name, freeze_case
 from Agents.schemas import Observation, StrategyPoint
 from Agents.schemas.evaluation import DedupCase, DedupCandidate
@@ -270,6 +271,12 @@ def _dedup_single_memory(
         for candidate in all_similar
         if candidate.score and candidate.score >= DEDUP_SIMILARITY_THRESHOLD
     ]
+
+    # Structured GATE (v6): keep only candidates in the same criticality/consensus bucket AND with the
+    # same net_verdict, so the cosine/LLM only ever compares already-homogeneous entries. No-op for v5
+    # entries (no v6 fields). This is the gate-then-embed partition — it does the "same situation" work
+    # deterministically so the LLM is left with the free-text residual.
+    similar = gate_filter(item, similar)
 
     if not similar:
         kind.store_new(store, namespace, item, game_id)

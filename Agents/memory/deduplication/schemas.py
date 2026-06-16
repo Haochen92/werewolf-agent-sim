@@ -82,11 +82,11 @@ class ObservationDedupDecisionOutput(BaseModel):
 
 
 class DedupAction(str, Enum):
-    """Compact dedup outcome label for stats and return values."""
+    """Compact dedup outcome label for stats and return values. Per-game/incremental dedup is
+    KEEP/DISCARD only — MERGE (rewriting) lives in the offline system-wide path, not here. (REPLACE/
+    DIFFERENTIATE were retired; eval mappers still read the historical "B"/"C" codes from frozen data.)"""
 
     DISCARD = "A"
-    REPLACE = "B"
-    DIFFERENTIATE = "C"
     KEEP = "D"
 
 
@@ -105,8 +105,6 @@ class DedupStats(BaseModel):
 
     kept: int = 0
     discarded: int = 0
-    replaced: int = 0
-    differentiated: int = 0
     failed: int = 0  # Fell back to raw storage
     auto_kept: int = 0
     auto_discarded: int = 0
