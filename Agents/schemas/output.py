@@ -40,9 +40,9 @@ class WolfNightDiscussOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
+    updated_strategy: str
     message: str
     vote_target: str
-    updated_strategy: str
 
 
 class DayDiscussOutput(BaseModel):
@@ -54,11 +54,11 @@ class DayDiscussOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
+    updated_strategy: str
     pass_turn: bool = Field(
         description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
     )
     message: str
-    updated_strategy: str
     addressed_targets: list[AddressedTarget] = Field(
         description="List of targets addressed in the discussion. Empty list if none.",
     )
@@ -73,8 +73,8 @@ class DayVoteOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
-    vote_target: str
     updated_strategy: str
+    vote_target: str
 
 
 class Accusation(BaseModel):
@@ -156,8 +156,8 @@ class HealerOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
-    healer_target: str
     updated_strategy: str
+    healer_target: str
 
 
 class InvestigatorOutput(BaseModel):
@@ -169,8 +169,8 @@ class InvestigatorOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
-    investigator_target: str
     updated_strategy: str
+    investigator_target: str
 
 
 class SerialKillerOutput(BaseModel):
@@ -182,8 +182,8 @@ class SerialKillerOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
-    serial_killer_target: str
     updated_strategy: str
+    serial_killer_target: str
 
 
 class VigilanteOutput(BaseModel):
@@ -195,8 +195,8 @@ class VigilanteOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
-    vigilante_target: str
     updated_strategy: str
+    vigilante_target: str
 
 
 class SituationEntry(BaseModel):

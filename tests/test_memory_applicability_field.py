@@ -46,6 +46,18 @@ def test_memory_applicability_present_and_before_action(schema, action_field):
     )
 
 
+@pytest.mark.parametrize("schema, action_field", SCHEMAS)
+def test_deliberation_precedes_action(schema, action_field):
+    # all deliberation (memory verdicts + the strategy note) is emitted BEFORE the action, so the
+    # action follows the reasoning rather than rationalising it (decision-replay reorder finding)
+    fields = list(schema.model_fields)
+    a = fields.index(action_field)
+    assert fields.index("memory_applicability") < a
+    assert fields.index("updated_strategy") < a, (
+        f"{schema.__name__}: updated_strategy must precede {action_field} (reason-before-act)"
+    )
+
+
 def _minimal_kwargs(schema) -> dict:
     """Dummy values for every REQUIRED field (so we can prove the optional ones default)."""
     out = {}
