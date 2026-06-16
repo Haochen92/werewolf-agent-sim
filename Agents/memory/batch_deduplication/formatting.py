@@ -10,6 +10,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from Agents.memory.dedup_gate import situation_for_dedup
+
 from .schemas import ClusterPreview, MemoryKind
 
 
@@ -39,7 +41,9 @@ def _format_cluster_entries(
         lines.append(f"[{i}]")
         lines.append(f"observation_count: {value.get('observation_count', 1)}")
         lines.append(f"last_observed: {_format_datetime(value.get('last_observed'))}")
-        lines.append(f"situation: {value.get('situation', '')}")
+        # v6: show the non-gated structured residual (gated dims are already homogeneous in the cluster);
+        # falls back to the composed prose for v5 / pre-dimensions entries.
+        lines.append(f"situation: {situation_for_dedup(value.get('dimensions', {}), value.get('situation', ''))}")
         if memory_kind == "strategy_points":
             lines.append(f"action: {value.get('action', '')}")
         else:

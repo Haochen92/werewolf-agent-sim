@@ -13,7 +13,8 @@ from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas import Observation, StrategyPoint
 
 from .config import DEDUP_MAX_RETRIES
-from .formatting import _format_existing_entries, _format_existing_observations, _situation_for_dedup
+from .formatting import _format_existing_entries, _format_existing_observations
+from Agents.memory.dedup_gate import situation_for_dedup
 from .schemas import (
     ObservationDedupDecisionOutput,
     ObservationDiscard,
@@ -97,7 +98,7 @@ def _observation_dedup_agent(
     """Call the LLM to decide how to integrate the new observation."""
     prompt = OBSERVATION_DEDUP_PROMPT.format(
         new_role=observation.perspective,
-        new_situation=_situation_for_dedup(
+        new_situation=situation_for_dedup(
             observation.model_dump(mode="json"), observation.composed_situation
         ),
         new_approach=observation.approach,

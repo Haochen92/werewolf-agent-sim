@@ -71,6 +71,37 @@ def same_verdict(a: Any, b: Any) -> bool:
     return va is None or vb is None or va == vb
 
 
+# ── Structured-residual situation display (shared by per-game and batch dedup) ──
+# The LLM judging dedup should see ONLY the non-gated free-text residual — never re-reason a field the
+# gate already decided. So `situation_for_dedup` shows the non-gated situation dims field-by-field (the
+# `_SITUATION_HIDE` set strips the gated structured fields + their prose echoes + routing + the
+# approach/outcome which have their own slots). Falls back to the composed prose for v5 / pre-dimensions.
+_SITUATION_HIDE = frozenset({
+    "players_alive", "distance_to_parity", "is_swing", "consensus_direction", "net_verdict",
+    "info_landscape_class", "exposure_class",  # coarse gate enums — the gate decides them
+    "criticality_stakes", "consensus_text", "perspective", "action_phase",
+    "approach", "impact_on_final_game_outcome", "immediate_response", "outcome",
+})
+_V6_MARKERS = ("information_landscape", "my_position", "target_landscape", "heat_now", "forward_exposure")
+
+
+def residual_situation(dims: dict) -> str:
+    """Non-gated situation dimensions, field-by-field, with readable labels."""
+    lines = []
+    for key, value in dims.items():
+        if key in _SITUATION_HIDE or not value:
+            continue
+        lines.append(f"{key.replace('_', ' ')}: {value}")
+    return "\n".join(lines)
+
+
+def situation_for_dedup(dims: dict, fallback: str) -> str:
+    """Structured residual when the entry has v6 dimensions; else the composed prose (v5 / pre-dims)."""
+    if not any(dims.get(m) for m in _V6_MARKERS):
+        return fallback
+    return residual_situation(dims)
+
+
 def batch_partition_key(obs: Any) -> tuple | None:
     """Full DEDUP partition for the batch / system-wide pass: the gate_key PLUS the pair-check fields,
     so every cluster the LLM resolves is fully homogeneous (same regime AND same verdict/landscape/

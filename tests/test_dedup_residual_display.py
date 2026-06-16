@@ -3,11 +3,8 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from Agents.memory.deduplication.formatting import (
-    _format_existing_observations,
-    _residual_situation,
-    _situation_for_dedup,
-)
+from Agents.memory.deduplication.formatting import _format_existing_observations
+from Agents.memory.dedup_gate import residual_situation, situation_for_dedup
 from Agents.schemas.memory import StoredObservation
 
 _DIMS = {
@@ -21,7 +18,7 @@ _DIMS = {
 
 
 def test_residual_shows_nongated_hides_gated():
-    out = _residual_situation(_DIMS).lower()
+    out = residual_situation(_DIMS).lower()
     for shown in ("information landscape:", "my position:", "target landscape:", "heat now:"):
         assert shown in out
     assert out.startswith("situation:")
@@ -31,12 +28,12 @@ def test_residual_shows_nongated_hides_gated():
 
 
 def test_v5_falls_back_to_composed_prose():
-    assert _situation_for_dedup({"situation": "x"}, "COMPOSED") == "COMPOSED"
-    assert _situation_for_dedup({}, "COMPOSED") == "COMPOSED"
+    assert situation_for_dedup({"situation": "x"}, "COMPOSED") == "COMPOSED"
+    assert situation_for_dedup({}, "COMPOSED") == "COMPOSED"
 
 
 def test_v6_uses_structured_residual():
-    assert _situation_for_dedup(_DIMS, "COMPOSED").startswith("situation:")
+    assert situation_for_dedup(_DIMS, "COMPOSED").startswith("situation:")
 
 
 def test_stored_observation_persists_dimensions_backward_compat():
