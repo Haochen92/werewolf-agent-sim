@@ -39,6 +39,7 @@ from Agents.schemas.evaluation import EvalCase
 from Agents.schemas.output import (
     HealerOutput,
     InvestigatorOutput,
+    MemoryVerdict,
     SerialKillerOutput,
     VigilanteOutput,
     WolfNightDiscussOutput,
@@ -141,21 +142,6 @@ class DayVoteOutputSituationMatch(BaseModel):
         )
     )
     vote_target: str
-
-
-class MemoryVerdict(BaseModel):
-    """One applicability verdict for one retrieved observation."""
-
-    memory_index: int = Field(
-        description="1-based position of this observation in the list shown, in order (first listed = 1)."
-    )
-    verdict: Literal["fully_applies", "partly_applies", "does_not_apply"] = Field(
-        description="How much THIS observation's situation matches your CURRENT board."
-    )
-    why: str = Field(
-        description="One sentence grounding the verdict in your current board: the evidence and how "
-        "credible it is, how many players and which roles remain and who this vote removes, the consensus."
-    )
 
 
 class DayVoteOutputStructuredApplicability(BaseModel):

@@ -10,15 +10,35 @@ AddressedTarget (game_events.py), which is embedded in DayDiscussOutput.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from Agents.schemas.game_events import AddressedTarget
+
+
+# Per-memory applicability verdict. Emitted BEFORE the action field (prospective commitment: the
+# vote/message/target follows the reasoning rather than rationalising it). The "one verdict per
+# numbered observation" instruction lives in the PROMPT BODY (memory-context block), not here — these
+# descriptions stay terse. Model-visible: no class docstring.
+class MemoryVerdict(BaseModel):
+    memory_index: int = Field(
+        description="1-based position of the observation in the numbered list shown.",
+    )
+    verdict: Literal["fully_applies", "partly_applies", "does_not_apply"] = Field(
+        description="How much this observation's situation matches your current board.",
+    )
+    why: str = Field(description="One-line reason, grounded in your current board.")
 
 
 class WolfNightDiscussOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
     message: str
     vote_target: str
@@ -29,6 +49,10 @@ class DayDiscussOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
     pass_turn: bool = Field(
         description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
@@ -44,6 +68,10 @@ class DayVoteOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
     vote_target: str
     updated_strategy: str
@@ -124,6 +152,10 @@ class HealerOutput(BaseModel):
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
     )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    )
     healer_target: str
     updated_strategy: str
 
@@ -132,6 +164,10 @@ class InvestigatorOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
     investigator_target: str
     updated_strategy: str
@@ -142,6 +178,10 @@ class SerialKillerOutput(BaseModel):
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
     )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    )
     serial_killer_target: str
     updated_strategy: str
 
@@ -150,6 +190,10 @@ class VigilanteOutput(BaseModel):
     adopted_strategy_keys: list[int] = Field(
         default_factory=list,
         description="Indices of strategy points whose advice your action follows, empty list if none match",
+    )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
     vigilante_target: str
     updated_strategy: str
