@@ -638,6 +638,148 @@ def cell_situation_schema_for(role: str, action_phase: str) -> type[BaseModel] |
     return _SITUATION_CELL_REGISTRY.get((role, action_phase))
 
 
+# ── Per-cell STRATEGY POINTS (v6) ─────────────────────────────────────────────────────────────
+# An SP is a cell observation with its retrospective tail (approach/impact/net_verdict) swapped for a
+# PRESCRIPTIVE one. It reuses the SAME situation dims as the observation cell, so `compose_situation_embed`
+# yields the identical embed string — SP co-retrieves and co-gates with the matching observations.
+# CellStrategyMixin is the SINGLE universal prescriptive payload (same for every role/phase cell — no
+# role-specific splitting); only the situation dims + perspective/action_phase vary per cell. The
+# move-classification enums (direction/honesty/valence) are the SP dedup signature (see dedup_gate), NOT
+# embedded; trigger/action are decision-time fields, also NOT embedded. Model-visible (extraction output)
+# → Field(description=), NO class docstring (folds into the JSON schema → leak).
+class CellStrategyMixin(BaseModel):
+    direction: Literal["offensive", "defensive", "positional"] = Field(
+        description="Whose position the move acts on: offensive (moves against another player — drives "
+        "an accusation, vote, or kill), defensive (protects the acting role's own standing — deflects "
+        "suspicion, manages exposure), positional (shapes the room or consensus without a single target)."
+    )
+    honesty: Literal["honest", "deceptive"] = Field(
+        description="Whether the move trades in truth (honest — claims/reads/votes meant sincerely) or "
+        "misdirection (deceptive — a fake claim, bluff, or misdirecting accusation). Any role may be "
+        "deceptive (e.g. a villager fake-claiming to bait a wolf, or claiming healer to draw the kill)."
+    )
+    valence: Literal["do", "dont"] = Field(
+        description="Whether this rule says to DO the move (it tends to help this role) or to NOT do it "
+        "(an anti-pattern that tends to backfire)."
+    )
+    trigger: str = Field(
+        description="The specific in-the-moment pattern that fires this rule — the recognizable tell on "
+        "the board RIGHT NOW, not the broad situation. Concrete enough to decide whether it is happening."
+    )
+    action: str = Field(
+        description="The prescriptive move to take when the trigger holds (or, if valence is 'dont', the "
+        "move to avoid). Concrete; include conditional branches inline if the trigger implies different responses."
+    )
+
+    @property
+    def composed_situation(self) -> str:
+        return compose_situation_embed(self)
+
+
+class VillagerDayStrategyPoint(VillagerDaySituation, CellStrategyMixin):
+    perspective: Literal["villager"] = Field(description="The role this strategy point is for — villager.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class HealerDayStrategyPoint(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, CellStrategyMixin,
+):
+    perspective: Literal["healer"] = Field(description="The role this strategy point is for — healer.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class InvestigatorDayStrategyPoint(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, CellStrategyMixin,
+):
+    perspective: Literal["investigator"] = Field(description="The role this strategy point is for — investigator.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class VigilanteDayStrategyPoint(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithBulletsLeft, CellStrategyMixin,
+):
+    perspective: Literal["vigilante"] = Field(description="The role this strategy point is for — vigilante.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class WolfDayStrategyPoint(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, WithAllyRevealed, CellStrategyMixin,
+):
+    perspective: Literal["wolf"] = Field(description="The role this strategy point is for — wolf.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class SerialKillerDayStrategyPoint(
+    BaseSituation, WithConsensus, WithHeat, WithTargetLandscape,
+    WithForwardExposure, WithPublicPrivate, CellStrategyMixin,
+):
+    perspective: Literal["serial_killer"] = Field(description="The role this strategy point is for — serial_killer.")
+    action_phase: _DAY_PHASES = Field(description="day_discussion or day_vote.")
+
+
+class HealerNightStrategyPoint(BaseSituation, WithTargetLandscape, CellStrategyMixin):
+    perspective: Literal["healer"] = Field(description="The role this strategy point is for — healer.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class InvestigatorNightStrategyPoint(BaseSituation, WithTargetLandscape, CellStrategyMixin):
+    perspective: Literal["investigator"] = Field(description="The role this strategy point is for — investigator.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class VigilanteNightStrategyPoint(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, WithBulletsLeft, CellStrategyMixin
+):
+    perspective: Literal["vigilante"] = Field(description="The role this strategy point is for — vigilante.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class WolfNightStrategyPoint(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, CellStrategyMixin
+):
+    perspective: Literal["wolf"] = Field(description="The role this strategy point is for — wolf.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+class SerialKillerNightStrategyPoint(
+    BaseSituation, WithTargetLandscape, WithForwardExposure, CellStrategyMixin
+):
+    perspective: Literal["serial_killer"] = Field(description="The role this strategy point is for — serial_killer.")
+    action_phase: Literal["night_action"] = Field(description="night_action.")
+
+
+_STRATEGY_CELL_REGISTRY: dict[tuple[str, str], type[BaseModel]] = {}
+for _r, _cls in (
+    ("villager", VillagerDayStrategyPoint),
+    ("healer", HealerDayStrategyPoint),
+    ("investigator", InvestigatorDayStrategyPoint),
+    ("vigilante", VigilanteDayStrategyPoint),
+    ("wolf", WolfDayStrategyPoint),
+    ("serial_killer", SerialKillerDayStrategyPoint),
+):
+    _STRATEGY_CELL_REGISTRY[(_r, "day_discussion")] = _cls
+    _STRATEGY_CELL_REGISTRY[(_r, "day_vote")] = _cls
+for _r, _cls in (
+    ("healer", HealerNightStrategyPoint),
+    ("investigator", InvestigatorNightStrategyPoint),
+    ("vigilante", VigilanteNightStrategyPoint),
+    ("wolf", WolfNightStrategyPoint),
+    ("serial_killer", SerialKillerNightStrategyPoint),
+):
+    _STRATEGY_CELL_REGISTRY[(_r, "night_action")] = _cls
+
+
+def cell_strategy_schema_for(role: str, action_phase: str) -> type[BaseModel] | None:
+    """The per-cell v6 strategy-point schema for a (role, action_phase): the cell's situation dims +
+    the universal prescriptive payload (direction/honesty/valence/trigger/action). None where the game
+    has no decision (e.g. villager night)."""
+    return _STRATEGY_CELL_REGISTRY.get((role, action_phase))
+
+
 class GameStrategyOutput(BaseModel):
     observations: list[Observation] = Field(
         description="Key strategic observations extracted from the full game"
