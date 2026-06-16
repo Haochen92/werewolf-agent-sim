@@ -27,11 +27,9 @@ from pydantic import BaseModel, Field, create_model
 
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
+from Agents.memory.extraction.inputs import build_cell_extraction_prompt
 from Agents.memory.persistence import memory_store_paths
 from Agents.memory.validators import coerce_consensus_direction
-from Agents.prompts import GAME_RULES
-from Agents.prompts.prompt_inputs import compose_cell_guidance
-from Agents.prompts.extraction import V6_CELL_EXTRACTION_PROMPT
 from Agents.schemas.memory import StoredObservation, cell_observation_schema_for
 from evaluation.src.core.manifest import build_manifest
 from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
@@ -61,25 +59,10 @@ ROLE_UNITS: dict[str, list[tuple[str, str, str]]] = {
 
 def _build_prompt(inputs: dict[str, str], role: str, phase_wording: str, rep_phase: str,
                   cell_schema: type[BaseModel]) -> str:
-    """Brace-safe placeholder substitution (transcripts can contain literal braces). The dimension
-    menu is GENERATED from the cell schema (single source) and the driver/horizon from the registry."""
-    prompt = V6_CELL_EXTRACTION_PROMPT
-    guidance = compose_cell_guidance(role, rep_phase, cell_schema)
-    for token, value in {
-        "{role}": role,
-        "{phase}": phase_wording,
-        "{driver_horizon}": guidance["driver_horizon"],
-        "{situation_quality}": guidance["situation_quality"],
-        "{dimension_menu}": guidance["dimension_menu"],
-        "{game_rules}": GAME_RULES,
-        "{epistemic_status_rule}": guidance["epistemic_status_rule"],
-        "{formatted_roles}": inputs["formatted_roles"],
-        "{formatted_discussions}": inputs["formatted_discussions"],
-        "{formatted_strategy_notes}": inputs["formatted_strategy_notes"],
-        "{game_outcome}": inputs["game_outcome"],
-    }.items():
-        prompt = prompt.replace(token, value)
-    return prompt
+    """Compose the prefix/tail cell-extraction prompt = cached role/phase-neutral prefix + per-cell
+    observation tail (the live build_role_extraction_prompt convention). phase_wording is the human
+    {phase} display; rep_phase drives the driver/menu guidance lookup."""
+    return build_cell_extraction_prompt(inputs, role, phase_wording, rep_phase, cell_schema)
 
 
 def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:

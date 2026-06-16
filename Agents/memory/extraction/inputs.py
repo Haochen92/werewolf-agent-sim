@@ -24,6 +24,13 @@ from Agents.prompts import (
     ROLE_PHASE_EXTRACTION_TAIL,
     SITUATION_STANDARDS,
 )
+from Agents.prompts.extraction.cell import (
+    CELL_EXTRACTION_PREFIX,
+    CELL_OBSERVATION_TAIL,
+    CELL_STRATEGY_TAIL,
+)
+from Agents.prompts.prompt_inputs import compose_cell_guidance
+from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
 from Agents.state import OrchestratorGraph
 
 logger = getLogger(__name__)
@@ -143,3 +150,49 @@ def build_role_extraction_prompt(inputs: dict[str, str], role: str) -> str:
     """Build the full role-specific extraction prompt (prefix + tail) as one
     string — the non-cached path (backup model, experiments)."""
     return build_role_extraction_prefix(inputs) + build_role_extraction_tail(role)
+
+
+# --- v6 per-cell extraction (prefix/tail, mirroring the role fan-out) ---
+
+def build_cell_extraction_prefix(inputs: dict[str, str]) -> str:
+    """Role/phase-NEUTRAL cell-extraction prefix (framing + rules + epistemic + naming + field rules +
+    quality + full game data). Byte-identical across every (role, phase) cell of a game, so it is the
+    unit cached once per game — like build_role_extraction_prefix."""
+    return CELL_EXTRACTION_PREFIX.format(
+        situation_quality=SITUATION_QUALITY_STANDARDS,
+        epistemic_status_rule=EPISTEMIC_STATUS_RULE,
+        game_rules=GAME_RULES,
+        **inputs,
+    )
+
+
+def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema) -> str:
+    """Per-cell observation lock appended after the cached prefix: role + phase + driver/horizon + the
+    schema-derived dimension menu. driver_horizon + dimension_menu come from compose_cell_guidance (the
+    single alignment point shared with the live situation-summary query)."""
+    guidance = compose_cell_guidance(role, action_phase, schema)
+    return CELL_OBSERVATION_TAIL.format(
+        role=role,
+        phase=phase,
+        driver_horizon=guidance["driver_horizon"],
+        dimension_menu=guidance["dimension_menu"],
+    )
+
+
+def build_cell_strategy_tail(role: str, phase: str) -> str:
+    """STUB strategy-points tail for the dual-extraction path (SP fields/schema land with the SP work)."""
+    return CELL_STRATEGY_TAIL.format(role=role, phase=phase)
+
+
+def build_cell_extraction_prompt(
+    inputs: dict[str, str], role: str, phase: str, action_phase: str, schema, with_sp: bool = False
+) -> str:
+    """Full per-cell extraction prompt: cached prefix + observation tail [+ strategy tail]. Mirrors
+    build_role_extraction_prompt = prefix + tail. with_sp appends the (stub) strategy-points tail for
+    the dual obs+sp extraction path."""
+    prompt = build_cell_extraction_prefix(inputs) + build_cell_observation_tail(
+        role, phase, action_phase, schema
+    )
+    if with_sp:
+        prompt += build_cell_strategy_tail(role, phase)
+    return prompt

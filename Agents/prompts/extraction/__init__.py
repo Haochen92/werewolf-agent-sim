@@ -5,9 +5,14 @@ v6, offline-only), `day_summary` (in-game), `archive` (superseded/dead). Re-expo
 
 from Agents.prompts.extraction.archive import (
     ARCHIVED_POSTGAME_EXTRACTION_PROMPT,
+    V6_CELL_EXTRACTION_PROMPT,
     VILLAGER_DAY_EXTRACTION_PROMPT,
 )
-from Agents.prompts.extraction.cell import V6_CELL_EXTRACTION_PROMPT
+from Agents.prompts.extraction.cell import (
+    CELL_EXTRACTION_PREFIX,
+    CELL_OBSERVATION_TAIL,
+    CELL_STRATEGY_TAIL,
+)
 from Agents.prompts.extraction.day_summary import DAY_SUMMARY_PROMPT
 from Agents.prompts.extraction.postgame import (
     POSTGAME_EXTRACTION_PROMPT,
@@ -18,6 +23,9 @@ from Agents.prompts.extraction.postgame import (
 
 __all__ = [
     "ARCHIVED_POSTGAME_EXTRACTION_PROMPT",
+    "CELL_EXTRACTION_PREFIX",
+    "CELL_OBSERVATION_TAIL",
+    "CELL_STRATEGY_TAIL",
     "DAY_SUMMARY_PROMPT",
     "POSTGAME_EXTRACTION_PROMPT",
     "ROLE_EXTRACTION_PREFIX",
