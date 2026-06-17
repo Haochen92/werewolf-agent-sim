@@ -201,6 +201,65 @@ def test_strategy_discard_keeps_survivor_and_sums_counts():
     assert "k1" not in items                       # and dropped from the working set
 
 
+def test_strategy_discard_preserves_survivor_structured_fields():
+    # Regression: the survivor rewrite used to whitelist situation/action/metadata only, silently
+    # dropping direction/honesty/dimensions + verdict counters on every absorbed survivor.
+    store = FakeStore()
+    items = {
+        "k1": _item(
+            "k1", situation="s1", action="a1",
+            direction="offensive", honesty="deceptive", dimensions={"x": 1},
+            follow_count=2, override_count=1, not_relevant_count=0,
+        ),
+        "k2": _item(
+            "k2", situation="s2", action="a2",
+            direction="offensive", honesty="deceptive", dimensions={"y": 9},
+            follow_count=3, override_count=0, not_relevant_count=4,
+        ),
+    }
+    operation = StrategyBatchOperation(
+        action="DISCARD", reasoning="dup", source_keys=["k1", "k2"], survivor_key="k2",
+    )
+
+    status, _ = _apply_strategy_operation(
+        store, NS, operation, {"k1", "k2"}, items, apply=True,
+    )
+
+    assert status == "discarded"
+    survivor = store.data[(NS, "k2")]
+    assert survivor["direction"] == "offensive"      # carried from survivor, not dropped
+    assert survivor["honesty"] == "deceptive"
+    assert survivor["dimensions"] == {"y": 9}          # survivor's own dims preserved
+    assert survivor["follow_count"] == 5               # 2 + 3 summed across the cluster
+    assert survivor["override_count"] == 1             # 1 + 0
+    assert survivor["not_relevant_count"] == 4         # 0 + 4
+
+
+def test_observation_discard_does_not_inject_strategy_counters():
+    # The verdict counters are strategy-only: an observation survivor must never gain them.
+    store = FakeStore()
+    items = {
+        "k1": _item("k1", situation="s1", approach="ap1", outcome="o1",
+                    dimensions={"d": 1}, distance_to_parity=2),
+        "k2": _item("k2", situation="s2", approach="ap2", outcome="o2",
+                    dimensions={"d": 3}, distance_to_parity=0),
+    }
+    operation = ObservationBatchOperation(
+        action="DISCARD", reasoning="dup", source_keys=["k1", "k2"], survivor_key="k1",
+    )
+
+    status, _ = _apply_observation_operation(
+        store, NS, operation, {"k1", "k2"}, items, apply=True,
+    )
+
+    assert status == "discarded"
+    survivor = store.data[(NS, "k1")]
+    assert survivor["dimensions"] == {"d": 1}          # structured fields preserved
+    assert survivor["distance_to_parity"] == 2
+    assert "follow_count" not in survivor              # SP-only counters never injected
+    assert "override_count" not in survivor
+
+
 # --- operations: observation MERGE adopts merged text, reports 'merged' -----
 
 

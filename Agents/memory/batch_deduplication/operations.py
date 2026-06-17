@@ -44,7 +44,12 @@ def _apply_strategy_operation(
     if survivor_key is None:
         return "failed", 0
     survivor_value = items_by_key[survivor_key].value
+    # Reconcile, don't rebuild: start from the survivor so its structured fields
+    # (direction/honesty/dimensions, verdict counters) survive — only situation/action and the
+    # summed metadata are overridden. The gate guarantees every cluster member shares
+    # (direction, honesty), so carrying the survivor's values is correct by construction.
     value = {
+        **survivor_value,
         "situation": operation.merged_situation or survivor_value.get("situation", ""),
         "action": operation.merged_action or survivor_value.get("action", ""),
         **_merged_metadata(source_keys, items_by_key, survivor_key),
@@ -89,7 +94,10 @@ def _apply_observation_operation(
         situation = operation.merged_situation or situation
         approach = operation.merged_approach or approach
         outcome = operation.merged_outcome or outcome
+    # Reconcile, don't rebuild (see _apply_strategy_operation): start from the survivor so its
+    # structured fields (dimensions + numerics: distance_to_parity/players_alive/is_swing/…) survive.
     value = {
+        **survivor_value,
         "situation": situation,
         "approach": approach,
         "outcome": outcome,
@@ -186,7 +194,7 @@ def _merged_metadata(
 ) -> dict[str, Any]:
     source_values = [items_by_key[key].value for key in source_keys if key in items_by_key]
     survivor_value = items_by_key[survivor_key].value
-    return {
+    meta = {
         "observation_count": sum(
             int(value.get("observation_count", 1)) for value in source_values
         ),
@@ -210,6 +218,14 @@ def _merged_metadata(
             int(value.get("negative_count", 0)) for value in source_values
         ),
     }
+    # SP-only verdict counters: sum across sources, but only emit keys that actually exist on the
+    # source records — so observation survivors are never injected with strategy-point fields.
+    for verdict_key in ("follow_count", "override_count", "not_relevant_count"):
+        if any(verdict_key in value for value in source_values):
+            meta[verdict_key] = sum(
+                int(value.get(verdict_key, 0)) for value in source_values
+            )
+    return meta
 
 
 def _cache_item_value(items_by_key: dict[str, Any], key: str, value: dict[str, Any]) -> None:
