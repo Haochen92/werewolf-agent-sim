@@ -6,9 +6,36 @@ The fixed domain facts of the 9-player/3-faction game (not run-time config — t
 across schemas.
 """
 
+from dataclasses import dataclass
 from typing import Literal
 
 roles = ["villager", "wolf", "investigator", "healer", "serial_killer", "vigilante"]
+
+
+@dataclass(frozen=True)
+class RoleSpec:
+    """Declarative facts about a role — the single source the prompt layer composes each role's
+    cross-faction awareness from (see Agents/prompts/roles.threat_brief), so adding a role is ONE
+    entry here, not a hunt through every prompt for "where do I mention the other factions". Also
+    the intended source for win-logic / night-routing / markers as those migrate onto it."""
+
+    name: str
+    faction: str
+    """Which faction this role wins with: "village" | "wolves" | "serial_killer"."""
+    night_action: str | None = None
+    """The role's night capability: "kill" | "protect" | "investigate" | None (no night action)."""
+    night_immune: bool = False
+    """True if this role cannot be removed by a night kill (only a daytime vote) — the SK."""
+
+
+ROLE_SPECS: dict[str, RoleSpec] = {
+    "villager": RoleSpec("villager", "village"),
+    "healer": RoleSpec("healer", "village", night_action="protect"),
+    "investigator": RoleSpec("investigator", "village", night_action="investigate"),
+    "vigilante": RoleSpec("vigilante", "village", night_action="kill"),
+    "wolf": RoleSpec("wolf", "wolves", night_action="kill"),
+    "serial_killer": RoleSpec("serial_killer", "serial_killer", night_action="kill", night_immune=True),
+}
 
 ActionPhase = Literal["day_discussion", "day_vote", "night_action"]
 ACTION_PHASES: list[str] = ["day_discussion", "day_vote", "night_action"]

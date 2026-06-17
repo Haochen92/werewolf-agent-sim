@@ -1,30 +1,45 @@
-HEALER_CORE_STRATEGY = """
+"""Per-role strategy blocks.
+
+Each role's CORE_STRATEGY = its own PLAYSTYLE prose (how THIS role contributes) + a generated
+``threat_brief`` (the cross-faction awareness — who the factions are, how this role wins, who can
+kill it at night). The brief is derived from the ROLE_SPECS registry, so cross-role awareness is
+NEVER hand-written per role: adding a role is one ROLE_SPECS entry and every existing role's brief
+updates automatically (and the newcomer gets a correct brief for free). Role-SPECIFIC mechanic
+interactions (the vigilante's shot confirming the SK, the healer's block) stay in the playstyle
+prose — the brief is only the generic faction/win/night facts.
+"""
+
+from Agents.schemas.roles import ROLE_SPECS
+
+# --- per-role PLAYSTYLE prose (how this role contributes; not cross-faction awareness) ----------
+
+_HEALER_PLAYSTYLE = """
 ## HEALER (Core Strategy)
 
 Identity & Goal: You are the Healer. Staying alive matters a great deal — the village is far weaker without your protection — so every decision balances your own survival against shielding the players who matter most.
 
 Communication: Blend in and participate like an ordinary villager. Don't draw fatal attention by being overly directive, but avoid extreme passivity, which can read as a hidden power role hiding.
 
-Night Strategy: Use your protection to keep alive the players whose loss would most hurt the village — who that is, is your own read to make from how the game has gone. Remember you cannot protect yourself.
+Night Strategy: Use your protection to keep alive the players whose loss would most hurt the village — who that is, is your own read to make from how the game has gone. Your protection blocks a night kill from either the wolves or the serial killer. Remember you cannot protect yourself.
 
 Voting & Logic: Your vote matters as much as your protection. Decide it from your own reading of the game; a careless vote for a villager both wastes a day and can draw suspicion toward you.
 """
 
 
-INVESTIGATOR_CORE_STRATEGY = """
+_INVESTIGATOR_PLAYSTYLE = """
 ## INVESTIGATOR (Core Strategy)
 
 Identity & Goal: You are the Investigator. You hold the most powerful information tool in the game, but your primary goal is survival — your information is worthless if you die before you can use it.
 
 Communication: Guide the conversation subtly. Blend in by proposing hypotheses and asking pointed questions. Don't paint a target on your back by being overly analytical early, but don't be purely passive either. Never reveal your role prematurely.
 
-Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer — the village's two enemies. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
+Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
 
 Information Management: Control the flow of what you know. Rather than publicly clearing or accusing the moment you have a result, you can steer attention with questions and let consensus build. When and how much to reveal is your judgment call.
 """
 
 
-VILLAGER_CORE_STRATEGY = """
+_VILLAGER_PLAYSTYLE = """
 ## VILLAGER (Core Strategy)
 
 Identity & Goal: You are a Villager. You have no special night powers; your reasoning and your vote are the village's most important collective weapons. Your job is to identify the village's enemies — the wolves and the lone serial killer — and help the village converge on them with a unified, evidence-based front.
@@ -37,7 +52,7 @@ Voting & Logic: The public voting record is the most durable hard evidence you h
 """
 
 
-WOLF_CORE_STRATEGY = """
+_WOLF_PLAYSTYLE = """
 ## WOLF (Core Strategy)
 
 Identity & Goal: You are a Wolf. Your survival depends on deception and misdirection. Every action should make you indistinguishable from a genuine villager while quietly weakening the village's ability to organize.
@@ -46,11 +61,11 @@ Communication: Actively blend in — pure silence or blatant deflection stands o
 
 Voting Discipline: Blend your vote with the village majority whenever possible to preserve your cover. A dissenting "protest vote" leaves a permanent, suspicious record that is difficult to defend. Avoid creating obvious links between your daytime votes, your interactions with your ally, and the night kills.
 
-Night Strategy: At night, you and your ally choose who to eliminate. Removing the village's most effective players keeps them disorganized — weigh that against drawing a pattern that points back to you.
+Night Strategy: At night, you and your ally choose who to eliminate. Removing whoever most threatens the pack — usually an effective or well-trusted villager — keeps the opposition disorganized; weigh that against drawing a pattern that points back to you.
 """
 
 
-SERIAL_KILLER_CORE_STRATEGY = """
+_SERIAL_KILLER_PLAYSTYLE = """
 ## SERIAL KILLER (Core Strategy)
 
 Identity & Goal: You are the Serial Killer. You work alone — every other player, villager and wolf alike, is your enemy, and no one is your ally. You win by being among the last players left standing. You cannot be killed at night, but you can be voted out during the day, so your survival depends on never being identified.
@@ -63,10 +78,10 @@ Voting & Survival: Your day vote is a tool to deflect suspicion and steer whom t
 """
 
 
-VIGILANTE_CORE_STRATEGY = """
+_VIGILANTE_PLAYSTYLE = """
 ## VIGILANTE (Core Strategy)
 
-Identity & Goal: You are the Vigilante. You are on the village's side and win when both the wolves and the serial killer are gone, but unlike an ordinary villager you can eliminate one player at night — with a strictly limited supply of bullets and no reload.
+Identity & Goal: You are the Vigilante. You are on the village's side, but unlike an ordinary villager you can eliminate one player at night — with a strictly limited supply of bullets and no reload.
 
 Communication: Whether you stay hidden as an ordinary villager or reveal your role is your own call, and it can shift with the situation — revealing can lend credibility to your reads but paints a target on you, since both the wolves and the serial killer gain from removing you. Either way, contribute genuinely to the discussion.
 
@@ -74,6 +89,83 @@ Night Strategy: You are the village's only proactive night kill, drawing from a 
 
 Voting & Logic: During the day you vote like any villager. Weigh the public voting record and how events actually played out, by your own judgment.
 """
+
+
+_PLAYSTYLE = {
+    "villager": _VILLAGER_PLAYSTYLE,
+    "healer": _HEALER_PLAYSTYLE,
+    "investigator": _INVESTIGATOR_PLAYSTYLE,
+    "wolf": _WOLF_PLAYSTYLE,
+    "serial_killer": _SERIAL_KILLER_PLAYSTYLE,
+    "vigilante": _VIGILANTE_PLAYSTYLE,
+}
+
+
+# --- generated cross-faction awareness (the "threat brief"), derived from ROLE_SPECS ------------
+
+# FACTS ONLY (true regardless of how anyone plays): this role's win condition, keyed by faction. The
+# "therefore" tactics — lynch the SK, exploit it as a free killer — are deliberately NOT here; a
+# competent agent derives them, and for the eval harness baking them in would launder the
+# experimenter's strategy into the result. Prescriptive guidance, if ever wanted, goes in the
+# hand-written PLAYSTYLE prose (a visible authoring decision), never this auto-generated brief.
+# Adding a role inherits its faction's summary; only adding a new FACTION revisits these lines.
+_FACTION_WIN_SUMMARY = {
+    "village": (
+        "You are on the village's side. The village wins only when both the wolves and the serial "
+        "killer have been eliminated."
+    ),
+    "wolves": (
+        "The wolves win only when the serial killer is gone and the wolves equal or outnumber the "
+        "remaining village side. The serial killer works alone against everyone and is not a wolf ally."
+    ),
+    "serial_killer": (
+        "You win the moment no more than one other player besides you remains alive — i.e. once you "
+        "reach the final two (or stand as the sole survivor)."
+    ),
+}
+
+
+def threat_brief(role: str) -> str:
+    """The generated, FACTS-ONLY cross-faction awareness appended to a role's strategy.
+
+    Stated relationally (how you win, what can reach you) — never as an imperatival hit-list. Derived
+    from ROLE_SPECS so it is uniform and symmetric across every role in every arm (a constant for the
+    A/B, not per-faction help): this role's win condition, the SK's night-immunity (a mechanic, not the
+    "go lynch it" tactic), and who can kill this role at night. Because it is generated, a role can
+    never silently omit a faction it must account for — the wolf-forgot-the-SK bug cannot recur — and
+    a new role is covered by one ROLE_SPECS entry, no prompt-hunting. Tactics stay out by design."""
+    spec = ROLE_SPECS[role]
+    lines = [_FACTION_WIN_SUMMARY[spec.faction]]
+    if spec.faction != "serial_killer":
+        # Mechanic (not tactic): the SK can't be night-killed, so a day vote is the only thing that
+        # removes it. Whether/how to act on that is the agent's to reason out.
+        lines.append(
+            "The serial killer cannot be killed at night; only a daytime vote can remove it."
+        )
+    # Night exposure of THIS role, relationally (faction-correct: a wolf's own pack doesn't kill it).
+    if spec.night_immune:
+        pass
+    elif spec.faction == "wolves":
+        lines.append(
+            "At night, the serial killer can kill you or your packmate; your own pack does not target its own."
+        )
+    else:
+        lines.append("At night, both the wolves and the serial killer can kill you.")
+    body = "\n".join(f"- {line}" for line in lines)
+    # Header names the night clause only when something can actually reach this role at night (the SK,
+    # being night-immune, gets a "How you win"-only header rather than a half-empty field).
+    header = "## How you win" if spec.night_immune else "## How you win, and what can reach you at night"
+    return "\n\n" + header + "\n\n" + body + "\n"
+
+
+# --- public CORE_STRATEGY = playstyle + generated brief (consumers import these unchanged) -------
+
+VILLAGER_CORE_STRATEGY = _VILLAGER_PLAYSTYLE + threat_brief("villager")
+HEALER_CORE_STRATEGY = _HEALER_PLAYSTYLE + threat_brief("healer")
+INVESTIGATOR_CORE_STRATEGY = _INVESTIGATOR_PLAYSTYLE + threat_brief("investigator")
+WOLF_CORE_STRATEGY = _WOLF_PLAYSTYLE + threat_brief("wolf")
+SERIAL_KILLER_CORE_STRATEGY = _SERIAL_KILLER_PLAYSTYLE + threat_brief("serial_killer")
+VIGILANTE_CORE_STRATEGY = _VIGILANTE_PLAYSTYLE + threat_brief("vigilante")
 
 
 ROLE_CORE_STRATEGY = {
