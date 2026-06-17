@@ -1,10 +1,8 @@
 """Vigilante night-graph state (single-actor; see state/night/healer.py for the shape)."""
 
-from operator import add
-from typing import Annotated, TypedDict
+from typing import TypedDict
 
 from Agents.schemas.game_events import DayChannel, DaySummary
-from Agents.schemas.memory import StrategyAdoption
 
 
 class VigilanteNightGraph(TypedDict, total=False):
@@ -19,8 +17,6 @@ class VigilanteNightGraph(TypedDict, total=False):
     """Candidate targets: every living player except the vigilante."""
     strategy_points: str
     """Retrieved memory strategy points formatted for the prompt."""
-    strategy_adoptions: Annotated[list[StrategyAdoption], add]
-    """Memory-adoption records emitted by the act node (tracing/eval)."""
     player_id: str
     """The vigilante's player_id."""
     player_role: str

@@ -36,7 +36,6 @@ from Agents.schemas.memory import (
     StoredObservation,
     StoredStrategy,
     StoredStrategyPoint,
-    StrategyAdoption,
     StrategyPoint,
 )
 from Agents.schemas.metrics import (
@@ -109,7 +108,6 @@ __all__ = [
     "StoredObservation",
     "StoredStrategy",
     "StoredStrategyPoint",
-    "StrategyAdoption",
     "StrategyPoint",
     "WolfChannel",
     "WolfNightDiscussOutput",

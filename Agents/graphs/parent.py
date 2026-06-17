@@ -104,7 +104,6 @@ def day_phase(
         "day_summaries": result.get("day_summaries", [])[len(state.get("day_summaries", [])):],
         "day_votes": result.get("day_votes", []),
         "agent_strategies": result.get("agent_strategies", {}),
-        "strategy_adoptions": result.get("strategy_adoptions", []),
     }
 
 
@@ -139,8 +138,6 @@ def wolf_night_phase(
         "wolves_kill_target": result.get("wolves_kill_target"),
         "agent_strategies": result.get("agent_strategies", {}),
     }
-    if result.get("strategy_adoptions"):
-        updates["strategy_adoptions"] = result["strategy_adoptions"]
     return updates
 
 
@@ -184,9 +181,6 @@ def healer_night_phase(
         updates["agent_strategies"] = {
             healer: result["updated_strategy"]
         }
-    if result.get("strategy_adoptions"):
-        updates["strategy_adoptions"] = result["strategy_adoptions"]
-
     return updates
 
 
@@ -227,9 +221,6 @@ def investigator_night_phase(
         updates["agent_strategies"] = {
             investigator: result["updated_strategy"]
         }
-    if result.get("strategy_adoptions"):
-        updates["strategy_adoptions"] = result["strategy_adoptions"]
-
     return updates
 
 
@@ -269,9 +260,6 @@ def serial_killer_night_phase(
         updates["agent_strategies"] = {
             serial_killer: result["updated_strategy"]
         }
-    if result.get("strategy_adoptions"):
-        updates["strategy_adoptions"] = result["strategy_adoptions"]
-
     return updates
 
 
@@ -318,9 +306,6 @@ def vigilante_night_phase(
         updates["agent_strategies"] = {
             vigilante: result["updated_strategy"]
         }
-    if result.get("strategy_adoptions"):
-        updates["strategy_adoptions"] = result["strategy_adoptions"]
-
     return updates
 
 

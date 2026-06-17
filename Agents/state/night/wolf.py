@@ -5,7 +5,6 @@ from operator import add
 from typing import Annotated, TypedDict
 
 from Agents.schemas.game_events import DayChannel, DaySummary, WolfChannel
-from Agents.schemas.memory import StrategyAdoption
 from Agents.state.reducers import merge_strategies
 
 
@@ -25,11 +24,6 @@ class WolfNightGraph(TypedDict, total=False):
     """Living non-wolves — the wolves' candidate kill targets."""
     agent_strategies: Annotated[dict[str, str], merge_strategies]
     """player_id -> private strategy note; merged per-key across parallel wolf turns."""
-    # Per-wolf memory adoptions from the (parallel) night discussion accumulate
-    # here, then wolf_night_phase bubbles them to the orchestrator — matching the
-    # single-target night roles.
-    strategy_adoptions: Annotated[list[StrategyAdoption], add]
-    """Memory-adoption records from the parallel wolf turns (tracing/eval)."""
 
     human_player: str
     """player_id of the human seat, or "" when fully agent-played."""

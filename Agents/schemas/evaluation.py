@@ -106,6 +106,11 @@ class EvalCase(BaseModel):
     """The agent's per-strategy-point verdicts (follow/override/not_relevant, one per retrieved SP it
     judged), captured from the structured output for offline analysis + the follow-vs-override credit
     signal. Empty when memory was off or no SPs retrieved. See Agents/turn/agent.py (_strategy_verdicts)."""
+    strategy_index_to_key: dict[int, str] = Field(default_factory=dict)
+    """1-based prompt index -> stored-SP key for EVERY retrieved strategy point this decision (the
+    adoption index_map). Lets each strategy_verdict — follow, override, AND not_relevant — be joined
+    to its exact stored SP for replay/credit-assignment, not just the FOLLOWs (those are also in
+    adopted_strategy_store_keys). Empty when memory was off or no SPs retrieved."""
     memory_applicability: list[MemoryVerdict] = Field(default_factory=list)
     """The agent's per-observation applicability verdicts (one per retrieved memory it judged),
     captured from the structured output for offline analysis. Empty when memory was off or none

@@ -1,5 +1,6 @@
 """Guard the per-SP verdict adoption: follow/override/not_relevant bump the right counters, follow
-drives used_count + the StrategyAdoption records, and retrieved_count bumps on every surfaced point."""
+drives used_count + is returned as a followed key, and retrieved_count bumps on every surfaced point.
+The full per-decision verdict record (incl. override/not_relevant) lives in the EvalCase, not here."""
 
 from types import SimpleNamespace
 
@@ -25,32 +26,31 @@ def _run(verdicts, keys=("ka", "kb", "kc")):
     store = FakeStore(keys)
     index_map = {i + 1: k for i, k in enumerate(keys)}  # 1-based index -> store key
     result = {"_strategy_verdicts": verdicts}
-    followed_idx, followed_keys, adoptions = _process_strategy_adoption(
+    followed_idx, followed_keys = _process_strategy_adoption(
         result, {"strategy_point_index_map": index_map}, SimpleNamespace(store=store),
         player_id="player_1", role="villager", action_phase="day_vote", day=2, round_num=0,
     )
-    return store, followed_idx, followed_keys, adoptions
+    return store, followed_idx, followed_keys
 
 
-def test_follow_bumps_follow_and_used_and_records_adoption():
-    store, followed_idx, followed_keys, adoptions = _run(
+def test_follow_bumps_follow_and_used_and_returns_key():
+    store, followed_idx, followed_keys = _run(
         [StrategyVerdict(strategy_index=1, verdict="follow", why="x")]
     )
     val = store.data[(NS, "ka")]
     assert val["follow_count"] == 1 and val["used_count"] == 1
     assert followed_idx == [1] and followed_keys == ["ka"]
-    assert len(adoptions) == 1 and adoptions[0].strategy_key == "ka"
 
 
 def test_override_and_not_relevant_bump_only_their_counters():
-    store, followed_idx, followed_keys, adoptions = _run([
+    store, followed_idx, followed_keys = _run([
         StrategyVerdict(strategy_index=1, verdict="override", why="better move"),
         StrategyVerdict(strategy_index=2, verdict="not_relevant", why="premise absent"),
     ])
     assert store.data[(NS, "ka")]["override_count"] == 1
     assert "used_count" not in store.data[(NS, "ka")]  # override is NOT a use
     assert store.data[(NS, "kb")]["not_relevant_count"] == 1
-    assert followed_idx == [] and adoptions == []  # neither is a follow
+    assert followed_idx == [] and followed_keys == []  # neither is a follow
 
 
 def test_retrieved_count_bumps_on_every_surfaced_point():
@@ -61,13 +61,13 @@ def test_retrieved_count_bumps_on_every_surfaced_point():
 
 
 def test_hallucinated_index_skipped():
-    store, followed_idx, _, adoptions = _run(
+    store, followed_idx, followed_keys = _run(
         [StrategyVerdict(strategy_index=9, verdict="follow", why="ghost")]
     )
-    assert followed_idx == [] and adoptions == []  # index 9 not in the map → skipped
+    assert followed_idx == [] and followed_keys == []  # index 9 not in the map → skipped
 
 
 def test_dict_form_verdicts_also_work():
     # the carrier may arrive as dicts (serialized) rather than StrategyVerdict objects
-    store, followed_idx, _, _ = _run([{"strategy_index": 1, "verdict": "follow", "why": "x"}])
+    store, followed_idx, _ = _run([{"strategy_index": 1, "verdict": "follow", "why": "x"}])
     assert store.data[(NS, "ka")]["follow_count"] == 1 and followed_idx == [1]

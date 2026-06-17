@@ -12,7 +12,6 @@ from typing import Any
 from langgraph.runtime import Runtime
 
 from Agents.tracing import GraphContext
-from Agents.schemas.memory import StrategyAdoption
 
 logger = getLogger(__name__)
 
@@ -41,28 +40,28 @@ def _process_strategy_adoption(
     action_phase: str,
     day: int,
     round_num: int,
-) -> tuple[list[int], list[str], list[StrategyAdoption]]:
+) -> tuple[list[int], list[str]]:
     """Apply the per-strategy-point verdicts the agent emitted at this decision.
 
     Bumps ``retrieved_count`` on every surfaced point, then for each verdict bumps the matching tally
     (follow -> follow_count + used_count; override -> override_count; not_relevant -> not_relevant_count).
-    Returns ``(followed_indices, followed_store_keys, strategy_adoptions)`` — the FOLLOW verdicts are the
-    adoptions. Shared by the day and night memory-informed paths. Mutates ``result`` by popping the
-    ``_strategy_verdicts`` marker.
+    Returns ``(followed_indices, followed_store_keys)`` — the FOLLOW verdicts. The full per-decision
+    verdict record (incl. override/not_relevant) lives in the EvalCase (``strategy_verdicts`` +
+    ``strategy_index_to_key``); this function's job is the store write-back. Shared by the day and night
+    memory-informed paths. Mutates ``result`` by popping the ``_strategy_verdicts`` marker.
     """
     index_map = enriched_payload.get("strategy_point_index_map", {})
     followed_indices: list[int] = []
     followed_store_keys: list[str] = []
-    strategy_adoptions: list[StrategyAdoption] = []
 
     if not (result and index_map):
-        return followed_indices, followed_store_keys, strategy_adoptions
+        return followed_indices, followed_store_keys
 
     verdicts = result.pop("_strategy_verdicts", [])
     sp_namespace = ("strategy_points", role, action_phase)
     active_store = runtime.store
     if active_store is None:
-        return followed_indices, followed_store_keys, strategy_adoptions
+        return followed_indices, followed_store_keys
 
     for key in index_map.values():
         item = active_store.get(sp_namespace, key)
@@ -92,15 +91,4 @@ def _process_strategy_adoption(
                 value[counter] = value.get(counter, 0) + 1
             active_store.put(sp_namespace, key, value, index=False)
 
-    strategy_adoptions = [
-        StrategyAdoption(
-            strategy_key=key,
-            player_id=player_id,
-            role=role,
-            day=day,
-            round=round_num,
-            action_phase=action_phase,
-        )
-        for key in followed_store_keys
-    ]
-    return followed_indices, followed_store_keys, strategy_adoptions
+    return followed_indices, followed_store_keys

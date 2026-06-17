@@ -19,7 +19,6 @@ from Agents.schemas.game_events import (
     InvestigatorResult,
     WolfChannel,
 )
-from Agents.schemas.memory import StrategyAdoption
 
 
 class OrchestratorGraph(TypedDict, total=False):
@@ -32,8 +31,6 @@ class OrchestratorGraph(TypedDict, total=False):
     """One condensed summary per completed day, carried into later days."""
     wolf_channel: Annotated[list[WolfChannel], add]
     """Wolf-night discussion + kill-vote transcript; accumulates across nights."""
-    strategy_adoptions: Annotated[list[StrategyAdoption], add]
-    """Records of agents adopting a retrieved strategy point (tracing/eval)."""
 
     # Cast & identity.
     agent_strategies: dict[str, str]

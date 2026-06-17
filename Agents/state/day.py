@@ -19,7 +19,6 @@ from Agents.schemas.game_events import (
     DayVote,
     InvestigatorResult,
 )
-from Agents.schemas.memory import StrategyAdoption
 from Agents.state.reducers import merge_strategies
 
 
@@ -35,8 +34,6 @@ class DayGraphState(TypedDict, total=False):
     """Prior-day summaries carried in as context."""
     day_votes: Annotated[list[DayVote], add]
     """Votes cast this day; accumulates as vote nodes report."""
-    strategy_adoptions: Annotated[list[StrategyAdoption], add]
-    """Memory-adoption records emitted by actor nodes (tracing/eval)."""
 
     agent_strategies: Annotated[dict[str, str], merge_strategies]
     """player_id -> private strategy note; merged per-key so concurrent votes don't clobber."""

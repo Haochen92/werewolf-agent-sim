@@ -4,7 +4,7 @@
 output) and CandidateRelevance, RerankResult (reranker output). Their class docstrings and
 Field(description=...) are serialized into the schema sent to the model, so they condition outputs
 and the Phase B gold labels; do NOT add docstrings or edit descriptions without a prompt-freeze
-review. The rest — StoredStrategy / StoredObservation / StoredStrategyPoint / StrategyAdoption /
+review. The rest — StoredStrategy / StoredObservation / StoredStrategyPoint /
 RetrievedObservation / RetrievedStrategyPoint — are internal store / retrieval / state records
 (never sent to a model) and are documented freely.
 """
@@ -887,18 +887,6 @@ class StoredStrategyPoint(BaseModel):
     """Adoptions whose game outcome was scored neutral."""
     negative_count: int = 0
     """Adoptions whose game outcome was scored negative."""
-
-
-class StrategyAdoption(BaseModel):
-    """Record that an agent adopted a specific stored strategy at a decision point
-    (player/role/day/round/phase) — feeds adoption + memory-impact tracking."""
-
-    strategy_key: str
-    player_id: str
-    role: str
-    day: int
-    round: int
-    action_phase: str
 
 
 class RetrievedObservation(BaseModel):

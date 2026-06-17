@@ -106,17 +106,15 @@ def _run_memory_informed_action(
         # --- Adoption processing ---
         # Capture the full verdict list for the EvalCase BEFORE adoption pops the carrier off `result`.
         strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
-        raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
-            _process_strategy_adoption(
-                result,
-                enriched_payload,
-                runtime,
-                player_id=player_id,
-                role=role,
-                action_phase=action_phase,
-                day=day,
-                round_num=round_num,
-            )
+        raw_adopted_indices, adopted_store_keys = _process_strategy_adoption(
+            result,
+            enriched_payload,
+            runtime,
+            player_id=player_id,
+            role=role,
+            action_phase=action_phase,
+            day=day,
+            round_num=round_num,
         )
 
         # --- Process output for graph state ---
@@ -166,9 +164,6 @@ def _run_memory_informed_action(
                         player_id: updated_strategy
                     }
 
-            if strategy_adoptions:
-                result["strategy_adoptions"] = strategy_adoptions
-
         eval_case = EvalCase(
             span_name=span_name,
             player_id=player_id,
@@ -196,6 +191,7 @@ def _run_memory_informed_action(
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
             strategy_verdicts=strategy_verdicts,
+            strategy_index_to_key=enriched_payload.get("strategy_point_index_map", {}),
             memory_applicability=(result or {}).get("_memory_applicability", []),
         )
 
@@ -289,17 +285,15 @@ def _run_memory_informed_night_action(
         )
 
         strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
-        raw_adopted_indices, adopted_store_keys, strategy_adoptions = (
-            _process_strategy_adoption(
-                result,
-                enriched_payload,
-                runtime,
-                player_id=player_id,
-                role=role,
-                action_phase=action_phase,
-                day=day,
-                round_num=round_num,
-            )
+        raw_adopted_indices, adopted_store_keys = _process_strategy_adoption(
+            result,
+            enriched_payload,
+            runtime,
+            player_id=player_id,
+            role=role,
+            action_phase=action_phase,
+            day=day,
+            round_num=round_num,
         )
 
         applied_game_update: dict[str, Any] | None = None
@@ -329,9 +323,6 @@ def _run_memory_informed_night_action(
                 target = result.get(output_key)
                 applied_game_update[output_key] = target
                 updated_strategy = result.get("updated_strategy", "") or ""
-            if strategy_adoptions:
-                result["strategy_adoptions"] = strategy_adoptions
-
         eval_case = EvalCase(
             span_name=span_name,
             player_id=player_id,
@@ -358,6 +349,7 @@ def _run_memory_informed_night_action(
             adopted_strategy_keys=raw_adopted_indices,
             adopted_strategy_store_keys=adopted_store_keys,
             strategy_verdicts=strategy_verdicts,
+            strategy_index_to_key=enriched_payload.get("strategy_point_index_map", {}),
             memory_applicability=(result or {}).get("_memory_applicability", []),
         )
 
