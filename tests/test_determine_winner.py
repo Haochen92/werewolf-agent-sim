@@ -247,3 +247,28 @@ def test_winner_resolves_after_sk_lynch():
     # with sk==0 -> wolves win. A stale marker would wrongly keep this at None.
     after = {**_lynch_state(sk_alive=True), **update}
     assert determine_winner(after) == "wolves"
+
+
+def test_faction_survivors_splits_sk_out_of_town():
+    # The durable-record helper (scripts.run_batch.faction_survivors) must NOT report the SK as a
+    # villager, even though surviving_villagers (the non-wolf bucket) contains it. Mirrors the smoke
+    # endgame: player_1 wolf, player_8 SK both alive.
+    from scripts.run_batch import faction_survivors
+
+    result = {
+        "surviving_wolves": ["player_1"],
+        "surviving_villagers": ["player_8", "player_2"],  # non-wolf bucket: SK + a real villager
+        "roles": {"player_1": "wolf", "player_8": "serial_killer", "player_2": "villager"},
+    }
+    fs = faction_survivors(result)
+    assert fs == {
+        "wolves": ["player_1"],
+        "town": ["player_2"],          # SK excluded
+        "serial_killer": ["player_8"],  # SK surfaced on its own axis
+    }
+
+
+def test_faction_survivors_handles_empty_state():
+    from scripts.run_batch import faction_survivors
+
+    assert faction_survivors({}) == {"wolves": [], "town": [], "serial_killer": []}

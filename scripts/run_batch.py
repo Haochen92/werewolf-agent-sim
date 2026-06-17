@@ -352,6 +352,22 @@ def load_game_ids(path: str | None) -> list[str] | None:
     return game_ids
 
 
+def faction_survivors(result: dict[str, Any]) -> dict[str, list[str]]:
+    """Marker-derived, unambiguous survivor breakdown for the durable record.
+
+    The graph's `surviving_villagers` channel is really the NON-WOLF bucket (town + the solo serial
+    killer), so reading it as "town" silently miscounts the SK. Split it by `roles` so replay/analysis
+    never has to know that quirk: wolves / town (non-wolf, non-SK) / serial_killer.
+    """
+    roles = result.get("roles") or {}
+    non_wolf = result.get("surviving_villagers") or []
+    return {
+        "wolves": list(result.get("surviving_wolves") or []),
+        "town": [p for p in non_wolf if roles.get(p) != "serial_killer"],
+        "serial_killer": [p for p in non_wolf if roles.get(p) == "serial_killer"],
+    }
+
+
 def run_batch(args: argparse.Namespace) -> int:
     config_names = selected_config_names(args.configs)
     memory_persistence_config = memory_persistence_config_from_args(args)
@@ -483,6 +499,8 @@ def run_batch(args: argparse.Namespace) -> int:
                 "current_day": result.get("current_day"),
                 "surviving_wolves": result.get("surviving_wolves"),
                 "surviving_villagers": result.get("surviving_villagers"),
+                # Unambiguous marker-derived split (surviving_villagers = non-wolf bucket incl. SK).
+                "faction_survivors": faction_survivors(result),
                 "roles": result.get("roles"),
                 "investigator_results": result.get("investigator_results"),
                 "day_channel": result.get("day_channel"),
