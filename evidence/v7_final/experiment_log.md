@@ -195,6 +195,23 @@ model makes the whole loop cheaper. Full design + kill-tests + the small-slice p
 nothing" guard) in `extraction_coverage_ab_spec.md`. ⚠ flash-lite breaks on the schema's `str|None` dims
 (needs an all-required variant); all results epoch-conditional + freeze-gated.
 
+**BUILT + RUN (2026-06-19) — model arm + recall arm.** Model-arm pre-gate CLEARED: flash-lite VIABLE (the
+`str|None` parse fear did NOT materialize); pro/3.5/lite comparable on volume + distinctness; de-halo
+inconclusive on 3 games. Recall arm (`recall_flags.py` flagger + `--anchors-from` suggestive-anchor +
+`recall_capture_metric.py`) = WEAK: **the suggestive anchor does NOT rescue flash-lite's recall** —
+within-model anchor on=off (3/12 flagged turns hit), reading shows only ~+1 obs on a flagged context,
+manufacture guard clean. pro covers flagged turns ~10× denser (47 vs 4 obs on flags) — a real gap the
+anchor doesn't close. ⇒ don't scale the flash-lite-rescue.
+
+**QUALITY READ (manual, the decisive evidence):** read full obs across pro/flash-3.5/flash-lite on the same
+games/cells. All three identify the SAME critical observations (the SK's fatal vote-record; the Investigator
+mislynch) — extraction quality is GOOD even on cheap models. **flash-3.5 ≈ pro** (same pivotal moments,
+causal chains, obs count 165≥144); **flash-lite correct but THIN** (drops secondary lessons = recall cost).
+And the obs CORRECTLY say passivity hurt the SK while the synthesized SP prescribes blending → **extraction
+is right, synthesis inverts it (halo-keyed)** — confirming the binding lever is synthesis (a)+(b), NOT
+extraction. Net: for a cheaper loop use **flash-3.5** (≈pro, not anchored-lite); put real spend on the
+synthesis fix.
+
 ## 8. (d) Discussion credit — designed + free floor measured
 **d0 cut:** the free deterministic advocacy signal is **thin/redundant-with-votes** (target-correctness,
 not discussion-specific) and the other free signal (lead-vs-blend) is null → **committed to d-full.**

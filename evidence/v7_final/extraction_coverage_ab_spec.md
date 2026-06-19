@@ -67,7 +67,25 @@ signal. This is the "don't pay for nothing" guard.
 - **De-halo INCONCLUSIVE on 3 games** (2-town/1-SK, low variance): pro marginally cleanest (+0.43),
   flash-3.5 most haloed (+0.64) — directional only. Scale-up needed (pro@20 ≈ +0.45 known).
 - ⇒ live signal (cheap models extract comparably) → scaling justified; open Q = does a cheap model trade
-  de-halo for cost. The recall (`suggestive-anchor`) arm is NOT yet run (needs leverage-flag plumbing).
+  de-halo for cost.
+
+**RECALL-ARM PRE-GATE RUN (2026-06-19, built + spent, `recall_flags.py` + `--anchors-from` +
+`recall_capture_metric.py`, flash-lite ± suggestive-anchor, 3 games, 12 flagged pivotal turns):** WEAK /
+does-not-clear.
+| arm | flags hit | capture% | obs on flags | stageJac |
+|---|---|---|---|---|
+| pro-2.5 | 12 | 100% | 47 | 0.19 |
+| flash-lite | 3 | 25% | 4 | 0.32 |
+| flash-lite+anchor | 3 | 25% | 4 | 0.18 |
+- **The suggestive anchor does NOT rescue flash-lite's recall.** Within-model (the clean read) anchor
+  on=off by the metric; reading shows only ~+1 obs on a flagged context (e.g. a "post-healer-death Day 2"
+  obs baseline lacked). Marginal, not gap-closing.
+- **Manufacture guard CLEAN** (anchored stageJac 0.18 < baseline 0.32 → more distinct, not padding).
+- **pro vs lite recall gap is real** (47 vs 4 obs on flags; capture% is verbosity-flattered for pro, but
+  the ~10× density gap is robust). Anchoring doesn't move lite toward it.
+- ⇒ **don't scale this lever.** Combined with the model arm (flash-3.5 ≈ pro quality/recall), the cheaper
+  loop path is **flash-3.5**, not anchored-flash-lite. Metric caveat: parse-based capture is
+  verbosity-sensitive → would need a semantic-match hardening before any pro-vs-lite recall scale-up.
 
 ## Caveats
 - **Epoch-conditional:** results hold for the run epoch only; backend fixed (Vertex — never compare across
