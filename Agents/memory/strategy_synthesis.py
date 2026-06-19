@@ -88,9 +88,13 @@ TASK: Emit 1-3 generalized IF-situation -> THEN-action strategy points.
   record shows UNDERPERFORMED when followed is a CORRECTIVE: do the opposite or a refinement, never the
   loser (e.g. if "blend/abstain" scored negative while "lead the vote against the closing-in threat"
   scored positive, do NOT prescribe blending).
-- PREFER A CONDITIONED RULE that integrates the gradient: state WHEN the high-lift move applies versus
-  the regime where the low-lift move fails — one IF/THEN that fuses them, not two disconnected rules.
-  This conditioning is the whole point; a bare restatement of the single highest-lift directive adds
+- INTEGRATE THE GRADIENT, but SCOPE EACH RULE TO ONE RETRIEVAL REGIME. The situation dimensions are the
+  retrieval key — a rule only fires in situations matching its dims. If the right move CHANGES across
+  regimes (different alive-count/stakes, is_swing, consensus direction — e.g. blend mid-game vs pivot in
+  the endgame), emit a SEPARATE strategy point PER REGIME, each with its situation dimensions set to THAT
+  regime, so each retrieves where it applies. Do NOT fuse a cross-regime gradient into one rule — it would
+  only retrieve in one regime and lie dormant in the other. WITHIN a single regime, conditioning in the
+  action is fine. A bare restatement of the single highest-lift directive (ignoring the gradient) adds
   nothing over just keeping it.
 - A strategy point is ALWAYS a positive prescription (something to DO). Never "don't do X".
 - Fill the situation dimensions as a GENERALIZED situation for the whole cluster, so the rule retrieves.
