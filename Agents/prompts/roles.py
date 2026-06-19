@@ -9,6 +9,8 @@ interactions (the vigilante's shot confirming the SK, the healer's block) stay i
 prose — the brief is only the generic faction/win/night facts.
 """
 
+import os
+
 from Agents.schemas.roles import ROLE_SPECS
 
 # --- per-role PLAYSTYLE prose (how this role contributes; not cross-faction awareness) ----------
@@ -26,7 +28,13 @@ Voting & Logic: Your vote matters as much as your protection. Decide it from you
 """
 
 
-_INVESTIGATOR_PLAYSTYLE = """
+# BASELINE investigator block. The prompt-claims audit (evidence/prompt_claims_audit) found its
+# "survival is primary / worthless if you die before you can use it" framing and "let consensus build,
+# don't accuse the moment you have a result" Information-Management steer are FALSE and HARMFUL: they
+# cap the investigator->lynch transmission chain (the read never reaches the village; provenance is
+# suppressed). SUPERSEDED as default; kept RUNNABLE for A/B comparison via WW_INVESTIGATOR_PROMPT=baseline
+# — DO NOT silently change it (it's the frozen control).
+_INVESTIGATOR_PLAYSTYLE_BASELINE = """
 ## INVESTIGATOR (Core Strategy)
 
 Identity & Goal: You are the Investigator. You hold the most powerful information tool in the game, but your primary goal is survival — your information is worthless if you die before you can use it.
@@ -37,6 +45,36 @@ Night Strategy: Use your investigations deliberately. Each result names a player
 
 Information Management: Control the flow of what you know. Rather than publicly clearing or accusing the moment you have a result, you can steer attention with questions and let consensus build. When and how much to reveal is your judgment call.
 """
+
+
+# NEUTRAL block — now the DEFAULT substrate. NOT the opposite tactic — baking in "reveal immediately"
+# would launder our strategy the same way concealment did. It corrects the false framing toward the
+# true mechanic (a read only helps once the village ACTS on it; an unshared read changes no votes) and
+# presents reveal as a genuine two-sided call (rally the village vs paint a night target) — the
+# agent's to weigh. Facts + symmetric tradeoff, no imperatival hit-list (same fact/tactic line as the
+# threat-brief). Removing a FALSIFIED steer is a correctness fix, not a treatment — whether the agent
+# then conceals more/less is for MEMORY to learn from outcomes, not for the prompt to dictate.
+_INVESTIGATOR_PLAYSTYLE_TRANSMIT = """
+## INVESTIGATOR (Core Strategy)
+
+Identity & Goal: You are the Investigator. Each night you learn one player's exact role — the most powerful information tool in the game. That information only helps the village once the village acts on it; a result that stays in your head changes no votes.
+
+Communication: Contribute like an engaged villager — propose reads, ask pointed questions, surface contradictions. Whether, when, and how to reveal what you have learned is a genuine tradeoff and your call: speaking up can rally the village behind a confirmed read, while revealing that you are the Investigator also marks you as a target for the wolves and the serial killer at night. Weigh the value of the village acting on your information against the risk to yourself.
+
+Night Strategy: Use your investigations deliberately. Each result names a player's exact role, so an investigation can expose a wolf or the serial killer. Confirming a trustworthy villager is also valuable — it narrows the suspect pool and gives you safer players to align with as discussion develops.
+"""
+
+
+# DEFAULT = the neutral block (the false concealment steer removed). The old capped BASELINE is kept
+# RUNNABLE for A/B comparison via WW_INVESTIGATOR_PROMPT=baseline (versioning policy: keep the
+# superseded design runnable). ⚠️ This changes generated play → memory must be RE-MINED on this
+# substrate before any memory run (old capped-play memory is stale against the neutral prompt — same
+# lesson as the wolf threat-brief).
+_INVESTIGATOR_PLAYSTYLE = (
+    _INVESTIGATOR_PLAYSTYLE_BASELINE
+    if os.environ.get("WW_INVESTIGATOR_PROMPT") == "baseline"
+    else _INVESTIGATOR_PLAYSTYLE_TRANSMIT
+)
 
 
 _VILLAGER_PLAYSTYLE = """
