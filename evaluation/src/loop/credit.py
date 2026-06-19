@@ -13,22 +13,72 @@ non-stationarity guard, for free.
 
 from __future__ import annotations
 
+import glob
 import json
+import os
+from collections import defaultdict
 from pathlib import Path
 
-from evaluation.src.experiments.credit_backfill import build_ledger, compute_base_rates
+from evaluation.src.experiments.credit_backfill import (
+    VERDICT_VALUE, SPCredit, _vote_credit, build_ledger, compute_base_rates,
+)
+
+
+def _discussion_ledger(dumps_glob: str) -> tuple[dict, dict]:
+    """(d) free floor — credit day_discussion SPs by the DAY-VOTE ENDPOINT (the day's lynch outcome,
+    faction-relative): discussion has no clean per-decision proxy, so it's scored by the vote it feeds.
+    Returns ({sp_key: SPCredit}, {channel: (base_mean, n)}). Reproduced held-out at +0.51 (M1)."""
+    base_sum, base_n = defaultdict(float), defaultdict(int)
+    rows = []  # (channel, verdict_str, eval_case) for memory-ON discussion turns
+    for dump in sorted(glob.glob(dumps_glob)):
+        for line in open(dump):
+            if not line.strip():
+                continue
+            g = json.loads(line)
+            roles, path = g.get("roles"), g.get("eval_cases_path")
+            if not roles or not path or not os.path.exists(path):
+                continue
+            lynch = {dr.get("day"): dr.get("voted_player") for dr in g.get("day_resolutions", [])}
+            for cl in open(path):
+                if not cl.strip():
+                    continue
+                ec = (json.loads(cl).get("output") or {}).get("eval_case") or {}
+                if ec.get("action_phase") != "day_discussion":
+                    continue
+                v = _vote_credit(ec.get("player_role"), lynch.get(ec.get("day")), roles)
+                ch = f"{ec.get('player_role')}/day_discussion"
+                if not ec.get("memory_enabled"):
+                    base_sum[ch] += VERDICT_VALUE[v]
+                    base_n[ch] += 1
+                elif ec.get("strategy_verdicts"):
+                    rows.append((ch, v, ec))
+    base = {ch: (base_sum[ch] / base_n[ch], base_n[ch]) for ch in base_n}
+    ledger: dict = defaultdict(SPCredit)
+    for ch, v, ec in rows:
+        idx = ec.get("strategy_index_to_key") or {}
+        for sv in ec["strategy_verdicts"]:
+            if sv.get("verdict") == "follow":
+                key = idx.get(str(sv.get("strategy_index")))
+                if key:
+                    ledger[key].add(v, ch, base.get(ch, (0.0, 0))[0])
+    return dict(ledger), base
 
 
 def credit_apply(store_sp_path: str | Path, dumps_glob: str,
-                 base_rates: dict | None = None) -> dict:
+                 base_rates: dict | None = None, discussion: bool = True) -> dict:
     """Recompute the de-luck ledger over `dumps_glob` and SET positive/neutral/negative/follow counts on
     matching SPs in `store_sp_path` (strategy_points.json). Returns {credited, matched, total} stats.
 
     base_rates default = memory-off per-cell means computed from the same dumps (the de-luck baseline);
-    pass a frozen set to reuse a calibration baseline across generations."""
+    pass a frozen set to reuse a calibration baseline across generations. `discussion` (d's free floor)
+    additionally credits day_discussion SPs by the day-vote endpoint, so all 3 channels get a signal."""
     store_sp_path = Path(store_sp_path)
     base_rates = base_rates if base_rates is not None else compute_base_rates(dumps_glob)
     ledger, _ = build_ledger(dumps_glob, base_rates)
+    if discussion:
+        disc_ledger, disc_base = _discussion_ledger(dumps_glob)
+        ledger = {**ledger, **disc_ledger}      # disjoint keys (vote/night vs day_discussion SPs)
+        base_rates = {**base_rates, **disc_base}
 
     store = json.loads(store_sp_path.read_text())
     matched = credited = total = 0

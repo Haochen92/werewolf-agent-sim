@@ -80,7 +80,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         window = " ".join(str(run_dir / f"gen{g}.jsonl") for g in range(max(1, gen - w + 1), gen + 1))
 
         if cfg.credit:
-            cstats = credit_apply(sp_path, window)
+            cstats = credit_apply(sp_path, window, discussion=cfg.discussion_credit)
             print(f"  credit: {cstats}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize:

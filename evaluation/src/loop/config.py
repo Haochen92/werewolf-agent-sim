@@ -33,7 +33,10 @@ class LoopConfig:
     evict: bool = True                     # drop SPs surfaced >= min_retrieved but never followed (rejected)
     evict_min_retrieved: int = 8
 
-    discussion_credit: bool = False        # (d) — off for loop v1 (free floor measured, tagger unbuilt)
+    # (d) FREE FLOOR on: credit day_discussion SPs by the day-vote endpoint (no clean per-decision proxy
+    # otherwise → the channel would be uncredited & invisible to consolidation). The LLM tagger
+    # (framing/credibility) is the deferred PAID refinement, separate from this free floor.
+    discussion_credit: bool = True
 
     def env(self) -> dict:
         """Env overrides to pin the extraction+synthesis model for a run (both primary and backup)."""
