@@ -1,0 +1,1526 @@
+{
+  "f5ba378f-4d73-4b93-be84-9dadf5466b23": {
+    "follow": 79,
+    "positive": 31,
+    "neutral": 48,
+    "negative": 0,
+    "utility": 0.3924,
+    "lift": -0.3195,
+    "shrunk_lift": -0.3004,
+    "channels": {
+      "serial_killer/day_vote": 79
+    }
+  },
+  "44037cc5-6524-4e72-b748-f56406d1ecc1": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.5805,
+    "shrunk_lift": -0.0967,
+    "channels": {
+      "serial_killer/night_action": 1
+    }
+  },
+  "39778d0d-2d1f-4c69-bb85-a03a9c943613": {
+    "follow": 17,
+    "positive": 8,
+    "neutral": 9,
+    "negative": 0,
+    "utility": 0.4706,
+    "lift": -0.1099,
+    "shrunk_lift": -0.0849,
+    "channels": {
+      "serial_killer/night_action": 17
+    }
+  },
+  "67265ed8-51de-4159-8c5e-5b9c6b65810e": {
+    "follow": 4,
+    "positive": 1,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.25,
+    "lift": -0.3305,
+    "shrunk_lift": -0.1469,
+    "channels": {
+      "serial_killer/night_action": 4
+    }
+  },
+  "0e8868f9-d537-4ae6-a416-a9aaf59c55b0": {
+    "follow": 4,
+    "positive": 4,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.1281,
+    "channels": {
+      "serial_killer/day_vote": 4
+    }
+  },
+  "ab0c3190-8147-459c-b3e8-ee33050413b6": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.048,
+    "channels": {
+      "serial_killer/day_vote": 1
+    }
+  },
+  "15e95431-8860-42f3-b19f-f38fb382111f": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.048,
+    "channels": {
+      "serial_killer/day_vote": 1
+    }
+  },
+  "f9482d1b-4738-4fff-b990-67da10267c42": {
+    "follow": 14,
+    "positive": 13,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.9286,
+    "lift": 0.3481,
+    "shrunk_lift": 0.2565,
+    "channels": {
+      "serial_killer/night_action": 14
+    }
+  },
+  "6fdc3bda-9610-4bc4-abec-c1999c01de13": {
+    "follow": 48,
+    "positive": 33,
+    "neutral": 15,
+    "negative": 0,
+    "utility": 0.6875,
+    "lift": 0.107,
+    "shrunk_lift": 0.0969,
+    "channels": {
+      "serial_killer/night_action": 48
+    }
+  },
+  "c48f0b49-753c-4978-8c7e-67f29c840d2a": {
+    "follow": 3,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.1081,
+    "channels": {
+      "serial_killer/day_vote": 3
+    }
+  },
+  "7e77e600-e641-4fa9-8e27-cfcd4c952bea": {
+    "follow": 40,
+    "positive": 40,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.2561,
+    "channels": {
+      "serial_killer/day_vote": 40
+    }
+  },
+  "e5505b75-51de-4394-af06-568f3364ed6b": {
+    "follow": 36,
+    "positive": 24,
+    "neutral": 12,
+    "negative": 0,
+    "utility": 0.6667,
+    "lift": 0.0862,
+    "shrunk_lift": 0.0757,
+    "channels": {
+      "serial_killer/night_action": 36
+    }
+  },
+  "6a476586-326e-4b28-96c1-ea5248734246": {
+    "follow": 30,
+    "positive": 30,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.247,
+    "channels": {
+      "serial_killer/day_vote": 30
+    }
+  },
+  "7f5562ab-9015-4346-8fcf-44493e8a8e84": {
+    "follow": 4,
+    "positive": 4,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.1864,
+    "channels": {
+      "serial_killer/night_action": 4
+    }
+  },
+  "7f5fc740-cb28-46f5-bb54-5198d0cc22ee": {
+    "follow": 12,
+    "positive": 5,
+    "neutral": 7,
+    "negative": 0,
+    "utility": 0.4167,
+    "lift": -0.1638,
+    "shrunk_lift": -0.1156,
+    "channels": {
+      "serial_killer/night_action": 12
+    }
+  },
+  "210c0b22-ad7d-43b6-a415-68eee419d7a2": {
+    "follow": 19,
+    "positive": 12,
+    "neutral": 7,
+    "negative": 0,
+    "utility": 0.6316,
+    "lift": 0.0511,
+    "shrunk_lift": 0.0404,
+    "channels": {
+      "serial_killer/night_action": 19
+    }
+  },
+  "6ccf897c-759e-45b3-a866-1286f0f27ffb": {
+    "follow": 20,
+    "positive": 18,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.9,
+    "lift": 0.1881,
+    "shrunk_lift": 0.1505,
+    "channels": {
+      "serial_killer/day_vote": 20
+    }
+  },
+  "23c607f5-32ba-4e1f-9962-c1f079641165": {
+    "follow": 15,
+    "positive": 15,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.2161,
+    "channels": {
+      "serial_killer/day_vote": 15
+    }
+  },
+  "07356df2-0c30-486f-938a-6ef27236e5e1": {
+    "follow": 4,
+    "positive": 2,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.0805,
+    "shrunk_lift": -0.0358,
+    "channels": {
+      "serial_killer/night_action": 4
+    }
+  },
+  "78b320f6-ef38-43f0-9169-c4fe429b534e": {
+    "follow": 8,
+    "positive": 4,
+    "neutral": 4,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.0805,
+    "shrunk_lift": -0.0495,
+    "channels": {
+      "serial_killer/night_action": 8
+    }
+  },
+  "5b7d5425-6917-4433-8ba0-52e11287a22a": {
+    "follow": 22,
+    "positive": 12,
+    "neutral": 10,
+    "negative": 0,
+    "utility": 0.5455,
+    "lift": -0.035,
+    "shrunk_lift": -0.0285,
+    "channels": {
+      "serial_killer/night_action": 22
+    }
+  },
+  "4d45120c-d541-4936-bff9-d055344334c9": {
+    "follow": 2,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.0823,
+    "channels": {
+      "serial_killer/day_vote": 2
+    }
+  },
+  "b2ea896d-7e5f-41b7-9c5f-c8b9c1a7f424": {
+    "follow": 13,
+    "positive": 12,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.9231,
+    "lift": 0.2112,
+    "shrunk_lift": 0.1525,
+    "channels": {
+      "serial_killer/day_vote": 13
+    }
+  },
+  "70246758-cc0a-4475-aa76-44e9c2e60ed6": {
+    "follow": 3,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.1081,
+    "channels": {
+      "serial_killer/day_vote": 3
+    }
+  },
+  "dbb87a25-cbda-4fb0-af94-4e692afda489": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.0699,
+    "channels": {
+      "serial_killer/night_action": 1
+    }
+  },
+  "2d06ad35-b293-40e4-a9d0-b48e4953fbc0": {
+    "follow": 14,
+    "positive": 6,
+    "neutral": 8,
+    "negative": 0,
+    "utility": 0.4286,
+    "lift": -0.1519,
+    "shrunk_lift": -0.1119,
+    "channels": {
+      "serial_killer/night_action": 14
+    }
+  },
+  "cc48379a-94b2-4cf3-9239-3110f102ede9": {
+    "follow": 4,
+    "positive": 4,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.1864,
+    "channels": {
+      "serial_killer/night_action": 4
+    }
+  },
+  "40a57a9d-3348-4e7c-a72e-542a390fe774": {
+    "follow": 8,
+    "positive": 8,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.2582,
+    "channels": {
+      "serial_killer/night_action": 8
+    }
+  },
+  "6e3bc7b9-6288-4dd4-a7e6-a4b7bd79ef40": {
+    "follow": 12,
+    "positive": 6,
+    "neutral": 6,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.0805,
+    "shrunk_lift": -0.0568,
+    "channels": {
+      "serial_killer/night_action": 12
+    }
+  },
+  "07152622-e534-410c-ad43-b766de84621e": {
+    "follow": 6,
+    "positive": 3,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.0805,
+    "shrunk_lift": -0.0439,
+    "channels": {
+      "serial_killer/night_action": 6
+    }
+  },
+  "eeda5295-414f-4b0f-aec0-3d1c7db58199": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.0699,
+    "channels": {
+      "serial_killer/night_action": 1
+    }
+  },
+  "6ed02867-0fea-4da9-8b69-12114a52bf3f": {
+    "follow": 6,
+    "positive": 6,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.1572,
+    "channels": {
+      "serial_killer/day_vote": 6
+    }
+  },
+  "caf9e9c2-8623-4c10-bbce-117229dcd349": {
+    "follow": 2,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.1199,
+    "channels": {
+      "serial_killer/night_action": 2
+    }
+  },
+  "a60975cd-fa1e-484c-b2ec-2350e8d7b9bb": {
+    "follow": 4,
+    "positive": 2,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.0805,
+    "shrunk_lift": -0.0358,
+    "channels": {
+      "serial_killer/night_action": 4
+    }
+  },
+  "4e5f3495-0044-4713-bf46-a017df14b69f": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.2881,
+    "shrunk_lift": 0.048,
+    "channels": {
+      "serial_killer/day_vote": 1
+    }
+  },
+  "85b319af-044b-4e92-9336-c4e53bbc056c": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.5805,
+    "shrunk_lift": -0.0967,
+    "channels": {
+      "serial_killer/night_action": 1
+    }
+  },
+  "2e485a95-fcdb-4e38-a351-338dff123fd7": {
+    "follow": 8,
+    "positive": 6,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.75,
+    "lift": 0.0381,
+    "shrunk_lift": 0.0235,
+    "channels": {
+      "serial_killer/day_vote": 8
+    }
+  },
+  "1473a37f-9bef-49ed-9d4e-ec69b380c860": {
+    "follow": 2,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.4195,
+    "shrunk_lift": 0.1199,
+    "channels": {
+      "serial_killer/night_action": 2
+    }
+  },
+  "45cda56a-74d7-4d58-83ae-5d95e0d7dfca": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.0805,
+    "shrunk_lift": -0.023,
+    "channels": {
+      "serial_killer/night_action": 2
+    }
+  },
+  "8226e2ac-c703-4c91-a014-5ffd3535b52f": {
+    "follow": 2,
+    "positive": 0,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.5805,
+    "shrunk_lift": -0.1659,
+    "channels": {
+      "serial_killer/night_action": 2
+    }
+  },
+  "b73ba65d-6141-4d09-952c-4adf07a7af78": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.7119,
+    "shrunk_lift": -0.1186,
+    "channels": {
+      "serial_killer/day_vote": 1
+    }
+  },
+  "bc7b8a88-356e-4a89-a139-ec548f9bfe7a": {
+    "follow": 69,
+    "positive": 0,
+    "neutral": 69,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.2123,
+    "shrunk_lift": -0.1979,
+    "channels": {
+      "villager/day_vote": 69
+    }
+  },
+  "ff46987b-cb52-47cb-a37c-0bce235369af": {
+    "follow": 30,
+    "positive": 2,
+    "neutral": 25,
+    "negative": 3,
+    "utility": -0.0333,
+    "lift": -0.1964,
+    "shrunk_lift": -0.1683,
+    "channels": {
+      "vigilante/day_vote": 30
+    }
+  },
+  "0f4c86ee-9f6b-44c4-ba34-9b197b32de52": {
+    "follow": 7,
+    "positive": 0,
+    "neutral": 7,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.163,
+    "shrunk_lift": -0.0951,
+    "channels": {
+      "vigilante/day_vote": 7
+    }
+  },
+  "99e30ebf-c997-4bd2-a11a-34029d64c942": {
+    "follow": 28,
+    "positive": 1,
+    "neutral": 26,
+    "negative": 1,
+    "utility": 0.0,
+    "lift": -0.2155,
+    "shrunk_lift": -0.1828,
+    "channels": {
+      "healer/day_vote": 28
+    }
+  },
+  "c192ccb6-bd0c-4b17-a695-0c850ed49077": {
+    "follow": 6,
+    "positive": 0,
+    "neutral": 6,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.2155,
+    "shrunk_lift": -0.1175,
+    "channels": {
+      "healer/day_vote": 6
+    }
+  },
+  "f760e4a0-b817-43b4-9ca3-458f956d7fb6": {
+    "follow": 7,
+    "positive": 0,
+    "neutral": 7,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.6233,
+    "shrunk_lift": -0.3636,
+    "channels": {
+      "investigator/day_vote": 7
+    }
+  },
+  "b249c952-6d1a-4db8-8717-5876bc5560ce": {
+    "follow": 13,
+    "positive": 0,
+    "neutral": 13,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0052,
+    "channels": {
+      "vigilante/night_action": 13
+    }
+  },
+  "a2514f5f-9e12-4e26-b2e1-1f76c92302cd": {
+    "follow": 6,
+    "positive": 2,
+    "neutral": 4,
+    "negative": 0,
+    "utility": 0.3333,
+    "lift": -0.2497,
+    "shrunk_lift": -0.1362,
+    "channels": {
+      "investigator/night_action": 6
+    }
+  },
+  "94ee5105-a830-4fc0-9d47-567937a455a4": {
+    "follow": 31,
+    "positive": 17,
+    "neutral": 0,
+    "negative": 14,
+    "utility": 0.0968,
+    "lift": -0.1155,
+    "shrunk_lift": -0.0994,
+    "channels": {
+      "villager/day_vote": 31
+    }
+  },
+  "a864214f-30e2-4e26-a6e7-1cfcf4f540e3": {
+    "follow": 10,
+    "positive": 8,
+    "neutral": 0,
+    "negative": 2,
+    "utility": 0.6,
+    "lift": -0.0233,
+    "shrunk_lift": -0.0155,
+    "channels": {
+      "investigator/day_vote": 10
+    }
+  },
+  "bec9a1a4-6c9c-481b-ba4a-d841ca6e1241": {
+    "follow": 3,
+    "positive": 1,
+    "neutral": 1,
+    "negative": 1,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0027,
+    "channels": {
+      "vigilante/night_action": 3
+    }
+  },
+  "ad8b500f-0f62-458e-85f9-579432acdd11": {
+    "follow": 5,
+    "positive": 3,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.6,
+    "lift": 0.017,
+    "shrunk_lift": 0.0085,
+    "channels": {
+      "investigator/night_action": 5
+    }
+  },
+  "4b8cf612-562b-4b3a-9142-14c6d82096f5": {
+    "follow": 4,
+    "positive": 3,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.75,
+    "lift": 0.167,
+    "shrunk_lift": 0.0742,
+    "channels": {
+      "investigator/night_action": 4
+    }
+  },
+  "1a308005-b148-4b75-9bfb-c8353085b58e": {
+    "follow": 11,
+    "positive": 5,
+    "neutral": 0,
+    "negative": 6,
+    "utility": -0.0909,
+    "lift": -0.3064,
+    "shrunk_lift": -0.2106,
+    "channels": {
+      "healer/day_vote": 11
+    }
+  },
+  "7b6516cc-5f79-4feb-b264-06325a3115f9": {
+    "follow": 24,
+    "positive": 24,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.3767,
+    "shrunk_lift": 0.3118,
+    "channels": {
+      "investigator/day_vote": 24
+    }
+  },
+  "fa4197f8-7416-46f8-a3b1-db2f3f3054ee": {
+    "follow": 34,
+    "positive": 9,
+    "neutral": 15,
+    "negative": 10,
+    "utility": -0.0294,
+    "lift": -0.1925,
+    "shrunk_lift": -0.1678,
+    "channels": {
+      "vigilante/day_vote": 34
+    }
+  },
+  "b1ad6de7-fa77-499d-8a1f-0fbbfac9129a": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.9928,
+    "shrunk_lift": 0.1655,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "9c841f4b-409c-4b40-8ab7-f612999b9b11": {
+    "follow": 33,
+    "positive": 15,
+    "neutral": 0,
+    "negative": 18,
+    "utility": -0.0909,
+    "lift": -0.3032,
+    "shrunk_lift": -0.2633,
+    "channels": {
+      "villager/day_vote": 33
+    }
+  },
+  "1e207507-63ac-4e45-a9ae-2cdf441d3af3": {
+    "follow": 3,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7877,
+    "shrunk_lift": 0.2954,
+    "channels": {
+      "villager/day_vote": 3
+    }
+  },
+  "f51933bc-f59d-49c0-b334-6f1f73f0f95d": {
+    "follow": 14,
+    "positive": 5,
+    "neutral": 4,
+    "negative": 5,
+    "utility": 0.0,
+    "lift": -0.2155,
+    "shrunk_lift": -0.1588,
+    "channels": {
+      "healer/day_vote": 14
+    }
+  },
+  "7828ac0e-70ee-40af-9315-864b2c7eb300": {
+    "follow": 2,
+    "positive": 0,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0021,
+    "channels": {
+      "vigilante/night_action": 2
+    }
+  },
+  "d24426cf-7465-424a-9ef1-c385bd98f1e3": {
+    "follow": 3,
+    "positive": 0,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0027,
+    "channels": {
+      "vigilante/night_action": 3
+    }
+  },
+  "3c36d939-f6eb-45a4-8c65-d05535f92b2e": {
+    "follow": 8,
+    "positive": 4,
+    "neutral": 0,
+    "negative": 4,
+    "utility": 0.0,
+    "lift": -0.163,
+    "shrunk_lift": -0.1003,
+    "channels": {
+      "vigilante/day_vote": 8
+    }
+  },
+  "b474b672-a000-4adb-ac86-db46e46dc24b": {
+    "follow": 7,
+    "positive": 0,
+    "neutral": 7,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0042,
+    "channels": {
+      "vigilante/night_action": 7
+    }
+  },
+  "f162d090-5531-412b-b65a-5beb6714a806": {
+    "follow": 3,
+    "positive": 0,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0027,
+    "channels": {
+      "vigilante/night_action": 3
+    }
+  },
+  "87e34dab-7392-4edb-8de6-e935910b2706": {
+    "follow": 2,
+    "positive": 0,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0021,
+    "channels": {
+      "vigilante/night_action": 2
+    }
+  },
+  "2b2c9932-bd87-476f-b250-54dd87c9172f": {
+    "follow": 5,
+    "positive": 3,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.6,
+    "lift": 0.017,
+    "shrunk_lift": 0.0085,
+    "channels": {
+      "investigator/night_action": 5
+    }
+  },
+  "1dc778f5-38c3-42c3-b2bb-8ca12f5c3993": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.417,
+    "shrunk_lift": 0.0695,
+    "channels": {
+      "investigator/night_action": 1
+    }
+  },
+  "a06c6886-651f-4325-8cae-73620d0ccdea": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.417,
+    "shrunk_lift": 0.0695,
+    "channels": {
+      "investigator/night_action": 1
+    }
+  },
+  "257dfb1a-e01b-4ca7-9dc8-aee6bfb1cae8": {
+    "follow": 4,
+    "positive": 4,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.3767,
+    "shrunk_lift": 0.1674,
+    "channels": {
+      "investigator/day_vote": 4
+    }
+  },
+  "5818766e-9af0-406f-aaf1-7ba75c6a6d3f": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.083,
+    "shrunk_lift": -0.0237,
+    "channels": {
+      "investigator/night_action": 2
+    }
+  },
+  "0f509db4-c3e1-4793-b0e7-6b47b5a58373": {
+    "follow": 2,
+    "positive": 0,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0021,
+    "channels": {
+      "vigilante/night_action": 2
+    }
+  },
+  "9258b553-2ec7-4aa6-b04e-80405142f99d": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0012,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "1a8974bd-a660-4881-8445-8cf63eb3bd2b": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.0,
+    "lift": -0.2123,
+    "shrunk_lift": -0.0606,
+    "channels": {
+      "villager/day_vote": 2
+    }
+  },
+  "490f5efc-beab-4749-8d65-97cbd5812d51": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0012,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "e5aa7490-9331-4f5f-bed0-5ce9312b240d": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.2155,
+    "shrunk_lift": -0.0359,
+    "channels": {
+      "healer/day_vote": 1
+    }
+  },
+  "0e0d10df-0741-4bd1-a0bf-a30b9b9cf998": {
+    "follow": 3,
+    "positive": 0,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0027,
+    "channels": {
+      "vigilante/night_action": 3
+    }
+  },
+  "423dc1c0-13f0-46db-b653-5508b0ee4f29": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.417,
+    "shrunk_lift": 0.0695,
+    "channels": {
+      "investigator/night_action": 1
+    }
+  },
+  "54d81991-2d11-4201-af85-f74443c4ced2": {
+    "follow": 4,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.5,
+    "lift": 0.337,
+    "shrunk_lift": 0.1498,
+    "channels": {
+      "vigilante/day_vote": 4
+    }
+  },
+  "8ae42aed-0d7f-472c-8250-893cd564060b": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.417,
+    "shrunk_lift": 0.0695,
+    "channels": {
+      "investigator/night_action": 1
+    }
+  },
+  "91450849-de9e-407f-a051-2f349540794d": {
+    "follow": 10,
+    "positive": 6,
+    "neutral": 0,
+    "negative": 4,
+    "utility": 0.2,
+    "lift": -0.0123,
+    "shrunk_lift": -0.0082,
+    "channels": {
+      "villager/day_vote": 10
+    }
+  },
+  "7f4560a3-aa9e-4c22-8935-df0491fc9108": {
+    "follow": 2,
+    "positive": 0,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.583,
+    "shrunk_lift": -0.1666,
+    "channels": {
+      "investigator/night_action": 2
+    }
+  },
+  "d499f666-f6c0-4233-a7b6-82909904595d": {
+    "follow": 7,
+    "positive": 1,
+    "neutral": 3,
+    "negative": 3,
+    "utility": -0.2857,
+    "lift": -0.498,
+    "shrunk_lift": -0.2905,
+    "channels": {
+      "villager/day_vote": 7
+    }
+  },
+  "36e256da-cd1a-4e0f-8861-8299208f45d1": {
+    "follow": 6,
+    "positive": 6,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7845,
+    "shrunk_lift": 0.4279,
+    "channels": {
+      "healer/day_vote": 6
+    }
+  },
+  "e9c75193-86cd-46b1-b1f5-d9133b9664e7": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.3767,
+    "shrunk_lift": 0.0628,
+    "channels": {
+      "investigator/day_vote": 1
+    }
+  },
+  "a4a2dd3b-5030-4db8-a134-ca2f9901e1bb": {
+    "follow": 5,
+    "positive": 4,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.8,
+    "lift": 0.5877,
+    "shrunk_lift": 0.2939,
+    "channels": {
+      "villager/day_vote": 5
+    }
+  },
+  "b4bc1833-f0ae-4bdc-a24c-37327b34f57f": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7845,
+    "shrunk_lift": 0.1308,
+    "channels": {
+      "healer/day_vote": 1
+    }
+  },
+  "210a7fe8-48a9-411c-8ee1-65ed75aae93f": {
+    "follow": 2,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7845,
+    "shrunk_lift": 0.2241,
+    "channels": {
+      "healer/day_vote": 2
+    }
+  },
+  "03d6e9bf-a2aa-4529-b4c7-7a80634c3488": {
+    "follow": 5,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 3,
+    "utility": -0.2,
+    "lift": -0.4123,
+    "shrunk_lift": -0.2061,
+    "channels": {
+      "villager/day_vote": 5
+    }
+  },
+  "b3538676-b659-4e24-8632-e45316530a17": {
+    "follow": 2,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7877,
+    "shrunk_lift": 0.2251,
+    "channels": {
+      "villager/day_vote": 2
+    }
+  },
+  "08e851d1-4a68-4916-a6de-df13ac71fbc1": {
+    "follow": 3,
+    "positive": 0,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0027,
+    "channels": {
+      "vigilante/night_action": 3
+    }
+  },
+  "81a1552e-e9e7-4aa5-baca-d47522489399": {
+    "follow": 3,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.3333,
+    "lift": -0.2899,
+    "shrunk_lift": -0.1087,
+    "channels": {
+      "investigator/day_vote": 3
+    }
+  },
+  "af0bfca7-0691-4589-a526-497bb15c213b": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.0,
+    "lift": -0.2123,
+    "shrunk_lift": -0.0606,
+    "channels": {
+      "villager/day_vote": 2
+    }
+  },
+  "f3988321-5be2-41e1-a6cc-2fd0e22c8d4e": {
+    "follow": 6,
+    "positive": 0,
+    "neutral": 6,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0039,
+    "channels": {
+      "vigilante/night_action": 6
+    }
+  },
+  "8b482aa5-a220-48fc-98e0-56da381e04a4": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 0,
+    "negative": 1,
+    "utility": -1.0,
+    "lift": -1.163,
+    "shrunk_lift": -0.1938,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "ce59f5d4-e93d-4c95-bdc0-b8bfdca5f768": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "d32205f9-509b-4883-896b-e9bdbb68ed03": {
+    "follow": 2,
+    "positive": 2,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.9928,
+    "shrunk_lift": 0.2837,
+    "channels": {
+      "vigilante/night_action": 2
+    }
+  },
+  "74226418-42ef-4dc1-8494-ff30358e59b7": {
+    "follow": 4,
+    "positive": 2,
+    "neutral": 2,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.083,
+    "shrunk_lift": -0.0369,
+    "channels": {
+      "investigator/night_action": 4
+    }
+  },
+  "b6cf853a-4abc-400f-aff0-eb98a940b6ac": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.5,
+    "lift": -0.083,
+    "shrunk_lift": -0.0237,
+    "channels": {
+      "investigator/night_action": 2
+    }
+  },
+  "75926761-dff9-4bbe-8ae0-f6a423e03581": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0012,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "8d9a6e4b-432c-4538-81a6-6d6c6774e6ae": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7877,
+    "shrunk_lift": 0.1313,
+    "channels": {
+      "villager/day_vote": 1
+    }
+  },
+  "b6f10ace-51f3-4112-8287-535037f69750": {
+    "follow": 5,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 2,
+    "utility": 0.2,
+    "lift": 0.1928,
+    "shrunk_lift": 0.0964,
+    "channels": {
+      "vigilante/night_action": 5
+    }
+  },
+  "f48be508-ddb4-465b-912a-9f0668849b6a": {
+    "follow": 3,
+    "positive": 0,
+    "neutral": 3,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0027,
+    "channels": {
+      "vigilante/night_action": 3
+    }
+  },
+  "71286b0b-42b1-4477-97e3-e6ec392dbe57": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 0,
+    "negative": 1,
+    "utility": -1.0,
+    "lift": -1.2155,
+    "shrunk_lift": -0.2026,
+    "channels": {
+      "healer/day_vote": 1
+    }
+  },
+  "775efeaa-417a-4a03-b202-7bcf94242308": {
+    "follow": 5,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 2,
+    "utility": 0.2,
+    "lift": -0.0123,
+    "shrunk_lift": -0.0061,
+    "channels": {
+      "villager/day_vote": 5
+    }
+  },
+  "24c88ec0-cace-485b-8e2e-da719fc76bab": {
+    "follow": 6,
+    "positive": 0,
+    "neutral": 6,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.0072,
+    "shrunk_lift": -0.0039,
+    "channels": {
+      "vigilante/night_action": 6
+    }
+  },
+  "da99667a-8280-42f5-83e2-20fdb4f756c3": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 0,
+    "negative": 1,
+    "utility": -1.0,
+    "lift": -1.2123,
+    "shrunk_lift": -0.202,
+    "channels": {
+      "villager/day_vote": 1
+    }
+  },
+  "1679a1ec-6e63-424b-9989-7680f20bf902": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "acda49e3-dcef-4745-9a67-4985aed3414d": {
+    "follow": 4,
+    "positive": 3,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.5,
+    "lift": 0.2877,
+    "shrunk_lift": 0.1279,
+    "channels": {
+      "villager/day_vote": 4
+    }
+  },
+  "69865cb3-adb0-412f-8aa6-cb24c6583ca5": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 0,
+    "negative": 1,
+    "utility": -1.0,
+    "lift": -1.0072,
+    "shrunk_lift": -0.1679,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "c5444dfb-f8d6-449c-9fdb-04bc9a0ee943": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.0,
+    "lift": -0.2123,
+    "shrunk_lift": -0.0606,
+    "channels": {
+      "villager/day_vote": 2
+    }
+  },
+  "079e794c-48b5-439d-8991-1bc522d49f52": {
+    "follow": 2,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 1,
+    "utility": 0.0,
+    "lift": -0.2123,
+    "shrunk_lift": -0.0606,
+    "channels": {
+      "villager/day_vote": 2
+    }
+  },
+  "60e02e97-3355-4819-865f-2c629d8dcba2": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7877,
+    "shrunk_lift": 0.1313,
+    "channels": {
+      "villager/day_vote": 1
+    }
+  },
+  "35170acf-7916-4c7e-847b-26a884b0db8b": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "0255b60d-c896-49fb-9f32-47de8f8990d3": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.417,
+    "shrunk_lift": 0.0695,
+    "channels": {
+      "investigator/night_action": 1
+    }
+  },
+  "2279dbf2-a6e1-4966-91a7-8839c877afea": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 0,
+    "negative": 1,
+    "utility": -1.0,
+    "lift": -1.2123,
+    "shrunk_lift": -0.202,
+    "channels": {
+      "villager/day_vote": 1
+    }
+  },
+  "0a0ef5ad-9cbb-4500-b7aa-7679e9f0e485": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "2f05b84b-c2a7-46b4-8e57-74aa0eea62b5": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "31a18fc0-486e-406d-94b8-03538fce2562": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "5ddeda3d-3c0c-4eb7-ada2-48c2b51e5591": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.9928,
+    "shrunk_lift": 0.1655,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "7878716f-dc76-4476-a5f6-99f9e9492e1f": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.2123,
+    "shrunk_lift": -0.0354,
+    "channels": {
+      "villager/day_vote": 1
+    }
+  },
+  "4f724f42-113b-4552-8551-c444891ca1a2": {
+    "follow": 1,
+    "positive": 0,
+    "neutral": 1,
+    "negative": 0,
+    "utility": 0.0,
+    "lift": -0.583,
+    "shrunk_lift": -0.0972,
+    "channels": {
+      "investigator/night_action": 1
+    }
+  },
+  "d3718678-4450-4297-96e8-da86457569ed": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.9928,
+    "shrunk_lift": 0.1655,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  },
+  "21ead385-e19a-42d7-b77c-63ea89b75e86": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.7877,
+    "shrunk_lift": 0.1313,
+    "channels": {
+      "villager/day_vote": 1
+    }
+  },
+  "3d602fc7-532f-4b57-bba7-ff91408a445f": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.837,
+    "shrunk_lift": 0.1395,
+    "channels": {
+      "vigilante/day_vote": 1
+    }
+  },
+  "f7a88ff2-8dbc-41cb-a9e0-5395aaa7f705": {
+    "follow": 1,
+    "positive": 1,
+    "neutral": 0,
+    "negative": 0,
+    "utility": 1.0,
+    "lift": 0.9928,
+    "shrunk_lift": 0.1655,
+    "channels": {
+      "vigilante/night_action": 1
+    }
+  }
+}
