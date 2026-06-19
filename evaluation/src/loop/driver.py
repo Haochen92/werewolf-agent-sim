@@ -48,15 +48,18 @@ def _init_store(run_dir: Path, base_store: str | None) -> Path:
     return store
 
 
-def _run_batch(store: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str) -> None:
+def _run_batch(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
+               store: Path | None = None, extra: tuple = ()) -> None:
     cmd = [
         "poetry", "run", "python", "scripts/run_batch.py",
         "--configs", configs,
         "--runs-per-config", str(cfg.games_per_generation),
-        "--memory-store-dir", str(store),
         "--output", str(out_jsonl),
         "--session-prefix", prefix,
     ]
+    if store is not None:                    # on arm: seed from + dump to the run store
+        cmd += ["--memory-store-dir", str(store)]
+    cmd += list(extra)
     env = {**os.environ, **cfg.env()}
     subprocess.run(cmd, cwd=REPO, env=env, check=True)
 
@@ -70,15 +73,19 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
     history: list[dict] = []
 
     for gen in range(1, cfg.generations + 1):
-        out_jsonl = run_dir / f"gen{gen}.jsonl"
-        print(f"\n=== generation {gen}/{cfg.generations} — run_batch ({cfg.games_per_generation} games, "
+        on_jsonl = run_dir / f"gen{gen}_on.jsonl"
+        print(f"\n=== generation {gen}/{cfg.generations} — ON arm ({cfg.games_per_generation} games, "
               f"{cfg.model}) ===", flush=True)
-        _run_batch(store, out_jsonl, f"loop_{run_dir.name}_gen{gen}", cfg, configs)
+        _run_batch(on_jsonl, f"loop_{run_dir.name}_gen{gen}_on", cfg, configs, store=store)
 
-        # rolling window of recent generations' records for credit
+        if cfg.off_baseline:                 # memory-OFF flat baseline — NO seed/dump (never touches store)
+            print(f"=== generation {gen} — OFF baseline (all_disabled, no seed/dump) ===", flush=True)
+            _run_batch(run_dir / f"gen{gen}_off.jsonl", f"loop_{run_dir.name}_gen{gen}_off", cfg,
+                       "all_disabled", store=None, extra=("--no-memory-seed", "--no-memory-dump"))
+
+        # credit runs over the ON arm only (rolling window); the off arm is the comparison, not credited
         w = cfg.window_generations or gen
-        window = " ".join(str(run_dir / f"gen{g}.jsonl") for g in range(max(1, gen - w + 1), gen + 1))
-
+        window = " ".join(str(run_dir / f"gen{g}_on.jsonl") for g in range(max(1, gen - w + 1), gen + 1))
         if cfg.credit:
             cstats = credit_apply(sp_path, window, discussion=cfg.discussion_credit,
                                   discussion_mode=cfg.discussion_mode)
@@ -89,7 +96,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             prev_obs_counts = cons.get("obs_counts", prev_obs_counts)
             print(f"  consolidate: prune_evict={cons.get('prune_evict')} synth={cons.get('synth')}",
                   flush=True)
-        score = generation_score(str(out_jsonl))
+        score = generation_score(str(run_dir / f"gen{gen}_*.jsonl"))   # on + off arms
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
         history.append({"generation": gen, "score": score, "consolidate": cons})
 

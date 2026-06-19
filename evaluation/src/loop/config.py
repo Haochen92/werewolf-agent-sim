@@ -18,6 +18,8 @@ class LoopConfig:
 
     games_per_generation: int = 5          # batch size = the consolidation tick cadence
     generations: int = 6
+    off_baseline: bool = True              # also run a memory-OFF arm (all_disabled, no seed/dump) as the
+    #                                        flat comparison the slope is measured against
 
     # (a) credit
     credit: bool = True

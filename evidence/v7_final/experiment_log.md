@@ -353,8 +353,20 @@ The compounding loop, wired + toggleable (config-flag policy). Components:
     the merit-only day-credit I first wired. `_tagger_ledger` credits both (disc holistic verdict; night
     read-quality OVERRIDING the deterministic `_night_credit`). `discussion_mode='tagger'` toggle.
     Caveat: LLM judge (unvalidatable absolutely), n=8; ultimate test = Gate B / the loop.
-- **NEXT:** the one-rotation gate (1 gen, warm-start v6_1, small N — the first loop spend, the
-  mechanism/safety check) → then the multi-generation slope run (the headline paid test).
+- **ONE-ROTATION GATE — PASSED (2026-06-19, `loop_gate`, 1 game/arm, flash-lite).** The full live loop
+  ran end-to-end (exit 0, no integration bugs): ON arm (all_enabled → seed/extract/dump to the run store)
+  + OFF baseline (all_disabled, `--no-memory-seed --no-memory-dump` → never touched canonical v6_1) +
+  credit (807 SPs, 79 credited) + consolidate (pruned 1, synth 261) + measure (on/off split) + history.
+  Mechanism VALIDATED. The score (on/town +0.59 vs off/town −0.36) is NOISE — 1 game/arm, different games/
+  outcomes (trajectory-divergence confound), NOT a compounding signal.
+  - **Headline-run lessons:** (1) game-play is the bottleneck and `run_batch` is SEQUENTIAL → must
+    parallelize games or N stays tiny (~20 min for 2 games). (2) Warm-start gen-1 consolidate
+    re-synthesizes the WHOLE store (incremental has no prior snapshot) → cold-start or pre-snapshot
+    obs-counts. (3) Need enough games/gen for credit to bite (1 game → 79 credited, 1 prune).
+  - Driver now runs the off baseline (isolated) + measures both arms. `off_baseline` toggle.
+- **NEXT (the headline paid test, NOT yet run):** the multi-generation slope run — parallelized games,
+  ~20+ games/gen, the de-luck slope vs the flat off baseline. Loop infra is built + gate-validated;
+  this is the remaining spend, awaiting green-light + the game-parallelism fix.
 
 ## 9. Conclusions / current state
 - The **free deterministic floor is strong + broad** (day-vote endpoint +0.51 + heat + night-exposure) —
