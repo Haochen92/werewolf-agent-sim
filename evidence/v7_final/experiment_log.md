@@ -324,9 +324,22 @@ The compounding loop, wired + toggleable (config-flag policy). Components:
 - **measure (`measure.py`):** `generation_score` = mean de-luck decision value, memory ON vs OFF × faction
   (ON should slope up vs flat OFF; outcome-independent). Tested offline.
 - **Models:** flash-lite for extract + synth (validated ≈ pro, ~3× faster → cost dissolved); toggle → pro.
+- **d FULLY BUILT (2026-06-19, `discussion_tagger.py`):** the apparatus, not just the free floor.
+  - *LLM tagging + omniscient per-day view* — `tag_game`: omniscient end-of-day flash-lite pass, per-day
+    chunked, judges each player's contribution on faction MERIT (outcome-independent de-luck framing) +
+    tags framing/credibility. All-required schema (flash-lite-safe). Tested: losing wolves graded
+    negative, healer-save positive, baseless vote = manipulative framing.
+  - *Associated proxy* — `_tagger_discussion_ledger` credits day_discussion SPs by the tagger verdict
+    (tier 2/3); `discussion_mode='floor'|'tagger'` toggle. Tested: credits 14 discussion SPs on a
+    memory-on game. Night consequences are in the tagger's input (it sees NIGHT deaths), so night-exposure
+    is partly subsumed. Floor = validated default; tagger earned by Gate B (predicts beyond floor).
+  - *Reasoning carrier (A4)* — RESOLVED as already-present: `DayVoteOutput`/`NightAction` have no reasoning
+    field, but the eval case ALREADY captures `updated_strategy` + `strategy_verdicts` (per-SP why) +
+    `firing_reason` (discussion) — the agent's own reasoning, gameplay-NEUTRAL. A dedicated vote/night
+    reasoning field would make the agent GENERATE new reasoning = a gameplay change (violates neutrality),
+    so it's rejected; feeding the existing reasoning into the tagger is a small deferrable refinement.
 - **NEXT:** the one-rotation gate (1 gen, warm-start v6_1, small N — the first loop spend, the
-  mechanism/safety check) → then the multi-generation slope run (the headline paid test). LLM discussion
-  tagger (framing/credibility) = deferred paid refinement, separate from d's wired free floor.
+  mechanism/safety check) → then the multi-generation slope run (the headline paid test).
 
 ## 9. Conclusions / current state
 - The **free deterministic floor is strong + broad** (day-vote endpoint +0.51 + heat + night-exposure) —
