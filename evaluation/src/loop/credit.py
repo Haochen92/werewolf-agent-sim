@@ -64,12 +64,14 @@ def _discussion_ledger(dumps_glob: str) -> tuple[dict, dict]:
     return dict(ledger), base
 
 
-def _tagger_discussion_ledger(dumps_glob: str) -> dict:
-    """(d) tier 2/3 — credit day_discussion SPs by the OMNISCIENT TAGGER's per-turn merit verdict (richer
-    than the day-vote-endpoint floor; the LLM judges framing/credibility/merit). PAID (flash-lite per game,
-    env-pin the model). The tagger verdict is already de-luck (merit, outcome-independent) → base 0."""
+def _tagger_ledger(dumps_glob: str) -> tuple[dict, dict]:
+    """(d) tier 2/3 — credit via the OMNISCIENT TAGGER (one pass/game): day_discussion SPs by the holistic
+    verdict (framing/credibility/role-reveal weighed); night_action SPs by READ-QUALITY (de-lucks
+    `_night_credit`'s outcome-luck). Returns (disc_ledger, night_ledger). PAID (flash-lite, env-pin model).
+    Tagger verdicts are de-luck → base 0."""
     from evaluation.src.loop.discussion_tagger import tag_game  # lazy: pulls LLM deps only when used
-    ledger: dict = defaultdict(SPCredit)
+    disc: dict = defaultdict(SPCredit)
+    night: dict = defaultdict(SPCredit)
     for dump in sorted(glob.glob(dumps_glob)):
         for line in open(dump):
             if not line.strip():
@@ -78,24 +80,30 @@ def _tagger_discussion_ledger(dumps_glob: str) -> dict:
             roles, path = g.get("roles"), g.get("eval_cases_path")
             if not roles or not path or not os.path.exists(path):
                 continue
-            tags = tag_game(g)  # {(day, player): tag}
+            d_tags, n_tags = tag_game(g)
             for cl in open(path):
                 if not cl.strip():
                     continue
                 ec = (json.loads(cl).get("output") or {}).get("eval_case") or {}
-                if ec.get("action_phase") != "day_discussion" or not ec.get("memory_enabled"):
+                phase = ec.get("action_phase")
+                if not ec.get("memory_enabled") or not ec.get("strategy_verdicts"):
                     continue
-                t = tags.get((ec.get("day"), ec.get("player_id")))
-                if not t or not ec.get("strategy_verdicts"):
+                if phase == "day_discussion":
+                    t, led = d_tags.get((ec.get("day"), ec.get("player_id"))), disc
+                elif phase == "night_action":
+                    t, led = n_tags.get((ec.get("day"), ec.get("player_id"))), night
+                else:
                     continue
-                ch = f"{ec.get('player_role')}/day_discussion"
+                if not t:
+                    continue
+                ch = f"{ec.get('player_role')}/{phase}"
                 idx = ec.get("strategy_index_to_key") or {}
                 for sv in ec["strategy_verdicts"]:
                     if sv.get("verdict") == "follow":
                         key = idx.get(str(sv.get("strategy_index")))
                         if key:
-                            ledger[key].add(t["verdict"], ch, 0.0)  # tagger already de-luck → base 0
-    return dict(ledger)
+                            led[key].add(t["verdict"], ch, 0.0)  # tagger de-luck → base 0
+    return dict(disc), dict(night)
 
 
 def credit_apply(store_sp_path: str | Path, dumps_glob: str,
@@ -112,8 +120,10 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     ledger, _ = build_ledger(dumps_glob, base_rates)
     if discussion:
         if discussion_mode == "tagger":        # (d) tier 2/3: omniscient LLM tagger (paid)
-            disc_ledger = _tagger_discussion_ledger(dumps_glob)
-            ledger = {**ledger, **disc_ledger}  # tagger verdict is de-luck → base 0 (no base entry)
+            disc_ledger, night_ledger = _tagger_ledger(dumps_glob)
+            # night_ledger OVERRIDES the deterministic _night_credit (de-luck read-quality > outcome-luck);
+            # disc_ledger ADDS day_discussion (disjoint keys). Tagger verdicts de-luck → base 0.
+            ledger = {**ledger, **night_ledger, **disc_ledger}
         else:                                   # (d) tier 1: day-vote endpoint free floor
             disc_ledger, disc_base = _discussion_ledger(dumps_glob)
             ledger = {**ledger, **disc_ledger}  # disjoint keys (vote/night vs day_discussion SPs)

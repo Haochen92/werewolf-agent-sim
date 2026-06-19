@@ -1,18 +1,22 @@
-"""Compounding loop — (d) the OMNISCIENT per-day DISCUSSION TAGGER.
+"""Compounding loop — (d) the OMNISCIENT per-day TAGGER (discussion + night).
 
-Discussion has no clean deterministic de-luck proxy (unlike votes/night), so an omniscient end-of-day LLM
-(flash-lite) judges each player's day contribution on its MERIT for their faction — INDEPENDENT of whether
-the day/game happened to go their way (the de-luck framing; a good move in a lost game is still good). It
-also tags framing (the primitive deterministic can't detect) and credibility. Per-day chunked, concurrent.
+One omniscient end-of-day flash-lite pass over the full day+night judges, per player:
+  DISCUSSION — framing / credibility / role_reveal tags → ONE holistic de-luck verdict that WEIGHS them
+               (tag-fine, credit-coarse: tags are the detection lens; the SP still gets one coarse value).
+  NIGHT      — read-quality of that player's night target given the day's discussion: a SKILLED read vs a
+               LUCKY hit. De-lucks `_night_credit`, which is outcome-only (hit_power/threat = partly luck).
 
-Output verdict credits the FOLLOWED discussion SPs at that turn — richer than the day-vote-endpoint free
-floor (tier 1). Validated INCREMENTALLY (Gate B): does it predict beyond that floor? An LLM "merit vs
-outcome" judge is a hypothesis (same caveat as the synthesis de-luck re-judge), so its keep is earned by
-that incremental check, not assumed.
+Discussion has no deterministic de-luck proxy (the irreducible LLM job); night HAS one (`_night_credit`)
+but it's outcome-luck — the tagger adds the read-quality the proxy can't see. Role-reveal is detected from
+the raw messages (no day-summary un-flatten needed). Returns ({(day,player): disc_tag}, {(day,player):
+night_tag}). Validated by the de-luck tests (does discussion beat the day-floor redundancy; does night
+beat `_night_credit`'s halo).
 """
 
 from __future__ import annotations
 
+import json
+import os
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from logging import getLogger
@@ -26,43 +30,59 @@ logger = getLogger(__name__)
 
 
 class TurnTag(BaseModel):  # all-required (flash-lite drops optional/nullable)
-    player: str = Field(description="The player id this tag is for.")
+    player: str = Field(description="The player id this discussion tag is for.")
     verdict: Literal["positive", "neutral", "negative"] = Field(
-        description="Did this player's discussion that day ADVANCE their own faction's win condition, "
-                    "judged omnisciently and INDEPENDENT of whether the day's vote or the game went "
-                    "their way? positive = advanced it, negative = hurt it, neutral = no effect.")
+        description="HOLISTIC: weighing framing, credibility and any role-reveal below, did this player's "
+                    "discussion ADVANCE their own faction's win condition — judged omnisciently and "
+                    "INDEPENDENT of whether the day's vote or the game went their way?")
     framing: Literal["none", "legitimate", "manipulative"] = Field(
-        description="Did they steer suspicion onto someone? none / legitimate (toward a real threat) / "
-                    "manipulative (away from truth or onto an ally's enemy).")
+        description="Steering suspicion: none / legitimate (toward a real threat) / manipulative.")
     credibility: Literal["low", "medium", "high"] = Field(
-        description="How believable were their claims/reads to the room that day.")
+        description="How believable their claims/reads were to the room.")
+    role_reveal: Literal["none", "own_role_claim", "challenge_claim"] = Field(
+        description="Did they claim their own role, challenge someone's claim, or neither this day?")
     why: str = Field(description="One line: the faction-merit reason, outcome-independent.")
 
 
+class NightTag(BaseModel):
+    player: str = Field(description="The player id who took this night action.")
+    verdict: Literal["positive", "neutral", "negative"] = Field(
+        description="READ QUALITY of their night target given the day's discussion + true roles, judged "
+                    "INDEPENDENT of whether the target happened to be valuable. positive = a SKILLED read "
+                    "(the discussion justified targeting them); neutral = a blind/lucky pick with no basis; "
+                    "negative = a misread that ignored available reads. Credit the READ, not a lucky hit.")
+    read_quality: Literal["skilled", "reasonable", "blind_or_lucky", "misread"] = Field(
+        description="The read behind the target choice.")
+    why: str = Field(description="One line, outcome-independent.")
+
+
 class DayTags(BaseModel):
-    tags: list[TurnTag] = Field(description="One tag per player who contributed meaningfully this day.")
+    discussion: list[TurnTag] = Field(description="One tag per player who contributed to discussion.")
+    night: list[NightTag] = Field(description="One tag per player who took a night action this day.")
 
 
-_PROMPT = """You are an omniscient post-game analyst for a social-deduction game (Werewolf-like, 3
-factions: villagers / wolves / serial_killer). You see ONE day's full public discussion with TRUE ROLES
-revealed, plus how the day's vote and that night resolved.
+_PROMPT = """You are an omniscient post-game analyst for a social-deduction game (3 factions: villagers /
+wolves / serial_killer). You see ONE day's full PUBLIC discussion with TRUE ROLES revealed, the day's
+vote, that night's actions, and that night's deaths.
 
-Judge EACH player who spoke meaningfully on the MERIT of their discussion contribution for THEIR OWN
-faction's win condition — judged omnisciently and INDEPENDENT of whether the day's vote or the eventual
-game happened to favor them. A good move in a game they later lost is still positive; a move that only
-looked good because the dice fell their way is not. Deceivers (wolf/serial_killer) advance by misdirecting
-the village and surviving usefully; villagers advance by correctly finding threats and building accurate
-consensus.
+Judge each player on the MERIT for THEIR OWN faction's win condition — omnisciently and INDEPENDENT of
+whether the day's vote / the game happened to favor them (a good move in a lost game is still positive; a
+lucky move is not). Deceivers advance by misdirection + useful survival; villagers by correctly finding
+threats + accurate consensus.
+
+DISCUSSION: weigh framing (steering suspicion), credibility, and any role-reveal into ONE holistic verdict.
+NIGHT: for each night action, judge the READ behind the target given the day's discussion — a SKILLED read
+(discussion justified it) earns credit; a blind/lucky pick that merely happened to hit does NOT.
 
 TRUE ROLES: {roles}
 DAY {day} DISCUSSION:
 {discussion}
 DAY {day} VOTE RESULT: {lynch}
+NIGHT {day} ACTIONS: {night_actions}
 NIGHT {day} DEATHS: {deaths}
 
-For each meaningful contributor output: player, verdict (positive/neutral/negative for their faction),
-framing (none/legitimate/manipulative), credibility (low/medium/high), and a one-line outcome-independent
-reason."""
+Output: discussion tags (per meaningful contributor) + night tags (per night actor), each
+outcome-independent."""
 
 
 def _format_day(msgs: list[dict], roles: dict) -> str:
@@ -76,30 +96,52 @@ def _format_day(msgs: list[dict], roles: dict) -> str:
     return "\n".join(lines) or "(no spoken messages)"
 
 
-def tag_game(record: dict, model: str | None = None, max_workers: int = 8) -> dict:
-    """Tag a finished game's discussion. Returns {(day, player): tag_dict}. flash-lite, per-day concurrent.
-    model=None uses get_llm_pro() (env-pinnable to flash-lite via GOOGLE_GENAI_PRO_MODEL)."""
+def _night_actions_by_day(record: dict) -> dict[int, list]:
+    """[(player, role, target)] per day, from the game's night-action eval cases."""
+    out: dict[int, list] = defaultdict(list)
+    path = record.get("eval_cases_path")
+    if not path or not os.path.exists(path):
+        return out
+    for cl in open(path):
+        if not cl.strip():
+            continue
+        ec = (json.loads(cl).get("output") or {}).get("eval_case") or {}
+        na = ec.get("agent_night_action")
+        if ec.get("action_phase") == "night_action" and na and na.get("target"):
+            out[ec.get("day")].append((ec.get("player_id"), na.get("role"), na.get("target")))
+    return out
+
+
+def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
+    """Omniscient per-day tags. Returns ({(day,player): disc_tag}, {(day,player): night_tag}).
+    flash-lite via get_llm_pro() (env-pin GOOGLE_GENAI_PRO_MODEL)."""
     roles = record.get("roles") or {}
     by_day: dict[int, list] = defaultdict(list)
     for m in record.get("day_channel") or []:
         by_day[m.get("day")].append(m)
     lynch = {dr.get("day"): dr.get("voted_player") for dr in record.get("day_resolutions", [])}
     deaths = {n.get("day"): n.get("deaths") for n in record.get("night_resolutions", [])}
+    night_acts = _night_actions_by_day(record)
     llm = get_llm_pro().with_structured_output(DayTags)
 
     def _tag(day: int):
+        na = night_acts.get(day, [])
+        na_str = "; ".join(f"{p}({r}) -> {t}" for p, r, t in na) or "(none)"
         prompt = _PROMPT.format(roles=roles, day=day, discussion=_format_day(by_day[day], roles),
-                                lynch=lynch.get(day), deaths=deaths.get(day))
+                                lynch=lynch.get(day), night_actions=na_str, deaths=deaths.get(day))
         try:
-            res = llm.invoke(prompt, config={"run_name": f"disc_tag_d{day}"})
-            return day, (res if isinstance(res, DayTags) else DayTags.model_validate(res)).tags
+            res = llm.invoke(prompt, config={"run_name": f"tag_d{day}"})
+            return day, (res if isinstance(res, DayTags) else DayTags.model_validate(res))
         except Exception as e:  # noqa: BLE001
-            logger.warning("disc_tag day %s failed: %s", day, e)
-            return day, []
+            logger.warning("tag day %s failed: %s", day, e)
+            return day, DayTags(discussion=[], night=[])
 
-    out: dict = {}
+    disc: dict = {}
+    night: dict = {}
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        for day, tags in pool.map(_tag, sorted(by_day)):
-            for t in tags:
-                out[(day, t.player)] = t.model_dump()
-    return out
+        for day, dt in pool.map(_tag, sorted(by_day)):
+            for t in dt.discussion:
+                disc[(day, t.player)] = t.model_dump()
+            for t in dt.night:
+                night[(day, t.player)] = t.model_dump()
+    return disc, night

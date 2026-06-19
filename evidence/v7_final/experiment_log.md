@@ -338,6 +338,21 @@ The compounding loop, wired + toggleable (config-flag policy). Components:
     `firing_reason` (discussion) — the agent's own reasoning, gameplay-NEUTRAL. A dedicated vote/night
     reasoning field would make the agent GENERATE new reasoning = a gameplay change (violates neutrality),
     so it's rejected; feeding the existing reasoning into the tagger is a small deferrable refinement.
+- **TAGGER EFFECTIVENESS (2026-06-19, `tagger_effectiveness.py`, 8 games flash-lite) — merit-only tagger
+  was wired to its REDUNDANT axis; the fix (user) = weigh the tags + use the night axis.**
+  - *Merit-only discussion verdict:* halo +0.21, but **+0.55 redundant with the FREE day-vote floor** →
+    poor ROI (paying for what's free). The face-validity "sensible tags" couldn't tell de-luck from halo.
+  - *Enriched discussion verdict (weighs framing/credibility/role-reveal):* halo **+0.11**, redundancy
+    **+0.34** (down from +0.55) → now adds the unique axes the floor can't see. Role-reveal detected from
+    raw messages (no day-summary un-flatten needed).
+  - *Night read-quality (de-lucks `_night_credit`'s outcome-luck):* halo +0.12; **reassigns ~31% of night
+    actions from luck to read-skill** — 30 SKILLED MISSES credited (good reads that missed; `_night_credit`
+    scores neutral) + 12 LUCKY HITS demoted (blind picks that hit; `_night_credit` scores positive). No
+    free signal exists for read quality → this is where the paid tagger is irreplaceable.
+  - ⇒ the tagger EARNS its keep on its unique axes (framing-weighted discussion + night read-quality), NOT
+    the merit-only day-credit I first wired. `_tagger_ledger` credits both (disc holistic verdict; night
+    read-quality OVERRIDING the deterministic `_night_credit`). `discussion_mode='tagger'` toggle.
+    Caveat: LLM judge (unvalidatable absolutely), n=8; ultimate test = Gate B / the loop.
 - **NEXT:** the one-rotation gate (1 gen, warm-start v6_1, small N — the first loop spend, the
   mechanism/safety check) → then the multi-generation slope run (the headline paid test).
 
