@@ -194,7 +194,7 @@ def run_screen(
         # query is composed in the same dimensions as the v6 store). Default reuses the frozen v5
         # summary (the original, mismatched-base behavior) for comparison.
         if regenerate_query:
-            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote"))
+            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote")[0])
         else:
             query = " ".join(case.situations)
         qv = np.array(emb.embed_query(query))

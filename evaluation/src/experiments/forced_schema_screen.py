@@ -225,7 +225,7 @@ def run_variants(
                 return None
             gid = str(game["game_id"])
             allow = allow_abstain_for(case.day, game["day_resolutions"])
-            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote"))
+            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote")[0])
             idx, _ = _topk_idx(query, pool, emb, gid, top_k)
             mem = _retrieved(pool.cands, idx, query)
             row: dict[str, Any] = {"n_mem": len(mem), "held_out": gid not in source_games}
@@ -338,7 +338,7 @@ def run_discussion(
             if not pool or not pool.cands:
                 return None
             gid = str(game["game_id"])
-            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_discussion"))
+            query = " ".join(_generate_situations_for_agent(eval_case_to_agent_payload(case), "day_discussion")[0])
             idx, _ = _topk_idx(query, pool, emb, gid, top_k)
             row = _discussion_row(case, _retrieved(pool.cands, idx, query))
             row["role"] = case.player_role
@@ -432,7 +432,7 @@ def run_screen(
 
         v5_query = " ".join(case.situations)  # frozen v5 situation summary (native to v5 pipeline)
         v6_query = " ".join(  # regenerated NOW under the v6 cell schema (native to v6 pipeline)
-            _generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote")
+            _generate_situations_for_agent(eval_case_to_agent_payload(case), "day_vote")[0]
         )
         v5_idx, _ = _topk_idx(v5_query, v5p, emb, gid, top_k)
         v6_idx, _ = _topk_idx(v6_query, v6p, emb, gid, top_k)
