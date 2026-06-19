@@ -174,6 +174,20 @@ measurement of whether credit has recoverable signal before consolidation is bui
   (strengthen / insert low-trust / decay / evict). This is what makes bad memories stale out
   (failure mode #1) using an objective cross-window signal (failure mode #2).
 - Rolling recent-window for non-stationarity.
+- ⭐**Synthesis-as-built is HALO-KEYED (eyeballed 2026-06-19, `sp_synthesis_quality_check.py` + manual
+  read of `v6_1_sp_cluster`):** cluster-synth weights directives by the cluster's outcome spread, but the
+  outcome is the obs' haloed `net_verdict` → it optimizes the halo, not de-luck lift. Result is
+  **faction-split**: synth FLIPPED the town passive-loser ("abstain"→"force a resolution") but REPRODUCED
+  the SK passive-loser ("blend/abstain", a −0.30/79-follow credited directive) — self-corrects where
+  halo≈de-luck (town), fails where they decouple (wolf/SK). ⇒ the loop's (a)+(b) de-luck credit is MOST
+  needed on **deceiver cells**; a go/no-go should watch them specifically. This is the concrete change the
+  loop makes: feed de-luck credit into synthesis/prune, *replacing* the halo-weighting.
+- ⚠**EPOCH-stability caveat:** all credit verdicts (incl. the deceiver-split above + the b1 prune) are
+  **v6ab-conditional, not laws** — held-out +0.54 proves SAMPLE-stability, NOT epoch-stability. Board-
+  observable variation → carry the condition (C-ii) + slice credit; hidden epoch variable (model vintage)
+  → re-credit per epoch (the rolling window). The b1 prune is epoch-PROVISIONAL (kept reversible); a v6ab
+  validation does NOT transfer free → the loop must **re-validate in-epoch**, treating prior credit as a
+  hypothesis it re-tests on-policy, never a fixed prior.
 
 **D. Extraction selection — anchor, don't rewrite.** Keep the whole-game omniscient pass (validated
 labeling + multi-day causal chains); inject the deterministic leverage signal as **anchors** and swap

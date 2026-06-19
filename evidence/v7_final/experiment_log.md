@@ -75,6 +75,38 @@ strategies are *directives* — averaging two directives is incoherent → disca
 in-place** (keep lineage, re-earn trust on post-revision credit). **b1 free + b2 paid LLM synthesis**
 (every 5 games, rolling window, revise/keep/drop). Single trigger (T1 mature+mediocre→revise).
 
+**Does synthesis (regeneration) self-correct the SP wash? — eyeballed 2026-06-19
+(`sp_synthesis_quality_check.py` underpowered via lexical join — synthesis PARAPHRASES, so token-overlap
+can't trace carry-forward; switched to manual read of worst-credited per-game SPs vs the synth store
+`v6_1_sp_cluster`).** The cluster-synth prompt drops `net_verdict` from the CLUSTER KEY but weights
+directives by the cluster's outcome SPREAD — and that outcome is the obs' HALOED `net_verdict`. So
+synthesis optimizes the halo, not de-luck lift. Result is **FACTION-SPLIT, exactly as halo⊥de-luck
+predicts:**
+- **Town (villager/day_vote):** worst per-game SP = "advocate and vote to ABSTAIN" (−0.20/69-follow);
+  synth FLIPPED it → "do not abstain, force a resolution, a tie benefits evil." Self-corrected — because
+  here passivity loses on BOTH halo and de-luck (they agree).
+- **Deceiver (serial_killer/day_vote):** worst per-game SP = "deflect, vote with the bloc, ABSTAIN to
+  minimize record" (−0.30/79-follow); synth REPRODUCED it nearly verbatim ("blend in, join the majority,
+  abstain with them"). NOT corrected — here "blend+survive" looks good on the halo but is bad on de-luck
+  (the passive-SK tautology); they DECOUPLE, and halo-weighted synthesis carries the loser through.
+- ⇒ **Synthesis self-corrects where halo≈de-luck (town) and fails where they decouple (wolf/SK).** The
+  loop's (a)+(b) de-luck credit is therefore MOST needed on DECEIVER cells; a go/no-go should watch them
+  specifically. (Caveat: town read is partly the plausibility trap — active SPs match our anti-caution
+  prior; the SK read is firmer — concrete carry-forward of a −0.30-credited directive.)
+
+**⚠ EPOCH-STABILITY caveat (user, 2026-06-19) — these verdicts are v6ab-conditional, not laws.** The
+held-out reproduction (Pearson +0.54) proves SAMPLE-stability *within* the v6ab epoch, NOT epoch-stability;
+"stably bad" should read **"bad in v6ab."** Epoch drift is known real here (it killed cross-run
+comparisons). And we're actively changing the meta (town de-cap → shifts what SK plays against), so
+passive-SK's value is especially likely to move. Split: **(i)** board-OBSERVABLE variation (passive bad
+when town votes aggressively) = a conditioning failure → carry the condition (C-ii) + slice credit by it;
+**(ii)** HIDDEN epoch variable (model vintage/backend) = not conditionable → re-credit per epoch (rolling
+window §3C). Consequences: the **b1 prune is epoch-PROVISIONAL** (kept reversible on a copy, pointer not
+flipped — correct), a mechanism validated in v6ab **does not transfer free** to the loop's run epoch (must
+re-validate in-epoch), and **no single-epoch credit — incl. the deceiver-split above — is a fixed prior;
+it's a hypothesis the loop re-tests on-policy.** No free test exists (epoch drift makes cross-epoch games
+incomparable).
+
 ## 5. §10 cleanups — three priors removed
 - **Density guard:** §10a hid two things — aggregate weight-fit (regress a role's composite across
   hundreds of decisions → reliable, sets thresholds) **ON**; per-SP *dimensional* credit (slice ~3 follows
