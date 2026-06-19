@@ -212,6 +212,17 @@ is right, synthesis inverts it (halo-keyed)** — confirming the binding lever i
 extraction. Net: for a cheaper loop use **flash-3.5** (≈pro, not anchored-lite); put real spend on the
 synthesis fix.
 
+**AMPLIFY arm + metric-reliability correction (2026-06-19).** Added a v6-cell `--amplify` mode (exhaustive
+deep single-slice pass — the namespace-amplification idea ported to the cell path) and ran flash-lite
+amplify on 3 games. **NULL:** total obs DROPPED (116<123), no pivotal-turn gain (still 3/12 by the
+metric); the "be exhaustive" instruction doesn't transfer to flash-lite (quality-bar conservatism wins).
+⭐**But the manual read overturned the capture METRIC:** on the heavily-flagged SK night cell, flash-lite
+(base AND amplify) capture the same night-kill sequence as pro (3 obs each) while the metric scored it 25%
+— the metric only counts obs stating a parseable alive-count, which pro's verbose situations do and
+flash-lite's terse ones don't → the 10× "gap" is largely a verbosity artifact. **Revised:** flash-lite
+already covers the critical pivotal turns ~comparably to pro (mildly thinner in places); neither anchor nor
+amplify is needed; trust the READ over the parse-metric. Binding lever stays **synthesis (a)+(b)**.
+
 ## 8. (d) Discussion credit — designed + free floor measured
 **d0 cut:** the free deterministic advocacy signal is **thin/redundant-with-votes** (target-correctness,
 not discussion-specific) and the other free signal (lead-vs-blend) is null → **committed to d-full.**

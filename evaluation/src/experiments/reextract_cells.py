@@ -62,10 +62,11 @@ def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:
 
 
 def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries: int,
-                 with_sp: bool = False, anchor: str = ""):
+                 with_sp: bool = False, anchor: str = "", amplify: bool = False):
     """Re-extract one (game, role, phase-group). Returns (observations, strategy_points) — the SP list
     is empty unless with_sp (the per_run dual path). action_phase is set by the model within the cell's
-    allowed phases. `anchor` (default "") injects the recall-arm suggestive pivotal-turn recommendation."""
+    allowed phases. `anchor` injects the recall-arm pivotal-turn recommendation; `amplify` swaps the
+    bounded ask for an exhaustive deep single-slice pass (namespace-amplification on the cell path)."""
     _, phase_wording, rep_phase = unit
     cell_schema = cell_observation_schema_for(role, rep_phase)
     if cell_schema is None:
@@ -75,7 +76,7 @@ def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries:
     )
     prompt = build_cell_extraction_prompt(
         extraction_inputs_from_frozen_case(case), role, phase_wording, rep_phase, cell_schema,
-        with_sp=with_sp, anchor=anchor,
+        with_sp=with_sp, anchor=anchor, amplify=amplify,
     )
     run = f"reextract_{role}_{unit[0]}_{str(case.get('game_id',''))[:8]}"
     for label, llm in (("primary", get_llm_pro()), ("backup", get_llm_pro_backup())):
@@ -105,6 +106,9 @@ def main() -> int:
     ap.add_argument("--anchors-from", default=None,
                     help="glob of finished-game records (ab_*.jsonl) to derive recall-arm pivotal-turn "
                          "anchors from, joined to --source by game_id (suggestive, not a quota)")
+    ap.add_argument("--amplify", action="store_true",
+                    help="recall-arm: exhaustive deep per-cell pass (drop the bounded item count) to test "
+                         "whether amplified cheap-model extraction matches a bounded pro pass")
     args = ap.parse_args()
 
     # recall-arm: deterministic pivotal-turn flags keyed by game_id (empty if --anchors-from unset)
@@ -160,7 +164,7 @@ def main() -> int:
 
     with ThreadPoolExecutor(max_workers=args.max_workers) as pool:
         futs = {pool.submit(extract_cell, c, role, unit, args.max_retries, args.with_sp,
-                            _anchor(c, unit)): (c, role, unit)
+                            _anchor(c, unit), args.amplify): (c, role, unit)
                 for c, role, unit in units}
         for fut in as_completed(futs):
             c, role, unit = futs[fut]

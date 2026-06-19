@@ -87,6 +87,26 @@ does-not-clear.
   loop path is **flash-3.5**, not anchored-flash-lite. Metric caveat: parse-based capture is
   verbosity-sensitive → would need a semantic-match hardening before any pro-vs-lite recall scale-up.
 
+**AMPLIFY-ARM RUN (2026-06-19, `--amplify` exhaustive-deep cell pass on flash-lite, 3 games):** NULL.
+| arm | tot obs | flags hit | capture% | obs on flags |
+|---|---|---|---|---|
+| pro-2.5 | 144 | 12 | 100% | 47 |
+| flash-lite | 123 | 3 | 25% | 4 |
+| flash-lite+anchor | 128 | 3 | 25% | 4 |
+| flash-lite+amplify | 116 | 3 | 25% | 3 |
+- **Amplify did NOT lift pivotal recall** — total obs even DROPPED (116<123); it added some early-game
+  lessons (villager/day_discussion 6→10) but nothing on flagged turns. The "be exhaustive" instruction
+  doesn't transfer to flash-lite (its quality-bar conservatism dominates). Neither prompt lever moves it.
+- ⭐**THE METRIC IS UNRELIABLE (verbosity-confounded).** Manual read: on the heavily-flagged SK
+  night_action cell, flash-lite (base AND amplify) capture the SAME night-kill sequence as pro (3 obs
+  each) — yet the metric scored flash-lite 25%. It only counts obs that STATE a parseable alive-count;
+  pro's verbose situations do, flash-lite's terse ones don't → false "miss." The 10× gap is largely
+  artifact. **Trust the read, not this metric.**
+- ⇒ **Revised conclusion:** flash-lite already covers the critical pivotal turns ~comparably to pro
+  (mildly thinner in some cells, equal in others); neither anchor nor amplify is needed. The cost-saver
+  (flash-lite) is more defensible than the metric implied; flash-3.5 stays the safe near-pro pick. The
+  binding lever remains **synthesis (a)+(b)**, not extraction or its model.
+
 ## Caveats
 - **Epoch-conditional:** results hold for the run epoch only; backend fixed (Vertex — never compare across
   backends); flash-lite drifts ~daily. A capability verdict is "in this epoch."

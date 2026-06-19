@@ -172,7 +172,22 @@ def build_cell_extraction_prefix(inputs: dict[str, str]) -> str:
     )
 
 
-def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema, anchor: str = "") -> str:
+# Recall-arm AMPLIFY override: turn a bounded cell pass into an exhaustive deep single-slice pass
+# (the namespace-augmentation idea, ported to the v6 cell path). Appended after the tail when amplify=True;
+# off by default → production prompt unchanged. Mirrors ROLE_PHASE_EXTRACTION_TAIL's exhaustive wording.
+_CELL_AMPLIFY_OVERRIDE = (
+    "\n\nAMPLIFY OVERRIDE (focused deep pass): DISREGARD the bounded item-count target above. This is an "
+    "EXHAUSTIVE deep pass on this single {role}/{phase} slice — surface EVERY distinct lesson the {role} "
+    "could draw from its {phase} decisions in this game, including subtle ones a bounded whole-game pass "
+    "would skip. Still respect the quality bar (no common-sense fundamentals, no vague situations, no "
+    "action without a reason), and keep each item a genuinely DISTINCT lesson (no near-restatements). "
+    "Extract as many quality-passing observations as the game genuinely supports — do not stop at a fixed "
+    "count."
+)
+
+
+def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema, anchor: str = "",
+                                amplify: bool = False) -> str:
     """Per-cell observation lock appended after the cached prefix: role + phase + driver/horizon + the
     schema-derived dimension menu. driver_horizon + dimension_menu come from compose_cell_guidance (the
     single alignment point shared with the live situation-summary query).
@@ -180,12 +195,13 @@ def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema
     `anchor` (default "" → canonical/unchanged) appends a suggestive pivotal-turn recommendation for the
     v7 recall-arm experiment; off by default so the production prompt is byte-identical and freeze-safe."""
     guidance = compose_cell_guidance(role, action_phase, schema)
+    amp = _CELL_AMPLIFY_OVERRIDE.format(role=role, phase=phase) if amplify else ""
     return CELL_OBSERVATION_TAIL.format(
         role=role,
         phase=phase,
         driver_horizon=guidance["driver_horizon"],
         dimension_menu=guidance["dimension_menu"],
-    ) + anchor
+    ) + amp + anchor
 
 
 def build_cell_strategy_tail(role: str, phase: str) -> str:
@@ -196,14 +212,15 @@ def build_cell_strategy_tail(role: str, phase: str) -> str:
 
 def build_cell_extraction_prompt(
     inputs: dict[str, str], role: str, phase: str, action_phase: str, schema,
-    with_sp: bool = False, anchor: str = ""
+    with_sp: bool = False, anchor: str = "", amplify: bool = False
 ) -> str:
     """Full per-cell extraction prompt: cached prefix + observation tail [+ strategy tail]. Mirrors
     build_role_extraction_prompt = prefix + tail. with_sp appends the (stub) strategy-points tail for
     the dual obs+sp extraction path. `anchor` (default "" → unchanged) threads the recall-arm pivotal-turn
-    recommendation into the observation tail."""
+    recommendation; `amplify` (default False) swaps the bounded ask for an exhaustive deep single-slice
+    pass (the namespace-amplification idea on the v6 cell path)."""
     prompt = build_cell_extraction_prefix(inputs) + build_cell_observation_tail(
-        role, phase, action_phase, schema, anchor=anchor
+        role, phase, action_phase, schema, anchor=anchor, amplify=amplify
     )
     if with_sp:
         prompt += build_cell_strategy_tail(role, phase)

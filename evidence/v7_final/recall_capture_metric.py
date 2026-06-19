@@ -27,7 +27,8 @@ from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE, lo
 
 SLICE = [str(c["game_id"]) for c in load_cases(Path(DEFAULT_SOURCE))[:3]]
 ARMS = {"pro-2.5": "memory_stores/v6_1", "flash-lite": "memory_stores/_ab_flite",
-        "flash-lite+anchor": "memory_stores/_ab_flite_anchor"}
+        "flash-lite+anchor": "memory_stores/_ab_flite_anchor",
+        "flash-lite+amplify": "memory_stores/_ab_flite_amplify"}
 AB_GLOB = "batch_results/ab_*.jsonl"
 WORDS = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9}
 
@@ -65,7 +66,7 @@ def main() -> int:
     flags = _flags_by_game()
     total_flags = sum(len(v) for g, v in flags.items() if g in flags)
     print(f"slice: {[g[:8] for g in SLICE]} | pivotal turns flagged: {total_flags}\n")
-    print(f"{'arm':20}{'flags hit':>11}{'capture%':>10}{'obs on flags':>14}{'stageJac':>9}")
+    print(f"{'arm':20}{'tot obs':>9}{'flags hit':>11}{'capture%':>10}{'obs on flags':>14}{'stageJac':>9}")
     for arm, path in ARMS.items():
         p = Path(path) / "observations.json"
         if not p.exists():
@@ -74,6 +75,7 @@ def main() -> int:
         ns = json.load(open(p))["namespaces"]
         # obs by (gid, phase) -> [(alive, text)]
         by = {}
+        tot_obs = 0
         for cell, recs in ns.items():
             phase = cell.split("/")[-1]
             for r in recs:
@@ -81,6 +83,7 @@ def main() -> int:
                 gid = str(v.get("game_id", ""))
                 if gid not in SLICE:
                     continue
+                tot_obs += 1
                 by.setdefault((gid, phase), []).append(
                     (_alive(v.get("situation", "")),
                      " ".join(str(v.get(f, "")) for f in ("situation", "approach", "outcome"))))
@@ -96,7 +99,7 @@ def main() -> int:
         sims = [len(_tok(a) & _tok(b)) / max(len(_tok(a) | _tok(b)), 1)
                 for a, b in combinations(landed_texts, 2)]
         mj = sum(sims) / len(sims) if sims else 0.0
-        print(f"{arm:20}{hit:>11}{hit/max(total_flags,1):>9.0%}{len(landed_texts):>14}{mj:>9.2f}")
+        print(f"{arm:20}{tot_obs:>9}{hit:>11}{hit/max(total_flags,1):>9.0%}{len(landed_texts):>14}{mj:>9.2f}")
     print("\nread WITH the manufacture guard: a capture gain with stageJac spiking ~ padding, not recall.")
     return 0
 
