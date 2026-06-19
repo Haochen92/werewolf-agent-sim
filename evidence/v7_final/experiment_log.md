@@ -183,9 +183,16 @@ CONDITIONED directive) · **S** pure-prune survivor (just the top-lift credited 
   (independent calls → ~3-5 min at 16 workers; `synth_deluck_ab.py` parallelized — proved it), **incremental
   re-synth** (only cells with new obs → seconds), frequency, tiering. ⇒ the loop's synthesis must be
   **incremental + concurrent** (pro per-call, FEW calls, parallel) — a real loop-design requirement.
-- **QUEUED (user "later"):** rerun the same A/B with **flash-lite** synthesis — directly tests whether pro
-  is even justified at synthesis; if flash-lite matches, the cost concern mostly dissolves. One-line
-  env-pin on this runner.
+- **FLASH-LITE synthesis RUN (2026-06-19, full A/B `--tag flite`, both SK cells × 3 clusters):**
+  **flash-lite ≈ pro at synthesis.** Day_vote (the decoupled cell): every cluster's D produced active,
+  track-record-grounded directives (eliminate-the-analyst +0.26, amplify-against-target +0.15,
+  vote-with-majority-for-cover +0.15) and **avoided the blend loser** — same as pro; H reproduced the
+  blend loser as always. Night (neutral): H≈D, both reasonable, same as pro. **~3× faster** (flash-lite
+  ≈15s/call vs pro ≈45s). The single-cluster "thinness" earlier was an artifact — on the full run
+  flash-lite covers the full gradient (incl. the cover regime). ⇒ **"pro justified at synthesis" is mostly
+  REFUTED** (pro buys marginal regime-boundary crispness, not correctness) and **the production-cost
+  concern DISSOLVES** (flash-lite + incremental + concurrent → seconds/cycle). Loop synthesis = flash-lite,
+  pro only as a quality top-up. Caveat: a READ, n=2 cells; true followed-and-helps = the loop.
 - **DIMS-ALIGNMENT check (user, `inspect_synth_dims.py`) — RESOLVED + refined.** The situation dimensions
   are the RETRIEVAL key (LLM-assigned per SP at synthesis, same schema as obs, composed → embedding +
   reranker features); clusters are gate_key-partitioned (is_swing + alive-bucket + consensus) = one regime.

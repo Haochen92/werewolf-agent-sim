@@ -191,8 +191,10 @@ measurement of whether credit has recoverable signal before consolidation is bui
 - ⚠**PRODUCTION-COST (loop-design requirement):** pro synthesis ≈40s/call; full-store SERIAL ≈30-60 min,
   every 5 games = untenable. The loop's synthesis MUST be **incremental** (only cells with new obs) +
   **concurrent** (independent calls → ~3-5 min at 16 workers, proven) — pro per-call but FEW, PARALLEL
-  calls. QUEUED: rerun the A/B on flash-lite (tests if pro is even needed at synthesis → would dissolve the
-  cost concern).
+  calls. ⭐**RESOLVED: flash-lite synthesis ≈ pro** (full A/B, both SK cells: same active gradient on the
+  decoupled day_vote, avoids the blend loser; ~3× faster). ⇒ pro is NOT needed at synthesis (marginal
+  top-up only); **loop synthesis = flash-lite + incremental + concurrent → seconds/cycle, cost concern
+  dissolved.** (True followed-and-helps still = the loop.)
 - ⚠**EPOCH-stability caveat:** all credit verdicts (incl. the deceiver-split above + the b1 prune) are
   **v6ab-conditional, not laws** — held-out +0.54 proves SAMPLE-stability, NOT epoch-stability. Board-
   observable variation → carry the condition (C-ii) + slice credit; hidden epoch variable (model vintage)
