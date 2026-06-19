@@ -58,8 +58,11 @@ def main() -> int:
                     help="role/phase cells to run (default: the 3 deceiver cells)")
     ap.add_argument("--max-clusters", type=int, default=3, help="cap clusters per cell (bound spend)")
     ap.add_argument("--max-workers", type=int, default=12, help="concurrent synthesis calls")
+    ap.add_argument("--tag", default="", help="output subdir suffix (e.g. 'flite' to not overwrite pro run)")
     args = ap.parse_args()
     cells = [tuple(c.split("/")) for c in args.cells]
+    out_dir = Path(f"{OUT}_{args.tag}") if args.tag else OUT
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     obs_path, sp_path = memory_store_paths(Path(OBS_DIR))
     print("seeding store (cached)...", flush=True)
@@ -67,7 +70,6 @@ def main() -> int:
                                        target_store=store, cache_dir=Path(OBS_DIR))
     print("seeded.", flush=True)
     config = BatchDedupRunConfig(similarity_threshold=0.70, cluster_mode="bounded", max_cluster_size=15)
-    OUT.mkdir(parents=True, exist_ok=True)
 
     # pass 1 (no LLM): gather clusters + track record per cell, build the concurrent task list
     cell_data: dict = {}
@@ -121,8 +123,8 @@ def main() -> int:
             lines.append("\n**D — credit-aware synthesis:**")
             lines += [f"- ({sp.direction}/{sp.honesty}) {sp.action}" for sp in dd] or ["- (none)"]
             lines.append("")
-        (OUT / f"{role}_{phase}.md").write_text("\n".join(lines))
-        print(f"  -> wrote {OUT}/{role}_{phase}.md", flush=True)
+        (out_dir / f"{role}_{phase}.md").write_text("\n".join(lines))
+        print(f"  -> wrote {out_dir}/{role}_{phase}.md", flush=True)
     return 0
 
 
