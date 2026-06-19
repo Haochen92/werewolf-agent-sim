@@ -15,9 +15,16 @@ leverage-labeled corpus never extracted obs) → it needs this paid run.
 
 ## Two factors
 - **Factor A — prompt (recall lever):** `baseline` (current free-form "extract 6–12 from pivotal moments")
-  vs `must-cover` (feed the deterministic leverage-flagged do-or-die turns as **must-cover anchors** +
-  leverage-derived budget; keep whole-game read, still invite un-flagged lessons — per §3 D-anchor:
-  soft prior, NOT a whitelist).
+  vs `suggestive-anchor` — provide the deterministic leverage-flagged do-or-die turns as a
+  **RECOMMENDATION**, not a command: *"these turns were pivotal by the game's math — give them attention,
+  extract the lesson genuinely there, and still surface anything else you find."* Keep the whole-game read.
+  Per §3 D-anchor: **soft prior, NOT a whitelist, NOT imperative.**
+  - ⚠ Why not `must-cover`: an imperative ("emit a lesson per flag") FORCES a lesson onto a
+    flagged-but-empty turn = **manufacture** (the confabulation failure mode) and re-imposes the whitelist
+    spirit we rejected. The flags raise *attention*, not a quota.
+  - **Manufacture guard:** pair the capture-rate read with a check that newly-captured flagged-turn obs
+    survive a validity/credit screen — i.e. recall went up because real lessons surfaced, not because the
+    model padded the suggested turns.
 - **Factor B — model (capability/cost):** `gemini-2.5-pro` (current) · `gemini-3.5-flash` (the pro backup)
   · `gemini-3.1-flash-lite`. Motivation: the loop re-extracts **every game**, so extraction-model cost
   dominates the loop's recurring bill — a cheap model that's "good enough" makes the whole loop cheaper.
@@ -31,9 +38,11 @@ leverage-labeled corpus never extracted obs) → it needs this paid run.
   leverage flags).
 
 ## Metrics (and the kill-tests)
-1. **PRIMARY — capture-rate of leverage-flagged turns** (recall). `must-cover` directly measurable (flags
-   are inputs); `baseline` via fuzzy post-hoc match (stage/situation). **Kill-test:** if `must-cover` does
-   NOT raise capture-rate over `baseline`, the recall lever is dead — stop.
+1. **PRIMARY — capture-rate of leverage-flagged turns** (recall). `suggestive-anchor` directly measurable
+   (flags are provided as input → check an obs surfaced per flag); `baseline` via fuzzy post-hoc match
+   (stage/situation). **Kill-test:** if `suggestive-anchor` does NOT raise capture-rate over `baseline`,
+   the recall lever is dead — stop. Read it WITH the manufacture guard (Factor A) so a capture-rate gain
+   isn't just padding the suggested turns.
 2. **Model capability/cost:** capture-rate + de-halo `corr(net_verdict, faction_won)` + structure-populate
    + **JSON parse-failure rate** per model. **Kill-test:** if 3.5-flash (or lite) capture-rate + de-halo
    land within ε of pro → adopt the cheaper model for the loop (big recurring saving). If it craters →
@@ -43,9 +52,22 @@ leverage-labeled corpus never extracted obs) → it needs this paid run.
    (`extraction_quota_screen.py`), de-halo corr.
 
 ## The small-slice PRE-GATE (do this before the full spend)
-Run all arms on **3–5 games** first. Read: (i) does `must-cover` lift capture-rate at all; (ii) flash-lite
-parse-failure rate (is the all-required variant even viable); (iii) rough de-halo per model. Only scale to
-the full corpus if the pre-gate shows a live signal. This is the "don't pay for nothing" guard.
+Run all arms on **3–5 games** first. Read: (i) does the recall lever lift capture-rate at all; (ii)
+flash-lite parse-failure rate (is it even viable); (iii) rough de-halo per model. Only scale if a live
+signal. This is the "don't pay for nothing" guard.
+
+**PRE-GATE RUN (2026-06-19, MODEL arm only, 3 games, `extraction_model_ab_compare.py`):** CLEARED.
+| arm | obs/cell | meanJac | near-dup | de-halo r |
+|---|---|---|---|---|
+| pro-2.5 | 2.82 | 0.21 | 0% | +0.43 |
+| flash-3.5 | 3.24 | 0.22 | 0% | +0.64 |
+| flash-lite | 3.1 | 2.46 | 0.18 | 0% | +0.50 |
+- **flash-lite VIABLE** — the `str|None` parse-failure did NOT materialize (langchain coerces); thinnest,
+  dropped 1/51 cells. **Capability comparable** across all three (same volume band, distinct/non-padded).
+- **De-halo INCONCLUSIVE on 3 games** (2-town/1-SK, low variance): pro marginally cleanest (+0.43),
+  flash-3.5 most haloed (+0.64) — directional only. Scale-up needed (pro@20 ≈ +0.45 known).
+- ⇒ live signal (cheap models extract comparably) → scaling justified; open Q = does a cheap model trade
+  de-halo for cost. The recall (`suggestive-anchor`) arm is NOT yet run (needs leverage-flag plumbing).
 
 ## Caveats
 - **Epoch-conditional:** results hold for the run epoch only; backend fixed (Vertex — never compare across
