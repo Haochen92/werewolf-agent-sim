@@ -158,6 +158,35 @@ framing experiments above were measured when *observations were the directive* �
 the `decision_replay` framing result is a **re-validate-under-new-regime target**, not a given. This also
 re-weights c: a chunk of its de-halo work is really **b2 synthesis-prompt** work.
 
+**⭐ SYNTHESIS A/B — credit-aware synthesis WORKS (2026-06-19, `synth_deluck_ab.py`, pro-2.5, READ
+eval).** The binding lever. 3-way per deceiver cell: **H** halo-synthesis (current, weights per-obs
+net_verdict) · **D** credit-aware (weights the REALIZED de-luck track record from the ledger, asked for a
+CONDITIONED directive) · **S** pure-prune survivor (just the top-lift credited SP, no synthesis).
+- **First-principles reframe (user, "thinking cap"):** there is NO clean STATIC de-luck signal for
+  deceiver decisions (deterministic proxy weak/null; an LLM "decision-quality" re-judge is UNVALIDATABLE —
+  re-derives the halo or the survival tautology). The ONLY trustworthy de-luck signal is **realized credit**
+  (the ledger, from played games: SK-blend = −0.30). So the de-luck arm feeds the realized track record,
+  not an LLM judge. And synthesis only beats pure-prune if it produces a better-CONDITIONED rule than the
+  top survivor (else "just prune (b)").
+- **Result (SK day_vote, all 3 clusters):** H reproduced the passive **blend loser** every time; **D
+  produced a conditioned active policy** every time ("default blend for cover → PIVOT to lead the vote
+  against an analytical threat in the endgame; attack methods not role; don't escalate speculatively" —
+  fusing the +0.26 winner, the −0.30 loss-guard, and the default into one IF/THEN). **D > S**: S is the
+  right-but-narrow endgame move alone; D adds the default + switch-condition + guard. D's conditions are
+  ledger-grounded, not invented.
+- **SK night_action:** H ≈ D (both reasonable; D adds a refinement) — no stark halo⊥de-luck decoupling
+  there, so credit-awareness is ~neutral. ⇒ **credit-aware synthesis corrects the inversions where halo
+  and de-luck decouple (the deceiver day-vote), neutral elsewhere** — exactly the right behavior. wolf/
+  day_vote skipped (no credited SPs ≥5 follows).
+- **⚠ PRODUCTION-COST constraint (user):** pro synthesis ≈ **40s/call**; full store (~17 cells × ~3-5
+  clusters) SERIAL on pro ≈ **30-60 min**, every 5 games = untenable. Mitigations: **concurrency**
+  (independent calls → ~3-5 min at 16 workers; `synth_deluck_ab.py` parallelized — proved it), **incremental
+  re-synth** (only cells with new obs → seconds), frequency, tiering. ⇒ the loop's synthesis must be
+  **incremental + concurrent** (pro per-call, FEW calls, parallel) — a real loop-design requirement.
+- **QUEUED (user "later"):** rerun the same A/B with **flash-lite** synthesis — directly tests whether pro
+  is even justified at synthesis; if flash-lite matches, the cost concern mostly dissolves. One-line
+  env-pin on this runner.
+
 **Settled (2026-06-19) — leverage anchor = soft prior + budget, NOT a whitelist.** Two extraction concerns
 raised: (i) self-judged "pivotal moments" = a selection-layer halo; (ii) the 6–12 obs / 3–8 SP floor pads
 low-value content. The fix is to anchor selection on the deterministic leverage FACT (do-or-die =

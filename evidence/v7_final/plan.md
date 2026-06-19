@@ -182,6 +182,17 @@ measurement of whether credit has recoverable signal before consolidation is bui
   halo≈de-luck (town), fails where they decouple (wolf/SK). ⇒ the loop's (a)+(b) de-luck credit is MOST
   needed on **deceiver cells**; a go/no-go should watch them specifically. This is the concrete change the
   loop makes: feed de-luck credit into synthesis/prune, *replacing* the halo-weighting.
+- ⭐**CREDIT-AWARE SYNTHESIS VALIDATED (2026-06-19, `synth_deluck_ab.py`, pro, READ):** feeding the realized
+  de-luck track record (ledger) into synthesis + asking for a CONDITIONED directive BEATS both halo-synthesis
+  (which reproduces the SK −0.30 blend loser) and pure-prune (the unconditioned top survivor) on the
+  decoupled SK day_vote cell; neutral on night (no decoupling). The de-luck signal MUST be realized credit,
+  not an LLM "decision-quality" re-judge (unvalidatable for deceivers). ⇒ synthesis-beyond-prune earns its
+  keep via the conditioning, on the deceiver cells where halo⊥de-luck.
+- ⚠**PRODUCTION-COST (loop-design requirement):** pro synthesis ≈40s/call; full-store SERIAL ≈30-60 min,
+  every 5 games = untenable. The loop's synthesis MUST be **incremental** (only cells with new obs) +
+  **concurrent** (independent calls → ~3-5 min at 16 workers, proven) — pro per-call but FEW, PARALLEL
+  calls. QUEUED: rerun the A/B on flash-lite (tests if pro is even needed at synthesis → would dissolve the
+  cost concern).
 - ⚠**EPOCH-stability caveat:** all credit verdicts (incl. the deceiver-split above + the b1 prune) are
   **v6ab-conditional, not laws** — held-out +0.54 proves SAMPLE-stability, NOT epoch-stability. Board-
   observable variation → carry the condition (C-ii) + slice credit; hidden epoch variable (model vintage)
