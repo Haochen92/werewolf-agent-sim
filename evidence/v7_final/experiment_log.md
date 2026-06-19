@@ -305,6 +305,29 @@ heat on self + teammates (team-aware — key for wolf/town team play).
   day-heat — **wolves→power 71%, SK→power 62%** — i.e. most power-role deaths happen at night on reads the
   day-vote never flagged. Worth wiring; the night-reasoning (A4) is what attributes it.
 
+## 8b. LOOP INFRASTRUCTURE — BUILT (2026-06-19, `evaluation/src/loop/`)
+The compounding loop, wired + toggleable (config-flag policy). Components:
+- **c (extract):** the existing `run_batch --memory-store-dir X` already does seed-from-X → play → extract
+  → dump-back-to-X. Reused as-is; model env-pinned to flash-lite.
+- **a (`credit.py`):** `credit_apply` recomputes the de-luck ledger over a rolling window (the dumps glob)
+  and SETS pos/neg/neu/follow on matching SPs + persists `base_rates.json`; `sp_lift` recovers the
+  BASELINED lift (raw counts carry the halo). **Credits all 3 channels** — vote + night + **d's free
+  discussion floor** (day-vote endpoint, `_discussion_ledger`) so the discussion channel isn't invisible
+  to consolidation. Tested offline: lift gradients match the ledger (SK vote blend −0.30…+0.26; SK
+  discussion passive −0.45…active +0.32).
+- **b (`consolidate.py`):** `prune_and_evict` (LLM-free: drop lift<τ&follow≥N + rejected
+  retrieved≥R&follow==0, never positive) + `synthesize` (incremental, credit-aware CREDIT_SYNTH_PROMPT,
+  flash-lite, concurrent; existing SPs persist so credit accumulates). Prune tested offline (drops the 8
+  b1 SPs incl the −0.30 loser).
+- **driver (`driver.py`):** `run_loop` per generation = run_batch (c) → credit (a) → consolidate (b) →
+  `generation_score`; run-specific store (canonical frozen), warm/cold start, rolling window.
+- **measure (`measure.py`):** `generation_score` = mean de-luck decision value, memory ON vs OFF × faction
+  (ON should slope up vs flat OFF; outcome-independent). Tested offline.
+- **Models:** flash-lite for extract + synth (validated ≈ pro, ~3× faster → cost dissolved); toggle → pro.
+- **NEXT:** the one-rotation gate (1 gen, warm-start v6_1, small N — the first loop spend, the
+  mechanism/safety check) → then the multi-generation slope run (the headline paid test). LLM discussion
+  tagger (framing/credibility) = deferred paid refinement, separate from d's wired free floor.
+
 ## 9. Conclusions / current state
 - The **free deterministic floor is strong + broad** (day-vote endpoint +0.51 + heat + night-exposure) —
   covers the outcomes of most role objectives.
