@@ -37,6 +37,10 @@ class LoopConfig:
     # otherwise → the channel would be uncredited & invisible to consolidation). The LLM tagger
     # (framing/credibility) is the deferred PAID refinement, separate from this free floor.
     discussion_credit: bool = True
+    # "floor" = day-vote-endpoint (free, deterministic); "tagger" = omniscient per-day LLM tagger
+    # (paid flash-lite, tier 2/3: framing/credibility/merit). Floor is the validated default; tagger is
+    # earned by Gate B (does it predict beyond the floor?).
+    discussion_mode: str = "floor"
 
     def env(self) -> dict:
         """Env overrides to pin the extraction+synthesis model for a run (both primary and backup)."""
