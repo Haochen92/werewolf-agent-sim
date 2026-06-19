@@ -1,5 +1,6 @@
 import hashlib
 
+from Agents.game_config import GameConfig
 from Agents.schemas.metrics import (
     BaseGameMetrics,
     ComputedGameMetrics,
@@ -15,6 +16,14 @@ TOWN_ROLES = {"villager", "healer", "investigator", "vigilante"}
 THREAT_ROLES = {"wolf", "serial_killer"}
 # Town power roles the wolves most want to remove (used for targeting/exposure metrics).
 POWER_ROLES = ("healer", "investigator", "vigilante")
+
+# Vigilante starting loadout = the SUPPLY denominator for the wolf-kill rate (constant per game).
+# vigilante_bullets is NOT persisted in run records (nor in the record's game_config), so the rate
+# must denominate by this known constant — NOT shots_taken+bullets_unused, which collapses to
+# shots_taken on recompute (bullets_unused unrecoverable → 0) and silently drops every held-bullet
+# game, the exact games the supply denominator exists to keep. A non-default loadout would need
+# persisting; sourced from GameConfig so it tracks the config default, not a magic number.
+_VIGILANTE_LOADOUT = GameConfig.model_fields["vigilante_bullets"].default
 
 
 def _score_id(*parts: str) -> str:
@@ -172,6 +181,18 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         1 for n in metrics.night_resolutions
         if n.kill_successful and n.wolf_target_role in POWER_ROLES
     )
+    # Threat-generic version: the SK also kills power roles, so wolf-only undercounts the town's
+    # night-protection failure (validated -0.40 vs wolf-only -0.21 against villager win). Deduped PER
+    # NIGHT by victim — a power role co-targeted by BOTH the wolves and the SK (same victim, both
+    # flags set) is one death, counted once, not twice.
+    power_roles_killed_by_evil = 0
+    for n in metrics.night_resolutions:
+        evil_victims = set()
+        if n.kill_successful and n.wolf_target_role in POWER_ROLES:
+            evil_victims.add(n.wolves_target)
+        if n.serial_killer_kill_landed and n.serial_killer_target_role in POWER_ROLES:
+            evil_victims.add(n.serial_killer_target)
+        power_roles_killed_by_evil += len(evil_victims)
 
     # --- Wolf voting behavior (steering measured on TOWN mislynch days only) ---
     mislynch_days_total = mislynch_days_steered = 0
@@ -225,6 +246,31 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         if sk_id else 0
     )
     sk_kills_landed = sum(1 for n in metrics.night_resolutions if n.serial_killer_kill_landed)
+    sk_power_roles_killed = sum(
+        1 for n in metrics.night_resolutions
+        if n.serial_killer_kill_landed and n.serial_killer_target_role in POWER_ROLES
+    )
+    # Cross-faction targeting: SK landings on WOLVES. The validated deceiver SKILL — survival-de-
+    # confounded (partial r=+0.30 net of nights_survived; within long-survivors 85% vs 53% win):
+    # the lone SK must address the pack or face a 2v1 at parity. (Timing slice — early vs late — is
+    # the richer follow-up; early kills correlate with worse outcomes but that cut is survival-bounded.)
+    sk_wolf_kills = sum(
+        1 for n in metrics.night_resolutions
+        if n.serial_killer_kill_landed and n.serial_killer_target_role == "wolf"
+    )
+    # SK day-vote camouflage (parallel to wolf unconditioned blending): SK votes aligned with the
+    # day's lynch / SK votes on lynch days (excl. the day the SK itself is lynched). SUGGESTIVE only
+    # (p=.019, fails a ~12-test Bonferroni; kept for parallel-construction prior plausibility).
+    sk_blend_aligned = sk_blend_total = 0
+    if sk_id:
+        for day in metrics.day_resolutions:
+            if day.voted_player is None or day.voted_player == sk_id:
+                continue
+            for v in day.votes:
+                if v["voter"] == sk_id:
+                    sk_blend_total += 1
+                    if v["votee"] == day.voted_player:
+                        sk_blend_aligned += 1
 
     # --- Vigilante: shot quality (evil = good, town = friendly fire); holds not penalized ---
     vigilante_shots_taken = sum(
@@ -236,7 +282,73 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
     vigilante_friendly_fire_shots = sum(
         1 for n in metrics.night_resolutions if n.vigilante_target_role in TOWN_ROLES
     )
-    vigilante_bullets_unused = int(result.get("vigilante_bullets") or 0)
+    # Wolf REMOVALS only: shooting the SK does NOT remove it (night-immune) — it merely confirms it, a
+    # transmission-dependent signal, not a kill. So the de-lucked removal proxy counts landed wolf
+    # kills over the bullet supply (validated +0.16 p=.035); the lumped evil_shots dilutes with the
+    # dead SK component (sk_shots r=+0.04). The SK-confirm belongs with the reveal/transmission metrics.
+    vigilante_wolf_kills = sum(
+        1 for n in metrics.night_resolutions
+        if n.vigilante_target_role == "wolf" and n.vigilante_kill_landed
+    )
+    # Loadout = supply (constant); bullets_unused = supply − shots fired (recompute-stable, unlike the
+    # old result.get("vigilante_bullets") which isn't persisted). 0 loadout when there's no vigilante.
+    vigilante_loadout = _VIGILANTE_LOADOUT if vigilante_id is not None else 0
+    vigilante_bullets_unused = max(0, vigilante_loadout - vigilante_shots_taken)
+
+    # --- Conversion: did a private night-confirmation reach a public LYNCH? Deterministic, no LLM,
+    # no transcript reading — join the confirmed PLAYER ID (not role: crediting any-wolf-lynched would
+    # over-count) to voted_player on a later day. Validated: investigator find->lynch +0.40 vs the
+    # dead find-rate -0.03; the rate also gauges the transmission bottleneck (~0.60 baseline = 40% of
+    # confirmed wolves never lynched). It does NOT isolate the agent's causal role (the day-summary
+    # reveal/led metric does that); a coincidental lynch still counts. ---
+    def _lynched_after(player_id: str | None, learn_day: int) -> bool:
+        return any(
+            d.voted_player == player_id and d.day >= learn_day for d in metrics.day_resolutions
+        )
+
+    inv_finds = [
+        (n.day, n.investigator_target)
+        for n in metrics.night_resolutions
+        if n.investigator_target_role == "wolf"
+    ]
+    investigator_finds_total = len(inv_finds)
+    investigator_finds_lynched = sum(1 for day, wolf in inv_finds if _lynched_after(wolf, day))
+
+    vig_sk_confirms = [
+        (n.day, n.vigilante_target)
+        for n in metrics.night_resolutions
+        if n.vigilante_target_role == "serial_killer"
+    ]
+    vigilante_skconfirms_total = len(vig_sk_confirms)
+    vigilante_skconfirms_lynched = sum(1 for day, sk in vig_sk_confirms if _lynched_after(sk, day))
+
+    # Suspicion drawn (concealment OUTCOME, not a clean skill proxy): per LIVING member, votes-at-member
+    # / total-votes-on-days-the-member-was-alive, averaged over the faction's members — kills the
+    # team-size (wolf is 2, SK is 1) and attrition confounds. CAVEATS (carried in the doc): it is
+    # outcome-proximate (esp. the night-immune SK: votes-at-SK is the precursor to its ONLY removal) AND
+    # opponent-coupled — it is town_vote_accuracy viewed from the other seat, so never count "town voted
+    # well" and "deceiver concealed poorly" as two pieces of evidence; they are one event.
+    def _member_suspicion(member: str) -> float | None:
+        alive_days = {
+            d.day for d in metrics.day_resolutions
+            if member in {v["voter"] for v in d.votes} or d.voted_player == member
+        }
+        num = den = 0
+        for d in metrics.day_resolutions:
+            if d.day not in alive_days:
+                continue
+            for v in d.votes:
+                den += 1
+                num += v["votee"] == member
+        return num / den if den else None
+
+    def _faction_suspicion(role: str) -> float | None:
+        rates = [_member_suspicion(p) for p, ro in roles.items() if ro == role]
+        rates = [x for x in rates if x is not None]
+        return sum(rates) / len(rates) if rates else None
+
+    wolf_suspicion_drawn = _faction_suspicion("wolf")
+    sk_suspicion_drawn = _faction_suspicion("serial_killer")
 
     # --- Exit methods (generic: per-killer night attribution is a deferred downstream pass) ---
     def _exit_method(player_id: str | None) -> str:
@@ -281,10 +393,13 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         investigator_threat_finds=investigator_threat_finds,
         investigator_found_wolf_day=investigator_found_wolf_day,
         investigator_mean_chance=investigator_mean_chance,
+        investigator_finds_total=investigator_finds_total,
+        investigator_finds_lynched=investigator_finds_lynched,
         investigator_exit_method=_exit_method(investigator_id),
         wolf_killed_healer_day=wolf_killed_healer_day,
         wolf_killed_investigator_day=wolf_killed_investigator_day,
         power_roles_killed_by_wolves=power_roles_killed_by_wolves,
+        power_roles_killed_by_evil=power_roles_killed_by_evil,
         wolf_power_target_nights=wolf_power_target_nights,
         power_role_alive_nights=power_role_alive_nights,
         mislynch_days_total=mislynch_days_total,
@@ -296,11 +411,21 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         wolf_blend_votes_total=wolf_blend_votes_total,
         sk_nights_survived=sk_nights_survived,
         sk_kills_landed=sk_kills_landed,
+        sk_power_roles_killed=sk_power_roles_killed,
+        sk_wolf_kills=sk_wolf_kills,
+        sk_blend_votes_aligned=sk_blend_aligned,
+        sk_blend_votes_total=sk_blend_total,
+        wolf_suspicion_drawn=wolf_suspicion_drawn,
+        sk_suspicion_drawn=sk_suspicion_drawn,
         sk_exit_method=_sk_exit_method(),
         vigilante_shots_taken=vigilante_shots_taken,
         vigilante_evil_shots=vigilante_evil_shots,
+        vigilante_wolf_kills=vigilante_wolf_kills,
+        vigilante_loadout=vigilante_loadout,
         vigilante_friendly_fire_shots=vigilante_friendly_fire_shots,
         vigilante_bullets_unused=vigilante_bullets_unused,
+        vigilante_skconfirms_total=vigilante_skconfirms_total,
+        vigilante_skconfirms_lynched=vigilante_skconfirms_lynched,
         vigilante_exit_method=_exit_method(vigilante_id),
     )
 
@@ -329,7 +454,18 @@ def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
         wolf_unconditioned_blending_rate=_safe_div(base.wolf_blend_votes_aligned, base.wolf_blend_votes_total),
         wolf_dissent_rate=_safe_div(base.wolf_elim_days_dissented, base.wolf_elim_days_total),
         wolf_power_role_targeting_rate=_safe_div(base.wolf_power_target_nights, base.power_role_alive_nights),
+        sk_kill_rate=_safe_div(base.sk_kills_landed, base.sk_nights_survived),
+        sk_unconditioned_blending_rate=_safe_div(base.sk_blend_votes_aligned, base.sk_blend_votes_total),
+        wolf_suspicion_drawn=base.wolf_suspicion_drawn,
+        sk_suspicion_drawn=base.sk_suspicion_drawn,
         vigilante_correct_shot_rate=_safe_div(base.vigilante_evil_shots, base.vigilante_shots_taken),
+        vigilante_wolf_kills_rate=_safe_div(base.vigilante_wolf_kills, base.vigilante_loadout),
+        investigator_find_to_lynch_rate=_safe_div(
+            base.investigator_finds_lynched, base.investigator_finds_total
+        ),
+        vigilante_skconfirm_to_lynch_rate=_safe_div(
+            base.vigilante_skconfirms_lynched, base.vigilante_skconfirms_total
+        ),
     )
 
 
@@ -350,7 +486,10 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         investigator_exit_method=base.investigator_exit_method,
         investigator_wolves_found=base.investigator_wolf_finds,
         investigator_found_wolf_day=base.investigator_found_wolf_day,
+        investigator_finds_total=base.investigator_finds_total,
+        investigator_finds_lynched=base.investigator_finds_lynched,
         power_roles_killed_by_wolves=base.power_roles_killed_by_wolves,
+        power_roles_killed_by_evil=base.power_roles_killed_by_evil,
         wolf_killed_healer_day=base.wolf_killed_healer_day,
         wolf_killed_investigator_day=base.wolf_killed_investigator_day,
         wolf_blend_votes_aligned=base.wolf_blend_votes_aligned,
@@ -358,8 +497,14 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         sk_nights_survived=base.sk_nights_survived,
         sk_exit_method=base.sk_exit_method,
         sk_kills_landed=base.sk_kills_landed,
+        sk_power_roles_killed=base.sk_power_roles_killed,
+        sk_wolf_kills=base.sk_wolf_kills,
+        sk_blend_votes_total=base.sk_blend_votes_total,
         vigilante_shots_taken=base.vigilante_shots_taken,
         vigilante_evil_shots=base.vigilante_evil_shots,
+        vigilante_wolf_kills=base.vigilante_wolf_kills,
+        vigilante_skconfirms_total=base.vigilante_skconfirms_total,
+        vigilante_skconfirms_lynched=base.vigilante_skconfirms_lynched,
         vigilante_friendly_fire_shots=base.vigilante_friendly_fire_shots,
         vigilante_bullets_unused=base.vigilante_bullets_unused,
         vigilante_exit_method=base.vigilante_exit_method,

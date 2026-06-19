@@ -127,12 +127,15 @@ class BaseGameMetrics(BaseModel):
     investigator_threat_finds: int   # wolf + SK
     investigator_found_wolf_day: int | None
     investigator_mean_chance: float | None
+    investigator_finds_total: int      # nights a wolf was confirmed (conversion denominator)
+    investigator_finds_lynched: int    # of those, the confirmed wolf was lynched on a later day
     investigator_exit_method: str
 
     # Wolves
     wolf_killed_healer_day: int | None
     wolf_killed_investigator_day: int | None
     power_roles_killed_by_wolves: int
+    power_roles_killed_by_evil: int  # wolf + SK night-kills of power roles (threat-generic; the stronger town-protection proxy)
     wolf_power_target_nights: int    # wolves targeted a live power role (numerator)
     power_role_alive_nights: int     # nights >=1 power role was alive (opportunity denom)
     mislynch_days_total: int         # town-lynch days
@@ -146,14 +149,24 @@ class BaseGameMetrics(BaseModel):
     # Serial killer — survival is the core (dense) proxy; SK wins by outlasting.
     sk_nights_survived: int
     sk_kills_landed: int
+    sk_power_roles_killed: int        # SK night-kills landing on a power role (offense)
+    sk_wolf_kills: int                # SK night-kills landing on a WOLF — cross-faction targeting (the 2v1-avoidance skill)
+    sk_blend_votes_aligned: int       # SK votes aligned w/ the day's lynch (numerator of sk blending)
+    sk_blend_votes_total: int         # SK votes on lynch days (denominator; 0 -> rate None)
+    wolf_suspicion_drawn: float | None  # per-member alive-window votes-at-wolf share (outcome-proximate + opponent-coupled)
+    sk_suspicion_drawn: float | None    # per-member alive-window votes-at-SK share (outcome-proximate: precursor to its only removal)
     sk_exit_method: str
 
     # Vigilante — shooting a wolf/SK is good; shooting town is friendly fire; holding
     # fire is a legitimate choice (never penalized). Raw counts, not a forced rate.
     vigilante_shots_taken: int
     vigilante_evil_shots: int
+    vigilante_wolf_kills: int         # landed kills on wolves only (the SK can't be removed at night)
+    vigilante_loadout: int            # starting bullet supply = the wolf-kill-rate denominator (0 if no vigilante)
     vigilante_friendly_fire_shots: int
     vigilante_bullets_unused: int
+    vigilante_skconfirms_total: int   # nights the vigilante shot the (immune) SK = confirmed it
+    vigilante_skconfirms_lynched: int # of those, the confirmed SK was lynched on a later day
     vigilante_exit_method: str
 
 
@@ -175,14 +188,22 @@ class DerivedGameMetrics(BaseModel):
     investigator_threat_find_rate: float | None = None
     investigator_threat_find_lift: float | None = None   # rate ÷ random baseline (de-lucked)
     investigator_wolf_find_rate: float | None = None
+    investigator_find_to_lynch_rate: float | None = None  # CONVERSION: confirmed wolf -> lynched (validated +0.40; gauges the bottleneck)
     # Wolves
     wolf_steering_rate: float | None = None
     wolf_blending_rate: float | None = None              # conditioned on wolf-elim days (disaster-state only)
     wolf_unconditioned_blending_rate: float | None = None  # all lynch days — the validated camouflage proxy
     wolf_dissent_rate: float | None = None
     wolf_power_role_targeting_rate: float | None = None
+    # Serial killer (offense; survival is the core but outcome-proximate — see ComputedGameMetrics)
+    sk_kill_rate: float | None = None                        # kills / nights survived (de-lucked offense)
+    sk_unconditioned_blending_rate: float | None = None      # SK day-vote camouflage (SUGGESTIVE: p=.019, fails Bonferroni)
+    wolf_suspicion_drawn: float | None = None                # concealment OUTCOME (per-member alive-window) — outcome-proximate + opponent-coupled
+    sk_suspicion_drawn: float | None = None                  # concealment OUTCOME — most outcome-proximate (≈ "got lynched"); not a clean skill proxy
     # Vigilante
-    vigilante_correct_shot_rate: float | None = None
+    vigilante_correct_shot_rate: float | None = None         # conditional precision (evil hits / shots); underpowered descriptor
+    vigilante_wolf_kills_rate: float | None = None           # landed wolf-kills / bullet supply — the de-lucked removal proxy (validated)
+    vigilante_skconfirm_to_lynch_rate: float | None = None   # CONVERSION: confirmed SK -> lynched (promising, underpowered n~9)
 
 
 # ---------------------------------------------------------------------------
@@ -208,8 +229,11 @@ class ComputedGameMetrics(DerivedGameMetrics):
     investigator_exit_method: str
     investigator_wolves_found: int
     investigator_found_wolf_day: int | None = None
+    investigator_finds_total: int = 0      # conversion denominator (filter low-sample games)
+    investigator_finds_lynched: int = 0
     # Wolves
     power_roles_killed_by_wolves: int
+    power_roles_killed_by_evil: int
     wolf_killed_healer_day: int | None = None
     wolf_killed_investigator_day: int | None = None
     wolf_blend_votes_aligned: int = 0   # numerator of wolf_unconditioned_blending_rate
@@ -218,9 +242,15 @@ class ComputedGameMetrics(DerivedGameMetrics):
     sk_nights_survived: int
     sk_exit_method: str
     sk_kills_landed: int
+    sk_power_roles_killed: int = 0
+    sk_wolf_kills: int = 0
+    sk_blend_votes_total: int = 0     # denominator for sk blending (filter low-sample games)
     # Vigilante
     vigilante_shots_taken: int
     vigilante_evil_shots: int
+    vigilante_wolf_kills: int
+    vigilante_skconfirms_total: int = 0    # conversion denominator (filter low-sample games)
+    vigilante_skconfirms_lynched: int = 0
     vigilante_friendly_fire_shots: int
     vigilante_bullets_unused: int
     vigilante_exit_method: str
