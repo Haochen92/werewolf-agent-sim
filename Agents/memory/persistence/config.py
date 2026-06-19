@@ -11,7 +11,11 @@ from pydantic import BaseModel
 # unlike the former __file__.parent form, which silently broke when this module
 # moved into the memory/ subpackage.
 MEMORY_STORES_DIR = Path(__file__).resolve().parents[3] / "memory_stores"
-DEFAULT_MEMORY_STORE_DIR = MEMORY_STORES_DIR / "v1_post_dedup"
+# Canonical live store = the v6 cell store (seed + dump default). v6_1 = QC prompts + gate enums +
+# dimensions + per_run SPs; not git-tracked (built offline by reextract_cells). Batch runs still
+# override seed_store_dir / dump_store_dir per-run; a dump that shouldn't compound into the canonical
+# store should point dump_store_dir at a throwaway copy.
+DEFAULT_MEMORY_STORE_DIR = MEMORY_STORES_DIR / "v6_1"
 OBSERVATIONS_FILE_NAME = "observations.json"
 STRATEGY_POINTS_FILE_NAME = "strategy_points.json"
 INDEXED_CACHE_FILE_NAME = "indexed_cache.pkl"
@@ -54,16 +58,15 @@ class IncrementalDedupConfig(BaseModel):
 
 
 class ExtractionConfig(BaseModel):
-    """How post-game extraction runs (the v5 lever).
+    """How post-game extraction runs.
 
-    ``per_role`` (default, the v5 way) fans the extraction out over the six roles
-    in concurrent LLM calls, each sharing one byte-identical role-neutral prefix —
-    the unit that explicit prefix caching reuses across the six calls. The old
-    single-shot path (one all-roles prompt) is kept runnable for A/B by setting
-    ``per_role=False``. ``cache_prefix`` creates a Vertex context cache from that
-    shared prefix so the concurrent calls hit it instead of re-sending it; it is
-    best-effort (falls back to the full uncached prompt) and only applies when
-    ``per_role`` is on.
+    The LIVE graph now runs the v6 per-CELL fan-out (``extract_postgame_per_cell``): one dual
+    {observations, strategy_points} call per (role, phase) cell over a byte-identical cell prefix.
+    ``cache_prefix`` creates a Vertex context cache from that shared prefix so the concurrent cell
+    calls hit it instead of re-sending it (best-effort; falls back to the full uncached prompt);
+    ``max_workers`` caps the cell concurrency. ``per_role`` is no longer read by the live graph —
+    it (and the v5 single-shot path) survive only for the offline store-builders / experiments that
+    still extract the v5 GameStrategyOutput schema.
     """
 
     per_role: bool = True

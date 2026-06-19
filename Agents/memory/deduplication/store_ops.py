@@ -160,18 +160,20 @@ def _store_new_point(
     fallback when an LLM DISCARD names a candidate that no longer exists. Counters
     start at zero.
     """
-    stored = {
-        "situation": point.composed_situation,
-        "action": point.action,
-        "observation_count": 1,
-        "last_observed": datetime.now().isoformat(),
-        "game_id": game_id,
-        "retrieved_count": 0,
-        "used_count": 0,
-        "positive_count": 0,
-        "neutral_count": 0,
-        "negative_count": 0,
-    }
+    stored = StoredStrategyPoint(
+        observation_count=1,
+        last_observed=datetime.now(),
+        game_id=game_id,
+        situation=point.composed_situation,
+        action=point.action,
+        # v6 SP dedup signature + full dimension dump, mirroring the offline serializer
+        # (reextract_cells.py). The LIVE extractor now emits v6 cell SPs, so these read real
+        # values; getattr(..., None) keeps tolerance for the remaining offline v5 builders.
+        # Usage counters default to 0 (same as the previous hand-built dict).
+        direction=getattr(point, "direction", None),
+        honesty=getattr(point, "honesty", None),
+        dimensions=point.model_dump(mode="json"),
+    ).model_dump(mode="json")
     store.put(namespace, str(uuid.uuid4()), stored)
 
 
@@ -186,15 +188,29 @@ def _store_new_observation(
     Observation twin of ``_store_new_point`` (same triggers): stores the
     observation as-is with usage counters at zero.
     """
-    stored = {
-        "situation": observation.composed_situation,
-        "approach": observation.approach,
-        "outcome": observation.outcome,
-        "net_verdict": getattr(observation, "net_verdict", ""),
-        "observation_count": 1,
-        "last_observed": datetime.now().isoformat(),
-        "game_id": game_id,
-    }
+    stored = StoredObservation(
+        observation_count=1,
+        last_observed=datetime.now(),
+        game_id=game_id,
+        situation=observation.composed_situation,
+        approach=observation.approach,
+        outcome=observation.outcome,
+        net_verdict=getattr(observation, "net_verdict", ""),
+        # v6 gate enums + criticality + full dimension dump, mirroring the offline serializer
+        # (reextract_cells.py). The LIVE post-game extractor now emits v6 cells, so these read
+        # real values; getattr(..., None) keeps the path tolerant of the remaining OFFLINE v5
+        # store-builders (build_nethorizon_store / augment) that still produce v5 Observations.
+        # source_game_winner / role_faction_won need the game outcome + role, which this signature
+        # doesn't carry — left to default None (as on legacy entries); they are soft rerank
+        # signals, never dedup gates.
+        consensus_direction=getattr(observation, "consensus_direction", None),
+        info_landscape_class=getattr(observation, "info_landscape_class", None),
+        exposure_class=getattr(observation, "exposure_class", None),
+        players_alive=getattr(observation, "players_alive", None),
+        distance_to_parity=getattr(observation, "distance_to_parity", None),
+        is_swing=getattr(observation, "is_swing", None),
+        dimensions=observation.model_dump(mode="json"),
+    ).model_dump(mode="json")
     store.put(namespace, str(uuid.uuid4()), stored)
 
 

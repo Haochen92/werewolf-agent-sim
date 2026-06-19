@@ -26,10 +26,7 @@ from Agents.state import (
 )
 
 from Agents.memory.extraction import (
-    build_extraction_prompt,
-    build_role_extraction_prefix,
-    extract_postgame,
-    extract_postgame_per_role,
+    extract_postgame_per_cell,
     format_extraction_inputs,
 )
 
@@ -419,15 +416,14 @@ def post_game_analysis(
         },
         metadata={"eval_schema": "extraction_case_v1"},
     ) as extraction_span:
-        if extraction_config.per_role:
-            prefix = build_role_extraction_prefix(extraction_inputs)
-            result = extract_postgame_per_role(
-                prefix,
-                max_workers=extraction_config.max_workers,
-                cache_prefix=extraction_config.cache_prefix,
-            )
-        else:
-            result = extract_postgame(build_extraction_prompt(extraction_inputs))
+        # v6 post-game extraction: fan out over (role, phase) cells producing the v6 cell schema.
+        # (Superseded the v5 per-role GameStrategyOutput fan-out; the v5 extractors stay in the
+        # package for the offline store-builders / experiments that aren't on v6 yet.)
+        result = extract_postgame_per_cell(
+            extraction_inputs,
+            max_workers=extraction_config.max_workers,
+            cache_prefix=extraction_config.cache_prefix,
+        )
 
         if result:
             extracted_observations_output = result.output

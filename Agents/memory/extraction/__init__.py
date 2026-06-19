@@ -20,8 +20,10 @@ from .inputs import (
 )
 from .extraction_agent import (
     EXTRACTION_ROLES,
+    CellExtractionOutput,
     ExtractionResult,
     extract_postgame,
+    extract_postgame_per_cell,
     extract_postgame_per_role,
 )
 from .augment_agent import (
@@ -33,6 +35,7 @@ from .prefix_cache import PrefixCache, create_prefix_cache
 
 __all__ = [
     "EXTRACTION_ROLES",
+    "CellExtractionOutput",
     "ExtractionResult",
     "PrefixCache",
     "AugmentTarget",
@@ -46,6 +49,7 @@ __all__ = [
     "build_role_phase_extraction_tail",
     "extraction_inputs_from_frozen_case",
     "extract_postgame",
+    "extract_postgame_per_cell",
     "extract_postgame_per_role",
     "format_extraction_inputs",
 ]

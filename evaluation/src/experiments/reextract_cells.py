@@ -27,6 +27,7 @@ from pydantic import BaseModel, Field, create_model
 
 from Agents.llm_factory import get_llm_pro, get_llm_pro_backup
 from Agents.memory.extraction import extraction_inputs_from_frozen_case
+from Agents.memory.extraction.cell_units import ROLE_UNITS
 from Agents.memory.extraction.inputs import build_cell_extraction_prompt
 from Agents.memory.persistence import memory_store_paths
 from Agents.memory.validators import coerce_consensus_direction
@@ -49,17 +50,7 @@ _FACTION = {
     "investigator": "villagers", "vigilante": "villagers",
 }
 
-# (group label, prompt phase wording, representative action_phase for the schema lookup)
-DAY_GROUP = ("day", "day (public discussion and the elimination vote)", "day_vote")
-NIGHT_GROUP = ("night", "night (the secret night action)", "night_action")
-ROLE_UNITS: dict[str, list[tuple[str, str, str]]] = {
-    "villager": [DAY_GROUP],
-    "healer": [DAY_GROUP, NIGHT_GROUP],
-    "investigator": [DAY_GROUP, NIGHT_GROUP],
-    "vigilante": [DAY_GROUP, NIGHT_GROUP],
-    "wolf": [DAY_GROUP, NIGHT_GROUP],
-    "serial_killer": [DAY_GROUP, NIGHT_GROUP],
-}
+# Cell fan-out plan now lives in Agents/ (shared with the live extractor); imported above.
 
 
 def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:

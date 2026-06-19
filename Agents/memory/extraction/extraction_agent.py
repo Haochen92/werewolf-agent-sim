@@ -1,11 +1,12 @@
 """Extraction agent: the post-game `llm.invoke` (primary → backup, with retries) that turns a
-finished game's pre-built prompt into a structured GameStrategyOutput. Prompt construction and
-input formatting live in inputs.py (this package).
+finished game into structured memory. Prompt construction and input formatting live in inputs.py.
 
-Two entry points share one primary→backup fallback core:
-  extract_postgame          — single all-roles prompt (legacy / A/B baseline)
-  extract_postgame_per_role — fan out the six roles concurrently over a shared
-                              cacheable prefix, then merge their outputs
+Entry points:
+  extract_postgame_per_cell — v6 (LIVE): fan out over (role, phase) cells concurrently, each a dual
+                              {observations, strategy_points} call in the v6 cell schema, merged.
+  extract_postgame_per_role — v5: fan out the six roles over a shared cacheable prefix
+                              (GameStrategyOutput); kept for the offline store-builders / experiments.
+  extract_postgame          — v5: single all-roles prompt (legacy / A/B baseline).
 """
 
 from __future__ import annotations
@@ -19,8 +20,15 @@ from logging import getLogger
 from Agents.llm_factory import DEFAULT_PRO_MODEL, get_llm_pro, get_llm_pro_backup
 from Agents.observability import extraction_role_run_name
 from Agents.schemas import GameStrategyOutput
+from Agents.schemas.memory import cell_dual_extraction_schema, cell_observation_schema_for
 
-from .inputs import build_role_extraction_tail
+from .cell_units import ROLE_UNITS
+from .inputs import (
+    build_cell_extraction_prefix,
+    build_cell_observation_tail,
+    build_cell_strategy_tail,
+    build_role_extraction_tail,
+)
 from .prefix_cache import create_prefix_cache
 
 logger = getLogger(__name__)
@@ -38,8 +46,18 @@ EXTRACTION_ROLES: tuple[str, ...] = (
 
 
 @dataclass
+class CellExtractionOutput:
+    """Merged v6 per-cell extraction: flat lists of the (heterogeneous) cell observation / strategy
+    objects across every (role, phase) cell. Duck-types to GameStrategyOutput for the downstream
+    dedup/store — both expose .observations / .strategy_points."""
+
+    observations: list
+    strategy_points: list
+
+
+@dataclass
 class ExtractionResult:
-    output: GameStrategyOutput
+    output: GameStrategyOutput | CellExtractionOutput
     model_used: str
 
 
@@ -198,3 +216,133 @@ def extract_postgame_per_role(
     if missing:
         model_used += f" (missing: {','.join(missing)})"
     return ExtractionResult(output=merged, model_used=model_used)
+
+
+def _extract_one_cell(
+    prefix: str,
+    role: str,
+    phase_wording: str,
+    rep_phase: str,
+    cache,
+    max_retries: int,
+    backup_max_retries: int,
+) -> tuple[list, list, str] | None:
+    """Extract one (role, phase-group) cell as a dual {observations, strategy_points} call.
+
+    Returns (observations, strategy_points, model_label) or None if the cell has no schema
+    (e.g. villager·night) or every attempt failed. Mirrors the per-role primary→backup fallback:
+    with a prefix cache the primary sends only the per-cell tail against the cache-bound model while
+    the backup re-sends the full prompt (different model, can't share the cache)."""
+    schema = cell_dual_extraction_schema(role, rep_phase)
+    if schema is None:
+        return None
+    obs_schema = cell_observation_schema_for(role, rep_phase)
+    tail = build_cell_observation_tail(role, phase_wording, rep_phase, obs_schema) + (
+        build_cell_strategy_tail(role, phase_wording)
+    )
+    full = prefix + tail
+    if cache is not None:
+        attempts = (
+            ("primary_cached", cache.model, tail, max_retries),
+            ("backup", get_llm_pro_backup(), full, backup_max_retries),
+        )
+    else:
+        attempts = (
+            ("primary", get_llm_pro(), full, max_retries),
+            ("backup", get_llm_pro_backup(), full, backup_max_retries),
+        )
+    run_name = f"{extraction_role_run_name(role)}_{rep_phase}"
+    for label, llm, prompt, retries in attempts:
+        for attempt in range(retries + 1):
+            try:
+                result = llm.with_structured_output(schema).invoke(
+                    prompt, config={"run_name": f"{run_name}_{label}"}
+                )
+                if isinstance(result, dict):
+                    result = schema.model_validate(result)
+                return list(result.observations), list(result.strategy_points), label
+            except Exception as e:
+                logger.warning(
+                    "cell %s/%s failed with %s model on attempt %s: %s",
+                    role, rep_phase, label, attempt + 1, e,
+                )
+        logger.warning("cell %s/%s exhausted %s model attempts.", role, rep_phase, label)
+    return None
+
+
+def extract_postgame_per_cell(
+    inputs: dict[str, str],
+    roles: tuple[str, ...] = EXTRACTION_ROLES,
+    max_workers: int = 8,
+    max_retries: int = 2,
+    backup_max_retries: int = 2,
+    cache_prefix: bool = False,
+) -> ExtractionResult | None:
+    """v6 post-game extraction: fan out over (role, phase-group) CELLS concurrently, then merge.
+
+    The v6 successor to extract_postgame_per_role — one dual {observations, strategy_points} call per
+    cell (villager·day; day+night for the other five roles = 11 cells), each producing the role/phase's
+    structured v6 cell schema. The role/phase-neutral prefix is byte-identical across cells (the unit
+    explicit caching reuses, exactly like the role fan-out). A cell with no schema or total failure is
+    dropped (partial extraction beats none); merged output concatenates all cells' observations and
+    strategy points. Returns None only if every cell produced nothing."""
+    prefix = build_cell_extraction_prefix(inputs)
+    cache = None
+    if cache_prefix:
+        model_id = os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL)
+        cache = create_prefix_cache(prefix, model_id=model_id)
+
+    cells = [
+        (role, group, wording, rep)
+        for role in roles
+        for (group, wording, rep) in ROLE_UNITS.get(role, [])
+    ]
+    obs_all: list = []
+    sp_all: list = []
+    used_backup: list[str] = []
+    missing: list[str] = []
+
+    try:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            # Snapshot the submitting thread's context so langchain's RunnableConfig callbacks and
+            # the active tracing span propagate into the workers (same reason as the role fan-out).
+            futures = {
+                pool.submit(
+                    contextvars.copy_context().run,
+                    _extract_one_cell,
+                    prefix, role, wording, rep, cache, max_retries, backup_max_retries,
+                ): (role, group)
+                for (role, group, wording, rep) in cells
+            }
+            for future in as_completed(futures):
+                role, group = futures[future]
+                try:
+                    res = future.result()
+                except Exception as e:  # defensive — _extract_one_cell already swallows call errors
+                    logger.warning("Per-cell extraction crashed for %s/%s: %s", role, group, e)
+                    res = None
+                if res is None:
+                    missing.append(f"{role}/{group}")
+                    continue
+                obs, sps, label = res
+                obs_all.extend(obs)
+                sp_all.extend(sps)
+                if label == "backup":
+                    used_backup.append(f"{role}/{group}")
+    finally:
+        if cache is not None:
+            cache.delete()
+
+    if not obs_all and not sp_all:
+        logger.warning("Per-cell extraction produced nothing across all cells.")
+        return None
+
+    model_used = "per_cell"
+    if used_backup:
+        model_used += f" (backup: {','.join(sorted(used_backup))})"
+    if missing:
+        model_used += f" (missing: {','.join(sorted(missing))})"
+    return ExtractionResult(
+        output=CellExtractionOutput(observations=obs_all, strategy_points=sp_all),
+        model_used=model_used,
+    )
