@@ -868,6 +868,77 @@ pairing + per-batch canaries; (b) the net-first town mechanism with transcripts;
 bundle + memory-content design. The journey (regression -> drift discovery -> mechanism -> Phase B design)
 IS the portfolio narrative. **Phase A closed; proceed to Phase B under the regeneration protocol.**
 
+## ⭐⭐ Phase B memory-content — facts-vs-stance RESOLVED + verdict reframe + pilot-first (2026-06-13)
+
+Continues the "Phase B MEMORY-CONTENT DESIGN" thread above; resolves the facts-vs-stance question and
+yesterday's open (a)/(b)/(c). User-driven; several points are user corrections that improved the design.
+
+**1. The verdict IS the model-opinion the outcome field was meant to exclude — and the conditioned
+lesson is MORE faithful to "facts not opinion," not less.** Extraction tells the model observations are
+"FACTS about what happened" (`extraction.py:75` / `:305`), yet `impact_on_final_game_outcome` +
+`net_verdict` ask it to JUDGE (one-word verdict; "an action that... is a NET NEGATIVE — say so"). That
+verdict is the opinion the original design feared, smuggled into the one field meant to be opinion-free.
+Fix: reframe the outcome field from "judge the net effect" to "distill WHY it worked/failed and on WHAT
+it hinged" — name the discriminating condition that, if different, flips the result. Stays in the
+indicative ("X happened under condition C"); never issues StrategyPoint's imperative ("do X"). Type-
+boundary test: an Observation may name an action only as the SUBJECT of a causal link, never as a
+recommendation; `StrategyPoint.action` is where the recommendation lives.
+
+**2. The conditions already exist as structured fields → the change is the outcome INSTRUCTION, not new
+fields.** `information_landscape` / `game_phase` / `agent_exposure` already capture "do I have evidence /
+how late / am I out front-or-target" (`extraction.py:94-105`). Situation-side fields do the FINDING
+(retrieval matches on composed situation); the conditioned outcome teaches the RULE + the hinge — and the
+hinge is often finer than the fixed buckets ("starved but holding a strong behavioral read" vs "starved
+and guessing"), so the prose still earns its place. No schema field added; `net_verdict` kept as a merge-
+grouping handle (point 3). Smaller/safer than "store analysis" sounded.
+
+**3. Verdict reframe (user correction).** The verdict's VALUE is the model's reasoned move-quality
+judgment, which legitimately denoises raw win/loss (raw outcome is noisy: good plays lose, bad plays win).
+Don't delete the judgment — express it AS the conditioned lead ("backfired because you were exposed with
+nothing to show" IS the judgment, board-applicable) and demote the one-word `net_verdict` to a hidden
+merge handle, NOT the agent-visible headline. Per-game verdict error (good play, unlucky loss →
+mislabeled negative) washes out across games via merge frequency — but ONLY IF conditioning keeps the
+mislabeled entry from merging into the true-negative pile; flat verdicts let it merge in and inflate the
+wrong lesson.
+
+**4. De-lucking = MERGE FREQUENCY, not a stored rate (user's original design intent, restored).** The
+"de-lucked verdict" option is rejected: the merge count already measures recurrence for free; a model-
+guessed rate is strictly worse. BUT merge-frequency fixes LUCK while conditioning fixes FLATNESS —
+different diseases, partners not substitutes. A perfectly merged store of FLAT verdicts = "leading is bad
+(×8)": well-calibrated AND still board-blind; frequency made it more CONFIDENT, not more conditional (and
+could anchor town harder). Conditioned facts also give merge the right GRAIN — "led-without-evidence→died"
+merges with its kind and climbs; "led-with-evidence→won" stays a separate, separately-counted lesson.
+Conditioning is what makes the frequency meaningful.
+
+**5. Interlock with corpus-balance (Q3 = separate step, CONFIRMED).** Merge-frequency de-lucks honestly
+ONLY if extraction isn't over-collecting one side. Survivorship: deaths are easy to trace → "led→died"
+over-extracted → frequency AMPLIFIES the anti-aggression tilt into high-confidence, top-ranked negatives.
+So the dedicated extraction step that mines inaction-cost / quiet-loss exemplars ("passivity also loses")
+is the REQUIRED enabler of frequency-de-lucking, not an optional extra. Conditioning + frequency + balance
+are one interlocked system; none suffices alone.
+
+**6. Wolf-leading-as-signal-to-healer = PARKED (Q2 = "prob not").** The value of leading isn't only your
+own outcome — others read off it (a wolf leading hard = a protect-cue for the healer). Doesn't fit a win-
+condition outcome field; it's a different "what others read off this move" memory shape. Not this pass;
+maybe a narrow per-role "tells" note later.
+
+**7. Volume-vs-framing confound BLOCKED (user: "current dedup pipeline not built for the new store
+schema").** Can't merge the nh store and re-look yet. So the merge redesign (verdict-aware key + compare
+on STRUCTURED fields, yesterday's Phase B item) is the prerequisite for BOTH a functioning deduped store
+AND the cheap volume re-look (replay retrieval on already-captured decision-point queries, no new games).
+Until then yesterday's town verdict keeps its caveat — part of the −40pp collapse may be raw-negative
+VOLUME flooding retrieval, not the verdict-first framing. Fine: the verdict always rested on
+direction + mechanism, not magnitude.
+
+**DECISION — pilot the conditioned-lesson extraction FIRST (user choice).** Before committing the whole
+corpus, re-extract a handful of frozen TOWN games with the new "distill the hinge, don't just judge"
+outcome prompt and read + light-label: (i) reliability — does the model produce genuine conditioned
+lessons, or slip back to flat verdicts / vague mush?; (ii) applicability — does it read more board-
+actionable than the flat verdict? ~few $, decides adoption on evidence, and answers yesterday's open-(a)
+(is read-conditioned extraction reliable enough to label a golden set on). SEQUENCE: pilot → if reliable,
+fold the conditioned outcome (and the corpus-balance step) into the merge-redesign re-extraction → merge
+(de-luck) → volume re-look.
+
 ## Code pointers
 
 - Net-horizon: `scripts/build_nethorizon_store.py` (`--seed-from` adds roles to an existing store),

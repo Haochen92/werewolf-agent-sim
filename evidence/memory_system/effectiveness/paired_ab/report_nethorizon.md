@@ -26,3 +26,10 @@ contrast is nethorizon vs the v5_0 RAW arm (same retrieval → isolates framing)
 - win: ref 40%[23%,59%] -> nethorizon 37%[20%,56%] (Δ-3%, McNemar p=1.000)
   - sk_lynched (-): ref 0.600 -> nh 0.633 (Δ+0.033, p=0.782)
   - sk_nights_survived (+): ref 3.400 -> nh 3.167 (Δ-0.233, p=0.389)
+
+## TOWN (REGRESSION — null = PASS; the validated basket must HOLD vs old-framing town)
+### nh_town vs v5_0-RAW town  (REGRESSION — does net-first disturb town?)  (faction=villagers, N=0)
+  (insufficient matched games yet)
+
+### nh_town vs same-epoch baseline (off)  (faction=villagers, N=0)
+  (insufficient matched games yet)

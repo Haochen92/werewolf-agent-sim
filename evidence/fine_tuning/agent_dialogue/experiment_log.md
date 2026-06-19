@@ -145,3 +145,28 @@ Exploratory. Depends on:
 - Dedup fine-tuning results (Projects 1-2) — proves the fine-tuning workflow
 - Base model validation — confirms GPT-OSS 120B can handle structured output
 - Dataset creation investment — bottleneck is generating high-quality training examples
+
+## 2026-06-12 update — external option-map review + plan refinements (still PARKED, post-ship)
+
+Reviewed an external 4-option fine-tuning menu against this plan: (1) pure SFT ≈ THIS plan;
+(2) decision-layer RL on a frozen LLM (Xu et al.); (3) SFT→decision-layer hybrid; (4) end-to-end
+PPO/GRPO. Options 2–4 re-open the fork this plan already resolved ("fine-tune for style, improve
+decisions via pipeline") — the memory system IS the decision mechanism and the paired A/B is its
+evidence. 4 rejected outright (cost, forgetting risk, sparse multi-agent reward). 2/3 analysis +
+the memory-composed alternative live in `../memory_selection_bandit/experiment_log.md`.
+
+Refinements adopted into THIS plan:
+- **Constrained decoding at serve time** (JSON-schema/grammar mode on Together/Fireworks) replaces
+  the soft "validation layer" — directly attacks Risk #3 (invalid JSON / hallucinated
+  `adopted_strategy_keys`); flash-lite's optional-fields failure says schema enforcement is
+  load-bearing.
+- **Data-source reality check:** "SFT on human transcripts" (the menu's default) is unavailable —
+  no human play exists; this plan's distillation / log-rewrite sources stand. (A shipped frontend
+  daily-puzzle would produce *labels*, not full transcripts.)
+- **DPO extension (cheap step-up, no reward model, same LoRA setup):** preference pairs from the
+  same turn — response that used the injected memory well vs one that followed a misleading memory.
+  Phase B **track-3b application labels (applied / overrode-with-reason / ignored) double as the
+  preference-pair source** (eval→training flywheel); the myopic-framing SK entries are canonical
+  negatives (correct behavior = ignore the memory). This strengthens — does not replace — the
+  "memory integration coverage" requirement above: selection of use-vs-ignore moves into the
+  weights as a side effect of training on relevant / irrelevant / no-memory turns.
