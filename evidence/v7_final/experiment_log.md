@@ -104,6 +104,51 @@ lessons extract, deterministic leverage). **c2** = emission redesign: emit *stru
 swing, influence) as features; de-halo the valence. **Success metric = does `corr(net_verdict, faction_won)`
 drop below +0.45** while structure fields populate. Freeze-gated (versioned variant + re-validate).
 
+**⚠ Prior-record correction (2026-06-19) — the de-halo must NOT undo a validated win.** The current
+net-effect-first `outcome` ordering was *deliberately adopted* as the v5 default, not an accident: net-
+horizon framing REMOVED the SK harm (`sk_lynched` 0.80→0.63, win 20%→37%, `paired_ab/report_nethorizon.md`
+2026-06-12) because immediate/success-framed SK entries were **cost-blind**; wolf stayed FLAT (+0.03 — an
+*adherence* gap, not framing); and for town the right framing is **situation-dependent** (`decision_replay`
+2026-06-13: net/cautious helps day-2 info-starved +0.167, but cautious is the game-level problem → no
+blanket horizon wins). ⇒ Three constraints on c (now in `plan.md` §3 D′): **C-i** drop the *luck*, keep the
+*cost + causal chain* (de-luck ≠ de-delay); **C-ii** emit the *condition*, never one global framing;
+**C-iii** the wolf is an adherence/injection item, not c's job. And **D″:** the (d) discussion tagger is
+c's discussion slice (one project) but likely a separate cheaper call feeding extraction — don't pay for
+two omniscient reads.
+
+**⚠ Consumption-model correction (2026-06-19, user) — split the de-halo by surface.** The agent is now
+fed the **synthesized strategy_point as the directive** and **observations as a fact-checker** (case
+evidence that corrects/overrides the rule — `Agents/prompts/memory/context.py` synergy instruction). The
+framing experiments above were measured when *observations were the directive* — that regime is gone. ⇒
+**C-iv** (now in `plan.md` §3 D′): steering de-halo + situation-conditioning migrate UP to **SP synthesis
+(b2)**; **C-i (cost/causal chain) stays on the observation emitter and matters MORE** (it's what powers the
+`override` fact-check); observation C-ii de-emphasizes to accurate situation-dimensions + clean facts; and
+the `decision_replay` framing result is a **re-validate-under-new-regime target**, not a given. This also
+re-weights c: a chunk of its de-halo work is really **b2 synthesis-prompt** work.
+
+**Settled (2026-06-19) — leverage anchor = soft prior + budget, NOT a whitelist.** Two extraction concerns
+raised: (i) self-judged "pivotal moments" = a selection-layer halo; (ii) the 6–12 obs / 3–8 SP floor pads
+low-value content. The fix is to anchor selection on the deterministic leverage FACT (do-or-die =
+P(win|miss) floor) + a leverage-derived budget — but **only as a soft must-cover + budget, never a
+turn-scoped whitelist** (that re-imposes §344, loses the causal-chain pass, gates discovery). Decisive
+reason: **omission is unrecoverable, commission is recoverable** — the credit loop prunes over-extraction
+but can't credit a never-extracted lesson → extraction errs **high-recall**; and the leverage signal is
+town-day-vote-only (night / framing / omissions blind), so a whitelist would blank-out the channels c wants
+to improve. Recorded in `plan.md` §3 D-anchor.
+
+**Free pre-screens RUN (2026-06-19, `extraction_quota_screen.py`, RAW no-dedup v6_1 store = 932 obs / 20
+games / 17 cells, built by the LIVE prompt builder `build_cell_observation_tail`):**
+- **Screen 1 — quota-binding: DISPELLED.** mean **2.78** obs/game-cell, median 3, **max 6, 98% BELOW the
+  prompt's 6-floor, 0% near the 12-cap.** The extractor UNDER-delivers, varies naturally (1→6) — no
+  padding-to-ceiling. (Reinforces recall-is-the-risk: the model already errs too-few.)
+- **Screen 2 — near-restatement: DISPELLED.** mean intra-cell Jaccard 0.21, **0 near-restatement pairs**
+  (>0.5), no size→redundancy slope (r=−0.03). Multi-obs cells are DISTINCT, not padded.
+- ⇒ **Both padding hypotheses are out.** (a)'s store-is-a-wash (lift +0.03) is therefore NOT from padding;
+  by elimination it concentrates on **confabulation / validity / halo** — which the free screens cannot
+  touch (needs re-extraction or downstream credit) and which c2 + the credit loop target.
+- **Re-prioritization:** the quota→leverage-budget fix (§D) drops to LOW priority (quota non-binding); the
+  leverage anchor narrows to **validity-only** (kill the self-judged-pivotal halo, not set a budget).
+
 ## 8. (d) Discussion credit — designed + free floor measured
 **d0 cut:** the free deterministic advocacy signal is **thin/redundant-with-votes** (target-correctness,
 not discussion-specific) and the other free signal (lead-vs-blend) is null → **committed to d-full.**

@@ -181,6 +181,68 @@ the 4–8 per-role quota for a **leverage-derived budget**. Steer selection by f
 GATE: extraction prompt conditions Phase B gold labels → deliberate versioned experiment, sequenced
 with labeling, not a casual tweak.
 
+**D-anchor — SETTLED (2026-06-19): leverage = soft prior, NOT a budget, NOT a whitelist.** ⭐**Screen
+result (`extraction_quota_screen.py`, RAW v6_1): the quota is NON-BINDING — mean 2.78 obs/game-cell,
+max 6, 98% BELOW the 6-floor, 0 near-restatements. The extractor UNDER-delivers; there is no padding.**
+So the anchor's job narrows to ONE thing: **kill the self-judged-pivotal halo** — replace the extractor's
+outcome-based sense of "pivotal" with a FACT-based one (do-or-die = P(win|miss) floor). The
+budget/anti-padding rationale is DROPPED (no padding to fix); if anything, push **recall** (must-cover the
+do-or-die turns) since the model errs too-few. It must NOT become a turn-scoped whitelist ("only explain these N turns") —
+that re-imposes §344 (loses the multi-day causal-chain pass) and gates discovery. Keep the **whole-game
+omniscient read**; flag do-or-die turns as **must-cover** while **explicitly inviting un-flagged lessons**.
+- **Why recall, not precision:** the credit loop (a/b) prunes over-extraction (commission = recoverable)
+  but can NEVER credit a lesson that was never extracted (omission = permanent). ⇒ extraction errs
+  high-recall; the loop mops up excess.
+- **Reinforced by signal incompleteness:** leverage is validated on town day-votes only (§ leverage-anchor);
+  night / discussion-framing / omissions are blind to it — a whitelist would blank-out exactly the channels
+  c aims to improve.
+
+**D′. (c) EMISSION redesign — the de-halo, and what it must NOT throw away.** The verdict the extractor
+writes today (`impact_on_final_game_outcome` = "judged from game end"; `net_verdict`; `outcome` =
+net-effect-first) imports the game's LUCK: `corr(net_verdict, role_faction_won) = +0.45` (§6 halo-load).
+c strips that luck. BUT the net-effect-first ordering was **deliberately adopted** and is validated — so
+the de-halo has three hard constraints from the prior record:
+- **C-i — de-halo ≠ de-condition.** The value of the final-outcome lead was never the luck; it was that
+  it surfaced the **cost / the causal chain** the immediate framing hid. Evidence: net-horizon framing
+  REMOVED the SK harm (`sk_lynched` 0.80→0.63, win 20%→37%, `paired_ab/report_nethorizon.md` 2026-06-12)
+  precisely because success/immediate-framed SK entries were **cost-blind**. ⇒ c drops the *luck*
+  (faction-won contamination) but KEEPS the **cost + multi-day causal chain + the condition** — write
+  "this kill exposed you → lynched 2 days later," NOT "and your faction lost." (This is the de-luck≠de-delay
+  point: §6's clean⊥delayed⊥free triangle — keep delay, drop dice.)
+- **C-ii — no blanket outcome-horizon; the content must carry the CONDITION.** Outcome-framing is
+  **situation-dependent** (`decision_replay` 2026-06-13): for town, net/cautious HELPS when info-starved
+  (day-2 +0.167) but cautious was the *game-level* problem → no single horizon wins everywhere. ⇒ c must
+  emit the precondition (cautious-when-info-starved vs act-when-threat-clear), not pick one global framing.
+  This is the §10c situation-conditioning lever.
+- **C-iii — the wolf residual is ADHERENCE, not extraction.** Net-horizon left wolf blending FLAT
+  (+0.03, p=0.75) — the wolf ignores the correct lesson (an injection-layer / Phase B item), so c must
+  NOT try to fix the wolf via framing. Leave it to the application-adherence work.
+- **Success metric** (unchanged): `corr(net_verdict, faction_won)` drops below +0.45 while the
+  cost/causal-chain/condition structure fields populate.
+- **C-iv — CONSUMPTION MODEL changed → split the de-halo by surface.** The agent is now fed the
+  **synthesized SP as the directive** and **observations as fact-check / case evidence** that correct or
+  `override` the rule (`Agents/prompts/memory/context.py` synergy instruction: "let the specific evidence
+  in the observations correct the general rule"). The framing experiments (`decision_replay`) were
+  measured when *observations were the directive* — that regime is GONE, so:
+  - **Steering de-halo + situation-conditioning (C-ii) migrate UP to SP SYNTHESIS** (b2 / the loop's
+    synthesis prompt) — the SP is what steers now, and it inherits the halo from the obs it's distilled
+    from. De-halo + "carry the condition" is mainly a synthesis-prompt job.
+  - **C-i (cost + causal chain) STAYS on the observation emitter and gets MORE important** — an obs's job
+    is now to let the agent check "does this rule's premise hold on my board, and did it backfire?"; that
+    `override`-triggering evidence is worthless without the cost/causal-chain.
+  - **Observation C-ii de-emphasizes** to: accurate **situation dimensions** (board-matchability) + clean
+    facts. The obs no longer has to win the framing fight; it has to be a precise, matchable, cost-aware
+    case.
+  - ⚠ The `decision_replay` framing result is therefore a **re-validate target under the new regime**, not
+    a transferable given.
+
+**D″. (c) ↔ discussion tagger — one project, likely two calls.** The (d) per-round discussion tagger is
+the **discussion slice of c's emission** (same omniscient-hindsight job), NOT a separate effort — but it
+likely stays a **separate cheaper (flash-lite) call that FEEDS the extractor**, because of the granularity
+(per-round vs whole-game-per-cell) + model-tier mismatch. Rule: **don't pay for two omniscient reads of
+the same game** — the tagger's structured discussion output is an INPUT to the extraction pass. Lock the
+one-call-vs-two fork inside c's build, not now.
+
 **E. Dedup + reranking (proper).** Reconcile-on-merge dedup (landed) so structured fields survive;
 re-enable MMR + reranker as **tested knobs** (screen on frozen eval-cases first). Cross-game dedup
 gives SP the cross-game basis single-game SP lacked.
