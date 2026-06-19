@@ -186,6 +186,20 @@ CONDITIONED directive) · **S** pure-prune survivor (just the top-lift credited 
 - **QUEUED (user "later"):** rerun the same A/B with **flash-lite** synthesis — directly tests whether pro
   is even justified at synthesis; if flash-lite matches, the cost concern mostly dissolves. One-line
   env-pin on this runner.
+- **DIMS-ALIGNMENT check (user, `inspect_synth_dims.py`) — RESOLVED + refined.** The situation dimensions
+  are the RETRIEVAL key (LLM-assigned per SP at synthesis, same schema as obs, composed → embedding +
+  reranker features); clusters are gate_key-partitioned (is_swing + alive-bucket + consensus) = one regime.
+  Worry: a CROSS-REGIME conditioned directive (mid blend / endgame pivot) with single-regime dims would
+  retrieve in only one regime (the conditioning dormant). Inspection of the actual D output: synthesis
+  **SPLITS the gradient into regime-scoped SPs with dims matching each branch** (e.g. SP@alive=6 mid-cover,
+  SP@alive=3 is_swing endgame-pivot) — retrieval-ALIGNED — and even generates a properly-scoped ENDGAME SP
+  from a MID-game cluster by pulling the track-record winner (coverage propagation). BUT non-deterministic
+  (an earlier run blobbed it). **Fix (shipped): added a SPLIT-BY-REGIME instruction to CREDIT_SYNTH_PROMPT**
+  — "if the right move changes across regimes, emit one SP per regime with dims set to that regime; never
+  fuse a cross-regime gradient." Re-verify: D produced **3 regime-scoped, dims-aligned SPs**, and correctly
+  distinguished *active blend* (vote-with-majority, +0.15, kept) from *passive abstain* (minimize-record,
+  −0.30, dropped) — the gradient read right, not winner-copied. ⇒ the conditioning is retrievable; the
+  content win survives into the retrieval layer. (Still pending the true followed-and-helps test = the loop.)
 
 **Settled (2026-06-19) — leverage anchor = soft prior + budget, NOT a whitelist.** Two extraction concerns
 raised: (i) self-judged "pivotal moments" = a selection-layer halo; (ii) the 6–12 obs / 3–8 SP floor pads
