@@ -233,6 +233,15 @@ the de-halo has three hard constraints from the prior record:
   NOT try to fix the wolf via framing. Leave it to the application-adherence work.
 - **Success metric** (unchanged): `corr(net_verdict, faction_won)` drops below +0.45 while the
   cost/causal-chain/condition structure fields populate.
+- **C-v — RECALL is first-order, de-halo is second (user, 2026-06-19).** De-luck credit/synthesis/prune
+  act only on what extraction captured; **omission is unrecoverable** → "did we capture what's NEEDED"
+  gates everything de-halo does. Free reads: extractor is THIN (median 3 obs/cell) but NOT temporally blind
+  (spans early/late/parity). "Captures what's needed" is a counterfactual → not free-measurable. ⇒ the
+  extraction A/B to run is a **RECALL test** (capture-rate of leverage-flagged turns), NOT de-halo framing,
+  **+ a model-capability arm** (2.5-pro vs 3.5-flash vs 3.1-flash-lite — the loop re-extracts every game so
+  extraction-model cost dominates its bill). Full spec + kill-tests + small-slice pre-gate:
+  `extraction_coverage_ab_spec.md`. ⚠ flash-lite breaks on `str|None` dims (all-required variant needed);
+  recall metric scoped to town day-votes (leverage validated there only); epoch-conditional + freeze-gated.
 - **C-iv — CONSUMPTION MODEL changed → split the de-halo by surface.** The agent is now fed the
   **synthesized SP as the directive** and **observations as fact-check / case evidence** that correct or
   `override` the rule (`Agents/prompts/memory/context.py` synergy instruction: "let the specific evidence

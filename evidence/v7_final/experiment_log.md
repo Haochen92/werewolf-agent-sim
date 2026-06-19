@@ -181,6 +181,20 @@ games / 17 cells, built by the LIVE prompt builder `build_cell_observation_tail`
 - **Re-prioritization:** the quota→leverage-budget fix (§D) drops to LOW priority (quota non-binding); the
   leverage anchor narrows to **validity-only** (kill the self-judged-pivotal halo, not set a budget).
 
+**The real extraction question is RECALL, not de-halo (user, 2026-06-19).** De-luck credit / synthesis /
+prune all operate only on what extraction captured — **omission is the one error the loop can never fix**
+(commission gets pruned; a never-extracted lesson is permanent). So "does it capture what's NEEDED" gates
+everything de-halo does. Free directional reads: the extractor is **thin** (median 3 obs/cell) but **NOT
+temporally blind** (obs span early 250 / late 194 / parity 333 across all cells — not early-clustered). But
+"captures what's needed" is **not free-measurable** — it's a counterfactual, and the leverage-labeled
+corpus (v6ab town day-votes) never extracted obs. ⇒ **the right extraction A/B is a RECALL test
+(capture-rate of leverage-flagged pivotal turns), NOT a de-halo framing test** — de-halo only matters for
+lessons already captured. Plus a **model-capability arm** (gemini-2.5-pro vs 3.5-flash vs 3.1-flash-lite):
+the loop re-extracts every game, so extraction-model cost dominates its recurring bill — a cheap-enough
+model makes the whole loop cheaper. Full design + kill-tests + the small-slice pre-gate (the "don't pay for
+nothing" guard) in `extraction_coverage_ab_spec.md`. ⚠ flash-lite breaks on the schema's `str|None` dims
+(needs an all-required variant); all results epoch-conditional + freeze-gated.
+
 ## 8. (d) Discussion credit — designed + free floor measured
 **d0 cut:** the free deterministic advocacy signal is **thin/redundant-with-votes** (target-correctness,
 not discussion-specific) and the other free signal (lead-vs-blend) is null → **committed to d-full.**
