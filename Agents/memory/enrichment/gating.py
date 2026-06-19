@@ -41,10 +41,14 @@ class RetrievalPlan:
     """Whether to LLM-rerank strategy points."""
     filtering: bool
     """Whether to apply dedup/MMR filtering."""
+    dimension_gating: bool
+    """Whether to soft-reweight retrieved memory by query↔stored dimension alignment (v7 retrieval
+    precision lever; SOFT + selective, never a hard drop). Default off — a screened knob."""
     reranking: bool
     """Derived: observation_reranking or strategy_point_reranking."""
     needs_wide_retrieval: bool
-    """Derived: reranking or filtering — drives the wide (top-k) retrieval + candidate snapshot."""
+    """Derived: reranking or filtering or dimension_gating — drives the wide (top-k) retrieval +
+    candidate snapshot (gating must see beyond top-5 to promote a dim-matched item into it)."""
 
 
 def retrieval_plan(
@@ -68,6 +72,7 @@ def retrieval_plan(
     strategy_point_reranking = _reranking_enabled_for_memory_kind(config, role, "strategy_points")
     reranking = observation_reranking or strategy_point_reranking
     filtering = _filtering_enabled_for_role(config, role)
+    dimension_gating = _dimension_gating_enabled_for_role(config, role)
 
     return RetrievalPlan(
         skip_reason=skip_reason,
@@ -77,8 +82,9 @@ def retrieval_plan(
         observation_reranking=observation_reranking,
         strategy_point_reranking=strategy_point_reranking,
         filtering=filtering,
+        dimension_gating=dimension_gating,
         reranking=reranking,
-        needs_wide_retrieval=reranking or filtering,
+        needs_wide_retrieval=reranking or filtering or dimension_gating,
     )
 
 
@@ -110,6 +116,14 @@ def _filtering_enabled_for_role(config: RunnableConfig, role: str) -> bool:
     if not isinstance(filtering_config, dict):
         return False
     return bool(filtering_config.get(role, False))
+
+
+def _dimension_gating_enabled_for_role(config: RunnableConfig, role: str) -> bool:
+    configurable = config.get("configurable", {}) if config else {}
+    dimension_gating_config = configurable.get("dimension_gating_config")
+    if not isinstance(dimension_gating_config, dict):
+        return False
+    return bool(dimension_gating_config.get(role, False))
 
 
 def _retrieval_type_enabled(config: RunnableConfig, memory_kind: str) -> bool:

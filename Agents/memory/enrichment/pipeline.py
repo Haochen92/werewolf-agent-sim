@@ -29,6 +29,7 @@ from Agents.memory.retrieval import (
     retrieve_observations_for_agent,
     retrieve_strategy_points_for_agent,
 )
+from Agents.memory.retrieval.dimension_gating import reweight as _dimension_reweight
 from Agents.memory.vectors import embed_texts
 from Agents.memory.store import embeddings as memory_embeddings
 from Agents.memory.enrichment.gating import retrieval_plan
@@ -59,7 +60,7 @@ def enrich_payload_with_memory(
         enriched_payload["strategy_points"] = payload.get("strategy_points", [])
         return enriched_payload, _skipped_metadata(plan.store_dir, plan.skip_reason)
 
-    situations = _generate_situations_for_agent(payload, action_phase)
+    situations, situation_dimensions = _generate_situations_for_agent(payload, action_phase)
     # Non-reranked cap = 5: the observations-only saturation point measured in
     # evidence/retrieval/capacity_limits (cap=7 regresses action quality below
     # cap=3). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
@@ -127,6 +128,14 @@ def enrich_payload_with_memory(
             plan.strategy_point_reranking,
         )
 
+        if plan.dimension_gating:
+            retrieved_observations, retrieved_strategy_points = _apply_soft_dimension_gating(
+                retrieved_observations,
+                retrieved_strategy_points,
+                situations,
+                situation_dimensions,
+            )
+
         retrieved_observations = cap_per_situation(
             retrieved_observations,
             get_situation=lambda o: o.matched_situation,
@@ -184,6 +193,7 @@ def enrich_payload_with_memory(
         "strategy_point_reranking_enabled": plan.strategy_point_reranking,
         "filtering_enabled": plan.filtering,
         "situations": situations,
+        "situation_dimensions": situation_dimensions,
         "retrieved_observations": retrieved_observations_json,
         "retrieved_strategy_points": retrieved_strategy_points_json,
         "candidate_observations": candidate_observations_json,
@@ -202,6 +212,7 @@ def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
         "memory_enabled": False,
         "retrieval_skipped_reason": skip_reason,
         "situations": [],
+        "situation_dimensions": [],
         "retrieved_observations": [],
         "retrieved_strategy_points": [],
         "candidate_observations": [],
@@ -332,4 +343,25 @@ def _apply_reranking(
         retrieved_strategy_points = rerank_strategy_points(
             llm, situations, retrieved_strategy_points,
         )
+    return retrieved_observations, retrieved_strategy_points
+
+
+def _apply_soft_dimension_gating(
+    retrieved_observations: list,
+    retrieved_strategy_points: list,
+    situations: list[str],
+    situation_dimensions: list[dict],
+) -> tuple[list, list]:
+    """Soft-reweight retrieved obs + SP by query↔stored dimension alignment, then re-sort (no hard
+    drop). Each item is matched against the query dims of the situation it matched. No-op when the query
+    has no structured dims (legacy path) — keeping the soft-retrieval guarantee."""
+    situation_to_dims = {s: d for s, d in zip(situations, situation_dimensions) if d}
+    if not situation_to_dims:
+        return retrieved_observations, retrieved_strategy_points
+    _dimension_reweight(
+        retrieved_observations, situation_to_dims, lambda it: it.observation.dimensions or {}
+    )
+    _dimension_reweight(
+        retrieved_strategy_points, situation_to_dims, lambda it: it.strategy_point.dimensions or {}
+    )
     return retrieved_observations, retrieved_strategy_points

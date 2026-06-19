@@ -72,7 +72,10 @@ def _generate_situations_for_agent(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     action_phase: str,
     max_retries: int = 1,
-) -> list[str]:
+) -> tuple[list[str], list[dict]]:
+    """Returns (composed embed strings, structured query-situation dims). The dims are the v6 cell
+    situation objects' model_dump (exposure_class / info_landscape_class / criticality / ...), parallel
+    to the strings, retained for eval-only dimension-gating screens; [] on the legacy path / fallback."""
     player_id = payload["player_id"]
     role = payload["player_role"]
     current_day = payload["current_day"]
@@ -85,12 +88,15 @@ def _generate_situations_for_agent(
         chain = V6_SITUATION_SUMMARY | get_llm().with_structured_output(
             _summary_container(cell_schema)
         )
-        compose = lambda r: [s.composed_situation for s in r.situations]  # noqa: E731
+        compose = lambda r: (  # noqa: E731
+            [s.composed_situation for s in r.situations],
+            [s.model_dump(mode="json") for s in r.situations],
+        )
         extra = compose_cell_guidance(role, action_phase, cell_schema)
     else:
         prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
         chain = prompt_template | get_llm().with_structured_output(SituationSummary)
-        compose = lambda r: r.composed_situations  # noqa: E731
+        compose = lambda r: (r.composed_situations, [])  # noqa: E731
 
     for attempt in range(max_retries + 1):
         try:
@@ -105,4 +111,4 @@ def _generate_situations_for_agent(
             break
 
     logger.error(f"{player_id} situation summary failed all retries, using fallback")
-    return [f"Day {current_day} as {role}, round {current_round}"]
+    return [f"Day {current_day} as {role}, round {current_round}"], []

@@ -85,6 +85,11 @@ class EvalCase(BaseModel):
     memory_enabled: bool
     retrieval_skipped_reason: str | None = None
     situations: list[str] = Field(default_factory=list)
+    situation_dimensions: list[dict] = Field(default_factory=list)
+    """Structured query-situation dims per situation (the v6 cell situation object's model_dump:
+    exposure_class, info_landscape_class, criticality numbers, consensus_direction, ...), parallel to
+    `situations`. Empty on the legacy retrieval path / memory-off. Eval-only: lets offline screens gate
+    on the QUERY-side enums (dimension-gating efficacy) without re-deriving them with an LLM."""
     retrieved_observations: list[RetrievedObservation] = Field(default_factory=list)
     retrieved_strategy_points: list[RetrievedStrategyPoint] = Field(default_factory=list)
     candidate_observations: list[RetrievedObservation] = Field(default_factory=list)
