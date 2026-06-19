@@ -172,17 +172,20 @@ def build_cell_extraction_prefix(inputs: dict[str, str]) -> str:
     )
 
 
-def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema) -> str:
+def build_cell_observation_tail(role: str, phase: str, action_phase: str, schema, anchor: str = "") -> str:
     """Per-cell observation lock appended after the cached prefix: role + phase + driver/horizon + the
     schema-derived dimension menu. driver_horizon + dimension_menu come from compose_cell_guidance (the
-    single alignment point shared with the live situation-summary query)."""
+    single alignment point shared with the live situation-summary query).
+
+    `anchor` (default "" → canonical/unchanged) appends a suggestive pivotal-turn recommendation for the
+    v7 recall-arm experiment; off by default so the production prompt is byte-identical and freeze-safe."""
     guidance = compose_cell_guidance(role, action_phase, schema)
     return CELL_OBSERVATION_TAIL.format(
         role=role,
         phase=phase,
         driver_horizon=guidance["driver_horizon"],
         dimension_menu=guidance["dimension_menu"],
-    )
+    ) + anchor
 
 
 def build_cell_strategy_tail(role: str, phase: str) -> str:
@@ -192,13 +195,15 @@ def build_cell_strategy_tail(role: str, phase: str) -> str:
 
 
 def build_cell_extraction_prompt(
-    inputs: dict[str, str], role: str, phase: str, action_phase: str, schema, with_sp: bool = False
+    inputs: dict[str, str], role: str, phase: str, action_phase: str, schema,
+    with_sp: bool = False, anchor: str = ""
 ) -> str:
     """Full per-cell extraction prompt: cached prefix + observation tail [+ strategy tail]. Mirrors
     build_role_extraction_prompt = prefix + tail. with_sp appends the (stub) strategy-points tail for
-    the dual obs+sp extraction path."""
+    the dual obs+sp extraction path. `anchor` (default "" → unchanged) threads the recall-arm pivotal-turn
+    recommendation into the observation tail."""
     prompt = build_cell_extraction_prefix(inputs) + build_cell_observation_tail(
-        role, phase, action_phase, schema
+        role, phase, action_phase, schema, anchor=anchor
     )
     if with_sp:
         prompt += build_cell_strategy_tail(role, phase)

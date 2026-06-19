@@ -62,10 +62,10 @@ def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:
 
 
 def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries: int,
-                 with_sp: bool = False):
+                 with_sp: bool = False, anchor: str = ""):
     """Re-extract one (game, role, phase-group). Returns (observations, strategy_points) — the SP list
     is empty unless with_sp (the per_run dual path). action_phase is set by the model within the cell's
-    allowed phases."""
+    allowed phases. `anchor` (default "") injects the recall-arm suggestive pivotal-turn recommendation."""
     _, phase_wording, rep_phase = unit
     cell_schema = cell_observation_schema_for(role, rep_phase)
     if cell_schema is None:
@@ -75,7 +75,7 @@ def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries:
     )
     prompt = build_cell_extraction_prompt(
         extraction_inputs_from_frozen_case(case), role, phase_wording, rep_phase, cell_schema,
-        with_sp=with_sp,
+        with_sp=with_sp, anchor=anchor,
     )
     run = f"reextract_{role}_{unit[0]}_{str(case.get('game_id',''))[:8]}"
     for label, llm in (("primary", get_llm_pro()), ("backup", get_llm_pro_backup())):
@@ -102,7 +102,26 @@ def main() -> int:
     ap.add_argument("--max-workers", type=int, default=8)
     ap.add_argument("--with-sp", action="store_true",
                     help="per_run dual extraction: also derive strategy points into the SP store")
+    ap.add_argument("--anchors-from", default=None,
+                    help="glob of finished-game records (ab_*.jsonl) to derive recall-arm pivotal-turn "
+                         "anchors from, joined to --source by game_id (suggestive, not a quota)")
     args = ap.parse_args()
+
+    # recall-arm: deterministic pivotal-turn flags keyed by game_id (empty if --anchors-from unset)
+    anchors_by_gid: dict[str, list] = {}
+    if args.anchors_from:
+        import glob as _glob
+
+        from evaluation.src.experiments.recall_flags import pivotal_turns
+        for rf in sorted(_glob.glob(args.anchors_from)):
+            for line in open(rf):
+                if not line.strip():
+                    continue
+                rec = json.loads(line)
+                gid = str(rec.get("game_id", ""))
+                if gid and gid not in anchors_by_gid and rec.get("day_resolutions"):
+                    anchors_by_gid[gid] = pivotal_turns(rec)
+        print(f"  recall-arm anchors loaded for {len(anchors_by_gid)} games", flush=True)
 
     out_dir = Path(args.output_store_dir)
     obs_path, sp_path = memory_store_paths(out_dir)
@@ -133,8 +152,15 @@ def main() -> int:
 
     counts: dict[str, int] = {}
     sp_counts: dict[str, int] = {}
+    from evaluation.src.experiments.recall_flags import UNIT_PHASES, anchor_text
+
+    def _anchor(case: dict, unit: tuple) -> str:
+        turns = anchors_by_gid.get(str(case.get("game_id", "")))
+        return anchor_text(turns, UNIT_PHASES.get(unit[0], ())) if turns else ""
+
     with ThreadPoolExecutor(max_workers=args.max_workers) as pool:
-        futs = {pool.submit(extract_cell, c, role, unit, args.max_retries, args.with_sp): (c, role, unit)
+        futs = {pool.submit(extract_cell, c, role, unit, args.max_retries, args.with_sp,
+                            _anchor(c, unit)): (c, role, unit)
                 for c, role, unit in units}
         for fut in as_completed(futs):
             c, role, unit = futs[fut]
