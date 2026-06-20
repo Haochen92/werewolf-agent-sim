@@ -11,6 +11,11 @@ but it's outcome-luck — the tagger adds the read-quality the proxy can't see. 
 the raw messages (no day-summary un-flatten needed). Returns ({(day,player): disc_tag}, {(day,player):
 night_tag}). Validated by the de-luck tests (does discussion beat the day-floor redundancy; does night
 beat `_night_credit`'s halo).
+
+A4 (2026-06-20): the agent's OWN reasoning (`updated_strategy`, already on the EvalCase — gameplay-neutral)
+is fed in for ATTRIBUTION ONLY — de-confound night targets (discussion-driven read vs known-power-role
+removal), surface the hidden read (formed but not voiced), trace influence. VALENCE stays on observable
+behavior + true roles; the agent's account never drives merit (LLMs confabulate). structure-not-valence.
 """
 
 from __future__ import annotations
@@ -71,14 +76,29 @@ lucky move is not). Deceivers advance by misdirection + useful survival; village
 threats + accurate consensus.
 
 DISCUSSION: weigh framing (steering suspicion), credibility, and any role-reveal into ONE holistic verdict.
+role_reveal must reflect the DECLARED ROLE CLAIMS listed below (the reliable in-game extraction). Cross each
+claim against TRUE ROLES: a claim whose role != the player's actual role is a FALSE claim = a strong
+deception tell (manipulative framing / the room mis-trusting it should read as low credibility).
 NIGHT: for each night action, judge the READ behind the target given the day's discussion — a SKILLED read
 (discussion justified it) earns credit; a blind/lucky pick that merely happened to hit does NOT.
+
+ATTRIBUTION INPUTS (A4) — the PRIVATE READS and the night-target rationales below are each player's OWN
+account, captured before they acted; LLMs CONFABULATE, so use them ONLY to ATTRIBUTE, never for merit:
+(i) tell whether a night target was a discussion-driven read vs. an obvious known-power-role removal;
+(ii) surface a read a player FORMED BUT NEVER VOICED (a deception tell the public chat misses);
+(iii) trace influence ("Y convinced me"). Take VALENCE only from observable behavior + true roles — never
+from a player's own account of itself.
 
 TRUE ROLES: {roles}
 DAY {day} DISCUSSION:
 {discussion}
+DAY {day} DECLARED ROLE CLAIMS (in-game summary; cross vs TRUE ROLES — a claim != true role is a deception tell):
+{role_claims}
+DAY {day} PRIVATE READS (each agent's own account — ATTRIBUTION ONLY, not merit):
+{private_reads}
 DAY {day} VOTE RESULT: {lynch}
-NIGHT {day} ACTIONS: {night_actions}
+NIGHT {day} ACTIONS (target [why] = the actor's own rationale, ATTRIBUTION ONLY):
+{night_actions}
 NIGHT {day} DEATHS: {deaths}
 
 Output: discussion tags (per meaningful contributor) + night tags (per night actor), each
@@ -112,6 +132,49 @@ def _night_actions_by_day(record: dict) -> dict[int, list]:
     return out
 
 
+def _reasoning_by_day(record: dict) -> tuple[dict, dict]:
+    """(A4) The agent's OWN reasoning (`updated_strategy`) per (day, player), split night vs discussion.
+    Fed to the tagger for ATTRIBUTION ONLY (who/why), never valence: it de-confounds a night target (a
+    discussion-driven read vs a known-power-role removal) and surfaces the HIDDEN READ (a read formed but
+    not voiced — the deception tell the public chat misses). Carrier is the already-captured EvalCase
+    field, so this is gameplay-NEUTRAL (no new generation). Returns (night_reason, disc_reason), each
+    {(day, player): reasoning}; for multi-turn discussion the last turn's read wins (their settled read)."""
+    night_reason: dict = {}
+    disc_reason: dict = {}
+    path = record.get("eval_cases_path")
+    if not path or not os.path.exists(path):
+        return night_reason, disc_reason
+    for cl in open(path):
+        if not cl.strip():
+            continue
+        ec = (json.loads(cl).get("output") or {}).get("eval_case") or {}
+        why = (ec.get("updated_strategy") or "").strip()
+        if not why:
+            continue
+        key = (ec.get("day"), ec.get("player_id"))
+        phase = ec.get("action_phase")
+        if phase == "night_action":
+            night_reason[key] = why
+        elif phase == "day_discussion":
+            disc_reason[key] = why
+    return night_reason, disc_reason
+
+
+def _role_claims_by_day(record: dict) -> dict[int, list]:
+    """{day: [(player, claimed_role)]} from the in-game day-summary's STRUCTURED role_claims (persisted on
+    DaySummary.structured). The reliable in-game extraction of who claimed what — fed to the tagger so
+    role_reveal/credibility are ANCHORED on it (a claim whose role != the true role is a deception tell),
+    rather than re-judged from raw chat (which under-detects). Empty for pre-A4 records with no structured
+    field -> the tagger falls back to judging role_reveal from the messages alone."""
+    out: dict[int, list] = defaultdict(list)
+    for s in record.get("day_summaries", []) or []:
+        for rc in (s.get("structured") or {}).get("role_claims", []) or []:
+            p, cr = rc.get("player"), rc.get("claimed_role")
+            if p and cr:
+                out[s.get("day")].append((p, cr))
+    return out
+
+
 def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
     """Omniscient per-day tags. Returns ({(day,player): disc_tag}, {(day,player): night_tag}).
     flash-lite via get_llm_pro() (env-pin GOOGLE_GENAI_PRO_MODEL)."""
@@ -122,13 +185,22 @@ def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
     lynch = {dr.get("day"): dr.get("voted_player") for dr in record.get("day_resolutions", [])}
     deaths = {n.get("day"): n.get("deaths") for n in record.get("night_resolutions", [])}
     night_acts = _night_actions_by_day(record)
+    night_reason, disc_reason = _reasoning_by_day(record)  # A4: attribution-only carrier
+    role_claims = _role_claims_by_day(record)              # anchors role_reveal on the in-game extraction
     llm = get_llm_pro().with_structured_output(DayTags)
 
     def _tag(day: int):
         na = night_acts.get(day, [])
-        na_str = "; ".join(f"{p}({r}) -> {t}" for p, r, t in na) or "(none)"
+        na_str = "; ".join(
+            f"{p}({r}) -> {t}" + (f"  [why: {night_reason[(day, p)][:240]}]" if (day, p) in night_reason else "")
+            for p, r, t in na) or "(none)"
+        pr_str = "\n".join(
+            f"{p} ({roles.get(p, '?')}): {disc_reason[(day, p)][:240]}"
+            for p in sorted({pp for (dd, pp) in disc_reason if dd == day})) or "(none captured)"
+        rc_str = "; ".join(f"{p} claimed {cr}" for p, cr in role_claims.get(day, [])) or "(none)"
         prompt = _PROMPT.format(roles=roles, day=day, discussion=_format_day(by_day[day], roles),
-                                lynch=lynch.get(day), night_actions=na_str, deaths=deaths.get(day))
+                                role_claims=rc_str, private_reads=pr_str, lynch=lynch.get(day),
+                                night_actions=na_str, deaths=deaths.get(day))
         try:
             res = llm.invoke(prompt, config={"run_name": f"tag_d{day}"})
             return day, (res if isinstance(res, DayTags) else DayTags.model_validate(res))
