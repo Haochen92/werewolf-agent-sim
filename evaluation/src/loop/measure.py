@@ -15,7 +15,7 @@ import json
 import os
 from collections import defaultdict
 
-from evaluation.src.experiments.credit_backfill import VERDICT_VALUE, _decision_credit
+from evaluation.src.experiments.credit_backfill import VERDICT_VALUE, _decision_credit, _majority_vote
 
 TOWN = {"villager", "investigator", "healer", "vigilante"}
 
@@ -33,6 +33,7 @@ def generation_score(batch_glob: str) -> dict:
             roles, path = g.get("roles"), g.get("eval_cases_path")
             if not roles or not path or not os.path.exists(path):
                 continue
+            blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -42,7 +43,7 @@ def generation_score(batch_glob: str) -> dict:
                 ec = (env.get("output") or {}).get("eval_case")
                 if not ec:
                     continue
-                verdict = _decision_credit(ec, roles)
+                verdict = _decision_credit(ec, roles, blend_by_day)
                 if verdict is None:
                     continue
                 val = VERDICT_VALUE[verdict]

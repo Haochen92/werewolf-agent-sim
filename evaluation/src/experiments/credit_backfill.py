@@ -52,15 +52,30 @@ SHRINK_K = 5  # low-follow SPs pull toward 0 lift: shrunk = lift * follow/(follo
 TOWN_VOTE_ROLES = frozenset({"villager", "healer", "investigator", "vigilante"})
 
 
-def _vote_credit(role: str, votee: str | None, roles: dict) -> str:
+def _majority_vote(day_res: dict) -> str | None:
+    """The room's plurality vote that day (incl. 'abstain') = the BLEND reference for wolf credit. None
+    if no vote happened. Uses vote_counts so an abstain-majority still counts as a consensus to blend
+    with (voted_player is None on no-lynch days, which would silently drop that signal)."""
+    vc = day_res.get("vote_counts") or {}
+    return max(vc, key=vc.get) if vc else None
+
+
+def _vote_credit(role: str, votee: str | None, roles: dict, majority: str | None = None) -> str:
     """Faction-RELATIVE day-vote credit: 'did this vote advance the voter's own win condition?'
-    Town wants threats lynched; a wolf wants non-wolves lynched; the last-standing SK wants anyone
-    but itself gone. Scoring every vote town-side would invert the deceivers."""
+    Town wants threats lynched; the last-standing SK wants anyone but itself gone.
+
+    WOLF is scored by BLENDING, not target — the validated signal (G2 day-blend r=+0.22; "blend with
+    majority" audit r=+0.20). Voting the room's plurality choice = concealment, and it is bussing-aware
+    by construction: when the majority is taking down an ally, blending means voting the ally too (the
+    correct cover play that the old 'ally=negative' rule wrongly punished); off-consensus voting draws
+    heat. `majority` None (no consensus, or called as a day-vote ENDPOINT) => the old target fallback."""
+    if role == "wolf" and majority is not None:
+        return "positive" if votee == majority else "negative"  # blend with the room (bussing-aware)
     o = score_vote(votee, roles)
     if o.is_abstain:
         return "neutral"  # abstain is its own bucket
     if role == "wolf":
-        return "negative" if o.votee_role == "wolf" else "positive"  # only lynching an ally hurts
+        return "negative" if o.votee_role == "wolf" else "positive"  # no-consensus fallback (old rule)
     if role == "serial_killer":
         return "positive"  # SK wins by being last — any non-self lynch advances it
     return "positive" if o.hit_threat else "negative"  # town: threat = good, townie = mislynch
@@ -129,6 +144,7 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
             roles, path = g.get("roles"), g.get("eval_cases_path")
             if not roles or not path or not os.path.exists(path):
                 continue
+            blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -138,14 +154,15 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
                 ec = (env.get("output") or {}).get("eval_case")
                 if not ec or ec.get("memory_enabled"):  # base rate = memory-OFF only
                     continue
-                verdict = _decision_credit(ec, roles)
+                verdict = _decision_credit(ec, roles, blend_by_day)
                 if verdict is not None:
                     totals[f"{ec['player_role']}/{ec['action_phase']}"].append(VERDICT_VALUE[verdict])
     return {ch: (sum(vs) / len(vs), len(vs)) for ch, vs in totals.items() if vs}
 
 
 def _iter_cases(dumps_glob: str):
-    """Yield (game_roles, eval_case) for every memory-on agent-action case with follow verdicts."""
+    """Yield (game_roles, blend_by_day, eval_case) for every memory-on agent-action case with follow
+    verdicts. blend_by_day = day -> room plurality vote (the wolf blend reference)."""
     for dump in sorted(glob.glob(dumps_glob)):
         for line in open(dump):
             if not line.strip():
@@ -154,6 +171,7 @@ def _iter_cases(dumps_glob: str):
             roles, path = g.get("roles"), g.get("eval_cases_path")
             if not roles or not path or not os.path.exists(path):
                 continue
+            blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -162,14 +180,17 @@ def _iter_cases(dumps_glob: str):
                     continue
                 ec = (env.get("output") or {}).get("eval_case")
                 if ec and ec.get("memory_enabled") and ec.get("strategy_verdicts"):
-                    yield roles, ec
+                    yield roles, blend_by_day, ec
 
 
-def _decision_credit(ec: dict, roles: dict) -> str | None:
-    """The de-lucked credit verdict for this decision's channel, or None if not creditable this round."""
+def _decision_credit(ec: dict, roles: dict, blend_by_day: dict | None = None) -> str | None:
+    """The de-lucked credit verdict for this decision's channel, or None if not creditable this round.
+    blend_by_day: day -> room plurality vote (the wolf BLEND reference); None => wolf vote falls back to
+    the old target rule (so callers without the game record degrade gracefully)."""
     phase, role = ec.get("action_phase"), ec.get("player_role")
     if phase == "day_vote" and ec.get("agent_vote"):
-        return _vote_credit(role, ec["agent_vote"].get("votee"), roles)
+        majority = (blend_by_day or {}).get(ec.get("day"))
+        return _vote_credit(role, ec["agent_vote"].get("votee"), roles, majority)
     if phase == "night_action" and ec.get("agent_night_action"):
         if role not in NIGHT_CREDIT_ROLES:
             return None  # healer-night deferred (needs the night_resolutions attack-join)
@@ -180,8 +201,8 @@ def _decision_credit(ec: dict, roles: dict) -> str | None:
 def build_ledger(dumps_glob: str, base_rates: dict[str, tuple[float, int]]) -> tuple[dict[str, SPCredit], Counter]:
     ledger: dict[str, SPCredit] = defaultdict(SPCredit)
     skipped: Counter = Counter()
-    for roles, ec in _iter_cases(dumps_glob):
-        verdict = _decision_credit(ec, roles)
+    for roles, blend_by_day, ec in _iter_cases(dumps_glob):
+        verdict = _decision_credit(ec, roles, blend_by_day)
         if verdict is None:
             skipped[f"{ec.get('player_role')}/{ec.get('action_phase')}"] += 1
             continue
