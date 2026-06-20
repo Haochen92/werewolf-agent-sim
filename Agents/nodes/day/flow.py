@@ -243,7 +243,7 @@ def summarize_day_discussion(
         input={"day": current_day, "raw_discussion": raw_discussion},
         metadata={"eval_schema": "day_summary_case_v1"},
     ) as summary_span:
-        summary, model_used = run_day_summary_agent(
+        summary, model_used, structured = run_day_summary_agent(
             current_day, current_day_messages, max_retries,
         )
 
@@ -273,7 +273,7 @@ def summarize_day_discussion(
             },
         )
 
-    return {"day_summaries": [DaySummary(day=current_day, summary=summary)]}
+    return {"day_summaries": [DaySummary(day=current_day, summary=summary, structured=structured)]}
 
 
 def route_after_day_summary(

@@ -20,11 +20,13 @@ def run_day_summary_agent(
     current_day: int,
     current_day_messages: list,
     max_retries: int = 1,
-) -> tuple[str, str]:
-    """Summarise one day's messages into (summary_text, model_used).
+) -> tuple[str, str, dict]:
+    """Summarise one day's messages into (summary_text, model_used, structured).
 
-    Retries the structured-output call; on repeated failure falls back to the raw
-    formatted channel (with model_used left empty).
+    `structured` is the raw DaySummaryOutput as a dict (role_claims / accusations / alliances /
+    village_dynamics) — persisted alongside the prose for the post-game tagger/credit (gameplay-neutral:
+    agents see only the prose). Retries the structured-output call; on repeated failure falls back to the
+    raw formatted channel (model_used "", structured {}).
     """
     prompt = DAY_SUMMARY_PROMPT.format(
         current_day=current_day,
@@ -36,7 +38,7 @@ def run_day_summary_agent(
         try:
             llm = get_llm_summary()
             result = llm.with_structured_output(DaySummaryOutput).invoke(prompt)
-            return _serialize_day_summary(result), getattr(llm, "model", "") or ""
+            return _serialize_day_summary(result), getattr(llm, "model", "") or "", result.model_dump()
         except Exception as exc:
             logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
             if attempt < max_retries:
@@ -45,9 +47,9 @@ def run_day_summary_agent(
                 f"Day discussion summary failed all retries for day {current_day}, "
                 "using fallback"
             )
-            return format_day_channel(current_day_messages), ""
+            return format_day_channel(current_day_messages), "", {}
     # Loop always returns inside; this satisfies type-checkers for the no-iteration case.
-    return format_day_channel(current_day_messages), ""
+    return format_day_channel(current_day_messages), "", {}
 
 
 def _serialize_day_summary(result: DaySummaryOutput) -> str:
