@@ -7,8 +7,9 @@ One omniscient end-of-day flash-lite pass over the full day+night judges, per pl
                LUCKY hit. De-lucks `_night_credit`, which is outcome-only (hit_power/threat = partly luck).
 
 Discussion has no deterministic de-luck proxy (the irreducible LLM job); night HAS one (`_night_credit`)
-but it's outcome-luck — the tagger adds the read-quality the proxy can't see. Role-reveal is detected from
-the raw messages (no day-summary un-flatten needed). Returns ({(day,player): disc_tag}, {(day,player):
+but it's outcome-luck — the tagger adds the read-quality the proxy can't see. Role-reveal is ANCHORED on
+the persisted day-summary `role_claims` (the reliable in-game extraction; falls back to the raw messages
+for pre-A4 records that lack it). Returns ({(day,player): disc_tag}, {(day,player):
 night_tag}). Validated by the de-luck tests (does discussion beat the day-floor redundancy; does night
 beat `_night_credit`'s halo).
 
