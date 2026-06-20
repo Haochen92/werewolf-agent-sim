@@ -34,6 +34,18 @@ class LoopConfig:
     prune_min_follow: int = 8
     evict: bool = True                     # drop SPs surfaced >= min_retrieved but never followed (rejected)
     evict_min_retrieved: int = 8
+    evict_require_override: bool = True     # scope-aware (§10b): only evict a retrieved-but-unfollowed SP
+    #   when its non-follow is OVERRIDE-dominant (agent applied it and beat it = bad content). SPARE
+    #   not_relevant-dominant SPs — the situation didn't hold, a retrieval/scoping miss, NOT the lesson's
+    #   fault; deleting it would blame content for a retrieval artifact. False = legacy blunt evict.
+
+    # OBSERVATION decay (the obs analog of prune/evict). Obs carry no credit (you don't "follow" one), so
+    # they decay by AGE x FREQUENCY: drop only obs that are BOTH old AND rarely reinforced. Keeps old-but-
+    # recurring lessons (high observation_count) and all recent obs. Recency is enforced by SELECTION (what
+    # reaches synthesis), never by asking the synthesizer to weigh a recency number.
+    evict_observations: bool = True
+    obs_evict_min_age: int = 2             # only evictable once first seen >= this many generations ago
+    obs_evict_max_count: int = 1           # ...and reinforced at most this many times (1 = seen once)
 
     # (d) FREE FLOOR on: credit day_discussion SPs by the day-vote endpoint (no clean per-decision proxy
     # otherwise → the channel would be uncredited & invisible to consolidation). The LLM tagger

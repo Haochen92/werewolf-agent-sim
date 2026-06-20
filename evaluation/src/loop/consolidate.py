@@ -27,10 +27,24 @@ def _cell_of(ns_key: str) -> str:
     return "/".join(ns_key.split("/")[1:])  # "strategy_points/role/phase" -> "role/phase"
 
 
+def _evict_ok(v: dict, cfg: LoopConfig) -> bool:
+    """Should a retrieved-but-never-followed SP be evicted? Scope-aware (§10b applicability funnel): if
+    the non-follow is DOMINATED by not_relevant, the situation simply didn't hold here = a retrieval/
+    scoping miss, NOT bad content, so sparing it avoids deleting good advice over a retrieval artifact.
+    Evict only when the agent APPLIED it and overrode it (override-dominant = rejected on the merits);
+    no verdict signal at all (both 0) is a coverage gap, not evidence => also spared."""
+    if not cfg.evict_require_override:
+        return True  # legacy blunt evict: any surfaced-but-unfollowed SP
+    ov = v.get("override_count", 0)
+    nr = v.get("not_relevant_count", 0)
+    return ov > 0 and ov >= nr
+
+
 def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> dict:
-    """Mutate sp_namespaces in place: drop harmful (lift<tau, follow>=N) + rejected (retrieved>=R,
-    follow==0) SPs. Never drops a positive-lift SP. Returns {pruned, evicted, kept}."""
-    pruned = evicted = kept = 0
+    """Mutate sp_namespaces in place: drop harmful (lift<tau, follow>=N) + rejected-on-merits
+    (retrieved>=R, follow==0, override-dominant) SPs. Never drops a positive-lift SP, nor one whose
+    non-follow is a retrieval mismatch (not_relevant-dominant). Returns {pruned, evicted, kept, spared}."""
+    pruned = evicted = kept = spared = 0
     for ns_key, recs in list(sp_namespaces.items()):
         base = base_rates.get(_cell_of(ns_key), [0.0])[0]
         survivors = []
@@ -43,12 +57,41 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> d
                 pruned += 1
                 continue
             if cfg.evict and follow == 0 and retrieved >= cfg.evict_min_retrieved:
-                evicted += 1
-                continue
+                if _evict_ok(v, cfg):
+                    evicted += 1
+                    continue
+                spared += 1  # surfaced+unfollowed but not_relevant-dominant => retrieval's problem, keep
             survivors.append(r)
             kept += 1
         sp_namespaces[ns_key] = survivors
-    return {"pruned": pruned, "evicted": evicted, "kept": kept}
+    return {"pruned": pruned, "evicted": evicted, "kept": kept, "spared": spared}
+
+
+def evict_observations(obs_path: str | Path, obs_gen_map: dict, current_gen: int, cfg: LoopConfig) -> dict:
+    """Decay observations by AGE x FREQUENCY (obs carry no credit, so they can't be pruned by lift).
+    Drop obs that are BOTH old (first seen <= current_gen - min_age) AND rare (observation_count <=
+    max_count). Keeps old-but-recurring lessons (high count survive any age) and every recent obs. Edits
+    obs.json in place; the SHA-keyed embedding cache auto-rebuilds on the changed file.
+
+    obs_gen_map: record `key` -> first-seen generation (driver sidecar). Stable across dedup merges (the
+    survivor keeps its key, so a merged-and-reinforced obs keeps its ORIGINAL age but grows its count =
+    exactly the 'old but proven' case we want to keep). Recency is a SELECTION here, not an LLM weight."""
+    obs_path = Path(obs_path)
+    store = json.loads(obs_path.read_text())
+    dropped = kept = 0
+    for ns_key, recs in list(store.get("namespaces", {}).items()):
+        survivors = []
+        for r in recs:
+            gen = obs_gen_map.get(r.get("key"), 0)
+            count = r["value"].get("observation_count", 1)
+            if gen <= current_gen - cfg.obs_evict_min_age and count <= cfg.obs_evict_max_count:
+                dropped += 1
+                continue
+            survivors.append(r)
+            kept += 1
+        store["namespaces"][ns_key] = survivors
+    obs_path.write_text(json.dumps(store, indent=2))
+    return {"obs_dropped": dropped, "obs_kept": kept}
 
 
 def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> str:
@@ -120,21 +163,29 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
     return {"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks})}, obs_counts
 
 
-def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | None = None) -> dict:
-    """Full consolidation tick on a (credited) store dir. Returns stats + obs_counts (for next tick)."""
+def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | None = None,
+                obs_gen_map: dict | None = None, current_gen: int | None = None) -> dict:
+    """Full consolidation tick on a (credited) store dir. Returns stats + obs_counts (for next tick).
+
+    obs_gen_map/current_gen (driver-supplied) enable observation decay BEFORE synthesis, so the
+    synthesizer distills only the surviving (recent or proven-recurring) obs."""
     store_dir = Path(store_dir)
-    _, sp_path = memory_store_paths_local(store_dir)
+    obs_path, sp_path = memory_store_paths_local(store_dir)
     base_rates = json.loads((store_dir / "base_rates.json").read_text()) \
         if (store_dir / "base_rates.json").exists() else {}
+
+    oe = {}
+    if cfg.evict_observations and obs_gen_map is not None and current_gen is not None:
+        oe = evict_observations(obs_path, obs_gen_map, current_gen, cfg)
+
     store = json.loads(sp_path.read_text())
     ns = store.setdefault("namespaces", {})
-
     pe = prune_and_evict(ns, base_rates, cfg) if (cfg.prune or cfg.evict) else {}
     syn, obs_counts = ({}, prev_obs_counts or {})
     if cfg.synthesize:
         syn, obs_counts = synthesize(store_dir, ns, base_rates, cfg, prev_obs_counts)
     sp_path.write_text(json.dumps(store, indent=2))
-    return {"prune_evict": pe, "synth": syn, "obs_counts": obs_counts}
+    return {"prune_evict": pe, "obs_evict": oe, "synth": syn, "obs_counts": obs_counts}
 
 
 def memory_store_paths_local(store_dir: Path):

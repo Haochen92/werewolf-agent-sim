@@ -48,6 +48,21 @@ def _init_store(run_dir: Path, base_store: str | None) -> Path:
     return store
 
 
+def _stamp_obs_generations(store: Path, gen: int, sidecar: Path) -> dict:
+    """First-seen generation per obs record `key`, persisted in a run sidecar. The loop clock is
+    GENERATION, not wall-clock: each re-extraction stamps a fresh created_at, so timestamps can't be the
+    decay key — but the record key is stable across dedup merges (the survivor keeps its key), so a
+    reinforced obs keeps its original age while its observation_count grows. New obs this gen get `gen`;
+    existing keep their stamp. Returns the full key -> first-seen-gen map for observation decay."""
+    gen_map = json.loads(sidecar.read_text()) if sidecar.exists() else {}
+    obs = json.loads((store / "observations.json").read_text())
+    for recs in obs.get("namespaces", {}).values():
+        for r in recs:
+            gen_map.setdefault(r.get("key"), gen)
+    sidecar.write_text(json.dumps(gen_map, indent=2))
+    return gen_map
+
+
 def _run_batch(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
                store: Path | None = None, extra: tuple = ()) -> None:
     cmd = [
@@ -69,6 +84,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
     run_dir = Path(run_dir)
     store = _init_store(run_dir, base_store)
     sp_path = store / "strategy_points.json"
+    obs_sidecar = run_dir / "obs_generations.json"
+    _stamp_obs_generations(store, 0, obs_sidecar)  # warm-start obs = generation 0 (oldest)
     prev_obs_counts: dict = {}
     history: list[dict] = []
 
@@ -91,11 +108,12 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
                                   discussion_mode=cfg.discussion_mode)
             print(f"  credit: {cstats}", flush=True)
         cons = {}
-        if cfg.prune or cfg.evict or cfg.synthesize:
-            cons = consolidate(store, cfg, prev_obs_counts)
+        if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:
+            obs_gen_map = _stamp_obs_generations(store, gen, obs_sidecar)  # new obs this gen -> `gen`
+            cons = consolidate(store, cfg, prev_obs_counts, obs_gen_map=obs_gen_map, current_gen=gen)
             prev_obs_counts = cons.get("obs_counts", prev_obs_counts)
-            print(f"  consolidate: prune_evict={cons.get('prune_evict')} synth={cons.get('synth')}",
-                  flush=True)
+            print(f"  consolidate: prune_evict={cons.get('prune_evict')} "
+                  f"obs_evict={cons.get('obs_evict')} synth={cons.get('synth')}", flush=True)
         score = generation_score(str(run_dir / f"gen{gen}_*.jsonl"))   # on + off arms
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
         history.append({"generation": gen, "score": score, "consolidate": cons})
