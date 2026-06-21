@@ -16,8 +16,10 @@ class LoopConfig:
 
     model: str = "gemini-3.1-flash-lite"   # extract + synth model (validated ≈ pro); toggle → gemini-2.5-pro
 
-    games_per_generation: int = 5          # batch size = the consolidation tick cadence
-    generations: int = 6
+    games_per_generation: int = 5          # batch size = the consolidation tick cadence (the LEARNING
+    #   cadence — parallel games seed a frozen snapshot, so consolidation can ONLY happen at the
+    #   generation boundary; small N = more frequent boundaries = faster/finer learning + more trend points)
+    generations: int = 10                  # 10 consolidation steps = 10 slope points to eyeball the trend
     off_baseline: bool = True              # also run a memory-OFF arm (all_disabled, no seed/dump) as the
     #                                        flat comparison the slope is measured against
     game_concurrency: int = 5              # games within a generation run in PARALLEL (snapshot-seed →
@@ -26,10 +28,11 @@ class LoopConfig:
 
     # (a) credit
     credit: bool = True
-    window_generations: int = 3            # rolling de-luck window (generations). WINDOWED not all-time:
-    #   the STORE compounds within a run, so an SP's old-generation credit is stale by construction —
-    #   3 balances recency against follows-per-SP (too short = thin/noisy; shrink+N-floor soften it).
-    #   Separate from games_per_generation (the synth cadence) on purpose. 0 = all-time.
+    window_generations: int = 6            # rolling de-luck window (generations). At N=5 the binding
+    #   concern is credit DENSITY not recency: W=6 pools ~30 games/tick so SPs clear the follow>=8 prune
+    #   threshold (W=4 -> ~20 games -> median ~3 follows -> prune barely fires -> a flat result is
+    #   ambiguous). Recency cost is small in a pinned-model run (an SP's followed-value is stable; the
+    #   non-stationarity is the store growing = which SPs exist, not a given SP's value). 0 = all-time.
     frozen_base_rates: bool = False        # reuse gen-1 baseline across generations (model-stability dep.)
 
     # (b) consolidation

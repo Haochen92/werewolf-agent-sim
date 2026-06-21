@@ -154,6 +154,41 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     return {"total_sps": total, "credited": credited, "ledger_keys": len(ledger), "matched": matched}
 
 
+def credit_distribution(store_sp_path: str | Path, min_follow: int = 8) -> dict:
+    """How much the credit signal ENGAGED this tick — so a flat slope stays INTERPRETABLE (did prune get
+    a fair shot, or did nothing reach the follow threshold?). Reads the just-credited SP store + the
+    persisted base_rates. Reports: total SPs, # ever followed, follow p50/max, # prune-ELIGIBLE
+    (follow>=min_follow), and how many of those have NEGATIVE lift (= real prune candidates). A flat trend
+    with n_prune_eligible≈0 means the loop never had signal to cull (raise W), not that memory failed."""
+    store_sp_path = Path(store_sp_path)
+    store = json.loads(store_sp_path.read_text())
+    br_path = store_sp_path.parent / "base_rates.json"
+    base_rates = json.loads(br_path.read_text()) if br_path.exists() else {}
+    follows: list[int] = []
+    n_sps = n_followed = eligible = eligible_neg = 0
+    for ns, recs in store.get("namespaces", {}).items():
+        cell = "/".join(ns.split("/")[1:])              # strategy_points/role/phase -> role/phase
+        br = base_rates.get(cell)
+        base = br[0] if br else 0.0
+        for r in recs:
+            v = r["value"]
+            f = v.get("follow_count", 0)
+            n_sps += 1
+            follows.append(f)
+            if f > 0:
+                n_followed += 1
+            if f >= min_follow:
+                eligible += 1
+                lf = sp_lift(v, base)
+                if lf is not None and lf < 0:
+                    eligible_neg += 1
+    follows.sort()
+    return {"n_sps": n_sps, "n_followed": n_followed,
+            "follow_p50": follows[len(follows) // 2] if follows else 0,
+            "follow_max": follows[-1] if follows else 0,
+            "n_prune_eligible": eligible, "n_eligible_neg_lift": eligible_neg}
+
+
 def sp_lift(value: dict, base_mean: float = 0.0) -> float | None:
     """De-luck shrunk-lift for a stored SP from its counts + the per-cell baseline. None if no follows.
 

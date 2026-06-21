@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from evaluation.src.experiments.credit_backfill import compute_base_rates
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
-from evaluation.src.loop.credit import credit_apply
+from evaluation.src.loop.credit import credit_apply, credit_distribution
 from evaluation.src.loop.measure import generation_score
 from evaluation.src.loop.merge import merge_new_obs
 
@@ -157,6 +157,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         w = cfg.window_generations or gen
         gens = range(max(1, gen - w + 1), gen + 1)
         window = " ".join(str(run_dir / f"gen{g}_on.jsonl") for g in gens)
+        cstats, cdist = {}, {}
         if cfg.credit:
             base_rates = None
             if cfg.off_baseline:
@@ -165,7 +166,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             cstats = credit_apply(sp_path, window, base_rates=base_rates,
                                   discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode,
                                   tags_dir=str(run_dir / "tags"))  # persist tags per game_id (no re-tag)
-            print(f"  credit: {cstats}", flush=True)
+            cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)  # did credit ENGAGE?
+            print(f"  credit: {cstats}\n  credit_dist: {cdist}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:
             obs_gen_map = _stamp_obs_generations(store, gen, obs_sidecar)  # new obs this gen -> `gen`
@@ -175,7 +177,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
                   f"obs_evict={cons.get('obs_evict')} synth={cons.get('synth')}", flush=True)
         score = generation_score(str(run_dir / f"gen{gen}_*.jsonl"))   # on + off arms
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
-        history.append({"generation": gen, "score": score, "consolidate": cons})
+        history.append({"generation": gen, "score": score, "credit": cstats,
+                        "credit_dist": cdist, "consolidate": cons})
 
     (run_dir / "loop_history.json").write_text(json.dumps(history, indent=2))
     print(f"\nloop history -> {run_dir / 'loop_history.json'}", flush=True)
@@ -187,14 +190,16 @@ def main() -> int:
     ap.add_argument("--run-dir", required=True)
     ap.add_argument("--base-store", default="memory_stores/v6_1", help="warm-start baseline ('' = cold)")
     ap.add_argument("--configs", default="all_enabled", help="run_batch config name (the arm)")
-    ap.add_argument("--generations", type=int, default=1)
+    ap.add_argument("--generations", type=int, default=10)
     ap.add_argument("--games-per-generation", type=int, default=5)
+    ap.add_argument("--window-generations", type=int, default=6, help="credit de-luck lookback (gens)")
     ap.add_argument("--game-concurrency", type=int, default=5, help="parallel games within a generation")
     ap.add_argument("--model", default="gemini-3.1-flash-lite")
     ap.add_argument("--no-synth", action="store_true")
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
-                     game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth)
+                     window_generations=args.window_generations, game_concurrency=args.game_concurrency,
+                     model=args.model, synthesize=not args.no_synth)
     run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 
