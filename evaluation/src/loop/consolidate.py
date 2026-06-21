@@ -210,12 +210,14 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
     if cfg.evict_observations and obs_gen_map is not None and current_gen is not None:
         oe = evict_observations(obs_path, obs_gen_map, current_gen, cfg)
 
+    # SYNTH -> DEDUP -> PRUNE (prune runs LAST). The SP-dedup collapses near-dup SPs onto the credited
+    # survivor, ABSORBING its counts — so it can push a survivor across the eviction threshold. Pruning
+    # BEFORE the dedup (the old order) let those dedup-bumped strongly-bad SPs (lift<tau & follow>=N) escape
+    # eviction for a generation and get followed — the harmful tail that dragged outcomes below baseline.
+    # Prune on the FINAL post-dedup counts so the tail is evicted the same generation it appears.
+    # (FAST-CULL / SLOW-SYNTH still holds: synthesis (paid) only every k gens; prune/evict run every gen.)
     store = json.loads(sp_path.read_text())
     ns = store.setdefault("namespaces", {})
-    pe = prune_and_evict(ns, base_rates, cfg) if (cfg.prune or cfg.evict) else {}
-    # FAST-CULL / SLOW-SYNTH: prune/evict/decay (above) run every gen; synthesis (paid) only every k gens.
-    # Skipping synth leaves prev_obs_counts unchanged, so the next synth treats all obs accumulated across
-    # the skipped gens as "new" (incremental accumulates correctly across the gap).
     do_synth = cfg.synthesize and (current_gen is None or current_gen % cfg.synth_every_k_gens == 0)
     syn, obs_counts = ({}, prev_obs_counts or {})
     if do_synth:
@@ -225,6 +227,11 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
     sd = {}
     if cfg.sp_dedup and syn.get("added"):             # only when synthesis added SPs to dedup
         sd = _dedup_strategy_points(store_dir)
+    # prune LAST, on the post-dedup store (re-read: the dedup mutated the file on disk, not `ns`)
+    store = json.loads(sp_path.read_text())
+    ns = store.setdefault("namespaces", {})
+    pe = prune_and_evict(ns, base_rates, cfg) if (cfg.prune or cfg.evict) else {}
+    sp_path.write_text(json.dumps(store, indent=2))
     return {"prune_evict": pe, "obs_evict": oe, "synth": syn, "sp_dedup": sd, "obs_counts": obs_counts}
 
 
