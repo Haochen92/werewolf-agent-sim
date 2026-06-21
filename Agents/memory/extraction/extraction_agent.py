@@ -20,7 +20,11 @@ from logging import getLogger
 from Agents.llm_factory import DEFAULT_PRO_MODEL, get_llm_pro, get_llm_pro_backup
 from Agents.observability import extraction_role_run_name
 from Agents.schemas import GameStrategyOutput
-from Agents.schemas.memory import cell_dual_extraction_schema, cell_observation_schema_for
+from Agents.schemas.memory import (
+    cell_dual_extraction_schema,
+    cell_observation_schema_for,
+    cell_observations_extraction_schema,
+)
 
 from .cell_units import ROLE_UNITS
 from .inputs import (
@@ -243,13 +247,15 @@ def _extract_one_cell(
     if obs_schema is None:  # e.g. villager·night
         return None
     if with_strategy_points:
-        schema = cell_dual_extraction_schema(role, rep_phase) or obs_schema
+        schema = cell_dual_extraction_schema(role, rep_phase)
         tail = build_cell_observation_tail(role, phase_wording, rep_phase, obs_schema) + (
             build_cell_strategy_tail(role, phase_wording)
         )
-    else:
-        schema = obs_schema
+    else:                                                  # v7 default: obs-only CONTAINER (has .observations)
+        schema = cell_observations_extraction_schema(role, rep_phase)
         tail = build_cell_observation_tail(role, phase_wording, rep_phase, obs_schema)
+    if schema is None:
+        return None
     full = prefix + tail
     if cache is not None:
         attempts = (

@@ -36,6 +36,7 @@ from Agents.schemas.memory import (
     StoredStrategyPoint,
     cell_dual_extraction_schema,
     cell_observation_schema_for,
+    cell_observations_extraction_schema,
 )
 from evaluation.src.core.manifest import build_manifest
 from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
@@ -53,14 +54,6 @@ _FACTION = {
 # Cell fan-out plan now lives in Agents/ (shared with the live extractor); imported above.
 
 
-def _container_for(cell_schema: type[BaseModel]) -> type[BaseModel]:
-    return create_model(
-        f"{cell_schema.__name__}Extraction",
-        __base__=BaseModel,
-        observations=(list[cell_schema], Field(description=f"{cell_schema.__name__} observations")),
-    )
-
-
 def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries: int,
                  with_sp: bool = False, anchor: str = "", amplify: bool = False):
     """Re-extract one (game, role, phase-group). Returns (observations, strategy_points) — the SP list
@@ -72,7 +65,8 @@ def extract_cell(case: dict, role: str, unit: tuple[str, str, str], max_retries:
     if cell_schema is None:
         return [], []
     container = (
-        cell_dual_extraction_schema(role, rep_phase) if with_sp else _container_for(cell_schema)
+        cell_dual_extraction_schema(role, rep_phase) if with_sp
+        else cell_observations_extraction_schema(role, rep_phase)
     )
     prompt = build_cell_extraction_prompt(
         extraction_inputs_from_frozen_case(case), role, phase_wording, rep_phase, cell_schema,

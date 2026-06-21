@@ -789,6 +789,20 @@ def cell_dual_extraction_schema(role: str, action_phase: str) -> type[BaseModel]
     )
 
 
+def cell_observations_extraction_schema(role: str, action_phase: str) -> type[BaseModel] | None:
+    """The obs-only {observations} container for the v7 obs-only extraction path (per-run SPs dropped —
+    SPs come from cross-game synthesis). Parallel to cell_dual_extraction_schema, minus the SP half.
+    None for combinations the game has no decision at (e.g. villager night)."""
+    obs = cell_observation_schema_for(role, action_phase)
+    if obs is None:
+        return None
+    return create_model(
+        f"{obs.__name__}Extraction",
+        __base__=BaseModel,
+        observations=(list[obs], Field(description=f"{role} {action_phase} observations (facts about what happened).")),
+    )
+
+
 class GameStrategyOutput(BaseModel):
     observations: list[Observation] = Field(
         description="Key strategic observations extracted from the full game"

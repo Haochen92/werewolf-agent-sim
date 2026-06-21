@@ -19,7 +19,9 @@ from pathlib import Path
 
 
 def _load_obs(store_dir: str | Path) -> dict:
-    return json.loads((Path(store_dir) / "observations.json").read_text())
+    # a game that failed/extracted nothing may not have dumped observations.json — treat as no obs
+    p = Path(store_dir) / "observations.json"
+    return json.loads(p.read_text()) if p.exists() else {"namespaces": {}}
 
 
 def collect_new_obs(snapshot_dir: str | Path, temp_dirs: list) -> dict:
