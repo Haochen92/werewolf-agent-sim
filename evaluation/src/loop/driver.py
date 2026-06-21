@@ -179,8 +179,11 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
         history.append({"generation": gen, "score": score, "credit": cstats,
                         "credit_dist": cdist, "consolidate": cons})
+        # write EVERY generation, not just at the end: the per-gen credit_dist/consolidate stats are
+        # computed on the store-as-it-was-that-gen, which the next gen OVERWRITES — so a mid-run crash
+        # would lose them irrecoverably (games + score re-derive from the gen records; these don't).
+        (run_dir / "loop_history.json").write_text(json.dumps(history, indent=2))
 
-    (run_dir / "loop_history.json").write_text(json.dumps(history, indent=2))
     print(f"\nloop history -> {run_dir / 'loop_history.json'}", flush=True)
     return history
 
