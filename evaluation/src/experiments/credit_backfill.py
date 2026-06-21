@@ -41,6 +41,14 @@ DEFAULT_DUMPS = "batch_results/*v6ab*.jsonl"
 DEFAULT_STORE = "memory_stores/v6_1"
 DEFAULT_LEDGER = "evidence/v7_final/credit_backfill_ledger.json"
 
+
+def _expand_dumps(dumps_glob: str) -> list[str]:
+    """Expand a dumps spec that is EITHER a single glob pattern OR a whitespace-joined list of
+    paths/patterns (the loop's rolling window passes the latter). Plain `glob.glob` treats the whole
+    space-separated string as ONE pattern and matches nothing — silently emptying the credit ledger for
+    any window spanning >1 generation (a single-generation smoke can't surface it)."""
+    return sorted(f for pat in dumps_glob.split() for f in glob.glob(pat))
+
 # Per-channel mapping from a deterministic outcome to a credit verdict. None = decision not creditable
 # this round (skipped, counted separately). Each returns "positive" | "neutral" | "negative".
 NIGHT_CREDIT_ROLES = frozenset({"investigator", "vigilante", "wolf", "serial_killer"})
@@ -136,7 +144,7 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
     'how this decision goes with no notes'. This is the free, cell-level stand-in for a per-turn
     memory-on-vs-off replay (which would be paid). Returns channel -> (mean_value, n)."""
     totals: dict[str, list[float]] = defaultdict(list)
-    for dump in sorted(glob.glob(dumps_glob)):
+    for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
             if not line.strip():
                 continue
@@ -163,7 +171,7 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
 def _iter_cases(dumps_glob: str):
     """Yield (game_roles, blend_by_day, eval_case) for every memory-on agent-action case with follow
     verdicts. blend_by_day = day -> room plurality vote (the wolf blend reference)."""
-    for dump in sorted(glob.glob(dumps_glob)):
+    for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
             if not line.strip():
                 continue

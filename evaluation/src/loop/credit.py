@@ -20,7 +20,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from evaluation.src.experiments.credit_backfill import (
-    VERDICT_VALUE, SPCredit, _vote_credit, build_ledger, compute_base_rates,
+    VERDICT_VALUE, SPCredit, _expand_dumps, _vote_credit, build_ledger, compute_base_rates,
 )
 
 
@@ -30,7 +30,7 @@ def _discussion_ledger(dumps_glob: str) -> tuple[dict, dict]:
     Returns ({sp_key: SPCredit}, {channel: (base_mean, n)}). Reproduced held-out at +0.51 (M1)."""
     base_sum, base_n = defaultdict(float), defaultdict(int)
     rows = []  # (channel, verdict_str, eval_case) for memory-ON discussion turns
-    for dump in sorted(glob.glob(dumps_glob)):
+    for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
             if not line.strip():
                 continue
@@ -73,7 +73,7 @@ def _tagger_ledger(dumps_glob: str, tags_dir: str | None = None) -> tuple[dict, 
     from evaluation.src.loop.discussion_tagger import tag_game_cached  # lazy: pulls LLM deps only when used
     disc: dict = defaultdict(SPCredit)
     night: dict = defaultdict(SPCredit)
-    for dump in sorted(glob.glob(dumps_glob)):
+    for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
             if not line.strip():
                 continue
