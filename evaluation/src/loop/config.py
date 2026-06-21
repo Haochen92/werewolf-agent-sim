@@ -41,6 +41,10 @@ class LoopConfig:
     #   is depleted (below) — not "any new obs" (which re-synths nearly every cell every tick).
     synth_min_new_obs: int = 4             # re-synth a cell once it gains >= this many new obs since last
     synth_replenish_floor: int = 3         # ...OR its SP count fell below this (prune/evict depleted it)
+    synth_every_k_gens: int = 2            # FAST-CULL / SLOW-SYNTH split: prune/evict/decay/credit run
+    #   EVERY generation (cheap, deterministic), but the one paid op (LLM synthesis) runs only every k
+    #   generations (cheaper + meatier — sees more accumulated obs per pass + less SP churn). 1 = every gen.
+    #   At k=2, gen 1 is an obs bootstrap (no SPs yet); first synth at gen 2.
     sp_dedup: bool = True                  # after synthesis, KEEP/DISCARD-dedup the new SPs (freeze-old):
     #   collapse near-duplicate synthesized SPs, keeping the credited OLDER survivor (absorbs the dup's
     #   counts). SPs never MERGE (combining directives is incoherent). Without this, re-synthesizing active

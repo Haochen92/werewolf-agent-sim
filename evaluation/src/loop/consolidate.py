@@ -199,8 +199,12 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
     store = json.loads(sp_path.read_text())
     ns = store.setdefault("namespaces", {})
     pe = prune_and_evict(ns, base_rates, cfg) if (cfg.prune or cfg.evict) else {}
+    # FAST-CULL / SLOW-SYNTH: prune/evict/decay (above) run every gen; synthesis (paid) only every k gens.
+    # Skipping synth leaves prev_obs_counts unchanged, so the next synth treats all obs accumulated across
+    # the skipped gens as "new" (incremental accumulates correctly across the gap).
+    do_synth = cfg.synthesize and (current_gen is None or current_gen % cfg.synth_every_k_gens == 0)
     syn, obs_counts = ({}, prev_obs_counts or {})
-    if cfg.synthesize:
+    if do_synth:
         syn, obs_counts = synthesize(store_dir, ns, base_rates, cfg, prev_obs_counts)
     sp_path.write_text(json.dumps(store, indent=2))   # persist synth before the SP dedup reads the store
     sd = {}

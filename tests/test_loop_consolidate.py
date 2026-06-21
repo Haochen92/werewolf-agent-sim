@@ -106,13 +106,15 @@ class SpDedupGatingTests(unittest.TestCase):
         return d
 
     def test_sp_dedup_runs_only_when_synthesis_added(self) -> None:
+        # synth_every_k_gens=1 isolates the sp_dedup-on-added logic from the synth-cadence gate
         with tempfile.TemporaryDirectory() as t:
             store = self._store(Path(t))
             with patch.object(con, "prune_and_evict", return_value={}), \
                  patch.object(con, "evict_observations", return_value={}), \
                  patch.object(con, "synthesize", return_value=({"added": 2}, {})), \
                  patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
-                con.consolidate(store, LoopConfig(sp_dedup=True), current_gen=1, obs_gen_map={})
+                con.consolidate(store, LoopConfig(sp_dedup=True, synth_every_k_gens=1),
+                                current_gen=1, obs_gen_map={})
             md.assert_called_once()
 
     def test_sp_dedup_skipped_when_nothing_synthesized(self) -> None:
@@ -122,7 +124,21 @@ class SpDedupGatingTests(unittest.TestCase):
                  patch.object(con, "evict_observations", return_value={}), \
                  patch.object(con, "synthesize", return_value=({"added": 0}, {})), \
                  patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
-                con.consolidate(store, LoopConfig(sp_dedup=True), current_gen=1, obs_gen_map={})
+                con.consolidate(store, LoopConfig(sp_dedup=True, synth_every_k_gens=1),
+                                current_gen=1, obs_gen_map={})
+            md.assert_not_called()
+
+    def test_synthesis_skipped_on_non_k_generation(self) -> None:
+        # synth_every_k_gens=2 -> gen 1 is a cull-only generation (no synthesis, no SP-dedup)
+        with tempfile.TemporaryDirectory() as t:
+            store = self._store(Path(t))
+            with patch.object(con, "prune_and_evict", return_value={}), \
+                 patch.object(con, "evict_observations", return_value={}), \
+                 patch.object(con, "synthesize", return_value=({"added": 9}, {})) as ms, \
+                 patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
+                con.consolidate(store, LoopConfig(sp_dedup=True, synth_every_k_gens=2),
+                                current_gen=1, obs_gen_map={})
+            ms.assert_not_called()   # synth skipped on gen 1 (1 % 2 != 0)
             md.assert_not_called()
 
 
