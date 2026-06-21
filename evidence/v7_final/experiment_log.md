@@ -579,3 +579,58 @@ documentable result — the experiment is NOT heading for "inconclusive noise", 
 verdict. Watching: weak-read SP lift sign + prune at gen 6+, vigilante de-luck recovery. ⚠ SP-bloat
 watch-item: gen-4 credit-aware synth added 193 SPs (3× gen-2) → `follow_p50` diluted 9→3 (top stays dense,
 `follow_max 65`); if synth stays verbose, cap the track-record / SPs-per-cell next run.
+
+### 11f. ⭐ FINAL RESULT — run completed; the slope is NOISE-LIMITED, not the divergence I called overnight
+Full slope (`on−off` town, gens 1-10, gen-6+ re-run with the synth-trigger + decay fixes):
+`−0.081, +0.033, −0.103, +0.133, −0.089, −0.207, −0.282, −0.346, −0.200, +0.134` — **mean −0.101, stdev
+0.156 at N=5.** I narrated gens 5→8 as "divergence"; **gen-10 (+0.134) broke that** — it was a noisy streak,
+not a trend. ⚠️**Honest correction: I over-read a noisy slope as a trend mid-run.** The cleanest signal is a
+*weak negative tilt* in the working regime (gens 6-10 avg −0.22, 4/5 negative) but **underpowered** — the
+swings dwarf the mean.
+
+⭐**The per-gen tail analysis REFUTED the SP-bloat-as-cause story.** Strongly-bad SPs (lift<−0.15, follow≥8)
+appear ONLY at synth gens (gen6: 2, gen8: 13) and are ZERO at non-synth gens — but they **anti-correlate**
+with the scores: the WORST gen (gen-8 −0.346) followed a ZERO-tail store; gen-9 (after the biggest tail)
+was *better*. Bad-follows are 1-9% — a rounding error. So the negatives are **noise + a small broad tilt,
+NOT the harmful tail.** (`gen-N games seed the gen-(N−1)-end store` — mapping confirmed in code.)
+
+### 11g. MEASUREMENT-VALIDITY findings (the real bottleneck)
+- **ON and OFF arms were UNPAIRED** (independent draws) → the on−off difference carries both arms' full
+  variance; the OFF arm alone (no memory) swung 0.119→0.389. **This is the dominant noise source**, and it
+  makes the slope unreadable at N=5. → FIXED: pair the arms via matched `game_id` (run_batch seeds role draw
+  + scheduler off `crc32(game_id)`), memory the only difference. Cuts variance 2-4× for free; also makes
+  per-decision lift causally interpretable (matched situations).
+- **Positive lift ≠ stronger play** (the paradox): follow-weighted lift on the gen-10 store was +0.161, yet
+  town scored below OFF. lift is **observational** (outcome on decisions the agent *chose* to follow, vs the
+  off-arm cell average — a selected subset), not causal. The intended per-decision isolation (follow vs
+  override) is **degenerate** (G3a: ~99% follow → no override variance). The causal measure is the paired
+  on−off, which is ~0. ("Action last" gives causal *availability*, not marginal *isolation*.)
+- **Win-rate is WORSE** (1 bit/game); the de-luck proxy was already the lowest-variance instrument and is
+  *still* too coarse at N=5. → Decouple learning cadence (small N, many gens) from measurement power (pool
+  draws / replicate runs / checkpoint eval batches) — don't raise the learning N (slows compounding).
+
+### 11h. V2 FIXES (all committed) + ACTUAL COST
+**Bugs found + fixed this run (a methodology shakedown):** (1) dead-credit glob (space-joined window →
+`glob`→[]); (2) silent synth-stall (incremental trigger used net-count-change, cancelled by decay → counts
+ARRIVALS by first-seen gen now); (3) over-aggressive obs decay (`min_age` 2→4; obs are 87% singletons);
+(4) prune-ordering bug (prune ran BEFORE the SP-dedup, which absorbs dup counts onto survivors post-prune →
+a strongly-bad tail escaped one gen — confirmed: a fresh prune drops exactly the 16 leaked; reorder to
+synth→dedup→PRUNE); (5) embedding cache whole-file-SHA-invalidated → re-embedded the whole store each gen
+(per-key reuse, byte-identical). Plus the **fail-loud invariants layer** (every silent seam now raises).
+**Pairing** (§11g) is the headline measurement fix.
+
+⭐**ACTUAL COST (Langfuse, exact): $65.21** — games $43.00 (163 games), obs-dedup $10.57 (re-embed overhead),
+SP-dedup $9.23 (bloat-inflated), synth ~$2.4 (flash-lite, cheap — the bloat hit DEDUP, not synth). The
+$65 vs the ~$30 estimate = ~$17 restart games (163 vs 100, the shakedown) + ~$20 dedup overhead the estimate
+omitted. **A clean v2 run ≈ $30-35** (no restarts, synth cap shrinks SP-dedup, embedding reuse + fewer
+merges shrink obs-dedup; pairing lets the signal read at low N rather than 4×-ing games for power).
+
+### 11i. VERDICT (pre-registered stopping rule)
+**No positive slope at this power → the loop is not demonstrably helpful (weak-negative tilt, underpowered).**
+But the instrumentation did its job: localized the cap to **measurement power (unpaired, N=5)**, not a dead
+mechanism — credit corrects content (validated by read), good SPs survive and dominate follows, the bloat/
+tail are minor. So this is a methodology shakedown, not the headline. **v2 = the readable rerun: paired arms
++ all five bug-fixes + a synth-output cap, measured with pooled/decoupled power.** Per the rule, if the
+*paired* v2 slope is still flat, that is the honest negative-with-mechanism — stop, don't escalate N blindly.
+Strong portfolio framing either way; the **v1 baseline** (regenerate a bounded prompt, no RAG/credit) is the
+competitive control that makes "v7 earns its complexity" a falsifiable claim.
