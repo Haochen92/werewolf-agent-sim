@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from langgraph.store.base import BaseStore, PutOp
+from langgraph.store.base import BaseStore, Item, PutOp
 
 from Agents.memory.store import store
 
-from .cache import load_indexed_store_cache, save_indexed_store_cache
+from .cache import load_cached_vectors, load_indexed_store_cache, save_indexed_store_cache
 from .config import (
     DEFAULT_MEMORY_STORE_DIR,
     INDEXED_CACHE_FILE_NAME,
@@ -18,6 +20,8 @@ from .config import (
 )
 from .retries import _batch_with_retries
 from .serialization import _read_json, _snapshot_namespaces, _snapshot_value
+
+logger = logging.getLogger(__name__)
 
 
 def seed_memory_from_config(
@@ -86,6 +90,7 @@ def seed_memory_from_json_files(
     observations_path: str | Path | None = None,
     strategy_points_path: str | Path | None = None,
     target_store: BaseStore = store,
+    reuse_index: dict[tuple, tuple] | None = None,
     batch_size: int = 1,
     retry_attempts: int = 5,
     retry_initial_delay: float = 1.0,
@@ -103,6 +108,9 @@ def seed_memory_from_json_files(
     strategy_points_path = strategy_points_path or default_strategy_points
 
     put_ops: list[PutOp] = []
+    reuse_index = reuse_index or {}
+    reused = 0
+    _now = datetime.now(timezone.utc)
     counts = {
         "observations": 0,
         "strategies": 0,
@@ -127,7 +135,18 @@ def seed_memory_from_json_files(
                 if not key or value is None:
                     continue
                 for namespace in namespaces:
-                    put_ops.append(PutOp(namespace, key, value))
+                    cached = reuse_index.get((namespace, key))
+                    if cached is not None and cached[0] == value:
+                        # value unchanged -> reuse the cached embedding (identical by determinism);
+                        # inject data + vectors directly, skipping the embedding API call
+                        target_store._data[namespace][key] = Item(
+                            value=value, key=key, namespace=namespace,
+                            created_at=_now, updated_at=_now,
+                        )
+                        target_store._vectors[namespace][key] = cached[1]
+                        reused += 1
+                    else:
+                        put_ops.append(PutOp(namespace, key, value))
                     counts[count_key] += 1
 
     for start in range(0, len(put_ops), batch_size):
@@ -139,6 +158,8 @@ def seed_memory_from_json_files(
             retry_max_delay=retry_max_delay,
         )
 
+    if reused:
+        logger.info("cached-seed: reused %d vectors, embedded %d new", reused, len(put_ops))
     return counts
 
 
@@ -164,10 +185,15 @@ def seed_memory_from_json_files_cached(
     ):
         return {"from_cache": True}
 
+    # Full cache stale (source changed). Instead of re-embedding everything, reuse the cached per-key
+    # vectors for records whose value is unchanged and embed only the new/changed ones — so cost scales
+    # with NEW obs, not the whole growing store.
+    reuse_index = load_cached_vectors(cache_path)
     counts = seed_memory_from_json_files(
         observations_path=observations_path,
         strategy_points_path=strategy_points_path,
         target_store=target_store,
+        reuse_index=reuse_index,
     )
 
     save_indexed_store_cache(

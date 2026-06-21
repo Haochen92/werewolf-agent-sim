@@ -116,3 +116,33 @@ def load_indexed_store_cache(
         sum(len(v) for v in payload["vectors"].values()),
     )
     return True
+
+
+def load_cached_vectors(cache_path: str | Path) -> dict[tuple, tuple]:
+    """Per-key vector reuse map {(namespace, key): (value, vectors)}, IGNORING the whole-file SHA gate.
+
+    The full-cache loader above is all-or-nothing: any change to the source JSON invalidates the ENTIRE
+    cache, re-embedding every record each generation (cost grows with the whole store, not the new obs).
+    This returns the cached per-key embeddings so a changed store can reuse the vectors of records whose
+    VALUE is unchanged — identical to re-embedding by embedding determinism (same text -> same vector) —
+    and embed only the genuinely new/changed records. Returns {} if the cache is absent or corrupt.
+    """
+    cache_path = Path(cache_path)
+    if not cache_path.exists():
+        return {}
+    try:
+        with open(cache_path, "rb") as f:
+            payload = pickle.load(f)  # noqa: S301
+    except Exception:
+        return {}
+    if payload.get("version") != 1:
+        return {}
+    data = payload.get("data", {})
+    vectors = payload.get("vectors", {})
+    reuse: dict[tuple, tuple] = {}
+    for namespace, items in vectors.items():
+        for key, paths in items.items():
+            entry = data.get(namespace, {}).get(key)
+            if entry is not None:
+                reuse[(namespace, key)] = (entry["value"], paths)
+    return reuse
