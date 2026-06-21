@@ -515,3 +515,67 @@ from smoke durations × the 2026-06-06 per-game cost-attribution; exact $ TBD vi
 **Run command (town arm):**
 `poetry run python -m evaluation.src.loop.driver --run-dir <dir> --base-store '' --configs town_only`
 (N/W/G/concurrency from the defaults above; cold start; awaiting green-light on spend).
+
+## 11. RUN-1 EXECUTION + IN-FLIGHT FINDINGS (2026-06-21, `town_only_run2`)
+
+The headline town_only G=10 run. **Two infrastructure bugs caught + fixed mid-run, plus the first real
+content dynamics.** Run in progress (resumed at gen 6 after a perf fix).
+
+### 11a. ⭐ DEAD-CREDIT BUG — caught at the gen-3 manual inspection (the inspection earned its keep)
+A first `town_only_run1` ran to gen 3, where the planned manual read found credit DEAD: `ledger_keys=0`
+despite **340 follow verdicts** in the window. **Root cause:** the driver builds the rolling credit window
+as a SPACE-JOINED string of file paths, but the credit/base-rate readers call `glob.glob(dumps_glob)` —
+which treats the whole space-separated string as ONE pattern → matches nothing → empty ledger → silent 0
+credit for any window spanning >1 generation. **The single-gen smoke + one-rotation gate structurally could
+NOT catch it** (a single-path window globs fine). So credit had been dead since gen 2; the run was an
+obs+halo-synth loop, not the credit-aware experiment. Fixed: `_expand_dumps` split-then-globs at all 4 read
+sites. Re-credited the existing gen-1/2/3 records → 38 SPs credited, confirming the fix on real data.
+
+### 11b. ⭐ FAIL-LOUD HARDENING — the bug was a symptom of a systemic fail-silent pattern
+Audit of the 5 loop seams (driver/credit/consolidate/merge/measure) found the same shape everywhere:
+`... or continue` / `glob -> []` / `.get(k, 0)` → a broken input degrades to a PLAUSIBLE WRONG number, never
+an error (the worst failure mode for an experiment — a flat slope that's actually a dead mechanism). Built
+`evaluation/src/loop/invariants.py`: per-generation guards that RAISE — credit-engaged (follows in window
+but empty ledger), base-rates non-empty when the off-arm ran, score non-empty, strict eval_cases_path
+resolution; plus observability (synth `with_track_record`, `window_follows`). 8 unit tests; the guards fired
+on the first fresh run (an over-strict follow-counter, since fixed) — proof the layer works. ⭐**Lesson: an
+experiment harness's one non-negotiable property is "cannot silently lie"; the smoke must exercise the
+PRODUCTION regime (≥2 gens for a windowed loop), not a strictly-easier case.**
+
+### 11c. ⭐ DEDUP EMBEDDING-CACHE SCALING BUG + RESUME (perf, identical-results)
+Diagnosing per-gen slowness (user-driven): OFF games are fast (~3 min/5 concurrent); the hidden cost is the
+obs MERGE/DEDUP between the ON and OFF arms — and it GROWS with the store, not new obs: **462→634→852→1105s
+across gens 1-4 while new_obs stayed ~constant (~100).** Root cause: the indexed-embedding cache is
+whole-file-SHA-invalidated, so each gen (store changed) RE-EMBEDS the entire growing store. Fix: per-key
+vector reuse (`load_cached_vectors` + a `reuse_index` path) reuses the cached vector for any record whose
+value is unchanged (**byte-identical by embedding determinism, validated max-abs-diff 0.0**), embedding only
+new records → cost scales with new obs. Plus a `loop: resume` capability (a run-dir with a loop_history
+continues from the next gen, reusing store+sidecar, no re-run). Per the user: let gen-5 complete → stop →
+apply (perf-only, NO slope seam) → resume from gen 6. Done; resume confirmed ("RESUMING at generation 6").
+
+### 11d. ⭐ GEN 1-5 RESULTS — trajectory noisy, but the loop is demonstrably SHAPING content
+- **Slope (on−off town):** −0.081 / +0.033 / −0.103 / +0.133 / −0.089 — oscillating ±0.1 around ZERO, no
+  slope through the 5-game noise. Credit-aware play started gen 5 (gen-4 = first credit-aware synth,
+  `with_track_record=11`).
+- **⭐ Credit verdict on content = excellent face validity (the thesis at the mechanism level).** Of 41
+  matured SPs (follow≥5): **29 positive-lift, 10 negative.** WORST (de-luck flagged BAD) = every
+  passive-loser ("abstain with the majority", "establish principles for future eliminations", "maintain a
+  low profile"). BEST = active transmission + CONDITIONED play ("definitive result late game → reveal to
+  force the lynch" +0.69; "no public evidence → don't reveal, build the case" +0.78). De-luck cleanly
+  separates passive losers from active winners; on the investigator-concealment watch-item it rewards the
+  CONDITIONED version, not blanket concealment.
+- **⭐ The gen-5 dip is an OVERCORRECTION, not noise.** Decomposed: one bad game + the VIGILANTE the
+  systematic drag (−0.263, vs investigator +0.53 / villager +0.24 / healer +0.22). **88% of bad town
+  decisions (15/17) followed an SP, and the culprits all say ACT ON WEAK READS**: "vote the most-suspicious
+  active player when deadlocked", "vigilante take a shot on suspicious behavior", "vote low-confidence". The
+  credit-aware synth swung town from passive→RECKLESS (act on weak evidence → mislynch townies / bad
+  vigilante shots). This is the loop shaping content with de-luck as regulator — NOT a flat noise floor.
+
+### 11e. THE OPEN QUESTION (gen 6+): convergence vs oscillation
+The weak-read-aggressive SPs just produced 17 negative-de-luck decisions → they should accrue negative lift
+→ get pruned/demoted at gen-6 synth. **The test: does the loop CONVERGE on "act on STRONG reads"** (passive
+AND reckless both pruned, vigilante de-luck recovers), **or OSCILLATE passive↔reckless?** Either is a CLEAN,
+documentable result — the experiment is NOT heading for "inconclusive noise", it's heading for a convergence
+verdict. Watching: weak-read SP lift sign + prune at gen 6+, vigilante de-luck recovery. ⚠ SP-bloat
+watch-item: gen-4 credit-aware synth added 193 SPs (3× gen-2) → `follow_p50` diluted 9→3 (top stays dense,
+`follow_max 65`); if synth stays verbose, cap the track-record / SPs-per-cell next run.
