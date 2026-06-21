@@ -189,11 +189,12 @@ def main() -> int:
     ap.add_argument("--configs", default="all_enabled", help="run_batch config name (the arm)")
     ap.add_argument("--generations", type=int, default=1)
     ap.add_argument("--games-per-generation", type=int, default=5)
+    ap.add_argument("--game-concurrency", type=int, default=5, help="parallel games within a generation")
     ap.add_argument("--model", default="gemini-3.1-flash-lite")
     ap.add_argument("--no-synth", action="store_true")
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
-                     model=args.model, synthesize=not args.no_synth)
+                     game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth)
     run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 

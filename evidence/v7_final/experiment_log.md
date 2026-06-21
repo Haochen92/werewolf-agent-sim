@@ -442,15 +442,24 @@ wiring gaps. Decisions + fixes, all on `feature-dimension-schema`:
   byproduct of computing tags inline, not a deliberate choice). `tag_game_cached` persists per game_id
   (versioned key invalidates on a tagger-prompt change); the driver passes a `tags/` dir.
 
-**Decided, NOT built — the RUN-LAUNCH unit (needs a paid smoke to validate, can't be offline-checked):**
-- **Parallelize game-play within a generation + freeze-old merge.** `run_batch` plays games sequentially
-  (games, not synthesis, are the wall-clock bottleneck). Parallelize via SNAPSHOT, never locks: freeze the
-  store at generation start, all N games seed READ-ONLY from that snapshot, each writes to its own temp
-  store (no collision), then ONE post-generation merge folds them in. The merge uses **freeze-old dedup
-  (#2)** — new obs absorb into the accumulated store, old obs NOT re-litigated (convergence-safe, idempotent;
-  NOT system-wide batch #3, which is O(store²) and non-convergent past ~17% → churns every tick). Old obs
-  are still removed — by the separate age×frequency DECAY pass, not by dedup (two complementary mechanisms).
-  Semantic change accepted: games within a generation no longer see each other's obs (they all see the
-  gen-start store) — which is correct, since the store is meant to update at the consolidation tick. This is
-  the one piece left; it's tightly coupled to launching the (paid, green-light-gated) headline slope run and
-  must be built with a 1-game smoke, not shipped blind.
+**BUILT (2026-06-20, commit ead2ef6) — needs a paid SMOKE to validate end-to-end** (parallel game-play +
+merge can't be offline-checked; the key-diff/append IS offline-tested in test_loop_merge):
+`evaluation/src/loop/merge.py` (`collect_new_obs`/`merge_new_obs`) + driver `_run_one_game`/
+`_run_games_parallel` + `game_concurrency`. Per generation: snapshot the gen-start store → play N games
+concurrently (each seeds READ-ONLY from the snapshot, dumps to its OWN per-game store = no write race) →
+ONE freeze-old merge folds the new obs in (cross-game dups → observation_count; snapshot frozen). Reuses
+run_batch's seed/dump-dir split + `run_batch_memory_dedup` (#2). Driver concatenates per-game records into
+the gen record + cleans up snapshot/temps.
+- **Why freeze-old (#2), not system-wide (#3):** #2 absorbs new into the accumulated store, old NOT
+  re-litigated (convergence-safe, idempotent); #3 is O(store²) and non-convergent past ~17% → churns every
+  tick. Old obs are retired by the separate age×frequency DECAY pass, not by dedup (two mechanisms).
+- **Serialization role:** games = fully parallel (the win); the merge SERIALIZES only the single store
+  write (correctness, not a bottleneck — it touches only new-key clusters via freeze-old, and dedup
+  parallelizes across independent namespaces). The snapshot read is shared/concurrent (no race).
+- **Semantic change accepted:** games within a generation no longer see each other's obs (all see the
+  gen-start store) — correct, since the store is meant to update at the consolidation tick.
+- **Production alignment:** this IS production_design's sampled-games→dedup step; the dedup core
+  (`run_batch_memory_dedup`) is the reusable piece, only the temp-store key-diff is experiment glue.
+- **SMOKE before the headline run:** `driver --generations 1 --games-per-generation 2 --base-store ''
+  --game-concurrency 2` → confirm 2 games ran concurrently, merge folded both, cross-game dups collapsed,
+  store grew, no corruption. Then the slope run is unblocked (still green-light-gated on spend).
