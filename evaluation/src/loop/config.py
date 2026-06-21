@@ -20,6 +20,9 @@ class LoopConfig:
     generations: int = 6
     off_baseline: bool = True              # also run a memory-OFF arm (all_disabled, no seed/dump) as the
     #                                        flat comparison the slope is measured against
+    game_concurrency: int = 5              # games within a generation run in PARALLEL (snapshot-seed →
+    #   per-game dump → freeze-old merge; never a shared-store write race). Cap for API rate limits; 1 =
+    #   sequential. Games are the wall-clock bottleneck, not consolidation.
 
     # (a) credit
     credit: bool = True

@@ -22,6 +22,7 @@ import os
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
@@ -31,6 +32,7 @@ from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply
 from evaluation.src.loop.measure import generation_score
+from evaluation.src.loop.merge import merge_new_obs
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -64,20 +66,53 @@ def _stamp_obs_generations(store: Path, gen: int, sidecar: Path) -> dict:
     return gen_map
 
 
-def _run_batch(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
-               store: Path | None = None, extra: tuple = ()) -> None:
+def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
+                  seed: Path | None = None, dump: Path | None = None, extra: tuple = ()) -> None:
+    """One game via run_batch (--runs-per-config 1). Separate seed/dump dirs let parallel games share a
+    read-only snapshot seed while each dumps to its own store (no shared-store write race)."""
     cmd = [
         "poetry", "run", "python", "scripts/run_batch.py",
-        "--configs", configs,
-        "--runs-per-config", str(cfg.games_per_generation),
-        "--output", str(out_jsonl),
-        "--session-prefix", prefix,
+        "--configs", configs, "--runs-per-config", "1",
+        "--output", str(out_jsonl), "--session-prefix", prefix,
     ]
-    if store is not None:                    # on arm: seed from + dump to the run store
-        cmd += ["--memory-store-dir", str(store)]
+    if seed is not None:
+        cmd += ["--seed-store-dir", str(seed)]
+    if dump is not None:
+        cmd += ["--dump-store-dir", str(dump)]
     cmd += list(extra)
-    env = {**os.environ, **cfg.env()}
-    subprocess.run(cmd, cwd=REPO, env=env, check=True)
+    subprocess.run(cmd, cwd=REPO, env={**os.environ, **cfg.env()}, check=True)
+
+
+def _run_games_parallel(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
+                        seed: Path | None = None, dump_each: bool = False, extra: tuple = ()) -> list:
+    """Play games_per_generation games CONCURRENTLY (cap = game_concurrency), then concatenate the
+    per-game batch records into out_jsonl. With dump_each, each game dumps to its own per-game store and
+    the dirs are returned (for the freeze-old merge). Games are the wall-clock bottleneck; the only writer
+    to the shared store is the post-merge, so this is race-free by construction."""
+    stem = out_jsonl.stem
+
+    def _one(k: int):
+        out_k = run_dir / f"{stem}_g{k}.jsonl"
+        dump_k = None
+        if dump_each:
+            dump_k = run_dir / f"{stem}_store_g{k}"
+            dump_k.mkdir(parents=True, exist_ok=True)
+        _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, extra=extra)
+        return out_k, dump_k
+
+    outs: list = []
+    dumps: list = []
+    with ThreadPoolExecutor(max_workers=max(1, cfg.game_concurrency)) as pool:
+        for out_k, dump_k in pool.map(_one, range(cfg.games_per_generation)):
+            outs.append(out_k)
+            if dump_k is not None:
+                dumps.append(dump_k)
+    with open(out_jsonl, "w") as f:                       # concat per-game records into the gen record
+        for o in outs:
+            if o.exists():
+                f.write(o.read_text())
+            o.unlink(missing_ok=True)                     # the per-game record is now redundant
+    return dumps
 
 
 def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "memory_stores/v6_1",
@@ -92,14 +127,28 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
 
     for gen in range(1, cfg.generations + 1):
         on_jsonl = run_dir / f"gen{gen}_on.jsonl"
-        print(f"\n=== generation {gen}/{cfg.generations} — ON arm ({cfg.games_per_generation} games, "
-              f"{cfg.model}) ===", flush=True)
-        _run_batch(on_jsonl, f"loop_{run_dir.name}_gen{gen}_on", cfg, configs, store=store)
+        print(f"\n=== generation {gen}/{cfg.generations} — ON arm ({cfg.games_per_generation} games "
+              f"x{cfg.game_concurrency} parallel, {cfg.model}) ===", flush=True)
+        # Freeze the gen-start store as a read-only SNAPSHOT; every parallel game seeds from it and dumps
+        # to its own per-game store (no shared-store write race). Then ONE freeze-old merge folds the new
+        # obs in (cross-game dups collapse to observation_count; the snapshot is frozen).
+        snapshot = run_dir / f"gen{gen}_snapshot"
+        if snapshot.exists():
+            shutil.rmtree(snapshot)
+        shutil.copytree(store, snapshot)
+        dump_dirs = _run_games_parallel(run_dir, on_jsonl, f"loop_{run_dir.name}_gen{gen}_on",
+                                        cfg, configs, seed=snapshot, dump_each=True)
+        mstats = merge_new_obs(store, snapshot, dump_dirs)
+        print(f"  merge: {mstats}", flush=True)
+        shutil.rmtree(snapshot, ignore_errors=True)      # cleanup snapshot + per-game temp stores
+        for d in dump_dirs:
+            shutil.rmtree(d, ignore_errors=True)
 
         if cfg.off_baseline:                 # memory-OFF flat baseline — NO seed/dump (never touches store)
             print(f"=== generation {gen} — OFF baseline (all_disabled, no seed/dump) ===", flush=True)
-            _run_batch(run_dir / f"gen{gen}_off.jsonl", f"loop_{run_dir.name}_gen{gen}_off", cfg,
-                       "all_disabled", store=None, extra=("--no-memory-seed", "--no-memory-dump"))
+            _run_games_parallel(run_dir, run_dir / f"gen{gen}_off.jsonl",
+                                f"loop_{run_dir.name}_gen{gen}_off", cfg, "all_disabled",
+                                seed=None, dump_each=False, extra=("--no-memory-seed", "--no-memory-dump"))
 
         # credit runs over the ON arm window (rolling). The de-luck BASELINE comes from the clean,
         # same-epoch OFF arm (consolidation_design §3), NOT the incidental memory-off decisions inside the
