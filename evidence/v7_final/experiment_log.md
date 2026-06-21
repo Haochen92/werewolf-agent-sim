@@ -463,3 +463,55 @@ the gen record + cleans up snapshot/temps.
 - **SMOKE before the headline run:** `driver --generations 1 --games-per-generation 2 --base-store ''
   --game-concurrency 2` → confirm 2 games ran concurrently, merge folded both, cross-game dups collapsed,
   store grew, no corruption. Then the slope run is unblocked (still green-light-gated on spend).
+
+---
+
+## 10. HEADLINE SLOPE-RUN CONFIG — decisions + reasoning (2026-06-21)
+
+Smoke passed clean end-to-end (§9) + content read as high-quality (obs concrete/cost-aware/leak-free;
+SPs sharp/conditioned/correct-classified/distinct; one watch-item = passive town SPs uncorrected at cold
+gen-1, exactly the halo↔de-luck decoupling the credit loop targets gen-2+). Config now locked:
+
+**N=5, W=6, G=10** (`evaluation/src/loop/config.py`):
+- **N=5 (games/generation = the LEARNING cadence).** Parallel games seed a FROZEN gen-start snapshot, so
+  consolidation (prune/evict/decay/credit/synthesis) can ONLY happen at the generation boundary — there is
+  NO valid place to cull mid-generation (pruning the snapshot is a no-op; the in-flight games already
+  seeded). So N is the *indivisible* learning cadence: small N = more frequent boundaries = faster/finer
+  learning + more trend points. (An earlier "decouple cheap ops to run per-game" idea was WRONG and
+  dropped — the parallel-snapshot design forbids it; only sequential games could learn per-game, at the
+  wall-clock cost we parallelized away.) N=5 → consolidate every 5 games → ~10 learning steps over 50.
+- **G=10 (generations).** 10 consolidation steps = 10 slope points. The result is read VISUALLY: a clear
+  upward trend through the per-gen points is a valid (arguably stronger) positive — read it on the DENSE
+  proxies (town basket, wolf-blend); thin channels (SK night ~5/gen) stay jumpy, don't judge the slope off
+  them.
+- **W=6 (credit lookback, gens).** At N=5 the binding concern is credit DENSITY, not recency: W=6 pools
+  ~30 games/tick so SPs clear the `follow>=8` prune threshold (W=4 → ~20 → median ~3 follows → prune barely
+  fires → a flat result would be AMBIGUOUS). Recency cost of the longer window is small in a pinned-model
+  run — an SP's followed-value is stable; the non-stationarity here is the store *growing* (which SPs
+  exist), not a given SP's value drifting. W does NOT touch the slope readout (generation_score scores each
+  gen's own games), only the credit→prune/synth machinery.
+
+**Interpretability guard — credit-distribution logging.** `credit_distribution()` records per generation
+into loop_history: n_sps, n_followed, follow_p50/max, n_prune_eligible (follow>=8), n_eligible_neg_lift. So
+a FLAT slope stays interpretable: if n_prune_eligible≈0, the loop never had signal to cull (raise W) — NOT
+"memory doesn't compound." This is what makes a low-N null defensible for the pre-registered stopping rule.
+
+**Thresholds — partly heuristic, tunable from run 1.** Prune (`follow>=8`, `τ=−0.15`) is held-out-validated
+(Pearson +0.54). The rest (`synth_min_new_obs=4`, `synth_replenish_floor=3`, `evict_min_retrieved=8`,
+obs-decay) are reasoned defaults — they can't be data-tuned until the multi-gen run exists. All ops are
+conservative (never drop a positive-lift SP; spare not_relevant; keep frequent obs), so a wrong threshold
+UNDER-acts rather than destroys. The credit-distribution log will show whether they bit; tune for run 2.
+
+**Arms — single-role isolated, NOT all-arm.** all_enabled measures each faction's slope against
+co-evolving opponents (arms race) → masks within-role effect. Isolate. Post-game extraction now respects
+the per-role memory_config (town_only mines only town cells), so a single-role arm builds a true
+single-role store. **Order: town_only FIRST** (strongest signal r=+0.56 / positive control / de-risks
+interpretation), **then serial_killer_only** (the v7 thesis: does credit-aware de-luck synthesis flip the
+v6 passive-loser?). Skip wolf (stale/null per v6). Each arm = its own run with its own same-epoch OFF arm.
+
+**Cost:** ~50 ON + 50 OFF games/arm ≈ **$25–30/arm**, ~4–5 hrs wall-clock at concurrency 5 ($ estimated
+from smoke durations × the 2026-06-06 per-game cost-attribution; exact $ TBD via token instrument/Langfuse).
+
+**Run command (town arm):**
+`poetry run python -m evaluation.src.loop.driver --run-dir <dir> --base-store '' --configs town_only`
+(N/W/G/concurrency from the defaults above; cold start; awaiting green-light on spend).
