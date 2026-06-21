@@ -127,8 +127,10 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
             cell = f"{role}/{phase}"
             items, clusters = cluster_observations_for_synth(store, ("observations", role, phase), cfgd)
             obs_counts[cell] = len(items)
-            if cfg.incremental and obs_counts[cell] == prev.get(cell):
-                continue  # no new obs → skip (the production-cost requirement)
+            new_obs = obs_counts[cell] - prev.get(cell, 0)
+            depleted = len(sp_namespaces.get(f"strategy_points/{cell}", [])) < cfg.synth_replenish_floor
+            if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
+                continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
             tr = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
                                base_rates.get(cell, [0.0])[0])
             for cl in clusters:

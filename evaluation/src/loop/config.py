@@ -23,12 +23,18 @@ class LoopConfig:
 
     # (a) credit
     credit: bool = True
-    window_generations: int = 0            # rolling de-luck window (0 = all generations so far)
+    window_generations: int = 3            # rolling de-luck window (generations). WINDOWED not all-time:
+    #   the STORE compounds within a run, so an SP's old-generation credit is stale by construction —
+    #   3 balances recency against follows-per-SP (too short = thin/noisy; shrink+N-floor soften it).
+    #   Separate from games_per_generation (the synth cadence) on purpose. 0 = all-time.
     frozen_base_rates: bool = False        # reuse gen-1 baseline across generations (model-stability dep.)
 
     # (b) consolidation
     synthesize: bool = True                # credit-aware synthesis (CREDIT_SYNTH_PROMPT)
-    incremental: bool = True               # re-synthesize only cells whose obs changed since last tick
+    incremental: bool = True               # re-synthesize a cell only when it has enough NEW evidence OR
+    #   is depleted (below) — not "any new obs" (which re-synths nearly every cell every tick).
+    synth_min_new_obs: int = 4             # re-synth a cell once it gains >= this many new obs since last
+    synth_replenish_floor: int = 3         # ...OR its SP count fell below this (prune/evict depleted it)
     prune: bool = True                     # drop SPs with de-luck lift < tau & follow >= min_follow (b1)
     prune_tau: float = -0.15
     prune_min_follow: int = 8
@@ -51,10 +57,13 @@ class LoopConfig:
     # otherwise → the channel would be uncredited & invisible to consolidation). The LLM tagger
     # (framing/credibility) is the deferred PAID refinement, separate from this free floor.
     discussion_credit: bool = True
-    # "floor" = day-vote-endpoint (free, deterministic); "tagger" = omniscient per-day LLM tagger
-    # (paid flash-lite, tier 2/3: framing/credibility/merit). Floor is the validated default; tagger is
-    # earned by Gate B (does it predict beyond the floor?).
-    discussion_mode: str = "floor"
+    # "tagger" = omniscient per-day LLM tagger (paid flash-lite: framing/credibility/role-reveal + night
+    # read-quality, A4 reasoning + role_claims-anchored); "floor" = day-vote-endpoint (free, deterministic).
+    # DEFAULT = tagger: it EARNED it — predicts beyond the floor (redundancy +0.34 vs the free floor; night
+    # de-lucks ~31% luck->skill) and the A4 + role_claims fixes landed. Switch to "floor" for a zero-spend run.
+    # ⚠COST: credit recomputes over the rolling window each tick, so the tagger RE-TAGS the window every
+    # generation (~O(gens^2) tag calls) — bound it with window_generations, or cache tags per game_id.
+    discussion_mode: str = "tagger"
 
     def env(self) -> dict:
         """Env overrides to pin the extraction+synthesis model for a run (both primary and backup)."""
