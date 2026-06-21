@@ -67,7 +67,9 @@ class LoopConfig:
     # recurring lessons (high observation_count) and all recent obs. Recency is enforced by SELECTION (what
     # reaches synthesis), never by asking the synthesizer to weigh a recency number.
     evict_observations: bool = True
-    obs_evict_min_age: int = 2             # only evictable once first seen >= this many generations ago
+    obs_evict_min_age: int = 4             # only evictable once first seen >= this many generations ago.
+    #   Most obs are singletons (game situations are diverse → count==1), so min_age=2 decimated the base
+    #   (~250 dropped/gen) and starved synthesis. 4 lets obs persist through most of a 10-gen run.
     obs_evict_max_count: int = 1           # ...and reinforced at most this many times (1 = seen once)
 
     # (d) FREE FLOOR on: credit day_discussion SPs by the day-vote endpoint (no clean per-decision proxy

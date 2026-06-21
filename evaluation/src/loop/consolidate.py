@@ -107,7 +107,8 @@ def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> str:
 
 
 def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: LoopConfig,
-               prev_obs_counts: dict | None = None) -> tuple[dict, dict]:
+               prev_obs_counts: dict | None = None,
+               obs_gen_map: dict | None = None, current_gen: int | None = None) -> tuple[dict, dict]:
     """Credit-aware synthesis for cells with NEW obs since prev tick (incremental). Appends fresh SPs to
     sp_namespaces. Returns ({added, cells_synthed}, current_obs_counts). LLM step (model via cfg.env())."""
     # imported lazily so pure prune/evict stays import-light + LLM-free
@@ -122,6 +123,11 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
                                        target_store=store, cache_dir=store_dir)
     cfgd = BatchDedupRunConfig(similarity_threshold=0.70, cluster_mode="bounded", max_cluster_size=15)
     prev = prev_obs_counts or {}
+    # "New obs since last synth" must count ARRIVALS (by first-seen generation), NOT the net count change.
+    # Net change cancels additions against obs DECAY (removals), so once decay >= additions the trigger
+    # reads "no new obs" even when fresh obs DID arrive — silently STALLING synthesis (the gen-6 stall).
+    # obs_gen_map (record key -> first-seen gen) makes the trigger decay-immune; net change is the fallback.
+    synth_lookback = (current_gen - cfg.synth_every_k_gens) if current_gen is not None else None
     obs_counts: dict[str, int] = {}
     tasks = []
     for role in ALL_ROLES:
@@ -129,7 +135,10 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
             cell = f"{role}/{phase}"
             items, clusters = cluster_observations_for_synth(store, ("observations", role, phase), cfgd)
             obs_counts[cell] = len(items)
-            new_obs = obs_counts[cell] - prev.get(cell, 0)
+            if obs_gen_map is not None and synth_lookback is not None:
+                new_obs = sum(1 for k in items if obs_gen_map.get(k, 0) > synth_lookback)
+            else:
+                new_obs = obs_counts[cell] - prev.get(cell, 0)   # fallback: net change (no gen map)
             depleted = len(sp_namespaces.get(f"strategy_points/{cell}", [])) < cfg.synth_replenish_floor
             if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
                 continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
@@ -210,7 +219,8 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
     do_synth = cfg.synthesize and (current_gen is None or current_gen % cfg.synth_every_k_gens == 0)
     syn, obs_counts = ({}, prev_obs_counts or {})
     if do_synth:
-        syn, obs_counts = synthesize(store_dir, ns, base_rates, cfg, prev_obs_counts)
+        syn, obs_counts = synthesize(store_dir, ns, base_rates, cfg, prev_obs_counts,
+                                     obs_gen_map=obs_gen_map, current_gen=current_gen)
     sp_path.write_text(json.dumps(store, indent=2))   # persist synth before the SP dedup reads the store
     sd = {}
     if cfg.sp_dedup and syn.get("added"):             # only when synthesis added SPs to dedup
