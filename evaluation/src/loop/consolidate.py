@@ -6,9 +6,11 @@ Runs on a credited store (after credit.credit_apply). Three levers, all toggleab
   SYNTH   credit-aware synthesis (CREDIT_SYNTH_PROMPT, realized track record) for cells with NEW obs —
           adds fresh SPs; existing SPs PERSIST so their credit accumulates across generations.
 
-Existing SPs keep their keys (credit history intact); prune/evict cull, synth grows. Dedup of overlaps is
-left to the existing batch-dedup pass (toggled in run_batch). Pure prune/evict is LLM-free → testable
-offline; synth is the only paid step (flash-lite).
+Existing SPs keep their keys (credit history intact); prune/evict cull, synth grows. SYNTH-DEDUP: synth
+APPENDS, so a freeze-old KEEP/DISCARD SP dedup runs right after (_dedup_strategy_points) to collapse
+near-duplicate synthesized SPs onto the credited older survivor — otherwise re-synthesizing active cells
+each generation smears the credit signal across duplicates. Pure prune/evict is LLM-free → testable
+offline; synth + the SP dedup are the paid steps (flash-lite).
 """
 
 from __future__ import annotations
@@ -165,6 +167,20 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
     return {"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks})}, obs_counts
 
 
+def _dedup_strategy_points(store_dir: Path) -> dict:
+    """SP KEEP/DISCARD dedup (freeze-old) over the just-synthesized store. Collapses near-duplicate SPs,
+    keeping the credited OLDER survivor (it absorbs the discarded dup's counts/timestamps). SPs NEVER
+    MERGE — combining two directives is incoherent; this is the design's keep/discard, gate-partitioned by
+    direction/honesty. Freeze-old (created_at boundary) makes the just-synthesized SPs the 'new' set and
+    prior SPs frozen, so credit history survives. Reuses the production dedup core (persists to store)."""
+    from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
+    from Agents.memory.batch_deduplication.orchestration import run_batch_memory_dedup
+    report = run_batch_memory_dedup(BatchDedupRunConfig(
+        seed_store_dir=store_dir, dump_store_dir=store_dir,
+        incremental=True, apply=True, memory_kinds=["strategy_points"]))
+    return {"ran": True, "namespaces": len(getattr(report, "stats", []))}
+
+
 def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | None = None,
                 obs_gen_map: dict | None = None, current_gen: int | None = None) -> dict:
     """Full consolidation tick on a (credited) store dir. Returns stats + obs_counts (for next tick).
@@ -186,8 +202,11 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
     syn, obs_counts = ({}, prev_obs_counts or {})
     if cfg.synthesize:
         syn, obs_counts = synthesize(store_dir, ns, base_rates, cfg, prev_obs_counts)
-    sp_path.write_text(json.dumps(store, indent=2))
-    return {"prune_evict": pe, "obs_evict": oe, "synth": syn, "obs_counts": obs_counts}
+    sp_path.write_text(json.dumps(store, indent=2))   # persist synth before the SP dedup reads the store
+    sd = {}
+    if cfg.sp_dedup and syn.get("added"):             # only when synthesis added SPs to dedup
+        sd = _dedup_strategy_points(store_dir)
+    return {"prune_evict": pe, "obs_evict": oe, "synth": syn, "sp_dedup": sd, "obs_counts": obs_counts}
 
 
 def memory_store_paths_local(store_dir: Path):

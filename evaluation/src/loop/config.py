@@ -38,6 +38,10 @@ class LoopConfig:
     #   is depleted (below) — not "any new obs" (which re-synths nearly every cell every tick).
     synth_min_new_obs: int = 4             # re-synth a cell once it gains >= this many new obs since last
     synth_replenish_floor: int = 3         # ...OR its SP count fell below this (prune/evict depleted it)
+    sp_dedup: bool = True                  # after synthesis, KEEP/DISCARD-dedup the new SPs (freeze-old):
+    #   collapse near-duplicate synthesized SPs, keeping the credited OLDER survivor (absorbs the dup's
+    #   counts). SPs never MERGE (combining directives is incoherent). Without this, re-synthesizing active
+    #   cells each generation piles up near-dup SPs and SMEARS the credit signal across them.
     prune: bool = True                     # drop SPs with de-luck lift < tau & follow >= min_follow (b1)
     prune_tau: float = -0.15
     prune_min_follow: int = 8

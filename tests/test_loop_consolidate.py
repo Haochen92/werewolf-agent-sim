@@ -9,7 +9,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+from evaluation.src.loop import consolidate as con
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import _evict_ok, evict_observations, prune_and_evict
 
@@ -95,6 +97,33 @@ class ObservationDecayTests(unittest.TestCase):
         stats, survived = self._run(recs, {"old_rare": 0}, current_gen=9, cfg=cfg)
         self.assertEqual(stats["obs_dropped"], 0)
         self.assertEqual(survived, ["old_rare"])
+
+
+class SpDedupGatingTests(unittest.TestCase):
+    def _store(self, d: Path) -> Path:
+        (d / "strategy_points.json").write_text(json.dumps({"namespaces": {}}))
+        (d / "observations.json").write_text(json.dumps({"namespaces": {}}))
+        return d
+
+    def test_sp_dedup_runs_only_when_synthesis_added(self) -> None:
+        with tempfile.TemporaryDirectory() as t:
+            store = self._store(Path(t))
+            with patch.object(con, "prune_and_evict", return_value={}), \
+                 patch.object(con, "evict_observations", return_value={}), \
+                 patch.object(con, "synthesize", return_value=({"added": 2}, {})), \
+                 patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
+                con.consolidate(store, LoopConfig(sp_dedup=True), current_gen=1, obs_gen_map={})
+            md.assert_called_once()
+
+    def test_sp_dedup_skipped_when_nothing_synthesized(self) -> None:
+        with tempfile.TemporaryDirectory() as t:
+            store = self._store(Path(t))
+            with patch.object(con, "prune_and_evict", return_value={}), \
+                 patch.object(con, "evict_observations", return_value={}), \
+                 patch.object(con, "synthesize", return_value=({"added": 0}, {})), \
+                 patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
+                con.consolidate(store, LoopConfig(sp_dedup=True), current_gen=1, obs_gen_map={})
+            md.assert_not_called()
 
 
 if __name__ == "__main__":
