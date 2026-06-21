@@ -120,14 +120,27 @@ def _run_games_parallel(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopCo
 def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "memory_stores/v6_1",
              configs: str = "all_enabled") -> list[dict]:
     run_dir = Path(run_dir)
-    store = _init_store(run_dir, base_store)
-    sp_path = store / "strategy_points.json"
     obs_sidecar = run_dir / "obs_generations.json"
-    _stamp_obs_generations(store, 0, obs_sidecar)  # warm-start obs = generation 0 (oldest)
-    prev_obs_counts: dict = {}
-    history: list[dict] = []
+    hist_path = run_dir / "loop_history.json"
+    # RESUME: a run-dir with a loop_history continues from the next generation, reusing the existing
+    # end-state store + obs-decay sidecar (no cold-wipe). The gen records of prior gens stay on disk, so
+    # the rolling credit window still resolves. prev_obs_counts (the incremental-synth baseline) is
+    # restored from the last consolidate. A fresh run-dir (no history) starts cold as before.
+    history: list[dict] = json.loads(hist_path.read_text()) if hist_path.exists() else []
+    if history:
+        store = run_dir / "store"                       # reuse end-state store; do NOT re-init/wipe
+        start_gen = history[-1]["generation"] + 1
+        prev_obs_counts = (history[-1].get("consolidate") or {}).get("obs_counts", {}) or {}
+        print(f"\n=== RESUMING at generation {start_gen} ({len(history)} gens done; store + sidecar "
+              f"reused, no wipe) ===", flush=True)
+    else:
+        store = _init_store(run_dir, base_store)
+        _stamp_obs_generations(store, 0, obs_sidecar)   # warm-start obs = generation 0 (oldest)
+        start_gen = 1
+        prev_obs_counts = {}
+    sp_path = store / "strategy_points.json"
 
-    for gen in range(1, cfg.generations + 1):
+    for gen in range(start_gen, cfg.generations + 1):
         on_jsonl = run_dir / f"gen{gen}_on.jsonl"
         print(f"\n=== generation {gen}/{cfg.generations} — ON arm ({cfg.games_per_generation} games "
               f"x{cfg.game_concurrency} parallel, {cfg.model}) ===", flush=True)
