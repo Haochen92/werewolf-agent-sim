@@ -226,20 +226,30 @@ def _extract_one_cell(
     cache,
     max_retries: int,
     backup_max_retries: int,
+    with_strategy_points: bool = False,
 ) -> tuple[list, list, str] | None:
-    """Extract one (role, phase-group) cell as a dual {observations, strategy_points} call.
+    """Extract one (role, phase-group) cell.
+
+    v7 DEFAULT = OBSERVATIONS ONLY. Per-run strategy points are dropped: an SP earns its place only by
+    GENERALIZING across games (cross-game cluster synthesis, done in consolidation), so a per-game SP is a
+    redundant single-game restatement that just pollutes the store. Pass with_strategy_points=True for the
+    legacy dual {observations, strategy_points} call (e.g. offline store-builders that want per-run SPs).
 
     Returns (observations, strategy_points, model_label) or None if the cell has no schema
     (e.g. villager·night) or every attempt failed. Mirrors the per-role primary→backup fallback:
     with a prefix cache the primary sends only the per-cell tail against the cache-bound model while
     the backup re-sends the full prompt (different model, can't share the cache)."""
-    schema = cell_dual_extraction_schema(role, rep_phase)
-    if schema is None:
-        return None
     obs_schema = cell_observation_schema_for(role, rep_phase)
-    tail = build_cell_observation_tail(role, phase_wording, rep_phase, obs_schema) + (
-        build_cell_strategy_tail(role, phase_wording)
-    )
+    if obs_schema is None:  # e.g. villager·night
+        return None
+    if with_strategy_points:
+        schema = cell_dual_extraction_schema(role, rep_phase) or obs_schema
+        tail = build_cell_observation_tail(role, phase_wording, rep_phase, obs_schema) + (
+            build_cell_strategy_tail(role, phase_wording)
+        )
+    else:
+        schema = obs_schema
+        tail = build_cell_observation_tail(role, phase_wording, rep_phase, obs_schema)
     full = prefix + tail
     if cache is not None:
         attempts = (
@@ -260,7 +270,8 @@ def _extract_one_cell(
                 )
                 if isinstance(result, dict):
                     result = schema.model_validate(result)
-                return list(result.observations), list(result.strategy_points), label
+                sps = list(result.strategy_points) if with_strategy_points else []
+                return list(result.observations), sps, label
             except Exception as e:
                 logger.warning(
                     "cell %s/%s failed with %s model on attempt %s: %s",
@@ -277,15 +288,17 @@ def extract_postgame_per_cell(
     max_retries: int = 2,
     backup_max_retries: int = 2,
     cache_prefix: bool = False,
+    with_strategy_points: bool = False,
 ) -> ExtractionResult | None:
     """v6 post-game extraction: fan out over (role, phase-group) CELLS concurrently, then merge.
 
-    The v6 successor to extract_postgame_per_role — one dual {observations, strategy_points} call per
-    cell (villager·day; day+night for the other five roles = 11 cells), each producing the role/phase's
-    structured v6 cell schema. The role/phase-neutral prefix is byte-identical across cells (the unit
-    explicit caching reuses, exactly like the role fan-out). A cell with no schema or total failure is
-    dropped (partial extraction beats none); merged output concatenates all cells' observations and
-    strategy points. Returns None only if every cell produced nothing."""
+    The v6 successor to extract_postgame_per_role. v7 DEFAULT = OBSERVATIONS ONLY (per-run SPs dropped;
+    SPs come from cross-game synthesis in consolidation — see _extract_one_cell). Pass
+    with_strategy_points=True for the legacy dual {observations, strategy_points} call. One call per cell
+    (villager·day; day+night for the other five roles = 11 cells). The role/phase-neutral prefix is
+    byte-identical across cells (the unit explicit caching reuses, like the role fan-out). A cell with no
+    schema or total failure is dropped (partial extraction beats none). Returns None only if every cell
+    produced nothing."""
     prefix = build_cell_extraction_prefix(inputs)
     cache = None
     if cache_prefix:
@@ -311,6 +324,7 @@ def extract_postgame_per_cell(
                     contextvars.copy_context().run,
                     _extract_one_cell,
                     prefix, role, wording, rep, cache, max_retries, backup_max_retries,
+                    with_strategy_points,
                 ): (role, group)
                 for (role, group, wording, rep) in cells
             }
