@@ -69,9 +69,12 @@ def _stamp_obs_generations(store: Path, gen: int, sidecar: Path) -> dict:
 
 
 def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
-                  seed: Path | None = None, dump: Path | None = None, extra: tuple = ()) -> None:
+                  seed: Path | None = None, dump: Path | None = None,
+                  game_id: str | None = None, extra: tuple = ()) -> None:
     """One game via run_batch (--runs-per-config 1). Separate seed/dump dirs let parallel games share a
-    read-only snapshot seed while each dumps to its own store (no shared-store write race)."""
+    read-only snapshot seed while each dumps to its own store (no shared-store write race). game_id pins
+    the role draw + scheduler seed (run_batch --game-ids-file) so the ON and OFF arms run the SAME board —
+    the paired A/B: memory is the only difference, which cancels the cross-game variance in on-off."""
     cmd = [
         "poetry", "run", "python", "scripts/run_batch.py",
         "--configs", configs, "--runs-per-config", "1",
@@ -81,16 +84,22 @@ def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
         cmd += ["--seed-store-dir", str(seed)]
     if dump is not None:
         cmd += ["--dump-store-dir", str(dump)]
+    if game_id is not None:
+        gids = out_jsonl.with_suffix(".gameids.json")
+        gids.write_text(json.dumps([game_id]))
+        cmd += ["--game-ids-file", str(gids)]
     cmd += list(extra)
     subprocess.run(cmd, cwd=REPO, env={**os.environ, **cfg.env()}, check=True)
 
 
 def _run_games_parallel(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
-                        seed: Path | None = None, dump_each: bool = False, extra: tuple = ()) -> list:
+                        seed: Path | None = None, dump_each: bool = False,
+                        game_id_base: str | None = None, extra: tuple = ()) -> list:
     """Play games_per_generation games CONCURRENTLY (cap = game_concurrency), then concatenate the
     per-game batch records into out_jsonl. With dump_each, each game dumps to its own per-game store and
     the dirs are returned (for the freeze-old merge). Games are the wall-clock bottleneck; the only writer
-    to the shared store is the post-merge, so this is race-free by construction."""
+    to the shared store is the post-merge, so this is race-free by construction. game_id_base (the SAME
+    value passed to ON and OFF in a generation) pins each game-k's board so the arms play matched draws."""
     stem = out_jsonl.stem
 
     def _one(k: int):
@@ -99,7 +108,8 @@ def _run_games_parallel(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopCo
         if dump_each:
             dump_k = run_dir / f"{stem}_store_g{k}"
             dump_k.mkdir(parents=True, exist_ok=True)
-        _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, extra=extra)
+        gid = f"{game_id_base}_g{k}" if game_id_base else None
+        _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, game_id=gid, extra=extra)
         return out_k, dump_k
 
     outs: list = []
@@ -151,8 +161,9 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         if snapshot.exists():
             shutil.rmtree(snapshot)
         shutil.copytree(store, snapshot)
+        pair_base = f"pair_{run_dir.name}_gen{gen}"   # SAME boards for ON and OFF this gen (paired A/B)
         dump_dirs = _run_games_parallel(run_dir, on_jsonl, f"loop_{run_dir.name}_gen{gen}_on",
-                                        cfg, configs, seed=snapshot, dump_each=True)
+                                        cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base)
         mstats = merge_new_obs(store, snapshot, dump_dirs)
         print(f"  merge: {mstats}", flush=True)
         shutil.rmtree(snapshot, ignore_errors=True)      # cleanup snapshot + per-game temp stores
@@ -163,7 +174,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             print(f"=== generation {gen} — OFF baseline (all_disabled, no seed/dump) ===", flush=True)
             _run_games_parallel(run_dir, run_dir / f"gen{gen}_off.jsonl",
                                 f"loop_{run_dir.name}_gen{gen}_off", cfg, "all_disabled",
-                                seed=None, dump_each=False, extra=("--no-memory-seed", "--no-memory-dump"))
+                                seed=None, dump_each=False, game_id_base=pair_base,
+                                extra=("--no-memory-seed", "--no-memory-dump"))
 
         # credit runs over the ON arm window (rolling). The de-luck BASELINE comes from the clean,
         # same-epoch OFF arm (consolidation_design §3), NOT the incidental memory-off decisions inside the
