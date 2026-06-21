@@ -114,7 +114,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
                 off_window = " ".join(str(run_dir / f"gen{g}_off.jsonl") for g in gens)
                 base_rates = compute_base_rates(off_window)
             cstats = credit_apply(sp_path, window, base_rates=base_rates,
-                                  discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode)
+                                  discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode,
+                                  tags_dir=str(run_dir / "tags"))  # persist tags per game_id (no re-tag)
             print(f"  credit: {cstats}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:

@@ -218,3 +218,25 @@ def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
             for t in dt.night:
                 night[(day, t.player)] = t.model_dump()
     return disc, night
+
+
+def tag_game_cached(record: dict, tags_dir: str | None, version: str = "v1",
+                    max_workers: int = 8) -> tuple[dict, dict]:
+    """PERSIST tags per game_id so the rolling-window credit recompute doesn't re-tag finished games.
+    A played game's tags are immutable, so re-running `tag_game` over the window each generation is pure
+    waste. Keyed by (game_id, version) — bump `version` when the tagger prompt changes so stale tags
+    invalidate (same idea as the SHA-keyed embedding cache). tags_dir=None or no game_id => tag fresh."""
+    gid = record.get("game_id")
+    if not tags_dir or not gid:
+        return tag_game(record, max_workers=max_workers)
+    path = os.path.join(tags_dir, f"{gid}.{version}.json")
+    if os.path.exists(path):
+        data = json.load(open(path))
+        unpack = lambda d: {(int(k.split("|", 1)[0]), k.split("|", 1)[1]): v for k, v in d.items()}
+        return unpack(data["disc"]), unpack(data["night"])
+    disc, night = tag_game(record, max_workers=max_workers)
+    os.makedirs(tags_dir, exist_ok=True)
+    pack = lambda m: {f"{d}|{p}": v for (d, p), v in m.items()}
+    with open(path, "w") as f:
+        json.dump({"disc": pack(disc), "night": pack(night)}, f)
+    return disc, night

@@ -64,12 +64,13 @@ def _discussion_ledger(dumps_glob: str) -> tuple[dict, dict]:
     return dict(ledger), base
 
 
-def _tagger_ledger(dumps_glob: str) -> tuple[dict, dict]:
+def _tagger_ledger(dumps_glob: str, tags_dir: str | None = None) -> tuple[dict, dict]:
     """(d) tier 2/3 — credit via the OMNISCIENT TAGGER (one pass/game): day_discussion SPs by the holistic
     verdict (framing/credibility/role-reveal weighed); night_action SPs by READ-QUALITY (de-lucks
     `_night_credit`'s outcome-luck). Returns (disc_ledger, night_ledger). PAID (flash-lite, env-pin model).
-    Tagger verdicts are de-luck → base 0."""
-    from evaluation.src.loop.discussion_tagger import tag_game  # lazy: pulls LLM deps only when used
+    Tagger verdicts are de-luck → base 0. tags_dir persists tags per game_id (no re-tagging across the
+    rolling window each generation)."""
+    from evaluation.src.loop.discussion_tagger import tag_game_cached  # lazy: pulls LLM deps only when used
     disc: dict = defaultdict(SPCredit)
     night: dict = defaultdict(SPCredit)
     for dump in sorted(glob.glob(dumps_glob)):
@@ -80,7 +81,7 @@ def _tagger_ledger(dumps_glob: str) -> tuple[dict, dict]:
             roles, path = g.get("roles"), g.get("eval_cases_path")
             if not roles or not path or not os.path.exists(path):
                 continue
-            d_tags, n_tags = tag_game(g)
+            d_tags, n_tags = tag_game_cached(g, tags_dir)
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -108,7 +109,7 @@ def _tagger_ledger(dumps_glob: str) -> tuple[dict, dict]:
 
 def credit_apply(store_sp_path: str | Path, dumps_glob: str,
                  base_rates: dict | None = None, discussion: bool = True,
-                 discussion_mode: str = "floor") -> dict:
+                 discussion_mode: str = "floor", tags_dir: str | None = None) -> dict:
     """Recompute the de-luck ledger over `dumps_glob` and SET positive/neutral/negative/follow counts on
     matching SPs in `store_sp_path` (strategy_points.json). Returns {credited, matched, total} stats.
 
@@ -120,7 +121,7 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     ledger, _ = build_ledger(dumps_glob, base_rates)
     if discussion:
         if discussion_mode == "tagger":        # (d) tier 2/3: omniscient LLM tagger (paid)
-            disc_ledger, night_ledger = _tagger_ledger(dumps_glob)
+            disc_ledger, night_ledger = _tagger_ledger(dumps_glob, tags_dir)
             # night_ledger OVERRIDES the deterministic _night_credit (de-luck read-quality > outcome-luck);
             # disc_ledger ADDS day_discussion (disjoint keys). Tagger verdicts de-luck → base 0.
             ledger = {**ledger, **night_ledger, **disc_ledger}

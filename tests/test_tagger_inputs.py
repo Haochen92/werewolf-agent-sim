@@ -10,8 +10,10 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from Agents.schemas.game_events import DaySummary
+from evaluation.src.loop import discussion_tagger as dt
 from evaluation.src.loop.discussion_tagger import _reasoning_by_day, _role_claims_by_day
 
 
@@ -63,6 +65,34 @@ class ReasoningByDayTests(unittest.TestCase):
     def test_missing_eval_path_is_empty(self) -> None:
         self.assertEqual(_reasoning_by_day({}), ({}, {}))
         self.assertEqual(_reasoning_by_day({"eval_cases_path": "/nonexistent.jsonl"}), ({}, {}))
+
+
+class TagCacheTests(unittest.TestCase):
+    def test_no_dir_tags_fresh(self) -> None:
+        with patch.object(dt, "tag_game", return_value=({(1, "p1"): {"v": 1}}, {})) as m:
+            disc, _ = dt.tag_game_cached({"game_id": "g1"}, None)
+        m.assert_called_once()
+        self.assertEqual(disc, {(1, "p1"): {"v": 1}})
+
+    def test_persists_and_reuses_by_game_id(self) -> None:
+        rec = {"game_id": "g1"}
+        ret = ({(2, "p3"): {"verdict": "positive"}}, {(2, "p3"): {"verdict": "neutral"}})
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(dt, "tag_game", return_value=ret) as m:
+                disc1, night1 = dt.tag_game_cached(rec, d)   # miss -> tag + write
+                disc2, night2 = dt.tag_game_cached(rec, d)   # hit  -> read, no re-tag
+            m.assert_called_once()                           # tagged exactly once
+            self.assertEqual(disc1, disc2)
+            self.assertEqual(night1, night2)
+            self.assertEqual(list(disc2.keys()), [(2, "p3")])  # (int day, str player) restored
+
+    def test_version_bump_invalidates(self) -> None:
+        rec = {"game_id": "g1"}
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(dt, "tag_game", return_value=({(1, "p1"): {"v": 1}}, {})) as m:
+                dt.tag_game_cached(rec, d, version="v1")
+                dt.tag_game_cached(rec, d, version="v2")   # different version -> re-tag
+            self.assertEqual(m.call_count, 2)
 
 
 if __name__ == "__main__":
