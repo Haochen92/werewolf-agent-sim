@@ -394,3 +394,63 @@ The compounding loop, wired + toggleable (config-flag policy). Components:
 
 **Not cut, kept honest:** every paid build (b2, c2, d-full) carries an explicit kill-test, and the free
 floor is strong enough that the paid pieces are refinements, not leaps of faith.
+
+---
+
+## 9. LOOP-CORRECTNESS PASS + RUN-LAUNCH PUNCH LIST (2026-06-20)
+
+A verification sweep of the built loop (memory ↔ plan ↔ code) surfaced several real de-syncs and
+wiring gaps. Decisions + fixes, all on `feature-dimension-schema`:
+
+**Fixed (committed, 338 tests green):**
+- **(d) tagger A4 + role_claims.** Reasoning carrier wired (A4 was "deferred refinement"): the agent's
+  own `updated_strategy` (already on the EvalCase) feeds the tagger for ATTRIBUTION ONLY — de-confound a
+  night target (discussion-driven read vs known-power-role removal), surface the hidden read, trace
+  influence; VALENCE stays deterministic (structure-not-valence). Persisted structured `DaySummary.role_claims`
+  (live-path, gameplay-neutral — agents still see only the prose) and feed it so role_reveal is ANCHORED
+  on the reliable in-game extraction (a claim ≠ true role = deterministic deception tell). Motivated by the
+  accuracy check (`tagger_accuracy.py`, 8 games): framing reliable (manip town 7%/wolf 85%/SK 88%, vs true
+  roles, NO regex) + credibility sensible, but role_reveal was regex-soft → fixed at source not by regex.
+- **(a) wolf vote credit = BLEND (bussing-aware).** Old `ally=negative` mis-scored bussing; re-anchored on
+  blending with the room's plurality (the validated signal — G2 day-blend r=+0.22). Threaded the room
+  plurality through `_vote_credit`/`_decision_credit`/`build_ledger`/`compute_base_rates` + `measure`.
+- **(a) de-luck BASELINE from the clean OFF arm.** `credit_apply` was computing base rates from its ON
+  window, where the only memory-off decisions are the incidental ~11% (retrieval-skipped, thin + biased).
+  `consolidation_design §3` already specified the same-epoch OFF arm; the driver now computes base_rates
+  from the `gen{g}_off.jsonl` window and passes them in. (The lift METHOD was always correct — the offline
+  validation used `*v6ab*` which includes the baseline arm; only the loop wiring was wrong.)
+- **(b) scope-aware SP eviction.** Evict a retrieved-but-unfollowed SP only when override-dominant (agent
+  applied + beat it = bad content); SPARE not_relevant-dominant (the situation didn't hold = a retrieval/
+  scoping miss, §10b — don't blame content for a retrieval artifact).
+- **(b) observation decay.** Obs carry no credit, so they decay by AGE × FREQUENCY (drop old AND rare;
+  keep old-but-recurring + recent). Generation-clocked via a sidecar keyed by record id (survives dedup
+  merges). Recency enforced by SELECTION before synthesis, never by asking the LLM to weigh a number.
+- **(b) incremental-synth trigger.** Re-synthesize a cell only when it gained ≥ `synth_min_new_obs` (=4)
+  new obs OR its SP count fell below `synth_replenish_floor` (=3) — not "any new obs" (which re-synths
+  nearly every cell every tick). Cold-start the fresh experiment so there's no gen-1 full re-synth.
+- **(c) post-game extraction is OBSERVATIONS-ONLY.** Per-run SPs dropped (an SP earns its place only by
+  GENERALIZING across games → cross-game synthesis owns SPs; a per-run SP is a redundant single-game
+  restatement). `extract_postgame_per_cell` defaults `with_strategy_points=False`; the flag restores the
+  legacy dual call for offline store-builders. (Fixed a design↔code de-sync — the loop was still mining dual.)
+- **discussion_mode default = "tagger"** (was "floor"): the tagger earned it (predicts beyond the floor;
+  framing/credibility validated; A4 + role_claims landed). "floor" remains the zero-spend fallback.
+- **rolling window = WINDOWED (`window_generations=3`), separate from the synth cadence.** The store
+  compounds within a run, so an SP's old-generation credit is stale; 3 balances recency vs follows-per-SP.
+  Same knob family as obs-decay age — kept independently settable, never tied to games-per-generation.
+- **tag PERSIST (not re-tag).** Tags are immutable for a finished game; the windowed credit recompute was
+  re-running `tag_game` over the whole window each generation (~O(gens²), pure waste — it was an accidental
+  byproduct of computing tags inline, not a deliberate choice). `tag_game_cached` persists per game_id
+  (versioned key invalidates on a tagger-prompt change); the driver passes a `tags/` dir.
+
+**Decided, NOT built — the RUN-LAUNCH unit (needs a paid smoke to validate, can't be offline-checked):**
+- **Parallelize game-play within a generation + freeze-old merge.** `run_batch` plays games sequentially
+  (games, not synthesis, are the wall-clock bottleneck). Parallelize via SNAPSHOT, never locks: freeze the
+  store at generation start, all N games seed READ-ONLY from that snapshot, each writes to its own temp
+  store (no collision), then ONE post-generation merge folds them in. The merge uses **freeze-old dedup
+  (#2)** — new obs absorb into the accumulated store, old obs NOT re-litigated (convergence-safe, idempotent;
+  NOT system-wide batch #3, which is O(store²) and non-convergent past ~17% → churns every tick). Old obs
+  are still removed — by the separate age×frequency DECAY pass, not by dedup (two complementary mechanisms).
+  Semantic change accepted: games within a generation no longer see each other's obs (they all see the
+  gen-start store) — which is correct, since the store is meant to update at the consolidation tick. This is
+  the one piece left; it's tightly coupled to launching the (paid, green-light-gated) headline slope run and
+  must be built with a 1-game smoke, not shipped blind.
