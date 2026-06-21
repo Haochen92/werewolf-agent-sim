@@ -26,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+from evaluation.src.experiments.credit_backfill import compute_base_rates
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply
@@ -100,12 +101,20 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             _run_batch(run_dir / f"gen{gen}_off.jsonl", f"loop_{run_dir.name}_gen{gen}_off", cfg,
                        "all_disabled", store=None, extra=("--no-memory-seed", "--no-memory-dump"))
 
-        # credit runs over the ON arm only (rolling window); the off arm is the comparison, not credited
+        # credit runs over the ON arm window (rolling). The de-luck BASELINE comes from the clean,
+        # same-epoch OFF arm (consolidation_design §3), NOT the incidental memory-off decisions inside the
+        # ON games (thin + biased toward retrieval-skipped/early boards). The off arm is the comparison AND
+        # calibrates the baseline. When off_baseline is disabled, credit_apply falls back to the ON glob.
         w = cfg.window_generations or gen
-        window = " ".join(str(run_dir / f"gen{g}_on.jsonl") for g in range(max(1, gen - w + 1), gen + 1))
+        gens = range(max(1, gen - w + 1), gen + 1)
+        window = " ".join(str(run_dir / f"gen{g}_on.jsonl") for g in gens)
         if cfg.credit:
-            cstats = credit_apply(sp_path, window, discussion=cfg.discussion_credit,
-                                  discussion_mode=cfg.discussion_mode)
+            base_rates = None
+            if cfg.off_baseline:
+                off_window = " ".join(str(run_dir / f"gen{g}_off.jsonl") for g in gens)
+                base_rates = compute_base_rates(off_window)
+            cstats = credit_apply(sp_path, window, base_rates=base_rates,
+                                  discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode)
             print(f"  credit: {cstats}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:
