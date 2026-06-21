@@ -134,7 +134,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
             if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
                 continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
             tr = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
-                               base_rates.get(cell, [0.0])[0])
+                               base_rates.get(cell, [0.0])[0], min_follow=cfg.synth_track_min_follow)
             for cl in clusters:
                 live = [k for k in cl if k in items]
                 if live:
@@ -164,7 +164,12 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
                                   "dimensions": sp.model_dump(mode="json")},
                     })
                     added += 1
-    return {"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks})}, obs_counts
+    # with_track_record = cells synthesized using a realized-credit track record (the credit-AWARE path).
+    # 0 while < synth_track_min_follow follows have accumulated => synthesis is silently halo-only; this
+    # makes the thesis mechanism observable per generation instead of hoped.
+    with_tr = len({(r, p) for r, p, _live, _items, tr in tasks if tr})
+    return ({"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
+             "with_track_record": with_tr}, obs_counts)
 
 
 def _dedup_strategy_points(store_dir: Path) -> dict:

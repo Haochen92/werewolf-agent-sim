@@ -31,6 +31,8 @@ from evaluation.src.experiments.credit_backfill import compute_base_rates
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply, credit_distribution
+from evaluation.src.loop.invariants import (
+    assert_base_rates, assert_credit_engaged, assert_score, expand_window)
 from evaluation.src.loop.measure import generation_score
 from evaluation.src.loop.merge import merge_new_obs
 
@@ -155,19 +157,21 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         # ON games (thin + biased toward retrieval-skipped/early boards). The off arm is the comparison AND
         # calibrates the baseline. When off_baseline is disabled, credit_apply falls back to the ON glob.
         w = cfg.window_generations or gen
-        gens = range(max(1, gen - w + 1), gen + 1)
-        window = " ".join(str(run_dir / f"gen{g}_on.jsonl") for g in gens)
+        gens = list(range(max(1, gen - w + 1), gen + 1))
+        win_on = expand_window(run_dir, gens, "on")          # explicit list; every file asserted present
+        window = " ".join(win_on)
         cstats, cdist = {}, {}
         if cfg.credit:
             base_rates = None
             if cfg.off_baseline:
-                off_window = " ".join(str(run_dir / f"gen{g}_off.jsonl") for g in gens)
-                base_rates = compute_base_rates(off_window)
+                base_rates = compute_base_rates(" ".join(expand_window(run_dir, gens, "off")))
+                assert_base_rates(base_rates, off_ran=True)   # empty base_rates => silent halo
             cstats = credit_apply(sp_path, window, base_rates=base_rates,
                                   discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode,
                                   tags_dir=str(run_dir / "tags"))  # persist tags per game_id (no re-tag)
+            follows = assert_credit_engaged(win_on, cstats.get("ledger_keys", 0))  # dead-credit guard
             cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)  # did credit ENGAGE?
-            print(f"  credit: {cstats}\n  credit_dist: {cdist}", flush=True)
+            print(f"  credit: {cstats} window_follows={follows}\n  credit_dist: {cdist}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:
             obs_gen_map = _stamp_obs_generations(store, gen, obs_sidecar)  # new obs this gen -> `gen`
@@ -176,6 +180,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             print(f"  consolidate: prune_evict={cons.get('prune_evict')} "
                   f"obs_evict={cons.get('obs_evict')} synth={cons.get('synth')}", flush=True)
         score = generation_score(str(run_dir / f"gen{gen}_*.jsonl"))   # on + off arms
+        assert_score(score, label=f"gen{gen}")                         # 0 decisions => silent empty point
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
         history.append({"generation": gen, "score": score, "credit": cstats,
                         "credit_dist": cdist, "consolidate": cons})
@@ -183,6 +188,13 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         # computed on the store-as-it-was-that-gen, which the next gen OVERWRITES — so a mid-run crash
         # would lose them irrecoverably (games + score re-derive from the gen records; these don't).
         (run_dir / "loop_history.json").write_text(json.dumps(history, indent=2))
+        # Preserve the END-of-gen content (obs + SPs only, light) for post-hoc inspection: the store is
+        # overwritten in place by the next gen, so without this the gen-3 content read isn't possible.
+        snap = run_dir / f"gen{gen}_store"
+        snap.mkdir(exist_ok=True)
+        for f in ("observations.json", "strategy_points.json"):
+            if (store / f).exists():
+                shutil.copy2(store / f, snap / f)
 
     print(f"\nloop history -> {run_dir / 'loop_history.json'}", flush=True)
     return history
@@ -200,10 +212,18 @@ def main() -> int:
     ap.add_argument("--game-concurrency", type=int, default=5, help="parallel games within a generation")
     ap.add_argument("--model", default="gemini-3.1-flash-lite")
     ap.add_argument("--no-synth", action="store_true")
+    # threshold knobs (default = the held-out-validated run values; a cheap smoke LOWERS them so the
+    # credit-aware path fires at tiny N — validating WIRING, not calibration)
+    ap.add_argument("--prune-min-follow", type=int, default=LoopConfig.prune_min_follow)
+    ap.add_argument("--synth-track-min-follow", type=int, default=LoopConfig.synth_track_min_follow)
+    ap.add_argument("--synth-min-new-obs", type=int, default=LoopConfig.synth_min_new_obs)
+    ap.add_argument("--discussion-mode", default=LoopConfig.discussion_mode, choices=["tagger", "floor"])
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
                      window_generations=args.window_generations, synth_every_k_gens=args.synth_every_k,
-                     game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth)
+                     game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth,
+                     prune_min_follow=args.prune_min_follow, synth_track_min_follow=args.synth_track_min_follow,
+                     synth_min_new_obs=args.synth_min_new_obs, discussion_mode=args.discussion_mode)
     run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 
