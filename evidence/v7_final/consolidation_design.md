@@ -236,7 +236,93 @@ accumulation), but its value is partial until (c)+(d).
 
 - **Open forks:** synthesis source (observations vs transcript); recalibration cadence for the baseline
   table; exact τ / N thresholds (set on the ledger distribution).
-- **Deferred:** recency/age-decay; dimension-split revision (T2); anti-churn guards; soft retrieval-rank
-  companion (parked with retrieval).
+- **Deferred:** recency-aware SP credit → now SPECCED in §11 (dual-window souring trigger, build after v2);
+  dimension-split revision (T2); anti-churn guards; soft retrieval-rank companion (parked with retrieval).
 - **Dependencies:** (c) extraction anchor (stops bad-lesson re-entry); (d) discussion tagger (unlocks
   discussion-SP credit → un-blocks the abstain set).
+
+---
+
+## 11. Recency-aware souring trigger — dual-window (SPEC; build AFTER v2)
+
+**Status: DESIGN LOCKED, NOT BUILT.** Unlike §6's b1/b2 (built + running), this is a spec for a second,
+*recency-aware* drop rule to add once v2 reports the post-compounding-fix follow distribution. Build
+sequencing + rationale in §11f.
+
+### The problem it solves
+The flat **W=6 credit window** (`window_generations`, recomputed-and-SET each tick — the non-stationarity
+guard) self-corrects a **previously-good-now-bad** SP only *slowly*: its stale good follows sit in the
+6-gen pool and prop the lift up until they age out (~6 gens of harm). We want a souring SP to drop in
+~1-2 gens — **without** demoting an SP merely because it stopped being used (disuse ≠ badness).
+
+### 11a. Two windows, one extra rule
+Compute **two** lifts from the same per-gen dumps (they're already per-generation files; `_expand_dumps`
+sorts them, so "short window" = the last K of that list — cheap, stateless):
+- **LONG (W=6, today's window)** → the *value* estimate. Drives **keep** + the **proven-SP exemption**
+  (§ `protect_min_follow`). All credit DENSITY lives here.
+- **SHORT (last 1-2 gens)** → the *souring detector*. Drives **one new drop trigger only**.
+
+Decision order — ⭐**the souring trigger runs BEFORE the proven-SP exemption**, so it is the one rule that
+can drop a still-positive-LONG-lift SP (that's the entire point: catch the SP whose long lift is propped
+by stale wins):
+
+| # | Rule | Window | Action |
+|---|------|--------|--------|
+| 1 | **fast souring**: shrunk recent-lift < τ_recent AND follow_short ≥ N_recent (+ robustness, §11c) | short | **DROP** |
+| 2 | proven-SP exemption: long-lift > 0 AND follow_long ≥ protect_min_follow | long | KEEP |
+| 3 | slow prune: long-lift < −0.15 AND follow_long ≥ 8 (b1, existing) | long | DROP |
+| 4 | dead-weight evict (existing) | — | DROP / spare |
+
+### 11b. Why disuse can't demote (the hard constraint)
+Rule 1 requires `follow_short ≥ N_recent`. An SP not followed lately has `follow_short ≈ 0` → trigger
+never fires; its positive long-lift keeps it under the exemption (rule 2). So an SP leaves ONLY via recent
+negatives *with real recent follows* (1) or sustained long-window negativity (3) — **never age/disuse alone.**
+
+### 11c. Robustness to noise (3 layers — the short window is small ⇒ noisy)
+A good SP can hit one unlucky de-luck streak; we drop on *sustained, evidence-backed* decline, not a streak.
+1. **Shrinkage (free, reuse `sp_lift`):** threshold the SHRUNK recent-lift (`lift·n/(n+K)`), so a noisy −0.4
+   on 3 follows shrinks below the bar — magnitude must be evidence-backed (the codebase's CI stand-in, §6a).
+2. **Persistence / 2-of-2 confirmation (the headline):** require the bar to be crossed across **2
+   consecutive ticks**, not one. Under the null (noise) consecutive ticks are ~independent → a chance
+   streak is ~pᴷ, collapses fast; real souring persists. A poor-man's significance test that combines
+   evidence across ticks instead of needing a tight single-window CI we can't get at n≈5. **Stateless:**
+   recompute per-gen recent-lift from the dumps each tick (matches credit.py's recompute-don't-accumulate
+   ethos); an EWMA "souring score" with decay is the stateful refinement if 2-of-2 proves too rigid.
+3. **Conservative bar + gradient:** τ_recent **stricter** than the slow τ (−0.30 vs −0.15 — recent is
+   noisier, demand a clearly-bad signal) AND recent-lift below long-lift (a real drop-OFF, not chronic
+   mediocrity — which rule 3 already handles).
+
+### 11d. Recommended default (built-but-OFF; calibrate on v2)
+> Drop iff **shrunk recent-lift < −0.30** with **≥ N_recent recent follows**, **confirmed across 2
+> consecutive ticks**, and **recent-lift < long-lift** — evaluated **before** the proven-SP exemption.
+> Stateless 2-of-2 recompute.
+
+⚠ **`N_recent / τ_recent / K / W_short` are calibrated from v2's post-Phase-1 follow distribution, not
+guessed.** Pre-Phase-1 density was `follow_p50 = 1` → no short window could carry signal; new-clusters-only
++ exemption concentrate follows onto the dense survivors (~40-73 SPs absorb 84% of follows), which is what
+makes a 1-2 gen window meaningful. If v2 shows density is still too thin, the trigger stays dormant — not a
+failure, just no signal yet.
+
+### 11e. ⚠ When it actually matters (stationarity caveat)
+Souring is driven by **non-stationarity** — the SP's followed-value drifting. In the v7 **town-only**
+experiment the other factions are **memory-OFF** ⇒ a **fixed** adversary ⇒ the environment is
+near-stationary; the only residual drift is town-internal (town's own coordination evolving as its memory
+grows), which is weak. So **expect few/no souring events in v2** — a flat souring count there is the
+*correct* reading, NOT evidence the trigger is broken. The trigger is insurance for the
+**all-factions-learning / production** regime (adapting opponents), where previously-good-now-bad is real.
+v2 = the near-stationary baseline.
+
+### 11f. Build surface + sequencing
+All loop-side, zero production-code, offline-testable (no spend):
+- `credit.py`: a second ledger pass over the last-K gen-dumps → parallel `*_recent` counts (or per-gen lifts).
+- `consolidate.py` `prune_and_evict`: rule 1 ahead of the exemption, `sp_lift` on the recent counts + 2-of-2.
+- `config.py`: `souring_trigger` flag (default off) + `recent_window_gens / prune_tau_recent /
+  prune_min_follow_recent / souring_confirm_ticks`.
+- Tests: fires on recent-negative+dense+confirmed; does NOT fire on disuse, on thin-recent, or on a single
+  unlucky tick; exemption still holds for long-positive non-souring.
+
+**Sequencing (decided 2026-06-22):** (1) spec now [this section] → (2) run v2 with Phase-1 + obs
+triage-only, trigger OFF (clean compounding-fix test + density data) → (3) calibrate thresholds from v2 →
+(4) build + enable as its own **paired A/B arm** (souring-on vs off), one isolated variable. Rejected
+alternative: a γ-weighted single lift — taxes density on EVERY decision (keep included); the dual-window
+spends recency only on the drop.
