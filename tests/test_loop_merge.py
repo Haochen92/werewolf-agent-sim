@@ -51,7 +51,7 @@ class MergeNewObsTests(unittest.TestCase):
             _write_store(g1, [_rec("o1"), _rec("o2")])
             _write_store(store, [_rec("o1")])                      # store == snapshot at call time
             res = merge_new_obs(store, snap, [g1], dedup=False)    # dedup off = pure append (offline)
-            self.assertEqual(res, {"new_obs": 1, "deduped": False})
+            self.assertEqual(res, {"new_obs": 1, "deduped": False, "no_merge": True})
             final = json.loads((store / "observations.json").read_text())["namespaces"][_NS]
             self.assertEqual(sorted(r["key"] for r in final), ["o1", "o2"])
 

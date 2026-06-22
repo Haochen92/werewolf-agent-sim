@@ -52,9 +52,22 @@ class LoopConfig:
     #   collapse near-duplicate synthesized SPs, keeping the credited OLDER survivor (absorbs the dup's
     #   counts). SPs never MERGE (combining directives is incoherent). Without this, re-synthesizing active
     #   cells each generation piles up near-dup SPs and SMEARS the credit signal across them.
+    dedup_model: str = "gemini-3.1-flash-lite"  # model for the loop's dedup passes (pro-2.5 was the cost
+    #   driver, ~$9/run on the bloated store). SP dedup is KEEP/DISCARD only (schema forbids MERGE) so
+    #   flash-lite is safe + cheap here. Obs dedup runs TRIAGE-ONLY (no merge, below) so flash-lite is safe
+    #   there too. Toggle → "gemini-2.5-pro" for a quality comparison.
+    obs_dedup_merge: bool = False          # obs dedup mode. False (default) = TRIAGE-ONLY (pass 1):
+    #   KEEP/DISCARD collapse exact dups + count-bump, near-dups kept SEPARATE, no merge text, no pro-2.5
+    #   — the cheap, nuance-safe version for the experiment. True = full dedup that can write merged text.
     prune: bool = True                     # drop SPs with de-luck lift < tau & follow >= min_follow (b1)
     prune_tau: float = -0.15
     prune_min_follow: int = 8
+    protect_min_follow: int = 2            # PROVEN-SP EXEMPTION: an SP with POSITIVE de-luck lift and
+    #   >= this many follows is NEVER dropped (prune/evict/any future age rule). A rare-but-proven lesson
+    #   survives on thin evidence — positive signal, however sparse, beats deletion. Kept LOW (1-2) on
+    #   purpose. Corollary (the non-stationarity case): SP degradation stays CREDIT-only — a note leaves
+    #   only via NEGATIVE lift over the rolling window (souring) or as never-followed dead weight, never
+    #   because it merely got old.
     evict: bool = True                     # drop SPs surfaced >= min_retrieved but never followed (rejected)
     evict_min_retrieved: int = 8
     evict_require_override: bool = True     # scope-aware (§10b): only evict a retrieved-but-unfollowed SP
@@ -85,5 +98,11 @@ class LoopConfig:
     discussion_mode: str = "tagger"
 
     def env(self) -> dict:
-        """Env overrides to pin the extraction+synthesis model for a run (both primary and backup)."""
-        return {"GOOGLE_GENAI_PRO_MODEL": self.model, "GOOGLE_GENAI_PRO_BACKUP_MODEL": self.model}
+        """Env overrides pinning EVERY paid model in a run to the cheap tier — the pro-2.5 cost guard.
+        GOOGLE_GENAI_PRO_MODEL/_BACKUP pin extraction + in-process synthesis + the tagger (all resolve via
+        get_llm_pro → these vars, whose default is gemini-2.5-pro). MEMORY_BATCH_DEDUP_MODEL pins any dedup
+        that falls back to its module default (also gemini-2.5-pro) — the loop's own dedup calls already
+        pass model=dedup_model, this covers subprocess/per-game paths. Applied to game subprocesses AND the
+        driver's own process (run_loop), so nothing hits pro-2.5 regardless of the launch shell."""
+        return {"GOOGLE_GENAI_PRO_MODEL": self.model, "GOOGLE_GENAI_PRO_BACKUP_MODEL": self.model,
+                "MEMORY_BATCH_DEDUP_MODEL": self.dedup_model}

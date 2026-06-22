@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 from evaluation.src.loop import consolidate as con
 from evaluation.src.loop.config import LoopConfig
-from evaluation.src.loop.consolidate import _evict_ok, evict_observations, prune_and_evict
+from evaluation.src.loop.consolidate import _evict_ok, _synth_cluster, evict_observations, prune_and_evict
 
 
 def _sp(follow=0, retrieved=0, pos=0, neg=0, override=0, not_relevant=0, action="x"):
@@ -62,6 +62,24 @@ class ScopeAwareEvictTests(unittest.TestCase):
         self.assertEqual(stats["pruned"], 0)
         self.assertEqual(stats["kept"], 1)
 
+    def test_proven_sp_exemption_protects_thin_positive(self) -> None:
+        # edge 1: a rare-but-proven SP (positive lift, only 4 follows) survives even an AGGRESSIVE prune
+        # (tau>=0, min_follow lowered) that would otherwise catch it — positive evidence beats deletion.
+        cfg = LoopConfig(prune_tau=0.5, prune_min_follow=2, protect_min_follow=2)
+        ns = {"strategy_points/villager/day_vote": [
+            _sp(follow=4, pos=2, neg=1, retrieved=20, action="rare_good"),   # lift +0.11 -> protected
+        ]}
+        stats = prune_and_evict(ns, {"villager/day_vote": [0.0, 50]}, cfg)
+        self.assertEqual(stats["pruned"], 0)
+        self.assertIn("rare_good", [r["value"]["action"] for r in ns["strategy_points/villager/day_vote"]])
+
+    def test_exemption_below_min_follow_not_protected(self) -> None:
+        # a single-follow positive SP is below protect_min_follow=2 -> NOT exempt (one follow is noise)
+        cfg = LoopConfig(prune_tau=0.5, prune_min_follow=1, protect_min_follow=2)
+        ns = {"strategy_points/villager/day_vote": [_sp(follow=1, pos=1, neg=0, action="one_follow")]}
+        stats = prune_and_evict(ns, {"villager/day_vote": [0.0, 50]}, cfg)
+        self.assertEqual(stats["pruned"], 1)
+
 
 class ObservationDecayTests(unittest.TestCase):
     def _run(self, recs, gen_map, current_gen, cfg=None):
@@ -97,6 +115,50 @@ class ObservationDecayTests(unittest.TestCase):
         stats, survived = self._run(recs, {"old_rare": 0}, current_gen=9, cfg=cfg)
         self.assertEqual(stats["obs_dropped"], 0)
         self.assertEqual(survived, ["old_rare"])
+
+
+class CostGuardTests(unittest.TestCase):
+    """Pro-2.5 cost guard: every paid model slot the loop pins must be the cheap tier, never gemini-2.5-pro.
+    Regression guard for the $55 run (in-process synth/tagger + dedup fallback silently hitting pro)."""
+
+    def test_env_pins_no_pro_2_5(self) -> None:
+        env = LoopConfig().env()
+        self.assertNotIn("gemini-2.5-pro", env.values())
+        self.assertEqual(env["GOOGLE_GENAI_PRO_MODEL"], "gemini-3.1-flash-lite")
+        self.assertEqual(env["GOOGLE_GENAI_PRO_BACKUP_MODEL"], "gemini-3.1-flash-lite")
+        self.assertEqual(env["MEMORY_BATCH_DEDUP_MODEL"], "gemini-3.1-flash-lite")
+
+    def test_dedup_model_default_is_cheap(self) -> None:
+        self.assertNotEqual(LoopConfig().dedup_model, "gemini-2.5-pro")
+
+
+class NewClustersOnlySynthTests(unittest.TestCase):
+    """The new-clusters-only gate: re-synthesize a cluster only when it carries a NEW obs (or the cell is
+    depleted / we can't filter). Stops the per-cell SP compounding (~6x/run) at the source."""
+
+    LOOKBACK = 6  # synth_lookback = current_gen - synth_every_k_gens => obs first-seen at gen 7+ are NEW
+
+    def test_cluster_with_new_obs_synthesized(self) -> None:
+        gen_map = {"a": 2, "b": 7}  # b is new (>6)
+        self.assertTrue(_synth_cluster(["a", "b"], False, gen_map, self.LOOKBACK, True))
+
+    def test_cluster_all_old_skipped(self) -> None:
+        gen_map = {"a": 2, "b": 5}  # both old (<=6) -> already distilled -> skip
+        self.assertFalse(_synth_cluster(["a", "b"], False, gen_map, self.LOOKBACK, True))
+
+    def test_empty_cluster_skipped(self) -> None:
+        self.assertFalse(_synth_cluster([], False, {"a": 9}, self.LOOKBACK, True))
+
+    def test_depleted_cell_replenishes_from_old(self) -> None:
+        # a cell emptied by prune/evict re-synthesizes its old clusters to refill (bypasses the filter)
+        gen_map = {"a": 2, "b": 5}
+        self.assertTrue(_synth_cluster(["a", "b"], True, gen_map, self.LOOKBACK, True))
+
+    def test_non_incremental_full_resynth(self) -> None:
+        self.assertTrue(_synth_cluster(["a"], False, {"a": 0}, self.LOOKBACK, False))
+
+    def test_no_gen_map_fallback_to_all(self) -> None:
+        self.assertTrue(_synth_cluster(["a"], False, None, None, True))
 
 
 class SpDedupGatingTests(unittest.TestCase):

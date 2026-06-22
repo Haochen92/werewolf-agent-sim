@@ -130,6 +130,11 @@ def _run_games_parallel(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopCo
 def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "memory_stores/v6_1",
              configs: str = "all_enabled") -> list[dict]:
     run_dir = Path(run_dir)
+    # ⭐PRO-2.5 COST GUARD. consolidate (synthesis) + credit_apply (tagger) run IN THIS process and resolve
+    # their model via get_llm_pro() -> os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL="gemini-2.5-pro").
+    # cfg.env() is only applied to game SUBPROCESSES; pin it on the driver's OWN env too so in-process
+    # synthesis/tagger/dedup-fallback never silently hit pro-2.5 because of the launch shell (the $55 trap).
+    os.environ.update(cfg.env())
     obs_sidecar = run_dir / "obs_generations.json"
     hist_path = run_dir / "loop_history.json"
     # RESUME: a run-dir with a loop_history continues from the next generation, reusing the existing
@@ -164,7 +169,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         pair_base = f"pair_{run_dir.name}_gen{gen}"   # SAME boards for ON and OFF this gen (paired A/B)
         dump_dirs = _run_games_parallel(run_dir, on_jsonl, f"loop_{run_dir.name}_gen{gen}_on",
                                         cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base)
-        mstats = merge_new_obs(store, snapshot, dump_dirs)
+        mstats = merge_new_obs(store, snapshot, dump_dirs,
+                               dedup_model=cfg.dedup_model, no_merge=not cfg.obs_dedup_merge)
         print(f"  merge: {mstats}", flush=True)
         shutil.rmtree(snapshot, ignore_errors=True)      # cleanup snapshot + per-game temp stores
         for d in dump_dirs:

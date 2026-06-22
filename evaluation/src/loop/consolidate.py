@@ -55,6 +55,14 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> d
             lift = sp_lift(v, base)
             follow = v.get("follow_count", 0)
             retrieved = v.get("retrieved_count", 0)
+            # PROVEN-SP EXEMPTION (edge 1): a POSITIVE de-luck lift with even thin evidence is never
+            # dropped — a rare-but-proven lesson survives any prune/evict/age rule. Degradation is
+            # CREDIT-only: a note leaves via negative lift (souring) or never-followed dead weight, never
+            # because it merely got old (edge 2).
+            if lift is not None and lift > 0 and follow >= cfg.protect_min_follow:
+                survivors.append(r)
+                kept += 1
+                continue
             if cfg.prune and lift is not None and lift < cfg.prune_tau and follow >= cfg.prune_min_follow:
                 pruned += 1
                 continue
@@ -94,6 +102,21 @@ def evict_observations(obs_path: str | Path, obs_gen_map: dict, current_gen: int
         store["namespaces"][ns_key] = survivors
     obs_path.write_text(json.dumps(store, indent=2))
     return {"obs_dropped": dropped, "obs_kept": kept}
+
+
+def _synth_cluster(live: list, depleted: bool, obs_gen_map: dict | None, synth_lookback: int | None,
+                   incremental: bool) -> bool:
+    """NEW-CLUSTERS-ONLY gate: re-synthesize a cluster only if it carries a NEW obs (first-seen after the
+    last synth tick). The cell-level gate in synthesize() admits a cell on enough TOTAL new obs, but
+    without THIS, every cluster in an admitted cell — including all-old ones — got re-synthesized each
+    tick, regenerating SP variants of already-distilled lessons that don't exact-dedup → the store
+    compounded ~6x/run (5.4 -> 34 SPs/cell). Return True (synthesize) when we can't/shouldn't filter:
+    a DEPLETED cell replenishes from its old clusters; non-incremental or no gen map => full re-synth."""
+    if not live:
+        return False
+    if not incremental or depleted or obs_gen_map is None or synth_lookback is None:
+        return True
+    return any(obs_gen_map.get(k, 0) > synth_lookback for k in live)
 
 
 def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> str:
@@ -146,7 +169,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
                                base_rates.get(cell, [0.0])[0], min_follow=cfg.synth_track_min_follow)
             for cl in clusters:
                 live = [k for k in cl if k in items]
-                if live:
+                if _synth_cluster(live, depleted, obs_gen_map, synth_lookback, cfg.incremental):
                     tasks.append((role, phase, live, items, tr))
 
     now = datetime.now(timezone.utc)
@@ -181,16 +204,18 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
              "with_track_record": with_tr}, obs_counts)
 
 
-def _dedup_strategy_points(store_dir: Path) -> dict:
+def _dedup_strategy_points(store_dir: Path, model: str) -> dict:
     """SP KEEP/DISCARD dedup (freeze-old) over the just-synthesized store. Collapses near-duplicate SPs,
     keeping the credited OLDER survivor (it absorbs the discarded dup's counts/timestamps). SPs NEVER
     MERGE — combining two directives is incoherent; this is the design's keep/discard, gate-partitioned by
     direction/honesty. Freeze-old (created_at boundary) makes the just-synthesized SPs the 'new' set and
-    prior SPs frozen, so credit history survives. Reuses the production dedup core (persists to store)."""
+    prior SPs frozen, so credit history survives. Reuses the production dedup core (persists to store).
+    `model` runs the resolution: flash-lite is safe here (KEEP/DISCARD is schema-enforced, no merge text)
+    and avoids the pro-2.5 cost on the per-generation re-dedup."""
     from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
     from Agents.memory.batch_deduplication.orchestration import run_batch_memory_dedup
     report = run_batch_memory_dedup(BatchDedupRunConfig(
-        seed_store_dir=store_dir, dump_store_dir=store_dir,
+        seed_store_dir=store_dir, dump_store_dir=store_dir, model=model,
         incremental=True, apply=True, memory_kinds=["strategy_points"]))
     return {"ran": True, "namespaces": len(getattr(report, "stats", []))}
 
@@ -226,7 +251,7 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
     sp_path.write_text(json.dumps(store, indent=2))   # persist synth before the SP dedup reads the store
     sd = {}
     if cfg.sp_dedup and syn.get("added"):             # only when synthesis added SPs to dedup
-        sd = _dedup_strategy_points(store_dir)
+        sd = _dedup_strategy_points(store_dir, cfg.dedup_model)
     # prune LAST, on the post-dedup store (re-read: the dedup mutated the file on disk, not `ns`)
     store = json.loads(sp_path.read_text())
     ns = store.setdefault("namespaces", {})
