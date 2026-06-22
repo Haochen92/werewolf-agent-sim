@@ -634,3 +634,73 @@ tail are minor. So this is a methodology shakedown, not the headline. **v2 = the
 *paired* v2 slope is still flat, that is the honest negative-with-mechanism — stop, don't escalate N blindly.
 Strong portfolio framing either way; the **v1 baseline** (regenerate a bounded prompt, no RAG/credit) is the
 competitive control that makes "v7 earns its complexity" a falsifiable claim.
+
+### 11j. ⭐ CORRECTION (2026-06-22, user) — run-1/2 is INVALID, not merely underpowered
+The §11i verdict under-stated the damage. The de-luck **BASELINE itself was distorted**, so the LIFT was
+inaccurate — and lift drives BOTH the credit-aware synthesis `track_record` AND the prune decisions:
+- **run-1** sourced the base rate from the **incidental memory-off decisions INSIDE the ON games** (thin +
+  biased toward retrieval-skipped/early boards; fixed `f2dfbd3b`).
+- **run-2** used a dedicated OFF arm but **UNPAIRED** (different boards → situation-distribution bias;
+  `compute_base_rates` is a per-CELL mean, so unpaired boards bias it; fixed `11c8781`).
+
+⇒ the per-cell base rate was not a valid counterfactual for the ON decisions ⇒ **SP synthesis and the
+lift-based reads are INVALID, not just noisy** (the on−off slope was separately noise-limited by unpaired
+variance). So **"credit corrects content (validated by read)" in §11i refers to the SEPARATE v6ab heldout
+(r=+0.54, paired/static data), NOT this loop run** — run-1/2 is not a mechanism validation. Net: **~$100
+spent, no usable loop result.** v2 fixes BOTH: the dedicated OFF-arm baseline (`f2dfbd3b`) + paired arms
+(`11c8781`, matched `game_id` → same boards) make the per-cell base rate a valid same-board counterfactual
+⇒ valid lift ⇒ valid synthesis + slope. (Per-decision matched lift would be a further refinement; per-cell
+over paired boards already removes the *distortion*.)
+
+---
+
+## 12. ⭐⭐ V2 — THE FIRST VALID LOOP RUN: honest negative-with-mechanism (2026-06-22)
+
+v2 is the readable rerun the §11j correction demanded: **COLD start** (re-mine from the de-capped substrate,
+not stale v6_1), **PAIRED arms** (matched `game_id`, verified live), **valid dedicated-OFF-arm baseline**,
+all five §11h fixes + **obs triage-only no-merge** + **flash-lite cost-guard** (pins GOOGLE_GENAI_PRO_MODEL/
+_BACKUP + MEMORY_BATCH_DEDUP_MODEL on the driver's own process, not just subprocesses) + **post-hoc Langfuse
+cost capture** (`loop/cost.py`). Config: 13 gens × 4 games/arm, parallel ON/OFF in one cap-8 pool, k=1, W=8.
+**Validation gate first — 3 smokes (~$7.6):** warm (pipeline), parallel-arms + cost-capture end-to-end,
+cold-bootstrap (store 0→21, credit-aware synth fires gen-2). All flash-lite, 0 pro-2.5.
+
+**Stopped at gen-6** per the pre-registered stopping rule (**$15** run vs run-1's ~$100; gens 1-6 preserved
+in `evidence/v7_final/v2_full/`).
+
+### 12a. RESULT — no positive compounding; noise-limited weak-negative
+Town on−off de-luck (gen-1 = empty-seed bootstrap, excluded): gens 2-6 = **−0.16, −0.33, +0.17, −0.32,
+−0.30 → mean −0.18, no upward trend.** Same shape as run-1's verdict, but now on a VALID instrument.
+
+### 12b. ⭐ WHY it's unmeasurable — a built-in NULL CONTROL
+Wolf & SK have **NO memory in either arm** (town-only), yet their on−off swings the same magnitude as town:
+`wolf: −0.14 −0.05 −0.11 +0.17 +0.10 +0.28` · `SK: +0.16 −0.14 −0.26 −0.14 −0.07 −0.10`. That ±0.2-0.3 is
+pure **game-divergence noise** (town's memory-changed votes → different lynches → different boards for
+everyone). **The town signal sits inside its own null control** ⇒ no effect (+ or −) is separable at 4
+games/gen — empirical proof of noise-limited, not an assertion. The variance is **intrinsic**: per-game
+town de-luck swings ±0.9 *even on matched boards* → within-pair correlation is low → **pairing is maxed**
+(differencing within pairs is algebraically identical to the aggregate at the gen level). The only lever is
+more games/gen = the epoch/cost wall the stopping rule rules out.
+
+### 12c. The weak-negative DIRECTION — one cell
+Follow-weighted de-luck lift per town cell (credited store): discussion cells all strongly positive
+(+0.26…+0.48), town followed-content net **+0.41** — EXCEPT **`villager/day_vote` = −0.118** (the cell the
+vote-proxy most directly measures). Villagers are the bulk of town voters → that one cell drags the proxy
+mildly negative. Mechanism: procedural SP *directives* underperform the pure-inference villager's gut+obs
+inference on votes — consistent with v6ab (town benefit was DEFENSIVE/obs-driven; gut-play dominates; SPs
+are the deceiver channel, not the villager's). Within the noise floor, but directionally consistent.
+
+### 12d. Incidental instrumentation gap (NOT the cause)
+SP adoption counters `retrieved/override/not_relevant` = 0 across all cells despite 1123 follows:
+`adoption.py` writes them live per-game, but the loop merge folds only OBSERVATIONS back into the run store,
+so per-game SP-counter updates are discarded; `credit_apply` then SETS `follow/pos/neg` from the ledger. ⇒
+the dead-weight EVICT rule (needs `retrieved≥8`) can **never fire in the loop** (explains `evicted=0` in
+every gen of every run). Prune-by-lift still works. Fix if the loop is ever revived: merge SP adoption
+counters back (or recompute them from the eval cases alongside credit).
+
+### 12e. VERDICT + pivot
+Per the pre-registered stopping rule — noise floor is **intrinsic**, escalating N is the epoch/cost wall ⇒
+**STOP; write the honest negative-with-mechanism.** v7 was the final memory-research iteration → the memory
+architecture is **FROZEN** here. The deliverable is the eval-rigor arc: caught run-1's baseline-distortion
+*invalidity* (§11j) → rebuilt a valid instrument (paired arms + valid baseline + 5 fixes + cost capture +
+cold start) → valid replication for $15 → **honest negative + null-control proof**. A trustworthy negative
+beats a fragile positive. **NEXT = frontend/ship** (the north star).

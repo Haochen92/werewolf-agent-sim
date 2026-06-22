@@ -1,0 +1,452 @@
+[
+  {
+    "generation": 1,
+    "score": {
+      "off/overall": 0.363,
+      "off/wolf": 0.516,
+      "off/serial_killer": 0.484,
+      "off/town": 0.172,
+      "on/overall": 0.363,
+      "on/town": 0.267,
+      "on/serial_killer": 0.643,
+      "on/wolf": 0.372,
+      "n_off/overall": 215,
+      "n_off/wolf": 91,
+      "n_off/serial_killer": 31,
+      "n_off/town": 93,
+      "n_on/overall": 157,
+      "n_on/town": 86,
+      "n_on/serial_killer": 28,
+      "n_on/wolf": 43
+    },
+    "credit": {
+      "total_sps": 0,
+      "credited": 0,
+      "ledger_keys": 0,
+      "matched": 0
+    },
+    "credit_dist": {
+      "n_sps": 0,
+      "n_followed": 0,
+      "follow_p50": 0,
+      "follow_max": 0,
+      "n_prune_eligible": 0,
+      "n_eligible_neg_lift": 0
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 0,
+        "evicted": 0,
+        "kept": 48,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 153
+      },
+      "synth": {
+        "added": 48,
+        "cells_synthed": 17,
+        "with_track_record": 0
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 9,
+        "villager/day_vote": 10,
+        "wolf/day_discussion": 10,
+        "wolf/day_vote": 7,
+        "wolf/night_action": 13,
+        "investigator/day_discussion": 6,
+        "investigator/day_vote": 6,
+        "investigator/night_action": 10,
+        "healer/day_discussion": 6,
+        "healer/day_vote": 4,
+        "healer/night_action": 10,
+        "serial_killer/day_discussion": 8,
+        "serial_killer/day_vote": 9,
+        "serial_killer/night_action": 15,
+        "vigilante/day_discussion": 7,
+        "vigilante/day_vote": 9,
+        "vigilante/night_action": 14
+      }
+    }
+  },
+  {
+    "generation": 2,
+    "score": {
+      "off/overall": 0.411,
+      "off/wolf": 0.475,
+      "off/serial_killer": 0.625,
+      "off/town": 0.28,
+      "on/overall": 0.31,
+      "on/town": 0.118,
+      "on/wolf": 0.423,
+      "on/serial_killer": 0.483,
+      "n_off/overall": 231,
+      "n_off/wolf": 99,
+      "n_off/serial_killer": 32,
+      "n_off/town": 100,
+      "n_on/overall": 168,
+      "n_on/town": 68,
+      "n_on/wolf": 71,
+      "n_on/serial_killer": 29
+    },
+    "credit": {
+      "total_sps": 48,
+      "credited": 44,
+      "ledger_keys": 44,
+      "matched": 44
+    },
+    "credit_dist": {
+      "n_sps": 48,
+      "n_followed": 44,
+      "follow_p50": 5,
+      "follow_max": 64,
+      "n_prune_eligible": 19,
+      "n_eligible_neg_lift": 8
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 4,
+        "evicted": 0,
+        "kept": 72,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 276
+      },
+      "synth": {
+        "added": 80,
+        "cells_synthed": 16,
+        "with_track_record": 13
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 16,
+        "villager/day_vote": 16,
+        "wolf/day_discussion": 20,
+        "wolf/day_vote": 13,
+        "wolf/night_action": 28,
+        "investigator/day_discussion": 13,
+        "investigator/day_vote": 10,
+        "investigator/night_action": 13,
+        "healer/day_discussion": 8,
+        "healer/day_vote": 6,
+        "healer/night_action": 16,
+        "serial_killer/day_discussion": 12,
+        "serial_killer/day_vote": 15,
+        "serial_killer/night_action": 31,
+        "vigilante/day_discussion": 15,
+        "vigilante/day_vote": 17,
+        "vigilante/night_action": 27
+      }
+    }
+  },
+  {
+    "generation": 3,
+    "score": {
+      "off/overall": 0.539,
+      "off/wolf": 0.493,
+      "off/serial_killer": 0.731,
+      "off/town": 0.514,
+      "on/overall": 0.299,
+      "on/town": 0.188,
+      "on/wolf": 0.386,
+      "on/serial_killer": 0.476,
+      "n_off/overall": 167,
+      "n_off/wolf": 69,
+      "n_off/serial_killer": 26,
+      "n_off/town": 72,
+      "n_on/overall": 134,
+      "n_on/town": 69,
+      "n_on/wolf": 44,
+      "n_on/serial_killer": 21
+    },
+    "credit": {
+      "total_sps": 76,
+      "credited": 70,
+      "ledger_keys": 70,
+      "matched": 70
+    },
+    "credit_dist": {
+      "n_sps": 76,
+      "n_followed": 70,
+      "follow_p50": 8,
+      "follow_max": 91,
+      "n_prune_eligible": 40,
+      "n_eligible_neg_lift": 23
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 14,
+        "evicted": 0,
+        "kept": 117,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 401
+      },
+      "synth": {
+        "added": 123,
+        "cells_synthed": 17,
+        "with_track_record": 16
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 27,
+        "villager/day_vote": 22,
+        "wolf/day_discussion": 26,
+        "wolf/day_vote": 20,
+        "wolf/night_action": 40,
+        "investigator/day_discussion": 19,
+        "investigator/day_vote": 15,
+        "investigator/night_action": 23,
+        "healer/day_discussion": 13,
+        "healer/day_vote": 9,
+        "healer/night_action": 23,
+        "serial_killer/day_discussion": 21,
+        "serial_killer/day_vote": 21,
+        "serial_killer/night_action": 43,
+        "vigilante/day_discussion": 25,
+        "vigilante/day_vote": 21,
+        "vigilante/night_action": 33
+      }
+    }
+  },
+  {
+    "generation": 4,
+    "score": {
+      "off/overall": 0.346,
+      "off/wolf": 0.32,
+      "off/serial_killer": 0.697,
+      "off/town": 0.221,
+      "on/overall": 0.451,
+      "on/serial_killer": 0.556,
+      "on/town": 0.386,
+      "on/wolf": 0.489,
+      "n_off/overall": 185,
+      "n_off/wolf": 75,
+      "n_off/serial_killer": 33,
+      "n_off/town": 77,
+      "n_on/overall": 144,
+      "n_on/serial_killer": 27,
+      "n_on/town": 70,
+      "n_on/wolf": 47
+    },
+    "credit": {
+      "total_sps": 131,
+      "credited": 107,
+      "ledger_keys": 107,
+      "matched": 107
+    },
+    "credit_dist": {
+      "n_sps": 131,
+      "n_followed": 107,
+      "follow_p50": 7,
+      "follow_max": 116,
+      "n_prune_eligible": 64,
+      "n_eligible_neg_lift": 32
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 20,
+        "evicted": 0,
+        "kept": 159,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 523
+      },
+      "synth": {
+        "added": 133,
+        "cells_synthed": 15,
+        "with_track_record": 15
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 34,
+        "villager/day_vote": 30,
+        "wolf/day_discussion": 34,
+        "wolf/day_vote": 26,
+        "wolf/night_action": 51,
+        "investigator/day_discussion": 21,
+        "investigator/day_vote": 17,
+        "investigator/night_action": 28,
+        "healer/day_discussion": 18,
+        "healer/day_vote": 17,
+        "healer/night_action": 32,
+        "serial_killer/day_discussion": 29,
+        "serial_killer/day_vote": 29,
+        "serial_killer/night_action": 55,
+        "vigilante/day_discussion": 32,
+        "vigilante/day_vote": 28,
+        "vigilante/night_action": 42
+      }
+    }
+  },
+  {
+    "generation": 5,
+    "score": {
+      "off/overall": 0.359,
+      "off/wolf": 0.37,
+      "off/serial_killer": 0.724,
+      "off/town": 0.208,
+      "on/overall": 0.227,
+      "on/town": -0.111,
+      "on/wolf": 0.465,
+      "on/serial_killer": 0.654,
+      "n_off/overall": 198,
+      "n_off/wolf": 92,
+      "n_off/serial_killer": 29,
+      "n_off/town": 77,
+      "n_on/overall": 132,
+      "n_on/town": 63,
+      "n_on/wolf": 43,
+      "n_on/serial_killer": 26
+    },
+    "credit": {
+      "total_sps": 179,
+      "credited": 143,
+      "ledger_keys": 143,
+      "matched": 143
+    },
+    "credit_dist": {
+      "n_sps": 179,
+      "n_followed": 143,
+      "follow_p50": 5,
+      "follow_max": 139,
+      "n_prune_eligible": 79,
+      "n_eligible_neg_lift": 34
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 22,
+        "evicted": 0,
+        "kept": 205,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 147,
+        "obs_kept": 468
+      },
+      "synth": {
+        "added": 103,
+        "cells_synthed": 11,
+        "with_track_record": 11
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 36,
+        "villager/day_vote": 40,
+        "wolf/day_discussion": 39,
+        "wolf/day_vote": 29,
+        "wolf/night_action": 59,
+        "investigator/day_discussion": 27,
+        "investigator/day_vote": 19,
+        "investigator/night_action": 32,
+        "healer/day_discussion": 21,
+        "healer/day_vote": 21,
+        "healer/night_action": 39,
+        "serial_killer/day_discussion": 35,
+        "serial_killer/day_vote": 32,
+        "serial_killer/night_action": 68,
+        "vigilante/day_discussion": 37,
+        "vigilante/day_vote": 31,
+        "vigilante/night_action": 50
+      }
+    }
+  },
+  {
+    "generation": 6,
+    "score": {
+      "off/overall": 0.41,
+      "off/wolf": 0.337,
+      "off/serial_killer": 0.737,
+      "off/town": 0.36,
+      "on/overall": 0.35,
+      "on/town": 0.058,
+      "on/wolf": 0.615,
+      "on/serial_killer": 0.636,
+      "n_off/overall": 239,
+      "n_off/wolf": 101,
+      "n_off/serial_killer": 38,
+      "n_off/town": 100,
+      "n_on/overall": 143,
+      "n_on/town": 69,
+      "n_on/wolf": 52,
+      "n_on/serial_killer": 22
+    },
+    "credit": {
+      "total_sps": 227,
+      "credited": 172,
+      "ledger_keys": 172,
+      "matched": 172
+    },
+    "credit_dist": {
+      "n_sps": 227,
+      "n_followed": 172,
+      "follow_p50": 5,
+      "follow_max": 170,
+      "n_prune_eligible": 100,
+      "n_eligible_neg_lift": 46
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 29,
+        "evicted": 0,
+        "kept": 272,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 268,
+        "obs_kept": 453
+      },
+      "synth": {
+        "added": 131,
+        "cells_synthed": 15,
+        "with_track_record": 15
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 39,
+        "villager/day_vote": 52,
+        "wolf/day_discussion": 43,
+        "wolf/day_vote": 37,
+        "wolf/night_action": 69,
+        "investigator/day_discussion": 32,
+        "investigator/day_vote": 22,
+        "investigator/night_action": 38,
+        "healer/day_discussion": 25,
+        "healer/day_vote": 27,
+        "healer/night_action": 48,
+        "serial_killer/day_discussion": 39,
+        "serial_killer/day_vote": 36,
+        "serial_killer/night_action": 76,
+        "vigilante/day_discussion": 43,
+        "vigilante/day_vote": 36,
+        "vigilante/night_action": 59
+      }
+    }
+  }
+]
