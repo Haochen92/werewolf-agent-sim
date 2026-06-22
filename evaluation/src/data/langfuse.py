@@ -575,3 +575,52 @@ def flush_langfuse() -> None:
     ``push_judge_scores`` are actually transmitted before the process exits.
     """
     langfuse.flush()
+
+
+# ---------------------------------------------------------------------------
+# Cost capture — realized USD from Langfuse's token accounting (the same source
+# as the manual reconciliations). trace.list returns total_cost ON each list
+# item, so a paginated list sums the cost with no per-trace get (no 422). All
+# best-effort: returns None if Langfuse is unreachable so callers can show
+# "unavailable" rather than a misleading $0, and NEVER raises into a run.
+# ---------------------------------------------------------------------------
+
+
+def _list_total_cost(**list_kwargs: Any) -> tuple[float | None, int]:
+    """Paginate ``api.trace.list(**list_kwargs)`` and sum ``total_cost`` across items.
+
+    Returns ``(usd, n_traces)``; ``usd`` is None only when Langfuse is unreachable (no page ever
+    fetched) so a transport failure reads as "unavailable", not "$0". A mid-paging error stops paging
+    and returns the partial sum gathered so far."""
+    try:
+        api = _require_langfuse_api()
+    except Exception:
+        return None, 0
+    total, n, page, any_ok = 0.0, 0, 1, False
+    while True:
+        try:
+            res = api.trace.list(page=page, limit=100, **list_kwargs)
+        except Exception:
+            break
+        any_ok = True
+        data = _field(res, "data") or []
+        if not data:
+            break
+        for t in data:
+            c = _field(t, "total_cost")
+            if c is not None:
+                total += c
+                n += 1
+        page += 1
+    return (round(total, 4) if any_ok else None), n
+
+
+def session_cost(session_id: str) -> tuple[float | None, int]:
+    """Realized USD for one run_batch session (its game's traces). (usd, n_traces); best-effort."""
+    return _list_total_cost(session_id=session_id)
+
+
+def window_cost(from_timestamp: Any, to_timestamp: Any) -> tuple[float | None, int]:
+    """Realized USD for ALL traces in a time window — the COMPLETE run cost (games + in-driver
+    dedup/synth/tagger, which don't carry a game session_id). (usd, n_traces); best-effort."""
+    return _list_total_cost(from_timestamp=from_timestamp, to_timestamp=to_timestamp)

@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
@@ -135,6 +136,12 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
     # cfg.env() is only applied to game SUBPROCESSES; pin it on the driver's OWN env too so in-process
     # synthesis/tagger/dedup-fallback never silently hit pro-2.5 because of the launch shell (the $55 trap).
     os.environ.update(cfg.env())
+    # Stamp run start for the cost-capture window (cost.py sums Langfuse traces from here -> now). Keep the
+    # ORIGINAL start on resume so the window still spans every generation.
+    run_dir.mkdir(parents=True, exist_ok=True)
+    meta_path = run_dir / "run_meta.json"
+    if not meta_path.exists():
+        meta_path.write_text(json.dumps({"run_started_at": datetime.now(timezone.utc).isoformat()}, indent=2))
     obs_sidecar = run_dir / "obs_generations.json"
     hist_path = run_dir / "loop_history.json"
     # RESUME: a run-dir with a loop_history continues from the next generation, reusing the existing
@@ -228,6 +235,17 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
                 shutil.copy2(store / f, snap / f)
 
     print(f"\nloop history -> {run_dir / 'loop_history.json'}", flush=True)
+    # COST CAPTURE (best-effort, post-hoc, NO auto-abort — surfaces the spend, a human decides). May
+    # undercount the final minutes (Langfuse ingestion lag); re-run `python -m evaluation.src.loop.cost`
+    # a few minutes later for the settled total.
+    try:
+        from evaluation.src.loop.cost import run_cost
+        rep = run_cost(run_dir)
+        (run_dir / "cost_report.json").write_text(json.dumps(rep, indent=2))
+        print(f"COST (Langfuse, realized): grand=${rep['grand_total_usd']} games=${rep['games_total_usd']} "
+              f"overhead=${rep['overhead_usd']}\n  per-gen games: {rep['per_gen_games_usd']}", flush=True)
+    except Exception as e:
+        print(f"[cost] capture failed (non-fatal): {e}", flush=True)
     return history
 
 
