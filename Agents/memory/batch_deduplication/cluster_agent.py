@@ -72,6 +72,15 @@ def _two_pass_cluster_dedup(
         else:
             trusted_ops.append(op)
 
+    if two_pass.skip_verify:
+        # Triage-only: do NOT escalate MERGE to the verify model. Downgrade every MERGE to KEEP (both
+        # near-dup entries stay, no merge text). Triage's KEEP/DISCARD already stand — exact dups still
+        # collapsed + count-bumped via DISCARD; we only decline to FUSE near-dups with a weaker model.
+        for op in triage_result.operations:
+            if op.action == "MERGE":
+                _downgrade_merge_to_keep(op)
+        return triage_result
+
     if not merge_keys:
         return triage_result
 

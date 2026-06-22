@@ -55,6 +55,12 @@ class TwoPassConfig(BaseModel):
     triage_thinking_level: str | None = DEFAULT_TRIAGE_THINKING_LEVEL
     verify_model: str = DEFAULT_BATCH_MODEL
     verify_thinking_level: str | None = DEFAULT_BATCH_THINKING_LEVEL or None
+    skip_verify: bool = False
+    """Run pass 1 (triage) ONLY and skip pass 2 (the verify/MERGE model). Triage's KEEP/DISCARD are
+    applied (exact dups still collapse + count-bump); anything triage flags MERGE downgrades to KEEP (both
+    entries stay, no merge text written, no verify-model call). Use this for observations when we want NO
+    merge at all — flash-lite triage is reliable for KEEP/DISCARD but loses nuance writing merged text, so
+    we keep near-dups separate rather than let it fuse them. Cheap (single flash-lite pass)."""
 
 
 class BatchDedupRunConfig(BaseModel):

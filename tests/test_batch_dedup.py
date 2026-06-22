@@ -439,3 +439,43 @@ def test_system_wide_mode_ignores_freeze_and_honors_llm_pick():
 
     assert (status, deleted) == ("discarded", 1)
     assert (NS, "k1") in store.deleted   # absorbed per the LLM, no freeze interference
+
+
+# --- two-pass: skip_verify runs triage only (obs no-merge) --------------------
+
+
+def test_two_pass_skip_verify_downgrades_merge_and_skips_verify(monkeypatch):
+    # Obs no-merge mode: run pass 1 (triage) only. MERGE verdicts downgrade to KEEP (near-dups kept,
+    # merge text cleared); DISCARD stands (exact dups collapse). The verify model is never called.
+    from Agents.memory.batch_deduplication import cluster_agent as ca
+    from Agents.memory.batch_deduplication.config import TwoPassConfig
+    from Agents.memory.batch_deduplication.schemas import (
+        ObservationBatchDedupOutput,
+        ObservationBatchOperation,
+    )
+
+    models_called = []
+
+    def fake_agent(memory_kind, role, action_phase, entries, index_to_key,
+                   model, thinking_level, prompt_variant="default"):
+        models_called.append(model)
+        return ObservationBatchDedupOutput(operations=[
+            ObservationBatchOperation(action="MERGE", reasoning="near-dup", source_keys=["k1", "k2"],
+                                      survivor_key="k1", merged_situation="m",
+                                      merged_approach="a", merged_outcome="o"),
+            ObservationBatchOperation(action="DISCARD", reasoning="exact", source_keys=["k3", "k4"],
+                                      survivor_key="k3"),
+        ])
+
+    monkeypatch.setattr(ca, "_cluster_agent", fake_agent)
+    monkeypatch.setattr(ca, "_format_cluster_entries", lambda *a, **k: ("entries", {}))
+
+    out = ca._two_pass_cluster_dedup(
+        "observations", "villager", "day_vote", ["k1", "k2", "k3", "k4"], {},
+        TwoPassConfig(triage_model="flash-lite", skip_verify=True),
+    )
+
+    assert models_called == ["flash-lite"]                  # verify model never called
+    assert sorted(op.action for op in out.operations) == ["DISCARD", "KEEP"]   # MERGE -> KEEP
+    keep = next(op for op in out.operations if op.action == "KEEP")
+    assert keep.merged_situation is None                    # merge text cleared by the downgrade
