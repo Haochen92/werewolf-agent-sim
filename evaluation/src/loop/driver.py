@@ -248,13 +248,20 @@ def main() -> int:
     ap.add_argument("--prune-min-follow", type=int, default=LoopConfig.prune_min_follow)
     ap.add_argument("--synth-track-min-follow", type=int, default=LoopConfig.synth_track_min_follow)
     ap.add_argument("--synth-min-new-obs", type=int, default=LoopConfig.synth_min_new_obs)
+    # evict + obs-decay thresholds — also LOWERED in a smoke so those paths fire at tiny N (else the smoke
+    # silently skips evict/decay, the paths most likely to hide a bug).
+    ap.add_argument("--evict-min-retrieved", type=int, default=LoopConfig.evict_min_retrieved)
+    ap.add_argument("--obs-evict-min-age", type=int, default=LoopConfig.obs_evict_min_age)
+    ap.add_argument("--protect-min-follow", type=int, default=LoopConfig.protect_min_follow)
     ap.add_argument("--discussion-mode", default=LoopConfig.discussion_mode, choices=["tagger", "floor"])
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
                      window_generations=args.window_generations, synth_every_k_gens=args.synth_every_k,
                      game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth,
                      prune_min_follow=args.prune_min_follow, synth_track_min_follow=args.synth_track_min_follow,
-                     synth_min_new_obs=args.synth_min_new_obs, discussion_mode=args.discussion_mode)
+                     synth_min_new_obs=args.synth_min_new_obs, discussion_mode=args.discussion_mode,
+                     evict_min_retrieved=args.evict_min_retrieved, obs_evict_min_age=args.obs_evict_min_age,
+                     protect_min_follow=args.protect_min_follow)
     run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 
