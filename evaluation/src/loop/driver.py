@@ -93,39 +93,65 @@ def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
     subprocess.run(cmd, cwd=REPO, env={**os.environ, **cfg.env()}, check=True)
 
 
-def _run_games_parallel(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
-                        seed: Path | None = None, dump_each: bool = False,
-                        game_id_base: str | None = None, extra: tuple = ()) -> list:
-    """Play games_per_generation games CONCURRENTLY (cap = game_concurrency), then concatenate the
-    per-game batch records into out_jsonl. With dump_each, each game dumps to its own per-game store and
-    the dirs are returned (for the freeze-old merge). Games are the wall-clock bottleneck; the only writer
-    to the shared store is the post-merge, so this is race-free by construction. game_id_base (the SAME
-    value passed to ON and OFF in a generation) pins each game-k's board so the arms play matched draws."""
+def _game_tasks(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
+                seed: Path | None = None, dump_each: bool = False,
+                game_id_base: str | None = None, extra: tuple = ()) -> list:
+    """Build (but don't run) one arm's per-game thunks. Each thunk plays game-k and returns
+    (out_k, dump_k). Returned as a list so a caller can pool BOTH arms' thunks together. game_id_base
+    (the SAME value for ON and OFF in a generation) pins each game-k's board so the arms play matched
+    draws — the paired A/B; memory is the only difference, which cancels cross-game variance in on-off."""
     stem = out_jsonl.stem
 
-    def _one(k: int):
-        out_k = run_dir / f"{stem}_g{k}.jsonl"
-        dump_k = None
-        if dump_each:
-            dump_k = run_dir / f"{stem}_store_g{k}"
-            dump_k.mkdir(parents=True, exist_ok=True)
-        gid = f"{game_id_base}_g{k}" if game_id_base else None
-        _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, game_id=gid, extra=extra)
-        return out_k, dump_k
+    def _make(k: int):
+        def _one():
+            out_k = run_dir / f"{stem}_g{k}.jsonl"
+            dump_k = None
+            if dump_each:
+                dump_k = run_dir / f"{stem}_store_g{k}"
+                dump_k.mkdir(parents=True, exist_ok=True)
+            gid = f"{game_id_base}_g{k}" if game_id_base else None
+            _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, game_id=gid,
+                          extra=extra)
+            return out_k, dump_k
+        return _one
 
-    outs: list = []
+    return [_make(k) for k in range(cfg.games_per_generation)]
+
+
+def _concat_games(out_jsonl: Path, results: list) -> list:
+    """Concatenate an arm's per-game records (results = [(out_k, dump_k), ...]) into out_jsonl, unlink the
+    redundant per-game files, and return the dump dirs (for the freeze-old merge)."""
     dumps: list = []
-    with ThreadPoolExecutor(max_workers=max(1, cfg.game_concurrency)) as pool:
-        for out_k, dump_k in pool.map(_one, range(cfg.games_per_generation)):
-            outs.append(out_k)
+    with open(out_jsonl, "w") as f:
+        for out_k, dump_k in results:
+            if out_k.exists():
+                f.write(out_k.read_text())
+            out_k.unlink(missing_ok=True)
             if dump_k is not None:
                 dumps.append(dump_k)
-    with open(out_jsonl, "w") as f:                       # concat per-game records into the gen record
-        for o in outs:
-            if o.exists():
-                f.write(o.read_text())
-            o.unlink(missing_ok=True)                     # the per-game record is now redundant
     return dumps
+
+
+def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: LoopConfig, configs: str,
+                       snapshot: Path, pair_base: str, off_baseline: bool) -> list:
+    """Run the ON and OFF arms' games CONCURRENTLY in ONE capped pool (total concurrency =
+    game_concurrency), so the OFF baseline overlaps the ON arm instead of running after it (~halves
+    per-gen wall-clock at a bounded cap). Independent by construction: OFF (all_disabled, no seed/dump)
+    touches nothing; ON seeds read-only from the snapshot and dumps to its own per-game stores; the merge
+    happens AFTER all games. Returns the ON dump dirs. Pairing is preserved — game-k is matched by
+    game_id across arms regardless of run order."""
+    on_tasks = _game_tasks(run_dir, on_jsonl, f"loop_{run_dir.name}_{on_jsonl.stem}",
+                           cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base)
+    off_tasks = _game_tasks(run_dir, off_jsonl, f"loop_{run_dir.name}_{off_jsonl.stem}",
+                            cfg, "all_disabled", seed=None, dump_each=False, game_id_base=pair_base,
+                            extra=("--no-memory-seed", "--no-memory-dump")) if off_baseline else []
+    n_on = len(on_tasks)
+    with ThreadPoolExecutor(max_workers=max(1, cfg.game_concurrency)) as pool:
+        results = list(pool.map(lambda t: t(), on_tasks + off_tasks))
+    dump_dirs = _concat_games(on_jsonl, results[:n_on])
+    if off_baseline:
+        _concat_games(off_jsonl, results[n_on:])
+    return dump_dirs
 
 
 def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "memory_stores/v6_1",
@@ -164,31 +190,29 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
 
     for gen in range(start_gen, cfg.generations + 1):
         on_jsonl = run_dir / f"gen{gen}_on.jsonl"
-        print(f"\n=== generation {gen}/{cfg.generations} — ON arm ({cfg.games_per_generation} games "
-              f"x{cfg.game_concurrency} parallel, {cfg.model}) ===", flush=True)
-        # Freeze the gen-start store as a read-only SNAPSHOT; every parallel game seeds from it and dumps
-        # to its own per-game store (no shared-store write race). Then ONE freeze-old merge folds the new
-        # obs in (cross-game dups collapse to observation_count; the snapshot is frozen).
+        off_jsonl = run_dir / f"gen{gen}_off.jsonl"
+        arms = "ON+OFF" if cfg.off_baseline else "ON"
+        print(f"\n=== generation {gen}/{cfg.generations} — {arms} arms "
+              f"({cfg.games_per_generation}/arm, cap {cfg.game_concurrency} parallel, {cfg.model}) ===",
+              flush=True)
+        # Freeze the gen-start store as a read-only SNAPSHOT; ON games seed from it (read-only) and dump to
+        # their own per-game stores; the OFF arm (all_disabled, no seed/dump) touches nothing. ON+OFF run in
+        # ONE capped pool (they overlap within game_concurrency), then ONE freeze-old merge folds the new ON
+        # obs in (cross-game dups -> observation_count; snapshot frozen). Pairing holds: game-k is matched
+        # by game_id across arms regardless of run order.
         snapshot = run_dir / f"gen{gen}_snapshot"
         if snapshot.exists():
             shutil.rmtree(snapshot)
         shutil.copytree(store, snapshot)
         pair_base = f"pair_{run_dir.name}_gen{gen}"   # SAME boards for ON and OFF this gen (paired A/B)
-        dump_dirs = _run_games_parallel(run_dir, on_jsonl, f"loop_{run_dir.name}_gen{gen}_on",
-                                        cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base)
+        dump_dirs = _run_arms_parallel(run_dir, on_jsonl, off_jsonl, cfg, configs, snapshot, pair_base,
+                                       cfg.off_baseline)
         mstats = merge_new_obs(store, snapshot, dump_dirs,
                                dedup_model=cfg.dedup_model, no_merge=not cfg.obs_dedup_merge)
         print(f"  merge: {mstats}", flush=True)
         shutil.rmtree(snapshot, ignore_errors=True)      # cleanup snapshot + per-game temp stores
         for d in dump_dirs:
             shutil.rmtree(d, ignore_errors=True)
-
-        if cfg.off_baseline:                 # memory-OFF flat baseline — NO seed/dump (never touches store)
-            print(f"=== generation {gen} — OFF baseline (all_disabled, no seed/dump) ===", flush=True)
-            _run_games_parallel(run_dir, run_dir / f"gen{gen}_off.jsonl",
-                                f"loop_{run_dir.name}_gen{gen}_off", cfg, "all_disabled",
-                                seed=None, dump_each=False, game_id_base=pair_base,
-                                extra=("--no-memory-seed", "--no-memory-dump"))
 
         # credit runs over the ON arm window (rolling). The de-luck BASELINE comes from the clean,
         # same-epoch OFF arm (consolidation_design §3), NOT the incidental memory-off decisions inside the
