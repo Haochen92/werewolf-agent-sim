@@ -17,6 +17,18 @@ A4 (2026-06-20): the agent's OWN reasoning (`updated_strategy`, already on the E
 is fed in for ATTRIBUTION ONLY — de-confound night targets (discussion-driven read vs known-power-role
 removal), surface the hidden read (formed but not voiced), trace influence. VALENCE stays on observable
 behavior + true roles; the agent's account never drives merit (LLMs confabulate). structure-not-valence.
+
+REASONING-QUALITY + LEAK CHECK (2026-06-23, cache → v2). The verdict grades REASONING QUALITY given visible
+info — true roles CHECK a read's conclusion but a lucky-correct guess earns NO credit (don't swap outcome-luck
+for guess-luck). A 2x2 ablation MEASURED the suspected outcome-leak and found it NEGLIGIBLE (day-local
+coupling moved +0.07 town / ~0 wolf/SK when the vote/deaths were withheld), so the tagger keeps SHOWING the
+day vote/deaths by default (show_outcome=True) — blinding bought a within-noise gain at the cost of the night
+verdict's legitimate lynch context. The show_outcome / speakers_only levers stay for research; a blinded +
+verbosity-controlled retest confirmed the wolf/SK discussion signal (partial r(disc_verdict, won | deluck,
+verbosity) ≈ +0.56/+0.60, N=24) is REAL skill the vote proxy misses, NOT leak or wordiness. Untested residual:
+the night verdict still sees its own kill's death (the night analogue of the day leak) — a two-prompt split
+would fix it if a clean deceiver night-metric is ever needed. (Code/numbers: evidence/v7_final/v2_full/
+tagger_deleak_ablation.py + tagger_skill_retest.py.)
 """
 
 from __future__ import annotations
@@ -67,21 +79,35 @@ class DayTags(BaseModel):
     night: list[NightTag] = Field(description="One tag per player who took a night action this day.")
 
 
+# show_outcome toggles whether the prompt includes the day's vote result + night deaths. DEFAULT = True
+# (shown): the 2x2 ablation measured the discussion-verdict outcome-leak as NEGLIGIBLE (+0.07 town / ~0
+# wolf/SK), so blinding isn't worth the night verdict's lost lynch context. The grader keys on REASONING
+# QUALITY regardless (true roles check the conclusion; a lucky-correct guess earns no credit). The
+# _CLAUSE_NO_OUTCOME variant (show_outcome=False) is the blinded form used by the ablation / a future split.
+_CLAUSE_NO_OUTCOME = (". You are deliberately NOT shown how the day's vote resolved or who died this night — "
+                      "those collective results are luck, and are withheld")
+_CLAUSE_OUTCOME = ", the day's vote result, and that night's deaths"
+
 _PROMPT = """You are an omniscient post-game analyst for a social-deduction game (3 factions: villagers /
-wolves / serial_killer). You see ONE day's full PUBLIC discussion with TRUE ROLES revealed, the day's
-vote, that night's actions, and that night's deaths.
+wolves / serial_killer). You see ONE day's full PUBLIC discussion with TRUE ROLES revealed, plus that
+night's actions{outcome_clause}.
 
-Judge each player on the MERIT for THEIR OWN faction's win condition — omnisciently and INDEPENDENT of
-whether the day's vote / the game happened to favor them (a good move in a lost game is still positive; a
-lucky move is not). Deceivers advance by misdirection + useful survival; villagers by correctly finding
-threats + accurate consensus.
+GRADE REASONING QUALITY given the information visible AT THE TIME — not whether a guess happened to be
+correct. TRUE ROLES let you CHECK a read's conclusion, but they are NOT the credit: a baseless accusation
+that merely happens to land on a real threat is NOT skilled, and a well-justified read that turns out wrong
+is still good reasoning. Credit the JUSTIFICATION (tells, behavior, consistency visible in the discussion),
+not a lucky hit. Judge each player on the MERIT for THEIR OWN faction's win condition (de-luck: a good play
+in a lost game is still positive). Deceivers advance by misdirection + useful survival; villagers by
+reasoning accurately toward real threats.
 
-DISCUSSION: weigh framing (steering suspicion), credibility, and any role-reveal into ONE holistic verdict.
-role_reveal must reflect the DECLARED ROLE CLAIMS listed below (the reliable in-game extraction). Cross each
-claim against TRUE ROLES: a claim whose role != the player's actual role is a FALSE claim = a strong
-deception tell (manipulative framing / the room mis-trusting it should read as low credibility).
-NIGHT: for each night action, judge the READ behind the target given the day's discussion — a SKILLED read
-(discussion justified it) earns credit; a blind/lucky pick that merely happened to hit does NOT.
+DISCUSSION: weigh framing (steering suspicion), credibility, and any role-reveal into ONE holistic verdict —
+on reasoning quality, NOT a lucky-correct conclusion. role_reveal must reflect the DECLARED ROLE CLAIMS
+listed below (the reliable in-game extraction). Cross each claim against TRUE ROLES: a claim whose role !=
+the player's actual role is a FALSE claim = a deception tell (manipulative framing / low credibility if the
+room mis-trusts it).
+NIGHT: for each night action, judge the READ behind the target given the day's discussion + true roles — a
+SKILLED read (the discussion justified it) earns credit; a blind/lucky pick that merely happened to hit does
+NOT.
 
 ATTRIBUTION INPUTS (A4) — the PRIVATE READS and the night-target rationales below are each player's OWN
 account, captured before they acted; LLMs CONFABULATE, so use them ONLY to ATTRIBUTE, never for merit:
@@ -97,13 +123,11 @@ DAY {day} DECLARED ROLE CLAIMS (in-game summary; cross vs TRUE ROLES — a claim
 {role_claims}
 DAY {day} PRIVATE READS (each agent's own account — ATTRIBUTION ONLY, not merit):
 {private_reads}
-DAY {day} VOTE RESULT: {lynch}
 NIGHT {day} ACTIONS (target [why] = the actor's own rationale, ATTRIBUTION ONLY):
-{night_actions}
-NIGHT {day} DEATHS: {deaths}
+{night_actions}{outcome_block}
 
-Output: discussion tags (per meaningful contributor) + night tags (per night actor), each
-outcome-independent."""
+Output: discussion tags (per player who contributed) + night tags (per night actor), each judged on
+reasoning-merit vs the TRUE ROLES."""
 
 
 def _format_day(msgs: list[dict], roles: dict) -> str:
@@ -176,18 +200,35 @@ def _role_claims_by_day(record: dict) -> dict[int, list]:
     return out
 
 
-def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
+def tag_game(record: dict, max_workers: int = 8, *, show_outcome: bool = True,
+             speakers_only: bool = True) -> tuple[dict, dict]:
     """Omniscient per-day tags. Returns ({(day,player): disc_tag}, {(day,player): night_tag}).
-    flash-lite via get_llm_pro() (env-pin GOOGLE_GENAI_PRO_MODEL)."""
+    flash-lite via get_llm_pro() (env-pin GOOGLE_GENAI_PRO_MODEL).
+
+    Two independent levers (the 2x2 ablation toggled them to separate the outcome-leak axis from the
+    mechanical silent-player axis — see tagger_deleak_ablation.py):
+      show_outcome=True (DEFAULT) — include the day's vote result + night deaths. The ablation MEASURED the
+        discussion-verdict outcome-leak as NEGLIGIBLE (day-local coupling moved +0.07 town / ~0 wolf/SK when
+        withheld), so blinding isn't worth the night verdict's lost lynch context. False = the blinded
+        variant (judge reasoning vs true roles only) — used by the ablation / a future two-prompt split.
+      speakers_only=True (DEFAULT) — drop discussion tags for players who didn't actually speak that day
+        (silence is a separate concealment axis, not a discussion verdict; barely changes the tags).
+    Either way the verdict grades REASONING QUALITY (true roles check the conclusion; a lucky-correct guess
+    earns no credit), which a blinded+verbosity-controlled retest confirmed is real skill the vote proxy
+    misses (wolf/SK partial r(disc,won|deluck,verbosity) ≈ +0.56/+0.60, N=24)."""
     roles = record.get("roles") or {}
     by_day: dict[int, list] = defaultdict(list)
+    spoke: dict[int, set] = defaultdict(set)        # day -> players who actually spoke (speakers_only gate)
     for m in record.get("day_channel") or []:
         by_day[m.get("day")].append(m)
+        if not m.get("passed") and (m.get("message") or "").strip():
+            spoke[m.get("day")].add(m.get("player"))
     lynch = {dr.get("day"): dr.get("voted_player") for dr in record.get("day_resolutions", [])}
     deaths = {n.get("day"): n.get("deaths") for n in record.get("night_resolutions", [])}
     night_acts = _night_actions_by_day(record)
     night_reason, disc_reason = _reasoning_by_day(record)  # A4: attribution-only carrier
     role_claims = _role_claims_by_day(record)              # anchors role_reveal on the in-game extraction
+    clause = _CLAUSE_OUTCOME if show_outcome else _CLAUSE_NO_OUTCOME
     llm = get_llm_pro().with_structured_output(DayTags)
 
     def _tag(day: int):
@@ -199,9 +240,11 @@ def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
             f"{p} ({roles.get(p, '?')}): {disc_reason[(day, p)][:240]}"
             for p in sorted({pp for (dd, pp) in disc_reason if dd == day})) or "(none captured)"
         rc_str = "; ".join(f"{p} claimed {cr}" for p, cr in role_claims.get(day, [])) or "(none)"
+        block = (f"\nDAY {day} VOTE RESULT: {lynch.get(day)}\nNIGHT {day} DEATHS: {deaths.get(day)}"
+                 if show_outcome else "")
         prompt = _PROMPT.format(roles=roles, day=day, discussion=_format_day(by_day[day], roles),
-                                role_claims=rc_str, private_reads=pr_str, lynch=lynch.get(day),
-                                night_actions=na_str, deaths=deaths.get(day))
+                                role_claims=rc_str, private_reads=pr_str, outcome_clause=clause,
+                                outcome_block=block, night_actions=na_str)
         try:
             res = llm.invoke(prompt, config={"run_name": f"tag_d{day}"})
             return day, (res if isinstance(res, DayTags) else DayTags.model_validate(res))
@@ -214,13 +257,15 @@ def tag_game(record: dict, max_workers: int = 8) -> tuple[dict, dict]:
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         for day, dt in pool.map(_tag, sorted(by_day)):
             for t in dt.discussion:
+                if speakers_only and t.player not in spoke[day]:
+                    continue                     # drop silent-player discussion tags (the cleanest leak source)
                 disc[(day, t.player)] = t.model_dump()
             for t in dt.night:
                 night[(day, t.player)] = t.model_dump()
     return disc, night
 
 
-def tag_game_cached(record: dict, tags_dir: str | None, version: str = "v1",
+def tag_game_cached(record: dict, tags_dir: str | None, version: str = "v2",
                     max_workers: int = 8) -> tuple[dict, dict]:
     """PERSIST tags per game_id so the rolling-window credit recompute doesn't re-tag finished games.
     A played game's tags are immutable, so re-running `tag_game` over the window each generation is pure
