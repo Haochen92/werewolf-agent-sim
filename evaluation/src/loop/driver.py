@@ -33,7 +33,7 @@ from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply, credit_distribution
 from evaluation.src.loop.invariants import (
-    assert_base_rates, assert_credit_engaged, assert_score, expand_window)
+    assert_arm_factions, assert_base_rates, assert_credit_engaged, assert_score, expand_window)
 from evaluation.src.loop.measure import generation_score
 from evaluation.src.loop.merge import merge_new_obs
 
@@ -207,6 +207,12 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         pair_base = f"pair_{run_dir.name}_gen{gen}"   # SAME boards for ON and OFF this gen (paired A/B)
         dump_dirs = _run_arms_parallel(run_dir, on_jsonl, off_jsonl, cfg, configs, snapshot, pair_base,
                                        cfg.off_baseline)
+        # ⭐ARM GUARD: verify the ON arm enabled memory for exactly the declared factions BEFORE spending
+        # the rest of the budget — crashes gen 1 on the v2 trap (configs=all_enabled vs intended town_only).
+        # Always surfaced + recorded (even with no --expect-factions) so the arm is never invisible again.
+        arm_factions = sorted(assert_arm_factions(on_jsonl, cfg.expect_factions))
+        print(f"  arm: memory ENABLED for {arm_factions} (configs={configs}, "
+              f"expect={cfg.expect_factions or 'unchecked'})", flush=True)
         mstats = merge_new_obs(store, snapshot, dump_dirs,
                                dedup_model=cfg.dedup_model, no_merge=not cfg.obs_dedup_merge)
         print(f"  merge: {mstats}", flush=True)
@@ -245,7 +251,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         assert_score(score, label=f"gen{gen}")                         # 0 decisions => silent empty point
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
         history.append({"generation": gen, "score": score, "credit": cstats,
-                        "credit_dist": cdist, "consolidate": cons})
+                        "credit_dist": cdist, "consolidate": cons, "arm_factions": arm_factions})
         # write EVERY generation, not just at the end: the per-gen credit_dist/consolidate stats are
         # computed on the store-as-it-was-that-gen, which the next gen OVERWRITES — so a mid-run crash
         # would lose them irrecoverably (games + score re-derive from the gen records; these don't).
@@ -296,6 +302,9 @@ def main() -> int:
     ap.add_argument("--obs-evict-min-age", type=int, default=LoopConfig.obs_evict_min_age)
     ap.add_argument("--protect-min-follow", type=int, default=LoopConfig.protect_min_follow)
     ap.add_argument("--discussion-mode", default=LoopConfig.discussion_mode, choices=["tagger", "floor"])
+    ap.add_argument("--expect-factions", default=None,
+                    help="DECLARE which factions the ON arm should give memory ('town_only', 'all', or a "
+                         "comma list); crashes gen 1 if --configs enables a different set (the v2 trap guard)")
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
                      window_generations=args.window_generations, synth_every_k_gens=args.synth_every_k,
@@ -303,7 +312,7 @@ def main() -> int:
                      prune_min_follow=args.prune_min_follow, synth_track_min_follow=args.synth_track_min_follow,
                      synth_min_new_obs=args.synth_min_new_obs, discussion_mode=args.discussion_mode,
                      evict_min_retrieved=args.evict_min_retrieved, obs_evict_min_age=args.obs_evict_min_age,
-                     protect_min_follow=args.protect_min_follow)
+                     protect_min_follow=args.protect_min_follow, expect_factions=args.expect_factions)
     run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 

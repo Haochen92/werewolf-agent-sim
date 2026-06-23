@@ -11,8 +11,9 @@ import pytest
 
 from evaluation.src.experiments.credit_backfill import _expand_dumps
 from evaluation.src.loop.invariants import (
-    _iter_eval_cases, assert_base_rates, assert_credit_engaged, assert_score,
-    count_follow_verdicts, expand_window)
+    _iter_eval_cases, arm_memory_factions, assert_arm_factions, assert_base_rates,
+    assert_credit_engaged, assert_score, count_follow_verdicts, expand_window,
+    resolve_expected_factions)
 
 
 def _write(p, rows):
@@ -97,3 +98,41 @@ def test_assert_score():
     with pytest.raises(AssertionError, match="0 decisions"):
         assert_score({}, label="gen2")
     assert_score({"on/town": 0.3, "n_on/town": 12}, label="gen2")  # has scored decisions
+
+
+# --- arm-factions guard: THE v2 trap (ran all_enabled when town_only was intended) ----------------
+def _on_arm(tmp_path, memory_config):
+    p = tmp_path / "gen1_on.jsonl"
+    _write(p, [{"roles": {"p1": "villager"}, "memory_config": memory_config, "eval_cases_path": "x"}])
+    return str(p)
+
+
+def test_arm_memory_factions_reads_enabled_set(tmp_path):
+    on = _on_arm(tmp_path, {"villager": True, "healer": True, "wolf": False, "serial_killer": False})
+    assert arm_memory_factions(on) == frozenset({"villager", "healer"})
+
+
+def test_assert_arm_factions_catches_v2_trap(tmp_path):
+    # all_enabled ran, town_only declared -> must crash (the $60 bug)
+    on = _on_arm(tmp_path, {r: True for r in
+                            ("villager", "healer", "investigator", "vigilante", "wolf", "serial_killer")})
+    with pytest.raises(AssertionError, match="ARM MISMATCH"):
+        assert_arm_factions(on, "town_only")
+
+
+def test_assert_arm_factions_match_passes(tmp_path):
+    town = {"villager": True, "healer": True, "investigator": True, "vigilante": True,
+            "wolf": False, "serial_killer": False}
+    on = _on_arm(tmp_path, town)
+    assert assert_arm_factions(on, "town_only") == frozenset({"villager", "healer", "investigator", "vigilante"})
+
+
+def test_assert_arm_factions_intent_none_surfaces_without_asserting(tmp_path):
+    on = _on_arm(tmp_path, {"villager": True, "wolf": True})
+    assert assert_arm_factions(on, None) == frozenset({"villager", "wolf"})  # returns set, no raise
+
+
+def test_resolve_all_matches_actual_cast(tmp_path):
+    actual = frozenset({"villager", "wolf", "serial_killer"})
+    assert resolve_expected_factions("all", actual) == actual          # 'all' = whatever the cast exposes
+    assert resolve_expected_factions("wolf,villager", actual) == frozenset({"wolf", "villager"})

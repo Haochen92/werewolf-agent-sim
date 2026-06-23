@@ -112,3 +112,55 @@ def assert_score(score: dict, label: str = "") -> None:
         raise AssertionError(
             f"generation_score {label} scored 0 decisions — empty/wrong slope point (eval_cases_path skips "
             "or batch glob mismatch).")
+
+
+_TOWN_ROLES = frozenset({"villager", "healer", "investigator", "vigilante"})
+# Symbolic intents accepted by --expect-factions (besides an explicit comma list of roles).
+FACTION_INTENTS = {
+    "town_only": _TOWN_ROLES,
+    "town": _TOWN_ROLES,
+    "all": None,    # all = "every role with a memory_config key" — resolved against the actual arm
+    "all_enabled": None,
+}
+
+
+def arm_memory_factions(on_jsonl: str | Path) -> frozenset[str]:
+    """The set of roles ACTUALLY given memory in the ON arm, read from the first ON game record's
+    memory_config. The loop reads `configs` (a name) but the engine resolves it to a per-role on/off map —
+    this returns what the engine actually enabled, so intent can be checked against reality, not the name."""
+    for line in open(on_jsonl):
+        if not line.strip():
+            continue
+        mc = json.loads(line).get("memory_config")
+        if isinstance(mc, dict):
+            return frozenset(r for r, on in mc.items() if on)
+    raise AssertionError(f"no memory_config in any ON record of {on_jsonl} — cannot verify the arm")
+
+
+def resolve_expected_factions(intent: str | None, actual: frozenset[str]) -> frozenset[str] | None:
+    """Map a --expect-factions value to the role set it should equal. None intent => no check. A symbolic
+    'all' resolves to every role present in the actual arm (intent = 'all factions', whatever the cast is);
+    'town_only' => the four town roles; otherwise a comma list of role names."""
+    if intent is None:
+        return None
+    key = intent.strip().lower()
+    if key in FACTION_INTENTS:
+        exp = FACTION_INTENTS[key]
+        return actual if exp is None else exp     # 'all' = whatever roles the cast exposes
+    return frozenset(r.strip() for r in intent.split(",") if r.strip())
+
+
+def assert_arm_factions(on_jsonl: str | Path, intent: str | None) -> frozenset[str]:
+    """⭐THE guard for the v2 config slip: the ON arm silently ran `all_enabled` (every faction had memory)
+    when the experiment intended `town_only`, so a town-only conclusion was drawn from an all-memory-on
+    arms-race board — a plausible WRONG number, no error. This asserts the ACTUAL enabled-faction set equals
+    the declared intent and returns it (always — the caller records it in loop_history so the arm is visible
+    even when no intent is declared). intent=None => no assertion, just surface the set."""
+    actual = arm_memory_factions(on_jsonl)
+    expected = resolve_expected_factions(intent, actual)
+    if expected is not None and actual != expected:
+        raise AssertionError(
+            f"ARM MISMATCH: ON arm enabled memory for {sorted(actual)} but --expect-factions={intent!r} "
+            f"requires {sorted(expected)}. The loop is running a DIFFERENT experiment than declared "
+            f"(the v2 all_enabled-vs-town_only trap). Pass the right --configs or fix --expect-factions.")
+    return actual

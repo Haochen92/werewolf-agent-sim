@@ -16,6 +16,12 @@ class LoopConfig:
 
     model: str = "gemini-3.1-flash-lite"   # extract + synth model (validated ≈ pro); toggle → gemini-2.5-pro
 
+    expect_factions: str | None = None     # ⭐DECLARED experiment intent: which factions SHOULD have memory
+    #   in the ON arm ("town_only", "all", or a comma list of roles). The driver reads the ON arm's ACTUAL
+    #   memory_config and CRASHES on gen 1 if it doesn't match — the guard for the v2 trap (silently ran
+    #   all_enabled vs the intended town_only, then drew a town conclusion off an all-memory-on arms-race
+    #   board). None = no assertion, but the actual enabled-faction set is still logged + recorded.
+
     games_per_generation: int = 5          # batch size = the consolidation tick cadence (the LEARNING
     #   cadence — parallel games seed a frozen snapshot, so consolidation can ONLY happen at the
     #   generation boundary; small N = more frequent boundaries = faster/finer learning + more trend points)
