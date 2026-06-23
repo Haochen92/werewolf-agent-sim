@@ -656,6 +656,15 @@ over paired boards already removes the *distortion*.)
 
 ## 12. ⭐⭐ V2 — THE FIRST VALID LOOP RUN: honest negative-with-mechanism (2026-06-22)
 
+> 🛑 **CORRECTION 2026-06-23 — §12a–e BELOW ARE INVALID. Read §12f FIRST.** v2 did **not** run
+> town-only: it ran `configs=all_enabled` (EVERY faction had memory) vs `all_disabled`. So the "built-in
+> null control" of §12b **does not exist** (wolf/SK were a live treatment arm — wolf on−off even *trends
+> up* to +0.28), and the town conclusion is **confounded by an arms race** (town faced memory-improved
+> wolves; the vote proxy is opponent-sensitive). The §12c "+0.41 town / discussion +0.26–0.48" lift was a
+> **halo** (raw utility, base pinned to 0, never differenced vs no-memory) compounded by a game_id/tag-cache
+> collision. v2 is INVALID for the town question — same class of error as run-1's §11j, different cause.
+> It is repositioned as an **all-memory-on A/B** in §12f. Original §12a–e kept verbatim as the record.
+
 v2 is the readable rerun the §11j correction demanded: **COLD start** (re-mine from the de-capped substrate,
 not stale v6_1), **PAIRED arms** (matched `game_id`, verified live), **valid dedicated-OFF-arm baseline**,
 all five §11h fixes + **obs triage-only no-merge** + **flash-lite cost-guard** (pins GOOGLE_GENAI_PRO_MODEL/
@@ -704,3 +713,104 @@ architecture is **FROZEN** here. The deliverable is the eval-rigor arc: caught r
 *invalidity* (§11j) → rebuilt a valid instrument (paired arms + valid baseline + 5 fixes + cost capture +
 cold start) → valid replication for $15 → **honest negative + null-control proof**. A trustworthy negative
 beats a fragile positive. **NEXT = frontend/ship** (the north star).
+
+### 12f. ⭐⭐ CORRECTION (2026-06-23) — v2 was INVALID for the town question; repositioned as an all-memory-on A/B
+Independent re-audit from the raw records (not the §12a–e narrative): `run.log` + every ON record's
+`memory_config` show the ON arm ran **`all_enabled`** — `{wolf, villager, healer, investigator,
+serial_killer, vigilante}` ALL True — not the intended `town_only` (which exists, `scripts/run_batch.py:50`,
+but was never passed; the driver defaults to `all_enabled`). Three consequences, each verified:
+
+1. **The §12b null control is fiction.** Wolf/SK had memory in the ON arm (wolf/night_action SPs took 269
+   follows, max 97; ~3 SPs retrieved/decision on 84–94% of decisions). They were a *treatment* arm, not a
+   null one. And wolf on−off **trends up**: −0.14 → −0.05 → −0.11 → +0.17 → +0.10 → **+0.28** (mean +0.077,
+   OLS slope +0.086 over gens 2-6) — the clearest learning signal in the whole run, which §12b dismissed as
+   "noise proving unmeasurability." It is the opposite.
+2. **The town result is confounded (arms race).** `_vote_credit` scores a town vote `positive` only if the
+   votee is an actual threat → better-concealed wolves *mechanically* depress the town proxy, independent of
+   town skill. De-luck removes outcome luck, NOT opponent strength. So ON-arm town facing memory-improved
+   wolves cannot be compared to OFF-arm town facing memoryless wolves. The clean town-only test was never run.
+3. **The §12c town lift was a halo, retracted.** The "+0.41 town / villager-day_discussion +0.556" was raw
+   `(pos−neg)/follow` from the credited store with the tagger base pinned to **0** — a *level*, never
+   differenced vs no-memory (positive tagger verdicts occur with OR without memory: the exact halo the credit
+   design warns of). Differenced properly via the FREE day-vote-endpoint floor (valid both arms),
+   villager/day_discussion on−off is pure noise: −0.11, −0.49, −0.36, +0.33, −0.56, +0.48 (mean ≈ −0.12). A
+   first re-score attempt *also* mis-scored the OFF arm because ON/OFF share `game_id` and tags cache per
+   `game_id` from the ON arm only (a collision) — fixed by scoring discussion via the floor, not the tagger.
+
+**Repositioned result — v2 = an all-factions-memory-ON paired A/B** (`v2_salvage.py`, $0, re-read only):
+
+| faction | standard proxy (vote+night) on−off mean / slope (g2-6) | discussion-incl. (floor) mean / slope |
+|---|---|---|
+| **wolf** | **+0.077 / +0.086** (rises to +0.28) | +0.125 / −0.035 |
+| town | −0.189 / −0.027 | −0.180 / +0.093 |
+| serial_killer | −0.142 / +0.027 | −0.011 / +0.016 |
+| overall | −0.086 / +0.019 | −0.052 / +0.028 |
+
+**Honest takeaways:** (a) **wolf memory shows a tentative positive, compounding-shaped signal** — the one
+real result, underpowered (4 games/gen, ±0.2-0.3 swings) but the only monotone trend. (b) **Town memory
+shows no measurable benefit on ANY properly-differenced proxy** — and that is *still not a verdict on town
+memory*, because the arms-race confound is irreparable post-hoc. (c) SK ≈ null. The **town compounding
+question remains OPEN** — the architecture is **NOT** validly frozen on this evidence; only a real
+`town_only` run can answer it.
+
+**Third defect — the anti-bloat fix was a NO-OP (so v2 can't even validate THAT either).** The v2-prep's
+headline code change was the **new-clusters-only synthesis gate** (`_synth_cluster`: re-synthesize a cell
+only if it carries a NEW obs), built to stop run-1's 6× SP explosion (537 SPs, follow_p50→1). At v2's
+cadence it never bit: **k=1** (synthesize every gen) × **4 games/gen spread across all 17 cells** → nearly
+every cell gains a new obs every gen → the gate passes ~everything (`cells_synthed` = 17,16,17,15,11,15 of
+17). Result is the exact bloat it was meant to kill: total SPs grew ~linearly **0→227** over 6 gens with
+**follow_p50 stuck at ~5** (SPs accrue faster than they're followed), concentrated in night cells
+(wolf/night 46, SK/night 43, healer/night 28, inv/night 26). The gate only bites at **k>1** (cull every gen,
+synthesize less often) or when games are concentrated so some cells go a gen without new obs — neither held
+here. So the bloat-control fix executed but filtered nothing → **untested**. (Run-1 had no gate: 11/11 cells
+re-synthesized every gen, 318 SPs, follow_p50→1.) Net: v2 has THREE things off-plan — config slip
+(arms race), and on top of it this no-op gate, plus the §12d evict-rule-inert instrumentation gap.
+
+**Process fixes shipped same day:** (i) `invariants.assert_arm_factions` + driver `--expect-factions` +
+`arm_factions` recorded in `loop_history` — crashes gen-1 if the ON arm enables a different faction set than
+declared (would have caught this for ~$0.5 instead of $65). (ii) `v2_salvage.py` colocated as the repositioned
+analysis. Cost so far across run-1 (~$100, §11j-invalid) + v2 ($15+smokes, this) ≈ **2 null runs / ~$130 on
+invalid instruments** — both the *same failure*: the harness ran a different experiment than intended and the
+analysis rationalized the result instead of checking the config. The arm-guard closes that class.
+
+### 12g. ⭐ TAGGER LEAK/VALIDITY INVESTIGATION (2026-06-23, ~$0.05, `tagger_deleak_ablation.py` + `tagger_skill_retest.py`)
+A sub-thread off §12f's salvage: is the omniscient discussion-tagger's verdict a valid performance signal, or
+does it just re-read the outcome? It survived adversarial review and the claim *shrank three times* — logged
+honestly because the deflation IS the finding.
+
+**The arc (each step corrected the last):** (1) first read "holistic verdict is HALOED for deceivers"
+(r_vs_won≫r_vs_deluck). (2) WRONG framing — the tagger is **winner-blind**: it runs one day at a time, sees
+true roles + that day's vote + that night's deaths, NOT the game result; and r_vs_deluck was a flawed de-halo
+test (discussion is a *different* skill axis than the vote proxy, so they needn't agree). (3) A **2×2 ablation**
+`{outcome in/out}×{all/speakers}` then measured the actual day-local leak: withholding the outcome moved the
+coupling **+0.07 town / −0.02 wolf / +0.05 SK — negligible**; the silent-player effect was ~0 (the tagger
+barely tags non-speakers, 2/86). So the suspected leak is **not where any real problem lived** — and my
+"silence-as-skill upper-bound" story was retracted (a single quiet-coupling can't separate leak from
+silence-skill; the sign even ran against it).
+
+**The foundation test (the one that mattered):** absence-of-leak ≠ validity, so the wolf game-level signal
+(partial r(disc_verdict, won | deluck) = **+0.60**, i.e. the verdict predicts the win *beyond* the de-luck
+vote proxy) was retested **blinded + verbosity-controlled** over the 24 v2 ON games:
+
+| faction | (A) in \| deluck | (B) OUT \| deluck | (C) OUT \| deluck, verbosity |
+|---|---|---|---|
+| wolf | +0.60 | **+0.58** | **+0.56** |
+| serial_killer | +0.55 | +0.55 | **+0.60** |
+| town | +0.07 | +0.06 | +0.02 |
+
+⇒ the wolf/SK discussion signal **survives blinding AND a verbosity control** → it is **real deceiver skill the
+vote proxy cannot see**, not outcome-leak and not wordiness. Town adds ~nothing (its skill *is* the vote proxy).
+Bounds: N=24, single-epoch, **correlational — validates the METRIC, not a memory effect.** (Model is not a
+confounder here: every agent is the same flash-lite.)
+
+**Decisions.** (a) CODE — kept SINGLE prompt; added the **reasoning-quality grader** (true roles check the
+conclusion, a lucky-correct guess earns no credit — the real, leak-independent improvement); **reverted the
+outcome-blinding** (`show_outcome=True` default) since the leak is negligible and blinding a single prompt
+costs the night verdict its legitimate lynch context; `speakers_only=True` (cheap, endorsed); both levers +
+the de-leaked prompt retained for research; cache bumped `v1→v2`. Untested residual: the night verdict still
+sees its own kill's death (night analogue of the day leak) — a two-prompt split fixes it iff a clean deceiver
+night-metric is built. (b) THREAD — the deceiver-discussion-skill signal is a **validated candidate metric**
+for measuring *deceiver* memory (the channel the opponent-sensitive vote proxy is blind to). Pursue only
+properly-powered (N≫24, ideally a held-out epoch) if/when deceiver memory is measured. **Meta-lesson:** the
+same standard that deflated the leak claim three times was turned on its replacement ("real skill") before
+asserting it — and that one held.
