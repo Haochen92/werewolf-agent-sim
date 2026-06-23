@@ -66,22 +66,36 @@ def _is_creditable_follow_case(ec: dict) -> bool:
     return phase == "day_vote" or (phase == "night_action" and role in _CREDITABLE_NIGHT)
 
 
-def count_follow_verdicts(window_files: list[str]) -> int:
-    """CREDITABLE 'follow' verdicts — mirrors the credit join's own gate so the dead-credit guard compares
-    like with like: a follow counts only if the case had memory ON, the follow maps to a real retrieved SP
-    key (strategy_index_to_key), AND it's on a channel build_ledger actually credits. A mem-OFF / no-SP row
-    can still carry a 'follow' verdict (e.g. a wolf night action with no memory) that the ledger correctly
-    ignores — counting those false-positived the guard at cold start. (Also strictly resolves every
-    eval_cases_path en route, so calling this validates path wiring too.)"""
+def _count_follows(window_files: list[str], case_ok) -> int:
+    """Shared counter: memory-ON 'follow' verdicts that map to a real retrieved SP key
+    (strategy_index_to_key), restricted to the cases `case_ok` accepts. A mem-OFF / no-SP row can carry a
+    'follow' the ledger correctly ignores, so those never count. (Strictly resolves every eval_cases_path
+    en route, so calling this validates path wiring too.)"""
     n = 0
     for _g, ec in _iter_eval_cases(window_files):
-        if not ec.get("memory_enabled") or not _is_creditable_follow_case(ec):
+        if not ec.get("memory_enabled") or not case_ok(ec):
             continue
         idx = ec.get("strategy_index_to_key") or {}
         for sv in ec.get("strategy_verdicts") or []:
             if isinstance(sv, dict) and sv.get("verdict") == "follow" and idx.get(str(sv.get("strategy_index"))):
                 n += 1
     return n
+
+
+def count_follow_verdicts(window_files: list[str]) -> int:
+    """CREDITABLE 'follow' verdicts — mirrors the credit join's own gate so the dead-credit guard compares
+    like with like: a follow counts only if it's on a channel build_ledger actually credits (vote /
+    creditable night). The cold-start false-positive (mem-OFF wolf-night follows) is excluded by
+    _count_follows' memory-ON gate."""
+    return _count_follows(window_files, _is_creditable_follow_case)
+
+
+def count_discussion_follow_verdicts(window_files: list[str]) -> int:
+    """day_discussion 'follow' verdicts mapping to a real retrieved SP key — the cases that SHOULD earn
+    discussion credit (floor or tagger). build_ledger does NOT cover this channel (vote/night only), so
+    count_follow_verdicts/assert_credit_engaged are blind to it: a silently-failed tagger could drop ALL
+    discussion credit while the vote/night ledger still passed the dead-credit guard. This is its counter."""
+    return _count_follows(window_files, lambda ec: ec.get("action_phase") == "day_discussion")
 
 
 def assert_credit_engaged(window_files: list[str], ledger_keys: int) -> int:
@@ -93,6 +107,24 @@ def assert_credit_engaged(window_files: list[str], ledger_keys: int) -> int:
         raise AssertionError(
             f"credit DEAD: {follows} follow verdicts in the window but ledger_keys=0 — the join produced "
             "nothing (window / path / glob wiring). NOT a valid 'no signal yet' state.")
+    return follows
+
+
+def assert_discussion_credit_engaged(window_files: list[str], disc_credited: int, *, enabled: bool) -> int:
+    """The day_discussion analog of assert_credit_engaged, for the channel that one is blind to. When
+    discussion credit is ON and the window carries day_discussion follows, the discussion ledger MUST have
+    credited something — else the tagger/floor silently no-opped. The motivating failure: the paid LLM
+    tagger catches all per-day errors and returns empty tags, so on a full whiff disc credit vanishes while
+    the vote/night ledger (deterministic) still passes the dead-credit guard — you spent on tags and got
+    nothing. Cold-start safe (no discussion follows yet => no claim). Returns the discussion follow count."""
+    if not enabled:
+        return 0
+    follows = count_discussion_follow_verdicts(window_files)
+    if follows > 0 and disc_credited == 0:
+        raise AssertionError(
+            f"discussion credit DEAD: {follows} day_discussion follow verdicts in the window but the "
+            "discussion ledger credited 0 SPs — the tagger/floor silently no-opped (a failed flash-lite "
+            "tagger returns empty tags; you spent on tags and got no credit). NOT a valid 'no signal' state.")
     return follows
 
 
@@ -164,3 +196,47 @@ def assert_arm_factions(on_jsonl: str | Path, intent: str | None) -> frozenset[s
             f"requires {sorted(expected)}. The loop is running a DIFFERENT experiment than declared "
             f"(the v2 all_enabled-vs-town_only trap). Pass the right --configs or fix --expect-factions.")
     return actual
+
+
+def assert_arm_declared(expect_factions: str | None, unchecked_arm: bool) -> None:
+    """⭐FAIL-CLOSED pre-spend gate: refuse to start unless the ON arm is DECLARED (--expect-factions) or the
+    check is explicitly WAIVED (--unchecked-arm). assert_arm_factions only fires when an intent is given, so
+    a None intent left the v2 guard opt-IN — forgetting the flag silently re-opened the trap. This flips the
+    default to declared: you must say what the arm should be, or knowingly opt out. No silent middle."""
+    if expect_factions is None and not unchecked_arm:
+        raise AssertionError(
+            "arm UNDECLARED: pass --expect-factions (e.g. 'town_only' or 'all') so the ON arm is verified "
+            "before spend, OR --unchecked-arm to knowingly run without the check. Refusing to run "
+            "unverified — the v2 trap recurred precisely by FORGETTING to declare the arm.")
+
+
+# runtime_fingerprint fields run_batch stamps on every game (Agents/run_fingerprint.py): backend, models,
+# temperature, prompt-bundle hash, git commit/dirty, embeddings. All environment-level (no per-game field),
+# so within ONE run every game's stamp is identical — any inequality is real drift.
+def arm_fingerprint(jsonl: str | Path) -> dict:
+    """The runtime_fingerprint stamped on the arm's first game record — the run's provenance (backend /
+    model / temp / prompt / commit). Surfaced into run_meta and held constant across the run, so a flip
+    can't silently splice incomparable scores (the 'Vertex vs Google differ at temp=0' rule, enforced)."""
+    for line in open(jsonl):
+        if not line.strip():
+            continue
+        fp = json.loads(line).get("runtime_fingerprint")
+        if isinstance(fp, dict):
+            return fp
+    raise AssertionError(f"no runtime_fingerprint in any record of {jsonl} — cannot verify run provenance")
+
+
+def assert_fingerprint_consistent(jsonl: str | Path, reference: dict) -> None:
+    """Crash if any game record's fingerprint diverges from `reference`. A mid-run flip — a resume under a
+    different backend/model/prompt, or an edit that changes the commit — otherwise silently mixes
+    incomparable games into one slope. Records lacking a fingerprint are skipped (not all paths stamp)."""
+    for line in open(jsonl):
+        if not line.strip():
+            continue
+        fp = json.loads(line).get("runtime_fingerprint")
+        if isinstance(fp, dict) and fp != reference:
+            diff = {k: (reference.get(k), fp.get(k))
+                    for k in set(reference) | set(fp) if reference.get(k) != fp.get(k)}
+            raise AssertionError(
+                f"runtime DRIFT within the run in {jsonl}: {diff} (reference vs record). A backend / model / "
+                "prompt / commit flip mid-run makes the scores incomparable — pin the env and restart.")

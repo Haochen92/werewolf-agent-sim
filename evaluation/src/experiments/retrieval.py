@@ -17,7 +17,7 @@ from typing import Any
 
 from langgraph.store.memory import InMemoryStore
 
-from evaluation.src.components.retrieval import (
+from evaluation.src.replay.retrieval import (
     build_store_from_snapshots,
     keep_top_scored_items,
     redundancy_ratio,

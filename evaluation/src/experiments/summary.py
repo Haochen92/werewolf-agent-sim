@@ -15,7 +15,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from evaluation.src.components import (
+from evaluation.src.replay import (
     run_situation_summary_variant,
 )
 from evaluation.src.core.config_schema import PairwiseExperimentConfig

@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from evaluation.src.experiments.credit_backfill import VERDICT_VALUE, _decision_credit  # noqa: E402
+from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _decision_credit  # noqa: E402
 
 DUMPS = "batch_results/*v6ab*.jsonl"
 SHRINK_K = 5

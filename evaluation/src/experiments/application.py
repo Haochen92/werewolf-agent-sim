@@ -16,11 +16,11 @@ from typing import Any
 from Agents.prompts.prompt_formatters import format_agent_action
 from Agents.memory import retrieve_observations_for_agent, retrieve_strategy_points_for_agent
 from Agents.schemas.evaluation import EvalCase
-from evaluation.src.components.application import (
+from evaluation.src.replay.application import (
     application_case_for_judge,
     run_application_action,
 )
-from evaluation.src.components.retrieval import build_store_from_snapshots, keep_top_scored_items
+from evaluation.src.replay.retrieval import build_store_from_snapshots, keep_top_scored_items
 from evaluation.src.core.config_schema import ApplicationExperimentConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env

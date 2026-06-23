@@ -33,8 +33,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from Agents.llm_factory.embeddings import create_embeddings
 from Agents.schemas import RetrievedObservation
 from Agents.schemas.memory import StoredObservation
-from evaluation.src.components.decision_scoring import THREAT_ROLES, allow_abstain_for, score_vote
-from evaluation.src.components.situation_summary import eval_case_to_agent_payload
+from evaluation.src.loop.decision_scoring import THREAT_ROLES, allow_abstain_for, score_vote
+from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 from evaluation.src.data.local_cases import LocalCaseSource
 from evaluation.src.experiments.decision_replay import _replay_vote, load_game_index, mcnemar_p
 from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent

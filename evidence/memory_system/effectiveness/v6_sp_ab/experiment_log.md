@@ -14,7 +14,7 @@ sk-sp, sk-both).
 - **Retrieval pinned RAW** (rerank + MMR-filter OFF) — i.e. the precision mechanisms are disabled by
   design (comparability with the prior raw A/B; the precision knobs are a deliberate follow-up lever).
 - **Same-epoch:** all arms launched concurrently → one model snapshot. **Epoch is SK-favoured:**
-  overall SK 47% / villagers 35% / wolves 18% (avg 4.7 days); baseline SK 52% — high but not ceilinged.
+  overall SK 43% / villagers 36% / wolves 22% (avg 4.6 days); baseline SK 47% — high but not ceilinged.
 - Game model `gemini-3.1-flash-lite`, temp 1.0, `game_thinking_level: minimal`.
 
 ## Headline results (paired McNemar / Wilcoxon vs baseline)
@@ -40,7 +40,7 @@ only those + win-rate are OUTCOME claims (per `evidence/metrics/proxy_win_monoto
 | sk-both | 53% | +7pp | 6/4 | 0.75 |
 
 The cleanest test is the **direct synergy contrast sk-both vs sk-sp** (no baseline in the way):
-SK lynched **47% vs 70%** (p=0.071), +23pp win (p=0.118), +0.40 nights, +0.40 kills. So:
+SK lynched **47% vs 70%** (p=0.118), +23pp win (p=0.118), +0.40 nights, +0.40 kills. So:
 **SP-alone trends harmful to the deceiver** (the stale "blend by going quiet" passivity SP, followed
 past the early game → caught — predicted a priori), and **obs+SP-with-synergy rescues it** (obs
 cross-check overrides the bad SP — exactly the synergy mode's design intent). Coherent across
@@ -125,12 +125,12 @@ flips the deceiver result from harmful to neutral/positive.
   *assert* the confirmed read (vs the heuristic bracket); (b) categorize SP content
   concealment/herd vs decisive enemy-ID at scale.
 - **Add a `town-both` arm** to test whether synergy rescues town-sp's negative trend (as it did for SK).
-- **More N** for the SK synergy contrast (lynch-rate p=0.071 would likely tighten at ~2×N).
+- **More N** for the SK synergy contrast (lynch-rate p=0.118 would likely tighten at ~2×N).
 
 ## Caveats
 
-Nothing significant (all p>0.07); N=30 underpowered; SK proxy basket unvalidated; content/transmission
-analyses are lexical/qualitative (judge-confirmation pending); town-sp incomplete (21/30); raw
+Nothing significant (all outcome-claim p>0.11); N=30 underpowered; SK proxy basket unvalidated;
+content/transmission analyses are lexical/qualitative (judge-confirmation pending); raw
 retrieval (precision off by design). Epoch is SK-favoured — absolute rates won't transfer across runs;
 within-arm paired deltas are the unit.
 

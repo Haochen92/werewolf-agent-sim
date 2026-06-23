@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import unittest
 
-from evaluation.src.experiments.credit_backfill import _majority_vote, _vote_credit
+from evaluation.src.loop.credit_backfill import _majority_vote, _vote_credit
 
 # player_1/2 are wolves; the rest town. score_vote only needs the votee's role to exist here.
 ROLES = {"player_1": "wolf", "player_2": "wolf", "player_3": "villager", "player_9": "villager"}

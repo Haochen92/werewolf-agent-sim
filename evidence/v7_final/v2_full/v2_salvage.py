@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from evaluation.src.experiments.credit_backfill import (
+from evaluation.src.loop.credit_backfill import (
     VERDICT_VALUE, _decision_credit, _majority_vote, _vote_credit)
 
 RUN = Path(__file__).resolve().parent

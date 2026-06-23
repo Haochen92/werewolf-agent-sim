@@ -1,17 +1,17 @@
-"""Reusable evaluation component runners."""
+"""Reusable replay-eval runners — re-run a production prompt / situation-summary / retrieval on a frozen turn."""
 
-from evaluation.src.components.application import (
+from evaluation.src.replay.application import (
     ActionSpec,
     action_spec_for,
     application_case_for_judge,
     run_application_action,
 )
-from evaluation.src.components.retrieval import (
+from evaluation.src.replay.retrieval import (
     build_store_from_snapshots,
     keep_top_scored_items,
     redundancy_ratio,
 )
-from evaluation.src.components.situation_summary import (
+from evaluation.src.replay.situation_summary import (
     eval_case_to_agent_payload,
     make_google_llm,
     message_content_text,

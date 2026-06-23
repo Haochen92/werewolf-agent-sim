@@ -28,12 +28,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from evaluation.src.experiments.credit_backfill import compute_base_rates
+from evaluation.src.loop.credit_backfill import compute_base_rates
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply, credit_distribution
 from evaluation.src.loop.invariants import (
-    assert_arm_factions, assert_base_rates, assert_credit_engaged, assert_score, expand_window)
+    arm_fingerprint, assert_arm_declared, assert_arm_factions, assert_base_rates, assert_credit_engaged,
+    assert_discussion_credit_engaged, assert_fingerprint_consistent, assert_score, expand_window)
 from evaluation.src.loop.measure import generation_score
 from evaluation.src.loop.merge import merge_new_obs
 
@@ -157,6 +158,11 @@ def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: Loop
 def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "memory_stores/v6_1",
              configs: str = "all_enabled") -> list[dict]:
     run_dir = Path(run_dir)
+    # ⭐ARM-DECLARATION GATE (fail-closed, before ANY spend): refuse to start unless the ON arm is declared
+    # (cfg.expect_factions) or the check is explicitly waived (cfg.unchecked_arm). The per-gen
+    # assert_arm_factions only fires when an intent is GIVEN, so a forgotten flag silently re-opened the v2
+    # trap; this makes declaration the default you cannot omit your way past.
+    assert_arm_declared(cfg.expect_factions, cfg.unchecked_arm)
     # ⭐PRO-2.5 COST GUARD. consolidate (synthesis) + credit_apply (tagger) run IN THIS process and resolve
     # their model via get_llm_pro() -> os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL="gemini-2.5-pro").
     # cfg.env() is only applied to game SUBPROCESSES; pin it on the driver's OWN env too so in-process
@@ -213,6 +219,21 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         arm_factions = sorted(assert_arm_factions(on_jsonl, cfg.expect_factions))
         print(f"  arm: memory ENABLED for {arm_factions} (configs={configs}, "
               f"expect={cfg.expect_factions or 'unchecked'})", flush=True)
+        # ⭐PROVENANCE DRIFT GUARD: the runtime_fingerprint (backend/model/temp/prompt/commit) run_batch
+        # stamps on each game must hold constant across the whole run; a flip (e.g. a resume under a
+        # different env/backend) silently splices incomparable scores. Pin gen-1's into run_meta as the
+        # reference; assert every later gen + the OFF arm match it (the 'never compare across backends' rule).
+        fp = arm_fingerprint(on_jsonl)
+        meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
+        reference = meta.get("runtime_fingerprint")
+        if reference is None:
+            reference = meta["runtime_fingerprint"] = fp
+            meta_path.write_text(json.dumps(meta, indent=2))
+        assert_fingerprint_consistent(on_jsonl, reference)
+        if cfg.off_baseline:
+            assert_fingerprint_consistent(off_jsonl, reference)
+        print(f"  fingerprint: backend={fp.get('llm_backend')} game={fp.get('game_model')} "
+              f"pro={fp.get('pro_model')} commit={str(fp.get('git_commit', '?'))[:8]}", flush=True)
         mstats = merge_new_obs(store, snapshot, dump_dirs,
                                dedup_model=cfg.dedup_model, no_merge=not cfg.obs_dedup_merge)
         print(f"  merge: {mstats}", flush=True)
@@ -238,8 +259,11 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
                                   discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode,
                                   tags_dir=str(run_dir / "tags"))  # persist tags per game_id (no re-tag)
             follows = assert_credit_engaged(win_on, cstats.get("ledger_keys", 0))  # dead-credit guard
+            disc_follows = assert_discussion_credit_engaged(  # discussion analog (build_ledger is blind to it)
+                win_on, cstats.get("disc_credited", 0), enabled=cfg.discussion_credit)
             cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)  # did credit ENGAGE?
-            print(f"  credit: {cstats} window_follows={follows}\n  credit_dist: {cdist}", flush=True)
+            print(f"  credit: {cstats} window_follows={follows} disc_follows={disc_follows}\n"
+                  f"  credit_dist: {cdist}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:
             obs_gen_map = _stamp_obs_generations(store, gen, obs_sidecar)  # new obs this gen -> `gen`
@@ -247,7 +271,9 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             prev_obs_counts = cons.get("obs_counts", prev_obs_counts)
             print(f"  consolidate: prune_evict={cons.get('prune_evict')} "
                   f"obs_evict={cons.get('obs_evict')} synth={cons.get('synth')}", flush=True)
-        score = generation_score(str(run_dir / f"gen{gen}_*.jsonl"))   # on + off arms
+        score = generation_score(                                      # bucket by ARM (file), not the flag
+            str(run_dir / f"gen{gen}_on.jsonl"),
+            str(run_dir / f"gen{gen}_off.jsonl") if cfg.off_baseline else None)
         assert_score(score, label=f"gen{gen}")                         # 0 decisions => silent empty point
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
         history.append({"generation": gen, "score": score, "credit": cstats,
@@ -305,6 +331,9 @@ def main() -> int:
     ap.add_argument("--expect-factions", default=None,
                     help="DECLARE which factions the ON arm should give memory ('town_only', 'all', or a "
                          "comma list); crashes gen 1 if --configs enables a different set (the v2 trap guard)")
+    ap.add_argument("--unchecked-arm", action="store_true",
+                    help="opt OUT of the arm-declaration gate (throwaway smokes only); paid runs MUST instead "
+                         "pass --expect-factions — the loop refuses to start with neither")
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
                      window_generations=args.window_generations, synth_every_k_gens=args.synth_every_k,
@@ -312,7 +341,8 @@ def main() -> int:
                      prune_min_follow=args.prune_min_follow, synth_track_min_follow=args.synth_track_min_follow,
                      synth_min_new_obs=args.synth_min_new_obs, discussion_mode=args.discussion_mode,
                      evict_min_retrieved=args.evict_min_retrieved, obs_evict_min_age=args.obs_evict_min_age,
-                     protect_min_follow=args.protect_min_follow, expect_factions=args.expect_factions)
+                     protect_min_follow=args.protect_min_follow, expect_factions=args.expect_factions,
+                     unchecked_arm=args.unchecked_arm)
     run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 

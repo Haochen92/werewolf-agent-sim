@@ -19,7 +19,7 @@ import os
 from collections import defaultdict
 from pathlib import Path
 
-from evaluation.src.experiments.credit_backfill import (
+from evaluation.src.loop.credit_backfill import (
     VERDICT_VALUE, SPCredit, _expand_dumps, _vote_credit, build_ledger, compute_base_rates,
 )
 
@@ -119,6 +119,7 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     store_sp_path = Path(store_sp_path)
     base_rates = base_rates if base_rates is not None else compute_base_rates(dumps_glob)
     ledger, _ = build_ledger(dumps_glob, base_rates)
+    disc_credited = 0
     if discussion:
         if discussion_mode == "tagger":        # (d) tier 2/3: omniscient LLM tagger (paid)
             disc_ledger, night_ledger = _tagger_ledger(dumps_glob, tags_dir)
@@ -129,6 +130,8 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
             disc_ledger, disc_base = _discussion_ledger(dumps_glob)
             ledger = {**ledger, **disc_ledger}  # disjoint keys (vote/night vs day_discussion SPs)
             base_rates = {**base_rates, **disc_base}
+        disc_credited = len(disc_ledger)        # day_discussion SP keys credited — the engaged-guard signal;
+        #   0 while there are discussion follows in the window = the tagger/floor silently produced nothing.
 
     store = json.loads(store_sp_path.read_text())
     matched = credited = total = 0
@@ -151,7 +154,8 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     # baseline is the real de-luck signal). base_rates: channel "role/phase" -> (mean, n).
     (store_sp_path.parent / "base_rates.json").write_text(
         json.dumps({k: list(v) for k, v in base_rates.items()}, indent=2))
-    return {"total_sps": total, "credited": credited, "ledger_keys": len(ledger), "matched": matched}
+    return {"total_sps": total, "credited": credited, "ledger_keys": len(ledger), "matched": matched,
+            "disc_credited": disc_credited}
 
 
 def credit_distribution(store_sp_path: str | Path, min_follow: int = 8) -> dict:

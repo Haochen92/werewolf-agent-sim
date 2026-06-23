@@ -94,7 +94,7 @@ def main() -> None:
         retrieve_strategy_points_for_agent,
     )
     from Agents.memory.persistence import seed_memory_from_json_files_cached
-    from evaluation.src.components.situation_summary import run_situation_summary_variant
+    from evaluation.src.replay.situation_summary import run_situation_summary_variant
     from evaluation.src.core.config_schema import VariantConfig
     from evaluation.src.data.datasets import read_eval_dataset
 

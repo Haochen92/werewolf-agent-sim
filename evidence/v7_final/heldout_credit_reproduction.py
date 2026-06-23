@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from evaluation.src.experiments.credit_backfill import (  # noqa: E402
+from evaluation.src.loop.credit_backfill import (  # noqa: E402
     SPCredit, _decision_credit, compute_base_rates,
 )
 

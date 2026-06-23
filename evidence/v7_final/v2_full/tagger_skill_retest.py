@@ -32,7 +32,7 @@ os.environ["GOOGLE_GENAI_PRO_BACKUP_MODEL"] = "gemini-3.1-flash-lite"
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
-from evaluation.src.experiments.credit_backfill import VERDICT_VALUE, _decision_credit, _majority_vote  # noqa: E402
+from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _decision_credit, _majority_vote  # noqa: E402
 from evaluation.src.loop.discussion_tagger import tag_game  # noqa: E402
 
 RUN = Path(__file__).resolve().parent

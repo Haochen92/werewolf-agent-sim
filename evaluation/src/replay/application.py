@@ -20,7 +20,7 @@ from Agents.prompts import (
 )
 from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
 from Agents.schemas.evaluation import EvalCase
-from evaluation.src.components.situation_summary import eval_case_to_agent_payload
+from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 
 
 @dataclass(frozen=True)

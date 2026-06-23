@@ -23,7 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from evaluation.src.experiments.credit_backfill import VERDICT_VALUE, _night_credit, _vote_credit  # noqa: E402
+from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _night_credit, _vote_credit  # noqa: E402
 from evaluation.src.loop.discussion_tagger import _night_actions_by_day, tag_game  # noqa: E402
 
 N_GAMES = 8

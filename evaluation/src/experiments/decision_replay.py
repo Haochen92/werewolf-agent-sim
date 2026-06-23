@@ -9,7 +9,7 @@ the abstain recovery before any LLM replay.
 The causal arms (swap the injected memory and/or the prompt -> regenerate the
 vote -> re-score) build on the same scoring (``decision_scoring``) plus the
 existing single-decision replay harness
-(``evaluation.src.components.application.run_application_action``).
+(``evaluation.src.replay.application.run_application_action``).
 
 Run: ``poetry run python evaluation/src/experiments/decision_replay.py \
         --batch batch_results/ab_nh_town.jsonl``
@@ -49,12 +49,12 @@ from Agents.prompts.prompt_formatters import format_day_channel
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.turn import _run_agent
 from Agents.turn.action_space import _valid_targets_for_action, _with_dynamic_target_enum
-from evaluation.src.components.application import (
+from evaluation.src.replay.application import (
     action_spec_for,
     application_case_for_judge,
     run_application_action,
 )
-from evaluation.src.components.decision_scoring import (
+from evaluation.src.loop.decision_scoring import (
     REPLAYABLE_TOWN_ROLES,
     THREAT_ROLES,
     allow_abstain_for,
@@ -72,13 +72,13 @@ NIGHT_SPECS: dict[str, tuple[Any, Any, str]] = {
     "investigator": (INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"),
     "vigilante": (VIGILANTE_NIGHT, VigilanteOutput, "vigilante_target"),
 }
-from evaluation.src.components.memory_adherence import (
+from evaluation.src.loop.memory_adherence import (
     DEFAULT_ADHERENCE_JUDGE_MODEL,
     judge_decision_adherence,
     judge_discussion_stance,
     summarize_adherence,
 )
-from evaluation.src.components.situation_summary import eval_case_to_agent_payload
+from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 from evaluation.src.data.local_cases import LocalCaseSource
 from pydantic import BaseModel, Field
 

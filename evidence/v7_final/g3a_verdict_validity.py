@@ -23,7 +23,7 @@ sys.path.insert(0, "evaluation/src")
 sys.path.insert(0, ".")
 from core.stats import compare_proportions  # noqa: E402
 
-from evaluation.src.components.decision_scoring import score_vote  # noqa: E402
+from evaluation.src.loop.decision_scoring import score_vote  # noqa: E402
 
 # town SP arm = the verdict-rich town channel; pool the town obs arm too (a few SP verdicts there).
 TOWN_SESSIONS = {

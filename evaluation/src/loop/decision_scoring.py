@@ -26,7 +26,7 @@ THREAT_ROLES = frozenset({"wolf", "serial_killer"})
 POWER_ROLES = frozenset({"investigator", "healer", "vigilante"})
 
 # Town roles whose day_vote the replay harness can regenerate today — i.e. the
-# roles present in evaluation.src.components.application.ACTION_SPECS for
+# roles present in evaluation.src.replay.application.ACTION_SPECS for
 # ("<role>", "day_vote"). Vigilante/serial_killer lack a vote spec there.
 REPLAYABLE_TOWN_ROLES = frozenset({"villager", "healer", "investigator"})
 

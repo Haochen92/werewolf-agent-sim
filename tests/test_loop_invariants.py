@@ -9,11 +9,12 @@ import json
 
 import pytest
 
-from evaluation.src.experiments.credit_backfill import _expand_dumps
+from evaluation.src.loop.credit_backfill import _expand_dumps
 from evaluation.src.loop.invariants import (
-    _iter_eval_cases, arm_memory_factions, assert_arm_factions, assert_base_rates,
-    assert_credit_engaged, assert_score, count_follow_verdicts, expand_window,
-    resolve_expected_factions)
+    _iter_eval_cases, arm_fingerprint, arm_memory_factions, assert_arm_declared, assert_arm_factions,
+    assert_base_rates, assert_credit_engaged, assert_discussion_credit_engaged,
+    assert_fingerprint_consistent, assert_score, count_discussion_follow_verdicts, count_follow_verdicts,
+    expand_window, resolve_expected_factions)
 
 
 def _write(p, rows):
@@ -21,16 +22,17 @@ def _write(p, rows):
     return str(p)
 
 
-def _game_with_cases(tmp_path, name, verdicts_per_case, *, creditable=True):
+def _game_with_cases(tmp_path, name, verdicts_per_case, *, creditable=True, phase="day_vote"):
     """A (game record file, eval-cases file) pair. verdicts_per_case = list of lists of verdict strings.
-    creditable=True => mem-ON day_vote cases with a populated strategy_index_to_key (follows count);
-    creditable=False => the cold-start shape (mem-OFF, empty index) whose 'follow's the ledger ignores."""
+    creditable=True => mem-ON cases with a populated strategy_index_to_key (follows count);
+    creditable=False => the cold-start shape (mem-OFF, empty index) whose 'follow's the ledger ignores.
+    phase = the action_phase (day_vote credits via build_ledger; day_discussion via the disc guard only)."""
     ec_path = tmp_path / f"{name}_cases.jsonl"
     cases = []
     for vs in verdicts_per_case:
         idx = {str(i): f"key-{name}-{i}" for i in range(len(vs))} if creditable else {}
         cases.append({"output": {"eval_case": {
-            "memory_enabled": creditable, "player_role": "villager", "action_phase": "day_vote",
+            "memory_enabled": creditable, "player_role": "villager", "action_phase": phase,
             "strategy_index_to_key": idx,
             "strategy_verdicts": [{"verdict": v, "strategy_index": i} for i, v in enumerate(vs)]}}})
     _write(ec_path, cases)
@@ -136,3 +138,67 @@ def test_resolve_all_matches_actual_cast(tmp_path):
     actual = frozenset({"villager", "wolf", "serial_killer"})
     assert resolve_expected_factions("all", actual) == actual          # 'all' = whatever the cast exposes
     assert resolve_expected_factions("wolf,villager", actual) == frozenset({"wolf", "villager"})
+
+
+# --- arm-declaration gate (#5): fail-closed unless declared OR explicitly waived -------------------
+def test_assert_arm_declared_requires_intent_or_waiver():
+    with pytest.raises(AssertionError, match="arm UNDECLARED"):
+        assert_arm_declared(None, False)          # forgot to declare -> refuse to start (the v2 hole)
+    assert_arm_declared("town_only", False)       # declared -> no raise
+    assert_arm_declared(None, True)               # explicitly waived -> no raise
+
+
+# --- discussion-credit guard (#3/#7): the channel build_ledger / assert_credit_engaged are blind to -
+def test_count_discussion_follow_verdicts(tmp_path):
+    disc = [_game_with_cases(tmp_path, "d", [["follow", "not_relevant"], ["follow"]], phase="day_discussion")]
+    assert count_discussion_follow_verdicts(disc) == 2   # 2 day_discussion follows
+    assert count_follow_verdicts(disc) == 0              # ...which the vote/night counter correctly ignores
+
+
+def test_assert_discussion_credit_engaged_dead_raises(tmp_path):
+    win = [_game_with_cases(tmp_path, "d", [["follow"], ["follow"]], phase="day_discussion")]
+    with pytest.raises(AssertionError, match="discussion credit DEAD"):
+        assert_discussion_credit_engaged(win, disc_credited=0, enabled=True)         # tagger whiffed silently
+    assert assert_discussion_credit_engaged(win, disc_credited=3, enabled=True) == 2  # engaged -> ok
+
+
+def test_assert_discussion_credit_engaged_disabled_or_cold(tmp_path):
+    win = [_game_with_cases(tmp_path, "d", [["follow"]], phase="day_discussion")]
+    assert assert_discussion_credit_engaged(win, disc_credited=0, enabled=False) == 0  # off -> no claim
+    cold = [_game_with_cases(tmp_path, "c", [["not_relevant"]], phase="day_discussion")]
+    assert assert_discussion_credit_engaged(cold, disc_credited=0, enabled=True) == 0  # no follows -> no claim
+
+
+# --- runtime-fingerprint drift guard (#16): never splice across backends/models/prompts ------------
+def _game_with_fp(tmp_path, name, fp):
+    p = tmp_path / f"{name}.jsonl"
+    _write(p, [{"roles": {"p1": "villager"}, "runtime_fingerprint": fp, "eval_cases_path": "x"}])
+    return str(p)
+
+
+def test_arm_fingerprint_reads_first_stamp(tmp_path):
+    fp = {"llm_backend": "google", "game_model": "gemini-3.1-flash-lite"}
+    assert arm_fingerprint(_game_with_fp(tmp_path, "g", fp)) == fp
+
+
+def test_arm_fingerprint_missing_raises(tmp_path):
+    p = tmp_path / "g.jsonl"
+    _write(p, [{"roles": {"p1": "villager"}}])           # no fingerprint stamped
+    with pytest.raises(AssertionError, match="no runtime_fingerprint"):
+        arm_fingerprint(str(p))
+
+
+def test_assert_fingerprint_consistent_detects_backend_flip(tmp_path):
+    ref = {"llm_backend": "vertex", "game_model": "gemini-3.1-flash-lite", "git_commit": "abc"}
+    assert_fingerprint_consistent(_game_with_fp(tmp_path, "same", dict(ref)), ref)   # identical -> ok
+    flipped = _game_with_fp(tmp_path, "flip", {**ref, "llm_backend": "google"})
+    with pytest.raises(AssertionError, match="runtime DRIFT"):
+        assert_fingerprint_consistent(flipped, ref)      # backend flipped mid-run -> crash
+
+
+def test_assert_fingerprint_consistent_skips_unstamped_records(tmp_path):
+    ref = {"llm_backend": "google", "game_model": "gemini-3.1-flash-lite"}
+    p = tmp_path / "mixed.jsonl"
+    _write(p, [{"roles": {"p1": "villager"}, "runtime_fingerprint": dict(ref)},
+               {"roles": {"p2": "wolf"}}])               # second record has no fingerprint -> skipped
+    assert_fingerprint_consistent(str(p), ref)           # no raise

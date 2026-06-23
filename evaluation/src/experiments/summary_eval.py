@@ -24,7 +24,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from evaluation.src.components.situation_summary import run_situation_summary_variant
+from evaluation.src.replay.situation_summary import run_situation_summary_variant
 from evaluation.src.core.config_schema import SummaryExperimentConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env

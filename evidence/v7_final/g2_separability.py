@@ -31,7 +31,7 @@ sys.path.insert(0, "evaluation/src")
 sys.path.insert(0, ".")
 from core.stats import point_biserial  # noqa: E402
 
-from evaluation.src.components.decision_scoring import (  # noqa: E402
+from evaluation.src.loop.decision_scoring import (  # noqa: E402
     POWER_ROLES, THREAT_ROLES, score_vote,
 )
 

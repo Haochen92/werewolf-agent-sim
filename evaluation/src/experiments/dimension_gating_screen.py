@@ -28,8 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from Agents.llm_factory.embeddings import create_embeddings  # noqa: E402
 from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent  # noqa: E402
 from Agents.memory.retrieval.dimension_gating import WEIGHT, alignment  # noqa: E402
-from evaluation.src.components.decision_scoring import allow_abstain_for  # noqa: E402
-from evaluation.src.components.situation_summary import eval_case_to_agent_payload  # noqa: E402
+from evaluation.src.loop.decision_scoring import allow_abstain_for  # noqa: E402
+from evaluation.src.replay.situation_summary import eval_case_to_agent_payload  # noqa: E402
 from evaluation.src.experiments.criticality_screen import (  # noqa: E402
     _RolePool, _cosine_matrix, _retrieved, load_candidates_by_role, load_source_games, select_spread,
 )

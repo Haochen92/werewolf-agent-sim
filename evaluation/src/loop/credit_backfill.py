@@ -19,7 +19,7 @@ and is deferred; the reveal/confirm-only class is unscorable until the discussio
 Compute is decoupled from the store-write: we emit the ledger + a validation read and STOP — no store
 is mutated until the signal is shown to separate. Applying the ledger to a v6_1 copy is a later step.
 
-  poetry run python evaluation/src/experiments/credit_backfill.py
+  poetry run python evaluation/src/loop/credit_backfill.py
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from evaluation.src.components.decision_scoring import score_night_target, score_vote  # noqa: E402
+from evaluation.src.loop.decision_scoring import score_night_target, score_vote  # noqa: E402
 
 DEFAULT_DUMPS = "batch_results/*v6ab*.jsonl"
 DEFAULT_STORE = "memory_stores/v6_1"

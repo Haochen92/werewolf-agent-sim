@@ -21,6 +21,10 @@ class LoopConfig:
     #   memory_config and CRASHES on gen 1 if it doesn't match — the guard for the v2 trap (silently ran
     #   all_enabled vs the intended town_only, then drew a town conclusion off an all-memory-on arms-race
     #   board). None = no assertion, but the actual enabled-faction set is still logged + recorded.
+    unchecked_arm: bool = False            # explicit opt-OUT of the arm-declaration gate (assert_arm_declared).
+    #   The gate is fail-CLOSED: run_loop refuses to start unless expect_factions is set OR this is True — so
+    #   the v2 trap can't recur by simply FORGETTING --expect-factions (the opt-in default let it). Set this
+    #   (--unchecked-arm) only for a throwaway smoke where the arm isn't the thing under test.
 
     games_per_generation: int = 5          # batch size = the consolidation tick cadence (the LEARNING
     #   cadence — parallel games seed a frozen snapshot, so consolidation can ONLY happen at the
