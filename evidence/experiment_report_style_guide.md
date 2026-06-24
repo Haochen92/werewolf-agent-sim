@@ -30,6 +30,33 @@ skeleton. The Core Principle above and the Tone rules below apply to all three.
   *why it looked feasible* → *what the investigation showed* → *the call (drop / defer / use a proxy)
   and why* → *Lessons*, stating what would change the verdict. (Example: concluding that deterministic
   decision-quality scoring isn't feasible, and substituting de-lucked outcome proxies.)
+- **Reference / how-it-works doc.** A reader needs to *use or audit* a finished mechanism, not learn
+  how you got there. This is the one type that **inverts the Core Principle**: it leads with the
+  synthesized destination and demotes the journey to an opt-in case study. Skeleton: *orientation line*
+  (a one-line mental model — a pipeline or map — so every identifier introduced later has somewhere to
+  hang) → *the guarantee / contract* (present-tense: what holds, where it's enforced, how it's
+  verified — not a changelog) → *the model / mechanism* → *verification* → *evidence* (a case study,
+  benchmark, or rationale, written **verdict-first then forensics**) → *known gaps* (criticality-ordered
+  + freshness-dated). Use it when the artifact's value is the *current truth* of how something works,
+  not the path to it; if the path *is* the point, use a journey type above. Exemplar:
+  `evidence/agent_boundaries/report.md`.
+
+### Discipline for reference docs (the part a fill-in template silently drops)
+
+The shape is easy to copy; these habits are what made the exemplar trustworthy, and they erode first
+under a fill-in-the-blanks template. They are *in addition to* the provenance-stamping and
+direction-vs-magnitude rules below, which apply to every type.
+
+- **Framework-behavior claims carry a version pin (+ a test where load-bearing).** "How LangGraph /
+  LangChain / lib X behaves" is version-specific and the depth-reader's first thing to poke; assert it
+  against the runtime fingerprint, and verify it empirically where the doc leans on it.
+- **Gaps carry a freshness date AND an honestly-applied severity.** Severity = likelihood × impact ×
+  detectability, *not* impact-if-violated alone (construction-enforced-but-unverified ≠ unenforced).
+  Run a freshness pass against the repo before trusting any gap, and **mark minor gaps, don't delete
+  them** — the list's value is the audit trail; criticality drives entry *length*, not inclusion.
+- **Separate verdict from forensics.** Lead the case study with a 4-sentence outcome paragraph + a
+  "skip by subhead" signpost, then the detail. One canonical doc — never fork a reader-friendly and a
+  detailed version (they drift).
 
 ---
 
@@ -154,6 +181,9 @@ convention requires of every record — see `CLAUDE.md → Eval Architecture` an
 - [ ] Are lessons stated as transferable principles with evidence?
 - [ ] Is impact framed honestly (metrics if available, capability unlocked if not)?
 - [ ] Would a reader who skips the tables still understand the narrative from the prose?
-- [ ] Did you pick the right document type (experiment / decision record / negative finding)?
+- [ ] Did you pick the right document type (experiment / decision record / negative finding / reference doc)?
 - [ ] Is the provenance stamped (commit / fingerprint / config) so results are traceable?
 - [ ] Is N stated, and direction separated from magnitude where the sample is small?
+- [ ] *(Reference docs)* Does each framework-behavior claim carry a version pin (+ a test where load-bearing)?
+- [ ] *(Reference docs)* Is each gap freshness-dated and severity-rated (likelihood × impact × detectability), with minor gaps marked, not deleted?
+- [ ] *(Reference docs)* Is the verdict separated from the forensics (skim layer before depth layer)?
