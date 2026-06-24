@@ -1,6 +1,6 @@
 
 ==========================================================================
-evidence/agent_speaking/gate/gate_sequential.jsonl  [all_disabled]   (2 games, 119 discussion messages)
+evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl  [all_disabled]   (2 games, 119 discussion messages)
 ==========================================================================
   STOCK  msgs:  26 / 119  (21.8%)   total marker hits: 44
   POLICE msgs:  24 / 119  (20.2%)   total marker hits: 27

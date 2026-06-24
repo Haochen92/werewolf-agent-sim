@@ -124,7 +124,7 @@ def report(label, games):
 
 
 if __name__ == "__main__":
-    G = "evidence/agent_speaking/gate"
+    G = "evidence/sequential_discussion/quality_gate/data"
     seq = load_games(f"{G}/gate_sequential.jsonl")
     seq_off = [(r, d) for r, d in seq if r.get("config_name") == "all_disabled"]
     seq_on  = [(r, d) for r, d in seq if r.get("config_name") == "all_enabled"]

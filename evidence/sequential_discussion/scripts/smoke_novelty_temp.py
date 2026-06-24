@@ -27,7 +27,7 @@ from Agents.agents import get_llm  # noqa: E402
 DATASET = Path("evidence/memory_system/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl")
 N_CASES = int(os.getenv("N_CASES", "20"))
 K_T1 = 3
-OUT = Path("evidence/agent_speaking/smoke_novelty_temp_results.jsonl")
+OUT = Path("evidence/sequential_discussion/data/smoke_novelty_temp_results.jsonl")
 
 
 class NoveltyLabel(str, Enum):

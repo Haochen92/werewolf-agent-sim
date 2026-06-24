@@ -7,7 +7,7 @@
 > **⏸ PARKED behind Phase A #1 (sequential redesign) + a discussion-quality gate (decided 2026-06-01).**
 > Sequential is built/validated on the *current* 4-role forced-vote game FIRST; if it fixes the bland
 > discussion, roles are added afterwards for richness/keystone reasons only (not to fix discourse).
-> Resume THIS workstream only after that gate passes. Active workstream now = `evidence/agent_speaking/`.
+> Resume THIS workstream only after that gate passes. Active workstream now = `evidence/sequential_discussion/`.
 >
 > **Status: casting + voting design LOCKED, no implementation yet, no role added.** The central
 > reframe below — **two casting targets (lean-eval vs rich-ship)** — is the spine of the decision; the

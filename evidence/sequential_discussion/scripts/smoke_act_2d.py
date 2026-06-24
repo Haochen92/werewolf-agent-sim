@@ -40,7 +40,7 @@ from evaluation.components.situation_summary import eval_case_to_agent_payload  
 
 DATASET = Path("evidence/memory_system/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl")
 N_CASES = int(os.getenv("N_CASES", "24"))
-OUT = Path("evidence/agent_speaking/smoke_act_2d_results.jsonl")
+OUT = Path("evidence/sequential_discussion/data/smoke_act_2d_results.jsonl")
 
 PLAYER_RE = re.compile(r"[Pp]layer\s*_?(\d+)")
 ACCUSE_KW = ("suspicious", "suspicion", "deflect", "dodg", "evasive", "avoid",

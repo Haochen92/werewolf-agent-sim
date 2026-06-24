@@ -4,7 +4,7 @@ Planned runs: 1
 - batch_20260605_091921_all_enabled_001: session=batch_20260605_091921_all_enabled {'wolf': True, 'villager': True, 'healer': True, 'investigator': True}
 Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}}
 Memory persistence override: {'seed_enabled': True, 'dump_enabled': False, 'seed_store_dir': 'Agents/memory_stores/v4_deduped_v2'}
-Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/evidence/agent_speaking/gate/gate_sequential_memon_retry.jsonl
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/evidence/sequential_discussion/quality_gate/gate_sequential_memon_retry.jsonl
 Running batch_20260605_091921_all_enabled_001 in session batch_20260605_091921_all_enabled
 Completed batch_20260605_091921_all_enabled_001: winner=wolves day=3
 Batch complete: 1 succeeded, 0 failed

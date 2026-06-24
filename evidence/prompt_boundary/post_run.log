@@ -5,7 +5,7 @@ Planned runs: 2
 - pb_post_all_disabled_002: session=pb_post_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}
 Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False}}
 Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
-Writing JSONL results to: evidence/agent_speaking/prompt_boundary/post_seq.jsonl
+Writing JSONL results to: evidence/prompt_boundary/post_seq.jsonl
 Running pb_post_all_disabled_001 in session pb_post_all_disabled
 Completed pb_post_all_disabled_001: winner=villagers day=3
 Running pb_post_all_disabled_002 in session pb_post_all_disabled

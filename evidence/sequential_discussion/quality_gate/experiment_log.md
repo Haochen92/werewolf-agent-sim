@@ -1,8 +1,12 @@
-# Discussion-quality gate — concurrent vs sequential (verdict)
+# Discussion-quality gate — concurrent vs sequential (study record)
+
+> **The durable verdict** — *sequential clears the bar; Phase A #1 closes* — is carried destination-first
+> in [`../report.md`](../report.md) §3–4. **This file is the full study record behind it:** the method, the
+> deterministic metrics, the dimension-by-dimension read, and the honest caveats.
 
 **Date:** 2026-06-05 · **Closes:** Phase A #1 (sequential day discussion)
 **Method:** hand-judged A/B over transcripts, against [rubric.md](rubric.md). Deterministic
-metrics from [metrics.py](metrics.py). No LLM judge.
+metrics from [scripts/metrics.py](scripts/metrics.py). No LLM judge.
 
 ## TL;DR — verdict
 
@@ -22,7 +26,7 @@ Confidence: **HIGH on the structural dimensions** (redundancy, responsiveness, d
 
 | | Sequential (this gate) | Concurrent (frozen, on disk) |
 |---|---|---|
-| Source | fresh runs, `gate_sequential.jsonl` | `werewolf_flashlite_3_v1*.jsonl` |
+| Source | fresh runs, `data/gate_sequential.jsonl` | `werewolf_flashlite_3_v1*.jsonl` |
 | Model | gemini-3.1-flash-lite | gemini-3.1-flash-lite (same family) |
 | Memory | v4_deduped_v2; 2 off + 2 on | mem-off (v1) + mem-on (v1_deduped) |
 | N | 2 mem-off + 2 mem-on | 4 mem-off + 4 mem-on |
@@ -33,7 +37,7 @@ mode is architectural and model-independent, so existing concurrent games are va
 for it. (Pinned fresh concurrent runs were deemed unnecessary cost — the worktree exists at
 tag `concurrent-baseline` if a quantitative pass is ever wanted.)
 
-## Deterministic metrics (auditable; [metrics.py](metrics.py))
+## Deterministic metrics (auditable; [scripts/metrics.py](scripts/metrics.py))
 
 `echo_rate` = frac of a day's messages ≥0.60 lexically similar to an earlier message that day
 (a **lower bound** on redundancy — misses paraphrase). `max_share` = top speaker's share of a

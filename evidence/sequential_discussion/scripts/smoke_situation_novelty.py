@@ -47,7 +47,7 @@ from Agents.retrieval_filters import cosine_similarity, embed_texts  # noqa: E40
 DATASET = Path("evidence/memory_system/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl")
 N_DRIFT = int(os.getenv("N_DRIFT", "12"))
 N_NOV = int(os.getenv("N_NOV", "15"))
-OUT = Path("evidence/agent_speaking/smoke_situation_novelty_results.jsonl")
+OUT = Path("evidence/sequential_discussion/data/smoke_situation_novelty_results.jsonl")
 
 PROMPTS = {
     "villager": VILLAGER_SITUATION_SUMMARY,

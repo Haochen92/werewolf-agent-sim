@@ -16,7 +16,7 @@ SK/vigilante blocks are written correctly the first time. (3) Clean attribution:
 the prompt change on the known-good current 4-role setup before stacking structural
 win-condition changes on top.
 
-**Does NOT reopen the sequential gate** (`evidence/agent_speaking/gate/`): that gate was
+**Does NOT reopen the sequential gate** (`evidence/sequential_discussion/quality_gate/`): that gate was
 concurrent-vs-sequential on identical prompts — internally valid. This is a forward quality
 improvement to the generator.
 
@@ -27,7 +27,7 @@ improvement to the generator.
   right isolation for a *prompt* change: no retrieved strategy points confounding the
   comparison, and no embedding 429s.
 - **Pre (baseline):** the `all_disabled` games already on disk from the discussion-quality
-  gate — `evidence/agent_speaking/gate/gate_sequential.jsonl` (2 games, 119 discussion msgs).
+  gate — `evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl` (2 games, 119 discussion msgs).
   These were generated on the *old* prompts, so they ARE the pre-change arm for free.
 - **Post:** 2 fresh `all_disabled` games on the edited prompts → `post_seq.jsonl`.
 - **Deterministic anchor:** [markers.py](markers.py) counts two pathologies over discussion
@@ -49,9 +49,9 @@ improvement to the generator.
 
 ```bash
 # aggregate STOCK/POLICE + verbatim excerpts + day-1-vs-day>=2 phase split, both arms:
-$PY evidence/agent_speaking/prompt_boundary/markers.py \
-    evidence/agent_speaking/gate/gate_sequential.jsonl:all_disabled \
-    evidence/agent_speaking/prompt_boundary/post_seq.jsonl:all_disabled
+$PY evidence/prompt_boundary/markers.py \
+    evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl:all_disabled \
+    evidence/prompt_boundary/post_seq.jsonl:all_disabled
 ```
 
 Pre arm = the discussion-quality gate's `all_disabled` games (`gate_sequential.jsonl`, old
@@ -66,7 +66,7 @@ only embedding calls (no 429s):
 ```bash
 $PY scripts/run_batch.py --configs all_disabled --runs-per-config 2 \
     --no-memory-seed --no-memory-dump \
-    --output evidence/agent_speaking/prompt_boundary/post_seq.jsonl --session-prefix pb_post
+    --output evidence/prompt_boundary/post_seq.jsonl --session-prefix pb_post
 ```
 
 To compare against the **old** prompts, check out a commit before `93c7721` (or revert the two

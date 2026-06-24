@@ -33,7 +33,7 @@ from Agents.agents import get_llm  # noqa: E402
 
 DATASET = Path("evidence/memory_system/strategy_adoption/eval_sets/phase1_adoption_v2.jsonl")
 PER_ROUND = int(os.getenv("PER_ROUND", "10"))
-OUT = Path("evidence/agent_speaking/smoke_act_2d_distribution_results.jsonl")
+OUT = Path("evidence/sequential_discussion/data/smoke_act_2d_distribution_results.jsonl")
 PLAYER_RE = re.compile(r"[Pp]layer\s*_?(\d+)")
 
 

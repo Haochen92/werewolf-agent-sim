@@ -1,6 +1,6 @@
 
 ==========================================================================
-evidence/agent_speaking/gate/gate_sequential.jsonl  [all_disabled]   (2 games, 119 discussion messages)
+evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl  [all_disabled]   (2 games, 119 discussion messages)
 ==========================================================================
   STOCK  msgs:  26 / 119  (21.8%)   total marker hits: 44
   POLICE msgs:  24 / 119  (20.2%)   total marker hits: 27
@@ -26,7 +26,7 @@ evidence/agent_speaking/gate/gate_sequential.jsonl  [all_disabled]   (2 games, 1
     d2 player_5 ['defensive']: "Player 4, I'm not defending a specific person, I'm defending the process. If we lynch someone based on 'defensive rhetoric' alone, we're guessing, not solving. "
 
 ==========================================================================
-evidence/agent_speaking/prompt_boundary/post_seq.jsonl  [all_disabled]   (2 games, 79 discussion messages)
+evidence/prompt_boundary/post_seq.jsonl  [all_disabled]   (2 games, 79 discussion messages)
 ==========================================================================
   STOCK  msgs:  11 / 79  (13.9%)   total marker hits: 19
   POLICE msgs:   8 / 79  (10.1%)   total marker hits: 8
@@ -55,10 +55,10 @@ evidence/agent_speaking/prompt_boundary/post_seq.jsonl  [all_disabled]   (2 game
 # PHASE SPLIT (defuses easy-board confound: day 1 is zero-info everywhere)
 ##########################################################################
 
-  evidence/agent_speaking/gate/gate_sequential.jsonl [all_disabled] — phase split:
+  evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl [all_disabled] — phase split:
     day 1 (zero-info)  n= 19  STOCK 10 (52.6%)  POLICE  2 (10.5%)
     day >=2            n=100  STOCK 16 (16.0%)  POLICE 22 (22.0%)
 
-  evidence/agent_speaking/prompt_boundary/post_seq.jsonl [all_disabled] — phase split:
+  evidence/prompt_boundary/post_seq.jsonl [all_disabled] — phase split:
     day 1 (zero-info)  n= 14  STOCK  2 (14.3%)  POLICE  0 ( 0.0%)
     day >=2            n= 65  STOCK  9 (13.8%)  POLICE  8 (12.3%)

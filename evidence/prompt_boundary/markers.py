@@ -14,7 +14,7 @@ anchor only — the verdict is by eyeball against excerpts. Run identical on the
 pre-change (gate) and post-change transcripts so the delta is apples-to-apples.
 
 Usage:
-  poetry run python evidence/agent_speaking/prompt_boundary/markers.py PRE.jsonl POST.jsonl
+  poetry run python evidence/prompt_boundary/markers.py PRE.jsonl POST.jsonl
   (each arg: path[:config_name]; config_name filters records, default all_disabled)
 """
 from __future__ import annotations
@@ -134,7 +134,7 @@ def by_phase(label, games):
 
 
 if __name__ == "__main__":
-    args = sys.argv[1:] or ["evidence/agent_speaking/gate/gate_sequential.jsonl"]
+    args = sys.argv[1:] or ["evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl"]
     loaded = []
     for a in args:
         path, _, cfg = a.partition(":")
