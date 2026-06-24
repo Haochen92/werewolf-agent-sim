@@ -43,7 +43,7 @@ class GameConfig(BaseModel):
     # decided by surviving-faction size (tie -> draw).
 
     # --- Sequential discussion scheduler (Phase 0) -------------------------------
-    # All deterministic, pure-function knobs; tune later. See evidence/agent_speaking/.
+    # All deterministic, pure-function knobs; tune later. See evidence/sequential_discussion/.
     discussion_utterance_multiplier: float = Field(default=3.0, gt=0)
     # global hard cap on real utterances/day = ceil(multiplier * surviving players),
     # floored by min_discussion_utterances. Backstop only — pass_turn does the real
@@ -52,7 +52,7 @@ class GameConfig(BaseModel):
     per_pair_reengagement_cap: int = Field(default=2, ge=1)
     # K: a directed (speaker -> target, stance) edge can create an obligation at most
     # K times/day (escalation cap). Distinct from the open-edge freshness dedup.
-    reengagement_cooldown_multiplier: float = Field(default=3, gt=0)
+    reengagement_cooldown_multiplier: float = Field(default=1.0, gt=0)
     # M = ceil(multiplier * surviving players). Once a directed pair has gone M
     # utterances untouched, its K cycle-count resets to 0 so a cooled feud can reopen
     # after the room has moved on. Throttles CONSECUTIVE ping-pong (K caps a burst)
