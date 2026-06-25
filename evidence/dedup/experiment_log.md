@@ -1,117 +1,179 @@
 # Deduplication — chronological overview
 
-**What this is.** The spine of the whole dedup workstream: why each sub-experiment happened, in time
-order, with a pointer into each one's own log. Memory entries (observations + strategy points)
-accumulate near-duplicates as games are played; duplicates crowd the retrieval slate and teach nothing
-new. Dedup is how the store stays lean. This doc is the *map*; the destination — how dedup works in the
-code **today** — is the companion [report.md](report.md).
+**What this is.** The spine of the whole dedup workstream, in the order it actually happened: *why*
+dedup had to exist, what we reached for first, what broke, and what replaced it — with a pointer into
+each sub-experiment's own log for the detail. The story ends in a **deliberate freeze** — tuning is
+paused pending an upstream question (*does the memory even help?*), detailed in
+[report.md](report.md) — so the open threads below are a parked decision, not a loose end. That
+companion [report.md](report.md) is also the destination: how dedup works in the code **today**.
 
-**The shape of the problem (so the chronology has somewhere to hang).** Dedup splits into two
-families, and the LLM family into three passes:
+**The two things being deduplicated.** Post-game extraction writes two kinds of memory. An
+**observation** records what happened in one situation — situation → approach → outcome, a
+lesson-by-example. A **strategy point** is a reusable *situation → action* rule. They hit the same
+duplication problem but behave differently under it, which turns out to be the crux of §5.
 
+**The shape of the problem.** Played over many games, the store **compounds with near-duplicates**, and
+duplicates crowd the retrieval slate while teaching nothing new. Everything below searches for a
+mechanism that removes the redundancy *without* removing a distinct lesson. It splits into two
+families, the LLM one into three passes — and these are the **only** terms this log uses for them:
+
+- **Embedding auto-filter** — a deterministic similarity check; cheap, no LLM, but blunt.
 - **LLM dedup** — a model judges whether two entries teach the same thing.
-  - **Per-extraction (online):** each new entry, as a game ends, against existing neighbours. KEEP/DISCARD.
-  - **Batch (offline, system-wide):** the whole store swept in similarity clusters. KEEP/DISCARD/**MERGE**.
-  - **Incremental batch:** the batch pass restricted to clusters touching new entries, with old entries
-    frozen so re-runs converge.
-- **Embedding auto-filter** — a deterministic similarity pre-filter that disposes of the obvious cases
-  (clearly-novel → keep, clearly-duplicate → discard) with **no LLM call**, leaving only the ambiguous
-  middle band for the model.
+  - **per-extraction** (the *online* pass): each new entry, as a game ends. KEEP/DISCARD.
+  - **batch** (the *offline* pass): the whole store swept in clusters. KEEP/DISCARD/MERGE.
+  - **incremental batch**: the batch pass restricted to clusters touching new entries, old ones frozen.
+
+**Naming — three independent version counters (the log always says which).** *Store* versions (v4, v5,
+v6 …) track the memory store; *per-extraction prompt* versions (v1→v11b) and *batch prompt* versions
+(v0→v3) track the two dedup prompts; the **v6 gate** is an architecture milestone, not a prompt. Where a
+bare number would be ambiguous, the scheme is written out.
 
 **Reading contract.** Sections are in time order; each is a one-paragraph orientation that points to
-the sub-log holding the detail. The arc has a real correction in it (an n=5 result overturned by n=39)
-and a real architectural shift at the end (the v6 gate) — both are called out where they happen, not
-smoothed over. For the current shipped state and the places these older logs lag the code, jump to
-[report.md](report.md).
+the sub-log holding the detail. The arc contains real corrections — an approach that looked sufficient
+and wasn't, an n=5 result overturned by n=39, a tension we *still haven't settled* (§6) — and they're
+called out where they happen, not smoothed over. For the current shipped state and the places these
+older logs lag the code, jump to [report.md](report.md).
 
 ---
 
-## 1 · May 23 — Store dedup discovers the retrieval win  →  [store_retrieval_impact/](store_retrieval_impact/experiment_log.md)
+## 0 · Origin — why dedup exists
 
-The workstream started as a retrieval problem, not a dedup one. After building retrieval filtering (a
-dedup gate, MMR, per-situation caps), evaluation showed the bottleneck wasn't retrieval sophistication
-— it was a **dirty store** full of near-duplicate observations. The first measurement asked: does
-cleaning the store at the source beat filtering at retrieval time? On n=5 frozen cases it did, clearly
-(observation efficiency 3.00→4.00, redundancy halved). A latent bug surfaced too — the cluster builder
-capped clusters at 8 and naively chunked larger ones, letting duplicates across chunk boundaries
-survive (fixed 8→25). **This is what motivated everything below.**
+Observations and strategy points are extracted after every game and accumulated in a persistent store.
+That accumulation is the whole point (memory compounds), but it has a failure mode: the same lesson
+gets re-learned and re-written across games, so the store fills with near-duplicates that spend
+retrieval slots on copies. Dedup is the mechanism that keeps the store lean. Every design below is
+judged against one bar — *remove the redundancy without removing a distinct lesson.*
 
-## 2 · May 26 — Per-extraction golden labels + prompt tuning  →  [per_extraction/](per_extraction/experiment_log.md)
+## 1 · First solution — cosine-similarity dedup
 
-With store-cleanup proven worthwhile, attention turned to the **online** decision-maker — the per-game
-pass that judges each new entry KEEP / DISCARD / MERGE. We had no ground truth for its accuracy (the
-old eval scored one LLM with another). So we hand-labelled 50→65 golden cases and tuned the prompt
-across v1→v11b. The journey is the lesson: directional **calibration cascades create ratchets** (push
-"prefer D" and you kill KEEP recall; push "prefer M" and you flood false merges); **action-before-
-situation field ordering** fixed strategy-point errors better than any instruction; and two rounds of
-**golden-label revision** were needed when *every* model failed the same cases (uniform cross-model
-failure was label error, not prompt error). The convergence point: **MERGE was eventually removed from
-online dedup entirely** (v11) — rare, hard to call, and its rewrites corrupted entries.
+The first cut was purely deterministic: embed each new entry's situation, search the store, and decide
+by the top cosine score. Below a low floor (`DEDUP_SIMILARITY_THRESHOLD = 0.55`,
+[deduplication/config.py:7](../../Agents/memory/deduplication/config.py#L7)) nothing similar exists →
+store as new; above a high threshold (~0.9 at the time) → treat as a near-duplicate and discard. Cheap,
+simple, no model in the loop.
 
-## 3 · May 26-27 — Batch prompt tuning + the idempotency alarm  →  [batch_prompt_tuning/](batch_prompt_tuning/experiment_log.md)
+## 2 · Why cosine alone is too weak — the bi-encoder ceiling
 
-The **offline** whole-store pass is harder than online (clusters of 2–25 entries, multiple operations
-per cluster, MERGE retained because the model sees a whole cluster). We ported the per-extraction
-criteria into the cluster prompts (v0→v3 + a "lite" anti-over-merge variant) on an 111-key golden set,
-and landed a **two-pass pipeline** — flash-lite triages cheaply, 2.5-pro verifies and writes the merges
-where it matters (89.2%, the best of all approaches). Critically, an **idempotency test** showed a
-second run on an already-deduped store removed *another* ~10% — the pass is **not idempotent**. That
-alarm is what motivated incremental dedup (§6). The mechanics of this pass are reference material in
-[batch_architecture.md](batch_architecture.md).
+It didn't hold up: a bi-encoder's cosine similarity is a poor separator of *duplicate* from *distinct*.
+Near-duplicates and genuinely-different lessons sit in almost the same embedding neighbourhood — the
+gap between "same lesson" and "different lesson" is extremely narrow, because embeddings encode **topic,
+not stance**. Two strategy points about the same situation that recommend *opposite* actions embed
+~95% alike. So a single similarity cutoff can't be set without either merging distinct lessons or
+keeping duplicates. (This is documented rigorously later, when the embedding **pre-filter** was
+calibrated — §5 — but the intuition is what motivated bringing in an LLM here.) The conclusion: cosine
+is a good *first sieve*, not a *decider*.
 
-## 4 · May 26 — Retrieval impact, phase 2: the correction  →  [store_retrieval_impact/ §Phase 2](store_retrieval_impact/experiment_log.md#phase-2-v3-prompt-calibration-and-larger-sample-n39)
+## 3 · LLM per-extraction dedup — and the field set shrinking 4 → 2
 
-The n=5 result from §1 was **optimistic**. Replicating on n=39 with the tuned prompts overturned it:
-the original aggressive dedup (v0, 39% store reduction) actually *lost* observation relevance — it had
-crossed from removing redundancy into removing distinct lessons. The conservative v3 store (17%
-reduction) was the real winner: best efficiency and unique-lesson counts while holding relevance.
-**Dedup is a Goldilocks problem** — the break-even is prompt-sensitive, not a fixed similarity
-threshold — and this is why the shipped batch default is the conservative `bounded` clustering mode.
-(A second finding foreshadowed later work: strategy-point redundancy never responded to dedup at all —
-a content-coverage gap, not a dedup gap.)
+So each new entry, as a game ends, goes to an **LLM** that judges it against its nearest neighbours.
+Early on (store versions up to ~v3) the prompt was **not tuned** — we accepted the default and used
+**gemini-2.5-flash** (the model from the original 30-game batch). The decision vocabulary then *shrank*,
+in two separate prunings, both for the same reason — **weak models can't rewrite reliably**:
 
-## 5 · May 26 — Embedding pre-filter: the automatic layer and its ceiling  →  [embedding_prefilter/](embedding_prefilter/experiment_log.md)
+- The original enum had **four** actions: `DISCARD / REPLACE / DIFFERENTIATE / KEEP` (the legacy
+  `A/B/C/D` still visible in [deduplication/schemas.py](../../Agents/memory/deduplication/schemas.py)).
+  `REPLACE` and `DIFFERENTIATE` were retired early — vestigial, never reliably driven by the model.
+- That left a `DISCARD / MERGE / KEEP` scheme (MERGE = rewrite two entries into one). MERGE was later
+  dropped too (§7), because the production model (**gemini-3.1-flash-lite**) produces **lossy** merges —
+  it silently drops the `merged_approach`/`merged_outcome` fields and corrupts the entry.
 
-Per-role extraction produces 2–3× more entries, overwhelming the LLM dedup pipeline. The fix: a
-**deterministic embedding pre-filter** that auto-decides the obvious cases (very-high similarity →
-discard, very-low → keep) and only pays for an LLM call on the ambiguous middle. We calibrated
-zero-error thresholds on the golden set, validated on a 232-case cross-game set, then tried to push the
-coverage higher — 3072 dimensions, `SEMANTIC_SIMILARITY` task type, multi-dimensional boundaries — and
-**every improvement came back negative**. The takeaway is a property, not a tuning failure: embeddings
-capture *topic, not stance* ("investigate the loud players" and "avoid the loud players" embed ~95%
-alike), so ~15-30% auto-decision coverage is a hard ceiling — the LLM is irreducible for the middle.
+End state online: **KEEP/DISCARD only**, MERGE confined to the offline batch pass where a pro model can
+be used. Detail: [per_extraction/](per_extraction/experiment_log.md).
 
-## 6 · Jun 9 — Incremental dedup: diagnosing non-convergence  →  [incremental_convergence.md](incremental_convergence.md)
+## 4 · Per-extraction dedup wasn't enough → batch as a second layer
 
-The idempotency alarm from §3 became a diagnosis. Running batch dedup incrementally (only clusters
-touching new entries) is cheap, but the LLM is shown the *whole* cluster including old, settled
-entries — so every new neighbour is a fresh chance to re-litigate and erode old data. There is no
-stable fixed point: the store drifts past the optimal dedup degree. The fix has two parts — preserve
-`created_at` through merges so old/new classification stays honest (Fix 1), and **forbid old-vs-old
-operations** in the apply layer so old lessons are only ever absorbed *into*, never away (Fix 2). At the
-time of writing, both were **proposed, not yet built**. *(Status has since changed — see that doc's
-banner and [report.md](report.md).)*
+Per-extraction dedup catches a new entry against what *already exists*, but it can't catch two
+near-duplicates that entered in *different* games and only later sit together — so the store kept
+bloating. The second layer is **batch** dedup: an offline pass that sweeps the *whole* store in
+similarity clusters and collapses redundancy a cluster at a time. Mechanics:
+[batch_architecture.md](batch_architecture.md); tuning: [batch_prompt_tuning/](batch_prompt_tuning/experiment_log.md).
 
-## 7 · June (v6, current) — the deterministic gate + freeze-old  →  [report.md](report.md)
+## 5 · Does cleaning the store actually help retrieval? (and the embedding ceiling, measured)
 
-The current era is barely represented in the logs above because it postdates them. Three shifts define
-the live system: (a) a **deterministic gate** (`Agents/memory/dedup_gate.py`) now partitions candidates
-by a structured `gate_key` + hard pair-checks *before* any embedding or LLM step, shared by both the
-online and batch paths — so the model only ever compares already-homogeneous entries; (b) Fix 2 from §6
-(**freeze-old apply guard**) is **built and live**; (c) online dedup is **KEEP/DISCARD only** (MERGE
-confined to the offline batch pass). The full current state — and every place the older logs lag the
-code — is in [report.md](report.md).
+Two threads landed here, both on the v4 store:
+
+- **Retrieval impact** ([store_retrieval_impact/](store_retrieval_impact/experiment_log.md)). Measured
+  on a frozen set of retrieval cases, each scored by a **gemini-2.5-flash judge on 1–5 rubrics**
+  (relevance, efficiency, unique-lessons). Cleaning the store improved retrieval — but the win was
+  lopsided, and the first read was optimistic. **Observations improved dramatically** (efficiency
+  3.0→4.0, redundancy 52%→25%, n=5); **strategy points barely moved** (redundancy stayed ~59–77%). That
+  non-response is itself a headline finding: strategy-point redundancy is a **content-coverage gap, not
+  a dedup gap** — the store lacks entries for some situations, and no amount of dedup creates them. And
+  the optimistic n=5 read was **overturned at n=39**: aggressive merging (39% store reduction) *lost*
+  observation relevance, while conservative dedup (17%) won on efficiency and unique-lessons. Dedup is a
+  Goldilocks problem.
+- **The embedding pre-filter, calibrated** ([embedding_prefilter/](embedding_prefilter/experiment_log.md)).
+  To stop paying for an LLM call on the obvious cases, we calibrated deterministic auto-keep/auto-discard
+  thresholds — and in the process *measured* the §2 intuition. Auto-decision coverage plateaus at
+  **~15–30% and that's a ceiling, not a tuning shortfall**: 3072-dim and `SEMANTIC_SIMILARITY` ablations
+  both came back negative. The embedding space genuinely can't separate the middle band — only the LLM can.
+
+## 6 · Golden labels, prompt tuning — and the discard-vs-keep tension we never settled
+
+At v4 we built **golden labels** to evaluate prompts against ground truth instead of LLM-judging-LLM:
+a human-led core set (sampled from `v4_action_phase_v2`) plus LLM-labelled cross-game sets, with
+explicit rules for "same lesson vs different." On that anchor we tuned the per-extraction prompt
+**v1→v11b** and the batch prompt **v0→v3**. The throughline — and the **single most-revisited open
+question** — is whether to **lean discard or lean keep**:
+
+- *Lean discard* keeps the store lean, and an over-discarded entry from a *common* situation will simply
+  be re-extracted from a future game.
+- *Lean keep* protects **rare-situation** lessons — over-discard those and they're **permanently lost**,
+  because the situation may never recur.
+
+The tuning settled the *tactic*. Directional calibration ("when in doubt DISCARD", or "prefer D over M
+over K") turned out to be **a lever with no neutral position**: push it and you ratchet one category to
+death. The per-extraction prompt's v6 cascade hit 93% D-recall but crushed K-recall to 41%; removing it
+entirely just flipped the failure to over-merge. The lesson: **targeted, failure-mode-specific
+corrections beat directional cascades.** But the *strategic* lean — should the store as a whole err
+toward discard or keep? — was left **undecided on purpose**. It "depends on downstream retrieval quality
+and agent strategy application, not on the prompt," and that downstream eval is part of what's frozen
+(§8). **Still open.** Detail: [per_extraction/](per_extraction/experiment_log.md),
+[batch_prompt_tuning/](batch_prompt_tuning/experiment_log.md).
+
+## 7 · MERGE removed from online dedup
+
+The golden-label work showed MERGE was rare (≈5/65 cases), hard for models to call, and — on
+flash-lite — **destructive when wrong** (lossy rewrites that corrupt entries). So per-extraction dropped
+to **KEEP/DISCARD only**; MERGE/rewrite survives only in the offline batch pass on a pro model. This is
+the second of the two prunings in §3.
+
+## 8 · Idempotency check → not idempotent → freeze
+
+Running batch dedup twice on an already-clean store removed **another ~10%** of the store — the pass is
+**not idempotent**, and incrementally it doesn't converge (it re-litigates settled old entries).
+Diagnosed in [incremental_convergence.md](incremental_convergence.md), with a two-part fix (preserve
+`created_at`; forbid old-vs-old merges). Around here the **prompt and golden-label tuning was frozen**
+(before store v5), pending two upstream decisions: whether the memory is even *helping* (an
+effectiveness question) and a final memory **format**, both still being settled. The tuning hasn't moved
+since — but structural work continued (§9).
+
+## 9 · The deterministic gate (v6 architecture, post-freeze)
+
+One architectural change did land after the tuning freeze, and it isn't in the logs above because it
+postdates them: a **deterministic gate** (`Agents/memory/dedup_gate.py`) that partitions candidates by
+a structured `gate_key` + hard pair-checks *before* any embedding or LLM step, shared by the online and
+batch paths — so the model only ever compares already-homogeneous entries. It's the §2 lesson taken to
+its conclusion: gate hard where the structured fields are reliable, reserve the LLM for the free-text
+residual. The freeze-old fix from §8 also shipped here. Current state: [report.md](report.md).
 
 ---
+
+## Recurring threads (so a chapter's detail has a home in the arc)
+
+- **The embedding ceiling** (§2, measured §5) — topic-not-stance is *why* an LLM is irreducible.
+- **Weak models can't rewrite** (§3, §7) — the reason the field set shrank 4→2 and MERGE is batch-only.
+- **Discard vs keep** (§6) — the open lever; tactic settled (targeted > directional), strategy deferred.
+- **Conservative beats aggressive** (§5) — the reason `bounded` clustering is the batch default.
 
 ## Sub-logs (the detail behind each beat)
 
-| Beat | Log | Type |
+| Beat | Log | What it covers |
 |---|---|---|
-| §1, §4 | [store_retrieval_impact/experiment_log.md](store_retrieval_impact/experiment_log.md) | does dedup help retrieval? (n=5 → n=39 correction) |
-| §2 | [per_extraction/experiment_log.md](per_extraction/experiment_log.md) | online dedup prompt tuning v1→v11b |
-| §3 | [batch_prompt_tuning/experiment_log.md](batch_prompt_tuning/experiment_log.md) | offline dedup prompt + two-pass tuning |
-| §5 | [embedding_prefilter/experiment_log.md](embedding_prefilter/experiment_log.md) | automatic pre-filter calibration |
-| §6 | [incremental_convergence.md](incremental_convergence.md) | incremental non-convergence diagnosis + fix |
+| §1–§2, §5 | [store_retrieval_impact/experiment_log.md](store_retrieval_impact/experiment_log.md) | does dedup help retrieval? (n=5 → n=39 correction) |
+| §3, §6, §7 | [per_extraction/experiment_log.md](per_extraction/experiment_log.md) | online dedup prompt tuning v1→v11b; MERGE removal |
+| §4, §6 | [batch_prompt_tuning/experiment_log.md](batch_prompt_tuning/experiment_log.md) | offline dedup prompt + two-pass tuning |
+| §5 | [embedding_prefilter/experiment_log.md](embedding_prefilter/experiment_log.md) | automatic pre-filter calibration + the measured ceiling |
+| §8 | [incremental_convergence.md](incremental_convergence.md) | incremental non-convergence diagnosis + fix |
 | reference | [batch_architecture.md](batch_architecture.md) | batch-pass mechanics (how-it-works) |
-| destination | [report.md](report.md) | current live state of everything + gap tracking |
+| §9 / destination | [report.md](report.md) | current live state of everything + gap tracking |
