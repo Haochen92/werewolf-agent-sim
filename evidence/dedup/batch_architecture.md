@@ -1,5 +1,11 @@
 # Batch Dedup — How It Works
 
+> **Freshness (2026-06-25):** v6 adds a deterministic **gate** (`Agents/memory/dedup_gate.py`) that
+> partitions candidates by a `gate_key` + hard pair-checks *on top of* the
+> `(memory_kind, role, action_phase)` namespace described below — so "dedup within a namespace" is now
+> "within a namespace **and** a gate bucket," shared with the online pass. Current live state + the
+> full gap list: [report.md](report.md).
+
 The rest of `evidence/dedup/` documents the **why and the results** (retrieval impact,
 golden-label prompt tuning, the "conservative beats aggressive" finding). This doc is the
 **how** — the mechanics of `Agents/memory/batch_deduplication/`, so the design is

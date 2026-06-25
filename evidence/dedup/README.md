@@ -2,11 +2,15 @@
 
 All experiments related to identifying and removing redundant entries from the memory store.
 
+> **Start here:** [experiment_log.md](experiment_log.md) is the chronological overview of the whole
+> dedup effort (with a pointer into each sub-log); [report.md](report.md) is how dedup works *today*,
+> including a current-vs-documented gap table. This README is the flat per-experiment index.
+
 ## Timeline: Batch Dedup Retrieval Impact
 
 These two experiments form a progression — the second supersedes the first with larger sample size and tuned prompts.
 
-### Phase 1: [Store Retrieval Impact](store_retrieval_impact/report.md) (May 23)
+### Phase 1: [Store Retrieval Impact](store_retrieval_impact/experiment_log.md) (May 23)
 
 First measurement of whether batch dedup improves retrieval quality. Compared v4 (522 items) vs v4_deduped (320 items, v0 prompts) on **n=5 frozen cases** with baseline retrieval.
 
@@ -14,7 +18,7 @@ Key finding at the time: observations efficiency jumped from 3.00 to 4.00 and re
 
 **Caveat**: The n=5 sample was optimistic. The full n=39 replication (May 26) showed v4_deduped actually *loses* observation relevance (-0.28 mean delta, 2W/24T/14L vs v4) with zero efficiency gain. The aggressive 39% store reduction (v0 prompts) crossed the line into information loss.
 
-### Phase 2: [Batch Prompt Tuning](batch_prompt_tuning/experiment_log.md) + [Retrieval Impact](store_retrieval_impact/report.md#phase-2) (May 26)
+### Phase 2: [Batch Prompt Tuning](batch_prompt_tuning/experiment_log.md) + [Retrieval Impact](store_retrieval_impact/experiment_log.md#phase-2) (May 26)
 
 Principled evaluation of batch dedup prompts using 111-key golden label set. Tuned prompts from v0 through v3, adding anti-over-merge calibration, indexed keys, and verification checklists. Tested three models (3.5-flash, 2.5-pro, flash-lite).
 

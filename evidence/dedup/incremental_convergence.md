@@ -1,5 +1,11 @@
 # Incremental batch dedup: non-convergence (old entries are not frozen)
 
+> **Status update (2026-06-25):** **Fix 2 (the freeze-old apply guard) below is now BUILT & LIVE**
+> (commit `6704202`, 2026-06-16: `operations._frozen_old_conflict` + `_resolve_survivor(new_keys=…)`,
+> threaded through `orchestration._apply_cluster_operations`, with tests). **Fix 1 (preserve
+> `created_at` through a merge) remains open.** The diagnosis and fix design below are preserved
+> as written on 2026-06-09; for the current live state see [report.md](report.md).
+
 Diagnosed 2026-06-09. The post-game **incremental** batch dedup
 (`run_batch_memory_dedup(incremental=True)`, driven by the `IncrementalDedupConfig` gate) is
 **idempotent in the narrow sense** but **does not converge**. The gate is currently dormant
