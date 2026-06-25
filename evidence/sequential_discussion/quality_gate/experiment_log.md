@@ -5,8 +5,11 @@
 > deterministic metrics, the dimension-by-dimension read, and the honest caveats.
 
 **Date:** 2026-06-05 · **Closes:** Phase A #1 (sequential day discussion)
-**Method:** hand-judged A/B over transcripts, against [rubric.md](rubric.md). Deterministic
-metrics from [scripts/metrics.py](scripts/metrics.py). No LLM judge.
+**Method:** hand-judged A/B over transcripts, against [rubric.md](rubric.md) — a **human**
+scoring guide, not an LLM-judge prompt (see its header). Deterministic metrics from
+[scripts/metrics.py](scripts/metrics.py). **Nothing LLM grades this gate.** (Distinct from the
+scheduler *under test*, which uses a runtime LLM novelty gate — that's part of the design being
+evaluated, not the evaluation of it.)
 
 ## TL;DR — verdict
 
@@ -43,18 +46,29 @@ tag `concurrent-baseline` if a quantitative pass is ever wanted.)
 (a **lower bound** on redundancy — misses paraphrase). `max_share` = top speaker's share of a
 day; `max_consec` = longest same-speaker run.
 
-| Condition | echo_rate | same-round echoes | max_share | max_consec | utt/day |
-|---|---|---|---|---|---|
-| **SEQ** mem-off | **0.00** | **0** | 0.25 | 2.00 | 17.0 |
-| CONC mem-off | 0.06 | 8 | 0.22 | 2.08 | 13.0 |
-| **SEQ** mem-on | **0.00** | **0** | 0.26 | 2.00 | 15.9 |
-| CONC mem-on | 0.05 | 8 | 0.21 | 2.00 | 16.6 |
+| Condition | echo_rate | max_share | max_consec | utt/day |
+|---|---|---|---|---|
+| **SEQ** mem-off | **0.00** | 0.25 | 2.00 | 17.0 |
+| CONC mem-off | 0.06 | 0.22 | 2.08 | 13.0 |
+| **SEQ** mem-on | **0.00** | 0.26 | 2.00 | 15.9 |
+| CONC mem-on | 0.05 | 0.21 | 2.00 | 16.6 |
 
-Read: sequential has **zero** lexical echo in both conditions; concurrent has consistent
-same-round echo (16 instances over 8 games), concentrated on day 1. Turn-fairness and volume
-are **comparable** — concurrent is *not* pathological on domination (its round-robin is in
-fact marginally more even, by construction). The win is **robust to memory** (echo pattern
-identical on/off).
+*The fairness columns count **turns, not airtime or influence** — they detect concentration/domination,
+not fairness in a richer sense; distinct-speaker coverage is computed but not tabled, so the rubric's "no
+silent survivors" axis is a **judged** call here, not a measured one.*
+
+Read: sequential has **zero** lexical echo in both conditions; concurrent shows a consistent low
+rate (0.05–0.06). The cross-arm echo comparison is **`echo_rate`** above.
+
+> **`same_round_echoes` is a concurrent-only diagnostic, not a cross-arm metric.** It counts echoes that
+> fall in the *same blind round*: **16 over the 8 concurrent games, day-1-concentrated**, localizing
+> concurrent's pathology to the blind parallel fan-out. Sequential has no rounds, so it doesn't apply —
+> the figure characterizes *where* concurrent's echo lives, not a delta between the arms. The cross-arm
+> echo metric is `echo_rate`.
+
+Turn-fairness and volume are **comparable** — concurrent is *not* pathological on domination (its
+round-robin is in fact marginally more even, by construction). The win is **robust to memory** (echo
+pattern identical on/off).
 
 ## Dimension-by-dimension
 
@@ -99,7 +113,7 @@ can still concentrate scrutiny on one player; it's bounded and responsive, not e
 Comparable. Concurrent's round-robin is marginally more even (max_share 0.21-0.22 vs
 0.25-0.26) but that evenness is *forced* — everyone must speak each round even with nothing to
 add, which directly feeds the parroting. Sequential's distribution is need-based (max_consec 2,
-max_share ≤0.35), healthy. No domination problem in either.
+max_share ≤0.35 on any single day, aggregate mean 0.25–0.26), healthy. No domination problem in either.
 
 ## Steelman / honest caveats
 - **Concurrent is not broken.** With concrete evidence (a confirmed wolf) it converges and
@@ -107,40 +121,47 @@ max_share ≤0.35), healthy. No domination problem in either.
   clearly does — but this isn't "concurrent fails."
 - **N is small.** All quantitative numbers are descriptive. The verdict rests on the
   *structural* dimensions, which don't need N.
-- **Judge = the implementer.** Bias mitigated by (a) deterministic metrics, (b) verbatim
-  excerpts above so any call is auditable, (c) explicit steelman. Excerpts are reproducible
-  from the dumped transcripts.
+- **Judge = the implementer** (who has a stake in sequential winning). Three checks on that bias:
+  (a) the scored claims are deterministic metrics, not a subjective rating; (b) every *qualitative*
+  call is backed by a verbatim excerpt, reproducible from the dumped transcripts, so a reader can
+  re-check and overrule it; (c) the strongest case *for the loser* is argued on the record — the
+  "Concurrent is not broken" caveat above is the implementer making concurrent's best argument.
+- **What version this gated.** The sequential arm was generated *after* the first-live-run fixes
+  (the external novelty judge, `mention`-discharge, `opener_floor`=3 — all landed earlier the same
+  day) — so this ratifies the **final** architecture, not a pre-novelty one. It predates the
+  `reengagement_cooldown_multiplier 3→1.0` fix (2026-06-24): the knob sat at the detuned `3`, which
+  *over*-suppressed re-engagement (exhausted pairs stayed shut), so sequential read marginally
+  *calmer* here than the shipped config would — a benign direction, and the consecutive K=2 cap
+  bounds re-engagement under `1.0` regardless. The structural verdict is unaffected; the exact
+  current config was not re-gated.
+- **What the echo number does — and doesn't — show.** `echo_rate=0.00` is **lexical** (difflib), so
+  it certifies the *structural* win: blind-round redundancy is gone because agents read before
+  speaking, by construction. It does **not** measure the *semantic* proactive echo the novelty judge
+  exists to tame (the agreement-pile "reworded same point"), and the gate has no novelty-on/off arm,
+  so the judge's specific contribution is **un-ablated**. That semantic echo is tamed rests on the
+  hand-judged Dimension-1 read, not the metric — reduced **by design, not quantitatively verified**.
 
 ## Decision
-**Adopt sequential. Phase A #1 closes.** Unblocks Phase A #2 (roles), #3 (tracing), #4 (night
-memory), #5 (v5 DB).
+**Adopt sequential. Phase A #1 closes.**
 
-## Future work (post-MVP — none blocks shipping the sequential design)
-Ordered roughly by value. All deferrable; the sequential design ships as-is.
-1. **`current_round` → `seq` cleanup (v5).** The day path zeroes `current_round` (vestigial);
-   `EvalCase.round`, `situation_summary` run-names, and `formatters` still reference `round`, so
-   day-phase eval cases label as `round_0`. Replace with `seq`. (Already on the v5 backlog.)
-2. **Eval-data schema shim.** `DayChannel.seq` is required, so old discussion-bearing eval cases
-   won't deserialize. Add a `seq` default / migration validator — *only* needed if we replay
-   pre-rebuild eval data; moot once v5 regenerates golds.
-3. **Wolf-night discussion → sequential.** Night discussion still uses the old concurrent 2-round
-   model. Applying the same reactive/proactive scheduler would bring the same coherence win and
-   remove the last `round`-based code path.
-4. **Novelty-gate hardening.** Judge strictness is currently lenient; consider a cheap
-   embedding pre-filter before the LLM gate (cuts cost on echo-heavy days). See experiment_log
-   "Tuning results".
-5. **Scheduler tunable sweep.** `per_pair_reengagement_cap`, `proactive_budget`, `opener_floor`,
-   `reengagement_cooldown_multiplier` were set by hand during tuning — a small grid sweep could
-   confirm the defaults.
-6. **Dialogue-style fine-tuning** (optional, Phase 4 of the FT plan) — fine-tune for natural
-   turn-taking once the rest of the rebuild lands.
-7. **Quantitative A/B (only if ever needed).** This gate is structural/qualitative. If a
-   defensible *number* is ever required (e.g. for an external audience), run pinned fresh
-   concurrent games from the `concurrent-baseline` tag worktree + a win-rate / judged A/B.
+Weighed against the limitations: the evidence is deliberately thin on *numbers* — N=4/arm,
+unpaired, concurrent's backend/temp unrecorded, judge=implementer. Adoption does **not** rest on
+a quantitative delta (there isn't a significant one, and the doc doesn't claim one). It rests on
+the **structural** finding — concurrent's blind-round redundancy and sequential's forced
+responsiveness are *architectural* properties that reproduce in **all 8 games**, hold on memory
+on *and* off, and don't need N. The decision leans only where the evidence is strong and
+explicitly disclaims the weak part.
 
-## Incidental fixes made during the gate (committed separately)
-- `run_batch.py` now dumps `day_channel`/`day_summaries` (was dropping the transcript →
-  records had no discussion to judge).
-- `create_embeddings` wrapped with transient-error retry/backoff
-  (`_RetryingGoogleGenerativeAIEmbeddings`) — the runtime retrieval-query embedding had no
-  retry, so a single 429 aborted a mem-on game.
+The commitment is also **reversible**: the concurrent design is frozen at tag
+`concurrent-baseline`, so if a defensible *number* is ever required (e.g. an external audience),
+the pinned quantitative A/B (future work #6) runs against it with nothing re-derived. A decisive
+structural win + a reversible commitment + a preserved fallback is enough to adopt now despite
+small N.
+
+## Future work
+Workstream-level future work — wolf-night migration, the scheduler tunable sweep, novelty-gate hardening,
+the residual `current_round`, human integration — is tracked in the parent journey log
+[`../experiment_log.md`](../experiment_log.md) §11. The one item specific to *this gate*: a pinned
+**quantitative A/B** against the `concurrent-baseline` tag worktree (a win-rate / judged comparison), if a
+defensible *number* is ever required for an external audience — this gate is structural/qualitative by
+design (see the "What version this gated" caveat above).
