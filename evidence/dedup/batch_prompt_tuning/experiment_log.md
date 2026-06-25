@@ -1,4 +1,20 @@
-# Batch Dedup: Golden Labels and Prompt Tuning
+# Batch Dedup: Golden Labels and Prompt Tuning — experiment log
+
+**What this is.** The **offline** whole-store dedup pass tuned against golden labels: porting the
+per-extraction decision criteria into the cluster-resolution prompts (v0→v3 + a "lite" variant),
+landing the two-pass pipeline (flash-lite triage → 2.5-pro verify, 89.2%), and discovering the pass is
+**not idempotent** — which is what motivated incremental dedup. Companions: the folder
+[report.md](../report.md) is the destination (how batch dedup works *today*); the mechanics reference
+is [../batch_architecture.md](../batch_architecture.md); the incremental/freeze-old story this kicks
+off is [../incremental_convergence.md](../incremental_convergence.md); the chronological overview is
+[../experiment_log.md](../experiment_log.md).
+
+**Reading contract.** In rough time order; prompt variants and the two-pass design are shown as tried,
+with the idempotency test (a second run removed another ~10%) left in place because it's what exposed
+the convergence problem. Eval JSONs are in [data/](data/), frozen prompts in
+[prompt_versions/](prompt_versions/).
+
+---
 
 ## Motivation
 
@@ -373,7 +389,26 @@ This gives two complementary modes:
 ## Next Steps
 
 1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure in `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). Golden eval: 89.2% accuracy, best of all approaches. See [two-pass golden eval results](#two-pass-golden-eval-results-v3-prompts).
-2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/report.md#phase-2).
+2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/experiment_log.md#phase-2).
 3. ~~**Tune flash-lite triage prompt**~~ — **Done.** Lite anti-overmerge prompt created and evaluated. Standalone: 85.6% (up from 72.1%). Two-pass with lite: 84.7% at 12% escalation vs 89.2% at 25% escalation with v3 default. See [flash-lite anti-overmerge prompt tuning](#flash-lite-anti-overmerge-prompt-tuning) and [two-pass with lite prompt](#two-pass-with-lite-prompt-validated).
 4. ~~**Solve idempotency before integration**~~ — **Done.** Incremental dedup mode (`--incremental`) implemented. Tracks `.last_dedup_at` timestamp, skips all-old clusters. See [incremental dedup](#incremental-dedup-implemented).
 5. ~~**Integrate batch dedup into the game pipeline**~~ — **Done.** `BatchDedupConfig` added to `MemoryPersistenceConfig` (disabled by default). When enabled, runs incremental two-pass dedup after memory dump in `post_game_analysis()`. Enable via `build_game_config(memory_persistence_config=MemoryPersistenceConfig(batch_dedup=BatchDedupConfig(enabled=True)))`.
+
+## Current live state (2026-06-25)
+
+Batch dedup is **built and wired but dormant by default** — `IncrementalDedupConfig.enabled=False`
+(`Agents/memory/persistence/config.py:51`), so it does not run post-game unless turned on; the
+system-wide refresh (#3) is manual-only. What shipped from this log:
+
+- **Bounded clustering, gate-partitioned.** The default cluster mode is the conservative `bounded`
+  (the retrieval-impact finding that aggressive merging hurts —
+  [../store_retrieval_impact/experiment_log.md](../store_retrieval_impact/experiment_log.md)), and
+  clustering now runs **inside** a deterministic gate partition (`Agents/memory/dedup_gate.py`, v6 —
+  postdates this log), not just the `(memory_kind, role, action_phase)` namespace.
+- **Two-pass is the recommended config** (flash-lite triage → 2.5-pro verify; `two_pass=True` within
+  the incremental config); MERGE/rewrite stays a batch-only, pro-model operation.
+- **The idempotency alarm was right.** The "second run removes another ~10%" finding here led directly
+  to incremental mode and its **freeze-old guard** — now built and live (it was "not yet built" at the
+  time of [../incremental_convergence.md](../incremental_convergence.md); see that doc's status banner).
+
+Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.

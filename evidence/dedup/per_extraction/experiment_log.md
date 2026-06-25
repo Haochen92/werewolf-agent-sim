@@ -1,8 +1,23 @@
-# Per-Extraction Dedup: Golden Labels and Baseline Accuracy
+# Per-Extraction Dedup: Golden Labels and Prompt Tuning — experiment log
+
+**What this is.** The **online** (per-game) dedup decision-maker, tuned against human golden labels:
+how accurately the LLM calls KEEP / DISCARD / (then-)MERGE on each newly extracted entry, and the
+prompt journey v1→v11b that got there. Companions: the folder [report.md](../report.md) is the
+destination (how online dedup works *today*); [../experiment_log.md](../experiment_log.md) is the
+chronological overview of the whole dedup effort.
+
+**Reading contract.** Sections run in rough time order; prompt versions are shown **as they were
+tried** — including the ones that regressed (v2's calibration cascade, v4's merge-ratchet) and the two
+**golden-label revisions** that re-scored them — left in place because the back-and-forth *is* the
+lesson. The headline shift the journey converges on: **MERGE was eventually removed from online dedup**
+(v11) — see *Current live state* at the end. Artifacts (replays, scorer output, frozen prompts) are
+tabled at the end.
+
+---
 
 ## Motivation
 
-The per-extraction dedup pipeline runs after every game to decide whether newly extracted observations and strategy points are novel (KEEP), redundant (DISCARD), or partially overlapping (MERGE). The batch dedup work ([store_dedup/report.md](../store_retrieval_impact/report.md)) showed that store-level cleanup dramatically improved retrieval quality, but we had no way to measure how accurately the LLM makes individual dedup decisions. The existing `dedup_eval.py` used an LLM judge to score decisions — which meant we were evaluating one LLM's judgment with another LLM's judgment, with no ground-truth anchor. We needed human-annotated golden labels so we could measure decision accuracy deterministically and identify systematic biases in the dedup prompt.
+The per-extraction dedup pipeline runs after every game to decide whether newly extracted observations and strategy points are novel (KEEP), redundant (DISCARD), or partially overlapping (MERGE). The batch dedup work ([store_retrieval_impact](../store_retrieval_impact/experiment_log.md)) showed that store-level cleanup dramatically improved retrieval quality, but we had no way to measure how accurately the LLM makes individual dedup decisions. The existing `dedup_eval.py` used an LLM judge to score decisions — which meant we were evaluating one LLM's judgment with another LLM's judgment, with no ground-truth anchor. We needed human-annotated golden labels so we could measure decision accuracy deterministically and identify systematic biases in the dedup prompt.
 
 ## Design and Hypothesis
 
@@ -789,6 +804,30 @@ K→D errors dropped from 9 to 4. The calibration successfully prevented 5 false
 1. **Run 3.5-flash on v11b**: Confirm the three-field calibration doesn't hurt the conservative model's already-good K precision.
 2. **Address 3.5-flash under-discarding**: 11 D→K errors suggest adding same-lesson calibration — "different examples of the same lesson are still duplicates" — but this may conflict with flash-lite's over-discard tendency. May need model-specific tuning or accept the accuracy ceiling.
 3. **Investigate shared hard cases (30, 63, 64)**: Both models fail on these — review golden labels for possible mislabeling or accept as genuine ambiguity.
+
+## Current live state (2026-06-25)
+
+This pipeline is **live and on by default** during store-build / seeding (`dump_enabled=True`,
+`Agents/memory/persistence/config.py:89`), running after each game on every newly extracted entry.
+Three things differ from where the tuning journey above left off — they are its *outcome*, not
+contradictions of it:
+
+1. **MERGE is gone — online dedup is KEEP/DISCARD only.** The v11 decision to drop MERGE (rare,
+   over-fired, its rewrites corrupted entries) is the shipped state: the model is only ever offered
+   DISCARD/KEEP (`Agents/memory/deduplication/schemas.py:84-91`). MERGE (rewriting) now lives **only**
+   in the offline batch pass. The live prompts are a stabilized "v6.1" generation in
+   `Agents/prompts/dedup.py` (carrying the v9d action-before-situation ordering) — not literally any
+   single v-number above.
+2. **A deterministic gate runs before the LLM.** Candidates are first narrowed by a structured gate
+   (`Agents/memory/dedup_gate.py`) — same role/phase, same `gate_key` bucket, compatible hard
+   pair-checks — so the LLM only ever compares already-homogeneous entries, and the gated dimensions are
+   hidden from it via `situation_for_dedup`. This is v6 work that **postdates** this log.
+3. **The embedding pre-filter auto-decides the easy cases.** The thresholds calibrated in the sibling
+   [embedding_prefilter](../embedding_prefilter/experiment_log.md) log are live in
+   `Agents/memory/deduplication/config.py` (SP 0.93/0.81, OBS 0.96/0.935); the LLM sees only the
+   ambiguous middle band.
+
+Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
 
 ## Artifacts
 

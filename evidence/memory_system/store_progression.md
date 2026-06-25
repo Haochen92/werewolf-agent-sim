@@ -52,7 +52,7 @@ whole strategy doc. Retrieval *is* the anti-overfitting mechanism.
 filled with near-duplicates — by v3, retrieval showed ~52% observation redundancy and ~77% strategy-
 point redundancy. Retrieval slots were being spent on copies.
 
-*Source: `effectiveness/report.md` §Phase 1; `dedup/store_retrieval_impact/report.md`.*
+*Source: `effectiveness/report.md` §Phase 1; `dedup/store_retrieval_impact/experiment_log.md`.*
 
 ## 3. Phase 2 — dedup + action-phase namespacing (v3_deduped → v4 → v4_deduped → v4_deduped_v2)
 
@@ -75,7 +75,7 @@ dedup* — it stayed ~59–77% across every store. That ruled out "dedup harder"
 **content-coverage gap**: the store simply lacked entries for some situations. This is the first
 signal that the eventual bottleneck would be content, not plumbing.
 
-*Source: `dedup/store_retrieval_impact/report.md`; `dedup/README.md`; `effectiveness/report.md` Batch B.*
+*Source: `dedup/store_retrieval_impact/experiment_log.md`; `dedup/README.md`; `effectiveness/report.md` Batch B.*
 
 > **Interlude — the effectiveness study (v3_deduped vs v4).** The headline A/B on these stores showed
 > memory *can* move outcomes dramatically (Batch A all-enabled **70%→97%, Fisher p=0.012**) but that

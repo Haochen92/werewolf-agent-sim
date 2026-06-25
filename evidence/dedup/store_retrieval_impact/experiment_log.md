@@ -1,4 +1,16 @@
-# Store Deduplication: Fixing Redundancy at the Source
+# Store dedup → retrieval impact — experiment log
+
+**What this is.** The measurement that *started* the dedup workstream: does cleaning the memory store
+actually improve retrieval, and how hard should it clean? Two phases — an n=5 first look (May 23) and
+an n=39 replication (May 26) that **corrected** it. The destination (how dedup works today) is the
+folder's [report.md](../report.md); the chronological overview of the whole effort is
+[../experiment_log.md](../experiment_log.md).
+
+**Reading contract.** Phases are in time order; the n=5 verdict is shown **as it stood** and then
+falsified in place by the n=39 replication — the correction is the point, not an edit to hide. Raw
+per-case judge dumps are in [data/](data/).
+
+---
 
 ## The Problem
 
@@ -140,8 +152,8 @@ The v3 prompts are far more conservative — anti-over-merge calibration, BEFORE
 
 | File | Description |
 |---|---|
-| [01_v4_vs_v4deduped_baseline.md](01_v4_vs_v4deduped_baseline.md) | Phase 1: v4 vs v4_deduped retrieval eval (n=5) |
-| [02_v4deduped_with_filtering.md](02_v4deduped_with_filtering.md) | Phase 1: v4_deduped with filtering pipeline (n=5) |
+| [data/01_v4_vs_v4deduped_baseline.md](data/01_v4_vs_v4deduped_baseline.md) | Phase 1: v4 vs v4_deduped retrieval eval (n=5), raw per-case judge dump |
+| [data/02_v4deduped_with_filtering.md](data/02_v4deduped_with_filtering.md) | Phase 1: v4_deduped with filtering pipeline (n=5), raw per-case judge dump |
 
 ## Code References
 
@@ -151,3 +163,19 @@ The v3 prompts are far more conservative — anti-over-merge calibration, BEFORE
 - `eval_configs/store_dedup/store_dedup_comparison.json` — phase 1 eval config (n=5)
 - `eval_configs/store_dedup/dedup_v2_comparison.json` — phase 2 eval config (n=39)
 - `eval_results/retrieval_eval_20260526_174803.jsonl` — phase 2 raw results
+
+---
+
+## Current live state (2026-06-25)
+
+The verdict here — **conservative store dedup helps retrieval; aggressive over-merging hurts** — held
+and shaped what shipped: batch dedup defaults to the conservative `bounded` clustering mode and is now
+gate-partitioned (see [../report.md](../report.md)). Two caveats for a reader arriving from the v6
+code:
+
+1. **Path moved.** The pipeline cited above as the monolithic `Agents/memory_batch_deduplication.py`
+   is now the package `Agents/memory/batch_deduplication/`.
+2. **Numbers are v4-store-era.** These n=5 / n=39 results justify the *direction* (clean
+   conservatively, don't over-merge), not absolute scores on today's v6 store — and the n=5 phase is
+   superseded by n=39 regardless. The consolidated current-vs-documented gaps live in
+   [../report.md](../report.md) § *Current-vs-documented gaps*.

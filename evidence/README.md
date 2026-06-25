@@ -12,7 +12,7 @@ Removing redundant entries from the memory store, both at batch level (periodic 
 
 | Experiment | Sample | Date | Status |
 |---|---|---|---|
-| [store_retrieval_impact](dedup/store_retrieval_impact/report.md) | n=5 + n=39 | May 23, 26 | Phase 1 (n=5) superseded; phase 2 (n=39) is current |
+| [store_retrieval_impact](dedup/store_retrieval_impact/experiment_log.md) | n=5 + n=39 | May 23, 26 | Phase 1 (n=5) superseded; phase 2 (n=39) is current |
 | [batch_prompt_tuning](dedup/batch_prompt_tuning/experiment_log.md) | n=111 golden | May 26 | Current |
 | [per_extraction](dedup/per_extraction/experiment_log.md) | n=50 golden | May 26 | Current |
 | [embedding_prefilter](dedup/embedding_prefilter/) | n=65+232 | May 26 | Current |

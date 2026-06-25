@@ -1,4 +1,22 @@
 
+# Embedding Pre-filter Calibration — experiment log
+
+**What this is.** The **automatic** (no-LLM) dedup layer: a deterministic embedding-similarity
+pre-filter that auto-keeps clearly-novel and auto-discards clearly-duplicate entries, sending only the
+ambiguous middle band to the LLM. This log is the threshold calibration — on a 65-case golden set and a
+232-case cross-game set — plus the ablations (3072 dims, `SEMANTIC_SIMILARITY` task type,
+multi-dimensional boundaries) that all came back **negative**, converging on *why* embedding similarity
+has a hard ceiling. Companions: the folder [report.md](../report.md) is the destination (how the
+pre-filter works today); it feeds the online pipeline in
+[../per_extraction/experiment_log.md](../per_extraction/experiment_log.md); the chronological overview
+is [../experiment_log.md](../experiment_log.md).
+
+**Reading contract.** Calibration first, then the ablations shown **as tried and rejected** — each with
+the negative result that killed it, left in place because the "no improvement" findings *are* the point
+(they establish the ceiling). Cached embeddings + golden labels are in [data/](data/).
+
+---
+
 ## Embedding Pre-filter for Deterministic Auto-Decisions
 
 ### Motivation
@@ -209,6 +227,20 @@ Going forward, every dedup decision now logs its full embedding similarities to 
 This means future threshold tuning reduces to: pull traces → extract cases with `similarity_scores` → sweep. No re-embedding, no dataset builder, no separate labeling run. The LLM decisions on the non-auto cases serve as free labeled data accumulating over time — exactly the "log tuples and find where the boundary sits" approach, but with golden-labeled calibration as the principled anchor and production traces as the ongoing validation.
 
 The tracing infrastructure (`_emit_dedup_span` → Langfuse span → `fetch_dedup_cases()` → `DedupDatasetRecord`) was already in place for decision-level eval. Adding `similarity_scores` to the existing span output was a one-field change that unlocks continuous threshold monitoring without any new infrastructure.
+
+## Current live state (2026-06-25)
+
+The calibrated thresholds are **live** in the online dedup pipeline —
+`SP_ACTION_DISCARD_THRESHOLD=0.93`, `SP_ACTION_KEEP_THRESHOLD=0.81`,
+`OBS_CONTENT_DISCARD_THRESHOLD=0.96`, `OBS_CONTENT_KEEP_THRESHOLD=0.935`
+(`Agents/memory/deduplication/config.py`) — applied per new entry in `Agents/memory/deduplication/`.
+Both ends short-circuit (similarity ≥ discard → auto-discard; < keep → auto-keep; the middle band
+falls through to the LLM). The ~15-30% auto-decision rate and its ceiling are unchanged: they're a
+property of the embedding space ("topic, not stance"), not a tuning target. The one piece that
+postdates this log: the **deterministic gate now runs *before* the pre-filter**, so candidates are
+already role/phase/bucket-homogeneous when similarity is computed (see [../report.md](../report.md)).
+
+Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
 
 ## Embedding Pre-filter Artifacts
 
