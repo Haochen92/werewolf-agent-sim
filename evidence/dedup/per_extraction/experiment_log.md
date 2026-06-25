@@ -1,809 +1,294 @@
-# Per-Extraction Dedup: Golden Labels and Prompt Tuning — experiment log
+# Per-extraction dedup — golden labels & prompt tuning (experiment log)
 
-**What this is.** The **online** (per-game) dedup decision-maker, tuned against human golden labels:
-how accurately the LLM calls KEEP / DISCARD / (then-)MERGE on each newly extracted entry, and the
-prompt journey v1→v11b that got there. Companions: the folder [report.md](../report.md) is the
-destination (how online dedup works *today*); [../experiment_log.md](../experiment_log.md) is the
-chronological overview of the whole dedup effort.
+**What this is.** The detailed chapter behind beats **§3, §6, §7** of the
+[dedup overview](../experiment_log.md): the **per-extraction** (online) dedup decision-maker — the LLM
+that judges each newly extracted entry against its neighbours as a game ends — tuned against
+human-anchored golden labels across prompt versions **v1→v11b**. The overview gives the highlights;
+this gives all the load-bearing detail. The destination (how online dedup runs today) is
+[../report.md](../report.md).
 
-**Reading contract.** Sections run in rough time order; prompt versions are shown **as they were
-tried** — including the ones that regressed (v2's calibration cascade, v4's merge-ratchet) and the two
-**golden-label revisions** that re-scored them — left in place because the back-and-forth *is* the
-lesson. The headline shift the journey converges on: **MERGE was eventually removed from online dedup**
-(v11) — see *Current live state* at the end. Artifacts (replays, scorer output, frozen prompts) are
-tabled at the end.
+**Terms used throughout (anchored once).**
+- **observation** vs **strategy point** — an observation is a *situation → approach → outcome*
+  lesson-by-example; a strategy point is a reusable *situation → action* rule. They dedup differently,
+  and observations carry an extra action (MERGE) that strategy points never do.
+- **decision schemes** — the dataset was first recorded in a legacy `A/B/C/D`
+  (DISCARD / REPLACE / DIFFERENTIATE / KEEP) scheme; this work uses **D / M / K**
+  (DISCARD / MERGE / KEEP), and the endgame collapses it to **D / K**.
+- **accuracy** — unless stated otherwise, *strict* accuracy = exact match against the human golden
+  label. *Lenient* additionally accepts the `also_acceptable` second label on the few genuinely
+  borderline cases.
+- **prompt versions** v1→v11b are **per-extraction prompt** versions (not store versions, not the
+  batch prompt). Replays run a frozen case set through a given (model × prompt-version).
+
+**Reading contract.** Roughly chronological. Prompt versions are shown **as they were tried** —
+including the several that *regressed* — because the back-and-forth is the lesson, and twice the
+"failures" turned out to be **mislabelled golden data**, not bad prompts. The arc converges on removing
+MERGE; the synthesis (lessons, the still-open discard-vs-keep question, live state) is at the **end**,
+after the full chronology.
+
+**The shape of the journey (so the v-by-v detail has a map).** Prompt tuning went through four phases
+plus an endgame, and the headline is that *directional* calibration never worked:
+
+1. **Phase 1 (v2–v5): structural decision-gates** — forcing the model through two-stage D/M/K gates
+   consistently *hurt*. (And round 1 of golden-label revision happened here.)
+2. **Phase 2 (v6): a directional calibration cascade** — "prefer D over M over K" lifted DISCARD
+   recall to 93% but crushed KEEP recall to 41%. (Round 2 of golden-label revision happened here.)
+3. **Phase 3 (v7–v8): from cascade to targeted** — removing the cascade flipped it to over-merge;
+   *targeted, failure-mode-specific* notes finally worked (3.5-flash hit 80%).
+4. **Phase 4 (v9–v9d): presentation over instruction** — reordering fields (action before situation)
+   beat any amount of added instruction text.
+5. **Endgame (v10→v11→v11b): drop MERGE** — rare, hard, and destructive on weak models; per-extraction
+   became KEEP/DISCARD only.
 
 ---
 
-## Motivation
+## ① Why golden labels at all
 
-The per-extraction dedup pipeline runs after every game to decide whether newly extracted observations and strategy points are novel (KEEP), redundant (DISCARD), or partially overlapping (MERGE). The batch dedup work ([store_retrieval_impact](../store_retrieval_impact/experiment_log.md)) showed that store-level cleanup dramatically improved retrieval quality, but we had no way to measure how accurately the LLM makes individual dedup decisions. The existing `dedup_eval.py` used an LLM judge to score decisions — which meant we were evaluating one LLM's judgment with another LLM's judgment, with no ground-truth anchor. We needed human-annotated golden labels so we could measure decision accuracy deterministically and identify systematic biases in the dedup prompt.
+The per-extraction pipeline runs after every game to decide whether each newly extracted observation
+and strategy point is novel (**KEEP**), redundant (**DISCARD**), or — for observations — a variant
+worth folding in (**MERGE**). We had no way to measure how *accurately* the LLM made those calls: the
+existing `dedup_eval.py` scored decisions with an *LLM judge*, i.e. one model grading another with no
+ground-truth anchor. To find systematic biases in the dedup prompt we needed **human-annotated golden
+labels** and a deterministic scorer.
 
-## Design and Hypothesis
+## ② The eval anchor: golden labels + baseline
 
-**Dataset**: 50 cases sampled from 390 total dedup spans across 30 games (v4_action_phase_v2, seed=42). The sample is balanced: 25 observations, 25 strategy points. Each case contains the new entry, its top-k candidate matches with similarity scores, and the LLM's original decision.
+### Building the golden set
 
-**Label scheme**: We used the current D/M/K (Discard/Merge/Keep) scheme rather than the legacy A/B/C/D codes present in the dataset. This meant translating legacy decisions for comparison. The hypothesis was straightforward: human review of 50 cases would establish a reliable accuracy baseline, and the error patterns would reveal specific prompt weaknesses worth fixing.
+We sampled **50 cases** (later expanded to 65 — §below) from 390 dedup spans across 30 games
+(`v4_action_phase_v2`, seed=42), balanced 25 observations / 25 strategy points. Each case carries the
+new entry, its top-k candidates with similarity scores, and the LLM's original decision. Labelling was
+interactive human review across two sessions; we surfaced full original text whenever a summary felt
+ambiguous (~15 of 50, mostly observations).
 
-**Labeling process**: Interactive human-in-the-loop review. For each case, we examined the new entry and its candidates, compared the strategic lessons taught, and assigned D/M/K. When cases were ambiguous, we surfaced the original text to resolve them. We tracked tricky/mislabeled cases in a separate file to accumulate prompt improvement evidence.
+Three design decisions shaped the set, each earning its keep later:
+- **Strategy points are D/K only** — `StrategyDedupDecisionOutput` is `StrategyDiscard | StrategyKeep`;
+  merging two prescriptive rules is semantically harder than merging two anecdotes. (A
+  discard-*with-rewrite* option let a discard still steal better phrasing — revisited and removed at v10.)
+- **`also_acceptable` for genuine borderlines** — some cases sit honestly between D and M; rather than
+  force one label and penalise a defensible call, we record both and report strict *and* lenient
+  accuracy.
+- **Tricky cases as a separate artifact** — the 7 hardest cases live in
+  [tricky_cases.md](tricky_cases.md) with full text, the tension, and the prompt implication: a
+  machine-readable golden file for scoring, a human-readable file for debugging.
 
-### Key schema constraints discovered during labeling
+### The legacy-mapping gotcha (a scoring fix, not a behaviour change)
 
-- **Strategy points only support D/K** — no merge. This was confirmed from `StrategyDedupDecisionOutput` in `Agents/memory_deduplication.py`, which is a union of `StrategyDiscard | StrategyKeep`. Strategy points are prescriptive rules; merging two pieces of advice into one is semantically harder than merging two game anecdotes.
-- **Strategy point discard-with-rewrite** bridges this gap. `StrategyDiscard` has optional `improved_situation` and `improved_action` fields — the pipeline can discard the new entry but steal its better phrasing to improve the existing one. We used this for 2 cases (28, 33) where the new entry was better written but covered the same lesson.
-- **`also_acceptable` for borderline cases**. Some cases genuinely fell between D and M — a specific instance of a well-generalized pattern could be either "discard, it adds nothing" or "merge, it enriches the pattern." Rather than forcing a single label, we added an `also_acceptable` field (used for cases 22 and 35). This avoids penalizing the LLM for a judgment call that humans can't consistently resolve.
+The dataset's legacy `A/B/C/D` codes had to be translated to D/M/K. The naïve uniform map gave **66%**
+and a suspicious mismatch list — nearly all strategy errors showed predicted=M, impossible since
+strategy points have no merge. The fix: legacy **B (REPLACE)** maps to **M for observations** but **D
+for strategy points** (which can't merge). Splitting the map by item type jumped accuracy to **78%** —
+purely a scoring correction. *Lesson in miniature:* a label-set mapping is mediated by schema
+constraints, not a lookup table.
 
-## Process and Challenges
+### Baseline accuracy and the dominant failure
 
-### Labeling workflow
+The baseline model — **gemini-2.5-flash** (the model used during the original 30-game batch) — scored
+**78% strict / 80% lenient**.
 
-We reviewed all 50 cases interactively across two sessions. For each case, the initial pass showed a condensed summary: item type, the LLM's original decision, the new entry's key content, and the top candidate's key content with similarity score. Most cases (especially clear keeps and clear discards) were decided from the summary alone. When a case felt ambiguous, we surfaced the full original JSON text for the new entry and relevant candidates — this happened roughly 15 times out of 50, concentrated in the observation cases.
-
-The workflow evolved as we went. Early on (cases 0-15), we relied more on summaries and quick gut checks. By the mid-twenties, we'd developed a sharper eye for the subtle distinction between "same response to different triggers" vs "different response to same trigger," and started proactively requesting original text for any observation case with similarity > 0.80. This shift was prompted by Case 17, where the summary made two entries look like the same "endgame rejection of wolf deflection," but the full text revealed distinct wolf tactics being countered.
-
-### Challenge: the D/M gradient for observations
-
-The hardest recurring judgment was Discard vs Merge for observations. Both mean "these are about the same thing" — the question is whether the new entry adds anything worth incorporating into the existing text. In practice, nearly every new observation adds *some* specificity (a game phase detail, a player count, a specific outcome). The question became: does this specificity change what an agent would *do* with the information?
-
-Case 22 was the clearest example of this tension. The new entry detected late bussing (wolf joining the correct vote suspiciously late); the candidate detected partner protection (wolf voting against eliminating their partner). The village response was identical ("press with evidence → wolf folds"). Initially it looked like a merge, but the detection heuristic was fundamentally different — an agent reading one wouldn't learn the other. This was a Keep that the LLM mislabeled as Merge.
-
-Conversely, Case 23 was a genuine borderline: a specific "protect effective villager" observation vs an already well-generalized candidate with obs_count=3. The new entry added "revenge targeting" detail but no new strategic dimension. We couldn't confidently choose D or M, so this prompted the `also_acceptable` design decision.
-
-### Challenge: confusing source text
-
-Case 35 initially tripped up both the human reviewer and the LLM. The new entry described a player voting against someone, but the writing made it ambiguous whether the target was a confirmed non-wolf (which would be a distinct observation about voting against cleared players) or just another suspect. On closer reading, the confirmed non-wolf was a different player entirely — the confusing pronoun reference masked what was actually a straightforward "bandwagon with no evidence" pattern, making it a Discard of Candidate 1. The LLM labeled it Keep, likely confused by the same writing ambiguity. This is a data quality issue rather than a prompt issue — the extraction step produced confusingly written text that downstream dedup couldn't parse correctly.
-
-### Challenge: conflicting strategy advice
-
-Case 42 presented two strategy points giving opposite advice for the same situation: "vote for a third target to avoid suspicion" vs "vote with the majority to blend in." Both are valid wolf tactics depending on context. Our initial instinct was that conflicting advice should be merged into a single nuanced entry, but strategy points don't support merge. The right call was Keep — giving the agent two distinct tactical options is better than forcing one. This reframed our thinking: for strategy points, contradiction between entries is a feature (tactical flexibility), not redundancy.
-
-### Design decision: why 50 cases
-
-The 390-case full dataset was too large for careful human review. We considered three sample sizes: 20 (quick but possibly too few error cases to identify patterns), 50 (balanced between effort and statistical coverage), and 100 (thorough but would take multiple sessions). At 50, we expected ~10-15 mismatches at 70-80% accuracy — enough to identify recurring patterns but not so many that labeling fatigue degrades quality. The actual 11 mismatches confirmed this was the right range: enough to see three distinct bias patterns, few enough that each mismatch got careful attention.
-
-### Design decision: tricky cases as a separate artifact
-
-Rather than embedding labeling notes directly into the golden labels JSON, we created a separate `dedup_v2_tricky_cases.md` with full original text for both entries. The rationale: the golden labels file is for automated scoring (structured, machine-readable), while the tricky cases file is for prompt debugging (narrative, human-readable). Keeping them separate means the scorer doesn't need to parse prose, and the prompt engineer doesn't need to decode JSON to understand what went wrong. Each tricky case includes the LLM's decision, the golden label, the tension (why it was wrong), and the prompt implication (what to fix) — a self-contained prompt debugging unit.
-
-## Evaluation Setup
-
-**Golden labels**: 50 cases in `eval_sets/dedup_v2_golden_labels.json`. Distribution: D=19, M=6, K=25.
-
-**Tricky cases**: 7 mislabeled cases documented in `eval_sets/dedup_v2_tricky_cases.md` with full original text for both new entry and candidate, enabling prompt auditing.
-
-**Scorer**: `evaluation/experiments/dedup_score.py` — deterministic, no LLM. Auto-detects legacy vs current scheme. Reports strict accuracy (exact match), lenient accuracy (accepts `also_acceptable`), per-label precision/recall/F1, confusion matrix, and per-item-type breakdown.
-
-**Legacy decision mapping**: The dataset uses legacy codes (A/B/C/D) that must be translated to current D/M/K for comparison. This mapping was non-trivial — see the iteration below.
-
-## Iterations
-
-### Legacy B mapping: one size does not fit all
-
-The initial scorer mapped legacy decisions uniformly: A→D, B→M, C→K, D→K. This produced 66% accuracy. But the mismatch list was suspicious — nearly all strategy point errors showed predicted=M, which is impossible since strategy points don't have merge.
-
-The problem: legacy B (REPLACE) means "these are about the same thing; keep the better one." For observations, this maps to M (merge them). For strategy points, it maps to D (discard the new one, since merge doesn't exist). The LLM was making the correct "same thing" judgment, but the uniform B→M mapping was miscounting it as the wrong decision type.
-
-After splitting the mapping by item type (B→M for observations, B→D for strategy points), accuracy jumped from 66% to 78%. This was purely a scoring fix, not a change in the LLM's behavior — but it taught us that **the legacy-to-current mapping is not a simple lookup table; it's mediated by schema constraints**.
-
-## Results
-
-The baseline LLM (gemini-2.5-flash, the model used during the original 30-game batch) scores 78% strict / 80% lenient on the 50-case golden label set.
-
-| Metric | Overall | Observations | Strategy Points |
+| Metric | Overall | Observations | Strategy points |
 |---|---|---|---|
-| Strict accuracy | 39/50 (78%) | 18/25 (72%) | 21/25 (84%) |
-| Lenient accuracy | 40/50 (80%) | 19/25 (76%) | 21/25 (84%) |
+| Strict | 39/50 (78%) | 18/25 (72%) | 21/25 (84%) |
 
-Observations are harder than strategy points. The 12-point gap makes sense: observations require comparing nuanced game anecdotes to decide if they teach the "same lesson," while strategy points are more concrete ("investigate the dissenting voter" is clearly a duplicate of the same advice elsewhere).
+Observations are the hard half (comparing nuanced anecdotes for "same lesson"); strategy points are
+more concrete. The per-label breakdown names the enemy:
 
-### Per-label precision, recall, and F1
-
-The confusion pattern reveals where the LLM systematically errs.
-
-| Label | Precision | Recall | F1 | Support |
-|---|---|---|---|---|
-| D (Discard) | 0.82 | 0.74 | 0.78 | 19 |
-| M (Merge) | 0.56 | 0.83 | 0.67 | 6 |
-| K (Keep) | 0.83 | 0.80 | 0.82 | 25 |
-
-MERGE has high recall (0.83) but low precision (0.56) — the LLM correctly identifies most true merges, but also incorrectly calls merge on cases that should be discard or keep. In other words, the LLM over-merges. This is the dominant failure mode.
-
-### Confusion matrix
-
-|  | pred D | pred M | pred K |
+| Label | Precision | Recall | Support |
 |---|---|---|---|
-| **gold D** | 14 | 2 | 3 |
-| **gold M** | 0 | 5 | 1 |
-| **gold K** | 3 | 2 | 20 |
+| D | 0.82 | 0.74 | 19 |
+| **M** | **0.56** | **0.83** | 6 |
+| K | 0.83 | 0.80 | 25 |
 
-Two patterns stand out:
+**MERGE has high recall but low precision — the model over-merges.** It calls MERGE on cases that
+should be D or K. That single tendency drives most of the tuning that follows.
 
-1. **gold_D → pred_M (2 cases)**: The LLM chooses merge when it should discard — it sees surface-level detail differences and wants to incorporate them, even when the existing entry already generalizes the pattern well. Case 24 is the clearest: the exact same "groupthink accusation" tactic in the same situation, but the LLM opted for merge because the new entry had "more specific game state details."
+### Three systematic biases (from the 7 tricky cases)
 
-2. **gold_K → pred_M (2 cases)**: The LLM merges entries that are actually distinct. Cases 16 and 21 both involve endgame voting-record analysis, but teach fundamentally different detection heuristics — late bussing (Case 21) vs partner protection (Case 16's candidate). The LLM focused on the similar *villager response* (press with evidence → wolf folds) rather than the distinct *signal being detected*.
+1. **Over-merge when the response is similar but the *opposing tactic* differs** (cases 16, 21). Same
+   villager response ("press with evidence") but a different wolf signal being countered → a different
+   lesson the agent must learn separately.
+2. **Merge-bias over discard when any surface detail differs** (cases 22, 24). The model treats a
+   player-count or game-phase difference as enough to merge, even when the existing entry already
+   generalises the pattern.
+3. **Over-differentiate on game phase alone** (case 40). The "too obvious" defence fails identically
+   mid-game and endgame; the phase change doesn't make it a new lesson.
 
-## Systematic Biases
+These three became the test cases for every subsequent prompt.
 
-The 7 tricky cases revealed three patterns in the dedup prompt's failure modes:
+## ③ The tuning loop — four phases + endgame
 
-**1. Over-merging when the response is similar but the opposing tactic differs.** (Cases 16, 21) If the correct action for the agent is the same ("trust the evidence"), the LLM concludes the observations are the same — but the wolf tactic being countered is different, which makes the observation teach a different lesson. The prompt should emphasize: if the opposing player's strategy is distinct, the observation is distinct even if the correct response looks similar.
+### Phase 1 (v2–v5): structural decision-gates consistently hurt
 
-**2. Merge bias over discard when any surface detail differs.** (Cases 22, 24) The LLM defaults to merge whenever the new entry adds any specificity (a game phase detail, a player count, a specific outcome), even when the existing entry already captures the general principle at sufficient abstraction. The prompt should clarify: merge is for when the new entry adds a *meaningfully different tactical dimension*, not just different instance details.
+**v2** rebuilt the observation prompt as a **two-stage decision test** (Stage 1: lesson identity →
+D vs not-D; Stage 2: signal novelty → M vs K) with a **calibration cascade** (doubt → D over M, M over
+K) and obs_count gravity. (Three independent drafts converged on the structure; the merged draft that
+shipped is in [drafts/](drafts/observation_prompt_draft_v2_merged.md).)
 
-**3. Over-differentiating based on game phase alone.** (Case 40) The LLM kept an entry as distinct because the "too obvious" defense occurred in endgame vs mid-game. But the tactic, defense, and outcome were identical — the phase difference doesn't change the lesson. The prompt should emphasize: a different game phase does not make an observation distinct if the strategic lesson is the same.
+Replayed across five models, v2 **regressed**: the production model (flash-lite) fell **78% → 60%**.
+The decision distribution showed why — flash-lite v2 predicted **38 discards** (golden has 19) and
+MERGE recall collapsed to **0%** on three of four models. The cascade had ratcheted everything toward D.
 
-These three biases are actionable prompt improvements. They're documented with full original text in `eval_sets/dedup_v2_tricky_cases.md`.
+**But half the "regression" was mislabelled data.** Every model — cheapest to most expensive —
+independently refused to merge the same 4–5 cases. Uniform cross-model failure is stronger evidence of
+*label* error than prompt error, so we re-examined all 6 MERGE labels:
 
-## Phase 1 Lessons
-
-**Ground-truth labels expose biases that LLM judges miss.** The existing `dedup_eval.py` LLM judge scored decision correctness on a 1-5 scale, but it couldn't identify systematic patterns like "over-merging when villager response is similar." That requires comparing predicted vs actual labels across cases and looking at the confusion matrix — which requires knowing the actual correct answer. LLM-as-judge is useful for evaluating *rewrite quality* (which is subjective), but *decision correctness* needs deterministic scoring against ground truth.
-
-**Schema constraints mediate evaluation mappings.** The legacy B→M mapping was correct for observations but wrong for strategy points, because strategy points don't have a merge option. This is easy to miss when translating between decision schemes — the "obvious" mapping (REPLACE≈MERGE) only holds when the target schema supports it. Any time you map between label sets, check whether the target schema constrains which labels are valid for which item types.
-
-**Borderline cases need explicit handling, not forced decisions.** The `also_acceptable` field avoided two problems: (a) penalizing the LLM for a judgment call that humans disagree on, and (b) artificially inflating accuracy by always picking the label that matches the LLM. Reporting both strict and lenient accuracy makes the uncertainty transparent rather than hiding it in either direction.
-
-**A small, well-annotated dataset beats a large noisy one for prompt debugging.** 50 cases was enough to identify three distinct bias patterns with specific prompt fixes. The value wasn't in the accuracy number (78% is a baseline, not a verdict) — it was in the mismatch analysis that showed *why* the LLM errs. The tricky cases file, with full original text and labeled tension, is more useful for prompt improvement than the aggregate metrics.
-
-## Phase 1 — What's Next
-
-1. **Prompt refinement**: Apply the three bias corrections to the dedup prompt and re-run scoring to measure improvement. The tricky cases file provides the test cases.
-2. **Model comparison via replay**: Use `dedup_replay.py` to run the same 50 cases through different models (gemini-2.5-pro, gemini-3.5-flash) and score against golden labels. The scorer already handles replayed datasets.
-3. **LLM judge for rewrite quality**: The deterministic scorer handles D/M/K decision accuracy. For cases where the LLM merges or rewrites, rewrite quality still needs an LLM judge — this is the second layer of evaluation mentioned in the design.
-4. **Batch dedup cluster labeling**: 34 clusters in `eval_sets/batch_dedup_clusters_v4.json` still need golden labels. This is a different evaluation target — cluster-level decisions rather than per-extraction decisions.
-
-## Prompt Revision: Observation Dedup v2
-
-### Diagnosis
-
-The baseline observation prompt had two structural weaknesses exposed by the tricky cases:
-
-1. **DISCARD defined as "exact duplicate"** — too narrow. The LLM treated any surface detail difference (player count, game phase, save count) as evidence against DISCARD, falling through to MERGE even when the strategic lesson was identical. This created the merge-bias-over-discard pattern (Cases 22, 24) and the phase/degree over-differentiation (Cases 2, 40).
-
-2. **Decision test only checked the agent's response** — the MERGE/KEEP test asked "would the agent make a different strategic decision?" This is framed from the responder's perspective. When the agent's response is the same ("press with evidence"), the LLM concluded MERGE — but the observation might teach a different *detection heuristic* (late bussing vs partner protection) that the agent must learn independently. Cases 16 and 21 were both victims of this one-sided test.
-
-### Design process
-
-Three independent drafts were produced and compared. All three converged on the same structural fix: a two-stage decision test (lesson identity first, then signal novelty). They diverged on presentation style — narrative prose vs labeled rules vs formulaic branching.
-
-Key design decisions in the final merged version:
-
-- **"An agent reading this learns..." sentence stem** — forces the model to abstract away surface details before comparing. The final version mandates writing these sentences in the reasoning output, not just performing the test mentally. This compliance mechanism matters for flash models that might shortcut reasoning.
-- **"Which side changed?" branching** in Stage 2 — creates a clean binary: opponent side differs → KEEP, agent side differs → MERGE. This directly addresses the Cases 16/21 pattern.
-- **"No new tactic variant is present"** added to DISCARD definition — explicitly states the absence of what would trigger MERGE, making the D/M boundary a single check.
-- **Labeled rules over prose** in Stage 1 (SAME LESSON DIFFERENT DEGREE, SAME LESSON DIFFERENT PHASE, SPECIFIC INSTANCE OF GENERALIZED ENTRY) — more scannable for flash models than embedded narrative.
-- **Success/failure outcome axis** added to Stage 2 KEEP conditions — covers Cases 34/37/39 where the same tactic produces opposite results in different conditions.
-- **Calibration cascade** (doubt → D over M, doubt → M over K) and obs_count gravity — corrects the baseline's zero-false-discard, high-false-merge bias.
-
-### What's being tested
-
-The revised prompt will be replayed against the same 50 golden-label cases to measure improvement. The baseline is 78% strict / 80% lenient.
-
-## Prompt v2: Multi-Model Replay Results
-
-### Setup
-
-We replayed the 50 golden-label cases with the revised observation dedup prompt (v2) across five models. The production model (gemini-3.1-flash-lite, thinking=low) served as the primary comparison against the baseline, with four alternative models tested to measure whether the prompt regression was model-specific or systematic.
-
-All runs used `evaluation/experiments/dedup_replay.py`, which re-runs dedup decisions on frozen inputs with a specified model. One model (gemini-3-flash-preview) experienced API stalls mid-run, inflating its wall-clock time; its accuracy is included but timing is not comparable.
-
-### Results
-
-Golden label distribution: D=19, M=6, K=25
-
-| Model | Prompt | Strict | Observations | Strategy | Time |
-|---|---|---|---|---|---|
-| flash-lite (production) | v1 baseline | **78%** | 72% | 84% | ~52s |
-| flash-lite (production) | v2 | 60% (-18) | 48% | 72% | ~52s |
-| gemini-3.5-flash | v2 | **74%** | 60% | **88%** | 472s |
-| gemini-2.5-flash | v2 | 64% | 44% | 84% | 724s |
-| gemini-2.5-pro | v2 | 64% | 56% | 72% | 889s |
-| gemini-3-flash-preview | v2 | 66% | 52% | 80% | ~3631s* |
-
-\* gemini-3-flash-preview stalled mid-run; wall-clock time not representative of actual inference speed.
-
-### Decision distribution vs golden
-
-| Model | Pred D | Pred M | Pred K | M Recall |
-|---|---|---|---|---|
-| Golden truth | 19 | 6 | 25 | — |
-| flash-lite v1 baseline | 17 | 9 | 24 | 83% |
-| flash-lite v2 | 38 | 1 | 11 | 0% |
-| gemini-3.5-flash v2 | 27 | 2 | 21 | 0% |
-| gemini-2.5-flash v2 | 23 | 6 | 21 | 0% |
-| gemini-2.5-pro v2 | 26 | 6 | 18 | 33% |
-| gemini-3-flash-preview v2 | 31 | 3 | 16 | 0% |
-
-### Analysis: the calibration cascade over-corrected
-
-The prompt v2 made things worse, not better. The overall accuracy dropped from 78% to 60% on the production model. The cause is clear from the decision distributions: the calibration cascade ("doubt → D over M, doubt → M over K") effectively eliminated MERGE as a viable decision.
-
-**The over-discard problem.** Flash-lite v2 predicted 38 discards — double the golden count of 19. It achieved 100% D recall (never missed a true discard) but at the cost of 44% K recall — it discarded 13 entries that should have been kept and all 6 that should have been merged. The "obs_count gravity" rule and "specific instance of generalized entry → DISCARD" guidance made the model too aggressive at collapsing entries into existing high-count observations.
-
-**MERGE recall collapsed across all models.** The baseline had 83% M recall (5/6 merges identified correctly). Prompt v2 dropped this to 0% for three of four models. Only gemini-2.5-pro recovered any merge recall (33%, 2/6), likely because its stronger reasoning partially resists the calibration pressure. The "doubt → D over M" rule was too blunt — when the model was uncertain between D and M, the calibration always pushed it to D, but most M cases genuinely are in the "uncertain between D and M" zone.
-
-**2.5-flash: merges in the wrong places.** Uniquely, 2.5-flash predicted 6 merges — but all 6 were false positives (KEEPs misclassified as M). It correctly handled none of the 6 actual merges. This suggests the model is applying the merge heuristic but to the wrong cases — it merges when it detects similar *agent responses* (the Stage 2 "agent's own tactic differs" rule) instead of when the *core lesson* is the same with a variant tactic.
-
-**Strategy points improved for 3.5-flash.** The one bright spot: gemini-3.5-flash reached 88% on strategy points (up from the baseline's 84%). The clearer D/K guidance in the prompt helped strategy point decisions. But observations degraded from 72% to 60%, dragging overall accuracy to 74%.
-
-**More expensive models didn't help.** 2.5-pro (889s, ~15 min) and 2.5-flash (724s, ~12 min) both scored 64% — lower than the much faster 3.5-flash (472s, 74%). The production flash-lite (52s) was 17x faster than 2.5-pro but the prompt v2 was the bottleneck, not the model.
-
-### Root cause: two simultaneous problems
-
-The initial diagnosis pointed to the calibration cascade — "doubt → D over M" eliminated MERGE as a viable decision. All five models produced 0-33% M recall against the golden labels' 6 MERGE cases. We hypothesized the calibration override was suppressing correct MERGE predictions and planned prompt v3 to soften it.
-
-This turned out to be half right and half wrong. Two problems were entangled:
-
-1. **The calibration cascade was too aggressive** (correctly diagnosed). Flash-lite v2 predicted 38 discards, double the golden count. The "doubt → D over M" rule and obs_count gravity created a ratchet that collapsed everything into existing entries.
-2. **The golden labels themselves were wrong** (not yet diagnosed). Four of the six MERGE labels were incorrect. The models were "failing" on cases that were actually mislabeled — their consistent disagreement with MERGE was signal, not noise.
-
-We couldn't see problem #2 until we revisited the golden labels directly, prompted by the suspiciously uniform M recall failure across all five models.
-
-## Golden Label Revision
-
-### The observation that triggered re-examination
-
-Every model — from the cheapest (flash-lite, ~52s) to the most expensive (2.5-pro, ~889s) — independently decided the same 4-5 MERGE cases should not be merges. When five models with different architectures and capabilities all "fail" on the same cases in the same way, the most parsimonious explanation is that the labels are wrong.
-
-### Case-by-case review
-
-We re-examined all 6 MERGE-labeled cases against three principles derived from the prompt improvement work:
-
-1. **Same situation structure for MERGE.** MERGE requires the entries to share the same functional situation, not just the same topic. A general "wolves target leaders" observation and a specific "wolves target the Investigator using indirect evidence" observation have different triggering situations — different detection signals the agent must learn independently.
-
-2. **MERGE enriches general with concrete.** MERGE's value is adding a specific tactic variant to an existing general pattern: the new entry adds a concrete instance (e.g., "questioning healer save choices" added to "wolves use misdirection in endgame"). The direction matters — merging specifics INTO a general pattern, not merging two equally specific entries.
-
-3. **DISCARD means the existing entry covers everything.** "Covers everything" is about information content, not verbosity. A shorter, more general existing entry can fully cover a longer, more specific new entry if the specific details don't change what the agent would do. The question is whether the new entry adds information the existing entry lacks, not whether it's more or less detailed.
-
-Results of the review:
-
-| Case | Old Label | New Label | Reason |
-|---|---|---|---|
-| 1 | M | **D** | New entry adds "2 saves" vs existing "3 saves" — degree, not kind. Same lesson. |
-| 17 | M | **K** | Different triggering situation: Investigator killed → analyze voting records vs wolf eliminated → analyze records. Different game events initiate the same analysis. |
-| 18 | M | **K** | Coordinated two-wolf challenge is a structurally distinct triggering event from solo wolf challenge. |
-| 19 | M | M | Correct MERGE: specific tactic (questioning healer save choices) enriches general pattern. |
-| 20 | M | M | Correct MERGE: specific approach variant adds detail to same-situation observation. |
-| 23 | M | **D** | Same find-and-die Investigator pattern. Existing entry (obs=3) already generalizes this well. |
-
-Four of six MERGE labels changed: 2 became DISCARD, 2 became KEEP. The two surviving MERGEs (Cases 19, 20) were the only cases where a specific tactic variant genuinely enriched an existing general pattern — the narrow band that MERGE is designed to capture.
-
-### Revised golden label distribution (first 50 cases)
-
-| Label | Original | Revised | Change |
-|---|---|---|---|
-| D (Discard) | 19 | 21 | +2 (from M) |
-| M (Merge) | 6 | 2 | -4 |
-| K (Keep) | 25 | 27 | +2 (from M) |
-
-### What this means for MERGE
-
-MERGE is genuinely rare — 2 out of 50 cases (4%). An exhaustive search of all 21 observation cases in the dataset with the highest MERGE potential (item_type=observation with legacy decision B) found zero additional true MERGEs beyond the 2 already labeled. The narrow band between "same lesson, discard" and "different lesson, keep" leaves very little room for "same lesson, but with a novel tactic variant worth incorporating."
-
-This rarity is structural, not accidental. For a case to be a true MERGE, it must satisfy three constraints simultaneously: (1) same functional situation as an existing entry, (2) same outcome direction, AND (3) a concrete tactic variant not already captured. Most cases that satisfy (1) and (2) also fail (3) because the existing entry already generalizes the pattern.
-
-### Re-scored results with revised golden labels
-
-Re-scoring all prior replays against the revised labels changes the accuracy picture substantially.
-
-| Model | Prompt | Old Strict | **Revised Strict** | Obs | Strat |
-|---|---|---|---|---|---|
-| baseline v1 (2.5-flash) | v1 | 78% | **72%** | 60% | 84% |
-| flash-lite | v2 | 60% | **64%** | 56% | 72% |
-| **3.5-flash** | **v2** | 74% | **80%** | 72% | 88% |
-| 2.5-flash | v2 | 64% | **68%** | 52% | 84% |
-| 2.5-pro | v2 | 70% | **70%** | 68% | 72% |
-| flash-lite | v3 | 56% | **62%** | 52% | 72% |
-| 3.5-flash | v3 | 72% | **78%** | 68% | 88% |
-
-The most striking change: **3.5-flash + prompt v2 rose from 74% to 80%**, surpassing the baseline's revised 72%. Its "failure" to predict MERGE was actually correct — it was correctly calling D or K on cases that the golden labels had wrong. The v2 prompt's calibration cascade, which we blamed for over-discarding, was partially vindicated: it correctly suppressed MERGE for the 4 mislabeled cases, and its D/K decisions on those cases were right.
-
-The baseline dropped from 78% to 72% — the original model's MERGE predictions on Cases 1 and 23 (now labeled D) and Cases 17 and 18 (now labeled K) were counted as correct under old labels but wrong under revised ones.
-
-This reframes the experiment. The prompt v2 didn't universally regress — it regressed on flash-lite (64% revised vs 72% baseline) but improved on 3.5-flash (80% vs 72%). The calibration cascade works when paired with a model strong enough to handle the D/K distinction underneath it.
-
-## Prompt v3-v5: Structural Iterations
-
-Despite the golden label revision showing v2 was better than initially thought, we continued iterating to improve observation accuracy. Each iteration tested a specific hypothesis about the prompt structure.
-
-### v3: Softening the calibration (50 cases)
-
-**What changed.** Removed "doubt → D over M" calibration. Softened obs_count gravity to allow MERGE even for high-count entries. Kept the two-stage test structure.
-
-**Why.** The initial (pre-revision) analysis showed 0% M recall across most models, attributed to the calibration cascade being too aggressive.
-
-**What happened.** Flash-lite v3: 62% (vs 64% v2). 3.5-flash v3: 78% (vs 80% v2). Both slightly worse. Softening the calibration didn't help because the remaining M errors were on cases that were actually mislabeled (not yet revised at this point). The underlying Stage 1 structure still had a problem: it decided "DISCARD vs everything else," which meant both D and M cases went to DISCARD before Stage 2 could consider MERGE.
-
-### v4: Restructuring the decision stages (50 cases)
-
-**What changed.** Reversed Stage 1 to gate KEEP (different trigger) vs same-pattern (D or M). Stage 2 then decides D vs M for same-pattern cases. Added "doubt → M over K" calibration to prevent the new structure from over-keeping.
-
-**Why.** The v2/v3 structure made Stage 1 decide "D vs not-D," which short-circuited MERGE consideration — both D and M are "same lesson" cases, so Stage 1 always chose DISCARD before reaching Stage 2. The fix was to make Stage 1 only gate KEEP (structurally different) vs same-pattern, then let Stage 2 handle the D/M split.
-
-**What happened.** Flash-lite v4: **40%** — the worst of all iterations. The M calibration swung too far: flash-lite predicted 25 merges (golden has 2), with observation accuracy cratering to 8%. Every non-KEEP observation case was predicted as MERGE. The "doubt → M over K" rule was as damaging as the original "doubt → D over M" — calibration overrides that push toward a rare label create massive false-positive rates because most "doubted" cases aren't that rare label.
-
-### v5: Removing aggressive calibration (65 cases)
-
-**What changed.** Removed "doubt → M over K" calibration. Added "MERGE is the rarest outcome" framing. Kept the restructured stages (Stage 1 gates KEEP, Stage 2 gates D/M). Clarified DISCARD as a subset test: "If the existing entry already covers everything in the new entry, DISCARD — regardless of relative detail level."
-
-**Why.** v4 proved that calibration overrides don't work — they create ratchets regardless of direction. The structural change (Stage 1 gates KEEP) was sound in principle; the problem was the calibration layered on top.
-
-**What happened.** Tested on the expanded 65-case set (see below). Flash-lite v5: **56.9%** (obs 47.5%, strat 72%). 3.5-flash v5: **40.0%** (obs 32.5%, strat 52%). Both dramatically worse than v2. The restructured stages hurt both models, but 3.5-flash was especially damaged — dropping from its v2 peak of 80% to 40%.
-
-The v5 results revealed a deeper problem with the structural change: **forcing explicit MERGE consideration increases MERGE predictions**. In v2, the model could go straight to DISCARD without ever evaluating whether a case qualifies for MERGE. In v5, every non-KEEP case passes through the D/M decision in Stage 2, giving the model too many opportunities to choose M. Flash-lite v5 predicted 19 merges (golden: 2); 3.5-flash v5 predicted 14. The "MERGE is the rarest outcome" framing wasn't strong enough to counteract the structural invitation to merge.
-
-For 3.5-flash, the damage was even worse: strategy point accuracy dropped from 88% (v2) to 52% (v5), with errors scattering in both directions — 5 D→K errors and 6 K→D errors. The v5 prompt structure confused the model's D/K judgment on strategy points, which v2 handled cleanly.
-
-## Expanded Eval Set
-
-After the golden label revision, we expanded the eval set from 50 to 65 cases to increase statistical coverage and test whether the accuracy patterns held on unseen data. The additional 15 cases were drawn from the full 390-case dataset, selected to cover a range of item types and difficulty levels.
-
-Human review found the 15 new cases were cleaner than the original 50 — 10 clear discards, 5 clear keeps, 0 merges. No borderline M cases were found, further confirming MERGE's rarity.
-
-**Revised golden label distribution (all 65 cases, after round 2 revision):** D=30, M=5, K=29, M/K=1
-
-## Final Results
-
-The best configuration is **3.5-flash + prompt v8** at 80.0% strict accuracy on the full 65-case set.
-
-### Full comparison (65 cases, current golden labels: D=30, M=5, K=29, M/K=1)
-
-| Model | Prompt | Accuracy | D recall | K recall | M recall |
-|---|---|---|---|---|---|
-| flash-lite | v5 | 60.0% | 70% | 45% | 80% |
-| flash-lite | v6 | 67.7% | 93% | 41% | 60% |
-| flash-lite | v7 | 69.2% | 77% | 55% | 100% |
-| flash-lite | v8 | **69.2%** | 83% | 52% | 80% |
-| 3.5-flash | v5 | 72.3% | 70% | 76% | 60% |
-| 3.5-flash | v6 | 75.4% | 90% | 66% | 40% |
-| 3.5-flash | v7 | 75.4% | 60% | 93% | 60% |
-| **3.5-flash** | **v8** | **80.0%** | **77%** | **90%** | 40% |
-
-3.5-flash v8 achieves the best balance: 77% D recall and 90% K recall, with 88% strategy point accuracy and 75% observation accuracy. Flash-lite v8 (69.2%) is verified deterministic at temperature 0 (5 identical runs).
-
-## Prompt v6: Flat Prompt with Calibration Cascade (65 cases)
-
-### What changed
-
-Rather than iterating further on the two-stage structure (v2-v5), we reverted to a flat single-pass prompt — closer to the original v1 structure but incorporating the content-level insights from v2. The key additions:
-
-- **Dimensional situation comparison** for observations: information landscape, consensus texture, agent exposure, game phase — each with explicit guidance on when a dimension difference makes situations "different."
-- **Calibration cascade**: "When uncertain: prefer D over M, and M over K." This was the v2 insight that worked on 3.5-flash: a gentle nudge toward the more conservative decision.
-- **Clearer MERGE definition**: MERGE requires same situation + same outcome + different tactic variant. The "different tactic variant" criterion was sharpened: different tactic *category* (accusation vs deflection), not different wording of the same tactic.
-
-### Why
-
-v3-v5 showed that structural changes to the prompt (two-stage decision gates, explicit MERGE consideration) consistently hurt accuracy. The calibration cascade worked when embedded in a flat structure (v2) but failed when combined with structural gates (v4, v5). The hypothesis: return to a flat prompt, keep the good content from v2's definitions, and let the calibration cascade do its work without structural interference.
-
-### Results
-
-| Model | Prompt | Accuracy | D recall | K recall | M recall |
-|---|---|---|---|---|---|
-| flash-lite | v5 | 60.0% | 70% | 45% | 80% |
-| flash-lite | **v6** | **67.7%** | **93%** | 41% | 60% |
-| 3.5-flash | v5 | 72.3% | 70% | 76% | 60% |
-| 3.5-flash | **v6** | **75.4%** | **90%** | 66% | 40% |
-
-v6 improved overall accuracy for both models (+7.7pp flash-lite, +3.1pp 3.5-flash). The pattern was clear: D recall jumped dramatically (70%→93% flash-lite, 70%→90% 3.5-flash) but K recall suffered (45%→41% flash-lite, 76%→66% 3.5-flash).
-
-**The calibration cascade worked exactly as designed — too well.** "Prefer D over M, M over K" created a ratchet that pushed uncertain cases toward D. Since many K cases sit in the "uncertain between D and K" zone (similarity 0.55-0.85), the cascade systematically consumed them. Flash-lite's 41% K recall meant it was discarding more than half of genuinely novel entries.
-
-## Golden Label Revision: Round 2
-
-### Motivation
-
-The v6 results exposed a new signal: we had 32 cases where at least one model (flash-lite or 3.5-flash, using v6 prompt) disagreed with the golden label. Some of these were genuine model errors, but the v5→v6 accuracy jump (after the first golden label revision) taught us that model disagreements sometimes expose label errors. We reviewed all 32 disagreement cases one-by-one with full text.
-
-### Process
-
-Each of the 32 cases was examined with complete text for the new entry and all relevant candidates. The review applied the retrieval test as the primary criterion for situation comparison: would a semantic search query matching situation A also retrieve situation B? This test hadn't been fully internalized during the first labeling round.
-
-### Results: 10 labels changed
-
-| Case | Old | New | Key reason |
-|---|---|---|---|
-| 8 | D | **K** | Different agent position: confirmed non-wolf with high credibility vs general villager under suspicion |
-| 16 | M | **M/K** | Genuinely ambiguous — either interpretation defensible |
-| 17 | D | **D** | Confirmed after full review (no change) |
-| 18 | K | **K** | Confirmed (no change) |
-| 27 | D | **K** | Aggressive player might be frustrated Investigator — distinct situational scope |
-| 29 | D | **K** | Behavioral test + meta-accusation = distinct action from simple challenge |
-| 34 | D | **K** | Same approach, opposite outcome (success vs failure) — teaches risk/reward |
-| 36 | D | **K** | Different triggering situation despite surface similarity |
-| 37 | D | **K** | Success vs failure of same approach |
-| 38 | K | **M** | Same situation, different target choice = tactic variant |
-
-### Revised golden label distribution (65 cases)
-
-| Label | Previous | Revised | Change |
-|---|---|---|---|
-| D (Discard) | 31 | 30 | -1 |
-| M (Merge) | 2 | 5 | +3 |
-| K (Keep) | 32 | 29 | -3 |
-| M/K (either acceptable) | 0 | 1 | +1 |
-
-MERGE increased from 2 to 5 cases — still rare (~8%) but no longer negligibly small. The M/K label for Case 16 acknowledges genuine ambiguity rather than forcing a single answer.
-
-### Key insights from labeling that informed prompt revision
-
-Six distinct patterns emerged during the case-by-case review:
-
-1. **Retrieval test as ground truth**: The decisive test for "same vs different" situation is whether a semantic search query matching one would also retrieve the other. Two entries teaching the same lesson in semantically different situations must exist separately — otherwise the agent never sees the relevant entry when it needs it.
-
-2. **Confidence posture**: "Treat accusation as ground truth and act immediately" vs "probe to evaluate alignment before committing" point in the same direction but lead to meaningfully different agent behavior → KEEP.
-
-3. **Agent exposure**: Different agent positions (confirmed non-wolf with high credibility vs general villager under suspicion) create different situations even with the same trigger event.
-
-4. **Conflicting strategies**: Opposite actions for the same situation are by definition different hypotheses → KEEP. Both give the agent tactical flexibility.
-
-5. **Success vs failure**: Same approach with opposite outcomes teaches risk/reward → always KEEP.
-
-6. **One-off vs persistent**: 1x vs 2+ crosses the qualitative one-off → persistent threshold (MERGE tactic variant), but 2x vs 3x is just degrees of persistence (DISCARD).
-
-## Prompt v7: Removing the Calibration Cascade (65 cases)
-
-### What changed
-
-Incorporated all six insights from the golden label review into both the observation and strategy prompts:
-
-**Observation prompt:**
-- Replaced situation comparison with explicit retrieval test: "would a semantic search query matching situation A also retrieve situation B?"
-- Added one-off vs persistent distinction in approach comparison
-- Added explicit success vs failure → KEEP in outcome comparison
-- Added two new examples (M for one-off→persistent, K for success/failure)
-- **Removed the entire CALIBRATION section** — no more "prefer D over M, M over K"
-
-**Strategy prompt:**
-- Added new SITUATION COMPARISON section with retrieval test and dimensional checks (information landscape, agent exposure with example, consensus texture, game phase)
-- Added confidence posture and conflicting strategies as KEEP examples in DECISION TEST
-- **Removed CALIBRATION NOTE** — no more "when in doubt, DISCARD"
-
-### Why
-
-The v6 results showed the calibration cascade killed K recall (41% flash-lite, 66% 3.5-flash). The cascade was a blunt instrument: it applied the same "prefer D" bias to every uncertain case, regardless of whether the uncertainty was genuine (borderline D/K) or false (surface similarity masking genuine novelty). The hypothesis: remove the cascade entirely and rely on the improved decision criteria to guide the model's judgment.
-
-### Results
-
-| Model | v6 Accuracy | v7 Accuracy | v6 D | v7 D | v6 K | v7 K | v6 M | v7 M |
-|---|---|---|---|---|---|---|---|---|
-| flash-lite | 67.7% | **69.2%** | 93% | 77% | 41% | **55%** | 60% | **100%** |
-| 3.5-flash | 75.4% | 75.4% | 90% | 60% | 66% | **93%** | 40% | 60% |
-
-Removing the cascade worked for K recall: flash-lite jumped from 41%→55%, 3.5-flash from 66%→93%. M recall also improved. But D recall dropped sharply: flash-lite 93%→77%, 3.5-flash 90%→60%.
-
-**The pendulum swung too far.** Flash-lite predicted M 16 times (gold: 5) — it was using MERGE as a safe middle ground when uncertain, the mirror image of v6's over-discard. 3.5-flash predicted K too aggressively on cases where the surface situation looked different but the underlying action was the same.
-
-The calibration cascade is a lever with no neutral position: present = over-discard, absent = over-merge/over-keep. The next iteration targets this directly.
-
-## Prompt v8: Targeted Anti-Merge Calibration (65 cases)
-
-### What changed
-
-Added narrow calibration notes to both prompts, targeting the specific failure modes exposed by v7:
-
-**Observation prompt:** "MERGE requires a clearly distinct tactic variant — a different category of action, not a different description of the same action. If you are unsure whether the approach difference is a genuine tactic variant or just different wording, choose DISCARD."
-
-**Strategy prompt:** "Focus on what the agent would DO, not on how the entries are worded. If both entries point the agent toward the same target, timing, and risk tradeoff, they are the same hypothesis — DISCARD, even if the reasoning or phrasing differs."
-
-### Why
-
-v7's error analysis showed two distinct failure modes:
-
-1. **Observation D→M errors** (4 cases): flash-lite saw minor wording differences in the approach field and called them "tactic variants" warranting MERGE. E.g., "protect the vocal player" vs "protect the accusatory player" — same action, different description. The calibration targets this: MERGE requires a different *category* of action.
-
-2. **Strategy D→K errors** (8 cases for 3.5-flash): the model saw different reasoning or phrasing and concluded the hypotheses were different, even when the recommended action was identical. The calibration targets this: focus on what the agent would *do*, not on how the advice is *worded*.
-
-These are surgical corrections, not directional cascades. They don't say "prefer D over everything" — they say "this specific type of difference is not enough for M" and "this specific type of difference is not enough for K."
-
-### Results
-
-| Model | v7 Accuracy | v8 Accuracy | v7 D | v8 D | v7 K | v8 K | v7 M | v8 M |
-|---|---|---|---|---|---|---|---|---|
-| flash-lite | 69.2% | 69.2% | 77% | **83%** | 55% | 52% | 100% | 80% |
-| 3.5-flash | 75.4% | **80.0%** | 60% | **77%** | 93% | 90% | 60% | 40% |
-
-**3.5-flash v8 at 80.0% is the best configuration on the full 65-case set.** The targeted calibration recovered D recall (60%→77%, +17pp) while barely touching K recall (93%→90%, -3pp). Strategy point accuracy reached 88% (22/25), observation accuracy 75% (30/40). This is the sweet spot: the calibration note addresses the specific D→K failure mode (same action described differently) without creating a general bias.
-
-**Flash-lite v8 ties with v7 at 69.2%** but with a healthier internal balance: D recall recovered 6pp while K and M dropped modestly. Flash-lite's K recall (52%) remains its ceiling problem — it over-discards genuinely novel entries regardless of prompt version, consistently classifying 9 of 29 K cases as D. The remaining 20 errors are spread: 4 D→M (over-merge on same-action cases), 5 K→M (treating distinct situations as tactic variants), and 6 K→D (collapsing genuinely different entries).
-
-**The targeted calibration works better than directional cascades.** "MERGE requires a clearly distinct tactic variant" is a criterion, not a bias — it tells the model what M means, not to avoid M. "Focus on what the agent would DO" grounds the D/K distinction in behavior, not wording. These surgical corrections recovered D recall without the ratchet effect that killed K in v6.
-
-## Cost and Latency Analysis: flash-lite vs 3.5-flash
-
-### Pricing (per 1M tokens, paid tier)
-
-| Model | Input | Output (incl thinking) |
+| Case | Old → New | Reason |
 |---|---|---|
-| flash-lite 3.1 | $0.25 | $1.50 |
-| 3.5-flash | $1.50 | $9.00 |
+| 1 | M → **D** | "2 saves" vs "3 saves" — degree, not kind |
+| 17, 18 | M → **K** | structurally distinct triggering events |
+| 23 | M → **D** | existing entry already generalises it (obs=3) |
+| 19, 20 | M → M | the only true merges — a real tactic variant enriching a pattern |
 
-Per-token ratio: 6x for both input and output.
+Four of six MERGE labels were wrong. Re-scored against corrected labels, **3.5-flash v2 rose 74% → 80%**
+(its "failures" were correct) while the baseline *dropped* 78% → 72%. MERGE is genuinely rare — **2/50
+(4%)**.
 
-### Per-game economics
+**v3–v5** kept iterating on structure and all came back *worse* than v2: v3 (softened calibration) 62%
+flash-lite; v4 (Stage 1 gates KEEP instead of D) cratered to **40%** with 25 false merges; v5 (drop M
+calibration, add "MERGE is rarest" framing) 56.9% flash-lite / 40% 3.5-flash. The structural lesson:
+**forcing explicit MERGE consideration through a decision gate *increases* MERGE false positives** —
+in v2 the model could skip straight to DISCARD; in v5 every non-KEEP case passes through a D/M choice,
+handing the model more chances to wrongly merge.
 
-The dedup pipeline runs ~15.6 LLM calls per game (390 spans across 30 games in the eval dataset). Each call sends ~1,163 input tokens (new entry + candidates) and receives ~200 output tokens. Flash-lite additionally generates ~400 thinking tokens per call (thinking=low mode).
+*(Mid-phase the eval set expanded 50 → 65 cases; the 15 new cases were cleaner — 10 D, 5 K, 0 M —
+confirming MERGE's rarity. Working golden distribution from here: D=30, M=5, K=29, M/K=1.)*
 
-| Dimension | flash-lite | 3.5-flash | Delta |
+### Phase 2 (v6): a directional calibration cascade
+
+Abandoning the two-stage structure, **v6** went back to a *flat* prompt (closer to baseline) but kept
+the v2 content — a dimensional situation comparison (information landscape, consensus texture, agent
+exposure, game phase) plus the cascade **"when uncertain: prefer D over M, and M over K."**
+
+It worked exactly as designed — too well:
+
+| Model | Accuracy | D recall | K recall |
 |---|---|---|---|
-| Cost/case | $0.0012 | $0.0035 | 3x |
-| Cost/game (15.6 cases) | $0.019 | $0.055 | 3x |
-| Cost/1000 games | $18.58 | $55.29 | +$36.72 |
-| Latency/case | ~1s | ~7s | 7x |
-| Latency/game | ~15s | ~109s | +94s |
+| flash-lite v6 | 67.7% | **93%** | **41%** |
+| 3.5-flash v6 | 75.4% | **90%** | **66%** |
 
-The per-case ratio is 3x (not 6x) because flash-lite's thinking tokens inflate its output cost, narrowing the effective gap.
+D recall soared, but the cascade **crushed K recall** — flash-lite discarded more than half of
+genuinely-novel entries. Many K cases live in the "uncertain between D and K" band, and the cascade
+consumed them.
 
-### What the accuracy gap costs in practice
+**A second golden-label revision** ran here, triggered the same way (32 cross-model disagreements
+reviewed): **10 labels changed**, mostly D→K, applying the **retrieval test** as the decisive criterion
+— *would a search query matching situation A also retrieve situation B?* If not, they must coexist.
+That review crystallised six labelling principles (retrieval test, confidence posture, agent exposure,
+conflicting strategies → KEEP, success-vs-failure → KEEP, one-off-vs-persistent → MERGE) that fed the
+next prompts.
 
-Per 1000 games (15,600 dedup decisions):
+### Phase 3 (v7–v8): from cascade to targeted
 
-- **Flash-lite (69.2%)**: ~4,805 wrong decisions. K recall at 52% means ~7.3 novel entries wrongly discarded per game.
-- **3.5-flash (80.0%)**: ~3,120 wrong decisions. K recall at 90% means ~1.4 novel entries wrongly discarded per game.
+**v7** removed the calibration cascade entirely. K recall recovered (flash-lite 41% → 55%, 3.5-flash
+66% → 93%) — but the pendulum swung to **over-merge** (flash-lite predicted M 16× vs 5 golden). This is
+the crux finding: **the calibration cascade is a lever with no neutral position — present = over-discard,
+absent = over-merge.**
 
-The K recall gap (52% vs 90%) is the critical difference. Over-discarded entries from common situations will be re-extracted from future games, but entries from rare game states may be permanently lost. 3.5-flash's lower D recall (77% vs 83%) produces a few extra duplicates, but those are cleaned up by the existing batch dedup pipeline.
+**v8** stopped pushing a *direction* and added **targeted, failure-mode-specific** notes instead:
+"MERGE requires a clearly distinct tactic *category*, not different wording — if unsure, DISCARD," and
+for strategy "focus on what the agent would DO, not how it's worded." This recovered D recall without a
+ratchet:
 
-### Decision
-
-**Keep flash-lite as the production model.** The 3x cost multiplier and 7x latency increase are meaningful, and flash-lite's accuracy improved with further prompt fine-tuning (see v9/v9d below). The batch dedup pipeline provides a safety net for both over-discard (rare but impactful) and over-keep (common but recoverable).
-
-## Prompt v9/v9d: Strategy-Focused Fine-Tuning (65 cases)
-
-### Diagnosis
-
-v8 flash-lite's 20 errors broke down as:
-- **K→D (9)**: 6 strategy_points, 3 observations — biggest problem
-- **K→M (5)**: all observations — mis-merging when situation is different
-- **D→M (4)**: all observations — over-merging when should discard
-- **D→K (1)** and **M→D (1)**: minor
-
-Strategy K→D was the highest-count targetable error. Analysis of the LLM reasoning on cases 32, 42, 48 revealed flash-lite was rationalizing at too high an abstraction level — it sees theme overlap (e.g., "both about voting when partner is doomed") and ignores that the actual actions conflict (vote with majority vs vote for a third target; acknowledge mistake vs deny mistake).
-
-### Experiments tried
-
-| Variant | Change | Overall | Strategy | K recall | Outcome |
-|---|---|---|---|---|---|
-| v8 (baseline) | — | 69.2% | 72.0% | 52% | — |
-| v9 | + DISCARD verification check | 70.8% | 76.0% | 55% | +1 strategy fix (case 8) |
-| v9b | + ACTION CHECK in output format | 67.7% | 68.0% | 48% | Regressed — structured output confused flash-lite |
-| v9c | + ACTION COMPARISON section (parallel to SITUATION COMPARISON) | 69.2% | 72.0% | 52% | Net zero — added noise, didn't help |
-| **v9d** | **v9 + action-before-situation field ordering** | **73.8%** | **84.0%** | **59%** | **+3 more strategy fixes (cases 32, 42, 45)** |
-
-### What changed in v9d (production prompt)
-
-Two changes from v8:
-
-1. **DISCARD verification check** (replaces CALIBRATION): Before choosing DISCARD, the model must verify both (a) situations are functionally the same and (b) recommended actions point in the same direction. If either fails, KEEP.
-
-2. **Action-before-situation field ordering**: In both the new extraction template and existing entries formatting, Action is presented before Situation. This causes flash-lite to anchor on action differences before getting absorbed by situation similarity.
-
-### Why action-first ordering works
-
-Flash-lite's K→D errors on strategy points consistently showed the model noticing situation similarity first and then rationalizing action differences as "tactical variations of the same strategy." By presenting the action field first, the model encounters conflicting advice ("vote with majority" vs "vote for a third target") before it sees the similar situation framing that would cause it to lump them together.
-
-This is a presentation-order effect, not a content change — the same information is shown, just reordered. It specifically helps strategy points where action direction is the key discriminator. It had no effect on observation accuracy (67.5% unchanged) because observation errors are dominated by M calibration issues, not action-direction blindness.
-
-### Results
-
-| Model | v8 | v9d | Delta |
+| Model | v7 → v8 accuracy | D recall v7→v8 | K recall v7→v8 |
 |---|---|---|---|
-| flash-lite overall | 69.2% | **73.8%** | +4.6pp |
-| flash-lite strategy | 72.0% | **84.0%** | +12.0pp |
-| flash-lite observation | 67.5% | 67.5% | 0 |
-| flash-lite K recall | 52% | **59%** | +7pp |
-| flash-lite K precision | 0.94 | **1.00** | +0.06 |
-| 3.5-flash overall | 80.0% | 80.0% | 0 |
-| 3.5-flash strategy | 88.0% | 88.0% | 0 |
-
-The v9d changes had no effect on 3.5-flash — it was already at 88% strategy accuracy, leaving no room for improvement on strategy K→D errors.
-
-### Remaining errors (flash-lite v9d, 17 total)
-
-**Strategy (4 errors)**: Cases 8, 27, 29, 48 — K→D where flash-lite still misses genuinely different situations or conflicting actions. These appear to be at the model's capability ceiling for this prompt structure.
-
-**Observation (13 errors)**: 9 of 13 involve M — either over-merging (D→M: 4 cases) or mis-merging when situations differ (K→M: 5 cases). The model is too generous in what it considers a "distinct tactic variant." Tightening M criteria risks breaking the 4/5 correct M predictions; loosening for K→M would worsen D→M. These pull in opposite directions.
-
-### Key lessons from v9 tuning
-
-**Presentation order matters more than explicit instructions.** The DISCARD verification check (v9) helped modestly (+1.6pp), but adding an ACTION COMPARISON section with detailed criteria (v9c) added zero value. The action-first field reorder (v9d) added +3pp on top of v9 — more impact than any textual instruction. For small models, how you present information matters more than how much you explain.
-
-**Structured output requirements can hurt small models.** v9b added an ACTION CHECK field to the output format, forcing flash-lite to explicitly state each entry's core action. This regressed accuracy by -3.1pp, likely because the additional output structure interfered with flash-lite's reasoning flow.
-
-**Observation accuracy appears to be at flash-lite's ceiling.** The 13 observation errors are dominated by M calibration — a problem where the fixes for different error types conflict. Further observation tuning offers diminishing returns without either dropping M from per-extraction dedup or upgrading the model.
-
-## Decision and Tradeoffs
-
-**The prompt has been through four distinct phases**, each teaching a different lesson about calibration:
-
-1. **Phase 1 (v2-v5)**: Structural prompt changes (two-stage decision gates) consistently degraded accuracy. The flat prompt structure is better because it lets the model reason holistically rather than through forced sequential gates.
-
-2. **Phase 2 (v6)**: A flat prompt with a directional calibration cascade ("prefer D over M over K") improved D recall to 93% but crushed K recall to 41%. The cascade is a blunt instrument that can't distinguish genuine uncertainty from false confidence.
-
-3. **Phase 3 (v7-v8)**: Removing the cascade entirely caused over-merge. Targeted calibration (v8) addresses specific failure modes without biasing the overall distribution.
-
-4. **Phase 4 (v9-v9d)**: Presentation-order tuning. Reordering fields (action before situation) had more impact than adding explicit comparison criteria or structured output requirements. For small models, information architecture matters more than instruction volume.
-
-**The model matters as much as the prompt.** 3.5-flash consistently outperforms flash-lite by 6-8pp regardless of prompt version. Flash-lite's K recall reached 59% on v9d (up from a ceiling of 55%), while 3.5-flash sits at 90%. The gap has narrowed from 10.8pp (v8) to 6.2pp (v9d).
-
-**Over-discarding is still cheaper than over-keeping**, but the margin is smaller than we initially assumed. A discarded novel entry will be re-extracted from a future game — but only if a similar game situation occurs. For rare situations, over-discard means permanent information loss. The ideal operating point balances D and K recall, not maximizes one at the expense of the other.
-
-## Lessons
-
-**When all your models "fail" on the same cases, check the labels first.** Five models spanning three generations independently produced 0% MERGE recall on 4 cases. The initial diagnosis was "calibration cascade over-correction" — a prompt-level explanation. The actual cause was mislabeled golden data. Uniform cross-model failure is stronger evidence of label error than of prompt error, because prompt deficiencies tend to produce model-specific failure patterns.
-
-**Calibration cascades create ratchets regardless of direction.** "Doubt → D over M" eliminated true merges (v2). "Doubt → M over K" created 25 false merges (v4). Removing all calibration caused over-merge (v7). The lesson isn't "calibration is bad" — it's that *directional* calibration (prefer X over Y) creates a ratchet that kills the non-preferred category. Targeted calibration ("this specific pattern is not sufficient for X") avoids the ratchet by addressing failure modes directly.
-
-**Forcing explicit consideration of a rare option increases its false-positive rate.** The v2→v5 prompt restructuring moved MERGE from an implicit possibility to an explicit decision gate. This increased M predictions from 1-2 to 14-19 despite adding "MERGE is the rarest outcome" framing. For rare decisions, implicit availability outperforms explicit decision gates.
-
-**Stronger models amplify both prompt improvements and regressions.** Flash-lite showed modest variation across prompt versions (60-69%). 3.5-flash showed dramatic variation: 82% (v2 baseline) to 40% (v5) to 75% (v6-v7). The stronger model extracts more value from good prompts but is also more sensitive to bad ones. This means prompt improvements paired with model upgrades have multiplicative potential.
-
-**Golden label iteration is part of the eval process, not a failure of it.** Two rounds of label revision changed 14 labels total (4 in round 1, 10 in round 2). Each round was triggered by cross-model disagreement analysis. The corrections consistently strengthened the ground truth. The right workflow is: label → score → investigate uniform failures → revise labels → re-score.
-
-**The retrieval test grounds abstract similarity judgments.** "Are these situations the same?" is subjective. "Would a search query for situation A retrieve situation B?" is concrete and testable. This reframing resolved several labeling disagreements and gave the LLM a more operational decision criterion. When building prompts for similarity judgment, anchor to the downstream use case (retrieval) rather than abstract semantic similarity.
-
-## Rewrite Quality Analysis
-
-Judged by gemini-3.1-pro-preview on four dimensions (1-5 scale): decision_correctness, merge_quality, information_preservation, and fabrication_detected (boolean). Cases without rewrites (KEEP or DISCARD-without-rewrite) receive automatic 5s on merge_quality and info_preservation. Two types of rewrite exist: MERGE produces a combined observation (merged situation, approach, outcome), and DISCARD-with-rewrite overwrites the existing strategy point's situation and action fields with improved text from the new entry.
-
-### Flash-Lite v9d
-
-Of 65 cases, 19 produced rewrites: 14 MERGE (all observations) and 5 DISCARD-with-rewrite (all strategy points). 0% fabrication rate.
-
-**MERGE rewrites (14 observation cases)**
-
-| Quality | Count | Cases |
-|---|---|---|
-| Perfect (mq=5, ip=5) | 8 | 4 gold=K/M/K, 2 gold=M, 2 gold=D — correct merges and compatible false merges |
-| Mediocre (ip 3-4) | 4 | 2 gold=D (unnecessary merges), 1 gold=M/K, 1 gold=D |
-| Destructive (ip ≤ 2) | 2 | 1 gold=M (ip=2), 1 gold=K (ip=1) |
-| **Avg** | | **mq=4.36, ip=4.21** |
-
-Against golden labels, the 14 merges break down as: 4 correct (gold=M, 3 scored ip ≥ 4, 1 scored ip=2), 5 false merges from K (2 destructive, 3 perfect/mediocre), 4 false merges from D (unnecessary rewrites), and 1 ambiguous (gold=M/K).
-
-**DISCARD-with-rewrite (5 strategy point cases)**
-
-| Quality | Count | Cases |
-|---|---|---|
-| Perfect (mq=5, ip=5) | 2 | Both gold=D or gold=K — correct decisions with clean improvement |
-| Mediocre (ip 3-4) | 2 | gold=D (ip=3), gold=K (ip=4) |
-| Destructive (ip ≤ 2) | 1 | gold=D (ip=1, mq=1) — overwrote conflicting strategy entirely |
-| **Avg** | | **mq=3.80, ip=3.60** |
-
-**Overall: 19 rewrites, avg mq=4.21, ip=4.05. IP distribution: 5:11, 4:3, 3:2, 2:1, 1:2.**
-
-### 3.5-Flash v9d
-
-Of 65 cases, 11 produced rewrites: 5 MERGE (all observations) and 6 DISCARD-with-rewrite (all strategy points). 0% fabrication rate.
-
-**MERGE rewrites (5 observation cases)**
-
-| Quality | Count | Cases |
-|---|---|---|
-| Perfect (mq=5, ip=5) | 4 | 2 gold=M (correct), 1 gold=K, 1 gold=D |
-| Mediocre (ip 3-4) | 1 | gold=K (ip=4) |
-| Destructive (ip ≤ 2) | 0 | — |
-| **Avg** | | **mq=4.80, ip=4.80** |
-
-3.5-flash produced only 5 merges vs flash-lite's 14 — it correctly avoids most false merges, which eliminates the destructive rewrites entirely.
-
-**DISCARD-with-rewrite (6 strategy point cases)**
-
-| Quality | Count | Cases |
-|---|---|---|
-| Perfect (mq=5, ip=5) | 4 | All gold=D — correct decisions with clean improvement |
-| Mediocre (ip 3-4) | 1 | gold=D (ip=3) — same case (fe46f8eb0ad4) that flash-lite also scored ip=3 |
-| Destructive (ip ≤ 2) | 1 | gold=K (ip=2, mq=3) — wrong decision; overwrote a genuinely different strategy |
-| **Avg** | | **mq=4.33, ip=4.17** |
-
-**Overall: 11 rewrites, avg mq=4.55, ip=4.45. IP distribution: 5:8, 4:1, 3:1, 2:1.**
-
-### Cross-Model Comparison
-
-| Dimension | Flash-lite (19 rewrites) | 3.5-flash (11 rewrites) |
-|---|---|---|
-| Avg merge_quality | 4.21 | 4.55 |
-| Avg info_preservation | 4.05 | 4.45 |
-| Perfect rewrites | 10/19 (53%) | 8/11 (73%) |
-| Destructive rewrites | 3/19 (16%) | 1/11 (9%) |
-| Fabrication | 0% | 0% |
-
-3.5-flash's advantage is primarily **fewer rewrites, not better rewrites**. When both models rewrite the same case, the quality gap is modest — the shared mediocre case (fe46f8eb0ad4, ip=3 for both) and the shared perfect cases confirm this. 3.5-flash's higher averages come from avoiding the 9 false merges that produce flash-lite's worst scores.
-
-The one case where both models score poorly — fe46f8eb0ad4, a strategy DISCARD-with-rewrite — scores ip=3 on both models. This is a prompt issue, not a model issue: the rewrite instructions don't give enough guidance on what to preserve when improving an existing strategy point's fields.
-
-### When rewrites fail: prompt vs model
-
-The destructive rewrites (ip ≤ 2) fall into two categories:
-
-**Wrong decision → bad rewrite (both models).** Flash-lite's 2 destructive observation merges and 3.5-flash's 1 destructive strategy rewrite all have decision_correctness ≤ 2. The entries were incompatible — combining them was impossible regardless of rewrite instructions. Fixing decision accuracy (the D/M/K prompt) would prevent these.
-
-**Mediocre rewrites on correct decisions (prompt issue).** The shared ip=3 case (fe46f8eb0ad4) has decision_correctness=5 on both models — the decision was right, but the rewrite lost nuance. Flash-lite's 4 mediocre observation merges include 2 correct decisions (gold=D, gold=M/K) where the model combined entries adequately but dropped minor details. The current rewrite instructions say "output the final merged observation fields" and "MUST list ALL distinct tactics" but don't specify how to preserve situational context, outcome nuance, or observation counts during the merge.
-
-## Prompt v10: Removing DISCARD-with-Rewrite from Strategy (65 cases)
-
-### What changed
-
-Removed the optional rewrite fields (`improved_situation`, `improved_action`) from strategy DISCARD. Previously, when discarding a new strategy point, the model could optionally overwrite the existing entry's text if it deemed the new entry better written. Now DISCARD simply increments the observation count and preserves the existing entry as-is.
-
-### Why
-
-Analysis of rewrite quality showed: (a) models rewrote both fields 60-97% of the time even when value was in only one detail, (b) 3/4 "good" D-rewrite cases were arguably mislabeled DISCARDs that should have been KEEPs, (c) the shared mediocre case (fe46f8eb0ad4) confirmed this is a prompt limitation, not a model limitation. Removing the rewrite option forces cleaner D/K boundary decisions.
-
-### Results
-
-**Important caveat**: Between v9d and v10, we switched from Google AI Studio to Vertex AI backend. This affects model outputs even at temperature=0 (confirmed by re-running flash-lite v10 on both backends: 76.9% on Google AI vs 73.8% on Vertex AI). All v10+ results use Vertex AI. Scores are comparable within v10+ but not directly comparable to v9d.
-
-| Model | v9d (Google AI) | v10 (Vertex AI) |
-|---|---|---|
-| flash-lite overall | 73.8% | 73.8% |
-| flash-lite obs | 67.5% | 60.0% |
-| flash-lite strategy | 84.0% | **96.0%** |
-| 3.5-flash overall | 80.0% | 73.8% |
-| 3.5-flash obs | 75.0% | 70.0% |
-| 3.5-flash strategy | 88.0% | 80.0% |
-
-The strategy improvement for flash-lite (84% → 96%) is genuine — the prompt change directly targets strategy decisions. The observation changes are backend noise (prompt unchanged for observations). Cross-backend comparison is unreliable for measuring prompt impact.
-
-## Prompt v11: Removing MERGE from Observation Dedup (65 cases)
-
-### What changed
-
-Removed the MERGE (M) option from per-extraction observation dedup. The prompt now only supports DISCARD (D) and KEEP (K). Golden labels updated: 5 M labels relabeled to K. Batch dedup retains MERGE for cluster-level cleanup.
-
-### Why
-
-MERGE was rare in practice — only 5/65 golden cases. Both models heavily over-merged: flash-lite predicted 15 MERGEs (vs 5 golden), 3.5-flash predicted 8. False merges produced the worst rewrite quality scores (ip ≤ 2) and corrupted existing memory entries. Removing M and letting batch dedup handle tactic-variant consolidation eliminates these destructive rewrites.
-
-The decision boundary was also hard for models to learn. The D/M distinction ("same lesson" vs "same situation but different tactic variant") required nuanced approach comparison that models frequently got wrong. D/K is a cleaner binary: "same observation, or different?"
-
-### Results
-
-| Model | v10 (Vertex) | v11 | Delta |
-|---|---|---|---|
-| flash-lite overall | 73.8% | **80.0%** | +6.2pp |
-| flash-lite obs | 60.0% | **70.0%** | +10.0pp |
-| flash-lite strategy | 96.0% | 96.0% | — |
-| 3.5-flash overall | 73.8% | **83.1%** | +9.3pp |
-| 3.5-flash obs | 70.0% | **82.5%** | +12.5pp |
-| 3.5-flash strategy | 80.0% | 84.0% | +4.0pp |
-
-Golden labels: D=30, K=34 (was D=30, M=5, K=29).
-
-### Error analysis
-
-The two models show opposite error profiles on v11:
-
-**Flash-lite v11**: 13 errors, 9 are K→D (over-discarding). The model sees high similarity scores (0.82-0.86) and collapses entries that have genuinely different approaches or outcomes. Most of the over-discarded cases (7/9) are former M labels now relabeled K — entries with similar situations but different tactic variants that should be kept.
-
-**3.5-flash v11**: 11 errors, ALL are D→K (under-discarding, 100% K precision). The model is conservative — it never wrongly discards, but keeps duplicates that teach the same lesson with different specific examples.
-
-Shared errors (cases 30, 63, 64): both models fail to discard these — they may represent genuinely hard boundary cases.
-
-## Prompt v11b: Strengthening the Three-Field Match Requirement (65 cases)
-
-### What changed
-
-Added an explicit calibration section before the decision options:
-
-> **DISCARD REQUIRES ALL THREE FIELDS TO MATCH:** Similar situations alone do not justify DISCARD. You must also confirm that the approach uses the same tactic category AND the outcome follows the same success/failure pattern. If the approach uses a different tactic (e.g., proactive framing vs defensive deflection, voting record analysis vs behavioral reading) or the outcome differs (success vs failure), KEEP — even if the situations look nearly identical.
-
-### Why
-
-Flash-lite's 9 K→D errors in v11 showed a pattern: the model was DISCARDing entries with similar situations (sim > 0.80) without adequately checking approach and outcome differences. The calibration makes the three-field requirement explicit and gives concrete examples of tactic differences that should trigger KEEP.
-
-### Results (flash-lite only)
-
-| flash-lite | v11 | v11b | Delta |
-|---|---|---|---|
-| Overall | 80.0% | **83.1%** | +3.1pp |
-| Observation | 70.0% | **75.0%** | +5.0pp |
-| Strategy | 96.0% | 96.0% | — |
-
-K→D errors dropped from 9 to 4. The calibration successfully prevented 5 false discards without introducing new errors. Remaining 4 K→D errors are harder cases where the approach difference is subtler (e.g., indirect deduction vs direct investigation — both are "investigation" at a coarse level).
-
-## What's Next
-
-1. **Run 3.5-flash on v11b**: Confirm the three-field calibration doesn't hurt the conservative model's already-good K precision.
-2. **Address 3.5-flash under-discarding**: 11 D→K errors suggest adding same-lesson calibration — "different examples of the same lesson are still duplicates" — but this may conflict with flash-lite's over-discard tendency. May need model-specific tuning or accept the accuracy ceiling.
-3. **Investigate shared hard cases (30, 63, 64)**: Both models fail on these — review golden labels for possible mislabeling or accept as genuine ambiguity.
+| flash-lite | 69.2% → 69.2% | 77% → **83%** | 55% → 52% |
+| **3.5-flash** | 75.4% → **80.0%** | 60% → **77%** | 93% → 90% |
+
+**3.5-flash v8 = 80%** is the best two-way (D/M/K) configuration. The lesson: **targeted corrections beat
+directional cascades** — a criterion ("this difference isn't enough for M") doesn't ratchet the way a
+bias ("prefer D") does.
+
+### Phase 4 (v9–v9d): presentation beats instruction
+
+v8's biggest remaining error on flash-lite was **strategy K→D** — the model saw situation similarity
+first and rationalised conflicting actions as "variations of the same strategy." We tried adding
+explicit instruction (a DISCARD verification check; a parallel ACTION COMPARISON section; an ACTION
+CHECK output field) — *none* helped, and the output-field variant **regressed** (structured output
+interfered with flash-lite's reasoning).
+
+What worked was **v9d: reorder the fields so Action comes before Situation.** Same information, just
+presented so the model meets the *conflicting action* before the *similar situation* anchors it
+together:
+
+| flash-lite | v8 → v9d |
+|---|---|
+| overall | 69.2% → **73.8%** |
+| strategy | 72.0% → **84.0%** (+12pp) |
+| K recall | 52% → 59% |
+
+**Presentation order matters more than instruction volume** for weak models — a content-neutral reorder
+out-performed every added paragraph. (3.5-flash was unmoved — already at 88% strategy.) v9d is the
+production prompt going into the endgame.
+
+### Endgame (v10 → v11 → v11b): dropping MERGE
+
+> **Backend caveat (load-bearing for reading v10+).** Between v9d and v10 we switched the API backend
+> from Google AI Studio to Vertex AI, which shifts outputs *even at temperature 0* (flash-lite v10:
+> 76.9% on Google AI vs 73.8% on Vertex). v10+ numbers are comparable within themselves but **not**
+> directly to v9d and earlier. This is why store-version and backend are stamped in run provenance.
+
+- **v10 — remove discard-with-rewrite from strategy.** Models rewrote both fields 60–97% of the time
+  even when value was in one detail, and the "good" rewrites were mostly mislabelled discards. Removing
+  it forced cleaner D/K boundaries; flash-lite strategy **84% → 96%** (Vertex).
+- **v11 — remove MERGE from observation dedup (the climax).** MERGE was rare (5/65), both models
+  over-fired it (flash-lite predicted 15, 3.5-flash 8), and false merges produced the worst
+  rewrite-quality scores and corrupted live entries. Dropping to **D/K only** (5 M labels relabelled K,
+  golden D=30/K=34) lifted both models — flash-lite **73.8% → 80.0%** (obs 60% → 70%), 3.5-flash
+  **73.8% → 83.1%** (obs 70% → 82.5%). The two models then show opposite residual errors: flash-lite
+  **over-discards** (9 K→D), 3.5-flash **under-discards** (all errors D→K, 100% K precision).
+- **v11b — strengthen the three-field match.** "DISCARD requires all three fields (situation,
+  approach, outcome) to agree; a different tactic *category* or a different outcome → KEEP." This
+  targeted flash-lite's over-discard: **80.0% → 83.1%**, K→D errors 9 → 4.
+
+### Supporting analyses (folded in, not the spine)
+
+- **Cost / latency — why flash-lite is the production model.** flash-lite vs 3.5-flash is ~6× cheaper
+  per token but ~**3×** per *case* (flash-lite's thinking tokens narrow the gap); ~7× faster. Accuracy
+  trails (flash-lite 69.2% vs 3.5-flash 80% two-way; the decisive gap is **K recall 52% vs 90%**, i.e.
+  over-discard). We kept **flash-lite** anyway: the cost/latency matter at scale, flash-lite improved
+  with the v9d/v11b work, and the offline **batch dedup is a safety net** for both over-discard (rare,
+  impactful) and over-keep (common, recoverable).
+- **Rewrite quality (while MERGE still existed).** Judged by gemini-3.1-pro-preview on 4 dimensions:
+  flash-lite v9d merges scored mq 4.21 / ip 4.05, 3.5-flash 4.55 / 4.45, **0% fabrication** on both.
+  3.5-flash's edge was **fewer merges, not better ones** — it avoided the false merges that produced
+  flash-lite's destructive rewrites. The destructive cases all traced to a *wrong decision*, not a bad
+  rewrite — which is part of why v11 removed MERGE rather than tuning its rewrite further.
+
+## ④ Synthesis
+
+### Lessons (the transferable part)
+
+- **When every model "fails" the same cases, check the labels first.** Five models across three
+  generations produced 0% MERGE recall on the same 4 cases — that uniformity was *label* error.
+  Prompt deficiencies produce *model-specific* failure patterns; cross-model agreement against the
+  golden label is a label smell. (Two revision rounds changed 14 labels total, each strengthening
+  ground truth — golden-label iteration is *part of* the eval, not a failure of it.)
+- **Directional calibration is a ratchet with no neutral position.** "Doubt → D" kills KEEP; "doubt →
+  M" floods false merges; removing all calibration over-merges. *Targeted* notes ("this specific
+  difference isn't enough for X") fix a failure mode without biasing the whole distribution.
+- **Forcing explicit consideration of a rare option increases its false-positive rate.** Routing every
+  case through a D/M gate raised MERGE predictions 10× despite "MERGE is rarest" framing. For rare
+  decisions, implicit availability beats an explicit gate.
+- **Presentation order beats instruction volume for weak models.** A content-neutral field reorder
+  (action before situation) added more than any paragraph of rules, and an extra output field *hurt*.
+- **The retrieval test grounds an otherwise-subjective call.** "Are these the same situation?" is
+  fuzzy; "would a query for A retrieve B?" is operational and resolved most labelling disputes.
+- **Stronger models amplify both good and bad prompts.** 3.5-flash ranged 82% → 40% → 80% across
+  versions; flash-lite stayed in a narrow 60–69% band. The stronger model extracts more from a good
+  prompt and suffers more from a bad one.
+
+### The open question: lean discard or lean keep
+
+This is the recurring tension of the whole chapter, and it is **deliberately unresolved** (it threads
+through the dedup overview's [§6](../experiment_log.md)). The *tactic* is settled — targeted
+corrections, not directional cascades. The *strategic lean* is not:
+- **Lean discard** keeps the store lean, and an over-discarded entry from a *common* situation will be
+  re-extracted from a future game.
+- **Lean keep** protects *rare*-situation lessons — over-discard those and they're permanently lost.
+
+We never picked, on purpose: the right bias "depends on downstream retrieval quality and agent strategy
+application, not on the prompt," and that downstream evaluation is part of the frozen memory work. The
+live prompt sits near-neutral with targeted anti-over-discard notes (v11b).
 
 ## Current live state (2026-06-25)
 
@@ -812,12 +297,11 @@ This pipeline is **live and on by default** during store-build / seeding (`dump_
 Three things differ from where the tuning journey above left off — they are its *outcome*, not
 contradictions of it:
 
-1. **MERGE is gone — online dedup is KEEP/DISCARD only.** The v11 decision to drop MERGE (rare,
-   over-fired, its rewrites corrupted entries) is the shipped state: the model is only ever offered
-   DISCARD/KEEP (`Agents/memory/deduplication/schemas.py:84-91`). MERGE (rewriting) now lives **only**
-   in the offline batch pass. The live prompts are a stabilized "v6.1" generation in
-   `Agents/prompts/dedup.py` (carrying the v9d action-before-situation ordering) — not literally any
-   single v-number above.
+1. **MERGE is gone — online dedup is KEEP/DISCARD only.** The v11 decision is the shipped state: the
+   model is only ever offered DISCARD/KEEP (`Agents/memory/deduplication/schemas.py:84-91`). MERGE
+   (rewriting) now lives **only** in the offline batch pass. The live prompts are a stabilized "v6.1"
+   generation in `Agents/prompts/dedup.py` (carrying the v9d action-before-situation ordering) — not
+   literally any single v-number above.
 2. **A deterministic gate runs before the LLM.** Candidates are first narrowed by a structured gate
    (`Agents/memory/dedup_gate.py`) — same role/phase, same `gate_key` bucket, compatible hard
    pair-checks — so the LLM only ever compares already-homogeneous entries, and the gated dimensions are
@@ -833,42 +317,17 @@ Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-doc
 
 | File | Description |
 |---|---|
-| `eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D:30, K:34, M/K:1) — M relabeled to K for v11 |
-| `eval_sets/dedup_v2_sampled.jsonl` | 65 sampled dedup cases (source dataset, expanded from 50) |
-| `eval_sets/dedup_v2.manifest.json` | Dataset manifest (390 cases, seed=42) |
-| `evaluation/experiments/dedup_score.py` | Deterministic golden-label scorer (matches by case_id or index) |
-| `scripts/dedup_model_comparison.py` | Multi-file comparison script — scores all replay files and prints table |
-| `evidence/dedup/per_extraction/data/dedup_score_original_v2.json` | Original baseline scoring (78% strict, old labels) |
-| `evidence/dedup/per_extraction/tricky_cases.md` | 7 mislabeled cases with full text and prompt improvement suggestions |
-| `evidence/dedup/per_extraction/prompt_history/dedup_prompt_baseline.py` | Frozen baseline prompts (pre-revision) |
-| `evidence/dedup/per_extraction/prompt_history/standards_baseline.py` | Frozen situation standards and epistemic status rule |
-| `evidence/dedup/per_extraction/drafts/observation_prompt_draft_v2.md` | Draft 1: narrative style with worked examples |
-| `evidence/dedup/per_extraction/drafts/observation_prompt_draft_v2_merged.md` | Draft 2 (merged): the version that shipped into `Agents/prompts/dedup.py` |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v2.jsonl` | Replay: flash-lite, prompt v2 (50 cases) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v2.jsonl` | Replay: 3.5-flash, prompt v2 (50 cases) |
-| `eval_sets/dedup_v2_replay_25flash_prompt_v2.jsonl` | Replay: 2.5-flash, prompt v2 (50 cases) |
-| `eval_sets/dedup_v2_replay_25pro_prompt_v2.jsonl` | Replay: 2.5-pro, prompt v2 (50 cases) |
-| `eval_sets/dedup_v2_replay_3flash_prompt_v2.jsonl` | Replay: 3-flash-preview, prompt v2 (50 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v3.jsonl` | Replay: flash-lite, prompt v3 (50 cases) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v3.jsonl` | Replay: 3.5-flash, prompt v3 (50 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v4.jsonl` | Replay: flash-lite, prompt v4 (50 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v5.jsonl` | Replay: flash-lite, prompt v5 (65 cases) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v5.jsonl` | Replay: 3.5-flash, prompt v5 (65 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v6.jsonl` | Replay: flash-lite, prompt v6 (65 cases) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v6.jsonl` | Replay: 3.5-flash, prompt v6 (65 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v7.jsonl` | Replay: flash-lite, prompt v7 (65 cases) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v7.jsonl` | Replay: 3.5-flash, prompt v7 (65 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v8.jsonl` | Replay: flash-lite, prompt v8 (65 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v8_verified.jsonl` | Replay: flash-lite, prompt v8 verified (5 identical runs confirm determinism) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v8.jsonl` | Replay: 3.5-flash, prompt v8 (65 cases) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v9.jsonl` | Replay: flash-lite, prompt v9 (65 cases, 70.8%) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v9d.jsonl` | Replay: flash-lite, prompt v9d (65 cases, 73.8% — production) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v9d.jsonl` | Replay: 3.5-flash, prompt v9d (65 cases, 80.0%) |
-| `eval_configs/dedup/dedup_v2_judge_v9d.json` | Config: judge flash-lite v9d with gemini-3.1-pro-preview |
-| `eval_configs/dedup/dedup_v2_judge_35flash_v9d.json` | Config: judge 3.5-flash v9d with gemini-3.1-pro-preview |
-| `eval_results/dedup_judge_flash_lite_v9d.jsonl` | Judge results: flash-lite v9d rewrite quality (19 rewrites) |
-| `eval_results/dedup_judge_35flash_v9d.jsonl` | Judge results: 3.5-flash v9d rewrite quality (11 rewrites) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v10.jsonl` | Replay: flash-lite, prompt v10 (65 cases, Google AI backend) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v10.jsonl` | Replay: 3.5-flash, prompt v10 (65 cases, Vertex AI) |
-| `eval_sets/dedup_v2_replay_flash_lite_prompt_v11.jsonl` | Replay: flash-lite, prompt v11 (65 cases, 80.0%, Vertex AI) |
-| `eval_sets/dedup_v2_replay_35flash_prompt_v11.jsonl` | Replay: 3.5-flash, prompt v11 (65 cases, 83.1%, Vertex AI) |
+| `evaluation/frozen_eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D=30, K=34, M/K=1) — M relabelled to K at v11 |
+| `evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl` | the 65 sampled dedup cases (source dataset) |
+| `evaluation/frozen_eval_sets/dedup_v2.manifest.json` | dataset manifest (390 cases, seed=42) |
+| `evaluation/src/experiments/dedup_score.py` | deterministic golden-label scorer (strict + lenient) |
+| `evaluation/src/experiments/dedup_replay.py` | re-runs frozen cases through a chosen model/prompt |
+| `data/dedup_score_original_v2.json` | original baseline scoring (78% strict, pre-revision labels) |
+| [tricky_cases.md](tricky_cases.md) | 7 mislabelled cases with full text + prompt implication |
+| [drafts/](drafts/) | the v2 observation-prompt drafts (Draft 1 + the merged version that shipped) |
+| `prompt_history/{dedup_prompt_baseline,standards_baseline,dedup_v5,dedup_v6}.py` | frozen prompt snapshots |
+| `evaluation/frozen_eval_sets/dedup_v2_replay_*.jsonl` | one replay JSONL per (model × prompt-version), v2→v11 (older ones in `legacy/`) |
+| `evaluation/eval_results/dedup_judge_*_v9d.jsonl` | rewrite-quality judge results (flash-lite + 3.5-flash) |
+
+*Provenance: dataset `v4_action_phase_v2`, seed=42; per-extraction prompt versions v1→v11b; backend
+Google AI Studio through v9d, Vertex AI from v10 (stamped per run).*
