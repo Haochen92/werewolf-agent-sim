@@ -40,7 +40,7 @@ Only the `dedup` mode produces a valid apples-to-apples comparison against the p
 
 Scored all 65 golden set cases (`dedup_v2_golden_labels.json`) with the cross-encoder using the same field inputs as the production auto-dedup. Compared threshold sweeps directly against the Gemini field-specific similarity baseline.
 
-Gemini baseline loaded from `evidence/dedup_golden_eval/embedding_cache.json` (action_sim for SP, content_sim for obs).
+Gemini baseline loaded from `evidence/dedup/golden_eval/embedding_cache.json` (action_sim for SP, content_sim for obs).
 
 ### Strategy Points (25 cases: 10D, 15K)
 

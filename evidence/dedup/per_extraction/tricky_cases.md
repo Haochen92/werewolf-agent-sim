@@ -3,9 +3,9 @@
 Cases where the LLM made the wrong dedup decision, revealing prompt weaknesses.
 Use these to refine the dedup prompt after evaluation.
 
-**Prompt that produced these decisions:** [dedup_prompt_baseline.py](dedup_prompt_baseline.py)
+**Prompt that produced these decisions:** [dedup_prompt_baseline.py](prompt_history/dedup_prompt_baseline.py)
 (per-extraction prompts: `OBSERVATION_DEDUP_PROMPT` lines 93-162, `STRATEGY_DEDUP_PROMPT` lines 1-90)
-**Supporting standards:** [standards_baseline.py](standards_baseline.py)
+**Supporting standards:** [standards_baseline.py](prompt_history/standards_baseline.py)
 
 ---
 

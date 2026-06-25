@@ -177,7 +177,7 @@ def main(
     dataset: str = "eval_sets/dedup_v2_sampled.jsonl",
     golden: str = "eval_sets/dedup_v2_golden_labels.json",
     text_mode: str = "dedup",
-    embedding_cache: str = "evidence/dedup_golden_eval/embedding_cache.json",
+    embedding_cache: str = "evidence/dedup/golden_eval/embedding_cache.json",
 ):
     import sys
     from pathlib import Path

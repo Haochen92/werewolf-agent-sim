@@ -15,7 +15,7 @@ Usage::
     poetry run python -m evaluation.experiments.eval_auto_dedup \
         --dataset evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl \
         --golden evaluation/frozen_eval_sets/dedup_v2_golden_labels.json \
-        --cache evidence/dedup_golden_eval/embedding_cache.json
+        --cache evidence/dedup/golden_eval/embedding_cache.json
 
     # Sweep with custom grid
     poetry run python -m evaluation.experiments.eval_auto_dedup \

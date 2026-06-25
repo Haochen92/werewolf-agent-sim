@@ -24,7 +24,7 @@ On any embedding failure, fall through to LLM (fail-open).
 
 ### Calibration on Golden Set (65 cases)
 
-Used the existing 65-case golden label set (`dedup_v2_golden_labels.json`: D=30, M=5, K=29, M/K=1) to find zero-error threshold boundaries. Embedded all cases using `gemini-embedding-001` at 1536D, cached to `evidence/dedup/per_extraction/embedding_cache.json`.
+Used the existing 65-case golden label set (`dedup_v2_golden_labels.json`: D=30, M=5, K=29, M/K=1) to find zero-error threshold boundaries. Embedded all cases using `gemini-embedding-001` at 1536D, cached to `evidence/dedup/golden_eval/embedding_cache.json`.
 
 **Strategy points (25 cases: D=10, K=15)**
 
@@ -224,12 +224,12 @@ The tracing infrastructure (`_emit_dedup_span` → Langfuse span → `fetch_dedu
 | `configs/eval/auto_dedup_build_v1_cross_game.json` | Cross-game dataset config (232 cases) |
 | `eval_sets/auto_dedup_v1.jsonl` | Same-game calibration dataset (192 cases) |
 | `eval_sets/auto_dedup_v1_cross_game.jsonl` | Cross-game calibration dataset (232 cases) |
-| `evidence/dedup/per_extraction/embedding_cache.json` | Cached embedding sims for 65 golden cases |
-| `evidence/dedup/embedding_prefilter/cross_game_embedding_cache.json` | Cached embedding sims for 232 cross-game cases |
-| `evidence/dedup/embedding_prefilter/cross_game_golden_labels.json` | 232 golden labels from gemini-3.5-flash |
-| `evidence/dedup/embedding_prefilter/cross_game_golden_labels_flash_lite.json` | 232 golden labels from gemini-3.1-flash-lite |
-| `evidence/dedup/embedding_prefilter/golden_embedding_cache_3072_dims.json` | Golden set at 3072 dims + SEMANTIC_SIMILARITY |
-| `evidence/dedup/embedding_prefilter/cross_game_embedding_cache_3072_dims.json` | Cross-game at 3072 dims + SEMANTIC_SIMILARITY |
-| `evidence/dedup/embedding_prefilter/golden_embedding_cache_3072_dims_default_task.json` | Golden set at 3072 dims + default task type |
-| `evidence/dedup/embedding_prefilter/golden_embedding_cache_1536_dims_semantic_sim.json` | Golden set at 1536 dims + SEMANTIC_SIMILARITY |
-| `evidence/dedup/embedding_prefilter/cross_game_embedding_cache_1536_semantic_sim.json` | Cross-game at 1536 dims + SEMANTIC_SIMILARITY |
+| `evidence/dedup/golden_eval/embedding_cache.json` | Cached embedding sims for 65 golden cases |
+| `evidence/dedup/embedding_prefilter/data/cross_game_embedding_cache.json` | Cached embedding sims for 232 cross-game cases |
+| `evidence/dedup/embedding_prefilter/data/cross_game_golden_labels.json` | 232 golden labels from gemini-3.5-flash |
+| `evidence/dedup/embedding_prefilter/data/cross_game_golden_labels_flash_lite.json` | 232 golden labels from gemini-3.1-flash-lite |
+| `evidence/dedup/embedding_prefilter/data/golden_embedding_cache_3072_dims.json` | Golden set at 3072 dims + SEMANTIC_SIMILARITY |
+| `evidence/dedup/embedding_prefilter/data/cross_game_embedding_cache_3072_dims.json` | Cross-game at 3072 dims + SEMANTIC_SIMILARITY |
+| `evidence/dedup/embedding_prefilter/data/golden_embedding_cache_3072_dims_default_task.json` | Golden set at 3072 dims + default task type |
+| `evidence/dedup/embedding_prefilter/data/golden_embedding_cache_1536_dims_semantic_sim.json` | Golden set at 1536 dims + SEMANTIC_SIMILARITY |
+| `evidence/dedup/embedding_prefilter/data/cross_game_embedding_cache_1536_semantic_sim.json` | Cross-game at 1536 dims + SEMANTIC_SIMILARITY |

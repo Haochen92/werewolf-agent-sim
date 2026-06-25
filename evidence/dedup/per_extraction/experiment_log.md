@@ -799,10 +799,10 @@ K→D errors dropped from 9 to 4. The calibration successfully prevented 5 false
 | `eval_sets/dedup_v2.manifest.json` | Dataset manifest (390 cases, seed=42) |
 | `evaluation/experiments/dedup_score.py` | Deterministic golden-label scorer (matches by case_id or index) |
 | `scripts/dedup_model_comparison.py` | Multi-file comparison script — scores all replay files and prints table |
-| `evidence/dedup/per_extraction/dedup_score_original_v2.json` | Original baseline scoring (78% strict, old labels) |
+| `evidence/dedup/per_extraction/data/dedup_score_original_v2.json` | Original baseline scoring (78% strict, old labels) |
 | `evidence/dedup/per_extraction/tricky_cases.md` | 7 mislabeled cases with full text and prompt improvement suggestions |
-| `evidence/dedup/per_extraction/dedup_prompt_baseline.py` | Frozen baseline prompts (pre-revision) |
-| `evidence/dedup/per_extraction/standards_baseline.py` | Frozen situation standards and epistemic status rule |
+| `evidence/dedup/per_extraction/prompt_history/dedup_prompt_baseline.py` | Frozen baseline prompts (pre-revision) |
+| `evidence/dedup/per_extraction/prompt_history/standards_baseline.py` | Frozen situation standards and epistemic status rule |
 | `evidence/dedup/per_extraction/observation_prompt_draft_v2.md` | Draft 1: narrative style with worked examples |
 | `evidence/dedup/per_extraction/observation_prompt_draft_v2_merged.md` | Draft 2: merged structural version |
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v2.jsonl` | Replay: flash-lite, prompt v2 (50 cases) |
