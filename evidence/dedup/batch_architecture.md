@@ -103,17 +103,26 @@ For DISCARD/MERGE the cluster collapses onto a **survivor**:
   dry-run safety) → `tests/test_batch_dedup.py`. These are the bugs an eval can't isolate
   — a wrong graph edge or a mis-picked survivor is silent in aggregate metrics.
 
-## Interview cheat-sheet (the probes that actually come)
+## Design rationale
 
-- **Why dedup?** Redundant memories crowd retrieval; conservative dedup raised observation
-  efficiency and unique-lessons without losing relevance (n=39).
-- **Why per-namespace?** Duplicates only exist among same-role, same-phase entries; scoping
-  keeps clusters small/on-topic and bounds the blast radius of a bad merge.
-- **Why cluster instead of comparing all pairs?** Cost — batches likely-dups into small
-  groups so the LLM sees a handful at a time instead of O(n²) calls.
-- **What if the LLM over-merges two non-duplicates?** Bias conservative (bounded default +
-  size cap contains it), and an invalid survivor fails safe rather than deleting blindly.
-- **How do you avoid losing signal when collapsing entries?** Usage counters are summed onto
-  the survivor, so combined weight is preserved.
-- **Online vs batch?** Online = per-entry as each game ends (threshold prefilter → LLM,
-  keep/discard only); batch = offline whole-store sweep with clustering + merge.
+A few of the choices above are load-bearing; these are the considerations behind them.
+
+- **Why dedup at all.** Redundant memories crowd the retrieval slate and teach nothing new. The
+  retrieval-impact study showed that *conservative* dedup raises observation efficiency and
+  unique-lesson count without losing relevance at n=39 (`store_retrieval_impact/`); that payoff is the
+  reason the pass exists, and the "conservative, not aggressive" qualifier is the reason `bounded` is
+  the default mode rather than the higher-recall `connected`.
+- **Why scope by namespace (and, in v6, by gate).** Two entries can only be duplicates if they share
+  role, phase — and now the same `gate_key` bucket and pair-checks. Scoping keeps clusters small and
+  on-topic and bounds the blast radius of a wrong call: a bad merge can never cross roles, phases, or
+  incompatible game situations.
+- **Why cluster instead of comparing all pairs.** All-pairs is O(n²) LLM calls and won't fit in a
+  prompt. Clustering batches likely-duplicates into small groups so the model resolves a handful at a
+  time — *clustering decides what gets compared; the LLM decides what is actually a duplicate.*
+- **Why bias toward under-merging.** Over-merging is the expensive failure — it destroys a distinct
+  lesson with no easy recovery — so the safe direction is to leave a borderline pair separate. The
+  `bounded` size cap contains runaway clusters, and an invalid `survivor_key` fails safe (no deletion)
+  rather than guessing.
+- **Why collapsing preserves weight.** Summing the usage counters onto the survivor means consolidating
+  five entries into one keeps their combined reinforcement — a merge never silently demotes a
+  well-supported lesson to a single-observation one.
