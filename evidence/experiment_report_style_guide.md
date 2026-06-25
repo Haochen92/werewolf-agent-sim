@@ -12,12 +12,27 @@ Each report covers one experiment or feature segment of the project. Multiple re
 
 ## Document Types
 
-Not every report is a measured experiment. Three shapes recur — pick the one that fits and use its
-skeleton. The Core Principle above and the Tone rules below apply to all three.
+Not every report is a measured experiment. A few shapes recur — pick the one that fits and use its
+skeleton. The Core Principle above and the Tone rules below apply to all of them.
 
 - **Experiment report** (the default; full structure below). You ran variants and measured an
   outcome. Motivation → Design/Hypothesis → Iterations → Evaluation Setup → Results → Decision →
   Lessons → What's Next → Artifacts.
+- **Build-journey log** (the chronological `experiment_log.md`; the multi-phase superset of the
+  experiment report). You ran a *sequence* of designs, experiments, and builds toward one shipped
+  change, and the value is the **path** — what you tried, what got falsified, what you locked. The
+  Experiment report above is the single-experiment case; reach for this when there are many beats over
+  days or weeks. It is a **loop of section-types**, each with its own treatment (see *Discipline for
+  journey logs* below), bookended by an *orientation header* ("what this is" + the
+  chronological-supersession contract + companion-doc pointers) and a *sources footer*: *① Motivation*
+  (the gap — a problem in the current solution, an improvement, or something new — charitable to the
+  incumbent, ending on the root cause) → *② Design derivation* (the proposed design from first
+  principles, mechanics-first, alternatives-rejected, virtues stated by construction) → *③ Implement →
+  Verify → Decide* (the build-test-decide engine, which **repeats** — a pivot loops back to a fresh ②)
+  → *④ Limitations / future work* (criticality-ordered, freshness-dated). It is the journey genre's
+  fullest form — the inverse of the Reference doc, which distils the *same* workstream
+  destination-first. **Menu, not mandate:** a short log might be just ①②④. Exemplar:
+  `evidence/sequential_discussion/experiment_log.md` (its `report.md` is the paired reference doc).
 - **Decision / design record.** You made an architectural or methodological choice, not a
   measurement — there is no dataset or results table, and forcing one is filler. Skeleton: *the
   tension* (the gap or conflict) → *the principle / design* → *alternatives considered and rejected,
@@ -57,6 +72,36 @@ direction-vs-magnitude rules below, which apply to every type.
 - **Separate verdict from forensics.** Lead the case study with a 4-sentence outcome paragraph + a
   "skip by subhead" signpost, then the detail. One canonical doc — never fork a reader-friendly and a
   detailed version (they drift).
+
+### Discipline for journey logs (the per-archetype treatment a flat template flattens)
+
+A journey log is the loop above, but each archetype gets a *different* treatment — and those treatments,
+not the section order, are what keep a long log honest and readable. They erode first under a
+fill-in-the-blanks skeleton. (In addition to the provenance and direction-vs-magnitude rules below,
+which apply to every type.)
+
+- **Cross-cutting — chronological integrity, and one home per argument.** An earlier section must not
+  know a later section's result: show a falsified or revised design **in place** rather than editing it
+  away (the falsified beat is often the most instructive), and treat a `(§N)` forward-pointer as
+  *navigation*, not laundering. And argue each point **once** — later sections point back (`argued at
+  §6`) instead of re-deriving, the main source of bloat in a long log.
+- **① Motivation — be charitable to the incumbent.** Explain why the thing you're replacing was a
+  *defensible* choice before giving its failure mode and root cause; strawmanning the predecessor
+  cheapens the log. End on the precise root cause — it is the target everything downstream aims at.
+- **② Design — mechanics-first, and stated as a proposal.** Introduce what the design *is* (first
+  principles + mechanics) before what it buys; show the alternatives weighed and **rejected** (the
+  rejections are where judgment shows); state virtues **by construction, never as validated results** —
+  validation is ③'s job, and importing it here is laundering. Replacing a prior design ⇒ map its
+  weaknesses **1:1**.
+- **③ Implement → Verify → Decide — name the risk, lead with the problem.** *Implement:* present each
+  refinement **problem → fix** (the bold lead states what broke, then the mechanism — not the reverse),
+  with provenance inline (SHA / config / file). *Verify:* every probe **names the one risk it isolates**
+  ("*Catches:* …") → result → decision; a probe reported without the risk it tests is a fact-dump, and
+  **falsification is first-class** — a killed approach is shown, diagnosed, and its recovery traced,
+  never deleted. *Decide:* adopt / pivot / kill; a pivot re-enters ②.
+- **④ Limitations — the reference doc's gap discipline, reused.** Criticality-ordered (likelihood ×
+  impact × detectability, not impact-if-violated alone), freshness-dated, **mark-minor-don't-delete**
+  (the list is the audit trail).
 
 ---
 
@@ -181,9 +226,13 @@ convention requires of every record — see `CLAUDE.md → Eval Architecture` an
 - [ ] Are lessons stated as transferable principles with evidence?
 - [ ] Is impact framed honestly (metrics if available, capability unlocked if not)?
 - [ ] Would a reader who skips the tables still understand the narrative from the prose?
-- [ ] Did you pick the right document type (experiment / decision record / negative finding / reference doc)?
+- [ ] Did you pick the right document type (experiment / build-journey log / decision record / negative finding / reference doc)?
 - [ ] Is the provenance stamped (commit / fingerprint / config) so results are traceable?
 - [ ] Is N stated, and direction separated from magnitude where the sample is small?
 - [ ] *(Reference docs)* Does each framework-behavior claim carry a version pin (+ a test where load-bearing)?
 - [ ] *(Reference docs)* Is each gap freshness-dated and severity-rated (likelihood × impact × detectability), with minor gaps marked, not deleted?
 - [ ] *(Reference docs)* Is the verdict separated from the forensics (skim layer before depth layer)?
+- [ ] *(Journey logs)* Does no earlier section depend on a later result — falsified designs shown in place, `(§N)` used as navigation only?
+- [ ] *(Journey logs)* Does each refinement/fix lead with the problem, then the mechanism (not fix-first)?
+- [ ] *(Journey logs)* Does each design state its mechanics before its benefits, and each experiment name the risk it isolates?
+- [ ] *(Journey logs)* Is each argument made in one place and pointed back to elsewhere (no cross-section re-derivation)?
