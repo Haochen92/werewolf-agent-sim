@@ -175,7 +175,7 @@ Known gaps, in rough priority order; none block Phase B/C:
    Per-generation thinking capture would need callback surgery — not worth it.
 4. **Serving-stack drift is unobservable.** Even a pinned GA ID can shift behavior when Google
    updates the serving stack (same mechanism that invalidates caches — see
-   `evidence/caching/cost_variance_claims_analysis.md`). Uncontrollable; `started_at` timestamps
+   `evidence/caching/report.md`). Uncontrollable; `started_at` timestamps
    make temporal confounds at least diagnosable. Operational rule: A/B arms run interleaved, not
    weeks apart.
 5. **Dirty-tree runs are stamped but not blocked.** `git_dirty: true` + `prompt_bundle_hash` tell
