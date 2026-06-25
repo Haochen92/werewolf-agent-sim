@@ -19,6 +19,9 @@ this gives all the load-bearing detail. The destination (how online dedup runs t
   borderline cases.
 - **prompt versions** v1→v11b are **per-extraction prompt** versions (not store versions, not the
   batch prompt). Replays run a frozen case set through a given (model × prompt-version).
+- **the model roster** (it recurs in every table): **baseline** = `gemini-2.5-flash` (the model from
+  the original 30-game batch); **production** = **flash-lite** = `gemini-3.1-flash-lite`; **strong
+  comparison** = **3.5-flash** = `gemini-3.5-flash`; **rewrite judge** = `gemini-3.1-pro-preview`.
 
 **Reading contract.** Roughly chronological. Prompt versions are shown **as they were tried** —
 including the several that *regressed* — because the back-and-forth is the lesson, and twice the
@@ -121,7 +124,8 @@ These three became the test cases for every subsequent prompt.
 
 **v2** rebuilt the observation prompt as a **two-stage decision test** (Stage 1: lesson identity →
 D vs not-D; Stage 2: signal novelty → M vs K) with a **calibration cascade** (doubt → D over M, M over
-K) and obs_count gravity. (Three independent drafts converged on the structure; the merged draft that
+K) and *obs_count gravity* — a high-reinforcement existing entry raises the bar to merge into it.
+(Three independent drafts converged on the structure; the merged draft that
 shipped is in [drafts/](drafts/observation_prompt_draft_v2_merged.md).)
 
 Replayed across five models, v2 **regressed**: the production model (flash-lite) fell **78% → 60%**.
@@ -140,8 +144,8 @@ independently refused to merge the same 4–5 cases. Uniform cross-model failure
 | 19, 20 | M → M | the only true merges — a real tactic variant enriching a pattern |
 
 Four of six MERGE labels were wrong. Re-scored against corrected labels, **3.5-flash v2 rose 74% → 80%**
-(its "failures" were correct) while the baseline *dropped* 78% → 72%. MERGE is genuinely rare — **2/50
-(4%)**.
+(its "failures" were correct) while the baseline *dropped* 78% → 72%. MERGE is now rare — **2 of the 50
+(4%)** *at this point* (round 2 revises it back up — see Phase 2).
 
 **v3–v5** kept iterating on structure and all came back *worse* than v2: v3 (softened calibration) 62%
 flash-lite; v4 (Stage 1 gates KEEP instead of D) cratered to **40%** with 25 false merges; v5 (drop M
@@ -150,8 +154,8 @@ calibration, add "MERGE is rarest" framing) 56.9% flash-lite / 40% 3.5-flash. Th
 in v2 the model could skip straight to DISCARD; in v5 every non-KEEP case passes through a D/M choice,
 handing the model more chances to wrongly merge.
 
-*(Mid-phase the eval set expanded 50 → 65 cases; the 15 new cases were cleaner — 10 D, 5 K, 0 M —
-confirming MERGE's rarity. Working golden distribution from here: D=30, M=5, K=29, M/K=1.)*
+*(Mid-phase the eval set expanded 50 → 65 cases; the 15 new cases were cleaner — 10 D, 5 K, 0 M.
+Distribution going into Phase 2: **D=31, M=2, K=32**.)*
 
 ### Phase 2 (v6): a directional calibration cascade
 
@@ -175,7 +179,15 @@ reviewed): **10 labels changed**, mostly D→K, applying the **retrieval test** 
 — *would a search query matching situation A also retrieve situation B?* If not, they must coexist.
 That review crystallised six labelling principles (retrieval test, confidence posture, agent exposure,
 conflicting strategies → KEEP, success-vs-failure → KEEP, one-off-vs-persistent → MERGE) that fed the
-next prompts.
+next prompts. By the end of this round the working set was **D=30, M=5, K=29, M/K=1** — MERGE back up
+to ~8% from its round-1 low of 2, still rare.
+
+*Tracing the MERGE count (a diligent reader will): 6 → 2 (round 1 fixes 4 mislabels) → 2 (expansion
+adds none) → 5 (round 2 reclassifies a few D/K cases as genuine tactic-variant merges) → 0 (v11
+relabels all to K). Anchor on the frozen label file
+`evaluation/frozen_eval_sets/dedup_v2_golden_labels.json` — today **D=30 / K=34 / M-K=1**, which the v11
+"5 M→K" relabel forces back to the D=30 / M=5 / K=29 / M-K=1 above. The round-2 per-case working table
+under-records the move back into MERGE, so the **file counts are authoritative, not the table.***
 
 ### Phase 3 (v7–v8): from cascade to targeted
 
@@ -194,7 +206,8 @@ ratchet:
 | flash-lite | 69.2% → 69.2% | 77% → **83%** | 55% → 52% |
 | **3.5-flash** | 75.4% → **80.0%** | 60% → **77%** | 93% → 90% |
 
-**3.5-flash v8 = 80%** is the best two-way (D/M/K) configuration. The lesson: **targeted corrections beat
+**3.5-flash v8 = 80%** is the best **three-label (D/M/K)** configuration — the best while MERGE still
+existed. The lesson: **targeted corrections beat
 directional cascades** — a criterion ("this difference isn't enough for M") doesn't ratchet the way a
 bias ("prefer D") does.
 
@@ -229,12 +242,14 @@ production prompt going into the endgame.
 
 - **v10 — remove discard-with-rewrite from strategy.** Models rewrote both fields 60–97% of the time
   even when value was in one detail, and the "good" rewrites were mostly mislabelled discards. Removing
-  it forced cleaner D/K boundaries; flash-lite strategy **84% → 96%** (Vertex).
+  it forced cleaner D/K boundaries; flash-lite strategy **84% → 96%** on Vertex — though **overall held at
+73.8%** (observations fell to 60% on the backend switch), and 3.5-flash landed at the same 73.8% overall:
+the shared pre-v11 baseline below.
 - **v11 — remove MERGE from observation dedup (the climax).** MERGE was rare (5/65), both models
   over-fired it (flash-lite predicted 15, 3.5-flash 8), and false merges produced the worst
   rewrite-quality scores and corrupted live entries. Dropping to **D/K only** (5 M labels relabelled K,
-  golden D=30/K=34) lifted both models — flash-lite **73.8% → 80.0%** (obs 60% → 70%), 3.5-flash
-  **73.8% → 83.1%** (obs 70% → 82.5%). The two models then show opposite residual errors: flash-lite
+  golden D=30/K=34) lifted both models from their coincident **73.8% Vertex-v10 baseline** — flash-lite →
+  **80.0%** (obs 60% → 70%), 3.5-flash → **83.1%** (obs 70% → 82.5%). The two models then show opposite residual errors: flash-lite
   **over-discards** (9 K→D), 3.5-flash **under-discards** (all errors D→K, 100% K precision).
 - **v11b — strengthen the three-field match.** "DISCARD requires all three fields (situation,
   approach, outcome) to agree; a different tactic *category* or a different outcome → KEEP." This
@@ -244,7 +259,7 @@ production prompt going into the endgame.
 
 - **Cost / latency — why flash-lite is the production model.** flash-lite vs 3.5-flash is ~6× cheaper
   per token but ~**3×** per *case* (flash-lite's thinking tokens narrow the gap); ~7× faster. Accuracy
-  trails (flash-lite 69.2% vs 3.5-flash 80% two-way; the decisive gap is **K recall 52% vs 90%**, i.e.
+  trails (flash-lite 69.2% vs 3.5-flash 80%, the v8 D/M/K figures; the decisive gap is **K recall 52% vs 90%**, i.e.
   over-discard). We kept **flash-lite** anyway: the cost/latency matter at scale, flash-lite improved
   with the v9d/v11b work, and the offline **batch dedup is a safety net** for both over-discard (rare,
   impactful) and over-keep (common, recoverable).
