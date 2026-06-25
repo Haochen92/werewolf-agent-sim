@@ -842,8 +842,8 @@ Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-doc
 | `evidence/dedup/per_extraction/tricky_cases.md` | 7 mislabeled cases with full text and prompt improvement suggestions |
 | `evidence/dedup/per_extraction/prompt_history/dedup_prompt_baseline.py` | Frozen baseline prompts (pre-revision) |
 | `evidence/dedup/per_extraction/prompt_history/standards_baseline.py` | Frozen situation standards and epistemic status rule |
-| `evidence/dedup/per_extraction/observation_prompt_draft_v2.md` | Draft 1: narrative style with worked examples |
-| `evidence/dedup/per_extraction/observation_prompt_draft_v2_merged.md` | Draft 2: merged structural version |
+| `evidence/dedup/per_extraction/drafts/observation_prompt_draft_v2.md` | Draft 1: narrative style with worked examples |
+| `evidence/dedup/per_extraction/drafts/observation_prompt_draft_v2_merged.md` | Draft 2 (merged): the version that shipped into `Agents/prompts/dedup.py` |
 | `eval_sets/dedup_v2_replay_flash_lite_prompt_v2.jsonl` | Replay: flash-lite, prompt v2 (50 cases) |
 | `eval_sets/dedup_v2_replay_35flash_prompt_v2.jsonl` | Replay: 3.5-flash, prompt v2 (50 cases) |
 | `eval_sets/dedup_v2_replay_25flash_prompt_v2.jsonl` | Replay: 2.5-flash, prompt v2 (50 cases) |
