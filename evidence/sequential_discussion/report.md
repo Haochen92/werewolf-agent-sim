@@ -6,9 +6,10 @@ shipped design (Phase A #1) and the evidence that it works. **Companion docs:** 
 journey is in [`experiment_log.md`](experiment_log.md); the acceptance study is
 [`quality_gate/`](quality_gate/experiment_log.md) (the concurrent-vs-sequential A/B).
 
-**Distilled** 2026-06-24 from the workstream logs (2026-05-31 – 06-05) and **verified against the repo at
-that date**. Framework-behavior claims below are pinned to LangGraph as used in this repo (`.invoke()`
-only; no `.stream()`/`interrupt()`/checkpointer at the time of writing).
+**Distilled** 2026-06-24 from the workstream logs (2026-05-31 – 06-05); **re-verified against the repo
+2026-06-25** (file paths, config values, and the open gaps all re-checked against the current code).
+Framework-behavior claims below are pinned to LangGraph as used in this repo (`.invoke()` only; no
+`.stream()`/`interrupt()`/checkpointer at the time of writing).
 
 **Orientation — one cycle of the loop:**
 
@@ -65,9 +66,12 @@ Concretely, the sequential design guarantees:
   resume-safe (recomputed from the transcript, never from mutable side-state).
 - **Ping-pong is bounded.** A two-agent feud is capped (per-pair K, with a cooldown that lets a genuinely
   re-surfacing topic back in) so it cannot starve the rest of the table.
-- **Blatant low-information echo is gated.** On a quiet turn an agent can be handed the floor with nothing
-  new to say; a disinterested novelty judge converts the worst of that into a silent pass. It gates
-  *blatant* echo, not every restatement — the judge is deliberately lenient (§5).
+- **Redundancy is handled at two levels — one structural, one best-effort.** The concurrent *blind-round*
+  duplication (N agents reacting to one frozen snapshot, blind to each other) is **eliminated by
+  construction**: every agent reads the running transcript before speaking, so same-round parallel
+  monologues cannot occur. *Semantic* echo on quiet proactive turns (the same point reworded) is only
+  **soft-reduced** — a disinterested novelty judge converts the worst of it into a silent pass, but it is
+  deliberately lenient, un-ablated, and reduced **by design rather than quantitatively verified** (§5).
 - **The day ends on its own.** Termination is structural — either everyone with something to say has said
   it (a run of passes) or a hard utterance cap fires as a backstop.
 
@@ -111,8 +115,9 @@ nothing fresh sets the flag, which appends a hidden pass marker rather than a me
 
 **The novelty gate (proactive only).** Because a proactive speaker proves no novelty, a **disinterested
 external LLM judge** runs *post-generation* on proactive turns and converts a low-information echo into a
-pass. The day's first `opener_floor` (= 3) real utterances bypass the judge so every day gets a
-substantive opening before gating can kick in. (This judge is the *re-introduction* of novelty detection
+pass. It **owns only silencing — never priority (recency owns that) or termination (deterministic)**, and a
+reactive answer is never gated. The day's first `opener_floor` (= 3) real utterances bypass the judge so
+every day gets a substantive opening before gating can kick in. (This judge is the *re-introduction* of novelty detection
 in the one form that survives — see §4.)
 
 **Stateless by construction.** Every cycle recomputes the whole picture (recency + open obligations) from
@@ -188,7 +193,9 @@ proactive turns dogpiled — agents handed the floor with no obligation echoed w
 agents narrated it themselves: *"stuck in a cycle of agreeing… which itself is a trap"*). The fix honored
 Smoke 4's actual lesson: re-add novelty detection as a **disinterested external judge** on proactive turns
 (the Smoke-2/3 form that *did* work), plus an `opener_floor` so it can't collapse a day's opening. Novelty
-came back in exactly the one form the original experiment had shown would survive.
+came back in exactly the one form the original experiment had shown would survive — and in a single,
+narrowed role: **silencing a proactive echo, never again touching priority (recency owns that) or
+termination (deterministic)**.
 
 **The acceptance test (the gate).** The whole concurrent→sequential change was then ratified by an A/B
 ([`quality_gate/`](quality_gate/experiment_log.md)): sequential clears the bar. Echo rate **0.00** (sequential, both
@@ -202,7 +209,7 @@ and wins — but it reads as parallel monologues where sequential reads as a con
 ## 5. Known gaps
 
 Criticality = likelihood × impact × detectability (not impact-if-violated alone). Freshness-checked
-against the repo **2026-06-24**; all open unless noted. Minor gaps are kept, not deleted — the list is the
+against the repo **2026-06-25**; all open unless noted. Minor gaps are kept, not deleted — the list is the
 audit trail.
 
 - **[medium] Human speech-act extraction is not built.** The stateless scheduler assumes every turn's
@@ -215,10 +222,14 @@ audit trail.
   re-selected repeatedly (observed live: one agent ×7, with a verbatim re-generation). Mitigated by the
   A+B tuning (a `mention` discharges; a firing-reason brief anchors the turn) — clean across 4 live games
   since — but **not eliminated**; the root fix is the same external extraction as above.
-- **[low–medium] Proactive echo residual / judge leniency.** The novelty judge is deliberately lenient
-  ("lean novel when uncertain") — it gates blatant echo but keeps "agreement + minor reframe." A cheap
-  embedding pre-filter (cosine vs transcript, 0 extra LLM calls) is the deferred next step if logs show it
-  still bites.
+- **[low–medium] Proactive echo is reduced, not eliminated — duplication is still observable.** The
+  novelty judge is a *probabilistic LLM filter, not a structural guard*, and it is deliberately lenient
+  ("lean novel when uncertain"): it converts the *worst* low-information echo into a pass but lets
+  "agreement + minor reframe" through. So despite the guards, a reader watching live transcripts will still
+  find some near-duplicate turns — the gate is **best-effort, not failproof**. (Only the *blind-round*
+  redundancy of §1 is eliminated by construction; *semantic* echo is soft-reduced and will never hit zero
+  with a lenient judge.) A cheap embedding pre-filter (cosine vs transcript, 0 extra LLM calls) is the
+  deferred next step if logs show it still bites.
 - **[low] Scheduler tunables were never swept.** `per_pair_reengagement_cap`, `proactive_budget`,
   `opener_floor`, `reengagement_cooldown_multiplier` were all hand-set during tuning; a grid sweep is
   deferred. (Concrete evidence this matters: `reengagement_cooldown_multiplier` shipped at `3` against a
