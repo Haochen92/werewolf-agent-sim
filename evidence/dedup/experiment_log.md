@@ -76,14 +76,15 @@ simple, no model in the loop.
 
 ## 2 · Why cosine alone is too weak — the bi-encoder ceiling
 
-It didn't hold up: a bi-encoder's cosine similarity is a poor separator of *duplicate* from *distinct*.
-Near-duplicates and genuinely-different lessons sit in almost the same embedding neighbourhood — the
-gap between "same lesson" and "different lesson" is extremely narrow, because embeddings encode **topic,
-not stance**. Two strategy points about the same situation that recommend *opposite* actions embed
-~95% alike. So a single similarity cutoff can't be set without either merging distinct lessons or
-keeping duplicates. (This is documented rigorously later, when the embedding **pre-filter** was
-calibrated — §5 — but the intuition is what motivated bringing in an LLM here.) The conclusion: cosine
-is a good *first sieve*, not a *decider*.
+It didn't hold up — not because cosine is useless, but because it fails *exactly in the zone that
+matters*. Near-duplicates and genuinely-different lessons sit in almost the same embedding neighbourhood:
+the gap between "same lesson" and "different lesson" is extremely narrow, because embeddings encode
+**topic, not stance**. Two strategy points about the same situation that recommend *opposite* actions
+embed ~95% alike. So a *single* similarity cutoff can't be set without either merging distinct lessons or
+keeping duplicates. Where the two *don't* overlap — near-identical text, or plainly different topics —
+cosine **is** reliable, and §5's pre-filter later harvests exactly those extremes (~15-30% of cases);
+it's the broad ambiguous **middle** that's irreducible. The conclusion: cosine is a good first sieve and
+can auto-decide the clear extremes, but it can't be the **sole decider** — the middle needs the LLM.
 
 ## 3 · LLM per-extraction dedup — and the vocabulary collapse to D/K
 
