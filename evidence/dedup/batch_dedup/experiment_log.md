@@ -21,14 +21,17 @@ the convergence problem. Eval JSONs are in [data/](data/), frozen prompts in
 
 1. **Why a second pass** — online dedup is greedy, top-N-bounded, and never re-examines old pairs; batch
    re-clusters the whole store and can MERGE.
-2. **Port the criteria** — the cluster prompts never had the per-extraction criteria; v0 (untuned) → v1
+2. **Form the clusters** — no single similarity threshold cuts cleanly; connected/union-find blobs into
+   one giant cluster, so the pass runs **bounded** (greedy, non-transitive, capped at 15) — the mode the
+   live v7 loop actually sets.
+3. **Port the criteria** — the cluster prompts never had the per-extraction criteria; v0 (untuned) → v1
    (ported) → v2 (indexed keys + anti-over-merge) → v3 (drop the KEEP-bias note, cap clusters at 15).
-3. **Pick the model** — 3.5-flash is the best single model; flash-lite over-merges *and* can't write
+4. **Pick the model** — 3.5-flash is the best single model; flash-lite over-merges *and* can't write
    merges; 2.5-pro writes good merges but is slow and fabricates → **two-pass** (flash-lite triage →
    2.5-pro verify) wins at **89.2%**.
-4. **Merge quality** — only a pro model preserves all three merged fields; weak models silently drop
+5. **Merge quality** — only a pro model preserves all three merged fields; weak models silently drop
    `merged_approach`/`merged_outcome` (the reason MERGE is pro-only).
-5. **The idempotency alarm** — a second full run removed another ~10%, so the pass isn't idempotent →
+6. **The idempotency alarm** — a second full run removed another ~10%, so the pass isn't idempotent →
    incremental mode + the freeze-old guard.
 
 ---
@@ -49,6 +52,55 @@ been updated** with the decision criteria refined during per-extraction tuning (
 operations, not one D/K call, and observations keep **MERGE** here (a full cluster lets a strong model
 consolidate tactic variants with counts). So the work below ports those criteria, then tunes for the
 cluster setting.
+
+## Forming the clusters
+
+Before any prompt, the pass must decide *which entries are compared together* — the first hard problem,
+because **clustering decides what the LLM ever sees as a candidate group** (the prompt only resolves
+*within* a cluster). The trouble is that the embedding space is too smooth to cut cleanly — the same
+topic-not-stance problem as the overview's [§2](../experiment_log.md) — so no single similarity
+threshold separates near-duplicates from distinct lessons, and the *method* matters as much as the
+threshold. Three modes were built; each trades recall against blast radius:
+
+- **`connected` — similarity graph / union-find.** Draw an edge wherever two situations embed above the
+  threshold, then take connected components (BFS). *Pro:* highest recall — catches a duplicate however
+  it's worded. *Con:* **transitive** — A~B and B~C pull `{A,B,C}` together even if A≁C, so any threshold
+  low enough to catch real duplicates collapses the whole namespace into **one giant cluster**. This is
+  the union-find blob.
+- **`agglomerative` — hierarchical.** Re-embed every situation, build the full cosine matrix, run scipy
+  linkage, cut at `1 − threshold`, chunk by the size cap. *Pro:* most principled — a global view of the
+  distance structure. *Con:* heavy (re-embeds everything, needs scipy), and un-gated it has the same
+  global-blob tendency as `connected`.
+- **`bounded` — greedy, capped (the one that ships).** Take the highest-value seed (the most-reinforced
+  entry), pull its top neighbours above threshold, **cap the cluster at `max_cluster_size`**, mark them
+  consumed, repeat. *Pro:* non-transitive and bounded — each item lands in exactly one small cluster, so
+  no drift and no blob; conservative and controllable. *Con:* a duplicate can be missed if it falls
+  outside the seed's capped neighbourhood (the same top-N-bound limit as online — a later full-store
+  refresh can still catch it).
+
+**The decision: `bounded` — and it's the live method, not just a code default.** Every real run config
+sets it explicitly: the v7 consolidation loop
+([consolidate.py](../../../evaluation/src/loop/consolidate.py): `cluster_mode="bounded",
+similarity_threshold=0.70, max_cluster_size=15`), the de-luck A/B, and the cell-SP synthesis — and a
+produced store records it (`memory_stores/v6_1_sp_cluster/manifest_sp.json`: `"cluster_mode":
+"bounded"`). The rationale is the retrieval-impact finding that **conservative dedup beats aggressive**
+(17% reduction won on relevance and efficiency; 39% *lost* observation relevance —
+[store_retrieval_impact](../store_retrieval_impact/experiment_log.md)): `bounded` is the mode that
+*mechanically* enforces that conservatism, so it was the natural pick. `connected` and `agglomerative`
+stay available behind the flag for one-off full-store consolidation but are not used in the loop.
+
+**The size cap was tuned 8 → 25 → 15.** It started at 8, was raised to 25, then cut to **15** when the
+eval showed accuracy falls off a cliff above ~15 entries (26–74% vs 80–100% for smaller clusters).
+
+**The blob returned once — in the *global* `agglomerative` path — and forced the gate.** A system-wide
+run that clustered a whole namespace un-gated over-merged across unrelated game states (the commit calls
+it "the global agglomerative blob-merge"); the fix was to **gate-partition the clustering** (2026-06-16)
+so entries in different criticality / verdict / information-landscape / exposure buckets can never enter
+the same cluster. That is the same v6 gate the overview's [§9](../experiment_log.md) describes, applied
+on the clustering side — clustering now runs *inside* a gate partition.
+
+*Point-in-time: `bounded` is the choice as of this log, but the clustering approach is under active
+revision in the v7 loop — this section will be updated when that work lands.*
 
 ## Dataset
 
