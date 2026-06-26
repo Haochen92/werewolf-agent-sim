@@ -34,6 +34,23 @@ the convergence problem. Eval JSONs are in [data/](data/), frozen prompts in
 6. **The idempotency alarm** — a second full run removed another ~10%, so the pass isn't idempotent →
    incremental mode + the freeze-old guard.
 
+**Bottom line (what we run).** Periodic-maintenance dedup runs **two-pass — flash-lite triage → 2.5-pro
+verify — with the v3 default prompt** (89.2%, the best-accuracy config; the lite prompt is the speed
+option for more frequent runs). The **gate and bounded clustering already run live** (online dedup + the
+v7 loop); the offline two-pass pass itself is **built and validated but off by default — one flag**
+(`IncrementalDedupConfig`). The one unclosed risk before flipping it on is merge fabrication (below).
+
+**Model names, once.** *flash / pro / lite* are capability **tiers**; the numbers (`3.5`, `2.5`, `3.1`)
+are **generations** — so the newer `gemini-3.5-flash` can and does beat the older `gemini-2.5-pro` here.
+Not a typo.
+
+**Why this layer is hard — one fault line.** Almost every problem below is a face of a single fact:
+**embedding similarity ≠ situation identity.** Cosine groups by *topic*, but topic-similar entries can
+teach *different* lessons — which is why a similarity graph blobs into one cluster (§Forming the
+clusters), why flash-lite over-merges (§Results), and why a second full sweep isn't idempotent
+(re-clustering a changed store re-litigates settled entries — §Idempotency Test). Three problems, one
+root cause.
+
 ---
 
 ## Why a second (offline) pass
@@ -179,7 +196,7 @@ Cluster 25 (strategy, 11 entries) is consistently hard — 64% for both models.
 3. **Calibration bias should be neutral** — "when in doubt KEEP" hurt 3.5-flash; "when in doubt DISCARD" only applies to strategy. The right bias depends on downstream retrieval quality and agent strategy application, not on the prompt.
 4. **Cluster size limit of 15 is well-supported** — all models degrade sharply above 15 entries.
 5. **flash-lite is not viable as a standalone model** for batch dedup — the lite prompt fixes over-merge (85.6% accuracy) but flash-lite has the same merge rewrite limitation as 3.5-flash: it drops `merged_approach` and `merged_outcome` fields, outputting only `merged_situation`. Only 2.5-pro produces complete merge rewrites (see Merge Rewrite Quality). This is why two-pass is needed: flash-lite triages, 2.5-pro writes the merges.
-6. **Two-pass pipeline (flash-lite triage → 2.5-pro verification) is the recommended production approach** — combines flash-lite's speed and KEEP/DISCARD precision with 2.5-pro's merge quality, reducing 2.5-pro API volume by ~69% (see Time and Cost Analysis). **3.5-flash remains the best single-model option** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
+6. **Two-pass pipeline (flash-lite triage → 2.5-pro verification) is the recommended production approach** — combines flash-lite's speed and KEEP/DISCARD precision with 2.5-pro's merge quality, cutting 2.5-pro call volume by ~69% (see *Time and throughput*). **3.5-flash remains the best single-model option** — fastest, most accurate, no over-merge tendency. 2.5-pro is close but 50% slower with no accuracy advantage.
 
 ## Merge Rewrite Quality
 
@@ -219,7 +236,19 @@ The observation prompt at ~7383 chars is at 3.5-flash's structured output capaci
 
 **2.5-pro writes high-quality merges** with good information preservation (4.0/5) but fabricates 33% of the time — introducing game context not present in source entries.
 
-## Time and Cost Analysis
+**Open risk — nothing catches the fabrication before it lands.** MERGE is the one **irreversible,
+store-mutating** operation in the pipeline (a DISCARD just drops a near-identical copy; a bad MERGE
+rewrites the survivor with invented context), and 2.5-pro — the *only* model that preserves all three
+fields, so the one we must use to write merges — fabricates on ~1/3 of them. The apply layer
+(`operations.py`) validates keys and merges metadata but does **no content check** against the source
+entries, so a fabricated merge would land. Today's safeguards are only partial: the pass is **dry-run
+unless `--apply`**, MERGE is the **rarest** operation, and bounded clustering keeps merge volume low. The
+fix is half-built — the `fabrication_detected` judge from this very eval
+(`evaluation/src/experiments/batch_dedup_merge_eval.py`) is the obvious pre-apply gate, just not wired
+into the apply path yet. **This is the single most important open risk in the batch pipeline**, and the
+one to close before turning the offline pass on by default.
+
+## Time and throughput (the win is latency, not dollars)
 
 ### Per-model performance on 111-key eval set (11 clusters, v3 prompts)
 
@@ -229,7 +258,7 @@ The observation prompt at ~7383 chars is at 3.5-flash's structured output capaci
 | gemini-3.5-flash | 86.5% | 342s | 31.1s | 2.4x slower |
 | gemini-2.5-pro | 83.8% | 513s | 46.7s | 3.5x slower |
 
-At production scale (v4 store: 522 items, ~50 clusters), a full 2.5-pro batch dedup run takes 30-40 minutes. This makes it a periodic maintenance operation, not something to run after every game. Cost per run is comparable across models (2.5-pro and 3.5-flash have similar per-token pricing), but the time cost is significant.
+At production scale (v4 store: 522 items, ~50 clusters), a full 2.5-pro batch dedup run takes 30-40 minutes — which is why it's a periodic-maintenance operation, not something to run after every game. **Per-token pricing is comparable across these models, so the axis that matters here is wall-clock latency and 2.5-pro throughput/load, not dollars.**
 
 ### Two-pass pipeline: flash-lite triage + 2.5-pro verification
 
@@ -258,14 +287,14 @@ Flash-lite's dominant error mode is over-merging: it flags entries as MERGE that
 1. **Pass 1 (flash-lite, medium thinking):** Runs on all clusters. KEEP and DISCARD decisions are trusted. All MERGE decisions are escalated to pass 2.
 2. **Pass 2 (2.5-pro):** Only processes the keys flash-lite flagged as MERGE (~30% of total). Re-decides KEEP/MERGE/DISCARD and writes merge text where appropriate.
 
-**Projected cost/time savings on 111-key eval set:**
+**Projected time/throughput savings on 111-key eval set:**
 
 - Pass 1: 11 clusters at 13.2s/cluster = ~145s (111 keys)
 - Pass 2: ~34 MERGE-flagged keys across fewer, smaller clusters at 46.7s/cluster ≈ ~140s
 - Total: ~285s vs 513s for pure 2.5-pro (44% time reduction)
 - 2.5-pro API volume: ~34 keys vs 111 keys (69% reduction)
 
-At production scale (522 items), the savings compound because flash-lite processes the full store cheaply and only the ambiguous MERGE cases reach 2.5-pro.
+At production scale (522 items), the savings compound because flash-lite processes the full store quickly and only the ambiguous MERGE cases reach the slow 2.5-pro pass.
 
 **For strategy points** (KEEP/DISCARD only, no MERGE operation), flash-lite may be sufficient on its own — the over-merge problem doesn't apply. This needs separate validation.
 
@@ -322,7 +351,7 @@ No dominant error mode. The 4 KEEP→MERGE errors come from 2.5-pro over-merging
 
 The two-pass produces comparable store sizes to 3.5-flash single-pass (16% vs 17% reduction), with the advantage of proper merge rewrite quality from 2.5-pro.
 
-### Recommendation
+### Recommendation (preliminary — see *Resolved recommendation* below)
 
 **Two-pass pipeline (flash-lite triage → 2.5-pro verification)** is the recommended production approach:
 - Best accuracy (89.2%) and fastest accurate option (311s on eval set)
@@ -399,8 +428,9 @@ Initial eval had a bug: `--prompt-variant` wasn't passed to the triage call in `
 
 The lite prompt halved escalation (25% → 12%) and reduced total time by 27% (311s → 227s), but accuracy dropped 4.5pp (89.2% → 84.7%). The cause: the lite prompt's conservatism prevents legitimate MERGEs from reaching 2.5-pro (7 MERGE→KEEP errors vs 3 with default). The v3 default prompt's "over-escalation" is actually beneficial — 2.5-pro catches false MERGEs while confirming real ones.
 
-### Recommendation (updated)
+### Resolved recommendation
 
+This is the settled verdict (it supersedes the preliminary one above, after the harness-bug fix).
 **Two-pass pipeline remains the recommended approach.** The prompt variant choice is a speed/accuracy tradeoff:
 
 - **Best accuracy: two-pass + v3 default prompt** (89.2%, 311s, 25% escalation). Over-escalation is a feature — all real MERGEs reach 2.5-pro for verification. Use this for periodic maintenance dedup where quality matters most.
@@ -480,19 +510,24 @@ This gives two complementary modes:
 
 ## Current live state (2026-06-25)
 
-Batch dedup is **built and wired but dormant by default** — `IncrementalDedupConfig.enabled=False`
-(`Agents/memory/persistence/config.py:51`), so it does not run post-game unless turned on; the
-system-wide refresh (#3) is manual-only. What shipped from this log:
+**This isn't shelved — the parts that earned their keep run today.** The deterministic **gate**
+(`gate_enabled=True`) and **bounded clustering** are live: the gate on every online dedup decision,
+bounded clustering in the v7 consolidation loop (`evaluation/src/loop/consolidate.py`). What's off is the
+**offline two-pass whole-store sweep** — built, wired, and validated, but **one flag** from on
+(`IncrementalDedupConfig.enabled=False`, `Agents/memory/persistence/config.py:51`; the system-wide
+refresh is manual-only). What shipped from this log:
 
-- **Bounded clustering, gate-partitioned.** The default cluster mode is the conservative `bounded`
+- **Bounded clustering, gate-partitioned.** The cluster mode is the conservative `bounded`
   (the retrieval-impact finding that aggressive merging hurts —
-  [../store_retrieval_impact/experiment_log.md](../store_retrieval_impact/experiment_log.md)), and
-  clustering now runs **inside** a deterministic gate partition (`Agents/memory/dedup_gate.py`, v6 —
-  postdates this log), not just the `(memory_kind, role, action_phase)` namespace.
-- **Two-pass is the recommended config** (flash-lite triage → 2.5-pro verify; `two_pass=True` within
-  the incremental config); MERGE/rewrite stays a batch-only, pro-model operation.
+  [../store_retrieval_impact/experiment_log.md](../store_retrieval_impact/experiment_log.md)), running
+  **inside** a deterministic gate partition (`Agents/memory/dedup_gate.py`, v6 — postdates this log),
+  not just the `(memory_kind, role, action_phase)` namespace.
+- **Two-pass is the resolved config** (flash-lite triage → 2.5-pro verify, v3 default prompt;
+  `two_pass=True` within the incremental config); MERGE/rewrite stays a batch-only, pro-model operation.
 - **The idempotency alarm was right.** The "second run removes another ~10%" finding here led directly
   to incremental mode and its **freeze-old guard** — now built and live (it was "not yet built" at the
   time of [../incremental_convergence.md](../incremental_convergence.md); see that doc's status banner).
+- **Open before flipping the offline pass on: merge fabrication is unguarded** (see *Merge Rewrite
+  Quality*) — the one risk to close first.
 
 Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
