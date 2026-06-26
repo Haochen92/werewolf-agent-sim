@@ -8,12 +8,17 @@ this gives all the load-bearing detail. The destination (how online dedup runs t
 [../report.md](../report.md).
 
 **Terms used throughout (anchored once).**
+
 - **observation** vs **strategy point** — an observation is a *situation → approach → outcome*
   lesson-by-example; a strategy point is a reusable *situation → action* rule. They dedup differently,
-  and observations carry an extra action (MERGE) that strategy points never do.
+  and observations carry an extra dedup decision (MERGE) that strategy points never do.
 - **decision schemes** — the dataset was first recorded in a legacy `A/B/C/D`
   (DISCARD / REPLACE / DIFFERENTIATE / KEEP) scheme; this work uses **D / M / K**
-  (DISCARD / MERGE / KEEP), and the endgame collapses it to **D / K**.
+  (DISCARD / MERGE / KEEP), and the endgame collapses it to **D / K**. The collapse has one cause:
+  REPLACE, DIFFERENTIATE, and MERGE all ask the model to **rewrite** an entry, and weak online models
+  can't rewrite reliably — so each was dropped in turn (REPLACE/DIFFERENTIATE early; MERGE, which was
+  *born in this online pass* on 2026-05-23, removed at v11). Rewriting now lives only in the pro-model
+  batch pass.
 - **accuracy** — unless stated otherwise, *strict* accuracy = exact match against the human golden
   label. *Lenient* additionally accepts the `also_acceptable` second label on the few genuinely
   borderline cases.
@@ -45,6 +50,49 @@ plus an endgame, and the headline is that *directional* calibration never worked
 
 ---
 
+## What counts as a duplicate (the decision basis)
+
+*Stated up front because it's the target the whole chapter tunes toward; the journey (①–④) is how its
+edges got pinned down, and §④ reflects on what stayed open.*
+
+Recall the two memory types and their constituents: an **observation** is a *situation → approach →
+outcome* lesson-by-example; a **strategy point** is a *situation → action* rule. Dedup decides, for a new
+entry against its neighbours, whether it is a duplicate (DISCARD) or a distinct lesson (KEEP).
+
+**The trigger is `situation`, because it is the only embedded field.** The store indexes
+`fields=["situation"]` ([store.py:29](../../../Agents/memory/store.py#L29)), so situation is the
+semantic-retrieval key; the live prompts make the rule operational as *"would a search query matching A
+also retrieve B?"* Different situation ⇒ the two can't co-retrieve ⇒ **not duplicates by default**, even
+when the underlying lesson rhymes. On that trigger the two types diverge:
+
+- **Observations** — DISCARD requires **all three** of (situation · approach · outcome) to match: same
+  situation, same *tactic category* (not wording, not degree), same *success/failure* outcome. A
+  different **outcome** is a **contrasting** lesson → KEEP; same situation+outcome with a different
+  *tactic variant* is the merge case (offline; online keeps-rather-than-discards, since v11 removed
+  online MERGE).
+- **Strategy points** — same situation ⇒ the **action must differ** (target, timing, direction, risk) to
+  keep; same situation + same action direction is the duplicate.
+
+**What role each field plays** — these are the fields the per-extraction LLM actually judges, all present
+in `v4_action_phase_v2` (the store these golden labels were sampled from). `situation` here is the
+*composed* situation: a core-event line plus the v4/v5 dimensional sub-fields (information landscape, game
+phase, optional consensus / agent-exposure) folded into one embedded string.
+
+| Field | How it's used | Role in the duplicate decision |
+|---|---|---|
+| **observations** (situation → approach → outcome) | | |
+| `situation` | free-text, **embedded** | **the trigger** — "would a query for A retrieve B?" is the first test |
+| `approach` | free-text, LLM-judged | tactic *category* (not wording/degree); a different category ⇒ a different lesson |
+| `outcome` | free-text, LLM-judged | success/failure pattern; opposite outcome ⇒ contrasting lesson ⇒ KEEP |
+| **strategy points** (situation → action) | | |
+| `situation` | free-text, **embedded** | **the trigger** (same retrieval test) |
+| `action` | free-text, LLM-judged | must differ (target / timing / direction / risk) to keep |
+
+One scope note on "settled": the **per-field basis here is fixed and code-encoded**; the **global lean** —
+should the store as a whole err toward discard or keep? — is the separate open question in §④, left
+undecided on purpose. (The *structured* board-state fields that today gate dedup were added **after** these
+experiments — see *The structured fields came later* at the end.)
+
 ## ① Why golden labels at all
 
 The per-extraction pipeline runs after every game to decide whether each newly extracted observation
@@ -65,6 +113,7 @@ interactive human review across two sessions; we surfaced full original text whe
 ambiguous (~15 of 50, mostly observations).
 
 Three design decisions shaped the set, each earning its keep later:
+
 - **Strategy points are D/K only** — `StrategyDedupDecisionOutput` is `StrategyDiscard | StrategyKeep`;
   merging two prescriptive rules is semantically harder than merging two anecdotes. (A
   discard-*with-rewrite* option let a discard still steal better phrasing — revisited and removed at v10.)
@@ -89,18 +138,20 @@ constraints, not a lookup table.
 The baseline model — **gemini-2.5-flash** (the model used during the original 30-game batch) — scored
 **78% strict / 80% lenient**.
 
-| Metric | Overall | Observations | Strategy points |
-|---|---|---|---|
-| Strict | 39/50 (78%) | 18/25 (72%) | 21/25 (84%) |
+
+| Metric | Overall     | Observations | Strategy points |
+| ------ | ----------- | ------------ | --------------- |
+| Strict | 39/50 (78%) | 18/25 (72%)  | 21/25 (84%)     |
 
 Observations are the hard half (comparing nuanced anecdotes for "same lesson"); strategy points are
 more concrete. The per-label breakdown names the enemy:
 
-| Label | Precision | Recall | Support |
-|---|---|---|---|
-| D | 0.82 | 0.74 | 19 |
-| **M** | **0.56** | **0.83** | 6 |
-| K | 0.83 | 0.80 | 25 |
+
+| Label | Precision | Recall   | Support |
+| ----- | --------- | -------- | ------- |
+| D     | 0.82      | 0.74     | 19      |
+| **M** | **0.56**  | **0.83** | 6       |
+| K     | 0.83      | 0.80     | 25      |
 
 **MERGE has high recall but low precision — the model over-merges.** It calls MERGE on cases that
 should be D or K. That single tendency drives most of the tuning that follows.
@@ -116,7 +167,11 @@ should be D or K. That single tendency drives most of the tuning that follows.
 3. **Over-differentiate on game phase alone** (case 40). The "too obvious" defence fails identically
    mid-game and endgame; the phase change doesn't make it a new lesson.
 
-These three became the test cases for every subsequent prompt.
+These three became the test cases for every subsequent prompt — and each names one of the three "what
+makes X different?" boundaries the basis had to pin down: bias 1 is *what makes an action/variation
+different* (a different opponent-tactic is a different lesson, even when the response matches), biases
+2–3 are *what makes the trigger different* (surface detail and game-phase alone are not enough — the
+retrieval test settled it), and the success-vs-failure split is *what makes an outcome different*.
 
 ## ③ The tuning loop — four phases + endgame
 
@@ -128,7 +183,7 @@ K) and *obs_count gravity* — a high-reinforcement existing entry raises the ba
 (Three independent drafts converged on the structure; the merged draft that
 shipped is in [drafts/](drafts/observation_prompt_draft_v2_merged.md).)
 
-Replayed across five models, v2 **regressed**: the production model (flash-lite) fell **78% → 60%**.
+Replayed across five models, v2 **regressed**: the production model (gemini 3.1 flash-lite) fell **78% → 60%**.
 The decision distribution showed why — flash-lite v2 predicted **38 discards** (golden has 19) and
 MERGE recall collapsed to **0%** on three of four models. The cascade had ratcheted everything toward D.
 
@@ -136,12 +191,13 @@ MERGE recall collapsed to **0%** on three of four models. The cascade had ratche
 independently refused to merge the same 4–5 cases. Uniform cross-model failure is stronger evidence of
 *label* error than prompt error, so we re-examined all 6 MERGE labels:
 
-| Case | Old → New | Reason |
-|---|---|---|
-| 1 | M → **D** | "2 saves" vs "3 saves" — degree, not kind |
-| 17, 18 | M → **K** | structurally distinct triggering events |
-| 23 | M → **D** | existing entry already generalises it (obs=3) |
-| 19, 20 | M → M | the only true merges — a real tactic variant enriching a pattern |
+
+| Case   | Old → New | Reason                                                            |
+| ------ | ---------- | ----------------------------------------------------------------- |
+| 1      | M →**D**  | "2 saves" vs "3 saves" — degree, not kind                        |
+| 17, 18 | M →**K**  | structurally distinct triggering events                           |
+| 23     | M →**D**  | existing entry already generalises it (obs=3)                     |
+| 19, 20 | M → M     | the only true merges — a real tactic variant enriching a pattern |
 
 Four of six MERGE labels were wrong. Re-scored against corrected labels, **3.5-flash v2 rose 74% → 80%**
 (its "failures" were correct) while the baseline *dropped* 78% → 72%. MERGE is now rare — **2 of the 50
@@ -165,10 +221,11 @@ exposure, game phase) plus the cascade **"when uncertain: prefer D over M, and M
 
 It worked exactly as designed — too well:
 
-| Model | Accuracy | D recall | K recall |
-|---|---|---|---|
-| flash-lite v6 | 67.7% | **93%** | **41%** |
-| 3.5-flash v6 | 75.4% | **90%** | **66%** |
+
+| Model         | Accuracy | D recall | K recall |
+| ------------- | -------- | -------- | -------- |
+| flash-lite v6 | 67.7%    | **93%**  | **41%**  |
+| 3.5-flash v6  | 75.4%    | **90%**  | **66%**  |
 
 D recall soared, but the cascade **crushed K recall** — flash-lite discarded more than half of
 genuinely-novel entries. Many K cases live in the "uncertain between D and K" band, and the cascade
@@ -201,10 +258,11 @@ absent = over-merge.**
 for strategy "focus on what the agent would DO, not how it's worded." This recovered D recall without a
 ratchet:
 
-| Model | v7 → v8 accuracy | D recall v7→v8 | K recall v7→v8 |
-|---|---|---|---|
-| flash-lite | 69.2% → 69.2% | 77% → **83%** | 55% → 52% |
-| **3.5-flash** | 75.4% → **80.0%** | 60% → **77%** | 93% → 90% |
+
+| Model         | v7 → v8 accuracy | D recall v7→v8 | K recall v7→v8 |
+| ------------- | ----------------- | --------------- | --------------- |
+| flash-lite    | 69.2% → 69.2%    | 77% →**83%**   | 55% → 52%      |
+| **3.5-flash** | 75.4% →**80.0%** | 60% →**77%**   | 93% → 90%      |
 
 **3.5-flash v8 = 80%** is the best **three-label (D/M/K)** configuration — the best while MERGE still
 existed. The lesson: **targeted corrections beat
@@ -223,11 +281,12 @@ What worked was **v9d: reorder the fields so Action comes before Situation.** Sa
 presented so the model meets the *conflicting action* before the *similar situation* anchors it
 together:
 
-| flash-lite | v8 → v9d |
-|---|---|
-| overall | 69.2% → **73.8%** |
-| strategy | 72.0% → **84.0%** (+12pp) |
-| K recall | 52% → 59% |
+
+| flash-lite | v8 → v9d                 |
+| ---------- | ------------------------- |
+| overall    | 69.2% →**73.8%**         |
+| strategy   | 72.0% →**84.0%** (+12pp) |
+| K recall   | 52% → 59%                |
 
 **Presentation order matters more than instruction volume** for weak models — a content-neutral reorder
 out-performed every added paragraph. (3.5-flash was unmoved — already at 88% strategy.) v9d is the
@@ -243,8 +302,8 @@ production prompt going into the endgame.
 - **v10 — remove discard-with-rewrite from strategy.** Models rewrote both fields 60–97% of the time
   even when value was in one detail, and the "good" rewrites were mostly mislabelled discards. Removing
   it forced cleaner D/K boundaries; flash-lite strategy **84% → 96%** on Vertex — though **overall held at
-73.8%** (observations fell to 60% on the backend switch), and 3.5-flash landed at the same 73.8% overall:
-the shared pre-v11 baseline below.
+  73.8%** (observations fell to 60% on the backend switch), and 3.5-flash landed at the same 73.8% overall:
+  the shared pre-v11 baseline below.
 - **v11 — remove MERGE from observation dedup (the climax).** MERGE was rare (5/65), both models
   over-fired it (flash-lite predicted 15, 3.5-flash 8), and false merges produced the worst
   rewrite-quality scores and corrupted live entries. Dropping to **D/K only** (5 M labels relabelled K,
@@ -287,7 +346,9 @@ the shared pre-v11 baseline below.
 - **Presentation order beats instruction volume for weak models.** A content-neutral field reorder
   (action before situation) added more than any paragraph of rules, and an extra output field *hurt*.
 - **The retrieval test grounds an otherwise-subjective call.** "Are these the same situation?" is
-  fuzzy; "would a query for A retrieve B?" is operational and resolved most labelling disputes.
+  fuzzy; "would a query for A retrieve B?" is operational and resolved most labelling disputes — it is
+  what operationalised "same *trigger*," and the v6 gate later made the *structured* half of that call
+  deterministic (see *What counts as a duplicate* up front + *The structured fields came later* below).
 - **Stronger models have a higher ceiling and bank prompt gains weak models can't.** On consistent
   final labels, 3.5-flash climbs **72% → 80%** (v5→v8) while flash-lite plateaus at **60% → 69%** — a
   ~10pp ceiling gap that *widens* at v8, where only the stronger model captures the
@@ -299,6 +360,7 @@ the shared pre-v11 baseline below.
 This is the recurring tension of the whole chapter, and it is **deliberately unresolved** (it threads
 through the dedup overview's [§6](../experiment_log.md)). The *tactic* is settled — targeted
 corrections, not directional cascades. The *strategic lean* is not:
+
 - **Lean discard** keeps the store lean, and an over-discarded entry from a *common* situation will be
   re-extracted from a future game.
 - **Lean keep** protects *rare*-situation lessons — over-discard those and they're permanently lost.
@@ -306,6 +368,25 @@ corrections, not directional cascades. The *strategic lean* is not:
 We never picked, on purpose: the right bias "depends on downstream retrieval quality and agent strategy
 application, not on the prompt," and that downstream evaluation is part of the frozen memory work. The
 live prompt sits near-neutral with targeted anti-over-discard notes (v11b).
+
+### The structured fields came later (v5/v6) — the gate, not this decision space
+
+The field-role table up front is the **v4-era** decision space — the fields the per-extraction LLM judged,
+all present in `v4_action_phase_v2`. The structured board-state fields that now *gate* dedup were added
+**after** this tuning and were never part of it:
+
+| Field | Added | Role today |
+|---|---|---|
+| `net_verdict` | net-horizon outcome split (2026-06-12, after v11) | gate pair-check — opposite verdict ⇒ never a duplicate |
+| `info_landscape_class` / `exposure_class` | v6 (2026-06-16) | gate pair-checks — disagree ⇒ never a duplicate |
+| `is_swing` / `players_alive` (→ early ≥8 / mid 5–7 / late ≤4) / `consensus_direction` | v6 (2026-06-15/16) | gate partition — different bucket ⇒ never compared |
+| strategy points: `direction` / `honesty` | v6 (2026-06-15) | gate partition — different move-class ⇒ never compared |
+
+They decide the "same situation?" call **deterministically, before the LLM**, on fields a bi-encoder reads
+unreliably — so today's pipeline resolves many pairs the per-extraction LLM here had to judge by hand.
+That granularity is much of why current dedup looks different from the experiments above; the mechanism is
+the overview's [§9](../experiment_log.md) and the
+[dimension build spec](../../phase_b/dimension_schema_build_spec.md).
 
 ## Current live state (2026-06-25)
 
@@ -332,19 +413,20 @@ Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-doc
 
 ## Artifacts
 
-| File | Description |
-|---|---|
-| `evaluation/frozen_eval_sets/dedup_v2_golden_labels.json` | 65 golden labels (D=30, K=34, M/K=1) — M relabelled to K at v11 |
-| `evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl` | the 65 sampled dedup cases (source dataset) |
-| `evaluation/frozen_eval_sets/dedup_v2.manifest.json` | dataset manifest (390 cases, seed=42) |
-| `evaluation/src/experiments/dedup_score.py` | deterministic golden-label scorer (strict + lenient) |
-| `evaluation/src/experiments/dedup_replay.py` | re-runs frozen cases through a chosen model/prompt |
-| `data/dedup_score_original_v2.json` | original baseline scoring (78% strict, pre-revision labels) |
-| [tricky_cases.md](tricky_cases.md) | 7 mislabelled cases with full text + prompt implication |
-| [drafts/](drafts/) | the v2 observation-prompt drafts (Draft 1 + the merged version that shipped) |
-| `prompt_history/{dedup_prompt_baseline,standards_baseline,dedup_v5,dedup_v6}.py` | frozen prompt snapshots |
-| `evaluation/frozen_eval_sets/dedup_v2_replay_*.jsonl` | one replay JSONL per (model × prompt-version), v2→v11 (older ones in `legacy/`) |
-| `evaluation/eval_results/dedup_judge_*_v9d.jsonl` | rewrite-quality judge results (flash-lite + 3.5-flash) |
+
+| File                                                                             | Description                                                                      |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `evaluation/frozen_eval_sets/dedup_v2_golden_labels.json`                        | 65 golden labels (D=30, K=34, M/K=1) — M relabelled to K at v11                 |
+| `evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl`                             | the 65 sampled dedup cases (source dataset)                                      |
+| `evaluation/frozen_eval_sets/dedup_v2.manifest.json`                             | dataset manifest (390 cases, seed=42)                                            |
+| `evaluation/src/experiments/dedup_score.py`                                      | deterministic golden-label scorer (strict + lenient)                             |
+| `evaluation/src/experiments/dedup_replay.py`                                     | re-runs frozen cases through a chosen model/prompt                               |
+| `data/dedup_score_original_v2.json`                                              | original baseline scoring (78% strict, pre-revision labels)                      |
+| [tricky_cases.md](tricky_cases.md)                                               | 7 mislabelled cases with full text + prompt implication                          |
+| [drafts/](drafts/)                                                               | the v2 observation-prompt drafts (Draft 1 + the merged version that shipped)     |
+| `prompt_history/{dedup_prompt_baseline,standards_baseline,dedup_v5,dedup_v6}.py` | frozen prompt snapshots                                                          |
+| `evaluation/frozen_eval_sets/dedup_v2_replay_*.jsonl`                            | one replay JSONL per (model × prompt-version), v2→v11 (older ones in`legacy/`) |
+| `evaluation/eval_results/dedup_judge_*_v9d.jsonl`                                | rewrite-quality judge results (flash-lite + 3.5-flash)                           |
 
 *Provenance: dataset `v4_action_phase_v2`, seed=42; per-extraction prompt versions v1→v11b; backend
 Google AI Studio through v9d, Vertex AI from v10 (stamped per run).*

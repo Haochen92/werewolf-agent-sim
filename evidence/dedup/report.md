@@ -14,6 +14,27 @@ new entry ─▶ cosine candidate gather ─▶ GATE (role/phase + gate_key + pa
 online:  KEEP / DISCARD               batch: KEEP / DISCARD / MERGE
 ```
 
+## What counts as a duplicate (current rule)
+
+The trigger is **`situation`** — the only field embedded for retrieval
+([store.py:29](../../Agents/memory/store.py#L29): `fields=["situation"]`) — so two entries can only be
+duplicates if a search query matching one would also retrieve the other. On that trigger the two types
+differ:
+
+- **Observations** (situation → approach → outcome): DISCARD requires **all three** to match — same
+  situation, same *tactic category*, same *success/failure* outcome. A different outcome is a contrasting
+  lesson (KEEP); a same-situation/same-outcome *tactic variant* is the merge case (batch only — online
+  keeps it).
+- **Strategy points** (situation → action): same situation ⇒ the **action must differ** (target, timing,
+  direction, risk) to keep.
+
+The **gate is the deterministic encoding of the structured half** of this rule: the partition key and
+pair-checks (below) decide the situation differences a bi-encoder can't see, leaving the LLM only the
+free-text residual. That structured half exists because **v6 grew `situation` from one prose blob into
+many dimensions** — much of why current dedup is shaped the way it is. Full per-field breakdown + the
+history of how the criteria were pinned down: [per_extraction/](per_extraction/experiment_log.md)
+(*What counts as a duplicate*) and the overview's [§3 / §6 / §9](experiment_log.md).
+
 ## Guarantee / contract (present-tense)
 
 - **The gate is hard, retrieval is soft.** Two entries are *never* merged across different roles,

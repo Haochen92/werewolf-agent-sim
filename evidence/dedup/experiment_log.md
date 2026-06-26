@@ -12,6 +12,25 @@ companion [report.md](report.md) is also the destination: how dedup works in the
 lesson-by-example. A **strategy point** is a reusable *situation → action* rule. They hit the same
 duplication problem but behave differently under it, which turns out to be the crux of §5.
 
+**What counts as a duplicate — the trigger, then the per-type rule.** Everything rests on one field:
+**`situation`** is the only text embedded for retrieval ([store.py:29](../../Agents/memory/store.py#L29):
+`fields=["situation"]`), so it is the **trigger** — two memories with the *same* situation retrieve
+together; different situations can't collide, so they are **not duplicates by default.** The operative
+test, written into every dedup prompt, is literally *"would a search query matching A also retrieve B?"*
+On that trigger the two types diverge:
+
+- **Observations** (situation → approach → outcome): a duplicate needs **all three** to match — same
+  situation, same *tactic category* (not wording or degree), same *success/failure* outcome. A different
+  **outcome** is a **contrasting** lesson (keep both); same situation+outcome with a different *tactic
+  variant* is the merge case (combined offline; online keeps-rather-than-discards, since online has no
+  MERGE — §7).
+- **Strategy points** (situation → action): same situation ⇒ the **action must differ** (target, timing,
+  direction, risk) to keep.
+
+These rules were not declared up front — they were **pinned down through mislabelling** (§6) and later
+hardened into the deterministic **gate** (§9). Per-field detail + the full history:
+[per_extraction/](per_extraction/experiment_log.md).
+
 **The shape of the problem.** Played over many games, the store **compounds with near-duplicates**, and
 duplicates crowd the retrieval slate while teaching nothing new. Everything below searches for a
 mechanism that removes the redundancy *without* removing a distinct lesson. It splits into two
@@ -63,22 +82,28 @@ keeping duplicates. (This is documented rigorously later, when the embedding **p
 calibrated — §5 — but the intuition is what motivated bringing in an LLM here.) The conclusion: cosine
 is a good *first sieve*, not a *decider*.
 
-## 3 · LLM per-extraction dedup — and the field set shrinking 4 → 2
+## 3 · LLM per-extraction dedup — and the vocabulary collapse to D/K
 
 So each new entry, as a game ends, goes to an **LLM** that judges it against its nearest neighbours.
 Early on (store versions up to ~v3) the prompt was **not tuned** — we accepted the default and used
-**gemini-2.5-flash** (the model from the original 30-game batch). The decision vocabulary then *shrank*,
-in two separate prunings, both for the same reason — **weak models can't rewrite reliably**:
+**gemini-2.5-flash** (the model from the original 30-game batch). What changed most over time was the
+**decision vocabulary**, and it collapsed for one reason: **every action that asks the model to *rewrite*
+an entry is unreliable on a weak online model**, so each was pushed out in turn.
 
-- The original enum had **four** actions: `DISCARD / REPLACE / DIFFERENTIATE / KEEP` (the legacy
-  `A/B/C/D` still visible in [deduplication/schemas.py](../../Agents/memory/deduplication/schemas.py)).
-  `REPLACE` and `DIFFERENTIATE` were retired early — vestigial, never reliably driven by the model.
-- That left a `DISCARD / MERGE / KEEP` scheme (MERGE = rewrite two entries into one). MERGE was later
-  dropped too (§7), because the production model (**gemini-3.1-flash-lite**) produces **lossy** merges —
-  it silently drops the `merged_approach`/`merged_outcome` fields and corrupts the entry.
+- The original scheme (strategy dedup, 2026-05-14) had **four** actions, `DISCARD / REPLACE /
+  DIFFERENTIATE / KEEP` (the legacy `A/B/C/D` still referenced by the eval mappers — see the enum
+  docstring in [deduplication/schemas.py](../../Agents/memory/deduplication/schemas.py)). Both *rewriting*
+  actions were retired early, never reliably driven: **REPLACE** = "the new entry is better — replace the
+  old, keeping the best of both"; **DIFFERENTIATE** = "similar situation, different action — rewrite
+  *both* situations to make the distinguishing variable explicit."
+- That left **MERGE** (rewrite two entries into one). MERGE was **born in the online pass** — observation
+  dedup gained `DISCARD / MERGE / KEEP` on 2026-05-23 — and was **removed from online at v11**
+  (2026-05-26): rare (≈5/65 golden cases), over-fired by both models, and **lossy on
+  gemini-3.1-flash-lite**, which silently drops the `merged_approach`/`merged_outcome` fields and corrupts
+  the entry (§7).
 
-End state online: **KEEP/DISCARD only**, MERGE confined to the offline batch pass where a pro model can
-be used. Detail: [per_extraction/](per_extraction/experiment_log.md).
+End state online: **KEEP/DISCARD only** — no rewriting. Rewriting (MERGE) survives **only** in the
+offline batch pass, where a pro model runs it. Detail: [per_extraction/](per_extraction/experiment_log.md).
 
 ## 4 · Per-extraction dedup wasn't enough → batch as a second layer
 
@@ -112,7 +137,10 @@ Two threads landed here, both on the v4 store:
 
 At v4 we built **golden labels** to evaluate prompts against ground truth instead of LLM-judging-LLM:
 a human-led core set (sampled from `v4_action_phase_v2`) plus LLM-labelled cross-game sets, with
-explicit rules for "same lesson vs different." On that anchor we tuned the per-extraction prompt
+explicit rules for "same lesson vs different." Those rules were not given up front — the two
+label-revision rounds *were* the act of pinning down where the boundaries sit (game-phase alone ≠ a new
+trigger; opposite outcome, success vs failure, is always a keep; a different opponent-tactic is a
+different lesson even when the response matches). On that anchor we tuned the per-extraction prompt
 **v1→v11b** and the batch prompt **v0→v3**. The throughline — and the **single most-revisited open
 question** — is whether to **lean discard or lean keep**:
 
@@ -155,14 +183,26 @@ postdates them: a **deterministic gate** (`Agents/memory/dedup_gate.py`) that pa
 a structured `gate_key` + hard pair-checks *before* any embedding or LLM step, shared by the online and
 batch paths — so the model only ever compares already-homogeneous entries. It's the §2 lesson taken to
 its conclusion: gate hard where the structured fields are reliable, reserve the LLM for the free-text
-residual. The freeze-old fix from §8 also shipped here. Current state: [report.md](report.md).
+residual. The gate is really the **structured encoding of the decision-basis rules above**: the partition
+key (`is_swing` + alive-bucket + `consensus_direction`) and the hard pair-checks (`net_verdict` /
+`info_landscape_class` / `exposure_class`; strategy points: `direction` / `honesty`) are exactly the
+situation differences a bi-encoder can't see, made deterministic. It only became possible because **v6
+grew `situation` from one prose blob into many structured dimensions**
+([dimension build spec](../phase_b/dimension_schema_build_spec.md)) — that granularity is much of why
+current dedup looks different from the v4-era prompt work above. The freeze-old fix from §8 also shipped
+here. Current state: [report.md](report.md).
 
 ---
 
 ## Recurring threads (so a chapter's detail has a home in the arc)
 
 - **The embedding ceiling** (§2, measured §5) — topic-not-stance is *why* an LLM is irreducible.
-- **Weak models can't rewrite** (§3, §7) — the reason the field set shrank 4→2 and MERGE is batch-only.
+- **Weak models can't rewrite** (§3, §7) — the one reason REPLACE, DIFFERENTIATE, *and* MERGE were all
+  pushed out of the online path; rewriting (MERGE) survives only on the pro-model batch pass.
+- **Situation granularity** (§9) — `situation` grew from one prose blob into many dimensions (decomposed
+  early for distinguishability; dimensionalized at v6 to mark critical moments); the structured dims are
+  what made the deterministic gate possible. Schema history:
+  [dimension build spec](../phase_b/dimension_schema_build_spec.md).
 - **Discard vs keep** (§6) — the open lever; tactic settled (targeted > directional), strategy deferred.
 - **Conservative beats aggressive** (§5) — the reason `bounded` clustering is the batch default.
 
