@@ -1,12 +1,15 @@
-# Batch Dedup: Golden Labels and Prompt Tuning — experiment log
+# Batch dedup — the offline whole-store pass (experiment log)
 
-**What this is.** The **offline** whole-store dedup pass tuned against golden labels: porting the
-per-extraction decision criteria into the cluster-resolution prompts (v0→v3 + a "lite" variant),
-landing the two-pass pipeline (flash-lite triage → 2.5-pro verify, 89.2%), and discovering the pass is
-**not idempotent** — which is what motivated incremental dedup. Companions: the folder
-[report.md](../report.md) is the destination (how batch dedup works *today*); the mechanics reference
-is [../batch_architecture.md](../batch_architecture.md); the incremental/freeze-old story this kicks
-off is [../incremental_convergence.md](../incremental_convergence.md); the chronological overview is
+**What this is.** The **offline** dedup layer: the whole store swept in similarity clusters on a strong
+model. Prompt tuning was only *one* of several threads here (hence the folder is `batch_dedup`, not
+"prompt tuning") — this chapter covers all of them: **(1)** why an offline pass is needed at all;
+**(2)** porting the per-extraction decision criteria into the cluster-resolution prompts (v0→v3 + a
+"lite" variant); **(3)** the **two-pass** pipeline (flash-lite triage → 2.5-pro verify, **89.2%**);
+**(4)** merge-rewrite quality (why only a pro model can write merges); and **(5)** the discovery that
+the pass is **not idempotent**, which motivated incremental dedup. Companions: the folder
+[report.md](../report.md) is the destination (how batch dedup works *today*); the mechanics reference is
+[../batch_architecture.md](../batch_architecture.md); the incremental/freeze-old story this kicks off is
+[../incremental_convergence.md](../incremental_convergence.md); the chronological overview is
 [../experiment_log.md](../experiment_log.md).
 
 **Reading contract.** In rough time order; prompt variants and the two-pass design are shown as tried,
@@ -14,13 +17,38 @@ with the idempotency test (a second run removed another ~10%) left in place beca
 the convergence problem. Eval JSONs are in [data/](data/), frozen prompts in
 [prompt_versions/](prompt_versions/).
 
+**The shape of the journey.**
+
+1. **Why a second pass** — online dedup is greedy, top-N-bounded, and never re-examines old pairs; batch
+   re-clusters the whole store and can MERGE.
+2. **Port the criteria** — the cluster prompts never had the per-extraction criteria; v0 (untuned) → v1
+   (ported) → v2 (indexed keys + anti-over-merge) → v3 (drop the KEEP-bias note, cap clusters at 15).
+3. **Pick the model** — 3.5-flash is the best single model; flash-lite over-merges *and* can't write
+   merges; 2.5-pro writes good merges but is slow and fabricates → **two-pass** (flash-lite triage →
+   2.5-pro verify) wins at **89.2%**.
+4. **Merge quality** — only a pro model preserves all three merged fields; weak models silently drop
+   `merged_approach`/`merged_outcome` (the reason MERGE is pro-only).
+5. **The idempotency alarm** — a second full run removed another ~10%, so the pass isn't idempotent →
+   incremental mode + the freeze-old guard.
+
 ---
 
-## Motivation
+## Why a second (offline) pass
 
-The per-extraction dedup pipeline handles individual new entries against existing candidates. The batch dedup pipeline operates on entire similarity clusters within a namespace, resolving them into DISCARD groups, MERGE groups, and KEEPs. While per-extraction dedup reached 83-85% accuracy through prompt tuning (v1→v11b), the batch dedup prompts were never updated with the refined decision criteria discovered during that process. This experiment ports those criteria to the batch prompts and evaluates their impact.
+Online per-extraction dedup already searches the whole store across games — but it's a **greedy,
+insertion-time** check: each new entry is compared only against its **top-N** neighbours at the moment
+it lands, it **never re-examines a pair once both are kept**, and it can't MERGE. So near-duplicates
+that fell outside each other's top-N window, or were both kept before they sat together, accumulate (and
+under *parallel* per-game generation, concurrent entries aren't seen at all). The **batch** pass closes
+that gap: it re-clusters the *whole* store and re-examines every near-duplicate together, on a strong
+model that can MERGE variants into one entry with summed counts.
 
-Batch dedup is more complex than per-extraction: each cluster can contain 2-25 entries and requires multiple operations (not a single D/K decision). The observation batch prompt retains MERGE (dropped from per-extraction) because the model sees full clusters and can consolidate tactic variants with counts.
+That leaves a second problem specific to this pass: the batch cluster-resolution prompts had **never
+been updated** with the decision criteria refined during per-extraction tuning (v1→v11b, which reached
+83–85%). Batch is also harder than per-extraction — a cluster holds 2–25 entries and needs *multiple*
+operations, not one D/K call, and observations keep **MERGE** here (a full cluster lets a strong model
+consolidate tactic variants with counts). So the work below ports those criteria, then tunes for the
+cluster setting.
 
 ## Dataset
 
@@ -118,8 +146,12 @@ Pipeline: `evaluation/experiments/batch_dedup_merge_eval.py` extracts MERGE/DISC
 
 | Model | Cases | Retrieval Coverage | Merge Quality | Info Preservation | Fabrication Rate |
 |---|---|---|---|---|---|
-| gemini-3.5-flash | 6 | 4.33 | 3.00 | 1.67 | 0% |
-| gemini-2.5-pro | 6 | 4.33 | 4.00 | 4.00 | 33% |
+| gemini-3.5-flash | 3 | 4.33 | 4.00 | 1.67 | 0% |
+| gemini-2.5-pro | 9 | 4.89 | 4.78 | 4.00 | 33% |
+
+(The case counts differ because the two source runs emitted different numbers of merge/rewrite
+operations to judge — 2.5-pro merges far more than 3.5-flash. Figures recomputed from the surviving
+[data/](data/) `merge_quality_*.json` artifacts.)
 
 ### Analysis
 
