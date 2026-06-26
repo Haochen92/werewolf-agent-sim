@@ -3,10 +3,12 @@
 
 **What this is.** The **automatic** (no-LLM) dedup layer: a deterministic embedding-similarity
 pre-filter that auto-keeps clearly-novel and auto-discards clearly-duplicate entries, sending only the
-ambiguous middle band to the LLM. This log is the threshold calibration — on a 65-case golden set and a
-232-case cross-game set — plus the ablations (3072 dims, `SEMANTIC_SIMILARITY` task type,
-multi-dimensional boundaries) that all came back **negative**, converging on *why* embedding similarity
-has a hard ceiling. Companions: the folder [report.md](../report.md) is the destination (how the
+ambiguous middle band to the LLM. It is a **conservative triage, not a replacement** for the LLM — it
+fires only where the bi-encoder is actually trustworthy (the *extremes*: near-identical text → discard,
+clearly-different topic → keep), which empirically is just **~15-30%** of cases. This log is the
+threshold calibration — on a 65-case human golden set and a 232-case cross-game set — plus the ablations
+(3072 dims, `SEMANTIC_SIMILARITY` task type, multi-dimensional boundaries) that all came back
+**negative**, converging on *why* embedding similarity has a hard ceiling. Companions: the folder [report.md](../report.md) is the destination (how the
 pre-filter works today); it feeds the online pipeline in
 [../per_extraction/experiment_log.md](../per_extraction/experiment_log.md); the chronological overview
 is [../experiment_log.md](../experiment_log.md).
@@ -14,6 +16,20 @@ is [../experiment_log.md](../experiment_log.md).
 **Reading contract.** Calibration first, then the ablations shown **as tried and rejected** — each with
 the negative result that killed it, left in place because the "no improvement" findings *are* the point
 (they establish the ceiling). Cached embeddings + golden labels are in [data/](data/).
+
+**The shape of the journey.**
+
+1. **The premise is empirical.** The bi-encoder can't separate the ambiguous middle (the overview's
+   [§2](../experiment_log.md) topic-not-stance ceiling), so the only open question is whether a
+   *reliable band exists at the extremes* — near-identical text, or clearly-different topic — where a
+   no-LLM decision is safe.
+2. **Calibrate the band.** Find zero-error thresholds on a 65-case human golden set, validate on 232
+   cross-game (LLM-labelled) cases → SP discard ≥0.93 / keep <0.81, OBS discard ≥0.96 / keep <0.935.
+3. **Try to widen it.** 3072 dims, `SEMANTIC_SIMILARITY` task type, multi-dimensional boundaries — all
+   come back **negative** on the cross-game set.
+4. **The ceiling, explained.** Auto-decision plateaus at **~15-30%** because embeddings encode topic,
+   not stance; the band is reliable only at the extremes and the middle is irreducibly the LLM's. The
+   ceiling isn't a tuning miss — it's the measured size of what similarity alone can decide.
 
 ---
 
