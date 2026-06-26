@@ -288,9 +288,11 @@ the shared pre-v11 baseline below.
   (action before situation) added more than any paragraph of rules, and an extra output field *hurt*.
 - **The retrieval test grounds an otherwise-subjective call.** "Are these the same situation?" is
   fuzzy; "would a query for A retrieve B?" is operational and resolved most labelling disputes.
-- **Stronger models amplify both good and bad prompts.** 3.5-flash ranged 82% → 40% → 80% across
-  versions; flash-lite stayed in a narrow 60–69% band. The stronger model extracts more from a good
-  prompt and suffers more from a bad one.
+- **Stronger models have a higher ceiling and bank prompt gains weak models can't.** On consistent
+  final labels, 3.5-flash climbs **72% → 80%** (v5→v8) while flash-lite plateaus at **60% → 69%** — a
+  ~10pp ceiling gap that *widens* at v8, where only the stronger model captures the
+  targeted-calibration win. (The older "dramatic regression to 40%" rested on a v5 score taken against
+  pre-revision labels, so it's dropped here.)
 
 ### The open question: lean discard or lean keep
 
