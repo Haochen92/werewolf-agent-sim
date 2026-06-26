@@ -1,0 +1,182 @@
+[
+  {
+    "generation": 1,
+    "score": {
+      "off/overall": 0.43,
+      "off/wolf": 0.455,
+      "off/serial_killer": 0.672,
+      "off/town": 0.271,
+      "on/overall": 0.243,
+      "on/town": 0.243,
+      "n_off/overall": 391,
+      "n_off/wolf": 191,
+      "n_off/serial_killer": 67,
+      "n_off/town": 133,
+      "n_on/overall": 140,
+      "n_on/town": 140
+    },
+    "credit": {
+      "total_sps": 0,
+      "credited": 0,
+      "ledger_keys": 0,
+      "matched": 0
+    },
+    "credit_dist": {
+      "n_sps": 0,
+      "n_followed": 0,
+      "follow_p50": 0,
+      "follow_max": 0,
+      "n_prune_eligible": 0,
+      "n_eligible_neg_lift": 0
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 0,
+        "evicted": 0,
+        "kept": 0,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 124
+      },
+      "synth": {},
+      "sp_dedup": {},
+      "obs_counts": {}
+    }
+  },
+  {
+    "generation": 2,
+    "score": {
+      "off/overall": 0.542,
+      "off/wolf": 0.556,
+      "off/serial_killer": 0.82,
+      "off/town": 0.374,
+      "on/overall": 0.095,
+      "on/town": 0.095,
+      "n_off/overall": 345,
+      "n_off/wolf": 169,
+      "n_off/serial_killer": 61,
+      "n_off/town": 115,
+      "n_on/overall": 84,
+      "n_on/town": 84
+    },
+    "credit": {
+      "total_sps": 0,
+      "credited": 0,
+      "ledger_keys": 0,
+      "matched": 0
+    },
+    "credit_dist": {
+      "n_sps": 0,
+      "n_followed": 0,
+      "follow_p50": 0,
+      "follow_max": 0,
+      "n_prune_eligible": 0,
+      "n_eligible_neg_lift": 0
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 0,
+        "evicted": 0,
+        "kept": 0,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 216
+      },
+      "synth": {
+        "added": 57,
+        "cells_synthed": 11
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 20,
+        "villager/day_vote": 23,
+        "wolf/day_discussion": 0,
+        "wolf/day_vote": 0,
+        "wolf/night_action": 0,
+        "investigator/day_discussion": 16,
+        "investigator/day_vote": 11,
+        "investigator/night_action": 22,
+        "healer/day_discussion": 17,
+        "healer/day_vote": 21,
+        "healer/night_action": 22,
+        "serial_killer/day_discussion": 0,
+        "serial_killer/day_vote": 0,
+        "serial_killer/night_action": 0,
+        "vigilante/day_discussion": 16,
+        "vigilante/day_vote": 22,
+        "vigilante/night_action": 26
+      }
+    }
+  },
+  {
+    "generation": 3,
+    "score": {
+      "off/overall": 0.42,
+      "off/wolf": 0.426,
+      "off/serial_killer": 0.671,
+      "off/town": 0.287,
+      "on/overall": 0.337,
+      "on/town": 0.337,
+      "n_off/overall": 414,
+      "n_off/wolf": 162,
+      "n_off/serial_killer": 85,
+      "n_off/town": 167,
+      "n_on/overall": 95,
+      "n_on/town": 95
+    },
+    "credit": {
+      "total_sps": 48,
+      "credited": 0,
+      "ledger_keys": 0,
+      "matched": 0
+    },
+    "credit_dist": {
+      "n_sps": 48,
+      "n_followed": 0,
+      "follow_p50": 0,
+      "follow_max": 0,
+      "n_prune_eligible": 0,
+      "n_eligible_neg_lift": 0
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 0,
+        "evicted": 0,
+        "kept": 48,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 110,
+        "obs_kept": 188
+      },
+      "synth": {},
+      "sp_dedup": {},
+      "obs_counts": {
+        "villager/day_discussion": 20,
+        "villager/day_vote": 23,
+        "wolf/day_discussion": 0,
+        "wolf/day_vote": 0,
+        "wolf/night_action": 0,
+        "investigator/day_discussion": 16,
+        "investigator/day_vote": 11,
+        "investigator/night_action": 22,
+        "healer/day_discussion": 17,
+        "healer/day_vote": 21,
+        "healer/night_action": 22,
+        "serial_killer/day_discussion": 0,
+        "serial_killer/day_vote": 0,
+        "serial_killer/night_action": 0,
+        "vigilante/day_discussion": 16,
+        "vigilante/day_vote": 22,
+        "vigilante/night_action": 26
+      }
+    }
+  }
+]

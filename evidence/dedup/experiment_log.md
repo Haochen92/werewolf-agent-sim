@@ -111,7 +111,7 @@ Per-extraction dedup catches a new entry against what *already exists*, but it c
 near-duplicates that entered in *different* games and only later sit together — so the store kept
 bloating. The second layer is **batch** dedup: an offline pass that sweeps the *whole* store in
 similarity clusters and collapses redundancy a cluster at a time. Mechanics:
-[batch_architecture.md](batch_architecture.md); tuning: [batch_prompt_tuning/](batch_prompt_tuning/experiment_log.md).
+[batch_architecture.md](batch_architecture.md); tuning: [batch_dedup/](batch_dedup/experiment_log.md).
 
 ## 5 · Does cleaning the store actually help retrieval? (and the embedding ceiling, measured)
 
@@ -157,7 +157,7 @@ corrections beat directional cascades.** But the *strategic* lean — should the
 toward discard or keep? — was left **undecided on purpose**. It "depends on downstream retrieval quality
 and agent strategy application, not on the prompt," and that downstream eval is part of what's frozen
 (§8). **Still open.** Detail: [per_extraction/](per_extraction/experiment_log.md),
-[batch_prompt_tuning/](batch_prompt_tuning/experiment_log.md).
+[batch_dedup/](batch_dedup/experiment_log.md).
 
 ## 7 · MERGE removed from online dedup
 
@@ -212,7 +212,7 @@ here. Current state: [report.md](report.md).
 |---|---|---|
 | §1–§2, §5 | [store_retrieval_impact/experiment_log.md](store_retrieval_impact/experiment_log.md) | does dedup help retrieval? (n=5 → n=39 correction) |
 | §3, §6, §7 | [per_extraction/experiment_log.md](per_extraction/experiment_log.md) | online dedup prompt tuning v1→v11b; MERGE removal |
-| §4, §6 | [batch_prompt_tuning/experiment_log.md](batch_prompt_tuning/experiment_log.md) | offline dedup prompt + two-pass tuning |
+| §4, §6 | [batch_dedup/experiment_log.md](batch_dedup/experiment_log.md) | offline dedup prompt + two-pass tuning |
 | §5 | [embedding_prefilter/experiment_log.md](embedding_prefilter/experiment_log.md) | automatic pre-filter calibration + the measured ceiling |
 | §8 | [incremental_convergence.md](incremental_convergence.md) | incremental non-convergence diagnosis + fix |
 | reference | [batch_architecture.md](batch_architecture.md) | batch-pass mechanics (how-it-works) |

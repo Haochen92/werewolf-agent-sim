@@ -96,7 +96,7 @@ Filtering made scores *worse*. Two mechanisms caused this:
 
 ## Phase 2: v3 Prompt Calibration and Larger Sample (n=39)
 
-The original evaluation above used n=5 frozen cases and v0 (untuned) batch dedup prompts. After tuning batch prompts through v1-v3 (see [batch_prompt_tuning](../batch_prompt_tuning/experiment_log.md)), we created a third store — v4_deduped_v2 — using v3 prompts, then re-evaluated all three stores on the full 40-case eval set (39 complete).
+The original evaluation above used n=5 frozen cases and v0 (untuned) batch dedup prompts. After tuning batch prompts through v1-v3 (see [batch_dedup](../batch_dedup/experiment_log.md)), we created a third store — v4_deduped_v2 — using v3 prompts, then re-evaluated all three stores on the full 40-case eval set (39 complete).
 
 ### Store sizes
 

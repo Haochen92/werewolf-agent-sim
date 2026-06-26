@@ -30,7 +30,7 @@ Golden labels: `eval_sets/batch_dedup_golden_labels.json` — 17 clusters, 149 i
 
 ## Prompt Versions
 
-Each important checkpoint is stored in `evidence/dedup/batch_prompt_tuning/prompt_versions/`.
+Each important checkpoint is stored in `evidence/dedup/batch_dedup/prompt_versions/`.
 
 ### v0 (baseline)
 

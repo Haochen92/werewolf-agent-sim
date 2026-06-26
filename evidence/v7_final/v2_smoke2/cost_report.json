@@ -1,0 +1,15 @@
+{
+  "per_gen_games_usd": {
+    "1": {
+      "on": 0.8349,
+      "off": 0.3234
+    },
+    "2": {
+      "on": 0.8552,
+      "off": 0.4003
+    }
+  },
+  "games_total_usd": 2.41,
+  "grand_total_usd": 2.75,
+  "overhead_usd": 0.34
+}

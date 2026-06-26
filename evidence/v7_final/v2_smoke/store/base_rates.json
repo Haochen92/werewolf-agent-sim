@@ -1,0 +1,42 @@
+{
+  "wolf/night_action": [
+    0.36,
+    50
+  ],
+  "serial_killer/night_action": [
+    0.6363636363636364,
+    22
+  ],
+  "vigilante/night_action": [
+    0.1,
+    20
+  ],
+  "investigator/night_action": [
+    0.6666666666666666,
+    15
+  ],
+  "investigator/day_vote": [
+    0.6666666666666666,
+    15
+  ],
+  "vigilante/day_vote": [
+    0.3333333333333333,
+    18
+  ],
+  "healer/day_vote": [
+    0.35,
+    20
+  ],
+  "villager/day_vote": [
+    0.42857142857142855,
+    42
+  ],
+  "wolf/day_vote": [
+    -0.30434782608695654,
+    23
+  ],
+  "serial_killer/day_vote": [
+    0.7619047619047619,
+    21
+  ]
+}

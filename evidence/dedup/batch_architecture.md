@@ -96,7 +96,7 @@ For DISCARD/MERGE the cluster collapses onto a **survivor**:
 ## How it's verified
 
 - **Decision quality** (does it merge the *right* things) → empirical, in this folder:
-  golden-label accuracy on the cluster prompts (`batch_prompt_tuning/`) and downstream
+  golden-label accuracy on the cluster prompts (`batch_dedup/`) and downstream
   retrieval impact (`store_retrieval_impact/`). An LLM merge can only be judged by an eval,
   not a unit test.
 - **Deterministic mechanics** (clustering construction, survivor selection, count merging,

@@ -55,7 +55,7 @@ audit-only)** — drop into it *only* to re-audit a result you doubt; "—" mean
 | **Credit-aware synthesis** beats the outcome-halo baseline | [synth_deluck_ab.py](../../evaluation/src/experiments/synth_deluck_ab.py) · [synth_deluck_ab/](synth_deluck_ab/) | — |
 | Discussion credit = **free floor + paid tagger** tiers | [discussion_credit_deterministic.py](discussion_credit_deterministic.py) · [tagger_accuracy.py](tagger_accuracy.py)/[tagger_effectiveness.py](tagger_effectiveness.py) · [heldout_credit_reproduction.py](heldout_credit_reproduction.py) | — |
 | **Rolling-window** credit (the non-stationarity guard) | [windowed_credit.py](windowed_credit.py) | — |
-| Dedup = **gate-then-embed, KEEP/DISCARD freeze-old**, top_k=10 | [dedup/](../dedup/) — embedding_prefilter, batch_prompt_tuning | v5 `experiments/dedup_*.py` |
+| Dedup = **gate-then-embed, KEEP/DISCARD freeze-old**, top_k=10 | [dedup/](../dedup/) — embedding_prefilter, batch_dedup | v5 `experiments/dedup_*.py` |
 
 ---
 

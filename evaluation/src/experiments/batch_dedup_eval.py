@@ -454,7 +454,7 @@ def main() -> None:
             model_slug = args.model.replace("/", "_").replace("-", "_")
         thinking_slug = f"_think_{args.thinking}" if args.thinking and not args.two_pass else ""
         variant_slug = f"_{args.prompt_variant}" if args.prompt_variant != "default" else ""
-        args.output = REPO_ROOT / "evidence" / "dedup" / "batch_prompt_tuning" / f"eval_{model_slug}{thinking_slug}{variant_slug}_{ts}.json"
+        args.output = REPO_ROOT / "evidence" / "dedup" / "batch_dedup" / f"eval_{model_slug}{thinking_slug}{variant_slug}_{ts}.json"
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w") as f:

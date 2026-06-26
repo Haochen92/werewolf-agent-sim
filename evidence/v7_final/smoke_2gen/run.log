@@ -1,0 +1,133 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+
+=== generation 1/2 — ON arm (2 games x2 parallel, gemini-3.1-flash-lite) ===
+Planned runs: 1
+- loop_smoke_2gen_gen1_on_g1_town_only_001: session=loop_smoke_2gen_gen1_on_g1_town_only {'wolf': False, 'villager': True, 'healer': True, 'investigator': True, 'serial_killer': False, 'vigilante': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': True, 'seed_store_dir': 'evidence/v7_final/smoke_2gen/gen1_snapshot', 'dump_store_dir': 'evidence/v7_final/smoke_2gen/gen1_on_store_g1'}
+Planned runs: 1
+- loop_smoke_2gen_gen1_on_g0_town_only_001: session=loop_smoke_2gen_gen1_on_g0_town_only {'wolf': False, 'villager': True, 'healer': True, 'investigator': True, 'serial_killer': False, 'vigilante': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': True, 'seed_store_dir': 'evidence/v7_final/smoke_2gen/gen1_snapshot', 'dump_store_dir': 'evidence/v7_final/smoke_2gen/gen1_on_store_g0'}
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen1_on_g0.jsonl
+Running loop_smoke_2gen_gen1_on_g0_town_only_001 in session loop_smoke_2gen_gen1_on_g0_town_only
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen1_on_g1.jsonl
+Running loop_smoke_2gen_gen1_on_g1_town_only_001 in session loop_smoke_2gen_gen1_on_g1_town_only
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen1_on_g1_town_only_001: winner=serial_killer day=5
+Batch complete: 1 succeeded, 0 failed
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen1_on_g0_town_only_001: winner=villagers day=7
+Batch complete: 1 succeeded, 0 failed
+  merge: {'new_obs': 46, 'deduped': True}
+=== generation 1 — OFF baseline (all_disabled, no seed/dump) ===
+Planned runs: 1
+- loop_smoke_2gen_gen1_off_g1_all_disabled_001: session=loop_smoke_2gen_gen1_off_g1_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
+Planned runs: 1
+- loop_smoke_2gen_gen1_off_g0_all_disabled_001: session=loop_smoke_2gen_gen1_off_g0_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen1_off_g1.jsonl
+Running loop_smoke_2gen_gen1_off_g1_all_disabled_001 in session loop_smoke_2gen_gen1_off_g1_all_disabled
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen1_off_g0.jsonl
+Running loop_smoke_2gen_gen1_off_g0_all_disabled_001 in session loop_smoke_2gen_gen1_off_g0_all_disabled
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen1_off_g0_all_disabled_001: winner=villagers day=4
+Batch complete: 1 succeeded, 0 failed
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen1_off_g1_all_disabled_001: winner=villagers day=5
+Batch complete: 1 succeeded, 0 failed
+  credit: {'total_sps': 0, 'credited': 0, 'ledger_keys': 0, 'matched': 0} window_follows=0
+  credit_dist: {'n_sps': 0, 'n_followed': 0, 'follow_p50': 0, 'follow_max': 0, 'n_prune_eligible': 0, 'n_eligible_neg_lift': 0}
+  consolidate: prune_evict={'pruned': 0, 'evicted': 0, 'kept': 0, 'spared': 0} obs_evict={'obs_dropped': 0, 'obs_kept': 45} synth={'added': 14, 'cells_synthed': 8, 'with_track_record': 0}
+  score: {'off/overall': 0.395, 'off/wolf': 0.098, 'off/serial_killer': 0.543, 'off/town': 0.647, 'on/overall': 0.159, 'on/town': 0.159}
+
+=== generation 2/2 — ON arm (2 games x2 parallel, gemini-3.1-flash-lite) ===
+Planned runs: 1
+- loop_smoke_2gen_gen2_on_g0_town_only_001: session=loop_smoke_2gen_gen2_on_g0_town_only {'wolf': False, 'villager': True, 'healer': True, 'investigator': True, 'serial_killer': False, 'vigilante': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': True, 'seed_store_dir': 'evidence/v7_final/smoke_2gen/gen2_snapshot', 'dump_store_dir': 'evidence/v7_final/smoke_2gen/gen2_on_store_g0'}
+Planned runs: 1
+- loop_smoke_2gen_gen2_on_g1_town_only_001: session=loop_smoke_2gen_gen2_on_g1_town_only {'wolf': False, 'villager': True, 'healer': True, 'investigator': True, 'serial_killer': False, 'vigilante': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': True, 'seed_store_dir': 'evidence/v7_final/smoke_2gen/gen2_snapshot', 'dump_store_dir': 'evidence/v7_final/smoke_2gen/gen2_on_store_g1'}
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen2_on_g0.jsonl
+Running loop_smoke_2gen_gen2_on_g0_town_only_001 in session loop_smoke_2gen_gen2_on_g0_town_only
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen2_on_g1.jsonl
+Running loop_smoke_2gen_gen2_on_g1_town_only_001 in session loop_smoke_2gen_gen2_on_g1_town_only
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen2_on_g0_town_only_001: winner=villagers day=4
+Batch complete: 1 succeeded, 0 failed
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen2_on_g1_town_only_001: winner=villagers day=6
+Batch complete: 1 succeeded, 0 failed
+  merge: {'new_obs': 50, 'deduped': True}
+=== generation 2 — OFF baseline (all_disabled, no seed/dump) ===
+Planned runs: 1
+- loop_smoke_2gen_gen2_off_g0_all_disabled_001: session=loop_smoke_2gen_gen2_off_g0_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
+Planned runs: 1
+- loop_smoke_2gen_gen2_off_g1_all_disabled_001: session=loop_smoke_2gen_gen2_off_g1_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen2_off_g0.jsonl
+Running loop_smoke_2gen_gen2_off_g0_all_disabled_001 in session loop_smoke_2gen_gen2_off_g0_all_disabled
+Runtime fingerprint: {'git_commit': '4e1df73831812ad39cb8b9477e44260afa1134fe', 'git_dirty': True, 'prompt_bundle_hash': 'e059459b809a07de', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-001', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Writing JSONL results to: evidence/v7_final/smoke_2gen/gen2_off_g1.jsonl
+Running loop_smoke_2gen_gen2_off_g1_all_disabled_001 in session loop_smoke_2gen_gen2_off_g1_all_disabled
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen2_off_g0_all_disabled_001: winner=wolves day=5
+Batch complete: 1 succeeded, 0 failed
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed loop_smoke_2gen_gen2_off_g1_all_disabled_001: winner=wolves day=6
+Batch complete: 1 succeeded, 0 failed
+  credit: {'total_sps': 14, 'credited': 8, 'ledger_keys': 8, 'matched': 8} window_follows=26
+  credit_dist: {'n_sps': 14, 'n_followed': 8, 'follow_p50': 2, 'follow_max': 11, 'n_prune_eligible': 7, 'n_eligible_neg_lift': 2}
+  consolidate: prune_evict={'pruned': 1, 'evicted': 0, 'kept': 13, 'spared': 0} obs_evict={'obs_dropped': 0, 'obs_kept': 93} synth={'added': 37, 'cells_synthed': 8, 'with_track_record': 6}
+  score: {'off/overall': 0.48, 'off/wolf': 0.662, 'off/serial_killer': 0.75, 'off/town': -0.048, 'on/overall': 0.316, 'on/town': 0.316}
+
+loop history -> evidence/v7_final/smoke_2gen/loop_history.json

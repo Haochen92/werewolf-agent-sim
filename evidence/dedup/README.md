@@ -18,7 +18,7 @@ Key finding at the time: observations efficiency jumped from 3.00 to 4.00 and re
 
 **Caveat**: The n=5 sample was optimistic. The full n=39 replication (May 26) showed v4_deduped actually *loses* observation relevance (-0.28 mean delta, 2W/24T/14L vs v4) with zero efficiency gain. The aggressive 39% store reduction (v0 prompts) crossed the line into information loss.
 
-### Phase 2: [Batch Prompt Tuning](batch_prompt_tuning/experiment_log.md) + [Retrieval Impact](store_retrieval_impact/experiment_log.md#phase-2) (May 26)
+### Phase 2: [Batch Dedup](batch_dedup/experiment_log.md) + [Retrieval Impact](store_retrieval_impact/experiment_log.md#phase-2) (May 26)
 
 Principled evaluation of batch dedup prompts using 111-key golden label set. Tuned prompts from v0 through v3, adding anti-over-merge calibration, indexed keys, and verification checklists. Tested three models (3.5-flash, 2.5-pro, flash-lite).
 

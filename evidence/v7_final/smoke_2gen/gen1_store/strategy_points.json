@@ -1,0 +1,647 @@
+{
+  "description": "Strategy-point memory snapshot with action-phase namespaces. Situation field is used for semantic search; action stores the recommended move.",
+  "namespaces": {
+    "strategy_points/healer/day_discussion": [],
+    "strategy_points/healer/day_vote": [
+      {
+        "created_at": "2026-06-21T08:40:28.881435+00:00",
+        "key": "d1e8f570-e81f-4001-a120-912d7bfa3c15",
+        "namespace": [
+          "strategy_points",
+          "healer",
+          "day_vote"
+        ],
+        "updated_at": "2026-06-21T08:40:28.881439+00:00",
+        "value": {
+          "action": "When the village lacks clear evidence and you are not under suspicion, abstain or vote with a non-committal bloc. Prioritize self-preservation to guarantee your night action, even if it means not saving a player you believe is a villager. Your survival is more valuable than taking a stand in an information-poor environment.",
+          "dimensions": {
+            "action": "When the village lacks clear evidence and you are not under suspicion, abstain or vote with a non-committal bloc. Prioritize self-preservation to guarantee your night action, even if it means not saving a player you believe is a villager. Your survival is more valuable than taking a stand in an information-poor environment.",
+            "action_phase": "day_vote",
+            "consensus_direction": "no_clear_direction",
+            "consensus_text": "The village is chaotic, divided, or moving towards a 'no elimination' vote due to a lack of actionable information. There is no clear, evidence-based consensus forming.",
+            "criticality_stakes": "The vote is not game-ending. The primary goal is to avoid a costly village mis-elimination and ensure key roles, like yourself, survive to the next night phase to gather more information.",
+            "direction": "defensive",
+            "distance_to_parity": 3,
+            "divergence_sign": "no_divergence",
+            "exposure_class": "safe",
+            "forward_exposure": "Committing a vote, especially to save a controversial player, would link you to them and make you a prime target for the wolves at night. Abstaining or joining a 'no elimination' consensus keeps your role and alignment hidden.",
+            "heat_now": "Low to none. You are not a person of interest and have not been a central part of any major conflicts.",
+            "honesty": "deceptive",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "No power roles have been confirmed, no night action results have been revealed, and all accusations are based on speculation. The game is information-starved.",
+            "is_swing": false,
+            "my_position": "holding out",
+            "perspective": "healer",
+            "players_alive": 9,
+            "public_private_text": "Privately, you know your role is Healer and that your survival is critical for the village's long-term chances. Publicly, you project the image of an undecided villager, waiting for more information before committing.",
+            "situation": "During an early-game vote, the village is information-starved and is either deadlocked or moving to eliminate a player based on panic or thin speculation.",
+            "target_landscape": "The potential targets are based on weak behavioral reads or speculation, or the room is so divided that no single target has emerged. There is no evidence-backed case."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "deceptive",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "During an early-game vote, the village is information-starved and is either deadlocked or moving to eliminate a player based on panic or thin speculation. Information landscape: No power roles have been confirmed, no night action results have been revealed, and all accusations are based on speculation. The game is information-starved. Stakes: The vote is not game-ending. The primary goal is to avoid a costly village mis-elimination and ensure key roles, like yourself, survive to the next night phase to gather more information. Consensus: The village is chaotic, divided, or moving towards a 'no elimination' vote due to a lack of actionable information. There is no clear, evidence-based consensus forming. My position: holding out Heat: Low to none. You are not a person of interest and have not been a central part of any major conflicts. Forward exposure: Committing a vote, especially to save a controversial player, would link you to them and make you a prime target for the wolves at night. Abstaining or joining a 'no elimination' consensus keeps your role and alignment hidden. Target landscape: The potential targets are based on weak behavioral reads or speculation, or the room is so divided that no single target has emerged. There is no evidence-backed case. Public vs private: Privately, you know your role is Healer and that your survival is critical for the village's long-term chances. Publicly, you project the image of an undecided villager, waiting for more information before committing."
+        }
+      },
+      {
+        "created_at": "2026-06-21T08:40:29.258169+00:00",
+        "key": "07e3d1bb-3100-43d9-9d5c-c753656f5e9e",
+        "namespace": [
+          "strategy_points",
+          "healer",
+          "day_vote"
+        ],
+        "updated_at": "2026-06-21T08:40:29.258174+00:00",
+        "value": {
+          "action": "When strong, public evidence (e.g., voting records, claims from a confirmed info role) points to a single wolf suspect, vote decisively to eliminate them. Do not abstain or split the vote; commit to removing the clear threat, whether you are driving the consensus or aligning with it.",
+          "dimensions": {
+            "action": "When strong, public evidence (e.g., voting records, claims from a confirmed info role) points to a single wolf suspect, vote decisively to eliminate them. Do not abstain or split the vote; commit to removing the clear threat, whether you are driving the consensus or aligning with it.",
+            "action_phase": "day_vote",
+            "consensus_direction": "aligns_with_my_read",
+            "consensus_text": "A strong consensus is forming or has formed around eliminating the evidence-backed suspect. The village is largely united on this vote.",
+            "criticality_stakes": "This is a critical moment to capitalize on clear information. Failing to eliminate a well-evidenced wolf wastes valuable information and cedes momentum back to the evil faction.",
+            "direction": "offensive",
+            "distance_to_parity": 2,
+            "divergence_sign": "no_divergence",
+            "exposure_class": "safe",
+            "forward_exposure": "Voting against the wolf will solidify your position as a trusted villager but will also likely make you a primary target for the remaining wolves, especially if you are driving the vote. This is an acceptable risk to remove a definite threat.",
+            "heat_now": "Your current heat level is secondary to the need to act. Whether you are driving the vote or simply aligning with an established consensus, the correct move is to secure the elimination.",
+            "honesty": "honest",
+            "info_landscape_class": "info_rich",
+            "information_landscape": "Information-rich, with clear, actionable evidence such as a voting audit or claims from a confirmed (or posthumously confirmed) informational role.",
+            "is_swing": false,
+            "my_position": "Either driving the vote based on your analysis or joining the majority that has correctly identified the threat.",
+            "perspective": "healer",
+            "players_alive": 7,
+            "public_private_text": "Your private knowledge as Healer (e.g., knowing who you saved from a likely attack) likely corroborates the public evidence against the wolf target, reinforcing your decision. The public case is strong enough on its own.",
+            "situation": "During a day vote, strong public evidence has emerged against a single player, making them the clear and logical target for elimination. The village is rallying to vote them out.",
+            "target_landscape": "The target is a single player strongly implicated by hard evidence, such as voting patterns or testimony from a confirmed role. They are the clear consensus target."
+          },
+          "direction": "offensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "During a day vote, strong public evidence has emerged against a single player, making them the clear and logical target for elimination. The village is rallying to vote them out. Information landscape: Information-rich, with clear, actionable evidence such as a voting audit or claims from a confirmed (or posthumously confirmed) informational role. Stakes: This is a critical moment to capitalize on clear information. Failing to eliminate a well-evidenced wolf wastes valuable information and cedes momentum back to the evil faction. Consensus: A strong consensus is forming or has formed around eliminating the evidence-backed suspect. The village is largely united on this vote. My position: Either driving the vote based on your analysis or joining the majority that has correctly identified the threat. Heat: Your current heat level is secondary to the need to act. Whether you are driving the vote or simply aligning with an established consensus, the correct move is to secure the elimination. Forward exposure: Voting against the wolf will solidify your position as a trusted villager but will also likely make you a primary target for the remaining wolves, especially if you are driving the vote. This is an acceptable risk to remove a definite threat. Target landscape: The target is a single player strongly implicated by hard evidence, such as voting patterns or testimony from a confirmed role. They are the clear consensus target. Public vs private: Your private knowledge as Healer (e.g., knowing who you saved from a likely attack) likely corroborates the public evidence against the wolf target, reinforcing your decision. The public case is strong enough on its own."
+        }
+      }
+    ],
+    "strategy_points/healer/night_action": [
+      {
+        "created_at": "2026-06-21T08:40:29.559487+00:00",
+        "key": "09e7e32b-4716-4428-8f2e-f5dce3b3688d",
+        "namespace": [
+          "strategy_points",
+          "healer",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:29.559491+00:00",
+        "value": {
+          "action": "Prioritize healing the confirmed or revealed village power role (e.g., Investigator, Vigilante). When a power role becomes the focus of attacks, they are your highest-priority save target to preserve the village's information or killing power.",
+          "dimensions": {
+            "action": "Prioritize healing the confirmed or revealed village power role (e.g., Investigator, Vigilante). When a power role becomes the focus of attacks, they are your highest-priority save target to preserve the village's information or killing power.",
+            "action_phase": "night_action",
+            "criticality_stakes": "The game is at a tipping point. Losing the only remaining confirmed power role would likely cripple the village's ability to identify and eliminate threats, making it a must-save situation to prevent a swift loss.",
+            "direction": "defensive",
+            "distance_to_parity": 2,
+            "exposure_class": "safe",
+            "honesty": "honest",
+            "info_landscape_class": "info_rich",
+            "information_landscape": "The game is info-rich due to the confirmed identity of a power role. This creates a clear, high-value target for both protection and attack, giving the village a known asset to rally around.",
+            "is_swing": true,
+            "perspective": "healer",
+            "players_alive": 8,
+            "situation": "A key village power role (e.g., Investigator, Vigilante) has been confirmed or revealed, making them the primary target for all evil factions, often after another power role has already been eliminated.",
+            "target_landscape": "The primary choice is between the publicly confirmed/claimed power role, who is under heavy fire from multiple factions, and other villagers with less certain roles or lower threat levels."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "A key village power role (e.g., Investigator, Vigilante) has been confirmed or revealed, making them the primary target for all evil factions, often after another power role has already been eliminated. Information landscape: The game is info-rich due to the confirmed identity of a power role. This creates a clear, high-value target for both protection and attack, giving the village a known asset to rally around. Stakes: The game is at a tipping point. Losing the only remaining confirmed power role would likely cripple the village's ability to identify and eliminate threats, making it a must-save situation to prevent a swift loss. Target landscape: The primary choice is between the publicly confirmed/claimed power role, who is under heavy fire from multiple factions, and other villagers with less certain roles or lower threat levels."
+        }
+      }
+    ],
+    "strategy_points/investigator/day_discussion": [
+      {
+        "created_at": "2026-06-21T08:40:29.859260+00:00",
+        "key": "0a8217ca-90b5-47b6-b1e5-8de0eb0462a6",
+        "namespace": [
+          "strategy_points",
+          "investigator",
+          "day_discussion"
+        ],
+        "updated_at": "2026-06-21T08:40:29.859264+00:00",
+        "value": {
+          "action": "When under critical suspicion due to a communication error, stop trying to use your information to prove your innocence. Pivot to a pure survival-based defense. Argue as if you are a regular villager being railroaded, focusing on the motives of your accusers or finding a plausible alternate target based on public behavior. Do not reveal more of your findings or claim your role, as it will be perceived as a desperate bluff.",
+          "dimensions": {
+            "action": "When under critical suspicion due to a communication error, stop trying to use your information to prove your innocence. Pivot to a pure survival-based defense. Argue as if you are a regular villager being railroaded, focusing on the motives of your accusers or finding a plausible alternate target based on public behavior. Do not reveal more of your findings or claim your role, as it will be perceived as a desperate bluff.",
+            "action_phase": "day_discussion",
+            "consensus_direction": "opposes_my_read",
+            "consensus_text": "The village is largely united against me. My attempts to provide or clarify information have been interpreted as proof of deception rather than helpful contributions.",
+            "criticality_stakes": "My elimination is highly probable. The immediate priority is surviving this day's vote, even if it means withholding valuable information for a future round.",
+            "direction": "defensive",
+            "distance_to_parity": 2,
+            "divergence_sign": "contradicts",
+            "exposure_class": "exposed",
+            "forward_exposure": "Attempting to use my role's power will only confirm the village's suspicion that I'm a wolf caught in a lie. By feigning ignorance of any special role, I attempt to reset my credibility and survive the day's vote. This is reversible if I survive.",
+            "heat_now": "Critical to fatal. I am the primary candidate for elimination, and a consensus is forming against me based on my perceived behavioral tells or communication blunders.",
+            "honesty": "deceptive",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The game is information-starved, with few hard facts available. The village is relying heavily on social reads and behavioral analysis to find targets.",
+            "is_swing": false,
+            "my_position": "Driving the discussion as the main suspect.",
+            "perspective": "investigator",
+            "players_alive": 7,
+            "public_private_text": "Privately, I know I am the investigator and my information is valid. Publicly, I will act like a cornered villager, completely withholding my role and findings to avoid them being used as further evidence against me.",
+            "situation": "As the investigator, I am under intense suspicion due to a communication slip-up or perceived behavioral lie, and my attempts to correct the situation with my role's information are making things worse.",
+            "target_landscape": "I am the current target. The goal is to shift this focus to another player, likely one of my primary accusers, based on social reads and public information, not my private knowledge."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "deceptive",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "As the investigator, I am under intense suspicion due to a communication slip-up or perceived behavioral lie, and my attempts to correct the situation with my role's information are making things worse. Information landscape: The game is information-starved, with few hard facts available. The village is relying heavily on social reads and behavioral analysis to find targets. Stakes: My elimination is highly probable. The immediate priority is surviving this day's vote, even if it means withholding valuable information for a future round. Consensus: The village is largely united against me. My attempts to provide or clarify information have been interpreted as proof of deception rather than helpful contributions. My position: Driving the discussion as the main suspect. Heat: Critical to fatal. I am the primary candidate for elimination, and a consensus is forming against me based on my perceived behavioral tells or communication blunders. Forward exposure: Attempting to use my role's power will only confirm the village's suspicion that I'm a wolf caught in a lie. By feigning ignorance of any special role, I attempt to reset my credibility and survive the day's vote. This is reversible if I survive. Target landscape: I am the current target. The goal is to shift this focus to another player, likely one of my primary accusers, based on social reads and public information, not my private knowledge. Public vs private: Privately, I know I am the investigator and my information is valid. Publicly, I will act like a cornered villager, completely withholding my role and findings to avoid them being used as further evidence against me."
+        }
+      }
+    ],
+    "strategy_points/investigator/day_vote": [],
+    "strategy_points/investigator/night_action": [
+      {
+        "created_at": "2026-06-21T08:40:30.191614+00:00",
+        "key": "7dbfd75f-f7e0-4e03-9e02-d23fad786873",
+        "namespace": [
+          "strategy_points",
+          "investigator",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:30.191618+00:00",
+        "value": {
+          "action": "Investigate the most active or vocal player from the initial day's discussion. This player is a high-information target; confirming them as either wolf or villager provides a strong pivot for the town's strategy.",
+          "dimensions": {
+            "action": "Investigate the most active or vocal player from the initial day's discussion. This player is a high-information target; confirming them as either wolf or villager provides a strong pivot for the town's strategy.",
+            "action_phase": "night_action",
+            "criticality_stakes": "The game is not at a critical juncture. The goal is to convert speculative behavioral reads into hard information to establish a strategic direction for the town. A successful check provides a massive advantage, while any check provides useful data.",
+            "direction": "positional",
+            "distance_to_parity": 3,
+            "exposure_class": "safe",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The board is information-starved. No roles have been confirmed, no voting patterns have emerged, and there are no established alliances or conflicts. All reads are purely speculative.",
+            "is_swing": false,
+            "perspective": "investigator",
+            "players_alive": 10,
+            "situation": "It is the first night, and the game has just begun. There is no hard information available, and all reads must be based on initial behavioral cues.",
+            "target_landscape": "All unconfirmed players. The choice is between players who are highly visible/active based on early-game behavior versus those who are quiet or passive."
+          },
+          "direction": "positional",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "It is the first night, and the game has just begun. There is no hard information available, and all reads must be based on initial behavioral cues. Information landscape: The board is information-starved. No roles have been confirmed, no voting patterns have emerged, and there are no established alliances or conflicts. All reads are purely speculative. Stakes: The game is not at a critical juncture. The goal is to convert speculative behavioral reads into hard information to establish a strategic direction for the town. A successful check provides a massive advantage, while any check provides useful data. Target landscape: All unconfirmed players. The choice is between players who are highly visible/active based on early-game behavior versus those who are quiet or passive."
+        }
+      }
+    ],
+    "strategy_points/serial_killer/day_discussion": [],
+    "strategy_points/serial_killer/day_vote": [],
+    "strategy_points/serial_killer/night_action": [],
+    "strategy_points/vigilante/day_discussion": [
+      {
+        "created_at": "2026-06-21T08:40:30.507842+00:00",
+        "key": "c3dec236-a1f3-4a72-b174-0dff9696ffa4",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "day_discussion"
+        ],
+        "updated_at": "2026-06-21T08:40:30.507847+00:00",
+        "value": {
+          "action": "If a claimed Investigator correctly outs you as the vigilante, deny the claim calmly but do not lead a counter-attack. Frame the situation as your word against theirs, sow doubt about the wisdom of trusting unverified claims, and attempt to shift focus to other players. Your immediate goal is survival, but orchestrating the elimination of a real Investigator will cripple the village.",
+          "dimensions": {
+            "action": "If a claimed Investigator correctly outs you as the vigilante, deny the claim calmly but do not lead a counter-attack. Frame the situation as your word against theirs, sow doubt about the wisdom of trusting unverified claims, and attempt to shift focus to other players. Your immediate goal is survival, but orchestrating the elimination of a real Investigator will cripple the village.",
+            "action_phase": "day_discussion",
+            "bullets_left": 1,
+            "consensus_direction": "no_clear_direction",
+            "consensus_text": "The village is divided and uncertain, caught between your denial and the Investigator's claim. There is no clear consensus.",
+            "criticality_stakes": "Mid-game stakes. Being eliminated is a significant loss of town power. However, causing the village to eliminate a confirmed Investigator is an even greater strategic disaster.",
+            "direction": "defensive",
+            "distance_to_parity": 2,
+            "divergence_sign": "contradicts",
+            "exposure_class": "exposed",
+            "forward_exposure": "Publicly denying a true claim commits you to a lie that could be exposed later. However, leading an aggressive attack on the Investigator risks your credibility and the town's chances if they are lynched and revealed to be town.",
+            "heat_now": "High and immediate. You have been directly accused by a potential power role, making you a central focus of suspicion.",
+            "honesty": "deceptive",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The situation is information-starved, boiling down to one player's word against another's, with no hard evidence for the village to use.",
+            "is_swing": false,
+            "my_position": "driving",
+            "perspective": "vigilante",
+            "players_alive": 7,
+            "public_private_text": "You privately know the Investigator is telling the truth and is a town asset. Publicly, you must portray them as a potential threat making a dangerous and unproven claim to save yourself.",
+            "situation": "A player claiming to be the Investigator makes a direct and accurate public claim, outing you as the vigilante and forcing a public confrontation.",
+            "target_landscape": "The primary target is the claimed Investigator who has correctly identified you. The conflict is based on their behavioral claim versus your denial."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "deceptive",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "A player claiming to be the Investigator makes a direct and accurate public claim, outing you as the vigilante and forcing a public confrontation. Information landscape: The situation is information-starved, boiling down to one player's word against another's, with no hard evidence for the village to use. Stakes: Mid-game stakes. Being eliminated is a significant loss of town power. However, causing the village to eliminate a confirmed Investigator is an even greater strategic disaster. Consensus: The village is divided and uncertain, caught between your denial and the Investigator's claim. There is no clear consensus. My position: driving Heat: High and immediate. You have been directly accused by a potential power role, making you a central focus of suspicion. Forward exposure: Publicly denying a true claim commits you to a lie that could be exposed later. However, leading an aggressive attack on the Investigator risks your credibility and the town's chances if they are lynched and revealed to be town. Target landscape: The primary target is the claimed Investigator who has correctly identified you. The conflict is based on their behavioral claim versus your denial. Public vs private: You privately know the Investigator is telling the truth and is a town asset. Publicly, you must portray them as a potential threat making a dangerous and unproven claim to save yourself."
+        }
+      },
+      {
+        "created_at": "2026-06-21T08:40:30.828944+00:00",
+        "key": "dec8d55f-ee6d-47c8-94d5-2fc380ebe3ec",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "day_discussion"
+        ],
+        "updated_at": "2026-06-21T08:40:30.828948+00:00",
+        "value": {
+          "action": "When a claimed Investigator makes a suspicious or illogical claim (e.g., 'confirming' a villager without a kill), do not lead a direct, aggressive charge. Instead, ask pointed, clarifying questions to guide the village to see the inconsistencies. Focus on the logic of their play ('How did you confirm them?') to expose the weakness of their claim without making it a personal attack.",
+          "dimensions": {
+            "action": "When a claimed Investigator makes a suspicious or illogical claim (e.g., 'confirming' a villager without a kill), do not lead a direct, aggressive charge. Instead, ask pointed, clarifying questions to guide the village to see the inconsistencies. Focus on the logic of their play ('How did you confirm them?') to expose the weakness of their claim without making it a personal attack.",
+            "action_phase": "day_discussion",
+            "bullets_left": 1,
+            "consensus_direction": "no_clear_direction",
+            "consensus_text": "The village is likely uncertain about the Investigator's claim, looking for a clear line of reasoning to follow.",
+            "criticality_stakes": "Mid-game. Exposing a fake claimant is valuable, but mistakenly discrediting a real town power role is a significant setback. The goal is to gain information while minimizing risk.",
+            "direction": "offensive",
+            "distance_to_parity": 2,
+            "divergence_sign": "confirms",
+            "exposure_class": "safe",
+            "forward_exposure": "Questioning a potential power role puts you on record as a doubter, which carries risk if they are a real but confused townie. This is less committal and more reversible than a direct accusation, lowering your personal exposure.",
+            "heat_now": "Moderate. Questioning a power role claim will draw some attention, but framing it as a request for clarification keeps heat lower than a direct attack.",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The primary evidence is behavioral and logical, based on the claimant's own words and the plausibility of their actions within the game's rules.",
+            "is_swing": false,
+            "my_position": "driving",
+            "perspective": "vigilante",
+            "players_alive": 7,
+            "public_private_text": "You privately suspect the claimant is lying or making a serious error based on game mechanics. Publicly, you are positioning yourself as a careful villager seeking clarity, not an accuser.",
+            "situation": "A player claiming to be an Investigator makes a suspicious or logically flawed public claim, creating an opportunity for interrogation.",
+            "target_landscape": "The target is a claimed Investigator whose claim seems behaviorally or logically flawed. Suspicion is based on the content of their statement."
+          },
+          "direction": "offensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "A player claiming to be an Investigator makes a suspicious or logically flawed public claim, creating an opportunity for interrogation. Information landscape: The primary evidence is behavioral and logical, based on the claimant's own words and the plausibility of their actions within the game's rules. Stakes: Mid-game. Exposing a fake claimant is valuable, but mistakenly discrediting a real town power role is a significant setback. The goal is to gain information while minimizing risk. Consensus: The village is likely uncertain about the Investigator's claim, looking for a clear line of reasoning to follow. My position: driving Heat: Moderate. Questioning a power role claim will draw some attention, but framing it as a request for clarification keeps heat lower than a direct attack. Forward exposure: Questioning a potential power role puts you on record as a doubter, which carries risk if they are a real but confused townie. This is less committal and more reversible than a direct accusation, lowering your personal exposure. Target landscape: The target is a claimed Investigator whose claim seems behaviorally or logically flawed. Suspicion is based on the content of their statement. Public vs private: You privately suspect the claimant is lying or making a serious error based on game mechanics. Publicly, you are positioning yourself as a careful villager seeking clarity, not an accuser."
+        }
+      }
+    ],
+    "strategy_points/vigilante/day_vote": [],
+    "strategy_points/vigilante/night_action": [
+      {
+        "created_at": "2026-06-21T08:40:31.150550+00:00",
+        "key": "bb57d05b-8931-4a86-a631-065430c8ecbb",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:31.150554+00:00",
+        "value": {
+          "action": "Abstain from shooting on the first night when there are no reliable leads. Conserve your bullet for a higher-certainty situation after at least one day of discussion and voting.",
+          "dimensions": {
+            "action": "Abstain from shooting on the first night when there are no reliable leads. Conserve your bullet for a higher-certainty situation after at least one day of discussion and voting.",
+            "action_phase": "night_action",
+            "bullets_left": 1,
+            "criticality_stakes": "The game is in its opening stages and is not at a critical decision point. The priority is information gathering, not making high-risk, low-certainty plays. A random shot is more likely to hit a villager than an evil role, and revealing yourself this early is a major strategic loss for the village.",
+            "direction": "defensive",
+            "distance_to_parity": 4,
+            "exposure_class": "safe",
+            "forward_exposure": "Shooting on Night 1 is an irreversible action that reveals the presence of a killing town role. This makes you a priority target for all evil factions, likely resulting in your death the following night.",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The game is information-starved. There are no confirmed roles, no voting records, and no public accusations with evidence. A shot would be random.",
+            "is_swing": false,
+            "perspective": "vigilante",
+            "players_alive": 9,
+            "situation": "It is the first night of the game with a large number of players alive, and no information has been generated from day-phase interactions.",
+            "target_landscape": "All other players are potential targets, but none have provided any evidence through claims, votes, or confirmed actions. All reads are purely speculative."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "It is the first night of the game with a large number of players alive, and no information has been generated from day-phase interactions. Information landscape: The game is information-starved. There are no confirmed roles, no voting records, and no public accusations with evidence. A shot would be random. Stakes: The game is in its opening stages and is not at a critical decision point. The priority is information gathering, not making high-risk, low-certainty plays. A random shot is more likely to hit a villager than an evil role, and revealing yourself this early is a major strategic loss for the village. Forward exposure: Shooting on Night 1 is an irreversible action that reveals the presence of a killing town role. This makes you a priority target for all evil factions, likely resulting in your death the following night. Target landscape: All other players are potential targets, but none have provided any evidence through claims, votes, or confirmed actions. All reads are purely speculative."
+        }
+      },
+      {
+        "created_at": "2026-06-21T08:40:31.474236+00:00",
+        "key": "ffeeae53-d1af-4656-a702-2b5923f6381c",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:31.474241+00:00",
+        "value": {
+          "action": "If you are under heavy suspicion and believe you are a likely target for the night kill, you must use your final bullet. The risk of your role being removed with no impact outweighs the risk of a bad shot. Target your strongest evil read, even if the evidence is behavioral or circumstantial.",
+          "dimensions": {
+            "action": "If you are under heavy suspicion and believe you are a likely target for the night kill, you must use your final bullet. The risk of your role being removed with no impact outweighs the risk of a bad shot. Target your strongest evil read, even if the evidence is behavioral or circumstantial.",
+            "action_phase": "night_action",
+            "bullets_left": 1,
+            "criticality_stakes": "The game is not yet at a tipping point, but losing your role and its final shot without any value is a major blow to the village's chances.",
+            "direction": "offensive",
+            "distance_to_parity": 2,
+            "exposure_class": "exposed",
+            "forward_exposure": "Using the bullet confirms the existence of a killing town role. If you survive, you may be forced to justify your shot. However, this is secondary to the immediate risk of being eliminated with no value gained.",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "Hard information is scarce or focused on a past event, leaving current threats to be assessed based on speculative behavioral reads.",
+            "is_swing": false,
+            "perspective": "vigilante",
+            "players_alive": 8,
+            "situation": "Following a chaotic day phase with a contentious claim or vote, you are under direct suspicion and a likely target for elimination by evil factions.",
+            "target_landscape": "Candidates include the most suspicious players based on voting patterns or behavior, especially those who seem to be flying under the radar while a central conflict distracts the town."
+          },
+          "direction": "offensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "Following a chaotic day phase with a contentious claim or vote, you are under direct suspicion and a likely target for elimination by evil factions. Information landscape: Hard information is scarce or focused on a past event, leaving current threats to be assessed based on speculative behavioral reads. Stakes: The game is not yet at a tipping point, but losing your role and its final shot without any value is a major blow to the village's chances. Forward exposure: Using the bullet confirms the existence of a killing town role. If you survive, you may be forced to justify your shot. However, this is secondary to the immediate risk of being eliminated with no value gained. Target landscape: Candidates include the most suspicious players based on voting patterns or behavior, especially those who seem to be flying under the radar while a central conflict distracts the town."
+        }
+      },
+      {
+        "created_at": "2026-06-21T08:40:31.775780+00:00",
+        "key": "5c39ff29-7e39-4d38-aae1-fea869aeb9f5",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:31.775785+00:00",
+        "value": {
+          "action": "If you are not under direct suspicion and have multiple bullets, hold your fire amidst high uncertainty (e.g., unconfirmed conflicting claims, possible healer saves). Conserving bullets allows you to act later with better information and avoids wasting a shot on a townie or a protected evil.",
+          "dimensions": {
+            "action": "If you are not under direct suspicion and have multiple bullets, hold your fire amidst high uncertainty (e.g., unconfirmed conflicting claims, possible healer saves). Conserving bullets allows you to act later with better information and avoids wasting a shot on a townie or a protected evil.",
+            "action_phase": "night_action",
+            "bullets_left": 2,
+            "criticality_stakes": "The game is not on a knife's edge. The primary risk is not inaction, but a costly misfire that wastes a valuable resource and potentially kills a townie. Patience is key.",
+            "direction": "defensive",
+            "distance_to_parity": 3,
+            "exposure_class": "safe",
+            "forward_exposure": "Holding the shot maintains your cover and the element of surprise. You reveal nothing and preserve your power as a threat-in-reserve for a more critical moment.",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "Evidence is highly speculative and contradictory, with key roles like healer potentially in play but unconfirmed. There is no clear, safe target.",
+            "is_swing": false,
+            "perspective": "vigilante",
+            "players_alive": 9,
+            "situation": "The village is divided by conflicting, unverified power role claims, creating a chaotic and information-poor environment for shooting.",
+            "target_landscape": "Primary targets are involved in a high-stakes, unverified conflict (e.g., an investigator and their accused), making any shot highly speculative and risky."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "The village is divided by conflicting, unverified power role claims, creating a chaotic and information-poor environment for shooting. Information landscape: Evidence is highly speculative and contradictory, with key roles like healer potentially in play but unconfirmed. There is no clear, safe target. Stakes: The game is not on a knife's edge. The primary risk is not inaction, but a costly misfire that wastes a valuable resource and potentially kills a townie. Patience is key. Forward exposure: Holding the shot maintains your cover and the element of surprise. You reveal nothing and preserve your power as a threat-in-reserve for a more critical moment. Target landscape: Primary targets are involved in a high-stakes, unverified conflict (e.g., an investigator and their accused), making any shot highly speculative and risky."
+        }
+      },
+      {
+        "created_at": "2026-06-21T08:40:32.154234+00:00",
+        "key": "38dd2d57-5960-4e2f-bd2d-ee3c9a6b7f14",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:32.154238+00:00",
+        "value": {
+          "action": "If a confirmed information role (e.g., an Investigator) provides a high-confidence read on a wolf, use your shot on that target. Prioritize acting on hard evidence over purely behavioral reads to maximize the impact of your limited bullets.",
+          "dimensions": {
+            "action": "If a confirmed information role (e.g., an Investigator) provides a high-confidence read on a wolf, use your shot on that target. Prioritize acting on hard evidence over purely behavioral reads to maximize the impact of your limited bullets.",
+            "action_phase": "night_action",
+            "bullets_left": 1,
+            "criticality_stakes": "The game is at a tipping point where eliminating a confirmed evil role can secure the village's majority and prevent wolves from reaching parity.",
+            "direction": "offensive",
+            "distance_to_parity": 1,
+            "exposure_class": "safe",
+            "forward_exposure": "Using a shot based on public information confirms a powerful pro-village role is in play. While this makes you a target for wolves, it's a justifiable move that solidifies your alignment with the town's information core.",
+            "honesty": "honest",
+            "info_landscape_class": "info_rich",
+            "information_landscape": "The game has become information-rich, with at least one confirmed role providing concrete leads that shift the game away from pure speculation.",
+            "is_swing": true,
+            "perspective": "vigilante",
+            "players_alive": 7,
+            "situation": "An information-gathering role has been confirmed by the village, and their findings have identified a clear, actionable wolf target, creating a prime opportunity to eliminate a threat.",
+            "target_landscape": "The primary candidate is a player definitively identified as a wolf by a confirmed town-aligned information role. All other players are low-priority targets."
+          },
+          "direction": "offensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "An information-gathering role has been confirmed by the village, and their findings have identified a clear, actionable wolf target, creating a prime opportunity to eliminate a threat. Information landscape: The game has become information-rich, with at least one confirmed role providing concrete leads that shift the game away from pure speculation. Stakes: The game is at a tipping point where eliminating a confirmed evil role can secure the village's majority and prevent wolves from reaching parity. Forward exposure: Using a shot based on public information confirms a powerful pro-village role is in play. While this makes you a target for wolves, it's a justifiable move that solidifies your alignment with the town's information core. Target landscape: The primary candidate is a player definitively identified as a wolf by a confirmed town-aligned information role. All other players are low-priority targets."
+        }
+      },
+      {
+        "created_at": "2026-06-21T08:40:32.465297+00:00",
+        "key": "bba46533-6cff-4a4e-a656-a8c77356d4b0",
+        "namespace": [
+          "strategy_points",
+          "vigilante",
+          "night_action"
+        ],
+        "updated_at": "2026-06-21T08:40:32.465302+00:00",
+        "value": {
+          "action": "If a key information role was just eliminated by vote, hold your fire for one night. Wait for their posthumous role reveal to confirm their credibility and clarify their accusations before expending a bullet on an unconfirmed target.",
+          "dimensions": {
+            "action": "If a key information role was just eliminated by vote, hold your fire for one night. Wait for their posthumous role reveal to confirm their credibility and clarify their accusations before expending a bullet on an unconfirmed target.",
+            "action_phase": "night_action",
+            "bullets_left": 2,
+            "criticality_stakes": "A misfire based on unconfirmed information could be game-losing. Waiting preserves a critical resource for a more certain opportunity that will likely emerge after the role reveal.",
+            "direction": "defensive",
+            "distance_to_parity": 2,
+            "exposure_class": "exposed",
+            "forward_exposure": "Holding fire is a zero-exposure move. It preserves your anonymity and your finite resources, and is fully reversible on the following night once more information is available.",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The information state is transitional. Key data (the dead player's role) is about to be revealed, which will dramatically reshape the landscape from starved to rich.",
+            "is_swing": true,
+            "perspective": "vigilante",
+            "players_alive": 8,
+            "situation": "An information role has just been voted out, leaving their claims in limbo. The town is awaiting a role reveal that will retroactively validate or invalidate a large chunk of the existing evidence.",
+            "target_landscape": "The potential targets are players accused by the now-dead info role, but their guilt is unconfirmed pending the role flip. The landscape is defined by uncertainty."
+          },
+          "direction": "defensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "An information role has just been voted out, leaving their claims in limbo. The town is awaiting a role reveal that will retroactively validate or invalidate a large chunk of the existing evidence. Information landscape: The information state is transitional. Key data (the dead player's role) is about to be revealed, which will dramatically reshape the landscape from starved to rich. Stakes: A misfire based on unconfirmed information could be game-losing. Waiting preserves a critical resource for a more certain opportunity that will likely emerge after the role reveal. Forward exposure: Holding fire is a zero-exposure move. It preserves your anonymity and your finite resources, and is fully reversible on the following night once more information is available. Target landscape: The potential targets are players accused by the now-dead info role, but their guilt is unconfirmed pending the role flip. The landscape is defined by uncertainty."
+        }
+      }
+    ],
+    "strategy_points/villager/day_discussion": [
+      {
+        "created_at": "2026-06-21T08:40:32.796280+00:00",
+        "key": "98ed6b9d-a456-4b41-a8b5-c4986f0b2ed6",
+        "namespace": [
+          "strategy_points",
+          "villager",
+          "day_discussion"
+        ],
+        "updated_at": "2026-06-21T08:40:32.796285+00:00",
+        "value": {
+          "action": "When an unverified information role's claim is the sole basis for a conflict, intervene to slow down the push for elimination. Argue that the evidence is insufficient for a high-confidence vote on either party. Propose the village either pursue a 'no elimination' day to gather more information or shift focus to find a different target with stronger evidence against them.",
+          "dimensions": {
+            "action": "When an unverified information role's claim is the sole basis for a conflict, intervene to slow down the push for elimination. Argue that the evidence is insufficient for a high-confidence vote on either party. Propose the village either pursue a 'no elimination' day to gather more information or shift focus to find a different target with stronger evidence against them.",
+            "action_phase": "day_discussion",
+            "consensus_direction": "no_clear_direction",
+            "consensus_text": "The village is divided or uncertain, struggling to decide between two unverified players. There is no clear majority forming, and sentiment could easily be swayed.",
+            "criticality_stakes": "The game is not at a tipping point, but eliminating a potential information role would be a major loss for the village, while eliminating an innocent based on a wolf's frame would be equally damaging. The priority is to avoid a costly error.",
+            "direction": "positional",
+            "distance_to_parity": 2,
+            "exposure_class": "safe",
+            "heat_now": "None. I am not involved in the central conflict and am not under suspicion.",
+            "honesty": "honest",
+            "info_landscape_class": "info_starved",
+            "information_landscape": "The game is information-starved. The central conflict relies on a single, unverified role claim versus a circumstantial or behavioral defense. There is no corroborating evidence.",
+            "is_swing": false,
+            "my_position": "holding out",
+            "perspective": "villager",
+            "players_alive": 8,
+            "situation": "An unverified player, often claiming an information role, accuses another player, creating a 1-on-1 conflict based on weak or purely behavioral evidence with no clear village consensus.",
+            "target_landscape": "The candidates are the unverified role claimant and the player they accused. Both are supported or condemned by purely behavioral reads or unsubstantiated claims."
+          },
+          "direction": "positional",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "An unverified player, often claiming an information role, accuses another player, creating a 1-on-1 conflict based on weak or purely behavioral evidence with no clear village consensus. Information landscape: The game is information-starved. The central conflict relies on a single, unverified role claim versus a circumstantial or behavioral defense. There is no corroborating evidence. Stakes: The game is not at a tipping point, but eliminating a potential information role would be a major loss for the village, while eliminating an innocent based on a wolf's frame would be equally damaging. The priority is to avoid a costly error. Consensus: The village is divided or uncertain, struggling to decide between two unverified players. There is no clear majority forming, and sentiment could easily be swayed. My position: holding out Heat: None. I am not involved in the central conflict and am not under suspicion. Target landscape: The candidates are the unverified role claimant and the player they accused. Both are supported or condemned by purely behavioral reads or unsubstantiated claims."
+        }
+      }
+    ],
+    "strategy_points/villager/day_vote": [
+      {
+        "created_at": "2026-06-21T08:40:33.118251+00:00",
+        "key": "ec186617-2bf4-4a0c-9683-0e2132d57187",
+        "namespace": [
+          "strategy_points",
+          "villager",
+          "day_vote"
+        ],
+        "updated_at": "2026-06-21T08:40:33.118256+00:00",
+        "value": {
+          "action": "Before casting a final vote on a suspect identified by voting patterns, pause to consider if their 'suspicious' behavior could plausibly be explained by a hidden, pro-village power role (e.g., a Healer avoiding detection). If key power roles are unaccounted for and the evidence is purely behavioral, advocate for re-evaluating the target to avoid accidentally eliminating a critical village asset.",
+          "dimensions": {
+            "action": "Before casting a final vote on a suspect identified by voting patterns, pause to consider if their 'suspicious' behavior could plausibly be explained by a hidden, pro-village power role (e.g., a Healer avoiding detection). If key power roles are unaccounted for and the evidence is purely behavioral, advocate for re-evaluating the target to avoid accidentally eliminating a critical village asset.",
+            "action_phase": "day_vote",
+            "consensus_direction": "aligns_with_my_read",
+            "consensus_text": "The majority of the village is aligned on eliminating a single suspect, with the primary evidence being their voting history.",
+            "criticality_stakes": "The vote is decisive. Eliminating a wolf can secure a strong village lead, but mistakenly eliminating a key power role (like the last Healer) could directly lead to a loss.",
+            "direction": "offensive",
+            "distance_to_parity": 1,
+            "exposure_class": "safe",
+            "heat_now": "Low to moderate. You are not a primary suspect and have the credibility to influence the vote.",
+            "honesty": "honest",
+            "info_landscape_class": "info_rich",
+            "information_landscape": "The game has a significant amount of public information, such as detailed voting histories and some confirmed roles, but key village power roles may still be unconfirmed.",
+            "is_swing": true,
+            "my_position": "with majority",
+            "perspective": "villager",
+            "players_alive": 6,
+            "situation": "A consensus has formed to eliminate a player based on their 'inconsistent' or 'suspicious' voting record in an information-rich game.",
+            "target_landscape": "The main target is a player with an unconfirmed role who is being condemned for their voting patterns. Other suspects exist but are not the focus of the consensus."
+          },
+          "direction": "offensive",
+          "follow_count": 0,
+          "game_id": "",
+          "honesty": "honest",
+          "last_observed": "2026-06-21T08:39:34.502927+00:00",
+          "negative_count": 0,
+          "neutral_count": 0,
+          "observation_count": 1,
+          "positive_count": 0,
+          "retrieved_count": 0,
+          "situation": "A consensus has formed to eliminate a player based on their 'inconsistent' or 'suspicious' voting record in an information-rich game. Information landscape: The game has a significant amount of public information, such as detailed voting histories and some confirmed roles, but key village power roles may still be unconfirmed. Stakes: The vote is decisive. Eliminating a wolf can secure a strong village lead, but mistakenly eliminating a key power role (like the last Healer) could directly lead to a loss. Consensus: The majority of the village is aligned on eliminating a single suspect, with the primary evidence being their voting history. My position: with majority Heat: Low to moderate. You are not a primary suspect and have the credibility to influence the vote. Target landscape: The main target is a player with an unconfirmed role who is being condemned for their voting patterns. Other suspects exist but are not the focus of the consensus."
+        }
+      }
+    ],
+    "strategy_points/wolf/day_discussion": [],
+    "strategy_points/wolf/day_vote": [],
+    "strategy_points/wolf/night_action": []
+  },
+  "schema_version": "werewolf_strategy_points.v3",
+  "updated_at": "2026-06-21T08:41:02.426495"
+}

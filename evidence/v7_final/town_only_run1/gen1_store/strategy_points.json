@@ -1,0 +1,24 @@
+{
+  "description": "Strategy-point memory snapshot with action-phase namespaces. Situation field is used for semantic search; action stores the recommended move.",
+  "namespaces": {
+    "strategy_points/healer/day_discussion": [],
+    "strategy_points/healer/day_vote": [],
+    "strategy_points/healer/night_action": [],
+    "strategy_points/investigator/day_discussion": [],
+    "strategy_points/investigator/day_vote": [],
+    "strategy_points/investigator/night_action": [],
+    "strategy_points/serial_killer/day_discussion": [],
+    "strategy_points/serial_killer/day_vote": [],
+    "strategy_points/serial_killer/night_action": [],
+    "strategy_points/vigilante/day_discussion": [],
+    "strategy_points/vigilante/day_vote": [],
+    "strategy_points/vigilante/night_action": [],
+    "strategy_points/villager/day_discussion": [],
+    "strategy_points/villager/day_vote": [],
+    "strategy_points/wolf/day_discussion": [],
+    "strategy_points/wolf/day_vote": [],
+    "strategy_points/wolf/night_action": []
+  },
+  "schema_version": "werewolf_strategy_points.v3",
+  "updated_at": "2026-06-21T05:55:41.695338"
+}

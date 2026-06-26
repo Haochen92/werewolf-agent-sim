@@ -151,7 +151,7 @@ posture is the deliberate outcome of the one result that got overturned. Specifi
 improves retrieval *when conservative* (n=39, [store_retrieval_impact/](store_retrieval_impact/experiment_log.md));
 the online prompt reaches ~80%/83% strict golden accuracy with MERGE removed
 ([per_extraction/](per_extraction/experiment_log.md)); the batch two-pass reaches 89.2% on the 111-key
-golden set ([batch_prompt_tuning/](batch_prompt_tuning/experiment_log.md)); the pre-filter thresholds
+golden set ([batch_dedup/](batch_dedup/experiment_log.md)); the pre-filter thresholds
 are zero-error on golden + cross-game ([embedding_prefilter/](embedding_prefilter/experiment_log.md)).
 
 **Split of concerns.** *Decision quality* (does it merge the right things) is empirical — golden-label
