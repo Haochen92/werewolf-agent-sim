@@ -53,6 +53,13 @@ history of how the criteria were pinned down: [per_extraction/](per_extraction/e
   the usage counters are summed, so combined weight is never lost (`batch_deduplication/operations.py`).
 - **Defaults are conservative.** Online dedup is on during store-build; batch dedup is built but
   **off by default**; clustering defaults to the bounded (non-transitive) mode. See the config table.
+- **Merge *content* fidelity is not yet guaranteed.** The guards above are all *structural* — none checks
+  whether a merged entry's rewritten text is faithful to its sources. 2.5-pro (the only model that
+  preserves all three merged fields, so the one used to write merges) fabricates game context on ~1/3 of
+  merges ([batch_dedup/](batch_dedup/experiment_log.md) § *Merge Rewrite Quality*), and the apply layer
+  (`operations.py`) does **no content check**. Today the blast radius is bounded — batch is off by
+  default, the pass is dry-run unless `apply=True`, and MERGE is the rarest operation — but this is the
+  open risk to close before the offline pass is turned on (gaps table, below).
 
 ## The online pipeline (`Agents/memory/deduplication/`)
 
@@ -161,6 +168,12 @@ accuracy + downstream retrieval impact, in the sub-logs; an LLM merge can only b
 dry-run safety) are unit-tested in `tests/test_batch_dedup.py` — these are the bugs an aggregate metric
 can't isolate.
 
+**What dedup can't do.** Dedup removes redundancy; it can't create coverage. Strategy-point redundancy
+stays ~59% even on the cleanest store because the bottleneck there is a **content-coverage gap** — the
+store simply lacks entries for some common situations — not duplication
+([store_retrieval_impact/](store_retrieval_impact/experiment_log.md)). No amount of dedup tuning moves
+that number; only generating experience in those situations does.
+
 ## Current-vs-documented gaps (freshness: 2026-06-25)
 
 The sub-logs are dated records of the v4/v5 era; this table is the audit trail of where the live v6
@@ -168,15 +181,19 @@ code has since moved, ordered by how misleading the stale doc is to a reader.
 
 | # | Gap | What the doc says | What the code does | Severity |
 |---|---|---|---|---|
-| 1 | **Freeze-old guard** | [incremental_convergence.md](incremental_convergence.md): Fix 2 "not yet built" | **Built & live** (commit `6704202`, 2026-06-16; `operations.py:137-150`, tests) | High — doc reads as an open risk that is actually closed; corrected via that doc's banner |
-| 2 | **`created_at` on merge (Fix 1)** | proposed alongside Fix 2 | **Still NOT built** — `created_at` lives only on the envelope and resets on re-put (`operations.py:99-105`, `incremental.py:42`) | Medium — Fix 1 underpins Fix 2's old/new partition across runs; genuinely open |
-| 3 | **The deterministic gate** | absent from every evidence doc | **Live** online + batch (`dedup_gate.py`, `gate_enabled=True`) | Medium — the most important current mechanism, undocumented before this report |
-| 4 | **Namespace scoping** | [batch_architecture.md](batch_architecture.md): "dedup within a namespace" | namespace **+ gate bucket** (`clustering.partition_key_for`) | Low — additive; banner added to that doc |
-| 5 | **Online MERGE** | per_extraction journeys MERGE v1→v11 | **removed** — KEEP/DISCARD only (`schemas.py:84-91`) | Low — the log's own endpoint; stated as live in its close |
-| 6 | **Prompt version** | logs cite v9d / v11b | live = stabilized "v6.1" in `Agents/prompts/dedup.py` (same v9d ordering) | Low — naming only |
-| 7 | **Run defaults** | scattered across logs | online on (`dump_enabled`); incremental off; bounded; gate on | Low — consolidated in the config table above |
+| 1 | **Merge fabrication guard** | contract implies merges are safe (counts summed, fails-safe survivor) | **No content check** — `operations.py` writes the rewritten text as-is; 2.5-pro fabricates ~1/3 of merges; the `fabrication_detected` judge exists only in `evaluation/`, unwired from apply | High — a reader *under*-trusts the risk; the item to close before the offline pass is turned on |
+| 2 | **Freeze-old guard** | [incremental_convergence.md](incremental_convergence.md): Fix 2 "not yet built" | **Built & live** (commit `6704202`, 2026-06-16; `operations.py:137-150`, tests) | High — doc reads as an open risk that is actually closed; corrected via that doc's banner |
+| 3 | **`created_at` on merge (Fix 1)** | proposed alongside Fix 2 | **Still NOT built** — `created_at` lives only on the envelope and resets on re-put (`operations.py:99-105`, `incremental.py:42`) | Medium — Fix 1 underpins Fix 2's old/new partition across runs; genuinely open |
+| 4 | **The deterministic gate** | absent from every evidence doc | **Live** online + batch (`dedup_gate.py`, `gate_enabled=True`) | Medium — the most important current mechanism, undocumented before this report |
+| 5 | **Namespace scoping** | [batch_architecture.md](batch_architecture.md): "dedup within a namespace" | namespace **+ gate bucket** (`clustering.partition_key_for`) | Low — additive; banner added to that doc |
+| 6 | **Online MERGE** | per_extraction journeys MERGE v1→v11 | **removed** — KEEP/DISCARD only (`schemas.py:84-91`) | Low — the log's own endpoint; stated as live in its close |
+| 7 | **Prompt version** | logs cite v9d / v11b | live = stabilized "v6.1" in `Agents/prompts/dedup.py` (same v9d ordering) | Low — naming only |
+| 8 | **Run defaults** | scattered across logs | online on (`dump_enabled`); incremental off; bounded; gate on | Low — consolidated in the config table above |
 
-**Open work (not just stale docs):** gap #2 (`created_at` preservation) is the one genuine
-not-yet-built item — without it, the old/new partition that the freeze-old guard relies on is only
-trustworthy within a single run, so unbounded repeated incremental runs could still drift. It is a
-prompt-neutral apply-layer change; tracked in [incremental_convergence.md](incremental_convergence.md).
+**Open work (not just stale docs):** two genuine not-yet-built items remain, both gating the offline
+pass. **(a) Merge fabrication guard** (gap #1) — the `fabrication_detected` judge from the batch_dedup
+eval is the natural pre-apply check but isn't wired into `operations.py`, so a fabricated merge would
+land; it's the top risk to close before the offline pass is turned on by default. **(b) `created_at`
+preservation** (gap #3) — without it, the old/new partition the freeze-old guard relies on is only
+trustworthy within a single run, so unbounded repeated incremental runs could still drift; a
+prompt-neutral apply-layer change tracked in [incremental_convergence.md](incremental_convergence.md).
