@@ -1,10 +1,27 @@
 # Store dedup → retrieval impact — experiment log
 
-**What this is.** The measurement that *started* the dedup workstream: does cleaning the memory store
-actually improve retrieval, and how hard should it clean? Two phases — an n=5 first look (May 23) and
-an n=39 replication (May 26) that **corrected** it. The destination (how dedup works today) is the
-folder's [report.md](../report.md); the chronological overview of the whole effort is
-[../experiment_log.md](../experiment_log.md).
+**What this is.** The measurement that *started* the dedup workstream — and the one that decided **what
+earns its keep at retrieval time.** Two questions, one eval harness:
+
+1. Does cleaning the memory store actually improve retrieval, and how hard should it clean?
+2. Does the retrieval-time *filtering* pipeline (dedup gate + MMR + per-situation cap) still earn its
+   keep once the store is clean — or does store-dedup solve the redundancy at the root, leaving filtering
+   to solve the same problem a second time?
+
+Two phases — an n=5 first look (May 23) and an n=39 replication (May 26) that **corrected** it.
+
+**Bottom line.** Conservative store-dedup helps retrieval (mostly for observations); aggressive
+over-merging *hurts*. Retrieval-time filtering does **not** stack on a clean store — it over-corrects on
+redundancy that's already gone — so it ships **off by default**. And the most durable finding of all:
+**strategy points are a content-coverage problem, not a dedup problem** — no amount of dedup or filtering
+moves their numbers, because the store simply lacks entries for many common situations.
+
+*Scope note: this study runs on `baseline retrieval (no filtering, no reranking)` as the control — the
+CE **reranker is not evaluated here** (that's a separate study). The "did it earn its keep" verdict is
+about the retrieval-time **filtering** layer.*
+
+The destination (how dedup works today) is the folder's [report.md](../report.md); the chronological
+overview of the whole effort is [../experiment_log.md](../experiment_log.md).
 
 **Reading contract.** Phases are in time order; the n=5 verdict is shown **as it stood** and then
 falsified in place by the n=39 replication — the correction is the point, not an edit to hide. Raw
@@ -20,14 +37,16 @@ The filtering pipeline improved efficiency on this dirty store (redundancy ratio
 
 ## The Approach
 
-The batch deduplication pipeline uses agglomerative clustering (cosine similarity threshold 0.70) to group semantically similar items, then sends each cluster to gemini-2.5-pro for decisions:
+The batch deduplication pipeline groups semantically similar items into **size-capped similarity clusters** (cosine threshold 0.70 — the conservative `bounded` mode), then sends each cluster to gemini-2.5-pro for decisions:
 
 - **Observations**: DISCARD, MERGE, or KEEP. Merge consolidates multiple game anecdotes teaching the same lesson into a single, more general observation.
 - **Strategy points**: DISCARD or KEEP. Strategy points are prescriptive rules, so merging is harder — they're either duplicates or they're not.
 
+(*How* the clustering method was chosen — `bounded` vs `connected`/`agglomerative`, and why a single similarity threshold won't cut cleanly — is the [batch_dedup](../batch_dedup/experiment_log.md) chapter's *Forming the clusters*. This study used the cap-bounded default; the size cap is the subject of the next section.)
+
 ### Cluster Size Fix
 
-During the first run, we discovered that the pipeline capped cluster size at 8 and naively chunked larger clusters into sequential groups. A cluster of 19 items became [8, 8, 3], with no cross-chunk comparison — duplicates landing in different chunks survived. Raising the cap from 8 to 25 fixed this, and the second run caught significantly more duplicates.
+During the first run we hit a cap artifact: with `max_cluster_size=8`, a group of 19 mutually-similar items couldn't all land in one cluster — the cap split them into [8, 8, 3], and items that fell into different sub-clusters were **never compared**, so duplicates straddling the boundary survived. Raising the cap from 8 to 25 fixed it, and the second run caught significantly more duplicates. (The cap was later settled at **15** for the live loop once the eval showed accuracy falls off a cliff above ~15 entries — see [batch_dedup](../batch_dedup/experiment_log.md); the exact 15/25 value doesn't change this study's *direction*.)
 
 | Run | Max Cluster | Observations | Strategy Points | Total |
 |---|---|---|---|---|
