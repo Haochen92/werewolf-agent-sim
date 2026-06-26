@@ -62,8 +62,11 @@ entry against its neighbours, whether it is a duplicate (DISCARD) or a distinct 
 **The trigger is `situation`, because it is the only embedded field.** The store indexes
 `fields=["situation"]` ([store.py:29](../../../Agents/memory/store.py#L29)), so situation is the
 semantic-retrieval key; the live prompts make the rule operational as *"would a search query matching A
-also retrieve B?"* Different situation ⇒ the two can't co-retrieve ⇒ **not duplicates by default**, even
-when the underlying lesson rhymes. On that trigger the two types diverge:
+also retrieve B?"* The *intent* is that a different situation ⇒ no co-retrieval ⇒ distinct **by default**;
+but the bi-encoder is fuzzy (topic, not stance), so different situations **do** surface as candidates —
+the v6 gate hard-separates those differing on structured dimensions, and within a bucket the free-text
+call stays a judgment where documented false positives slip through (see *The structured fields came
+later* + the retrieval eval). On that trigger the two types diverge:
 
 - **Observations** — DISCARD requires **all three** of (situation · approach · outcome) to match: same
   situation, same *tactic category* (not wording, not degree), same *success/failure* outcome. A

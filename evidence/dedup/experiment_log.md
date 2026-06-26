@@ -15,9 +15,12 @@ duplication problem but behave differently under it, which turns out to be the c
 **What counts as a duplicate — the trigger, then the per-type rule.** Everything rests on one field:
 **`situation`** is the only text embedded for retrieval ([store.py:29](../../Agents/memory/store.py#L29):
 `fields=["situation"]`), so it is the **trigger** — two memories with the *same* situation retrieve
-together; different situations can't collide, so they are **not duplicates by default.** The operative
-test, written into every dedup prompt, is literally *"would a search query matching A also retrieve B?"*
-On that trigger the two types diverge:
+together, and the operative test in every dedup prompt is literally *"would a search query matching A
+also retrieve B?"* The *intent* is that different situations don't collide; in practice a bi-encoder is
+fuzzy (it captures topic, not stance — §2), so different situations **do** surface as candidates. The
+deterministic **gate** (§9) is what makes "different *structured* situation ⇒ never compared" actually
+hold; the free-text remainder stays a judgment call where some false positives slip through. On that
+trigger the two types diverge:
 
 - **Observations** (situation → approach → outcome): a duplicate needs **all three** to match — same
   situation, same *tactic category* (not wording or degree), same *success/failure* outcome. A different
@@ -107,10 +110,15 @@ offline batch pass, where a pro model runs it. Detail: [per_extraction/](per_ext
 
 ## 4 · Per-extraction dedup wasn't enough → batch as a second layer
 
-Per-extraction dedup catches a new entry against what *already exists*, but it can't catch two
-near-duplicates that entered in *different* games and only later sit together — so the store kept
-bloating. The second layer is **batch** dedup: an offline pass that sweeps the *whole* store in
-similarity clusters and collapses redundancy a cluster at a time. Mechanics:
+Per-extraction dedup *does* search the whole store across all games (the namespace is
+`(kind, role, phase)`, not game-scoped), so the gap isn't game boundaries. It is that online dedup is a
+**greedy, insertion-time** check: each new entry is compared only against its **top-N** neighbours (top
+5) at the moment it lands, and once two near-duplicates are both kept the pass **never re-examines that
+pair**. So near-duplicates that fell outside each other's top-N window, or were both kept before they sat
+together, accumulate — and online can't MERGE variants even when it sees them. (Cross-game blindness
+only arises under *parallel* generation with separate per-game stores; the sequential baseline doesn't
+hit it.) The second layer is **batch** dedup: an offline pass that re-clusters the *whole* store and
+re-examines every near-duplicate together, with MERGE available. Mechanics:
 [batch_architecture.md](batch_architecture.md); tuning: [batch_dedup/](batch_dedup/experiment_log.md).
 
 ## 5 · Does cleaning the store actually help retrieval? (and the embedding ceiling, measured)

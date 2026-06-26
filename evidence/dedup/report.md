@@ -18,8 +18,9 @@ online:  KEEP / DISCARD               batch: KEEP / DISCARD / MERGE
 
 The trigger is **`situation`** — the only field embedded for retrieval
 ([store.py:29](../../Agents/memory/store.py#L29): `fields=["situation"]`) — so two entries can only be
-duplicates if a search query matching one would also retrieve the other. On that trigger the two types
-differ:
+duplicates if a search query matching one would also retrieve the other. That's **necessary, not
+sufficient**: the bi-encoder is fuzzy and also surfaces some genuinely-different situations, so the gate
+and the LLM do the real separation. On that trigger the two types differ:
 
 - **Observations** (situation → approach → outcome): DISCARD requires **all three** to match — same
   situation, same *tactic category*, same *success/failure* outcome. A different outcome is a contrasting
