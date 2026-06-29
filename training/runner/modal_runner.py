@@ -56,10 +56,10 @@ vol = modal.Volume.from_name("cross-encoder-training-output", create_if_missing=
     volumes={"/output": vol},
 )
 def _train_remote(adapter_name: str, config_json: str, raw: dict) -> dict:
-    from evaluation.src.training import engine
-    from evaluation.src.training.adapters import get_adapter
-    from evaluation.src.training.config import TrainConfig
-    from evaluation.src.training.manifest import write_manifest
+    from training import engine
+    from training.adapters import get_adapter
+    from training.config import TrainConfig
+    from training.manifest import write_manifest
 
     adapter = get_adapter(adapter_name)
     config = TrainConfig.model_validate_json(config_json)
@@ -85,8 +85,8 @@ def main(
     lr: float = 2e-5,
     data_dir: str = "",
 ):
-    from evaluation.src.training.adapters import get_adapter
-    from evaluation.src.training.config import TrainConfig
+    from training.adapters import get_adapter
+    from training.config import TrainConfig
 
     # read_raw runs locally (plain disk reads, no ML deps) so the GPU container
     # receives a ready-to-train payload. data_dir overrides the adapter's default

@@ -1,7 +1,9 @@
-# evaluation.training
+# training
 
-A small, composable harness for fine-tuning cross-encoders, mirroring
-`evaluation.labeling`. One shared engine + pluggable per-task adapters, so adding
+Top-level fine-tuning subsystem (moved out of `evaluation/` — it trains models,
+it doesn't judge cases). A small, composable harness for fine-tuning
+cross-encoders, mirroring `evaluation.src.labeling`. One shared engine +
+pluggable per-task adapters, so adding
 a new model-training task means writing an adapter — not another bespoke script.
 
 It replaces the per-experiment `train_*_modal.py` / `eval_*_modal.py` scripts
@@ -24,7 +26,7 @@ that used to live under `evidence/fine_tuning/cross_encoder/`.
 | `engine.py` | the shared training loop (runs inside the Modal container) |
 | `evaluator.py` | `RankingEvaluator`, `BinaryClassificationEvaluator` — standalone metrics |
 | `manifest.py` | per-run reproducibility record (`manifest.json` next to the model) |
-| `evaluate.py` | `python -m evaluation.training.evaluate` — CPU eval of a saved model |
+| `evaluate.py` | `python -m training.evaluate` — CPU eval of a saved model |
 | `runner/modal_runner.py` | the Modal GPU training backend |
 | `adapters/reranker.py` | relevance-regression CE (retrieval reranker) |
 | `adapters/dedup.py` | binary Keep/Discard CE (auto-dedup pre-filter) |
@@ -40,10 +42,10 @@ build_datasets()  pure transform — runs wherever training executes
 ## Train (Modal)
 
 ```bash
-poetry run modal run evaluation/training/runner/modal_runner.py \
+poetry run modal run training/runner/modal_runner.py \
     --adapter reranker --run-name reranker_v5 --epochs 20
 
-poetry run modal run evaluation/training/runner/modal_runner.py \
+poetry run modal run training/runner/modal_runner.py \
     --adapter dedup --run-name ce_minilm_dedup_v2 --epochs 10
 ```
 
@@ -57,11 +59,11 @@ modal volume get cross-encoder-training-output reranker_v5/ ./models/cross_encod
 ## Evaluate a saved model (CPU, no GPU)
 
 ```bash
-poetry run python -m evaluation.training.evaluate \
+poetry run python -m training.evaluate \
     --adapter reranker --model models/cross_encoder/reranker_v4 --split test
 # {"ndcg3": 0.885, "ndcg5": 0.882, "ndcg10": 0.866, "pearson_r": 0.570, ...}
 
-poetry run python -m evaluation.training.evaluate \
+poetry run python -m training.evaluate \
     --adapter dedup --model models/cross_encoder/ce_minilm_dedup_run1
 # {"average_precision": 0.839, "best_f1": 0.756, ...}
 ```
@@ -76,7 +78,7 @@ Subclass `TrainingAdapter`, implement three methods, and register it. Example
 (an embedding-style task):
 
 ```python
-# evaluation/training/adapters/mymodel.py
+# training/adapters/mymodel.py
 from ..base import DatasetBundle, TrainingAdapter
 from ..evaluator import Evaluator, RankingEvaluator
 
