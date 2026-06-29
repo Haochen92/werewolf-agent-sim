@@ -19,6 +19,9 @@ if str(REPO_ROOT) not in sys.path:
 
 load_dotenv(REPO_ROOT / ".env")
 
+# Imported after sys.path is set so the evaluation package resolves; lightweight (no heavy deps).
+from evaluation.src.data import batch_layout
+
 
 ROLES = ("wolf", "villager", "healer", "investigator", "serial_killer", "vigilante")
 
@@ -223,6 +226,28 @@ def parse_args() -> argparse.Namespace:
             "throwaway game without writing to the store."
         ),
     )
+    parser.add_argument(
+        "--experiment",
+        default=None,
+        help=(
+            "Experiment id = the batch_results/<id>/ folder name. Defaults to the "
+            "session prefix, so every run is structured (games/, eval_cases/, "
+            "config.json, summary.json). Use --flat for the legacy flat layout."
+        ),
+    )
+    parser.add_argument(
+        "--description",
+        default=None,
+        help="Free-text note describing the experiment; recorded in config.json.",
+    )
+    parser.add_argument(
+        "--flat",
+        action="store_true",
+        help=(
+            "Opt out of the experiment-folder layout: write the legacy flat "
+            "batch_results/<session-prefix>.jsonl + eval_cases/<session>/ instead."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -244,6 +269,15 @@ def output_path(session_prefix: str, requested_path: Path | None) -> Path:
     return REPO_ROOT / "batch_results" / f"{session_prefix}.jsonl"
 
 
+def resolve_experiment(args: argparse.Namespace, session_prefix: str) -> str | None:
+    """The experiment-folder name. Structured layout is the DEFAULT: an explicit
+    --experiment, else the session prefix. Returns None ONLY under --flat (the
+    backwards-compatible escape hatch → legacy flat batch_results/<prefix>.jsonl)."""
+    if args.flat:
+        return None
+    return args.experiment or session_prefix
+
+
 def write_record(path: Path, record: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as file:
@@ -251,17 +285,24 @@ def write_record(path: Path, record: dict[str, Any]) -> None:
 
 
 def write_eval_cases_sidecar(
-    session_id: str, game_id: str, eval_records: list[dict] | None
+    session_id: str,
+    game_id: str,
+    eval_records: list[dict] | None,
+    experiment: str | None = None,
 ) -> Path | None:
     """Persist a game's locally-emitted eval cases (normalized span dicts) as a
     per-game sidecar the frozen-set builders read directly — no Langfuse fetch.
 
     One file per game, overwritten if present: game_id is a fresh uuid4 per run,
     so unlike the appended batch JSONL a cancelled rerun can't leave stale cruft.
+    With an experiment set, the sidecar nests under that experiment's folder.
     """
     if not eval_records:
         return None
-    path = REPO_ROOT / "batch_results" / "eval_cases" / session_id / f"{game_id}.jsonl"
+    if experiment:
+        path = batch_layout.eval_cases_path(experiment, session_id, game_id)
+    else:
+        path = REPO_ROOT / "batch_results" / "eval_cases" / session_id / f"{game_id}.jsonl"
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as file:
         for eval_record in eval_records:
@@ -382,7 +423,13 @@ def run_batch(args: argparse.Namespace) -> int:
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
     )
-    results_path = output_path(session_prefix, args.output)
+    experiment = resolve_experiment(args, session_prefix)
+    # --output (explicit) wins; else an experiment routes game records under its
+    # folder; else (--flat) the legacy flat path.
+    if args.output is None and experiment:
+        results_path = batch_layout.game_records_path(experiment, session_prefix)
+    else:
+        results_path = output_path(session_prefix, args.output)
 
     planned_runs = [
         (config_name, run_index)
@@ -434,6 +481,44 @@ def run_batch(args: argparse.Namespace) -> int:
     print(f"Runtime fingerprint: {fingerprint}")
 
     print(f"Writing JSONL results to: {results_path}")
+
+    if experiment:
+        # config.json = a faithful mirror of the RESOLVED run config (what actually
+        # ran, not the nominal request) + the runtime fingerprint. Write-if-absent,
+        # so a loop campaign's first call stamps it and the rest no-op. Re-runnable:
+        # it carries every knob run_batch resolved.
+        resolved_config = {
+            "configs": config_names,
+            "memory_configs": {n: MEMORY_CONFIGS[n] for n in config_names},
+            "runs_per_config": runs_per_config,
+            "game_ids_pinned": game_ids,
+            "reranking": args.reranking,
+            "reranking_config": reranking_config,
+            "filtering": args.filtering,
+            "filtering_config": filtering_config,
+            "retrieval_types": args.retrieval_types,
+            "retrieval_types_config": retrieval_types_config,
+            "memory_persistence_config": memory_persistence_config,
+            "game_config": game_config,
+        }
+        # Scannable trio first (experiment / description / overview), then provenance,
+        # then the full resolved config + fingerprint.
+        run_config = {
+            "experiment": experiment,
+            "description": args.description,
+            "overview": batch_layout.config_overview(resolved_config, fingerprint),
+            "created_at": datetime.now().isoformat(),
+            "source": {
+                "argv": sys.argv[1:],
+                "session_prefix": session_prefix,
+                "session_scope": args.session_scope,
+            },
+            "resolved_config": resolved_config,
+            "runtime_fingerprint": fingerprint,
+        }
+        config_file = batch_layout.write_run_config(experiment, json_safe(run_config))
+        print(f"Experiment config: {config_file}")
+
     failures = 0
     started_runs = 0
     leak_games = 0
@@ -477,7 +562,7 @@ def run_batch(args: argparse.Namespace) -> int:
                     file=sys.stderr,
                 )
             eval_cases_path = write_eval_cases_sidecar(
-                session_id, outcome.game_id, outcome.eval_records
+                session_id, outcome.game_id, outcome.eval_records, experiment
             )
             record = {
                 "status": "success",
@@ -575,6 +660,21 @@ def run_batch(args: argparse.Namespace) -> int:
     if leak_games:
         summary += f", {leak_games} game(s) WITH PRIVATE-INFO LEAKS"
     print(summary)
+
+    if experiment:
+        batch_layout.merge_run_summary(
+            experiment,
+            session_prefix,
+            {
+                "configs": config_names,
+                "status": "complete" if not failures else "errors",
+                "successes": successes,
+                "failures": failures,
+                "not_started": not_started,
+                "leak_games": leak_games,
+            },
+        )
+
     return 1 if failures or leak_games else 0
 
 
