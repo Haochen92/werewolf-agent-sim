@@ -23,11 +23,13 @@ import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+from evaluation.src.data import batch_layout
 from evaluation.src.loop.credit_backfill import compute_base_rates
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
@@ -72,7 +74,8 @@ def _stamp_obs_generations(store: Path, gen: int, sidecar: Path) -> dict:
 
 def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
                   seed: Path | None = None, dump: Path | None = None,
-                  game_id: str | None = None, extra: tuple = ()) -> None:
+                  game_id: str | None = None, extra: tuple = (),
+                  experiment: str | None = None) -> None:
     """One game via run_batch (--runs-per-config 1). Separate seed/dump dirs let parallel games share a
     read-only snapshot seed while each dumps to its own store (no shared-store write race). game_id pins
     the role draw + scheduler seed (run_batch --game-ids-file) so the ON and OFF arms run the SAME board —
@@ -82,6 +85,8 @@ def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
         "--configs", configs, "--runs-per-config", "1",
         "--output", str(out_jsonl), "--session-prefix", prefix,
     ]
+    if experiment:  # nest eval-case sidecars under batch_results/<experiment>/ (--output keeps records here)
+        cmd += ["--experiment", experiment]
     if seed is not None:
         cmd += ["--seed-store-dir", str(seed)]
     if dump is not None:
@@ -96,7 +101,8 @@ def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
 
 def _game_tasks(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
                 seed: Path | None = None, dump_each: bool = False,
-                game_id_base: str | None = None, extra: tuple = ()) -> list:
+                game_id_base: str | None = None, extra: tuple = (),
+                experiment: str | None = None) -> list:
     """Build (but don't run) one arm's per-game thunks. Each thunk plays game-k and returns
     (out_k, dump_k). Returned as a list so a caller can pool BOTH arms' thunks together. game_id_base
     (the SAME value for ON and OFF in a generation) pins each game-k's board so the arms play matched
@@ -112,7 +118,7 @@ def _game_tasks(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, co
                 dump_k.mkdir(parents=True, exist_ok=True)
             gid = f"{game_id_base}_g{k}" if game_id_base else None
             _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, game_id=gid,
-                          extra=extra)
+                          extra=extra, experiment=experiment)
             return out_k, dump_k
         return _one
 
@@ -134,7 +140,8 @@ def _concat_games(out_jsonl: Path, results: list) -> list:
 
 
 def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: LoopConfig, configs: str,
-                       snapshot: Path, pair_base: str, off_baseline: bool) -> list:
+                       snapshot: Path, pair_base: str, off_baseline: bool,
+                       experiment: str | None = None) -> list:
     """Run the ON and OFF arms' games CONCURRENTLY in ONE capped pool (total concurrency =
     game_concurrency), so the OFF baseline overlaps the ON arm instead of running after it (~halves
     per-gen wall-clock at a bounded cap). Independent by construction: OFF (all_disabled, no seed/dump)
@@ -142,10 +149,12 @@ def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: Loop
     happens AFTER all games. Returns the ON dump dirs. Pairing is preserved — game-k is matched by
     game_id across arms regardless of run order."""
     on_tasks = _game_tasks(run_dir, on_jsonl, f"loop_{run_dir.name}_{on_jsonl.stem}",
-                           cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base)
+                           cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base,
+                           experiment=experiment)
     off_tasks = _game_tasks(run_dir, off_jsonl, f"loop_{run_dir.name}_{off_jsonl.stem}",
                             cfg, "all_disabled", seed=None, dump_each=False, game_id_base=pair_base,
-                            extra=("--no-memory-seed", "--no-memory-dump")) if off_baseline else []
+                            extra=("--no-memory-seed", "--no-memory-dump"),
+                            experiment=experiment) if off_baseline else []
     n_on = len(on_tasks)
     with ThreadPoolExecutor(max_workers=max(1, cfg.game_concurrency)) as pool:
         results = list(pool.map(lambda t: t(), on_tasks + off_tasks))
@@ -153,6 +162,17 @@ def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: Loop
     if off_baseline:
         _concat_games(off_jsonl, results[n_on:])
     return dump_dirs
+
+
+def _write_loop_config(run_dir: Path, experiment: str, cfg: LoopConfig, base_store: str | None,
+                       configs: str) -> None:
+    """Stamp the campaign's config.json (the LoopConfig mirror) under batch_results/<experiment>/
+    BEFORE the first game, so the per-game run_batch calls (write-if-absent) don't shadow it with
+    the thinner run_batch-resolved config."""
+    descriptor = batch_layout.build_loop_descriptor(
+        experiment, asdict(cfg), base_store=base_store, configs=configs,
+        created_at=datetime.now(timezone.utc).isoformat(), argv=sys.argv[1:], run_dir=str(run_dir))
+    batch_layout.write_run_config(experiment, descriptor)
 
 
 def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "memory_stores/v6_1",
@@ -171,6 +191,8 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
     # Stamp run start for the cost-capture window (cost.py sums Langfuse traces from here -> now). Keep the
     # ORIGINAL start on resume so the window still spans every generation.
     run_dir.mkdir(parents=True, exist_ok=True)
+    experiment = run_dir.name  # campaign id; eval_cases + config.json nest under batch_results/<experiment>/
+    _write_loop_config(run_dir, experiment, cfg, base_store, configs)
     meta_path = run_dir / "run_meta.json"
     if not meta_path.exists():
         meta_path.write_text(json.dumps({"run_started_at": datetime.now(timezone.utc).isoformat()}, indent=2))
@@ -212,7 +234,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         shutil.copytree(store, snapshot)
         pair_base = f"pair_{run_dir.name}_gen{gen}"   # SAME boards for ON and OFF this gen (paired A/B)
         dump_dirs = _run_arms_parallel(run_dir, on_jsonl, off_jsonl, cfg, configs, snapshot, pair_base,
-                                       cfg.off_baseline)
+                                       cfg.off_baseline, experiment)
         # ⭐ARM GUARD: verify the ON arm enabled memory for exactly the declared factions BEFORE spending
         # the rest of the budget — crashes gen 1 on the v2 trap (configs=all_enabled vs intended town_only).
         # Always surfaced + recorded (even with no --expect-factions) so the arm is never invisible again.
@@ -307,7 +329,10 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--run-dir", required=True)
+    ap.add_argument("--run-dir", default=None,
+                    help="campaign output dir; defaults to batch_results/<experiment> when --experiment is given")
+    ap.add_argument("--experiment", default=None,
+                    help="campaign id; sets the run-dir to batch_results/<experiment> unless --run-dir is passed")
     ap.add_argument("--base-store", default="memory_stores/v6_1", help="warm-start baseline ('' = cold)")
     ap.add_argument("--configs", default="all_enabled", help="run_batch config name (the arm)")
     ap.add_argument("--generations", type=int, default=10)
@@ -343,7 +368,10 @@ def main() -> int:
                      evict_min_retrieved=args.evict_min_retrieved, obs_evict_min_age=args.obs_evict_min_age,
                      protect_min_follow=args.protect_min_follow, expect_factions=args.expect_factions,
                      unchecked_arm=args.unchecked_arm)
-    run_loop(args.run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
+    run_dir = args.run_dir or (f"batch_results/{args.experiment}" if args.experiment else None)
+    if run_dir is None:
+        ap.error("pass --experiment NAME (or an explicit --run-dir PATH)")
+    run_loop(run_dir, cfg, base_store=args.base_store or None, configs=args.configs)
     return 0
 
 
