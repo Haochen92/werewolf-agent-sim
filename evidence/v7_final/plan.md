@@ -578,6 +578,19 @@ is **agent self-report**, so not-relevant can mean *agent-blindness* rather than
 don't auto-prune on not-relevant alone; cross it with the situation field's specificity (high
 not-relevant + a tightly-scoped situation ⇒ blindness, not mis-filing).
 
+**Deeper limit — not-relevant is itself a 1-vs-3 conflation; the table's "not-relevant → retrieval/scoping"
+is the right *default*, not a clean read.** Refusing to blame content (the second Goodhart, above) is
+correct, but the leftover bucket still merges two observationally-identical causes — both render as "the
+situation didn't hold": **(1) genuinely inapplicable** — an endgame SP correctly declined in the opening,
+exactly what a broad repertoire SHOULD do = HEALTH, not waste; and **(3) a retrieval false positive** —
+semantically near, never applicable, the actual precision bug. So **the 58% not-relevant rate (G3a/G3c) is an
+UPPER BOUND on retrieval waste, not the waste itself** — the correct-decline share is uncounted, and
+"retrieval precision is the #1 lever" is sized against an inflated denominator. Offline, the only separator
+is the same situation-specificity cross (a tightly-scoped situation that still goes not-relevant ⇒
+false-positive/blindness; a broad situation ⇒ plausibly a correct decline); a clean (1)-vs-(3) split needs
+the precondition-level applicability judge (the expensive LLM, the parked retrieval lever). Until then read
+the not-relevant rate as *retrieval-waste + healthy-breadth, undifferentiated* — never as pure waste.
+
 ### 10c. Net effect on the build order
 No new layer — these tighten §3B/§3C/§6: (i) the credit reward is the **de-luck OUTCOME proxy** (the
 offensive acts that have signal feed it); the fitted offense/defense basket is a **diagnostic

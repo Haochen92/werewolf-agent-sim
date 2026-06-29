@@ -100,6 +100,21 @@ Two honest options, not one:
 
 Either way, two known gaps if the loop is revived: (a) SP adoption counters aren't merged back into the loop store, so the dead-weight eviction rule is currently inert (prune-by-lift still works); (b) the new-clusters-only synthesis gate is a no-op at `k=1` with small games/gen (every cell gets new obs every tick), so the SP-bloat control it was built for was never actually exercised.
 
+**One structural lever, unbuilt — tier the index by proof, don't just prune it.** The effective library is
+the *followed slice*, not the nominal count: per-SP follows are heavily right-skewed (median ~3, max 79), and
+the loop made it worse — run-1 bloated to **537 SPs with `follow_p50 → 1`** (`experiment_log.md` §12), so
+most SPs are retrieval-window ballast displacing a slot a followable SP could have used. Today's only hygiene
+is prune-by-lift (drops *harmful* SPs) plus the inert dead-weight evictor (gap (a) above) — neither reclaims
+budget from the never-followed tail. The cleaner fix is to **split the store: a proven working set owns the
+primary retrieval budget; an unproven reserve is retrieved rarely or not at all.** That reclaims the budget
+*and* preserves frozen-but-unproven SPs intact — dissolving the freeze-out tension (proven and unproven
+currently compete for the same top-k slots, so pruning dead weight and keeping frozen potential look like a
+forced choice; tiering buys both) and giving the dead-weight evictor a real job (demote-to-reserve, not
+delete). Pure retrieval-side, offline, no extra games — the cheapest unbuilt lever in this report. **Caveat
+that bounds it:** the *not-relevant* signal you'd tier on is itself an upper bound on waste — it merges
+genuine correct-declines (healthy breadth) with retrieval false positives, and the logs only partially
+separate them (`plan.md` §10b) — so tier on *follow track record*, not on the raw not-relevant rate.
+
 **One validated instrument lead** (for *deceiver* play, which the vote proxy can't measure): the omniscient discussion-tagger's verdict predicts the wolf/SK win **beyond** the de-luck vote proxy (partial r ≈ +0.56/+0.60), and that signal **survives blinding the tagger to the game outcome and controlling for verbosity** — so it's real skill, not outcome-leak or wordiness (`tagger_skill_retest.py`). It's correlational at N=24, so it validates *a metric*, not a memory effect — but it's the natural instrument for a future measurement of *deceiver* memory, the gap the town-centric vote proxy left open. (En route, a 2×2 ablation also confirmed the tagger's outcome-leak is negligible, so the production tagger keeps its hindsight; details in `experiment_log.md` §12g.)
 
 ## 9. Artifacts

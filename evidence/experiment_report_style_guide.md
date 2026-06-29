@@ -72,6 +72,15 @@ direction-vs-magnitude rules below, which apply to every type.
 - **Separate verdict from forensics.** Lead the case study with a 4-sentence outcome paragraph + a
   "skip by subhead" signpost, then the detail. One canonical doc — never fork a reader-friendly and a
   detailed version (they drift).
+- **Pitch at the reader's altitude — drop nitty-gritty, don't reconcile it.** A reference doc serves a
+  *busy auditor / interviewer*: current design + current gaps + future plan + the pivotal results that
+  drove design shifts. It is **not** a forensic audit (commit-level provenance, which exact script ran,
+  edge-case thresholds belong in the source-map/ledger or nowhere). When two statements conflict over a
+  *mechanism* detail that doesn't move the narrative, **delete the over-specific claim rather than
+  reconciling it** — reconciliation adds the very noise the reader didn't want and re-introduces the
+  detail you should be cutting. Keep the honest *highlight* (e.g. "the pieces had never run end-to-end")
+  and drop the *plumbing* that proves it. (You may still dig forensically to learn *which* claim to cut —
+  just don't put the dig in the doc.)
 
 ### Discipline for journey logs (the per-archetype treatment a flat template flattens)
 
