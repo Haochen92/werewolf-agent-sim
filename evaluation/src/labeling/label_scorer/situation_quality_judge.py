@@ -8,14 +8,14 @@ role_perspective.
 Usage::
 
     # Compare captured vs flash-lite regenerated
-    poetry run python -m evaluation.experiments.labeling.situation_quality_judge
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_quality_judge
 
     # Use a specific regenerated file (e.g. pro output)
-    poetry run python -m evaluation.experiments.labeling.situation_quality_judge \
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_quality_judge \
         --regen-file evidence/extraction/situation_summary/regenerated_situations_pro.json
 
     # Filter by role
-    poetry run python -m evaluation.experiments.labeling.situation_quality_judge \
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_quality_judge \
         --role wolf
 """
 

@@ -7,14 +7,14 @@ Compares golden, old-captured, and new-regenerated situations side by side.
 Usage::
 
     # Regenerate for all 20 labeled cases
-    poetry run python -m evaluation.experiments.labeling.situation_regenerate_eval
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_regenerate_eval
 
     # Filter by role
-    poetry run python -m evaluation.experiments.labeling.situation_regenerate_eval \
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_regenerate_eval \
         --role wolf
 
     # Save generated situations to file for later analysis
-    poetry run python -m evaluation.experiments.labeling.situation_regenerate_eval \
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_regenerate_eval \
         --save-situations evidence/extraction/situation_summary/regenerated_situations.json
 """
 

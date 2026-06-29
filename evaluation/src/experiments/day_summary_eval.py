@@ -14,7 +14,7 @@ import json
 import time
 from pathlib import Path
 
-from evaluation.src.experiments.labeling.day_summary_regen import (
+from evaluation.src.labeling.label_scorer.day_summary_regen import (
     generate_summary,
     load_pairs,
 )

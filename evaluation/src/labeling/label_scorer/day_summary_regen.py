@@ -4,7 +4,7 @@ Extracts raw discussion transcripts from the eval set, runs the current
 DAY_SUMMARY_PROMPT on them, and saves old vs new summaries for comparison.
 
 Usage:
-    poetry run python evaluation/experiments/labeling/day_summary_regen.py [--pair PAIR_ID]
+    poetry run python -m evaluation.src.labeling.label_scorer.day_summary_regen [--pair PAIR_ID]
 """
 
 import argparse

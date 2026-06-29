@@ -11,14 +11,14 @@ Two modes:
 Usage::
 
     # Evaluate golden situation retrieval (offline, no API calls)
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_ndcg
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_retrieval_ndcg
 
     # Also evaluate captured situations (requires embedding API)
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_ndcg \
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_retrieval_ndcg \
         --include-captured
 
     # Filter by role or phase
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_ndcg \
+    poetry run python -m evaluation.src.labeling.label_scorer.situation_retrieval_ndcg \
         --role wolf --phase day_vote
 """
 

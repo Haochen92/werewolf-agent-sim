@@ -13,21 +13,21 @@ Methods:
 Usage::
 
     # Default: test split, bi-encoder + cross-encoder + flash-lite
-    poetry run python -m evaluation.experiments.labeling.reranker_comparison
+    poetry run python -m evaluation.src.labeling.label_scorer.reranker_comparison
 
     # Evaluate on all data (with warning)
-    poetry run python -m evaluation.experiments.labeling.reranker_comparison --split all
+    poetry run python -m evaluation.src.labeling.label_scorer.reranker_comparison --split all
 
     # Specific methods only
-    poetry run python -m evaluation.experiments.labeling.reranker_comparison \
+    poetry run python -m evaluation.src.labeling.label_scorer.reranker_comparison \
         --methods bi-encoder cross-encoder
 
     # Include Cohere
-    poetry run python -m evaluation.experiments.labeling.reranker_comparison \
+    poetry run python -m evaluation.src.labeling.label_scorer.reranker_comparison \
         --include-cohere
 
     # Save scores to JSON for later analysis
-    poetry run python -m evaluation.experiments.labeling.reranker_comparison \
+    poetry run python -m evaluation.src.labeling.label_scorer.reranker_comparison \
         --save-scores reranker_scores.json
 """
 from __future__ import annotations

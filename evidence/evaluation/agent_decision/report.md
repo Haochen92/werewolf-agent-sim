@@ -29,7 +29,7 @@ instrument per stage, and they do **not** share calibration.
   (`core/schemas.py:88-101`): two `SummaryDimensionScores` × {faithfulness, specificity,
   retrieval_usefulness, non_redundancy, role_perspective} 1-5, + `winner` + `confidence`. gemini-2.5-pro,
   `max_retries=1`. Position-bias controlled (order alternated by case index). **No ground truth.**
-- **Golden-NDCG retrieval metric** (`experiments/labeling/situation_retrieval_ndcg.py`; **no console entry**,
+- **Golden-NDCG retrieval metric** (`labeling/label_scorer/situation_retrieval_ndcg.py`; **no console entry**,
   `python -m`): ranking quality of retrieved memories vs graded human relevance (0/1/2), NDCG@{3,5,10},
   **offline / zero API**. ⚠️ Two NDCG impls coexist (linear `rel` vs exponential `2^rel−1`) → cross-harness
   numbers not comparable.
@@ -148,7 +148,7 @@ context_eval program).
 - **Code:** `evaluation/src/judges/{pairwise_summary,retrieval,application}.py`,
   `judges/prompts.py`, `replay/{situation_summary,retrieval,application}.py`,
   `experiments/{summary,retrieval,application,recall_flags,captured}.py`,
-  `experiments/labeling/situation_retrieval_ndcg.py`, `loop/memory_adherence.py`,
+  `labeling/label_scorer/situation_retrieval_ndcg.py`, `loop/memory_adherence.py`,
   `core/schemas.py::{PairwiseJudgeScores,RetrievalScores,ApplicationScores}`.
 - **L2 artifacts (pointed-at):** situation golden `../../extraction/situation_summary/retrieval_golden_labels.json`
   (⚠️ shared cross-component asset — read by reranker training + context_eval; do **not** move); the deferred
