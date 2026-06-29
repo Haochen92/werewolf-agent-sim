@@ -39,8 +39,9 @@ instruments for them:
 
 ### Supporting harness
 `dedup_builder.py` (`eval-build-dedup-dataset`) freezes `DedupCase` datasets; `dedup_replay.py` re-runs the
-*production* decision through a different model/prompt for A/Bs; `batch_dedup_labeler.py` is the interactive
-tool that produced the batch golden set; `eval_auto_dedup.py` calibrates the embedding-prefilter thresholds.
+*production* decision through a different model/prompt for A/Bs; `labeling/manual_labelers/batch_dedup_labeler.py`
+is the interactive tool that produced the batch golden set (moved from `experiments/` into the repurposed
+`labeling/manual_labelers/` home 2026-06-29); `eval_auto_dedup.py` calibrates the embedding-prefilter thresholds.
 
 > **The irony (an apparatus finding).** The measurement that *should* be load-bearing — the deterministic
 > golden scorer — has **no first-class command**; the weaker, uncalibrated LLM judge is the one wired as
