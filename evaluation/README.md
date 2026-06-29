@@ -55,8 +55,8 @@ evaluation/                the eval subsystem (code + its data)
     experiments/ command-line experiment entrypoints
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
-  frozen_eval_sets/        frozen replay datasets + gold labels
-  eval_results/            judge / gold-label scores (gitignored scratch)
+  frozen_eval_sets/        shared frozen replay datasets + gold labels (experiment-specific sets live in evidence/<exp>/eval_sets/)
+  eval_results/            transient run output (gitignored scratch; keepers graduate to evidence/<exp>/)
 ```
 
 Live code should not import from `evaluation/src/archive`.
@@ -109,9 +109,18 @@ eval-* runners (--config evaluation/config/<domain>/<name>.json) ─→ evaluati
 | Folder | Role | Git |
 |---|---|---|
 | `evaluation/config/` | experiment configs, grouped by domain subfolder (+ `template/`) | tracked |
-| `evaluation/frozen_eval_sets/` | frozen replay datasets + gold labels | tracked |
-| `evaluation/eval_results/` | judge / gold-label scores | gitignored (scratch) |
+| `evaluation/frozen_eval_sets/` | **shared** frozen sets + gold labels (experiment-specific → `evidence/<exp>/eval_sets/`) | tracked |
+| `evaluation/eval_results/` | transient run output — staging only; keepers graduate to `evidence/` | gitignored (scratch) |
 | `batch_results/` | per-game run logs (link games → Langfuse traces) | gitignored |
+
+**Staging vs record (two zones).** `evaluation/eval_results/` is throwaway staging —
+the runner dumps every iteration there, gitignored, safe to clean. The durable
+record is `evidence/<experiment>/`: when a run is a keeper, **graduate** it (result →
+`eval_results/`, the exact config → `eval_configs/`, narrative → `report.md`),
+stamping lineage (git SHA, config hash, content-hashed inputs) at that point.
+Co-locating a run's config with its result is an `evidence/` property, not an
+`evaluation/` one — `evaluation/` holds the reusable *templates* (`config/`) and
+*shared* inputs (`frozen_eval_sets/`); the frozen run lives in `evidence/`.
 
 `configs/` no longer exists — experiment configs have one home, `evaluation/config/`.
 Code-level config stays in modules (`Agents/game_config.py`, per-package
@@ -122,6 +131,11 @@ subfolder vocabulary — *config asks the question, eval_set is the exam, eval_r
 is the grade; same domain name at each stage.* A domain gets a subfolder in a stage
 once it holds ≥2 artifacts there; single shared datasets (e.g. `v4_filtering_eval`,
 used across reranking / filtering / store_dedup) stay at the folder root.
+A frozen set belongs in `evaluation/frozen_eval_sets/` only if it is **shared**
+(≥2 consuming configs/experiments, or a standing benchmark); a set built for one
+study lives in `evidence/<exp>/eval_sets/`. Each set's `<id>.manifest.json` records
+its `scope` (`shared` | `experiment:<name>`) plus optional `consumers` — the
+machine-readable marker for the distinction.
 `batch_results/` is **flat** for the batch logs — games are domain-agnostic inputs and
 the filename is the Langfuse session link. The one subtree is `batch_results/eval_cases/`:
 per-game eval-case sidecars keyed by the same session-id convention, written once per
