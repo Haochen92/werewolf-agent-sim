@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from Agents.llm_factory import create_chat_model
+from pydantic import ValidationError
 
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import BatchDedupMergeScores
@@ -83,8 +84,13 @@ def run_batch_merge_judge(
                 strip_json_fences(message_content_text(response.content))
             )
             return BatchDedupMergeScores.model_validate(payload)
-        except (json.JSONDecodeError, Exception) as exc:
-            print(f"  Judge error: {exc}")
+        except (json.JSONDecodeError, ValidationError) as exc:
+            print(f"  Batch merge judge returned invalid scores: {exc}")
+            if attempt < max_retries:
+                continue
+            return None
+        except Exception as exc:
+            print(f"  Batch merge judge call failed: {exc}")
             if attempt < max_retries:
                 continue
             return None
