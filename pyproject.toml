@@ -36,6 +36,7 @@ eval-build-extraction-dataset = "evaluation.src.experiments.extraction_builder:m
 eval-build-dedup-dataset = "evaluation.src.experiments.dedup_builder:main"
 eval-extraction = "evaluation.src.experiments.extraction_eval:main"
 eval-dedup = "evaluation.src.experiments.dedup_eval:main"
+eval-graduate = "evaluation.src.experiments.graduate:main"
 
 [tool.poetry]
 packages = [{ include = "Agents" }, { include = "evaluation" }]
