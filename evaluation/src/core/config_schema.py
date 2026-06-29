@@ -12,6 +12,18 @@ from typing import Literal
 from pydantic import BaseModel, Field, model_validator
 
 
+class _DescribedConfig(BaseModel):
+    """Base for file-loaded experiment/build configs.
+
+    Adds an optional human note. It is ignored by the runners but embedded
+    verbatim into the lineage manifest, so the recorded recipe self-documents
+    (a JSON config cannot carry a comment — this field is its stand-in).
+    """
+
+    description: str | None = None
+    """Free-text note on what this config is for. Humans only; never model-visible."""
+
+
 class VariantConfig(BaseModel):
     """Model/prompt settings for a replayed agent component."""
 
@@ -31,7 +43,7 @@ class JudgeConfig(BaseModel):
     temperature: float = 0.0
 
 
-class DatasetBuildConfig(BaseModel):
+class DatasetBuildConfig(_DescribedConfig):
     """Config for freezing game traces into a local eval dataset."""
 
     eval_set_id: str
@@ -63,7 +75,7 @@ class DatasetBuildConfig(BaseModel):
         return self
 
 
-class PairwiseExperimentConfig(BaseModel):
+class PairwiseExperimentConfig(_DescribedConfig):
     """Config for comparing two variants of a replayed component."""
 
     experiment_id: str
@@ -100,7 +112,7 @@ class RetrievalPipelineConfig(BaseModel):
 DEFAULT_RETRIEVAL_PIPELINE = RetrievalPipelineConfig(label="baseline")
 
 
-class RetrievalExperimentConfig(BaseModel):
+class RetrievalExperimentConfig(_DescribedConfig):
     """Config for replaying captured situation queries against memory snapshots."""
 
     dataset: Path
@@ -118,7 +130,7 @@ class RetrievalExperimentConfig(BaseModel):
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 
-class ApplicationExperimentConfig(BaseModel):
+class ApplicationExperimentConfig(_DescribedConfig):
     """Config for replaying final discussion/vote actions from frozen cases."""
 
     dataset: Path
@@ -141,7 +153,7 @@ class ApplicationExperimentConfig(BaseModel):
         return self
 
 
-class SummaryExperimentConfig(BaseModel):
+class SummaryExperimentConfig(_DescribedConfig):
     """Config for evaluating situation summaries with a rubric-based judge.
 
     mode="captured" judges the frozen situations from the EvalCase.
@@ -164,7 +176,7 @@ class SummaryExperimentConfig(BaseModel):
         return self
 
 
-class CapturedEvaluationConfig(BaseModel):
+class CapturedEvaluationConfig(_DescribedConfig):
     """Config for judging captured EvalCase rows without replaying any stage."""
 
     dataset: Path
@@ -175,7 +187,7 @@ class CapturedEvaluationConfig(BaseModel):
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 
-class E2EExperimentConfig(BaseModel):
+class E2EExperimentConfig(_DescribedConfig):
     """Config for turn-level replay of summary, retrieval, action, and judging."""
 
     dataset: Path
@@ -218,7 +230,7 @@ def _require_one_case_source(model: BaseModel) -> None:
         )
 
 
-class ExtractionDatasetBuildConfig(BaseModel):
+class ExtractionDatasetBuildConfig(_DescribedConfig):
     """Config for freezing extraction spans into a local eval dataset."""
 
     eval_set_id: str
@@ -243,7 +255,7 @@ class ExtractionDatasetBuildConfig(BaseModel):
         return self
 
 
-class DedupDatasetBuildConfig(BaseModel):
+class DedupDatasetBuildConfig(_DescribedConfig):
     """Config for freezing dedup decision spans into a local eval dataset."""
 
     eval_set_id: str
@@ -274,7 +286,7 @@ class DedupDatasetBuildConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class ExtractionExperimentConfig(BaseModel):
+class ExtractionExperimentConfig(_DescribedConfig):
     """Config for judging captured extraction cases."""
 
     dataset: Path
@@ -285,7 +297,7 @@ class ExtractionExperimentConfig(BaseModel):
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 
-class DedupExperimentConfig(BaseModel):
+class DedupExperimentConfig(_DescribedConfig):
     """Config for judging captured dedup decision cases."""
 
     dataset: Path
@@ -302,7 +314,7 @@ class DedupExperimentConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AutoDedupDatasetBuildConfig(BaseModel):
+class AutoDedupDatasetBuildConfig(_DescribedConfig):
     """Config for building a dedup threshold calibration dataset.
 
     Takes extraction JSONL files, builds an in-memory store from ``store_files``,
@@ -329,7 +341,7 @@ class AutoDedupDatasetBuildConfig(BaseModel):
     overwrite: bool = False
 
 
-class AutoDedupCalibrationConfig(BaseModel):
+class AutoDedupCalibrationConfig(_DescribedConfig):
     """Config for sweeping thresholds against a labeled calibration dataset."""
 
     dataset: Path

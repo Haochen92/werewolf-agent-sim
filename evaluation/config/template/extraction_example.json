@@ -1,4 +1,5 @@
 {
+  "description": "example: judge extraction quality on a frozen set (JSON has no comments — use this field)",
   "dataset": "evaluation/frozen_eval_sets/extraction_eval_001.jsonl",
   "max_samples": 20,
   "judge": true,
