@@ -106,6 +106,29 @@ class DedupAdapter(LabelingAdapter):
                 return char
         return None
 
+    def response_schema(self, item: LabelItem) -> type:
+        """Structured output: the production dedup decision schema, per item type.
+
+        Golden-minting uses structured output (not free-text K/D scraping) so the
+        K/D label is parse-robust and the model's ``reasoning`` /
+        ``duplicate_of_candidate`` are captured as audit provenance.
+        """
+        from Agents.memory.deduplication.schemas import (
+            ObservationDedupDecisionOutput,
+            StrategyDedupDecisionOutput,
+        )
+
+        if item.item_type == "observation":
+            return ObservationDedupDecisionOutput
+        return StrategyDedupDecisionOutput
+
+    def parse_structured(self, item: LabelItem, result: Any) -> tuple[str, dict[str, Any]]:
+        if isinstance(result, dict):
+            result = self.response_schema(item).model_validate(result)
+        decision = result.result
+        letter = decision.decision[0].upper()  # "DISCARD"/"D" -> "D", "KEEP"/"K" -> "K"
+        return letter, decision.model_dump(mode="json")
+
     def item_key(self, item: LabelItem) -> str:
         return str(item.case_index)
 

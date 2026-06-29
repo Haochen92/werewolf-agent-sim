@@ -5,10 +5,10 @@ the eval set, then supports qualitative labeling against the SITUATION_STANDARDS
 dimensions and downstream consumer needs.
 
 Usage:
-    poetry run python evaluation/experiments/labeling/day_summary_labeler.py pairs
-    poetry run python evaluation/experiments/labeling/day_summary_labeler.py show <pair_id>
-    poetry run python evaluation/experiments/labeling/day_summary_labeler.py label <pair_id>
-    poetry run python evaluation/experiments/labeling/day_summary_labeler.py progress
+    poetry run python evaluation/src/labeling/manual_labelers/day_summary_labeler.py pairs
+    poetry run python evaluation/src/labeling/manual_labelers/day_summary_labeler.py show <pair_id>
+    poetry run python evaluation/src/labeling/manual_labelers/day_summary_labeler.py label <pair_id>
+    poetry run python evaluation/src/labeling/manual_labelers/day_summary_labeler.py progress
 """
 
 import argparse

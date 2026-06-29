@@ -10,19 +10,19 @@ golden labels. Supports three workflows:
 Usage::
 
     # Show a specific cluster
-    poetry run python -m evaluation.experiments.batch_dedup_labeler \\
+    poetry run python -m evaluation.src.labeling.manual_labelers.batch_dedup_labeler \\
         show --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json --cluster 0
 
     # Show all small clusters (size <= 5)
-    poetry run python -m evaluation.experiments.batch_dedup_labeler \\
+    poetry run python -m evaluation.src.labeling.manual_labelers.batch_dedup_labeler \\
         show --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json --max-size 5
 
     # Sample clusters for labeling (target ~120 items)
-    poetry run python -m evaluation.experiments.batch_dedup_labeler \\
+    poetry run python -m evaluation.src.labeling.manual_labelers.batch_dedup_labeler \\
         sample --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json --target-items 120
 
     # Show labeling progress
-    poetry run python -m evaluation.experiments.batch_dedup_labeler \\
+    poetry run python -m evaluation.src.labeling.manual_labelers.batch_dedup_labeler \\
         progress --labels evaluation/frozen_eval_sets/batch_dedup_golden_labels.json
 """
 

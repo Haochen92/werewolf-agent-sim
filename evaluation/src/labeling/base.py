@@ -62,6 +62,28 @@ class LabelingAdapter(ABC):
     def parse_response(self, text: str) -> int | str | None:
         """Extract a label from model output text. Returns None on parse failure."""
 
+    def response_schema(self, item: LabelItem) -> type | None:
+        """Optional Pydantic schema for structured output.
+
+        When this returns a model class, the engine calls the LLM with
+        ``with_structured_output(schema)`` and routes the result through
+        :meth:`parse_structured` instead of free-text :meth:`parse_response`.
+        Default ``None`` keeps the free-text path, so existing adapters are
+        unaffected. Per-item because the schema can depend on ``item_type``.
+        """
+        return None
+
+    def parse_structured(
+        self, item: LabelItem, result: Any
+    ) -> tuple[int | str | None, dict[str, Any]]:
+        """Extract ``(label, detail)`` from a structured-output result.
+
+        Only called when :meth:`response_schema` returns non-None. ``detail`` is
+        audit provenance (e.g. the model's reasoning) carried into the entry's
+        ``model_details``; it is never used for voting (only the label is).
+        """
+        raise NotImplementedError
+
     @abstractmethod
     def item_key(self, item: LabelItem) -> str:
         """Unique string key for checkpointing and merge lookups."""

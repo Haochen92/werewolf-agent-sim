@@ -32,38 +32,6 @@ class VotingConfig(BaseModel):
         return self
 
 
-class ManualSourceConfig(BaseModel):
-    """Describes human-labeled data to merge with model labels."""
-
-    name: str
-    path: Path
-    format: Literal["batch_dir", "single_file"] = "single_file"
-    key_style: Literal["full", "truncated"] = "full"
-    key_truncation_length: int = 12
-
-
-class LabelingRunConfig(BaseModel):
-    """Top-level config for a multi-model labeling run."""
-
-    models: list[ModelSpec] = Field(min_length=1)
-    voting: VotingConfig = Field(default_factory=VotingConfig)
-    checkpoint_every: int = Field(default=1, ge=1)
-    max_retries: int = Field(default=3, ge=1)
-    output_dir: Path
-    candidates_path: Path
-
-
-class MergeConfig(BaseModel):
-    """Config for merging multiple label sources into consensus."""
-
-    model_label_files: dict[str, Path]
-    manual_sources: list[ManualSourceConfig] = Field(default_factory=list)
-    candidates_path: Path
-    voting: VotingConfig = Field(default_factory=VotingConfig)
-    output_path: Path
-    dry_run: bool = False
-
-
 class ExportConfig(BaseModel):
     """Config for exporting items for manual labeling."""
 
@@ -71,3 +39,39 @@ class ExportConfig(BaseModel):
     output_dir: Path
     batch_size: int = Field(default=5, ge=1)
     cases: list[int] | None = None
+
+
+class LabelingPipelineConfig(BaseModel):
+    """End-to-end config for the assembled pipeline (`pipeline.py`, one entry point).
+
+    Drives LABEL (engine panel) → optional EXPORT off-ramp (→ human) → CONSOLIDATE
+    (vote across model + human voters → consensus + ties). All stage artifacts
+    derive from ``output_dir``; ``models`` may be empty for a pure copy-paste run.
+    """
+
+    candidates_path: Path
+    adapter: str
+    adapter_kwargs: dict = Field(default_factory=dict)
+    models: list[ModelSpec] = Field(default_factory=list)
+    voting: VotingConfig = Field(default_factory=VotingConfig)
+    output_dir: Path
+    manual_sources: list[Path] = Field(default_factory=list)
+    checkpoint_every: int = Field(default=1, ge=1)
+    export_batch_size: int = Field(default=5, ge=1)
+    export_instructions: str = ""
+
+    @property
+    def scores_path(self) -> Path:
+        return self.output_dir / "model_scores.json"
+
+    @property
+    def consensus_path(self) -> Path:
+        return self.output_dir / "consensus_golden.json"
+
+    @property
+    def ties_path(self) -> Path:
+        return self.output_dir / "ties.json"
+
+    @property
+    def export_dir(self) -> Path:
+        return self.output_dir / "export_batches"

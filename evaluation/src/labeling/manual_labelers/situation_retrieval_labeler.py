@@ -10,28 +10,28 @@ Supports the co-labeling workflow:
 Usage::
 
     # Show game state for a case (what the situation summary model sees)
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_labeler \
+    poetry run python -m evaluation.src.labeling.manual_labelers.situation_retrieval_labeler \
         show --case-index 0
 
     # Show game state with the pipeline-captured situations for comparison
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_labeler \
+    poetry run python -m evaluation.src.labeling.manual_labelers.situation_retrieval_labeler \
         show --case-index 0 --show-captured
 
     # Run retrieval with custom situations and display candidates for labeling
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_labeler \
+    poetry run python -m evaluation.src.labeling.manual_labelers.situation_retrieval_labeler \
         retrieve --case-index 0 \
         --situations "situation 1" "situation 2"
 
     # Retrieve using the pipeline-captured situations (for baseline comparison)
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_labeler \
+    poetry run python -m evaluation.src.labeling.manual_labelers.situation_retrieval_labeler \
         retrieve --case-index 0 --use-captured
 
     # Sample cases for labeling (balanced across roles)
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_labeler \
+    poetry run python -m evaluation.src.labeling.manual_labelers.situation_retrieval_labeler \
         sample --count 20
 
     # Show labeling progress
-    poetry run python -m evaluation.experiments.labeling.situation_retrieval_labeler \
+    poetry run python -m evaluation.src.labeling.manual_labelers.situation_retrieval_labeler \
         progress
 """
 

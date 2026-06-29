@@ -58,28 +58,39 @@ def _extract_text(content) -> str:
 
 def _call_model(
     model: ModelSpec,
+    item: LabelItem,
     prompt: str,
     adapter: LabelingAdapter,
     rate_limiter: _RateLimiter,
-) -> int | str | None:
-    """Call a single model and parse the response via the adapter."""
+) -> tuple[int | str | None, dict | None]:
+    """Call a single model and parse via the adapter.
+
+    Returns ``(label, detail)``. ``detail`` is the structured-output audit dict
+    when the adapter opts into ``response_schema``; it is ``None`` on the
+    free-text path.
+    """
     from Agents.llm_factory import create_chat_model
 
     kwargs = {}
     if model.thinking_level:
         kwargs["thinking_level"] = model.thinking_level
 
+    schema = adapter.response_schema(item)
+
     for attempt in range(model.max_retries):
         try:
             rate_limiter.wait(model.name)
             llm = create_chat_model(model.name, temperature=model.temperature, **kwargs)
+            if schema is not None:
+                result = llm.with_structured_output(schema).invoke(prompt)
+                return adapter.parse_structured(item, result)
             response = llm.invoke(prompt)
             text = _extract_text(response.content)
             label = adapter.parse_response(text)
             if label is not None:
-                return label
+                return label, None
             print(f"    WARNING: {model.name} returned unparseable: {text!r}")
-            return None
+            return None, None
         except Exception as e:
             if attempt < model.max_retries - 1:
                 is_rate_limit = "429" in str(e)
@@ -88,8 +99,8 @@ def _call_model(
                 time.sleep(wait)
             else:
                 print(f"    FAILED {model.name}: {e}")
-                return None
-    return None
+                return None, None
+    return None, None
 
 
 def label_items(
@@ -140,13 +151,18 @@ def label_items(
     def _process(item: LabelItem) -> dict:
         prompt = adapter.format_prompt(item)
         scores: dict[str, int | str | None] = {}
+        details: dict[str, dict] = {}
         with ThreadPoolExecutor(max_workers=len(models)) as executor:
             futures = {
-                executor.submit(_call_model, m, prompt, adapter, rate_limiter): m
+                executor.submit(_call_model, m, item, prompt, adapter, rate_limiter): m
                 for m in models
             }
             for future in as_completed(futures):
-                scores[futures[future].name] = future.result()
+                label, detail = future.result()
+                name = futures[future].name
+                scores[name] = label
+                if detail is not None:
+                    details[name] = detail
 
         entry = {
             "case_index": item.case_index,
@@ -154,6 +170,8 @@ def label_items(
             "item_type": item.item_type,
             "model_scores": scores,
         }
+        if details:
+            entry["model_details"] = details
         _short = lambda m: m.split("/")[-1] if "/" in m else m.split("-")[-1]
         score_str = " ".join(f"{_short(m)}={s}" for m, s in scores.items())
         with write_lock:

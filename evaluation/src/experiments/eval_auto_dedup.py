@@ -39,6 +39,7 @@ import numpy as np
 from Agents.llm_factory import create_embeddings
 from Agents.memory import embeddings as embedding_model
 from Agents.memory.vectors import cosine_similarity, embed_texts
+from evaluation.src.core.config_schema import AutoDedupCalibrationConfig
 from evaluation.src.data.datasets import (
     read_auto_dedup_dataset,
     read_dedup_dataset,
@@ -640,7 +641,12 @@ def _print_per_case_decision(
 # ---------------------------------------------------------------------------
 
 
-def parse_args() -> argparse.Namespace:
+def parse_config() -> AutoDedupCalibrationConfig:
+    """Parse CLI args into a validated calibration recipe (argparse → config).
+
+    Keeps the sweep's interactive flags while giving each run one validated
+    ``AutoDedupCalibrationConfig`` as its single source of truth.
+    """
     parser = argparse.ArgumentParser(
         description="Calibrate embedding pre-filter thresholds against golden labels."
     )
@@ -675,38 +681,47 @@ def parse_args() -> argparse.Namespace:
         "--embedding-model", type=str, default=None,
         help="Embedding model name (default: gemini-embedding-001).",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    return AutoDedupCalibrationConfig(
+        dataset=args.dataset,
+        golden=args.golden,
+        cache=args.cache,
+        discard_range=tuple(args.discard_range),
+        keep_range=tuple(args.keep_range),
+        show_decisions=args.show_decisions,
+        obs_keep_mode=args.obs_keep_mode,
+        dims=args.dims,
+        task_type=args.task_type,
+        embedding_model=args.embedding_model,
+    )
 
 
 def main() -> None:
-    args = parse_args()
+    config = parse_config()
 
     emb_model = None
-    if args.embedding_model or args.dims:
-        model_name = args.embedding_model or "gemini-embedding-001"
-        emb_model = create_embeddings(model_name, output_dimensionality=args.dims)
-        print(f"Using embedding model: {model_name}, dims={args.dims}, task_type={args.task_type}")
+    if config.embedding_model or config.dims:
+        model_name = config.embedding_model or "gemini-embedding-001"
+        emb_model = create_embeddings(model_name, output_dimensionality=config.dims)
+        print(f"Using embedding model: {model_name}, dims={config.dims}, task_type={config.task_type}")
 
     cases = compute_all_embeddings(
-        args.dataset, args.golden, args.cache,
-        emb_model=emb_model, task_type=args.task_type,
+        config.dataset, config.golden, config.cache,
+        emb_model=emb_model, task_type=config.task_type,
     )
 
     _print_distribution(cases, "strategy_point")
     _print_distribution(cases, "observation")
 
-    discard_range = tuple(args.discard_range)
-    keep_range = tuple(args.keep_range)
-
-    sp_results = sweep_strategy_thresholds(cases, discard_range, keep_range)
+    sp_results = sweep_strategy_thresholds(cases, config.discard_range, config.keep_range)
     _print_sweep("STRATEGY POINTS (action similarity)", sp_results)
 
     obs_results = sweep_observation_thresholds(
-        cases, discard_range, keep_range, keep_mode=args.obs_keep_mode,
+        cases, config.discard_range, config.keep_range, keep_mode=config.obs_keep_mode,
     )
-    _print_sweep(f"OBSERVATIONS (content sim, keep={args.obs_keep_mode})", obs_results)
+    _print_sweep(f"OBSERVATIONS (content sim, keep={config.obs_keep_mode})", obs_results)
 
-    if args.show_decisions:
+    if config.show_decisions:
         sp_zero = [r for r in sp_results if r.wrong_auto_discard == 0 and r.wrong_auto_keep == 0 and r.auto_rate > 0]
         if sp_zero:
             best = max(sp_zero, key=lambda r: r.auto_rate)
