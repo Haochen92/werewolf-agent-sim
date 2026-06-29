@@ -31,7 +31,27 @@ from evaluation.src.data.sampling import (  # noqa: E402
     sample_cases,
 )
 from Agents.schemas.evaluation import EvalCase  # noqa: E402
-from evaluation.src.core.schemas import EvalResult  # noqa: E402
+from Agents.schemas.roles import ActionPhase  # noqa: E402
+from evaluation.src.core.schemas import JudgeScores  # noqa: E402
+
+
+# Legacy per-turn eval-result envelope (the old ``agent_action_eval`` span).
+# Inlined here when removed from live ``core.schemas`` — this archived judge is
+# its only remaining consumer, so the audit copy owns its own dead result type.
+class EvalResult(BaseModel):
+    span_kind: str = "agent_action_eval"
+    span_name: str
+    trace_id: str
+    observation_id: str
+    role: str
+    day: int
+    round: int
+    action_phase: ActionPhase
+    model: str
+    model_type: str
+    eval_version: str
+    sampling_seed: int
+    scores: JudgeScores
 
 
 def resolve_trace_ids(args: argparse.Namespace) -> list[str]:

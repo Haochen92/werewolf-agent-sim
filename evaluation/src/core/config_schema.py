@@ -43,8 +43,13 @@ class JudgeConfig(BaseModel):
     temperature: float = 0.0
 
 
-class DatasetBuildConfig(_DescribedConfig):
-    """Config for freezing game traces into a local eval dataset."""
+class _CaseSourceBuildConfig(_DescribedConfig):
+    """Shared base for freezing game traces/spans into a local eval dataset.
+
+    Exactly one of the six case sources must be set — five Langfuse routes
+    (session/trace selectors) or the local-sidecar route. Subclasses add their
+    format-specific sampling fields.
+    """
 
     eval_set_id: str
     session_prefix: str | None = None
@@ -58,21 +63,38 @@ class DatasetBuildConfig(_DescribedConfig):
     local emission landed; the other five sources fetch from Langfuse."""
     created_from: str | None = None
     max_games: int = Field(default=5, ge=0)
-    per_role_per_phase: int = Field(default=1, ge=1)
     max_samples: int = Field(default=40, ge=0)
     seed: int = 0
+    output: Path | None = None
+    overwrite: bool = False
+
+    @model_validator(mode="after")
+    def _require_one_case_source(self) -> "_CaseSourceBuildConfig":
+        sources = [
+            self.session_prefix,
+            self.session_id,
+            self.session_ids,
+            self.batch_results,
+            self.trace_ids,
+            self.local_results,
+        ]
+        if sum(source not in (None, "", []) for source in sources) != 1:
+            raise ValueError(
+                "Exactly one of session_prefix, session_id, session_ids, "
+                "batch_results, trace_ids, or local_results must be set."
+            )
+        return self
+
+
+class DatasetBuildConfig(_CaseSourceBuildConfig):
+    """Config for freezing game traces into a local eval dataset."""
+
+    per_role_per_phase: int = Field(default=1, ge=1)
     action_phases: list[str] | None = None
     """Which action phases are eligible for sampling. None → day-only
     ("day_discussion", "day_vote"). Add "night_action" to include night
     decisions (wolf kill-vote, healer, investigator, SK, vigilante) — in scope
     for Phase B labeling on v5."""
-    output: Path | None = None
-    overwrite: bool = False
-
-    @model_validator(mode="after")
-    def require_one_source(self) -> "DatasetBuildConfig":
-        _require_one_case_source(self)
-        return self
 
 
 class PairwiseExperimentConfig(_DescribedConfig):
@@ -212,73 +234,14 @@ class E2EExperimentConfig(_DescribedConfig):
 # ---------------------------------------------------------------------------
 
 
-def _require_one_case_source(model: BaseModel) -> None:
-    """Exactly one case source: five Langfuse routes or the local-sidecar route."""
-    sources = [
-        getattr(model, "session_prefix", None),
-        getattr(model, "session_id", None),
-        getattr(model, "session_ids", None),
-        getattr(model, "batch_results", None),
-        getattr(model, "trace_ids", None),
-        getattr(model, "local_results", None),
-    ]
-    provided_count = sum(source not in (None, "", []) for source in sources)
-    if provided_count != 1:
-        raise ValueError(
-            "Exactly one of session_prefix, session_id, session_ids, "
-            "batch_results, trace_ids, or local_results must be set."
-        )
-
-
-class ExtractionDatasetBuildConfig(_DescribedConfig):
+class ExtractionDatasetBuildConfig(_CaseSourceBuildConfig):
     """Config for freezing extraction spans into a local eval dataset."""
 
-    eval_set_id: str
-    session_prefix: str | None = None
-    session_id: str | None = None
-    session_ids: list[str] | None = None
-    batch_results: Path | None = None
-    trace_ids: list[str] | None = None
-    local_results: Path | None = None
-    """run_batch JSONL whose per-game sidecars supply the cases locally
-    (no Langfuse read); see DatasetBuildConfig.local_results."""
-    created_from: str | None = None
-    max_games: int = Field(default=5, ge=0)
-    max_samples: int = Field(default=40, ge=0)
-    seed: int = 0
-    output: Path | None = None
-    overwrite: bool = False
 
-    @model_validator(mode="after")
-    def require_one_source(self) -> "ExtractionDatasetBuildConfig":
-        _require_one_case_source(self)
-        return self
-
-
-class DedupDatasetBuildConfig(_DescribedConfig):
+class DedupDatasetBuildConfig(_CaseSourceBuildConfig):
     """Config for freezing dedup decision spans into a local eval dataset."""
 
-    eval_set_id: str
-    session_prefix: str | None = None
-    session_id: str | None = None
-    session_ids: list[str] | None = None
-    batch_results: Path | None = None
-    trace_ids: list[str] | None = None
-    local_results: Path | None = None
-    """run_batch JSONL whose per-game sidecars supply the cases locally
-    (no Langfuse read); see DatasetBuildConfig.local_results."""
-    created_from: str | None = None
-    max_games: int = Field(default=5, ge=0)
-    max_samples: int = Field(default=40, ge=0)
     filter_auto: bool = False
-    seed: int = 0
-    output: Path | None = None
-    overwrite: bool = False
-
-    @model_validator(mode="after")
-    def require_one_source(self) -> "DedupDatasetBuildConfig":
-        _require_one_case_source(self)
-        return self
 
 
 # ---------------------------------------------------------------------------
@@ -342,11 +305,21 @@ class AutoDedupDatasetBuildConfig(_DescribedConfig):
 
 
 class AutoDedupCalibrationConfig(_DescribedConfig):
-    """Config for sweeping thresholds against a labeled calibration dataset."""
+    """Threshold-sweep recipe for the embedding pre-filter calibration.
+
+    Built from CLI args by ``experiments/eval_auto_dedup.py`` (argparse →
+    validated config), so the sweep keeps its interactive flags while each run
+    has one validated recipe. The runner reports to stdout — it writes no
+    artifact, so there is no ``output`` field.
+    """
 
     dataset: Path
     golden: Path
     cache: Path | None = None
-    discard_range: tuple[float, float, float] = (0.80, 1.01, 0.005)
-    keep_range: tuple[float, float, float] = (0.50, 0.90, 0.01)
-    output: Path | None = None
+    discard_range: tuple[float, float, float] = (0.80, 0.96, 0.01)
+    keep_range: tuple[float, float, float] = (0.50, 0.76, 0.01)
+    show_decisions: bool = False
+    obs_keep_mode: Literal["content", "field"] = "content"
+    dims: int | None = None
+    task_type: str | None = None
+    embedding_model: str | None = None

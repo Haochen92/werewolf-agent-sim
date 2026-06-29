@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Literal
 
-from Agents.schemas.roles import ActionPhase
 from pydantic import BaseModel, Field, field_validator
 
 AttributionDirection = Literal["over", "under", "accurate"]
@@ -16,22 +15,6 @@ class JudgeScores(BaseModel):
     strategy_application: int = Field(ge=1, le=5)
     grounding: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
-
-
-class EvalResult(BaseModel):
-    span_kind: str = "agent_action_eval"
-    span_name: str
-    trace_id: str
-    observation_id: str
-    role: str
-    day: int
-    round: int
-    action_phase: ActionPhase
-    model: str
-    model_type: str
-    eval_version: str
-    sampling_seed: int
-    scores: JudgeScores
 
 
 class LessonCluster(BaseModel):
