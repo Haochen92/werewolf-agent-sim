@@ -47,17 +47,23 @@ Each `EvalCase` represents one agent turn and includes:
 
 ```text
 evaluation/                the eval subsystem (code + its data)
-  src/                     the code:
-    core/        config schemas, result schemas, IO, formatting, costs, settings
-    data/        Langfuse fetching, EvalCase conversion, dataset sampling
-    components/  replay adapters for summary, retrieval, and action stages
-    judges/      judge prompts and LLM judge wrappers
-    experiments/ command-line experiment entrypoints
+  src/                     the code (the judge half — capture lives in tracing; see evidence/tracing/):
+    core/        config schemas, result schemas, IO, formatting, costs, stats, manifests, settings
+    data/        Langfuse fetching, case conversion (EvalCase/Extraction/Dedup/DaySummary), sampling
+    replay/      replay adapters for the summary, retrieval, and action stages (renamed from components/)
+    judges/      judge prompts + LLM judge wrappers, one per case type
+    labeling/    multi-model golden-label pipeline: engine, voter, exporter, adapters/, pipeline,
+                 manual_labelers/ (interactive human CLIs), label_scorer/ (golden-set scorers/NDCG/regen)
+    loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
+    experiments/ command-line eval runners + concluded v6/v7 study runners (inventory below)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
   frozen_eval_sets/        shared frozen replay datasets + gold labels (experiment-specific sets live in evidence/<exp>/eval_sets/)
   eval_results/            transient run output (gitignored scratch; keepers graduate to evidence/<exp>/)
 ```
+
+Model *training* (CE reranker / dedup classifier) is not part of this subsystem — it lives in the
+repo-root `training/` package (it trains models; it does not judge cases).
 
 Live code should not import from `evaluation/src/archive`.
 
@@ -173,18 +179,18 @@ One-off studies (e.g. the model-comparison runners) write their outputs into
 `evidence/<experiment>/`, not `evaluation/eval_results/`. The full layer rule + the
 explore→graduate→supersede lifecycle is in **CLAUDE.md → Eval Architecture**.
 
-## Components, Judges, And Experiments
+## Replay, Judges, And Experiments
 
 The evaluation code is split by responsibility:
 
 ```text
-components  = produce outputs by replaying part of the agent pipeline
+replay      = produce outputs by replaying part of the agent pipeline on a frozen case
 judges      = grade or compare outputs using a rubric
-experiments = coordinate datasets, components, judges, configs, and JSONL output
+experiments = coordinate datasets, replay, judges, configs, and JSONL output (the CLI layer)
 ```
 
-For example, an E2E experiment reads frozen cases, runs the summary component,
-runs retrieval, runs the action component, optionally calls a judge, and writes
+For example, an E2E experiment reads frozen cases, replays the summary stage,
+replays retrieval, replays the action stage, optionally calls a judge, and writes
 one JSONL record per replay. The judge does not know about datasets, output
 paths, snapshots, or CLI config. It only receives formatted inputs and returns
 scores.
@@ -192,11 +198,44 @@ scores.
 The dependency direction should stay simple:
 
 ```text
-experiments -> components
+experiments -> replay
 experiments -> judges
 judges      -> prompts / schemas / formatters
-components  -> production agent code
+replay      -> production agent code
 ```
+
+### `experiments/` inventory
+
+`experiments/` is the CLI layer. It holds two kinds of file, kept distinct on purpose:
+
+**1. Live eval runners** — the authoritative one-runner-per-kind surface. Most are wired as
+`eval-*` console scripts (see `pyproject.toml [project.scripts]`): builders
+(`eval-build-dataset`/`-extraction-dataset`/`-dedup-dataset`), the agent-decision funnel
+(`eval-summary`, `eval-summary-rubric`, `eval-retrieval`, `eval-application`, `eval-captured`,
+`eval-e2e`), `eval-extraction`, `eval-day-summary`, dedup (`eval-dedup`, `eval-dedup-score`,
+`eval-batch-dedup`), and `eval-graduate`. A few live tools run by module path only:
+`dedup_replay`, `batch_dedup_merge_eval`, `extraction_replay`, `eval_auto_dedup` +
+`auto_dedup_dataset_builder`.
+
+**2. Concluded v6/v7 study runners** — the apparatus that produced the v5→v6→v7 store-evolution
+conclusions. Not part of the live CLI surface; kept runnable because frozen `evidence/v7_final/`
+scripts import them and the evidence reports point at them. Their physical disposition (subfolder
+vs colocate) is **deferred to the concurrent code + memory-effectiveness review** — the apparatus
+and its verdict are two axes of the same files.
+
+| Study runner | What it studied | Record |
+|---|---|---|
+| `decision_replay.py` | de-luck proxy validation (off-policy decision replay) | `evidence/memory_system/effectiveness/decision_replay/` |
+| `criticality_screen.py` | conditioned-vs-flat retrieval (gated the v6 build) | `evidence/phase_b/criticality_screen/` |
+| `forced_schema_screen.py` | forced per-memory applicability schema | `evidence/phase_b/forced_schema_screen/` |
+| `dimension_gating_screen.py` | retrieval dimension-gating (NEGATIVE → ships default-off) | `evidence/v7_final/review_map.md` |
+| `reextract_villager_day.py`, `reextract_cells.py` | v6 per-cell re-extraction store build | `evidence/phase_b/v6_full_store.md` |
+| `synthesize_cell_sp.py` | v6 cluster→strategy-point synthesis | `evidence/phase_b/` |
+| `recall_flags.py` | deterministic pivotal-turn flagger (v7 recall anchor) | `evidence/v7_final/review_map.md` |
+| `synth_deluck_ab.py` | credit-aware vs outcome-halo synthesis A/B | `evidence/v7_final/synth_deluck_ab/` |
+| `consolidation_prune.py` | offline credit-prune apply-tool | `evidence/v7_final/review_map.md` |
+| `investigator_transmission.py` | v6 static SP A/B (motivates cross-game synthesis) | `evidence/memory_system/effectiveness/v6_sp_ab/` |
+| `extraction_model_comparison.py` | extraction model comparison | `evidence/v7_final/extraction_model_ab_compare.py` |
 
 ## Step 1: Run Games
 
@@ -298,7 +337,7 @@ Starter templates live under `evaluation/config/template/`.
 Paths are resolved relative to the current working directory, so run commands
 from the repository root.
 
-The config models are defined in `evaluation/core/config_schema.py`.
+The config models are defined in `evaluation/src/core/config_schema.py`.
 
 ### Summary Pairwise
 
@@ -439,7 +478,7 @@ Example config:
 Run:
 
 ```bash
-poetry run python -m evaluation.experiments.captured --config evaluation/config/captured_v2_memory.json
+poetry run python -m evaluation.src.experiments.captured --config evaluation/config/captured_v2_memory.json
 ```
 
 Template: `evaluation/config/template/captured_example.json`.
