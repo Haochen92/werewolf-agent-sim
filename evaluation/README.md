@@ -6,7 +6,8 @@ Werewolf agents.
 The intended workflow is:
 
 1. Run full games with `scripts/run_batch.py`.
-2. Use Langfuse spans from those games to build a frozen local eval dataset.
+2. Build a frozen local eval dataset from the per-game eval-case sidecars `run_batch`
+   writes (Langfuse traces are a fallback for games predating local emission).
 3. Replay specific parts of the memory pipeline from the frozen dataset.
 4. Optionally use an LLM judge to score the replayed outputs.
 5. Write JSONL results under `evaluation/eval_results/`.
@@ -34,8 +35,9 @@ full game history
   -> memory store snapshots
 ```
 
-The evaluation module uses frozen `EvalCase` records captured from Langfuse.
-Each `EvalCase` represents one agent turn and includes:
+The evaluation module uses frozen `EvalCase` records captured during each game —
+written to a per-game local sidecar (the primary source) and mirrored to the Langfuse
+span. Each `EvalCase` represents one agent turn and includes:
 
 - visible discussion context
 - private role context
@@ -49,7 +51,10 @@ Each `EvalCase` represents one agent turn and includes:
 evaluation/                the eval subsystem (code + its data)
   src/                     the code (the judge half — capture lives in tracing; see evidence/tracing/):
     core/        config schemas, result schemas, IO, formatting, costs, stats, manifests, settings
-    data/        Langfuse fetching, case conversion (EvalCase/Extraction/Dedup/DaySummary), sampling
+    data/        the read side — rehydrate the eval-case span-dicts run_batch captured, then curate + freeze:
+      converters/    span-dict → one typed case (EvalCase / Extraction / Dedup / DaySummary)
+      sources/       where cases come from: sidecar.py (run_batch's local sidecars, PRIMARY) · langfuse.py (fallback fetch + cost)
+      frozen_sets.py  frozen-set record schemas + JSONL I/O · sampling.py  stratified subset selection · batch_layout.py  batch_results/ write layout
     replay/      replay adapters for the summary, retrieval, and action stages (renamed from components/)
     judges/      judge prompts + LLM judge wrappers, one per case type
     labeling/    multi-model golden-label pipeline: engine, voter, exporter, adapters/, pipeline,
@@ -111,6 +116,11 @@ eval-build-* CLIs freeze cases ─→ evaluation/frozen_eval_sets/<id>.jsonl  (+
         ▼
 eval-* runners (--config evaluation/config/<domain>/<name>.json) ─→ evaluation/eval_results/…  (judge or gold-label scores)
 ```
+
+The `eval-build-*` step is where `src/data/` runs against the captured span-dicts:
+`sources/sidecar.py` reads the per-game sidecars `run_batch` wrote, `converters/` rehydrate
+each into a typed case, `sampling.py` selects a stratified subset, and `frozen_sets.py`
+writes the immutable set. (`sources/langfuse.py` is the same path sourced from traces instead.)
 
 | Folder | Role | Git |
 |---|---|---|

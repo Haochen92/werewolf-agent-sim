@@ -56,8 +56,8 @@ Mostly the *capture* side's output; included because the eval reads it. Boundary
 |-------|------|-------------|-------|
 | Frozen-set builder | `experiments/dataset_builder.py` (`eval-build-dataset`) → `frozen_eval_sets/<id>.jsonl` + `.manifest.json` | ✅ (tested: `test_eval_case_sink`, `test_local_case_source`, `test_langfuse_fetch`) | source = local sidecars (preferred) or Langfuse |
 | Stratified sampling | `data/sampling.py` (`sample_cases`) | ✅ (tested: `test_sampling`) | **default day-only**; `night_action` opt-in via `action_phases`. Stratifies by game/role/phase/action. **This is the eval-side selection policy** (vs capture). |
-| Case loaders | `data/{cases,local_cases,datasets,extraction_cases,dedup_cases,day_summary_cases}.py` | ✅/🟡 | legacy span/decision formats (A/B/C→K/M/D) mapped; old formats in `archive/legacy_cases.py` |
-| Langfuse read | `data/langfuse.py` | 🟡 | network-dependent; the post-422 cheap-read path (capture report §4) |
+| Case converters + sources | `data/converters/{agent_decision,extraction,dedup,day_summary}.py` (span→case) · `data/sources/sidecar.py` (local, primary) · `data/frozen_sets.py` (records + JSONL) | ✅/🟡 | legacy span/decision formats (A/B/C→K/M/D) mapped; old formats in `archive/legacy_cases.py` |
+| Langfuse read | `data/sources/langfuse.py` | 🟡 | network-dependent; the post-422 cheap-read path (capture report §4) |
 | Provenance manifest | `core/manifest.py` (tested), `core/costs.py` | ✅ / ⚠️ | costs.py has magic `chars/token=4` + dated Gemini-only pricing → **cost figures are estimates, not billing truth** |
 
 ---
