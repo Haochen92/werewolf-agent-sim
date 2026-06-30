@@ -4,17 +4,15 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import BatchDedupMergeScores
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import (
     BATCH_DEDUP_MERGE_SYSTEM_PROMPT,
     BATCH_DEDUP_MERGE_USER_PROMPT,
 )
-
-DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
 
 
 def _format_source_entries(
@@ -61,7 +59,7 @@ def run_batch_merge_judge(
     model: str = DEFAULT_JUDGE_MODEL,
     max_retries: int = 1,
 ) -> BatchDedupMergeScores | None:
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
 
     prompt = BATCH_DEDUP_MERGE_USER_PROMPT.format(
         memory_kind=memory_kind,

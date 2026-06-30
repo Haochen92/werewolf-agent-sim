@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.schemas.evaluation import DedupCase
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import DedupScores
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import DEDUP_SYSTEM_PROMPT, DEDUP_USER_PROMPT
-
-DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
 
 DECISION_LABELS = {
     # Current per-extraction decisions
@@ -99,7 +97,7 @@ def run_dedup_judge(
     model: str = DEFAULT_JUDGE_MODEL,
     max_retries: int = 1,
 ) -> DedupScores | None:
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
 
     decision_label = DECISION_LABELS.get(case.decision, case.decision)
     reasoning = ""

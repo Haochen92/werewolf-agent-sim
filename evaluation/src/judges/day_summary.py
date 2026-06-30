@@ -4,18 +4,18 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import DaySummaryScores
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import (
     DAY_SUMMARY_JUDGE_SYSTEM_PROMPT,
     DAY_SUMMARY_JUDGE_USER_PROMPT,
     DAY_SUMMARY_RUBRIC,
 )
 
-DEFAULT_DAY_SUMMARY_JUDGE_MODEL = "gemini-2.5-pro"
+DEFAULT_DAY_SUMMARY_JUDGE_MODEL = DEFAULT_JUDGE_MODEL
 
 
 def _format_raw_transcript(messages: list[dict], day: int) -> str:
@@ -51,7 +51,7 @@ def run_day_summary_judge(
     max_retries: int = 1,
 ) -> DaySummaryScores | None:
     prompt = _build_judge_prompt(raw_discussion, summary, day)
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
 
     for attempt in range(max_retries + 1):
         try:

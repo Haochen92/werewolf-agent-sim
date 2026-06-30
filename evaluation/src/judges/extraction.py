@@ -4,19 +4,17 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas.evaluation import ExtractionCase
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import ExtractionScores
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import (
     EXTRACTION_SYSTEM_PROMPT,
     EXTRACTION_USER_PROMPT,
 )
-
-DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
 
 
 def _format_dimensional_fields(item: dict) -> str:
@@ -76,7 +74,7 @@ def run_extraction_judge(
     model: str = DEFAULT_JUDGE_MODEL,
     max_retries: int = 1,
 ) -> ExtractionScores | None:
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
     prompt = EXTRACTION_USER_PROMPT.format(
         roles=_format_roles(case.roles),
         game_outcome=case.game_outcome,

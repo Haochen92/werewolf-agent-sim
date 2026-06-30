@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.prompts.standards import SITUATION_STANDARDS
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import RetrievalScores
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import RETRIEVAL_SYSTEM_PROMPT, RETRIEVAL_USER_PROMPT
 
 
-DEFAULT_RETRIEVAL_JUDGE_MODEL = "gemini-2.5-pro"
+DEFAULT_RETRIEVAL_JUDGE_MODEL = DEFAULT_JUDGE_MODEL
 
 
 def minimal_retrieval_scores(item_count: int) -> RetrievalScores:
@@ -54,7 +54,7 @@ def run_retrieval_judge(
         situations="\n".join(f"- {situation}" for situation in situations),
         items=items_formatted,
     )
-    llm = create_chat_model(model, thinking_level=thinking_level)
+    llm = get_judge_llm(model, thinking_level=thinking_level)
     for attempt in range(max_retries + 1):
         try:
             response = llm.invoke(

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.prompts.prompt_formatters import format_day_channel
@@ -12,6 +11,7 @@ from Agents.schemas.evaluation import EvalCase
 from evaluation.src.core.formatters import format_eval_private_context, format_eval_situations
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import SituationSummaryScores
+from evaluation.src.judges.config import get_judge_llm
 from evaluation.src.judges.prompts import (
     SUMMARY_RUBRIC,
     SUMMARY_RUBRIC_SYSTEM_PROMPT,
@@ -19,6 +19,8 @@ from evaluation.src.judges.prompts import (
 )
 
 
+# Overrides the package default (config.DEFAULT_JUDGE_MODEL) — the summary judge
+# runs on a stronger model.
 DEFAULT_SUMMARY_JUDGE_MODEL = "gemini-3.1-pro-preview"
 
 
@@ -44,7 +46,7 @@ def run_summary_judge(
     max_retries: int = 1,
 ) -> SituationSummaryScores | None:
     prompt = _build_judge_prompt(case, situations)
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
 
     for attempt in range(max_retries + 1):
         try:

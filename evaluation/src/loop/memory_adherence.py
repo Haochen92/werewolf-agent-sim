@@ -27,7 +27,7 @@ from pydantic import BaseModel, Field
 from Agents.llm_factory import create_chat_model
 from Agents.prompts.prompt_formatters import format_agent_action, format_day_channel
 from Agents.schemas.evaluation import EvalCase
-from evaluation.src.data.cases import eval_case_to_judge_inputs
+from evaluation.src.judges.case_inputs import eval_case_to_judge_inputs
 
 DEFAULT_ADHERENCE_JUDGE_MODEL = "gemini-2.5-pro"
 

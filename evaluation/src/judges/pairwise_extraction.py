@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas.evaluation import ExtractionCase
 from pydantic import ValidationError
 
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import PairwiseExtractionScores
+from evaluation.src.judges.config import get_judge_llm
 from evaluation.src.judges.extraction import (
     DEFAULT_JUDGE_MODEL,
     _format_observations,
@@ -61,7 +61,7 @@ def run_pairwise_extraction_judge(
         strategy_points_b_formatted=_format_strategy_points(sp_b),
     )
 
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
     for attempt in range(max_retries + 1):
         try:
             response = llm.invoke(

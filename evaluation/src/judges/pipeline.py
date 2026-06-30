@@ -4,21 +4,14 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import JudgeScores
-from evaluation.src.data.cases import eval_case_to_judge_inputs
+from evaluation.src.judges.case_inputs import eval_case_to_judge_inputs
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import JUDGE_SYSTEM_PROMPT, JUDGE_USER_PROMPT
-
-
-DEFAULT_JUDGE_MODEL = "gemini-2.5-pro"
-
-
-def get_judge_llm(model: str = DEFAULT_JUDGE_MODEL):
-    return create_chat_model(model)
 
 
 def _parse_judge_scores(text: str) -> JudgeScores:

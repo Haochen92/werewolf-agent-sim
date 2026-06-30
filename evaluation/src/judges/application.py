@@ -4,18 +4,18 @@ from __future__ import annotations
 
 import json
 
-from Agents.llm_factory import create_chat_model
 from pydantic import ValidationError
 
 from Agents.prompts.prompt_formatters import format_agent_action, format_day_channel
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.core.io import message_content_text, strip_json_fences
 from evaluation.src.core.schemas import ApplicationScores
-from evaluation.src.data.cases import eval_case_to_judge_inputs
+from evaluation.src.judges.case_inputs import eval_case_to_judge_inputs
+from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm
 from evaluation.src.judges.prompts import APPLICATION_SYSTEM_PROMPT, APPLICATION_USER_PROMPT
 
 
-DEFAULT_APPLICATION_JUDGE_MODEL = "gemini-2.5-pro"
+DEFAULT_APPLICATION_JUDGE_MODEL = DEFAULT_JUDGE_MODEL
 
 
 def parse_application_scores(text: str) -> ApplicationScores:
@@ -48,7 +48,7 @@ def run_application_judge(
         agent_updated_strategy=case.updated_strategy,
         agent_adoption_report=inputs["agent_adoption_report"],
     )
-    llm = create_chat_model(model)
+    llm = get_judge_llm(model)
     for attempt in range(max_retries + 1):
         try:
             response = llm.invoke(
