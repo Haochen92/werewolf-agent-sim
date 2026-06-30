@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from evaluation.src.data.datasets import read_dedup_dataset
+from evaluation.src.data.frozen_sets import read_dedup_dataset
 
 LEGACY_TO_CURRENT_OBS = {
     "A": "D",  # DISCARD → DISCARD

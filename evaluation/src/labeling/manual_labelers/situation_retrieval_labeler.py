@@ -59,7 +59,7 @@ from Agents.memory.persistence import seed_memory_from_json_files_cached
 from Agents.prompts import SITUATION_ROLE_LENS, SITUATION_STANDARDS
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.core.settings import REPO_ROOT
-from evaluation.src.data.datasets import EvalDatasetRecord, read_eval_dataset
+from evaluation.src.data.frozen_sets import EvalDatasetRecord, read_eval_dataset
 
 EVAL_DATASET = REPO_ROOT / "evaluation" / "frozen_eval_sets" / "v4_filtering_eval.jsonl"
 STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"

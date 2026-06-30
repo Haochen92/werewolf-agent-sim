@@ -22,7 +22,7 @@ from Agents.schemas.evaluation import (
     ExtractionCase,
 )
 from evaluation.src.core.config_schema import ExtractionDatasetBuildConfig
-from evaluation.src.data.local_cases import LocalCaseSource, read_local_spans
+from evaluation.src.data.sources.sidecar import LocalCaseSource, read_local_spans
 from evaluation.src.experiments.extraction_builder import build_records
 
 

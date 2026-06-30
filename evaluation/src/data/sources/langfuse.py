@@ -1,23 +1,22 @@
-"""Langfuse evaluation pipeline.
+"""Langfuse case-read path (the §4 fallback source) + realized-cost capture.
 
-This module implements a top-down pipeline for extracting evaluation cases
-from Langfuse traces and pushing judge scores back:
+The case read path is a top-down funnel that narrows the data at each layer:
 
     Entry Points (session IDs)
         → Trace Resolution (session → trace IDs)
             → Observation Extraction (trace → eval spans)
-                → EvalCase Construction (span → structured case)
-                    → Score Push (judge results → Langfuse scores)
+                → Case Construction (span → structured *Case)
 
-Each layer narrows the data: broad session identifiers are resolved into
-specific trace IDs, which yield observations, which are filtered to
-evaluation spans, which are converted to EvalCase objects for judging.
+Local sidecars are the PRIMARY source (see ``local_cases.py``); this Langfuse
+fetch path remains only for games that predate local emission. Cost capture
+(``session_cost`` / ``window_cost``) reads Langfuse's token accounting directly.
+Pushing judge scores back onto the trace is the *evaluation system*'s job
+(`Agents/compute_metrics.push_scores_to_langfuse`), not this read-side module.
 """
 
 from __future__ import annotations
 
 import json
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -40,30 +39,17 @@ from Agents.schemas.evaluation import (  # noqa: E402
     EvalCase,
     ExtractionCase,
 )
-from evaluation.src.data.cases import eval_case_from_span  # noqa: E402
-from evaluation.src.data.day_summary_cases import day_summary_case_from_span  # noqa: E402
-from evaluation.src.data.dedup_cases import dedup_case_from_span  # noqa: E402
-from evaluation.src.data.extraction_cases import extraction_case_from_span  # noqa: E402
+from evaluation.src.data.converters.agent_decision import eval_case_from_span  # noqa: E402
+from evaluation.src.data.converters.day_summary import day_summary_case_from_span  # noqa: E402
+from evaluation.src.data.converters.dedup import dedup_case_from_span  # noqa: E402
+from evaluation.src.data.converters.extraction import extraction_case_from_span  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-# Version tag attached to every score pushed by this module.  Bump this when
-# the judge prompt or scoring rubric changes so that old and new scores can
-# be distinguished in Langfuse dashboards.
-EVAL_VERSION = "retrieval_judge_v2"
-
 # The span-name prefixes that mark evaluation spans are shared with the
 # producers via Agents.observability (imported above) — single source of truth.
-
-# The four score dimensions the judge produces for each eval span.
-SCORE_NAMES = [
-    "summary_quality",
-    "retrieval_relevance",
-    "strategy_application",
-    "grounding",
-]
 
 # ---------------------------------------------------------------------------
 # Langfuse client
@@ -479,102 +465,6 @@ def fetch_day_summary_cases(trace_id: str) -> list[DaySummaryCase]:
         trace_id, prefix=DAY_SUMMARY_SPAN_PREFIX, kind="day_summary"
     )
     return _cases_from_spans(spans, day_summary_case_from_span)
-
-
-# ---------------------------------------------------------------------------
-# Layer 4 — Score push: judge results → Langfuse scores
-#
-# After an external judge (LLM or human) produces scores for an EvalCase,
-# this layer writes them back to Langfuse so they appear on the trace's
-# score panel.  Scores use deterministic UUID-5 IDs so re-running the
-# pipeline is idempotent (same input → same score ID → upsert, not dupe).
-# ---------------------------------------------------------------------------
-
-
-def push_judge_scores(
-    trace_id: str,
-    observation_id: str,
-    scores: dict[str, Any],
-    model: str,
-    model_type: str,
-    session_id: str | None = None,
-) -> None:
-    """Write judge scores for one observation back to Langfuse.
-
-    Args:
-        trace_id:       The Langfuse trace this observation belongs to.
-        observation_id: The specific observation (eval span) that was judged.
-        scores:         Dict with numeric values for each of ``SCORE_NAMES``
-                        and an optional ``brief_reasoning`` string.
-        model:          The judge model identifier (e.g. ``"gpt-4"``).
-        model_type:     Category of the judge (e.g. ``"llm"`` or ``"human"``).
-    """
-    for name in SCORE_NAMES:
-        value = scores.get(name)
-        if value is None:
-            continue
-
-        # Deterministic ID: same eval version + model + trace + observation +
-        # score name always produces the same UUID, making re-runs idempotent.
-        score_id = str(
-            uuid.uuid5(
-                uuid.NAMESPACE_URL,
-                f"{EVAL_VERSION}:{model_type}:{model}:"
-                f"{trace_id}:{observation_id}:{name}",
-            )
-        )
-
-        langfuse.create_score(
-            trace_id=trace_id,
-            observation_id=observation_id,
-            score_id=score_id,
-            name=f"judge_{name}",
-            value=float(value),
-            data_type="NUMERIC",
-            comment=scores.get("brief_reasoning", ""),
-            metadata={
-                "eval_version": EVAL_VERSION,
-                "judge_model": model,
-                "model_type": model_type,
-            },
-        )
-        if session_id:
-            session_score_id = str(
-                uuid.uuid5(
-                    uuid.NAMESPACE_URL,
-                    f"{EVAL_VERSION}:{model_type}:{model}:"
-                    f"{session_id}:{trace_id}:{observation_id}:{name}",
-                )
-            )
-            langfuse.create_score(
-                session_id=session_id,
-                score_id=session_score_id,
-                name=f"judge_{name}",
-                value=float(value),
-                data_type="NUMERIC",
-                comment=scores.get("brief_reasoning", ""),
-                metadata={
-                    "eval_version": EVAL_VERSION,
-                    "judge_model": model,
-                    "model_type": model_type,
-                    "trace_id": trace_id,
-                    "observation_id": observation_id,
-                },
-            )
-
-
-# ---------------------------------------------------------------------------
-# Cleanup
-# ---------------------------------------------------------------------------
-
-
-def flush_langfuse() -> None:
-    """Flush any buffered Langfuse events to the server.
-
-    Call this at the end of a pipeline run to ensure all scores created by
-    ``push_judge_scores`` are actually transmitted before the process exits.
-    """
-    langfuse.flush()
 
 
 # ---------------------------------------------------------------------------

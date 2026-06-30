@@ -19,10 +19,10 @@ from Agents.schemas.evaluation import (
     EvalCase,
     ExtractionCase,
 )
-from evaluation.src.data.cases import eval_case_from_span
-from evaluation.src.data.day_summary_cases import day_summary_case_from_span
-from evaluation.src.data.dedup_cases import dedup_case_from_span
-from evaluation.src.data.extraction_cases import extraction_case_from_span
+from evaluation.src.data.converters.agent_decision import eval_case_from_span
+from evaluation.src.data.converters.day_summary import day_summary_case_from_span
+from evaluation.src.data.converters.dedup import dedup_case_from_span
+from evaluation.src.data.converters.extraction import extraction_case_from_span
 
 FAKE_SPAN = SimpleNamespace(trace_id="trace-abc", id="obs-123")
 

@@ -15,7 +15,7 @@ load_dotenv()
 
 from evaluation.src.replay.situation_summary import run_situation_summary_variant
 from evaluation.src.core.config_schema import JudgeConfig, VariantConfig
-from evaluation.src.data.datasets import read_eval_dataset
+from evaluation.src.data.frozen_sets import read_eval_dataset
 from evaluation.src.judges.pairwise_summary import run_pairwise_summary_judge
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

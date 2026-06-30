@@ -40,7 +40,7 @@ from Agents.llm_factory import create_embeddings
 from Agents.memory import embeddings as embedding_model
 from Agents.memory.vectors import cosine_similarity, embed_texts
 from evaluation.src.core.config_schema import AutoDedupCalibrationConfig
-from evaluation.src.data.datasets import (
+from evaluation.src.data.frozen_sets import (
     read_auto_dedup_dataset,
     read_dedup_dataset,
 )

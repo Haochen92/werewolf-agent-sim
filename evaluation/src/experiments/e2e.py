@@ -25,7 +25,7 @@ from evaluation.src.replay.situation_summary import run_situation_summary_varian
 from evaluation.src.core.config_schema import E2EExperimentConfig, VariantConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
-from evaluation.src.data.datasets import read_eval_dataset
+from evaluation.src.data.frozen_sets import read_eval_dataset
 from evaluation.src.judges.pipeline import run_judge
 
 from Agents.memory import (

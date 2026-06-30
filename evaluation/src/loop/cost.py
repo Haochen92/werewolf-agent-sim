@@ -31,7 +31,7 @@ def run_cost(run_dir: str | Path) -> dict:
     """Realized cost report for a loop run dir. Returns per-gen GAME cost (by session), the games total,
     the COMPLETE window total (run_meta start → now), and the overhead = complete − games (the in-driver
     dedup/synth/tagger). Any field is None when Langfuse couldn't answer (best-effort)."""
-    from evaluation.src.data.langfuse import (
+    from evaluation.src.data.sources.langfuse import (
         read_session_ids_from_batch_results, session_cost, window_cost,
     )
 

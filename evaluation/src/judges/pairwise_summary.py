@@ -16,7 +16,7 @@ from evaluation.src.core.formatters import (
     format_eval_situations,
 )
 from evaluation.src.core.schemas import PairwiseJudgeScores
-from evaluation.src.data.datasets import EvalDatasetRecord
+from evaluation.src.data.frozen_sets import EvalDatasetRecord
 from evaluation.src.judges.prompts import (
     PAIRWISE_SUMMARY_SYSTEM_PROMPT,
     PAIRWISE_SUMMARY_USER_PROMPT,

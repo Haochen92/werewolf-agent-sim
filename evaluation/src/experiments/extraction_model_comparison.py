@@ -17,7 +17,7 @@ from Agents.llm_factory import create_chat_model
 
 from Agents.memory.extraction import build_extraction_prompt, build_role_extraction_prompt
 from Agents.schemas import GameStrategyOutput
-from evaluation.src.data.datasets import read_extraction_dataset
+from evaluation.src.data.frozen_sets import read_extraction_dataset
 
 from evaluation.src.core.settings import REPO_ROOT
 PLAYER_ID_RE = re.compile(r"player_\d+")

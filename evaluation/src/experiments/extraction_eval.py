@@ -10,7 +10,7 @@ from pathlib import Path
 from evaluation.src.core.config_schema import ExtractionExperimentConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
-from evaluation.src.data.datasets import read_extraction_dataset
+from evaluation.src.data.frozen_sets import read_extraction_dataset
 from evaluation.src.judges.extraction import run_extraction_judge
 
 load_project_env()

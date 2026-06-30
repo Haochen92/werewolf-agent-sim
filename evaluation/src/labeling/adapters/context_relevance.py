@@ -112,7 +112,7 @@ class ContextRerankerAdapter(RerankerAdapter):
     def _game_state_for(self, case_index: int, case_id: str) -> str:
         if case_index not in self._game_state_cache:
             if self._records is None:
-                from evaluation.src.data.datasets import read_eval_dataset
+                from evaluation.src.data.frozen_sets import read_eval_dataset
 
                 self._records = read_eval_dataset(self._eval_dataset_path)
             rec = self._records[case_index]

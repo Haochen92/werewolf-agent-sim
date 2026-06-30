@@ -96,7 +96,7 @@ def main() -> None:
     from Agents.memory.persistence import seed_memory_from_json_files_cached
     from evaluation.src.replay.situation_summary import run_situation_summary_variant
     from evaluation.src.core.config_schema import VariantConfig
-    from evaluation.src.data.datasets import read_eval_dataset
+    from evaluation.src.data.frozen_sets import read_eval_dataset
 
     print("Loading store from cache...", flush=True)
     seed_memory_from_json_files_cached(

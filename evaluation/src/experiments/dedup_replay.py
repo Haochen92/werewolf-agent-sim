@@ -34,7 +34,7 @@ from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
 from Agents.schemas.evaluation import DedupCandidate, DedupCase
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
-from evaluation.src.data.datasets import read_dedup_dataset
+from evaluation.src.data.frozen_sets import read_dedup_dataset
 
 load_project_env()
 logger = logging.getLogger(__name__)

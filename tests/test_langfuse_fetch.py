@@ -5,7 +5,7 @@ LLM-run exclusion."""
 import unittest
 from unittest.mock import Mock, patch
 
-import evaluation.src.data.langfuse as lf
+import evaluation.src.data.sources.langfuse as lf
 
 
 def _trace(observations):

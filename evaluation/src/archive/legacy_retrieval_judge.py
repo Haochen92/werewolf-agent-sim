@@ -16,14 +16,11 @@ from evaluation.src.judges.pipeline import (  # noqa: E402
     DEFAULT_JUDGE_MODEL,
     run_judge,
 )
-from evaluation.src.data.langfuse import (  # noqa: E402
-    EVAL_VERSION,
+from evaluation.src.data.sources.langfuse import (  # noqa: E402
     fetch_eval_cases,
     fetch_trace_ids_for_session_id,
     fetch_trace_ids_for_session_ids,
     fetch_trace_ids_for_session_prefix,
-    flush_langfuse,
-    push_judge_scores,
     read_session_ids_from_batch_results,
 )
 from evaluation.src.data.sampling import (  # noqa: E402
@@ -52,6 +49,100 @@ class EvalResult(BaseModel):
     eval_version: str
     sampling_seed: int
     scores: JudgeScores
+
+
+# ---------------------------------------------------------------------------
+# Inlined Langfuse score push-back (the old "Layer 4"). Removed from the live
+# read-side ``data/langfuse.py`` — it was dead there, and the tracing report
+# (§2.8) draws the score seam at ``Agents/compute_metrics.push_scores_to_langfuse``,
+# not the read path. This archived judge is its only consumer, so the audit copy
+# owns its own copy — same self-contained pattern as ``eval_retrieval_v1.py``.
+# ---------------------------------------------------------------------------
+import uuid  # noqa: E402
+
+from langfuse import get_client  # noqa: E402
+
+langfuse = get_client()
+
+EVAL_VERSION = "retrieval_judge_v2"
+
+# The four score dimensions this judge produces for each eval span.
+SCORE_NAMES = [
+    "summary_quality",
+    "retrieval_relevance",
+    "strategy_application",
+    "grounding",
+]
+
+
+def push_judge_scores(
+    trace_id: str,
+    observation_id: str,
+    scores: dict,
+    model: str,
+    model_type: str,
+    session_id: str | None = None,
+) -> None:
+    """Write judge scores for one observation back to Langfuse.
+
+    Deterministic UUID-5 score IDs make re-runs idempotent (same input → same
+    score ID → upsert, not duplicate).
+    """
+    for name in SCORE_NAMES:
+        value = scores.get(name)
+        if value is None:
+            continue
+
+        score_id = str(
+            uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                f"{EVAL_VERSION}:{model_type}:{model}:"
+                f"{trace_id}:{observation_id}:{name}",
+            )
+        )
+
+        langfuse.create_score(
+            trace_id=trace_id,
+            observation_id=observation_id,
+            score_id=score_id,
+            name=f"judge_{name}",
+            value=float(value),
+            data_type="NUMERIC",
+            comment=scores.get("brief_reasoning", ""),
+            metadata={
+                "eval_version": EVAL_VERSION,
+                "judge_model": model,
+                "model_type": model_type,
+            },
+        )
+        if session_id:
+            session_score_id = str(
+                uuid.uuid5(
+                    uuid.NAMESPACE_URL,
+                    f"{EVAL_VERSION}:{model_type}:{model}:"
+                    f"{session_id}:{trace_id}:{observation_id}:{name}",
+                )
+            )
+            langfuse.create_score(
+                session_id=session_id,
+                score_id=session_score_id,
+                name=f"judge_{name}",
+                value=float(value),
+                data_type="NUMERIC",
+                comment=scores.get("brief_reasoning", ""),
+                metadata={
+                    "eval_version": EVAL_VERSION,
+                    "judge_model": model,
+                    "model_type": model_type,
+                    "trace_id": trace_id,
+                    "observation_id": observation_id,
+                },
+            )
+
+
+def flush_langfuse() -> None:
+    """Flush buffered scores to Langfuse before the process exits."""
+    langfuse.flush()
 
 
 def resolve_trace_ids(args: argparse.Namespace) -> list[str]:

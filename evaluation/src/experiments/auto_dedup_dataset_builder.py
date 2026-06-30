@@ -39,7 +39,7 @@ from pathlib import Path
 from Agents.llm_factory import create_embeddings
 from Agents.schemas.memory import Observation, StrategyPoint
 from evaluation.src.core.config_schema import AutoDedupDatasetBuildConfig
-from evaluation.src.data.datasets import AutoDedupRecord, write_auto_dedup_dataset
+from evaluation.src.data.frozen_sets import AutoDedupRecord, write_auto_dedup_dataset
 from langgraph.store.memory import InMemoryStore
 
 

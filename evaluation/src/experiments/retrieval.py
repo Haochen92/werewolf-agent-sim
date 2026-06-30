@@ -51,7 +51,7 @@ from evaluation.src.core.formatters import (  # noqa: E402
     format_eval_retrieved_observations,
     format_eval_retrieved_strategy_points,
 )
-from evaluation.src.data.datasets import read_eval_dataset  # noqa: E402
+from evaluation.src.data.frozen_sets import read_eval_dataset  # noqa: E402
 from evaluation.src.judges.retrieval import run_retrieval_judge  # noqa: E402
 
 

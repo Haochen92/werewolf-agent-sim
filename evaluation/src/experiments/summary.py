@@ -20,7 +20,7 @@ from evaluation.src.replay import (
 )
 from evaluation.src.core.config_schema import PairwiseExperimentConfig
 from evaluation.src.core.io import write_jsonl
-from evaluation.src.data.datasets import EvalDatasetRecord, read_eval_dataset
+from evaluation.src.data.frozen_sets import EvalDatasetRecord, read_eval_dataset
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
 from evaluation.src.judges.pairwise_summary import run_pairwise_summary_judge
 

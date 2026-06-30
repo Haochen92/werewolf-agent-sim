@@ -8,15 +8,15 @@ from pathlib import Path
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.core.config_schema import DatasetBuildConfig
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
-from evaluation.src.data.datasets import EvalDatasetRecord, record_from_case, write_eval_dataset
-from evaluation.src.data.langfuse import (
+from evaluation.src.data.frozen_sets import EvalDatasetRecord, record_from_case, write_eval_dataset
+from evaluation.src.data.sources.langfuse import (
     fetch_eval_cases,
     fetch_trace_ids_for_session_id,
     fetch_trace_ids_for_session_ids,
     fetch_trace_ids_for_session_prefix,
     read_session_ids_from_batch_results,
 )
-from evaluation.src.data.local_cases import LocalCaseSource
+from evaluation.src.data.sources.sidecar import LocalCaseSource
 from evaluation.src.data.sampling import sample_cases
 
 

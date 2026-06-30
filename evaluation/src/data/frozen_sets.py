@@ -1,8 +1,17 @@
-"""Read and write local frozen evaluation datasets as JSONL."""
+"""Read and write local frozen evaluation datasets as JSONL.
+
+Every case type freezes into its own record (``*DatasetRecord``) that wraps the
+case with a stable ``case_id`` + dataset/provenance fields. The JSONL read/write
+mechanics are identical across types, so they live in two generic helpers
+(``_read_jsonl_records`` / ``_write_jsonl_records``); the per-type ``read_*`` /
+``write_*`` functions stay as thin, typed wrappers so callers keep a precise
+return type and a stable import surface.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TypeVar
 
 from pydantic import BaseModel
 
@@ -12,6 +21,41 @@ from Agents.schemas.evaluation import (
     EvalCase,
     ExtractionCase,
 )
+
+_RecordT = TypeVar("_RecordT", bound=BaseModel)
+
+
+def _read_jsonl_records(
+    path: Path, model: type[_RecordT], label: str
+) -> list[_RecordT]:
+    """Parse a JSONL file into validated *model* records; *label* names the type
+    in the error raised on a malformed line."""
+    records: list[_RecordT] = []
+    with path.open(encoding="utf-8") as file:
+        for line_number, line in enumerate(file, 1):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                records.append(model.model_validate_json(stripped))
+            except Exception as exc:
+                raise ValueError(
+                    f"Invalid {label} on line {line_number} of {path}: {exc}"
+                ) from exc
+    return records
+
+
+def _write_jsonl_records(path: Path, records: list[BaseModel]) -> None:
+    """Write Pydantic records to JSONL, creating parent dirs as needed."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as file:
+        for record in records:
+            file.write(record.model_dump_json() + "\n")
+
+
+# ---------------------------------------------------------------------------
+# Agent-decision (EvalCase) dataset records
+# ---------------------------------------------------------------------------
 
 
 class EvalDatasetRecord(BaseModel):
@@ -55,26 +99,11 @@ def record_from_case(
 
 
 def read_eval_dataset(path: Path) -> list[EvalDatasetRecord]:
-    records: list[EvalDatasetRecord] = []
-    with path.open(encoding="utf-8") as file:
-        for line_number, line in enumerate(file, 1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                records.append(EvalDatasetRecord.model_validate_json(stripped))
-            except Exception as exc:
-                raise ValueError(
-                    f"Invalid eval dataset record on line {line_number} of {path}: {exc}"
-                ) from exc
-    return records
+    return _read_jsonl_records(path, EvalDatasetRecord, "eval dataset record")
 
 
 def write_eval_dataset(path: Path, records: list[EvalDatasetRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file:
-        for record in records:
-            file.write(record.model_dump_json() + "\n")
+    _write_jsonl_records(path, records)
 
 
 # ---------------------------------------------------------------------------
@@ -113,30 +142,13 @@ def extraction_record_from_case(
 
 
 def read_extraction_dataset(path: Path) -> list[ExtractionDatasetRecord]:
-    records: list[ExtractionDatasetRecord] = []
-    with path.open(encoding="utf-8") as file:
-        for line_number, line in enumerate(file, 1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                records.append(
-                    ExtractionDatasetRecord.model_validate_json(stripped)
-                )
-            except Exception as exc:
-                raise ValueError(
-                    f"Invalid extraction record on line {line_number} of {path}: {exc}"
-                ) from exc
-    return records
+    return _read_jsonl_records(path, ExtractionDatasetRecord, "extraction record")
 
 
 def write_extraction_dataset(
     path: Path, records: list[ExtractionDatasetRecord]
 ) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file:
-        for record in records:
-            file.write(record.model_dump_json() + "\n")
+    _write_jsonl_records(path, records)
 
 
 # ---------------------------------------------------------------------------
@@ -175,30 +187,15 @@ def day_summary_record_from_case(
 
 
 def read_day_summary_dataset(path: Path) -> list[DaySummaryDatasetRecord]:
-    records: list[DaySummaryDatasetRecord] = []
-    with path.open(encoding="utf-8") as file:
-        for line_number, line in enumerate(file, 1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                records.append(
-                    DaySummaryDatasetRecord.model_validate_json(stripped)
-                )
-            except Exception as exc:
-                raise ValueError(
-                    f"Invalid day-summary record on line {line_number} of {path}: {exc}"
-                ) from exc
-    return records
+    return _read_jsonl_records(
+        path, DaySummaryDatasetRecord, "day-summary record"
+    )
 
 
 def write_day_summary_dataset(
     path: Path, records: list[DaySummaryDatasetRecord]
 ) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file:
-        for record in records:
-            file.write(record.model_dump_json() + "\n")
+    _write_jsonl_records(path, records)
 
 
 # ---------------------------------------------------------------------------
@@ -245,26 +242,11 @@ def dedup_record_from_case(
 
 
 def read_dedup_dataset(path: Path) -> list[DedupDatasetRecord]:
-    records: list[DedupDatasetRecord] = []
-    with path.open(encoding="utf-8") as file:
-        for line_number, line in enumerate(file, 1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                records.append(DedupDatasetRecord.model_validate_json(stripped))
-            except Exception as exc:
-                raise ValueError(
-                    f"Invalid dedup record on line {line_number} of {path}: {exc}"
-                ) from exc
-    return records
+    return _read_jsonl_records(path, DedupDatasetRecord, "dedup record")
 
 
 def write_dedup_dataset(path: Path, records: list[DedupDatasetRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file:
-        for record in records:
-            file.write(record.model_dump_json() + "\n")
+    _write_jsonl_records(path, records)
 
 
 # ---------------------------------------------------------------------------
@@ -286,23 +268,8 @@ class AutoDedupRecord(BaseModel):
 
 
 def read_auto_dedup_dataset(path: Path) -> list[AutoDedupRecord]:
-    records: list[AutoDedupRecord] = []
-    with path.open(encoding="utf-8") as file:
-        for line_number, line in enumerate(file, 1):
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                records.append(AutoDedupRecord.model_validate_json(stripped))
-            except Exception as exc:
-                raise ValueError(
-                    f"Invalid auto-dedup record on line {line_number} of {path}: {exc}"
-                ) from exc
-    return records
+    return _read_jsonl_records(path, AutoDedupRecord, "auto-dedup record")
 
 
 def write_auto_dedup_dataset(path: Path, records: list[AutoDedupRecord]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file:
-        for record in records:
-            file.write(record.model_dump_json() + "\n")
+    _write_jsonl_records(path, records)

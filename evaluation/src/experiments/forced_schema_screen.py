@@ -69,7 +69,7 @@ from evaluation.src.experiments.decision_replay import (
     mcnemar_p,
 )
 from Agents.schemas.output import DayDiscussOutput
-from evaluation.src.data.local_cases import LocalCaseSource
+from evaluation.src.data.sources.sidecar import LocalCaseSource
 
 PLAIN_ARMS = ("off", "v5_plain", "v6_plain")
 FORCED_ARMS = ("v5_forced", "v6_forced")

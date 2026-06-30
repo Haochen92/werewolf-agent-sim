@@ -16,7 +16,7 @@ from Agents.prompts.prompt_formatters import format_agent_action
 from evaluation.src.core.config_schema import CapturedEvaluationConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
-from evaluation.src.data.datasets import read_eval_dataset
+from evaluation.src.data.frozen_sets import read_eval_dataset
 from evaluation.src.judges.application import run_application_judge
 from evaluation.src.judges.pipeline import run_judge
 

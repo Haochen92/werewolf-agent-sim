@@ -68,7 +68,7 @@ def main() -> None:
     args = parser.parse_args()
 
     from evaluation.src.core.config_schema import JudgeConfig
-    from evaluation.src.data.datasets import read_eval_dataset
+    from evaluation.src.data.frozen_sets import read_eval_dataset
     from evaluation.src.judges.pairwise_summary import run_pairwise_summary_judge
 
     records = read_eval_dataset(EVAL_DATASET)

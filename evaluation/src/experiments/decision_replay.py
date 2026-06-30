@@ -79,7 +79,7 @@ from evaluation.src.loop.memory_adherence import (
     summarize_adherence,
 )
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
-from evaluation.src.data.local_cases import LocalCaseSource
+from evaluation.src.data.sources.sidecar import LocalCaseSource
 from pydantic import BaseModel, Field
 
 

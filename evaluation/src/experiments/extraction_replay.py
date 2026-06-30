@@ -29,7 +29,7 @@ from Agents.schemas import GameStrategyOutput
 from Agents.schemas.evaluation import ExtractionCase
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
-from evaluation.src.data.datasets import read_extraction_dataset
+from evaluation.src.data.frozen_sets import read_extraction_dataset
 
 load_project_env()
 logger = getLogger(__name__)

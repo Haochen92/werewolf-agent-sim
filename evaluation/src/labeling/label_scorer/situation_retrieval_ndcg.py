@@ -102,7 +102,7 @@ def compute_captured_ndcg(
         retrieve_observations_for_agent,
         retrieve_strategy_points_for_agent,
     )
-    from evaluation.src.data.datasets import read_eval_dataset
+    from evaluation.src.data.frozen_sets import read_eval_dataset
 
     _ensure_store()
 
