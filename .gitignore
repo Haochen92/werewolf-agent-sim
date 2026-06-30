@@ -46,6 +46,10 @@ dist/
 evaluation/eval_results/
 batch_results/
 
+# Memory store snapshots — regenerable from games/seeding; never source of truth.
+# Versioned dirs (v5_*, v6_*, _ab_*, _checkpoints/) hold observations/strategy_points JSON.
+memory_stores/
+
 # Model weights live under /models/ (download from Modal volume instead).
 # Single rule survives experiment-folder reorganizations.
 /models/
