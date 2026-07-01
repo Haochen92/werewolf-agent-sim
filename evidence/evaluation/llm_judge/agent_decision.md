@@ -23,12 +23,19 @@ instrument per stage, and they do **not** share calibration.
 
 ## Stage 1 — Situation-summary (what the agent saw)
 
-**L1 — two instruments, do not conflate:**
+**L1 — three instruments, do not conflate:**
 - **Pairwise-preference judge** (`judges/pairwise_summary.py`, harness `experiments/summary.py` → console
   `eval-summary`): which of two summary variants is the better *retrieval query*. `PairwiseJudgeScores`
-  (`core/schemas.py:88-101`): two `SummaryDimensionScores` × {faithfulness, specificity,
-  retrieval_usefulness, non_redundancy, role_perspective} 1-5, + `winner` + `confidence`. gemini-2.5-pro,
-  `max_retries=1`. Position-bias controlled (order alternated by case index). **No ground truth.**
+  (`core/schemas.py:79-84`): two `SummaryDimensionScores` × {faithfulness, specificity,
+  retrieval_usefulness, non_redundancy, role_perspective} 1-5, + `winner` + `confidence`. Model =
+  `JudgeConfig.model` (default **gemini-2.5-pro**, `config_schema.py:41`); `max_retries=1`. Position-bias
+  controlled (order alternated by case index). **No ground truth.**
+- **Single-rubric summary judge** (`judges/summary.py::run_summary_judge`, harness `experiments/summary_eval.py`
+  → console `eval-summary-rubric`): scores *one* summary on its own (not pairwise) against the same 5 dims via
+  `SituationSummaryScores` (`core/schemas.py:222-269`). ⭐ The **only** funnel judge on a **stronger model** —
+  `DEFAULT_SUMMARY_JUDGE_MODEL = gemini-3.1-pro-preview` (`summary.py:24`, the one intentional override of the
+  package default; matched by `config_schema.py:191`). **No ground truth.** (Promoted to a console entry in the
+  2026-06-29 experiments pass; distinct from the pairwise `eval-summary`.)
 - **Golden-NDCG retrieval metric** (`labeling/label_scorer/situation_retrieval_ndcg.py`; **no console entry**,
   `python -m`): ranking quality of retrieved memories vs graded human relevance (0/1/2), NDCG@{3,5,10},
   **offline / zero API**. ⚠️ Two NDCG impls coexist (linear `rel` vs exponential `2^rel−1`) → cross-harness
@@ -59,10 +66,13 @@ headline number.
 
 **L1:** retrieval-quality judge (`judges/retrieval.py` → console `eval-retrieval`; replay
 `replay/retrieval.py` rebuilds an `InMemoryStore` and retrieves **deterministically**). `RetrievalScores`
-(`core/schemas.py:43-48`): `clusters[]`, `relevance` 1-5, `unique_lessons` ≥0, `efficiency` 1-5,
+(`core/schemas.py:26-31`): `clusters[]`, `relevance` 1-5, `unique_lessons` ≥0, `efficiency` 1-5,
 `brief_reasoning`. **`redundancy_ratio` is a deterministic derivation** (`1 − unique_lessons/item_count`,
 `replay/retrieval.py:110-113`), **NOT LLM-judged** *(source_map error — see corrections).* Live judge model
-= **gemini-2.5-flash** (config), not the module's dead 2.5-pro default. `max_retries=1`. **Capacity** (top_k
+= **gemini-2.5-flash** (config default, `config_schema.py:150`); the module constant
+`DEFAULT_RETRIEVAL_JUDGE_MODEL = gemini-2.5-pro` (`retrieval.py:16`) is now **defined-but-unused** —
+`run_retrieval_judge` (`retrieval.py:44`) makes `model` a required arg with no default. `max_retries=1`.
+**Capacity** (top_k
 3/5/7) is measured by the *application* proxy (`eval-application`, n=120), not this judge. `recall_flags.py`
 is a deterministic pivotal-turn flagger (no LLM, no scores). `context_eval/` is a deferred labeling program.
 
@@ -96,8 +106,10 @@ needs v6_1 re-labelling.
 - **(A) ApplicationScores** (`judges/application.py` → console `eval-application`; the *reported* instrument).
   Mixes adherence + quality: `action_quality` 1-5, `strategy_application` 1-5, `grounding` 1-5,
   `adoption_accuracy` 1-5 (nullable), `attribution_direction` over/under/accurate (nullable),
-  `fabricated_claims[]`, `brief_reasoning` (`core/schemas.py:51-75`). Live runs used **gemini-2.5-flash**
-  (module default 2.5-pro never fired). `max_retries=1`. `replay/application.py` does captured-vs-none
+  `fabricated_claims[]`, `brief_reasoning` (`core/schemas.py:34-57`). The frozen n=120 runs used
+  **gemini-2.5-flash**; the module constant `DEFAULT_APPLICATION_JUDGE_MODEL = gemini-2.5-pro`
+  (`application.py:18`) is **defined-but-unused** — `run_application_judge` (`application.py:29`) makes `model`
+  a required arg with no default. `max_retries=1`. `replay/application.py` does captured-vs-none
   memory-swap replay; the n=120 report numbers came from `captured.py` (judge-only on frozen rows).
 - **(B) DecisionAdherence** (`loop/memory_adherence.py`): per-memory `implied_direction` (verdict-aware),
   `action_followed`, `application`, `evidence`; gemini-2.5-pro; **outcome-blind**. Despite living in `loop/`,
@@ -145,9 +157,10 @@ context_eval program).
 
 ## Evidence (code + L2 artifacts)
 
-- **Code:** `evaluation/src/judges/{pairwise_summary,retrieval,application}.py`,
-  `judges/prompts.py`, `replay/{situation_summary,retrieval,application}.py`,
-  `experiments/{summary,retrieval,application,recall_flags,captured}.py`,
+- **Code:** `evaluation/src/judges/{pairwise_summary,summary,retrieval,application}.py`,
+  `judges/prompts/{pairwise_summary,summary,retrieval,application}.py`, `judges/config.py`,
+  `replay/{situation_summary,retrieval,application}.py`,
+  `experiments/{summary,summary_eval,retrieval,application,recall_flags,captured}.py`,
   `labeling/label_scorer/situation_retrieval_ndcg.py`, `loop/memory_adherence.py`,
   `core/schemas.py::{PairwiseJudgeScores,RetrievalScores,ApplicationScores}`.
 - **L2 artifacts (pointed-at):** situation golden `../../extraction/situation_summary/retrieval_golden_labels.json`
@@ -163,4 +176,9 @@ context_eval program).
 `memory_system/`. The situation golden is a shared cross-component asset (reranker + context_eval) → must be
 pointed-at. Key numbers distilled above for standalone value.
 
-*(Inspected 2026-06-28 — three parallel apparatus reads, synthesised.)*
+*(Inspected 2026-06-28 — three parallel apparatus reads, synthesised. Judge-folder verification sweep
+2026-06-30 — re-pointed refactor-stale refs after the `prompts/`-package split, `config.py` model-DRY, and
+`core/schemas.py` shift; refined the model-routing story (per-module `DEFAULT_*_JUDGE_MODEL` constants are now
+unused aliases — `run_retrieval_judge`/`run_application_judge` require `model`); surfaced the previously
+undocumented third Stage-1 instrument, the single-rubric `eval-summary-rubric` judge on gemini-3.1-pro-preview.
+No verdict change — every live judge remains uncalibrated.)*

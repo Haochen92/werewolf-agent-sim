@@ -20,22 +20,25 @@ instruments for them:
 ## L1 — the instruments (two layers, very different strength)
 
 ### Layer 1 — the deterministic golden-label scorer  *(the strong one)*
-- `evaluation/src/experiments/dedup_score.py` (`score()` @ `:223`) — compares a dataset's decisions against a
+- `evaluation/src/experiments/dedup_score.py` (`score()` @ `:223`; console **`eval-dedup-score`**) — compares a dataset's decisions against a
   **human** golden label file, no LLM. Auto-detects legacy/current label scheme, item-type-aware remap
   (`:29-39`), reports **strict + lenient accuracy, per-label P/R/F1, confusion matrix, per-type breakdown,
   mismatch list**. Honours `also_acceptable` / dual-label sets (`:212-215`).
-- Batch sibling: `experiments/batch_dedup_eval.py` scores batch clusters vs `batch_dedup_golden_labels.json`.
-- ⚠️ **Neither has a console-script entry** — `python -m` only.
+- Batch sibling: `experiments/batch_dedup_eval.py` (console **`eval-batch-dedup`**) scores batch clusters vs `batch_dedup_golden_labels.json`.
+- Both gained first-class console entries in the 2026-06-29 experiments pass (previously `python -m` only).
 
 ### Layer 2 — the LLM "quality" judges  *(the weak one — machine-on-machine)*
-- **Online:** `judges/dedup.py::run_dedup_judge` (gemini-2.5-pro, `:15`; `max_retries=1`, `:100`). Scores a
-  captured decision on `DedupScores` (`core/schemas.py:378-416`): `decision_correctness 1-5 · merge_quality
-  1-5 · information_preservation 1-5 · fabrication_detected bool · brief_reasoning`. Driven by
-  `experiments/dedup_eval.py` → **console script `eval-dedup`** (`pyproject.toml:38`).
-- **Batch merge:** `judges/batch_dedup.py::run_batch_merge_judge` (gemini-2.5-pro; `max_retries=1`, `:61`).
-  Scores a merge/rewrite on `BatchDedupMergeScores` (`core/schemas.py:342-375`): `retrieval_coverage ·
-  merge_quality · information_preservation 1-5 · fabrication_detected bool`. Driven by
-  `experiments/batch_dedup_merge_eval.py` (`python -m` only).
+- **Online:** `judges/dedup.py::run_dedup_judge` (`:95`; gemini-2.5-pro via imported `DEFAULT_JUDGE_MODEL`
+  after the `config.py` DRY; `max_retries=1`, `:98`). Scores a captured decision on `DedupScores`
+  (`core/schemas.py:361-399`): `decision_correctness 1-5 · merge_quality 1-5 · information_preservation 1-5 ·
+  fabrication_detected bool · brief_reasoning`. The `fabrication_detected` description (`schemas.py:391-397`)
+  is **v6-dimension-aware** — it explicitly asks whether the rewrite invented "game phase, information
+  landscape, consensus texture, agent exposure" not present in the inputs. Driven by `experiments/dedup_eval.py`
+  → **console script `eval-dedup`** (`pyproject.toml:38`).
+- **Batch merge:** `judges/batch_dedup.py::run_batch_merge_judge` (`:53`; gemini-2.5-pro via imported
+  `DEFAULT_JUDGE_MODEL`; `max_retries=1`, `:60`). Scores a merge/rewrite on `BatchDedupMergeScores`
+  (`core/schemas.py:325-358`): `retrieval_coverage · merge_quality · information_preservation 1-5 ·
+  fabrication_detected bool`. Driven by `experiments/batch_dedup_merge_eval.py` (`python -m` only).
 
 ### Supporting harness
 `dedup_builder.py` (`eval-build-dedup-dataset`) freezes `DedupCase` datasets; `dedup_replay.py` re-runs the
@@ -43,9 +46,10 @@ instruments for them:
 is the interactive tool that produced the batch golden set (moved from `experiments/` into the repurposed
 `labeling/manual_labelers/` home 2026-06-29); `eval_auto_dedup.py` calibrates the embedding-prefilter thresholds.
 
-> **The irony (an apparatus finding).** The measurement that *should* be load-bearing — the deterministic
-> golden scorer — has **no first-class command**; the weaker, uncalibrated LLM judge is the one wired as
-> `eval-dedup`. The system's strongest instrument is the one you have to know to run by module path.
+> **An apparatus finding — since resolved.** For most of the project the measurement that *should* be
+> load-bearing — the deterministic golden scorer — had **no first-class command**, while the weaker,
+> uncalibrated LLM judge was the one wired as `eval-dedup`: the system's strongest instrument was the one you
+> had to know to run by module path. The 2026-06-29 experiments pass closed the gap by adding `eval-dedup-score`.
 
 ## L2 — how much to trust it
 
@@ -83,11 +87,12 @@ documented relabelling rounds, per-class + confusion-matrix reporting, and a cro
 4. **Prefilter open loop.** Embedding-prefilter thresholds are "zero-error" on the golden set only because the
    0.90 SP gap was a 25-case artifact (the 232-case cross-game set forced 0.93); auto-decision coverage caps
    at ~15-30% (topic-not-stance ceiling); the promised **wild-trace re-validation has never run**.
-5. **✅ Silent-failure bug — FIXED 2026-06-28.** `judges/batch_dedup.py` (handler now at `:87`, shifted up from `:86` by the added `ValidationError` import) had `except
-   (json.JSONDecodeError, Exception)` — `Exception` subsumed `JSONDecodeError`, swallowing *every* error (API,
-   schema-validation, attribute) into one "parse failure → None", silently dropped from aggregates. Fixed to
-   match the online judge (`dedup.py:138-147`): split into `(JSONDecodeError, ValidationError)` → "invalid
-   scores" vs a catch-all `Exception` → "call failed" (added the `ValidationError` import). Uncommitted.
+5. **✅ Silent-failure bug — FIXED + COMMITTED (`6280610`).** `judges/batch_dedup.py` (handler now at `:85`)
+   had `except (json.JSONDecodeError, Exception)` — `Exception` subsumed `JSONDecodeError`, swallowing *every*
+   error (API, schema-validation, attribute) into one "parse failure → None", silently dropped from aggregates.
+   Fixed to match the online judge (`dedup.py:136-145`): split into `(JSONDecodeError, ValidationError)` →
+   "invalid scores" vs a catch-all `Exception` → "call failed" (added the `ValidationError` import). Landed in
+   commit `6280610` ("fix(eval): split batch-dedup judge errors"), since carried through the `config.py` DRY.
 6. **Small-N throughout** — online golden 65, batch 111 keys / 11 clusters, fabrication rate n=9; 3.5-flash is
    non-deterministic near its output ceiling (86.5% best vs 81.0% worst, same prompt).
 
@@ -103,8 +108,8 @@ re-validation is open.
 (`../../dedup/batch_dedup/data/merge_quality_*.json`) for fabrication true/false and score
 `batch_dedup_merge_eval`'s `fabrication_detected` against them. Zero new generation — a read-and-label pass —
 and it calibrates the single highest-stakes uncalibrated signal (the 33% fabrication rate the report leans on
-to gate the offline pass). Second-cheapest: give `dedup_score.py` a console entry and re-run it on
-current-prompt replays to retire the staleness gap.
+to gate the offline pass). Second-cheapest: re-run the now-wired `eval-dedup-score` on current-prompt
+replays to retire the staleness gap.
 
 ## Evidence (code + L2 artifacts)
 
@@ -126,4 +131,7 @@ frozen result JSONs *are* clean pure-L2, but they're referenced by their L0 `exp
 moving them would break the design log's links for no real gain. The key numbers are distilled into the tables
 above, giving this report standalone value without a physical move.
 
-*(Inspected 2026-06-28.)*
+*(Apparatus-inspected 2026-06-28; judge-folder verification sweep 2026-06-30 — re-pointed refactor-stale refs
+after the `prompts/`-package split, `config.py` model-DRY (`run_dedup_judge`/`run_batch_merge_judge` now take
+the model from the imported `DEFAULT_JUDGE_MODEL`), and `core/schemas.py` shift; confirmed the silent-fail fix
+is committed (`6280610`) and the online `fabrication_detected` check is v6-dimension-aware. No verdict change.)*

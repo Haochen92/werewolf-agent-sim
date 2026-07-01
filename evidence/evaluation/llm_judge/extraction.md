@@ -19,15 +19,16 @@ and, for v7, *"is a credit-aware synthesised strategy-point any good?"*
 ## L1 — the instrument
 
 - **Extraction judge** `judges/extraction.py` → console **`eval-extraction`** (`pyproject.toml:37`,
-  confirmed real). `ExtractionScores` (`core/schemas.py:104-188`): **8 flat dims, each int 1-5** —
+  confirmed real). `ExtractionScores` (`core/schemas.py:87-171`): **8 flat dims, each int 1-5** —
   `specificity · epistemic_compliance · grounding · coverage · diversity · perspective_compliance ·
   strategy_depth · novelty` + `brief_reasoning`. Model default gemini-2.5-pro (frozen 48-game runs used
   gemini-3.5-flash; model-comparison used 3.1-pro-preview). `max_retries=1`.
 - **Per-role** (`per_role_extraction.py`) is **the same judge** applied to role-sliced inputs, aggregated by
   mean — not a different instrument.
-- ⚠️ **Stale prompt header bug:** the user prompt says "Score the following **five** dimensions"
-  (`prompts.py:470`) but the schema demands all **8**. Output unaffected (schema is the contract), but it's a
-  live self-contradiction.
+- ⚠️ **Prompt is internally self-contradictory on the dimension count:** the system prompt says "score the
+  extraction output on **eight** dimensions" (`prompts/extraction.py:9`) while the user scoring header says
+  "Score the following **five** dimensions" (`prompts/extraction.py:40`). The JSON template + `ExtractionScores`
+  enforce all **8**, so output is unaffected (schema is the contract) — but the prompt disagrees with itself.
 - **v7 SYNTHESIS quality has NO judge.** Zero references to `ExtractionScores`/`run_extraction_judge` in
   `evaluation/src/loop/`. Synthesised SPs are measured only by (a) the loop's **outcome** slope
   (`measure.py`) and (b) one **underpowered** offline lexical probe (`v7_final/sp_synthesis_quality_check.py`,
@@ -38,11 +39,13 @@ and, for v7, *"is a credit-aware synthesised strategy-point any good?"*
 
 **The 2 judge bugs + fixes (both real, verified live in code):**
 1. **Epistemic scope** — judge applied `epistemic_compliance` to observations too (which legitimately use
-   omniscient framing) → deflated −1.19 (2.81→4.00). Fixed: `prompts.py:482-484` scopes it to strategy
-   points only.
+   omniscient framing) → deflated −1.19 (2.81→4.00). Fixed: `prompts/extraction.py:52-53` scopes it to
+   strategy points only ("EPISTEMIC COMPLIANCE (strategy points ONLY — ignore observations…)").
 2. **Specificity field** — judge scored `specificity` on the narrow `situation` field, but retrieval uses
-   `composed_situation` (+ dimensional fields). Fixed: `extraction.py:22-32` emits the dimensional fields +
-   prompt evaluates the composed query. Lifted +0.69 (3.19→3.88).
+   `composed_situation` (+ dimensional fields). Fixed: `extraction.py:20-30` (`_format_dimensional_fields`)
+   emits the four v6 dimensional fields into both obs/SP, and the prompt scores the composed query
+   (`prompts/extraction.py:42-49` — "situation field TOGETHER with its dimensional fields … as a single
+   composed search query"). Lifted +0.69 (3.19→3.88).
 Both fixes shipped; the report's accounting matches the code. **These are genuine apparatus improvements —
 the strength is real.**
 
@@ -99,8 +102,8 @@ store — the instrument exists; it's simply never aimed at synthesis (which is 
 
 ## Evidence (code + L2 artifacts)
 
-- **Code:** `evaluation/src/judges/extraction.py`, `judges/per_role_extraction.py`, `judges/prompts.py`,
-  `experiments/extraction_eval.py`, `experiments/extraction_builder.py`,
+- **Code:** `evaluation/src/judges/extraction.py`, `judges/per_role_extraction.py`,
+  `judges/prompts/extraction.py`, `experiments/extraction_eval.py`, `experiments/extraction_builder.py`,
   `core/schemas.py::{ExtractionScores,PerRoleExtractionScores}`; v7 probe
   `../../v7_final/sp_synthesis_quality_check.py`.
 - **L2 artifacts (no golden — the gap; results pointed-at):** `../../extraction/quality/eval_results/*.jsonl`
@@ -116,4 +119,7 @@ store — the instrument exists; it's simply never aimed at synthesis (which is 
 absence is the finding), and the result JSONs are referenced by their L0 logs + live runners. Key numbers
 distilled above.
 
-*(Inspected 2026-06-28.)*
+*(Apparatus-inspected 2026-06-28; judge-folder verification sweep 2026-06-30 — re-pointed refactor-stale
+refs after the `prompts/`-package split, `config.py` model-DRY, and `core/schemas.py` shift (`EvalResult`
+deletion moved class lines ~−17); re-confirmed the v6 dimensional-field apparatus and that v7 synthesis is
+still unjudged (zero `loop/` references to the extraction judge). No verdict change.)*

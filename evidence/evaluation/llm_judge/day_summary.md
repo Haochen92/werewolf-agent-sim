@@ -20,7 +20,7 @@ actions, village dynamics) without fabricating?*
 
 - **Judge** — `evaluation/src/judges/day_summary.py::run_day_summary_judge`. One LLM (gemini-2.5-pro default,
   `judges/day_summary.py:18`), **reference-based**: it is handed the *raw transcript AND the summary*
-  (`prompts.py:825-842`), so it can check claims against ground truth rather than score blind — which dims
+  (`prompts/day_summary.py:9,15-32`), so it can check claims against ground truth rather than score blind — which dims
   that buys is the L2 question (below). A 5-dimension rubric each scored 1-5 — `completeness · accuracy ·
   evidence_type_clarity · village_dynamics · epistemic_correctness` (`core/schemas.py::DaySummaryScores`) —
   plus `brief_reasoning`. `max_retries=1` (`day_summary.py:51`); on a parse/validation failure it returns
@@ -36,7 +36,7 @@ actions, village dynamics) without fabricating?*
   ≥5 discussion messages, one per trace (`day_summary_regen.py:46`), across 8 unique games drawn from two eval
   sets. No balance across roles, outcomes, or difficulty — so the flat-high scores may partly reflect an easy
   sample, not only a lenient judge.
-- **Rubric/prompt** — `evaluation/src/judges/prompts.py::DAY_SUMMARY_{JUDGE_SYSTEM,JUDGE_USER,RUBRIC}`.
+- **Rubric/prompt** — `evaluation/src/judges/prompts/day_summary.py::DAY_SUMMARY_{JUDGE_SYSTEM,JUDGE_USER,RUBRIC}`.
 
 ## L2 — how much to trust it
 
@@ -93,9 +93,11 @@ judging — judge one fixed set of summaries N times to size judge-noise separat
 
 - **Code (the instrument):** `evaluation/src/judges/day_summary.py`,
   `evaluation/src/experiments/day_summary_eval.py`, `evaluation/src/core/schemas.py::DaySummaryScores`,
-  `evaluation/src/judges/prompts.py::DAY_SUMMARY_*`.
+  `evaluation/src/judges/prompts/day_summary.py::DAY_SUMMARY_*`.
 - **L2 artifacts:** `../../extraction/day_summary/eval_summary_*.txt` (the per-config score tables — the only
   reliability data that exists). **No golden set** — its absence *is* the headline L2 finding.
 
-*(Inspected 2026-06-28. Colocation: original folder stays put — design-dominated, → ch.3; no L2 artifact was
-self-contained enough to move, so all are pointed-at.)*
+*(Inspected 2026-06-28; content-verified 2026-06-29. Colocation: original folder stays put — design-dominated,
+→ ch.3; no L2 artifact was self-contained enough to move, so all are pointed-at. Judge-folder sweep 2026-06-30
+re-pointed the three prompt references to the `prompts/day_summary.py` module after the package split — no
+content change.)*
