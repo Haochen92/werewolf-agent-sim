@@ -26,9 +26,10 @@ not against a second model's preferences. (How those standards are set is sectio
 The fair test of whether this layer earned its place is simple: what did a judge actually decide? A judge
 whose scores changed no decision did nothing. Going through the record, the answer is modest.
 
-- **Two design calls were judge-driven, and both rest on little data.** A judge's scores were the deciding
-  input in exactly two places: which model to use for extraction (compared on 5–10 games), and locking version
-  2 of the application prompt (120 cases, judge-scored only). Real influence, thin evidence.
+- **Two design calls were judge-driven, and both rest on little data from the old pipeline.** A judge's scores
+  were the deciding input in exactly two places: which model to use for extraction (compared on 5–10 games),
+  and locking version 2 of the application prompt (120 cases, judge-scored only). Both were settled in May, on
+  the pre-v7 pipeline, and neither was re-run on the current version. Real influence, thin evidence, and stale.
 - **One finding mattered without settling anything.** The deduplication quality judge found that the
   merge-writing model invents game details on about a third of its merges (3 of 9 cases). Batch deduplication
   is already off by default for a plainer reason: it is expensive, so it runs as an occasional offline sweep
@@ -59,6 +60,14 @@ The honest limit is that none of the live judges is calibrated. Each is one mode
 human-checked answer key behind the numbers, so they are best read as smoke alarms rather than gauges. The
 larger wins of the eval system (the head-to-head verdict that memory helps, and two configuration bugs the
 harness caught) come from other layers and are covered in the [parent report](../report.md).
+
+One more limit is worth stating plainly, because it is easy to miss: none of this reached the current version.
+The two judge-driven calls, and the situation-summary golden set that outranked the judge, all ran on the
+pre-v7 pipeline (v4-era stores, May prompts). The choices that survive into v7, per-role extraction and the
+2.5 Pro extractor, were validated back then and carried forward, not re-judged. v7's genuinely new parts, the
+dimensional memory schema and the credit-aware synthesised strategy notes, have no LLM-judge score at all.
+On v7 specifically, the LLM-judge layer drove no design decision; what stands behind v7 is the outcome and
+deterministic instruments described in the [parent report](../report.md).
 
 ## 2. The harness
 
@@ -132,7 +141,7 @@ unverified, 🔴 weak or null, ⏸ designed but not run. Fuller detail is in the
 |---|---|---|---|---|
 | **Situation-summary** (pairwise + single-rubric) · [detail](agent_decision.md) | faithfulness, specificity, retrieval-usefulness, non-redundancy, role-perspective | 3.1 Pro (both modes) | drove no design call; a human-labelled key did (dropped a −0.08 option, kept a +0.06 one) | 🟡 an answer key exists but isn't wired to the live judge |
 | **Retrieval** · [detail](agent_decision.md) | relevance, efficiency, redundancy of the retrieved notes | 2.5 Flash | the version actually shipping (plain similarity search, no reranking) is the least-measured | 🔴 uncalibrated, and inflates efficiency when few notes are returned (section 6) |
-| **Application** · [detail](agent_decision.md) | action quality, use of strategy, grounding, adoption accuracy | 2.5 Flash | note adoption stays flat near 50% across prompt versions (the prompt changed accuracy, not volume); 120 cases from only 3 games, one outlier swings it | ⏸ calibration designed, never run (section 6) |
+| **Application** · [detail](agent_decision.md) | action quality, use of strategy, grounding, adoption accuracy | 2.5 Flash | note adoption stays flat near 50% across prompt versions (the prompt changed accuracy, not volume); 120 cases from only 3 games, pre-v7 (v4 store, May prompts), one outlier swings it | ⏸ calibration designed, never run (section 6) |
 | **Extraction** (8 dimensions) · [detail](extraction.md) | specificity, epistemic, grounding, coverage, diversity, perspective, strategy-depth, novelty | 2.5 Pro | two prompt bugs found by inspection and fixed; the original five dimensions cluster near 4.0 and barely discriminate; drove the extraction model choice (5–10 games) | 🟡 debugged, not calibrated; the newest synthesised notes are unjudged |
 | **Dedup quality** · [detail](../labeling/dedup.md) | merge quality, information preservation, fabrication | 2.5 Pro | the merge-writing model it scores (also 2.5 Pro) invents details in 3 of 9 cases; a faster merge-writer (3.5 Flash) fabricates 0% but drops fields, so the fabricating one ships anyway | 🟡 weak layer; dedup's strong instrument is the deterministic scorer, not this |
 | **Day-summary** (5 dimensions) · [detail](day_summary.md) | completeness, accuracy, evidence-type, village-dynamics, epistemic | 2.5 Pro | the judge is shown the transcript, so the content dimensions move but the "is this section present" dimensions sit at the maximum; flat across versions | ⚠️ a smoke test, too weak to rank versions |
