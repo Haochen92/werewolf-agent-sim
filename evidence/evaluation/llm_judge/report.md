@@ -21,7 +21,7 @@
 One judge grades every memory component. It is a single model, configured in one place, that scores each
 output in a fixed structure and retries once if parsing fails. It records its exact configuration with every
 run so two results can be compared fairly. Each component is judged against the standard it was built to meet,
-not against a second model's preferences. (How those standards are set is section 3.)
+rather than against whatever the judge model happens to prefer. (How those standards are set is section 3.)
 
 The fair test of whether this layer earned its place is simple: what did a judge actually decide? A judge
 whose scores changed no decision did nothing. Going through the record, the answer is modest.
@@ -143,7 +143,7 @@ unverified, 🔴 weak or null, ⏸ designed but not run. Fuller detail is in the
 | **Retrieval** · [detail](agent_decision.md) | relevance, efficiency, redundancy of the retrieved notes | 2.5 Flash | the version actually shipping (plain similarity search, no reranking) is the least-measured | 🔴 uncalibrated, and inflates efficiency when few notes are returned (section 6) |
 | **Application** · [detail](agent_decision.md) | action quality, use of strategy, grounding, adoption accuracy | 2.5 Flash | note adoption stays flat near 50% across prompt versions (the prompt changed accuracy, not volume); 120 cases from only 3 games, pre-v7 (v4 store, May prompts), one outlier swings it | ⏸ calibration designed, never run (section 6) |
 | **Extraction** (8 dimensions) · [detail](extraction.md) | specificity, epistemic, grounding, coverage, diversity, perspective, strategy-depth, novelty | 2.5 Pro | two prompt bugs found by inspection and fixed; the original five dimensions cluster near 4.0 and barely discriminate; drove the extraction model choice (5–10 games) | 🟡 debugged, not calibrated; the newest synthesised notes are unjudged |
-| **Dedup quality** · [detail](../labeling/dedup.md) | merge quality, information preservation, fabrication | 2.5 Pro | the merge-writing model it scores (also 2.5 Pro) invents details in 3 of 9 cases; a faster merge-writer (3.5 Flash) fabricates 0% but drops fields, so the fabricating one ships anyway | 🟡 weak layer; dedup's strong instrument is the deterministic scorer, not this |
+| **Dedup quality** · [detail](../labeling/dedup.md) | merge quality, information preservation, fabrication | 2.5 Pro | the merge-writing model it scores (also 2.5 Pro) invents details in 3 of 9 cases; a faster merge-writer (3.5 Flash) fabricates 0% but drops whole fields, so 2.5 Pro was chosen deliberately: losing fields was judged the worse defect than inventing them | 🟡 weak layer; dedup's strong instrument is the deterministic scorer, not this |
 | **Day-summary** (5 dimensions) · [detail](day_summary.md) | completeness, accuracy, evidence-type, village-dynamics, epistemic | 2.5 Pro | the judge is shown the transcript, so the content dimensions move but the "is this section present" dimensions sit at the maximum; flat across versions | ⚠️ a smoke test, too weak to rank versions |
 
 Two judges sit off this list: a turn-level pipeline judge used in the end-to-end runs, and per-role and
@@ -162,19 +162,25 @@ can flag a problem but cannot reliably rank two options. There are three kinds o
    the most trusted numbers in the whole eval system.
 2. **A human answer key.** How well does the judge agree with human labels on a sample? This is the fallback
    when there is no clean outcome, and it is what a golden set provides.
-3. **A direct computation.** When the thing being measured is actually checkable, such as whether a claim
-   appears in the transcript or how many distinct notes were returned, compute it rather than ask a model to
-   estimate it.
+3. **A direct computation.** When the thing being measured is cheaply checkable, such as how many distinct
+   notes were returned or whether a banned player-ID appears, compute it rather than ask a model to estimate
+   it.
 
-This turns "the score isn't anchored" from one problem into four cases, and only one of them is the model's
-fault:
+This turns "the score isn't anchored" from one complaint into five situations, and only the last is a real
+design failure:
 
 | The dimension is… | The fix is… |
 |---|---|
-| factual and checkable (grounding, accuracy, fabrication) | compute it directly; an LLM score here is a wasted opportunity |
+| cheaply checkable (player-ID leakage, distinct-note counts) | compute it directly; an LLM score here is a wasted opportunity |
+| checkable in principle but hard to label (fabrication, whether a claim is grounded in the transcript) | an LLM judge is the best available proxy: a golden set is expensive and sometimes hard even to define, so an uncalibrated judge is a reasonable stand-in as long as you flag it as directional |
 | subjective but consequential (specificity, strategy depth) | anchor to an outcome if possible, otherwise a human answer key |
 | subjective with no outcome to tie to | a human answer key; this genuinely is not a counting problem |
 | stuck at one value regardless of input | redesign or delete the dimension; no anchor fixes a gauge that never moves |
+
+The deduplication fabrication check is the clearest case of the second row. Deciding whether a merged note
+introduced a fact that is not in the source entries is a genuine semantic judgment, not a lookup, and there is
+no obvious deterministic label to build. So an uncalibrated LLM judge earns its place there: the honest move
+is to read its number as directional and say so, not to pretend a computation was on offer.
 
 The way to tell an honestly subjective dimension from a badly designed one is whether it moves. A dimension
 that sits at the same value no matter how good or bad the input is measuring the format the prompt forces, not
