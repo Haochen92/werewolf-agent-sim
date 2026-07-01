@@ -182,6 +182,12 @@ introduced a fact that is not in the source entries is a genuine semantic judgme
 no obvious deterministic label to build. So an uncalibrated LLM judge earns its place there: the honest move
 is to read its number as directional and say so, not to pretend a computation was on offer.
 
+The subjective extraction dimensions, novelty and strategy depth, sit in the same row: a person can rate them
+but there is no formula, so the extraction judge is legitimate proxy work there too. The difference is
+anchoring. Dedup pins its keep-or-merge *decision* to a human golden and lets only the fabrication content
+ride on the LLM; extraction has no golden beneath it at all, so its proxy is unchecked. That is why the two
+share a rubric quality but not a trust tag.
+
 The way to tell an honestly subjective dimension from a badly designed one is whether it moves. A dimension
 that sits at the same value no matter how good or bad the input is measuring the format the prompt forces, not
 the quality. Four such failures recur across the judges.
@@ -213,8 +219,10 @@ In priority order. Current as of 2026-06-30.
 3. **The retrieval judge inflates one score when too few notes are retrieved.** It sets efficiency to the
    maximum and pools that into the average with no counter, which can bias one side of a comparison. The fix is
    about two lines, and it is flagged so a future run does not misread the number.
-4. **The newest synthesised notes are not judged at all.** The extraction judge could score them but has not
-   been pointed at them, because that part of the pipeline is not yet validated.
+4. **The newest synthesised notes have no quality judge.** Whether a synthesised strategy note is *good* is
+   hard to label directly, so its quality is anchored to the outcome instead (the credit signal from the
+   LLM-free loop measure), which is the correct anchor but is currently underpowered. The extraction judge
+   could add a cheap directional read on top, and simply has not been pointed there yet.
 
 The cheapest improvement in every case is the same move: calibrate one judge, or connect one answer key that
 already exists. None of it needs new machinery.
