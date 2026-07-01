@@ -18,20 +18,26 @@ skeleton. The Core Principle above and the Tone rules below apply to all of them
 - **Experiment report** (the default; full structure below). You ran variants and measured an
   outcome. Motivation → Design/Hypothesis → Iterations → Evaluation Setup → Results → Decision →
   Lessons → What's Next → Artifacts.
-- **Build-journey log** (the chronological `experiment_log.md`; the multi-phase superset of the
-  experiment report). You ran a *sequence* of designs, experiments, and builds toward one shipped
-  change, and the value is the **path** — what you tried, what got falsified, what you locked. The
-  Experiment report above is the single-experiment case; reach for this when there are many beats over
-  days or weeks. It is a **loop of section-types**, each with its own treatment (see *Discipline for
-  journey logs* below), bookended by an *orientation header* ("what this is" + the
-  chronological-supersession contract + companion-doc pointers) and a *sources footer*: *① Motivation*
-  (the gap — a problem in the current solution, an improvement, or something new — charitable to the
-  incumbent, ending on the root cause) → *② Design derivation* (the proposed design from first
-  principles, mechanics-first, alternatives-rejected, virtues stated by construction) → *③ Implement →
-  Verify → Decide* (the build-test-decide engine, which **repeats** — a pivot loops back to a fresh ②)
-  → *④ Limitations / future work* (criticality-ordered, freshness-dated). It is the journey genre's
-  fullest form — the inverse of the Reference doc, which distils the *same* workstream
-  destination-first. **Menu, not mandate:** a short log might be just ①②④. Exemplar:
+- **Build-journey log** (the chronological `experiment_log.md`) — the multi-phase superset of the
+  experiment report. You ran a *sequence* of designs, experiments, and builds toward one shipped
+  change, and the value is the **path**: what you tried, what got falsified, what you locked. The
+  experiment report above is the single-experiment case; reach for this one when there are many beats
+  over days or weeks.
+
+  The log is a **loop of section-types**, each with its own treatment (see *Discipline for journey
+  logs* below). It opens with an *orientation header* — what the document is, the rule that later
+  entries supersede earlier ones, and pointers to companion docs — and closes with a *sources footer*.
+  Between them the loop runs:
+    - *① Motivation* — the gap, whether a problem in the current solution, an improvement, or
+      something new. Stay charitable to the incumbent, and end on the root cause.
+    - *② Design derivation* — the proposed design from first principles: mechanics first, alternatives
+      rejected, virtues stated by construction.
+    - *③ Implement → Verify → Decide* — the build-test-decide engine. It **repeats**: a pivot loops
+      back to a fresh ②.
+    - *④ Limitations / future work* — ordered by criticality, dated for freshness.
+
+  This is the journey genre's fullest form, the inverse of the reference doc, which distils the *same*
+  workstream destination-first. **Menu, not mandate:** a short log might be just ①②④. Exemplar:
   `evidence/sequential_discussion/experiment_log.md` (its `report.md` is the paired reference doc).
 - **Decision / design record.** You made an architectural or methodological choice, not a
   measurement — there is no dataset or results table, and forcing one is filler. Skeleton: *the
@@ -108,9 +114,9 @@ which apply to every type.)
   ("*Catches:* …") → result → decision; a probe reported without the risk it tests is a fact-dump, and
   **falsification is first-class** — a killed approach is shown, diagnosed, and its recovery traced,
   never deleted. *Decide:* adopt / pivot / kill; a pivot re-enters ②.
-- **④ Limitations — the reference doc's gap discipline, reused.** Criticality-ordered (likelihood ×
-  impact × detectability, not impact-if-violated alone), freshness-dated, **mark-minor-don't-delete**
-  (the list is the audit trail).
+- **④ Limitations — the reference doc's gap discipline, reused** (see *Discipline for reference docs*
+  above for the full rule): criticality-ordered, freshness-dated, mark minor gaps rather than deleting
+  them.
 
 ---
 
@@ -213,6 +219,42 @@ convention requires of every record — see `CLAUDE.md → Eval Architecture` an
 
 **Avoid pure-fact dumps.** A "Challenges" section that lists five bullet points is an experiment log. A "Challenges" section that explains what each challenge taught you about the system is a reflection.
 
+### Prose legibility (how a sentence reads)
+
+Every rule above decides *what* to say and *in what order*. None of them decides how a sentence reads.
+A report can pass all of them and still be hard work: ideas fused into one clause, hyphenated
+modifiers stacked three deep, an em-dash breaking every line. Concision means cutting filler, not
+compressing what remains — dense prose is a separate failure, and the checks above do not catch it.
+The rules below are mechanical; apply them on a final read-through.
+
+- **One main idea per sentence.** Keep the subject and verb close together. When a sentence welds three
+  ideas into one clause, split it into three sentences.
+- **Unpack stacked modifiers.** A pile of hyphenated qualifiers ("criticality-ordered, freshness-dated,
+  construction-enforced-but-unverified") buries the verb. Turn the modifiers back into clauses:
+  "ordered by criticality, dated for freshness, and enforced by construction though not yet verified."
+- **Cap em-dashes at about one per paragraph.** An em-dash suspends the sentence; several in a row
+  fracture it. Keep the interruption that earns its place and convert the rest to periods, commas, or
+  parentheses.
+- **Introduce shorthand before you lean on it.** The portfolio is read by outsiders — interviewers
+  included, as the reference-doc rules already assume. A term used before it is defined costs that
+  reader a re-read. Define it once, in plain words, on first use.
+- **Prefer a plain sentence to an aphorism.** A compressed maxim reads well the first time and obscures
+  on the second. State the point directly, then crystallize it only once it is already clear.
+
+**Exemplar — this guide, before and after.** An earlier draft described the journey-log loop in a
+single breath:
+
+> *Dense (avoid):* "It is a loop of section-types, each with its own treatment, bookended by an
+> orientation header ('what this is' + the chronological-supersession contract + companion-doc
+> pointers) and a sources footer: ① Motivation (the gap …) → ② Design derivation (…) → ③ Implement →
+> Verify → Decide (…) → ④ Limitations (…)."
+
+The current *Build-journey log* entry says the same thing across a short paragraph and a four-item
+list. It is longer and easier to read: one idea per sentence, the shorthand ("orientation header,"
+"sources footer") introduced in plain words, and its one em-dash pair spent where it clarifies. Writers
+imitate the prose they see more reliably than the prose they are told to write, so the guide tries to
+model the voice it asks for.
+
 ---
 
 ## Anti-Patterns to Avoid
@@ -223,6 +265,8 @@ convention requires of every record — see `CLAUDE.md → Eval Architecture` an
 - **Impact theater.** Claiming vague impact without evidence. Either show numbers or honestly frame what was enabled.
 - **Flat iteration lists.** "v1 did X. v2 did Y. v3 did Z." without causal links between them.
 - **Lessons that don't generalize.** "We learned v2 is better" is not a lesson. "Schema field ordering affects reasoning direction in structured output" is.
+- **Density mistaken for concision.** Fusing five ideas into one clause, stacking hyphenated modifiers, chaining em-dashes. The argument can be complete and the prose still unreadable — this is the failure the *Prose legibility* rules catch, and the one most common in practice. Cutting filler does not fix it.
+- **Aphorism density.** Every sentence a crystallized maxim. One or two land; a page of them exhausts the reader. Say the thing plainly, then crystallize only what earns it.
 
 ---
 
@@ -235,6 +279,7 @@ convention requires of every record — see `CLAUDE.md → Eval Architecture` an
 - [ ] Are lessons stated as transferable principles with evidence?
 - [ ] Is impact framed honestly (metrics if available, capability unlocked if not)?
 - [ ] Would a reader who skips the tables still understand the narrative from the prose?
+- [ ] Can an independent reader parse each *sentence* on the first pass — one main idea per sentence, roughly one em-dash per paragraph at most, internal shorthand defined before it's used? (This tests the sentences; the check above tests the argument — different failures.)
 - [ ] Did you pick the right document type (experiment / build-journey log / decision record / negative finding / reference doc)?
 - [ ] Is the provenance stamped (commit / fingerprint / config) so results are traceable?
 - [ ] Is N stated, and direction separated from magnitude where the sample is small?
