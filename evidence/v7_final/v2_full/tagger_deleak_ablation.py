@@ -1,4 +1,6 @@
-"""2x2 ablation — does WITHHOLDING the day's outcome actually reduce the tagger's leak, or was the leak
+"""Graduated 2026-07-02 → evaluation/src/experiments/tagger_eval.py (mode=deleak); this file is the frozen original apparatus.
+
+2x2 ablation — does WITHHOLDING the day's outcome actually reduce the tagger's leak, or was the leak
 just the (mechanical) silent-player effect? The one-armed re-tag couldn't tell these apart: speakers-only
 mechanically drops the silent tail that produced the v1 coupling, so "coupling drops" was foregone.
 

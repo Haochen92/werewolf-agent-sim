@@ -1,4 +1,6 @@
-"""Foundation test for the deceiver-metric thread: is the wolf game-level signal (Check C partial
+"""Graduated 2026-07-02 → evaluation/src/experiments/tagger_eval.py (mode=skill); this file is the frozen original apparatus.
+
+Foundation test for the deceiver-metric thread: is the wolf game-level signal (Check C partial
 r(disc_verdict, won | deluck) = +0.60) REAL SKILL, or leak / a verbosity confounder?
 
 Three numbers per faction, over the 24 v2 ON games:

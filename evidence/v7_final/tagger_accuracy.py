@@ -1,4 +1,6 @@
-"""v7 (d) — TAG ACCURACY check (not effectiveness): are the tagger's per-field tags CORRECT?
+"""Graduated 2026-07-02 → evaluation/src/experiments/tagger_eval.py (mode=accuracy); this file is the frozen original apparatus.
+
+v7 (d) — TAG ACCURACY check (not effectiveness): are the tagger's per-field tags CORRECT?
 
 Settles the pre-run question: the credit loop weighs role_reveal / framing / credibility, but those fields
 were never validated against ground truth (only the holistic verdict's de-halo/redundancy were). Here:

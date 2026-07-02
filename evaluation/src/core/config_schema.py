@@ -304,6 +304,50 @@ class AutoDedupDatasetBuildConfig(_DescribedConfig):
     overwrite: bool = False
 
 
+_TAGGER_MODE_DEFAULT_GLOB = {
+    "accuracy": "batch_results/v6ab_baseline.jsonl batch_results/v6ab_skboth.jsonl",
+    "skill": "evidence/v7_final/v2_full/gen*_on.jsonl",
+    "deleak": "evidence/v7_final/v2_full/gen*_on.jsonl",
+}
+
+
+class TaggerEvalConfig(_DescribedConfig):
+    """Config for the discussion-tagger validation runner (``experiments/tagger_eval.py``).
+
+    One runner, three modes — each reproducing a frozen ``evidence/v7_final`` apparatus:
+    ``accuracy`` (per-field tag correctness vs a deterministic self-claim detector + faction
+    skews), ``skill`` (game-level wolf/SK partial ``r(disc_verdict, won | deluck[, verbosity])``
+    leak/confound guard), ``deleak`` (2x2 outcome-withholding ablation isolating the outcome-leak
+    from the mechanical silent-player effect). See the docstrings there and in
+    ``evidence/evaluation/discussion_tagger/`` for the methodology.
+    """
+
+    mode: Literal["accuracy", "skill", "deleak"]
+    batch_glob: str | None = None
+    """Whitespace-joined repo-root glob(s) for the batch/game-run JSONL. None → the mode default
+    (``accuracy`` reads the v6ab dumps; ``skill``/``deleak`` read the v2 gen*_on dumps)."""
+    max_games_per_source: int | None = None
+    """``accuracy`` only: keep the first N records of EACH matched file (None → 4, the original cap)."""
+    n_games: int | None = None
+    """``deleak`` only: stride-subsample to this many games (None → 6, the original count)."""
+    tags_cache_dir: Path | None = None
+    """Provenance-slugged tag cache (keyed by game_id/slug/outcome/speakers/version). None → tag
+    fresh every run. A played game's tags are immutable, so caching makes a re-run within a paid
+    revalidation campaign free."""
+    tagger_version: str = "v2"
+    strict: bool = False
+    """Re-raise the first per-day tag failure instead of degrading to empty tags (see ``tag_game``)."""
+    pro_model: str | None = "gemini-3.1-flash-lite"
+    """Cost guard: pin ``GOOGLE_GENAI_PRO_MODEL``/``_BACKUP`` before any tagging. None → leave env as-is."""
+    output: Path | None = None
+
+    @model_validator(mode="after")
+    def _fill_mode_default_glob(self) -> "TaggerEvalConfig":
+        if self.batch_glob is None:
+            self.batch_glob = _TAGGER_MODE_DEFAULT_GLOB[self.mode]
+        return self
+
+
 class AutoDedupCalibrationConfig(_DescribedConfig):
     """Threshold-sweep recipe for the embedding pre-filter calibration.
 

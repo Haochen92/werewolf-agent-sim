@@ -1,0 +1,9 @@
+{
+  "description": "Discussion-tagger validation. mode=skill reproduces the game-level wolf/SK partial-r (blinded + verbosity-controlled) on the v2 ON games; switch mode to 'accuracy' (per-field tag correctness on the v6ab dumps) or 'deleak' (2x2 outcome-withholding ablation). Set tags_cache_dir so a re-run over the same dumps is free; pro_model pins the paid slot to flash-lite.",
+  "mode": "skill",
+  "batch_glob": "evidence/v7_final/v2_full/gen*_on.jsonl",
+  "tags_cache_dir": "evaluation/eval_results/tagger_tags",
+  "tagger_version": "v2",
+  "pro_model": "gemini-3.1-flash-lite",
+  "output": "evaluation/eval_results/tagger_eval_skill.json"
+}
