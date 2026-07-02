@@ -104,6 +104,9 @@ apparatus thread. Full code/evidence pointers per topic live in [`source_map.md`
 | **A/B methodology** | drift guards + arm-guard (hard-fail ×2) + pairing/stats | 🟡 strong where enforced; cross-epoch gate + embedding-alias drift are MANUAL/undetected; pairing BUILT but ≈0 power; CUPED N/A | [`methodology/report.md`](methodology/report.md) |
 | **Sampled human review** (rung ②) | case sampler → human + pro-LLM eyeball | ⛔ UNDERBUILT — documented; the build *is* the sampler | [`sampled_human_review/report.md`](sampled_human_review/report.md) |
 | **v7 loop** | LLM-free `measure.py` + paid omniscient tagger + invariants | ✅ mechanics (best-tested; caught its own invalid runs) · 🟡 science open (tagger = validated metric not memory verdict; both v2 runs invalid) | [`loop/report.md`](loop/report.md) |
+| **Replay screens** | per-turn decision-replay screen (built) + per-day replay (design) | ✅ screen sound as triage (off-policy; direction+mechanism, not win-rate; deceiver coverage fixed 07-02) · ⏸ per-day replay design-only | [`replay_screens/report.md`](replay_screens/report.md) |
+| **Dimension extraction** | v6 situation-dimension fills + $0 deterministic accuracy audit (~6,267 cases) | ⚠️ never checked until now: `players_alive` sound (0.990) but `bullets_left` (0.164) + wolf `is_swing` (0.606, worse-than-constant) broken → **RE-OPENED** the gating null; enum kappa PENDING | [`dimension_extraction/report.md`](dimension_extraction/report.md) |
+| **Discussion tagger** | omniscient per-day LLM deceiver-skill metric (loop credit) | 🟡 validated METRIC not memory verdict (wolf +0.56 / SK +0.60, N=24; deleak negligible N=6); per-field accuracy stdout-only; single-epoch | [`discussion_tagger/report.md`](discussion_tagger/report.md) |
 
 ## Cross-cutting findings
 

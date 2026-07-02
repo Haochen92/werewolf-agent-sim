@@ -6,8 +6,12 @@
 > outcome they proxy for, and at what N.** Design (L0) excluded. Lens + skeleton: [`../report.md`](../report.md);
 > ledger: [`../source_map.md`](../source_map.md).
 >
-> **Verdict by basket: ✅ Town · 🟡 Investigator · ⚠️ Deceiver · 🔴 Discussion.** The town basket is the
-> trustworthy core both eval tiers rest on; everything else is partial-to-unmeasured.
+> **Verdict by basket: ✅ Town · 🟡 Investigator · ⚠️ Deceiver · 🔴→🟡 Discussion.** The town basket is
+> the trustworthy core both eval tiers rest on; everything else is partial-to-unmeasured. **2026-07-02
+> metrics-audit update (dated section at tail):** a wolf-night proxy was *rescued* and the first
+> town-discussion proxy *discovered* (both diagnostic-tier, not basket-promoted); the wrong-sign
+> investigator scare *dissolved* at N; and both the scheduler-starvation and a wolf-offense-helps
+> hypothesis were *falsified*. Read the tail for what moved.
 
 ## Objective the apparatus targets
 
@@ -27,9 +31,14 @@ tracks winning. The validation harness exists to prove that.
   reads existing `batch_results/*.jsonl` (zero new games); reported twice (pooled N=50 + memory-OFF-only N=30,
   because the memory treatment moves both proxy and win). The 3-faction refinement re-ran the same discipline
   at N=180. `point_biserial` returns NaN on degenerate inputs (<3 rows / constant proxy / single-class).
-- **`score_tier_design` (the typed GameScore projection): NOT BUILT** — markdown design only ("Status:
-  DESIGN, not implemented"); no `class GameScore` anywhere. Consequence: the SCORE/DIAGNOSTIC/PLUMBING tiering
-  lives only in prose, which is exactly what the indiscriminate Langfuse push above realises.
+- **`score_tier_design` (the typed GameScore projection): still NOT BUILT** — markdown design only; no
+  `class GameScore`. But a **minimal trust tiering shipped 2026-07-02** as a guardrail short of the full
+  projection: `Agents/compute_metrics.py` now carries `VALIDATED_BASKET_METRICS` (11 point-biserial-checked
+  proxies), `DIAGNOSTIC_METRICS` (3 audit-graduated, context-not-basket), and `DO_NOT_USE_METRICS` (5
+  wrong-sign/uninterpretable); `push_scores_to_langfuse` renames the DNU set with a `dnu_` prefix and tags
+  every score with its tier. So a *validated wrong-sign* proxy can no longer be silently averaged into a
+  verdict. The full GameScore projection (which would stop the `suspicion_drawn`↔`blending` double-count
+  *by construction*) remains the deferred apparatus upgrade.
 
 ## L2 — trust, per basket
 
@@ -94,3 +103,79 @@ refs. (Note: `../../metrics/variance_reduction_levers.md` is **mis-filed** in me
 *methodology*, not a metric — and is handled in the [methodology report](../methodology/report.md).)
 
 *(Inspected 2026-06-28. source_map metrics claims verified accurate; sharpenings folded into the ledger.)*
+
+---
+
+## 2026-07-02 metrics-audit update (proxy rescue/discovery + structural-bias falsification)
+
+A $0, zero-LLM audit re-ran the incumbent validation discipline on N=180 v6ab (with split-half
+confirmation and pre-registered signs) to probe the basket's *holes* rather than its errors. Full logs +
+per-candidate verdicts stay in `evidence/metrics/metrics_audit/` (pointed-at, not copied):
+[`proxy_discovery_log.md`](../../metrics/metrics_audit/proxy_discovery_log.md) (workstream 1) and
+[`scheduler_bias_log.md`](../../metrics/metrics_audit/scheduler_bias_log.md) (workstream 2). What moved:
+
+**Deceiver (⚠️→ one diagnostic added).** `wolf_power_kill_rate` is the **first wolf-night proxy to clear
+the bar** — but only once conditioned on the environment. Pooled it is null (+0.13, n.s.); the mechanism
+is that wolves *cannot win when `sk_lynched=0`* (the SK wins by default), so 77/180 games carry zero
+wolf-skill information yet dilute the flat correlation. Within `sk_lynched=1` (n=103, 39 wolf wins) it is
+**+0.31 (p=.002)**, split-half stable (+0.26 / +0.38) and robust to partialling out both `sk_lynched` and
+`game_length` (+0.190, p=.011). This reframes the earlier "wolf night-offense doesn't convert (−0.10)" as
+a **not-conditioned-on-the-SK-axis artifact**, not an absence. Adopted **diagnostic**, not basket-promoted
+(pending a larger wolf-win N). Corollary: *the flat point-biserial is structurally miscalibrated for wolf
+proxies* — any wolf null in the older refinement docs should be re-read as "diluted," not "absent."
+
+**Discussion (🔴→🟡, town side).** `town_accusation_precision` (town accusations on true threats / all)
+is the **first town-discussion proxy**: **+0.34 (p<.001)**, both halves p≤.002, Bonferroni-passing.
+**Accepted as diagnostic, not independent evidence** — it couples with the already-validated
+`town_vote_accuracy` at r=+0.558 (~31% shared variance), so it re-expresses the "town IDs threats"
+construct on the discussion surface rather than confirming a good town twice. The metrics-side wolf
+lead-vs-blend proxy *stays 🔴 null* — and the audit sharpened *why*: `wolf_accusation_on_town_rate` was
+pre-registered **+** (framing offense should help wolves) and came back **−0.33 (p<.001, both halves)** —
+a **pre-registered sign FALSIFICATION**. Wolves that attack town lose more; wolves that accuse real
+threats win more, the blending mirror of the validated `wolf_unconditioned_blending_rate` (+0.27). Only
+the pre-registration makes that a legible finding rather than a silent flip.
+
+**Investigator (🟡, unchanged verdict, softened rationale).** The v5 scare — `investigator_found_wolf_day`
+**significantly wrong-sign** (+0.38, p=.039, n=30) — **dissolves at N=180 to +0.15 n.s.**; neither
+length-normalizing nor partialling `game_length` pushes it to the expected negative. So the sign confusion
+was **small-N noise plus mild length coupling, not a robust backwards relationship**. The find-rate cluster
+stays quarantined (`dnu_`), but the rationale downgrades from "significantly wrong-sign" to "null; the
+earliness sign is N-fragile." Only the conversion proxy (`investigator_find_to_lynch_rate`) is validated,
+now joined by the confirmed timing refinement `investigator_find_next_round_convergence` **+0.31 (both
+halves)** — adopted diagnostic, transmission-cluster. A related program is **BLOCKED**: claim-conditioned
+joins need `DaySummary.structured.role_claims`, present in **0/180** v6ab and 0/50 v5 (an A4 addition
+postdating both epochs) — unbuildable until a post-A4 batch is itself win-validated.
+
+**The nulls are NOT scheduler artifacts (structural-bias falsification).** A sibling workstream tested
+whether the role-blind discussion scheduler *starves* the behaviors these proxies measure. It found **no
+floor-starvation**: investigator and wolf are the floor-*richest* roles (turns/alive-day 2.45 and 2.04;
+investigator spoke-zero rate 0.10), pending-find investigators speak before the vote **58/58 (100%)**,
+wolves hold pre-bandwagon proactive floor on **76.5%** of pile-on days (and decline 35% of proactive
+offers), and the 12 unconverted investigator finds decompose to **0 no-floor / 0 late-floor** vs 7
+withheld / 5 revealed-but-ignored. So the wolf-steering null and investigator non-conversion are
+**agent/town behavior, not scheduler-shaped**. One question stays open: the novelty gate's role-selectivity
+is **unmeasurable from existing records** (a gated pass and a voluntary pass write the identical marker) —
+the 2-field instrumentation to fix it shipped, so a future gate-selectivity audit is unblocked on new
+records only.
+
+**The whiff-visibility finding (prices a held game-design change).** When a wolf's night-kill hits the
+night-immune SK, the kill *silently whiffs* — and the wolf **never notices 68% of the time** (vs 31% on an
+*announced* heal; the wolf's noticing rate tracks visibility). The vigilante, handed an explicit immune
+note, converts the whiff to day-action **0.75–0.89 from a ~0 base**. So the binding layer is **visibility,
+not wolf skill or scheduler floor** — evidence that supports (does not decide) the held change to disclose
+failed kills to the wolf, priced honestly at an epoch reset. Relevant to metrics because `sk_lynched`
+(+0.455) is the wolf's biggest win-correlate and is currently an *environmental* event, not a wolf skill.
+
+**Adoption + tiering (shipped).** The three survivors (`wolf_power_kill_rate`, `town_accusation_precision`,
+`investigator_find_next_round_convergence`) were adopted into a **`DIAGNOSTIC_METRICS`** tier beside — not
+inside — `VALIDATED_BASKET_METRICS`, pushed with `tier="diagnostic"` and carrying their caveats as
+attribute docstrings (A2's `sk_lynched` conditioning, B1's r=+0.558 coupling, C1's refinement status). The
+`dnu_`-prefixed `DO_NOT_USE_METRICS` (the investigator find-rate cluster + `wolf_steering_rate`) keep them
+out of any silent average. Basket promotion of the diagnostics remains pending a larger wolf-win N. All
+$0/zero-LLM, ran at `4b1449e`; 9 + 11 logic tests, suite green. Label caveat carried forward: the
+accusation graph rides `addressed_targets` self-labels (tuned for scheduling, not measurement), whose
+error rate as measurement input is still uncharacterized.
+
+*(Update inspected 2026-07-02 from the metrics-audit logs; findings verified against
+`proxy_discovery_log.md` §3 and `scheduler_bias_log.md` §3 + the tiering constants in
+`Agents/compute_metrics.py`. Diagnostic-tier, not basket-promoted — the trustworthy core is unchanged.)*
