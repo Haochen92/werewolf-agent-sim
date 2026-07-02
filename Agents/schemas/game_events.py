@@ -61,6 +61,17 @@ class DayChannel(BaseModel):
     firing_reason: FiringReason | None = None
     """Scheduler trace for why this turn fired; observability only, hidden from agents. None for
     non-scheduler (e.g. legacy/human) messages."""
+    gated: bool = False
+    """On a pass marker: True = the novelty gate SILENCED a would-be proactive turn; False = the
+    agent VOLUNTARILY declined (pass_turn). Lets a gate-selectivity audit tell the two apart (they
+    were previously one indistinguishable passed=True marker). Observability only; never on a real
+    utterance."""
+    gated_candidate: str = ""
+    """The discarded candidate text the novelty gate silenced (empty unless gated=True). ⚠️ LEAK
+    BOUNDARY: this text was removed from the discussion ON PURPOSE — it must NEVER be formatted into
+    any agent-facing prompt. Persisted-but-hidden like firing_reason: the day-channel formatters drop
+    passed markers, so it is guarded there; tests/leak_test.check_gated_candidate_isolation is the
+    standing guard. Observability only (a future gate audit reads it), never model-visible."""
 
 
 class DaySummary(BaseModel):

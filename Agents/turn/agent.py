@@ -87,9 +87,10 @@ def _run_agent(
 
             if pass_turn:
                 # Proactive decline -> hidden pass marker (the stateless scheduler reads it).
+                # gated=False: this is a VOLUNTARY pass, not a novelty-gate silence.
                 entry = DayChannel(
                     day=current_day, seq=seq, player=player_id,
-                    message="", passed=True, firing_reason=firing_reason,
+                    message="", passed=True, firing_reason=firing_reason, gated=False,
                 )
             else:
                 message = result.message.strip() if result.message else None
@@ -114,9 +115,14 @@ def _run_agent(
                 past_opener_floor = today_real >= payload.get("opener_floor", 0)
                 if (is_proactive and past_opener_floor
                         and not judge_proactive_novelty(message, payload, current_day)):
+                    # Novelty-gate SILENCE: the candidate was substantive-enough to write but
+                    # judged an echo/restatement. gated=True + the discarded text is persisted for
+                    # a future gate-selectivity audit — and MUST stay out of every agent prompt
+                    # (see DayChannel.gated_candidate leak-boundary note).
                     entry = DayChannel(
                         day=current_day, seq=seq, player=player_id,
                         message="", passed=True, firing_reason=firing_reason,
+                        gated=True, gated_candidate=message,
                     )
                 else:
                     entry = DayChannel(

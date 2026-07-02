@@ -124,6 +124,27 @@ def check_vigilante_results_isolation(prompt_log: list[dict[str, Any]]) -> list[
     return leaks
 
 
+def check_gated_candidate_isolation(
+    prompt_log: list[dict[str, Any]], gated_candidates: Iterable[str]
+) -> list[str]:
+    """A novelty-gated candidate message was SILENCED — its text must never reach any agent's
+    prompt. The day-channel formatters drop passed markers (where gated_candidate lives), so a
+    correctly-behaving pipeline never surfaces it; this scans every recorded prompt_input for any
+    gated candidate substring as a standing guard against a formatter/template regression."""
+    leaks: list[str] = []
+    needles = [c for c in gated_candidates if c and c.strip()]
+    for entry in prompt_log:
+        blob = repr(entry.get("prompt_input", {}))
+        for needle in needles:
+            if needle in blob:
+                _record_leak(
+                    leaks,
+                    f"LEAK: {entry['player_id']} ({entry['player_role']}) received a "
+                    f"novelty-gated candidate in prompt_input: {needle!r}",
+                )
+    return leaks
+
+
 def check_eliminated_players_excluded(
     prompt_log: list[dict[str, Any]], eliminated_players: Iterable[str]
 ) -> list[str]:
@@ -156,6 +177,7 @@ def run_leak_tests(
     prompt_log: list[dict[str, Any]],
     roles: dict[str, str],
     eliminated_players: Iterable[str] = (),
+    gated_candidates: Iterable[str] = (),
 ) -> list[str]:
     print("=== Running Leak Tests ===")
     leaks = [
@@ -165,6 +187,7 @@ def run_leak_tests(
         *check_vigilante_results_isolation(prompt_log),
         *check_healer_target_absent(prompt_log),
         *check_eliminated_players_excluded(prompt_log, eliminated_players),
+        *check_gated_candidate_isolation(prompt_log, gated_candidates),
     ]
     print("=== Leak Tests Complete ===")
     return leaks
