@@ -33,7 +33,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from Agents.llm_factory.embeddings import create_embeddings
 from Agents.schemas import RetrievedObservation
 from Agents.schemas.memory import StoredObservation
-from evaluation.src.loop.decision_scoring import THREAT_ROLES, allow_abstain_for, score_vote
+from evaluation.src.loop.decision_scoring import (
+    THREAT_ROLES,
+    allow_abstain_for,
+    query_criticality,
+    score_vote,
+)
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 from evaluation.src.data.sources.sidecar import LocalCaseSource
 from evaluation.src.experiments.decision_replay import _replay_vote, load_game_index, mcnemar_p
@@ -65,18 +70,6 @@ class _RolePool:
         self.swing = np.array([1 if c.is_swing else 0 for c in cands])
         self.game = np.array([c.game_id or "" for c in cands])
         self.vecs = np.array(emb.embed_documents([c.situation for c in cands])) if cands else np.zeros((0, 1))
-
-
-def query_criticality(surviving_players: list[str], roles: dict[str, str]) -> tuple[int, int, bool]:
-    """Deterministic query criticality from the frozen board. distance_to_parity is wolf-faction
-    parity (non-wolf eliminations until wolves reach parity); is_swing = one result from flipping.
-    Town-lensed (wolves are the dominant parity driver; SK is a minority wildcard)."""
-    alive = list(surviving_players)
-    n = len(alive)
-    wolves = sum(1 for p in alive if roles.get(p) == "wolf")
-    others = n - wolves
-    distance_to_parity = others - wolves
-    return n, distance_to_parity, distance_to_parity <= 1
 
 
 def _cosine_matrix(q: np.ndarray, M: np.ndarray) -> np.ndarray:
