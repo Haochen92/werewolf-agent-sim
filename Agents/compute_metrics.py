@@ -67,6 +67,72 @@ def _dead_before_each_night(metrics: Metrics) -> dict[int, set[str]]:
     return entering
 
 
+# ---------------------------------------------------------------------------
+# Diagnostic-tier per-game computations (metrics-audit survivors, 2026-07-02).
+#
+# The definitions mirror the audit runners that VALIDATED them
+# (evaluation/src/experiments/{accusation_metrics,claim_conversion}.py, per
+# evidence/metrics/metrics_audit/proxy_discovery_log.md §3.B/§3.C). They are re-expressed here
+# against the live object shapes (DayChannel / *ResolutionMetric) rather than imported, because
+# Agents/ (production) must not depend on evaluation/ (the eval harness) — the runners already
+# import FROM Agents, so the dependency only runs one way. Both sides compute the same quantity;
+# the runners stay the validation source of record.
+# ---------------------------------------------------------------------------
+
+
+def _town_accusation_counts(result: dict) -> tuple[int, int]:
+    """(town accusations on a true threat, all town accusations) from the discussion layer.
+
+    Parse day_channel addressed_targets with stance=='accusation' (skip passes + self-accusations),
+    keep those whose accuser is town-aligned; the numerator is the subset aimed at a wolf/SK. Mirrors
+    accusation_metrics.accusations() exactly (denominator counts every town accusation, even one at an
+    unknown target). Feeds the DIAGNOSTIC town_accusation_precision rate.
+    """
+    roles = result.get("roles") or {}
+    total = on_threat = 0
+    for m in result.get("day_channel", []) or []:
+        if getattr(m, "passed", False):
+            continue
+        accuser = m.player
+        if roles.get(accuser) not in TOWN_ROLES:
+            continue
+        for a in m.addressed_targets or []:
+            if a.stance != "accusation":
+                continue
+            target = a.target
+            if not target or target == accuser:
+                continue
+            total += 1
+            if roles.get(target) in THREAT_ROLES:
+                on_threat += 1
+    return on_threat, total
+
+
+def _investigator_find_next_round_convergence(result: dict, metrics: Metrics) -> float | None:
+    """Mean over wolf-finds of (town day-(d+1) votes on the found wolf / all town votes that day).
+
+    A find lands on NIGHT d; day d+1 is the first round the town can act on it. Skips finds whose
+    next round has no town votes. Mirrors claim_conversion.find_next_round_convergence. Feeds the
+    DIAGNOSTIC investigator_find_next_round_convergence proxy (a timing-sensitive refinement of the
+    validated investigator_find_to_lynch_rate). Deterministic, no LLM.
+    """
+    roles = result.get("roles") or {}
+    votes_by_day = {d.day: d.votes for d in metrics.day_resolutions}
+    convs: list[float] = []
+    for n in metrics.night_resolutions:
+        if n.investigator_target_role != "wolf" or not n.investigator_target:
+            continue
+        nxt = votes_by_day.get((n.day or 0) + 1)
+        if not nxt:
+            continue
+        town_votes = [v for v in nxt if roles.get(v["voter"]) in TOWN_ROLES]
+        if not town_votes:
+            continue
+        on_wolf = sum(1 for v in town_votes if v["votee"] == n.investigator_target)
+        convs.append(on_wolf / len(town_votes))
+    return (sum(convs) / len(convs)) if convs else None
+
+
 def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
     roles = result["roles"]
     # surviving_villagers is the non-wolf bucket (town + the solo SK + vigilante).
@@ -369,6 +435,12 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
             return "lynched"  # the SK can only be removed by a day vote
         return "draw"
 
+    # --- Diagnostic-tier survivors (metrics-audit 2026-07-02): discussion-layer + timing proxies ---
+    town_accusations_on_threat, town_accusations_total = _town_accusation_counts(result)
+    investigator_find_next_round_convergence = _investigator_find_next_round_convergence(
+        result, metrics
+    )
+
     return BaseGameMetrics(
         winner=winner,
         game_length=game_length,
@@ -427,6 +499,9 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         vigilante_skconfirms_total=vigilante_skconfirms_total,
         vigilante_skconfirms_lynched=vigilante_skconfirms_lynched,
         vigilante_exit_method=_exit_method(vigilante_id),
+        town_accusations_total=town_accusations_total,
+        town_accusations_on_threat=town_accusations_on_threat,
+        investigator_find_next_round_convergence=investigator_find_next_round_convergence,
     )
 
 
@@ -466,6 +541,14 @@ def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
         vigilante_skconfirm_to_lynch_rate=_safe_div(
             base.vigilante_skconfirms_lynched, base.vigilante_skconfirms_total
         ),
+        # --- Diagnostic tier (metrics-audit survivors, 2026-07-02) ---
+        wolf_power_kill_rate=_safe_div(
+            base.power_roles_killed_by_wolves, base.power_role_alive_nights
+        ),
+        town_accusation_precision=_safe_div(
+            base.town_accusations_on_threat, base.town_accusations_total
+        ),
+        investigator_find_next_round_convergence=base.investigator_find_next_round_convergence,
     )
 
 
@@ -508,12 +591,69 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         vigilante_friendly_fire_shots=base.vigilante_friendly_fire_shots,
         vigilante_bullets_unused=base.vigilante_bullets_unused,
         vigilante_exit_method=base.vigilante_exit_method,
+        # Diagnostic-tier denominators (carried so low-sample games can be filtered).
+        power_role_alive_nights=base.power_role_alive_nights,
+        town_accusations_total=base.town_accusations_total,
+        town_accusations_on_threat=base.town_accusations_on_threat,
     )
 
 
 # ---------------------------------------------------------------------------
 # Langfuse push
 # ---------------------------------------------------------------------------
+
+# Minimal trust tiering for the ~50-field push (a full GameScore class is NOT built here).
+# The push otherwise treats every field co-equal, so a *validated wrong-sign* proxy sits
+# next to the point-biserial-checked basket and gets read as if trustworthy.
+#
+# DO_NOT_USE = proxies that are wrong-sign or uninterpretable against faction-won (the
+# investigator find-rate cluster + wolf_steering_rate). Pushed with a `dnu_` name prefix +
+# a `tier="do_not_use"` metadata tag so they can never be silently averaged into a verdict.
+DO_NOT_USE_METRICS = frozenset({
+    "investigator_found_wolf_day",
+    "investigator_threat_find_rate",
+    "investigator_wolf_find_rate",
+    "investigator_threat_find_lift",
+    "wolf_steering_rate",
+})
+
+# VALIDATED_BASKET = the proxies checked (point-biserial vs win) and trusted; tagged
+# tier="validated" so a downstream reader can filter to just these.
+VALIDATED_BASKET_METRICS = frozenset({
+    "town_vote_accuracy",
+    "correct_elimination_rate",
+    "town_mislynch_rate",
+    "mislynches",
+    "serial_killer_lynched",
+    "healer_town_save_rate",
+    "investigator_find_to_lynch_rate",
+    "wolf_unconditioned_blending_rate",
+    "sk_kill_rate",
+    "sk_power_roles_killed",
+    "power_roles_killed_by_evil",
+})
+
+# DIAGNOSTIC = win-validated on the audit set (proxy_discovery_log §3) but adopted as CONTEXT, not
+# as basket evidence — each is either environment-conditioned, coupled to a basket metric, or a
+# refinement of one. Named explicitly (default-diagnostic already tags everything un-tiered, but
+# these are deliberate adoptions the metrics audit graduated, so they get a roster of their own).
+# NOT basket promotion: proxy_discovery_log records that as pending a larger wolf-win N. Caveats
+# live as attribute docstrings on the DerivedGameMetrics fields (docstrings for humans).
+DIAGNOSTIC_METRICS = frozenset({
+    "wolf_power_kill_rate",
+    "town_accusation_precision",
+    "investigator_find_next_round_convergence",
+})
+
+
+def _metric_tier(field_name: str) -> str:
+    if field_name in DO_NOT_USE_METRICS:
+        return "do_not_use"
+    if field_name in VALIDATED_BASKET_METRICS:
+        return "validated"
+    # DIAGNOSTIC_METRICS members and everything un-tiered both push as "diagnostic"; the named
+    # set documents the audit-graduated adoptions (proxy_discovery_log §3).
+    return "diagnostic"
 
 
 def push_scores_to_langfuse(
@@ -526,12 +666,17 @@ def push_scores_to_langfuse(
             continue
 
         data_type = "CATEGORICAL" if isinstance(value, str) else "NUMERIC"
+        tier = _metric_tier(field_name)
+        # DO_NOT_USE fields are renamed with a `dnu_` prefix so they stand out and can't be
+        # confused with a trusted proxy; the tier is also carried in metadata for filtering.
+        score_name = f"dnu_{field_name}" if tier == "do_not_use" else field_name
         langfuse.create_score(
             score_id=_score_id("game_metric", "trace", trace_id, field_name),
             trace_id=trace_id,
-            name=field_name,
+            name=score_name,
             value=value,
             data_type=data_type,
+            metadata={"tier": tier},
         )
         if session_id:
             langfuse.create_score(
@@ -543,8 +688,8 @@ def push_scores_to_langfuse(
                     field_name,
                 ),
                 session_id=session_id,
-                name=field_name,
+                name=score_name,
                 value=value,
                 data_type=data_type,
-                metadata={"trace_id": trace_id},
+                metadata={"trace_id": trace_id, "tier": tier},
             )

@@ -169,6 +169,12 @@ class BaseGameMetrics(BaseModel):
     vigilante_skconfirms_lynched: int # of those, the confirmed SK was lynched on a later day
     vigilante_exit_method: str
 
+    # Diagnostic-tier survivors (metrics-audit 2026-07-02) — numerators/denominators for the
+    # discussion-layer + timing proxies graduated in proxy_discovery_log §3.
+    town_accusations_total: int = 0        # town accusations parsed from day_channel (denominator)
+    town_accusations_on_threat: int = 0    # ... aimed at a wolf/SK (precision numerator)
+    investigator_find_next_round_convergence: float | None = None  # mean find->day-(d+1) vote share
+
 
 class DerivedGameMetrics(BaseModel):
     """Rate/ratio proxies computed from BaseGameMetrics (de-lucked where noted). Each is None when
@@ -204,6 +210,24 @@ class DerivedGameMetrics(BaseModel):
     vigilante_correct_shot_rate: float | None = None         # conditional precision (evil hits / shots); underpowered descriptor
     vigilante_wolf_kills_rate: float | None = None           # landed wolf-kills / bullet supply — the de-lucked removal proxy (validated)
     vigilante_skconfirm_to_lynch_rate: float | None = None   # CONVERSION: confirmed SK -> lynched (promising, underpowered n~9)
+
+    # --- DIAGNOSTIC tier (metrics-audit survivors, proxy_discovery_log §3). Adopted as CONTEXT, not
+    # basket evidence; each caveat below is the audit's, kept human-side (attribute docstrings). ---
+    wolf_power_kill_rate: float | None = None
+    """Power roles the wolves killed / nights >=1 power role was alive. First wolf-night proxy to
+    clear the bar, but ONLY expresses conditioned on sk_lynched=1: the flat r is diluted by the
+    degenerate sk_lynched=0 stratum where wolves cannot win by construction (proxy_discovery_log
+    §3.A). Read the conditioned signal (|r|~0.31), never the pooled value."""
+    town_accusation_precision: float | None = None
+    """Town accusations aimed at a true threat / all town accusations (the first town-discussion
+    proxy). DIAGNOSTIC, not independent evidence: it shares ~31% variance (Pearson r=+0.558) with
+    town_vote_accuracy — the discussion-surface view of the same 'town IDs threats' construct
+    (proxy_discovery_log §3.B). Do not count it and vote_accuracy as two pieces of evidence."""
+    investigator_find_next_round_convergence: float | None = None
+    """Mean over wolf-finds of the town's day-(d+1) vote share on the found wolf. A timing-sensitive
+    REFINEMENT of the validated investigator_find_to_lynch_rate (+0.40), same find->convert construct
+    family — its extra content is the SPEED of convergence, not a new signal (proxy_discovery_log
+    §3.C)."""
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +278,11 @@ class ComputedGameMetrics(DerivedGameMetrics):
     vigilante_friendly_fire_shots: int
     vigilante_bullets_unused: int
     vigilante_exit_method: str
+    # Diagnostic-tier denominators (carried so a reader can filter low-sample games without
+    # re-deriving; the rates themselves live on DerivedGameMetrics above).
+    power_role_alive_nights: int = 0       # wolf_power_kill_rate denominator
+    town_accusations_total: int = 0        # town_accusation_precision denominator
+    town_accusations_on_threat: int = 0
 
 
 @dataclass
