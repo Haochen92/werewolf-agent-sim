@@ -1,0 +1,28 @@
+{
+  "coverage": {
+    "n_games": 180,
+    "games_with_role_claims": 0,
+    "total_role_claims": 0
+  },
+  "c1_covered_games": 117,
+  "C1": {
+    "metric": "investigator_find_next_round_convergence",
+    "stats": {
+      "full": {
+        "r": 0.30592146398466197,
+        "p": 0.0007956193268479322,
+        "n": 117
+      },
+      "discover_half": {
+        "r": 0.338856487754531,
+        "p": 0.003844831000187678,
+        "n": 71
+      },
+      "confirm_half": {
+        "r": 0.30777484007678046,
+        "p": 0.03745320649159567,
+        "n": 46
+      }
+    }
+  }
+}

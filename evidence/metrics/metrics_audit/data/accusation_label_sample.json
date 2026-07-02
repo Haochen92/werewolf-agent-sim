@@ -1,0 +1,186 @@
+{
+  "note": "human spot-check: is each message actually an accusation of `target`?",
+  "total_accusations_parsed": 2290,
+  "sample": [
+    {
+      "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+      "day": 5,
+      "accuser": "player_8",
+      "accuser_role": "vigilante",
+      "target": "player_9",
+      "target_role": "serial_killer",
+      "message": "Player 9, your claims of being misunderstood hold no weight. I know exactly what happened last night, and your immunity confirms your role. There is no mystery left to solve."
+    },
+    {
+      "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+      "day": 4,
+      "accuser": "player_1",
+      "accuser_role": "villager",
+      "target": "player_2",
+      "target_role": "wolf",
+      "message": "Player 2, you're asking me about patterns, but it was your vote that contributed directly to the removal of the investigator. Since player 4 was a wolf, it's worth noting that the chaotic split on Day 3 made it very difficult to track who was actually trying to clear the village of threats versus who was just adding noise. I'm looking at everyone's record, but the consistency of the push against player 7 still stands out as the most pivotal moment for the town's current state."
+    },
+    {
+      "game_id": "0777a995-3ab3-4c97-81f8-fe495e4f2e11",
+      "day": 2,
+      "accuser": "player_1",
+      "accuser_role": "wolf",
+      "target": "player_6",
+      "target_role": "investigator",
+      "message": "Player_6, that's a pretty heavy accusation without any proof. Why exactly are you pinning this on me? We know player_4 was a wolf, but calling me out without any evidence feels more like someone trying to start a panic than someone actually trying to find the remaining threats."
+    },
+    {
+      "game_id": "0abbaf5c-3e1c-4250-ab43-2653b5afa317",
+      "day": 4,
+      "accuser": "player_3",
+      "accuser_role": "wolf",
+      "target": "player_7",
+      "target_role": "healer",
+      "message": "player_7, questioning my focus on your record isn't a defense against the fact that we need a clear reason to trust you right now. Everyone else has been pressured, yet you seem to have a convenient explanation for every hesitation. If we are wrong today, the game is over, and I'd rather take the risk on someone whose actions have been consistently inconsistent than leave the door open for a killer."
+    },
+    {
+      "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+      "day": 3,
+      "accuser": "player_2",
+      "accuser_role": "villager",
+      "target": "player_4",
+      "target_role": "wolf",
+      "message": "player_4, choosing to vote for the investigator while everyone else was silent is a huge gamble for a 'random' pick. If you were just trying to stir the pot, why not pick someone who hadn't been active, rather than casting the only vote of the day against someone who held a key role? It feels like testing the waters to see who would follow your lead."
+    },
+    {
+      "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+      "day": 5,
+      "accuser": "player_9",
+      "accuser_role": "villager",
+      "target": "player_4",
+      "target_role": "wolf",
+      "message": "Player 4, your point about the serial killer is valid, but the fact remains that you actively fought against the only method that led us to a wolf. It is not 'over-relying' on data to track those who push against the grain; it is how we survive. Why should we trust your judgment now when your previous 'caution' consistently shielded a wolf?"
+    },
+    {
+      "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+      "day": 4,
+      "accuser": "player_5",
+      "accuser_role": "villager",
+      "target": "player_3",
+      "target_role": "wolf",
+      "message": "Player 7, you're now pivoting to question player 9's consistency after being pushed to provide your own leads. That feels like a deflection. Players 3 and 4, you both still haven't named a single concrete suspect outside of questioning the process. If you're town, start giving us actual names, or I have to assume you're stalling for the wolves."
+    },
+    {
+      "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+      "day": 4,
+      "accuser": "player_5",
+      "accuser_role": "investigator",
+      "target": "player_8",
+      "target_role": "serial_killer",
+      "message": "Player 8, your explanation for voting against a known wolf feels like a convenient excuse to deflect. If you were truly 'testing' others, why not engage with the evidence against player 4 instead of attempting to misdirect? By prioritizing a hunch over a confirmed wolf, you acted directly against the village's survival. I am not hiding information to protect myself; I am keeping the last reliable lead alive because the serial killer is already trying to remove me. If you are innocent, your deflection to my 'transparency' is a strange way to clear your name."
+    },
+    {
+      "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+      "day": 3,
+      "accuser": "player_5",
+      "accuser_role": "investigator",
+      "target": "player_1",
+      "target_role": "wolf",
+      "message": "I know how this looks, but I am not making this up. I waited because I wanted to be certain before outing myself, but when the game hit a stalemate, it became clear that inaction was killing us. Check the logic: why would I target the two most vocal, active players if I were just trying to stir up safe, easy trouble? I'm exposing myself precisely because I'm the only one here with proof, and I'm betting my life that you'll see the truth of these results before the threats eliminate us all."
+    },
+    {
+      "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+      "day": 3,
+      "accuser": "player_5",
+      "accuser_role": "villager",
+      "target": "player_4",
+      "target_role": "wolf",
+      "message": "Player 1, dismissing a factual error as a 'heat of the moment' slip is convenient when it directly shifts the focus away from your own inconsistencies. You asked why we shouldn't fixate on the record, but that's precisely where these discrepancies live. Player 4, your logic about targeting the 'most active' player to test reactions also feels hollow; you didn't just challenge them, you targeted the only person actually trying to find wolves. We are forced to look at these details because they are the only points of contact we have with anyone's hidden intentions."
+    },
+    {
+      "game_id": "fafccca9-5442-4ef5-9ada-05a69721271b",
+      "day": 5,
+      "accuser": "player_4",
+      "accuser_role": "healer",
+      "target": "player_5",
+      "target_role": "serial_killer",
+      "message": "My vote for player_3 was based on the fact that they were clearly pushing for chaos, which was the only evidence we had. You call my tone calculated, yet your own vote for me on Day 4 was cast specifically when you were under scrutiny, effectively forcing a tie to prevent a majority vote. If you were innocent, a more logical move would have been to pivot toward another suspicious player, not to directly attack the person identifying the wolf. Why did you choose to force a tie instead of helping remove a suspected wolf?"
+    },
+    {
+      "game_id": "0abbaf5c-3e1c-4250-ab43-2653b5afa317",
+      "day": 4,
+      "accuser": "player_8",
+      "accuser_role": "villager",
+      "target": "player_4",
+      "target_role": "vigilante",
+      "message": "Player 4, claiming you voted for player 3 because they targeted player 7 doesn't change the fact that your vote aligned you with the majority against a wolf. I'm not deflecting; I'm pointing out that my record is transparent. If player 1 and player 9 were so certain I was suspicious, why focus on me rather than the person who is now confirmed to be a wolf? We need to determine if your vote for player 3 was strategic distancing or genuine deduction. Everyone else, look at the alignment of these votes\u2014we need to be certain before we commit today."
+    },
+    {
+      "game_id": "94b6a0e3-1238-4cfc-829d-93296941b4a2",
+      "day": 4,
+      "accuser": "player_5",
+      "accuser_role": "vigilante",
+      "target": "player_1",
+      "target_role": "villager",
+      "message": "Player 1, you claim my abstention helped the threats, but abstaining was the only honest action when we had no data, unlike those who might have voted with a hidden agenda. You and Player 3 are putting a lot of energy into analyzing a neutral day to avoid discussing current motives. Are you trying to deflect from the fact that we still haven't caught the remaining threats? I am focusing on what you both are doing now, not just what happened when we were all flying blind."
+    },
+    {
+      "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+      "day": 6,
+      "accuser": "player_2",
+      "accuser_role": "serial_killer",
+      "target": "player_6",
+      "target_role": "wolf",
+      "message": "My goal was never to cause trouble, but to ensure we didn't eliminate a key role by mistake. When I look at your record, player_6, it was your insistence on maintaining the stalemate even when others were ready to investigate or vote that stands out. You claim it was for caution, but in this final stage, we have to look at whose actions effectively shielded the wolves and me for the longest time. If we don't vote now, we lose by default, and I am choosing to act based on that pattern."
+    },
+    {
+      "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+      "day": 3,
+      "accuser": "player_5",
+      "accuser_role": "investigator",
+      "target": "player_3",
+      "target_role": "wolf",
+      "message": "Player 3, I suggested you because your questions about 'why' we are voting seem to serve the same stalling function as the meta-talk I was criticizing. If you aren't hiding, explain why you think your own line of questioning is more productive than simply putting forward a suspect yourself. I'm testing you precisely because I want to see if we can move beyond just debating the process of the game."
+    },
+    {
+      "game_id": "94b6a0e3-1238-4cfc-829d-93296941b4a2",
+      "day": 4,
+      "accuser": "player_9",
+      "accuser_role": "wolf",
+      "target": "player_6",
+      "target_role": "villager",
+      "message": "Player 6, pointing fingers at people who voted differently doesn't automatically make them a wolf. We were all trying to read a confusing board. If you want to talk about behavior, let's look at who stands to gain most by narrowing the field so quickly. We have a serial killer out there, yet you're only obsessed with the voting records. Why the exclusive focus on the wolves right now?"
+    },
+    {
+      "game_id": "213a8d16-bbbd-49d3-854d-55ff3888189d",
+      "day": 4,
+      "accuser": "player_8",
+      "accuser_role": "vigilante",
+      "target": "player_4",
+      "target_role": "wolf",
+      "message": "Player 4, calling my interest in the game's end-stage a 'push to define roles' is just another deflection. We are at four players with a killer and a wolf still active, so of course the focus must shift to identifying the remaining threats. If you think the vote on the investigator was manipulated, you're the one who needs to name names instead of throwing general suspicion at everyone."
+    },
+    {
+      "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+      "day": 3,
+      "accuser": "player_7",
+      "accuser_role": "villager",
+      "target": "player_9",
+      "target_role": "villager",
+      "message": "Player 9, you argue that abstaining was a cautious, neutral act, but notice how it effectively protected the wolf pack from being forced to choose a target while they prepared to strike the investigator. If we don't hold the people who avoided the vote accountable, we're essentially granting them immunity for as long as they stay quiet. I'm not saying every abstainer is a wolf, but we need to stop treating the refusal to participate in the elimination process as a blank slate."
+    },
+    {
+      "game_id": "4f416ff8-1c78-45f5-b789-cc9c7a687f79",
+      "day": 3,
+      "accuser": "player_1",
+      "accuser_role": "villager",
+      "target": "player_2",
+      "target_role": "investigator",
+      "message": "The revelation about player_6 is huge. Looking at the Day 2 vote, player_2, player_4, player_5, player_8, and player_9 all abstained. If player_6 was a wolf, we need to ask if any of those who pushed for an abstain were intentionally shielding them or just being cautious. I want to hear from player_2 specifically\u2014why did you choose to abstain when there was a clear push for accountability?"
+    },
+    {
+      "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+      "day": 2,
+      "accuser": "player_6",
+      "accuser_role": "investigator",
+      "target": "player_1",
+      "target_role": "serial_killer",
+      "message": "Player 1, you claim that investigating you is statistically bizarre, yet you ignore the fact that the only reason I am here is to find the truth. If I were a wolf trying to manufacture an easy kill, I would not stake my life on a single accusation against someone who is clearly prepared to lead a counter-smear campaign. My role is to act on information, not to sit back and wait for an 'optimal' moment that only benefits those who can kill at night. I stand by my findings and I urge the rest of you to consider why the only person vehemently fighting this move is the one I identified as the threat."
+    }
+  ]
+}

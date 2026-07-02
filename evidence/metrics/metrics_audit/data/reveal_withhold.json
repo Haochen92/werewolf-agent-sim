@@ -1,0 +1,178 @@
+{
+  "meta": {
+    "n_games": 50,
+    "files": [
+      "v5_seed_b1",
+      "v5_seed_b2",
+      "v5_seed_b3",
+      "v5_seed_b4",
+      "v5_baseline_pad",
+      "v5_1_b1",
+      "v5_1_b2",
+      "v5_1_b3",
+      "v5_1_b4"
+    ]
+  },
+  "total_threat_finds": 54,
+  "converted_to_lynch": 42,
+  "unconverted": 12,
+  "conversion_rate": 0.778,
+  "by_found_role": {
+    "wolf": {
+      "converted": 26,
+      "unconverted": 11,
+      "conversion_rate": 0.703
+    },
+    "serial_killer": {
+      "converted": 16,
+      "unconverted": 1,
+      "conversion_rate": 0.941
+    }
+  },
+  "unconverted_breakdown": {
+    "WITHHELD": 7,
+    "REVEALED_IGNORED": 5
+  },
+  "unconverted_breakdown_pct": {
+    "WITHHELD": 0.583,
+    "REVEALED_IGNORED": 0.417
+  },
+  "role_claim_coverage": {
+    "finds": 12,
+    "any_role_claim_by_inv": 5
+  },
+  "detail": [
+    {
+      "run_id": "v5_seed_b1_all_disabled_002",
+      "investigator": "player_2",
+      "target": "player_8",
+      "found_role": "wolf",
+      "find_night": 2,
+      "available_day": 3,
+      "pending_end_day": 3,
+      "target_death_day": 4,
+      "class": "REVEALED_IGNORED"
+    },
+    {
+      "run_id": "v5_seed_b2_all_disabled_002",
+      "investigator": "player_6",
+      "target": "player_8",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 2,
+      "target_death_day": 3,
+      "class": "REVEALED_IGNORED"
+    },
+    {
+      "run_id": "v5_baseline_pad_all_disabled_003",
+      "investigator": "player_2",
+      "target": "player_8",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 2,
+      "target_death_day": 3,
+      "class": "REVEALED_IGNORED"
+    },
+    {
+      "run_id": "v5_baseline_pad_all_disabled_005",
+      "investigator": "player_8",
+      "target": "player_4",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 5,
+      "target_death_day": null,
+      "class": "REVEALED_IGNORED"
+    },
+    {
+      "run_id": "v5_baseline_pad_all_disabled_008",
+      "investigator": "player_7",
+      "target": "player_8",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 2,
+      "target_death_day": 3,
+      "class": "REVEALED_IGNORED"
+    },
+    {
+      "run_id": "v5_1_b1_all_enabled_003",
+      "investigator": "player_7",
+      "target": "player_8",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 4,
+      "target_death_day": 5,
+      "class": "WITHHELD"
+    },
+    {
+      "run_id": "v5_1_b1_all_enabled_004",
+      "investigator": "player_5",
+      "target": "player_4",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 4,
+      "target_death_day": null,
+      "class": "WITHHELD"
+    },
+    {
+      "run_id": "v5_1_b1_all_enabled_005",
+      "investigator": "player_4",
+      "target": "player_2",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 4,
+      "target_death_day": null,
+      "class": "WITHHELD"
+    },
+    {
+      "run_id": "v5_1_b2_all_enabled_005",
+      "investigator": "player_5",
+      "target": "player_9",
+      "found_role": "serial_killer",
+      "find_night": 4,
+      "available_day": 5,
+      "pending_end_day": 6,
+      "target_death_day": null,
+      "class": "WITHHELD"
+    },
+    {
+      "run_id": "v5_1_b3_all_enabled_001",
+      "investigator": "player_1",
+      "target": "player_2",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 3,
+      "target_death_day": null,
+      "class": "WITHHELD"
+    },
+    {
+      "run_id": "v5_1_b4_all_enabled_003",
+      "investigator": "player_9",
+      "target": "player_2",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 4,
+      "target_death_day": null,
+      "class": "WITHHELD"
+    },
+    {
+      "run_id": "v5_1_b4_all_enabled_006",
+      "investigator": "player_1",
+      "target": "player_8",
+      "found_role": "wolf",
+      "find_night": 1,
+      "available_day": 2,
+      "pending_end_day": 2,
+      "target_death_day": 3,
+      "class": "WITHHELD"
+    }
+  ]
+}

@@ -1,0 +1,1160 @@
+{
+  "meta": {
+    "n_games": 50,
+    "files": [
+      "v5_seed_b1",
+      "v5_seed_b2",
+      "v5_seed_b3",
+      "v5_seed_b4",
+      "v5_baseline_pad",
+      "v5_1_b1",
+      "v5_1_b2",
+      "v5_1_b3",
+      "v5_1_b4"
+    ]
+  },
+  "per_role": {
+    "healer": {
+      "real_utterances": 244,
+      "reactive_share": 0.176,
+      "proactive_share": 0.824,
+      "passes": 135,
+      "pass_rate_of_offers": 0.402,
+      "alive_player_days": 169,
+      "spoke_zero_days": 43,
+      "spoke_zero_rate": 0.254,
+      "turns_per_alive_day": 1.444
+    },
+    "investigator": {
+      "real_utterances": 380,
+      "reactive_share": 0.403,
+      "proactive_share": 0.597,
+      "passes": 52,
+      "pass_rate_of_offers": 0.186,
+      "alive_player_days": 155,
+      "spoke_zero_days": 16,
+      "spoke_zero_rate": 0.103,
+      "turns_per_alive_day": 2.452
+    },
+    "serial_killer": {
+      "real_utterances": 441,
+      "reactive_share": 0.363,
+      "proactive_share": 0.637,
+      "passes": 111,
+      "pass_rate_of_offers": 0.283,
+      "alive_player_days": 205,
+      "spoke_zero_days": 35,
+      "spoke_zero_rate": 0.171,
+      "turns_per_alive_day": 2.151
+    },
+    "vigilante": {
+      "real_utterances": 293,
+      "reactive_share": 0.246,
+      "proactive_share": 0.754,
+      "passes": 101,
+      "pass_rate_of_offers": 0.314,
+      "alive_player_days": 166,
+      "spoke_zero_days": 36,
+      "spoke_zero_rate": 0.217,
+      "turns_per_alive_day": 1.765
+    },
+    "villager": {
+      "real_utterances": 926,
+      "reactive_share": 0.158,
+      "proactive_share": 0.842,
+      "passes": 289,
+      "pass_rate_of_offers": 0.27,
+      "alive_player_days": 535,
+      "spoke_zero_days": 113,
+      "spoke_zero_rate": 0.211,
+      "turns_per_alive_day": 1.731
+    },
+    "wolf": {
+      "real_utterances": 669,
+      "reactive_share": 0.445,
+      "proactive_share": 0.555,
+      "passes": 202,
+      "pass_rate_of_offers": 0.353,
+      "alive_player_days": 328,
+      "spoke_zero_days": 53,
+      "spoke_zero_rate": 0.162,
+      "turns_per_alive_day": 2.04
+    }
+  },
+  "investigator_pending_join": {
+    "pending_find_days": 58,
+    "spoke_before_vote": 58,
+    "spoke_rate": 1.0,
+    "detail": [
+      {
+        "run_id": "v5_seed_b1_all_disabled_001",
+        "day": 2,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_001",
+        "day": 3,
+        "pending_targets": [
+          "player_3"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_002",
+        "day": 3,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_003",
+        "day": 2,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_004",
+        "day": 2,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_004",
+        "day": 3,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_004",
+        "day": 4,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_005",
+        "day": 2,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_002",
+        "day": 5,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_005",
+        "day": 2,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_002",
+        "day": 3,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_002",
+        "day": 4,
+        "pending_targets": [
+          "player_9"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_002",
+        "day": 5,
+        "pending_targets": [
+          "player_5"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_003",
+        "day": 3,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_004",
+        "day": 3,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_004",
+        "day": 4,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_004",
+        "day": 4,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_004",
+        "day": 6,
+        "pending_targets": [
+          "player_5"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_001",
+        "day": 3,
+        "pending_targets": [
+          "player_5"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_001",
+        "day": 4,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_001",
+        "day": 5,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_002",
+        "day": 6,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_003",
+        "day": 2,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_004",
+        "day": 3,
+        "pending_targets": [
+          "player_9"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_005",
+        "day": 2,
+        "pending_targets": [
+          "player_4"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_006",
+        "day": 3,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_006",
+        "day": 4,
+        "pending_targets": [
+          "player_3"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_007",
+        "day": 3,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_008",
+        "day": 2,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_009",
+        "day": 3,
+        "pending_targets": [
+          "player_4"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_010",
+        "day": 2,
+        "pending_targets": [
+          "player_3"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_010",
+        "day": 3,
+        "pending_targets": [
+          "player_9"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_003",
+        "day": 2,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_004",
+        "day": 2,
+        "pending_targets": [
+          "player_4"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_005",
+        "day": 2,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_001",
+        "day": 3,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_001",
+        "day": 4,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_001",
+        "day": 5,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_4"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 2,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 3,
+        "pending_targets": [
+          "player_6",
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 4,
+        "pending_targets": [
+          "player_3"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_004",
+        "day": 4,
+        "pending_targets": [
+          "player_9"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_005",
+        "day": 2,
+        "pending_targets": [
+          "player_6"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_005",
+        "day": 5,
+        "pending_targets": [
+          "player_9"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_001",
+        "day": 2,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_002",
+        "day": 2,
+        "pending_targets": [
+          "player_9"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_001",
+        "day": 2,
+        "pending_targets": [
+          "player_1"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_002",
+        "day": 3,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_003",
+        "day": 2,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_003",
+        "day": 3,
+        "pending_targets": [
+          "player_2"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_006",
+        "day": 2,
+        "pending_targets": [
+          "player_8"
+        ],
+        "investigator_spoke": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_006",
+        "day": 4,
+        "pending_targets": [
+          "player_7"
+        ],
+        "investigator_spoke": true
+      }
+    ]
+  },
+  "wolf_bandwagon_join": {
+    "bandwagon_days_with_live_wolf": 85,
+    "wolf_proactive_turn_before_formation": 65,
+    "wolf_proactive_before_rate": 0.765,
+    "wolf_already_accusing_before_formation": 33,
+    "wolf_accuser_before_rate": 0.388,
+    "detail": [
+      {
+        "run_id": "v5_seed_b1_all_disabled_001",
+        "day": 3,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_003",
+        "day": 2,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_003",
+        "day": 3,
+        "bandwagon_seq": 14,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_004",
+        "day": 3,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_004",
+        "day": 4,
+        "bandwagon_seq": 15,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_005",
+        "day": 2,
+        "bandwagon_seq": 12,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b1_all_disabled_005",
+        "day": 3,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_001",
+        "day": 2,
+        "bandwagon_seq": 20,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_001",
+        "day": 3,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_002",
+        "day": 2,
+        "bandwagon_seq": 18,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_003",
+        "day": 1,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_003",
+        "day": 4,
+        "bandwagon_seq": 13,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_003",
+        "day": 5,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_004",
+        "day": 2,
+        "bandwagon_seq": 23,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_005",
+        "day": 2,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b2_all_disabled_005",
+        "day": 3,
+        "bandwagon_seq": 18,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_001",
+        "day": 3,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_001",
+        "day": 4,
+        "bandwagon_seq": 19,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_001",
+        "day": 5,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_002",
+        "day": 3,
+        "bandwagon_seq": 15,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_002",
+        "day": 4,
+        "bandwagon_seq": 2,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_003",
+        "day": 3,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_004",
+        "day": 2,
+        "bandwagon_seq": 4,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_004",
+        "day": 4,
+        "bandwagon_seq": 14,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_004",
+        "day": 5,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_005",
+        "day": 3,
+        "bandwagon_seq": 9,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b3_all_disabled_005",
+        "day": 4,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_001",
+        "day": 3,
+        "bandwagon_seq": 11,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_001",
+        "day": 4,
+        "bandwagon_seq": 2,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_002",
+        "day": 2,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_002",
+        "day": 4,
+        "bandwagon_seq": 3,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_003",
+        "day": 2,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_004",
+        "day": 3,
+        "bandwagon_seq": 20,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_004",
+        "day": 4,
+        "bandwagon_seq": 2,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_seed_b4_all_disabled_005",
+        "day": 2,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_001",
+        "day": 4,
+        "bandwagon_seq": 17,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_002",
+        "day": 2,
+        "bandwagon_seq": 14,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_003",
+        "day": 2,
+        "bandwagon_seq": 9,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_003",
+        "day": 3,
+        "bandwagon_seq": 16,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_004",
+        "day": 3,
+        "bandwagon_seq": 9,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_005",
+        "day": 2,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_005",
+        "day": 5,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_006",
+        "day": 3,
+        "bandwagon_seq": 21,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_006",
+        "day": 4,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_007",
+        "day": 3,
+        "bandwagon_seq": 13,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_007",
+        "day": 4,
+        "bandwagon_seq": 12,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_008",
+        "day": 3,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_009",
+        "day": 3,
+        "bandwagon_seq": 6,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_009",
+        "day": 4,
+        "bandwagon_seq": 2,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_baseline_pad_all_disabled_010",
+        "day": 3,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_002",
+        "day": 3,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_003",
+        "day": 3,
+        "bandwagon_seq": 11,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_003",
+        "day": 4,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_004",
+        "day": 3,
+        "bandwagon_seq": 2,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_004",
+        "day": 4,
+        "bandwagon_seq": 12,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_005",
+        "day": 3,
+        "bandwagon_seq": 9,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b1_all_enabled_005",
+        "day": 4,
+        "bandwagon_seq": 3,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_001",
+        "day": 3,
+        "bandwagon_seq": 6,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_001",
+        "day": 4,
+        "bandwagon_seq": 9,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_001",
+        "day": 5,
+        "bandwagon_seq": 3,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 2,
+        "bandwagon_seq": 6,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 3,
+        "bandwagon_seq": 17,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 4,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_003",
+        "day": 5,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_004",
+        "day": 2,
+        "bandwagon_seq": 27,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_004",
+        "day": 3,
+        "bandwagon_seq": 17,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_004",
+        "day": 4,
+        "bandwagon_seq": 15,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_004",
+        "day": 5,
+        "bandwagon_seq": 6,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b2_all_enabled_005",
+        "day": 2,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_001",
+        "day": 2,
+        "bandwagon_seq": 17,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_002",
+        "day": 3,
+        "bandwagon_seq": 9,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_003",
+        "day": 4,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_003",
+        "day": 5,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_004",
+        "day": 2,
+        "bandwagon_seq": 25,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_004",
+        "day": 3,
+        "bandwagon_seq": 3,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_004",
+        "day": 4,
+        "bandwagon_seq": 15,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b3_all_enabled_004",
+        "day": 5,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_001",
+        "day": 4,
+        "bandwagon_seq": 10,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_002",
+        "day": 3,
+        "bandwagon_seq": 7,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_003",
+        "day": 4,
+        "bandwagon_seq": 11,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_004",
+        "day": 3,
+        "bandwagon_seq": 28,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": true
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_004",
+        "day": 4,
+        "bandwagon_seq": 16,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_005",
+        "day": 3,
+        "bandwagon_seq": 14,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_005",
+        "day": 4,
+        "bandwagon_seq": 5,
+        "wolf_proactive_before": false,
+        "wolf_accuser_before": false
+      },
+      {
+        "run_id": "v5_1_b4_all_enabled_005",
+        "day": 5,
+        "bandwagon_seq": 8,
+        "wolf_proactive_before": true,
+        "wolf_accuser_before": false
+      }
+    ]
+  }
+}

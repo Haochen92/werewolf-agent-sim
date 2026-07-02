@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "n_games": 50,
+    "files": [
+      "v5_seed_b1",
+      "v5_seed_b2",
+      "v5_seed_b3",
+      "v5_seed_b4",
+      "v5_baseline_pad",
+      "v5_1_b1",
+      "v5_1_b2",
+      "v5_1_b3",
+      "v5_1_b4"
+    ]
+  },
+  "distinguishable": false,
+  "gated_text_persisted": false,
+  "pass_tier_distribution": {
+    "proactive": 890
+  },
+  "passes_with_nonempty_message": 0,
+  "passes_with_addressed_targets": 0,
+  "per_role": {
+    "healer": {
+      "proactive_passes": 135,
+      "proactive_reals": 201,
+      "pass_share_of_proactive_offers": 0.402
+    },
+    "investigator": {
+      "proactive_passes": 52,
+      "proactive_reals": 227,
+      "pass_share_of_proactive_offers": 0.186
+    },
+    "serial_killer": {
+      "proactive_passes": 111,
+      "proactive_reals": 281,
+      "pass_share_of_proactive_offers": 0.283
+    },
+    "vigilante": {
+      "proactive_passes": 101,
+      "proactive_reals": 221,
+      "pass_share_of_proactive_offers": 0.314
+    },
+    "villager": {
+      "proactive_passes": 289,
+      "proactive_reals": 780,
+      "pass_share_of_proactive_offers": 0.27
+    },
+    "wolf": {
+      "proactive_passes": 202,
+      "proactive_reals": 371,
+      "pass_share_of_proactive_offers": 0.353
+    }
+  },
+  "note": "Novelty-gated pass and voluntary pass_turn share one write path (Agents/turn/agent.py) producing an identical passed=True/empty-message/proactive marker; the attempted-but-gated message is never persisted. Gate selectivity by role/stance is UNMEASURABLE from records. Fix is a small instrumentation change (persist a gate flag + the gated candidate on the pass marker), to PROPOSE not build."
+}

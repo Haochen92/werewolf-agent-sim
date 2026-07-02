@@ -71,6 +71,50 @@ def point_biserial(binary: list[int], values: list[float]) -> tuple[float, float
     return (result.statistic, result.pvalue)
 
 
+def pearson(x: list[float], y: list[float]) -> tuple[float, float]:
+    """Pearson r between two dense vectors. Degenerate (constant either side, n<3)
+    returns (nan, nan) rather than raising — the small per-proxy sub-Ns make that common."""
+    if len(x) != len(y) or len(x) < 3 or len(set(x)) < 2 or len(set(y)) < 2:
+        return (float("nan"), float("nan"))
+    result = stats.pearsonr(x, y)
+    return (result.statistic, result.pvalue)
+
+
+def partial_correlation(
+    x: list[float], y: list[float], controls: list[list[float]]
+) -> tuple[float, float, int]:
+    """Partial correlation of x and y controlling for one or more covariates.
+
+    Residualizes x and y on the controls (via OLS with an intercept) and correlates
+    the residuals; the t-test uses df = n - k - 2 (k = number of controls), so the
+    p-value already pays for each thing partialled out. Used to ask whether a proxy's
+    win-correlation survives conditioning on an environmental dominator (e.g. sk_lynched)
+    or a confound (game_length). Returns (r, p, n); degenerate inputs return (nan, nan, n).
+    """
+    import numpy as np
+
+    n = len(x)
+    if n != len(y) or any(len(c) != n for c in controls):
+        raise ValueError("x, y and every control must be equal-length")
+    k = len(controls)
+    if n < k + 3 or len(set(x)) < 2 or len(set(y)) < 2:
+        return (float("nan"), float("nan"), n)
+    design = np.column_stack([np.ones(n)] + [np.asarray(c, float) for c in controls])
+    xa = np.asarray(x, float)
+    ya = np.asarray(y, float)
+    rx = xa - design @ np.linalg.lstsq(design, xa, rcond=None)[0]
+    ry = ya - design @ np.linalg.lstsq(design, ya, rcond=None)[0]
+    if np.allclose(rx, rx[0]) or np.allclose(ry, ry[0]):
+        return (float("nan"), float("nan"), n)
+    r = float(np.corrcoef(rx, ry)[0, 1])
+    df = n - k - 2
+    if df <= 0 or abs(r) >= 1.0:
+        return (r, float("nan"), n)
+    t = r * (df ** 0.5) / ((1 - r * r) ** 0.5)
+    p = float(2 * stats.t.sf(abs(t), df))
+    return (r, p, n)
+
+
 @dataclass
 class McNemarResult:
     """Paired binary outcomes (off vs on, one pair per game) — exact McNemar."""
