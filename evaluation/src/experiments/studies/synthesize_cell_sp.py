@@ -9,7 +9,7 @@ This is the SP path that justifies SPs existing (generalization across games); p
 (reextract_cells --with-sp) is the cheap single-game baseline. Compare them — and "both" = run both into
 separate stores, then dedup the SPs together.
 
-  poetry run python evaluation/src/experiments/synthesize_cell_sp.py \
+  poetry run python evaluation/src/experiments/studies/synthesize_cell_sp.py \
       --obs-store-dir memory_stores/v6_0 --output-store-dir memory_stores/v6_0_sp_cluster
 """
 
@@ -33,7 +33,7 @@ from Agents.memory.strategy_synthesis import cluster_observations_for_synth, syn
 from Agents.schemas.memory import StoredStrategyPoint
 from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE, roles as ALL_ROLES_TUPLE
 from evaluation.src.core.manifest import build_manifest
-from evaluation.src.experiments.reextract_villager_day import SCHEMA_VERSION
+from evaluation.src.experiments.studies.reextract_villager_day import SCHEMA_VERSION
 
 logger = getLogger(__name__)
 

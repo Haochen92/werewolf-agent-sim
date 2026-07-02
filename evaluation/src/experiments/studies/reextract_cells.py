@@ -6,7 +6,7 @@ night_action. Writes RAW observations (no dedup) routed to observations/<role>/<
 HELD-OUT DISCIPLINE: extracts ONLY from --source (the 20 extraction_v5_0 games), so any game NOT in
 that set stays a clean held-out test game; every screen additionally enforces same-game exclusion.
 
-  poetry run python evaluation/src/experiments/reextract_cells.py \
+  poetry run python evaluation/src/experiments/studies/reextract_cells.py \
       --roles healer investigator vigilante wolf serial_killer --append   # add to villager v6_0
 """
 
@@ -39,7 +39,7 @@ from Agents.schemas.memory import (
     cell_observations_extraction_schema,
 )
 from evaluation.src.core.manifest import build_manifest
-from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
+from evaluation.src.experiments.studies.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
 
 logger = getLogger(__name__)
 
@@ -110,7 +110,7 @@ def main() -> int:
     if args.anchors_from:
         import glob as _glob
 
-        from evaluation.src.experiments.recall_flags import pivotal_turns
+        from evaluation.src.audits.recall_flags import pivotal_turns
         for rf in sorted(_glob.glob(args.anchors_from)):
             for line in open(rf):
                 if not line.strip():
@@ -150,7 +150,7 @@ def main() -> int:
 
     counts: dict[str, int] = {}
     sp_counts: dict[str, int] = {}
-    from evaluation.src.experiments.recall_flags import UNIT_PHASES, anchor_text
+    from evaluation.src.audits.recall_flags import UNIT_PHASES, anchor_text
 
     def _anchor(case: dict, unit: tuple) -> str:
         turns = anchors_by_gid.get(str(case.get("game_id", "")))

@@ -12,12 +12,11 @@ across the discover/confirm halves.
 
 from __future__ import annotations
 
-import glob
 import hashlib
-import json
-from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+from evaluation.src.core.settings import REPO_ROOT  # re-exported: runners resolve output paths off it
+from evaluation.src.data.sources.batch_records import load_batch_records
+
 V6AB_GLOB = "batch_results/v6ab_*.jsonl"
 
 TOWN_ROLES = {"villager", "healer", "investigator", "vigilante"}
@@ -26,15 +25,7 @@ THREAT_ROLES = {"wolf", "serial_killer"}
 
 def load_v6ab() -> list[dict]:
     """All status==success v6ab games (N=180)."""
-    games: list[dict] = []
-    for f in sorted(glob.glob(str(REPO_ROOT / V6AB_GLOB))):
-        for line in Path(f).read_text().splitlines():
-            if not line.strip():
-                continue
-            rec = json.loads(line)
-            if rec.get("status") == "success":
-                games.append(rec)
-    return games
+    return load_batch_records(V6AB_GLOB)
 
 
 def split_half(game_id: str) -> int:

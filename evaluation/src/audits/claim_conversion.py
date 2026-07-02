@@ -17,7 +17,7 @@ deterministic timing refinement:
 Validated vs villager win on N=180 v6ab + the pre-registered game_id 50/50 split
 (`evidence/metrics/metrics_audit/proxy_discovery_log.md` §3.0). Deterministic, ZERO LLM.
 
-    poetry run python evaluation/src/experiments/claim_conversion.py
+    poetry run python evaluation/src/audits/claim_conversion.py
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.core.stats import point_biserial
-from evaluation.src.experiments._metrics_audit_common import (
+from evaluation.src.audits.metrics_common import (
     REPO_ROOT,
     TOWN_ROLES,
     load_v6ab,

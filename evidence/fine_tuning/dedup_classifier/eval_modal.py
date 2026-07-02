@@ -16,7 +16,7 @@ Usage:
         --base-model Qwen/Qwen3-4B-Instruct-2507
 
     # Then score with existing eval pipeline:
-    poetry run python -m evaluation.experiments.dedup_score \
+    poetry run python -m evaluation.src.audits.dedup_score \
         --dataset eval_sets/dedup_ft_predictions.jsonl \
         --golden eval_sets/dedup_v2_golden_labels.json
 """
@@ -270,6 +270,6 @@ def main(
     print(f"\nPredictions written to {out_path}")
     print(f"Decision distribution: {dict(decisions)}")
     print(f"\nScore with:")
-    print(f"  poetry run python -m evaluation.experiments.dedup_score \\")
+    print(f"  poetry run python -m evaluation.src.audits.dedup_score \\")
     print(f"      --dataset {out_path} \\")
     print(f"      --golden eval_sets/dedup_v2_golden_labels.json")

@@ -22,8 +22,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from evaluation.src.experiments.recall_flags import pivotal_turns  # noqa: E402
-from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE, load_cases  # noqa: E402
+from evaluation.src.audits.recall_flags import pivotal_turns  # noqa: E402
+from evaluation.src.experiments.studies.reextract_villager_day import DEFAULT_SOURCE, load_cases  # noqa: E402
 
 SLICE = [str(c["game_id"]) for c in load_cases(Path(DEFAULT_SOURCE))[:3]]
 ARMS = {"pro-2.5": "memory_stores/v6_1", "flash-lite": "memory_stores/_ab_flite",

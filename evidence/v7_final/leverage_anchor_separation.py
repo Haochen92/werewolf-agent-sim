@@ -22,7 +22,7 @@ import sys
 sys.path.insert(0, "evaluation/src")
 sys.path.insert(0, ".")
 from evaluation.src.loop.decision_scoring import score_vote  # noqa: E402
-from evaluation.src.experiments.criticality_screen import query_criticality  # noqa: E402
+from evaluation.src.experiments.studies.criticality_screen import query_criticality  # noqa: E402
 
 TOWN_ROLES = {"villager", "healer", "investigator", "vigilante"}
 ARMS = sorted(glob.glob("batch_results/v6ab_*.jsonl"))

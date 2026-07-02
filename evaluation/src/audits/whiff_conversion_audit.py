@@ -19,7 +19,7 @@ separate because it runs on BOTH validation sets (not the 50-game access set) an
 attacker conversion — is orthogonal to floor access. All definitions are pinned in the log's ③.E
 pre-registration block. Zero LLM calls.
 
-    poetry run python -m evaluation.src.experiments.whiff_conversion_audit run
+    poetry run python -m evaluation.src.audits.whiff_conversion_audit run
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from evaluation.src.experiments.scheduler_access_audit import (
+from evaluation.src.audits.scheduler_access_audit import (
     DATA_DIR,
     ON_FILES,
     OFF_FILES,

@@ -21,15 +21,16 @@ transmitted/win cross-tab below is DESCRIPTIVE (collider risk), and the per-arm 
 the mediator to check first (does memory move transmission at all?).
 
 Usage:
-  poetry run python -m evaluation.src.experiments.investigator_transmission batch_results/v6ab_*.jsonl
+  poetry run python -m evaluation.src.experiments.studies.investigator_transmission batch_results/v6ab_*.jsonl
 """
 
 from __future__ import annotations
 
 import glob
-import json
 import sys
 from pathlib import Path
+
+from evaluation.src.data.sources.batch_records import read_records_file
 
 
 def _mention_forms(player_id: str) -> list[str]:
@@ -100,7 +101,7 @@ def _rate(num: int, den: int) -> str:
 
 
 def analyze_arm(path: Path) -> dict:
-    games = [analyze_game(json.loads(line)) for line in path.read_text().splitlines() if line.strip()]
+    games = [analyze_game(rec) for rec in read_records_file(path, require_success=False)]
     wr = [g for g in games if g["has_wolf_read"]]
     trans = [g for g in wr if g["transmitted"]]
     return {

@@ -6,8 +6,8 @@ pointer is never flipped — adoption is a separate, gated step. Guard-asserted:
 or thin-evidence SP. The `indexed_cache.pkl` (embedding vectors, SHA-keyed to the JSON) is removed in the
 copy since the JSON changed — it rebuilds on next seed (observations.json is untouched, SP-only prune).
 
-  dry run:  poetry run python evaluation/src/experiments/consolidation_prune.py
-  apply:    poetry run python evaluation/src/experiments/consolidation_prune.py --apply
+  dry run:  poetry run python evaluation/src/experiments/studies/consolidation_prune.py
+  apply:    poetry run python evaluation/src/experiments/studies/consolidation_prune.py --apply
 """
 
 import argparse

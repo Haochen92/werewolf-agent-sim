@@ -15,7 +15,7 @@ Subcommands:
   reveal-withhold (C) the four-way decomposition of confirmed finds that never converted to a lynch.
   all             run all three, write every artifact.
 
-    poetry run python -m evaluation.src.experiments.scheduler_access_audit all
+    poetry run python -m evaluation.src.audits.scheduler_access_audit all
 
 Artifacts land in evidence/metrics/metrics_audit/data/. Timeline convention and all three matched
 definitions are pinned in the log's §3 pre-registration block.
@@ -29,6 +29,8 @@ import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+
+from evaluation.src.data.sources.batch_records import read_records_file
 
 HERE = Path(__file__).resolve()
 REPO_ROOT = HERE.parents[3]
@@ -64,13 +66,7 @@ def load_records(names: list[str]) -> list[dict]:
     """Successful game records from the named batch_results JSONL files."""
     records = []
     for name in names:
-        path = REPO_ROOT / "batch_results" / f"{name}.jsonl"
-        for line in path.read_text().splitlines():
-            if not line.strip():
-                continue
-            record = json.loads(line)
-            if record.get("status") == "success":
-                records.append(record)
+        records.extend(read_records_file(REPO_ROOT / "batch_results" / f"{name}.jsonl"))
     return records
 
 

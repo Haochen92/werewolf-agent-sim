@@ -7,7 +7,7 @@ find-disclosure matchers, and the four-way reveal/withhold classification.
 
 from __future__ import annotations
 
-from evaluation.src.experiments.scheduler_access_audit import (
+from evaluation.src.audits.scheduler_access_audit import (
     alive_at_start_of_day,
     bandwagon_seq,
     death_day_of,

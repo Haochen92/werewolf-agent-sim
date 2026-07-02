@@ -12,7 +12,7 @@ config) on each. Headline = does GATED have a lower `does_not_apply` rate than U
 Held-out: town day-votes from a v6ab batch (NOT in v6_1's 20 source games); same-game candidates
 excluded at retrieval. Reuses criticality_screen (pools/retrieve/select) + forced_schema_screen (judge).
 
-  poetry run python evaluation/src/experiments/dimension_gating_screen.py \
+  poetry run python evaluation/src/experiments/studies/dimension_gating_screen.py \
       --batch batch_results/v6ab_townsp.jsonl --store memory_stores/v6_1 --n 24
 """
 
@@ -30,12 +30,12 @@ from Agents.memory.enrichment.situation_agent import _generate_situations_for_ag
 from Agents.memory.retrieval.dimension_gating import WEIGHT, alignment  # noqa: E402
 from evaluation.src.loop.decision_scoring import allow_abstain_for  # noqa: E402
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload  # noqa: E402
-from evaluation.src.experiments.criticality_screen import (  # noqa: E402
+from evaluation.src.experiments.studies.criticality_screen import (  # noqa: E402
     _RolePool, _cosine_matrix, _retrieved, load_candidates_by_role, load_source_games, select_spread,
 )
-from evaluation.src.experiments.decision_replay import load_game_index  # noqa: E402
-from evaluation.src.experiments.forced_schema_screen import _forced_variant  # noqa: E402
-from evaluation.src.experiments.reextract_villager_day import DEFAULT_SOURCE  # noqa: E402
+from evaluation.src.replay.decision_screen import load_game_index  # noqa: E402
+from evaluation.src.experiments.studies.forced_schema_screen import _forced_variant  # noqa: E402
+from evaluation.src.experiments.studies.reextract_villager_day import DEFAULT_SOURCE  # noqa: E402
 
 ROLES = frozenset({"villager", "healer", "investigator"})  # the replayable town day-vote roles
 

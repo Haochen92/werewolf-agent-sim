@@ -6,11 +6,11 @@ schemes — auto-detects which scheme the dataset uses.
 
 Usage::
 
-    poetry run python -m evaluation.experiments.dedup_score \
+    poetry run python -m evaluation.src.audits.dedup_score \
         --dataset evaluation/frozen_eval_sets/dedup_v2_sampled.jsonl \
         --golden evaluation/frozen_eval_sets/dedup_v2_golden_labels.json
 
-    poetry run python -m evaluation.experiments.dedup_score \
+    poetry run python -m evaluation.src.audits.dedup_score \
         --dataset evaluation/frozen_eval_sets/dedup_replay_gemini_20260525.jsonl \
         --golden evaluation/frozen_eval_sets/dedup_v2_golden_labels.json \
         --output evaluation/eval_results/dedup_score_gemini.json

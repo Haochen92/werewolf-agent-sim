@@ -1,7 +1,7 @@
 """Diagnostic-tier per-game proxies adopted from the 2026-07-02 metrics audit
 (evidence/metrics/metrics_audit/proxy_discovery_log.md §3): wolf_power_kill_rate,
 town_accusation_precision, investigator_find_next_round_convergence. Definitions mirror the audit
-runners (evaluation/src/experiments/{accusation_metrics,claim_conversion}.py); these synthetic-record
+runners (evaluation/src/audits/{accusation_metrics,claim_conversion}.py); these synthetic-record
 tests pin that the production computation matches those definitions. Deterministic, no LLM."""
 
 from Agents.compute_metrics import (

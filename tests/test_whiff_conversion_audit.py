@@ -7,7 +7,7 @@ night re-target), the Layer-3 floor count, and the reasoning-scan keyword matche
 
 from __future__ import annotations
 
-from evaluation.src.experiments.whiff_conversion_audit import (
+from evaluation.src.audits.whiff_conversion_audit import (
     _field_matches,
     conversion_for_event,
     dedup_events,

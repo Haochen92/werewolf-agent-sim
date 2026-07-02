@@ -3,7 +3,7 @@ gated dimension from a case's OWN frozen board, and the epistemic-split verdict 
 exactly right. Pure, no LLM, synthetic fixtures."""
 
 from Agents.schemas.evaluation import EvalCase, EvalPrivateContext
-from evaluation.src.experiments.dimension_audit import (
+from evaluation.src.audits.dimension_audit import (
     ally_revealed_true_absent,
     ally_revealed_true_lynched,
     bullets_left_true,

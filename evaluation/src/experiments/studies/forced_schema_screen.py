@@ -23,7 +23,7 @@ summary, v6 regenerates under the v6 cell schema — each pipeline is internally
 memory is excluded from BOTH pools; --held-out-only additionally drops decisions whose game seeded the
 v6 store. Engagement (verdict distribution) is captured for the forced arms only.
 
-  poetry run python evaluation/src/experiments/forced_schema_screen.py \
+  poetry run python evaluation/src/experiments/studies/forced_schema_screen.py \
       --batch batch_results/ab_arms_town.jsonl --held-out-only --n 24
 """
 
@@ -51,7 +51,7 @@ from Agents.turn.action_space import _valid_targets_for_action, _with_dynamic_ta
 from evaluation.src.replay.application import action_spec_for
 from evaluation.src.loop.decision_scoring import allow_abstain_for, score_vote
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
-from evaluation.src.experiments.criticality_screen import (
+from evaluation.src.experiments.studies.criticality_screen import (
     _RolePool,
     _cosine_matrix,
     _retrieved,
@@ -60,7 +60,7 @@ from evaluation.src.experiments.criticality_screen import (
     load_source_games,
     select_spread,
 )
-from evaluation.src.experiments.decision_replay import (
+from evaluation.src.replay.decision_screen import (
     DayVoteOutputStructuredApplicability,
     MemoryVerdict,
     _replay_vote,

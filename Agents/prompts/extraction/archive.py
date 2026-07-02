@@ -9,7 +9,7 @@ ARCHIVED_POSTGAME_EXTRACTION_PROMPT = the old v5 whole-game prompt (zero live us
 # consensus_texture/agent_exposure dimensions). The per-field micro-guidance lives in the
 # VillagerDayObservation Field(description=) — this prompt frames the task + the criticality rule +
 # the descriptive-only (state, not prescription) discipline. Used only by the re-extraction runner
-# (evaluation/src/experiments/reextract_villager_day.py); the live extraction prompts are untouched.
+# (evaluation/src/experiments/studies/reextract_villager_day.py); the live extraction prompts are untouched.
 VILLAGER_DAY_EXTRACTION_PROMPT = """
 You are an expert strategic analyst reviewing this completed Werewolf game. Extract
 episodic-memory lessons for the VILLAGER role, for the DAY phases only (day_discussion and

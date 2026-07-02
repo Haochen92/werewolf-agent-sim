@@ -7,7 +7,7 @@ needed to calibrate the auto-keep boundary.
 
 Usage::
 
-    poetry run python -m evaluation.experiments.auto_dedup_dataset_builder \
+    poetry run python -m evaluation.src.experiments.studies.auto_dedup_dataset_builder \
         --config evaluation/config/dedup/auto_dedup_build_v1.json
 
 Example config::

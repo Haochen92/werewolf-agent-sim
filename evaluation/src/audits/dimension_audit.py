@@ -20,8 +20,8 @@ with the agent's epistemic limit (a villager cannot know the wolf count) → rep
 "vs-omniscient disagreement"; for WOLF roles it is ~true fill accuracy (a wolf knows the wolf count —
 caveat: the parity metric ignores the serial killer, which wolves also cannot see).
 
-  poetry run python evaluation/src/experiments/dimension_audit.py            # runs the $0 audit
-  poetry run python evaluation/src/experiments/dimension_audit.py --regen    # BLOCKED (spends money)
+  poetry run python evaluation/src/audits/dimension_audit.py            # runs the $0 audit
+  poetry run python evaluation/src/audits/dimension_audit.py --regen    # BLOCKED (spends money)
 """
 
 from __future__ import annotations

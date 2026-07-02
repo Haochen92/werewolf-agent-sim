@@ -16,7 +16,7 @@ import argparse
 import glob
 from pathlib import Path
 
-from evaluation.src.experiments.dedup_score import score, LABEL_ORDER
+from evaluation.src.audits.dedup_score import score, LABEL_ORDER
 
 
 def main() -> None:
