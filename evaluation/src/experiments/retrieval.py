@@ -94,11 +94,25 @@ def summarize_records(records: list[dict[str, Any]]) -> None:
 
     print("\nRETRIEVAL SUMMARY", flush=True)
     for (snapshot, pipeline, item_type), rows in sorted(buckets.items()):
-        judged = [row for row in rows if row.get("retrieval_quality") is not None]
+        scored = [
+            row
+            for row in rows
+            if row.get("retrieval_quality") is not None
+            and not row["retrieval_quality"].get("is_fallback")
+        ]
+        # <2-item short-circuit rows: no LLM judged them (efficiency=5 placeholder).
+        # Excluded from every judged average and reported as a count, because the
+        # fallback fires arm-asymmetrically and pooling it silently inflates efficiency.
+        fallback = sum(
+            1
+            for row in rows
+            if (row.get("retrieval_quality") or {}).get("is_fallback")
+        )
+        judged = scored
         retrieved_counts = [row["retrieved_count"] for row in rows]
         ratios = [
             row["redundancy_ratio"]
-            for row in rows
+            for row in scored
             if row.get("redundancy_ratio") is not None
         ]
         low_efficiency = [
@@ -109,7 +123,8 @@ def summarize_records(records: list[dict[str, Any]]) -> None:
         avg_retrieved = sum(retrieved_counts) / len(retrieved_counts)
         print(
             f"  {snapshot} / {pipeline} / {item_type}: "
-            f"n={len(rows)} avg_retrieved={avg_retrieved:.2f}",
+            f"n={len(rows)} avg_retrieved={avg_retrieved:.2f} "
+            f"fallback_rows={fallback}",
             flush=True,
         )
         if judged:

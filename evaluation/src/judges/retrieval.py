@@ -27,6 +27,7 @@ def minimal_retrieval_scores(item_count: int) -> RetrievalScores:
             if item_count == 0
             else "Only one item was retrieved, so efficiency is maximal."
         ),
+        is_fallback=True,
     )
 
 

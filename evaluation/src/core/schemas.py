@@ -29,6 +29,11 @@ class RetrievalScores(BaseModel):
     unique_lessons: int = Field(ge=0)
     efficiency: int = Field(ge=1, le=5)
     brief_reasoning: str = ""
+    # True for the <2-item short-circuit row (no LLM judged it; efficiency/relevance
+    # are placeholders, not verdicts). Aggregators MUST exclude these from judged
+    # averages and count them separately — pooling them silently inflates efficiency
+    # and, because the fallback fires arm-asymmetrically, biases arm comparisons.
+    is_fallback: bool = False
 
 
 class ApplicationScores(BaseModel):
