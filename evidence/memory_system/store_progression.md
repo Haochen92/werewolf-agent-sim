@@ -1,30 +1,38 @@
 # Memory Store Progression: `old_strateg_archive` → v7
 
-A cross-experiment synthesis of how the episodic-memory store evolved across ~8 versions. This is a
-**portfolio progression piece**, not a new experiment: every number here is sourced from a dated
-evidence folder (cited inline), and the value is the *narrative that connects them*. If you read one
-thing, read the arc below — it turns eight store versions into a single story.
+A cross-experiment synthesis of how the episodic-memory store evolved across ~8 versions, grouped into
+**five eras**. This is a **portfolio progression piece**, not a new experiment: every number here is
+sourced from a dated evidence folder (cited inline), and the value is the *narrative that connects
+them*. If you read one thing, read the arc below — it turns eight store versions into a single story.
 
 ## The arc: the bottleneck kept moving
 
 Each version is best understood not as "a better store" but as a **response to where the binding
-constraint had moved**. Once a version exhausted one bottleneck, the next bottleneck became visible
-and defined the next version:
+constraint had moved**. Once a version exhausted one bottleneck, the next bottleneck became visible and
+defined the next version. The five eras (and the one structural reset that interrupts the sequence):
 
 ```
-  architecture            store hygiene           retrieval precision         content quality
- (monolithic→RAG)   →   (redundancy→dedup)   →   (namespacing→dimensions)  →   (the loop)
-   Phase 0→1              Phase 2                   v5→v6                        v7
+  Era 1 · Architecture    monolithic → modular RAG        bottleneck: overfitting
+  Era 2 · Store hygiene    dedup + action-phase namespace  bottleneck: redundancy (content gap surfaces)
+  Era 3 · The rebuild      new game + new extraction        structural RESET — v4 baselines don't transfer
+  Era 4 · Retrieval prec.  per-cell dimension schema        bottleneck: is retrieval the lever? → NO
+  Era 5 · Content          the compounding loop             bottleneck: content quality → self-updating store
 ```
 
-The most important thing this progression demonstrates is **diagnostic discipline**: the later
-versions (v6, v7) return *negative and open* results, and those are the most informative versions in
-the set — they are what relocated the bottleneck from "retrieve better" to "the content itself is the
-limit." A reader should come away understanding that the negative findings were *earned*, not failures.
+The most important thing this progression demonstrates is **diagnostic discipline**: v5's clean paired
+A/B established the **positive anchor** (static memory measurably helps town — Era 3's v5_0 A/B), and
+the later versions (v6, v7) return *negative and open* results that are the most informative in the set
+— they are what relocated the bottleneck from "retrieve better" to "the content itself is the limit." A
+reader should come away understanding that both the positive anchor and the negative findings were
+*earned*, not accidents.
 
 ---
 
-## 1. Phase 0 — `old_strateg_archive`: monolithic strategy injection
+## Era 1 — Architecture: monolithic → modular RAG
+
+*How memory is represented and surfaced — from a single overfit document to situation-retrieved RAG.*
+
+### Phase 0 — `old_strateg_archive`: monolithic strategy injection
 
 **What it was.** The earliest system extracted "learnings" from postgame transcripts and accumulated
 them into a single strategy document per role (228 items across 4 role namespaces), injected wholesale
@@ -39,7 +47,7 @@ qualitative architecture failure rather than a measured metric.
 
 *Source: `effectiveness/report.md` §System Evolution (Phase 0).*
 
-## 2. Phase 1 — modular RAG (v1–v3): retrieve the situation, not the doc
+### Phase 1 — modular RAG (v1–v3): retrieve the situation, not the doc
 
 **What changed.** Decompose memory into two retrievable types — **observations** (factual accounts of
 past events) and **strategy points** (prescriptive advice) — stored in a vector store, namespaced by
@@ -54,7 +62,12 @@ point redundancy. Retrieval slots were being spent on copies.
 
 *Source: `effectiveness/report.md` §Phase 1; `dedup/store_retrieval_impact/experiment_log.md`.*
 
-## 3. Phase 2 — dedup + action-phase namespacing (v3_deduped → v4 → v4_deduped → v4_deduped_v2)
+## Era 2 — Store hygiene: dedup + action-phase namespacing
+
+*With retrieval working, the binding constraint became keeping the store clean — redundant slots
+crowd out signal.*
+
+### Phase 2 — dedup + action-phase namespacing (v3_deduped → v4 → v4_deduped → v4_deduped_v2)
 
 **What changed.** Two moves: (a) a **batch deduplication pipeline** — agglomerative clustering then an
 LLM judges each cluster KEEP / MERGE (observations only) / DISCARD; (b) **action-phase namespace
@@ -85,7 +98,16 @@ signal that the eventual bottleneck would be content, not plumbing.
 > *Source: `effectiveness/report.md` §Results/Decision. (Independently re-verified: every p-value and
 > CI in that report reproduces exactly from the raw JSONLs via a separate code path.)*
 
-## 4. v5.0 — the rebuild (a discontinuity, not an increment)
+## Era 3 — The rebuild: new game + new extraction (the one structural discontinuity)
+
+*Not a store tweak but a full-system rebuild that resets the measurement frame. **Three** things
+changed at once: the **game** (9-player / 3-faction casting + sequential scheduler), the **extraction
+pipeline** (per-role concurrent fan-out + Vertex prefix caching), and a whole-store dedup. Because the
+game itself changed, v4 baselines* **do not transfer** *— every later number stands on a fresh v5
+baseline. This era also produced the project's* **positive anchor** *(memory helps town) and the
+confound that nearly hid it.*
+
+### v5.0 — the rebuild (a discontinuity, not an increment)
 
 **What changed.** A full-system rebuild underneath the store: **sequential discussion scheduler**
 (replacing concurrent), **9-player / 3-faction casting** (serial killer added), and **per-role
@@ -101,7 +123,7 @@ wolves 7%), which become the reference point for all subsequent A/Bs.
 
 *Source: `effectiveness/v5_seeding_plan.md`; `effectiveness/v5_baseline_proxy_analysis.md`.*
 
-## 5. v5_1 — the compounding pilot that named the real problem
+### v5_1 — the compounding pilot that named the real problem
 
 **What changed.** Memory-ON build games seeded from v5.0, run with **raw retrieval (top_k=3,
 rerank/filter OFF)** and a growing store — deliberately the *uncurated* condition.
@@ -114,9 +136,41 @@ raw retrieval, small unequal N) and is labelled directional-only — but it prod
 drove v6: the problem is **regime-mismatched lessons** (endgame town retrieving mid-game strategy),
 and the lever is retrieval precision.
 
-*Source: `effectiveness/v5_baseline_proxy_analysis.md` §Key read.*
+*Source: `effectiveness/v5_baseline_proxy_analysis.md` §Key read.* **The pilot's negative did not
+survive a clean test — the v5_0 A/B below refuted it.**
 
-## 6. v6 — the dimension-schema store: attack retrieval precision
+### v5_0 paired A/B — the clean test that says memory *works* (the positive anchor)
+
+**What changed.** No new store — the **frozen v5_0 store** put to the deciding experiment (2026-06-11).
+Because the v5_1 pilot was confounded, its "memory distracts town" claim was re-run as a clean **paired
+A/B**: 30 shared boards (identical role draws, memory the only variable), memory-ON vs memory-OFF
+against a **same-epoch fresh baseline**, with both raw and reranked retrieval arms.
+
+**Result — the pilot was refuted; static memory HELPS town.** Town win rose on *every* arm — **+17pp
+raw (p=0.267, NS), +33pp reranked (p=0.013), +23pp all-on** — and, more decisively than the underpowered
+win-rate, the pre-registered town decision-quality basket moved significantly on the clean interleaved
+raw arm (correct-elimination +0.17 **p=0.028**, healer-save +0.23 **p=0.005**, mislynch-rate −0.17
+**p=0.036**; paired Wilcoxon). This is the project's **positive anchor** — the strongest evidence memory
+works — and the result the v7 report cites. It is a **v5_0** finding, *not* v6 or v7.
+
+**Two side-findings here shaped every later version:**
+- **Null for the deceivers** (wolf/SK unmoved): memory helped inference-heavy *town* play but not
+  deception. This split seeded the two-tier procedural-memory framing and, downstream, the v7 credit
+  design (de-lucking matters most exactly where outcome ≠ decision quality — the deceiver cells).
+- **Reranking ≈ raw**: retrieval *ranking* is not the lever. This pointed v6 at *structured* criticality
+  gating rather than better fuzzy ranking, and foreshadowed v6_1's verdict that retrieval was never the
+  bottleneck.
+
+*Source: `effectiveness/paired_ab/{report,experiment_log}.md`. Win-rates and the proxy basket were
+independently re-verified against the raw JSONLs.*
+
+## Era 4 — Retrieval precision: the dimension store
+
+*With memory shown to help town but* reranking ≈ raw*, the open question was whether* retrieval
+precision *was the lever. This era rebuilds the store around a structured situation schema to test that
+— and answers* **no**.
+
+### v6 — the dimension-schema store: attack retrieval precision
 
 **What changed.** A **per-cell structured situation schema** (11 cells = role × {day, night}; day
 merges discussion+vote because their validity boundary is the same, night is gated separately because
@@ -126,8 +180,10 @@ magnitude — and exposed to an **exact structured reranker gate**. Extraction g
 from one schema (single source of truth), closing prompt-field drift across extraction / query /
 embedding / dedup.
 
-**Why.** Directly tests the v5_1 hypothesis: if distraction is regime-mismatch, then gating retrieval
-on structured criticality (not fuzzy embedding similarity) should recover town benefit.
+**Why.** With the v5_0 A/B (Era 3) showing memory already helps town but that *fuzzy* reranking ≈ raw
+(ranking isn't the lever), v6 tests the remaining retrieval hypothesis: that **structured** criticality
+gating (not fuzzy embedding similarity) is what sharpens the regime-mismatched cases the v5_1 pilot
+flagged.
 
 **Result — HOLD, not GO.** The full store built cleanly (919 observations / 17 namespaces; a
 consensus-direction hindsight leak was found and driven to 0%). But the criticality screen validated
@@ -137,7 +193,7 @@ underpowered to call a clean win. The honest call was HOLD.
 *Source: `phase_b/dimension_schema_build_spec.md`; `phase_b/v6_full_store.md`;
 `phase_b/criticality_screen/experiment_log.md`.*
 
-## 7. v6_1 — the paired A/B that relocated the bottleneck
+### v6_1 — the *second* paired A/B (on the dimension store): the content reframe
 
 **What changed.** A clean **paired A/B** on 30 shared boards (identical role draws, memory the only
 variable), 6 arms (town/SK × observations/strategy-points/both), retrieval pinned raw for comparability.
@@ -155,9 +211,23 @@ faithfully and *still* doesn't help, the bottleneck is **not retrieval precision
 **content quality** of lessons mined from a system's own capped play, which mirror mediocre play and
 carry no decision-improving signal. v6's premise (fix retrieval) was disproven by its own clean test.
 
-*Source: `effectiveness/v6_sp_ab/experiment_log.md`.*
+**An honest bound.** This null is a clean *same-epoch* result, but it does **not** overturn the v5_0
+A/B (Era 3). That A/B and this run sit in **different epochs** — a prompt-bundle fix had raised the
+no-memory town baseline to roughly the level v5 memory lifted town *to* — and the only same-epoch
+v5-store-vs-v6-store control shows the two stores a wash. So the flatness reflects a **risen baseline +
+capped-play content**, not a degraded dimension schema: the content-quality diagnosis stands, but
+"the v6 store broke the town benefit" does not.
 
-## 8. v7 — the compounding loop: make the store improve its own content
+*Source: `effectiveness/v6_sp_ab/experiment_log.md`; the cross-epoch analysis was re-verified against
+the raw batch JSONLs.*
+
+## Era 5 — Content: the compounding loop (the largest new *subsystem*, added on top — not a rebuild)
+
+*The biggest addition of new machinery in the arc — but* additive*, bolted on top of the unchanged v6
+store and v5 game, not a v5-style throw-and-rebuild. With retrieval exonerated and content named as the
+limit, the store stops being a static index and becomes* **self-updating**.
+
+### v7 — the compounding loop: make the store improve its own content
 
 **What changed.** The store stops being a static index and becomes **self-updating**. Across
 generations it runs a closed loop: **de-lucked credit assignment** (grade each *followed* directive by
@@ -174,7 +244,7 @@ more over time?* — distinct from *does having memory help?*
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Static memory helps town | ✅ **valid** | **+17pp, p=0.013** (paired same-epoch A/B — a *different* experiment from the loop) |
+| Static memory helps town | ✅ **valid** | **+17→+33pp win across arms** (N=30, frozen v5_0); decision-quality basket significant (correct-elim p=0.028, healer-save p=0.005, mislynch-rate p=0.036); reranked win +33pp p=0.013 — paired same-epoch A/B, a *different* experiment from the loop |
 | The system demonstrably learns | ✅ **valid** | Credit fires, synthesis engages, prune/decay cull — mechanism, outcome-independent |
 | Compounding *improves play* | ❓ **open** | Both paid loop runs invalid (below) |
 
@@ -199,21 +269,23 @@ surviving to a $65 null. Honest negatives and a retracted claim beat a fragile p
 
 | Version | Era | The change | Driver (prior version's exhausted bottleneck) | Result |
 |---|---|---|---|---|
-| `old_strateg_archive` | Phase 0 | Monolithic strategy doc/role (228 items), injected wholesale | — | Sophistication up, but **overfitting** |
-| v1–v3 (RAG) | Phase 1 | Observations + strategy-points, vector retrieval by role+phase | Kill overfitting → situation-specific retrieval | Works; store grows **noisy** (~52%/~77% redundancy) |
-| v3_deduped → v4_deduped_v2 | Phase 2 | Batch dedup + action-phase namespacing | Redundant slots crowd out signal | Dedup is **Goldilocks**; SP redundancy is a **content gap**, not a dedup gap |
-| v5.0 | Rebuild | Sequential scheduler, 9p/3-faction, per-role extraction | v4 baselines no longer transfer | Fresh baselines (67/27/7) |
-| v5_1 | Pilot | Raw memory-ON build games | Explore compounding | **Raw memory distracts town**; hypothesis = regime-mismatch (confounded) |
-| v6 / v6_0 | Dimension schema | Per-cell schema; criticality → structured reranker gate | Fix retrieval precision | 919 obs / 17 cells; criticality gating **weakly validated → HOLD** |
-| v6_1 | Paired A/B | 6-arm paired A/B, raw retrieval | Isolate obs vs SP | Memory followed but **doesn't improve decisions** → **content is the bottleneck**, not retrieval |
-| v7 | Compounding loop | Self-updating store: credit→synthesize→prune→decay | Content can only improve via outcome feedback | Static **+17pp (valid)**; learns **(valid)**; **compounding = open** (runs invalid) |
+| `old_strateg_archive` | Era 1 · architecture | Monolithic strategy doc/role (228 items), injected wholesale | — | Sophistication up, but **overfitting** |
+| v1–v3 (RAG) | Era 1 · architecture | Observations + strategy-points, vector retrieval by role+phase | Kill overfitting → situation-specific retrieval | Works; store grows **noisy** (~52%/~77% redundancy) |
+| v3_deduped → v4_deduped_v2 | Era 2 · hygiene | Batch dedup + action-phase namespacing | Redundant slots crowd out signal | Dedup is **Goldilocks**; SP redundancy is a **content gap**, not a dedup gap |
+| v5.0 | Era 3 · the rebuild | Sequential scheduler, 9p/3-faction, **per-role extraction rebuild**, whole-store dedup | v4 baselines no longer transfer | Fresh baselines (67/27/7) |
+| v5_1 | Era 3 · the rebuild | Raw memory-ON build games | Explore compounding | **Raw memory distracts town**; hypothesis = regime-mismatch (confounded — later refuted) |
+| v5_0 A/B | Era 3 · the rebuild | Frozen store, memory-ON vs OFF, raw + reranked arms, same-epoch baseline | Refute the pilot's confound | ⭐**Static memory HELPS town +17→+33pp** (basket sig: correct-elim p=.028, healer-save p=.005); **null deceivers; rerank≈raw** — the positive anchor |
+| v6 / v6_0 | Era 4 · retrieval precision | Per-cell schema; criticality → structured reranker gate | Fuzzy rerank≈raw → try structured precision | 919 obs / 17 cells; criticality gating **weakly validated → HOLD** |
+| v6_1 | Era 4 · retrieval precision | 6-arm paired A/B, raw retrieval | Isolate obs vs SP | Memory followed but **doesn't improve decisions** → **content bottleneck**, not retrieval (same-epoch null; the v5→v6 non-replication is **cross-epoch**, not a store regression) |
+| v7 | Era 5 · content (loop) | Self-updating store: credit→synthesize→prune→decay (largest new *subsystem*, additive) | Content can only improve via outcome feedback | Static **+17→+33pp (valid)**; learns **(valid)**; **compounding = open** (runs invalid) |
 
 ## Lessons (transferable)
 
 - **In a learning system, the bottleneck migrates — and naming where it currently sits is the real
-  work.** Four times here, exhausting one constraint (architecture, hygiene, precision) made the next
-  one visible. A version that doesn't relocate the bottleneck isn't progress, even if its store is
-  "cleaner."
+  work.** Exhausting one constraint (architecture → hygiene → retrieval precision → content) repeatedly
+  made the next visible; the v4→v5 rebuild sits between hygiene and precision as a **structural reset**,
+  not a new bottleneck. A version that doesn't relocate the bottleneck isn't progress, even if its store
+  is "cleaner."
 - **Faithful retrieval + faithful following + no improvement = a content problem, not a retrieval
   problem.** The ~99%-follow / Δ≈0-decision result (v6_1) is the cleanest possible disproof of a
   retrieval-precision thesis, and it could only be seen because the A/B was paired and the follow-rate
@@ -233,7 +305,7 @@ surviving to a $65 null. Honest negatives and a retracted claim beat a fragile p
 - **Open:** the town compounding question — answerable by a single **town-only** loop rerun (now arm-
   guarded), *or* deliberately deferred if the demonstrable-learning capability (v7 Claim 2) is judged
   sufficient for the product story.
-- **Ship-ready now:** static memory's +17pp town benefit and the *visible* learning loop (a memory
+- **Ship-ready now:** static memory's +17→+33pp town benefit and the *visible* learning loop (a memory
   inspector showing an agent retrieve and act on a specific past-game lesson) are the differentiated,
   demo-able capabilities that don't depend on resolving the compounding magnitude.
 
@@ -244,6 +316,6 @@ surviving to a $65 null. Honest negatives and a retracted claim beat a fragile p
   Authoritative numbers and their provenance live in the cited source folders:
   `evidence/memory_system/effectiveness/` (Phase 0–2, v5, v6_1), `evidence/dedup/` (Phase 2),
   `evidence/phase_b/` (v6), `evidence/v7_final/` (v7), and the loop code at `evaluation/src/loop/`.
-- Where this synthesis restates a statistic (e.g. 70%→97% p=0.012; v7 +17pp p=0.013), the figure is
+- Where this synthesis restates a statistic (e.g. 70%→97% p=0.012; v7 town +17→+33pp win, reranked +33pp p=0.013), the figure is
   quoted from those folders, not recomputed here; the effectiveness A/B and v5 pilot figures were
   independently re-verified against the raw JSONLs during this synthesis.

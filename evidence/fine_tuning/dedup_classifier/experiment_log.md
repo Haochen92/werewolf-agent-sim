@@ -104,7 +104,7 @@ Script: `evidence/fine_tuning/dedup_classifier/generate_dedup_cases.py`
 
 ### Extraction sources selected
 
-Selected files based on extraction quality evaluation (see `evidence/extraction/quality/report.md`):
+Selected files based on extraction quality evaluation (see `evidence/extraction/post_game/report.md`):
 
 | Source | Quality (Avg) | Files | Games | Entries |
 |--------|--------------|-------|-------|---------|

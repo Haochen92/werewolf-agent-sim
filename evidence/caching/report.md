@@ -115,7 +115,7 @@ reuse-count economics in *Model*. The two design conclusions that follow:
    *"You are a {role} analyst…"*-first form. Whether that reorder changed extraction *quality* was never
    isolated in an A/B (deferred under the memory-pipeline prompt freeze). Severity: **medium** —
    likelihood is real (LLMs are order-sensitive) but impact is bounded: the *live* prompt's quality is
-   separately characterized in [`../extraction/quality/`](../extraction/quality/report.md); what is
+   separately characterized in [`../extraction/post_game/`](../extraction/post_game/report.md); what is
    unmeasured is the counterfactual (could perspective-first have scored higher?), i.e. the risk is
    leaving quality on the table, not unknown current quality. *What would change the verdict:* a
    transcript-first vs perspective-first A/B on the extraction judge basket.

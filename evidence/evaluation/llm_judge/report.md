@@ -39,7 +39,11 @@ whose scores changed no decision did nothing. Going through the record, the answ
   situation-summary design was settled by a human-labelled answer key, which dropped one prompt option (worth
   −0.08) and kept another (worth +0.06). Retrieval depth, how many notes to pull, was settled by a
   downstream outcome measure. The day-summary format was a design choice, because later code needs structured
-  fields, and its model was picked by reading real summaries and weighing speed. The judge's scores were
+  fields, and its model was picked by reading real summaries and weighing speed. The component itself was left on the
+  pre-v6 situation framework — last and optional in the v6 migration — so whether its summaries carry enough
+  for the newer dimensional consumers is untested; the hard facts it might drop (the vote tally, eliminations,
+  revealed roles) are backstopped by a deterministic game-master channel, leaving only argumentative context
+  at risk. The judge's scores were
   statistically flat across the prompt versions, and where they did separate the models, they pointed at the
   slow one that latency ruled out.
 

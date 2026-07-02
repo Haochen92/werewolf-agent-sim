@@ -59,6 +59,12 @@ golden + proper offline NDCG), but stale, partly machine-anchored, small-N on th
 **Cheapest upgrade:** re-run NDCG golden-mode against the **v6_1 store** (offline, **free** — just repoint
 the hard-coded `STORE_DIR`/`EVAL_DATASET` constants in `situation_retrieval_ndcg.py:41-42`); refreshes the single most-stale
 headline number.
+**Anchoring the summary judges:** the pairwise and single-rubric judges both grade summary *content* with **no
+ground truth** — the same no-anchor gap as day-summary. The situation-summary is fundamentally an extraction
+task (extract what is critical about the situation), so the fix is a reference-point golden set (critical
+situation elements → coverage/recall, game-state faithfulness → precision):
+[`golden_set_method.md`](golden_set_method.md). This is distinct from the NDCG golden above, which anchors
+*retrieval ranking*, not summary content.
 
 ---
 
@@ -181,4 +187,7 @@ pointed-at. Key numbers distilled above for standalone value.
 `core/schemas.py` shift; refined the model-routing story (per-module `DEFAULT_*_JUDGE_MODEL` constants are now
 unused aliases — `run_retrieval_judge`/`run_application_judge` require `model`); surfaced the previously
 undocumented third Stage-1 instrument, the single-rubric `eval-summary-rubric` judge on gemini-3.1-pro-preview.
-No verdict change — every live judge remains uncalibrated.)*
+No verdict change — every live judge remains uncalibrated. Design-folder note 2026-07-02: the situation-summary
+design folder (`extraction/situation_summary/`) was brought to the report+log standard — a destination-first
+`report.md` (v6 cell schema, how it works today) + a curated `experiment_log.md` (the model-comparison and
+golden-label-NDCG threads, originals verbatim in Appendices A/B). Apparatus and verdict unchanged.)*

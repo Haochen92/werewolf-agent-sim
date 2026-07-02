@@ -37,8 +37,8 @@ Quality of what goes into the memory store and what queries are generated at ret
 
 | Experiment | Sample | Date | Notes |
 |---|---|---|---|
-| [quality](extraction/quality/report.md) | n=48 | May 24-26 | Multi-phase: judge comparison, per-role, model comparison |
-| [situation_summary](extraction/situation_summary/report.md) | n=15 | May 24 | 4-model comparison for situation summary generation |
+| [post_game](extraction/post_game/report.md) | n=48 | May 24-26 | Judge de-bug, per-role vs single-pass, model bake-off (journey in [experiment_log.md](extraction/post_game/experiment_log.md)) |
+| [situation_summary](extraction/situation_summary/report.md) | n=15 / 20 | May 24-27 | How it works today; model comparison + golden-label NDCG retrieval iteration (journey in [experiment_log.md](extraction/situation_summary/experiment_log.md)) |
 
 ### [metrics/](metrics/) — Evaluation Metrics
 

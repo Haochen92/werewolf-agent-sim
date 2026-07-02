@@ -2,8 +2,9 @@
 
 > **Scope: the apparatus, not the design.** Covers *how we measure* extraction quality (post-game mining of
 > obs/SP + v7 synthesis) and *how far to trust it* (L1 + L2). The extraction **design** (per-role fan-out,
-> v7 credit-aware synthesis) stays in [`../../extraction/quality/`](../../extraction/quality/),
-> [`../../phase_b/`](../../phase_b/), [`../../v7_final/`](../../v7_final/). Lens + skeleton:
+> v7 credit-aware synthesis) stays in [`../../extraction/post_game/`](../../extraction/post_game/) (destination
+> → `report.md`, journey → `experiment_log.md`), [`../../phase_b/`](../../phase_b/),
+> [`../../v7_final/`](../../v7_final/). Lens + skeleton:
 > [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
 > **Verdict: 🟡 PARTIAL — DE-BUGGED, not calibrated** *(downgraded from ✅ VALIDATED — see corrections).*
@@ -70,7 +71,8 @@ the strength is real.**
   is **clean** on this axis.
 - **(d) Staleness:** frozen runs 2026-05-24/26 on 3.5-flash/3.1-pro-preview judges across a **Google→Vertex
   backend shift** the report says invalidates absolute-score comparison; the 48-case set predates the v6
-  schema + per-role write-path.
+  schema + per-role write-path. *(The model question was later re-answered on the live v6_1 store by the v7 A/B
+  — see adjacent findings below.)*
 - **(e) Small-N:** judge-bug runs n=48 (solid); every model/mode recommendation rests on **n=5-10 games**.
 
 **Adjacent apparatus findings (the selection + screen threads):**
@@ -87,6 +89,18 @@ the strength is real.**
   pydantic `Field(description=)` (invisible to the model) → coverage 0.27; moving it to the prompt body lifted
   it to 0.97. It also **retracted an inflated metric** (the earlier "v6 engages more 0.697" was partial-
   coverage inflation; true applicable-rate ≈0.55) and ran same-epoch. High apparatus hygiene; n=48, n.s.
+- **v7 model + recall A/B (2026-06-19) — the one extraction read on the *live* v6_1 store.** A capability arm
+  (pro-2.5 / flash-3.5 / flash-lite) + a recall arm, re-extracted per-cell on a 3-game v6ab slice. Two things
+  matter for trust. **(1) Model:** flash-3.5 ≈ pro by *manual read* (165 ≥ 144 obs, same pivotal chains),
+  flash-lite correct-but-thin — this refreshes gap (d)'s staleness for the *model* question, though at n=3
+  (de-halo inconclusive). **(2) ⚠️ the parse-based recall metric was verbosity-confounded:** it scored
+  flash-lite 25% vs pro 100% on flagged pivotal turns by counting only obs that *state a parseable alive-count*;
+  a manual read found flash-lite captured the same kill sequences, so the 10× "gap" is largely surface-form
+  artifact — it needs a semantic-match rebuild before any recall claim scales (the `golden_set_method` lesson,
+  now at a deterministic metric). The A/B's own verdict — **the binding lever is synthesis, not extraction or
+  its model** — is exactly why the unjudged-synthesis gap below is the headline. Generated obs colocated at
+  `../../extraction/post_game/model_comparison/v7_refresh/`; spec + tables
+  `../../v7_final/extraction_coverage_ab_spec.md`.
 
 ## Verdict + cheapest upgrade
 
@@ -97,17 +111,22 @@ and **v7 synthesis quality entirely unjudged**.
 
 **Cheapest upgrade:** label a small human golden (~20-30 items, 2-3/role) and report judge-vs-human agreement
 on the 8 dims — ~an afternoon; converts "de-bugged" → "calibrated" and exposes whether the ceiling-saturation
-is real or leniency. **Second-cheapest:** point the existing `run_extraction_judge` at the v7 synthesised SP
-store — the instrument exists; it's simply never aimed at synthesis (which is currently outcome-only).
+is real or leniency. Here the reference points are the game's critical observations / strategy-points a good
+mining must surface: `coverage` becomes measured recall, `grounding` the precision side. Construction method +
+refinements (atomic points, citing judge, recall/precision split): [`golden_set_method.md`](golden_set_method.md).
+**Second-cheapest:** point the existing `run_extraction_judge` at the v7 synthesised SP store — the instrument
+exists; it's simply never aimed at synthesis (which is currently outcome-only).
 
 ## Evidence (code + L2 artifacts)
 
 - **Code:** `evaluation/src/judges/extraction.py`, `judges/per_role_extraction.py`,
   `judges/prompts/extraction.py`, `experiments/extraction_eval.py`, `experiments/extraction_builder.py`,
-  `core/schemas.py::{ExtractionScores,PerRoleExtractionScores}`; v7 probe
-  `../../v7_final/sp_synthesis_quality_check.py`.
-- **L2 artifacts (no golden — the gap; results pointed-at):** `../../extraction/quality/eval_results/*.jsonl`
-  (Runs 1-3), `../../extraction/quality/model_comparison/`, the player-ID verification txts;
+  `core/schemas.py::{ExtractionScores,PerRoleExtractionScores}`; v7 probes
+  `../../v7_final/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.
+- **L2 artifacts (no golden — the gap; results pointed-at):** `../../extraction/post_game/eval_results/*.jsonl`
+  (Runs 1-3), `../../extraction/post_game/model_comparison/` (May study) + `.../model_comparison/v7_refresh/`
+  (v7 model-A/B generated obs on v6_1) + `../../v7_final/extraction_coverage_ab_spec.md` (v7 spec/tables), the
+  player-ID verification txts;
   `../../extraction_selection/experiment_log.md` (net_verdict halo);
   `../../phase_b/{criticality_screen,forced_schema_screen}/experiment_log.md`. ⚠️ the evidence manifest's
   `dataset_path` is a stale absolute path; the report's `scripts/per_role_*` paths graduated to
@@ -122,4 +141,7 @@ distilled above.
 *(Apparatus-inspected 2026-06-28; judge-folder verification sweep 2026-06-30 — re-pointed refactor-stale
 refs after the `prompts/`-package split, `config.py` model-DRY, and `core/schemas.py` shift (`EvalResult`
 deletion moved class lines ~−17); re-confirmed the v6 dimensional-field apparatus and that v7 synthesis is
-still unjudged (zero `loop/` references to the extraction judge). No verdict change.)*
+still unjudged (zero `loop/` references to the extraction judge). No verdict change. Design-folder pointers
+updated 2026-07-02: `extraction/quality/` renamed to `extraction/post_game/`, and its single multi-phase report
+split into a destination `report.md` + a curated `experiment_log.md` (raw study preserved verbatim in the
+log's Appendix A); no verdict change.)*

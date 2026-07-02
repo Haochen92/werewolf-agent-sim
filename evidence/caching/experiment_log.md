@@ -120,7 +120,7 @@ Explicit is billed (creation at full rate, reads at ~10%), so it only pays at **
 
 1. **Extraction reorder neutrality unvalidated** — the transcript-first reorder shipped without an A/B
    isolating its quality effect. The *live* prompt's quality is separately characterized in
-   [`../extraction/quality/`](../extraction/quality/report.md); what is unmeasured is the counterfactual
+   [`../extraction/post_game/`](../extraction/post_game/report.md); what is unmeasured is the counterfactual
    (could perspective-first have scored higher?). Resolve with a transcript-first vs perspective-first A/B
    on the extraction judge basket. (Full severity rationale: `report.md` gap #1.)
 2. **Implicit caching may return at a future model pin** — dead on today's flash-lite/Vertex, but a later
