@@ -56,3 +56,41 @@ upcoming v5/v6/v7 + eval concurrent review will run on.
 
 *(Created 2026-06-30 as the type-③ modality folder in the by-modality eval-hub. Status: documented, not yet
 built — the honest state.)*
+
+## BUILD — 2026-07-02: the sampler exists (status flip: "not built" → "built, smoke-tested")
+
+The apparatus above is now built (Phase 3 of the eval-hardening pass). The two gaps this report named —
+**no principled sampler** and **no durable record** — both close:
+
+- **Code (the reusable logic):** [`../../../evaluation/src/diagnosis/sampler.py`](../../../evaluation/src/diagnosis/sampler.py)
+  — the four steps as importable functions. **SELECT** on two combinable, outcome-blind signals:
+  a deterministic per-case decision score (`decision_scoring.score_vote`/`score_night_target`, the
+  DEFAULT) plus a **computed** leverage anchor (`is_swing`/`distance_to_parity` via
+  `query_criticality`, never the LLM situation-dimension fill — Phase 1 showed the wolf-side `is_swing`
+  fill scores 0.606, worse than the always-False constant). The application-judge score is an **opt-in**
+  outlier source, flagged `(uncalibrated)` in every output because that judge's calibration is a later
+  phase. `assert_outcome_blind` makes the halo rule executable — selecting on `winner`/`won`/… raises.
+  **COHORT** via `data.sampling.sample_cases` (stratified, seed-deterministic). **REPLAY**
+  (`replay_case_stage`) is wired to the live `replay/` harness but **guarded default-OFF** (refuses
+  unless `enabled=True` after spend sign-off — the `dimension_audit --regen` discipline; building is $0).
+  **RECORD** = `ReviewVerdict` + `append_verdict` to a durable local JSONL.
+- **CLI:** [`../../../evaluation/src/experiments/case_sampler.py`](../../../evaluation/src/experiments/case_sampler.py)
+  (`eval-case-sample` console entry — registers on next install). Thin: args → pipeline → files.
+- **Tests:** `tests/test_diagnosis_sampler.py` (14) — halo-rule raises on an outcome signal, outlier
+  selection on synthetic scores, same-seed→same-cohort determinism, the computed-not-filled anchor, the
+  uncalibrated-judge flag, verdict round-trip. Suite green.
+- **Smoke ($0, real local sidecar data — `batch_results/ab_nh_town.jsonl`, read-only):**
+  [`sampler_smoke/`](sampler_smoke/) — `review_packets.md` (9 human-readable packets), `cohort_strata.json`,
+  and `verdicts.jsonl` (one demo verdict exercising the record path). The 9-case cohort drew from all three
+  channels — **by reason:** 3 `outlier:decision_score` · 3 `leverage:is_swing` · 4 `cohort:stratified`;
+  **by role:** vigilante 3 · healer 3 · investigator 2 · villager 1; **by phase:** day_vote 4 · night_action 3
+  · day_discussion 2; **by game-phase:** late 5 · early 4. Regenerate:
+  `poetry run python evaluation/src/experiments/case_sampler.py --batch batch_results/ab_nh_town.jsonl
+  --out evidence/evaluation/sampled_human_review/sampler_smoke --n-outliers 3 --n-leverage 3 --cohort-max 4
+  --seed 0 --emit-demo-verdict`.
+
+**What this does and does not change.** It closes the *methodology* gaps (selection bias + no record); it
+does **not** retro-fit the v5→v7 qualitative calls that were made by the old ad-hoc reading — those stay
+"a real signal a person saw," per the trust reading above. The sampler is the tool the upcoming
+v5/v6/v7 + eval concurrent review runs on, and the front door that feeds rung ③ (sample → review →
+promote the worth-labelling ones).

@@ -1,0 +1,23 @@
+{
+  "n_selected": 9,
+  "by_role": {
+    "healer": 3,
+    "investigator": 2,
+    "vigilante": 3,
+    "villager": 1
+  },
+  "by_action_phase": {
+    "day_discussion": 2,
+    "day_vote": 4,
+    "night_action": 3
+  },
+  "by_game_phase": {
+    "early": 4,
+    "late": 5
+  },
+  "by_reason": {
+    "cohort:stratified": 4,
+    "outlier:decision_score": 3,
+    "leverage:is_swing": 3
+  }
+}

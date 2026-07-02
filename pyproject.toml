@@ -41,6 +41,7 @@ eval-dedup = "evaluation.src.experiments.dedup_eval:main"
 eval-dedup-score = "evaluation.src.experiments.dedup_score:main"
 eval-batch-dedup = "evaluation.src.experiments.batch_dedup_eval:main"
 eval-graduate = "evaluation.src.experiments.graduate:main"
+eval-case-sample = "evaluation.src.experiments.case_sampler:main"
 
 [tool.poetry]
 packages = [{ include = "Agents" }, { include = "evaluation" }]

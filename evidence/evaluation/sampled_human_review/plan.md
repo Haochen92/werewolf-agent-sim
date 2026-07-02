@@ -42,4 +42,6 @@ This is the tool the **v5/v6/v7 + eval concurrent review** will run on — so it
 first step of that pass, against the settled store. (Origin: the scoped sampler build green-lit in
 [`../source_map.md`](../source_map.md) → *Planned build*.)
 
-*(Plan drafted 2026-06-30. Not yet built.)*
+*(Plan drafted 2026-06-30. **Built 2026-07-02** — `evaluation/src/diagnosis/sampler.py` +
+`evaluation/src/experiments/case_sampler.py` (`eval-case-sample`); smoke artifacts in
+[`sampler_smoke/`](sampler_smoke/). See the BUILD section in [`report.md`](report.md).)*
