@@ -53,14 +53,20 @@ evaluation/                the eval subsystem (code + its data)
     core/        config schemas, result schemas, IO, formatting, costs, stats, manifests, settings
     data/        the read side — rehydrate the eval-case span-dicts run_batch captured, then curate + freeze:
       converters/    span-dict → one typed case (EvalCase / Extraction / Dedup / DaySummary)
-      sources/       where cases come from: sidecar.py (run_batch's local sidecars, PRIMARY) · langfuse.py (fallback fetch + cost)
+      sources/       where cases come from: sidecar.py (run_batch's per-game sidecars, PRIMARY) ·
+                     batch_records.py (repo-root batch_results/*.jsonl game-run logs) · langfuse.py (fallback fetch + cost)
       frozen_sets.py  frozen-set record schemas + JSONL I/O · sampling.py  stratified subset selection · batch_layout.py  batch_results/ write layout
-    replay/      replay adapters for the summary, retrieval, and action stages (renamed from components/)
+    replay/      replay adapters for the summary, retrieval, and action stages, plus
+      decision_screen/  the off-policy per-turn decision-replay engine (cases/replay/schemas/stats/screens)
     judges/      judge prompts + LLM judge wrappers, one per case type
     labeling/    multi-model golden-label pipeline: engine, voter, exporter, adapters/, pipeline,
                  manual_labelers/ (interactive human CLIs), label_scorer/ (golden-set scorers/NDCG/regen)
+    diagnosis/   outcome-blind case sampler for human/pro-LLM review cohorts (rung ② of the modality ladder)
+    audits/      re-runnable $0 deterministic audits — the regression surface (dimension fills, scheduler
+                 access, whiff conversion, proxy validation, dedup golden scorer, pivotal-turn flags)
     loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
-    experiments/ command-line eval runners + concluded v6/v7 study runners (inventory below)
+    experiments/ command-line eval runners — the live CLI layer (inventory below)
+      studies/       concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
   frozen_eval_sets/        shared frozen replay datasets + gold labels (experiment-specific sets live in evidence/<exp>/eval_sets/)
@@ -205,7 +211,10 @@ The evaluation code is split by responsibility:
 ```text
 replay      = produce outputs by replaying part of the agent pipeline on a frozen case
 judges      = grade or compare outputs using a rubric
+audits      = deterministic $0 checks over recorded data (no LLM; re-runnable as regression audits)
+diagnosis   = outcome-blind sampling of cases into human/pro-LLM review cohorts
 experiments = coordinate datasets, replay, judges, configs, and JSONL output (the CLI layer)
+studies     = concluded one-shot apparatus behind frozen verdicts (under experiments/, off the CLI surface)
 ```
 
 For example, an E2E experiment reads frozen cases, replays the summary stage,
@@ -221,40 +230,36 @@ experiments -> replay
 experiments -> judges
 judges      -> prompts / schemas / formatters
 replay      -> production agent code
+audits      -> data / core (deterministic, never judges)
+studies     -> replay / loop (frozen apparatus; nothing live imports studies)
 ```
 
 ### `experiments/` inventory
 
-`experiments/` is the CLI layer. It holds two kinds of file, kept distinct on purpose:
-
-**1. Live eval runners** — the authoritative one-runner-per-kind surface. Most are wired as
-`eval-*` console scripts (see `pyproject.toml [project.scripts]`): builders
+`experiments/` is the live CLI layer — one config-driven runner per eval kind, wired as `eval-*`
+console scripts (see `pyproject.toml [project.scripts]`): builders
 (`eval-build-dataset`/`-extraction-dataset`/`-dedup-dataset`), the agent-decision funnel
 (`eval-summary`, `eval-summary-rubric`, `eval-retrieval`, `eval-application`, `eval-captured`,
-`eval-e2e`), `eval-extraction`, `eval-day-summary`, dedup (`eval-dedup`, `eval-dedup-score`,
-`eval-batch-dedup`), and `eval-graduate`. A few live tools run by module path only:
-`dedup_replay`, `batch_dedup_merge_eval`, `extraction_replay`, `eval_auto_dedup` +
-`auto_dedup_dataset_builder`.
+`eval-e2e`), `eval-extraction`, `eval-day-summary`, the discussion-tagger runner `eval-tagger`
+(modes `accuracy`/`skill`/`deleak`), dedup (`eval-dedup`, `eval-batch-dedup`), the diagnosis-sampler
+CLI `eval-case-sample`, and `eval-graduate`. Two model-swap tools run by module path only:
+`dedup_replay`, `extraction_replay`.
 
-**2. Concluded v6/v7 study runners** — the apparatus that produced the v5→v6→v7 store-evolution
-conclusions. Not part of the live CLI surface; kept runnable because frozen `evidence/v7_final/`
-scripts import them and the evidence reports point at them. Their physical disposition (subfolder
-vs colocate) is **deferred to the concurrent code + memory-effectiveness review** — the apparatus
-and its verdict are two axes of the same files.
+Its former flatmates moved out on 2026-07-02:
 
-| Study runner | What it studied | Record |
-|---|---|---|
-| `decision_replay.py` | de-luck proxy validation (off-policy decision replay) | `evidence/memory_system/effectiveness/decision_replay/` |
-| `criticality_screen.py` | conditioned-vs-flat retrieval (gated the v6 build) | `evidence/phase_b/criticality_screen/` |
-| `forced_schema_screen.py` | forced per-memory applicability schema | `evidence/phase_b/forced_schema_screen/` |
-| `dimension_gating_screen.py` | retrieval dimension-gating (NEGATIVE → ships default-off) | `evidence/v7_final/review_map.md` |
-| `reextract_villager_day.py`, `reextract_cells.py` | v6 per-cell re-extraction store build | `evidence/phase_b/v6_full_store.md` |
-| `synthesize_cell_sp.py` | v6 cluster→strategy-point synthesis | `evidence/phase_b/` |
-| `recall_flags.py` | deterministic pivotal-turn flagger (v7 recall anchor) | `evidence/v7_final/review_map.md` |
-| `synth_deluck_ab.py` | credit-aware vs outcome-halo synthesis A/B | `evidence/v7_final/synth_deluck_ab/` |
-| `consolidation_prune.py` | offline credit-prune apply-tool | `evidence/v7_final/review_map.md` |
-| `investigator_transmission.py` | v6 static SP A/B (motivates cross-game synthesis) | `evidence/memory_system/effectiveness/v6_sp_ab/` |
-| `extraction_model_comparison.py` | extraction model comparison | `evidence/v7_final/extraction_model_ab_compare.py` |
+- **`evaluation/src/audits/`** — the deterministic $0 checks that re-run on any new batch as
+  regression audits: `dimension_audit`, `scheduler_access_audit`, `whiff_conversion_audit`, the
+  proxy-validation trio (`proxy_rescue`/`accusation_metrics`/`claim_conversion` over the shared
+  pre-registered split in `metrics_common`), the dedup golden scorer `dedup_score`
+  (`eval-dedup-score`), and `recall_flags`. All pytest-covered; batch-record loading shared via
+  `data/sources/batch_records.py`.
+- **`experiments/studies/`** — the concluded one-shot study runners behind the v5→v6→v7
+  store-evolution verdicts (the screen family, the v6 reextraction chain, the synthesis and
+  calibration A/Bs). Off the CLI surface; kept runnable because frozen `evidence/v7_final/` scripts
+  import them and two held re-screens (dimension-gating, wolf) would run on them. The
+  module → question → verdict → evidence table lives in `studies/__init__.py`.
+- **`replay/decision_screen/`** — the reusable decision-replay engine extracted verbatim
+  (golden byte-diff-verified) from the study monolith; the screens in `studies/` are thin consumers.
 
 ## Step 1: Run Games
 
