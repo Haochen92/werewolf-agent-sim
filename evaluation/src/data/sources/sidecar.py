@@ -7,6 +7,19 @@ fetch layer produces — so the ``*_case_from_span`` converters apply verbatim a
 a frozen-set build needs no Langfuse read at all (no 422s, no truncation, no
 span-name collisions). This is the preferred source; the Langfuse fetchers in
 ``langfuse.py`` remain for games that predate local emission.
+
+Span-wrapper shape (READ THIS before concluding "a field is empty everywhere"):
+each JSONL line is a SPAN dict, not a bare case. The eval-case payload is NESTED at
+``output.eval_case.<field>`` (e.g. ``line["output"]["eval_case"]["situation_dimensions"]``),
+alongside sibling span keys (``name``, ``trace_id``, ``input``). Reading ``line["<field>"]``
+at the top level therefore always looks empty — that is a wrong-level read, not missing
+data. The ``*_case_from_span`` converters and ``_spans_with_prefix`` here unwrap that level
+for you; ad-hoc scans must do the same (see ``discussion_tagger._night_actions_by_day``).
+
+Provenance of query-side ``situation_dimensions``: it is persisted ONLY in the LOOP-era
+sidecars (``batch_results/{town_only_run1,town_only_run2,v2_full,legacy}``, ~9k filled
+objects); the ``ab_*`` / ``v6ab_*`` sessions ran the v5 query path and carry ZERO. An empty
+``situation_dimensions`` in an ab_* sidecar is expected, not a bug.
 """
 
 from __future__ import annotations

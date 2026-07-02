@@ -248,6 +248,15 @@ def parse_args() -> argparse.Namespace:
             "batch_results/<session-prefix>.jsonl + eval_cases/<session>/ instead."
         ),
     )
+    parser.add_argument(
+        "--skip-embedding-canary",
+        action="store_true",
+        help=(
+            "Skip the embedding-alias drift check that runs at batch start (default "
+            "on). Only skip if embedding creds are unavailable; drift silently "
+            "corrupts every store vector and retrieval query."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -479,6 +488,14 @@ def run_batch(args: argparse.Namespace) -> int:
     # another if their bundles match (model, prompts, backend, ...).
     fingerprint = runtime_fingerprint()
     print(f"Runtime fingerprint: {fingerprint}")
+
+    # Embedding-alias drift canary: assert the store's embedding geometry still matches its
+    # pins before spending a run on (silently) corrupted retrieval. Default-on; drift raises.
+    if not args.skip_embedding_canary:
+        from evaluation.src.core.embedding_canary import check_embedding_canary
+
+        if check_embedding_canary():
+            print("Embedding canary: OK (no alias drift).")
 
     print(f"Writing JSONL results to: {results_path}")
 

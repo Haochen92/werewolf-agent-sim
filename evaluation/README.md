@@ -122,6 +122,15 @@ The `eval-build-*` step is where `src/data/` runs against the captured span-dict
 each into a typed case, `sampling.py` selects a stratified subset, and `frozen_sets.py`
 writes the immutable set. (`sources/langfuse.py` is the same path sourced from traces instead.)
 
+**Sidecar span-wrapper shape** (before concluding "a field is empty everywhere"): each line of
+a `batch_results/eval_cases/<session>/<game>.jsonl` sidecar is a **span** dict, and the eval-case
+payload is nested at `output.eval_case.<field>` (e.g. `line["output"]["eval_case"]["situation_dimensions"]`),
+not at the top level. A top-level `line["<field>"]` read always looks empty — that is a wrong-level
+read, not missing data; the `*_case_from_span` converters unwrap it, and ad-hoc scans must too.
+Query-side `situation_dimensions` is persisted **only in the loop-era sidecars**
+(`town_only_run1`/`town_only_run2`/`v2_full`/`legacy`); `ab_*`/`v6ab_*` sessions ran the v5 query
+path and carry none, so an empty value there is expected.
+
 | Folder | Role | Git |
 |---|---|---|
 | `evaluation/config/` | experiment configs, grouped by domain subfolder (+ `template/`) | tracked |
