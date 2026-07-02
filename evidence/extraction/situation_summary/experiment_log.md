@@ -1,3 +1,306 @@
+# Situation Summary — chronological overview
+
+**What this is.** The spine of the situation-summary quality workstream, in the order it happened. It has two
+threads that met in the middle: first a **model comparison** (is flash-lite good enough to generate retrieval
+queries?), then a **human-anchored retrieval golden** and the prompt iteration it drove (do the queries
+actually retrieve the right memories?). It ends where [report.md](report.md) begins — that companion doc is the
+destination, the current shipped state, which carried this study's endpoints one step further into the v6
+cell-situation schema. How the output is *measured* — the two summary judges and the NDCG golden — is written
+up in the funnel apparatus report
+[../../evaluation/llm_judge/agent_decision.md](../../evaluation/llm_judge/agent_decision.md) (Stage 1).
+
+The two original documents are preserved verbatim: the model-comparison report as **Appendix A**, the
+golden-label retrieval log as **Appendix B**, so the curated arc and the original records can be read side by
+side. Section numbers (`§N`) are for navigation; the dated tables live in the appendices.
+
+**What situation-summary is.** On every agent turn, before the agent decides, one LLM call turns the current
+game state into 1-2 semantic-search queries that retrieve the episodic memories the agent reasons with. It is
+the front door of the memory *read* path, so query quality bounds retrieval quality no matter how good the
+store is. That is why the workstream exists.
+
+**Reading contract.** Sections are in time order, and each states what it tested and what it found. The arc
+keeps its real corrections in place: a "core dilemma" dimension that felt right and scored negative (§3), and a
+retrieval metric whose early wins were partly an unlabeled-item artifact that later labeling corrected (§4).
+For the current shipped state, jump to [report.md](report.md).
+
+---
+
+## 0 · Origin — the query generator, and two unknowns
+
+Situation-summary sits at the head of the retrieval pipeline: `game state → queries → semantic search →
+retrieved memories → decision`. If the queries are vague, fabricated, or written from the wrong role's
+viewpoint, retrieval degrades regardless of store quality. Two things were unknown. Was the cheap production
+model (flash-lite) leaving quality on the table (§1)? And — the deeper question — did the pipeline actually
+retrieve the *right* memories, something never checked against human ground truth (§2)? The two threads
+answered these in turn.
+
+## 1 · Model comparison — is flash-lite good enough?
+
+Four models were compared on 15 frozen cases with two graders: a pairwise-preference judge (each model vs
+flash-lite, order alternated) and an independent 1-5 rubric on five dimensions (faithfulness, specificity,
+retrieval usefulness, non-redundancy, role perspective). The recommendation was **keep flash-lite** — the gain
+from 3.5-flash was modest on rubric average, at 6× the cost and ~3× the latency, on a call that fires every
+turn. Three findings outlasted the decision:
+
+- **Pairwise is more sensitive than an independent rubric.** 3.5-flash won 14/15 pairwise while the rubric
+  averages *tied* (both 3.92). Side by side, a judge detects small consistent advantages that isolated scoring
+  misses — pairwise for the decision, rubric for the *why*.
+- **Thinking hurt flash-lite.** Medium thinking scored *worse* than no thinking (3.59 vs 3.92). The model lacks
+  the capacity to use the reasoning budget productively — the same effect the extraction study saw.
+- **Role perspective is a hidden failure mode.** 2.5-flash was the most faithful model (4.93) yet scored 2.73
+  on role perspective, writing omniscient queries — in one wolf case referring to *itself* in the third person
+  as its own ally. A factually accurate query framed from the wrong viewpoint retrieves the wrong strategies. A
+  generic "quality" score would have missed this; the role-specific dimension caught it.
+
+The catch: every number here came from an *ungrounded* LLM judge. That is what the second thread set out to
+fix.
+
+## 2 · Building a human-anchored retrieval golden
+
+Model comparison told us which query *looked* better to a judge, not which one *retrieved* better. So the
+workstream built a golden set for retrieval correctness — the strongest anchor in the memory pipeline. The
+design (Method A, query-forward): for each case, a human co-creates the ideal situation query from the exact
+prompt inputs, runs top-10 semantic search against the frozen `v4_deduped_v2` store, and labels each retrieved
+memory on a **3-point graded scale** (2 = highly relevant, 1 = partially, 0 = not), which enables **NDCG**.
+Twenty cases were labelled across four roles and two phases — 340 relevance judgments. The baseline came out at
+**NDCG@10 ≈ 0.83**: embedding retrieval was already doing a reasonable job, with the most headroom in top-3
+precision and on strategy points (written more generically than observations, so they match less precisely).
+
+## 3 · Prompt iteration, judged by NDCG
+
+With a grounded metric in hand, the prompt was iterated and each version scored on the golden. This is where
+the metric earned its keep by *overturning* intuitions:
+
+- **Structured over prose (embedding alignment).** A structured query using the store's own dimensional labels
+  embed-matched stored entries better than natural prose — same items retrieved, higher similarity. This is the
+  first sighting of the alignment lever that v6 later made structural (§5).
+- **Core dilemma: falsified in place.** A fifth "core dilemma" dimension (the agent's specific tradeoff) was
+  added in v2 on the theory that state-similar cases can face different *decisions*. On clean cases it scored
+  **net-negative (−0.084)**: it pushed the model toward abstract framing over concrete game events. It was
+  removed in v4 — the single biggest improvement of the iteration.
+- **Investigator lens fix (v4b).** Front-loading how the agent's private findings relate to the public
+  narrative recovered an investigator regression.
+
+Shipped **v4b**: +0.061 NDCG over the v1 captured baseline on expanded labels, with the largest gain on the
+weakest role (villager, +0.196).
+
+## 4 · The unlabeled-item trap, and its correction
+
+The early golden-vs-captured gap (+0.112 NDCG) was partly an artifact: when a captured query retrieved items
+the golden set never labelled, those items scored 0 by default, inflating the gap. **Phase 2 union labeling**
+(labelling the 108 previously-unlabelled items) corrected it: the true improvement settled at **+0.061**, and
+investigator flipped from −0.040 to **+0.042** — it had been improving all along, masked by the unlabeled
+penalty. This is a methodological correction kept in place, not a headline: it is why the report's numbers are
+the expanded-label figures, and why the auto-augmented golden is flagged as only directional.
+
+## 5 · What graduated, and what did not
+
+The iteration's endpoints graduated; the metric's staleness did not get fixed:
+
+- **The v4b design** — structured dimensional fields, no core dilemma, investigator-lens-first — carried into
+  the live **v6 cell-situation schema**, which makes the extraction↔summary alignment *structural*: the query
+  is now composed by the *same* per-cell schema as the stored observation, so they embed-match by construction
+  rather than by a shared prose convention (report.md, "What it produces").
+- **flash-lite** stayed the production model (the model comparison held).
+- **What did not carry forward:** currency. The golden and every NDCG number are anchored to the `v4_deduped_v2`
+  store and 2026-05 prompts; the golden later grew to 108 cases via 4-model-consensus auto-labels, never
+  human-re-validated. The cheapest fix — re-baseline NDCG against the v6_1 store, offline and free — is still
+  open (report.md gap 1).
+
+---
+
+## Recurring threads
+
+- **Two graders, two blind spots** (§1, §2) — the ungrounded content judges (pairwise + rubric) can rank and
+  can catch a gross failure mode but cannot certify; the grounded NDCG golden can rank retrieval but cannot
+  separate a bad query from a thin store. Neither alone is enough.
+- **Grounding beats rubric intuition** (§3, §4) — the golden overturned two rubric-era reads: core dilemma
+  *felt* right and scored negative, and the first gap was inflated by unlabeled items. A grounded metric earns
+  its cost by being *wrong-proof* in ways a rubric is not.
+- **Alignment is the lever** (§3, §5) — queries that share the store's structure embed-match better; v6 turns
+  that from a prompt nudge into a schema guarantee.
+- **Store coverage keeps leaking in** (§2, §3) — villager/wolf day_vote "query" weaknesses were really
+  store-coverage gaps; NDCG through stage 1 can't fully separate them.
+- **Everything is v4-stale** (§5) — golden + prompts on `v4_deduped_v2`, pre-v6; the single most-stale headline
+  in the funnel.
+
+## Artifacts
+
+| Beat | Artifact | What it holds |
+|---|---|---|
+| §1 | `model_comparison/outputs_*.jsonl`, `judge_pairwise_*.jsonl`, `rubric_judge_*.jsonl` | 4-model outputs + pairwise + rubric judge results |
+| §2-§4 | `retrieval_golden_labels.json` | the graded-relevance golden (⚠️ shared asset — also read by reranker training + context_eval; do not move) |
+| §3 | `regenerated_situations_v*.json`, `quality_judge_results*.json`, `prompt_versions/` | per-version regenerated queries + judge scores + checkpointed prompts |
+| §2-§4 | `staging/case_*.json` | per-case labeling inputs (the prompt the model saw) |
+| destination | [report.md](report.md) | current shipped state (v6 cell schema) + freshness/gap tracking |
+| apparatus | [../../evaluation/llm_judge/agent_decision.md](../../evaluation/llm_judge/agent_decision.md) | the L1/L2 measurement write-up (Stage 1) |
+
+## Limitations / future work
+
+Carried to the destination doc's gaps table ([report.md](report.md#current-vs-documented-gaps-freshness-2026-07-02)),
+criticality-ordered and freshness-dated: the shipped prompt and golden are v5-era (gap 1), the summary-content
+judges are uncalibrated (gap 2), the golden is partly machine-augmented (gap 3), and query quality is entangled
+with store coverage (gap 4). The credible next step is a free v6_1 re-baseline of the NDCG golden before any
+further prompt tuning is worth crediting.
+
+---
+
+## Appendix A — original model-comparison report (2026-05-24, verbatim)
+
+> Preserved unedited as the original dated record of the model-comparison thread (§1), superseded by the
+> curated narrative above. Written as a standalone `report.md`; its title and any file paths are
+> period-accurate. The current shipped state and pointers live in [report.md](report.md).
+
+---
+
+# Situation Summary Model Comparison
+
+## Motivation
+
+The situation summary component converts the current game state (visible discussion + private context) into 2-3 semantic search queries used to retrieve relevant observations and strategy points. It runs on every agent turn with gemini-3.1-flash-lite (no thinking). If the summaries are vague, fabricated, or miss the agent's role perspective, retrieval degrades regardless of store quality. This evaluation compares four models to determine whether upgrading from flash-lite improves summary quality enough to justify the cost.
+
+## Design
+
+We compared four models on 15 frozen EvalCase records from the v4 filtering eval dataset, covering four roles (healer, investigator, villager, wolf) across multiple game phases.
+
+**Models tested:**
+- gemini-3.1-flash-lite (default) — current production model, no thinking
+- gemini-3.1-flash-lite (medium thinking) — same model with thinking enabled
+- gemini-2.5-flash — next tier up
+- gemini-3.5-flash — latest flash model
+
+The hypothesis: flash-lite may be leaving quality on the table for this task, since situation summaries require synthesizing discussion dynamics, private knowledge, and role perspective into targeted retrieval queries. A more capable model might produce more specific, better-grounded summaries.
+
+We initially tested flash-lite with high thinking, but abandoned it after case 1 took 593 seconds (nearly 10 minutes) — an unacceptable latency for a component that runs on every turn. Medium thinking kept latency under 10 seconds per case.
+
+## Evaluation
+
+Two evaluation approaches were used:
+
+**Pairwise comparison** (gemini-3.1-pro-preview judge): Each alternative model's output was compared head-to-head against flash-lite-default on the same case, with alternating presentation order to reduce position bias. The judge chose a winner based on faithfulness, specificity, retrieval usefulness, non-redundancy, and role perspective.
+
+**Rubric scoring** (gemini-3.1-pro-preview judge): Each model's output was independently scored 1-5 on the same five dimensions. This provides absolute quality levels per dimension rather than just relative rankings.
+
+## Results
+
+### Pairwise comparison (vs flash-lite-default baseline)
+
+3.5-flash dominated the pairwise comparison, winning 14 of 15 cases. 2.5-flash was roughly equal to flash-lite, while medium thinking actually hurt.
+
+| Model | Wins | Losses | Ties | Win rate |
+|---|---|---|---|---|
+| gemini-3.5-flash | 14 | 1 | 0 | 93% |
+| gemini-2.5-flash | 8 | 7 | 0 | 53% |
+| gemini-3.1-flash-lite (medium) | 4 | 10 | 1 | 27% |
+
+### Per-dimension rubric scores (1-5 scale, 15 cases)
+
+The rubric scores reveal where each model excels and where it struggles. The overall averages are surprisingly close despite the lopsided pairwise results.
+
+| Model | Faithful | Specific | Retrieval | Non-redund | Role persp | **Avg** |
+|---|---|---|---|---|---|---|
+| flash-lite-default | 4.40 | 3.87 | 3.73 | 3.80 | 3.80 | **3.92** |
+| flash-lite-medium | 4.27 | 3.20 | 3.33 | 3.67 | 3.47 | **3.59** |
+| 2.5-flash | 4.93 | 4.00 | 3.60 | 3.40 | 2.73 | **3.73** |
+| 3.5-flash | 4.53 | 3.87 | 4.00 | 3.53 | 3.67 | **3.92** |
+
+### Latency
+
+| Model | Avg/case | Total (15 cases) |
+|---|---|---|
+| flash-lite-default | 2.6s | 40s |
+| flash-lite-medium | 4.3s | 64s |
+| 2.5-flash | 9.5s | 143s |
+| 3.5-flash | 7.0s | 105s |
+
+### Pricing context
+
+| Model | Input $/1M | Output $/1M |
+|---|---|---|
+| gemini-3.1-flash-lite | $0.25 | $1.50 |
+| gemini-2.5-flash | $0.30 | $2.50 |
+| gemini-3.5-flash | $1.50 | $9.00 |
+
+## Analysis
+
+### The pairwise vs rubric gap
+
+The most notable finding is the disconnect between pairwise and rubric results. 3.5-flash won 14/15 pairwise comparisons but ties with flash-lite-default on rubric average (3.92). This suggests the pairwise judge is picking up on *consistent* advantages that are small per-dimension but compound across dimensions — when both outputs are placed side by side, the judge consistently prefers 3.5-flash even though the rubric scores look similar in isolation.
+
+This is a useful calibration: pairwise comparison is more sensitive to quality differences than independent rubric scoring.
+
+### Thinking hurts flash-lite for this task
+
+Flash-lite with medium thinking scored the lowest across the board (3.59 avg), worse than flash-lite without thinking (3.92). It was also the worst on the pairwise comparison (4-10-1). The likely explanation: flash-lite lacks the model capacity to benefit from additional reasoning time on this task. Instead, the thinking budget may lead to overthinking or second-guessing, producing less focused summaries. This is consistent with the extraction evaluation where flash-lite with max thinking also underperformed.
+
+### 2.5-flash has a role perspective problem
+
+2.5-flash scored highest on faithfulness (4.93) — it rarely fabricates. But its role perspective score (2.73) is dramatically low, with 6 of 15 cases scoring 1. The judge consistently flagged it for "reading like an omniscient narrator" and ignoring role-specific private knowledge.
+
+A concrete example: in a wolf case (d2r4), the agent IS player_6, but 2.5-flash writes "My wolf ally, player_6, is currently under direct scrutiny" — referring to itself in third person as its own ally. This produces retrieval queries that match "how to defend a teammate" rather than "how to handle being under suspicion as a wolf." Flash-lite-default handles the same case better, writing "my wolf ally, player_6, is facing direct pressure" but then adding "I am currently maintaining a low profile to avoid scrutiny" — at least acknowledging its own position.
+
+For retrieval, this matters: a healer-perspective situation query should retrieve healer-relevant strategies, not generic observations. A model that drops role perspective undermines the retrieval pipeline even if its summaries are factually accurate.
+
+### 3.5-flash wins on retrieval usefulness
+
+3.5-flash's strongest dimension is retrieval usefulness (4.00 vs flash-lite's 3.73). Since the entire point of situation summaries is to drive retrieval, this is the most decision-relevant dimension. The 0.27 gap per case compounds across the 6-8 retrieval calls per game.
+
+## Decision and tradeoffs
+
+**Recommendation: keep flash-lite-default for now, revisit when production latency budget allows 3.5-flash.**
+
+3.5-flash is clearly better on pairwise comparison and the most important dimension (retrieval usefulness), but the improvement is modest on rubric scores (3.92 vs 3.92 average). The cost increase is 6x on input and 6x on output, and latency nearly triples (2.6s → 7.0s). Since situation summary runs on every agent turn (multiple times per game round), the latency and cost compound significantly.
+
+The strongest argument for upgrading: the pairwise judge picked 3.5-flash 14/15 times, suggesting consistent-if-small quality improvements that the rubric doesn't fully capture. If retrieval quality becomes a bottleneck in downstream evaluations, 3.5-flash is the clear upgrade path.
+
+The argument against: flash-lite's current quality (3.92 avg) is adequate, and the retrieval pipeline has other levers (reranking, filtering, store quality) that may yield larger improvements per dollar than upgrading the summary model.
+
+## Lessons
+
+**Pairwise comparison is more sensitive than independent rubric scoring.** When two outputs are evaluated side by side, the judge can detect subtle quality differences that don't show up as score gaps on independent rubric evaluation. For model comparison decisions, pairwise is the more informative signal — but rubric scores explain *why* one model wins.
+
+**Thinking budget is not universally beneficial.** For flash-lite, adding medium thinking made outputs worse (3.59 vs 3.92). The model lacks the capacity to productively use the reasoning time. This held across both extraction and situation summary tasks, suggesting it's a property of the model rather than the task.
+
+**Role perspective is a hidden failure mode.** 2.5-flash's high faithfulness masked its poor role perspective (2.73). A summary that's factually accurate but framed from the wrong viewpoint will retrieve irrelevant memories. This dimension wouldn't be caught by a generic "quality" evaluation — it required the role-specific rubric.
+
+## What's next
+
+The situation summary eval pipeline (`evaluation/experiments/summary_eval.py`) now supports both frozen case scoring and model replay with per-dimension rubric judging. The pairwise experiment (`evaluation/experiments/summary.py`) now returns both per-output dimension scores and the pairwise winner in a single judge call. These tools enable future prompt iteration and model comparison without ad-hoc scripts.
+
+If retrieval quality evaluations show that summary-driven retrieval is a bottleneck, the first lever to pull is upgrading to 3.5-flash. The infrastructure to test this is now in place.
+
+## Artifacts
+
+All artifacts are co-located in this evidence folder.
+
+### Model outputs (15 cases each)
+
+| File | Description |
+|---|---|
+| `model_comparison/outputs_flash-lite-default_20260524_162057.jsonl` | flash-lite default (no thinking) |
+| `model_comparison/outputs_flash-lite-medium_20260524_162057.jsonl` | flash-lite medium thinking |
+| `model_comparison/outputs_2.5-flash_20260524_162057.jsonl` | gemini-2.5-flash |
+| `model_comparison/outputs_3.5-flash_20260524_162057.jsonl` | gemini-3.5-flash |
+
+### Judge results
+
+| File | Description |
+|---|---|
+| `model_comparison/judge_pairwise_20260524_162057.jsonl` | Pairwise comparison results (45 comparisons) |
+| `model_comparison/rubric_judge_20260524_164203.jsonl` | Independent rubric scores (60 scores, 4 models × 15 cases) |
+
+
+---
+
+## Appendix B — original golden-label retrieval log (2026-05-27, verbatim)
+
+> Preserved unedited as the original dated record of the golden-label retrieval + prompt-iteration thread
+> (§2-§4), superseded by the curated narrative above. It was written as this folder's `experiment_log.md`;
+> its file paths and store versions (`v4_deduped_v2`, etc.) are period-accurate and may not resolve against
+> current code. The current shipped state and pointers live in [report.md](report.md).
+
+---
+
 # Situation Summary — Experiment Log
 
 ## Context

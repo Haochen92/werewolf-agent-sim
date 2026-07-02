@@ -1,3 +1,181 @@
+# Day Summary — chronological overview
+
+**What this is.** The spine of the day-summary quality workstream, in the order it happened: why the summary
+needed evaluating, what each prompt version tested, what the judge could and couldn't tell us, and how the
+two shipped decisions (structured output, and the generation model) were actually made. It ends where
+[report.md](report.md) begins — that companion doc is the destination, the current truth of how day-summary
+works in the code. The measurement apparatus itself is written up in
+[../../evaluation/llm_judge/day_summary.md](../../evaluation/llm_judge/day_summary.md).
+
+The raw dated lab notebook this narrative was distilled from is preserved verbatim in **Appendix A**, so the
+curated arc and the original record can be read side by side.
+
+**What day-summary is.** At the end of each day's discussion, before the vote, one LLM call condenses the
+day's public talk into a structured summary. It is the *only* representation of a past day an agent ever sees
+again, because raw transcripts are never re-shown, so an omission here is an omission for the rest of the
+game. That single fact is why the workstream exists.
+
+**The two channels.** Hard game-state facts (the vote tally, the elimination, the death-revealed role) do
+*not* depend on this LLM: they are written deterministically by the game master at vote resolution and
+appended to the same `day_summaries` stream. The LLM summary owns the *argumentative* content: accusations
+and their reasoning, role claims, alliances, and village dynamics. Keeping that division in mind explains why
+several apparent "completeness" failures below turn out not to matter.
+
+**What "quality" means here.** From v2 on, quality was scored by an LLM judge on five 1-5 dimensions:
+`completeness`, `accuracy`, `evidence_type_clarity`, `village_dynamics`, `epistemic_correctness`. Two of those
+turned out to be presence checks on forced structure; three could actually move (§2, §7).
+
+**Naming.** The **prompt** iterated v1→v4b. A separate **model bake-off** (§7) compared generation models
+under the fixed v4b prompt. The **judge** model was gemini-2.5-pro throughout.
+
+**Reading contract.** Sections are in time order, and each states what it tested and what it found. The arc
+contains real corrections shown in place, not smoothed over: a word-limit hypothesis that was falsified (§3),
+and a judge that proved unable to rank the versions it was built to rank (§5). For the current shipped state,
+jump to [report.md](report.md).
+
+---
+
+## 0 · Origin — why the day summary exists, and why its quality mattered
+
+The day summary exists for two reasons. First, it **bounds the context**: agents act over many days, and
+re-feeding every earlier day's full transcript on every later prompt would make the context swell as the game
+runs on, so each past day is compressed once into a fixed-size digest and only the current day is shown raw.
+Second, it **turns dialogue into signal**: a raw discussion is mostly repetition, hedging, and social texture,
+so a structured extract of the load-bearing facts is cheaper and cleaner for a downstream model to reason over
+than the transcript.
+
+That design has a consequence. The summary becomes the sole carrier of a prior day into every later decision:
+agent prompts, the situation-summary query, and post-game extraction all read it, and none of them ever see
+the raw transcript again. So its quality is a bottleneck for multi-day reasoning, yet it had never been
+evaluated. Three things were unknown: did it capture all the strategically important content (completeness),
+were its attributions correct (accuracy), and did its omissions propagate downstream (impact)? The
+four-section v1 template had been written once and never revisited. Everything below is judged against one
+bar: preserve what a later day needs, without inventing what didn't happen.
+
+## 1 · v1 baseline — four fixed categories
+
+v1 captured four fixed buckets: accusations, defenses, role reveals, and alliances. That was a defensible
+first cut, but it asked for none of the *situation* signals the downstream consumers actually needed — how
+much the village knew, how aligned it was, who was driving. Those signals are exactly what the
+situation-summary query and post-game extraction were built to consume, so their absence was the root gap v2
+set out to close.
+
+## 2 · v2 — compose the situation standard, and build the judge
+
+**Change.** v2 composed the shared `SITUATION_STANDARDS` document into the prompt and added a "Village
+dynamics" section. This is the same standard the situation-summary and extraction prompts already used. A
+hand comparison on 8 pairs confirmed it added real signal: every summary now stated whether the village was
+information-rich or information-starved, described the consensus texture, and named who was driving versus
+deflecting.
+
+**The judge.** To score this at scale, a five-dimension LLM judge (gemini-2.5-pro) was built. Its first
+result was already the shape of everything that followed:
+
+| Dimension | Avg | Min |
+|---|---|---|
+| completeness | 4.56 | 3 |
+| accuracy | 4.83 | 4 |
+| evidence_type_clarity | 4.89 | 3 |
+| village_dynamics | 5.00 | 5 |
+| epistemic_correctness | 4.89 | 3 |
+
+`village_dynamics` was pinned at a perfect 5.00, and `completeness` was the weak spot: the judge flagged
+dropped vote actions and secondary accusers in 5 of 18 pairs (e.g. `0313eab5_day3`, `6a8635b0_day2`). The
+reading at the time was that the word limit forced the model to triage, and it triaged away votes and minor
+accusers.
+
+## 3 · The word-limit hypothesis, falsified
+
+If the model was triaging to fit a budget, raising the budget should help. It didn't. Bumped from 400 to 500
+words, the model kept writing 130-230 words either way, and completeness didn't move (4.44 → 4.39). One
+outlier even got worse. The limit was reverted. The lesson corrected the §2 diagnosis: the gaps are not a
+budget problem, they are the model's **summarization priorities**. It chooses what to include, and a higher
+ceiling doesn't change those choices.
+
+## 4 · v3 — completeness fixes, and the noise floor
+
+v3 targeted the two named causes. It clarified that past votes cited *as evidence* should be kept (the "no
+vote tally" rule had been over-applied), and it told the model to list *all* accusers in a pile-on. It fixed
+the two worst v2 cases (`6a8635b0_day2` 3→5, `0313eab5_day3` 3→4) but regressed others, and the averages
+drifted slightly down within noise. The real finding was methodological: individual pairs swing ±1 between
+runs from generation non-determinism, so at n=18 with a single run per pair, the deltas being chased (−0.11,
+−0.22) were smaller than the noise.
+
+## 5 · v4 — structured output, and the decision the judge couldn't make
+
+**Change.** Free-text generation let the model choose what to include, and even "list ALL accusers" didn't
+hold. v4 replaced the free-text field with structured extraction — separate `Accusation`, `RoleClaim`,
+`Alliance`, and `VillageDynamics` entries — plus a deterministic serializer that rebuilds the text block
+downstream expects. Forcing one entry per accusation makes pile-on participants hard to drop. Completeness
+nudged up (4.44 → 4.50); one game regressed on epistemic (a confirmed-dead role labeled "unverified"), which
+v4b then fixed.
+
+**The decision.** Across v2, v3, and v4 the judge could not statistically distinguish any version. So the
+call to keep structured output was made on **architectural** grounds, not judge deltas: a deterministic
+format, forced enumeration, and fields that later code can parse. Falling back to a non-eval reason when the
+instrument can't resolve a difference is the honest move, and it is the pattern that repeats in §7.
+
+## 6 · v4b — targeted epistemic and vote-declaration fixes
+
+v4b added a "confirmed by death reveal" epistemic tier and extended the vote rule to cover in-discussion vote
+*declarations*, not just past references. The targeted fix landed cleanly (`04aabab0` day3 and day4 both
+jumped epistemic 1→5). New low scores appeared on *different* pairs (a fabricated game-master announcement on
+`8e437de2_day3`), which confirmed rather than contradicted the §4 finding: the residual movement is
+generation non-determinism, not a remaining prompt gap.
+
+## 7 · Model bake-off — thinking budget over model size
+
+With the prompt settled, the last lever was the generation model. Four configs were scored under v4b
+(judge = gemini-2.5-pro):
+
+| Model | comp | acc | epis | latency (18 pairs) |
+|---|---|---|---|---|
+| flash-lite (minimal) | 4.50 | 4.61 | 4.72 | ~10 min |
+| flash-lite (medium) | 4.44 | 4.89 | 5.00 | ~10 min |
+| 3.5-flash | 4.78 | 4.78 | 5.00 | ~80 min |
+| **2.5-pro** | **4.83** | **4.94** | 5.00 | ~120 min |
+
+2.5-pro scored highest, but latency ruled it out. The decisive read was not the aggregate but a manual
+inspection of failure cases: **medium thinking** on flash-lite removed the two most damaging modes of minimal
+thinking — a fabricated game-master announcement (`8e437de2_day3`) and a dropped primary accuser
+(`6a8635b0_day2`) — at no latency cost over minimal. So the choice was flash-lite with medium thinking: the
+thinking budget bought the quality that mattered without paying the model-size latency tax.
+
+---
+
+## Recurring threads
+
+- **Saturation is mechanistic, not uniform** (§2, §7) — the two dimensions that never move
+  (`village_dynamics`, `evidence_type_clarity`) are presence checks on structure the prompt forces; the three
+  that move are content checks against the transcript.
+- **Noise ≥ signal at n=18** (§3, §4) — single-run-per-pair scoring swings ±1, so sub-0.2 deltas were never
+  real.
+- **Generation non-determinism, not prompt gaps** (§4, §6) — after v4, different pairs regress each run and no
+  systematic gap remained.
+- **Architecture and latency over judge deltas** (§5, §7) — both shipped decisions were made on grounds the
+  judge couldn't provide, because it couldn't rank near-equal options.
+- **Two channels** (throughout) — the LLM owns argumentative content and the game master owns the hard facts,
+  which is why dropped-vote "completeness" failures are largely harmless.
+
+## Artifacts
+
+| Beat | Artifact | What it holds |
+|---|---|---|
+| §2 | `regen_comparison.json` | v1-vs-v2 hand comparison (the Village-dynamics signal) |
+| §2-§7 | `eval_summary.txt`, `eval_results.jsonl` | per-dimension score tables + per-pair judge output |
+| §7 | `eval_summary_31-flash-lite_medium.txt`, `eval_summary_35-flash.txt`, `eval_summary_25-pro.txt` (+ matching `eval_results_*.jsonl`) | the model bake-off, per config |
+| all | `prompt_versions/` | checkpointed prompts v1 → v4b |
+| destination | [report.md](report.md) | current shipped state + freshness/gap tracking |
+| apparatus | [../../evaluation/llm_judge/day_summary.md](../../evaluation/llm_judge/day_summary.md) | the L1/L2 measurement write-up |
+
+---
+
+## Appendix A — Raw lab notebook (2026-05-27, verbatim)
+
+> Preserved unedited as the original dated record, superseded by the curated narrative above. File paths and
+> identifiers here are period-accurate (pre-refactor) and may not resolve against current code; the current
+> pointers live in [report.md](report.md).
+
 # Day Summary — Experiment Log
 
 ## Context

@@ -94,7 +94,7 @@ def run_eval(
     return results
 
 
-def write_results(results: list[dict], suffix: str):
+def write_results(results: list[dict], suffix: str, total_pairs: int):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     results_file = OUTPUT_DIR / f"eval_results_{suffix}.jsonl"
@@ -105,13 +105,24 @@ def write_results(results: list[dict], suffix: str):
             f.write(json.dumps(r) + "\n")
 
     scored = [r for r in results if r["scores"]]
+
+    # Reconcile N so an averages table is never read as covering more pairs than
+    # it does: a pair silently drops out either via a generation failure (never
+    # added to results) or a judge that returns None (no scores).
+    gen_failures = total_pairs - len(results)
+    judge_failures = len(results) - len(scored)
+    coverage = (
+        f"{len(scored)}/{total_pairs} pairs scored "
+        f"({gen_failures} generation failures, {judge_failures} judge failures)"
+    )
+
     if not scored:
-        print("\nNo scored results to summarize.")
+        print(f"\nNo scored results to summarize — {coverage}.")
         return
 
     dims = ["completeness", "accuracy", "evidence_type_clarity", "village_dynamics", "epistemic_correctness"]
     lines = []
-    lines.append(f"Day Summary Eval — {len(scored)} pairs scored")
+    lines.append(f"Day Summary Eval — {coverage}")
     lines.append(f"Gen model: {scored[0]['gen_model']} (thinking={scored[0]['thinking_level']})")
     lines.append(f"Judge model: {scored[0]['judge_model']}")
     lines.append("")
@@ -185,7 +196,7 @@ def main():
         gen_model=args.gen_model, thinking_level=args.thinking,
     )
     suffix = _output_suffix(args.gen_model, args.thinking)
-    write_results(results, suffix)
+    write_results(results, suffix, len(pairs))
 
 
 if __name__ == "__main__":

@@ -1,3 +1,251 @@
+# Post-Game Extraction — chronological overview
+
+**What this is.** The spine of the post-game extraction quality workstream, in the order it happened: why
+extraction needed evaluating, how the judge was de-bugged before it could be trusted, which generation model
+to use, and the finding that reshaped the architecture — that fanning out *per role* beats one all-roles pass.
+It ends where [report.md](report.md) begins: that companion doc is the destination, the current shipped state,
+which carried this study's per-role finding one step further into the live **per-cell** fan-out and dropped
+per-game strategy points under v7. The measurement instrument itself — the judge and how far to trust it — is
+written up in [../../evaluation/llm_judge/extraction.md](../../evaluation/llm_judge/extraction.md).
+
+The full multi-phase study, with every per-model and per-role score table, is preserved verbatim in
+**Appendix A**, so the curated arc and the original record can be read side by side. Section numbers below
+(`§N`) are for navigation, not chronology-of-record; the dated tables live in the appendix.
+
+**What extraction is.** When a game ends, one pass mines the transcript into structured **observations** and
+(historically) **strategy points** — the memory a future game retrieves against. It is the write side of the
+memory system, so its quality bounds everything downstream: if the extractions are vague, ungrounded, or
+role-starved, no amount of retrieval or reranking tuning recovers what was never written. That is why the
+workstream exists.
+
+**Reading contract.** Sections are in time order, and each states what it tested and what it found. The arc
+keeps its real corrections in place rather than smoothing them over: a judge that had to be fixed twice before
+its scores meant anything (§2), a "more thinking is better" assumption that was falsified (§5), and a judge
+metric that actively *penalized* the design that turned out to win (§5). For the current shipped state, jump to
+[report.md](report.md).
+
+---
+
+## 0 · Origin — why extraction quality is load-bearing
+
+Extraction decides what a finished game contributes to memory, and nothing downstream can add information the
+extraction never captured. Three failure modes would each be silent at write time and only surface later as bad
+retrieval: an extraction could be **vague** (situations like "after a mislynch" that match every game), it
+could be **ungrounded** (claims not in the transcript), or it could be **epistemically broken** (strategy
+advice that assumes knowledge a role would not have in play). The workstream set out to measure all three at
+scale, which meant building a judge — and the first thing the judge revealed was that it was measuring itself
+wrong.
+
+## 1 · The prompt lineage — from vague to distinctive
+
+The extraction prompt reached its current shape through three moves, each fixing a named failure of the last.
+The earliest version never mentioned retrieval, and it produced consistently vague situations that matched
+everything. The second added a "critical retrieval constraint" — it told the model these situations would be
+matched by semantic search, so "after a mislynch" would collide with every mislynch ever, and it must specify
+the *conditions* that made a situation distinctive. That lifted specificity sharply. The third replaced the
+inline constraint with a shared standard: `SITUATION_STANDARDS`, a dimensional framework (information
+landscape, consensus texture, agent exposure, game phase) composed into extraction, dedup, and the
+situation-summary query alike, so all three components judge "is this situation distinctive" by the same yardstick.
+That version also promoted the dimensions to real schema fields, concatenated at storage time into the
+`composed_situation` that retrieval embeds. This last fact is what §2 turns on.
+
+## 2 · The judge, de-bugged before it was trusted (Runs 1-3)
+
+The first judge run scored `epistemic_compliance` at 2.81 — alarmingly low — and `specificity` at 3.19. Both
+turned out to be judge bugs, not extraction failures, and finding that is the point of the run.
+
+- **Epistemic scope (Run 1→2).** The judge applied the epistemic rule uniformly, penalizing *observations* for
+  omniscient framing. But observations are factual post-game records; only strategy points are served back into
+  play and must respect role knowledge. Scoping the rule to strategy points lifted the dimension 2.81 → 4.00 —
+  the extractions had been clean all along.
+- **Specificity field (Run 2→3).** The judge scored specificity on the narrow `situation` string, but
+  retrieval matches the `composed_situation` — situation plus the four dimensional fields (§1). The judge
+  wasn't seeing the text that makes an item findable. Showing it the composed query lifted specificity
+  3.19 → 3.88.
+
+A mechanical check ran alongside the judge, deliberately kept *off* the judge: a script counted player IDs and
+found 84.3% of observations used them (§3). The lesson of this section is methodological — a judge is an
+instrument, and an instrument that grades the wrong field or the wrong item type reports artifacts as findings.
+Both fixes were verified live and carried forward into the current judge; the apparatus report tracks them.
+
+## 3 · The player-ID naming rule — permissive to prohibitive
+
+The 84.3% ID usage traced to a permissive prompt: "you may use actual roles here" was read as *permission* to
+use roles, not *prohibition* against IDs. IDs are undesirable in observations even though the omniscient framing
+allows them — `player_2` means nothing in a different game, and it wastes tokens a role descriptor would spend
+better. The fix was a standalone naming rule with an explicit "never use player IDs," an omniscient-perspective
+framing, and good/bad examples ("the wolf who led the early accusation" not "player_2"). Leakage dropped from
+84.3% to 0% on the production model. It is the one prompt change this study shipped that was driven by a
+deterministic check rather than the judge.
+
+## 4 · Model bake-off — quality against cost and latency
+
+With the prompt settled and the judge fixed, the last single-pass lever was the generation model. Five models
+were profiled on the same transcripts (judge: gemini-3.1-pro-preview), and the read was a cost/quality frontier,
+not a single winner:
+
+- **gemini-2.5-pro** — the incumbent and the quality ceiling (4.96 aggregate); the standard to beat.
+- **gemini-3.5-flash** — the best all-rounder: near-pro quality (4.88), fast, good volume, 0% ID leak.
+- **gemini-2.5-flash** — the volume king (11.6 obs/game) and best price/volume, but lower quality and the one
+  model that still leaked IDs (3.4%).
+- **gemini-3-flash-preview** — highest raw score (4.98) but prohibitive latency (116s/game, spiking to 389s);
+  a preview API, not production-ready.
+- **gemini-3.1-flash-lite** — too minimal alone: it emitted a fixed 4+4 items regardless of game complexity.
+
+Two caveats bound this section, and both are the reason the *absolute* numbers here should not be read as
+current (report.md gap 4). The judge model differs from Runs 1-3 (3.1-pro-preview scores more generously than
+the 3.5-flash judge), so scores are not comparable across the two judges — only rankings within a run are. And
+the re-judging that added perspective compliance ran on Vertex AI while the original ran on Google AI; the two
+backends differ at temperature 0, so absolute dimension scores shifted (grounding for flash-preview moved
+4.90 → 4.40 on backend alone).
+
+## 5 · The finding that reshaped the architecture — per-role over single-pass
+
+The pivotal experiment replaced one all-roles extraction call with four role-focused calls, merged. The
+hypothesis was volume; the real finding was that single-pass **structurally starves the minority roles**.
+
+- **Volume roughly doubles**, at ~3x latency and cost (four sequential calls).
+- **Single-pass under-serves healer and investigator specifically.** With gemini-2.5-pro, single-pass coverage
+  for healer and investigator sat near the floor (1.20 and 1.40 on a 1-5 scale); per-role lifted them to 3.40
+  and 3.80. The prompt asks for "4-8 items per role" in both modes, but a single call spends its budget on the
+  roles that dominate the transcript (wolf, villager) and starves the rest. A dedicated call cannot.
+- **Per-role wins head-to-head.** In pairwise judging, 2.5-pro per-role beat its own single-pass output 80% of
+  matchups, sweeping wolf and investigator 5-0; single-pass won only villager, the role it already over-serves.
+
+This section also carries two corrections kept in place:
+
+- **A falsified assumption.** For flash-lite, a *higher* thinking budget (8192 tokens) was slower *and* worse
+  than a medium one (4096): medium ran 6.4x faster with a +0.44 higher judge average and no latency spikes.
+  More thinking was actively hurting the smaller model. Medium became the flash-lite setting.
+- **A judge metric that penalized the winner.** The judge's `diversity` and `coverage` dimensions *dropped*
+  under per-role, because the judge saw the same game events described from four perspectives and read them as
+  repetitive — but a wolf's view of a mislynch and a healer's view of it are distinct retrieval targets. The
+  judge measures surface properties *within* one output; it cannot see information *gain over an alternative*.
+  Manual inspection of the investigator role told the opposite story from the scores: per-role surfaced whole
+  categories of strategy (investigation targeting, failure-mode pivots, pre-death information sharing) that
+  single-pass never mentioned. This is the concrete instance of the LLM-judge's structural blind spot, and it
+  is why the per-role call was made on inspection, not on the aggregate.
+
+## 6 · The 8-dimension judge and the model hierarchy
+
+Two dimensions the extraction prompt already demanded but the judge never scored — `strategy_depth` (concrete
+conditions + action + reasoning) and `novelty` (non-obvious mechanism vs restated fundamentals) — were added,
+and unlike the original five they produced *differentiated* scores (3.95 and 2.95), not ceilings. With a
+pairwise tournament on top, the model hierarchy came out clean and consistent: gemini-2.5-pro per-role (4.60
+aggregate, sweeps flash-lite 20-0) ≫ gemini-3.5-flash per-role ≫ flash-lite medium per-role (3.86). The one
+practical surprise: flash-lite per-role fought 3.5-flash *single-pass* to a near coin-flip (45% of matchups),
+because the cheaper model's per-role coverage advantage offsets much of the stronger model's per-item quality —
+and after dedup collapses flash-lite's filler, the volume advantage compounds at ~6x lower cost.
+
+## 7 · What graduated, and what did not
+
+The study's **directional** finding graduated into production; its **absolute** numbers did not. What carried
+forward:
+
+- **The fan-out.** Per-role extraction became the live design — and then went one step further to **per-cell**
+  fan-out under v6 (one call per role×phase, 11 cells), for the same minority-role reason but at finer grain.
+- **The judge fixes** (epistemic scope, composed-situation specificity) and the **naming rule** are live.
+- **gemini-2.5-pro** remained the production extractor (the ceiling), with the flash tier characterized as the
+  cost lever.
+
+What did not carry forward: per-game **strategy points**. Under v7 the per-game SP extraction was dropped
+entirely — an SP earns its place only by generalizing across games, so SPs are now synthesized from cross-game
+observation clusters in consolidation, not minted per game. That decision, and the v6 dimensional schema, are
+documented in their own evidence folders (`phase_b/`, `v7_final/`); this study is the quality groundwork they
+built on.
+
+## 8 · The v7 refresh (2026-06-19) — model A/B on the live store
+
+Three weeks later the v7 consolidation loop re-opened the model question — this time on the **live v6_1 store**,
+not the v4-era stores of §4-§6. Two things forced the re-ask. The loop **re-extracts every game**, so the
+extraction-model cost dominates its recurring bill; and the first-order extraction question for the loop is not
+framing but **recall** — *did we capture what's needed* — because omission is the one error the loop can never
+fix (a wrong lesson gets pruned; a never-extracted one is gone for good).
+
+**What ran.** A model arm (pro-2.5 vs flash-3.5 vs flash-lite) plus a recall arm, on the same 3-game v6ab
+slice, re-extracted per-cell. The real generated observations are colocated in
+[`model_comparison/v7_refresh/`](model_comparison/v7_refresh/) (144 / 165 / 123 obs across the three arms); the
+full design and the recall/amplify tables are in
+[`../../v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md).
+
+**The model finding held, and sharpened: flash-3.5 ≈ pro.** The decisive read was manual, not the judge —
+across all three models on the same games, all identified the same critical observations (the serial killer's
+fatal vote-record, the Investigator mislynch), with flash-3.5 at 165 obs matching pro's 144 on the pivotal
+chains. flash-lite is correct but **thin** (123, dropping some secondary lessons). So the May conclusion — cheap
+models extract competitively — survives on the current store, and for a cheaper loop the safe near-pro pick is
+flash-3.5.
+
+**A metric falsified in place.** The recall arm's parse-based capture metric scored flash-lite at 25% of
+flagged pivotal turns versus pro's 100% — a 10× gap. The manual read overturned it: on the heavily-flagged
+serial-killer night cell, flash-lite captured the *same* kill sequence as pro, but the metric only credits an
+observation that states a parseable alive-count, which pro's verbose situations do and flash-lite's terse ones
+do not. The gap was largely a verbosity artifact. This is §5's judge lesson again at a new instrument — a proxy
+scored *surface form*, not the information captured — so the read was trusted over the metric, and the metric
+would need a semantic-match rebuild before any pro-vs-lite recall claim could scale.
+
+**And it relocated the binding lever.** Extraction was *right* — the observations correctly recorded that
+passivity hurt the serial killer — while the synthesized strategy point inverted it (halo-keyed). So the loop's
+real spend belongs on the **synthesis** fix, not on extraction or its model. That verdict is why the
+extraction-model choice, though refreshed here, is no longer where the leverage sits.
+
+**Currency.** Because this ran on v6_1, the model question is *not* v4-stale (unlike §4-§6's absolute numbers).
+What it did not fix: the recall metric's verbosity confound, the judge's missing calibration, and — the
+headline — that the synthesis it fingered as the binding lever is still unjudged.
+
+---
+
+## Recurring threads
+
+- **The judge measures surface, not information gain** (§2, §5, §6, §8) — it graded the wrong field twice
+  before it was trusted, its `diversity`/`coverage` dims penalized the per-role design that manual inspection
+  showed was better, and in the v7 refresh a parse-based recall metric false-missed flash-lite's terse-but-
+  correct observations. An automated grader sees properties *within* an output's surface form, not the
+  information actually captured or the gain *over an alternative* — three times the read overturned the metric.
+- **Single-pass starves minority roles** (§5, §7) — the structural finding under everything: one call spends
+  its budget on the dominant roles, so healer and investigator coverage sat near the floor until each got a
+  dedicated call. This drove per-role and then per-cell.
+- **Backend and judge-model shifts break absolute comparison** (§4, §6) — Google→Vertex at temp 0, and a more
+  generous 3.1-pro-preview judge, both move absolute scores; only within-run rankings survive.
+- **De-bugged ≠ calibrated** (§2, throughout) — every fix was made against *design intent* and face validity,
+  never against a human golden set. That gap is the apparatus report's headline and is still open.
+- **Small-N on the recommendations** (§4-§6, §8) — the two judge-bug runs were n=48, but every model and mode
+  recommendation rests on n=5-10 games, and the v7 model A/B is a n=3 pre-gate (directional, de-halo
+  inconclusive at that size).
+
+## Artifacts
+
+| Beat | Artifact | What it holds |
+|---|---|---|
+| §2 | `eval_results/extraction_eval_20260524_*.jsonl` | Runs 1-3, the judge de-bug (epistemic scope, specificity field) |
+| §2-§3 | `flash_extraction_5games.txt`, `pro_reextraction_playerid_fix.txt` | player-ID verification (deterministic check) |
+| §4-§6 | `model_comparison/*.jsonl` | per-model extractions + judge scores + pairwise tournaments (May study) |
+| §8 | [`model_comparison/v7_refresh/`](model_comparison/v7_refresh/) | v7 model-A/B generated observations (pro / flash-3.5 / flash-lite, 3-game v6ab slice) + README |
+| §8 | [`../../v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md) | the v7 A/B spec, kill-tests, and recall/amplify result tables (scripts alongside in `v7_final/`) |
+| §1 | `eval_sets/extraction_v1.jsonl`, `eval_configs/` | the frozen 48-game dataset + build/eval config |
+| destination | [report.md](report.md) | current shipped state (per-cell, obs-only) + freshness/gap tracking |
+| apparatus | [../../evaluation/llm_judge/extraction.md](../../evaluation/llm_judge/extraction.md) | the L1/L2 measurement write-up |
+
+## Limitations / future work
+
+Carried to the destination doc's gaps table ([report.md](report.md#current-vs-documented-gaps-freshness-2026-07-02)),
+criticality-ordered and freshness-dated: v7 synthesis quality is unjudged (gap 1), the judge is uncalibrated
+(gap 2), five of eight dimensions saturate (gap 3), and this study's absolute model numbers are v5-era (gap 4 —
+though the v7 refresh in §8 re-answered the *model* question on the live v6_1 store, so only the May per-dimension
+numbers are stale). The credible upgrades — point the existing judge at the synthesized SP store, build a small
+human golden, and give the recall metric a semantic-match rebuild (§8) — stay deferred while extraction is not
+the binding constraint.
+
+---
+
+## Appendix A — original multi-phase report (2026-05-24 to 05-26, verbatim)
+
+> Preserved unedited as the original dated record of the full study, superseded by the curated narrative above.
+> It was written as a single `report.md` (the genre split into report + log came later), so it reads as a
+> chronological lab report; the naming ("quality") and any file paths are period-accurate and may not resolve
+> against the current folder/code. The current shipped state and pointers live in [report.md](report.md).
+
+---
+
 # Extraction Quality Evaluation
 
 ## Motivation
