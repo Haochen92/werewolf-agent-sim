@@ -19,7 +19,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import re
+import warnings
 from collections import Counter, OrderedDict
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
@@ -55,11 +57,13 @@ from evaluation.src.replay.application import (
     run_application_action,
 )
 from evaluation.src.loop.decision_scoring import (
+    REPLAYABLE_DECEIVER_ROLES,
     REPLAYABLE_TOWN_ROLES,
     THREAT_ROLES,
     allow_abstain_for,
     score_night_target,
     score_vote,
+    wolf_vote_is_good,
 )
 
 # Night-action spec map (role -> prompt, output schema, output_key) mirroring
@@ -344,27 +348,47 @@ def _select_diverse(
     max_day: int = 999,
     roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
     phase: str = "day_vote",
+    seed: int = 0,
 ) -> list[tuple[EvalCase, dict[str, Any]]]:
-    """Pick ~n decisions in [min_day, max_day] for the given roles+phase, spread
-    ACROSS games (round-robin), so a sample isn't dominated by one game."""
-    by_game: OrderedDict[str, list[tuple[EvalCase, dict[str, Any]]]] = OrderedDict()
+    """Pick ~n decisions in [min_day, max_day] for the given roles+phase, STRATIFIED BY
+    DAY and spread across games. The old round-robin walked each game's day-ordered pool
+    from depth 0, so day-2 (always present) was drawn first and day-3+ was under-sampled —
+    early-weighting every aggregate. Here we round-robin ACROSS days (one per day per
+    round until a day is exhausted → each day is represented up to its availability), and
+    within a day round-robin across games. Deterministic given `seed` (it only fixes the
+    per-day game ordering, so the same seed → the same cohort)."""
+    by_day: dict[int, OrderedDict[str, list[tuple[EvalCase, dict[str, Any]]]]] = {}
     for case, game in iter_cases(batch_path, roles, phase):
         if case.day < min_day or case.day > max_day:
             continue
-        by_game.setdefault(str(game["game_id"]), []).append((case, game))
+        by_day.setdefault(case.day, OrderedDict()).setdefault(
+            str(game["game_id"]), []
+        ).append((case, game))
+
+    rng = random.Random(seed)
+    day_queues: dict[int, list[tuple[EvalCase, dict[str, Any]]]] = {}
+    for day, games in by_day.items():
+        game_pools = list(games.values())
+        rng.shuffle(game_pools)  # reproducible cross-game spread within the day
+        queue: list[tuple[EvalCase, dict[str, Any]]] = []
+        depth = 0
+        while any(len(pool) > depth for pool in game_pools):
+            for pool in game_pools:
+                if len(pool) > depth:
+                    queue.append(pool[depth])
+            depth += 1
+        day_queues[day] = queue
+
+    days = sorted(day_queues)
     picked: list[tuple[EvalCase, dict[str, Any]]] = []
-    depth = 0
-    while len(picked) < n:
-        added = False
-        for pool in by_game.values():
-            if len(pool) > depth:
-                picked.append(pool[depth])
-                added = True
+    idx = 0
+    while len(picked) < n and any(idx < len(day_queues[d]) for d in days):
+        for d in days:
+            if idx < len(day_queues[d]):
+                picked.append(day_queues[d][idx])
                 if len(picked) >= n:
                     break
-        if not added:
-            break
-        depth += 1
+        idx += 1
     return picked
 
 
@@ -422,14 +446,19 @@ def run_causal(
     judge_model: str = DEFAULT_ADHERENCE_JUDGE_MODEL,
     max_workers: int = 6,
     roles: frozenset[str] = REPLAYABLE_TOWN_ROLES,
+    lens: Literal["town", "wolf"] = "town",
 ) -> dict[str, Any]:
     """The causal screen: replay each decision memory-OFF vs memory-AS-STORED in
     one sitting, score each regenerated vote against true roles, pair by decision.
     Decisions run concurrently (I/O-bound LLM calls). With do_judge, also label
-    adherence on the stored arm's regenerated action. NOTE: hit_threat scoring is
-    town-lensed (correct = votee is wolf/SK); for a wolf/SK run, read the raw
-    votee roles from the rows, not the town accuracy summary."""
+    adherence on the stored arm's regenerated action.
+
+    `lens` sets what "accuracy" means: town (default, correct = votee is wolf/SK,
+    ``hit_threat``) or wolf (deceiver lens, correct = the vote INDUCES a town mislynch,
+    ``wolf_vote_is_good``) — pass ``lens='wolf'`` with ``--roles wolf`` (or
+    serial_killer) so a deceiver run is scored on its own win condition, not town's."""
     cases = _select_diverse(batch_path, n, min_day, max_day, roles)
+    good = (lambda out: out.hit_threat) if lens == "town" else wolf_vote_is_good
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         futures = [ex.submit(_causal_one, c, g, do_judge, judge_model) for c, g in cases]
         results = [f.result() for f in futures]
@@ -447,12 +476,12 @@ def run_causal(
             continue
         for arm, out in (("off", off_out), ("stored", stored_out)):
             agg[arm]["n"] += 1
-            agg[arm]["hit"] += out.hit_threat
+            agg[arm]["hit"] += good(out)
             agg[arm]["mislynch"] += out.is_town_mislynch
             agg[arm]["abstain"] += out.is_abstain
-        if off_out.hit_threat and not stored_out.hit_threat:
+        if good(off_out) and not good(stored_out):
             hurt += 1
-        elif stored_out.hit_threat and not off_out.hit_threat:
+        elif good(stored_out) and not good(off_out):
             helped += 1
         if stored_out.is_abstain and not off_out.is_abstain:
             abst_induced += 1
@@ -469,6 +498,7 @@ def run_causal(
     acc_off, acc_stored = summary["off"]["accuracy"], summary["stored"]["accuracy"]
     return {
         "batch": batch_path.name,
+        "lens": lens,
         "n_decisions": len(cases),
         "n_failed": failed,
         "arms": summary,
@@ -847,8 +877,13 @@ def _echo_toks(s: str | None) -> set[str]:
 
 
 def _echo(reasoning: str | None, mem_text: str) -> float | None:
-    """Fraction of the reasoning's distinctive (>=4-char, non-stopword) tokens that
-    also appear in the memory text; None if the reasoning has no scorable tokens."""
+    """DEPRECATED — the lexical echo proxy is RETIRED as an engagement measure.
+    Fraction of the reasoning's distinctive (>=4-char, non-stopword) tokens that also
+    appear in the memory text; None if the reasoning has no scorable tokens. Validated
+    against the adherence judge at Spearman rho=0.14 (p=0.38) — it does NOT track whether
+    the memory was applied, so it must not be read as an engagement signal. Kept only so
+    ``run_echo_judge_validation`` can reproduce the invalidation; do not use it in new
+    screens (use the adherence judge)."""
     s, m = _echo_toks(reasoning), _echo_toks(mem_text)
     return (len(s & m) / len(s)) if s else None
 
@@ -879,7 +914,18 @@ def run_echo_consideration(
     memory). The floor is taken per-schema and per-decision, so it cancels verbosity:
     a longer memory-flavored note overlaps ANY memory, and only echo-above-floor
     isolates genuine drawing-on. Paired by decision -> does the memory-LINKED wording
-    make the reasoning engage the memory more than plain vote-first, with no judge?"""
+    make the reasoning engage the memory more than plain vote-first, with no judge?
+
+    DEPRECATED / RETIRED: the echo proxy this screen is built on does not track memory
+    application (rho=0.14 vs the adherence judge, p=0.38 — see run_echo_judge_validation
+    and evidence/.../decision_replay/experiment_log.md). Its numbers are not a valid
+    engagement signal; use the adherence judge instead. Retained for reproducibility."""
+    warnings.warn(
+        "run_echo_consideration uses the retired lexical echo proxy (rho=0.14 vs the "
+        "adherence judge); its engagement numbers are invalid — use the adherence judge.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     cases = _select_diverse(batch_path, n, min_day, 999, roles, phase="day_vote")
     schemas = {
         "vote_first": None,
@@ -1733,6 +1779,13 @@ def main() -> None:
         default="villager,healer,investigator",
         help="comma-separated player roles to replay (default town; e.g. 'wolf')",
     )
+    ap.add_argument(
+        "--lens",
+        choices=["town", "wolf"],
+        default="town",
+        help="scoring lens for --causal: town (correct = votes a threat) or wolf "
+        "(deceiver: correct = induces a town mislynch). Use with --roles wolf,serial_killer",
+    )
     ap.add_argument("--model", default=DEFAULT_ADHERENCE_JUDGE_MODEL)
     args = ap.parse_args()
     roles = frozenset(r.strip() for r in args.roles.split(",") if r.strip())
@@ -1749,6 +1802,7 @@ def main() -> None:
             do_judge=args.judge,
             judge_model=args.model,
             roles=roles,
+            lens=args.lens,
         )
         print(json.dumps(report, indent=2))
     elif args.night:

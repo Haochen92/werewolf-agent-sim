@@ -530,3 +530,12 @@ Spec rewritten to v2 (`evidence/phase_b/dimension_schema_build_spec.md`). Outcom
   experiment, reuses logged `adopted_strategy_keys`+count fields); MEDIUM=feed utilities into ranking;
   PARK=exploration/online convergence.
 - Dimension build (villager·day) proceeds in PARALLEL — untouched by the procedural workstream.
+
+## 2026-07-02 — echo proxy formally RETIRED (instrument-hardening pass)
+
+The lexical echo proxy (`_echo` / `run_echo_consideration`) is retired as an engagement
+measure. Its own validation (`echo_judge_validation_nh_town.json`, N=40) showed it does NOT
+track memory application — Spearman rho=0.14 vs the adherence judge (p=0.38). It is now marked
+DEPRECATED in code (docstring + a `DeprecationWarning` on `run_echo_consideration`) and kept
+only so `run_echo_judge_validation` can reproduce the invalidation. Use the adherence judge for
+any engagement read; no history in this log is rewritten.

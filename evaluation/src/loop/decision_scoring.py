@@ -27,8 +27,24 @@ POWER_ROLES = frozenset({"investigator", "healer", "vigilante"})
 
 # Town roles whose day_vote the replay harness can regenerate today — i.e. the
 # roles present in evaluation.src.replay.application.ACTION_SPECS for
-# ("<role>", "day_vote"). Vigilante/serial_killer lack a vote spec there.
+# ("<role>", "day_vote"). vigilante is town but now also has a vote spec (see
+# REPLAYABLE_DECEIVER_ROLES note); kept off this town-default set only because the
+# default screen is town-lensed and vigilante is opted in explicitly by --roles.
 REPLAYABLE_TOWN_ROLES = frozenset({"villager", "healer", "investigator"})
+
+# Roles scored with the DECEIVER lens (a good day-vote INDUCES a town mislynch, the
+# mirror of town's hit_threat). wolf + serial_killer both have day_vote ACTION_SPECS;
+# vigilante is town-lensed (it is a town power role) even though it now has a spec too.
+REPLAYABLE_DECEIVER_ROLES = frozenset({"wolf", "serial_killer"})
+
+
+def wolf_vote_is_good(outcome: "VoteOutcome") -> bool:
+    """Deceiver-lens read on a day vote: a wolf/SK advances its faction by driving a
+    town MISLYNCH (voting an actual town player off), so ``is_town_mislynch`` — NOT the
+    town's ``hit_threat`` — is the "correct" deceiver vote. Voting a fellow threat is
+    self-sabotage (neither), abstaining is neutral. Named distinctly so a deceiver run
+    never silently reuses town hit_threat semantics."""
+    return outcome.is_town_mislynch
 
 
 @dataclass(frozen=True)
@@ -94,6 +110,28 @@ def allow_abstain_for(
     cfg = config or GameConfig()
     streak = no_lynch_streak_before(day, list(day_resolutions))
     return cfg.abstain_enabled and streak < cfg.no_lynch_force_after
+
+
+def query_criticality(
+    surviving_players: Iterable[str], roles: Mapping[str, str]
+) -> tuple[int, int, bool]:
+    """Deterministic query criticality from the frozen board: ``(players_alive,
+    distance_to_parity, is_swing)``. ``distance_to_parity`` is wolf-faction parity
+    (non-wolf eliminations until wolves reach parity); ``is_swing`` = one result from
+    flipping. Town-lensed (wolves are the dominant parity driver; the serial killer is a
+    minority wildcard counted among "others"). Omniscient/offline — computed from the true
+    role map, never shown to an agent; the memory-query fill of the same three dims is what
+    the dimension audit checks against this.
+
+    Shared home (not the criticality-screen experiment) so the dimension audit and the
+    screen compute the criticality truth identically. ``criticality_screen`` re-imports it.
+    """
+    alive = list(surviving_players)
+    n = len(alive)
+    wolves = sum(1 for p in alive if roles.get(p) == "wolf")
+    others = n - wolves
+    distance_to_parity = others - wolves
+    return n, distance_to_parity, distance_to_parity <= 1
 
 
 @dataclass(frozen=True)

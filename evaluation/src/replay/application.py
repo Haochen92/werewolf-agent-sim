@@ -13,6 +13,10 @@ from Agents.prompts import (
     HEALER_DAY_VOTE,
     INVESTIGATOR_DAY_DISCUSS,
     INVESTIGATOR_DAY_VOTE,
+    SERIAL_KILLER_DAY_DISCUSS,
+    SERIAL_KILLER_DAY_VOTE,
+    VIGILANTE_DAY_DISCUSS,
+    VIGILANTE_DAY_VOTE,
     VILLAGER_DAY_DISCUSS,
     VILLAGER_DAY_VOTE,
     WOLF_DAY_DISCUSS,
@@ -51,6 +55,16 @@ ACTION_SPECS: dict[tuple[str, str], ActionSpec] = {
         DayDiscussOutput,
         "day_channel",
     ),
+    ("vigilante", "day_discussion"): ActionSpec(
+        VIGILANTE_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    ),
+    ("serial_killer", "day_discussion"): ActionSpec(
+        SERIAL_KILLER_DAY_DISCUSS,
+        DayDiscussOutput,
+        "day_channel",
+    ),
     ("villager", "day_vote"): ActionSpec(VILLAGER_DAY_VOTE, DayVoteOutput, "day_votes"),
     ("healer", "day_vote"): ActionSpec(HEALER_DAY_VOTE, DayVoteOutput, "day_votes"),
     ("investigator", "day_vote"): ActionSpec(
@@ -59,6 +73,14 @@ ACTION_SPECS: dict[tuple[str, str], ActionSpec] = {
         "day_votes",
     ),
     ("wolf", "day_vote"): ActionSpec(WOLF_DAY_VOTE, DayVoteOutput, "day_votes"),
+    # vigilante (town power role) + serial_killer day-votes — added so the deceiver /
+    # power-role side of the board is replayable, not just the town trio.
+    ("vigilante", "day_vote"): ActionSpec(VIGILANTE_DAY_VOTE, DayVoteOutput, "day_votes"),
+    ("serial_killer", "day_vote"): ActionSpec(
+        SERIAL_KILLER_DAY_VOTE,
+        DayVoteOutput,
+        "day_votes",
+    ),
 }
 
 
