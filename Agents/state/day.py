@@ -48,6 +48,9 @@ class DayGraphState(TypedDict, total=False):
     """Private investigation outcomes (siloed to the investigator's payload)."""
     vigilante_results: list[str]
     """Private notes the vigilante learned from its shots (siloed to the vigilante)."""
+    vigilante_bullets: int
+    """Remaining vigilante shots; seeded from orchestrator state so the vigilante's day payload can
+    fill the deterministic `bullets_left` situation dim (not shown in any prompt)."""
 
     surviving_villagers: list[str]
     """Living non-wolves (includes the solo serial killer)."""

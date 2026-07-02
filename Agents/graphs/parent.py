@@ -86,6 +86,7 @@ def day_phase(
         "human_player": state["human_player"],
         "investigator_results": state.get("investigator_results", []),
         "vigilante_results": state.get("vigilante_results", []),
+        "vigilante_bullets": state.get("vigilante_bullets", 0),
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
         "no_lynch_streak": state.get("no_lynch_streak", 0),

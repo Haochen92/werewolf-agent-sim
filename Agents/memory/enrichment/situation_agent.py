@@ -68,6 +68,74 @@ def _summary_container(cell_schema: type[BaseModel]) -> type[BaseModel]:
     return cached
 
 
+def _computed_players_alive(payload: dict) -> int | None:
+    """Deterministic living-player count from the agent's OWN payload — robust to payload shape:
+
+    - wolf payloads carry the faction rosters (surviving_wolves + surviving_villagers) and no
+      role-blind list; their sum is the whole board (self is in surviving_wolves);
+    - single-actor NIGHT payloads list every living player EXCEPT the actor, so the actor is added
+      back via the membership check;
+    - day payloads carry the full role-blind roster including self (membership check → no adjustment).
+
+    Returns None when neither roster is reachable (legacy fallback → keep the LLM fill)."""
+    wolves = payload.get("surviving_wolves")
+    villagers = payload.get("surviving_villagers")
+    if wolves is not None and villagers is not None:
+        return len(wolves) + len(villagers)
+    roster = payload.get("surviving_players")
+    if roster is None:
+        return None
+    self_counted = payload.get("player_id") in roster
+    return len(roster) + (0 if self_counted else 1)
+
+
+def _log_dim_override(payload: dict, field: str, llm_value, computed_value) -> None:
+    """Debug-log only when the deterministic override actually corrects the LLM — so future runs
+    surface residual LLM fill error for free (grep the situation-summary debug logs)."""
+    if llm_value != computed_value:
+        logger.debug(
+            "situation dim override: %s (%s) day %s %s -> LLM said %r, computed %r",
+            payload.get("player_id"), payload.get("player_role"),
+            payload.get("current_day"), field, llm_value, computed_value,
+        )
+
+
+def _override_deterministic_dims(situation: BaseModel, payload: dict) -> None:
+    """Replace the agent-KNOWABLE situation dims with values computed from game state, so they are
+    never trusted from the LLM's structured output. The 2026-07 dimension-accuracy audit
+    (`evidence/phase_b/dimension_accuracy_audit/`) measured the LLM mis-filling `players_alive` ~3%
+    for no epistemic reason and systematically UNDER-counting `bullets_left` (0.164 exact, day-2
+    acc 0.0) — all three fields below are in the agent's own information set, so they are computed
+    here deterministically and for free.
+
+    RESIDUAL INCONSISTENCY (accepted this pass, flagged in the audit log): only the NUMERIC/BOOL
+    dims are corrected — NOT the prose (`criticality_stakes` etc.), which the LLM derived from its
+    OWN, possibly-wrong numbers. So a corrected `players_alive`/`bullets_left` may now disagree with
+    the un-corrected prose in the same object. Re-deriving the prose is out of scope (it would need a
+    second LLM call). `distance_to_parity` / `is_swing` are deliberately left LLM-filled: they need
+    the true role map the live agent cannot see."""
+    alive = _computed_players_alive(payload)
+    if alive is not None and hasattr(situation, "players_alive"):
+        _log_dim_override(payload, "players_alive", situation.players_alive, alive)
+        situation.players_alive = alive
+
+    # bullets_left lives only on the vigilante cells; vigilante_bullets is the runtime remaining-shot
+    # counter (night payload carries it directly; the day payload has it threaded in — see flow.py).
+    if hasattr(situation, "bullets_left") and payload.get("vigilante_bullets") is not None:
+        computed = int(payload["vigilante_bullets"])
+        _log_dim_override(payload, "bullets_left", situation.bullets_left, computed)
+        situation.bullets_left = computed
+
+    # ally_revealed lives only on the wolf DAY cell. initial_wolf_count is threaded from the game's
+    # true role map (see flow.py); a partner is "revealed/eliminated" iff fewer wolves survive than
+    # were cast (the audit's validated partner-absent truth, 0.975 accurate as an LLM fill already).
+    if hasattr(situation, "ally_revealed") and payload.get("initial_wolf_count") is not None:
+        living_wolves = len(payload.get("surviving_wolves", []))
+        computed = living_wolves < int(payload["initial_wolf_count"])
+        _log_dim_override(payload, "ally_revealed", situation.ally_revealed, computed)
+        situation.ally_revealed = computed
+
+
 def _generate_situations_for_agent(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     action_phase: str,
@@ -103,6 +171,11 @@ def _generate_situations_for_agent(
             result = chain.invoke(
                 {**_build_agent_prompt_input(payload), **extra}, config={"run_name": run_name}
             )
+            if cell_schema is not None:
+                # Correct the agent-knowable dims from game state before composing the dims/embeds
+                # (the legacy path emits no structured dims, so nothing to override there).
+                for situation in result.situations:
+                    _override_deterministic_dims(situation, payload)
             return compose(result)
         except Exception as e:
             logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")

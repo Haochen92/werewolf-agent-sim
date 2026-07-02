@@ -87,6 +87,13 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
     
     
     
+def _initial_wolf_count(state: DayGraphState) -> int:
+    """How many wolves the game was CAST with (from the true role map). Used only to fill the wolf
+    day cell's deterministic `ally_revealed` — a scalar count, so no wolf identity rides the payload
+    (the leak-boundary invariant is about names, not the count the wolf already knows)."""
+    return sum(1 for r in state.get("roles", {}).values() if r == "wolf")
+
+
 def build_speaker_send(
     state: DayGraphState,
     speaker_id: str,
@@ -121,10 +128,16 @@ def build_speaker_send(
     if role == "wolf":
         payload["surviving_wolves"] = state["surviving_wolves"]
         payload["surviving_villagers"] = state["surviving_villagers"]
+        # Deterministic ally_revealed fill (situation_agent): how many wolves were cast, so a live
+        # query can compute "a partner is gone" from surviving_wolves without trusting the LLM.
+        payload["initial_wolf_count"] = _initial_wolf_count(state)
     elif role == "investigator":
         payload["investigator_results"] = state.get("investigator_results", [])
     elif role == "vigilante":
         payload["vigilante_results"] = state.get("vigilante_results", [])
+        # Deterministic bullets_left fill (situation_agent): the vigilante day cell carries
+        # bullets_left, but VillagerDayState otherwise drops the counter — thread it explicitly.
+        payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
     return Send(f"{role}_discuss", payload)
 
 
@@ -179,10 +192,12 @@ def fan_out_day(
         if role == "wolf":
             payload["surviving_wolves"] = state["surviving_wolves"]
             payload["surviving_villagers"] = state["surviving_villagers"]
+            payload["initial_wolf_count"] = _initial_wolf_count(state)
         elif role == "investigator":
             payload["investigator_results"] = state["investigator_results"]
         elif role == "vigilante":
             payload["vigilante_results"] = state.get("vigilante_results", [])
+            payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
 
         concurrent_nodes.append(Send(f"{role}_{phase}", payload))
 
