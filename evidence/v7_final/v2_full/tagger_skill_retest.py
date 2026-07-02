@@ -141,6 +141,7 @@ def main():
     print(f"Wolf game-level skill retest over {len(records)} v2 ON games "
           f"({calls} fresh outcome-out day-calls, {elapsed:.0f}s)\n")
     print(f"{'faction':14s} {'N':>3}  (A) in|deluck   (B) OUT|deluck   (C) OUT|deluck,verbosity")
+    artifact_rows = {}
     for f in ("wolf", "serial_killer", "town"):
         c = cols[f]
         n = len(c["won"])
@@ -149,10 +150,28 @@ def main():
         C = _pcorr2(c["dout"], c["won"], c["deluck"], c["verb"])
         fmt = lambda x: f"{x:+.2f}" if x is not None else "  -  "
         print(f"{f:14s} {n:>3}     {fmt(A):>8}        {fmt(B):>8}         {fmt(C):>8}")
+        artifact_rows[f] = {
+            "n": n,
+            "A_in_given_deluck": A,
+            "B_out_given_deluck": B,
+            "C_out_given_deluck_verbosity": C,
+        }
     print("\n(A) reproduces Check C (~+0.60 wolf). (B) blinded: signal not from outcome-leak if it holds.")
     print("(C) blinded + verbosity partialled: holds => 'skill'; collapses => verbosity confounder.")
     print(f"\nCOST: {calls} fresh flash-lite day-calls (~$0.0{max(1, calls//30)}); 0 if fully cached. "
           "Exact via Langfuse if a receipt is needed.")
+
+    # Persist the load-bearing partial-r numbers as a durable artifact (was stdout-only).
+    # Additive: the statistics above are unchanged; this just serializes them.
+    out_path = RUN / "tagger_skill_retest_results.json"
+    out_path.write_text(json.dumps(
+        {"n_games": len(records), "fresh_day_calls": calls,
+         "partial_r": artifact_rows,
+         "legend": {"A": "partial r(disc_in, won | deluck)",
+                    "B": "partial r(disc_out[blinded], won | deluck)",
+                    "C": "partial r(disc_out[blinded], won | deluck, verbosity)"}},
+        indent=2))
+    print(f"Wrote results artifact: {out_path}")
 
 
 if __name__ == "__main__":

@@ -171,6 +171,46 @@ def main():
     print(f"COST: {calls} fresh flash-lite day-calls ({elapsed:.0f}s wall). Est ~$0.02-0.06 ({rate}); "
           f"0 if fully cached. Exact realized cost: pull Langfuse over this window if a receipt is needed.")
 
+    # Persist the load-bearing numbers as a durable artifact (was stdout-only). Additive:
+    # the stats above are unchanged; this just serializes `cells` + the two contrasts.
+    artifact = {
+        "game_ids": [g["game_id"] for g in records],
+        "n_games": len(records),
+        "fresh_day_calls": calls,
+        "coupling": {
+            f: {
+                f"{outc}/{who}": {
+                    "disc_verdict": cells[(outc, who)].get(f, (None, None, 0))[0],
+                    "credibility": cells[(outc, who)].get(f, (None, None, 0))[1],
+                    "n": cells[(outc, who)].get(f, (None, None, 0))[2],
+                }
+                for outc in ("in", "out")
+                for who in ("all", "speakers")
+            }
+            for f in ("town", "wolf", "serial_killer")
+        },
+        "contrasts": {
+            f: {
+                "mechanical_silent_player_effect": (
+                    (cells[("in", "all")].get(f, (None,))[0] - cells[("in", "speakers")].get(f, (None,))[0])
+                    if cells[("in", "all")].get(f, (None,))[0] is not None
+                    and cells[("in", "speakers")].get(f, (None,))[0] is not None
+                    else None
+                ),
+                "outcome_leak_all_players": (
+                    (cells[("in", "all")].get(f, (None,))[0] - cells[("out", "all")].get(f, (None,))[0])
+                    if cells[("in", "all")].get(f, (None,))[0] is not None
+                    and cells[("out", "all")].get(f, (None,))[0] is not None
+                    else None
+                ),
+            }
+            for f in ("town", "wolf", "serial_killer")
+        },
+    }
+    out_path = RUN / "tagger_deleak_ablation_results.json"
+    out_path.write_text(json.dumps(artifact, indent=2))
+    print(f"Wrote results artifact: {out_path}")
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

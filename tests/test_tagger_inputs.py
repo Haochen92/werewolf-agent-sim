@@ -10,7 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from Agents.schemas.game_events import DaySummary
 from evaluation.src.loop import discussion_tagger as dt
@@ -93,6 +93,81 @@ class TagCacheTests(unittest.TestCase):
                 dt.tag_game_cached(rec, d, version="v1")
                 dt.tag_game_cached(rec, d, version="v2")   # different version -> re-tag
             self.assertEqual(m.call_count, 2)
+
+
+class TagCacheProvenanceTests(unittest.TestCase):
+    """The (game_id, version) key once collided across a paired A/B (same game_id, different
+    play). session_id/trace_id now partition the filename AND provenance is asserted on read."""
+
+    def test_different_arms_do_not_collide(self) -> None:
+        # Same game_id pinned across arms, but each arm has its own trace/session -> the two
+        # must NOT share a cache file (the cross-arm "scored OFF with ON tags" bug).
+        off = {"game_id": "g1", "session_id": "s_off", "trace_id": "t_off"}
+        on = {"game_id": "g1", "session_id": "s_on", "trace_id": "t_on"}
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(dt, "tag_game", return_value=({(1, "p1"): {"v": "off"}}, {})) as m:
+                dt.tag_game_cached(off, d)
+            with patch.object(dt, "tag_game", return_value=({(1, "p1"): {"v": "on"}}, {})) as m2:
+                disc_on, _ = dt.tag_game_cached(on, d)   # different arm -> tags fresh, no hit
+                m2.assert_called_once()
+            self.assertEqual(disc_on, {(1, "p1"): {"v": "on"}})
+            self.assertEqual(len(list(Path(d).glob("g1.*.json"))), 2)  # two distinct files
+
+    def test_present_but_mismatched_provenance_retags(self) -> None:
+        rec = {"game_id": "g1", "session_id": "s1", "trace_id": "t1"}
+        slug = dt._provenance_slug(rec)
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / f"g1.{slug}.v2.json"
+            # A file at the exact path but belonging to a DIFFERENT trace -> must not be trusted.
+            path.write_text(json.dumps({
+                "provenance": {"game_id": "g1", "session_id": "s1", "trace_id": "OTHER", "version": "v2"},
+                "disc": {"1|p1": {"v": "foreign"}}, "night": {},
+            }))
+            with patch.object(dt, "tag_game", return_value=({(1, "p1"): {"v": "fresh"}}, {})) as m:
+                disc, _ = dt.tag_game_cached(rec, d)
+            m.assert_called_once()                          # mismatch -> re-tag, not foreign tags
+            self.assertEqual(disc, {(1, "p1"): {"v": "fresh"}})
+
+    def test_matching_provenance_hits(self) -> None:
+        rec = {"game_id": "g1", "session_id": "s1", "trace_id": "t1"}
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(dt, "tag_game", return_value=({(2, "p3"): {"v": 1}}, {})) as m:
+                dt.tag_game_cached(rec, d)                  # miss -> write with provenance
+                dt.tag_game_cached(rec, d)                  # same play -> hit, no re-tag
+            m.assert_called_once()
+
+
+class TaggerFailureCounterTests(unittest.TestCase):
+    """A swallowed per-day tag = silent credit degradation, so it must be LOUD (summary ERROR)
+    and strict=True must re-raise."""
+
+    def _record(self) -> dict:
+        return {
+            "game_id": "g1",
+            "roles": {"p1": "villager"},
+            "day_channel": [{"day": 1, "player": "p1", "message": "hi"}],
+            "day_resolutions": [],
+            "night_resolutions": [],
+        }
+
+    def _boom_llm(self):
+        boom = MagicMock()
+        boom.invoke.side_effect = RuntimeError("forced tag failure")
+        structured = MagicMock()
+        structured.with_structured_output.return_value = boom
+        return structured
+
+    def test_failure_logs_summary_error_and_returns_empty(self) -> None:
+        with patch.object(dt, "get_llm_pro", return_value=self._boom_llm()):
+            with self.assertLogs("evaluation.src.loop.discussion_tagger", level="ERROR") as cm:
+                disc, night = dt.tag_game(self._record())
+        self.assertEqual((disc, night), ({}, {}))           # degraded to empty, not a crash
+        self.assertTrue(any("days produced EMPTY tags" in line for line in cm.output))
+
+    def test_strict_reraises(self) -> None:
+        with patch.object(dt, "get_llm_pro", return_value=self._boom_llm()):
+            with self.assertRaises(RuntimeError):
+                dt.tag_game(self._record(), strict=True)
 
 
 if __name__ == "__main__":

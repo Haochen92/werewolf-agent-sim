@@ -33,6 +33,7 @@ tagger_deleak_ablation.py + tagger_skill_retest.py.)
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from collections import defaultdict
@@ -201,9 +202,17 @@ def _role_claims_by_day(record: dict) -> dict[int, list]:
 
 
 def tag_game(record: dict, max_workers: int = 8, *, show_outcome: bool = True,
-             speakers_only: bool = True) -> tuple[dict, dict]:
+             speakers_only: bool = True, strict: bool = False) -> tuple[dict, dict]:
     """Omniscient per-day tags. Returns ({(day,player): disc_tag}, {(day,player): night_tag}).
     flash-lite via get_llm_pro() (env-pin GOOGLE_GENAI_PRO_MODEL).
+
+    Failure surfacing (a swallowed tag = silent credit degradation, so make it loud):
+      * a per-day LLM failure logs a WARNING and, at end of game, a summary ERROR counting
+        how many of the game's days produced empty tags — visible in the run/credit log;
+      * strict=True re-raises the first per-day failure instead of returning empty tags
+        (use in a rerun where a partial tag pass must not be silently scored);
+      * a missing/absent `eval_cases_path` (which empties role_claims/private_reads) logs one
+        loud WARNING per game rather than degrading silently.
 
     Two independent levers (the 2x2 ablation toggled them to separate the outcome-leak axis from the
     mechanical silent-player axis — see tagger_deleak_ablation.py):
@@ -217,6 +226,12 @@ def tag_game(record: dict, max_workers: int = 8, *, show_outcome: bool = True,
     earns no credit), which a blinded+verbosity-controlled retest confirmed is real skill the vote proxy
     misses (wolf/SK partial r(disc,won|deluck,verbosity) ≈ +0.56/+0.60, N=24)."""
     roles = record.get("roles") or {}
+    gid = record.get("game_id")
+    path = record.get("eval_cases_path")
+    if not path or not os.path.exists(path):
+        logger.warning(
+            "tagger: eval_cases_path missing/absent for game %s (%r) — role_claims and "
+            "private_reads degrade to empty for this game", gid, path)
     by_day: dict[int, list] = defaultdict(list)
     spoke: dict[int, set] = defaultdict(set)        # day -> players who actually spoke (speakers_only gate)
     for m in record.get("day_channel") or []:
@@ -230,6 +245,8 @@ def tag_game(record: dict, max_workers: int = 8, *, show_outcome: bool = True,
     role_claims = _role_claims_by_day(record)              # anchors role_reveal on the in-game extraction
     clause = _CLAUSE_OUTCOME if show_outcome else _CLAUSE_NO_OUTCOME
     llm = get_llm_pro().with_structured_output(DayTags)
+
+    failed_days: list[int] = []
 
     def _tag(day: int):
         na = night_acts.get(day, [])
@@ -249,39 +266,86 @@ def tag_game(record: dict, max_workers: int = 8, *, show_outcome: bool = True,
             res = llm.invoke(prompt, config={"run_name": f"tag_d{day}"})
             return day, (res if isinstance(res, DayTags) else DayTags.model_validate(res))
         except Exception as e:  # noqa: BLE001
-            logger.warning("tag day %s failed: %s", day, e)
+            if strict:
+                raise
+            logger.warning("tag day %s (game %s) failed: %s", day, gid, e)
+            failed_days.append(day)
             return day, DayTags(discussion=[], night=[])
 
     disc: dict = {}
     night: dict = {}
+    days = sorted(by_day)
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        for day, dt in pool.map(_tag, sorted(by_day)):
+        for day, dt in pool.map(_tag, days):
             for t in dt.discussion:
                 if speakers_only and t.player not in spoke[day]:
                     continue                     # drop silent-player discussion tags (the cleanest leak source)
                 disc[(day, t.player)] = t.model_dump()
             for t in dt.night:
                 night[(day, t.player)] = t.model_dump()
+    if failed_days:
+        logger.error(
+            "tagger: %d/%d days produced EMPTY tags for game %s (days %s) — the credit "
+            "signal for those days is degraded, not zero-skill", len(failed_days),
+            len(days), gid, sorted(failed_days))
     return disc, night
+
+
+def _cache_provenance(record: dict, version: str) -> dict:
+    """The identity a cached tag file belongs to. game_id ALONE is not unique across a
+    paired A/B (the same game_id is deliberately pinned across arms, but each arm PLAYS
+    a different game), so caching on game_id once let an OFF-arm decision be scored with
+    an ON-arm's tags. session_id + trace_id pin the specific play; version pins the prompt."""
+    return {
+        "game_id": record.get("game_id"),
+        "session_id": record.get("session_id"),
+        "trace_id": record.get("trace_id"),
+        "version": version,
+    }
+
+
+def _provenance_slug(record: dict) -> str | None:
+    """A short, stable disambiguator (session_id|trace_id) folded into the cache filename so
+    two arms sharing a game_id never share a file. None when neither is present (legacy
+    single-arm caches keep the flat `{gid}.{version}.json` name; the in-file provenance
+    assert still guards them)."""
+    raw = f"{record.get('session_id')}|{record.get('trace_id')}"
+    if record.get("session_id") is None and record.get("trace_id") is None:
+        return None
+    return hashlib.sha1(raw.encode()).hexdigest()[:12]
 
 
 def tag_game_cached(record: dict, tags_dir: str | None, version: str = "v2",
                     max_workers: int = 8) -> tuple[dict, dict]:
     """PERSIST tags per game_id so the rolling-window credit recompute doesn't re-tag finished games.
     A played game's tags are immutable, so re-running `tag_game` over the window each generation is pure
-    waste. Keyed by (game_id, version) — bump `version` when the tagger prompt changes so stale tags
-    invalidate (same idea as the SHA-keyed embedding cache). tags_dir=None or no game_id => tag fresh."""
+    waste. Keyed by (game_id, session/trace slug, version) — bump `version` when the tagger prompt changes
+    so stale tags invalidate (same idea as the SHA-keyed embedding cache). The cached record stores its
+    provenance and it is ASSERTED on read: a game_id/trace_id/session mismatch (the cross-arm collision
+    class) re-tags fresh instead of returning foreign tags. tags_dir=None or no game_id => tag fresh."""
     gid = record.get("game_id")
     if not tags_dir or not gid:
         return tag_game(record, max_workers=max_workers)
-    path = os.path.join(tags_dir, f"{gid}.{version}.json")
+    slug = _provenance_slug(record)
+    name = f"{gid}.{slug}.{version}.json" if slug else f"{gid}.{version}.json"
+    path = os.path.join(tags_dir, name)
+    provenance = _cache_provenance(record, version)
     if os.path.exists(path):
         data = json.load(open(path))
-        unpack = lambda d: {(int(k.split("|", 1)[0]), k.split("|", 1)[1]): v for k, v in d.items()}
-        return unpack(data["disc"]), unpack(data["night"])
+        cached_prov = data.get("provenance")
+        # Back-compat: files written before provenance existed have none — trust them
+        # (the slug already partitions arms); a PRESENT but mismatched provenance is the
+        # cross-arm collision this guard exists to catch, so re-tag rather than mis-score.
+        if cached_prov is not None and cached_prov != provenance:
+            logger.warning(
+                "tagger cache provenance mismatch at %s (cached=%s wanted=%s) — re-tagging "
+                "fresh instead of scoring with foreign tags", path, cached_prov, provenance)
+        else:
+            unpack = lambda d: {(int(k.split("|", 1)[0]), k.split("|", 1)[1]): v for k, v in d.items()}
+            return unpack(data["disc"]), unpack(data["night"])
     disc, night = tag_game(record, max_workers=max_workers)
     os.makedirs(tags_dir, exist_ok=True)
     pack = lambda m: {f"{d}|{p}": v for (d, p), v in m.items()}
     with open(path, "w") as f:
-        json.dump({"disc": pack(disc), "night": pack(night)}, f)
+        json.dump({"provenance": provenance, "disc": pack(disc), "night": pack(night)}, f)
     return disc, night
