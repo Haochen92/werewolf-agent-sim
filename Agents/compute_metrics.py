@@ -71,7 +71,7 @@ def _dead_before_each_night(metrics: Metrics) -> dict[int, set[str]]:
 # Diagnostic-tier per-game computations (metrics-audit survivors, 2026-07-02).
 #
 # The definitions mirror the audit runners that VALIDATED them
-# (evaluation/src/experiments/{accusation_metrics,claim_conversion}.py, per
+# (evaluation/src/audits/{accusation_metrics,claim_conversion}.py, per
 # evidence/metrics/metrics_audit/proxy_discovery_log.md §3.B/§3.C). They are re-expressed here
 # against the live object shapes (DayChannel / *ResolutionMetric) rather than imported, because
 # Agents/ (production) must not depend on evaluation/ (the eval harness) — the runners already

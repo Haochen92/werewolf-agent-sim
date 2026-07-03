@@ -21,7 +21,7 @@ scratch it came from.
 Graduate with:
 
 ```bash
-poetry run python -m evaluation.src.experiments.graduate \
+poetry run python -m evaluation.src.cli_runner.graduate_run \
   --result evaluation/eval_results/<run>.jsonl \
   --config evaluation/config/<domain>/<name>.json \
   --experiment retrieval/store_dedup        # evidence/<experiment>; --dry-run to preview

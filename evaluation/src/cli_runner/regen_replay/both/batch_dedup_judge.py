@@ -7,7 +7,7 @@ reporting per-key accuracy and DISCARD/MERGE/KEEP confusion.
 
 Usage::
 
-    poetry run python -m evaluation.src.experiments.cli_runners.both.batch_dedup_judge \\
+    poetry run python -m evaluation.src.cli_runner.regen_replay.both.batch_dedup_judge \\
         --model gemini-3.5-flash --thinking medium \\
         --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json \\
         --labels evaluation/frozen_eval_sets/batch_dedup_golden_labels.json

@@ -300,7 +300,7 @@ _TAGGER_MODE_DEFAULT_GLOB = {
 
 
 class TaggerEvalConfig(_DescribedConfig):
-    """Config for the discussion-tagger validation runner (``experiments/tagger_eval.py``).
+    """Config for the discussion-tagger validation runner (``cli_runner/discussion_tagger_eval.py``).
 
     One runner, three modes — each reproducing a frozen ``evidence/v7_final`` apparatus:
     ``accuracy`` (per-field tag correctness vs a deterministic self-claim detector + faction
@@ -339,7 +339,7 @@ class TaggerEvalConfig(_DescribedConfig):
 class AutoDedupCalibrationConfig(_DescribedConfig):
     """Threshold-sweep recipe for the embedding pre-filter calibration.
 
-    Built from CLI args by ``experiments/eval_auto_dedup.py`` (argparse →
+    Built from CLI args by ``studies/eval_auto_dedup.py`` (argparse →
     validated config), so the sweep keeps its interactive flags while each run
     has one validated recipe. The runner reports to stdout — it writes no
     artifact, so there is no ``output`` field.

@@ -1,4 +1,4 @@
-"""Aggregation-math + config tests for the canonical tagger runner (experiments/tagger_eval.py).
+"""Aggregation-math + config tests for the canonical tagger runner (cli_runner/discussion_tagger_eval.py).
 
 $0: ``tag_game`` (the only paid path — flash-lite) is stubbed with canned DayTags-shaped dicts, so
 every mode's aggregation is exercised on tiny synthetic records without a real tagging pass. The
@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from evaluation.src.core.config_schema import TaggerEvalConfig
-from evaluation.src.experiments import tagger_eval as te
+from evaluation.src.cli_runner import discussion_tagger_eval as te
 
 
 def _cfg(mode: str, **kw) -> TaggerEvalConfig:

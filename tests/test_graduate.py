@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evaluation.src.experiments.graduate import (
+from evaluation.src.cli_runner.graduate_run import (
     graduate,
     referenced_inputs,
     referenced_models,

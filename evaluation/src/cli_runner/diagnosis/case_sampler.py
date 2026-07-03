@@ -4,7 +4,7 @@ Runs select -> cohort -> review-packet -> verdict-scaffold on REAL local sidecar
 lives in ``evaluation.src.diagnosis.sampler`` (reusable/importable); this file only wires args → the
 pipeline → files. The optional replay step is GUARDED and refuses to run without spend sign-off.
 
-  poetry run python evaluation/src/experiments/case_sampler.py \
+  poetry run python evaluation/src/cli_runner/diagnosis/case_sampler.py \
       --batch batch_results/ab_nh_town.jsonl --out evidence/.../sampler_smoke --n-outliers 8
   # add --replay to see it REFUSE (paid live-LLM regeneration; wired, not run)
 """

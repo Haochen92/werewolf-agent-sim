@@ -67,9 +67,11 @@ evaluation/                the eval subsystem (code + its data)
     audits/      re-runnable $0 deterministic audits — the regression surface (dimension fills, scheduler
                  access, whiff conversion, proxy validation, dedup + batch-dedup golden scorers, pivotal-turn flags)
     loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
-    experiments/ command-line eval runners — the live CLI layer (inventory below)
-      cli_runners/  thin CLIs, grouped by operation: regen/ (regen-only) · judge/ (judge-only) · both/
-      studies/       concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
+    cli_runner/  command-line eval runners — the live CLI layer (inventory below)
+      regen_replay/  thin CLIs, grouped by operation: regen/ (regen-only) · judge/ (judge-only) · both/
+      diagnosis/     the case-sampler CLI (command wiring over the diagnosis/ logic package above)
+      graduate_run.py · discussion_tagger_eval.py   ops CLIs: promote a keeper run to evidence/ · validate the discussion tagger
+    studies/     concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
   frozen_eval_sets/        shared frozen replay datasets + gold labels (experiment-specific sets live in evidence/<exp>/eval_sets/)
@@ -207,7 +209,7 @@ One-off studies (e.g. the model-comparison runners) write their outputs into
 `evidence/<experiment>/`, not `evaluation/eval_results/`. The full layer rule + the
 explore→graduate→supersede lifecycle is in **CLAUDE.md → Eval Architecture**.
 
-## Replay, Judges, And Experiments
+## Replay, Judges, And Runners
 
 The evaluation code is split by responsibility:
 
@@ -216,8 +218,8 @@ replay      = produce outputs by replaying part of the agent pipeline on a froze
 judges      = grade or compare outputs using a rubric
 audits      = deterministic $0 checks over recorded data (no LLM; re-runnable as regression audits)
 diagnosis   = outcome-blind sampling of cases into human/pro-LLM review cohorts
-experiments = coordinate datasets, replay, judges, configs, and JSONL output (the CLI layer)
-studies     = concluded one-shot apparatus behind frozen verdicts (under experiments/, off the CLI surface)
+cli_runner  = coordinate datasets, replay, judges, configs, and JSONL output (the CLI layer)
+studies     = concluded one-shot apparatus behind frozen verdicts (its own top-level package, off the CLI surface)
 ```
 
 For example, an E2E experiment reads frozen cases, replays the summary stage,
@@ -229,7 +231,7 @@ scores.
 The dependency direction should stay simple:
 
 ```text
-experiments/cli_runners -> replay + judges + audits   (thin CLIs; hold no eval logic)
+cli_runner/regen_replay -> replay + judges + audits   (thin CLIs; hold no eval logic)
 data/builders                 -> data / core                (freeze frozen sets; the eval-build-* CLIs)
 judges      -> prompts / schemas / formatters
 replay      -> production agent code
@@ -241,9 +243,9 @@ A CLI stays out of `judges/` and `replay/` even when it only judges (or only rep
 packages must not depend on the data plane (config / datasets / JSONL output), so the runnable
 command lives in the CLI layer and the *logic* it calls lives in `judges/` + `replay/`.
 
-### `experiments/` inventory
+### `cli_runner/` inventory
 
-`experiments/cli_runners/` is the live CLI layer — one config-driven runner per eval kind, wired as
+`cli_runner/regen_replay/` is the live CLI layer — one config-driven runner per eval kind, wired as
 `eval-*` console scripts (see `pyproject.toml [project.scripts]`). Each is a thin wrapper: it reads a
 frozen dataset, optionally replays a stage (`replay/`), optionally scores it (an LLM `judges/` grader or
 a deterministic `audits/` scorer), and writes JSONL. Runners are grouped into three subpackages by
@@ -261,12 +263,13 @@ exercises only one, e.g. `turn_eval --replay none` is judge-only):
   (`eval-summary-rubric`), `retrieval` (`eval-retrieval`), `day_summary_judge` (`eval-day-summary`),
   `batch_dedup_judge` (`eval-batch-dedup`).
 
-**Ops at `experiments/` root** (not frozen-case evals): the discussion-tagger validation runner
-`tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI `case_sampler`
-(`eval-case-sample`), and `graduate` (`eval-graduate`).
+**Ops at `cli_runner/` root** (not frozen-case evals): the discussion-tagger validation runner
+`discussion_tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI
+`diagnosis/case_sampler` (`eval-case-sample`, command wiring over the `diagnosis/` logic package), and
+`graduate_run` (`eval-graduate`).
 
 The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extraction`/`dedup`, the
-`eval-build-*` CLIs) — they write the read side, so they sit with `data/`, not `experiments/`.
+`eval-build-*` CLIs) — they write the read side, so they sit with `data/`, not `cli_runner/`.
 
 Its former flatmates moved out on 2026-07-02:
 
@@ -277,11 +280,13 @@ Its former flatmates moved out on 2026-07-02:
   (`eval-dedup-score`, online per-decision) and `batch_dedup_score` (the batch-cluster golden compare,
   split out of the old `batch_dedup_eval` monolith on 2026-07-03), and `recall_flags`. All
   pytest-covered; batch-record loading shared via `data/sources/batch_records.py`.
-- **`experiments/studies/`** — the concluded one-shot study runners behind the v5→v6→v7
+- **`studies/`** — the concluded one-shot study runners behind the v5→v6→v7
   store-evolution verdicts (the screen family, the v6 reextraction chain, the synthesis and
-  calibration A/Bs). Off the CLI surface; kept runnable because frozen `evidence/v7_final/` scripts
-  import them and two held re-screens (dimension-gating, wolf) would run on them. The
-  module → question → verdict → evidence table lives in `studies/__init__.py`.
+  calibration A/Bs). Promoted to its own top-level `evaluation/src/studies/` package on 2026-07-03 (out
+  of the `experiments/`→`cli_runner/` rename — studies sit off the CLI surface, so they don't belong
+  under it). Kept runnable because frozen `evidence/v7_final/` scripts import them and two held
+  re-screens (dimension-gating, wolf) would run on them. The module → question → verdict → evidence
+  table lives in `studies/__init__.py`.
 - **`replay/decision_screen/`** — the reusable decision-replay engine extracted verbatim
   (golden byte-diff-verified) from the study monolith; the screens in `studies/` are thin consumers.
 
@@ -474,7 +479,7 @@ redundant pairs.
 
 ### Turn Eval (captured / action / e2e)
 
-One runner (`eval-turn`, module `cli_runners.both.turn_eval`) judges a frozen turn,
+One runner (`eval-turn`, module `regen_replay.both.turn_eval`) judges a frozen turn,
 optionally regenerating part of the pipeline first. Two orthogonal knobs:
 
 - `replay`: `none` (judge the turn as captured — no regeneration), `action` (rerun
