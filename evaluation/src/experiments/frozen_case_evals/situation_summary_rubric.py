@@ -8,11 +8,11 @@ Supports two modes:
 Usage::
 
     # Judge captured situations
-    poetry run python -m evaluation.experiments.summary_eval \\
+    poetry run eval-summary-rubric \\
         --config evaluation/config/summary/captured.json
 
     # Replay with a different model, then judge
-    poetry run python -m evaluation.experiments.summary_eval \\
+    poetry run eval-summary-rubric \\
         --config evaluation/config/summary/replay_flash35.json
 """
 

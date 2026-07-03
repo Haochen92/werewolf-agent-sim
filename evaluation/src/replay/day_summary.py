@@ -3,8 +3,10 @@
 Extracts raw discussion transcripts from the eval set, runs the current
 DAY_SUMMARY_PROMPT on them, and saves old vs new summaries for comparison.
 
-Usage:
-    poetry run python -m evaluation.src.labeling.label_scorer.day_summary_regen [--pair PAIR_ID]
+Used by the ``eval-day-summary`` judge CLI (``experiments/frozen_case_evals/
+day_summary_judge``); also runnable standalone for an old-vs-new eyeball dump::
+
+    poetry run python -m evaluation.src.replay.day_summary [--pair PAIR_ID]
 """
 
 import argparse

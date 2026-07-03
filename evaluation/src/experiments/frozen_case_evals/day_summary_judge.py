@@ -4,9 +4,9 @@ Re-generates day summaries with the current prompt on raw transcripts from
 eval sets, then judges each summary using the day summary rubric judge.
 
 Usage:
-    poetry run python -m evaluation.experiments.day_summary_eval [--pair PAIR_ID] [--judge-model MODEL]
-    poetry run python -m evaluation.experiments.day_summary_eval --gen-model gemini-3.5-flash
-    poetry run python -m evaluation.experiments.day_summary_eval --gen-model gemini-3.1-flash-lite --thinking medium
+    poetry run eval-day-summary [--pair PAIR_ID] [--judge-model MODEL]
+    poetry run eval-day-summary --gen-model gemini-3.5-flash
+    poetry run eval-day-summary --gen-model gemini-3.1-flash-lite --thinking medium
 """
 
 import argparse
@@ -14,7 +14,7 @@ import json
 import time
 from pathlib import Path
 
-from evaluation.src.labeling.label_scorer.day_summary_regen import (
+from evaluation.src.replay.day_summary import (
     generate_summary,
     load_pairs,
 )

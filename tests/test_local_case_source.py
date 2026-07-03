@@ -23,7 +23,7 @@ from Agents.schemas.evaluation import (
 )
 from evaluation.src.core.config_schema import ExtractionDatasetBuildConfig
 from evaluation.src.data.sources.sidecar import LocalCaseSource, read_local_spans
-from evaluation.src.experiments.extraction_builder import build_records
+from evaluation.src.data.builders.extraction import build_records
 
 
 def _sink_for_game(trace_id: str) -> EvalCaseSink:

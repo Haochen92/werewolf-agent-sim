@@ -9,7 +9,7 @@ import io
 import unittest
 from contextlib import redirect_stdout
 
-from evaluation.src.experiments.retrieval import summarize_records
+from evaluation.src.experiments.frozen_case_evals.retrieval import summarize_records
 from evaluation.src.judges.retrieval import minimal_retrieval_scores, run_retrieval_judge
 
 

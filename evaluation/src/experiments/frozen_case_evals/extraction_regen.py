@@ -1,13 +1,13 @@
-"""Re-run extraction on frozen inputs with a different model.
+"""Re-run extraction on frozen inputs with a different model (CLI).
 
-Reads an existing extraction dataset, replays the extraction prompt through
-a specified model, and writes a new dataset in the same
-``ExtractionDatasetRecord`` format.  The output can be judged directly by
-``extraction_eval.py`` with no adapter scripts.
+Reads an existing extraction dataset, replays the extraction prompt through a
+specified model (via ``replay.extraction``), and writes a new dataset in the same
+``ExtractionDatasetRecord`` format. The output can be judged directly by
+``extraction_judge`` with no adapter scripts.
 
 Usage::
 
-    poetry run python -m evaluation.experiments.extraction_replay \\
+    poetry run python -m evaluation.src.experiments.frozen_case_evals.extraction_regen \\
         --source evaluation/frozen_eval_sets/extraction_v1.jsonl \\
         --model gemini-3.5-flash \\
         --max-games 10
@@ -16,20 +16,22 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import time
 from datetime import datetime
 from logging import getLogger
 from pathlib import Path
 
-from Agents.llm_factory import create_chat_model
-
-from Agents.memory.extraction import build_extraction_prompt
-from Agents.schemas import GameStrategyOutput
 from Agents.schemas.evaluation import ExtractionCase
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
 from evaluation.src.data.frozen_sets import read_extraction_dataset
+from evaluation.src.replay.extraction import (
+    build_prompt_from_case,
+    make_extraction_llm,
+    run_extraction,
+)
 
 load_project_env()
 logger = getLogger(__name__)
@@ -37,38 +39,8 @@ logger = getLogger(__name__)
 PLAYER_ID_RE = re.compile(r"player_\d+")
 
 
-def _make_llm(model: str, temperature: float = 0.0, **kwargs):
-    return create_chat_model(model, temperature=temperature, **kwargs)
-
-
-def _run_extraction(llm, prompt: str) -> GameStrategyOutput:
-    result = llm.with_structured_output(GameStrategyOutput).invoke(prompt)
-    if isinstance(result, GameStrategyOutput):
-        return result
-    if isinstance(result, dict):
-        return GameStrategyOutput.model_validate(result)
-    raise TypeError(f"Unexpected extraction result type: {type(result)!r}")
-
-
 def _count_player_ids(items: list[dict]) -> int:
-    import json
-
     return sum(1 for item in items if PLAYER_ID_RE.search(json.dumps(item)))
-
-
-def _build_prompt_from_case(case: ExtractionCase) -> str:
-    inputs = {
-        "formatted_roles": "\n".join(
-            f"{pid}: {role}" for pid, role in case.roles.items()
-        ),
-        "formatted_discussions": case.formatted_discussions,
-        "formatted_strategy_notes": case.formatted_strategy_notes,
-        "formatted_previous_strategies": (
-            "No previous role strategy summaries."
-        ),
-        "game_outcome": case.game_outcome,
-    }
-    return build_extraction_prompt(inputs)
 
 
 def output_path(args: argparse.Namespace, model: str) -> Path:
@@ -116,7 +88,7 @@ def main() -> None:
         llm_kwargs["model_kwargs"] = {
             "thinking_config": {"mode": args.thinking_mode}
         }
-    llm = _make_llm(args.model, args.temperature, **llm_kwargs)
+    llm = make_extraction_llm(args.model, args.temperature, **llm_kwargs)
 
     eval_set_id = args.eval_set_id or f"replay_{args.model}"
     out = output_path(args, args.model)
@@ -135,12 +107,12 @@ def main() -> None:
 
     for i, record in enumerate(records, 1):
         source_case = record.extraction_case
-        prompt = _build_prompt_from_case(source_case)
+        prompt = build_prompt_from_case(source_case)
 
         output = None
         for attempt in range(args.max_retries + 1):
             try:
-                output = _run_extraction(llm, prompt)
+                output = run_extraction(llm, prompt)
                 break
             except Exception as exc:
                 logger.warning(
