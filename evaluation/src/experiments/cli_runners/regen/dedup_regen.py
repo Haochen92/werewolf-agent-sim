@@ -6,7 +6,7 @@ model (via ``replay.dedup``), and writes a new dataset in the same
 
 Usage::
 
-    poetry run python -m evaluation.src.experiments.cli_runners.dedup_regen \\
+    poetry run python -m evaluation.src.experiments.cli_runners.regen.dedup_regen \\
         --source evaluation/frozen_eval_sets/dedup_v1.jsonl \\
         --model gemini-3.5-flash \\
         --max-cases 15

@@ -2,7 +2,7 @@
 
 Re-runs extraction with a chosen model so the regenerated observations and
 strategy points can be judged in the same ``ExtractionDatasetRecord`` shape as
-the original. The CLI wrapper (``experiments/cli_runners/extraction_regen``)
+the original. The CLI wrapper (``experiments/cli_runners/regen/extraction_regen``)
 adds retries, record assembly, and player-id leakage reporting.
 """
 

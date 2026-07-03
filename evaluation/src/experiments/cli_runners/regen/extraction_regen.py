@@ -7,7 +7,7 @@ specified model (via ``replay.extraction``), and writes a new dataset in the sam
 
 Usage::
 
-    poetry run python -m evaluation.src.experiments.cli_runners.extraction_regen \\
+    poetry run python -m evaluation.src.experiments.cli_runners.regen.extraction_regen \\
         --source evaluation/frozen_eval_sets/extraction_v1.jsonl \\
         --model gemini-3.5-flash \\
         --max-games 10

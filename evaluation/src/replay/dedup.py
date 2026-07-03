@@ -2,7 +2,7 @@
 
 Reconstructs the observation/strategy dedup prompt from the frozen candidates and
 re-runs it, returning the KEEP/DISCARD/MERGE decision letter + detail. The CLI
-wrapper (``experiments/cli_runners/dedup_regen``) adds record assembly and
+wrapper (``experiments/cli_runners/regen/dedup_regen``) adds record assembly and
 distribution reporting so the output can be judged by ``judges/dedup``.
 """
 

@@ -4,7 +4,7 @@ Formats a cluster's entries with numbered indices, invokes the observation or
 strategy batch-dedup prompt (single-pass or two-pass triage->verify), and returns
 the model's operations remapped back to real keys. Deterministic golden scoring of
 these operations lives in ``audits.batch_dedup_score``; the CLI wrapper
-(``experiments/cli_runners/batch_dedup_judge``) chains regen + score.
+(``experiments/cli_runners/both/batch_dedup_judge``) chains regen + score.
 """
 
 from __future__ import annotations

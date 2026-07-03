@@ -68,7 +68,7 @@ evaluation/                the eval subsystem (code + its data)
                  access, whiff conversion, proxy validation, dedup + batch-dedup golden scorers, pivotal-turn flags)
     loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
     experiments/ command-line eval runners — the live CLI layer (inventory below)
-      cli_runners/  thin CLIs that replay a stage and/or judge a frozen case (funnel + component evals)
+      cli_runners/  thin CLIs, grouped by operation: regen/ (regen-only) · judge/ (judge-only) · both/
       studies/       concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
@@ -243,26 +243,27 @@ command lives in the CLI layer and the *logic* it calls lives in `judges/` + `re
 
 ### `experiments/` inventory
 
-`experiments/cli_runners/` is the live CLI layer — one config-driven runner per eval kind,
-wired as `eval-*` console scripts (see `pyproject.toml [project.scripts]`). Each is a thin wrapper:
-it reads a frozen dataset, optionally replays a stage (`replay/`), scores it (an LLM `judges/` grader
-or a deterministic `audits/` scorer), and writes JSONL. Naming: `*_judge` (judge frozen/replayed
-cases), `*_pairwise`/`*_rubric` (the two situation-summary judging modes), `*_regen` (regenerate with
-a different model into a new dataset, no judge).
+`experiments/cli_runners/` is the live CLI layer — one config-driven runner per eval kind, wired as
+`eval-*` console scripts (see `pyproject.toml [project.scripts]`). Each is a thin wrapper: it reads a
+frozen dataset, optionally replays a stage (`replay/`), optionally scores it (an LLM `judges/` grader or
+a deterministic `audits/` scorer), and writes JSONL. Runners are grouped into three subpackages by
+operation — **filed by capability** (a runner that *can* do both lives in `both/` even if a config mode
+exercises only one, e.g. `turn_eval --replay none` is judge-only):
 
-- **agent-decision funnel**: `turn_eval` (`eval-turn`) is one runner over a frozen turn —
-  `--replay {none|action|all}` × `--judge {off|application|pipeline}` — collapsing the former captured
-  (`--replay none`), application (`--replay action`), and e2e (`--replay all`) CLIs; the `eval-captured`
-  / `eval-application` / `eval-e2e` script names remain as aliases that read a config with the matching
-  `replay`. Alongside it: `situation_summary_pairwise` (`eval-summary`), `situation_summary_rubric`
-  (`eval-summary-rubric`), and `retrieval` (`eval-retrieval`) stay separate (they judge the summary /
-  retrieved-memories artifacts, not the action).
-- **component evals**: `extraction_judge` (`eval-extraction`), `dedup_judge` (`eval-dedup`),
-  `day_summary_judge` (`eval-day-summary`), `batch_dedup_judge` (`eval-batch-dedup`). The two model-swap
-  regenerators run by module path only: `extraction_regen`, `dedup_regen`.
-- **ops at `experiments/` root** (not frozen-case evals): the discussion-tagger validation runner
-  `tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI
-  `case_sampler` (`eval-case-sample`), and `graduate` (`eval-graduate`).
+- **`regen/`** — regenerate an output, no judge (model-swap dataset producers, run by module path only):
+  `extraction_regen`, `dedup_regen`.
+- **`judge/`** — judge a captured output, no regeneration: `extraction_judge` (`eval-extraction`),
+  `dedup_judge` (`eval-dedup`).
+- **`both/`** — regenerate a stage AND judge/score it: `turn_eval` (`eval-turn`) is one runner over a
+  frozen turn, `--replay {none|action|all}` × `--judge {off|application|pipeline}`, collapsing the former
+  captured/application/e2e CLIs (their `eval-captured`/`eval-application`/`eval-e2e` names remain as
+  aliases). Plus `situation_summary_pairwise` (`eval-summary`), `situation_summary_rubric`
+  (`eval-summary-rubric`), `retrieval` (`eval-retrieval`), `day_summary_judge` (`eval-day-summary`),
+  `batch_dedup_judge` (`eval-batch-dedup`).
+
+**Ops at `experiments/` root** (not frozen-case evals): the discussion-tagger validation runner
+`tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI `case_sampler`
+(`eval-case-sample`), and `graduate` (`eval-graduate`).
 
 The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extraction`/`dedup`, the
 `eval-build-*` CLIs) — they write the read side, so they sit with `data/`, not `experiments/`.
@@ -473,7 +474,7 @@ redundant pairs.
 
 ### Turn Eval (captured / action / e2e)
 
-One runner (`eval-turn`, module `cli_runners.turn_eval`) judges a frozen turn,
+One runner (`eval-turn`, module `cli_runners.both.turn_eval`) judges a frozen turn,
 optionally regenerating part of the pipeline first. Two orthogonal knobs:
 
 - `replay`: `none` (judge the turn as captured — no regeneration), `action` (rerun
