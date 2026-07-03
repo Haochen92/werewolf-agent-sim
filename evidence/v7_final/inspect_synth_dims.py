@@ -19,7 +19,7 @@ from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
 from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files_cached
 from Agents.memory.store import store
 from Agents.memory.strategy_synthesis import cluster_observations_for_synth, synthesize_cluster_sps
-from evaluation.src.experiments.studies.synth_deluck_ab import _credited_for_cell, _track_record
+from evaluation.src.studies.synth_deluck_ab import _credited_for_cell, _track_record
 
 ROLE, PHASE = "serial_killer", "day_vote"
 DIM_KEYS = ("players_alive", "is_swing", "criticality", "heat", "consensus", "consensus_texture",

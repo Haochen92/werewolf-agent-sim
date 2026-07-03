@@ -24,7 +24,7 @@ import sys
 
 sys.path.insert(0, "evaluation/src")
 sys.path.insert(0, ".")
-from evaluation.src.experiments.studies.criticality_screen import query_criticality  # noqa: E402
+from evaluation.src.studies.criticality_screen import query_criticality  # noqa: E402
 
 SESSIONS = {
     "v6ab_townsp_town_only": "batch_results/v6ab_townsp.jsonl",
