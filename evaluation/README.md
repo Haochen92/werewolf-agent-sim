@@ -53,19 +53,22 @@ evaluation/                the eval subsystem (code + its data)
     core/        config schemas, result schemas, IO, formatting, costs, stats, manifests, settings
     data/        the read side — rehydrate the eval-case span-dicts run_batch captured, then curate + freeze:
       converters/    span-dict → one typed case (EvalCase / Extraction / Dedup / DaySummary)
+      builders/      frozen-set builders (agent_decision / extraction / dedup) — the eval-build-* CLIs
       sources/       where cases come from: sidecar.py (run_batch's per-game sidecars, PRIMARY) ·
                      batch_records.py (repo-root batch_results/*.jsonl game-run logs) · langfuse.py (fallback fetch + cost)
       frozen_sets.py  frozen-set record schemas + JSONL I/O · sampling.py  stratified subset selection · batch_layout.py  batch_results/ write layout
-    replay/      replay adapters for the summary, retrieval, and action stages, plus
+    replay/      regenerate one pipeline stage on a frozen case: situation_summary, retrieval, application (action),
+                 extraction, dedup, batch_dedup, day_summary, plus
       decision_screen/  the off-policy per-turn decision-replay engine (cases/replay/schemas/stats/screens)
     judges/      judge prompts + LLM judge wrappers, one per case type
     labeling/    multi-model golden-label pipeline: engine, voter, exporter, adapters/, pipeline,
                  manual_labelers/ (interactive human CLIs), label_scorer/ (golden-set scorers/NDCG/regen)
     diagnosis/   outcome-blind case sampler for human/pro-LLM review cohorts (rung ② of the modality ladder)
     audits/      re-runnable $0 deterministic audits — the regression surface (dimension fills, scheduler
-                 access, whiff conversion, proxy validation, dedup golden scorer, pivotal-turn flags)
+                 access, whiff conversion, proxy validation, dedup + batch-dedup golden scorers, pivotal-turn flags)
     loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
     experiments/ command-line eval runners — the live CLI layer (inventory below)
+      frozen_case_evals/  thin CLIs that replay a stage and/or judge a frozen case (funnel + component evals)
       studies/       concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
@@ -226,33 +229,50 @@ scores.
 The dependency direction should stay simple:
 
 ```text
-experiments -> replay
-experiments -> judges
+experiments/frozen_case_evals -> replay + judges + audits   (thin CLIs; hold no eval logic)
+data/builders                 -> data / core                (freeze frozen sets; the eval-build-* CLIs)
 judges      -> prompts / schemas / formatters
 replay      -> production agent code
 audits      -> data / core (deterministic, never judges)
 studies     -> replay / loop (frozen apparatus; nothing live imports studies)
 ```
 
+A CLI stays out of `judges/` and `replay/` even when it only judges (or only replays): those
+packages must not depend on the data plane (config / datasets / JSONL output), so the runnable
+command lives in the CLI layer and the *logic* it calls lives in `judges/` + `replay/`.
+
 ### `experiments/` inventory
 
-`experiments/` is the live CLI layer — one config-driven runner per eval kind, wired as `eval-*`
-console scripts (see `pyproject.toml [project.scripts]`): builders
-(`eval-build-dataset`/`-extraction-dataset`/`-dedup-dataset`), the agent-decision funnel
-(`eval-summary`, `eval-summary-rubric`, `eval-retrieval`, `eval-application`, `eval-captured`,
-`eval-e2e`), `eval-extraction`, `eval-day-summary`, the discussion-tagger runner `eval-tagger`
-(modes `accuracy`/`skill`/`deleak`), dedup (`eval-dedup`, `eval-batch-dedup`), the diagnosis-sampler
-CLI `eval-case-sample`, and `eval-graduate`. Two model-swap tools run by module path only:
-`dedup_replay`, `extraction_replay`.
+`experiments/frozen_case_evals/` is the live CLI layer — one config-driven runner per eval kind,
+wired as `eval-*` console scripts (see `pyproject.toml [project.scripts]`). Each is a thin wrapper:
+it reads a frozen dataset, optionally replays a stage (`replay/`), scores it (an LLM `judges/` grader
+or a deterministic `audits/` scorer), and writes JSONL. Naming: `*_judge` (judge frozen/replayed
+cases), `*_pairwise`/`*_rubric` (the two situation-summary judging modes), `*_regen` (regenerate with
+a different model into a new dataset, no judge).
+
+- **agent-decision funnel** (replay a stage of the turn, then judge): `situation_summary_pairwise`
+  (`eval-summary`), `situation_summary_rubric` (`eval-summary-rubric`), `retrieval` (`eval-retrieval`),
+  `application` (`eval-application`), `captured_judge` (`eval-captured`, judges the frozen turn as-is),
+  `e2e` (`eval-e2e`, replays all three stages).
+- **component evals**: `extraction_judge` (`eval-extraction`), `dedup_judge` (`eval-dedup`),
+  `day_summary_judge` (`eval-day-summary`), `batch_dedup_judge` (`eval-batch-dedup`). The two model-swap
+  regenerators run by module path only: `extraction_regen`, `dedup_regen`.
+- **ops at `experiments/` root** (not frozen-case evals): the discussion-tagger validation runner
+  `tagger_eval` (`eval-tagger`, modes `accuracy`/`skill`/`deleak`), the diagnosis-sampler CLI
+  `case_sampler` (`eval-case-sample`), and `graduate` (`eval-graduate`).
+
+The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extraction`/`dedup`, the
+`eval-build-*` CLIs) — they write the read side, so they sit with `data/`, not `experiments/`.
 
 Its former flatmates moved out on 2026-07-02:
 
 - **`evaluation/src/audits/`** — the deterministic $0 checks that re-run on any new batch as
   regression audits: `dimension_audit`, `scheduler_access_audit`, `whiff_conversion_audit`, the
   proxy-validation trio (`proxy_rescue`/`accusation_metrics`/`claim_conversion` over the shared
-  pre-registered split in `metrics_common`), the dedup golden scorer `dedup_score`
-  (`eval-dedup-score`), and `recall_flags`. All pytest-covered; batch-record loading shared via
-  `data/sources/batch_records.py`.
+  pre-registered split in `metrics_common`), the dedup golden scorers `dedup_score`
+  (`eval-dedup-score`, online per-decision) and `batch_dedup_score` (the batch-cluster golden compare,
+  split out of the old `batch_dedup_eval` monolith on 2026-07-03), and `recall_flags`. All
+  pytest-covered; batch-record loading shared via `data/sources/batch_records.py`.
 - **`experiments/studies/`** — the concluded one-shot study runners behind the v5→v6→v7
   store-evolution verdicts (the screen family, the v6 reextraction chain, the synthesis and
   calibration A/Bs). Off the CLI surface; kept runnable because frozen `evidence/v7_final/` scripts
@@ -502,7 +522,7 @@ Example config:
 Run:
 
 ```bash
-poetry run python -m evaluation.src.experiments.captured --config evaluation/config/captured_v2_memory.json
+poetry run eval-captured --config evaluation/config/captured_v2_memory.json
 ```
 
 Template: `evaluation/config/template/captured_example.json`.
