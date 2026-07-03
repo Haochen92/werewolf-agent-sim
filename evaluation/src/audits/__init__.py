@@ -2,7 +2,7 @@
 
 Every module here is recompute-only (ZERO LLM, no network): given a new ``batch_results/`` batch it
 re-derives the same structural / behavioral facts, so an audit that passed on the frozen epoch can be
-re-run as a regression check on any later run. Distinct from ``experiments/studies/`` (concluded
+re-run as a regression check on any later run. Distinct from ``studies/`` (concluded
 one-shot design screens) — these are meant to be re-run.
 
 - ``dimension_audit``          — $0 audit of the v6 situation-dimension fields (schema/fill sanity).

@@ -8,7 +8,7 @@ signal the synthesis LLM uses ("this move worked across N instances" vs "mostly 
 
 This is the SP path that justifies SPs existing (generalization across games); the per_run path
 (reextract_cells --with-sp) is the cheap single-game baseline. Offline store-build tooling — the
-offline runner is evaluation/src/experiments/studies/synthesize_cell_sp.py.
+offline runner is evaluation/src/studies/synthesize_cell_sp.py.
 """
 
 from __future__ import annotations

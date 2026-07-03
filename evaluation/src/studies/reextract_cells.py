@@ -6,7 +6,7 @@ night_action. Writes RAW observations (no dedup) routed to observations/<role>/<
 HELD-OUT DISCIPLINE: extracts ONLY from --source (the 20 extraction_v5_0 games), so any game NOT in
 that set stays a clean held-out test game; every screen additionally enforces same-game exclusion.
 
-  poetry run python evaluation/src/experiments/studies/reextract_cells.py \
+  poetry run python evaluation/src/studies/reextract_cells.py \
       --roles healer investigator vigilante wolf serial_killer --append   # add to villager v6_0
 """
 
@@ -39,7 +39,7 @@ from Agents.schemas.memory import (
     cell_observations_extraction_schema,
 )
 from evaluation.src.core.manifest import build_manifest
-from evaluation.src.experiments.studies.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
+from evaluation.src.studies.reextract_villager_day import DEFAULT_SOURCE, SCHEMA_VERSION, load_cases
 
 logger = getLogger(__name__)
 

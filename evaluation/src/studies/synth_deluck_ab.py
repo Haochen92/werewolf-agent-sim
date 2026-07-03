@@ -9,7 +9,7 @@ Three arms per deceiver cell, READ side-by-side (semantic eval → read, not a p
 If D ≈ S, synthesis-beyond-prune adds nothing (answer: just prune (b)). D only wins if it produces a
 better-CONDITIONED rule than S. Synthesis model = pro-2.5 (justified: low-frequency + binding lever).
 
-  poetry run python evaluation/src/experiments/studies/synth_deluck_ab.py
+  poetry run python evaluation/src/studies/synth_deluck_ab.py
 """
 
 from __future__ import annotations

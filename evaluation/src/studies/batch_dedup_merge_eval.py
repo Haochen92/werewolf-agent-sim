@@ -6,7 +6,7 @@ to score the merged text quality.
 
 Usage::
 
-    poetry run python -m evaluation.src.experiments.studies.batch_dedup_merge_eval \
+    poetry run python -m evaluation.src.studies.batch_dedup_merge_eval \
         --result evidence/batch_dedup_golden_eval/eval_gemini_3.5_flash_20260526_132829.json \
         --source evaluation/frozen_eval_sets/batch_dedup_clusters_v4.json \
         --judge-model gemini-2.5-pro

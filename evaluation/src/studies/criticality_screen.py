@@ -12,7 +12,7 @@ v6 candidate pool with the SAME embedding; flat ranks by cosine, conditioned add
 proximity term. The query criticality is computed deterministically from the frozen board (alive list
 intersect true roles) — omniscient, offline, never shown to the agent. Memory off is the floor.
 
-  poetry run python evaluation/src/experiments/studies/criticality_screen.py \
+  poetry run python evaluation/src/studies/criticality_screen.py \
       --batch batch_results/ab_arms_town.jsonl --store memory_stores/v6_0 --n 40
 """
 

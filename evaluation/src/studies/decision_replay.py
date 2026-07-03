@@ -8,7 +8,7 @@ This module is the thin CLI over it plus the RETIRED lexical-echo proxy — kept
 deprecated, only so ``run_echo_judge_validation`` can reproduce its own invalidation
 (rho=0.14 vs the adherence judge, p=0.38); do NOT resurrect it in new screens.
 
-Run: ``poetry run python evaluation/src/experiments/studies/decision_replay.py \
+Run: ``poetry run python evaluation/src/studies/decision_replay.py \
         --batch batch_results/ab_nh_town.jsonl``
 """
 

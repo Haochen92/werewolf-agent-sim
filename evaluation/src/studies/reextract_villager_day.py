@@ -8,8 +8,8 @@ Only villager·day is migrated to the v6 schema; the live extraction path and th
 untouched (see evidence/phase_b/dimension_schema_build_spec.md §8b). After the criticality screen
 shows the lever, the full DAG + live rewiring follow.
 
-  poetry run python evaluation/src/experiments/studies/reextract_villager_day.py --limit 2   # smoke
-  poetry run python evaluation/src/experiments/studies/reextract_villager_day.py             # full 20 games
+  poetry run python evaluation/src/studies/reextract_villager_day.py --limit 2   # smoke
+  poetry run python evaluation/src/studies/reextract_villager_day.py             # full 20 games
 """
 
 from __future__ import annotations

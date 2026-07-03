@@ -21,7 +21,7 @@ transmitted/win cross-tab below is DESCRIPTIVE (collider risk), and the per-arm 
 the mediator to check first (does memory move transmission at all?).
 
 Usage:
-  poetry run python -m evaluation.src.experiments.studies.investigator_transmission batch_results/v6ab_*.jsonl
+  poetry run python -m evaluation.src.studies.investigator_transmission batch_results/v6ab_*.jsonl
 """
 
 from __future__ import annotations
