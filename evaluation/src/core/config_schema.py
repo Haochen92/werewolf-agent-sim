@@ -152,23 +152,42 @@ class RetrievalExperimentConfig(_DescribedConfig):
     sleep_seconds: float = Field(default=1.0, ge=0)
 
 
-class ApplicationExperimentConfig(_DescribedConfig):
-    """Config for replaying final discussion/vote actions from frozen cases."""
+class TurnEvalConfig(_DescribedConfig):
+    """Config for the unified turn eval: optionally replay a stage, then judge.
+
+    Collapses the former captured / application / e2e configs into one shape:
+      replay=none    judge the recorded turn as captured
+      replay=action  regenerate the final action, then judge
+      replay=all     regenerate summary -> retrieval -> action, then judge
+    ``judge`` selects the grader independently of depth: application | pipeline | off.
+    ``memory_mode`` chooses the action's memory inputs when replay=action.
+    """
 
     dataset: Path
+    replay: Literal["none", "action", "all"] = "none"
     memory_mode: Literal["captured", "none", "snapshot"] = "captured"
     snapshots: list[MemorySnapshotConfig] | None = None
+    summary: VariantConfig | None = None
     top_k: int = Field(default=3, ge=1)
     max_retrieved_items: int = Field(default=0, ge=0)
     output: Path | None = None
     max_samples: int = Field(default=0, ge=0)
-    judge: bool = False
+    judge: Literal["off", "application", "pipeline"] = "application"
     judge_model: str = "gemini-2.5-pro"
     sleep_seconds: float = Field(default=1.0, ge=0)
 
     @model_validator(mode="after")
-    def require_snapshots_for_snapshot_mode(self) -> "ApplicationExperimentConfig":
-        if self.memory_mode == "snapshot" and not self.snapshots:
+    def _check_replay_requirements(self) -> "TurnEvalConfig":
+        if self.replay == "all":
+            if not self.snapshots:
+                raise ValueError("snapshots must be provided when replay='all'.")
+            if self.summary is None:
+                raise ValueError("summary must be provided when replay='all'.")
+        if (
+            self.replay == "action"
+            and self.memory_mode == "snapshot"
+            and not self.snapshots
+        ):
             raise ValueError(
                 "snapshots must be provided when memory_mode is 'snapshot'."
             )
@@ -196,37 +215,6 @@ class SummaryExperimentConfig(_DescribedConfig):
         if self.mode == "replay" and not self.variant:
             raise ValueError("variant must be provided when mode is 'replay'.")
         return self
-
-
-class CapturedEvaluationConfig(_DescribedConfig):
-    """Config for judging captured EvalCase rows without replaying any stage."""
-
-    dataset: Path
-    output: Path | None = None
-    max_samples: int = Field(default=0, ge=0)
-    judge_model: str = "gemini-2.5-pro"
-    judge_type: Literal["pipeline", "application"] = "pipeline"
-    sleep_seconds: float = Field(default=1.0, ge=0)
-
-
-class E2EExperimentConfig(_DescribedConfig):
-    """Config for turn-level replay of summary, retrieval, action, and judging."""
-
-    dataset: Path
-    snapshots: list[MemorySnapshotConfig] = Field(min_length=1)
-    summary: VariantConfig = Field(
-        default_factory=lambda: VariantConfig(
-            label="summary_current",
-            model="gemini-2.5-flash",
-        )
-    )
-    top_k: int = Field(default=3, ge=1)
-    max_retrieved_items: int = Field(default=0, ge=0)
-    output: Path | None = None
-    max_samples: int = Field(default=0, ge=0)
-    judge: bool = False
-    judge_model: str = "gemini-2.5-pro"
-    sleep_seconds: float = Field(default=1.0, ge=0)
 
 
 # ---------------------------------------------------------------------------

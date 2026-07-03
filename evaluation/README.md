@@ -250,10 +250,13 @@ or a deterministic `audits/` scorer), and writes JSONL. Naming: `*_judge` (judge
 cases), `*_pairwise`/`*_rubric` (the two situation-summary judging modes), `*_regen` (regenerate with
 a different model into a new dataset, no judge).
 
-- **agent-decision funnel** (replay a stage of the turn, then judge): `situation_summary_pairwise`
-  (`eval-summary`), `situation_summary_rubric` (`eval-summary-rubric`), `retrieval` (`eval-retrieval`),
-  `application` (`eval-application`), `captured_judge` (`eval-captured`, judges the frozen turn as-is),
-  `e2e` (`eval-e2e`, replays all three stages).
+- **agent-decision funnel**: `turn_eval` (`eval-turn`) is one runner over a frozen turn —
+  `--replay {none|action|all}` × `--judge {off|application|pipeline}` — collapsing the former captured
+  (`--replay none`), application (`--replay action`), and e2e (`--replay all`) CLIs; the `eval-captured`
+  / `eval-application` / `eval-e2e` script names remain as aliases that read a config with the matching
+  `replay`. Alongside it: `situation_summary_pairwise` (`eval-summary`), `situation_summary_rubric`
+  (`eval-summary-rubric`), and `retrieval` (`eval-retrieval`) stay separate (they judge the summary /
+  retrieved-memories artifacts, not the action).
 - **component evals**: `extraction_judge` (`eval-extraction`), `dedup_judge` (`eval-dedup`),
   `day_summary_judge` (`eval-day-summary`), `batch_dedup_judge` (`eval-batch-dedup`). The two model-swap
   regenerators run by module path only: `extraction_regen`, `dedup_regen`.
@@ -468,78 +471,37 @@ This replays retrieval for both observations and strategy points. If `judge` is
 true, the LLM judge scores relevance, redundancy, unique idea count, and
 redundant pairs.
 
-### Application
+### Turn Eval (captured / action / e2e)
 
-Use this to evaluate the final discussion or vote action while holding the
-frozen turn context fixed.
+One runner (`eval-turn`, module `cli_runners.turn_eval`) judges a frozen turn,
+optionally regenerating part of the pipeline first. Two orthogonal knobs:
 
-Example config:
+- `replay`: `none` (judge the turn as captured — no regeneration), `action` (rerun
+  the final discussion/vote prompt), or `all` (regenerate summary → retrieval →
+  action). `--replay` overrides the config.
+- `judge`: `off`, `application` (action-quality rubric), or `pipeline`
+  (summary + retrieval + action rubric).
+- `memory_mode` (when `replay=action`): `captured` (memories from the original run)
+  or `none` (cleared). `replay=all` always retrieves from a `snapshot`.
+
+`replay=none` example (judge as captured):
 
 ```json
 {
   "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
-  "memory_mode": "captured",
+  "replay": "none",
+  "judge": "pipeline",
   "max_samples": 20,
-  "judge": true,
-  "judge_model": "gemini-2.5-pro",
-  "sleep_seconds": 1.0
+  "judge_model": "gemini-2.5-pro"
 }
 ```
 
-`memory_mode` can be:
-
-- `captured`: use the retrieved memories captured in the original run
-- `none`: clear retrieved observations and strategy points
-
-Run:
-
-```bash
-poetry run eval-application --config evaluation/config/application_captured.json
-```
-
-Template: `evaluation/config/template/application_example.json`.
-
-This reruns the production discussion/vote prompt and optionally judges action
-quality and strategy application.
-
-### Captured Case Scoring
-
-Use this to judge exactly what was captured in the frozen dataset. This mode
-does not regenerate situation summaries, rerun retrieval, rebuild memory
-indexes, or rerun the final action prompt.
-
-Example config:
+`replay=all` example (full path against a snapshot store):
 
 ```json
 {
   "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
-  "max_samples": 20,
-  "judge_model": "gemini-2.5-pro",
-  "sleep_seconds": 1.0
-}
-```
-
-Run:
-
-```bash
-poetry run eval-captured --config evaluation/config/captured_v2_memory.json
-```
-
-Template: `evaluation/config/template/captured_example.json`.
-
-### E2E Turn Replay
-
-Use this to replay the full turn-level memory path:
-
-```text
-summary -> retrieval -> action -> judge
-```
-
-Example config:
-
-```json
-{
-  "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
+  "replay": "all",
   "snapshots": [
     {
       "label": "v1_post_dedup",
@@ -547,31 +509,23 @@ Example config:
       "strategy_points_path": "memory_stores/v1_post_dedup/strategy_points.json"
     }
   ],
-  "summary": {
-    "label": "summary_current",
-    "model": "gemini-2.5-flash",
-    "prompt_id": "current",
-    "temperature": 0.0
-  },
+  "summary": { "label": "summary_current", "model": "gemini-2.5-flash" },
   "top_k": 3,
-  "max_retrieved_items": 0,
-  "max_samples": 20,
-  "judge": true,
-  "judge_model": "gemini-2.5-pro",
-  "sleep_seconds": 1.0
+  "judge": "pipeline",
+  "judge_model": "gemini-2.5-pro"
 }
 ```
 
 Run:
 
 ```bash
-poetry run eval-e2e --config evaluation/config/e2e_memory_snapshot.json
+poetry run eval-turn --config evaluation/config/e2e/e2e_v2_memory.json
 ```
 
-Template: `evaluation/config/template/e2e_example.json`.
-
-This is the closest eval to the full episodic memory system, but still at the
-single-turn replay level rather than full-game replay.
+Templates: `evaluation/config/template/{captured,application,e2e}_example.json` (the
+three `replay` presets). The `eval-captured` / `eval-application` / `eval-e2e` script
+names remain as aliases of `eval-turn`. `replay=all` is the closest eval to the full
+episodic memory system, but still at single-turn replay level, not full-game replay.
 
 ## Outputs
 

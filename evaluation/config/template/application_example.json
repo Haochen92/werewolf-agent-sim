@@ -1,8 +1,9 @@
 {
   "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
+  "replay": "action",
   "memory_mode": "captured",
   "max_samples": 20,
-  "judge": true,
+  "judge": "application",
   "judge_model": "gemini-2.5-pro",
   "sleep_seconds": 1.0
 }

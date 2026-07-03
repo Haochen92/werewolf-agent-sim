@@ -1,5 +1,6 @@
 {
   "dataset": "evaluation/frozen_eval_sets/memory_eval_001.jsonl",
+  "replay": "all",
   "snapshots": [
     {
       "label": "v1_post_dedup",
@@ -16,7 +17,7 @@
   "top_k": 3,
   "max_retrieved_items": 0,
   "max_samples": 20,
-  "judge": true,
+  "judge": "pipeline",
   "judge_model": "gemini-2.5-pro",
   "sleep_seconds": 1.0
 }
