@@ -1,4 +1,4 @@
-from evaluation.src.experiments.frozen_case_evals.e2e import main
+from evaluation.src.experiments.cli_runners.e2e import main
 
 
 if __name__ == "__main__":

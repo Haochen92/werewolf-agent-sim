@@ -68,7 +68,7 @@ evaluation/                the eval subsystem (code + its data)
                  access, whiff conversion, proxy validation, dedup + batch-dedup golden scorers, pivotal-turn flags)
     loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
     experiments/ command-line eval runners — the live CLI layer (inventory below)
-      frozen_case_evals/  thin CLIs that replay a stage and/or judge a frozen case (funnel + component evals)
+      cli_runners/  thin CLIs that replay a stage and/or judge a frozen case (funnel + component evals)
       studies/       concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
@@ -229,7 +229,7 @@ scores.
 The dependency direction should stay simple:
 
 ```text
-experiments/frozen_case_evals -> replay + judges + audits   (thin CLIs; hold no eval logic)
+experiments/cli_runners -> replay + judges + audits   (thin CLIs; hold no eval logic)
 data/builders                 -> data / core                (freeze frozen sets; the eval-build-* CLIs)
 judges      -> prompts / schemas / formatters
 replay      -> production agent code
@@ -243,7 +243,7 @@ command lives in the CLI layer and the *logic* it calls lives in `judges/` + `re
 
 ### `experiments/` inventory
 
-`experiments/frozen_case_evals/` is the live CLI layer — one config-driven runner per eval kind,
+`experiments/cli_runners/` is the live CLI layer — one config-driven runner per eval kind,
 wired as `eval-*` console scripts (see `pyproject.toml [project.scripts]`). Each is a thin wrapper:
 it reads a frozen dataset, optionally replays a stage (`replay/`), scores it (an LLM `judges/` grader
 or a deterministic `audits/` scorer), and writes JSONL. Naming: `*_judge` (judge frozen/replayed
