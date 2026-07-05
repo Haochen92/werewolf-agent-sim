@@ -137,7 +137,7 @@ is **not wired yet** — the graph runs `.invoke()`-only (per the header) — so
 capability *possible*, not currently in use.
 
 **Where it lives:** scheduler `Agents/turn/scheduler.py` · per-turn pipeline + novelty gate
-`Agents/turn/agent.py` + `Agents/turn/novelty_agent.py` · graph wiring `Agents/nodes/day/flow.py` ·
+`Agents/turn/decision.py` + `Agents/turn/novelty_agent.py` · graph wiring `Agents/nodes/day/flow.py` ·
 schemas `Agents/schemas/{game_events,output,scheduler}.py` · knobs `Agents/game_config.py`.
 
 ---

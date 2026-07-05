@@ -24,13 +24,13 @@ instrument per stage, and they do **not** share calibration.
 ## Stage 1 — Situation-summary (what the agent saw)
 
 **L1 — three instruments, do not conflate:**
-- **Pairwise-preference judge** (`judges/pairwise_summary.py`, harness `experiments/summary.py` → console
+- **Pairwise-preference judge** (`judges/situation_summary_pairwise.py`, harness `experiments/summary.py` → console
   `eval-summary`): which of two summary variants is the better *retrieval query*. `PairwiseJudgeScores`
   (`core/schemas.py:79-84`): two `SummaryDimensionScores` × {faithfulness, specificity,
   retrieval_usefulness, non_redundancy, role_perspective} 1-5, + `winner` + `confidence`. Model =
   `JudgeConfig.model` (default **gemini-2.5-pro**, `config_schema.py:41`); `max_retries=1`. Position-bias
   controlled (order alternated by case index). **No ground truth.**
-- **Single-rubric summary judge** (`judges/summary.py::run_summary_judge`, harness `experiments/summary_eval.py`
+- **Single-rubric summary judge** (`judges/situation_summary.py::run_summary_judge`, harness `experiments/summary_eval.py`
   → console `eval-summary-rubric`): scores *one* summary on its own (not pairwise) against the same 5 dims via
   `SituationSummaryScores` (`core/schemas.py:222-269`). ⭐ The **only** funnel judge on a **stronger model** —
   `DEFAULT_SUMMARY_JUDGE_MODEL = gemini-3.1-pro-preview` (`summary.py:24`, the one intentional override of the
@@ -109,13 +109,13 @@ needs v6_1 re-labelling.
 ## Stage 3 — Application / adherence (how it used it)
 
 **L1 — two judges:**
-- **(A) ApplicationScores** (`judges/application.py` → console `eval-application`; the *reported* instrument).
+- **(A) ApplicationScores** (`judges/turn_action.py` → console `eval-application`; the *reported* instrument).
   Mixes adherence + quality: `action_quality` 1-5, `strategy_application` 1-5, `grounding` 1-5,
   `adoption_accuracy` 1-5 (nullable), `attribution_direction` over/under/accurate (nullable),
   `fabricated_claims[]`, `brief_reasoning` (`core/schemas.py:34-57`). The frozen n=120 runs used
   **gemini-2.5-flash**; the module constant `DEFAULT_APPLICATION_JUDGE_MODEL = gemini-2.5-pro`
-  (`application.py:18`) is **defined-but-unused** — `run_application_judge` (`application.py:29`) makes `model`
-  a required arg with no default. `max_retries=1`. `replay/application.py` does captured-vs-none
+  (`turn_action.py:18`) is **defined-but-unused** — `run_application_judge` (`turn_action.py:29`) makes `model`
+  a required arg with no default. `max_retries=1`. `replay/turn_action.py` does captured-vs-none
   memory-swap replay; the n=120 report numbers came from `captured.py` (judge-only on frozen rows).
 - **(B) DecisionAdherence** (`loop/memory_adherence.py`): per-memory `implied_direction` (verdict-aware),
   `action_followed`, `application`, `evidence`; gemini-2.5-pro; **outcome-blind**. Despite living in `loop/`,
@@ -163,9 +163,9 @@ context_eval program).
 
 ## Evidence (code + L2 artifacts)
 
-- **Code:** `evaluation/src/judges/{pairwise_summary,summary,retrieval,application}.py`,
-  `judges/prompts/{pairwise_summary,summary,retrieval,application}.py`, `judges/config.py`,
-  `replay/{situation_summary,retrieval,application}.py`,
+- **Code:** `evaluation/src/judges/{situation_summary_pairwise,situation_summary,retrieval,turn_action}.py`,
+  `judges/prompts/{situation_summary_pairwise,situation_summary,retrieval,turn_action}.py`, `judges/config.py`,
+  `replay/{situation_summary,retrieval,turn_action}.py`,
   `experiments/{summary,summary_eval,retrieval,application,recall_flags,captured}.py`,
   `labeling/label_scorer/situation_retrieval_ndcg.py`, `loop/memory_adherence.py`,
   `core/schemas.py::{PairwiseJudgeScores,RetrievalScores,ApplicationScores}`.

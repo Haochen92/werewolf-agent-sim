@@ -78,7 +78,7 @@ fingerprint (header). A reader on another version should re-confirm before relyi
 ## 3. How we verify — the leak checks
 
 `tests/leak_test.py` — six `check_*` functions over the per-game `prompt_log` (the global in
-`Agents/turn/agent.py` that `_run_agent` appends every agent LLM call's `prompt_input` to). **All**
+`Agents/turn/decision.py` that `_run_agent` appends every agent LLM call's `prompt_input` to). **All**
 agent decision calls route through `_run_agent` — including the memory-informed day/night wrappers —
 so coverage is total. Driven by `run_leak_tests(prompt_log, roles)`.
 
@@ -255,5 +255,5 @@ whether to trust it or re-confirm.
   assertion rather than a live hole.
 - **`prompt_log` only captures `_run_agent` calls.** Situation-summary generation
   (`_build_agent_prompt_input`'s second call site) still doesn't append (sole append:
-  `Agents/turn/agent.py`), so it's invisible to the checks. The layer-2 fix covers it (same payload), so
+  `Agents/turn/decision.py`), so it's invisible to the checks. The layer-2 fix covers it (same payload), so
   this is a checker-*visibility* gap, not an active leak; folding it into the log would close it.

@@ -24,7 +24,7 @@ and, for v7, *"is a credit-aware synthesised strategy-point any good?"*
   `specificity · epistemic_compliance · grounding · coverage · diversity · perspective_compliance ·
   strategy_depth · novelty` + `brief_reasoning`. Model default gemini-2.5-pro (frozen 48-game runs used
   gemini-3.5-flash; model-comparison used 3.1-pro-preview). `max_retries=1`.
-- **Per-role** (`per_role_extraction.py`) is **the same judge** applied to role-sliced inputs, aggregated by
+- **Per-role** (`archive/per_role_extraction.py`, archived 2026-07-04 as unwired) is **the same judge** applied to role-sliced inputs, aggregated by
   mean — not a different instrument.
 - ⚠️ **Prompt is internally self-contradictory on the dimension count:** the system prompt says "score the
   extraction output on **eight** dimensions" (`prompts/extraction.py:9`) while the user scoring header says
@@ -119,7 +119,7 @@ exists; it's simply never aimed at synthesis (which is currently outcome-only).
 
 ## Evidence (code + L2 artifacts)
 
-- **Code:** `evaluation/src/judges/extraction.py`, `judges/per_role_extraction.py`,
+- **Code:** `evaluation/src/judges/extraction.py`, `archive/per_role_extraction.py` (archived 2026-07-04, unwired),
   `judges/prompts/extraction.py`, `experiments/extraction_eval.py`, `experiments/extraction_builder.py`,
   `core/schemas.py::{ExtractionScores,PerRoleExtractionScores}`; v7 probes
   `../../v7_final/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.

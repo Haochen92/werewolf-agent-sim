@@ -34,17 +34,17 @@ concatenates them into the string that retrieval embeds. The central v6 fact:
 
 - **Query↔store embedding alignment by construction.** Because the live query and the stored observation are
   composed by the same v6 cell schema
-  ([situation_agent.py:85-94](../../../Agents/memory/enrichment/situation_agent.py#L85-L94)), they land in the
+  ([situation_agent.py:85-94](../../../Agents/memory/retrieval/situation_agent.py#L85-L94)), they land in the
   same region of embedding space. Alignment is a property of the shared schema, not of the model remembering to
   match a house style.
 - **At most two queries, each a distinct decision.** The structured container caps output at 1-2
   (`min_length=1, max_length=2`,
-  [situation_agent.py:62](../../../Agents/memory/enrichment/situation_agent.py#L62)), and the prompt requires a
+  [situation_agent.py:62](../../../Agents/memory/retrieval/situation_agent.py#L62)), and the prompt requires a
   second only if it captures a genuinely independent decision. The pipeline never reliably produced three
   useful queries and filled the extra slots with rephrasings of the first (experiment_log §3).
 - **A summary failure never blocks a turn.** One retry, then a trivial fallback string
   (`"Day {d} as {role}, round {r}"`,
-  [situation_agent.py:113-114](../../../Agents/memory/enrichment/situation_agent.py#L113-L114)). A failure
+  [situation_agent.py:113-114](../../../Agents/memory/retrieval/situation_agent.py#L113-L114)). A failure
   degrades that turn's retrieval; it does not stall the decision.
 - **Role perspective is locked.** Per-role prompts frame the query from the agent's own vantage and private
   knowledge (with an investigator lens fix that front-loads private findings), so retrieval returns
@@ -58,9 +58,9 @@ concatenates them into the string that retrieval embeds. The central v6 fact:
 ## The mechanism / model
 
 - **Live entry point.** `_generate_situations_for_agent`
-  ([situation_agent.py:71](../../../Agents/memory/enrichment/situation_agent.py#L71)), called once per agent
-  turn from the enrichment pipeline
-  ([enrichment/pipeline.py:63](../../../Agents/memory/enrichment/pipeline.py#L63)).
+  ([situation_agent.py:71](../../../Agents/memory/retrieval/situation_agent.py#L71)), called once per agent
+  turn from the read-path pipeline
+  ([retrieval/pipeline.py:63](../../../Agents/memory/retrieval/pipeline.py#L63)).
 - **Model.** The default agent model `get_llm()` = **gemini-3.1-flash-lite**, no thinking
   ([accessors.py:17](../../../Agents/llm_factory/accessors.py#L17)). The model comparison profiled 3.5-flash
   and 2.5-flash as upgrades and kept flash-lite: the gain was modest on rubric scores, the cost 6× and latency

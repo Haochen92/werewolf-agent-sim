@@ -27,5 +27,5 @@ _The spine — a few-minute linear tour of the project, filled in as chapters la
    _Proof → `../evidence/memory_system/`, `../evidence/{dedup, retrieval, extraction}`._
 4. **Evaluation rigor** — de-lucked outcome proxies, paired-A/B methodology, and the
    de-luck credit signal.
-   _Proof → `../evidence/metrics/`, `../evidence/stats_used/`._
+   _Proof → `../evidence/metrics/`, `../evidence/evaluation/metrics/report.md`._
 5. **Frontend** — _added after the build (replay + live spectator)._

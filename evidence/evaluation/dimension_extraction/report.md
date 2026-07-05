@@ -17,7 +17,7 @@
 
 The v6 memory pipeline attaches structured *situation dimensions* to each stored and retrieved note.
 Every dimension is LLM-filled — at extraction time (the extractor's numerics are copied straight into
-the store) and at query time (`Agents/memory/enrichment/situation_agent.py`). Production retrieval
+the store) and at query time (`Agents/memory/retrieval/situation_agent.py`). Production retrieval
 *gating* keys on four of them: `players_alive` (bucketed), `is_swing`, `exposure_class`, and
 `info_landscape_class`. No tool had ever compared a filled value to ground truth, even where truth is
 deterministically computable from the board. If the fills are inaccurate, the gating and criticality
@@ -26,7 +26,7 @@ to distinguish those two worlds at $0.
 
 ## L1 — the instrument
 
-- **The $0 deterministic audit** (`evaluation/src/audits/dimension_audit.py`; the paid `--regen` arm
+- **The $0 deterministic audit** (`evaluation/src/instrument_validation/dimensions/dimension_audit.py`; the paid `--regen` arm
   hard-refuses pending spend sign-off). It recomputes deterministic truth for every LLM-filled
   query-side dimension in the loop-era sidecars and compares. Coverage: **~6,267 cases-with-dims**
   (20,284 situation-rows) across town_only_run1 (25.9% / 30 games), town_only_run2 (24.7% / 100 games),
@@ -81,7 +81,7 @@ false positives vs 76 true positives), so it is materially worse than a constant
 ## L1 — the computed-fill fix (done 2026-07-02, $0)
 
 The structural corollary, green-lit as free. At query time, after the situation LLM returns,
-`Agents/memory/enrichment/situation_agent.py::_override_deterministic_dims` overwrites the three
+`Agents/memory/retrieval/situation_agent.py::_override_deterministic_dims` overwrites the three
 agent-knowable dims from game state before dims and embeds are composed: `players_alive` from a
 shape-robust living-player count, `bullets_left` from the vigilante's live counter, `ally_revealed` from
 pack-size vs initial wolf count. `distance_to_parity` / `is_swing` are deliberately left LLM-filled —
@@ -121,9 +121,9 @@ re-screen).
 
 ## Evidence (code + L2 artifacts)
 
-- **Code (at `4b1449e`):** audit `evaluation/src/audits/dimension_audit.py`; truth fn
+- **Code (at `4b1449e`):** audit `evaluation/src/instrument_validation/dimensions/dimension_audit.py`; truth fn
   `query_criticality` in `evaluation/src/loop/decision_scoring.py`; gate `dimension_gating.py::_alive_bucket`;
-  fill fix `Agents/memory/enrichment/situation_agent.py` (`_override_deterministic_dims`,
+  fill fix `Agents/memory/retrieval/situation_agent.py` (`_override_deterministic_dims`,
   `_computed_players_alive`) + threading in `Agents/nodes/day/flow.py`, `Agents/graphs/parent.py`,
   `Agents/state/day.py`. Tests: `tests/test_dimension_audit.py`, `tests/test_situation_dim_override.py`.
 - **L2 artifacts (pointed-at):**

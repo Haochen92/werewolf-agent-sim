@@ -1,5 +1,7 @@
 # Proxy-vs-Win Monotonicity Check (2026-06-11)
 
+> Code graduated to `evaluation/src/instrument_validation/proxies/` (2026-07-04); this doc remains the dated record.
+
 The validation step the v2 metrics design required but deferred ("correlate each proxy with its
 faction's win across games; drop proxies that don't move with winning"). Run on the **existing**
 v5 games — 30 memory-off + 20 memory-on (arm definitions:

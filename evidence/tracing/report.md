@@ -417,7 +417,7 @@ cheap `trace.get`-then-name-scoped-`get_many`. Result: all 20 `v5_seed_b*` games
 failed / Fix / Verification / Lessons) if the verdict is all you need.*
 
 **Cause — the tracer was the primary eval store.** The eval cases were always built at game-time
-(`turn/actions.py` for `EvalCase`, `orchestrator.py` for `ExtractionCase`) and dumped into span
+(`turn/pipeline.py` for `EvalCase`, `orchestrator.py` for `ExtractionCase`) and dumped into span
 output, but `run_batch` persisted only raw metrics — so the only way to *read a case back* was to
 re-fetch it from Langfuse. As span volume grew (v5's longer games), the fetch-all read pattern crossed
 Langfuse's cost guard. The instrument for *watching* a run had been quietly drafted into being the
