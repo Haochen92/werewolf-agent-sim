@@ -17,7 +17,7 @@ from typing import Literal
 
 from langgraph.runtime import Runtime
 
-from Agents.schemas import DayChannel, DaySummary, InvestigatorResult
+from Agents.schemas import DayChannel, DaySummary, InvestigatorResult, WolfChannel
 from Agents.state import (
     OrchestratorGraph,
 )
@@ -140,6 +140,26 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
         state_update["vigilante_results"] = [
             f"Night of day {current_day}: you shot {vigilante_target}, but they were unharmed "
             f"— immune to night kills, which confirms {vigilante_target} is the serial killer."
+        ]
+
+    # A wolf kill on the night-immune target (the SK) is publicly SILENT — announcing it would
+    # out the SK — so the wolves can only infer the whiff from absence. Mirror the vigilante's
+    # private confirmation: drop a game-master note into the wolf channel so BOTH wolves learn
+    # the immune target is the serial killer. (A heal gives outcome "saved", not "immune", so a
+    # healed target never triggers this — no false positive; the save is announced publicly.)
+    if wolves_target and outcomes.get(wolves_target) == "immune":
+        state_update["wolf_channel"] = [
+            WolfChannel(
+                day=current_day,
+                round=2,
+                wolf="game_master",
+                message=(
+                    f"Night of day {current_day}: your kill on {wolves_target} failed — "
+                    f"{wolves_target} was unharmed, immune to night kills, which confirms "
+                    f"{wolves_target} is the serial killer."
+                ),
+                vote="",
+            )
         ]
 
     lines: list[str] = []
