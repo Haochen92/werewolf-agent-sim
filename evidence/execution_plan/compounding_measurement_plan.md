@@ -64,6 +64,10 @@ a deferral read as **scoping**, not **salvage after a null**.
 | **2b** | **…and consequently agents decide better** — the same agent, on the same frozen decisions, decides better as the store advances. | Checkpoint replay curve | ⏳ **Buildable now, cheap.** |
 | **3** | Loop-improved stores translate into **live-game wins** (in-situ, multi-turn, within-game compounding). | New paired live games at powered N | ⛔ **Deferred, cost-quantified.** The power calc attaches the price tag (illustratively ~hundreds of games/arm). Deferred ≠ false. |
 
+> **PROPOSED 2026-07-05 (pending ratification):** replace the live slope with an end-point paired A/B —
+> final store vs initial (gen-1) store on 30 shared boards — converting the ramp into the step design
+> that succeeded in the static A/B; see `power_analysis/decision_rationale.md` §7.
+
 The honesty conditions (agreed in review): **pre-register the ladder before the run**, and **word rung 2b
 precisely** — "the loop measurably improves the store's decision-steering quality on frozen boards," not
 "agents win more over time." The gap between 2b and 3 (frozen boards vs in-situ behavior) is real, and the
@@ -102,6 +106,11 @@ pilot to measure *variance*, not quality). Batch any substrate change into **one
 ## Phase 0 — $0 / cheap, before any paid run
 
 ### 0.1 Power analysis (MDE simulation) — ~½ day, $0, highest info/effort
+
+**EXECUTED 2026-07-05** → readout + decision: `power_analysis/mde_table.md` +
+`power_analysis/decision_rationale.md`. Headline: real per-game noise ≈0.3 (not ±0.9); +0.15
+undetectable at every affordable config (11% at the v2-size run); MDE at 200 games ($56) = +0.20 →
+slope readout retired at plausible effect sizes.
 
 **Finding it addresses.** The `+0.4`/`+0.5` numbers are *validity* (the ruler is real). Power is a
 different quantity entirely and the only one that involves N:
@@ -177,6 +186,8 @@ confirmation.
 
 ### 0.3 SP-lineage tracking — compounding at the mechanism grain — ~1 day, offline
 
+**SHIPPED 2026-07-05:** `distilled_from` field live in `evaluation/src/loop/consolidate.py` (+4 tests).
+
 **Finding it addresses.** Credit already assigns each SP a realized lift; synthesis already rewrites the
 store. **Nobody ever joins the two across generations** — nobody asks: *"synthesis produced SP X′ at gen 4;
 did X′ then out-earn the older SPs it was distilled from in gens 5–6?"* That question **is** the compounding
@@ -230,6 +241,11 @@ credit-distribution logging was built to avoid.
 > after 0.1–0.3 are at least scaffolded (they tell you whether the fixes moved anything).
 
 ### 0.5 Credit-scale fixes — from the 2026-07-04 code audit — ~1 day + one spend decision
+
+> **DECIDED 2026-07-05 — option A (user):** tag the OFF arm too (~2× tagger spend; clean same-instrument
+> base for discussion AND tagger-night credit). Options B/C rejected → the g3b/discussion_credit probe
+> trio stays dated evidence (no standing re-open). Implementation queued with Findings 2+3 + the
+> baseline-coherence invariant.
 
 A line-level audit of the credit path (`credit.py`, `credit_backfill.py`, `adoption.py`, `driver.py`,
 `measure.py`, the dedup absorb, the loop tests). **The join itself is clean** — verdicts →
@@ -367,11 +383,20 @@ No reference points, no coverage judge — just human agreement on sampled cases
   gate eat, by role and stance?"
 - C0 claim-timing joins (`role_claims` now persists — the field that was 0/180 in v6ab).
 - `strategy_verdicts` "why"-text mining — *why* do agents follow SPs?
+- **Wolf self-leak check (added 2026-07-05, with the wolf_channel day extension):** deterministic
+  n-gram/substring overlap between each wolf's public day messages and its `wolf_channel` content — the
+  original (untested) worry that day visibility makes wolves parrot night coordination in public. If it
+  fires, the prompt-instruction mitigation needs teeth.
 
 **One bundled epoch reset, if/when a stronger substrate is wanted (re-baseline once, never drip):**
 - **Whiff-disclosure change E** (wolf-side): the whiff audit says visibility is the binding layer and the
   vigilante is the natural experiment proving conversion follows disclosure — this creates a genuinely
   *learnable* wolf lesson for memory to compound.
+  **BUILT 2026-07-05** (wolf_channel note, vigilante-mirror; epoch-bump pending the bundled reset).
+  **extended 2026-07-05:** wolf_channel now attached to wolf DAY discuss/vote payloads (fixes the
+  day-lag + the empty day situation-summary slot); wolf day prompts carry a confidentiality
+  instruction to guard against self-leak (parroting night coordination), flagged for next-batch
+  measurement.
 - Deferred prompt-pass items (structured dead-roster, anti-repetition — the day-3 "I agree we can't keep
   abstaining" loop).
 - Optionally the 3.5-flash **variance** pilot (10 games, measured on variance not quality).
