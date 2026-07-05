@@ -203,6 +203,16 @@ convention requires of every record — see `CLAUDE.md → Eval Architecture` an
 
 **Co-locate artifacts with the report.** All files that support the report — eval sets, eval results, eval configs — should live in the same `evidence/<experiment>/` folder alongside the report. This keeps the experiment self-contained and reviewable without hunting across directories. When artifacts are generated elsewhere (e.g., `eval_results/`), move them into the evidence folder and clean up the originals.
 
+**Pointer discipline (how to cite code).** Cite code by handles that survive a refactor. Prefer a
+console-entry name from `pyproject [project.scripts]`, or a package path whose README will still
+orient a reader after a rename. Reserve deep `file:line` anchors for a claim that is load-bearing —
+where the exact line *is* the point — and expect a reference doc to maintain those anchors as the
+code moves. A record does not chase moving code: it freezes the pointer with a provenance stamp
+(the SHA / `runtime_fingerprint` above) instead. Frozen evidence scripts carry a FROZEN RECORD
+header — cite them as records of what ran, not as live code you are pointing a reader at. The reason
+is empirical: the linkage audit found path-level pointers rot at every refactor while console-entry
+names survive.
+
 ---
 
 ## Tone and Style
@@ -282,6 +292,7 @@ model the voice it asks for.
 - [ ] Can an independent reader parse each *sentence* on the first pass — one main idea per sentence, roughly one em-dash per paragraph at most, internal shorthand defined before it's used? (This tests the sentences; the check above tests the argument — different failures.)
 - [ ] Did you pick the right document type (experiment / build-journey log / decision record / negative finding / reference doc)?
 - [ ] Is the provenance stamped (commit / fingerprint / config) so results are traceable?
+- [ ] Are code pointers refactor-stable (console names / package paths), with deep anchors only where load-bearing?
 - [ ] Is N stated, and direction separated from magnitude where the sample is small?
 - [ ] *(Reference docs)* Does each framework-behavior claim carry a version pin (+ a test where load-bearing)?
 - [ ] *(Reference docs)* Is each gap freshness-dated and severity-rated (likelihood × impact × detectability), with minor gaps marked, not deleted?
