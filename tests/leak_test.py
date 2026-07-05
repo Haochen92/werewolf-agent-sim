@@ -56,11 +56,24 @@ def check_wolf_identity_isolation(
     return leaks
 
 
+# The output_keys a WOLF player's decision produces: wolf_channel (night discussion+vote),
+# day_channel (day discussion), day_votes (day elimination vote). As of 2026-07-05 the wolf
+# channel rides all three (day exposure added); any other pairing carrying it is a leak.
+_WOLF_OUTPUT_KEYS = frozenset({"wolf_channel", "day_channel", "day_votes"})
+
+
 def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
-    """Wolf channel should only appear in wolf night prompts."""
+    """Wolf channel content may appear only in a WOLF player's own prompts.
+
+    Re-scoped 2026-07-05 when wolves gained day-turn visibility of their channel (was:
+    night-only, keyed on output_key == "wolf_channel"). The true invariant is by *player*,
+    not by phase: the channel is the wolves' own information, so it may reach any wolf
+    prompt (night discussion + day discuss/vote) but NEVER a non-wolf player's prompt.
+    Kept strict — a wolf entry is only exempt on a known wolf output_key.
+    """
     leaks: list[str] = []
     for entry in prompt_log:
-        if entry["output_key"] == "wolf_channel":
+        if entry["player_role"] == "wolf" and entry["output_key"] in _WOLF_OUTPUT_KEYS:
             continue
 
         wolf_channel = entry["prompt_input"]["wolf_channel"]

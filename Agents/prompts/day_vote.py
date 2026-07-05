@@ -99,7 +99,9 @@ INVESTIGATOR_DAY_VOTE = _vote_template(
 
 WOLF_DAY_VOTE = _vote_template(
     "Surviving villagers: {surviving_villagers}\n"
-    "Known surviving wolves: {surviving_wolves}\n",
+    "Known surviving wolves: {surviving_wolves}\n"
+    "\nYour private wolf channel (night coordination + game-master notes):\n{wolf_channel}\n"
+    "This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you.\n",
     "\nCast your vote. Choose the target that best preserves your cover.",
     system=build_system_prompt(
         GAME_PREAMBLE,

@@ -34,8 +34,12 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
 def format_wolf_channel(messages: list[WolfChannel]) -> str:
     if not messages:
         return "No messages yet."
+    # Only append the "vote:" suffix when a vote was cast — GM whiff notes (and any
+    # discussion-round entry without a binding vote) carry vote="" and shouldn't render
+    # a dangling "vote: ".
     return "\n".join(
-        f"[Day {m.day}, Round {m.round}] {m.wolf}: {m.message}.  vote: {m.vote}"
+        f"[Day {m.day}, Round {m.round}] {m.wolf}: {m.message}."
+        + (f"  vote: {m.vote}" if m.vote else "")
         for m in messages
     )
 

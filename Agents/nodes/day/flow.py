@@ -128,6 +128,9 @@ def build_speaker_send(
     if role == "wolf":
         payload["surviving_wolves"] = state["surviving_wolves"]
         payload["surviving_villagers"] = state["surviving_villagers"]
+        # Wolves carry their own night coordination + GM whiff notes into day discuss/vote (their own
+        # information; gated to wolves only — see check_wolf_channel_isolation).
+        payload["wolf_channel"] = state.get("wolf_channel", [])
         # Deterministic ally_revealed fill (situation_agent): how many wolves were cast, so a live
         # query can compute "a partner is gone" from surviving_wolves without trusting the LLM.
         payload["initial_wolf_count"] = _initial_wolf_count(state)
@@ -192,6 +195,9 @@ def fan_out_day(
         if role == "wolf":
             payload["surviving_wolves"] = state["surviving_wolves"]
             payload["surviving_villagers"] = state["surviving_villagers"]
+            # Wolves carry their own night coordination + GM whiff notes into the vote too
+            # (gated to wolves only — see check_wolf_channel_isolation).
+            payload["wolf_channel"] = state.get("wolf_channel", [])
             payload["initial_wolf_count"] = _initial_wolf_count(state)
         elif role == "investigator":
             payload["investigator_results"] = state["investigator_results"]

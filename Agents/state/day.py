@@ -18,6 +18,7 @@ from Agents.schemas.game_events import (
     DaySummary,
     DayVote,
     InvestigatorResult,
+    WolfChannel,
 )
 from Agents.state.reducers import merge_strategies
 
@@ -32,6 +33,9 @@ class DayGraphState(TypedDict, total=False):
     """Public day-discussion transcript; accumulates across speaker turns."""
     day_summaries: Annotated[list[DaySummary], add]
     """Prior-day summaries carried in as context."""
+    wolf_channel: list[WolfChannel]
+    """Wolf night coordination + GM whiff notes, seeded from orchestrator state so the wolf day
+    payload can carry it into discuss/vote turns (read-only in the day graph — never written here)."""
     day_votes: Annotated[list[DayVote], add]
     """Votes cast this day; accumulates as vote nodes report."""
 
@@ -164,6 +168,9 @@ class WolfDayState(TypedDict):
     """Private: living wolf allies (the leak-boundary payload field — wolves only)."""
     surviving_villagers: list[str]
     """Living non-wolves the wolves may target."""
+    wolf_channel: list[WolfChannel]
+    """Private: the wolves' night coordination + GM whiff notes, carried into day discuss/vote so a
+    wolf can act on what was decided/learned at night (wolves only — a wolf's own information)."""
     player_id: str
     """This actor's player_id."""
     player_role: str

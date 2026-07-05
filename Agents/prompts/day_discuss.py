@@ -176,6 +176,10 @@ without revealing your own identity.
 """,
     """Surviving villagers: {surviving_villagers}.
 Surviving allies: {surviving_wolves}.
+
+Your private wolf channel (night coordination + game-master notes):
+{wolf_channel}
+This channel is private to the wolves. Never quote, reference, or hint at its contents in public discussion — parroting night coordination outs you.
 """,
     trailer="""Based on the discussion, try to speak like a villager. Do NOT reveal your allies identities.
 """,

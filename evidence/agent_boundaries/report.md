@@ -30,7 +30,7 @@ the data layer.**
 | Private field | Sole consumer |
 |---|---|
 | `surviving_wolves` / `surviving_villagers` (the wolf roster) | wolf nodes only |
-| `wolf_channel` (night coordination) | wolf night nodes only (`output_key wolf_channel`) |
+| `wolf_channel` (night coordination + GM whiff notes) | wolf nodes only — wolf night discussion **and** (as of 2026-07-05) wolf day discuss/vote |
 | `investigator_results` | investigator only |
 | `vigilante_results` (SK-confirmation shot feedback) | vigilante only |
 | `healer_target` | nobody's prompt, ever |
@@ -41,10 +41,18 @@ filter (§2) — so the payload is the *only* place the guarantee can live. Two 
 decisions carry the guarantee: SK/vigilante payloads use the role-blind `surviving_players` (never
 the wolf-visible roster), and the wolf night fan-out iterates `surviving_wolves` only.
 
-> *Game-scoping, not a leak boundary:* `WolfDayState` also carries no `wolf_channel`, so wolves
-> can't cite night coordination during the day. That keeps night talk out of public day reasoning,
-> but it is a **design-scoping** choice, not a cross-role isolation guarantee — `wolf_channel` is the
-> wolf's own information, so giving it to a wolf would not be a leak. No leak check enforces it.
+> *Game-scoping, not a leak boundary (extended 2026-07-05):* originally `WolfDayState` carried no
+> `wolf_channel`, so wolves couldn't cite night coordination during the day. This was **design-scoping**,
+> not a cross-role isolation guarantee — `wolf_channel` is the wolf's own information, so giving it to a
+> wolf is never a leak. The scoping existed for one (untested) worry: that a wolf would **self-leak** by
+> parroting night-chat content into its public day messages ("as we planned last night…"), outing itself.
+> As of **2026-07-05** wolves DO carry the channel into their day discuss/vote turns (mirroring how the
+> investigator/vigilante get their private results by day, and fixing the day-lag on the change-E whiff
+> note + the wolf day situation-summary slot that used to render empty). The self-leak worry is now
+> mitigated by an explicit confidentiality instruction in the wolf day prompts ("never quote or hint at
+> this channel in public") and **flagged for measurement on the next batch** (no self-leak analyzer this
+> pass). The cross-role invariant is now enforced by `check_wolf_channel_isolation` (below): the channel
+> may reach any wolf prompt but never a non-wolf's.
 
 **How it's verified:** six `check_*` invariants run on **every batch game**, auditing the
 prompt-input dict (one layer upstream of rendering) and exiting non-zero on any violation (§3).
@@ -85,7 +93,7 @@ so coverage is total. Driven by `run_leak_tests(prompt_log, roles)`.
 | Check | Invariant |
 |---|---|
 | `check_wolf_identity_isolation` | Non-wolf prompt inputs carry no `surviving_wolves` / wolf names |
-| `check_wolf_channel_isolation` | `wolf_channel` content only in entries with output_key `wolf_channel` |
+| `check_wolf_channel_isolation` *(re-scoped 2026-07-05 for wolf day visibility)* | `wolf_channel` content only in a **wolf player's** own entries (night discussion + day discuss/vote); never in any non-wolf's entry |
 | `check_investigator_results_isolation` | Investigation results only in investigator entries |
 | `check_vigilante_results_isolation` *(added 2026-06-06, `8008623` — the checker set predated the 9p roster)* | Shot feedback only in vigilante entries |
 | `check_healer_target_absent` | `healer_target` in no prompt input at all |

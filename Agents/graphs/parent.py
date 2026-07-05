@@ -82,6 +82,7 @@ def day_phase(
         "current_day": state["current_day"],
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        "wolf_channel": state.get("wolf_channel", []),
         "roles": state["roles"],
         "human_player": state["human_player"],
         "investigator_results": state.get("investigator_results", []),
