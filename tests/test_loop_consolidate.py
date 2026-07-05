@@ -204,5 +204,85 @@ class SpDedupGatingTests(unittest.TestCase):
             md.assert_not_called()
 
 
+class _FakeSP:
+    """Minimal stand-in for a synthesized SP cell object (the shape synthesize() reads off it)."""
+    action_phase = "day_vote"
+    composed_situation = "sit"
+    action = "act"
+    direction = "protect"
+    honesty = "truthful"
+
+    def model_dump(self, mode: str = "json") -> dict:
+        return {"action_phase": self.action_phase}
+
+
+class TrackRecordLineageTests(unittest.TestCase):
+    """§0.3: _track_record returns the keys of exactly the SPs whose rows it rendered (the lineage set)."""
+
+    def _rec(self, key, follow, pos=0, neg=0, action="a"):
+        return {"key": key, "value": {"follow_count": follow, "positive_count": pos,
+                                      "negative_count": neg, "action": action}}
+
+    def test_returns_keys_of_qualifying_rows_only(self) -> None:
+        recs = [
+            self._rec("k_hi", follow=20, pos=15, neg=1, action="strong"),   # qualifies (lift>0, follow>=5)
+            self._rec("k_lo", follow=2, pos=2, neg=0, action="too_few"),    # below min_follow -> excluded
+            self._rec("k_mid", follow=8, pos=5, neg=2, action="ok"),        # qualifies
+        ]
+        text, keys = con._track_record(recs, base=0.0, min_follow=5)
+        self.assertEqual(set(keys), {"k_hi", "k_mid"})
+        self.assertNotIn("k_lo", keys)
+        self.assertEqual(keys[0], "k_hi")   # keys follow the rendered (lift-descending) row order
+        self.assertTrue(text)
+
+    def test_empty_when_none_qualify(self) -> None:
+        recs = [self._rec("k", follow=1, pos=1)]   # single follow < min_follow
+        self.assertEqual(con._track_record(recs, base=0.0, min_follow=5), ("", []))
+
+
+class DistilledFromSynthTests(unittest.TestCase):
+    """§0.3: synthesized SPs carry an inert distilled_from = keys of the track-record source SPs ([] if none).
+    Stubs the LLM synth + clustering the same lazy-imported way the module reaches Agents/."""
+
+    def _synth(self, sp_recs):
+        import Agents.memory.persistence as persist_mod
+        import Agents.memory.strategy_synthesis as synth_mod
+        import Agents.schemas.roles as roles_mod
+        ns = {"strategy_points/villager/day_vote": list(sp_recs)}
+        base = {"villager/day_vote": [0.0, 100]}
+        with tempfile.TemporaryDirectory() as t, \
+                patch.object(roles_mod, "roles", ["villager"]), \
+                patch.object(roles_mod, "VALID_ACTION_PHASES_BY_ROLE", {"villager": ["day_vote"]}), \
+                patch.object(persist_mod, "memory_store_paths",
+                             lambda d: (Path(t) / "o.json", Path(t) / "s.json")), \
+                patch.object(persist_mod, "seed_memory_from_json_files_cached", lambda **kw: None), \
+                patch.object(synth_mod, "cluster_observations_for_synth",
+                             lambda store, nskey, cfgd: (["o1"], [["o1"]])), \
+                patch.object(synth_mod, "synthesize_cluster_sps",
+                             lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
+            con.synthesize(Path(t), ns, base, LoopConfig(incremental=False))
+        return [r for r in ns["strategy_points/villager/day_vote"] if "distilled_from" in r["value"]]
+
+    def test_new_sp_lists_qualifying_source_keys(self) -> None:
+        recs = [
+            {"key": "src_hi", "value": {"follow_count": 20, "positive_count": 15,
+                                        "negative_count": 1, "action": "strong"}},
+            {"key": "src_lo", "value": {"follow_count": 1, "positive_count": 1,
+                                        "negative_count": 0, "action": "weak"}},   # < min_follow -> excluded
+        ]
+        new = self._synth(recs)
+        self.assertTrue(new)
+        for r in new:
+            self.assertEqual(r["value"]["distilled_from"], ["src_hi"])
+
+    def test_distilled_from_empty_without_track_record(self) -> None:
+        recs = [{"key": "src_lo", "value": {"follow_count": 1, "positive_count": 1,
+                                            "negative_count": 0, "action": "weak"}}]
+        new = self._synth(recs)
+        self.assertTrue(new)
+        for r in new:
+            self.assertEqual(r["value"]["distilled_from"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

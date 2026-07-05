@@ -119,14 +119,18 @@ def _synth_cluster(live: list, depleted: bool, obs_gen_map: dict | None, synth_l
     return any(obs_gen_map.get(k, 0) > synth_lookback for k in live)
 
 
-def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> str:
-    rows = [(sp_lift(r["value"], base), r["value"].get("follow_count", 0), r["value"].get("action", ""))
-            for r in sp_recs]
-    rows = [(lf, f, a) for lf, f, a in rows if lf is not None and f >= min_follow]
+def _track_record(sp_recs: list, base: float, min_follow: int = 5) -> tuple[str, list[str]]:
+    """Render the realized-credit track record for a cell AND return the keys of exactly the SPs whose rows
+    it contains (lift known, followed >= min_follow). Those keys are the §0.3 lineage: the source SPs whose
+    record was fed into synthesis, so a revised SP can be joined back to them offline via distilled_from."""
+    rows = [(sp_lift(r["value"], base), r["value"].get("follow_count", 0), r["value"].get("action", ""),
+             r.get("key", "")) for r in sp_recs]
+    rows = [row for row in rows if row[0] is not None and row[1] >= min_follow]
     if not rows:
-        return ""
-    return "\n".join(f"- realized lift {lf:+.2f} (followed {f}x): {a}"
-                     for lf, f, a in sorted(rows, reverse=True))
+        return "", []
+    rows.sort(key=lambda row: (row[0], row[1], row[2]), reverse=True)
+    text = "\n".join(f"- realized lift {lf:+.2f} (followed {f}x): {a}" for lf, f, a, _k in rows)
+    return text, [k for *_, k in rows]
 
 
 def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: LoopConfig,
@@ -165,41 +169,45 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
             depleted = len(sp_namespaces.get(f"strategy_points/{cell}", [])) < cfg.synth_replenish_floor
             if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
                 continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
-            tr = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
-                               base_rates.get(cell, [0.0])[0], min_follow=cfg.synth_track_min_follow)
+            tr, tr_keys = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
+                                        base_rates.get(cell, [0.0])[0], min_follow=cfg.synth_track_min_follow)
             for cl in clusters:
                 live = [k for k in cl if k in items]
                 if _synth_cluster(live, depleted, obs_gen_map, synth_lookback, cfg.incremental):
-                    tasks.append((role, phase, live, items, tr))
+                    tasks.append((role, phase, live, items, tr, tr_keys))
 
     now = datetime.now(timezone.utc)
     added = 0
 
     def _run(t):
-        role, phase, live, items, tr = t
-        return role, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr)
+        role, phase, live, items, tr, tr_keys = t
+        return role, tr_keys, synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record=tr)
 
     if tasks:
         with ThreadPoolExecutor(max_workers=12) as pool:
-            for role, sps in pool.map(_run, tasks):
+            for role, tr_keys, sps in pool.map(_run, tasks):
                 for sp in sps:
                     ns = f"strategy_points/{role}/{sp.action_phase}"
                     sp_namespaces.setdefault(ns, []).append({
                         "created_at": now.isoformat(), "key": str(uuid.uuid4()),
                         "namespace": ["strategy_points", role, sp.action_phase],
                         "updated_at": now.isoformat(),
+                        # distilled_from (§0.3): keys of the SPs whose track record was fed into synthesis
+                        # for this cell — inert lineage metadata (agents never see it) to join a revised SP
+                        # back to its parents' credit history offline. [] when no SP passed the min-follow bar.
                         "value": {"observation_count": 1, "last_observed": now.isoformat(), "game_id": "",
                                   "situation": sp.composed_situation, "action": sp.action,
                                   "direction": sp.direction, "honesty": sp.honesty,
                                   "follow_count": 0, "retrieved_count": 0, "positive_count": 0,
                                   "neutral_count": 0, "negative_count": 0,
+                                  "distilled_from": tr_keys,
                                   "dimensions": sp.model_dump(mode="json")},
                     })
                     added += 1
     # with_track_record = cells synthesized using a realized-credit track record (the credit-AWARE path).
     # 0 while < synth_track_min_follow follows have accumulated => synthesis is silently halo-only; this
     # makes the thesis mechanism observable per generation instead of hoped.
-    with_tr = len({(r, p) for r, p, _live, _items, tr in tasks if tr})
+    with_tr = len({(r, p) for r, p, _live, _items, tr, _keys in tasks if tr})
     return ({"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
              "with_track_record": with_tr}, obs_counts)
 
