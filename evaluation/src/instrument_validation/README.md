@@ -54,8 +54,11 @@ situation dimension. This package validates the instruments, not the agents.
 - **`dimensions/`** — v6 situation-dimension validation. `dimension_audit.py` ($0 fill-accuracy vs the
   case's own board), `dimension_gating_screen.py` (does soft dimension-gating cut retrieval waste? —
   concluded negative, RE-OPENED by the audit, so standing-again).
-- **`power/`** — the pre-registered power / MDE gate (compounding plan §0.1). No code yet; an MDE table
-  is required before any paid compounding run.
+- **`power/`** — the pre-registered power / MDE gate (compounding plan §0.1). `mde_simulation.py` resamples
+  the existing per-game de-luck scores (run-1 / v2 / v6ab), injects a known linear-in-generation effect, and
+  reports detection rate + MDE across N∈{4,5,10,20}/gen × G∈{6,8,10} gens. $0, deterministic. Its dated
+  readout lives at `evidence/execution_plan/power_analysis/mde_table.md`. Standing gate: no paid compounding
+  run without a current MDE table.
 
 ## How to invoke
 
@@ -77,4 +80,4 @@ All runners are package modules; run from the repo root.
 | dimension gating screen | `poetry run python -m evaluation.src.instrument_validation.dimensions.dimension_gating_screen --batch … --store …` | paid (LLM judge) |
 | tagger validation | `poetry run eval-tagger --config evaluation/config/template/tagger_eval_example.json` | paid on cache miss |
 | tagger effectiveness | `poetry run python -m evaluation.src.instrument_validation.tagger.tagger_effectiveness` | paid (tags flash-lite) |
-| power / MDE gate | — (no code yet; MDE table required before any paid compounding run) | — |
+| power / MDE gate | `poetry run python -m evaluation.src.instrument_validation.power.mde_simulation` | $0 |

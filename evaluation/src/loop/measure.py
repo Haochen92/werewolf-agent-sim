@@ -20,6 +20,45 @@ from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _decision_credit,
 TOWN = {"villager", "investigator", "healer", "vigilante"}
 
 
+def game_score(record: dict, arm: str = "off", *,
+               skip_day1: bool = True, on_memory_active_only: bool = True) -> tuple[dict, dict]:
+    """De-luck decision (sum, n) per faction key for ONE whole-game record — the game-grain factoring of
+    generation_score's inner loop. Same filters (drop day-1; in the ON arm count only memory-active
+    decisions), same faction bucketing ('town' for the four town roles, else the role). Returns two dicts
+    keyed by 'overall' and the faction (no arm prefix): the value sum and the decision count. A record with
+    no roles / no eval-cases file yields empty dicts. Used by generation_score (which pools over games) and
+    by the power/MDE simulation (which needs the per-game score distribution)."""
+    sums: dict[str, float] = defaultdict(float)
+    ns: dict[str, int] = defaultdict(int)
+    roles, path = record.get("roles"), record.get("eval_cases_path")
+    if not roles or not path or not os.path.exists(path):
+        return sums, ns
+    blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in record.get("day_resolutions", [])}
+    for cl in open(path):
+        if not cl.strip():
+            continue
+        env = json.loads(cl)
+        if env.get("kind") != "agent_action_eval":
+            continue
+        ec = (env.get("output") or {}).get("eval_case")
+        if not ec:
+            continue
+        if skip_day1 and ec.get("day") == 1:
+            continue                                      # day-1 is memoryless in BOTH arms
+        if arm == "on" and on_memory_active_only and not ec.get("memory_enabled"):
+            continue                                      # ON-arm decision that didn't use memory
+        verdict = _decision_credit(ec, roles, blend_by_day)
+        if verdict is None:
+            continue
+        val = VERDICT_VALUE[verdict]
+        role = ec.get("player_role", "?")
+        faction = "town" if role in TOWN else role
+        for key in ("overall", faction):
+            sums[key] += val
+            ns[key] += 1
+    return sums, ns
+
+
 def generation_score(on_glob: str, off_glob: str | None = None, *,
                      skip_day1: bool = True, on_memory_active_only: bool = True) -> dict:
     """Mean de-luck decision value per faction for one generation, split by ARM. ON should slope up across
@@ -43,32 +82,11 @@ def generation_score(on_glob: str, off_glob: str | None = None, *,
                 if not line.strip():
                     continue
                 g = json.loads(line)
-                roles, path = g.get("roles"), g.get("eval_cases_path")
-                if not roles or not path or not os.path.exists(path):
-                    continue
-                blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
-                for cl in open(path):
-                    if not cl.strip():
-                        continue
-                    env = json.loads(cl)
-                    if env.get("kind") != "agent_action_eval":
-                        continue
-                    ec = (env.get("output") or {}).get("eval_case")
-                    if not ec:
-                        continue
-                    if skip_day1 and ec.get("day") == 1:
-                        continue                                  # day-1 is memoryless in BOTH arms
-                    if arm == "on" and on_memory_active_only and not ec.get("memory_enabled"):
-                        continue                                  # ON-arm decision that didn't use memory
-                    verdict = _decision_credit(ec, roles, blend_by_day)
-                    if verdict is None:
-                        continue
-                    val = VERDICT_VALUE[verdict]
-                    role = ec.get("player_role", "?")
-                    faction = "town" if role in TOWN else role
-                    for key in (f"{arm}/overall", f"{arm}/{faction}"):
-                        sums[key] += val
-                        ns[key] += 1
+                gs, gn = game_score(g, arm, skip_day1=skip_day1,
+                                    on_memory_active_only=on_memory_active_only)
+                for key in gn:
+                    sums[f"{arm}/{key}"] += gs[key]
+                    ns[f"{arm}/{key}"] += gn[key]
 
     _score_arm(on_glob, "on")
     _score_arm(off_glob, "off")
