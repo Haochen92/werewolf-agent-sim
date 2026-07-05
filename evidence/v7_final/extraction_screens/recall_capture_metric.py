@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (ccd9a8d) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 recall-arm — capture-rate of flagged pivotal turns, per arm. Zero additional spend.
 
 Question: does suggestive-anchoring lift FLASH-LITE's capture of pivotal turns up toward PRO's?
@@ -11,7 +17,7 @@ reliable than day numbers, and applied IDENTICALLY to every arm so the compariso
 Manufacture guard: also report intra-stage distinctness of the obs that land on flagged turns, so a
 capture gain isn't just padding the suggested turns.
 
-  poetry run python evidence/v7_final/recall_capture_metric.py
+  poetry run python evidence/v7_final/extraction_screens/recall_capture_metric.py
 """
 
 import json
@@ -20,7 +26,7 @@ import sys
 from itertools import combinations
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.audits.recall_flags import pivotal_turns  # noqa: E402
 from evaluation.src.studies.reextract_villager_day import DEFAULT_SOURCE, load_cases  # noqa: E402

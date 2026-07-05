@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (ccd9a8d) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 (c) model-capability pre-gate — compare pro / flash-3.5 / flash-lite extraction on the SAME 3-game
 slice. Zero additional spend (reads the already-extracted stores).
 
@@ -8,7 +14,7 @@ slice. Zero additional spend (reads the already-extracted stores).
 Metrics: obs volume, intra-cell distinctness (token Jaccard near-restatement), de-halo
 corr(net_verdict, faction_won). De-halo is THIN on 3 games (low faction-won variance) — directional only.
 
-  poetry run python evidence/v7_final/extraction_model_ab_compare.py
+  poetry run python evidence/v7_final/extraction_screens/extraction_model_ab_compare.py
 """
 
 import json
@@ -17,7 +23,7 @@ from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.studies.reextract_villager_day import DEFAULT_SOURCE, load_cases  # noqa: E402
 

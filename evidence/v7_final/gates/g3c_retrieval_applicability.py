@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (6dc92cf) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 Gate G3c — retrieval applicability/precision (plan §5-G3, §10b). Zero spend, no LLM, no re-judge.
 
 G3a showed not_relevant DOMINATES retrieval (30–69%) → retrieval precision is the #1 v7 lever, and the

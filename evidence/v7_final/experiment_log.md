@@ -1,5 +1,7 @@
 # v7 (final memory iteration) — build log
 
+*Folder regrouped 2026-07-05 (runs/ + purpose subfolders); artifact paths below predate the regroup — see README.md for the current layout.*
+
 **What this is:** the chronological narrative of the v7 credit / consolidation / discussion-credit build —
 the reasoning, each test and its result, each conclusion, and (most importantly) **what we cut and why.**
 The design docs (`plan.md`, `consolidation_design.md`, `discussion_credit_design.md`) hold the *current

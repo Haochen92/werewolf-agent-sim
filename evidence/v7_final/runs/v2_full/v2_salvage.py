@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../../README.md); it is kept runnable-as-of last touch (1a0a9bc) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v2_full REPOSITIONED — all-factions-memory-ON paired A/B (NOT the town-only test it was meant to be).
 
 v2 ran `configs=all_enabled` (EVERY faction had memory) vs `all_disabled`, instead of the intended
@@ -13,7 +19,7 @@ own memory (game_id-matched ON vs OFF). This script extracts that, at zero spend
      reuse ON transcripts' tags (a real collision found 2026-06-23). The floor avoids that AND avoids
      the halo of a tagger-base-0 "gain" that was never differenced against no-memory.
 
-  poetry run python evidence/v7_final/v2_full/v2_salvage.py
+  poetry run python evidence/v7_final/runs/v2_full/v2_salvage.py
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from evaluation.src.loop.credit_backfill import (
     VERDICT_VALUE, _decision_credit, _majority_vote, _vote_credit)

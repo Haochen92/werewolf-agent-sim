@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (ccd9a8d) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 — gating efficacy (the G3c follow-on). Zero spend, no LLM, no re-retrieval.
 
 G3c proved embedding similarity is BLIND to applicability (not_relevant 58%, score can't cut it). The

@@ -1,4 +1,10 @@
-"""Graduated 2026-07-02 → evaluation/src/experiments/tagger_eval.py (mode=skill); this file is the frozen original apparatus.
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../../README.md); it is kept runnable-as-of last touch (fde7045) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
+"""Graduated 2026-07-02 → evaluation/src/instrument_validation/tagger/tagger_validation.py (mode=skill); this file is the frozen original apparatus.
 
 Foundation test for the deceiver-metric thread: is the wolf game-level signal (Check C partial
 r(disc_verdict, won | deluck) = +0.60) REAL SKILL, or leak / a verbosity confounder?
@@ -15,7 +21,7 @@ Collapses anywhere => the premise was leak/confounder and the powered deceiver-m
 Partial r via dependency-free recursive formula. COST: re-tag the ~18 games not already cached
 outcome-out (the 6 ablation games are reused), flash-lite-PINNED, ~90 day-calls, ~cents.
 
-  poetry run python evidence/v7_final/v2_full/tagger_skill_retest.py
+  poetry run python evidence/v7_final/runs/v2_full/tagger_skill_retest.py
 """
 
 from __future__ import annotations
@@ -32,7 +38,7 @@ from statistics import mean
 os.environ["GOOGLE_GENAI_PRO_MODEL"] = "gemini-3.1-flash-lite"          # cost guard
 os.environ["GOOGLE_GENAI_PRO_BACKUP_MODEL"] = "gemini-3.1-flash-lite"
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO))
 from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _decision_credit, _majority_vote  # noqa: E402
 from evaluation.src.loop.discussion_tagger import tag_game  # noqa: E402

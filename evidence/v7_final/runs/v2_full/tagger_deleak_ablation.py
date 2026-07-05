@@ -1,4 +1,10 @@
-"""Graduated 2026-07-02 → evaluation/src/experiments/tagger_eval.py (mode=deleak); this file is the frozen original apparatus.
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../../README.md); it is kept runnable-as-of last touch (fde7045) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
+"""Graduated 2026-07-02 → evaluation/src/instrument_validation/tagger/tagger_validation.py (mode=deleak); this file is the frozen original apparatus.
 
 2x2 ablation — does WITHHOLDING the day's outcome actually reduce the tagger's leak, or was the leak
 just the (mechanical) silent-player effect? The one-armed re-tag couldn't tell these apart: speakers-only
@@ -22,7 +28,7 @@ legitimate silence-skill; this 2x2 is what makes each number diagnostic instead 
 COST: 2 flash-lite passes over 6 games (~60 day-calls); tags cached to tags_ablation/ so re-analysis is free.
 Model PINNED to flash-lite below (never pro-2.5).
 
-  poetry run python evidence/v7_final/v2_full/tagger_deleak_ablation.py
+  poetry run python evidence/v7_final/runs/v2_full/tagger_deleak_ablation.py
 """
 
 from __future__ import annotations
@@ -40,7 +46,7 @@ from statistics import mean
 os.environ["GOOGLE_GENAI_PRO_MODEL"] = "gemini-3.1-flash-lite"
 os.environ["GOOGLE_GENAI_PRO_BACKUP_MODEL"] = "gemini-3.1-flash-lite"
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO))
 
 from evaluation.src.loop.discussion_tagger import tag_game  # noqa: E402

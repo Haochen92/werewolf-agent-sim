@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (1a0a9bc) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 (d) — two FREE deterministic measurements (zero spend) to size the design before tagger spend.
 
 M1 — DAY-VOTE ENDPOINT credit + DEFENSE-HEAT coverage. Credits EVERY followed discussion SP by the day's
@@ -11,7 +17,7 @@ on a player, acted on at night, never voiced in discussion). By target-role-clas
 the night-exposure axis (A3) is worth wiring or a rare edge case. (Deterministic upper bound; the agent
 night-reasoning (A4) would refine attribution.)
 
-  poetry run python evidence/v7_final/discussion_coverage_check.py
+  poetry run python evidence/v7_final/discussion_credit/discussion_coverage_check.py
 """
 
 import glob
@@ -21,7 +27,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _vote_credit  # noqa: E402
 

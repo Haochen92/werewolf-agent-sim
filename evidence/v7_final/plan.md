@@ -1,5 +1,7 @@
 # v7 — the final memory-architecture iteration (plan + pre-registered stopping rule)
 
+*Folder regrouped 2026-07-05 (runs/ + purpose subfolders); artifact paths below predate the regroup — see README.md for the current layout.*
+
 **Date:** 2026-06-17 (reframed 2026-06-18) · **Status:** CHEAP-SCREEN CAMPAIGN COMPLETE; binding
 constraint REFRAMED to CONTENT (§1a). Built+validated: investigator de-cap (default), query-enum
 instrumentation, soft dimension-gating (validated → NEGATIVE, parked off). Retrieval precision =

@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (15fad99) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 (b/loop) — does cluster-SYNTHESIS (the loop's 'regeneration' step) concentrate SP QUALITY,
 or is it quality-blind? Zero spend.
 
@@ -14,7 +20,7 @@ TEST: for each CREDITED per-game SP, is its directive 'carried forward' (a near 
 the synth store, same cell)? Compare the lift distribution of CARRIED vs DROPPED. Quality-aware synthesis
 => carried SPs have higher lift than dropped. Quality-blind => equal.
 
-  poetry run python evidence/v7_final/sp_synthesis_quality_check.py
+  poetry run python evidence/v7_final/synthesis_checks/sp_synthesis_quality_check.py
 """
 
 import json

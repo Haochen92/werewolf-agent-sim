@@ -1,4 +1,10 @@
-"""Graduated 2026-07-02 → evaluation/src/experiments/tagger_eval.py (mode=accuracy); this file is the frozen original apparatus.
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (fde7045) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
+"""Graduated 2026-07-02 → evaluation/src/instrument_validation/tagger/tagger_validation.py (mode=accuracy); this file is the frozen original apparatus.
 
 v7 (d) — TAG ACCURACY check (not effectiveness): are the tagger's per-field tags CORRECT?
 
@@ -16,7 +22,7 @@ misses implicit/challenge claims, so: regex-found-but-tagger-missed = likely tag
 dumped examples). Per [[feedback-semantic-eval-not-string-parse]] the residual semantic cases need a read.
 
   GOOGLE_GENAI_PRO_MODEL=gemini-3.1-flash-lite GOOGLE_GENAI_PRO_BACKUP_MODEL=gemini-3.1-flash-lite \
-    poetry run python evidence/v7_final/tagger_accuracy.py
+    poetry run python evidence/v7_final/discussion_credit/tagger_accuracy.py
 """
 
 import json
@@ -25,7 +31,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.loop.discussion_tagger import tag_game  # noqa: E402
 

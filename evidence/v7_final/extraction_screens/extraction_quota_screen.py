@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (1835863) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 (c) — two FREE extraction-shape screens (zero spend) over the RAW (no-dedup) v6_1 store.
 
 The store is the per-cell re-extraction output BEFORE dedup, so every observation still carries its
@@ -15,7 +21,7 @@ A positive count->similarity slope = the floor is being filled with restatements
 NEITHER screen touches CONFABULATION (the lesson being causally wrong) — that is not cleanly
 free-screenable; it needs the re-extraction screen or downstream credit. Stated, not hidden.
 
-  poetry run python evidence/v7_final/extraction_quota_screen.py
+  poetry run python evidence/v7_final/extraction_screens/extraction_quota_screen.py
 """
 
 import json

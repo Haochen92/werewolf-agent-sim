@@ -1,7 +1,7 @@
 # A rigorously-measured cross-game-learning memory system for multi-agent Werewolf
 
 **Status:** v7 memory-research iteration · static-memory result solid · **compounding question OPEN** (the loop run that was meant to answer it was invalid — see §3/§5c)
-**Provenance:** repo `8bfd0ad` (`feature-dimension-schema`); loop run on `bdfe1fa..52e26b1`; run record + config in `evidence/v7_final/v2_full/` (`run_meta.json`, `loop_history.json`, `cost_report.json`, `v2_salvage.py`).
+**Provenance:** repo `8bfd0ad` (`feature-dimension-schema`); loop run on `bdfe1fa..52e26b1`; run record + config in `evidence/v7_final/runs/v2_full/` (`run_meta.json`, `loop_history.json`, `cost_report.json`, `v2_salvage.py`).
 
 > **One-line claim set (read this first, then the rest qualifies it):** Static episodic memory measurably improves town play (**paired same-epoch A/B, N=30 on the frozen v5_0 store: the town decision-quality basket is significant — correct-elim p=0.028, healer-save p=0.005, mislynch-rate p=0.036 — with a +17→+33pp win lift across arms; win-rate itself reaches p=0.013 only on the reranked arm, +33pp**) — more than market sims, which are stateless. The agents **demonstrably learn across games** (a self-consolidating credit→synthesize→prune loop that updates the store from outcomes). Whether that *compounding* further improves play is **still open**: the loop run built to test it accidentally enabled memory for *all* factions (not the intended town-only), confounding the town signal in an arms race — though it does, by accident, show a **tentative positive compounding signal for *wolf* memory**. The durable deliverable is the **eval instrument plus the rigor around it**: it caught **two** invalid runs (a distorted baseline, then a config slip) and a halo in my own first-pass analysis — honest negatives and retracted claims beat fragile positives.
 
@@ -121,10 +121,10 @@ separate them (`plan.md` §10b) — so tier on *follow track record*, not on the
 
 | File | What |
 |---|---|
-| `evidence/v7_final/v2_full/loop_history.json` | per-generation scores (per-faction ON/OFF) + `arm_factions` |
-| `evidence/v7_final/v2_full/v2_salvage.py` | the repositioned all-memory-on per-faction A/B (the corrected §5c table) |
-| `evidence/v7_final/v2_full/run.log` | shows the actual arm: `all_enabled` (the slip) |
-| `evidence/v7_final/v2_full/cost_report.json` | realized cost ($15.00; games $13.43 + overhead $1.57), Langfuse-sourced |
+| `evidence/v7_final/runs/v2_full/loop_history.json` | per-generation scores (per-faction ON/OFF) + `arm_factions` |
+| `evidence/v7_final/runs/v2_full/v2_salvage.py` | the repositioned all-memory-on per-faction A/B (the corrected §5c table) |
+| `evidence/v7_final/runs/v2_full/run.log` | shows the actual arm: `all_enabled` (the slip) |
+| `evidence/v7_final/runs/v2_full/cost_report.json` | realized cost ($15.00; games $13.43 + overhead $1.57), Langfuse-sourced |
 | `evidence/v7_final/experiment_log.md` §11j, §12 (incl. **§12f correction**) | invalidity corrections + the repositioned analysis |
 | `evidence/v7_final/consolidation_design.md` | the credit→consolidate design (incl. §11 dual-window souring spec, built-but-deferred) |
 

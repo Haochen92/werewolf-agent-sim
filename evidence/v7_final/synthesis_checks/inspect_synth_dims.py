@@ -1,10 +1,16 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (ccd9a8d) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """Inspect the SITUATION DIMENSIONS the synthesizer assigns — the retrieval key.
 
 Re-synthesizes SK day_vote cluster 1 (the clean conditioned-directive cluster) on the credit arm and
 prints the obs-cluster regime vs the H/D SPs' assigned situation dims, so we can see whether a
 CROSS-REGIME conditioned directive gets tagged to a SINGLE regime (retrieval misalignment) or broadened.
 
-  poetry run python evidence/v7_final/inspect_synth_dims.py
+  poetry run python evidence/v7_final/synthesis_checks/inspect_synth_dims.py
 """
 
 from __future__ import annotations
@@ -13,7 +19,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
 from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files_cached

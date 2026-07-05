@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (6dc92cf) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 Gate G3b — target-advocacy detector (the OFFENSE channel, plan §6.2 / §10a). Zero spend.
 
 Discussion is the hardest channel to credit (diffuse/lagged/collective). G3b tests whether the cheapest

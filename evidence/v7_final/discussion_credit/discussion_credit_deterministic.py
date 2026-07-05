@@ -1,3 +1,9 @@
+# ── FROZEN RECORD (stamped 2026-07-05) ──────────────────────────
+# Dated evidence artifact, NOT maintained code. It answered its question once
+# (verdict: ../README.md); it is kept runnable-as-of last touch (1a0a9bc) but is
+# not import-safe against future refactors. Standing apparatus lives in
+# evaluation/src/instrument_validation/.
+# ────────────────────────────────────────────────────────────────────────────
 """v7 (d) — the FREE deterministic discussion-credit slice (zero spend).
 
 Credits day_discussion SPs on the only cleanly per-SP-computable deterministic signal: ADVOCACY
@@ -10,7 +16,7 @@ Reports: (1) COVERAGE — what fraction of followed discussion SP-instances are 
 (the ceiling for this free signal); (2) does the credit SEPARATE; (3) HELD-OUT reproduction (split
 games, corr lift_A vs lift_B) = is it signal or noise. Tells us how much of d is achievable with no LLM.
 
-  poetry run python evidence/v7_final/discussion_credit_deterministic.py
+  poetry run python evidence/v7_final/discussion_credit/discussion_credit_deterministic.py
 """
 
 import glob
@@ -20,7 +26,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _vote_credit  # noqa: E402
 
