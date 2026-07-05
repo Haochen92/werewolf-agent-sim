@@ -50,14 +50,19 @@ def _replay_vote(
     allow_abstain: bool,
     prompt_template: Any | None = None,
     schema_override: Any | None = None,
+    strategy_points: list[Any] | None = None,
 ) -> tuple[str | None, str]:
     """Regenerate one vote with a swapped memory block and the correct abstain
     choice set. Returns (votee, replayed updated_strategy). prompt_template and
     schema_override let an arm vary the prompt or the output schema (e.g. the
-    reason-first DayVoteOutput); defaults are the role's live template + schema."""
+    reason-first DayVoteOutput); defaults are the role's live template + schema.
+    strategy_points swaps the injected strategy-point block too (defaults to none,
+    the observations-only convention every existing screen relies on); the
+    checkpoint-replay sweep passes the snapshot's retrieved SPs so it measures the
+    loop's synthesized-SP growth, not just observations."""
     payload = eval_case_to_agent_payload(case)
     payload["retrieved_observations"] = retrieved_observations
-    payload["strategy_points"] = []
+    payload["strategy_points"] = strategy_points or []
     payload["allow_abstain"] = allow_abstain
     spec = action_spec_for(case)
     result = _run_agent(
@@ -75,13 +80,18 @@ def _replay_vote(
 
 
 def _replay_night(
-    case: EvalCase, retrieved_observations: list[Any], prompt_template: Any | None = None
+    case: EvalCase,
+    retrieved_observations: list[Any],
+    prompt_template: Any | None = None,
+    strategy_points: list[Any] | None = None,
 ) -> str | None:
     """Regenerate one night target with a swapped memory block. The wolf kill
-    rides the wolf_channel vote field; other roles return their *_target directly."""
+    rides the wolf_channel vote field; other roles return their *_target directly.
+    strategy_points swaps the injected SP block (defaults to none — the
+    observations-only screen convention; the checkpoint sweep passes snapshot SPs)."""
     payload = eval_case_to_agent_payload(case)
     payload["retrieved_observations"] = retrieved_observations
-    payload["strategy_points"] = []
+    payload["strategy_points"] = strategy_points or []
     prompt, schema, output_key = NIGHT_SPECS[case.player_role]
     result = _run_agent(payload, prompt_template or prompt, schema, output_key)
     if not result:

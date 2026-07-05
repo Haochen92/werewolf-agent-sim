@@ -44,6 +44,7 @@ eval-batch-dedup = "evaluation.src.cli_runner.regen_replay.both.batch_dedup_judg
 eval-graduate = "evaluation.src.cli_runner.graduate_run:main"
 eval-case-sample = "evaluation.src.cli_runner.diagnosis.case_sampler:main"
 eval-tagger = "evaluation.src.cli_runner.discussion_tagger_eval:main"
+eval-checkpoint-replay = "evaluation.src.replay.decision_screen.checkpoint_replay:main"
 
 [tool.poetry]
 packages = [{ include = "Agents" }, { include = "evaluation" }]

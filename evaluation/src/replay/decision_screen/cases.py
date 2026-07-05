@@ -19,7 +19,8 @@ from evaluation.src.loop.decision_scoring import REPLAYABLE_TOWN_ROLES
 
 def load_game_index(batch_path: Path) -> dict[str, dict[str, Any]]:
     """Map trace_id -> the ground truth a vote is scored against (roles +
-    day_resolutions for abstain recovery), read straight from the batch records."""
+    day_resolutions for abstain recovery + night_resolutions for the healer-night
+    attack-join), read straight from the batch records."""
     index: dict[str, dict[str, Any]] = {}
     with batch_path.open(encoding="utf-8") as fh:
         for line in fh:
@@ -34,6 +35,7 @@ def load_game_index(batch_path: Path) -> dict[str, dict[str, Any]]:
                 "game_id": rec.get("game_id"),
                 "roles": rec.get("roles", {}) or {},
                 "day_resolutions": rec.get("day_resolutions", []) or [],
+                "night_resolutions": rec.get("night_resolutions", []) or [],
                 "winner": rec.get("winner"),
             }
     return index

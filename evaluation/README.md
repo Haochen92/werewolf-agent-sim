@@ -57,9 +57,11 @@ evaluation/                the eval subsystem (code + its data)
       sources/       where cases come from: sidecar.py (run_batch's per-game sidecars, PRIMARY) ·
                      batch_records.py (repo-root batch_results/*.jsonl game-run logs) · langfuse.py (fallback fetch + cost)
       frozen_sets.py  frozen-set record schemas + JSONL I/O · sampling.py  stratified subset selection · batch_layout.py  batch_results/ write layout
-    replay/      regenerate one pipeline stage on a frozen case: situation_summary, retrieval, application (action),
+    replay/      regenerate one pipeline stage on a frozen case: situation_summary, retrieval, turn_action (action),
                  extraction, dedup, batch_dedup, day_summary, plus
-      decision_screen/  the off-policy per-turn decision-replay engine (cases/replay/schemas/stats/screens)
+      decision_screen/  the off-policy per-turn decision-replay engine (cases/replay/schemas/stats/screens);
+                        checkpoint_replay.py replays a fixed exam vs each loop-generation store snapshot
+                        (empty/gen1/genN arms, leakage-guarded, case-major) — the compounding readout (eval-checkpoint-replay)
     judges/      judge prompts + LLM judge wrappers, one per case type
     labeling/    multi-model golden-label pipeline: engine, voter, exporter, adapters/, pipeline,
                  manual_labelers/ (interactive human CLIs), label_scorer/ (golden-set scorers/NDCG/regen)

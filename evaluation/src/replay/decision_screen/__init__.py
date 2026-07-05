@@ -15,6 +15,8 @@ Layers (import from this package, not the submodules):
 - ``schemas``  replay-INPUT output-schema variants (reason-first / memory-linked / …)
 - ``stats``    ``mcnemar_p`` paired-discordant test
 - ``screens``  the day-vote / night / discussion / framing / adherence screen runners
+- ``checkpoint_replay``  the compounding readout — one fixed exam vs each loop-generation
+  store snapshot (empty/gen1/genN arms), leakage-guarded, case-major anti-drift
 
 Records: evidence/memory_system/effectiveness/decision_replay/ (the study journey)
 and evidence/evaluation/replay_screens/ (the apparatus write-up)."""
@@ -58,6 +60,15 @@ from evaluation.src.replay.decision_screen.screens import (
     run_reorder_adoption,
     run_reorder_test,
 )
+from evaluation.src.replay.decision_screen.checkpoint_replay import (
+    CheckpointLeakageError,
+    assert_no_leakage,
+    discover_snapshots,
+    run_checkpoint_replay,
+    run_sweep,
+    select_cases,
+    summarize,
+)
 from evaluation.src.replay.decision_screen.stats import mcnemar_p
 
 __all__ = [
@@ -98,4 +109,12 @@ __all__ = [
     "run_framing_rewrite_screen",
     "run_adherence_scan",
     "PASSIVE_STANCES",
+    # checkpoint_replay
+    "run_checkpoint_replay",
+    "run_sweep",
+    "summarize",
+    "select_cases",
+    "discover_snapshots",
+    "assert_no_leakage",
+    "CheckpointLeakageError",
 ]
