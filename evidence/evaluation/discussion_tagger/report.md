@@ -4,7 +4,9 @@
 > an omniscient end-of-day LLM pass that tags each player's discussion and night play. This spoke
 > covers *what it extracts, what depends on it, and how far to trust it* — a companion to the
 > [`../loop/report.md`](../loop/report.md) apparatus report, which frames the same tagger inside the
-> compounding-slope machinery. Design + run records: [`../../v7_final/`](../../v7_final/).
+> compounding-slope machinery. Design lineage + current mechanism:
+> [`../../metrics/discussion_tagger/`](../../metrics/discussion_tagger/) (report.md + experiment_log.md);
+> frozen design + run records: [`../../v7_final/`](../../v7_final/).
 > Lens + skeleton: [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
 > **Verdict: 🟡 a VALIDATED deceiver-skill METRIC, not a memory verdict.** Its holistic discussion
@@ -89,7 +91,7 @@ merit the vote proxy is blind to — which is exactly why its trust matters.
 ## The new canonical runner
 
 The tagger's eval runner graduated 2026-07-02 out of the frozen `v2_full/` scripts into
-`evaluation/src/experiments/tagger_eval.py` (console `eval-tagger`) — one config-driven entry with
+`evaluation/src/cli_runner/discussion_tagger_eval.py` (console `eval-tagger`) — one config-driven entry with
 `mode: accuracy | skill | deleak` reproducing the three originals' computations, manifest-stamped
 output, 12 stubbed-LLM tests. One disclosed refinement: skill's secondary A statistic now uses a fresh
 symmetric outcome-in pass (so A won't bit-reproduce the frozen run); the load-bearing outcome-blind
