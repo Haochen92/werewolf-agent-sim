@@ -9,9 +9,9 @@ wrong-sign or ~zero proxies should not carry win-rate narratives.
 Reported twice: pooled (all 50 games — more N, but the memory treatment moves both proxy
 and win, which can inflate r) and memory-OFF only (30 games, treatment-free).
 
-    poetry run python evidence/metrics/proxy_win_monotonicity.py
+    poetry run python -m evaluation.src.instrument_validation.proxies.proxy_win_monotonicity
 
-Output: prints the markdown table that lives in proxy_win_monotonicity.md.
+Output: prints the markdown table that lives in evidence/metrics/proxy_win_monotonicity.md.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO_ROOT = HERE.parents[1]
+REPO_ROOT = HERE.parents[3]  # proxies -> instrument_validation -> src -> evaluation -> repo root
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 

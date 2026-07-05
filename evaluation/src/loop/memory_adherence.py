@@ -2,7 +2,7 @@
 
 The 3a/3b half of the decision-replay screen — it complements the mechanical
 outcome score (``decision_scoring``) and the existing decision-QUALITY judge
-(``judges/application.py``, Track 3c). External and OUTCOME-BLIND: the judge sees
+(``judges/turn_action.py``, Track 3c). External and OUTCOME-BLIND: the judge sees
 only the information set the agent had, the memories actually injected, and the
 action taken — never the game result. Per retrieved memory it labels, read
 VERDICT-AWARE (a net-negative memory recommends AVOIDING its approach, so

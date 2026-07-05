@@ -18,7 +18,7 @@ Findings on first run (2026-06-12):
 - Wolf night skill rises with memory (power_targeting 0.459 -> 0.544 raw / 0.511 rr; town-arm
   negative control 0.448) while detectability rises too (wolf_elim_rate 0.227 -> 0.292 / 0.340).
 
-    poetry run python evidence/memory_system/effectiveness/paired_ab/diagnose_wolf_sk_proxies.py
+    poetry run python -m evaluation.src.instrument_validation.proxies.diagnose_wolf_sk_proxies
 """
 from __future__ import annotations
 

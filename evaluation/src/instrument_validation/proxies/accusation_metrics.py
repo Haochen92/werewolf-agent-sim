@@ -17,7 +17,7 @@ Validated by point-biserial vs own-faction win on the N=180 v6ab set + the pre-r
 20-row random sample of (message, parsed-accusation) pairs is dumped for human spot-check, because
 `addressed_targets` are self-labeled speech acts tuned for scheduling, not measurement.
 
-    poetry run python evaluation/src/audits/accusation_metrics.py
+    poetry run python -m evaluation.src.instrument_validation.proxies.accusation_metrics
 """
 
 from __future__ import annotations
@@ -27,10 +27,10 @@ import random
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from evaluation.src.core.stats import point_biserial
-from evaluation.src.audits.metrics_common import (
+from evaluation.src.instrument_validation.proxies.metrics_common import (
     REPO_ROOT,
     THREAT_ROLES,
     TOWN_ROLES,

@@ -45,10 +45,10 @@ from pydantic import Field, create_model
 
 from Agents.llm_factory import get_llm
 from Agents.llm_factory.embeddings import create_embeddings
-from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
+from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.turn.action_space import _valid_targets_for_action, _with_dynamic_target_enum
-from evaluation.src.replay.application import action_spec_for
+from evaluation.src.replay.turn_action import action_spec_for
 from evaluation.src.loop.decision_scoring import allow_abstain_for, score_vote
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 from evaluation.src.studies.criticality_screen import (

@@ -26,7 +26,7 @@ THREAT_ROLES = frozenset({"wolf", "serial_killer"})
 POWER_ROLES = frozenset({"investigator", "healer", "vigilante"})
 
 # Town roles whose day_vote the replay harness can regenerate today — i.e. the
-# roles present in evaluation.src.replay.application.ACTION_SPECS for
+# roles present in evaluation.src.replay.turn_action.ACTION_SPECS for
 # ("<role>", "day_vote"). vigilante is town but now also has a vote spec (see
 # REPLAYABLE_DECEIVER_ROLES note); kept off this town-default set only because the
 # default screen is town-lensed and vigilante is opted in explicitly by --roles.

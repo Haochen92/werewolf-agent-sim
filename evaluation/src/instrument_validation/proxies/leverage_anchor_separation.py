@@ -18,11 +18,11 @@ Board reconstruction + query_criticality reused from the gating-efficacy screen.
 import glob
 import json
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "evaluation/src")
-sys.path.insert(0, ".")
-from evaluation.src.loop.decision_scoring import score_vote  # noqa: E402
-from evaluation.src.studies.criticality_screen import query_criticality  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))  # repo root, for `evaluation.src.*`
+
+from evaluation.src.loop.decision_scoring import query_criticality, score_vote  # noqa: E402
 
 TOWN_ROLES = {"villager", "healer", "investigator", "vigilante"}
 ARMS = sorted(glob.glob("batch_results/v6ab_*.jsonl"))

@@ -11,12 +11,12 @@ from __future__ import annotations
 import math
 
 from evaluation.src.core.stats import partial_correlation, pearson
-from evaluation.src.audits.accusation_metrics import accusations, game_metrics
-from evaluation.src.audits.claim_conversion import (
+from evaluation.src.instrument_validation.proxies.accusation_metrics import accusations, game_metrics
+from evaluation.src.instrument_validation.proxies.claim_conversion import (
     find_next_round_convergence,
     role_claim_coverage,
 )
-from evaluation.src.audits.proxy_rescue import _power_role_alive_nights
+from evaluation.src.instrument_validation.proxies.proxy_rescue import _power_role_alive_nights
 
 # p1,p2 town villagers; p3 wolf; p4 SK; p5 investigator; p6 vigilante
 ROLES = {"p1": "villager", "p2": "villager", "p3": "wolf", "p4": "serial_killer",

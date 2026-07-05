@@ -364,7 +364,7 @@ def replay_case_stage(
             "default. Pass enabled=True ONLY after explicit spend sign-off — the rest of the sampler "
             "is $0."
         )
-    from evaluation.src.replay.application import run_application_action  # heavy import, kept lazy
+    from evaluation.src.replay.turn_action import run_application_action  # heavy import, kept lazy
 
     return run_application_action(
         case,

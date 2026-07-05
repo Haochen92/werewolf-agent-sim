@@ -12,7 +12,7 @@ NIGHT (does it de-luck `_night_credit`'s outcome-luck?):
   skilled) credited. + corr(night_verdict, faction_won) halo.
 
   GOOGLE_GENAI_PRO_MODEL=gemini-3.1-flash-lite GOOGLE_GENAI_PRO_BACKUP_MODEL=gemini-3.1-flash-lite \
-    poetry run python evidence/v7_final/tagger_effectiveness.py
+    poetry run python -m evaluation.src.instrument_validation.tagger.tagger_effectiveness
 """
 
 import glob
@@ -21,7 +21,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _night_credit, _vote_credit  # noqa: E402
 from evaluation.src.loop.discussion_tagger import _night_actions_by_day, tag_game  # noqa: E402

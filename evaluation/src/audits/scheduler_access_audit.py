@@ -387,7 +387,7 @@ def gate_silencing(records: list[dict]) -> dict:
         "passes_with_addressed_targets": passes_with_addressed,
         "per_role": per_role,
         "note": (
-            "Novelty-gated pass and voluntary pass_turn share one write path (Agents/turn/agent.py) "
+            "Novelty-gated pass and voluntary pass_turn share one write path (Agents/turn/decision.py) "
             "producing an identical passed=True/empty-message/proactive marker; the attempted-but-gated "
             "message is never persisted. Gate selectivity by role/stance is UNMEASURABLE from records. "
             "Fix is a small instrumentation change (persist a gate flag + the gated candidate on the "

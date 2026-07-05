@@ -1,6 +1,6 @@
 """Reusable replay-eval runners — re-run a production prompt / situation-summary / retrieval on a frozen turn."""
 
-from evaluation.src.replay.application import (
+from evaluation.src.replay.turn_action import (
     ActionSpec,
     action_spec_for,
     application_case_for_judge,

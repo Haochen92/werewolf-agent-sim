@@ -27,7 +27,7 @@ verdict's legitimate lynch context. The show_outcome / speakers_only levers stay
 verbosity-controlled retest confirmed the wolf/SK discussion signal (partial r(disc_verdict, won | deluck,
 verbosity) ≈ +0.56/+0.60, N=24) is REAL skill the vote proxy misses, NOT leak or wordiness. Untested residual:
 the night verdict still sees its own kill's death (the night analogue of the day leak) — a two-prompt split
-would fix it if a clean deceiver night-metric is ever needed. (Code/numbers: evidence/v7_final/v2_full/
+would fix it if a clean deceiver night-metric is ever needed. (Code/numbers: evidence/v7_final/runs/v2_full/
 tagger_deleak_ablation.py + tagger_skill_retest.py.)
 """
 

@@ -64,14 +64,19 @@ evaluation/                the eval subsystem (code + its data)
     labeling/    multi-model golden-label pipeline: engine, voter, exporter, adapters/, pipeline,
                  manual_labelers/ (interactive human CLIs), label_scorer/ (golden-set scorers/NDCG/regen)
     diagnosis/   outcome-blind case sampler for human/pro-LLM review cohorts (rung ② of the modality ladder)
-    audits/      re-runnable $0 deterministic audits — the regression surface (dimension fills, scheduler
-                 access, whiff conversion, proxy validation, dedup + batch-dedup golden scorers, pivotal-turn flags)
-    loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure)
+    audits/      re-runnable $0 deterministic audits — "is the SYSTEM behaving as recorded" regression
+                 surface (scheduler access, whiff conversion, dedup + batch-dedup golden scorers, pivotal-turn flags, embedding canary). See its README.
+    instrument_validation/  "do the RULERS measure what they claim" — standing validation of the measurement
+                 instruments: proxies/ (de-luck proxy monotonicity/rescue), credit/ (credit-signal validity),
+                 tagger/ (discussion-tagger accuracy/skill/deleak + effectiveness), dimensions/ (v6 dim accuracy +
+                 gating screen), power/ (pre-registered power/MDE gate, no code yet). See its README.
+    loop/        the v7 compounding-loop harness (generational A/B: credit, synth, consolidate, measure). See its README.
     cli_runner/  command-line eval runners — the live CLI layer (inventory below)
       regen_replay/  thin CLIs, grouped by operation: regen/ (regen-only) · judge/ (judge-only) · both/
       diagnosis/     the case-sampler CLI (command wiring over the diagnosis/ logic package above)
-      graduate_run.py · discussion_tagger_eval.py   ops CLIs: promote a keeper run to evidence/ · validate the discussion tagger
-    studies/     concluded one-shot study runners — frozen verdicts, kept runnable (table in its __init__.py)
+      graduate_run.py · discussion_tagger_eval.py   ops CLIs: promote a keeper run to evidence/ · thin CLI for
+                 the tagger validation (logic in instrument_validation/tagger/; eval-tagger console entry)
+    studies/     concluded one-shot study runners — frozen verdicts, kept runnable (inventory in its README, grouped by era)
     archive/     old eval code kept for auditing only
   config/                  experiment configs (domain subfolders + template/)
   frozen_eval_sets/        shared frozen replay datasets + gold labels (experiment-specific sets live in evidence/<exp>/eval_sets/)
@@ -211,12 +216,19 @@ explore→graduate→supersede lifecycle is in **CLAUDE.md → Eval Architecture
 
 ## Replay, Judges, And Runners
 
+**One case stream, three readouts.** A captured turn (the `EvalCase`) can be read three ways: *score it
+live* (`loop/` de-luck credit + `Agents` metrics — the on-policy decision proxy), *judge it as recorded*
+(a `judges/` rubric over the frozen output, `replay=none`), or *replay a stage and judge the variation*
+(`replay/` regenerates a stage, then `judges/` grades the difference). Same stream, three lenses — the
+rest of this section is how the code is filed to serve them.
+
 The evaluation code is split by responsibility:
 
 ```text
 replay      = produce outputs by replaying part of the agent pipeline on a frozen case
 judges      = grade or compare outputs using a rubric
-audits      = deterministic $0 checks over recorded data (no LLM; re-runnable as regression audits)
+audits      = deterministic $0 checks that the SYSTEM behaves as recorded (no LLM; re-runnable regression audits)
+instrument_validation = standing checks that the RULERS measure what they claim (proxies/credit/tagger/dimensions/power)
 diagnosis   = outcome-blind sampling of cases into human/pro-LLM review cohorts
 cli_runner  = coordinate datasets, replay, judges, configs, and JSONL output (the CLI layer)
 studies     = concluded one-shot apparatus behind frozen verdicts (its own top-level package, off the CLI surface)
@@ -236,6 +248,8 @@ data/builders                 -> data / core                (freeze frozen sets;
 judges      -> prompts / schemas / formatters
 replay      -> production agent code
 audits      -> data / core (deterministic, never judges)
+instrument_validation -> data / core / loop / replay / judges (validates the instruments; the tagger CLI in
+                         cli_runner/ is a thin wrapper over instrument_validation/tagger/)
 studies     -> replay / loop (frozen apparatus; nothing live imports studies)
 ```
 
@@ -273,13 +287,14 @@ The frozen-set builders live in **`data/builders/`** (`agent_decision`/`extracti
 
 Its former flatmates moved out on 2026-07-02:
 
-- **`evaluation/src/audits/`** — the deterministic $0 checks that re-run on any new batch as
-  regression audits: `dimension_audit`, `scheduler_access_audit`, `whiff_conversion_audit`, the
-  proxy-validation trio (`proxy_rescue`/`accusation_metrics`/`claim_conversion` over the shared
-  pre-registered split in `metrics_common`), the dedup golden scorers `dedup_score`
-  (`eval-dedup-score`, online per-decision) and `batch_dedup_score` (the batch-cluster golden compare,
-  split out of the old `batch_dedup_eval` monolith on 2026-07-03), and `recall_flags`. All
-  pytest-covered; batch-record loading shared via `data/sources/batch_records.py`.
+- **`evaluation/src/audits/`** — the deterministic $0 checks that the SYSTEM behaves as recorded,
+  re-run on any new batch as regression audits: `scheduler_access_audit`, `whiff_conversion_audit`, the
+  dedup golden scorers `dedup_score` (`eval-dedup-score`, online per-decision) and `batch_dedup_score`
+  (the batch-cluster golden compare, split out of the old `batch_dedup_eval` monolith on 2026-07-03),
+  `recall_flags`, and `embedding_canary`. All pytest-covered; batch-record loading shared via
+  `data/sources/batch_records.py`. (The instrument-validation runners — proxy monotonicity/rescue,
+  credit validity, tagger validation, dimension audit — moved to `instrument_validation/` on
+  2026-07-04; see its README.)
 - **`studies/`** — the concluded one-shot study runners behind the v5→v6→v7
   store-evolution verdicts (the screen family, the v6 reextraction chain, the synthesis and
   calibration A/Bs). Promoted to its own top-level `evaluation/src/studies/` package on 2026-07-03 (out

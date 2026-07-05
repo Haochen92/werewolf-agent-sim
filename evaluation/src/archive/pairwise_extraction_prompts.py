@@ -1,3 +1,4 @@
+# Archived 2026-07-04: unwired (no importer, no console entry); superseded by the per-cell extraction judge.
 """Prompt text for the pairwise extraction judge."""
 
 PAIRWISE_EXTRACTION_SYSTEM_PROMPT = """\

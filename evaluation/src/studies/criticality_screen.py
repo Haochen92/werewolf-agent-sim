@@ -42,7 +42,7 @@ from evaluation.src.loop.decision_scoring import (
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 from evaluation.src.data.sources.sidecar import LocalCaseSource
 from evaluation.src.replay.decision_screen import _replay_vote, load_game_index, mcnemar_p
-from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
+from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent
 
 
 def load_candidates_by_role(store_dir: Path, roles: frozenset[str]) -> dict[str, list[StoredObservation]]:

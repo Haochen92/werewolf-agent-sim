@@ -294,8 +294,8 @@ class AutoDedupDatasetBuildConfig(_DescribedConfig):
 
 _TAGGER_MODE_DEFAULT_GLOB = {
     "accuracy": "batch_results/v6ab_baseline.jsonl batch_results/v6ab_skboth.jsonl",
-    "skill": "evidence/v7_final/v2_full/gen*_on.jsonl",
-    "deleak": "evidence/v7_final/v2_full/gen*_on.jsonl",
+    "skill": "evidence/v7_final/runs/v2_full/gen*_on.jsonl",
+    "deleak": "evidence/v7_final/runs/v2_full/gen*_on.jsonl",
 }
 
 

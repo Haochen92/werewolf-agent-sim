@@ -11,7 +11,7 @@ Per-stratum r + N are reported so a muted-but-real signal is separated from a st
 Pre-registration: `evidence/metrics/metrics_audit/proxy_discovery_log.md` §3.0. Deterministic, ZERO
 LLM, recompute-only over the N=180 v6ab set. Split-half confirmation on `game_id` parity.
 
-    poetry run python evaluation/src/audits/proxy_rescue.py
+    poetry run python -m evaluation.src.instrument_validation.proxies.proxy_rescue
 """
 
 from __future__ import annotations
@@ -20,10 +20,10 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from evaluation.src.core.stats import partial_correlation, point_biserial
-from evaluation.src.audits.metrics_common import (
+from evaluation.src.instrument_validation.proxies.metrics_common import (
     REPO_ROOT,
     load_v6ab,
     split_half,

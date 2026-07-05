@@ -34,9 +34,9 @@ from evaluation.src.core.config_schema import TurnEvalConfig, VariantConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
 from evaluation.src.data.frozen_sets import read_eval_dataset
-from evaluation.src.judges.application import run_application_judge
-from evaluation.src.judges.pipeline import run_judge
-from evaluation.src.replay.application import (
+from evaluation.src.judges.turn_action import run_application_judge
+from evaluation.src.judges.turn_pipeline import run_judge
+from evaluation.src.replay.turn_action import (
     application_case_for_judge,
     run_application_action,
 )

@@ -1,3 +1,4 @@
+# Archived 2026-07-04: unwired (no importer, no console entry); superseded by the per-cell extraction judge.
 """Per-role extraction judge — evaluates each role's items separately."""
 
 from __future__ import annotations

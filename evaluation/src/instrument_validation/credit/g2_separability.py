@@ -26,11 +26,11 @@ import glob
 import json
 import random
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "evaluation/src")
-sys.path.insert(0, ".")
-from core.stats import point_biserial  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))  # repo root, for `evaluation.src.*`
 
+from evaluation.src.core.stats import point_biserial  # noqa: E402
 from evaluation.src.loop.decision_scoring import (  # noqa: E402
     POWER_ROLES, THREAT_ROLES, score_vote,
 )

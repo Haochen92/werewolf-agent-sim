@@ -10,7 +10,7 @@ justified. Flat => the threshold catches noise => back off before deleting anyth
 Per the frozen-calibration design, the memory-off BASELINE is computed on the FULL data (a stable
 reference); only the memory-on FOLLOWS are split A/B. Reuses the scoring from credit_backfill.
 
-  poetry run python evidence/v7_final/heldout_credit_reproduction.py
+  poetry run python -m evaluation.src.instrument_validation.credit.heldout_credit_reproduction
 """
 
 import glob
@@ -20,7 +20,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from evaluation.src.loop.credit_backfill import (  # noqa: E402
     SPCredit, _decision_credit, compute_base_rates,

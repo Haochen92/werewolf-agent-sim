@@ -42,7 +42,7 @@ from evaluation.src.loop.memory_adherence import (
     judge_discussion_stance,
     summarize_adherence,
 )
-from evaluation.src.replay.application import (
+from evaluation.src.replay.turn_action import (
     application_case_for_judge,
     run_application_action,
 )

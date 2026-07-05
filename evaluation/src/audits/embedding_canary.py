@@ -13,9 +13,9 @@ in the alias moves the geometry and trips the assert loudly at batch start, befo
 spends anything on corrupted retrieval.
 
 Bootstrap (one command, needs embedding creds — cheap, NOT generation spend):
-    poetry run python -m evaluation.src.core.embedding_canary --pin
+    poetry run python -m evaluation.src.audits.embedding_canary --pin
 Verify:
-    poetry run python -m evaluation.src.core.embedding_canary --check
+    poetry run python -m evaluation.src.audits.embedding_canary --check
 """
 
 from __future__ import annotations
@@ -120,7 +120,7 @@ def check_embedding_canary(
     if not path.exists():
         msg = (
             f"Embedding canary not pinned ({path.name} missing). Bootstrap once with:\n"
-            "  poetry run python -m evaluation.src.core.embedding_canary --pin"
+            "  poetry run python -m evaluation.src.audits.embedding_canary --pin"
         )
         if raise_on_missing:
             raise FileNotFoundError(msg)

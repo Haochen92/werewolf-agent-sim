@@ -12,7 +12,7 @@ from evaluation.src.core.settings import REPO_ROOT, load_project_env
 
 load_project_env()
 
-from evaluation.src.judges.pipeline import (  # noqa: E402
+from evaluation.src.judges.turn_pipeline import (  # noqa: E402
     DEFAULT_JUDGE_MODEL,
     run_judge,
 )

@@ -29,7 +29,7 @@ from evaluation.src.core.config_schema import SummaryExperimentConfig
 from evaluation.src.core.io import write_jsonl
 from evaluation.src.core.settings import REPO_ROOT, load_project_env
 from evaluation.src.data.frozen_sets import read_eval_dataset
-from evaluation.src.judges.summary import run_summary_judge
+from evaluation.src.judges.situation_summary import run_summary_judge
 
 load_project_env()
 

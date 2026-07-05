@@ -69,7 +69,7 @@ def main() -> None:
 
     from evaluation.src.core.config_schema import JudgeConfig
     from evaluation.src.data.frozen_sets import read_eval_dataset
-    from evaluation.src.judges.pairwise_summary import run_pairwise_summary_judge
+    from evaluation.src.judges.situation_summary_pairwise import run_pairwise_summary_judge
 
     records = read_eval_dataset(EVAL_DATASET)
 

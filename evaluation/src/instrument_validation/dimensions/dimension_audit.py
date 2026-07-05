@@ -10,7 +10,7 @@ query-side fill against that truth.
 
 Data: the loop-era eval-case sidecars are the ONLY place query-side ``situation_dimensions`` are
 persisted (``batch_results/{town_only_run1,town_only_run2,v2_full,legacy}``); the batch records that
-carry roles + night/day resolutions live in ``evidence/v7_final/<run>/gen*_{on,off}.jsonl`` and are
+carry roles + night/day resolutions live in ``evidence/v7_final/runs/<run>/gen*_{on,off}.jsonl`` and are
 joined per game by ``trace_id``.
 
 Epistemic split (MANDATORY): ``players_alive`` / ``bullets_left`` / ``ally_revealed`` are
@@ -20,8 +20,8 @@ with the agent's epistemic limit (a villager cannot know the wolf count) → rep
 "vs-omniscient disagreement"; for WOLF roles it is ~true fill accuracy (a wolf knows the wolf count —
 caveat: the parity metric ignores the serial killer, which wolves also cannot see).
 
-  poetry run python evaluation/src/audits/dimension_audit.py            # runs the $0 audit
-  poetry run python evaluation/src/audits/dimension_audit.py --regen    # BLOCKED (spends money)
+  poetry run python -m evaluation.src.instrument_validation.dimensions.dimension_audit            # runs the $0 audit
+  poetry run python -m evaluation.src.instrument_validation.dimensions.dimension_audit --regen    # BLOCKED (spends money)
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Iterator
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from Agents.game_config import GameConfig
 from Agents.memory.retrieval.dimension_gating import _alive_bucket
@@ -49,20 +49,20 @@ from evaluation.src.loop.decision_scoring import query_criticality
 TOWN_ROLES = frozenset({"villager", "healer", "investigator", "vigilante"})
 
 # Runs whose sidecars carry query-side v6 dimensions, mapped to the batch records that carry roles +
-# resolutions. Loop runs write records to evidence/v7_final/<run>/; the legacy smoke runs keep theirs
+# resolutions. Loop runs write records to evidence/v7_final/runs/<run>/; the legacy smoke runs keep theirs
 # at the batch_results/legacy top level.
 DEFAULT_RUNS: dict[str, list[str]] = {
     "town_only_run1": sorted(
-        glob.glob("evidence/v7_final/town_only_run1/gen*_on.jsonl")
-        + glob.glob("evidence/v7_final/town_only_run1/gen*_off.jsonl")
+        glob.glob("evidence/v7_final/runs/town_only_run1/gen*_on.jsonl")
+        + glob.glob("evidence/v7_final/runs/town_only_run1/gen*_off.jsonl")
     ),
     "town_only_run2": sorted(
-        glob.glob("evidence/v7_final/town_only_run2/gen*_on.jsonl")
-        + glob.glob("evidence/v7_final/town_only_run2/gen*_off.jsonl")
+        glob.glob("evidence/v7_final/runs/town_only_run2/gen*_on.jsonl")
+        + glob.glob("evidence/v7_final/runs/town_only_run2/gen*_off.jsonl")
     ),
     "v2_full": sorted(
-        glob.glob("evidence/v7_final/v2_full/gen*_on.jsonl")
-        + glob.glob("evidence/v7_final/v2_full/gen*_off.jsonl")
+        glob.glob("evidence/v7_final/runs/v2_full/gen*_on.jsonl")
+        + glob.glob("evidence/v7_final/runs/v2_full/gen*_off.jsonl")
     ),
     "legacy": [
         "batch_results/legacy/v6live_smoke.jsonl",

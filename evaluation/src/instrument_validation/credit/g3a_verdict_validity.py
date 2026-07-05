@@ -18,11 +18,11 @@ only valid if the follow/override verdict carries real signal about memory quali
 import glob
 import json
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "evaluation/src")
-sys.path.insert(0, ".")
-from core.stats import compare_proportions  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))  # repo root, for `evaluation.src.*`
 
+from evaluation.src.core.stats import compare_proportions  # noqa: E402
 from evaluation.src.loop.decision_scoring import score_vote  # noqa: E402
 
 # town SP arm = the verdict-rich town channel; pool the town obs arm too (a few SP verdicts there).

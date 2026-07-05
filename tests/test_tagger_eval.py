@@ -1,4 +1,4 @@
-"""Aggregation-math + config tests for the canonical tagger runner (cli_runner/discussion_tagger_eval.py).
+"""Aggregation-math + config tests for the tagger validation logic (instrument_validation/tagger/tagger_validation.py).
 
 $0: ``tag_game`` (the only paid path — flash-lite) is stubbed with canned DayTags-shaped dicts, so
 every mode's aggregation is exercised on tiny synthetic records without a real tagging pass. The
@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from evaluation.src.core.config_schema import TaggerEvalConfig
-from evaluation.src.cli_runner import discussion_tagger_eval as te
+from evaluation.src.instrument_validation.tagger import tagger_validation as te
 
 
 def _cfg(mode: str, **kw) -> TaggerEvalConfig:
@@ -41,8 +41,8 @@ class ConfigTests(unittest.TestCase):
     def test_mode_default_glob_filled(self) -> None:
         self.assertEqual(_cfg("accuracy").batch_glob,
                          "batch_results/v6ab_baseline.jsonl batch_results/v6ab_skboth.jsonl")
-        self.assertEqual(_cfg("skill").batch_glob, "evidence/v7_final/v2_full/gen*_on.jsonl")
-        self.assertEqual(_cfg("deleak").batch_glob, "evidence/v7_final/v2_full/gen*_on.jsonl")
+        self.assertEqual(_cfg("skill").batch_glob, "evidence/v7_final/runs/v2_full/gen*_on.jsonl")
+        self.assertEqual(_cfg("deleak").batch_glob, "evidence/v7_final/runs/v2_full/gen*_on.jsonl")
 
     def test_explicit_glob_preserved(self) -> None:
         self.assertEqual(_cfg("skill", batch_glob="foo/*.jsonl").batch_glob, "foo/*.jsonl")

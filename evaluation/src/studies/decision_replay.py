@@ -32,7 +32,7 @@ from evaluation.src.loop.memory_adherence import (
     DEFAULT_ADHERENCE_JUDGE_MODEL,
     judge_decision_adherence,
 )
-from evaluation.src.replay.application import application_case_for_judge
+from evaluation.src.replay.turn_action import application_case_for_judge
 from evaluation.src.replay.decision_screen import (
     DayVoteOutputMemoryLinked,
     DayVoteOutputReasonFirst,

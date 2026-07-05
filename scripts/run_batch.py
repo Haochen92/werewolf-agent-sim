@@ -492,7 +492,7 @@ def run_batch(args: argparse.Namespace) -> int:
     # Embedding-alias drift canary: assert the store's embedding geometry still matches its
     # pins before spending a run on (silently) corrupted retrieval. Default-on; drift raises.
     if not args.skip_embedding_canary:
-        from evaluation.src.core.embedding_canary import check_embedding_canary
+        from evaluation.src.audits.embedding_canary import check_embedding_canary
 
         if check_embedding_canary():
             print("Embedding canary: OK (no alias drift).")

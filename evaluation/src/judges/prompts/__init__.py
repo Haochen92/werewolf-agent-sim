@@ -5,7 +5,7 @@ Re-exported here so callers can
 judge-type module a constant now lives in.
 """
 
-from evaluation.src.judges.prompts.pipeline import (
+from evaluation.src.judges.prompts.turn_pipeline import (
     JUDGE_SYSTEM_PROMPT,
     JUDGE_USER_PROMPT,
 )
@@ -13,26 +13,22 @@ from evaluation.src.judges.prompts.retrieval import (
     RETRIEVAL_SYSTEM_PROMPT,
     RETRIEVAL_USER_PROMPT,
 )
-from evaluation.src.judges.prompts.application import (
+from evaluation.src.judges.prompts.turn_action import (
     APPLICATION_SYSTEM_PROMPT,
     APPLICATION_USER_PROMPT,
 )
-from evaluation.src.judges.prompts.summary import (
+from evaluation.src.judges.prompts.situation_summary import (
     SUMMARY_RUBRIC_SYSTEM_PROMPT,
     SUMMARY_RUBRIC_USER_PROMPT,
     SUMMARY_RUBRIC,
 )
-from evaluation.src.judges.prompts.pairwise_summary import (
+from evaluation.src.judges.prompts.situation_summary_pairwise import (
     PAIRWISE_SUMMARY_SYSTEM_PROMPT,
     PAIRWISE_SUMMARY_USER_PROMPT,
 )
 from evaluation.src.judges.prompts.extraction import (
     EXTRACTION_SYSTEM_PROMPT,
     EXTRACTION_USER_PROMPT,
-)
-from evaluation.src.judges.prompts.pairwise_extraction import (
-    PAIRWISE_EXTRACTION_SYSTEM_PROMPT,
-    PAIRWISE_EXTRACTION_USER_PROMPT,
 )
 from evaluation.src.judges.prompts.batch_dedup import (
     BATCH_DEDUP_MERGE_SYSTEM_PROMPT,
@@ -62,8 +58,6 @@ __all__ = [
     "PAIRWISE_SUMMARY_USER_PROMPT",
     "EXTRACTION_SYSTEM_PROMPT",
     "EXTRACTION_USER_PROMPT",
-    "PAIRWISE_EXTRACTION_SYSTEM_PROMPT",
-    "PAIRWISE_EXTRACTION_USER_PROMPT",
     "BATCH_DEDUP_MERGE_SYSTEM_PROMPT",
     "BATCH_DEDUP_MERGE_USER_PROMPT",
     "DEDUP_SYSTEM_PROMPT",

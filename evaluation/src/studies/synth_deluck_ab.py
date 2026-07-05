@@ -29,7 +29,7 @@ from Agents.memory.strategy_synthesis import cluster_observations_for_synth, syn
 
 OBS_DIR = "memory_stores/v6_1"
 LEDGER = "evidence/v7_final/credit_backfill_ledger.json"
-OUT = Path("evidence/v7_final/synth_deluck_ab")
+OUT = Path("evidence/v7_final/runs/synth_deluck_ab")
 CELLS = [("serial_killer", "day_vote"), ("wolf", "day_vote"), ("serial_killer", "night_action")]
 MIN_FOLLOW = 5
 

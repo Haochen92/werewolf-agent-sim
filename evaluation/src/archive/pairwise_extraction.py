@@ -1,3 +1,4 @@
+# Archived 2026-07-04: unwired (no importer, no console entry); superseded by the per-cell extraction judge.
 """Pairwise extraction judge — compares two extraction outputs for one role."""
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ from evaluation.src.judges.extraction import (
     _format_roles,
     _format_strategy_points,
 )
-from evaluation.src.judges.prompts import (
+from evaluation.src.archive.pairwise_extraction_prompts import (
     PAIRWISE_EXTRACTION_SYSTEM_PROMPT,
     PAIRWISE_EXTRACTION_USER_PROMPT,
 )

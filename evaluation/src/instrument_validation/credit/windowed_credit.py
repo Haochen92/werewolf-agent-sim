@@ -15,7 +15,7 @@ from immediate while NOT being pure terminal -> delay carries extra clean signal
 If surv@k just tracks terminal -> the only free delayed signal is halo -> delayed credit needs the
 (paid) LLM or stays out.
 
-  poetry run python evidence/v7_final/windowed_credit.py
+  poetry run python -m evaluation.src.instrument_validation.credit.windowed_credit
 """
 
 import glob
@@ -25,7 +25,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from evaluation.src.loop.credit_backfill import VERDICT_VALUE, _decision_credit  # noqa: E402
 

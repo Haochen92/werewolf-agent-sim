@@ -12,7 +12,7 @@ config) on each. Headline = does GATED have a lower `does_not_apply` rate than U
 Held-out: town day-votes from a v6ab batch (NOT in v6_1's 20 source games); same-game candidates
 excluded at retrieval. Reuses criticality_screen (pools/retrieve/select) + forced_schema_screen (judge).
 
-  poetry run python evaluation/src/studies/dimension_gating_screen.py \
+  poetry run python -m evaluation.src.instrument_validation.dimensions.dimension_gating_screen \
       --batch batch_results/v6ab_townsp.jsonl --store memory_stores/v6_1 --n 24
 """
 
@@ -23,10 +23,10 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from Agents.llm_factory.embeddings import create_embeddings  # noqa: E402
-from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent  # noqa: E402
+from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent  # noqa: E402
 from Agents.memory.retrieval.dimension_gating import WEIGHT, alignment  # noqa: E402
 from evaluation.src.loop.decision_scoring import allow_abstain_for  # noqa: E402
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload  # noqa: E402
