@@ -1,169 +1,194 @@
 # Memory Effectiveness: Does Episodic Memory Improve Gameplay?
 
-## Motivation
+**Scope:** the one question that justifies the whole memory pipeline — does giving agents episodic
+memory produce measurably better game outcomes? This is the current-truth hub for that answer. The
+deciding experiment (a paired, seeded A/B on the frozen `v5_0` store) has run and closed the question
+for *static* memory. **Companion docs:** the store's version-by-version arc is
+[`../store_progression.md`](../store_progression.md); the full A/B statistics and design are in
+[`paired_ab/`](paired_ab/report.md); the open *compounding* question lives in
+[`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md).
 
-The episodic memory system is the central infrastructure investment in this project. Retrieval filtering, store deduplication, reranking, adoption tracking — all of these experiments optimize intermediate quality metrics (retrieval relevance, adoption accuracy, action quality scores). But the question that justifies the entire pipeline is simpler: **does giving agents access to episodic memory produce measurably better game outcomes?**
+**Provenance.** The A/B arms ran 2026-06-11 on `gemini-3.1-flash-lite` / Vertex, prompt_bundle
+`16f7f700`, store `memory_stores/v5_0` (consumption mode, `--no-memory-dump`). Every win-rate and proxy
+below was independently re-verified from `batch_results/ab_*.jsonl` on 2026-07-02 (own pairing + a
+separate stats path).
 
-This report consolidates evidence from two batch evaluation runs (91 and 91 successful games respectively) that tested memory's effect on win rates and gameplay metrics. This is a preliminary report — a final batch with the latest configuration (observations-only, v4_deduped store) has not yet been run.
+## The verdict
 
-## System Evolution
+- ✅ **Static memory measurably helps *town* play.** Proven by the `v5_0` paired A/B — the town
+  decision-quality basket moves significantly on the clean interleaved raw arm, win-rate direction is
+  consistent across every town arm.
+- ✅ **Memory does *not* help the deceivers.** Wolf and serial-killer (SK) arms are null on win rate
+  and on their proxies. Memory helps the inference game, not the deception game.
+- ⚠️ **The benefit is epoch-sensitive, not store-fragile.** A later run on the v6 store did not
+  replicate the town lift; the cause is a risen no-memory baseline between epochs, not a broken store
+  (a same-epoch control exonerates the store).
+- ❓ **Whether memory *compounds* across games is open.** Owned by the compounding measurement plan
+  (linked above), not this report.
 
-The memory system went through three distinct phases:
+## The deciding experiment — the `v5_0` paired A/B
 
-### Phase 0 — Monolithic Strategy Injection
+The earlier evidence (below) showed memory *can* move outcomes but left the current configuration
+unresolved, so we ran the confound-killer: a **paired, seeded, same-epoch A/B**. Each of 30 boards is
+played twice with *identical initial conditions* — same role draw, same RNG, same personas — differing
+only in whether memory is on. Pairing on `game_id` cancels the dominant noise source in werewolf, the
+luck of the setup (a wolf-favored draw, an easy or hard board), so a within-pair comparison isolates
+the treatment. Binary win/loss is read with **McNemar** on the discordant pairs (both-win and both-lose
+pairs carry no signal); dense proxies use a **paired Wilcoxon** on per-pair differences. The store is
+the frozen `v5_0` in consumption mode (it cannot grow, so the treatment is constant), and arms cover
+raw / reranked / all-on retrieval crossed with the town / wolf / SK factions. Full design and the
+wolf/SK arm tables are in [`paired_ab/`](paired_ab/report.md).
 
-The earliest version extracted "learnings" from postgame transcripts and accumulated them into a single strategy document per role. This strategy was injected as a system prompt at game start. Over 10+ iterations, visual inspection of dialogue transcripts showed increasing gameplay sophistication — agents developed more nuanced discussion patterns, better deception (wolves), and more targeted investigations.
+One design note carries weight. The original memory-off baseline (villagers 67% / SK 27% / wolves 7%)
+came from an earlier epoch, and a fresh 10-game re-run of it shifted systematically (Fisher **p=0.0028**)
+despite byte-identical play prompts — most likely silent Vertex-side model drift. That baseline was
+discarded and re-run fresh in the A/B's own epoch, giving a same-epoch off-control (villagers 27% / SK
+40% / wolves 33%). This run set a standing rule: never pair against a historical-epoch baseline.
 
-The limitation was overfitting. A single monolithic strategy accumulated every lesson from every game, including edge cases and contradictory advice. Recent games dominated the strategy text, and agents would rigidly follow advice that applied to a specific prior situation but not the current one. The strategy archive (`memory_stores/old_strateg_archive/strategies.json`) contains 228 strategy items across 4 role namespaces — the accumulated output of this phase.
+**Town win rate rises on every arm** (N=30 each; off = the same-epoch fresh baseline, 27% town win):
 
-### Phase 1 — Modular RAG (Observations + Strategy Points)
+| Arm (memory on for) | Town win off→on | Δ | McNemar p |
+|---|---|---|---|
+| raw town | 27% → 43% | +17pp | 0.267 |
+| reranked town | 27% → 60% | +33pp | **0.013** |
+| all-on (all roles) | 27% → 50% | +23pp | 0.167 |
 
-The replacement decomposed memory into two types:
-- **Observations** — factual accounts of specific past game events ("healer saved player_3 on night 2 and survived to endgame")
-- **Strategy points** — prescriptive advice extracted from patterns across games ("maintain a low profile after a successful save")
+The direction is unanimous, but only the reranked arm's win rate reaches significance, and win rate is
+underpowered at N=30 (the minimum detectable effect is ≈36pp). So the win-rate table is read as
+*consistent direction*, not as three independent proofs. The load-bearing evidence is the
+pre-registered town decision-quality basket on the **interleaved raw arm** (N=30, paired Wilcoxon):
 
-Both types are stored in a vector store, namespaced by role. Before each game turn, agents retrieve relevant items via semantic search based on their current situation summary. This eliminates the overfitting problem: retrieval surfaces only situation-relevant memories rather than dumping an entire strategy document.
+| Proxy | off → on | Δ | p |
+|---|---|---|---|
+| healer town-save rate | 0.370 → 0.598 | +0.228 | **0.005** |
+| correct-elimination rate | 0.470 → 0.638 | +0.168 | **0.028** |
+| town mislynch rate | 0.530 → 0.362 | −0.168 | **0.036** |
+| town vote accuracy | 0.560 → 0.710 | +0.149 | 0.053 |
 
-### Phase 2 — Namespace Refinement and Pipeline Maturation
+Bold marks p<0.05 uncorrected; the Bonferroni line over the ≤3 pre-registered primaries is 0.017. Three of four move
+significantly and all four move the same way. Healer-save clears even the Bonferroni line;
+correct-elimination and mislynch-rate cluster just above it. Town memory is improving the town's
+*decisions*, not just its luck.
 
-Further iterations added action_phase namespace segregation (separating discussion-relevant from vote-relevant memories), store deduplication, retrieval filtering, and reranking. Each change was evaluated independently (see `evidence/retrieval/filtering/`, `evidence/dedup/store_retrieval_impact/`, `evidence/retrieval/reranking/`). The adoption tracking experiment (`evidence/memory_system/strategy_adoption/`) and memory ablation (`evidence/memory_system/ablation/`) led to the current planned default of observations-only retrieval.
+### Why the raw basket is the anchor, not the +33pp win
 
-## Batch Evaluation Design
+The single significant win rate (+33pp, reranked, p=0.013) is *not* the citable headline, for two
+reasons.
 
-Two batch runs tested memory's effect on game outcomes using a 3-condition design:
+First, **power**: win rate at N=30 is underpowered (MDE ≈36pp), so a flat win rate here means
+"underpowered," not "no effect." The basket is pre-registered, has more signal per game, and is
+significant — it is the stronger instrument.
 
-1. **No memory** — all agents play without episodic memory retrieval
-2. **Wolf only** — only wolf agents receive retrieved memories
-3. **All enabled** — all agents (wolf, villager, healer, investigator) receive memories
+Second, **an unguarded temporal risk on the reranked arm specifically**. All arms ran the same day with
+an identical `runtime_fingerprint`, but they did not all overlap the baseline in time. The raw arm
+*interleaved* with the baseline (08:11–13:11); the reranked and all-on arms ran 12:57–18:31, after the
+baseline had finished at 12:06. Pairing on `game_id` cancels role-draw luck but not intraday drift, and
+06-11 had no intraday canary to detect drift (that discipline arrived 06-12). So the one significant
+win rate carries a small unguarded drift risk that the interleaved raw arm does not. Anchoring on the
+raw arm's basket sidesteps it.
 
-Each condition was run for ~30 games. The game configuration is otherwise identical: 8 players (2 wolves, 1 healer, 1 investigator, 4 villagers), `gemini-3.1-flash-lite` with minimal thinking for all agents.
+A note on a retracted claim: an earlier portfolio headline read "+17pp, p=0.013." That was a fusion
+error — the +17pp effect belongs to the raw arm (p=0.267), the p=0.013 to the reranked arm (+33pp). It
+was corrected on 2026-07-02 and should never be re-cited in the fused form.
 
-### Batch A — v3_deduped store, no action_phase namespace
+## Side-findings that shaped later work
 
-Store: v3 with deduplication applied. Retrieval namespaced by role only (not action phase). No filtering or reranking.
+**Memory does not help the deceivers.** The wolf arm is flat (wolf-faction win 33%→30%, p=1.000) and
+the SK arm trends down (SK win 40%→20%, p=0.146); neither faction's proxies improve. Mechanistically this fits — town
+plays an inference game where cross-game patterns compound, while wolf and SK play in-the-moment
+generative deception that memory doesn't sharpen. This null is *why* v7's credit design de-lucks by
+decision quality rather than win/loss: outcome and decision quality diverge most exactly in the
+deceiver cells, where a win can hide bad play and a loss can hide good play.
 
-### Batch B — v4 store, action_phase namespace
+**Reranking adds nothing over raw retrieval.** Town memory helps whether retrieval is raw or reranked,
+and the reranked-vs-raw contrast on town vote accuracy is null (0.710→0.686, Wilcoxon p=0.518). Sharper
+*ranking* is not the lever. This result pointed v6 away from fuzzy reranking and toward *structured*
+criticality gating — testing whether exact numeric gating (not embedding similarity) was the missing
+precision. (v6 later answered that too: no.)
 
-Store: v4 pre-dedup (522 items, larger and noisier). Retrieval namespaced by role AND action phase. No filtering or reranking.
+## The pre-rebuild batches — historical ceiling, not a citable anchor
 
-## Results
+Before the `v5` rebuild, two unpaired 30-game batches on the old game established that memory *can* move
+outcomes dramatically. They remain useful as a ceiling-and-sensitivity record, never as a current
+number.
 
-### Win Rates
-
-The no-memory baseline is consistent across batches, giving confidence that game dynamics are comparable.
-
-| Condition | Batch A (v3_deduped) | Batch B (v4_action_phase) |
-|-----------|---------------------|--------------------------|
+| Condition | Batch A (v3_deduped) | Batch B (v4 + action_phase) |
+|---|---|---|
 | No memory | 70.0% (21/30) | 74.2% (23/31) |
 | Wolf only | 87.1% (27/31) | 83.3% (25/30) |
 | All enabled | **96.7%** (29/30) | 73.3% (22/30) |
 
-#### Statistical tests (Fisher exact vs own-batch no-memory baseline, 95% Clopper–Pearson CIs)
+Batch A's all-enabled lift (96.7% vs 70%, Fisher **p=0.012**) is the strongest single-batch signal in
+the set — villagers went from losing one game in three to one in thirty. **Multiplicity caveat:** it is
+the best cell of six condition-batch comparisons, so under a Bonferroni-style correction p=0.012 is
+borderline, not decisive. And the *same* all-enabled condition collapsed to baseline in Batch B
+(73.3%, p=1.0), which changed two variables at once (store version and namespace granularity) — a
+confound the batches cannot resolve. So these show the ceiling memory can reach and that configuration
+can lose the entire benefit, nothing tighter.
 
-Regenerated from the colocated JSONLs by `regenerate_stats.py` — no hand-typed statistics.
+**A hard boundary applies:** the `v4→v5` rebuild changed the game itself — 9 players, 3 factions, a
+sequential scheduler — so these numbers do not transfer, and comparing any Batch A/B figure to a `v5`
+figure is a category error. They are context, never a comparator.
 
-| Comparison | Rates (95% CI) | Fisher p |
-|---|---|---|
-| A all-enabled vs no-memory | 96.7% [82.8, 99.9] vs 70.0% [50.6, 85.3] | **0.0122** |
-| A wolf-only vs no-memory | 87.1% [70.2, 96.4] vs 70.0% [50.6, 85.3] | 0.1271 |
-| B all-enabled vs no-memory | 73.3% [54.1, 87.7] vs 74.2% [55.4, 88.1] | 1.0000 |
-| B wolf-only vs no-memory | 83.3% [65.3, 94.4] vs 74.2% [55.4, 88.1] | 0.5339 |
-| Baselines A vs B | 70.0% vs 74.2% | 0.7802 |
-| All-enabled A vs B | 96.7% vs 73.3% | **0.0257** |
+## Why the v6 store did not replicate the town lift
 
-Only the Batch A all-enabled lift (and the A-vs-B regression on that same condition) is
-individually significant. **Multiplicity caveat:** the 96.7% is the best cell of six
-condition-batch comparisons run on this question; under a Bonferroni-style correction p=0.012
-is borderline rather than decisive. It is treated below as strong-but-single-batch evidence,
-not proof.
+A later paired A/B on the v6 dimension store (2026-06-17, N=30 boards, run against its *own* fresh
+same-epoch baseline) found town-obs **flat** (villager win +6pp, p=0.77; the decision-quality basket
+Δ≈0), which reads at first like the store broke the benefit.
+It did not. The v5 A/B (06-11) and the v6 run (06-17) sit in **different epochs**, and the confound is a
+risen baseline, not a degraded store.
 
-### Gameplay Metrics (Batch B only — computed_metrics available)
+**The dominant cause — the no-memory baseline rose to memory's old ceiling.** Between the two runs the
+prompt bundle changed (`16f7f700`→`1cb76993`, Phase-B prompt fixes), on top of the backend drift the
+06-11 epoch-shift finding already demonstrated. The no-memory town proxies jumped accordingly: vote
+accuracy 0.560→0.674, correct-elimination 0.470→0.622, mislynch rate 0.530→0.378, win 27%→37% (the
+06-11 values are the OFF columns in `paired_ab/report.md`; the 06-17 values recompute from the
+`batch_results/v6ab_*.jsonl` `all_disabled` arm, N=30 — re-verified 2026-07-05). The 06-17 *no-memory*
+baseline already plays at roughly the level `v5` memory had lifted town *to*, so there was no headroom
+left to show — flat, not harmful.
 
-| Metric | No Memory | Wolf Only | All Enabled |
-|--------|-----------|-----------|-------------|
-| Correct elimination rate | 0.621 | 0.639 | 0.672 |
-| Wolf blending rate | 0.120 | 0.480 | 0.480 |
-| Healer save rate | 0.554 | 0.433 | 0.453 |
-| Investigator accuracy | 0.468 | 0.411 | 0.403 |
-| Mislynches per game | 1.000 | 0.900 | 0.767 |
+**A same-epoch control exonerates the store.** An off-policy replay screen
+([`../../phase_b/forced_schema_screen/`](../../phase_b/forced_schema_screen/experiment_log.md)) scores
+the v5 and v6 stores in *one* epoch: v5-store 0.625 ≈ v6-store 0.604, both below the no-memory floor
+0.667 (paired McNemar p=1.0). Even the `v5_0` store that "worked" reads flat in the later epoch, so the
+flatness is the epoch, not the schema.
 
-## Interpretation
+**One real but mild bug.** v6 applies net-first outcome framing to *town* as well as the deceivers. The
+`_compose_outcome` helper (`Agents/schemas/memory.py:41-49`) always leads with the end-of-game verdict,
+and the role-aware immediate-first compose that town wants was specified but deferred. v5 evidence shows
+net-first framing hurts town, so this is a genuine drag — but town-obs came out flat, not below
+baseline, so it is a minor contributor, not the cause. The fix is to implement the deferred role-aware
+compose. (The `v6` non-replication is analyzed in full in
+[`v6_sp_ab/experiment_log.md`](v6_sp_ab/experiment_log.md); the store-arc framing is in
+[`../store_progression.md`](../store_progression.md).)
 
-### Memory can produce dramatic improvement
+A note on the pilot that preceded all this: an early confounded `v5_1` pilot (unpaired, growing store,
+raw retrieval) suggested memory *hurt* town by −32pp (p=0.043). The paired A/B refuted it — the collapse
+was the confound, not memory. See [`v5_baseline_proxy_analysis.md`](v5_baseline_proxy_analysis.md).
 
-Batch A's all-enabled condition (96.7% villager win rate vs 70% baseline, Fisher p=0.012) is the strongest evidence that episodic memory works — villagers went from losing roughly 1 in 3 games to losing 1 in 30. The effect is large and individually significant, but it is a single 30-game batch and the best cell of six comparisons (see the multiplicity caveat above), so it establishes that memory *can* deliver this lift, not that it reliably does.
+## What remains open
 
-### Configuration sensitivity is the dominant factor
-
-The same "all enabled" condition produced 96.7% in Batch A and 73.3% in Batch B — a complete loss of benefit. The no-memory baselines are nearly identical (70% vs 74%), so this isn't game variance. Something about the Batch B configuration neutralized memory's effect on villagers specifically.
-
-The two differences between batches:
-1. **Store quality** — v3_deduped (cleaner, fewer items) vs v4 pre-dedup (522 items, more noise)
-2. **Namespace granularity** — role-only vs role + action_phase
-
-Either or both could explain the regression. The v4 store has more items competing for retrieval slots, potentially flooding agents with less relevant memories. Action_phase namespace segregation reduces the retrieval pool per query, which could eliminate useful cross-phase memories that help villagers connect patterns across discussion and voting.
-
-### Wolf memory consistently improves blending (a proxy effect, not a proven win-rate effect)
-
-Across both batches, giving wolves memory dramatically improved their blending rate (12% → 48%) — wolves with memory learn to mimic villager discussion patterns and avoid behavioral tells, and this proxy effect is robust to store/namespace configuration. The win-rate deltas in the wolf-only condition, however, are **not individually significant** (A: p=0.13; B: p=0.53) and even point the *wrong* way for wolves (villager win rate rose). The defensible claim is behavioral: memory reliably changes how wolves play (blending), while its effect on wolf *outcomes* is unresolved at this sample size.
-
-### Villager benefit is configuration-dependent
-
-In Batch A, villagers with memory dominated (96.7%). In Batch B, villagers with memory performed at baseline (73.3%). The gameplay metrics from Batch B suggest why: healer save rate and investigator accuracy actually *decreased* with memory (55% → 45% and 47% → 40% respectively). The v4 store may have contained bad guidance for power roles, or the action_phase namespace split prevented retrieving cross-phase patterns that help power roles coordinate.
-
-## Limitations
-
-- **No computed_metrics for Batch A.** Win rate is the only available outcome metric for the v3_deduped batch. We can't verify whether the same gameplay patterns (wolf blending, healer saves) drove the result.
-- **Confounded variables.** Two things changed between batches (store version + namespace). We can't attribute the regression to one factor without running the intermediate configurations (v3_deduped with action_phase, or v4 without action_phase) — ideally **on shared seeds** so the comparison isn't a fresh random draw (see the paired-design section).
-- **n=30 is too small to call the baselines "identical."** The argument that the 70% vs 74% baselines rule out game variance is weak — at n=30 each has a 95% CI of ±~16pp, so they are statistically indistinguishable across a wide range of true values. Paired/seeded baselines would make this comparison tight enough to actually support that claim.
-- **Pre-current configuration.** Neither batch uses the current planned default (observations-only, v4_deduped store, filtering enabled). The latest config may recover Batch A's effectiveness or remain in Batch B territory.
-- **Visual-only evidence for Phase 0.** The monolithic strategy system's improvement was observed through transcript inspection, not measured systematically. We can't quantify how much of the Phase 1 improvement over "no memory" is attributable to the RAG architecture vs simply having more game experience in the store.
-
-## Decision
-
-Memory can move outcomes by large margins (Batch A: 70% → 97%, Fisher p=0.012), but the effect is **configuration-sensitive and unreplicated**: the same condition produced no effect in Batch B (p=1.0), the two batches confound store version with namespace granularity, and the Batch A result is the best cell of six comparisons (multiplicity caveat above). On the rebuilt v5 system, the interim pilot (`v5_baseline_proxy_analysis.md`) currently points the *opposite* way for town — under uncurated retrieval, memory-on villagers win less (p=0.04). So the honest status is: memory demonstrably changes outcomes; whether the current configuration helps, hurts, or is neutral is an open question that the paired A/B below is designed to decide.
-
-The Batch A result establishes the ceiling; Batch B establishes that configuration can lose the entire benefit; the v5 pilot suggests raw retrieval can invert it. The priority is the paired, seeded A/B on the current configuration — that is the deciding experiment, not more unpaired batches.
-
-## Statistical Design for the Validation Batch — Paired / Seeded Games
-
-The validation batch should not be run as two independent pools of games (N memory-off, N memory-on). It should be run as **matched pairs that share a seed**: for each of N seeds, run the game twice with *identical initial conditions* — same role assignment (who is wolf/healer/investigator), same RNG stream, same persona assignment — differing in **only** the treatment (memory on vs off). Analyze the **within-pair difference**, not the two pool averages.
-
-**Why this cuts the games needed.** A werewolf game's outcome has two variance sources: (1) the treatment effect we care about (does memory help), and (2) the luck of the setup — a wolf-favored role draw, an easy/hard configuration — which is noise. The variance of the difference between two conditions is
-
-```
-Var(on − off) = Var(on) + Var(off) − 2·Cov(on, off)
-```
-
-Independent games have `Cov = 0`, so you eat the full variance and must run many games for source-(2) noise to average out. Paired games share the setup, so their outcomes are **positively correlated** (`Cov > 0`); the `−2·Cov` term **cancels the shared setup noise**. The games needed scale with `(1 − ρ)`, where ρ is the within-pair outcome correlation: ρ≈0.5 roughly halves the games; a high ρ (the setup strongly determines difficulty, which it does in werewolf) can cut them by an order of magnitude. In plain terms: instead of asking "do memory-on games win more *on average*," you ask "*on this exact setup*, did turning memory on change the outcome" — comparing like with like, with the game's inherent luck subtracted out.
-
-**Binary win/loss → McNemar.** Classify each seed-pair: both-win / both-lose are **concordant** and carry no signal (the game was just easy or hard regardless of memory); only the **discordant** pairs (on-wins/off-loses vs the reverse) count, and McNemar tests whether they are asymmetric. You spend statistical power only on games where memory actually changed the result. For dense metrics (correct-elimination rate, survival, investigator accuracy), use a paired t / Wilcoxon on the per-pair differences.
-
-**This is not the headline's bottleneck — it's the confound-killer.** The observed effects here are large (Batch A 70%→97%, prior runs ~60%→90%). For a ~27–30pp lift, even the *independent* design needs only ~25–30 games/arm to be well powered — which is exactly why the existing 30-game batches showed clear signal. So pairing is **not** required to prove the headline. Its real payoff for *this* report is:
-
-1. **Resolving the Batch A vs Batch B regression.** The 97%-vs-73% gap for the "same" all-enabled condition is currently unattributable — two confounded variables (store version + namespace) measured on two *different* 30-game draws. Run the candidate configs **on the same seed set** and the setup variance cancels, so any remaining difference is the configuration effect, not two luck-of-the-draw samples.
-2. **A tighter, more defensible headline.** Pairing shrinks the CI on the memory effect, pre-empting the "Batch A was just a lucky 30 games" critique.
-3. **Power for the *subtle* comparisons** — ranking configurations that land between the 73% and 97% bounds, where the effect is small and the independent design would again be underpowered.
-
-**Practical caveat.** The two games in a pair *will* diverge after the first memory-influenced action — that divergence **is** the treatment effect and is expected; LLM nondeterminism means they were never going to stay byte-identical. You pair on **initial conditions**, not trajectories — and in werewolf the dominant variance (role assignment, setup balance) lives in exactly those initial conditions. This requires the sim to be **seedable**: drive *every* stochastic component — role assignment, persona assignment, night RNG, **and the sequential scheduler's turn-order tie-break (`seeded_random`)** — from one master seed, identical across both arms.
-
-A note specifically on the scheduler's turn-order randomness: seeding shares the RNG *stream*, but it does **not** keep turn order identical across the pair, because the order is computed from transcript-derived signals (pressure/debt/eligibility) that diverge as soon as memory changes what is said. Before divergence the order is identical; after, it diverges even with a shared stream. This is fine and wanted — turn-order shifts caused by memory are part of memory's legitimate effect, not a nuisance to cancel — and the factor is small by design (a within-tier tie-break that cannot reorder across hard signals), so its residual contribution averages out over the pairs. Seed it to share what can be shared and for reproducibility; don't expect (or want) it locked across the pair.
-
-## What's Next
-
-1. **Latest-config batch (paired/seeded)** — Run ~30 **seed-pairs**: each seed played twice (no-memory vs all-enabled, observations-only) with v4_deduped store + filtering and *identical initial conditions*. Analyze within-pair (McNemar for win/loss; paired test for computed_metrics). Determines whether the current system recovers Batch A's effectiveness, with setup variance controlled.
-2. **Isolate the regression (shared seeds)** — If the latest config still shows no benefit, test v4_deduped without action_phase namespace **on the same seed set** to isolate namespace granularity vs store content — paired, so the comparison isn't confounded by a fresh random draw.
-3. **Computed metrics for Batch A equivalent** — The latest batch should include computed_metrics to understand which gameplay dynamics drive the improvement.
+Static memory helps town; whether memory that *compounds* across generations helps *more over time* is a
+different question and is unresolved. Two paid loop runs meant to answer it were both invalidated (a
+biased de-lucked baseline in one, a config slip that ran the wrong arm in the other), so the compounding
+magnitude is open, not negative. The plan of record — claim ladder, power/MDE calc, and the readout
+redesign that gates any further paid runs — is
+[`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md).
 
 ## Artifacts
 
-All artifacts are co-located in `evidence/memory_system/effectiveness/`.
+The A/B statistics live in [`paired_ab/`](paired_ab/report.md); the pre-rebuild JSONLs and the stats
+regenerator are co-located here.
 
 | File | Description |
 |------|-------------|
-| `regenerate_stats.py` | Recomputes every p-value/CI in this report and the v5 pilot from the JSONLs (uses `evaluation/src/core/stats.py`) |
+| `paired_ab/report.md` | Full `v5_0` A/B stats — all arms (town/wolf/SK × raw/reranked/all-on), pre-registered called shots |
+| `paired_ab/experiment_log.md` | A/B design, epoch-drift finding, seed set, wolf/SK diagnostics |
+| `batch_results/ab_*.jsonl` (repo root) | Paired A/B raw results: `ab_baseline`, `ab_arms_{town,wolf,sk}`, `ab_rr_*`, `ab_allon` |
+| `v6_sp_ab/experiment_log.md` | v6 non-replication A/B (6 arms) + cross-epoch analysis |
+| `regenerate_stats.py` | Recomputes every p-value/CI for the pre-rebuild batches from the JSONLs (uses `evaluation/src/core/stats.py`) — no hand-typed statistics |
 | `batch_results/werewolf_flashlite_3_v1.jsonl` | Batch A: no_memory (30) + wolf_only (31), v3_deduped store |
 | `batch_results/werewolf_flashlite_3_v1_deduped.jsonl` | Batch A: all_enabled (30), v3_deduped store |
-| `batch_results/v4_action_phase_v2.jsonl` | Batch B: no_memory (31+), v4 store with action_phase |
+| `batch_results/v4_action_phase_v2.jsonl` | Batch B: no_memory, v4 store with action_phase |
 | `batch_results/v4_action_phase_v2_wolf_only_all_enabled.jsonl` | Batch B: wolf_only (30), v4 store |
 | `batch_results/v4_action_phase_v2_all_enabled_remainder.jsonl` | Batch B: all_enabled remainder (18), v4 store |
