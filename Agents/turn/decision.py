@@ -1,3 +1,10 @@
+"""The decision-LLM runner — the single chokepoint every agent decision call routes through.
+
+``_run_agent`` builds the prompt, enforces the dynamic target enum, invokes the model (with retry and
+pass handling), and returns the structured decision. ``prompt_log`` is the leak-test capture point:
+every prompt sent to the model is appended here so the boundary tests can assert no private state
+leaked into an agent's context.
+"""
 from logging import getLogger
 from typing import Any
 import random

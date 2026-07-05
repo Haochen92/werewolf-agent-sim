@@ -110,7 +110,7 @@ class EvalCase(BaseModel):
     strategy_verdicts: list[StrategyVerdict] = Field(default_factory=list)
     """The agent's per-strategy-point verdicts (follow/override/not_relevant, one per retrieved SP it
     judged), captured from the structured output for offline analysis + the follow-vs-override credit
-    signal. Empty when memory was off or no SPs retrieved. See Agents/turn/agent.py (_strategy_verdicts)."""
+    signal. Empty when memory was off or no SPs retrieved. See Agents/turn/decision.py (_strategy_verdicts)."""
     strategy_index_to_key: dict[int, str] = Field(default_factory=dict)
     """1-based prompt index -> stored-SP key for EVERY retrieved strategy point this decision (the
     adoption index_map). Lets each strategy_verdict — follow, override, AND not_relevant — be joined
@@ -119,7 +119,7 @@ class EvalCase(BaseModel):
     memory_applicability: list[MemoryVerdict] = Field(default_factory=list)
     """The agent's per-observation applicability verdicts (one per retrieved memory it judged),
     captured from the structured output for offline analysis. Empty when memory was off or none
-    retrieved. See Agents/turn/agent.py (the _memory_applicability carrier)."""
+    retrieved. See Agents/turn/decision.py (the _memory_applicability carrier)."""
 
     @property
     def game_phase_key(self) -> tuple[str, str, int, ActionPhase]:

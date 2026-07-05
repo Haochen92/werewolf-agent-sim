@@ -1,3 +1,9 @@
+"""Per-turn action orchestrator — the pipeline every agent turn runs, day and night.
+
+``_run_memory_informed_action`` and ``_run_memory_informed_night_action`` are the two entry points:
+each enriches the payload with retrieved memory, routes the decision through the LLM runner, and
+records the result (EvalCase snapshot + strategy-adoption write-back). enrich → decide → record.
+"""
 from logging import getLogger
 from typing import Any
 
@@ -15,7 +21,7 @@ from Agents.prompts.prompt_formatters import (
     format_investigator_results,
     format_wolf_channel,
 )
-from Agents.memory.enrichment import enrich_payload_with_memory
+from Agents.memory.retrieval import enrich_payload_with_memory
 from Agents.observability import action_eval_span_name, freeze_case
 from Agents.schemas import (
     EvalCase,
@@ -32,7 +38,7 @@ from Agents.state import (
     VillagerDayState,
     WolfDayState,
 )
-from Agents.turn.agent import _run_agent
+from Agents.turn.decision import _run_agent
 from Agents.turn.adoption import _process_strategy_adoption
 from Agents.turn.eval import _build_eval_private_context
 

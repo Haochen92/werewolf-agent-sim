@@ -1,4 +1,4 @@
-"""Memory-enrichment orchestrator — the read-side pipeline.
+"""Memory read-path orchestrator — the top of Agents.memory.retrieval.
 
 Given an agent's day/night payload, gating produces a RetrievalPlan (what to do this turn); the
 pipeline then generates situations, retrieves observations + strategy points, optionally filters
@@ -12,7 +12,7 @@ pure (trace-free).
 from __future__ import annotations
 
 from logging import getLogger
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
@@ -32,15 +32,17 @@ from Agents.memory.retrieval import (
 from Agents.memory.retrieval.dimension_gating import reweight as _dimension_reweight
 from Agents.memory.vectors import embed_texts
 from Agents.memory.store import embeddings as memory_embeddings
-from Agents.memory.enrichment.gating import retrieval_plan
-from Agents.memory.enrichment.situation_agent import _generate_situations_for_agent
+from Agents.memory.retrieval.plan_gating import retrieval_plan
+from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent
 from Agents.state import (
     HealerDayState,
     InvestigatorDayState,
     VillagerDayState,
     WolfDayState,
 )
-from Agents.tracing import GraphContext, langfuse
+
+if TYPE_CHECKING:
+    from Agents.tracing import GraphContext
 
 logger = getLogger(__name__)
 
@@ -51,6 +53,11 @@ def enrich_payload_with_memory(
     runtime: Runtime[GraphContext],
     action_phase: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    # Lazy import breaks the tracing<->retrieval init cycle: tracing's import chain loads
+    # Agents.memory (hence this module) before tracing finishes initializing, so a module-level
+    # `from Agents.tracing import langfuse` would hit a partially-initialized tracing module.
+    from Agents.tracing import langfuse
+
     enriched_payload = dict(payload)
     active_store = runtime.store
     plan = retrieval_plan(config, payload, active_store)

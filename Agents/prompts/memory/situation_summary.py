@@ -238,9 +238,12 @@ conflict is one situation.
 
 {driver_horizon}
 
+{known_board_facts}
+
 RULES (describe board STATE, never prescription): every field is what is TRUE right now in your own
 epistemic voice — no plans or recommendations. State exact criticality numbers and phrase
-criticality_stakes as their implication, derived from them. For the direction enums
+criticality_stakes as their implication, derived from them (use the KNOWN BOARD FACTS above verbatim
+where given — do not estimate a number you have been handed). For the direction enums
 (consensus_direction, divergence_sign), judge only from what you know/have expressed NOW (never
 hindsight); use no_clear_direction if there is no clear consensus.
 

@@ -2,12 +2,13 @@
 ally_revealed). These are computed from game state, never trusted from the LLM's structured output —
 the structural corollary of the 2026-07 dimension-accuracy audit
 (evidence/phase_b/dimension_accuracy_audit/). No LLM: we hand the override a synthetic parsed cell
-+ payload and assert the corrected dims. See Agents/memory/enrichment/situation_agent.py."""
++ payload and assert the corrected dims. See Agents/memory/retrieval/situation_agent.py."""
 
 from typing import Literal, get_args, get_origin
 
-from Agents.memory.enrichment.situation_agent import (
+from Agents.memory.retrieval.situation_agent import (
     _computed_players_alive,
+    _known_board_facts,
     _override_deterministic_dims,
 )
 from Agents.schemas.memory import cell_situation_schema_for
@@ -114,3 +115,44 @@ def test_ally_revealed_missing_count_keeps_llm_fill():
     cell = _make_cell("wolf", "day_discussion", ally_revealed=False)
     _override_deterministic_dims(cell, payload)
     assert cell.ally_revealed is False
+
+
+# ── _known_board_facts (the prompt-injection half) ─────────────────────────────────────────────
+def test_known_facts_states_players_alive():
+    payload = {"surviving_players": ["p1", "p2", "p3", "p4", "p5", "p6"], "player_id": "p1"}
+    facts = _known_board_facts(payload, cell_situation_schema_for("villager", "day_discussion"))
+    assert "Players alive right now: 6" in facts
+
+
+def test_known_facts_states_bullets_and_villager_note_at_zero():
+    schema = cell_situation_schema_for("vigilante", "night_action")
+    with_shot = _known_board_facts(
+        {"surviving_players": ["p2", "p3"], "player_id": "p1", "vigilante_bullets": 1}, schema)
+    assert "Vigilante shots you have left: 1" in with_shot and "regular villager" not in with_shot
+    spent = _known_board_facts(
+        {"surviving_players": ["p2", "p3"], "player_id": "p1", "vigilante_bullets": 0}, schema)
+    assert "Vigilante shots you have left: 0" in spent and "regular villager" in spent
+
+
+def test_known_facts_states_ally_revealed():
+    payload = {"surviving_wolves": ["w1"], "surviving_villagers": ["v1", "v2"],
+               "player_id": "w1", "initial_wolf_count": 2}
+    facts = _known_board_facts(payload, cell_situation_schema_for("wolf", "day_discussion"))
+    assert "revealed or eliminated: yes" in facts
+
+
+def test_known_facts_empty_when_uncomputable():
+    # No roster (uncomputable players_alive) and no conditioner inputs -> nothing to inject.
+    facts = _known_board_facts({"player_id": "p1"}, cell_situation_schema_for("villager", "day_discussion"))
+    assert facts == ""
+
+
+def test_known_facts_number_matches_the_override_value():
+    # Single-source invariant: the number the prompt STATES must equal the one the override SETS,
+    # so the model can never be told N and then overridden to M.
+    payload = {"surviving_players": ["p2", "p3", "p4", "p5"], "player_id": "p1"}  # night: +1 for self
+    schema = cell_situation_schema_for("healer", "night_action")
+    facts = _known_board_facts(payload, schema)
+    cell = _make_cell("healer", "night_action", players_alive=9)
+    _override_deterministic_dims(cell, payload)
+    assert f"Players alive right now: {cell.players_alive}" in facts

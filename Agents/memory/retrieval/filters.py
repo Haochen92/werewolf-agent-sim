@@ -1,7 +1,7 @@
 """Retrieval result filters — narrow/diversify a candidate list before it reaches the agent.
 
 MMR diversification, per-situation capping, and a near-duplicate gate. Built on the shared vector
-primitives in Agents.memory.vectors. Used by the enrichment read-pipeline and the retrieval eval.
+primitives in Agents.memory.vectors. Used by the read-path pipeline and the retrieval eval.
 """
 from __future__ import annotations
 

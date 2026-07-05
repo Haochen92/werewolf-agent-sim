@@ -89,6 +89,24 @@ def _computed_players_alive(payload: dict) -> int | None:
     return len(roster) + (0 if self_counted else 1)
 
 
+def _computed_dims(payload: dict, available: dict) -> dict[str, int | bool]:
+    """The agent-KNOWABLE situation dims computed from game state, for whichever of the cell's
+    `available` fields this payload can support. The SINGLE source for both (a) the KNOWN BOARD FACTS
+    injected into the query prompt (`_known_board_facts`, so the LLM writes `criticality_stakes` from
+    the true numbers) and (b) `_override_deterministic_dims` (so the gating dims are exact) — deriving
+    both from here means the number the model is TOLD and the number it is OVERRIDDEN to can never
+    disagree. Omits a dim when it cannot be computed (→ the LLM's own value stands)."""
+    dims: dict[str, int | bool] = {}
+    alive = _computed_players_alive(payload)
+    if alive is not None and "players_alive" in available:
+        dims["players_alive"] = alive
+    if "bullets_left" in available and payload.get("vigilante_bullets") is not None:
+        dims["bullets_left"] = int(payload["vigilante_bullets"])
+    if "ally_revealed" in available and payload.get("initial_wolf_count") is not None:
+        dims["ally_revealed"] = len(payload.get("surviving_wolves", [])) < int(payload["initial_wolf_count"])
+    return dims
+
+
 def _log_dim_override(payload: dict, field: str, llm_value, computed_value) -> None:
     """Debug-log only when the deterministic override actually corrects the LLM — so future runs
     surface residual LLM fill error for free (grep the situation-summary debug logs)."""
@@ -101,39 +119,50 @@ def _log_dim_override(payload: dict, field: str, llm_value, computed_value) -> N
 
 
 def _override_deterministic_dims(situation: BaseModel, payload: dict) -> None:
-    """Replace the agent-KNOWABLE situation dims with values computed from game state, so they are
-    never trusted from the LLM's structured output. The 2026-07 dimension-accuracy audit
-    (`evidence/phase_b/dimension_accuracy_audit/`) measured the LLM mis-filling `players_alive` ~3%
-    for no epistemic reason and systematically UNDER-counting `bullets_left` (0.164 exact, day-2
-    acc 0.0) — all three fields below are in the agent's own information set, so they are computed
-    here deterministically and for free.
+    """Guarantee the agent-KNOWABLE dims (`players_alive` / `bullets_left` / `ally_revealed`) equal the
+    values computed from game state, never the LLM's structured output. The 2026-07 dimension-accuracy
+    audit (`evidence/phase_b/dimension_accuracy_audit/`) measured the LLM mis-filling `players_alive`
+    ~3% for no epistemic reason and systematically UNDER-counting `bullets_left` (0.164 exact, day-2
+    acc 0.0); all three are in the agent's own information set, so they are computed here for free.
 
-    RESIDUAL INCONSISTENCY (accepted this pass, flagged in the audit log): only the NUMERIC/BOOL
-    dims are corrected — NOT the prose (`criticality_stakes` etc.), which the LLM derived from its
-    OWN, possibly-wrong numbers. So a corrected `players_alive`/`bullets_left` may now disagree with
-    the un-corrected prose in the same object. Re-deriving the prose is out of scope (it would need a
-    second LLM call). `distance_to_parity` / `is_swing` are deliberately left LLM-filled: they need
-    the true role map the live agent cannot see."""
-    alive = _computed_players_alive(payload)
-    if alive is not None and hasattr(situation, "players_alive"):
-        _log_dim_override(payload, "players_alive", situation.players_alive, alive)
-        situation.players_alive = alive
+    The query prompt is ALSO handed these numbers (`_known_board_facts`), so this override is normally a
+    belt-and-suspenders no-op — it still fires when the model ignores the injected fact, and
+    `_log_dim_override` records that residual disagreement.
 
-    # bullets_left lives only on the vigilante cells; vigilante_bullets is the runtime remaining-shot
-    # counter (night payload carries it directly; the day payload has it threaded in — see flow.py).
-    if hasattr(situation, "bullets_left") and payload.get("vigilante_bullets") is not None:
-        computed = int(payload["vigilante_bullets"])
-        _log_dim_override(payload, "bullets_left", situation.bullets_left, computed)
-        situation.bullets_left = computed
+    RESIDUAL: only the numeric/bool dims are corrected. `distance_to_parity` / `is_swing` stay
+    LLM-filled — they need the true role map the live agent cannot see, so they are NOT injected into
+    the prompt either. Any part of `criticality_stakes` that leans on parity/swing therefore still
+    reflects the LLM's estimate, while the players_alive/bullets/ally parts are now written from truth
+    (the prompt saw the real numbers)."""
+    for field, computed in _computed_dims(payload, type(situation).model_fields).items():
+        _log_dim_override(payload, field, getattr(situation, field), computed)
+        setattr(situation, field, computed)
 
-    # ally_revealed lives only on the wolf DAY cell. initial_wolf_count is threaded from the game's
-    # true role map (see flow.py); a partner is "revealed/eliminated" iff fewer wolves survive than
-    # were cast (the audit's validated partner-absent truth, 0.975 accurate as an LLM fill already).
-    if hasattr(situation, "ally_revealed") and payload.get("initial_wolf_count") is not None:
-        living_wolves = len(payload.get("surviving_wolves", []))
-        computed = living_wolves < int(payload["initial_wolf_count"])
-        _log_dim_override(payload, "ally_revealed", situation.ally_revealed, computed)
-        situation.ally_revealed = computed
+
+def _known_board_facts(payload: dict, cell_schema: type[BaseModel]) -> str:
+    """The computable agent-knowable dims, rendered as authoritative facts for the query prompt so the
+    LLM writes `criticality_stakes` (and the conditioner implications) FROM the true numbers rather than
+    estimating them. This is the fix that matters: the estimate was 0.164-accurate for `bullets_left`,
+    and that wrong number fed the EMBEDDED stakes prose, which `_override_deterministic_dims` cannot
+    repair after the fact (it corrects the numeric dim, not the already-composed embed string). Empty
+    string when nothing is computable (→ the LLM estimates, unchanged)."""
+    facts = _computed_dims(payload, cell_schema.model_fields)
+    if not facts:
+        return ""
+    lines: list[str] = []
+    if "players_alive" in facts:
+        lines.append(f"- Players alive right now: {facts['players_alive']} (set players_alive to exactly this).")
+    if "bullets_left" in facts:
+        b = facts["bullets_left"]
+        tail = " — with none left you now play as a regular villager" if b == 0 else ""
+        lines.append(f"- Vigilante shots you have left: {b}{tail} (set bullets_left to exactly this).")
+    if "ally_revealed" in facts:
+        yn = "yes" if facts["ally_revealed"] else "no"
+        lines.append(f"- A wolf partner has been revealed or eliminated: {yn} (set ally_revealed accordingly).")
+    return (
+        "KNOWN BOARD FACTS (authoritative — computed from the game state; use these EXACT values and "
+        "derive the Stakes from them, do not re-estimate):\n" + "\n".join(lines)
+    )
 
 
 def _generate_situations_for_agent(
@@ -143,7 +172,8 @@ def _generate_situations_for_agent(
 ) -> tuple[list[str], list[dict]]:
     """Returns (composed embed strings, structured query-situation dims). The dims are the v6 cell
     situation objects' model_dump (exposure_class / info_landscape_class / criticality / ...), parallel
-    to the strings, retained for eval-only dimension-gating screens; [] on the legacy path / fallback."""
+    to the strings; they feed the live dimension-gating filter (default-off per role) and the offline
+    gating screens. [] on the legacy path / fallback."""
     player_id = payload["player_id"]
     role = payload["player_role"]
     current_day = payload["current_day"]
@@ -161,6 +191,9 @@ def _generate_situations_for_agent(
             [s.model_dump(mode="json") for s in r.situations],
         )
         extra = compose_cell_guidance(role, action_phase, cell_schema)
+        # Hand the LLM the agent-knowable numbers so criticality_stakes is written FROM truth (the
+        # override below still guarantees the exact numeric dims for gating). Empty when uncomputable.
+        extra["known_board_facts"] = _known_board_facts(payload, cell_schema)
     else:
         prompt_template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
         chain = prompt_template | get_llm().with_structured_output(SituationSummary)

@@ -113,9 +113,9 @@ def test_run_agent_carries_memory_applicability_in_every_return():
     # the _memory_applicability carrier must ride EVERY output branch (mirrors _strategy_verdicts)
     import inspect
 
-    from Agents.turn import agent
+    from Agents.turn import decision
 
-    src = inspect.getsource(agent._run_agent)
+    src = inspect.getsource(decision._run_agent)
     assert src.count('output["_memory_applicability"] = memory_verdicts') == src.count(
         'output["_strategy_verdicts"] = strategy_verdicts'
     )

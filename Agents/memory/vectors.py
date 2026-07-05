@@ -1,6 +1,6 @@
 """Shared low-level vector primitives — embedding I/O + cosine similarity.
 
-Used across the memory subsystem (enrichment retrieval-filtering, dedup pre-filters) and the eval
+Used across the memory subsystem (read-path retrieval-filtering, dedup pre-filters) and the eval
 harness, so they live here rather than inside any one consumer. Pure/stateless.
 """
 from __future__ import annotations

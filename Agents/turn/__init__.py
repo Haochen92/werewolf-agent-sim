@@ -9,8 +9,8 @@ is nothing to schedule):
                  pass-based termination. Pure functions, no LLM.
 
 HOW (the execution pipeline: enrich → decide → record — all actions, day + night):
-  actions.py       — _run_memory_informed_action / _night_action: the pipeline
-  agent.py         — _run_agent: the decision llm.invoke (retry, pass handling)
+  pipeline.py      — _run_memory_informed_action / _night_action: the pipeline
+  decision.py      — _run_agent: the decision llm.invoke (retry, pass handling)
                      + prompt_log (leak-test capture)
   action_space.py  — legal-move enforcement (valid targets + dynamic target enum)
   novelty_agent.py — the proactive-novelty speak-gate (judge llm.invoke + prompt)
@@ -18,11 +18,11 @@ HOW (the execution pipeline: enrich → decide → record — all actions, day +
   eval.py          — record: EvalCase private-context snapshot
 """
 
-from Agents.turn.actions import (  # noqa: F401
+from Agents.turn.pipeline import (  # noqa: F401
     _run_memory_informed_action,
     _run_memory_informed_night_action,
 )
-from Agents.turn.agent import _run_agent, prompt_log  # noqa: F401
+from Agents.turn.decision import _run_agent, prompt_log  # noqa: F401
 from Agents.turn.novelty_agent import NOVELTY_JUDGE_PROMPT, judge_proactive_novelty  # noqa: F401
 from Agents.turn.scheduler import (  # noqa: F401
     build_reactive_queue,

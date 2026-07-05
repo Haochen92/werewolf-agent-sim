@@ -1,3 +1,8 @@
+"""Entry point for one game: seed memory, invoke the compiled parent graph, return the outcome.
+
+``run_game`` runs a single werewolf game end-to-end under one Langfuse trace; ``main`` is the CLI
+wrapper that runs one game and prints the result.
+"""
 from dotenv import load_dotenv
 
 from Agents.turn import prompt_log
@@ -40,6 +45,8 @@ def run_game(
     retrieval_types_config: dict | None = None,
     game_id: str | None = None,
 ):
+    """Run one game: seed the store from config, invoke the compiled parent graph under a Langfuse
+    trace, compute + push metrics, and return the GameOutcome (result + metrics + eval records)."""
     seed_memory_from_config(memory_persistence_config, target_store=store)
     config = build_game_config(
         memory_config,

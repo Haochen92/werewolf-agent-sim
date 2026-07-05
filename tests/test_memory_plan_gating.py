@@ -1,4 +1,4 @@
-"""Unit tests for memory-enrichment gating (Agents/memory/enrichment/gating.py).
+"""Unit tests for retrieval-plan gating (Agents/memory/retrieval/plan_gating.py).
 
 This is the Phase C independent variable. The danger these tests guard against is
 not a crash but a *silent* mis-gate: the "memory-on" arm secretly running with
@@ -15,7 +15,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 
-from Agents.memory.enrichment import (
+from Agents.memory.retrieval import (
     enrich_payload_with_memory,
     _filtering_enabled_for_role,
     _memory_enabled_for_role,
@@ -23,7 +23,7 @@ from Agents.memory.enrichment import (
     _retrieval_type_enabled,
     _store_dir_from_config,
 )
-from Agents.memory.enrichment.gating import retrieval_plan
+from Agents.memory.retrieval.plan_gating import retrieval_plan
 
 
 def cfg(**configurable) -> dict:

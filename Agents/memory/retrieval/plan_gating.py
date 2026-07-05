@@ -1,9 +1,9 @@
-"""Config-driven memory-enrichment policy: what this turn's retrieval should do.
+"""Config-driven retrieval-plan gating: what this turn's memory retrieval should do.
 
 ``retrieval_plan`` reads the per-role/per-kind routing off the runnable config (plus the day-1 /
-no-store / role-off skip) and returns a frozen ``RetrievalPlan`` the pipeline executes. The
+no-store / role-off skip) and returns a frozen ``RetrievalPlan`` the read-path pipeline executes. The
 underlying predicates are the Phase C independent variable — covered by
-tests/test_memory_enrichment_gating.py.
+tests/test_memory_plan_gating.py.
 """
 from __future__ import annotations
 
