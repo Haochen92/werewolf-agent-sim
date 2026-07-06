@@ -59,3 +59,6 @@ evidence/fine_tuning/cross_encoder/reranker/training_data_sitonly/
 evidence/fine_tuning/cross_encoder/reranker/training_data_sitact/
 evidence/fine_tuning/cross_encoder/reranker/training_data_allsitonly/
 evidence/v7_final/runs/loop_gate/
+
+# Personal material — never track (repo may go public)
+interview_prep/
