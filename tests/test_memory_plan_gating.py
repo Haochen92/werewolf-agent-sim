@@ -16,13 +16,18 @@ from types import SimpleNamespace
 
 
 from Agents.memory.retrieval import (
+    cap_per_situation,
     enrich_payload_with_memory,
+    partition_proven_first,
     _filtering_enabled_for_role,
     _memory_enabled_for_role,
     _reranking_enabled_for_memory_kind,
     _retrieval_type_enabled,
+    _sp_exploration_slot_enabled,
+    _sp_proven_tiering_enabled,
     _store_dir_from_config,
 )
+from Agents.memory.retrieval.pipeline import _sp_is_proven
 from Agents.memory.retrieval.plan_gating import retrieval_plan
 
 
@@ -220,3 +225,190 @@ def test_plan_retrieval_type_off_propagates():
 def test_plan_store_dir_propagates():
     p = plan(config=cfg(memory_persistence_config={"seed_store_dir": "/seeds/v5"}))
     assert p.store_dir == "/seeds/v5"
+
+
+# --- §0.4 proven-first SP tiering: gate + stable partition + tier boundary ----
+
+def _sp(key, follow, pos, neg):
+    """A retrieved-SP stand-in exposing exactly the counters _sp_is_proven reads."""
+    return SimpleNamespace(
+        key=key,
+        strategy_point=SimpleNamespace(
+            follow_count=follow, positive_count=pos, negative_count=neg
+        ),
+    )
+
+
+def test_sp_tiering_defaults_on_when_unconfigured():
+    # A dropped config must not silently disable it (inert on uncredited stores, so ON is safe).
+    assert _sp_proven_tiering_enabled(cfg()) is True
+    assert _sp_proven_tiering_enabled({}) is True
+
+
+def test_sp_tiering_explicit_off():
+    assert _sp_proven_tiering_enabled(cfg(sp_proven_tiering=False)) is False
+    assert _sp_proven_tiering_enabled(cfg(sp_proven_tiering=True)) is True
+
+
+def test_plan_sp_tiering_default_on_and_no_wide_retrieval():
+    p = plan()
+    assert p.sp_proven_tiering is True
+    # tiering reorders the final capped list -> it must NOT force a wide retrieval on its own.
+    assert p.needs_wide_retrieval is False
+
+
+def test_plan_sp_tiering_off_propagates():
+    p = plan(config=cfg(sp_proven_tiering=False))
+    assert p.sp_proven_tiering is False
+
+
+def test_sp_is_proven_boundary():
+    assert _sp_is_proven(_sp("ok", follow=5, pos=3, neg=1)) is True     # follow>=5 and pos>neg
+    assert _sp_is_proven(_sp("few", follow=4, pos=9, neg=0)) is False   # follow=4 < floor -> unproven
+    assert _sp_is_proven(_sp("tie", follow=9, pos=2, neg=2)) is False   # pos==neg -> unproven
+    assert _sp_is_proven(_sp("neg", follow=9, pos=1, neg=5)) is False   # pos<neg -> unproven
+
+
+def test_partition_proven_first_is_stable():
+    # Interleaved list; proven = {a, c}. Proven come first in their ORIGINAL relative order (a before c),
+    # unproven keep theirs (b before d) -> the partition never re-sorts within a tier.
+    items = [
+        _sp("a", follow=8, pos=6, neg=1),   # proven
+        _sp("b", follow=0, pos=0, neg=0),   # unproven (never followed)
+        _sp("c", follow=6, pos=4, neg=2),   # proven
+        _sp("d", follow=4, pos=4, neg=0),   # unproven (below follow floor)
+    ]
+    out = [it.key for it in partition_proven_first(items, _sp_is_proven)]
+    assert out == ["a", "c", "b", "d"]
+
+
+def test_partition_flag_off_leaves_order_unchanged():
+    # Mirrors the pipeline gate: `partition... if plan.sp_proven_tiering else <untouched>`.
+    items = [
+        _sp("b", follow=0, pos=0, neg=0),
+        _sp("a", follow=8, pos=6, neg=1),
+    ]
+    enabled = _sp_proven_tiering_enabled(cfg(sp_proven_tiering=False))
+    tiered = partition_proven_first(items, _sp_is_proven) if enabled else items
+    assert [it.key for it in tiered] == ["b", "a"]   # unproven-first order preserved (no tiering)
+
+
+# --- §0.4 tiering PROVENANCE: the flag reaches the run record + per-turn trace ----
+# A behavior-changing retrieval toggle that never reaches the recorded config would make tiering-on vs
+# tiering-off runs indistinguishable in the artifacts — the whole point of the embedded-config stamp.
+
+def test_recorded_game_config_carries_sp_tiering_default():
+    from Agents.tracing import DEFAULT_SP_PROVEN_TIERING, build_game_config
+
+    recorded = build_game_config()["configurable"]
+    assert recorded["sp_proven_tiering"] is DEFAULT_SP_PROVEN_TIERING is True
+    # False is a valid, recordable off-arm (the None-check, not `or`, keeps it from snapping to True).
+    assert build_game_config(sp_proven_tiering=False)["configurable"]["sp_proven_tiering"] is False
+
+
+def test_retrieval_metadata_carries_resolved_sp_tiering():
+    # Active path with zero situations: no store search, no LLM; langfuse span stubbed out.
+    import Agents.tracing as tracing_mod
+    from unittest.mock import MagicMock, patch
+
+    def meta_for(config):
+        with patch.object(tracing_mod, "langfuse", MagicMock()), \
+                patch("Agents.memory.retrieval.pipeline._generate_situations_for_agent",
+                      return_value=([], [])):
+            _, meta = enrich(day=2, config=config)
+        return meta
+
+    assert meta_for(cfg())["sp_proven_tiering_enabled"] is True                       # default ON
+    assert meta_for(cfg(sp_proven_tiering=False))["sp_proven_tiering_enabled"] is False  # resolved OFF
+    # Skipped turns mirror the active-path keys (nothing fired).
+    _, skipped = enrich(day=1)
+    assert skipped["sp_proven_tiering_enabled"] is False
+
+
+# --- §0.4 exploration slot at the SP cap: gate + the swap/fill/never-exceed behavior ----
+
+def _csp(key, situation, score, follow, pos, neg):
+    """A retrieved-SP stand-in with the situation + score cap_per_situation groups/ranks on, plus the
+    counters _sp_is_proven reads."""
+    return SimpleNamespace(
+        key=key,
+        matched_situation=situation,
+        score=score,
+        strategy_point=SimpleNamespace(follow_count=follow, positive_count=pos, negative_count=neg),
+    )
+
+
+def _cap(items, is_proven=_sp_is_proven, keep=3):
+    return cap_per_situation(
+        items, get_situation=lambda it: it.matched_situation,
+        get_score=lambda it: it.score or 0.0, keep=keep, is_proven=is_proven,
+    )
+
+
+def test_exploration_slot_swaps_lowest_proven_for_best_unproven():
+    # All three kept (top-3 by score) are proven; pool holds an unproven below them -> the lowest-scoring
+    # proven slot (0.7) is dropped for the best unproven (0.6).
+    items = [
+        _csp("p_hi", "s", 0.9, follow=8, pos=6, neg=0),
+        _csp("p_mid", "s", 0.8, follow=8, pos=6, neg=0),
+        _csp("p_lo", "s", 0.7, follow=8, pos=6, neg=0),
+        _csp("u", "s", 0.6, follow=0, pos=0, neg=0),
+    ]
+    keys = [it.key for it in _cap(items)]
+    assert keys == ["p_hi", "p_mid", "u"]   # p_lo evicted, unproven surfaced, re-sorted by score desc
+
+
+def test_exploration_slot_noop_when_unproven_already_kept():
+    # An unproven is already in the top-3 -> no swap; the lower unproven is NOT pulled in.
+    items = [
+        _csp("p_hi", "s", 0.9, follow=8, pos=6, neg=0),
+        _csp("u_hi", "s", 0.7, follow=0, pos=0, neg=0),
+        _csp("p_lo", "s", 0.5, follow=8, pos=6, neg=0),
+        _csp("u_lo", "s", 0.3, follow=0, pos=0, neg=0),
+    ]
+    keys = [it.key for it in _cap(items)]
+    assert keys == ["p_hi", "u_hi", "p_lo"]
+
+
+def test_exploration_slot_off_restores_plain_cap():
+    # is_proven=None (flag False path) -> today's behavior: top-3 by score, no exploration.
+    items = [
+        _csp("p_hi", "s", 0.9, follow=8, pos=6, neg=0),
+        _csp("p_mid", "s", 0.8, follow=8, pos=6, neg=0),
+        _csp("p_lo", "s", 0.7, follow=8, pos=6, neg=0),
+        _csp("u", "s", 0.6, follow=0, pos=0, neg=0),
+    ]
+    keys = [it.key for it in _cap(items, is_proven=None)]
+    assert keys == ["p_hi", "p_mid", "p_lo"]   # unproven never surfaces
+
+
+def test_exploration_slot_never_exceeds_keep():
+    # 5 proven + 1 unproven for one situation -> still exactly keep(=3), one of them the unproven.
+    items = [_csp(f"p{i}", "s", 0.9 - i * 0.1, follow=8, pos=6, neg=0) for i in range(5)]
+    items.append(_csp("u", "s", 0.1, follow=0, pos=0, neg=0))
+    out = _cap(items)
+    assert len(out) == 3
+    assert "u" in [it.key for it in out]
+
+
+def test_exploration_slot_defaults_on_when_unconfigured():
+    assert _sp_exploration_slot_enabled(cfg()) is True
+    assert _sp_exploration_slot_enabled({}) is True
+
+
+def test_exploration_slot_explicit_off():
+    assert _sp_exploration_slot_enabled(cfg(sp_exploration_slot=False)) is False
+    assert _sp_exploration_slot_enabled(cfg(sp_exploration_slot=True)) is True
+
+
+def test_plan_carries_exploration_slot():
+    assert plan().sp_exploration_slot is True
+    assert plan(config=cfg(sp_exploration_slot=False)).sp_exploration_slot is False
+
+
+def test_recorded_game_config_carries_exploration_slot_default():
+    from Agents.tracing import DEFAULT_SP_EXPLORATION_SLOT, build_game_config
+
+    recorded = build_game_config()["configurable"]
+    assert recorded["sp_exploration_slot"] is DEFAULT_SP_EXPLORATION_SLOT is True
+    assert build_game_config(sp_exploration_slot=False)["configurable"]["sp_exploration_slot"] is False

@@ -21,9 +21,12 @@ from Agents.memory.retrieval.accessors import (  # noqa: F401
     retrieve_strategy_points_for_agent,
 )
 from Agents.memory.retrieval.filters import (  # noqa: F401
+    SP_PROVEN_MIN_FOLLOW,
+    _sp_is_proven,
     cap_per_situation,
     dedup_gate,
     mmr_filter,
+    partition_proven_first,
 )
 from Agents.memory.retrieval.rerank_agent import (  # noqa: F401
     RERANK_KEEP,
@@ -36,6 +39,8 @@ from Agents.memory.retrieval.plan_gating import (  # noqa: F401
     _memory_enabled_for_role,
     _reranking_enabled_for_memory_kind,
     _retrieval_type_enabled,
+    _sp_exploration_slot_enabled,
+    _sp_proven_tiering_enabled,
     _store_dir_from_config,
 )
 from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent  # noqa: F401
@@ -45,9 +50,12 @@ __all__ = [
     "RETRIEVAL_KEEP_PER_SITUATION",
     "retrieve_observations_for_agent",
     "retrieve_strategy_points_for_agent",
+    "SP_PROVEN_MIN_FOLLOW",
+    "_sp_is_proven",
     "cap_per_situation",
     "dedup_gate",
     "mmr_filter",
+    "partition_proven_first",
     "RERANK_KEEP",
     "RERANK_TOP_K",
     "rerank_observations",
@@ -58,5 +66,7 @@ __all__ = [
     "_memory_enabled_for_role",
     "_reranking_enabled_for_memory_kind",
     "_retrieval_type_enabled",
+    "_sp_exploration_slot_enabled",
+    "_sp_proven_tiering_enabled",
     "_store_dir_from_config",
 ]

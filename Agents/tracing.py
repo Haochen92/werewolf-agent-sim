@@ -58,6 +58,18 @@ DEFAULT_RETRIEVAL_TYPES_CONFIG = {
     "strategy_points": True,
 }
 
+# Proven-first SP tiering (§0.4): default ON — inert on stores without credit counters, so ON is safe;
+# an explicit False is the A/B off-arm. Declared here (not only read with a fallback in plan_gating) so
+# the RECORDED game config always carries the resolved value — tiering-on vs tiering-off runs must be
+# distinguishable from the run record alone (epoch-bundle member: it changes live-game behavior).
+DEFAULT_SP_PROVEN_TIERING = True
+
+# Exploration slot at the SP cap (§0.4): default ON, same rationale as tiering — inert unless a kept set
+# is all-proven with an unproven candidate, so ON is safe; an explicit False is the A/B off-arm. Declared
+# here so the RECORDED game config always carries the resolved value (slot-on vs slot-off distinguishable
+# from the run record alone; it changes live-game behavior — an epoch-bundle member).
+DEFAULT_SP_EXPLORATION_SLOT = True
+
 
 def build_game_config(
     memory_config: dict | None = None,
@@ -68,11 +80,18 @@ def build_game_config(
     filtering_config: dict | None = None,
     retrieval_types_config: dict | None = None,
     game_id: str | None = None,
+    sp_proven_tiering: bool | None = None,
+    sp_exploration_slot: bool | None = None,
 ) -> dict:
     memory_config = memory_config or DEFAULT_MEMORY_CONFIG
     reranking_config = reranking_config or DEFAULT_RERANKING_CONFIG
     filtering_config = filtering_config or DEFAULT_FILTERING_CONFIG
     retrieval_types_config = retrieval_types_config or DEFAULT_RETRIEVAL_TYPES_CONFIG
+    # Explicit None-check (not `or`): False is a valid, recordable off-arm choice.
+    if sp_proven_tiering is None:
+        sp_proven_tiering = DEFAULT_SP_PROVEN_TIERING
+    if sp_exploration_slot is None:
+        sp_exploration_slot = DEFAULT_SP_EXPLORATION_SLOT
     normalized_game_config = game_config_dict(game_config)
     normalized_memory_persistence_config = normalize_memory_persistence_config(
         memory_persistence_config
@@ -94,6 +113,8 @@ def build_game_config(
             "reranking_config": reranking_config,
             "filtering_config": filtering_config,
             "retrieval_types_config": retrieval_types_config,
+            "sp_proven_tiering": sp_proven_tiering,
+            "sp_exploration_slot": sp_exploration_slot,
             "game_config": normalized_game_config,
             "memory_persistence_config": normalized_memory_persistence_config,
             "session_id": session_id,

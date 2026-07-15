@@ -21,9 +21,11 @@ from Agents.llm_factory import get_llm
 from Agents.memory.retrieval import (
     RERANK_TOP_K,
     RETRIEVAL_KEEP_PER_SITUATION,
+    _sp_is_proven,
     cap_per_situation,
     dedup_gate,
     mmr_filter,
+    partition_proven_first,
     rerank_observations,
     rerank_strategy_points,
     retrieve_observations_for_agent,
@@ -149,12 +151,26 @@ def enrich_payload_with_memory(
             get_score=lambda o: o.score or 0.0,
             keep=RETRIEVAL_KEEP_PER_SITUATION,
         )
+        # EXPLORATION SLOT (§0.4): when every SP kept for a situation is proven and its candidate pool
+        # holds an unproven SP, the cap surfaces the best unproven one in place of the weakest proven slot.
+        # SP credit is usage-gated — a candidate never retrieved never earns — so this guarantees the
+        # contested lane a read opportunity, which is also what drains the synthesis cap's contested lane.
         retrieved_strategy_points = cap_per_situation(
             retrieved_strategy_points,
             get_situation=lambda sp: sp.matched_situation,
             get_score=lambda sp: sp.score or 0.0,
             keep=RETRIEVAL_KEEP_PER_SITUATION,
+            is_proven=_sp_is_proven if plan.sp_exploration_slot else None,
         )
+
+        # PROVEN-FIRST SP TIERING (§0.4): stable partition, proven SPs ahead of unproven, semantic order
+        # kept within each tier — a track-record-blind read path otherwise ranks a 9-follow net-positive SP
+        # identically to never-followed churn. SP-only (observations untouched). This changes live-game
+        # behavior → it is an EPOCH-BUNDLE member like every other substrate change; batch it into a reset.
+        if plan.sp_proven_tiering:
+            retrieved_strategy_points = partition_proven_first(
+                retrieved_strategy_points, _sp_is_proven
+            )
 
         retrieved_observations_json = [
             item.model_dump(mode="json") for item in retrieved_observations
@@ -199,6 +215,8 @@ def enrich_payload_with_memory(
         "observation_reranking_enabled": plan.observation_reranking,
         "strategy_point_reranking_enabled": plan.strategy_point_reranking,
         "filtering_enabled": plan.filtering,
+        "sp_proven_tiering_enabled": plan.sp_proven_tiering,
+        "sp_exploration_slot_enabled": plan.sp_exploration_slot,
         "situations": situations,
         "situation_dimensions": situation_dimensions,
         "retrieved_observations": retrieved_observations_json,
@@ -227,6 +245,8 @@ def _skipped_metadata(store_dir: str, skip_reason: str) -> dict[str, Any]:
         "store_dir": store_dir,
         "reranking_enabled": False,
         "filtering_enabled": False,
+        "sp_proven_tiering_enabled": False,
+        "sp_exploration_slot_enabled": False,
         "num_situations": 0,
         "num_observations": 0,
         "num_strategy_points": 0,

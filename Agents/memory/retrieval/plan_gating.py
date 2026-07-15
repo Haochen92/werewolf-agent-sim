@@ -44,6 +44,17 @@ class RetrievalPlan:
     dimension_gating: bool
     """Whether to soft-reweight retrieved memory by query↔stored dimension alignment (v7 retrieval
     precision lever; SOFT + selective, never a hard drop). Default off — a screened knob."""
+    sp_proven_tiering: bool
+    """Whether to tier retrieved STRATEGY POINTS proven-first by credit track record (§0.4). A stable
+    partition (never a re-score), SP-only, applied after the cap. Default ON — but a no-op on any store
+    without credit counters (fresh/off-arm SPs are all unproven → identity), so it only bites on
+    loop-credited stores. A visible config choice via ``sp_proven_tiering`` on the runnable config."""
+    sp_exploration_slot: bool
+    """Whether the per-situation SP cap guarantees the CONTESTED lane a slot (§0.4): when every kept SP is
+    proven and an unproven candidate exists, the weakest proven slot is swapped for the best unproven one.
+    SP-only, applied AT the cap. Default ON — inert on any store where an unproven never co-occurs with an
+    all-proven kept set (fresh/off-arm stores have no proven SPs → identity), so ON is safe; an explicit
+    ``sp_exploration_slot: False`` on the runnable config restores today's cap exactly."""
     reranking: bool
     """Derived: observation_reranking or strategy_point_reranking."""
     needs_wide_retrieval: bool
@@ -73,6 +84,8 @@ def retrieval_plan(
     reranking = observation_reranking or strategy_point_reranking
     filtering = _filtering_enabled_for_role(config, role)
     dimension_gating = _dimension_gating_enabled_for_role(config, role)
+    sp_proven_tiering = _sp_proven_tiering_enabled(config)
+    sp_exploration_slot = _sp_exploration_slot_enabled(config)
 
     return RetrievalPlan(
         skip_reason=skip_reason,
@@ -83,6 +96,8 @@ def retrieval_plan(
         strategy_point_reranking=strategy_point_reranking,
         filtering=filtering,
         dimension_gating=dimension_gating,
+        sp_proven_tiering=sp_proven_tiering,
+        sp_exploration_slot=sp_exploration_slot,
         reranking=reranking,
         needs_wide_retrieval=reranking or filtering or dimension_gating,
     )
@@ -124,6 +139,25 @@ def _dimension_gating_enabled_for_role(config: RunnableConfig, role: str) -> boo
     if not isinstance(dimension_gating_config, dict):
         return False
     return bool(dimension_gating_config.get(role, False))
+
+
+def _sp_proven_tiering_enabled(config: RunnableConfig) -> bool:
+    """Proven-first SP tiering (§0.4). Defaults ON when unset (unlike the other retrieval toggles) — it
+    is inert on any store without credit counters, so the safe default is on; an explicit
+    ``sp_proven_tiering: False`` on the runnable config turns it off (a visible A/B choice)."""
+    configurable = config.get("configurable", {}) if config else {}
+    value = configurable.get("sp_proven_tiering")
+    return True if value is None else bool(value)
+
+
+def _sp_exploration_slot_enabled(config: RunnableConfig) -> bool:
+    """Exploration slot at the SP cap (§0.4). Defaults ON when unset (like sp_proven_tiering) — it is
+    inert unless a situation's kept set is all-proven with an unproven candidate available, so the safe
+    default is on; an explicit ``sp_exploration_slot: False`` on the runnable config turns it off (a
+    visible A/B choice restoring today's cap)."""
+    configurable = config.get("configurable", {}) if config else {}
+    value = configurable.get("sp_exploration_slot")
+    return True if value is None else bool(value)
 
 
 def _retrieval_type_enabled(config: RunnableConfig, memory_kind: str) -> bool:
