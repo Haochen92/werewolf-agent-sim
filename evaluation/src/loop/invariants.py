@@ -171,6 +171,46 @@ def assert_score(score: dict, label: str = "") -> None:
             "or batch glob mismatch).")
 
 
+def assert_observations_retired(on_jsonl: str | Path, retrieval_types: str) -> None:
+    """⭐THE §6.8 guard (owner ruling 2026-07-15): under the v7 default retrieval_types='strategy_points_only'
+    the ON arm must NOT inject observations — they are synthesis substrate, distilled into SPs offline, never
+    fed to a live prompt (evidence/store_curation report §6.8 / observations.md §1). The loop reads a config
+    NAME and run_batch's own --retrieval-types default is 'both', so a driver that forgot to pass the flag
+    would SILENTLY run the v5/v6 obs+SP arm — a plausible WRONG arm, no error. Two record surfaces, both
+    fail-loud:
+      (1) every ON game record's resolved retrieval_types_config['observations'] is False — what the engine
+          RAN with (the recorded per-game config);
+      (2) every memory-ENABLED decision's eval_case carries an EMPTY retrieved_observations slot — what
+          actually REACHED the prompt input (the obs block is absent from a sampled prompt).
+    Only asserted for 'strategy_points_only'; 'both'/'observations_only' legitimately inject obs (the v5/v6
+    comparison arms), so the guard no-ops for them."""
+    if retrieval_types != "strategy_points_only":
+        return
+    saw_config = False
+    for line in open(on_jsonl):
+        if not line.strip():
+            continue
+        rtc = json.loads(line).get("retrieval_types_config")
+        if isinstance(rtc, dict):
+            saw_config = True
+            if rtc.get("observations") is not False:
+                raise AssertionError(
+                    f"OBS INJECTED: an ON game ran retrieval_types_config={rtc} but the loop set "
+                    "retrieval_types='strategy_points_only' — observations must be OFF (v7: synthesis "
+                    "substrate, never injected; report §6.8). The --retrieval-types flag did not reach "
+                    "run_batch.")
+    if not saw_config:
+        raise AssertionError(
+            f"no retrieval_types_config in any ON record of {on_jsonl} — cannot verify obs are retired")
+    # (2) the direct prompt-input check: no memory-enabled decision may carry a retrieved-obs slot.
+    for _g, ec in _iter_eval_cases([str(on_jsonl)]):
+        if ec.get("memory_enabled") and ec.get("retrieved_observations"):
+            raise AssertionError(
+                f"OBS IN PROMPT: a memory-enabled ON decision's eval_case carries a non-empty "
+                f"retrieved_observations slot ({len(ec['retrieved_observations'])} obs) under "
+                "retrieval_types='strategy_points_only' — the obs block reached a live prompt (report §6.8).")
+
+
 _TOWN_ROLES = frozenset({"villager", "healer", "investigator", "vigilante"})
 # Symbolic intents accepted by --expect-factions (besides an explicit comma list of roles).
 FACTION_INTENTS = {

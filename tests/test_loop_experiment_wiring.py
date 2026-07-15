@@ -34,3 +34,16 @@ def test_run_one_game_omits_experiment_when_absent(tmp_path, monkeypatch):
     captured = _capture_cmd(monkeypatch)
     driver._run_one_game(tmp_path / "out.jsonl", "pfx", LoopConfig(), "all_disabled")
     assert "--experiment" not in captured["cmd"]
+
+
+def test_loop_config_default_retrieval_types_is_sp_only():
+    # v7 default (report §6.8): obs are synthesis substrate, never injected.
+    assert LoopConfig().retrieval_types == "strategy_points_only"
+
+
+def test_run_one_game_passes_retrieval_types(tmp_path, monkeypatch):
+    captured = _capture_cmd(monkeypatch)
+    driver._run_one_game(tmp_path / "out.jsonl", "pfx", LoopConfig(), "town_only")
+    cmd = captured["cmd"]
+    assert "--retrieval-types" in cmd
+    assert cmd[cmd.index("--retrieval-types") + 1] == "strategy_points_only"

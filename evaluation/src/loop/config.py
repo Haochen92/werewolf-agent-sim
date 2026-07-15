@@ -16,6 +16,14 @@ class LoopConfig:
 
     model: str = "gemini-3.1-flash-lite"   # extract + synth model (validated ≈ pro); toggle → gemini-2.5-pro
 
+    retrieval_types: str = "strategy_points_only"  # what the ON arm INJECTS into prompts. ⭐v7 design
+    #   (owner ruling 2026-07-15; report §6.8 of evidence/store_curation): observations are SYNTHESIS
+    #   SUBSTRATE — distilled into strategy points offline, NEVER injected into a live prompt. Default =
+    #   SP-only so the loop cannot silently reproduce the v5/v6-style obs+SP injection: run_batch's own
+    #   --retrieval-types default is "both", which the driver would otherwise inherit. "both" reproduces
+    #   that v5/v6 obs+SP injection for a comparison arm; "observations_only" is the obs-only arm. The
+    #   value is validated by run_batch's --retrieval-types choices= (names in RETRIEVAL_TYPES_CONFIGS —
+    #   an unknown value crashes the first game subprocess before any real spend).
     expect_factions: str | None = None     # ⭐DECLARED experiment intent: which factions SHOULD have memory
     #   in the ON arm ("town_only", "all", or a comma list of roles). The driver reads the ON arm's ACTUAL
     #   memory_config and CRASHES on gen 1 if it doesn't match — the guard for the v2 trap (silently ran

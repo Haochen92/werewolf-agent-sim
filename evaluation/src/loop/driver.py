@@ -36,8 +36,8 @@ from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply, credit_distribution
 from evaluation.src.loop.invariants import (
     arm_fingerprint, assert_arm_declared, assert_arm_factions, assert_base_rates, assert_baseline_coherence,
-    assert_credit_engaged, assert_discussion_credit_engaged, assert_fingerprint_consistent, assert_score,
-    expand_window)
+    assert_credit_engaged, assert_discussion_credit_engaged, assert_fingerprint_consistent,
+    assert_observations_retired, assert_score, expand_window)
 from evaluation.src.loop.measure import generation_score
 from evaluation.src.loop.merge import merge_new_obs
 
@@ -107,6 +107,9 @@ def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
     cmd = [
         "poetry", "run", "python", "scripts/run_batch.py",
         "--configs", configs, "--runs-per-config", "1",
+        # v7: SP-only injection by default (obs = synthesis substrate, never injected — report §6.8). Passed
+        # on BOTH arms: harmless + symmetric on the OFF arm (all_disabled retrieves nothing regardless).
+        "--retrieval-types", cfg.retrieval_types,
         "--output", str(out_jsonl), "--session-prefix", prefix,
     ]
     if experiment:  # nest eval-case sidecars under batch_results/<experiment>/ (--output keeps records here)
@@ -321,6 +324,10 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         arm_factions = sorted(assert_arm_factions(on_jsonl, cfg.expect_factions))
         print(f"  arm: memory ENABLED for {arm_factions} (configs={configs}, "
               f"expect={cfg.expect_factions or 'unchecked'})", flush=True)
+        # ⭐§6.8 GUARD (v7, 2026-07-15): under the SP-only default the ON games must have run with obs
+        # retrieval OFF — observations are synthesis substrate, never injected. Checks the recorded game
+        # config AND a sampled decision's retrieved-obs slot; no-ops for the 'both'/'obs_only' arms.
+        assert_observations_retired(on_jsonl, cfg.retrieval_types)
         # ⭐PROVENANCE DRIFT GUARD: the runtime_fingerprint (backend/model/temp/prompt/commit) run_batch
         # stamps on each game must hold constant across the whole run; a flip (e.g. a resume under a
         # different env/backend) silently splices incomparable scores. Pin gen-1's into run_meta as the
@@ -434,6 +441,10 @@ def main() -> int:
     ap.add_argument("--synth-every-k", type=int, default=2, help="synthesize every k gens (cull every gen)")
     ap.add_argument("--game-concurrency", type=int, default=5, help="parallel games within a generation")
     ap.add_argument("--model", default="gemini-3.1-flash-lite")
+    ap.add_argument("--retrieval-types", default=LoopConfig.retrieval_types,
+                    choices=["both", "observations_only", "strategy_points_only"],
+                    help="which memory types the ON arm injects; v7 default strategy_points_only (obs are "
+                         "synthesis substrate, never injected — report §6.8). 'both' = the v5/v6 obs+SP arm")
     ap.add_argument("--no-synth", action="store_true")
     # threshold knobs (default = the held-out-validated run values; a cheap smoke LOWERS them so the
     # credit-aware path fires at tiny N — validating WIRING, not calibration)
@@ -457,7 +468,8 @@ def main() -> int:
     args = ap.parse_args()
     cfg = LoopConfig(generations=args.generations, games_per_generation=args.games_per_generation,
                      window_generations=args.window_generations, synth_every_k_gens=args.synth_every_k,
-                     game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth,
+                     game_concurrency=args.game_concurrency, model=args.model,
+                     retrieval_types=args.retrieval_types, synthesize=not args.no_synth,
                      prune_min_follow=args.prune_min_follow, synth_track_min_follow=args.synth_track_min_follow,
                      synth_min_new_obs=args.synth_min_new_obs,
                      tells=args.tells, tell_seed_checklist=args.tell_seed_checklist,

@@ -1,5 +1,9 @@
 """Live tell-book injection — the second memory channel of the v1 two-channel design (tells + SPs;
-observations are synthesis substrate, never injected — read/tactic design record §4).
+observations are synthesis substrate, never injected — read/tactic design record §4). That obs
+retirement is enforced by the LOOP CONFIG DEFAULT, not by this retrieval layer: the pipeline still
+supports obs injection (for the v5/v6 comparison arms), and it is `LoopConfig.retrieval_types`
+defaulting to 'strategy_points_only' — asserted every generation by invariants.assert_observations_retired
+— that keeps observations out of v7 prompts (report §6.8 of evidence/store_curation).
 
 The book is a small, deterministic prompt block: a role-identification manual for every unrevealed
 role — top validated behavior→role tells with their observed subject-role rates — rendered immediately

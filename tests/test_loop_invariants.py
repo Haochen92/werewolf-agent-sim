@@ -13,8 +13,8 @@ from evaluation.src.loop.credit_backfill import _expand_dumps
 from evaluation.src.loop.invariants import (
     _iter_eval_cases, arm_fingerprint, arm_memory_factions, assert_arm_declared, assert_arm_factions,
     assert_base_rates, assert_credit_engaged, assert_discussion_credit_engaged,
-    assert_fingerprint_consistent, assert_score, count_discussion_follow_verdicts, count_follow_verdicts,
-    expand_window, resolve_expected_factions)
+    assert_fingerprint_consistent, assert_observations_retired, assert_score,
+    count_discussion_follow_verdicts, count_follow_verdicts, expand_window, resolve_expected_factions)
 
 
 def _write(p, rows):
@@ -167,6 +167,45 @@ def test_assert_discussion_credit_engaged_disabled_or_cold(tmp_path):
     assert assert_discussion_credit_engaged(win, disc_credited=0, enabled=False) == 0  # off -> no claim
     cold = [_game_with_cases(tmp_path, "c", [["not_relevant"]], phase="day_discussion")]
     assert assert_discussion_credit_engaged(cold, disc_credited=0, enabled=True) == 0  # no follows -> no claim
+
+
+# --- §6.8 obs-retirement guard: the loop must not inject observations under the v7 SP-only default ---
+def _on_arm_rtc(tmp_path, rtc, cases=None):
+    """ON game record carrying retrieval_types_config `rtc` + an eval-cases sidecar (`cases` = list of
+    {'output': {'eval_case': {...}}} rows, default empty)."""
+    ec_path = tmp_path / "rtc_cases.jsonl"
+    _write(ec_path, cases or [])
+    p = tmp_path / "gen1_on.jsonl"
+    _write(p, [{"roles": {"p1": "villager"}, "retrieval_types_config": rtc,
+                "eval_cases_path": str(ec_path)}])
+    return str(p)
+
+
+def test_assert_observations_retired_config_trips(tmp_path):
+    # obs retrieval ON but the loop declared SP-only -> the flag never reached run_batch (the wrong arm).
+    on = _on_arm_rtc(tmp_path, {"observations": True, "strategy_points": True})
+    with pytest.raises(AssertionError, match="OBS INJECTED"):
+        assert_observations_retired(on, "strategy_points_only")
+
+
+def test_assert_observations_retired_config_passes(tmp_path):
+    on = _on_arm_rtc(tmp_path, {"observations": False, "strategy_points": True})
+    assert_observations_retired(on, "strategy_points_only")   # obs off -> no raise
+
+
+def test_assert_observations_retired_noop_for_both(tmp_path):
+    # 'both' legitimately injects obs (the v5/v6 comparison arm) -> the guard must not fire.
+    on = _on_arm_rtc(tmp_path, {"observations": True, "strategy_points": True})
+    assert_observations_retired(on, "both")
+
+
+def test_assert_observations_retired_prompt_input_trips(tmp_path):
+    # config surface passes (obs off) but a sampled memory-enabled decision carries a retrieved-obs slot.
+    case = {"output": {"eval_case": {"memory_enabled": True,
+                                     "retrieved_observations": [{"key": "o1"}]}}}
+    on = _on_arm_rtc(tmp_path, {"observations": False, "strategy_points": True}, cases=[case])
+    with pytest.raises(AssertionError, match="OBS IN PROMPT"):
+        assert_observations_retired(on, "strategy_points_only")
 
 
 # --- runtime-fingerprint drift guard (#16): never splice across backends/models/prompts ------------
