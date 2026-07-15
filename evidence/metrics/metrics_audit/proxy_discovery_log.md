@@ -6,8 +6,8 @@
 > [`scheduler_bias_log.md`](scheduler_bias_log.md) (whether the discussion scheduler *causes* some
 > of these holes). Companions: the original validation record
 > ([`../proxy_win_monotonicity.md`](../proxy_win_monotonicity.md),
-> [`../town_metric_refinement.md`](../town_metric_refinement.md),
-> [`../deceiver_metric_refinement.md`](../deceiver_metric_refinement.md)), the apparatus verdict
+> [`../design/town_metric_refinement.md`](../design/town_metric_refinement.md),
+> [`../design/deceiver_metric_refinement.md`](../design/deceiver_metric_refinement.md)), the apparatus verdict
 > ([`../../evaluation/metrics/report.md`](../../evaluation/metrics/report.md)), and the hardening
 > pass that re-verified and tiered the basket
 > ([`../../evaluation/hardening_pass/experiment_log.md`](../../evaluation/hardening_pass/experiment_log.md) §2.4–2.5, §4.8).
@@ -101,7 +101,7 @@ after any scheduler or disclosure change from the sibling workstream).
 **Validation set.** N=180 v6ab (`batch_results/v6ab_{baseline,skboth,skobs,sksp,townobs,townsp}.jsonl`,
 all `status==success`; winners villagers 64 / wolves 39 / SK 77). This is the 3-faction epoch on which
 `sk_lynched +0.455`, the wolf-night null, and the deceiver-refinement results were measured
-(`../deceiver_metric_refinement.md`), so it is the comparable set for the rescue. `point_biserial` from
+(`../design/deceiver_metric_refinement.md`), so it is the comparable set for the rescue. `point_biserial` from
 `evaluation/src/core/stats.py`; partial correlation added there (residualization, reported with n and df).
 
 **Confirmation protocol.** The 180 games are 30 role-seeds × 6 memory-arms (`game_id` is pinned across
@@ -351,3 +351,33 @@ larger wolf-win N, per the verdict table. 9 new tests; suite 480 green.
 run 2026-07-02 (all $0, deterministic, ZERO LLM; N=180 v6ab). Headlines: A2 `wolf_power_kill_rate`
 rescued (first wolf-night proxy), B1 `town_accusation_precision` discovered (first town-discussion proxy),
 C1 confirmed; B6 pre-registered sign falsified (a blending discovery); C0 blocked on data.*
+
+---
+
+## ④ Follow-up rescue — the two questions ③ left open (2026-07-07)
+
+Two pre-registered, $0, deterministic re-tests on the same N=180 v6ab set with the same
+`game_id`-parity split (runner:
+`evaluation/src/instrument_validation/proxies/proxy_followup_rescue.py`; output
+`data/proxy_followup_rescue.json`).
+
+| id | question | pre-reg sign | full | disc / conf | verdict |
+|---|---|---|---|---|---|
+| F1 | does `town_accusation_precision` carry win signal *beyond* `town_vote_accuracy`? partial r(precision, town_won \| vote_accuracy) | + | **+0.024 (p=.756, n=175)** | −0.085 / +0.173 | **NO INCREMENTAL SIGNAL** — diagnostic placement confirmed on direct evidence |
+| F2 | does `vigilante_correct_shot_rate` (v5 promise +0.30 n=36 / +0.43 n=21) firm up at this epoch's N? point-biserial vs town win, shooter games only | + | +0.178 (p=.201, n=53) | +0.141 / +0.075 | **STILL-UNVALIDATED** — sign holds, promise diluted |
+
+- **F1 closes the question ③.B's coupling catch raised.** The raw +0.340 reproduces exactly, but
+  partialling on the vote endpoint removes all of it: the ~69% of precision variance NOT shared with
+  `town_vote_accuracy` carries no detectable win information. The construct-seat question is answered —
+  the proxy stays a diagnostic (its value is localization: the same construct read upstream, on the
+  discussion surface, including players who never get to vote), not a second witness. The *mediation*
+  reading of this null — the vote as town's causal actuator, with the tagger's town/deceiver asymmetry
+  as independent confirmation — is recorded in the topic log
+  ([`../experiment_log.md`](../experiment_log.md), 2026-07-07 section) and [`../report.md`](../report.md) §3.
+- **F2 note — an epoch behavior shift, flagged not investigated:** the vigilante shoots in only 53/180
+  v6ab games (29%) vs 36/50 (72%) in the v5 batch, so trebling the game count barely grew the defined
+  subset. The selection caveat stands (conditioning on "the vigilante shot" is behavioral selection).
+  The vigilante channel remains without a validated positive-skill proxy.
+
+*Run 2026-07-07. Both follow-ups returned null against their pre-registered signs — recorded in place,
+per the falsified-in-place discipline, rather than dropped.*

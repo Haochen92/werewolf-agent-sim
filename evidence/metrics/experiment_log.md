@@ -1,10 +1,27 @@
 # Evaluation Metrics — per-role play-performance scoring
 
+> **Supersession banner (2026-07-06).** This is a frozen dated record; read it as history, not as
+> current state.
+> - **The "DESIGN DISCUSSION, no code yet" header below is the June-6 snapshot.** The v2 metric set was
+>   implemented the *same day* (commit `93b1137`; see the §Implementation status section) and
+>   monotonicity-validated on 2026-06-11 (the tail section). "No code yet" was true only for the hours
+>   before that commit.
+> - **The current finalized shape lives in [report.md](report.md)** (new, the how-it-works doc);
+>   apparatus trust — which proxies are validated and at what N — is in
+>   [`../evaluation/metrics/report.md`](../evaluation/metrics/report.md); the folder map is
+>   [README.md](README.md).
+> - **Framings that have since died.** "Phase C" no longer exists as a plan; the plan of record for the
+>   memory-effect A/B is now `evidence/execution_plan/compounding_measurement_plan.md`. The Phase-B
+>   prompt freeze referenced below was *lifted 2026-06-20* (prompts are normal engineering now). And the
+>   Batch A/B "70% → 97%" lineage claim cited below was later **demoted to a non-citable historical
+>   ceiling** with a multiple-comparison caveat — see
+>   [`../memory_system/effectiveness/report.md`](../memory_system/effectiveness/report.md).
+
 **Status: DESIGN DISCUSSION (2026-06-06), no code yet.** Part of Phase A #3 (tracing consolidation;
 see `evidence/tracing/`) — "design against the eval needs." The metrics ARE the eval need: they are
 the key driver of how we measure the memory system's impact (Phase C win-rate A/B). This log tracks
-the audit + the design discussion. Pre-Phase-B-labelling; freeze rules apply
-(see `feedback-memory-pipeline-prompt-freeze` — no main-pipeline prompt changes).
+the audit + the design discussion. Pre-Phase-B-labelling; a prompt freeze was in force during Phase-B
+labelling — no main-pipeline prompt changes; lifted 2026-06-20 per the banner above.
 
 ## Goal / criteria
 
@@ -69,9 +86,9 @@ effectiveness, complementing the win-rate A/B.
 
 **Why it's subjective — concretely:** the judge is *itself an LLM* scoring free-text on a 1–5 rubric.
 So a score depends on (a) the judge model + prompt phrasing + temperature, (b) the judge's own
-interpretation with no ground-truth anchor, (c) the backend — Vertex vs Google AI give different
-outputs at temp 0 ([[feedback-vertex-backend-affects-scores]]), and (d) known blind spots — our own
-finding is that the judge **misses information gain** ([[feedback-llm-judge-limitations]]), plus the
+interpretation with no ground-truth anchor, (c) the backend — the Google-AI and Vertex backends produce
+different outputs even at temperature 0, a standing project finding, and (d) known blind spots — a prior
+project finding is that the judge **misses information gain**, plus the
 usual verbosity/leniency/position biases. It's reproducible only approximately. That subjectivity is
 exactly why v1 *also* shipped the deterministic metrics, and why v2 leans on them.
 
@@ -125,7 +142,7 @@ fixable in v2 and matter more than the luck critique.
 
 ## Audit of existing metrics (2026-06-06) — this is v1
 
-Two **fully separate** families. (Full catalog with file:line in the session record; condensed here.)
+Two **fully separate** families (condensed here; the per-metric verdicts are the tables below).
 
 ### Family 1 — deterministic game/role metrics (`Agents/compute_metrics.py`, `schemas/metrics.py`)
 **100% mechanical (votes, revealed roles, deaths) — zero LLM, fully objective. Already normalized by
@@ -360,3 +377,72 @@ strongly validated (|r|≈0.55–0.65, p<0.01, both views) — use it to power t
 investigator rate proxies are NOT validated (~zero or wrong-sign; `investigator_found_wolf_day`
 significantly backwards, plausibly game-length confounded). Wolf social proxies are underpowered
 on v5 (degenerate sub-Ns), not invalidated.
+
+## Follow-up validation + the mediation reading — 2026-07-07
+
+*(The chronology between the 2026-06-11 section above and this one — the 2026-07-02 N=180 audit that
+rescued `wolf_power_kill_rate`, discovered `town_accusation_precision`, and set the current tier
+frozensets — lives in [`metrics_audit/proxy_discovery_log.md`](metrics_audit/proxy_discovery_log.md);
+the finalized shape it produced is [report.md](report.md).)*
+
+Two pre-registered $0 follow-ups ran on the same N=180 set (runner
+`evaluation/src/instrument_validation/proxies/proxy_followup_rescue.py`; full figures in the audit log
+§④), each triggered by an owner challenge to the tiering:
+
+- **F1 — does `town_accusation_precision` add win signal beyond `town_vote_accuracy`?** The 2026-07-02
+  audit flagged the coupling (r=+0.558) but never partialled it. Answer: **no** — partial r = +0.02
+  (p=.76, n=175), halves −0.09 / +0.17; the raw +0.340 reproduced exactly. Diagnostic placement
+  confirmed on direct evidence.
+- **F2 — does `vigilante_correct_shot_rate` firm up at N=180?** The v5 promise (+0.43, p=.050, n=21
+  shooter games) **diluted to +0.18 (p=.20, n=53)** — sign holds, still unvalidated. The vigilante shot
+  in only 53/180 games at this epoch (29%, vs 72% in v5 — an unexplained behavior shift, flagged not
+  investigated).
+
+**The mediation reading (the insight F1 forced).** For town, the collective day vote is nearly the only
+actuator: discussion changes the outcome by *becoming votes*, so `town_vote_accuracy` is a **mediator**
+on the causal path, and partialling out a mediator removes the causal route itself. F1's null therefore
+reads "no bypass path" — and it *predicts* that any town discussion proxy, however built, partials to
+~zero against win at game grain. An independent instrument shows the same structure: the LLM tagger's
+discussion verdict, partialled on the vote proxy, gives **+0.02 town** vs **+0.56 wolf / +0.60 SK**
+(N=24; different instrument and sample, so qualitative agreement) — deceiver discussion acts on *other
+players'* votes, a path its own vote proxy does not mediate. Design consequence, stated once: **measure
+downstream (outcome-validated endpoints), teach upstream (reasoning quality as decision-grain credit)**
+— and nothing is lost to the ruler, because full mediation means a real discussion improvement *shows
+up in* `town_vote_accuracy`. Folded into [report.md](report.md) §3/§5.
+
+**Open question (with the owner, not yet decided):** the vigilante fork. `vigilante_correct_shot_rate`
+is *logically anchored* — a landed evil shot IS a threat elimination, the construct the validated
+`correct_elimination_rate` (+0.65) expresses — but *statistically underpowered* (a ≤2-bullet rare
+event; detecting r≈0.18 at 80% power needs ~240 shooter games ≈ 800+ games at this epoch's 29% shot
+rate). Whether the ledger should carry a named "logically-anchored, underpowered" status distinct from
+"invalidated", and whether a combined town threat-removal form (lynches + vigilante evil-shots) should
+be pre-registered as a candidate, is an open tiering-policy call.
+
+**Resolution (same day).** The owner's requirement is *per-cell coverage*: every (role, phase) decision
+cell should have its own readout unless none can exist — coverage being a different property from witness
+validity, which the tier system alone expresses. Adopted: a **cell-coverage map** in [report.md](report.md)
+§3 (all cells now accounted for: basket, diagnostic, or an explicit reason), and a new
+**"logically-anchored decision endpoint"** license for the definitional-sign-but-underpowered class —
+`vigilante_correct_shot_rate` is its first member (may read the vigilante-night cell in an A/B via
+arm-level pooling; may not carry a headline verdict). The wolf-night cell was found less bare than it
+looked: `wolf_power_kill_rate` (diagnostic) plus mirror-validation of the same event family from the town
+ledger (`power_roles_killed_by_evil` ★, −0.40). The combined town threat-removal candidate (lynches +
+vigilante evil-shots) stays parked, not pre-registered.
+
+## 2026-07-11 — consumer-side supersession: the credit redesign retires the tagger's credit role
+
+A pointer entry, not a metrics change: the read/tactic credit redesign
+([`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md))
+retires the LLM tagger as a credit source — day-discussion credit adopts the validated day-vote endpoint
+(M1, held-out +0.51) plus a move-grain advocacy rule; the night read-quality override is replaced by a
+read-partition over the deterministic outcome; the tagger stays as a standing diagnostic. **The ruler this
+folder documents is untouched** — every basket proxy and diagnostic reads engine facts (plus the one
+stance-tag diagnostic), and `addressed_targets` remains in the live output schema, which the redesign
+itself depends on. `report.md` §5 and §7 are stamped in place; wiring is pending.
+
+One forward-looking note for the ledger's dead wolf-discussion family: the redesign's advocacy/first-link
+instrument separates *leading* from *joining* deterministically (a stance-tagged accusation on X **before**
+the room's votes move to X), which is exactly the semantic question that made `wolf_steering_rate`
+uninterpretable. Once built for credit it becomes a win-testable candidate for the wolf-discussion cell —
+through the normal gate (empirical-sign class, momentum-adjusted), not the logically-anchored license.
+Until that test, the `wolf_steering_rate` lesson stands.

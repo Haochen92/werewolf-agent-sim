@@ -22,7 +22,7 @@ tracks winning. The validation harness exists to prove that.
 ## L1 — the instrument
 
 - **Compute surface** `Agents/compute_metrics.py`: `_compute_base_metrics` (raw counts) →
-  `_compute_derived_metrics` (de-lucked rates) → `compute_game_metrics` → `ComputedGameMetrics`, a **~50-field
+  `_compute_derived_metrics` (de-lucked rates) → `compute_game_metrics` → `ComputedGameMetrics`, a **63-field
   flat artifact** (`schemas/metrics.py:214-256`). `push_scores_to_langfuse` (`:519-550`) pushes **every
   non-None field indiscriminately** — no curated-basket filter, so unvalidated/diagnostic/plumbing fields land
   in Langfuse co-equal with validated proxies.
@@ -89,18 +89,19 @@ which stops the Langfuse/judge double-counting of `suspicion_drawn`↔`blending`
 ## Evidence (code + L2 artifacts)
 
 - **Code:** `Agents/compute_metrics.py`, `Agents/schemas/metrics.py`, `evaluation/src/core/stats.py`,
-  `../../metrics/proxy_win_monotonicity.py`, `../../metrics/discussion_lead_vs_blend.py` (both **point at** the
+  `../../metrics/proxy_win_monotonicity.py`, `../../metrics/design/discussion_lead_vs_blend.py` (both **point at** the
   canonical `core/stats.py`, not copied).
-- **L2 artifacts (pointed-at):** `../../metrics/{proxy_win_monotonicity,town_metric_refinement,
-  deceiver_metric_refinement,experiment_log,score_tier_design,discussion_scoring_plan}.md` — the validation
+- **L2 artifacts (pointed-at):** `../../metrics/{proxy_win_monotonicity,experiment_log}.md` +
+  `../../metrics/design/{town_metric_refinement,deceiver_metric_refinement,score_tier_design,discussion_scoring_plan}.md` — the validation
   docs are a **shared hub** referenced from 6 other evidence folders (point-at, per the "store the pointer"
   rule).
 
 ## Colocation call (JIT, 2026-06-28)
 
 **Stays put — pointed-at.** The validation docs are a shared cross-folder hub; moving them breaks 6 inbound
-refs. (Note: `../../metrics/variance_reduction_levers.md` is **mis-filed** in metrics/ — it's A/B
-*methodology*, not a metric — and is handled in the [methodology report](../methodology/report.md).)
+refs. (Note: `variance_reduction_levers.md` was **mis-filed** in metrics/ — it's A/B *methodology*, not a
+metric; the deferred relocation was executed 2026-07-07 and it now lives at
+[`../methodology/variance_reduction_levers.md`](../methodology/variance_reduction_levers.md).)
 
 *(Inspected 2026-06-28. source_map metrics claims verified accurate; sharpenings folded into the ledger.)*
 

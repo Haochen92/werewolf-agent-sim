@@ -5,8 +5,10 @@
 > synthesizes a design review of the current instrument stack into a sequenced, pre-registered plan.
 > **Findings first, then the plan.**
 >
-> **Status:** planned, not executed (2026-07-04). No paid run authorized yet; the whole point of Phase 0
-> is to earn the right to spend.
+> **Status:** revised 2026-07-11. Phase 0 executed (§0.1–0.5 stamped in place); the credit mechanism was
+> then superseded by the read/tactic redesign
+> (`../discussion_tagger/read_tactic_credit_redesign.md`), and this plan now carries the final pre-run
+> program — see **§R** below. No paid run yet.
 > **Genre:** execution plan, not an experiment report — it *precedes* the work rather than recording it.
 > Each completed piece graduates to its own `evidence/<topic>/` folder; this doc is the map.
 > **Sources:** the situation-dimensions + both tagger reports, the proxy-discovery and scheduler-bias
@@ -47,8 +49,84 @@ So the highest-leverage work is **not** more games and **not** a broad labeling 
    (§0.5) — and Finding 1 is a **hard gate for the wolf arm specifically** (its primary instrument is the
    distorted channel).
 
-Gold labels matter in exactly two load-bearing places (tagger verdict, SP-synthesis output); everything
-else on the "unverified" list gets a cheap directional bound, not a certification.
+Gold labels matter in exactly two load-bearing places — **revised 2026-07-11: the behavior detector and
+SP-synthesis output** (the tagger golden went moot with its demotion to diagnostic); everything else on
+the "unverified" list gets a cheap directional bound, not a certification. The re-scoped suite is in
+Phase 2.
+
+---
+
+## R · 2026-07-11 revision — the read/tactic redesign and the final pre-run program
+
+> Everything below §R is the 2026-07-04/05 plan with its execution stamps; it stays as the record. This
+> section is what changed on 2026-07-10/11 and the program that now precedes the paid run. Design record:
+> [`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md)
+> (v1 scope in its §8).
+
+**What changed since the 2026-07-05 stamps:**
+
+- **New prompt epoch 2026-07-09** — the per-turn reads bundle shipped live. The next build run is
+  fresh-epoch by construction and doubles as the bundled reset (reads + change E + wolf day-channel +
+  SP tiering + dead-roster + anti-repetition + the injection swap below): cold-start, both arms
+  in-epoch, no separate re-baseline.
+- **Credit is redesigned (read/tactic decomposition, v1 scoped 2026-07-11).** Reads become tells
+  (accuracy-credited facts, shrunk-lift ranked) plus a Brier ledger; day tactic credit = the day-vote
+  endpoint with a faction-relative target-value rule; night credit = deterministic, read-partitioned; a
+  guarded concealment floor; self-report attribution with a spot-check bound. **The tagger is demoted to
+  a standing diagnostic** (its night override retired) — its golden is moot for credit.
+- **Injection becomes two channels: tells + SPs; observations leave the prompt** (they remain the
+  synthesis substrate). Hedges before spend: the injection-channel replay screen and the in-run Brier
+  delta (book vs no book).
+- **The labeling sweep is re-scoped** — Phase 2's priority table is rewritten in place below.
+- **Ownership gate (user decision, 2026-07-11):** the run waits on the user personally re-deriving the
+  two remaining un-owned load-bearing stages — a `decision_scoring` teach-back, and a consolidation
+  **blind re-derivation** (blind derivation → code confrontation → delta classification: the method that
+  produced the credit redesign). The consolidation confrontation also authors the ledger-anchored
+  reference points for the SP-synthesis golden. Extraction is off the re-derivation list (user-driven
+  spec); it gets one verification pass riding tell mining (are behaviors objectively described).
+
+  > **2026-07-14 (owner) — format and scope of the consolidation gate revised.** Format = the
+  > **walkthrough teach-back** (the agent presents the current pipeline, the owner probes and
+  > revises — the same reformatted process the decision_scoring gate used), NOT a blind write-first
+  > derivation. Scope = **both compounding mechanisms**: SP consolidation (`loop/consolidate.py`)
+  > AND the tell epoch fold (`loop/tell_fold.py`), which had no unified mechanism record. Review
+  > basis and record home: `evidence/consolidation/` (report.md = the presentation, §6 = the
+  > agenda; walkthrough revisions land in its experiment_log.md). The synthesis-golden anchor
+  > points remain a required output of the session.
+
+**The critical path (target 1–2 working days, AI-implementation-heavy; owner marked):**
+
+*Day 1*
+1. `decision_scoring` teach-back — user writes a one-page spec from the code, adversarially reviewed
+   (~2h user). Signs off the valence semantics the new day credit reuses.
+2. Tell-mining offline probe on the v6ab dumps + dedup prompt v0 (AI, ~$0) → candidate tells, book-size
+   reality check, cross-epoch material; user reviews a sample for the objective-description
+   precondition (~30 min).
+3. v1 credit wiring per the design record (AI): both ledgers, endpoint + target-value day credit,
+   read-partitioned night credit, concealment floor with both guards, tagger override retired; extend
+   `assert_baseline_coherence` with a **registered baseline type for tells** (cast-prior,
+   arm-independent — not an OFF-arm base) so the invariant doesn't false-fire. Tests green.
+4. Detector golden — AI pre-labels 30–50 stratified cases, user adjudicates (~1–1.5h user) + the
+   role-blindness check. **Gates the run.**
+
+*Day 2*
+5. Consolidation blind re-derivation + confrontation (user, ~4–5h — the squeeze point). Output: the
+   delta classification + the synthesis-golden anchor points. Gates the consolidation-integration
+   sign-off only; the consolidation code is otherwise at its validated 2026-07-05 state.
+6. Dedup-judge spot-check (15–20 merges, ~45 min user) · injection-channel replay screen + cross-epoch
+   tell check (AI, ~$1–2).
+7. Pre-registration, user-signed: arms (tells + SPs injected, obs substrate-only), ONE primary endpoint
+   (town decision basket on the end-point A/B), stopping rule.
+8. Smoke → launch the arm-guarded, fresh-epoch build run (Phase 1.1).
+
+*Rides the run / post-run:* checkpoint replay (one batch, post-run by design) · Brier delta ·
+endpoint-vs-first-link comparison · per-tactic density census · SP-lineage join · completeness-tail
+labels · the validity-controls registry index (extends `../evaluation/methodology/report.md`) · the
+personal stats one-pager (`interview_prep/`, local-only).
+
+**Honesty clause (pre-registered):** the 1–2-day target holds only if (a) the detector golden bounds
+acceptably and (b) the consolidation confrontation surfaces no validity-gating change. Either failure
+slips the run — that is the gate working, not the plan failing.
 
 ---
 
@@ -59,14 +137,16 @@ a deferral read as **scoping**, not **salvage after a null**.
 
 | Rung | Claim | Instrument | Status |
 |---|---|---|---|
-| **1** | *Having* memory improves live decisions (and directionally, wins). | Static paired A/B | ✅ **Proven.** Decision basket significant (healer-save p=0.005, correct-elim p=0.028); win-rate direction positive (single-arm win estimate underpowered — see `[[project-static-memory-claim-correction]]`; do **not** re-cite the retracted fused "+17pp p=0.013" headline). |
+| **1** | *Having* memory improves live decisions (and directionally, wins). | Static paired A/B | ✅ **Proven.** Decision basket significant (healer-save p=0.005, correct-elim p=0.028); win-rate direction positive (single-arm win estimate underpowered — see `evidence/memory_system/effectiveness/report.md`; do **not** re-cite the retracted fused "+17pp p=0.013" headline). |
 | **2a** | The consolidation **loop improves the store** — each generation's store is higher-quality than the last. | SP-lineage lift + prune/evict census + lift-weighted composition (no agent in this measurement) | ⏳ **Buildable now, $0–cheap.** |
 | **2b** | **…and consequently agents decide better** — the same agent, on the same frozen decisions, decides better as the store advances. | Checkpoint replay curve | ⏳ **Buildable now, cheap.** |
 | **3** | Loop-improved stores translate into **live-game wins** (in-situ, multi-turn, within-game compounding). | New paired live games at powered N | ⛔ **Deferred, cost-quantified.** The power calc attaches the price tag (illustratively ~hundreds of games/arm). Deferred ≠ false. |
 
-> **PROPOSED 2026-07-05 (pending ratification):** replace the live slope with an end-point paired A/B —
-> final store vs initial (gen-1) store on 30 shared boards — converting the ramp into the step design
-> that succeeded in the static A/B; see `power_analysis/decision_rationale.md` §7.
+> **ADOPTED (proposed 2026-07-05; adopted for run planning 2026-07-11):** the live slope is retired as
+> the primary readout. The run's headline is the **end-point paired A/B** — final store vs initial
+> (gen-1) store on 30 shared boards, replayed in one batch — converting the ramp into the step design
+> that succeeded in the static A/B; see `power_analysis/decision_rationale.md` §7. This is Phase 1.1's
+> pre-registered primary endpoint.
 
 The honesty conditions (agreed in review): **pre-register the ladder before the run**, and **word rung 2b
 precisely** — "the loop measurably improves the store's decision-steering quality on frozen boards," not
@@ -92,6 +172,11 @@ null.
 | Consolidation (synth/prune/evict) | ❌ Insufficient as-is | Three structural holes (§0.4) leave the store full of never-followed ballast; plus stale out-of-window credit feeds prune/protect/track-records (§0.5, Finding 2). |
 | Measurement harness | ❌ Insufficient at N | Pairing decays after first divergence; §12b's own math collapses the paired estimator to unpaired. Valid but underpowered. |
 | Metrics basket | ✅ Sufficient | Pre-registered, tiered; diagnostic additions (A2/B1/C1) usable as secondary slope lines. |
+
+> **2026-07-11:** the two ❌ credit rows are superseded — §0.5's fixes shipped 2026-07-05, and the
+> read/tactic redesign then replaced the discussion/tagger-night channels outright (§R). The
+> consolidation row's §0.4 holes are closed; what remains open there is the ownership re-derivation
+> (§R), not a code defect.
 
 **On transcript quality** (game 1 of `gen2_on`, SK win, 5 days): the real issue is **information density**,
 not coherence. Four players open day 3 with near-identical "I agree we can't keep abstaining…" despite the
@@ -171,8 +256,7 @@ property. So:
   gen-6 checkpoints are scored under different API epochs, the curve confounds store-progress with drift.
   So replay all snapshots + control **same day, same backend, one batch**. The frozen boards being from old
   games is fine (static inputs); it's the *scoring calls* that must share an epoch. (Vertex-vs-Google-AI and
-  temp-drift lessons live in this class — `[[feedback-vertex-backend-affects-scores]]`,
-  `[[project-model-drift]]`.) The old recorded results are never compared against — only fresh same-batch
+  temp-drift lessons live in this class.) The old recorded results are never compared against — only fresh same-batch
   replays.
 - **Same-game leakage.** If cases come from the loop's own games, a gen-k store contains observations
   extracted from the very game a case came from — the leak that produced the criticality screen's fake
@@ -217,6 +301,18 @@ lineage for free); treat the fuzzy v2 pass as optional curiosity.
 
 ### 0.4 Consolidation fixes — un-dilute the store — ~1–2 days
 
+> **ALL THREE BUILT 2026-07-05:** evict counters live (via the §0.5 pass — `credit_apply` SETs
+> retrieved/override/not_relevant, windowed; `_evict_ok` fires in test); per-cell SP cap
+> (`synth_cell_sp_cap=12`, `cells_capped` in the per-gen stats); proven-first SP tiering in retrieval
+> (stable partition after `cap_per_situation`, `follow≥5 ∧ pos>neg`, config-gated `sp_proven_tiering`
+> default-ON, recorded in `build_game_config` + per-turn retrieval metadata). Tiering is an
+> epoch-bundle member (changes live behavior).
+> **2026-07-14 store-bounding revision** (consolidation report §2.1–§2.2, §6.7): the cap knob is now
+> `synth_cell_unproven_cap` and gates the CONTESTED lane only (proven SPs sit outside the quota); a
+> guaranteed exploration slot (`sp_exploration_slot`, default-ON, epoch-bundle member) surfaces the
+> best unproven SP at the per-situation retrieval cap; obs decay is count-scaled from last
+> reinforcement (nothing immortal).
+
 Three known holes leave most of the store as never-followed ballast that dilutes compounding. Without them,
 a flat slope stays ambiguous ("loop never had signal to act on") — the exact ambiguity §10's
 credit-distribution logging was built to avoid.
@@ -244,8 +340,18 @@ credit-distribution logging was built to avoid.
 
 > **DECIDED 2026-07-05 — option A (user):** tag the OFF arm too (~2× tagger spend; clean same-instrument
 > base for discussion AND tagger-night credit). Options B/C rejected → the g3b/discussion_credit probe
-> trio stays dated evidence (no standing re-open). Implementation queued with Findings 2+3 + the
-> baseline-coherence invariant.
+> trio stays dated evidence (no standing re-open).
+> **IMPLEMENTED same day (all three findings + the invariant):** `_tagger_off_base`/`_discussion_off_base`
+> over the true OFF arm, mode-keyed `tagger/<cell>` entries in base_rates with a shared `base_for`
+> selector (prune/synth/credit_distribution); window counters zeroed on every SP before ledger apply;
+> adoption counters SET from the window's eval cases; `assert_baseline_coherence` wired in the driver
+> (every credited channel needs a same-grading-function OFF base, raise-loud). **The wolf arm's
+> Finding-1 gate is CLEARED.**
+> **2026-07-11:** the tagger's demotion to diagnostic (§R) removes tagger *credit* entirely — the
+> Option-A tagger OFF-arm bases now matter only if the diagnostic is read comparatively across arms
+> (cheap, optional). What carries forward: the same-grading-function OFF-arm rule (the endpoint floor's
+> `_discussion_off_base`) and `assert_baseline_coherence`, which needs a registered baseline type for
+> tells (cast-prior, arm-independent) so it doesn't false-fire on the new channel.
 
 A line-level audit of the credit path (`credit.py`, `credit_backfill.py`, `adoption.py`, `driver.py`,
 `measure.py`, the dedup absorb, the loop tests). **The join itself is clean** — verdicts →
@@ -299,23 +405,29 @@ times (run-1 vote baseline, v2 salvage halo, loop discussion/night credit); guar
 Each run pre-registers **one** primary endpoint; everything else is exploratory (multiple-comparison
 discipline — see Standing gates).
 
-### 1.1 Town-only rerun — the clean experiment + positive control
+### 1.1 Town-only run — the clean experiment + positive control (revised 2026-07-11)
 The clean experiment never actually run (the v2 slip ran `all_enabled`, not `town_only` — see the v2
 post-mortem). Static town effect is the strongest validated signal, so it's the natural positive control.
+Fresh epoch, new memory system (tells + SPs injected, obs substrate-only), cold start.
 - **Guard:** `--expect-factions town_only` (the arm-guard shipped after the slip).
-- **Primary:** town-basket slope on live pairs. **Secondary:** checkpoint-replay curve (0.2) + B1
-  accusation-precision. Pre-register the **stopping rule**.
+- **Primary (one endpoint): the end-point paired A/B** — final store vs the initial (gen-1) store on 30
+  shared boards, replayed in one batch; town decision basket is the graded quantity.
+- **Secondary/exploratory:** Brier delta (book vs no book), checkpoint-replay curve per snapshot,
+  SP-lineage join, B1 accusation-precision, the endpoint-vs-first-link diagnostic comparison, tell-corpus
+  growth (the saturation premise).
+- Pre-register the **stopping rule** before gen 1.
 
-### 1.2 Wolf-only arm — the v7 thesis test
-The only compounding-shaped signal actually observed (+0.086 slope, rising to +0.28).
-- **Instruments:** tagger discussion verdict + night read-quality + A2 `wolf_power_kill_rate`.
-- **Hard prerequisite: §0.5 Finding 1.** The wolf arm's primary instrument is the tagger-credited
-  discussion + night channel — exactly the one the audit found level-scaled. Running the wolf arm before
-  that fix measures the halo, not the wolf.
-- **Two required adjustments:** (i) **stratify the wolf slope by `sk_lynched`** — otherwise ~40% of games
-  (77/180 in v6ab) carry zero wolf-skill information and dilute toward null *by construction*; (ii) this run
-  **doubles as the tagger's fresh-epoch validation** (closes tagger calibration gaps 1+3 for free — see
-  Labeling).
+### 1.2 Wolf-only arm — the v7 thesis test (revised 2026-07-11)
+The only compounding-shaped signal actually observed (+0.086 slope, rising to +0.28 — from the
+invalidated v2, so directional motivation only).
+- **Instruments (new):** endpoint + target-value day credit, the concealment floor (both guards), tell
+  hit-rates + Brier, A2 `wolf_power_kill_rate`. **The tagger verdict is a diagnostic here, not a
+  ruler** — tag both arms only if the diagnostic will be read comparatively (cheap, optional).
+- **Prerequisites:** the detector golden bounded (this replaces the old Finding-1 gate, which the
+  redesign superseded); the concealment-floor guards verified in the smoke.
+- **Kept from the original design:** stratify by `sk_lynched` — otherwise ~40% of games (77/180 in
+  v6ab) carry zero wolf-skill information and dilute toward null by construction. Fresh-epoch
+  calibration of the now-diagnostic tagger comes free.
 
 ---
 
@@ -340,23 +452,32 @@ semantic *coverage* (recall) + *faithfulness* (precision). Human time goes into 
 
 ### Gold type B — verdict/classification (plain human agreement labels)
 No reference points, no coverage judge — just human agreement on sampled cases.
-- **Consumers:** tagger verdicts, the silence/novelty rule.
+- **Consumers (revised 2026-07-11):** the behavior detector (presence/absence of a behavior), the tell
+  dedup judge (same-claim merges), tactic self-report attribution (does the action instantiate the
+  followed SP), the silence/novelty rule — and the tagger verdict only in its diagnostic afterlife.
 - **For soft judgments, score *agreement*, not correctness.** The silence rule and framing have no crisp
   truth, and flash-lite's silent-update tendency means labeler-vs-model disagreement isn't cleanly "model
   wrong." Report "agreed 11/15, 3 genuinely ambiguous" as a **bound on trust**, never an accuracy claim.
 
-### Priority (load-bearing first; completeness tail last)
+### Priority (rewritten 2026-07-11 for the read/tactic design; load-bearing first, completeness tail last)
 
 | Target | Gold type | Verdict | n (rule of three) | Why |
 |---|---|---|---|---|
-| **Discussion tagger** | B | **1st, ~2h, timed with wolf arm** | 30–50, stratified | Becomes the primary ruler the moment the wolf arm runs; only correlationally validated today. |
-| **SP-synthesis output** | A (ledger-anchored) | **2nd, ~2–4h** | per-cluster points | Biggest blind spot: content is the diagnosed binding constraint, synthesis is the mechanism, it inverted a lesson once, and it has **never** been judged. |
-| Post-game obs recall/precision | A | 3rd (smaller than it looks) | small | Already informally verified by manual reads; a per-game "5 lessons this must yield" golden would mostly confirm them. |
-| Situation dimensions | — | **Skip for now** | — | Live path is covered (retrieval NDCG + aligned-query win; computable dims deterministic); the unverified parts (`is_swing`, enums, stored fills) are default-off or bounded. Labeling improves a knob you're not using. |
-| Situation-summary semantic accuracy | A | **Defer** | — | Already measured by outcome (NDCG). Cheapest next step is the free v6_1 NDCG **re-baseline**, not fresh labels. |
-| Silence rule / novelty gate | B | **Defer; run the free audit first** | soft | Instrumentation just shipped (gate flag + discarded candidate persisted); the next batch gives a $0 descriptive answer. Only then does human labeling (soft) enter. |
+| **Behavior detector (role-blind)** | B | **1st — gates the run** | 30–50, stratified; AI pre-label → human adjudication (~1–1.5h human) | Every tell hit-rate rides this pass — the redesign's one load-bearing golden (it replaces the tagger golden). Includes the role-blindness leak check: detection must not shift when roles are visible. |
+| **SP-synthesis output** | A (ledger-anchored) | **2nd — reference points authored during the consolidation re-derivation (§R)** | per-cluster points | Unchanged rationale: synthesis is the compounding mechanism, it inverted a lesson once, and it has **never** been judged. Ledger-anchored points ("must retain the +0.26 lesson; must not carry the −0.30 directive") are crisper than prose coverage. |
+| **Tell dedup judge** | B (spot-check) | **before trusting pooled counts** | 15–20 merges (~45 min) | Asymmetric risk sets the bar: a **wrong merge** pools counts of *different* claims and miscalibrates hit-rates; a missed merge only splits support (conservative). Bound, not golden. |
+| **Tactic self-report attribution** | B (spot-check) | with the first credited window | ~15 (~30–45 min) | Bounds the dilution from ~99% follow rates; valence is deterministic, so the failure mode is smear, never sign error. |
+| **Extraction objective-description check** | verification read, not a golden | rides the tell-mining probe (§R item 2) | sample | The tell-mining precondition: behaviors objectively described, never role-inferential. Absorbs the old post-game-obs row — same reassurance, cheaper form. |
+| Discussion tagger | B | **Moot for credit (demoted to diagnostic 2026-07-11)**; optional tail | 30–50 only if ever needed | Label only if the diagnostic is ever cited as a headline number. |
+| Situation dimensions | — | **Skip for now** (unchanged) | — | Live path is covered; the unverified parts are default-off or bounded. Labeling improves a knob you're not using. |
+| Situation-summary semantic accuracy | A | **Defer** (unchanged) | — | Already measured by outcome (NDCG); stakes further reduced now that observations left the prompt. |
+| Silence rule / novelty gate | B | **Defer; run the free audit first** (unchanged) | soft | Instrumentation shipped; the next batch gives a $0 descriptive answer first. |
 
 ### Guardrails (keep a low-N sweep honest)
+- **AI-assisted labeling (added 2026-07-11).** AI pre-labels every set; the human adjudicates every case
+  the AI flags as uncertain plus a stratified subsample of the confident ones. **The reported bound
+  comes from the human-verified n only** — AI throughput widens coverage, it never substitutes for the
+  bound — and human–AI disagreements are the most informative cases, never discarded.
 - **Pre-commit before looking, per instrument:** the question, the n, and what counts as an error.
   Time-box each 30–60 min.
 - **Size n by the rule of three, not vibes.** Zero errors in n items ⇒ 95% upper bound ≈ 3/n. n=10 ⇒
@@ -371,8 +492,10 @@ No reference points, no coverage judge — just human agreement on sampled cases
 - **Sequence so the sweep can't delay decisive work.** The two load-bearing goldens + the paid runs come
   first; the completeness tail is fill-in work *while games run*.
 
-> **On "label everything, scaled by load-bearing-ness":** endorsed. Total program ≈ **6–10 human-hours**;
-> only the tagger + synthesis rows need to happen **before** the paid runs.
+> **On "label everything, scaled by load-bearing-ness":** endorsed. With AI pre-labeling, total program ≈
+> **4–7 human-hours**; only the **detector golden** (and the synthesis reference points, which the
+> consolidation re-derivation produces anyway) must land **before** the paid runs — the two spot-checks
+> ride the first credited window.
 
 ---
 
@@ -399,16 +522,28 @@ No reference points, no coverage judge — just human agreement on sampled cases
   measurement.
 - Deferred prompt-pass items (structured dead-roster, anti-repetition — the day-3 "I agree we can't keep
   abstaining" loop).
+  **BOTH BUILT 2026-07-05:** deterministic `dead_roster` state (every death path verified to publicly
+  reveal the role — night kills at resolution announce, lynch at orchestrator announce) rendered in all
+  day discuss/vote prompts; `ENGAGE_WITH_DISCUSSION_RULE` added once at the shared discuss-template level.
+  **Known residual (reported, not fixed):** the repetition mechanism is the `opener_floor=3` novelty-gate
+  bypass — the day's first 3 utterances are ungated by design, exactly where the identical openers landed;
+  prompt-level fix shipped, mechanism deliberately untouched. Night prompts don't carry the roster yet
+  (deferred). Current bundle contents: change E + wolf_channel day + SP tiering + dead-roster +
+  anti-repetition.
 - Optionally the 3.5-flash **variance** pilot (10 games, measured on variance not quality).
 
 ---
 
 ## One architecture idea worth a cheap flag
 
+> **Superseded 2026-07-11:** the read/tactic redesign removes observation injection entirely (tells +
+> SPs are the two channels), which subsumes this per-cell idea — the villager/day_vote question gets
+> re-tested for free by the new arm rather than by a config flag.
+
 v2's single negative cell was **villager/day_vote (−0.118)**: SP directives underperform villager gut+obs
 inference exactly where the proxy looks. Consider a **per-cell channel config** — obs-only for villager
-votes, SPs for power roles and deceivers — as a config-flag variant (per `[[reference-variant-versioning-policy]]`,
-this is a coexisting incremental A/B → config flag, not a worktree). Consistent with everything measured
+votes, SPs for power roles and deceivers — as a config-flag variant (a coexisting incremental A/B →
+config flag, not a worktree, per the project's variant-versioning policy). Consistent with everything measured
 (town benefit was defensive/obs-driven; SPs are the deceiver channel), and it's a one-line arm to add
 whenever you're already paying for town games.
 
@@ -440,41 +575,49 @@ Three residual weaknesses, each with a standing fix:
 ## Sequencing & bottom line
 
 ```
-Phase 0  ($0–few$, ~4–5 days)          →  Phase 1  (paid, ~$30–60 total)      →  Phase 3 (later)
-  0.1 power analysis  ($0)  ─┐            1.1 town-only  (--expect-factions       free mines +
-  0.2 checkpoint replay      ├─ gate →        town_only; positive control)         one bundled
-  0.3 SP-lineage field       │            1.2 wolf-only  (stratify sk_lynched;     epoch reset
-  0.4 consolidation fixes  ──┤                doubles as tagger validation;
-  0.5 credit-scale fixes  ───┘                GATED on 0.5 Finding 1)
-        │                                        │
-   labeling: tagger + synthesis goldens ────────┘  (before paid runs)
-   labeling: completeness tail ─────────────────────────────  (while games run)
+§R critical path (1–2 days)                    →  Phase 1 (paid, ~$15–35/run)    →  post-run
+  D1: decision_scoring teach-back (user)           1.1 town-only, fresh epoch,       checkpoint replay
+      tell-mining probe + dedup v0 (AI)                END-POINT A/B primary          (one batch) ·
+      v1 credit wiring + invariants (AI)           1.2 wolf-only (detector           first-link vs
+      detector golden: AI prelabel +                   golden bounded; sk_lynched     endpoint · density
+      user adjudication ── GATES THE RUN               strata; tagger=diagnostic)     census · lineage ·
+  D2: consolidation re-derivation (user)                                              tail labels ·
+      dedup + attribution spot-checks                                                 controls registry
+      replay screen + cross-epoch check (AI)
+      pre-registration → smoke → LAUNCH
 ```
 
-**Critical path / gates:** 0.1's MDE table decides whether Phase 1 runs as a *live-slope* experiment or a
-*replay-primary* one — don't authorize games until it's in hand. And **0.5's Finding-1 fix gates 1.2
-specifically** (the wolf arm's primary instrument is the level-scaled channel).
+**Critical path / gates (2026-07-11):** the detector golden and the signed pre-registration gate the
+launch; the consolidation confrontation gates only its own integration (the code is otherwise at its
+validated 2026-07-05 state). The power discipline stands — the end-point A/B *is* the answer to the MDE
+wall; do not re-grow a slope readout mid-run.
 
-**Bottom line:** don't spend on games yet. Spend ~4–5 days on Phase 0 (power calc, replay readout, lineage
-field, consolidation + credit-scale fixes) + the two load-bearing goldens, then run town-only and
-wolf-only for ~$30–60 with instruments that can actually detect what you're paying to see.
+**Bottom line (2026-07-11):** ~1–2 gated days — two user derivations, one AI-prelabeled load-bearing
+golden, the v1 credit build, two cheap screens — then run town-only and wolf-only on instruments that
+are deterministic or explicitly bounded, with the tagger watching as a diagnostic.
 
 ---
 
-## Open questions / gaps (freshness: 2026-07-04)
+## Open questions / gaps (freshness: 2026-07-11)
 
-- **MDE is a prior, not a measurement** until 0.1 runs. The "±0.9 / need hundreds of games" figures are
-  read off §12b + the static A/B; the power script produces the authoritative numbers.
-- **Fuzzy v2 lineage is directional only** — synthesis mints keys with no parent pointer, so the offline v2
-  pass is a curiosity; exact lineage requires the `distilled_from` field shipped before the next run.
 - **Replay ≠ live compounding.** Rung 2b (frozen boards) and rung 3 (in-situ) are genuinely different; the
   G3c replay-flat precedent means a flat replay curve is a real null but a rising one still doesn't prove
   rung 3.
+- **The detector golden's bound is unknown until labeled.** If it comes back poor, tell credit has no
+  trustworthy floor and the run slips (the §R honesty clause). Same clause covers the consolidation
+  confrontation surfacing a validity-gating change.
+- **Tell-corpus saturation is a premise, not a fact.** Detection scores the full corpus each game;
+  growth rate is a pre-registered first-run readout, with archive-below-floor as the relief valve
+  (design record §8).
+- **The reads_first "~40% cold filler" figure is from the session record** — re-confirm against the
+  replay-probe outputs before it becomes load-bearing; the read-ordering re-arbitration rides the first
+  smoke (it degrades the first-link *diagnostic*, not v1 credit).
 - **Soft-label instruments (silence rule, framing) yield bounds, not certifications** — flash-lite's
   silent-update behavior means disagreement isn't cleanly "model wrong."
-- **§0.5 Finding-1 fix needs a user decision:** tag the OFF arm (~2× tagger spend; clean same-instrument
-  baseline for discussion + night) **or** demote discussion credit to synthesis-input-only (never
-  prune/protect on a level-scaled channel). The wolf arm (1.2) is gated until one is picked and shipped.
 - **The audit's minor notes are logged, not fixed** (measure ON-arm selection asymmetry; wolf-blend
-  self-inclusion/tie noise; tagger partial-coverage override) — quantify only if a Phase-1 result leans on
-  them; the `--on-all` standing check is the one cheap habit to adopt now.
+  self-inclusion/tie noise) — quantify only if a Phase-1 result leans on them; the `--on-all` standing
+  check is the one cheap habit to adopt now. (The tagger partial-coverage override note retired with the
+  override itself.)
+- *Resolved since 2026-07-04:* the MDE prior (§0.1 executed — noise ≈0.3/game, slope retired); fuzzy v2
+  lineage (`distilled_from` shipped); the §0.5 Finding-1 decision (Option A implemented, then largely
+  mooted by the tagger demotion — see the §0.5 stamp).

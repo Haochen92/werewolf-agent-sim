@@ -21,7 +21,7 @@ situations). Fork #2 (dimensions-first then freeze). Narrative: `decision_replay
    own reasoning; the objective function ("a good target maximizes info-gain") is **payload** (action /
    strategy-point), retrieved-and-gated-in, NEVER a matching field. The drivers/objectives we derived
    per cell choose *which fields and what state to surface* (and what to lead with) — they never become
-   field text. (Guards the [[project-prompt-boundary]] leak mode + keeps the embedding state-only.)
+   field text. (Guards against how-to/prescription leaking into memory fields + keeps the embedding state-only.)
 
 ---
 

@@ -20,6 +20,16 @@ design is [experiment_log.md](experiment_log.md); how the output is *measured* l
 notes for [retrieval](../../evaluation/llm_judge/agent_decision.md) and
 [extraction](../../evaluation/llm_judge/extraction.md).
 
+**Why they exist.** The stored situation and the live query are written by two processes that never meet —
+offline extraction reading a finished game, and a live agent mid-decision who sees only its own role. They
+match in embedding space only if both describe the board in the same vocabulary and structure; making that
+true is the **alignment problem** the dimensions solve. It is also why the two rules above are structural,
+not stylistic. *Epistemic voice* — a situation written **omnisciently** (naming hidden roles) could never be
+matched by a query from an agent who cannot see them, so both sides speak in the agent's own voice. *State,
+never prescription* — advice in a matching field would make every query match the same generic counsel
+regardless of board (collapsing the discrimination retrieval exists for) and would leak "how to act" into
+the query prompt, so a dimension carries state only and the advice rides in the payload.
+
 ## What they are (current schema)
 
 The schema is a **mixin DAG → 11 cells**, one per `(role × {day, night})`
@@ -37,8 +47,8 @@ grouped by what they describe — with how each is represented and how far it ca
 | `information_landscape` | what is known / claimed / unknown on the board | embed | — semantic¹ |
 | **B · Criticality** — *how much is at stake* (the `game_phase` rescope → proxy) | | | |
 | `players_alive` | living-player count | computed → gate | ✅ deterministic (LLM fill was 0.99 bucket) |
-| `distance_to_parity` | town deaths from a wolf-parity win (others − wolves) | gate-excluded² | ❌ LLM-filled — 0.05–0.09 exact, MAE ≈2 |
-| `is_swing` | one swing from decided (distance ≤ 1) | gate key | ❌ LLM-filled — wolf 0.606, worse than always-False (0.827) |
+| `distance_to_parity` | eliminations until the leading evil faction can win (min of wolf/SK clocks; truth was wolf-only pre-2026-07-11) | gate-excluded² | ✅ computed 2026-07-11 — public census (the LLM fill it replaces was 0.05–0.09 exact, MAE ≈2) |
+| `is_swing` | the game can end within one elimination, in any direction (min of all three faction clocks ≤ 1; truth was wolf-only pre-2026-07-11) | gate key | ✅ computed 2026-07-11 — public census (the LLM fill it replaces was wolf 0.606, worse than always-False 0.827) |
 | `criticality_stakes` | the stakes phrased as an implication | embed | — semantic; derived from the numbers³ |
 | **C · Consensus** — *where the room stands* (day cells) | | | |
 | `consensus_text` | the room's alignment / vote texture | embed | — semantic¹ |
@@ -58,12 +68,14 @@ grouped by what they describe — with how each is represented and how far it ca
 | `ally_revealed` | a wolf partner is dead / outed (vote calculus flips) | computed → gate | ✅ deterministic (was 0.975 as LLM fill) |
 
 **Legend.** *Representation* — **embed**: folds into the retrieval string (recall); **gate key / rerank
-enum**: a numeric/enum *excluded* from the embed, read by the dimension gate + reranker; **computed**:
-overwritten deterministically from game state at query time. *Reliability* — ✅ deterministic/sound · ❌
+enum**: a numeric/enum *excluded* from the embed, read by the dimension gate + reranker (a second-stage
+scorer that reads the query and a candidate *together*, so it can weigh an exact number the embedding
+blurred); **computed**: overwritten deterministically from game state at query time. *Reliability* — ✅ deterministic/sound · ❌
 LLM-filled & unreliable · ⚠️ no deterministic truth (unvalidated) · — semantic free-text.
 
-¹ *semantic* = no deterministic ground truth; quality is graded by the NDCG retrieval golden and the
-(deferred) sampled review, **not** the $0 accuracy audit — the audit can only touch the numeric/bool dims.
+¹ *semantic* = no deterministic ground truth; quality is graded by the NDCG retrieval golden (NDCG = a
+graded-relevance ranking score, higher = the right memories ranked higher) and the (deferred) sampled
+review, **not** the $0 accuracy audit — the audit can only touch the numeric/bool dims.
 ² `distance_to_parity` is deliberately excluded from the live gate (it screened flat).
 ³ derived from the LLM's own numbers and *not* re-derived after the numeric override, so it can lag a
 corrected `players_alive` (gap 4).
@@ -71,8 +83,9 @@ corrected `players_alive` (gap 4).
 isn't sign-blind) while the exact enum goes to the reranker.
 
 **Why some dims are prose and some enums.** Not per-field taste — one rule: a low-entropy *sign or regime*
-(which a bi-encoder can't recover from a pooled vector) gets an **enum** for the reranker, while its
-**prose** sibling carries the same fact as recall narration. Every prose field that has such a signal is
+(which a **bi-encoder** — the embedding model, which commits one pooled vector per text before it sees the
+query — can't recover from that pooled vector) gets an **enum** for the reranker, while its **prose** sibling
+carries the same fact as recall narration. Every prose field that has such a signal is
 paired with an exact sibling:
 
 | prose (embed · recall) | exact sibling (rerank / gate) |
@@ -137,10 +150,19 @@ content the embedding separates on its own, and its directional sign is already 
   (`dimension_gating_config.get(role, False)`) — a screened knob, not a shipped default.
 - **Criticality proxy.** The deterministic truth `query_criticality(surviving_players, roles)`
   ([`decision_scoring.py`:115](../../../evaluation/src/loop/decision_scoring.py#L115)) computes the full
-  triple offline (town-lensed wolf parity: `distance_to_parity = others − wolves`, `is_swing = distance ≤ 1`).
-  This is the audit's ground truth and the diagnosis sampler's leverage anchor — **it is never shown to a
-  live agent**, which is precisely why the live `is_swing`/`distance_to_parity` cannot be computed and stay
-  LLM-filled.
+  triple offline from the game's three terminal clocks (mirroring `determine_winner`): wolf clock
+  `(town+SK)−wolves`, SK clock `(town+wolves)−1`, town clock `wolves+SK`. `distance_to_parity` = min of
+  the two evil clocks; `is_swing` = min of all three ≤ 1 (**redefined 2026-07-11** — both were wolf-only
+  before, which graded correct SK-endgame fills as wrong and rated deceiver do-or-die boards near a town
+  win as filler; ruling in [`../../credit/report.md`](../../credit/report.md) §6). This is the audit's
+  ground truth and the diagnosis sampler's leverage anchor. The function itself reads the true role map,
+  but its *values* are public-derivable — the cast is fixed and every death path announces the dead
+  player's role, so the census (cast minus revealed dead) yields the same faction counts
+  (`Agents/board_clocks.py`, the shared arithmetic home). That falsified this doc's long-standing "needs
+  hidden roles → must stay LLM-filled" premise (owner catch, 2026-07-11): both dims are now **computed at
+  query time** from the census, with the LLM fill kept only as the legacy fallback. Audit numbers dated
+  before 2026-07-11 were computed against the wolf-only truth, grading fills that were then still
+  LLM-estimated.
 
 ## Config / defaults
 
@@ -148,8 +170,8 @@ content the embedding separates on its own, and its directional sign is already 
 |---|---|---|
 | live query schema | v6 per-cell (embed-aligned with extraction); v5 per-role fallback | `cell_situation_schema_for` (memory.py:635) |
 | queries per turn | 1–2 structured situations | `_summary_container` (situation_agent.py:54) |
-| agent-knowable dims | computed from game state (`players_alive`, `bullets_left`, `ally_revealed`) | `_override_deterministic_dims` (situation_agent.py:103) |
-| `is_swing` / `distance_to_parity` | LLM-filled (need hidden roles) | — |
+| agent-knowable dims | computed from game state (`players_alive`, `bullets_left`, `ally_revealed`; + `distance_to_parity`, `is_swing` from the public census since 2026-07-11) | `_override_deterministic_dims` (situation_agent.py) · `Agents/board_clocks.py` |
+| `is_swing` / `distance_to_parity` | computed (census = fixed public cast − role-revealing deaths); LLM fill = legacy-payload fallback only | board_clocks.py · situation_agent.py |
 | dimension gating | soft tilt (WEIGHT 0.3), 4 keys, **default-OFF per role** | dimension_gating.py:58 · retrieval/plan_gating.py:121 |
 | current store | `memory_stores/v6_1` (obs-only under v7) | — |
 | query model | flash-lite, no thinking | accessors.py |

@@ -86,9 +86,9 @@ discipline as everywhere else in this project.
 
 Committed after inspecting record *structure* (field names, `firing_reason` tier values,
 `addressed_targets` shape, timeline ordering) but **before computing any audit outcome**. Runner:
-[`evaluation/src/experiments/scheduler_access_audit.py`](../../../evaluation/src/experiments/scheduler_access_audit.py)
+[`evaluation/src/audits/scheduler_access_audit.py`](../../../evaluation/src/audits/scheduler_access_audit.py)
 (subcommands `floor-access` / `gate-silencing` / `reveal-withhold` / `all`). Validation set =
-the same 50 v5 games as [`proxy_win_monotonicity.py`](../proxy_win_monotonicity.py) (30 memory-off
+the same 50 v5 games as [`proxy_win_monotonicity.py`](../../../evaluation/src/instrument_validation/proxies/proxy_win_monotonicity.py) (30 memory-off
 `v5_seed_b1..4` + `v5_baseline_pad`; 20 memory-on `v5_1_b1..4`) — chosen for consistency with the
 proxy-trust work these audits contextualize. No loop-era runs added: they share the epoch's schema
 gaps (below) and would not lift the blocked measures.
@@ -278,7 +278,7 @@ things on different sets; neither is a bug.**
 
 | figure (as cited) | set | role scope | grain | aggregation | value |
 |---|---|---|---|---|---|
-| "~0.60 / 40% never lynched" (`../town_metric_refinement.md`) | **v6ab (180)** | wolf-only | per-find-night | **per-game mean** | **0.601** |
+| "~0.60 / 40% never lynched" (`../design/town_metric_refinement.md`) | **v6ab (180)** | wolf-only | per-find-night | **per-game mean** | **0.601** |
 | "77.8%" (§3C above) | **v5 (50)** | **threat = wolf+SK** | dedup-by-target | pooled | 0.778 |
 | wolf-only sub-rate (§3C above) | v5 (50) | wolf-only | dedup-by-target | pooled | 0.703 |
 
@@ -299,11 +299,11 @@ things on different sets; neither is a bug.**
   bottleneck and must be cited as v6ab — on this workstream's own **v5** set the wolf-conversion rate
   is **~70%** (~30% unlynched, dedup 70.3% / per-find 71.1%). The audit's **77.8%** is a **wolf+SK**
   rate inflated by the SK's 94%; the comparable wolf-only v5 figure is **70.3%**.
-  `../town_metric_refinement.md` is left **unchanged** (its 0.60 is right for its set — frozen
+  `../design/town_metric_refinement.md` is left **unchanged** (its 0.60 is right for its set — frozen
   evidence); only the §1 citation here, which quoted the v6ab "40%" while running on v5, is corrected
   in place.
 
-*Runner: [`evaluation/src/experiments/scheduler_access_audit.py`](../../../evaluation/src/experiments/scheduler_access_audit.py)
+*Runner: [`evaluation/src/audits/scheduler_access_audit.py`](../../../evaluation/src/audits/scheduler_access_audit.py)
 (`floor-access` / `gate-silencing` / `reveal-withhold` / `all`); logic tests
 `tests/test_scheduler_access_audit.py` (11, synthetic fixtures, no LLM). Artifacts in
 [`data/`](data/). Ran 2026-07-02 at repo `4b1449e` (uncommitted tree). Zero LLM calls.*
@@ -318,7 +318,7 @@ opportunity)? It is the diagnostic that prices the held change **E** (whiff disc
 conversion rate caused by *visibility* supports E; one caused by *behavior* does not.
 
 Runner:
-[`evaluation/src/experiments/whiff_conversion_audit.py`](../../../evaluation/src/experiments/whiff_conversion_audit.py)
+[`evaluation/src/audits/whiff_conversion_audit.py`](../../../evaluation/src/audits/whiff_conversion_audit.py)
 (sibling module — reuses `scheduler_access_audit`'s record-loading + timeline machinery by import;
 kept separate because it runs on BOTH validation sets, not the 50-game access set, and its concern
 — attacker conversion — is orthogonal to floor access). Logic tests
@@ -462,7 +462,7 @@ to the wolf (mirroring the vigilante's note) — but priced honestly at the pre-
 and its effect measured on fresh games (behavior change, not replayable).
 
 *Runner:
-[`evaluation/src/experiments/whiff_conversion_audit.py`](../../../evaluation/src/experiments/whiff_conversion_audit.py)
+[`evaluation/src/audits/whiff_conversion_audit.py`](../../../evaluation/src/audits/whiff_conversion_audit.py)
 (`run`); logic tests `tests/test_whiff_conversion_audit.py` (10, synthetic fixtures, no LLM).
 Artifact [`data/whiff_conversion.json`](data/whiff_conversion.json). Ran 2026-07-02 at repo `4b1449e`
 (uncommitted tree). Zero LLM calls.*
@@ -527,7 +527,7 @@ Artifact [`data/whiff_conversion.json`](data/whiff_conversion.json). Ran 2026-07
   never-mentions rate, not an exact count.
 
 *Opened 2026-07-02 at repo `4b1449e` (uncommitted working tree). Diagnostics A–C ran the same day
-(runner `evaluation/src/experiments/scheduler_access_audit.py`, 50-game v5 validation set, zero LLM
+(runner `evaluation/src/audits/scheduler_access_audit.py`, 50-game v5 validation set, zero LLM
 calls); results + gate assessment in §3. The whiff-conversion beat (③.E, runner
-`evaluation/src/experiments/whiff_conversion_audit.py`, both sets, zero LLM) ran the same day — its
+`evaluation/src/audits/whiff_conversion_audit.py`, both sets, zero LLM) ran the same day — its
 verdict: the binding layer is VISIBILITY, which SUPPORTS the held change E (recommendation only).*
