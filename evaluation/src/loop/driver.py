@@ -35,8 +35,9 @@ from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
 from evaluation.src.loop.credit import credit_apply, credit_distribution
 from evaluation.src.loop.invariants import (
-    arm_fingerprint, assert_arm_declared, assert_arm_factions, assert_base_rates, assert_credit_engaged,
-    assert_discussion_credit_engaged, assert_fingerprint_consistent, assert_score, expand_window)
+    arm_fingerprint, assert_arm_declared, assert_arm_factions, assert_base_rates, assert_baseline_coherence,
+    assert_credit_engaged, assert_discussion_credit_engaged, assert_fingerprint_consistent, assert_score,
+    expand_window)
 from evaluation.src.loop.measure import generation_score
 from evaluation.src.loop.merge import merge_new_obs
 
@@ -57,25 +58,48 @@ def _init_store(run_dir: Path, base_store: str | None) -> Path:
     return store
 
 
-def _stamp_obs_generations(store: Path, gen: int, sidecar: Path) -> dict:
-    """First-seen generation per obs record `key`, persisted in a run sidecar. The loop clock is
-    GENERATION, not wall-clock: each re-extraction stamps a fresh created_at, so timestamps can't be the
-    decay key — but the record key is stable across dedup merges (the survivor keeps its key), so a
-    reinforced obs keeps its original age while its observation_count grows. New obs this gen get `gen`;
-    existing keep their stamp. Returns the full key -> first-seen-gen map for observation decay."""
-    gen_map = json.loads(sidecar.read_text()) if sidecar.exists() else {}
+def _stamp_obs_generations(store: Path, gen: int, sidecar: Path) -> tuple[dict, dict]:
+    """First-seen AND last-reinforced generation per obs record `key`, persisted in a run sidecar. The loop
+    clock is GENERATION, not wall-clock: each re-extraction stamps a fresh created_at, so timestamps can't
+    be the decay key — but the record key is stable across dedup merges (the survivor keeps its key), so a
+    reinforced obs keeps its original first-seen age while its observation_count grows AND its
+    last-reinforced clock advances. A reinforcement is detected as a RISE in observation_count for a key we
+    already track. Returns (first_seen_map, reinforced_map). The first return value is the flat first-seen
+    map synthesis/decay already consume; the reinforced map feeds the count-scaled obs decay.
+
+    Sidecar shape: {"first_seen": {key: gen}, "reinforced": {key: gen}, "counts": {key: count}}. Legacy
+    flat {key: gen} sidecars (first_seen only) load as first_seen with reinforced initialized to it and
+    counts seeded from THIS pass — that seeding is not itself counted as a reinforcement (no prior count
+    to compare against, so we can't know a rise happened)."""
+    raw = json.loads(sidecar.read_text()) if sidecar.exists() else {}
+    if raw and all(isinstance(v, int) for v in raw.values()):   # legacy flat {key: first_seen} sidecar
+        first_seen, reinforced, counts = dict(raw), dict(raw), {}
+    else:
+        first_seen = raw.get("first_seen", {})
+        reinforced = raw.get("reinforced", {})
+        counts = raw.get("counts", {})
     obs = json.loads((store / "observations.json").read_text())
     for recs in obs.get("namespaces", {}).values():
         for r in recs:
-            gen_map.setdefault(r.get("key"), gen)
-    sidecar.write_text(json.dumps(gen_map, indent=2))
-    return gen_map
+            key = r.get("key")
+            count = r["value"].get("observation_count", 1)
+            if key not in first_seen:
+                first_seen[key] = reinforced[key] = gen
+                counts[key] = count
+            elif key not in counts:          # legacy/first-touch: seed the count, NOT a reinforcement
+                counts[key] = count
+            elif count > counts[key]:        # a genuine rise in count = reinforced this gen
+                reinforced[key] = gen
+                counts[key] = count
+    sidecar.write_text(json.dumps(
+        {"first_seen": first_seen, "reinforced": reinforced, "counts": counts}, indent=2))
+    return first_seen, reinforced
 
 
 def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
                   seed: Path | None = None, dump: Path | None = None,
                   game_id: str | None = None, extra: tuple = (),
-                  experiment: str | None = None) -> None:
+                  experiment: str | None = None, env_extra: dict | None = None) -> None:
     """One game via run_batch (--runs-per-config 1). Separate seed/dump dirs let parallel games share a
     read-only snapshot seed while each dumps to its own store (no shared-store write race). game_id pins
     the role draw + scheduler seed (run_batch --game-ids-file) so the ON and OFF arms run the SAME board —
@@ -96,13 +120,13 @@ def _run_one_game(out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
         gids.write_text(json.dumps([game_id]))
         cmd += ["--game-ids-file", str(gids)]
     cmd += list(extra)
-    subprocess.run(cmd, cwd=REPO, env={**os.environ, **cfg.env()}, check=True)
+    subprocess.run(cmd, cwd=REPO, env={**os.environ, **cfg.env(), **(env_extra or {})}, check=True)
 
 
 def _game_tasks(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, configs: str,
                 seed: Path | None = None, dump_each: bool = False,
                 game_id_base: str | None = None, extra: tuple = (),
-                experiment: str | None = None) -> list:
+                experiment: str | None = None, env_extra: dict | None = None) -> list:
     """Build (but don't run) one arm's per-game thunks. Each thunk plays game-k and returns
     (out_k, dump_k). Returned as a list so a caller can pool BOTH arms' thunks together. game_id_base
     (the SAME value for ON and OFF in a generation) pins each game-k's board so the arms play matched
@@ -118,7 +142,7 @@ def _game_tasks(run_dir: Path, out_jsonl: Path, prefix: str, cfg: LoopConfig, co
                 dump_k.mkdir(parents=True, exist_ok=True)
             gid = f"{game_id_base}_g{k}" if game_id_base else None
             _run_one_game(out_k, f"{prefix}_g{k}", cfg, configs, seed=seed, dump=dump_k, game_id=gid,
-                          extra=extra, experiment=experiment)
+                          extra=extra, experiment=experiment, env_extra=env_extra)
             return out_k, dump_k
         return _one
 
@@ -141,7 +165,7 @@ def _concat_games(out_jsonl: Path, results: list) -> list:
 
 def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: LoopConfig, configs: str,
                        snapshot: Path, pair_base: str, off_baseline: bool,
-                       experiment: str | None = None) -> list:
+                       experiment: str | None = None, on_env: dict | None = None) -> list:
     """Run the ON and OFF arms' games CONCURRENTLY in ONE capped pool (total concurrency =
     game_concurrency), so the OFF baseline overlaps the ON arm instead of running after it (~halves
     per-gen wall-clock at a bounded cap). Independent by construction: OFF (all_disabled, no seed/dump)
@@ -150,7 +174,7 @@ def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: Loop
     game_id across arms regardless of run order."""
     on_tasks = _game_tasks(run_dir, on_jsonl, f"loop_{run_dir.name}_{on_jsonl.stem}",
                            cfg, configs, seed=snapshot, dump_each=True, game_id_base=pair_base,
-                           experiment=experiment)
+                           experiment=experiment, env_extra=on_env)
     off_tasks = _game_tasks(run_dir, off_jsonl, f"loop_{run_dir.name}_{off_jsonl.stem}",
                             cfg, "all_disabled", seed=None, dump_each=False, game_id_base=pair_base,
                             extra=("--no-memory-seed", "--no-memory-dump"),
@@ -162,6 +186,49 @@ def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: Loop
     if off_baseline:
         _concat_games(off_jsonl, results[n_on:])
     return dump_dirs
+
+
+def _tell_tick(run_dir: Path, gen: int, on_jsonl: Path) -> dict:
+    """One generation's tell pipeline (v1, 2026-07-13): mine + role-blind k=2 detect the ON arm's games
+    against the CURRENT frozen checklist, fold (wording dedup into canon, probation/null verdicts,
+    publish checklist v_{k+1}), then rebuild the injected book from ALL detected instances to date.
+    games_per_generation=10 makes the fold cadence the ledger spec's N=10. Roles accumulate in a sidecar
+    because lift denominators span every generation's games. Lazy imports: the tell modules pull LLM
+    deps only when the pipeline is ON."""
+    from evaluation.src.loop.tell_credit import build_book_file, cast_prior_base, lift_table
+    from evaluation.src.loop.tell_fold import fold
+    from evaluation.src.loop.tells import detect_games, load_games, mine_games
+
+    store_dir = run_dir / "tell_store"
+    state = json.loads((store_dir / "state.json").read_text())
+    checklist = json.loads((store_dir / f"checklist_v{state['fold']}.json").read_text())
+    games = load_games(str(on_jsonl))
+
+    mined_path = store_dir / f"mined_gen{gen}.jsonl"
+    n_mined = mine_games(games, mined_path)
+    detected, scanned = detect_games(games, checklist)
+
+    roles_path = store_dir / "roles_by_game.json"
+    roles_by_game = json.loads(roles_path.read_text()) if roles_path.exists() else {}
+    roles_by_game.update({g["game_id"]: g["roles"] for g in games})
+    roles_path.write_text(json.dumps(roles_by_game))
+
+    mined_rows = [json.loads(l) for l in open(mined_path) if l.strip()]
+    rep = fold(store_dir, mined_rows, detected, scanned, roles_by_game)
+    # the tell family's baseline coherence: the cast prior is the base, registered self-keyed
+    assert_baseline_coherence(rep["credited_channels"],
+                              {k: tuple(v) for k, v in rep["base_rates"].items()})
+
+    all_detected = [json.loads(l) for l in open(store_dir / "instances.jsonl") if l.strip()]
+    all_detected = [r for r in all_detected if r.get("source_kind") == "DETECTED"]
+    canon = json.loads((store_dir / "canon.json").read_text())
+    text_of = {c["tell_id"]: c["text"] for c in canon}
+    n_book = build_book_file(lift_table(all_detected, roles_by_game), text_of,
+                             store_dir / "book.json")
+    return {**{k: rep[k] for k in ("fold", "new_wordings", "new_canonicals",
+                                   "archived_singletons", "archived_null_lift", "checklist")},
+            "mined": n_mined, "detected": len(detected), "book": n_book,
+            "cast_prior": cast_prior_base(roles_by_game)["tell/vote"][0]}
 
 
 def _write_loop_config(run_dir: Path, experiment: str, cfg: LoopConfig, base_store: str | None,
@@ -216,6 +283,16 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         prev_obs_counts = {}
     sp_path = store / "strategy_points.json"
 
+    tell_store = run_dir / "tell_store"
+    if cfg.tells and not (tell_store / "canon.json").exists():
+        from evaluation.src.loop.tell_fold import init_store
+        if not cfg.tell_seed_checklist:
+            raise AssertionError("tells=True on a cold tell store needs --tell-seed-checklist "
+                                 "(the frozen seed canon)")
+        init_store(tell_store, json.loads(Path(cfg.tell_seed_checklist).read_text()))
+        if cfg.tell_seed_book:
+            shutil.copy2(cfg.tell_seed_book, tell_store / "book.json")
+
     for gen in range(start_gen, cfg.generations + 1):
         on_jsonl = run_dir / f"gen{gen}_on.jsonl"
         off_jsonl = run_dir / f"gen{gen}_off.jsonl"
@@ -233,8 +310,11 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             shutil.rmtree(snapshot)
         shutil.copytree(store, snapshot)
         pair_base = f"pair_{run_dir.name}_gen{gen}"   # SAME boards for ON and OFF this gen (paired A/B)
+        # the ON arm (and ONLY the ON arm) reads the current tell book, rebuilt at each fold below
+        on_env = ({"WW_TELL_BOOK": str(tell_store / "book.json")}
+                  if cfg.tells and (tell_store / "book.json").exists() else None)
         dump_dirs = _run_arms_parallel(run_dir, on_jsonl, off_jsonl, cfg, configs, snapshot, pair_base,
-                                       cfg.off_baseline, experiment)
+                                       cfg.off_baseline, experiment, on_env=on_env)
         # ⭐ARM GUARD: verify the ON arm enabled memory for exactly the declared factions BEFORE spending
         # the rest of the budget — crashes gen 1 on the v2 trap (configs=all_enabled vs intended town_only).
         # Always surfaced + recorded (even with no --expect-factions) so the arm is never invisible again.
@@ -274,22 +354,35 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
         cstats, cdist = {}, {}
         if cfg.credit:
             base_rates = None
+            off_window = None
             if cfg.off_baseline:
-                base_rates = compute_base_rates(" ".join(expand_window(run_dir, gens, "off")))
+                off_window = " ".join(expand_window(run_dir, gens, "off"))
+                base_rates = compute_base_rates(off_window)
                 assert_base_rates(base_rates, off_ran=True)   # empty base_rates => silent halo
+            # OPTION A (decision 2026-07-05): pass the OFF window so credit_apply can score the SAME
+            # instrument on the OFF arm (endpoint floor + concealment heat) — the same-instrument base
+            # that makes discussion credit a LIFT, not a level. Free since the tagger mode's retirement
+            # (2026-07-13): every discussion instrument is deterministic.
             cstats = credit_apply(sp_path, window, base_rates=base_rates,
-                                  discussion=cfg.discussion_credit, discussion_mode=cfg.discussion_mode,
-                                  tags_dir=str(run_dir / "tags"))  # persist tags per game_id (no re-tag)
+                                  discussion=cfg.discussion_credit, off_window=off_window)
             follows = assert_credit_engaged(win_on, cstats.get("ledger_keys", 0))  # dead-credit guard
             disc_follows = assert_discussion_credit_engaged(  # discussion analog (build_ledger is blind to it)
                 win_on, cstats.get("disc_credited", 0), enabled=cfg.discussion_credit)
+            if cfg.off_baseline:  # ⭐baseline-coherence: every credited channel needs a same-function OFF base
+                written = json.loads((sp_path.parent / "base_rates.json").read_text())
+                assert_baseline_coherence(cstats.get("credited_channels", {}), written)
             cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)  # did credit ENGAGE?
             print(f"  credit: {cstats} window_follows={follows} disc_follows={disc_follows}\n"
                   f"  credit_dist: {cdist}", flush=True)
+        tstats = {}
+        if cfg.tells:
+            tstats = _tell_tick(run_dir, gen, on_jsonl)
+            print(f"  tells: {tstats}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:
-            obs_gen_map = _stamp_obs_generations(store, gen, obs_sidecar)  # new obs this gen -> `gen`
-            cons = consolidate(store, cfg, prev_obs_counts, obs_gen_map=obs_gen_map, current_gen=gen)
+            obs_gen_map, reinforced_map = _stamp_obs_generations(store, gen, obs_sidecar)  # new -> `gen`
+            cons = consolidate(store, cfg, prev_obs_counts, obs_gen_map=obs_gen_map, current_gen=gen,
+                               reinforced_map=reinforced_map)
             prev_obs_counts = cons.get("obs_counts", prev_obs_counts)
             print(f"  consolidate: prune_evict={cons.get('prune_evict')} "
                   f"obs_evict={cons.get('obs_evict')} synth={cons.get('synth')}", flush=True)
@@ -298,7 +391,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             str(run_dir / f"gen{gen}_off.jsonl") if cfg.off_baseline else None)
         assert_score(score, label=f"gen{gen}")                         # 0 decisions => silent empty point
         print(f"  score: { {k: v for k, v in score.items() if not k.startswith('n_')} }", flush=True)
-        history.append({"generation": gen, "score": score, "credit": cstats,
+        history.append({"generation": gen, "score": score, "credit": cstats, "tells": tstats,
                         "credit_dist": cdist, "consolidate": cons, "arm_factions": arm_factions})
         # write EVERY generation, not just at the end: the per-gen credit_dist/consolidate stats are
         # computed on the store-as-it-was-that-gen, which the next gen OVERWRITES — so a mid-run crash
@@ -352,7 +445,9 @@ def main() -> int:
     ap.add_argument("--evict-min-retrieved", type=int, default=LoopConfig.evict_min_retrieved)
     ap.add_argument("--obs-evict-min-age", type=int, default=LoopConfig.obs_evict_min_age)
     ap.add_argument("--protect-min-follow", type=int, default=LoopConfig.protect_min_follow)
-    ap.add_argument("--discussion-mode", default=LoopConfig.discussion_mode, choices=["tagger", "floor"])
+    ap.add_argument("--tells", action="store_true", help="run the tell pipeline (mine + detect + fold + book) per generation")
+    ap.add_argument("--tell-seed-checklist", default="", help="frozen seed canon JSON (required with --tells on a cold store)")
+    ap.add_argument("--tell-seed-book", default="", help="optional gen-1 book JSON (from the held-out lift table)")
     ap.add_argument("--expect-factions", default=None,
                     help="DECLARE which factions the ON arm should give memory ('town_only', 'all', or a "
                          "comma list); crashes gen 1 if --configs enables a different set (the v2 trap guard)")
@@ -364,7 +459,9 @@ def main() -> int:
                      window_generations=args.window_generations, synth_every_k_gens=args.synth_every_k,
                      game_concurrency=args.game_concurrency, model=args.model, synthesize=not args.no_synth,
                      prune_min_follow=args.prune_min_follow, synth_track_min_follow=args.synth_track_min_follow,
-                     synth_min_new_obs=args.synth_min_new_obs, discussion_mode=args.discussion_mode,
+                     synth_min_new_obs=args.synth_min_new_obs,
+                     tells=args.tells, tell_seed_checklist=args.tell_seed_checklist,
+                     tell_seed_book=args.tell_seed_book,
                      evict_min_retrieved=args.evict_min_retrieved, obs_evict_min_age=args.obs_evict_min_age,
                      protect_min_follow=args.protect_min_follow, expect_factions=args.expect_factions,
                      unchecked_arm=args.unchecked_arm)

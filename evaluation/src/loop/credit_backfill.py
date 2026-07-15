@@ -12,9 +12,20 @@ to its result. This runner closes that join offline, on the already-generated du
 
 It is SP-only by design: observations are descriptive (you don't "follow" one), so they ride frequency
 × criticality, protected by the extraction anchor — not post-hoc credit (see the §1a reframe). Reward
-covers BOARD-OUTCOME decisions only this round: day-votes (all town roles) + night targets
-(investigator / vigilante / wolf / serial_killer). Healer-night needs the attack-join (night_resolutions)
-and is deferred; the reveal/confirm-only class is unscorable until the discussion tagger (build item d).
+covers BOARD-OUTCOME decisions: day-votes (all roles) + night targets (investigator / vigilante / wolf /
+serial_killer / healer — healer landed 2026-07-13 once the wolf-blend join made each game record, and
+with it the night_resolutions attack-join, available to the pass; the rule mirrors the validated
+★healer_town_save_rate construct in Agents/compute_metrics.py, +0.40 at N=180).
+
+Two v1 rules ride the night path (evidence/credit/report.md §3, rulings 2026-07-13):
+- READ-PARTITION: a negative outcome reached through a stated-and-wrong high-confidence threat-read on
+  the target is EXCLUDED from the SP ledger ("read_excluded") — the belief failed, not the procedure;
+  the wrong read is already priced by the read ledger (read_ledger.py scores every read at reveal, so
+  exclusion here needs no extra penalty write). No stated read / low confidence / 'unclear' => credit
+  normally: exclusion requires evidence of a wrong belief, not the absence of one. Legacy dumps
+  (pre-2026-07-09) carry no reads field, so the partition no-ops there by construction.
+- The reveal/confirm-only class stays unscorable by outcome; day discussion is credited by the
+  vote-endpoint floor + move-grain refinement in credit.py.
 
 Compute is decoupled from the store-write: we emit the ledger + a validation read and STOP — no store
 is mutated until the signal is shown to separate. Applying the ledger to a v6_1 copy is a later step.
@@ -35,7 +46,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from evaluation.src.loop.decision_scoring import score_night_target, score_vote  # noqa: E402
+from evaluation.src.loop.decision_scoring import (  # noqa: E402
+    THREAT_ROLES, score_night_target, score_vote,
+)
 
 DEFAULT_DUMPS = "batch_results/*v6ab*.jsonl"
 DEFAULT_STORE = "memory_stores/v6_1"
@@ -51,7 +64,9 @@ def _expand_dumps(dumps_glob: str) -> list[str]:
 
 # Per-channel mapping from a deterministic outcome to a credit verdict. None = decision not creditable
 # this round (skipped, counted separately). Each returns "positive" | "neutral" | "negative".
-NIGHT_CREDIT_ROLES = frozenset({"investigator", "vigilante", "wolf", "serial_killer"})
+# healer joined 2026-07-13 (the attack-join rides the same game record the wolf blend already loads);
+# its credit degrades to None when a caller has no night_resolutions to join against.
+NIGHT_CREDIT_ROLES = frozenset({"investigator", "vigilante", "wolf", "serial_killer", "healer"})
 
 VERDICT_VALUE = {"positive": 1.0, "neutral": 0.0, "negative": -1.0}
 SHRINK_K = 5  # low-follow SPs pull toward 0 lift: shrunk = lift * follow/(follow+K)
@@ -89,12 +104,13 @@ def _vote_credit(role: str, votee: str | None, roles: dict, majority: str | None
     return "positive" if o.hit_threat else "negative"  # town: threat = good, townie = mislynch
 
 
-def _night_credit(role: str, target: str | None, roles: dict) -> str:
+def _night_credit(role: str, target: str | None, roles: dict,
+                  night_res: dict | None = None) -> str | None:
     o = score_night_target(target, roles)
     if target in (None, "hold_fire", "abstain"):
         return "neutral"  # banked the action (vigilante hold / no-op)
     if role in ("investigator",):
-        # find-RATE is a null channel (transmission cap); credited but flagged weak in the report.
+        # find-RATE is a null channel (transmission cap); miss stays NEUTRAL (§6.2 ruling 2026-07-13).
         return "positive" if o.hit_threat else "neutral"
     if role == "vigilante":
         if o.hit_threat:
@@ -105,7 +121,48 @@ def _night_credit(role: str, target: str | None, roles: dict) -> str:
         if o.hit_power or o.hit_threat:
             return "positive"
         return "neutral"  # killed a plain townie / no-op — not the high-value kill
+    if role == "healer":
+        return _healer_credit(target, o, night_res)
     return "neutral"
+
+
+def _healer_credit(target: str, o, night_res: dict | None) -> str | None:
+    """The ★healer_town_save_rate construct, promoted verbatim from Agents/compute_metrics.py (not the
+    stricter screen-local lens in checkpoint_replay.py): a save is observable only when the heal target
+    was ATTACKED that night — by ANY attacker, the vigilante's mistake included — and survived. Split by
+    who was saved: town save = the validated good-play half (+0.40 at N=180); shielding a threat = the
+    validated error half. Unattacked heal = a prediction miss, neutral like the held bullet; attacked
+    but died anyway (double attack) = right prediction overwhelmed, neutral not negative. None (skip)
+    when the caller has no night_resolutions row to join against."""
+    if night_res is None:
+        return None
+    attackers = {night_res.get("wolves_target"), night_res.get("serial_killer_target"),
+                 night_res.get("vigilante_target")}
+    attackers.discard(None)
+    if target not in attackers:
+        return "neutral"
+    if target in (night_res.get("deaths") or []):
+        return "neutral"
+    return "negative" if o.hit_threat else "positive"
+
+
+def read_partition_excluded(ec: dict, roles: dict) -> bool:
+    """The v1 read-partition trigger (uniform across night channels; evidence/credit/report.md §3): the
+    actor held a stated HIGH-confidence THREAT-read on its target and the target was actually town — the
+    outcome then belongs to the read, not the followed tactic. Fires only on a stated-and-wrong belief:
+    no read on the target, low confidence, or 'unclear' => False (credit normally). Callers apply it to
+    NEGATIVE verdicts only — it exists to rescue procedures from bad beliefs, and the other night
+    channels have no negative to rescue (their partition pass-through is a near-no-op by design)."""
+    target = (ec.get("agent_night_action") or {}).get("target")
+    if not target or target in ("hold_fire", "abstain"):
+        return False
+    if roles.get(target) in THREAT_ROLES:
+        return False  # the belief was right at the faction grain — nothing to exclude
+    return any(
+        r.get("player") == target and r.get("confidence") == "high"
+        and r.get("suspected_role") in THREAT_ROLES
+        for r in ec.get("reads") or []
+    )
 
 
 @dataclass
@@ -153,6 +210,7 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
             if not roles or not path or not os.path.exists(path):
                 continue
             blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
+            night_by_day = {nr.get("day"): nr for nr in g.get("night_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -162,15 +220,16 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
                 ec = (env.get("output") or {}).get("eval_case")
                 if not ec or ec.get("memory_enabled"):  # base rate = memory-OFF only
                     continue
-                verdict = _decision_credit(ec, roles, blend_by_day)
-                if verdict is not None:
+                verdict = _decision_credit(ec, roles, blend_by_day, night_by_day)
+                if verdict in VERDICT_VALUE:  # read_excluded drops from the base too (same instrument)
                     totals[f"{ec['player_role']}/{ec['action_phase']}"].append(VERDICT_VALUE[verdict])
     return {ch: (sum(vs) / len(vs), len(vs)) for ch, vs in totals.items() if vs}
 
 
 def _iter_cases(dumps_glob: str):
-    """Yield (game_roles, blend_by_day, eval_case) for every memory-on agent-action case with follow
-    verdicts. blend_by_day = day -> room plurality vote (the wolf blend reference)."""
+    """Yield (game_roles, blend_by_day, night_by_day, eval_case) for every memory-on agent-action case
+    with follow verdicts. blend_by_day = day -> room plurality vote (the wolf blend reference);
+    night_by_day = day -> that night's resolution row (the healer attack-join)."""
     for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
             if not line.strip():
@@ -180,6 +239,7 @@ def _iter_cases(dumps_glob: str):
             if not roles or not path or not os.path.exists(path):
                 continue
             blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
+            night_by_day = {nr.get("day"): nr for nr in g.get("night_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -188,29 +248,39 @@ def _iter_cases(dumps_glob: str):
                     continue
                 ec = (env.get("output") or {}).get("eval_case")
                 if ec and ec.get("memory_enabled") and ec.get("strategy_verdicts"):
-                    yield roles, blend_by_day, ec
+                    yield roles, blend_by_day, night_by_day, ec
 
 
-def _decision_credit(ec: dict, roles: dict, blend_by_day: dict | None = None) -> str | None:
-    """The de-lucked credit verdict for this decision's channel, or None if not creditable this round.
-    blend_by_day: day -> room plurality vote (the wolf BLEND reference); None => wolf vote falls back to
-    the old target rule (so callers without the game record degrade gracefully)."""
+def _decision_credit(ec: dict, roles: dict, blend_by_day: dict | None = None,
+                     night_by_day: dict | None = None) -> str | None:
+    """The de-lucked credit verdict for this decision's channel; None = not creditable this round;
+    "read_excluded" = the read-partition dropped it (a negative reached through a stated-and-wrong
+    threat-read — counted separately, never valued). blend_by_day: day -> room plurality vote (the wolf
+    BLEND reference); night_by_day: day -> that night's resolution row (the healer attack-join). Either
+    None => the dependent channel degrades gracefully (wolf falls back to the target rule, healer skips)."""
     phase, role = ec.get("action_phase"), ec.get("player_role")
     if phase == "day_vote" and ec.get("agent_vote"):
         majority = (blend_by_day or {}).get(ec.get("day"))
         return _vote_credit(role, ec["agent_vote"].get("votee"), roles, majority)
     if phase == "night_action" and ec.get("agent_night_action"):
         if role not in NIGHT_CREDIT_ROLES:
-            return None  # healer-night deferred (needs the night_resolutions attack-join)
-        return _night_credit(role, ec["agent_night_action"].get("target"), roles)
+            return None
+        night_res = (night_by_day or {}).get(ec.get("day"))
+        verdict = _night_credit(role, ec["agent_night_action"].get("target"), roles, night_res)
+        if verdict == "negative" and read_partition_excluded(ec, roles):
+            return "read_excluded"
+        return verdict
     return None
 
 
 def build_ledger(dumps_glob: str, base_rates: dict[str, tuple[float, int]]) -> tuple[dict[str, SPCredit], Counter]:
     ledger: dict[str, SPCredit] = defaultdict(SPCredit)
     skipped: Counter = Counter()
-    for roles, blend_by_day, ec in _iter_cases(dumps_glob):
-        verdict = _decision_credit(ec, roles, blend_by_day)
+    for roles, blend_by_day, night_by_day, ec in _iter_cases(dumps_glob):
+        verdict = _decision_credit(ec, roles, blend_by_day, night_by_day)
+        if verdict == "read_excluded":
+            skipped[f"read_excluded/{ec.get('player_role')}/{ec.get('action_phase')}"] += 1
+            continue
         if verdict is None:
             skipped[f"{ec.get('player_role')}/{ec.get('action_phase')}"] += 1
             continue

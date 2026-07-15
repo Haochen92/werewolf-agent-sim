@@ -663,6 +663,13 @@ class CellStrategyMixin(BaseModel):
         description="The prescriptive move to take in this situation. Concrete and actionable; include "
         "conditional branches inline if the situation implies different responses for different reads."
     )
+    sp_type: Literal["general", "concealment", "risk_policy"] = Field(
+        default="general",  # default (not required) so pre-2026-07-13 stored SPs re-validate on load
+        description="The move's credit class: 'concealment' if its whole point is avoiding suspicion or "
+        "not drawing accusations (judged by heat avoided, not by the day's outcome); 'risk_policy' if it "
+        "prescribes acting under uncertainty at a stated threshold (its misses are priced in, judged as "
+        "a policy over all its firings); 'general' for everything else (most moves)."
+    )
 
     @property
     def composed_situation(self) -> str:

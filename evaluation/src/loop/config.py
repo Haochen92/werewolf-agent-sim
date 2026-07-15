@@ -51,6 +51,19 @@ class LoopConfig:
     #   is depleted (below) — not "any new obs" (which re-synths nearly every cell every tick).
     synth_min_new_obs: int = 4             # re-synth a cell once it gains >= this many new obs since last
     synth_replenish_floor: int = 3         # ...OR its SP count fell below this (prune/evict depleted it)
+    synth_cell_unproven_cap: int = 12      # HARD per-cell CONTESTED-lane ceiling: don't re-synthesize a
+    #   cell already holding >= this many UNPROVEN SPs (cost guard + bloat ceiling on top of the new-obs
+    #   gate). PROVEN SPs (positive de-luck lift & follow >= protect_min_follow) occupy EARNED slots OUTSIDE
+    #   the quota, so a cell full of proven SPs still admits synthesis (exploration continues); a cell whose
+    #   CONTESTED lane is full stays blocked — more untested candidates would only dilute exploration, and
+    #   the lane drains via credit (a contested SP proves out, sours, or is evicted), not by refusing synth
+    #   forever. Anchored on the §12 bloat record: healthy cells ran ~5 SPs, bloated ones ~34/cell (run-1
+    #   grew 0→227 total) and that record was overwhelmingly UNPROVEN duplicates, so the same 12 protects
+    #   against the same runaway — ~2.4x the healthy ~5 (headroom for legitimate deepening), well under the
+    #   ~34 runaway. A DEPLETED cell (below synth_replenish_floor) is exempt so the replenish path still
+    #   refills it. The cap gates GROWTH of the contested lane, not size: it holds until prune/evict shrink
+    #   the lane (culls run every gen, synth only every k), so an over-cap cell resumes synth once its dead
+    #   weight is culled below the cap.
     synth_track_min_follow: int = 5        # min follows before an SP's realized lift enters the synthesis
     #   TRACK RECORD (the credit-aware signal). Default 5 = the noise floor; a cheap smoke lowers it so the
     #   credit-aware path FIRES at tiny N (validates wiring, not calibration — the real run keeps the default).
@@ -86,26 +99,37 @@ class LoopConfig:
     #   fault; deleting it would blame content for a retrieval artifact. False = legacy blunt evict.
 
     # OBSERVATION decay (the obs analog of prune/evict). Obs carry no credit (you don't "follow" one), so
-    # they decay by AGE x FREQUENCY: drop only obs that are BOTH old AND rarely reinforced. Keeps old-but-
-    # recurring lessons (high observation_count) and all recent obs. Recency is enforced by SELECTION (what
-    # reaches synthesis), never by asking the synthesizer to weigh a recency number.
+    # they decay by a COUNT-SCALED survival allowance clocked from the LAST reinforcement: drop an obs once
+    # current_gen - last_reinforced_gen >= obs_evict_min_age * observation_count. Nothing is immortal — a
+    # count-N obs buys N windows, but a reinforcement RESTARTS the clock, so a still-recurring lesson keeps
+    # surviving while a distilled-and-abandoned one decays. The clock is the LAST reinforcement, not the
+    # first-seen age, because an obs reinforced recently must NOT die on its original age. Recency is
+    # enforced by SELECTION (what reaches synthesis), never by asking the synthesizer to weigh a number.
+    # Trade-off: evicting a reinforced obs resets its identity — the next rewording re-enters as a count-1
+    # singleton and may re-trigger synthesis of an already-distilled lesson; store size is traded for
+    # re-litigation. Fallback if this fails to bound the store in a live run: per-cell size-restricted LRU
+    # (evict oldest-touched).
     evict_observations: bool = True
-    obs_evict_min_age: int = 4             # only evictable once first seen >= this many generations ago.
-    #   Most obs are singletons (game situations are diverse → count==1), so min_age=2 decimated the base
-    #   (~250 dropped/gen) and starved synthesis. 4 lets obs persist through most of a 10-gen run.
-    obs_evict_max_count: int = 1           # ...and reinforced at most this many times (1 = seen once)
+    obs_evict_min_age: int = 4             # per-count grace window (generations since last reinforcement)
+    #   before an obs is evictable; the allowance is min_age * observation_count. For a count-1 obs this is
+    #   the old rule exactly. Most obs are singletons (game situations are diverse → count==1), so a small
+    #   window (2) decimated the base (~250 dropped/gen) and starved synthesis; 4 lets a singleton persist
+    #   through most of a 10-gen run while reinforced obs live proportionally longer.
 
-    # (d) FREE FLOOR on: credit day_discussion SPs by the day-vote endpoint (no clean per-decision proxy
-    # otherwise → the channel would be uncredited & invisible to consolidation). The LLM tagger
-    # (framing/credibility) is the deferred PAID refinement, separate from this free floor.
+    # (d) discussion credit on: day_discussion SPs earn the day-vote endpoint tick + the move-grain
+    # refinement, and concealment-typed deceiver SPs earn the guarded concealment floor (free,
+    # deterministic — evidence/credit/report.md §3). The omniscient-tagger credit MODE was RETIRED
+    # 2026-07-13 (owner ruling): its night read-quality override is gone and its per-day verdict is a
+    # standalone diagnostic (discussion_tagger.py, post-hoc), never a credit source.
     discussion_credit: bool = True
-    # "tagger" = omniscient per-day LLM tagger (paid flash-lite: framing/credibility/role-reveal + night
-    # read-quality, A4 reasoning + role_claims-anchored); "floor" = day-vote-endpoint (free, deterministic).
-    # DEFAULT = tagger: it EARNED it — predicts beyond the floor (redundancy +0.34 vs the free floor; night
-    # de-lucks ~31% luck->skill) and the A4 + role_claims fixes landed. Switch to "floor" for a zero-spend run.
-    # ⚠COST: credit recomputes over the rolling window each tick, so the tagger RE-TAGS the window every
-    # generation (~O(gens^2) tag calls) — bound it with window_generations, or cache tags per game_id.
-    discussion_mode: str = "tagger"
+
+    # The tell pipeline (v1, 2026-07-13): per generation, mine + role-blind k=2 detect over the ON
+    # arm's games against the frozen checklist, fold (dedup new wordings into canon, verdicts, publish
+    # checklist v_{k+1}), rebuild the injected book. OFF by default — the v7 run turns it on. The seed
+    # checklist/book are frozen artifacts from the held-out program (tell_extraction, log §13-16).
+    tells: bool = False
+    tell_seed_checklist: str = ""   # {channel: [{tell_id, text}]} — required when tells=True (cold store)
+    tell_seed_book: str = ""        # optional gen-1 book (built from the held-out lift table)
 
     def env(self) -> dict:
         """Env overrides pinning EVERY paid model in a run to the cheap tier — the pro-2.5 cost guard.

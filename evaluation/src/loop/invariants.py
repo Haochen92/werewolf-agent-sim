@@ -56,9 +56,10 @@ def _iter_eval_cases(window_files: list[str]):
                     yield g, ec
 
 
-# build_ledger's coverage: votes (all roles) + night for these roles. healer-night is deferred and
-# day_discussion is tagger/floor-dependent, so neither is a "credit MUST be non-empty" guarantee.
-_CREDITABLE_NIGHT = {"investigator", "vigilante", "wolf", "serial_killer"}
+# build_ledger's coverage: votes (all roles) + night for these roles (healer joined 2026-07-13 via the
+# night_resolutions attack-join). day_discussion is discussion_credit-dependent, so it stays out of the
+# "credit MUST be non-empty" guarantee and gets its own engaged-guard below.
+_CREDITABLE_NIGHT = {"investigator", "vigilante", "wolf", "serial_killer", "healer"}
 
 
 def _is_creditable_follow_case(ec: dict) -> bool:
@@ -135,6 +136,30 @@ def assert_base_rates(base_rates: dict, off_ran: bool) -> None:
         raise AssertionError(
             "off baseline ran but produced 0 base-rate channels — de-luck baseline would silently halo "
             "(lift == raw utility). Check the off-window wiring.")
+
+
+def assert_baseline_coherence(credited_channels: dict, base_rates: dict) -> None:
+    """⭐THE §11j/§12f STANDING guard (the class has now appeared THREE times: run-1 vote baseline, v2
+    salvage halo, loop discussion/night credit). Every credited channel must have a de-luck base produced
+    by the SAME grading function as its counts, from the OFF arm — else lift is a LEVEL not a lift (prune's
+    tau silently becomes tau−ambient, the protect exemption shields nearly everything, synthesis track
+    records overstate). credited_channels = {channel: grading} with grading in {'deterministic','floor',
+    'conceal','cast_prior'} (+ legacy 'tagger', retired from credit 2026-07-13 — kept so old records
+    still verify): a deterministic/floor channel needs a non-degenerate `<cell>` base; conceal channels
+    are SELF-KEYED (`conceal/<cell>` is the channel string itself) so the same `<cell>` lookup applies;
+    the tell fold registers its cast-prior base under the tell channel's own key the same way.
+    'Non-degenerate' = present with n>0 OFF observations (for cast_prior: n>0 role slots); a missing/n=0
+    base haloes the lift (base defaults to 0)."""
+    for ch, grading in credited_channels.items():
+        key = f"tagger/{ch}" if grading == "tagger" else ch
+        br = base_rates.get(key)
+        n = br[1] if isinstance(br, (list, tuple)) and len(br) > 1 else 0
+        if not br or n <= 0:
+            raise AssertionError(
+                f"baseline INCOHERENT: channel {ch!r} was credited by the {grading!r} grading function but "
+                f"its same-function OFF base {key!r} is missing/degenerate (base={br}). Lift would be a "
+                "LEVEL not a lift (the retracted §12f halo) — the OFF arm must be scored by the SAME "
+                "instrument (option A: tag the OFF arm / wire the OFF window).")
 
 
 def assert_score(score: dict, label: str = "") -> None:

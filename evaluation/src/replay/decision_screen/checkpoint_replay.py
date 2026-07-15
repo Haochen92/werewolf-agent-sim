@@ -69,31 +69,16 @@ Verdict mapping (decided, pre-registered) — the sweep reports TWO readouts:
    (+1 correct / 0 abstain / −1 otherwise). Both numbers land in the artifact.
 
 Role coverage: ``--factions town`` exams day-votes (villager/healer/investigator)
-PLUS night actions for investigator/vigilante (the loop's ``_night_credit``) AND healer
-(``_healer_night_credit``, a SCREEN-LOCAL lens — see below); villagers have no night action.
-
-The healer night lens (why it lives HERE, not in the loop's credit)
--------------------------------------------------------------------
-A healer save's quality needs that night's raw ATTACK targets, recorded in the game's
-``night_resolutions`` (``wolves_target`` / ``serial_killer_target`` / ``vigilante_target``,
-keyed by ``day``) independent of outcome. Night actions resolve SIMULTANEOUSLY, so those
-recorded attack targets are causally independent of the healer's replayed protect choice:
-scoring the replay against them is a pure prediction-skill readout, the SAME construct as
-the validated ``healer_town_save_rate`` proxy (Agents/compute_metrics.py:187-205).
-``_healer_night_credit`` grades it: positive = protected a town player the wolves/SK were
-about to kill (self-save counts); negative = shielded a THREAT (wolf/SK) from a
-town-beneficial removal; neutral = protected an unattacked player / no attack / no target.
-VERIFIED in the engine (Agents/nodes/night/resolution.py:80-99): a heal DOES block a
-vigilante shot too — ``attacks_on`` includes ``vigilante_target`` and ``_resolved`` returns
-"saved" for the healed target regardless of attacker — so the negative rule counts a
-vigilante shot on a threat as a shielded removal alongside wolf/SK attacks.
-
-This lens is SCREEN-LOCAL by deliberate design: it is NOT wired into the loop's
-``credit_backfill._night_credit``. Adding healer to the loop's production credit path is a
-gated change (it mutates the live store-write ledger); the checkpoint replay only READS
-snapshots, so grading healer here closes the coverage gap without touching production credit.
-Dry run (v6ab_townsp): 64 healer night cases (day>=2, with a frozen query) join their
-night_resolutions entry cleanly (94/94 day-join hit) and feed the town pool.
+PLUS night actions for investigator/vigilante/healer — ALL through the loop's own
+``_night_credit`` (healer included since its 2026-07-13 promotion into production credit:
+the loop lens IS the validated ``healer_town_save_rate`` construct, scored off the
+``night_resolutions`` attack-join this screen already performs). The screen-local
+``_healer_night_credit`` lens this file used to carry was DELETED at that promotion — its
+gate ("healer isn't in production credit yet") closed, and one grader beats two that can
+drift. A missing night_resolutions row degrades to neutral here (the replay must never
+crash on a sparse record); the loop's credit path skips such cases instead.
+Villagers have no night action. Historical dry run (v6ab_townsp): 64 healer night cases
+joined their night_resolutions entry cleanly (94/94 day-join hit).
 
 Run command
 -----------
@@ -149,7 +134,6 @@ from evaluation.src.loop.decision_scoring import (
     REPLAYABLE_DECEIVER_ROLES,
     REPLAYABLE_TOWN_ROLES,
     allow_abstain_for,
-    score_night_target,
     score_vote,
     wolf_vote_is_good,
 )
@@ -185,18 +169,12 @@ class _CasePlan:
     lens: str  # day votes: "town" | "wolf"; night actions: "night_credit"
 
 
-# Town night actions the screen grades. investigator/vigilante ride the loop's own
-# credit lens (NIGHT_CREDIT_ROLES ∩ town); HEALER rides a SCREEN-LOCAL lens
-# (_healer_night_credit) off the night_resolutions attack-join and is deliberately NOT in
-# the loop's NIGHT_CREDIT_ROLES — adding healer to production credit is a gated change, so
-# the screen grades it locally (see the module docstring). villagers have no night action.
-HEALER_SCREEN_LENS_ROLE = "healer"
-TOWN_NIGHT_ROLES = frozenset({"investigator", "vigilante", HEALER_SCREEN_LENS_ROLE})
-# Honesty guard, restructured for the screen-local role: every town-night role is graded
-# by SOME lens, and healer is graded by the screen-local one PRECISELY because it is not in
-# the loop's credit frozenset (so it must be excluded from the ⊆ NIGHT_CREDIT_ROLES check).
-assert HEALER_SCREEN_LENS_ROLE not in NIGHT_CREDIT_ROLES
-assert TOWN_NIGHT_ROLES - {HEALER_SCREEN_LENS_ROLE} <= NIGHT_CREDIT_ROLES
+# Town night actions the screen grades — every one through the loop's own credit lens
+# (healer joined NIGHT_CREDIT_ROLES 2026-07-13; the screen-local healer lens was deleted at
+# that promotion — module docstring). villagers have no night action.
+TOWN_NIGHT_ROLES = frozenset({"investigator", "vigilante", "healer"})
+# Honesty guard: every town-night role the screen exams IS graded by the loop's lens.
+assert TOWN_NIGHT_ROLES <= NIGHT_CREDIT_ROLES
 
 # What a faction run exams. town = day-votes on the town lens (the pending town-only
 # rerun's target) + investigator/vigilante nights on the loop's credit lens.
@@ -445,37 +423,6 @@ def _night_res_for_day(game: dict[str, Any], day: int) -> dict[str, Any] | None:
     return None
 
 
-def _healer_night_credit(
-    target: str | None, roles: dict[str, str], night_res: dict[str, Any] | None
-) -> str:
-    """SCREEN-LOCAL healer-night lens (NOT the loop's credit — see module docstring).
-    Grades a replayed protect target against that night's RAW attack targets, which
-    resolve simultaneously and so are causally independent of the replayed choice — a
-    pure prediction-skill readout (the healer_town_save_rate construct).
-
-    - positive: protected a TOWN player the wolves or SK were about to kill (a genuine
-      save prediction; self-protect when self was the attack target counts).
-    - negative: shielded a THREAT (wolf/SK per ``roles``) that was some actor's lethal
-      attack target — including a vigilante shot, since a heal blocks vig shots too
-      (VERIFIED Agents/nodes/night/resolution.py:80-99) — from a town-beneficial removal.
-    - neutral: everything else (unattacked target, no attack that night, None/hold/abstain,
-      or a missing night_res) — degrade to neutral, never crash.
-    """
-    if target in (None, "hold_fire", "abstain") or not night_res:
-        return "neutral"
-    outcome = score_night_target(target, roles)
-    killer_targets = {night_res.get("wolves_target"), night_res.get("serial_killer_target")}
-    # heal blocks vig shots too, so a vig-targeted threat is a shielded removal as well
-    attack_targets = killer_targets | {night_res.get("vigilante_target")}
-    attack_targets.discard(None)
-    killer_targets.discard(None)
-    if outcome.hit_town and target in killer_targets:
-        return "positive"  # predicted a real wolf/SK kill on a townie (self-save included)
-    if outcome.hit_threat and target in attack_targets:
-        return "negative"  # shielded a wolf/SK from a town-beneficial removal
-    return "neutral"
-
-
 def _decide_and_score(
     spec: _CaseSpec, observations: list[Any], strategy_points: list[Any]
 ) -> dict[str, Any] | None:
@@ -485,22 +432,19 @@ def _decide_and_score(
     verdict mapping). None = the replay dropped the call (excluded from the pairing,
     never miscounted as a miss).
 
-    Night actions score through the loop's own role-aware credit lens
-    (credit_backfill._night_credit) for investigator/vigilante/wolf/SK, and through the
-    SCREEN-LOCAL _healer_night_credit for the healer (the night_resolutions attack-join —
-    see module docstring): correct = positive verdict; neutral (banked/plain-townie kill/
-    unattacked protect) and negative (vigilante friendly fire / shielded threat) are both
-    not-correct."""
+    Night actions all score through the loop's own role-aware credit lens
+    (credit_backfill._night_credit) — healer included since its 2026-07-13 promotion, via
+    the night_resolutions attack-join this screen performs; a missing row degrades to
+    neutral (the replay never crashes on a sparse record; the loop's credit path skips
+    instead). correct = positive verdict; neutral (banked/plain-townie kill/unattacked
+    protect) and negative (vigilante friendly fire / shielded threat) are both not-correct."""
     case, roles = spec.case, spec.game["roles"]
     if case.action_phase == "night_action":
         target = _replay_night(case, observations, strategy_points=strategy_points)
         if target is None:
             return None
-        if case.player_role == HEALER_SCREEN_LENS_ROLE:
-            night_res = _night_res_for_day(spec.game, case.day)
-            verdict = _healer_night_credit(target, roles, night_res)
-        else:
-            verdict = _night_credit(case.player_role, target, roles)
+        night_res = _night_res_for_day(spec.game, case.day)
+        verdict = _night_credit(case.player_role, target, roles, night_res) or "neutral"
         return {"correct": verdict == "positive", "value": VERDICT_VALUE[verdict]}
     allow = allow_abstain_for(case.day, spec.game["day_resolutions"])
     votee, _ = _replay_vote(

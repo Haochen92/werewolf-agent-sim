@@ -101,7 +101,7 @@ def _iter(dumps_glob: str):
 def _values(ec: dict, g: dict, elim: dict, winner: str | None):
     """The four raw credit values for this decision, or None if not creditable."""
     verdict = _decision_credit(ec, g["roles"])
-    if verdict is None:
+    if verdict not in VERDICT_VALUE:  # None, or the v1 read-partition's "read_excluded" sentinel
         return None
     s1, s2, term = _signals(ec, g, elim, winner)
     return {"imm": VERDICT_VALUE[verdict], "surv1": s1, "surv2": s2, "terminal": term}

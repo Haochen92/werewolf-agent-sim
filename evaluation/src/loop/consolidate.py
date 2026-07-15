@@ -22,11 +22,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from evaluation.src.loop.config import LoopConfig
-from evaluation.src.loop.credit import sp_lift
+from evaluation.src.loop.credit import base_for, sp_lift
 
 
 def _cell_of(ns_key: str) -> str:
     return "/".join(ns_key.split("/")[1:])  # "strategy_points/role/phase" -> "role/phase"
+
+
+def _is_proven(v: dict, base: float, cfg: LoopConfig) -> bool:
+    """Loop-side PROVEN predicate: positive de-luck lift over the resolved OFF base with enough follows.
+    Deliberately DIFFERS from the game-side `_sp_is_proven` (raw counter heuristic) — the loop has the
+    base rates, the in-game read path doesn't. Shared by prune_and_evict's exemption and synthesize's
+    contested-lane cap so the two sites can't drift. `base` is already resolved (base_for) by the caller."""
+    lift = sp_lift(v, base)
+    return lift is not None and lift > 0 and v.get("follow_count", 0) >= cfg.protect_min_follow
 
 
 def _evict_ok(v: dict, cfg: LoopConfig) -> bool:
@@ -48,10 +57,11 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> d
     non-follow is a retrieval mismatch (not_relevant-dominant). Returns {pruned, evicted, kept, spared}."""
     pruned = evicted = kept = spared = 0
     for ns_key, recs in list(sp_namespaces.items()):
-        base = base_rates.get(_cell_of(ns_key), [0.0])[0]
         survivors = []
         for r in recs:
             v = r["value"]
+            # same-function OFF base, per SP: concealment-typed SPs difference against the conceal base
+            base = base_for(base_rates, _cell_of(ns_key), v.get("sp_type"))
             lift = sp_lift(v, base)
             follow = v.get("follow_count", 0)
             retrieved = v.get("retrieved_count", 0)
@@ -59,7 +69,7 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> d
             # dropped — a rare-but-proven lesson survives any prune/evict/age rule. Degradation is
             # CREDIT-only: a note leaves via negative lift (souring) or never-followed dead weight, never
             # because it merely got old (edge 2).
-            if lift is not None and lift > 0 and follow >= cfg.protect_min_follow:
+            if _is_proven(v, base, cfg):
                 survivors.append(r)
                 kept += 1
                 continue
@@ -77,24 +87,31 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> d
     return {"pruned": pruned, "evicted": evicted, "kept": kept, "spared": spared}
 
 
-def evict_observations(obs_path: str | Path, obs_gen_map: dict, current_gen: int, cfg: LoopConfig) -> dict:
-    """Decay observations by AGE x FREQUENCY (obs carry no credit, so they can't be pruned by lift).
-    Drop obs that are BOTH old (first seen <= current_gen - min_age) AND rare (observation_count <=
-    max_count). Keeps old-but-recurring lessons (high count survive any age) and every recent obs. Edits
-    obs.json in place; the SHA-keyed embedding cache auto-rebuilds on the changed file.
+def evict_observations(obs_path: str | Path, obs_gen_map: dict, current_gen: int, cfg: LoopConfig,
+                       reinforced_map: dict | None = None) -> dict:
+    """Decay observations by a COUNT-SCALED survival allowance clocked from the LAST reinforcement (obs
+    carry no credit, so they can't be pruned by lift). Drop an obs once it has gone
+    obs_evict_min_age x observation_count generations WITHOUT reinforcement. Nothing is immortal: a
+    count-N obs buys N windows of grace, but each reinforcement restarts the clock, so a still-recurring
+    lesson survives while a distilled-and-abandoned one eventually decays. Edits obs.json in place; the
+    SHA-keyed embedding cache auto-rebuilds on the changed file.
 
-    obs_gen_map: record `key` -> first-seen generation (driver sidecar). Stable across dedup merges (the
-    survivor keeps its key, so a merged-and-reinforced obs keeps its ORIGINAL age but grows its count =
-    exactly the 'old but proven' case we want to keep). Recency is a SELECTION here, not an LLM weight."""
+    obs_gen_map: record `key` -> first-seen generation; reinforced_map: `key` -> last-reinforced gen
+    (both driver sidecars). Keys are stable across dedup merges (the survivor keeps its key), so a
+    merged-and-reinforced obs keeps its ORIGINAL first-seen age but its count grows AND its clock resets.
+    For a count-1 never-reinforced obs, last_reinforced == first-seen, so this reduces EXACTLY to the old
+    age>=min_age & count<=1 rule. Recency is a SELECTION here, not an LLM weight."""
     obs_path = Path(obs_path)
+    reinforced_map = reinforced_map or {}
     store = json.loads(obs_path.read_text())
     dropped = kept = 0
     for ns_key, recs in list(store.get("namespaces", {}).items()):
         survivors = []
         for r in recs:
-            gen = obs_gen_map.get(r.get("key"), 0)
+            key = r.get("key")
             count = r["value"].get("observation_count", 1)
-            if gen <= current_gen - cfg.obs_evict_min_age and count <= cfg.obs_evict_max_count:
+            last_reinforced = reinforced_map.get(key, obs_gen_map.get(key, 0))
+            if current_gen - last_reinforced >= cfg.obs_evict_min_age * count:
                 dropped += 1
                 continue
             survivors.append(r)
@@ -137,12 +154,17 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
                prev_obs_counts: dict | None = None,
                obs_gen_map: dict | None = None, current_gen: int | None = None) -> tuple[dict, dict]:
     """Credit-aware synthesis for cells with NEW obs since prev tick (incremental). Appends fresh SPs to
-    sp_namespaces. Returns ({added, cells_synthed}, current_obs_counts). LLM step (model via cfg.env())."""
+    sp_namespaces. A per-cell CONTESTED-lane cap (cfg.synth_cell_unproven_cap) skips cells whose UNPROVEN
+    SPs already fill the quota — proven SPs sit in earned slots outside it (depleted cells exempt); cap
+    interacts with prune/evict — it holds until culls drain the contested lane.
+    Returns ({added, cells_synthed, with_track_record, cells_capped}, current_obs_counts). LLM step
+    (model via cfg.env())."""
     # imported lazily so pure prune/evict stays import-light + LLM-free
     from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
     from Agents.memory.persistence import memory_store_paths, seed_memory_from_json_files_cached
     from Agents.memory.store import store
-    from Agents.memory.strategy_synthesis import cluster_observations_for_synth, synthesize_cluster_sps
+    from Agents.memory.strategy_synthesis import (cluster_observations_for_synth,
+                                                   fetch_observations_for_synth, synthesize_cluster_sps)
     from Agents.schemas.roles import VALID_ACTION_PHASES_BY_ROLE, roles as ALL_ROLES
 
     obs_path, sp_path = memory_store_paths(store_dir)
@@ -156,21 +178,51 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
     # obs_gen_map (record key -> first-seen gen) makes the trigger decay-immune; net change is the fallback.
     synth_lookback = (current_gen - cfg.synth_every_k_gens) if current_gen is not None else None
     obs_counts: dict[str, int] = {}
+    cells_capped = 0
     tasks = []
     for role in ALL_ROLES:
         for phase in VALID_ACTION_PHASES_BY_ROLE.get(role, []):
             cell = f"{role}/{phase}"
-            items, clusters = cluster_observations_for_synth(store, ("observations", role, phase), cfgd)
+            # GATE-BEFORE-CLUSTER (deliberate ordering): fetch keys only, evaluate the admission gates,
+            # and cluster ONLY an admitted cell. The gates below are computable from keys + gen map alone;
+            # clustering is the store-size-scaling embedding cost, so a skipped cell must pay ZERO of it.
+            items = fetch_observations_for_synth(store, ("observations", role, phase))
             obs_counts[cell] = len(items)
             if obs_gen_map is not None and synth_lookback is not None:
                 new_obs = sum(1 for k in items if obs_gen_map.get(k, 0) > synth_lookback)
             else:
                 new_obs = obs_counts[cell] - prev.get(cell, 0)   # fallback: net change (no gen map)
-            depleted = len(sp_namespaces.get(f"strategy_points/{cell}", [])) < cfg.synth_replenish_floor
+            sp_recs = sp_namespaces.get(f"strategy_points/{cell}", [])
+            cur_sp_count = len(sp_recs)
+            # CONTESTED-lane count: SPs that are NOT proven (same predicate as prune_and_evict's exemption).
+            # PROVEN SPs occupy earned slots outside the quota, so they don't count against the cap.
+            unproven_count = sum(
+                1 for r in sp_recs
+                if not _is_proven(r["value"], base_for(base_rates, cell, r["value"].get("sp_type")), cfg))
+            depleted = cur_sp_count < cfg.synth_replenish_floor  # replenish floor = TOTAL size (lane-agnostic)
             if cfg.incremental and new_obs < cfg.synth_min_new_obs and not depleted:
                 continue  # not enough fresh evidence AND the cell isn't depleted → skip (cost guard)
+            # HARD per-cell CONTESTED-lane CAP (§0.4): a cell whose UNPROVEN lane already fills the quota
+            # doesn't re-synthesize — a bloat ceiling + cost guard ABOVE the new-obs gate. A cell full of
+            # PROVEN SPs still admits synth (exploration continues); the cap only blocks piling MORE untested
+            # candidates onto an already-full contested lane. A DEPLETED cell stays exempt so the replenish
+            # floor still refills it. The cap holds until prune/evict drain the lane below it (culls run
+            # every gen, synth only every k), so it gates growth, not size. Counted (cells_capped) so the
+            # per-gen print shows the gate biting (fail-loud observability).
+            if unproven_count >= cfg.synth_cell_unproven_cap and not depleted:
+                cells_capped += 1
+                continue
+            # SEED FROM NEW ARRIVALS ONLY: an all-old cluster gets discarded by _synth_cluster anyway, so
+            # never build one — seed clusters from obs first-seen after the synth tick (old obs still join
+            # as neighbours). A DEPLETED cell replenishes from its OLD clusters, so it keeps full seeding.
+            seed_keys = ({k for k in items if obs_gen_map.get(k, 0) > synth_lookback}
+                         if cfg.incremental and obs_gen_map is not None and synth_lookback is not None
+                         and not depleted else None)
+            items, clusters = cluster_observations_for_synth(store, ("observations", role, phase), cfgd,
+                                                             items=items, seed_keys=seed_keys)
             tr, tr_keys = _track_record(sp_namespaces.get(f"strategy_points/{cell}", []),
-                                        base_rates.get(cell, [0.0])[0], min_follow=cfg.synth_track_min_follow)
+                                        base_for(base_rates, cell),
+                                        min_follow=cfg.synth_track_min_follow)
             for cl in clusters:
                 live = [k for k in cl if k in items]
                 if _synth_cluster(live, depleted, obs_gen_map, synth_lookback, cfg.incremental):
@@ -198,6 +250,9 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
                         "value": {"observation_count": 1, "last_observed": now.isoformat(), "game_id": "",
                                   "situation": sp.composed_situation, "action": sp.action,
                                   "direction": sp.direction, "honesty": sp.honesty,
+                                  # credit class (2026-07-13): routes concealment-typed SPs to the
+                                  # concealment floor + conceal/<cell> base instead of the endpoint
+                                  "sp_type": getattr(sp, "sp_type", "general"),
                                   "follow_count": 0, "retrieved_count": 0, "positive_count": 0,
                                   "neutral_count": 0, "negative_count": 0,
                                   "distilled_from": tr_keys,
@@ -208,8 +263,9 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
     # 0 while < synth_track_min_follow follows have accumulated => synthesis is silently halo-only; this
     # makes the thesis mechanism observable per generation instead of hoped.
     with_tr = len({(r, p) for r, p, _live, _items, tr, _keys in tasks if tr})
+    # cells_capped = cells skipped by the contested-lane cap (bloat gate biting) — surfaced in the per-gen print.
     return ({"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
-             "with_track_record": with_tr}, obs_counts)
+             "with_track_record": with_tr, "cells_capped": cells_capped}, obs_counts)
 
 
 def _dedup_strategy_points(store_dir: Path, model: str) -> dict:
@@ -229,11 +285,12 @@ def _dedup_strategy_points(store_dir: Path, model: str) -> dict:
 
 
 def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | None = None,
-                obs_gen_map: dict | None = None, current_gen: int | None = None) -> dict:
+                obs_gen_map: dict | None = None, current_gen: int | None = None,
+                reinforced_map: dict | None = None) -> dict:
     """Full consolidation tick on a (credited) store dir. Returns stats + obs_counts (for next tick).
 
-    obs_gen_map/current_gen (driver-supplied) enable observation decay BEFORE synthesis, so the
-    synthesizer distills only the surviving (recent or proven-recurring) obs."""
+    obs_gen_map/reinforced_map/current_gen (driver-supplied) enable observation decay BEFORE synthesis, so
+    the synthesizer distills only the surviving (recently-seen or recently-reinforced) obs."""
     store_dir = Path(store_dir)
     obs_path, sp_path = memory_store_paths_local(store_dir)
     base_rates = json.loads((store_dir / "base_rates.json").read_text()) \
@@ -241,7 +298,7 @@ def consolidate(store_dir: str | Path, cfg: LoopConfig, prev_obs_counts: dict | 
 
     oe = {}
     if cfg.evict_observations and obs_gen_map is not None and current_gen is not None:
-        oe = evict_observations(obs_path, obs_gen_map, current_gen, cfg)
+        oe = evict_observations(obs_path, obs_gen_map, current_gen, cfg, reinforced_map)
 
     # SYNTH -> DEDUP -> PRUNE (prune runs LAST). The SP-dedup collapses near-dup SPs onto the credited
     # survivor, ABSORBING its counts — so it can push a survivor across the eviction threshold. Pruning

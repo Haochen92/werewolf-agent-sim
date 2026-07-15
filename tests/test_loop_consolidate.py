@@ -9,11 +9,12 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from evaluation.src.loop import consolidate as con
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import _evict_ok, _synth_cluster, evict_observations, prune_and_evict
+from evaluation.src.loop.driver import _stamp_obs_generations
 
 
 def _sp(follow=0, retrieved=0, pos=0, neg=0, override=0, not_relevant=0, action="x"):
@@ -82,39 +83,105 @@ class ScopeAwareEvictTests(unittest.TestCase):
 
 
 class ObservationDecayTests(unittest.TestCase):
-    def _run(self, recs, gen_map, current_gen, cfg=None):
+    def _run(self, recs, gen_map, current_gen, cfg=None, reinforced_map=None):
         cfg = cfg or LoopConfig()
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "observations.json"
             p.write_text(json.dumps({"namespaces": {"observations/villager/day_vote": recs}}))
-            stats = evict_observations(p, gen_map, current_gen, cfg)
+            stats = evict_observations(p, gen_map, current_gen, cfg, reinforced_map)
             survived = json.loads(p.read_text())["namespaces"]["observations/villager/day_vote"]
             return stats, [r["key"] for r in survived]
 
     def test_old_and_rare_dropped_others_kept(self) -> None:
         recs = [
-            {"key": "old_rare", "value": {"observation_count": 1}},      # drop: old + rare
-            {"key": "old_frequent", "value": {"observation_count": 7}},  # keep: recurring lesson
-            {"key": "recent_rare", "value": {"observation_count": 1}},   # keep: recent
+            {"key": "old_rare", "value": {"observation_count": 1}},      # drop: age 5 >= 4*1
+            {"key": "old_frequent", "value": {"observation_count": 7}},  # keep: allowance 4*7=28 > 5
+            {"key": "recent_rare", "value": {"observation_count": 1}},   # keep: age 0 < 4
         ]
         gen_map = {"old_rare": 0, "old_frequent": 0, "recent_rare": 5}
-        stats, survived = self._run(recs, gen_map, current_gen=5)  # min_age=2 -> gen<=3 is old
+        stats, survived = self._run(recs, gen_map, current_gen=5)  # min_age=4 -> count-1 evictable at age>=4
         self.assertEqual(stats["obs_dropped"], 1)
         self.assertEqual(sorted(survived), ["old_frequent", "recent_rare"])
 
+    def test_count1_identical_to_old_rule_at_min_age_4(self) -> None:
+        # A count-1 never-reinforced obs (reinforced == first-seen) reduces to the old age>=4 & count<=1
+        # rule exactly: age 4 drops, age 3 survives.
+        recs = [{"key": "at_bound", "value": {"observation_count": 1}},
+                {"key": "below_bound", "value": {"observation_count": 1}}]
+        gen_map = {"at_bound": 6, "below_bound": 7}
+        stats, survived = self._run(recs, gen_map, current_gen=10)  # ages 4 and 3
+        self.assertEqual(stats["obs_dropped"], 1)
+        self.assertEqual(survived, ["below_bound"])
+
+    def test_count2_dies_after_scaled_allowance_from_last_reinforcement(self) -> None:
+        # count=2 buys 4*2=8 generations of grace, clocked from the LAST reinforcement: 8 gens since ->
+        # dropped, 7 gens since -> kept. first-seen is old for both; the clock is the reinforcement.
+        recs = [{"key": "stale", "value": {"observation_count": 2}},
+                {"key": "fresher", "value": {"observation_count": 2}}]
+        gen_map = {"stale": 0, "fresher": 0}
+        reinforced = {"stale": 2, "fresher": 3}  # current_gen 10 -> 8 gens / 7 gens since reinforcement
+        stats, survived = self._run(recs, gen_map, current_gen=10, reinforced_map=reinforced)
+        self.assertEqual(stats["obs_dropped"], 1)
+        self.assertEqual(survived, ["fresher"])
+
+    def test_reinforced_map_absent_falls_back_to_first_seen(self) -> None:
+        # no reinforced_map => last_reinforced defaults to first-seen gen (the count-1 legacy behavior)
+        recs = [{"key": "old_rare", "value": {"observation_count": 1}}]
+        stats, survived = self._run(recs, {"old_rare": 0}, current_gen=5)
+        self.assertEqual(stats["obs_dropped"], 1)
+        self.assertEqual(survived, [])
+
     def test_unmapped_key_treated_as_oldest(self) -> None:
-        # a key missing from the sidecar defaults to generation 0 (oldest) -> evictable if rare
+        # a key missing from both sidecars defaults to generation 0 (oldest) -> evictable if count-1
         recs = [{"key": "ghost", "value": {"observation_count": 1}}]
         stats, survived = self._run(recs, {}, current_gen=5)
         self.assertEqual(stats["obs_dropped"], 1)
         self.assertEqual(survived, [])
 
-    def test_disabled_when_count_threshold_high(self) -> None:
+    def test_keep_everything_with_huge_min_age(self) -> None:
+        # obs_evict_max_count is gone; the "keep everything" config is a min_age larger than the run.
         recs = [{"key": "old_rare", "value": {"observation_count": 1}}]
-        cfg = LoopConfig(obs_evict_max_count=0)  # nothing is "rare" -> keep everything
+        cfg = LoopConfig(obs_evict_min_age=1000)
         stats, survived = self._run(recs, {"old_rare": 0}, current_gen=9, cfg=cfg)
         self.assertEqual(stats["obs_dropped"], 0)
         self.assertEqual(survived, ["old_rare"])
+
+
+class StampObsGenerationsTests(unittest.TestCase):
+    """The driver sidecar that clocks obs decay: first-seen is set once; a RISE in observation_count for a
+    tracked key advances the last-reinforced gen; legacy flat-int sidecars load without spurious bumps."""
+
+    def _store(self, d: Path, recs) -> Path:
+        (d / "observations.json").write_text(
+            json.dumps({"namespaces": {"observations/villager/day_vote": recs}}))
+        return d
+
+    def test_count_bump_advances_reinforced_gen(self) -> None:
+        with tempfile.TemporaryDirectory() as t:
+            store = self._store(Path(t), [{"key": "k", "value": {"observation_count": 1}}])
+            sidecar = Path(t) / "sidecar.json"
+            first_seen, reinforced = _stamp_obs_generations(store, 1, sidecar)
+            self.assertEqual((first_seen["k"], reinforced["k"]), (1, 1))
+            # count rises to 3 at gen 4 -> reinforced advances, first-seen unchanged
+            self._store(Path(t), [{"key": "k", "value": {"observation_count": 3}}])
+            first_seen, reinforced = _stamp_obs_generations(store, 4, sidecar)
+            self.assertEqual(first_seen["k"], 1)
+            self.assertEqual(reinforced["k"], 4)
+            # no further rise at gen 6 -> reinforced stays at 4
+            first_seen, reinforced = _stamp_obs_generations(store, 6, sidecar)
+            self.assertEqual(reinforced["k"], 4)
+
+    def test_legacy_flat_int_sidecar_loads_without_spurious_reinforcement(self) -> None:
+        with tempfile.TemporaryDirectory() as t:
+            store = self._store(Path(t), [{"key": "k", "value": {"observation_count": 5}}])
+            sidecar = Path(t) / "sidecar.json"
+            sidecar.write_text(json.dumps({"k": 0}))  # legacy flat {key: first_seen}
+            first_seen, reinforced = _stamp_obs_generations(store, 3, sidecar)
+            self.assertEqual(first_seen["k"], 0)
+            self.assertEqual(reinforced["k"], 0)   # seeding the count is NOT a reinforcement
+            raw = json.loads(sidecar.read_text())
+            self.assertEqual(set(raw), {"first_seen", "reinforced", "counts"})
+            self.assertEqual(raw["counts"]["k"], 5)
 
 
 class CostGuardTests(unittest.TestCase):
@@ -256,8 +323,9 @@ class DistilledFromSynthTests(unittest.TestCase):
                 patch.object(persist_mod, "memory_store_paths",
                              lambda d: (Path(t) / "o.json", Path(t) / "s.json")), \
                 patch.object(persist_mod, "seed_memory_from_json_files_cached", lambda **kw: None), \
+                patch.object(synth_mod, "fetch_observations_for_synth", lambda store, nskey: ["o1"]), \
                 patch.object(synth_mod, "cluster_observations_for_synth",
-                             lambda store, nskey, cfgd: (["o1"], [["o1"]])), \
+                             lambda store, nskey, cfgd, items=None, seed_keys=None: (["o1"], [["o1"]])), \
                 patch.object(synth_mod, "synthesize_cluster_sps",
                              lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
             con.synthesize(Path(t), ns, base, LoopConfig(incremental=False))
@@ -282,6 +350,118 @@ class DistilledFromSynthTests(unittest.TestCase):
         self.assertTrue(new)
         for r in new:
             self.assertEqual(r["value"]["distilled_from"], [])
+
+
+class CellSpCapTests(unittest.TestCase):
+    """§0.4 Build 1: the per-cell CONTESTED-lane cap stops re-synthesizing a cell whose UNPROVEN SPs fill
+    the quota (cost + bloat ceiling), but PROVEN SPs sit in earned slots OUTSIDE the quota — a cell full of
+    proven SPs still synthesizes (exploration continues). A DEPLETED cell replenishes despite the cap, and
+    an under-cap contested lane is unaffected. Counted in cells_capped. Stubs synth the same lazy way."""
+
+    def _unproven_recs(self, n, start=0):
+        return [{"key": f"u{i}", "value": {"follow_count": 0, "positive_count": 0,
+                                           "negative_count": 0, "action": "a"}}
+                for i in range(start, start + n)]
+
+    def _proven_recs(self, n, start=0):
+        # positive de-luck lift (util 1.0 over base 0.0) & follows past protect_min_follow => proven, so
+        # these occupy EARNED slots outside the contested-lane quota.
+        return [{"key": f"p{i}", "value": {"follow_count": 5, "positive_count": 5,
+                                           "negative_count": 0, "action": "a"}}
+                for i in range(start, start + n)]
+
+    def _synth_stats(self, recs, cap):
+        import Agents.memory.persistence as persist_mod
+        import Agents.memory.strategy_synthesis as synth_mod
+        import Agents.schemas.roles as roles_mod
+        ns = {"strategy_points/villager/day_vote": recs}
+        base = {"villager/day_vote": [0.0, 100]}
+        with tempfile.TemporaryDirectory() as t, \
+                patch.object(roles_mod, "roles", ["villager"]), \
+                patch.object(roles_mod, "VALID_ACTION_PHASES_BY_ROLE", {"villager": ["day_vote"]}), \
+                patch.object(persist_mod, "memory_store_paths",
+                             lambda d: (Path(t) / "o.json", Path(t) / "s.json")), \
+                patch.object(persist_mod, "seed_memory_from_json_files_cached", lambda **kw: None), \
+                patch.object(synth_mod, "fetch_observations_for_synth", lambda store, nskey: ["o1"]), \
+                patch.object(synth_mod, "cluster_observations_for_synth",
+                             lambda store, nskey, cfgd, items=None, seed_keys=None: (["o1"], [["o1"]])), \
+                patch.object(synth_mod, "synthesize_cluster_sps",
+                             lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
+            stats, _ = con.synthesize(Path(t), ns, base,
+                                      LoopConfig(incremental=False, synth_cell_unproven_cap=cap))
+        return stats
+
+    def test_full_proven_lane_still_synthesizes(self) -> None:
+        # 12 PROVEN SPs => contested lane is EMPTY, so the cap doesn't bite (proven slots are outside it).
+        stats = self._synth_stats(self._proven_recs(12), cap=12)
+        self.assertEqual(stats["cells_capped"], 0)
+        self.assertGreater(stats["added"], 0)
+
+    def test_full_contested_lane_skips_synthesis(self) -> None:
+        stats = self._synth_stats(self._unproven_recs(12), cap=12)   # 12 unproven, not depleted
+        self.assertEqual(stats["cells_capped"], 1)
+        self.assertEqual(stats["added"], 0)
+
+    def test_mixed_cell_under_contested_cap_synthesizes(self) -> None:
+        # 10 proven + 2 unproven => contested lane is 2 (< cap), so synthesis proceeds.
+        recs = self._proven_recs(10) + self._unproven_recs(2)
+        stats = self._synth_stats(recs, cap=12)
+        self.assertEqual(stats["cells_capped"], 0)
+        self.assertGreater(stats["added"], 0)
+
+    def test_depleted_cell_synthesizes_despite_cap(self) -> None:
+        # 2 SPs is below synth_replenish_floor (3) => depleted, so the cap is bypassed even though 2 >= cap.
+        stats = self._synth_stats(self._unproven_recs(2), cap=1)
+        self.assertEqual(stats["cells_capped"], 0)
+        self.assertGreater(stats["added"], 0)
+
+    def test_under_cap_cell_unaffected(self) -> None:
+        stats = self._synth_stats(self._unproven_recs(3), cap=12)   # not depleted (>=3), under the cap
+        self.assertEqual(stats["cells_capped"], 0)
+        self.assertGreater(stats["added"], 0)
+
+
+class SynthesizeGateOrderingTests(unittest.TestCase):
+    """Change 2: the admission gates (new-obs, SP cap) run BEFORE clustering, so a skipped cell pays zero
+    of the embedding/clustering bill. The clustering call is mocked and asserted NOT called for a capped
+    or quiet cell, and called exactly once for an admitted one."""
+
+    def _cluster_mock_after_synth(self, n_sps, cfg, fetch_items):
+        import Agents.memory.persistence as persist_mod
+        import Agents.memory.strategy_synthesis as synth_mod
+        import Agents.schemas.roles as roles_mod
+        ns = {"strategy_points/villager/day_vote":
+              [{"key": f"k{i}", "value": {"follow_count": 0, "positive_count": 0,
+                                          "negative_count": 0, "action": "a"}} for i in range(n_sps)]}
+        base = {"villager/day_vote": [0.0, 100]}
+        cluster_mock = MagicMock(return_value=(["o1"], [["o1"]]))
+        with tempfile.TemporaryDirectory() as t, \
+                patch.object(roles_mod, "roles", ["villager"]), \
+                patch.object(roles_mod, "VALID_ACTION_PHASES_BY_ROLE", {"villager": ["day_vote"]}), \
+                patch.object(persist_mod, "memory_store_paths",
+                             lambda d: (Path(t) / "o.json", Path(t) / "s.json")), \
+                patch.object(persist_mod, "seed_memory_from_json_files_cached", lambda **kw: None), \
+                patch.object(synth_mod, "fetch_observations_for_synth", lambda store, nskey: fetch_items), \
+                patch.object(synth_mod, "cluster_observations_for_synth", cluster_mock), \
+                patch.object(synth_mod, "synthesize_cluster_sps",
+                             lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
+            con.synthesize(Path(t), ns, base, cfg)
+        return cluster_mock
+
+    def test_capped_cell_never_clusters(self) -> None:
+        m = self._cluster_mock_after_synth(
+            n_sps=12, cfg=LoopConfig(incremental=False, synth_cell_unproven_cap=12), fetch_items=["o1"])
+        m.assert_not_called()
+
+    def test_quiet_cell_never_clusters(self) -> None:
+        # incremental, no new obs (empty fetch => new_obs 0 < synth_min_new_obs), not depleted (>=floor SPs)
+        m = self._cluster_mock_after_synth(n_sps=3, cfg=LoopConfig(incremental=True), fetch_items=[])
+        m.assert_not_called()
+
+    def test_admitted_cell_clusters_once(self) -> None:
+        m = self._cluster_mock_after_synth(
+            n_sps=3, cfg=LoopConfig(incremental=False, synth_cell_unproven_cap=12), fetch_items=["o1"])
+        m.assert_called_once()
 
 
 if __name__ == "__main__":

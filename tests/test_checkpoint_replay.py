@@ -222,14 +222,11 @@ def test_town_faction_plan_now_covers_healer_night():
     plans = cr.FACTION_PLANS["town"]
     night = [p for p in plans if p.phase == "night_action"]
     assert len(night) == 1
-    # healer is now in the town night pool (graded by the screen-local lens); villager
-    # (no night action) stays out.
+    # healer is in the town night pool, graded by the loop's own credit lens since its
+    # 2026-07-13 promotion into production credit; villager (no night action) stays out.
     assert night[0].roles == frozenset({"investigator", "vigilante", "healer"})
     assert "villager" not in night[0].roles
-    # honesty guard: healer is graded screen-locally PRECISELY because it is deliberately
-    # not in the loop's production credit frozenset.
-    assert cr.HEALER_SCREEN_LENS_ROLE == "healer"
-    assert "healer" not in cr.NIGHT_CREDIT_ROLES
+    assert "healer" in cr.NIGHT_CREDIT_ROLES
 
 
 def test_night_cases_scored_through_night_credit_in_sweep(monkeypatch):
@@ -301,9 +298,9 @@ def test_night_replay_failure_excluded_from_pairing(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# healer night: scored through the SCREEN-LOCAL lens (_healer_night_credit) off the
-# night_resolutions attack-join. Fixtures run the REAL _decide_and_score; only the LLM
-# (_replay_night) is stubbed to a chosen protect target.
+# healer night: scored through the loop's own _night_credit (healer promoted 2026-07-13)
+# off the night_resolutions attack-join. Fixtures run the REAL _decide_and_score; only the
+# LLM (_replay_night) is stubbed to a chosen protect target.
 # ---------------------------------------------------------------------------
 
 _HEALER_ROLES = {
