@@ -23,8 +23,7 @@
 > [`strategy_points.md`](strategy_points.md) + [`observations.md`](observations.md); the old §3
 > (tell tick) is now [`tells.md`](tells.md); §1/§4/§5/§6 numbering is unchanged. Suite 684 green
 > at the 07-14 review, uncommitted, `feature-dimension-schema`. Of the §6 agenda, open: §6.2's
-> tracked prefilter limitation, §6.4's signing-time pin, §6.5's post-run readout, and §6.8 (found
-> during this restructure).
+> tracked prefilter limitation, §6.4's signing-time pin, and §6.5's post-run readout.
 
 > **Orientation — one loop, two curation ticks, three stores.** Each generation of games feeds all
 > three stores, and each store is curated before the next generation reads it:
@@ -95,7 +94,7 @@ and only a small, bounded surface ever reaches a prompt.
 |---|---|---|---|
 | One item is | evidence: a situation→approach→outcome record | a directive: situation-conditioned advice with follow/outcome counters | a fact: "behavior X marks role Y", carried by instances |
 | Persistent layers | per-cell store (17 role×phase cells) + a generation sidecar carrying each record's first-seen and last-reinforced clocks | per-cell store with two implicit lanes — **proven** (positive lift, ≥2 follows) and **contested** (everything else) | **ledger** (`instances.jsonl`, append-only event rows) → **canon** (`canon.json`, every identity ever admitted) → **checklist** (`checklist_v{k}.json`, the ≤48/channel active-duty card detection scans for) |
-| Consumption layer | **none in v7, by design** — synthesis substrate only; the injection role obs held in v5/v6 is superseded by the tell book (§6.8: the run wiring does not enforce this yet) | RAG retrieval (top-k, proven tiering, exploration slot) → injection ≤3 per situation | the **book** — a role-identification manual built from the ledger at fold time, injected at game start |
+| Consumption layer | **none in v7, by design** — synthesis substrate only; the injection role obs held in v5/v6 is superseded by the tell book (§6.8, RESOLVED: the run wiring now enforces this) | RAG retrieval (top-k, proven tiering, exploration slot) → injection ≤3 per situation | the **book** — a role-identification manual built from the ledger at fold time, injected at game start |
 | Curation cadence | every generation (online dedup at game fold; decay inside the SP tick) | every generation (synthesis every 2) | every epoch (the fold); frozen checklist between folds |
 | Code anchors | `evaluation/src/loop/merge.py`, `consolidate.py` | `evaluation/src/loop/consolidate.py`, `credit.py` | `evaluation/src/loop/tells.py`, `tell_credit.py`, `tell_fold.py`, `Agents/memory/tell_book.py` |
 
@@ -164,7 +163,7 @@ The evidence layer: what happened, per (role, phase) cell, feeding SP synthesis.
 > [`../extraction/post_game/`](../extraction/post_game/report.md)) → online freeze-old dedup at
 > game fold (`loop/merge.py`; design + goldens: [`../dedup/`](../dedup/report.md)) → count-scaled
 > decay each generation → clustering substrate for SP synthesis. In v7, that is where the
-> lifecycle ends: observations no longer reach prompts (§6.8 tracks the wiring gap). Offline
+> lifecycle ends: observations no longer reach prompts (§6.8, RESOLVED: the run wiring enforces it). Offline
 > repair: batch dedup ([`../dedup/batch_architecture.md`](../dedup/batch_architecture.md)).
 
 ### Strategy points → [`strategy_points.md`](strategy_points.md)
@@ -314,21 +313,19 @@ cited.
    already serves as the SP's archive, since deletion plus re-synthesis is the SP-native re-audit
    path) and a probation deadline (a generation-based clock would kill rare-situation SPs).
    Mechanism and residuals: `strategy_points.md` §5.
-8. **NEW 2026-07-15 — the v7 obs-injection retirement is not wired into the run path yet** (found
-   while restructuring this folder; verified against the working tree by read; the design
-   position re-confirmed by the owner the same day). The v7 design retires observation injection:
-   prompts carry tells + SPs, and observations stay as synthesis substrate only (read/tactic
-   design record; `Agents/memory/tell_book.py`'s module docstring asserts the same). The wiring
-   does not enforce it: `--retrieval-types` defaults to both kinds (`scripts/run_batch.py`), the
-   loop driver never passes the flag (`evaluation/src/loop/driver.py` launches games with only
-   `--configs` plus the tell-book env), and the retrieval pipeline still caps and renders
-   observations into day and night prompts (`Agents/memory/retrieval/pipeline.py`). A run
-   launched as wired would therefore silently be an obs+SP+tells arm. Fix before the pre-reg
-   config pin: the driver's game launch passes the SP-only retrieval config (and the `--tells`
-   smoke checks the obs block is absent from a sampled prompt). Two notes for the record: pulling
-   observations out of prompts changes generation behavior, so it belongs to the same epoch
-   bundle as the other prompt-affecting changes; and the static-memory claim rungs that used obs
-   injection (v5/v6 arms) are unaffected — this is a v7 arm-definition item, not a retraction.
+8. **RESOLVED 2026-07-15 — the v7 obs-injection retirement is now wired into the run path** (found
+   while restructuring this folder, ruled + built the same day; log entry 8). The design stands
+   (prompts carry tells + SPs; observations are synthesis substrate only) and the wiring now
+   enforces it: a new `LoopConfig.retrieval_types` knob defaults to `strategy_points_only`, the
+   loop driver passes `--retrieval-types` to every game (both arms), and a per-generation invariant
+   (`assert_observations_retired`) fails loud on two record surfaces — the recorded per-game
+   `retrieval_types_config["observations"]` and every memory-enabled ON decision's recorded
+   `retrieved_observations` slot — so an obs+SP arm can never launch silently under the SP-only
+   default. `"both"` reproduces
+   the v5/v6 obs+SP injection for a comparison arm. Mechanism: `observations.md` §1. Two notes,
+   unchanged: pulling observations out of prompts changes generation behavior, so it stays in the
+   same epoch bundle as the other prompt-affecting changes; and the static-memory claim rungs that
+   used obs injection (v5/v6 arms) are unaffected — this was a v7 arm-definition item, not a retraction.
 
 ## Sources
 

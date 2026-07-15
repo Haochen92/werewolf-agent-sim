@@ -186,3 +186,34 @@ report-only batch-dedup pass first.
 Suite 676 → 684 green (new: tripwire and bounded-index tests). Report §3/§5/§6.1/§6.2/§6.3/§6.4 and
 the status header updated in place. §6 agenda now open: §6.2's prefilter limitation (tracked),
 §6.4's signing-time pin, §6.5's post-run readout.
+
+## 8. §6.8 wired — the loop stops injecting observations (2026-07-15)
+
+Restructuring this folder surfaced a wiring gap and it became the eighth agenda item: the v7 design
+retires observation injection (prompts carry tells + SPs; obs are synthesis substrate only), but a
+code-read of the working tree showed the run path did not enforce it. `--retrieval-types` defaults
+to `both` (`scripts/run_batch.py`), the loop driver launched games with only `--configs` plus the
+tell-book env and never passed the flag, and the retrieval pipeline still rendered observations into
+prompts — so a run launched as wired would silently have been an obs+SP+tells arm, a plausible wrong
+arm with no error (the same failure shape as the v2 arm slip §6 keeps guarding against).
+
+**Owner ruling (same day): the design stands, fix the wiring.** No re-litigation of whether obs
+should be injected — they should not; the item is purely that the default arm must match the design.
+
+**Built.** A new `LoopConfig.retrieval_types` knob (default `strategy_points_only`, so the loop
+cannot inherit run_batch's `both` default); the driver appends `--retrieval-types <cfg>` to every
+game launch (both arms — symmetric and harmless on the OFF arm, which retrieves nothing regardless);
+and a per-generation fail-loud invariant, `assert_observations_retired`, that checks two existing
+record surfaces — the recorded per-game `retrieval_types_config["observations"]` (what the engine
+ran with) and every memory-enabled ON decision's `retrieved_observations` eval-case slot (what
+actually reached the prompt) — no new capture plumbing needed. `"both"` reproduces the v5/v6 obs+SP injection for a
+comparison arm. The `tell_book.py` module docstring was sharpened to say the retirement is enforced
+by that config default, not by the retrieval layer (which still supports obs injection for the
+comparison arms). Two notes stand: this is an epoch-bundle member (it changes generation behavior),
+and the v5/v6 static-memory rungs that used obs injection are unaffected — a v7 arm-definition item,
+not a retraction.
+
+Suite 684 → 690 green (new: the SP-only default, the driver flag, and the assertion's config +
+prompt-input trips). Report §6.8 flipped to RESOLVED (+ the two inline §6.8 mentions and the status
+header), `observations.md` §1 and its §6 gap 1 updated. §6 agenda now open: §6.2's prefilter
+limitation (tracked), §6.4's signing-time pin, §6.5's post-run readout.

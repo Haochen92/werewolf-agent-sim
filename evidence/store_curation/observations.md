@@ -28,10 +28,11 @@ One consequence worth naming: the obs store doubles as the SP store's *archive* 
 underlying evidence persists here, and deletion plus re-synthesis is the SP-native re-audit path
 (report §6.7).
 
-⚠ **Wiring gap, tracked as report §6.8 (2026-07-15):** the run path does not enforce the
-retirement yet — `--retrieval-types` defaults to injecting both kinds and the loop driver never
-overrides it, so a run launched as wired would still inject observations. The fix (driver passes
-the SP-only retrieval config) gates the pre-reg config pin.
+**Enforced in the run path (report §6.8, RESOLVED 2026-07-15).** A `LoopConfig.retrieval_types`
+knob defaults to `strategy_points_only`, the loop driver passes `--retrieval-types` to every game
+(both arms), and a per-generation invariant (`assert_observations_retired`) fails loud if the
+recorded per-game config re-enabled obs retrieval or any memory-enabled ON decision's recorded
+`retrieved_observations` slot is non-empty. `"both"` re-enables obs injection for a v5/v6 comparison arm.
 
 ## 2. Layers
 
@@ -122,8 +123,9 @@ store-bounding review's tests.
 
 **Gaps, criticality-ordered:**
 
-1. **The §6.8 wiring gap** (report §6.8; §1 above) — the retired injection role is design and
-   docstring, not yet driver config. Gates the pre-reg pin.
+1. **~~The §6.8 wiring gap~~ — RESOLVED 2026-07-15** (report §6.8; §1 above): the retired injection
+   role is now driver config (`LoopConfig.retrieval_types='strategy_points_only'`) plus a
+   per-generation fail-loud invariant, no longer just design + docstring. No longer a launch blocker.
 2. **Decay has never shaped a live long run** — the count-scaled rule is suite-verified and the
    v2 runs motivated it, but no run has yet exercised the bound over enough generations to
    confirm the store plateaus; the ruled LRU fallback (§3) exists for exactly that contingency.
