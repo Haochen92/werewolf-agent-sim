@@ -3,12 +3,12 @@
 **What this is.** A standalone audit of three *statistical* variance-reduction levers that an external
 advisor proposed for the budget-constrained win-rate A/B, recorded on 2026-06-06 alongside the caching
 cost analysis and **freshness-rechecked 2026-06-25**. The two *caching* levers from that same advice
-live in [`../caching/`](../caching/report.md); the three statistical ones are kept here because they
+live in [`../../caching/`](../../caching/report.md); the three statistical ones are kept here because they
 bear on how the A/B is analyzed.
 
 **Scope note (read first).** This is **not** the authoritative A/B statistical design — that is
-specified in [`../memory_system/effectiveness/report.md`](../memory_system/effectiveness/report.md),
-with the proxy-side analysis plan in [`experiment_log.md`](experiment_log.md) (§ *Statistical analysis
+specified in [`../../memory_system/effectiveness/report.md`](../../memory_system/effectiveness/report.md),
+with the proxy-side analysis plan in [`experiment_log.md`](../../metrics/experiment_log.md) (§ *Statistical analysis
 plan*). Those describe the **current, plumbed** paired/seeded A/B. This doc is a separate, dated
 *audit* — kept apart deliberately so the 2026-06-06 findings are not conflated with the newer design
 (one of them, below, has since been superseded by it).
@@ -48,7 +48,7 @@ and CUPED is a few lines on the existing JSONL.
 ## Lever 3 — bootstrap / Bayesian CIs instead of p-values  *(verdict: adopt; partly already planned)*
 
 Worth adopting at analysis time, and **already in the proxy analysis plan**
-([`experiment_log.md`](experiment_log.md) § *Statistical analysis plan*: effect sizes + bootstrap CIs
+([`experiment_log.md`](../../metrics/experiment_log.md) § *Statistical analysis plan*: effect sizes + bootstrap CIs
 per de-lucked proxy). Recorded here for completeness: the deps (`scipy` / `numpy` / `pandas`) are
 present, and `scripts/analyze_batch.py` currently computes **no inferential statistics at all**, so this
 is an *add*, not a replacement — no methodological debt to unwind. A percentile bootstrap over any
@@ -61,4 +61,4 @@ per-game metric is ~20 lines; a beta-binomial posterior for win rate, less.
 Audited 2026-06-06 (originally embedded in the now-consolidated `evidence/caching` cost analysis;
 git history preserves the original). Freshness-rechecked against the repo 2026-06-25 — Lever 1's
 plumbing claim was re-verified and marked superseded. The two caching levers from the same advice
-are at [`../caching/report.md`](../caching/report.md) + [`../caching/experiment_log.md`](../caching/experiment_log.md).
+are at [`../../caching/report.md`](../../caching/report.md) + [`../../caching/experiment_log.md`](../../caching/experiment_log.md).

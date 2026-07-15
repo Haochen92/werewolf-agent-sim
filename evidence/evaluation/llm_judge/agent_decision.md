@@ -169,7 +169,7 @@ context_eval program).
   `experiments/{summary,summary_eval,retrieval,application,recall_flags,captured}.py`,
   `labeling/label_scorer/situation_retrieval_ndcg.py`, `loop/memory_adherence.py`,
   `core/schemas.py::{PairwiseJudgeScores,RetrievalScores,ApplicationScores}`.
-- **L2 artifacts (pointed-at):** situation golden `../../extraction/situation_summary/retrieval_golden_labels.json`
+- **L2 artifacts (pointed-at):** situation golden `../../extraction/situation_summary/outputs/retrieval_golden_labels.json`
   (⚠️ shared cross-component asset — read by reranker training + context_eval; do **not** move); the deferred
   calibration design `../../memory_system/strategy_adoption/judge_validation_protocol.md`; application results
   `../../memory_system/strategy_adoption/eval_results/captured_eval_*.jsonl`; CE reranker golden

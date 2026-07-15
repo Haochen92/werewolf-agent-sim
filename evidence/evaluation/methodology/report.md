@@ -68,7 +68,7 @@ alternate `--configs` per game so the interleave rule is enforced outside the lo
 - **Code:** `Agents/run_fingerprint.py`, `evaluation/src/loop/{invariants,driver,config}.py`,
   `evaluation/src/core/stats.py`.
 - **L2 artifacts:** `../../model_drift/drift_surfaces_and_guards.md` (the drift hub + the MDE/seed-effect
-  numbers), `../../metrics/variance_reduction_levers.md` (the levers audit).
+  numbers), `variance_reduction_levers.md` (the levers audit, colocated here 2026-07-07).
 
 ## Colocation call (JIT, 2026-06-28)
 
@@ -77,7 +77,8 @@ alternate `--configs` per game so the interleave rule is enforced outside the lo
   `../memory_system/effectiveness/report.md`, same-dir `experiment_log.md`) + **~5 inbound refs**
   (source_map ×3, CONSOLIDATION_PLAN ×2) that all need rewriting. **Deferred to the batched reorg** (flagged,
   not executed now) — the cost is a link-rewrite, not a move, and it's the one piece worth physically
-  relocating in the whole eval segment.
+  relocating in the whole eval segment. **Executed 2026-07-07**: moved here as
+  `variance_reduction_levers.md` during the metrics-folder reorg; all inbound refs repointed.
 - **`model_drift/drift_surfaces_and_guards.md`** — **point-at, don't move** (heavily inbound-linked from 4
   docs; mixes A/B methodology with a component-drift map that belongs to the memory narrative).
 

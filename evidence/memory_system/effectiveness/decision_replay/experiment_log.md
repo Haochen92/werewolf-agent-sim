@@ -431,7 +431,7 @@ Stopping-point fork decided: **#2 dimensions-first then freeze**. The full role�
 expansion is now written up as a concrete build spec → **`evidence/phase_b/dimension_schema_build_spec.md`**
 (the old→new field mapping, the mixin DAG, per-field embed/enum/numeric markers, composable-prompt
 registry, modules-touched + downstream ripple, cheap-first build order). DESIGN LOCKED, **no code
-written** pending sign-off. Key resolutions captured there (this session's design discussion):
+written** pending sign-off. Key resolutions captured there (from the design discussion):
 
 - **Embedding limits drive the ledger.** Bi-encoder = one pooled vector committed before the query →
   mean-pooling dilutes low-entropy fields, tokenizers aren't magnitude-aware, minimal-pair direction

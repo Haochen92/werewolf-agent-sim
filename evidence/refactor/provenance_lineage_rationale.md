@@ -143,10 +143,10 @@ Reproducibility needs three things provenance alone doesn't guarantee:
    track `evaluation/frozen_eval_sets/` in git on purpose ([structure_audit.md](structure_audit.md) §1) — so inputs
    *are* kept; the hash makes that durable rather than assumed.
 2. **Environment pinned.** Model IDs, backend, temperature, prompt bundle, git SHA — all already in
-   `runtime_fingerprint` ([[project-prompt-versioning-fingerprint]]).
+   `runtime_fingerprint`.
 3. **Acceptance of irreducible nondeterminism.** LLM eval is **not** byte-reproducible: a remote
    model can change behind a stable name, and we have *measured* that temp-0 outputs differ across
-   Google-AI vs Vertex backends ([[feedback-vertex-backend-affects-scores]]). So byte-identity is
+   Google-AI vs Vertex backends. So byte-identity is
    the wrong target; **statistical equivalence from a provably identical, drift-checked setup** is
    the right one.
 

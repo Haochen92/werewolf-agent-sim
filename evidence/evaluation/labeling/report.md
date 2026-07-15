@@ -154,8 +154,7 @@ additions (TOST, κ, cluster-robust agreement CI), a `CalibrationConfig`, and a 
 runs `panel → sample → [human pause] → calibrate → decide(stop/expand) → gold`. Sequenced MVP-first
 (Phase 1 = the acceptance test on pure `core/stats` reuse). **Gated**, not urgent: it needs a
 vendor-diverse panel run, ~100–250 human judgments, and a stable substrate — so the build unlocks value
-only when labelling restarts (which is itself gated on v7 proving memory compounds; see
-[[project-ship-roadmap]]).
+only when labelling restarts (which is itself gated on v7 proving memory compounds).
 
 ## Evidence, code & provenance
 

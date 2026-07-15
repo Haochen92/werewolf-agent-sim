@@ -87,7 +87,7 @@ Three real dependencies make the build well-scoped but deferred:
    size; ~one focused day per the protocol). Phase 1 code can be written + tested on synthetic data, but it
    produces nothing real without the anchor.
 3. **A stable substrate** — `context_eval` §6 carries a **"🛑 EXECUTION DEFERRED"** banner: golden built on
-   about-to-change games is wasted. Labelling restart is itself gated on v7 (see [[project-ship-roadmap]]).
+   about-to-change games is wasted. Labelling restart is itself gated on v7.
 
 **Recommendation:** keep this as the shovel-ready plan; build Phase 1 as a working skeleton only if we
 want to prove the design on synthetic labels before a real run. Do not stand up the full back-end with no

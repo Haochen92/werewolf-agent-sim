@@ -74,4 +74,4 @@ The proxies converge on a coherent — and counter-intuitive — story:
   population sd shown. Several proxies have small sub-N (wolf_blending 14/6, wolf_steering 12/12).
 - Next: the clean **frozen-store** memory-on run (constant treatment, N≈30) — and ideally **paired**
   (same `game_id` on/off → McNemar). Re-derive proxies on that; this pilot only points the way.
-  See `report.md` statistical design + [[project-metrics]].
+  See `report.md` statistical design + the de-lucked proxy metrics (`evidence/metrics/`).

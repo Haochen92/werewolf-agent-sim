@@ -123,7 +123,7 @@ coverage (NOT the namespace-scoped augment path). Reuse the offline harness:
 - Extractor: the canonical per-role `Agents/memory/extraction/extraction_agent.py` (the v5 path), now
   carrying the new prompt. Do **not** use `augment_agent.py` (that's namespace-targeted).
 - **Mirror the v5_0 seeding pipeline exactly** — same dedup config, same flow (see
-  [[project-v5-seeding-and-seedability]] / `scripts/`), changing only the prompt — so the store
+  `scripts/`), changing only the prompt — so the store
   differs from `v5_0` in outcome framing and nothing else. Output → `memory_stores/v5_0_nethorizon/`.
 - Cost ~$2–5 (prefix-caching fan-out).
 
@@ -187,5 +187,5 @@ win rate = underpowered directional co-read (N=30). All other cuts exploratory.
 - Echo-read gate (PASSED): `echo_read.py` / `echo_read_decisions.json`.
 - Proxy + blending instruments: `diagnose_wolf_sk_proxies.py`, `diagnose_wolf_blending.py`;
   `wolf_unconditioned_blending_rate` now in `Agents/compute_metrics.py`.
-- Seeding flow & footguns: [[project-v5-seeding-and-seedability]]; offline re-extraction:
+- Seeding flow & footguns: the V5 seeding path in `scripts/`; offline re-extraction:
   `Agents/memory/extraction/{inputs,extraction_agent}.py`.

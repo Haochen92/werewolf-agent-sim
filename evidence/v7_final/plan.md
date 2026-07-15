@@ -16,7 +16,7 @@ either too hard to build or too costly to verify — we **stop** (then freeze �
 > Reads alongside: the literature v7 report (external, literature-grounded — keep its synthesis, apply
 > the corrections below); `evidence/phase_b/procedural_memory_experiment.md` (other agent's
 > overlapping design); `evidence/memory_system/effectiveness/decision_replay/` (the harness);
-> `evidence/prompt_claims_audit/` + `evidence/extraction_selection/` (this session's findings).
+> `evidence/prompt_claims_audit/` + `evidence/extraction_selection/` (the prompt-audit and extraction-selection findings).
 
 ---
 
@@ -116,7 +116,7 @@ measurement of whether credit has recoverable signal before consolidation is bui
 
 ---
 
-## 2. What this session VALIDATED (the findings v7 builds on)
+## 2. What was VALIDATED (the findings v7 builds on)
 
 - **Prompt-claims audit** (`evidence/prompt_claims_audit/`): the hand-authored PLAYSTYLE tactics were
   never held to the facts-only bar. Tested two: **investigator "conceal / let consensus build" =
@@ -482,8 +482,8 @@ Discussion turns inherit the **leverage of the day they feed** for the extractio
 Sharpens §3B (credit) and §6 (discussion). Round-7 named the credit LOOP (join → write-back →
 consolidate); this names the **objective the loop optimizes** — what a `strategy_point` update is graded
 *against* — plus two failure modes the binary follow/override framing misses. Motivating evidence: the
-static 20-game store distilled **passive SK** and tanked win-rate (wolf/SK null-to-negative,
-[[project-episodic-memory-remaining-work]]) — a worked example of optimizing the wrong signal.
+static 20-game store distilled **passive SK** and tanked win-rate (wolf/SK null-to-negative, see
+`evidence/memory_system/effectiveness/`) — a worked example of optimizing the wrong signal.
 
 **The spine (one signal, four guards — each guard = a named failure). The whole design is small under
 the sprawl:**

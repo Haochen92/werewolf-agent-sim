@@ -20,7 +20,7 @@ os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 R = Path(__file__).resolve().parents[4]
 L = R / "evidence/fine_tuning/cross_encoder/reranker/labels/round2_expanded"
-COMB = R / "evidence/extraction/situation_summary/retrieval_golden_labels.json"
+COMB = R / "evidence/extraction/situation_summary/outputs/retrieval_golden_labels.json"
 SPLIT = R / "evidence/fine_tuning/cross_encoder/reranker/training_data/reranker_split.json"
 RMAP = {0: 0.0, 1: 0.25, 2: 1.0}
 

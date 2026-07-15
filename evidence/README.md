@@ -31,6 +31,7 @@ Tuning how memories are retrieved at game time: filtering, reranking, and capaci
 | [reranking](retrieval/reranking/report.md) | n=5 | May 23 | Strategy-only reranking on v4_deduped; small sample |
 | [capacity_limits](retrieval/capacity_limits/report.md) | n=120 | May 24 | Observations-only, top_k=3 vs 5 |
 | [context_eval](retrieval/context_eval/experiment_log.md) | — | Jun 1 | Context-based retrieval eval; methodology final, execution DEFERRED (golds conditioned on the v4_deduped_v2 substrate) |
+| [per_day_discussion_retrieval](per_day_discussion_retrieval/experiment_log.md) | 3,916 agent-days, $0 | Jul 7 | Design variant (retrieve once per day, not per turn) gated on a recompute pre-test: within-day retrievals almost never identical (0–9%), but the churn is substantially query-paraphrase noise, not adaptation; PARKED as a config-flag candidate |
 
 `filtering` and `reranking` used n=5 on v4_deduped (v0 prompts). Their directional findings hold but absolute numbers are noisy.
 
@@ -97,7 +98,7 @@ Distinct from the judges in other folders, which score the memory pipeline itsel
 |---|---|---|---|
 | [experiment_log](metrics/experiment_log.md) | — | Jun 6 | Design discussion: audit + proxy-basket decision (per-role decision-quality is not deterministically feasible; use de-lucked, monotonicity-verified outcome proxies) |
 
-This folder is the metric **design** journey; its instrument-**trust** twin is [evaluation/metrics/](evaluation/metrics/). Likewise [metrics/discussion_tagger/](metrics/discussion_tagger/) (the tagger design) twins [evaluation/discussion_tagger/](evaluation/discussion_tagger/) (the tagger-as-instrument trust report).
+This folder is the metric **design** journey; its instrument-**trust** twin is [evaluation/metrics/](evaluation/metrics/). Likewise [discussion_tagger/](discussion_tagger/) (the tagger design) twins [evaluation/discussion_tagger/](evaluation/discussion_tagger/) (the tagger-as-instrument trust report).
 
 ### Apparatus Support
 
@@ -115,6 +116,7 @@ The dimension-schema rebuild (Phase B) and the v7 compounding-loop iteration.
 |---|---|---|
 | [phase_b](phase_b/plan_review.md) | Jun 13 – 15 | Phase B design specs + cheap screens: [dimension_schema_build_spec](phase_b/dimension_schema_build_spec.md), [procedural_memory_experiment](phase_b/procedural_memory_experiment.md), [v6_full_store](phase_b/v6_full_store.md), the criticality/forced-schema/dimension-accuracy screens, and the v6-wide migration roadmap |
 | [v7_final](v7_final/experiment_log.md) | Jun 20 – Jul | Build log of the v7 credit / consolidation / discussion-credit work; the compounding loop itself is the one still-un-run paid test (design docs `consolidation_design.md`, `discussion_credit_design.md` hold current state) |
+| [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/discussion_tagger/](evaluation/discussion_tagger/)) |
 | [execution_plan](execution_plan/compounding_measurement_plan.md) | Jul 4 | Forward-looking plan for the compounding question; PLANNED, not executed — Phase 0 gates all paid runs |
 
 ## Training

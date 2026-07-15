@@ -8,7 +8,7 @@
 > Labelling now would be thrown away. **What survives wholesale: the methodology** (two-gold opposite
 > blinding, acceptance gates, progressive staged labelling, balance analysis). **Resume = re-run the
 > case-building + labelling on stable v5**, cheaply via the consolidated tracing pipeline. See
-> [[project-ship-roadmap]] Phase A/B. Everything below is the design to execute *then*, not now.
+> the roadmap at the time (foundation-rebuild phase, then label-once on v5). Everything below is the design to execute *then*, not now.
 
 > **⏩ READING GUIDE / CURRENT STATE (updated 2026-05-31). Start here if you're picking this up fresh.**
 > This log is a long investigation with several deliberate course-corrections. Read this block,
@@ -430,8 +430,7 @@ two things:
    tiers are fine.
 
 **Debiasing needs no relabeling** — re-merge trusting ChatGPT+Sonnet on the majority-tier
-disagreements (flip ~458 labels useful→not). See recommendation in
-[[project-context-based-retrieval-eval]] / below.
+disagreements (flip ~458 labels useful→not). See recommendation below.
 
 ### Recommended sequence for the reranker (disciplined, cheap-first)
 
@@ -444,7 +443,7 @@ disagreements (flip ~458 labels useful→not). See recommendation in
    the over-crediting that's visible in the situation text — phase/precondition mismatch — is
    learnable; context-only-visible relevance is not. Expect partial gains. (b) There is a
    standing decision to not over-optimize reranking until downstream game-outcome
-   measurement exists ([[reranking-pipeline-decisions]]); this re-eval respects it by
+   measurement exists; this re-eval respects it by
    *measuring* before optimizing. (c) For the stated ~2,800-pair volume bottleneck,
    flash-lite-CoT is the cheap low-bias way to scale, rather than more 3-auto-majority labels.
 
@@ -558,8 +557,7 @@ reeval_v4_power.py`):
 - **Observations:** a relabel+retrain has a **small but real** expected upside (~0.06–0.09
   NDCG@5) **and is cheap** — the existing ChatGPT/Sonnet OBS labels are input-matched, so it's
   just soft-averaging them and retraining, **no new labeling.** Worth doing as a low-cost
-  experiment; whether ~0.07 NDCG matters is ultimately a downstream-game-outcome question
-  ([[reranking-pipeline-decisions]]).
+  experiment; whether ~0.07 NDCG matters is ultimately a downstream-game-outcome question.
 - **Strategy points:** keep as-is. No significant degradation, and the situation-only re-pass
   (expensive, manual) is not justified.
 - **Human anchor:** justification is **purely the context eval** now, not the reranker.
@@ -605,7 +603,7 @@ The full validated two-gold program below is **deliberately descoped** to fit th
   the binding cost is **human anchor time**, staged (pilot ~50, expand only if it doesn't clear).
   *(Chat subscriptions ≠ API — automate the panel via API; reserve manual time for the anchor.)*
 - **Meta:** retrieval/labelling depth is **capped here.** Next effort rebalances to the agentic core +
-  a **downstream game-outcome metric** ([[project-episodic-memory-remaining-work]]) — the signal that
+  a **downstream game-outcome metric** — the signal that
   would actually tell us whether any of this retrieval quality moves agent performance.
 
 ## 0. The conceptual key — two ground truths, OPPOSITE blinding (do not mash them up again)
@@ -655,7 +653,7 @@ Dropped mistral-small / nim-8b as writers (too small for full-context summarizat
 from their failure as *judges*). Against **3.1** flash-lite both open models **undercut on cost**;
 speed is the open production question (see §3).
 
-**Open ceiling gap (raised this session — flagged OPEN).** The two open writers above are both
+**Open ceiling gap (raised here — flagged OPEN).** The two open writers above are both
 *lightweight* (chosen as cheap flash-lite-3.1 *replacements*), so neither is a quality ceiling.
 The roster's ceiling is **Gemini Pro — which is not open.** Whether we *also* need a **heavyweight
 open** writer (NIM-hosted: Llama-3.1-405B / Nemotron-class / Qwen2.5-72B — **not** DeepSeek, it is a
@@ -900,7 +898,7 @@ Human cost ≈ one focused day (1–2h rubric + ~2–3h for the 150 anchor, grou
 scene is read once + ~1–2h routed adjudication). **Integrity:** actually run the anchor, or mark it
 honestly as designed/piloted — never claim a validation that wasn't done.
 
-## 7. Status: decided vs open (updated 2026-05-31, this session)
+## 7. Status: decided vs open (updated 2026-05-31)
 
 - **Decided:** the two-gold decomposition; Part 1 = priority, Part 2 = optional/leveled; extraction
   scoped out; soft labels; speed not pre-gated; **open writers via NIM (OpenRouter dropped)**; **no

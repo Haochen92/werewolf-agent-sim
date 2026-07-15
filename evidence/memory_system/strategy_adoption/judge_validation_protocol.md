@@ -3,7 +3,7 @@
 > **🛑 EXECUTION DEFERRED (2026-06-01).** The protocol below is final, but running it is parked until
 > after the foundation rebuild — the spot-check labels would be on old-structure (parallel, 4-role,
 > day-only, v4-DB) games that are about to change. The *method* is substrate-independent and carries
-> forward; execute it on v5 transcripts. See [[project-ship-roadmap]] Phase B.
+> forward; execute it on v5 transcripts — the roadmap's label-once-on-v5 phase.
 
 > **Purpose.** The strategy-adoption judge ("did the agent meaningfully apply a useful
 > strategy?") is the one **load-bearing** prompt-quality judge in the project — its output is

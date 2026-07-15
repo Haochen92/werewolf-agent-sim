@@ -110,7 +110,7 @@ batches of ~5, count deduped store items after each, **stop at the knee (<~10% g
 — estimate ~15–20 (≈200–300 deduped items, in range of the old 300–522 stores). ~15 store + pad
 to ~30 memory-off ≈ **$11**, a bigger baseline for less than the flat-30.
 
-## Instrumentation fixes made this session
+## Instrumentation fixes made
 - **Extraction tracing restored**: the concurrent fan-out ran in ThreadPool workers where
   contextvars (langchain callback + Langfuse span) don't propagate → per-role generations were
   untraced (cost hidden). Fixed via `copy_context().run` per worker (output-neutral).

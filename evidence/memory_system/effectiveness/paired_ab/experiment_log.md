@@ -218,7 +218,7 @@ scope WHY. Two free checks already narrow it:
 
 That leaves four candidate layers — and critically, **"no measured effect" ≠ "no effect."** Our
 validated proxy basket is town-centric by construction (wolf social proxies failed validation, win is
-underpowered at N=30 — see [[project-metrics]]), so we may lack an instrument that could even SEE a
+underpowered at N=30 — see the proxy-basket validation in `evidence/metrics/`), so we may lack an instrument that could even SEE a
 wolf gain. The ladder therefore starts at the measurement layer, not the memory system. Free → paid:
 
 1. **Validate a wolf/SK instrument on data we already own (FREE, do first).** We now have 240 games —
@@ -244,7 +244,7 @@ wolf gain. The ladder therefore starts at the measurement layer, not the memory 
 - Retrieval gap → freeze-safe config levers ONLY: per-role `top_k`, namespace scoping, pool width.
   Retrieval/rerank prompt re-tunes are frozen until Phase B.
 - Content thinness/genericness (if step 2 shows wolf memories systematically off-point) → the
-  **namespace-augmentation pipeline is already built and parked** ([[project-namespace-augmentation]]);
+  **namespace-augmentation pipeline is already built and parked**;
   re-mining frozen games with frozen prompts is freeze-safe.
 - Application gap (memory in context, ignored) → injection-prompt territory = FROZEN → named Phase B
   item, not a now-fix.

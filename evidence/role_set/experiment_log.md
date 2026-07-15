@@ -2,7 +2,7 @@
 
 > **⏩ READING GUIDE / CURRENT STATE (started 2026-06-01). Start here if picking this up fresh.**
 > This logs the design discussion for the **role set** — one of the 5 foundation-rebuild changes
-> (see [[project-ship-roadmap]] Phase A) and a *gating* one: the role set must be locked before
+> (part of the project roadmap's foundation-rebuild phase) and a *gating* one: the role set must be locked before
 > role strata, per-role prompts, the v5 DB seed, and the keystone win-rate A/B can be designed.
 > **⏸ PARKED behind Phase A #1 (sequential redesign) + a discussion-quality gate (decided 2026-06-01).**
 > Sequential is built/validated on the *current* 4-role forced-vote game FIRST; if it fixes the bland
@@ -27,13 +27,13 @@ the role set:
 2. **Boring memory content.** Bland play → the episodic `observations` store is repetitive, which
    undercuts the thing the project is trying to demonstrate.
 3. **Keystone needs a measurable vehicle.** The headline experiment is memory-on vs memory-off win
-   rate ([[project-ship-roadmap]] Phase C); the role set determines what that A/B is measured on.
+   rate (the then-planned keystone win-rate A/B); the role set determines what that A/B is measured on.
 
 **Key diagnosis (do not conflate three causes):** the bland-discussion problem is *mostly not* a
 role-count problem.
 - "Nobody asks the investigator to come out" is a **structural coordination failure** of the current
   **parallel** day phase — agents speak simultaneously, so a question in round *r* can't be answered
-  in round *r*. Fixed by the sequential redesign ([[project-sequential-discussion]]), **not** by roles.
+  in round *r*. Fixed by the sequential redesign (see `evidence/sequential_discussion/`), **not** by roles.
 - Generic dialogue is partly flash-lite, partly prompting.
 - The role lever is **"claimspace"** (see §2 research), not raw power. More power roles can make
   discussion *worse* (mass-claim solves the game). Roles contribute "break the binary"; sequential
@@ -135,7 +135,7 @@ which is already **plurality** — only a tie-for-max yields no elimination — 
 
 - **Abstain = a sentinel vote target.** Add `"abstain"` to the valid vote targets. Keep
   `vote_target` a **required `str`** (do NOT make it nullable — flash-lite fails on optional/nullable
-  fields, see [[feedback-flashlite-optional-fields]]). "abstain" is just another entry in the existing
+  fields). "abstain" is just another entry in the existing
   `Counter`: if **abstain wins the plurality or ties for it → no lynch** (reuses the existing no-elim
   branch). A player winning outright → lynched. Side benefit: kills the edge case where one lone vote
   could lynch someone (now it loses to the abstain bloc).
@@ -149,12 +149,12 @@ which is already **plurality** — only a tie-for-max yields no elimination — 
   far sooner; at the cap, decide by surviving faction ratio or declare a draw.
 - **Why:** abstain makes "act now vs wait for more info" a real strategic choice and lengthens games
   when the town is uncertain — the cheap length lever (no extra agents/round) vs scaling player count.
-  Sequential + silence gate ([[project-sequential-discussion]]) further cuts per-day token cost.
+  Sequential + silence gate (see `evidence/sequential_discussion/`) further cuts per-day token cost.
 - **Scope:** localized — `day_resolution` (abstain handling + streak), valid_targets construction,
   the vote prompt (when to abstain + forced-day rule), two config knobs (`abstain_enabled`,
   `max_days`), a `no_lynch_streak` state field. **No graph-structure change.**
 
-## Resolved this session (2026-06-01)
+## Resolved (2026-06-01)
 
 - **Traitor** → wolves-only win condition if used (it can't co-win with a *solo* SK by definition);
   **rich-ship, not in the eval casting.**
@@ -174,7 +174,7 @@ which is already **plurality** — only a tie-for-max yields no elimination — 
    wolf 1v1 by mechanics → no special endgame rule needed (see Balance section). **This is the next
    substantive design step.**
 3. **Implement relaxed voting + stall guard** (mechanism above — ready to build).
-4. **Then:** how the locked set flows into **v5 DB seeding** ([[project-ship-roadmap]] #5) + **eval
+4. **Then:** how the locked set flows into **v5 DB seeding** (the roadmap's v5 memory-DB rebuild step) + **eval
    strata** (role × phase). Watch SK-namespace density and the baseline-run headroom sanity-check.
 
 ## §4 note — the real scaling cost is memory density, not extraction price

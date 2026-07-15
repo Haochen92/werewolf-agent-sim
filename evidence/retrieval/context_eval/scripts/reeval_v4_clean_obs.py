@@ -30,7 +30,7 @@ REPO = Path(__file__).resolve().parents[4]
 LABELS = REPO / "evidence/fine_tuning/cross_encoder/reranker/labels/round2_expanded"
 MERGED = LABELS / "expanded_merged_labels.json"
 CANDIDATES = LABELS / "expanded_candidates_for_labeling.json"
-COMBINED_GOLDEN = REPO / "evidence/extraction/situation_summary/retrieval_golden_labels.json"
+COMBINED_GOLDEN = REPO / "evidence/extraction/situation_summary/outputs/retrieval_golden_labels.json"
 SPLIT = REPO / "evidence/fine_tuning/cross_encoder/reranker/training_data/reranker_split.json"
 V4 = REPO / "models/cross_encoder/reranker_v4"
 

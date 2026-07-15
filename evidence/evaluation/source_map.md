@@ -103,10 +103,10 @@ The de-lucked outcome proxies that **both tiers depend on.** This is where Tier-
 
 | Proxy group | Code | Evidence | Reliability | Notes |
 |-------------|------|----------|-------------|-------|
-| Town primary basket | `Agents/compute_metrics.py` + `core/stats.py` | `metrics/{proxy_win_monotonicity,town_metric_refinement}.md` | ✅ **VALIDATED** | `town_vote_accuracy`, `correct_elimination_rate`, **`town_mislynch_rate`** (the old `mislynch_rate` was an internal decision-replay key, not this field), `serial_killer_lynched` — \|r\|≈0.55–0.65, p<0.01 (**point-biserial**; N=50/180). **The trustworthy core.** |
-| Investigator | ″ | `metrics/town_metric_refinement.md` | 🟡 **PARTIAL** | only `investigator_find_to_lynch_rate` (conversion) validated (+0.396); **find-rate NOT validated** (~0) |
-| Deceiver (wolf/SK) | ″ | `metrics/deceiver_metric_refinement.md` | ⚠️ **CLAIMED-UNVERIFIED** | SK kill metrics OK (+0.26..+0.32); `wolf_suspicion_drawn`/`sk_suspicion_drawn` (faction-split; outcome-proximate tautology); **wolf offense null/unmeasured** |
-| Discussion scoring (metrics **proxy**) | `metrics` Phase 1; Phase 2 deferred | `metrics/discussion_scoring_plan.md` | 🔴 **NULL / DEFERRED** | the *metrics-basket* discussion proxy: Phase-1 lead-vs-blend r=−0.093 (null); Phase-2 exposure-trajectory tagger deferred. ⚠️ **NOT the v7 loop tagger** — that one IS built (see Loop §). |
+| Town primary basket | `Agents/compute_metrics.py` + `core/stats.py` | `metrics/proxy_win_monotonicity.md` + `metrics/design/town_metric_refinement.md` | ✅ **VALIDATED** | `town_vote_accuracy`, `correct_elimination_rate`, **`town_mislynch_rate`** (the old `mislynch_rate` was an internal decision-replay key, not this field), `serial_killer_lynched` — \|r\|≈0.55–0.65, p<0.01 (**point-biserial**; N=50/180). **The trustworthy core.** |
+| Investigator | ″ | `metrics/design/town_metric_refinement.md` | 🟡 **PARTIAL** | only `investigator_find_to_lynch_rate` (conversion) validated (+0.396); **find-rate NOT validated** (~0) |
+| Deceiver (wolf/SK) | ″ | `metrics/design/deceiver_metric_refinement.md` | ⚠️ **CLAIMED-UNVERIFIED** | SK kill metrics OK (+0.26..+0.32); `wolf_suspicion_drawn`/`sk_suspicion_drawn` (faction-split; outcome-proximate tautology); **wolf offense null/unmeasured** |
+| Discussion scoring (metrics **proxy**) | `metrics` Phase 1; Phase 2 deferred | `metrics/design/discussion_scoring_plan.md` | 🔴 **NULL / DEFERRED** | the *metrics-basket* discussion proxy: Phase-1 lead-vs-blend r=−0.093 (null); Phase-2 exposure-trajectory tagger deferred. ⚠️ **NOT the v7 loop tagger** — that one IS built (see Loop §). |
 | Metric design v2 | — | `metrics/experiment_log.md` | ✅ design / 🟡 impl | basket rationale locked; per-proxy validation is the rows above |
 
 > **Verified:** `push_scores_to_langfuse` (`compute_metrics.py:519-550`) pushes **every** non-None metric field
@@ -121,7 +121,7 @@ The de-lucked outcome proxies that **both tiers depend on.** This is where Tier-
 
 ## Cross-cutting — A/B methodology (fair & directional at low N)
 
-The "make low-N runs trustworthy" layer. **`metrics/variance_reduction_levers.md` is mis-filed here (it's method, not a metric)** — absorb into this section of the write-up.
+The "make low-N runs trustworthy" layer. **`evaluation/methodology/variance_reduction_levers.md` is mis-filed here (it's method, not a metric)** — absorb into this section of the write-up.
 
 | Piece | Code/Evidence | Reliability | Notes |
 |-------|---------------|-------------|-------|
@@ -241,7 +241,7 @@ Verified by parallel code-readers; corrections folded into the tables above. Per
 ## Structural notes (for the write-up + the reorg)
 
 - **Two-axis mining holds:** every `memory_system/effectiveness/*` doc is both a *verdict* (→ writeup ch.) and an *apparatus-proof* (→ this report's credibility thread). E.g. drift doc = the system caught its own confound.
-- **Orphans/mis-files to absorb:** `metrics/variance_reduction_levers` (→ A/B-methodology section), `store_progression` (narrative spine → writeup), `phase_b/plan_review` + `v6_wide_migration_roadmap` (roadmaps).
+- **Orphans/mis-files to absorb:** `evaluation/methodology/variance_reduction_levers` (relocated there 2026-07-07), `store_progression` (narrative spine → writeup), `phase_b/plan_review` + `v6_wide_migration_roadmap` (roadmaps).
 - **No single source folder** — the eval system co-evolved across experiments; this report is a *synthesis-with-pointers*, not a colocation (unlike tracing).
 - **Diagnosis funnel ↔ modules** (the "how we diagnose a null" section): (1) did retrieval fire → EvalCase fields + `recall_flags.py`; (2) relevant → `judges/retrieval.py` + situation NDCG; (3) used → `judges/turn_action.py` + `loop/memory_adherence.py`; (4) decision changed → `replay/turn_action.py` (captured vs none); (5) outcome changed → metrics + `synth_deluck_ab.py` + paired A/B + decision-replay screen.
 
