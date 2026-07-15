@@ -388,6 +388,18 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
     vigilante_skconfirms_total = len(vig_sk_confirms)
     vigilante_skconfirms_lynched = sum(1 for day, sk in vig_sk_confirms if _lynched_after(sk, day))
 
+    # Wolf mirror: the wolf attack whiffs on the night-immune SK (wolf_target_role), merely CONFIRMING
+    # it. Only behaviorally meaningful from the current prompt epoch on — the wolf whiff was disclosed
+    # to wolves only recently (commit 51de191); earlier games measure a conversion the wolf didn't
+    # know it could make.
+    wolf_sk_confirms = [
+        (n.day, n.wolves_target)
+        for n in metrics.night_resolutions
+        if n.wolf_target_role == "serial_killer"
+    ]
+    wolf_skconfirms_total = len(wolf_sk_confirms)
+    wolf_skconfirms_lynched = sum(1 for day, sk in wolf_sk_confirms if _lynched_after(sk, day))
+
     # Suspicion drawn (concealment OUTCOME, not a clean skill proxy): per LIVING member, votes-at-member
     # / total-votes-on-days-the-member-was-alive, averaged over the faction's members — kills the
     # team-size (wolf is 2, SK is 1) and attrition confounds. CAVEATS (carried in the doc): it is
@@ -481,6 +493,8 @@ def _compute_base_metrics(result: dict, metrics: Metrics) -> BaseGameMetrics:
         wolf_elim_days_dissented=wolf_elim_days_dissented,
         wolf_blend_votes_aligned=wolf_blend_votes_aligned,
         wolf_blend_votes_total=wolf_blend_votes_total,
+        wolf_skconfirms_total=wolf_skconfirms_total,
+        wolf_skconfirms_lynched=wolf_skconfirms_lynched,
         sk_nights_survived=sk_nights_survived,
         sk_kills_landed=sk_kills_landed,
         sk_power_roles_killed=sk_power_roles_killed,
@@ -541,6 +555,9 @@ def _compute_derived_metrics(base: BaseGameMetrics) -> DerivedGameMetrics:
         vigilante_skconfirm_to_lynch_rate=_safe_div(
             base.vigilante_skconfirms_lynched, base.vigilante_skconfirms_total
         ),
+        wolf_skconfirm_to_lynch_rate=_safe_div(
+            base.wolf_skconfirms_lynched, base.wolf_skconfirms_total
+        ),
         # --- Diagnostic tier (metrics-audit survivors, 2026-07-02) ---
         wolf_power_kill_rate=_safe_div(
             base.power_roles_killed_by_wolves, base.power_role_alive_nights
@@ -577,6 +594,8 @@ def compute_game_metrics(result: dict, metrics: Metrics) -> ComputedGameMetrics:
         wolf_killed_investigator_day=base.wolf_killed_investigator_day,
         wolf_blend_votes_aligned=base.wolf_blend_votes_aligned,
         wolf_blend_votes_total=base.wolf_blend_votes_total,
+        wolf_skconfirms_total=base.wolf_skconfirms_total,
+        wolf_skconfirms_lynched=base.wolf_skconfirms_lynched,
         sk_nights_survived=base.sk_nights_survived,
         sk_exit_method=base.sk_exit_method,
         sk_kills_landed=base.sk_kills_landed,

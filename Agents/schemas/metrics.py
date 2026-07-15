@@ -145,6 +145,8 @@ class BaseGameMetrics(BaseModel):
     wolf_elim_days_dissented: int
     wolf_blend_votes_aligned: int   # living wolf votes aligned w/ the day's lynch, ALL lynch days
     wolf_blend_votes_total: int      # all living wolf votes on lynch days (excl. self being lynched)
+    wolf_skconfirms_total: int       # nights the wolves whiffed on the (immune) SK = confirmed it
+    wolf_skconfirms_lynched: int     # of those, the confirmed SK was lynched on a later day
 
     # Serial killer — survival is the core (dense) proxy; SK wins by outlasting.
     sk_nights_survived: int
@@ -201,6 +203,7 @@ class DerivedGameMetrics(BaseModel):
     wolf_unconditioned_blending_rate: float | None = None  # all lynch days — the validated camouflage proxy
     wolf_dissent_rate: float | None = None
     wolf_power_role_targeting_rate: float | None = None
+    wolf_skconfirm_to_lynch_rate: float | None = None    # CONVERSION: wolf-confirmed SK -> lynched (epoch-gated, see compute site)
     # Serial killer (offense; survival is the core but outcome-proximate — see ComputedGameMetrics)
     sk_kill_rate: float | None = None                        # kills / nights survived (de-lucked offense)
     sk_unconditioned_blending_rate: float | None = None      # SK day-vote camouflage (SUGGESTIVE: p=.019, fails Bonferroni)
@@ -262,6 +265,8 @@ class ComputedGameMetrics(DerivedGameMetrics):
     wolf_killed_investigator_day: int | None = None
     wolf_blend_votes_aligned: int = 0   # numerator of wolf_unconditioned_blending_rate
     wolf_blend_votes_total: int = 0      # denominator (0 -> rate is None); carry it to filter low-sample games
+    wolf_skconfirms_total: int = 0       # conversion denominator (filter low-sample games)
+    wolf_skconfirms_lynched: int = 0
     # Serial killer
     sk_nights_survived: int
     sk_exit_method: str

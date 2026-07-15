@@ -174,6 +174,31 @@ def test_wolf_power_kill_rate_none_without_power_alive_nights():
     assert m.wolf_power_kill_rate is None
 
 
+# --------------------------------------------------------------------------- wolf_skconfirm_to_lynch
+
+
+def test_wolf_skconfirm_to_lynch_counts_confirmed_sk_lynched_later():
+    # Night 1 the wolves whiff on the (night-immune) SK, confirming it; day 2 the SK is lynched.
+    night_res = [_night(1, wolves_target="sk", wolf_target_role="serial_killer")]
+    day_res = [
+        _day(1, [("v1", "v2")], "v2", "villager"),
+        _day(2, [("v1", "sk")], "sk", "serial_killer"),
+    ]
+    m = _compute([], day_res=day_res, night_res=night_res)
+    assert m.wolf_skconfirms_total == 1
+    assert m.wolf_skconfirms_lynched == 1
+    assert abs(m.wolf_skconfirm_to_lynch_rate - 1.0) < 1e-9
+
+
+def test_wolf_skconfirm_to_lynch_zero_when_confirmed_sk_never_lynched():
+    night_res = [_night(1, wolves_target="sk", wolf_target_role="serial_killer")]
+    day_res = [_day(2, [("v1", "v2")], "v2", "villager")]
+    m = _compute([], day_res=day_res, night_res=night_res)
+    assert m.wolf_skconfirms_total == 1
+    assert m.wolf_skconfirms_lynched == 0
+    assert m.wolf_skconfirm_to_lynch_rate == 0.0
+
+
 # --------------------------------------------------------------------------- tiering
 
 
