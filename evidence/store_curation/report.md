@@ -8,7 +8,8 @@
 > why the mechanisms differ per store (§4), what is verified (§5), and the open review points
 > (§6). Per-store mechanism detail lives in three companion docs in this folder:
 > [`observations.md`](observations.md) · [`strategy_points.md`](strategy_points.md) ·
-> [`tells.md`](tells.md).
+> [`tells.md`](tells.md); the complete knob inventory with per-value provenance is
+> [`knobs.md`](knobs.md).
 > **Role in the run program:** review basis for the consolidation ownership walkthrough (the §R
 > "D2" gate in [`../execution_plan/compounding_measurement_plan.md`](../execution_plan/compounding_measurement_plan.md)).
 > §6 is the walkthrough agenda; its item numbers are stable references (the log and the plan cite
@@ -282,7 +283,9 @@ cited.
    limitation: the tell-side prefilter (0.80/top-3) remains uncalibrated — the data to calibrate
    it exists (the 30-game sim's resolved rows), but a replay harness is a new instrument and the
    closing rule is no new complications pre-run. The remaining knobs are pinned as design-anchored
-   in the pre-reg, with a post-run sensitivity readout.
+   in the pre-reg, with a post-run sensitivity readout. *(2026-07-15: the complete per-knob
+   inventory — value, provenance class, validation status, and the pinning policy's rationale —
+   is now [`knobs.md`](knobs.md).)*
 3. **RESOLVED 2026-07-14 — the fuzzy match index is bounded** (owner ruling: a simple hard cap
    over the ledger design's unseen-based retirement, "easy to build, easy to explain"; built and
    suite-verified same day, log §7). Wording resolution now consults ~65 candidates per channel,
@@ -334,8 +337,8 @@ cited.
   `Agents/memory/tell_book.py` · `Agents/memory/strategy_synthesis.py` (the synthesis prompt) —
   module table in [`evaluation/src/loop/README.md`](../../evaluation/src/loop/README.md).
 - Per-store mechanism docs (this folder): [`observations.md`](observations.md) ·
-  [`strategy_points.md`](strategy_points.md) · [`tells.md`](tells.md); review record:
-  [`experiment_log.md`](experiment_log.md).
+  [`strategy_points.md`](strategy_points.md) · [`tells.md`](tells.md); knob inventory:
+  [`knobs.md`](knobs.md); review record: [`experiment_log.md`](experiment_log.md).
 - Evidence cited: tell-extraction log §10 (ledger sim) · §11 (consolidation №1) · §12
   (epoch-quantization ruling) · §16 (granularity screen)
   ([`../extraction/tell_extraction/experiment_log.md`](../extraction/tell_extraction/experiment_log.md));
