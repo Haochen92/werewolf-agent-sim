@@ -1,0 +1,378 @@
+{
+  "ab_allon_all_enabled": {
+    "wolf": {
+      "agent_days_with_retrieval": 152,
+      "total_retrieving_turns": 456,
+      "turns_per_agent_day": 3.0,
+      "multi_turn_agent_days": 128,
+      "identical_all_turns_rate": 0.023,
+      "diverged_rate": 0.977,
+      "mean_consecutive_jaccard_obs": 0.393,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.256,
+      "sit_set_pearson_r": 0.259,
+      "set_j_by_sit_tercile": [
+        0.296,
+        0.423,
+        0.459
+      ],
+      "n_pairs": 304
+    },
+    "town": {
+      "agent_days_with_retrieval": 437,
+      "total_retrieving_turns": 1217,
+      "turns_per_agent_day": 2.78,
+      "multi_turn_agent_days": 357,
+      "identical_all_turns_rate": 0.048,
+      "diverged_rate": 0.952,
+      "mean_consecutive_jaccard_obs": 0.413,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.263,
+      "sit_set_pearson_r": 0.278,
+      "set_j_by_sit_tercile": [
+        0.319,
+        0.429,
+        0.492
+      ],
+      "n_pairs": 780
+    },
+    "sk": {
+      "agent_days_with_retrieval": 87,
+      "total_retrieving_turns": 282,
+      "turns_per_agent_day": 3.24,
+      "multi_turn_agent_days": 78,
+      "identical_all_turns_rate": 0.0,
+      "diverged_rate": 1.0,
+      "mean_consecutive_jaccard_obs": 0.404,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.263,
+      "sit_set_pearson_r": 0.314,
+      "set_j_by_sit_tercile": [
+        0.294,
+        0.442,
+        0.477
+      ],
+      "n_pairs": 195
+    }
+  },
+  "ab_arms_sk_serial_killer_only": {
+    "sk": {
+      "agent_days_with_retrieval": 100,
+      "total_retrieving_turns": 313,
+      "turns_per_agent_day": 3.13,
+      "multi_turn_agent_days": 88,
+      "identical_all_turns_rate": 0.011,
+      "diverged_rate": 0.989,
+      "mean_consecutive_jaccard_obs": 0.388,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.268,
+      "sit_set_pearson_r": 0.272,
+      "set_j_by_sit_tercile": [
+        0.306,
+        0.396,
+        0.461
+      ],
+      "n_pairs": 213
+    }
+  },
+  "ab_arms_town_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 445,
+      "total_retrieving_turns": 1272,
+      "turns_per_agent_day": 2.86,
+      "multi_turn_agent_days": 388,
+      "identical_all_turns_rate": 0.046,
+      "diverged_rate": 0.954,
+      "mean_consecutive_jaccard_obs": 0.409,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.26,
+      "sit_set_pearson_r": 0.297,
+      "set_j_by_sit_tercile": [
+        0.296,
+        0.417,
+        0.514
+      ],
+      "n_pairs": 827
+    }
+  },
+  "ab_arms_wolf_wolf_only": {
+    "wolf": {
+      "agent_days_with_retrieval": 144,
+      "total_retrieving_turns": 450,
+      "turns_per_agent_day": 3.12,
+      "multi_turn_agent_days": 133,
+      "identical_all_turns_rate": 0.038,
+      "diverged_rate": 0.962,
+      "mean_consecutive_jaccard_obs": 0.39,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.26,
+      "sit_set_pearson_r": 0.377,
+      "set_j_by_sit_tercile": [
+        0.315,
+        0.356,
+        0.498
+      ],
+      "n_pairs": 306
+    }
+  },
+  "ab_epochB_nhtown_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 52,
+      "total_retrieving_turns": 162,
+      "turns_per_agent_day": 3.12,
+      "multi_turn_agent_days": 52,
+      "identical_all_turns_rate": 0.058,
+      "diverged_rate": 0.942,
+      "mean_consecutive_jaccard_obs": 0.375,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.262,
+      "sit_set_pearson_r": 0.281,
+      "set_j_by_sit_tercile": [
+        0.334,
+        0.3,
+        0.484
+      ],
+      "n_pairs": 110
+    }
+  },
+  "ab_epochB_rawtown_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 48,
+      "total_retrieving_turns": 150,
+      "turns_per_agent_day": 3.12,
+      "multi_turn_agent_days": 41,
+      "identical_all_turns_rate": 0.024,
+      "diverged_rate": 0.976,
+      "mean_consecutive_jaccard_obs": 0.368,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.258,
+      "sit_set_pearson_r": 0.261,
+      "set_j_by_sit_tercile": [
+        0.318,
+        0.353,
+        0.432
+      ],
+      "n_pairs": 102
+    }
+  },
+  "ab_nh_sk_serial_killer_only": {
+    "sk": {
+      "agent_days_with_retrieval": 85,
+      "total_retrieving_turns": 247,
+      "turns_per_agent_day": 2.91,
+      "multi_turn_agent_days": 71,
+      "identical_all_turns_rate": 0.07,
+      "diverged_rate": 0.93,
+      "mean_consecutive_jaccard_obs": 0.513,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.267,
+      "sit_set_pearson_r": 0.34,
+      "set_j_by_sit_tercile": [
+        0.389,
+        0.55,
+        0.6
+      ],
+      "n_pairs": 162
+    }
+  },
+  "ab_nh_town_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 421,
+      "total_retrieving_turns": 1223,
+      "turns_per_agent_day": 2.9,
+      "multi_turn_agent_days": 369,
+      "identical_all_turns_rate": 0.027,
+      "diverged_rate": 0.973,
+      "mean_consecutive_jaccard_obs": 0.381,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.262,
+      "sit_set_pearson_r": 0.236,
+      "set_j_by_sit_tercile": [
+        0.311,
+        0.394,
+        0.437
+      ],
+      "n_pairs": 802
+    }
+  },
+  "ab_nh_wolf_wolf_only": {
+    "wolf": {
+      "agent_days_with_retrieval": 160,
+      "total_retrieving_turns": 493,
+      "turns_per_agent_day": 3.08,
+      "multi_turn_agent_days": 148,
+      "identical_all_turns_rate": 0.02,
+      "diverged_rate": 0.98,
+      "mean_consecutive_jaccard_obs": 0.391,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.262,
+      "sit_set_pearson_r": 0.226,
+      "set_j_by_sit_tercile": [
+        0.342,
+        0.367,
+        0.465
+      ],
+      "n_pairs": 333
+    }
+  },
+  "ab_rr_sk_serial_killer_only": {
+    "sk": {
+      "agent_days_with_retrieval": 93,
+      "total_retrieving_turns": 286,
+      "turns_per_agent_day": 3.08,
+      "multi_turn_agent_days": 85,
+      "identical_all_turns_rate": 0.059,
+      "diverged_rate": 0.941,
+      "mean_consecutive_jaccard_obs": 0.377,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.267,
+      "sit_set_pearson_r": 0.321,
+      "set_j_by_sit_tercile": [
+        0.295,
+        0.356,
+        0.477
+      ],
+      "n_pairs": 193
+    }
+  },
+  "ab_rr_town_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 427,
+      "total_retrieving_turns": 1207,
+      "turns_per_agent_day": 2.83,
+      "multi_turn_agent_days": 367,
+      "identical_all_turns_rate": 0.022,
+      "diverged_rate": 0.978,
+      "mean_consecutive_jaccard_obs": 0.375,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.262,
+      "sit_set_pearson_r": 0.295,
+      "set_j_by_sit_tercile": [
+        0.29,
+        0.367,
+        0.469
+      ],
+      "n_pairs": 780
+    }
+  },
+  "ab_rr_wolf_wolf_only": {
+    "wolf": {
+      "agent_days_with_retrieval": 140,
+      "total_retrieving_turns": 393,
+      "turns_per_agent_day": 2.81,
+      "multi_turn_agent_days": 116,
+      "identical_all_turns_rate": 0.026,
+      "diverged_rate": 0.974,
+      "mean_consecutive_jaccard_obs": 0.397,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.263,
+      "sit_set_pearson_r": 0.175,
+      "set_j_by_sit_tercile": [
+        0.324,
+        0.461,
+        0.407
+      ],
+      "n_pairs": 253
+    }
+  },
+  "v6ab_skboth_serial_killer_only": {
+    "sk": {
+      "agent_days_with_retrieval": 93,
+      "total_retrieving_turns": 269,
+      "turns_per_agent_day": 2.89,
+      "multi_turn_agent_days": 76,
+      "identical_all_turns_rate": 0.013,
+      "diverged_rate": 0.987,
+      "mean_consecutive_jaccard_obs": 0.396,
+      "mean_consecutive_jaccard_sp": 0.337,
+      "mean_consecutive_sit_text_jaccard": 0.263,
+      "sit_set_pearson_r": 0.318,
+      "set_j_by_sit_tercile": [
+        0.285,
+        0.351,
+        0.393
+      ],
+      "n_pairs": 176
+    }
+  },
+  "v6ab_skobs_serial_killer_only": {
+    "sk": {
+      "agent_days_with_retrieval": 97,
+      "total_retrieving_turns": 280,
+      "turns_per_agent_day": 2.89,
+      "multi_turn_agent_days": 80,
+      "identical_all_turns_rate": 0.087,
+      "diverged_rate": 0.912,
+      "mean_consecutive_jaccard_obs": 0.453,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.261,
+      "sit_set_pearson_r": 0.271,
+      "set_j_by_sit_tercile": [
+        0.393,
+        0.421,
+        0.544
+      ],
+      "n_pairs": 183
+    }
+  },
+  "v6ab_sksp_serial_killer_only": {
+    "sk": {
+      "agent_days_with_retrieval": 90,
+      "total_retrieving_turns": 265,
+      "turns_per_agent_day": 2.94,
+      "multi_turn_agent_days": 73,
+      "identical_all_turns_rate": 0.041,
+      "diverged_rate": 0.959,
+      "mean_consecutive_jaccard_obs": 1.0,
+      "mean_consecutive_jaccard_sp": 0.333,
+      "mean_consecutive_sit_text_jaccard": 0.265,
+      "sit_set_pearson_r": 0.27,
+      "set_j_by_sit_tercile": [
+        0.236,
+        0.331,
+        0.43
+      ],
+      "n_pairs": 175
+    }
+  },
+  "v6ab_townobs_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 428,
+      "total_retrieving_turns": 1020,
+      "turns_per_agent_day": 2.38,
+      "multi_turn_agent_days": 296,
+      "identical_all_turns_rate": 0.057,
+      "diverged_rate": 0.943,
+      "mean_consecutive_jaccard_obs": 0.407,
+      "mean_consecutive_jaccard_sp": 1.0,
+      "mean_consecutive_sit_text_jaccard": 0.264,
+      "sit_set_pearson_r": 0.197,
+      "set_j_by_sit_tercile": [
+        0.328,
+        0.426,
+        0.466
+      ],
+      "n_pairs": 592
+    }
+  },
+  "v6ab_townsp_town_only": {
+    "town": {
+      "agent_days_with_retrieval": 417,
+      "total_retrieving_turns": 1087,
+      "turns_per_agent_day": 2.61,
+      "multi_turn_agent_days": 319,
+      "identical_all_turns_rate": 0.028,
+      "diverged_rate": 0.972,
+      "mean_consecutive_jaccard_obs": 1.0,
+      "mean_consecutive_jaccard_sp": 0.357,
+      "mean_consecutive_sit_text_jaccard": 0.265,
+      "sit_set_pearson_r": 0.148,
+      "set_j_by_sit_tercile": [
+        0.321,
+        0.346,
+        0.404
+      ],
+      "n_pairs": 670
+    }
+  }
+}
