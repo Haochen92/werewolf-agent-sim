@@ -478,7 +478,7 @@ def run_batch(args: argparse.Namespace) -> int:
     if args.dry_run:
         return 0
 
-    from Agents.turn import prompt_log
+    from Agents.turn import prompt_log, reads_log
     from Agents.main import run_game
     from Agents.run_fingerprint import runtime_fingerprint
     from tests.leak_test import run_leak_tests
@@ -568,10 +568,21 @@ def run_batch(args: argparse.Namespace) -> int:
             )
             result = outcome.result
             duration_seconds = perf_counter() - started_timer
-            # run_game clears prompt_log at start, so the global holds exactly
-            # this game's prompts. Leaks are recorded (not raised) so the game
+            # run_game clears prompt_log + reads_log at start, so the globals hold exactly
+            # this game's prompts/reads. Leaks are recorded (not raised) so the game
             # result is preserved; the batch still exits non-zero on any leak.
-            leaks = run_leak_tests(prompt_log, result.get("roles") or {})
+            # public_text = this game's shared prose (channel + summaries): a read why that
+            # also occurs there is shared vocabulary, not attributable to a leak.
+            public_text = " || ".join(
+                [m.message for m in result.get("day_channel") or []]
+                + [s.summary for s in result.get("day_summaries") or []]
+            )
+            leaks = run_leak_tests(
+                prompt_log,
+                result.get("roles") or {},
+                reads_log=reads_log,
+                public_text=public_text,
+            )
             if leaks:
                 leak_games += 1
                 print(

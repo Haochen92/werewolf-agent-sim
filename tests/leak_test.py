@@ -158,6 +158,66 @@ def check_gated_candidate_isolation(
     return leaks
 
 
+# Tokens that only appear in a prompt_input if a PlayerRead OBJECT was rendered into it (the field
+# name is schema vocabulary, not game prose). prompt_input holds template VARIABLES only, so the JSON
+# response examples in the templates — which legitimately contain "suspected_role" — never trip this.
+_READ_STRUCT_TOKENS = ("suspected_role", "'reads':", '"reads":')
+
+def check_reads_isolation(
+    prompt_log: list[dict[str, Any]],
+    reads_log: Iterable[dict[str, Any]],
+    public_text: str = "",
+) -> list[str]:
+    """Reads are PRIVATE — an agent's honest role suspicions (a wolf's read labels its packmate
+    "wolf") must never reach another agent's prompt_input. Reads never enter graph state by
+    construction (the _reads carrier is popped in Agents/turn/pipeline.py), so this is a standing
+    regression guard against a formatter/template regression.
+
+    Two passes, tuned by the 2026-07-09 smoke (the naive why-substring scan false-positived on
+    shared game vocabulary — "confirmed healer" lives in public discussion, store memories, and the
+    author's own strategy note all at once):
+      1. STRUCTURAL (primary): any prompt_input containing a read-object token (`suspected_role`, a
+         `reads` key) means read objects were rendered somewhere — the realistic regression vector.
+      2. PROSE (secondary): long whys (>=40 chars — short ones are generic game vocabulary) are
+         scanned as substrings, but only against OTHER players' prompts (the author's own strategy
+         note legitimately echoes its own reads) and only when the why does not itself appear in
+         ``public_text`` (the game's public channel + summaries — shared vocabulary can't be
+         attributed to a leak)."""
+    leaks: list[str] = []
+    blobs = [(entry, repr(entry.get("prompt_input", {}))) for entry in prompt_log]
+
+    for entry, blob in blobs:
+        for token in _READ_STRUCT_TOKENS:
+            if token in blob:
+                _record_leak(
+                    leaks,
+                    f"LEAK: {entry['player_id']} ({entry['player_role']}) has a rendered "
+                    f"read object in prompt_input (token {token!r})",
+                )
+                break
+
+    for rec in reads_log:
+        author = rec.get("player_id", "")
+        needles = [
+            why.strip()
+            for why in (r.get("why", "") for r in rec.get("reads", []))
+            if why and len(why.strip()) >= 40 and why.strip() not in public_text
+        ]
+        if not needles:
+            continue
+        for entry, blob in blobs:
+            if entry["player_id"] == author:
+                continue
+            for needle in needles:
+                if needle in blob:
+                    _record_leak(
+                        leaks,
+                        f"LEAK: {entry['player_id']} ({entry['player_role']}) received "
+                        f"{author}'s private read why-text in prompt_input: {needle!r}",
+                    )
+    return leaks
+
+
 def check_eliminated_players_excluded(
     prompt_log: list[dict[str, Any]], eliminated_players: Iterable[str]
 ) -> list[str]:
@@ -191,6 +251,8 @@ def run_leak_tests(
     roles: dict[str, str],
     eliminated_players: Iterable[str] = (),
     gated_candidates: Iterable[str] = (),
+    reads_log: Iterable[dict[str, Any]] = (),
+    public_text: str = "",
 ) -> list[str]:
     print("=== Running Leak Tests ===")
     leaks = [
@@ -201,6 +263,7 @@ def run_leak_tests(
         *check_healer_target_absent(prompt_log),
         *check_eliminated_players_excluded(prompt_log, eliminated_players),
         *check_gated_candidate_isolation(prompt_log, gated_candidates),
+        *check_reads_isolation(prompt_log, reads_log, public_text),
     ]
     print("=== Leak Tests Complete ===")
     return leaks
