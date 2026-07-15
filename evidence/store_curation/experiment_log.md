@@ -2,11 +2,20 @@
 
 > Chronological record of the consolidation ownership review: the walkthrough of both compounding
 > mechanisms (SP consolidation + tell fold), the probes it triggers, and the revisions it produces.
-> Later entries supersede earlier ones. The steady-state mechanism lives in [`report.md`](report.md)
-> (this log records only decisions and changes); the two mechanisms' *build* journeys predate this
-> folder and stay in their original homes — the SP side across the execution plan's §0.4/§0.5 fixes
+> Later entries supersede earlier ones. **Genre note:** this is a review-and-ruling log, not a
+> build journey — every entry is an owner probe, the ruling it produced, the implementation, and a
+> suite-count delta; it doubles as the changelog for [`report.md`](report.md). The steady-state
+> mechanism lives in the report and its per-store docs (this log records only decisions and
+> changes); the two mechanisms' *build* journeys predate this folder and stay in their original
+> homes — the SP side across the execution plan's §0.4/§0.5 fixes
 > (`../execution_plan/compounding_measurement_plan.md`) and the loop run records
 > (`../v7_final/`), the tell side in `../extraction/tell_extraction/experiment_log.md` §10–§16.
+> **Section-map note (2026-07-15):** the folder was renamed from `evidence/consolidation/` and the
+> report restructured into a framework doc plus per-store docs
+> (`observations.md` / `strategy_points.md` / `tells.md`). Report references in the entries below
+> are to the report *as of 2026-07-14*: its old §2 (SP tick, incl. §2.1 obs decay) is now
+> `strategy_points.md` + `observations.md`, its old §3 (tell tick) is now `tells.md`; §6 item
+> numbers are unchanged and remain valid.
 
 ## 1. Motivation — one review for two mechanisms (2026-07-14)
 
