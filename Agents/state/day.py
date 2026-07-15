@@ -17,6 +17,7 @@ from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
     DayVote,
+    DeathRecord,
     InvestigatorResult,
     WolfChannel,
 )
@@ -33,6 +34,14 @@ class DayGraphState(TypedDict, total=False):
     """Public day-discussion transcript; accumulates across speaker turns."""
     day_summaries: Annotated[list[DaySummary], add]
     """Prior-day summaries carried in as context."""
+    dead_roster: list[DeathRecord]
+    """Ordered PUBLIC dead roster (dead player -> revealed role + when), seeded from orchestrator
+    state so every day payload can render who is dead. Read-only in the day graph (deaths are
+    written by night/day resolution, which are parent-graph nodes — never here)."""
+    cast_role_counts: dict[str, int]
+    """Public fixed-cast census (role -> how many players were cast with it; counts only, no
+    identities), seeded from orchestrator state so every day payload can render the alive-roles line
+    (this census minus the revealed dead). Read-only in the day graph like dead_roster."""
     wolf_channel: list[WolfChannel]
     """Wolf night coordination + GM whiff notes, seeded from orchestrator state so the wolf day
     payload can carry it into discuss/vote turns (read-only in the day graph — never written here)."""
@@ -86,6 +95,10 @@ class VillagerDayState(TypedDict):
     """Public day-discussion transcript visible to everyone."""
     day_summaries: list[DaySummary]
     """Prior-day summaries for context."""
+    dead_roster: list[DeathRecord]
+    """Public dead roster (dead player -> revealed role + when); shown to every role."""
+    cast_role_counts: dict[str, int]
+    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
     surviving_players: list[str]
     """Role-blind roster of all living players (no faction split — this role can't see one)."""
     player_id: str
@@ -113,6 +126,10 @@ class HealerDayState(TypedDict):
     """Public day-discussion transcript."""
     day_summaries: list[DaySummary]
     """Prior-day summaries for context."""
+    dead_roster: list[DeathRecord]
+    """Public dead roster (dead player -> revealed role + when); shown to every role."""
+    cast_role_counts: dict[str, int]
+    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
     surviving_players: list[str]
     """Role-blind roster of all living players."""
     player_id: str
@@ -135,6 +152,10 @@ class InvestigatorDayState(TypedDict):
     """Public day-discussion transcript."""
     day_summaries: list[DaySummary]
     """Prior-day summaries for context."""
+    dead_roster: list[DeathRecord]
+    """Public dead roster (dead player -> revealed role + when); shown to every role."""
+    cast_role_counts: dict[str, int]
+    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
     surviving_players: list[str]
     """Role-blind roster of all living players."""
     investigator_results: list[InvestigatorResult]
@@ -164,6 +185,10 @@ class WolfDayState(TypedDict):
     """Public day-discussion transcript."""
     day_summaries: list[DaySummary]
     """Prior-day summaries for context."""
+    dead_roster: list[DeathRecord]
+    """Public dead roster (dead player -> revealed role + when); shown to every role."""
+    cast_role_counts: dict[str, int]
+    """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
     surviving_wolves: list[str]
     """Private: living wolf allies (the leak-boundary payload field — wolves only)."""
     surviving_villagers: list[str]
