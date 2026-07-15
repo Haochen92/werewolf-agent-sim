@@ -20,6 +20,7 @@ EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_filtering_eval.jsonl"
 STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 

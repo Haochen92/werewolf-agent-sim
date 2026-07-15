@@ -47,6 +47,7 @@ load_project_env()
 
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 CE_MODEL_PATH = (

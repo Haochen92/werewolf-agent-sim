@@ -15,7 +15,7 @@ Usage::
 
     # Save generated situations to file for later analysis
     poetry run python -m evaluation.src.labeling.label_scorer.situation_regenerate_eval \
-        --save-situations evidence/extraction/situation_summary/regenerated_situations.json
+        --save-situations evidence/extraction/situation_summary/outputs/regenerated_situations.json
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ GOLDEN_LABELS_PATH = (
     / "evidence"
     / "extraction"
     / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"

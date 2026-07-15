@@ -31,6 +31,7 @@ EVAL_DATASET = REPO_ROOT / "eval_sets" / "v4_reranker_expanded.jsonl"
 OUTPUT_DIR = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "labels" / "round2_expanded"
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 

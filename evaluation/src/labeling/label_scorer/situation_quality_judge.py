@@ -12,7 +12,7 @@ Usage::
 
     # Use a specific regenerated file (e.g. pro output)
     poetry run python -m evaluation.src.labeling.label_scorer.situation_quality_judge \
-        --regen-file evidence/extraction/situation_summary/regenerated_situations_pro.json
+        --regen-file evidence/extraction/situation_summary/outputs/regenerated_situations_pro.json
 
     # Filter by role
     poetry run python -m evaluation.src.labeling.label_scorer.situation_quality_judge \
@@ -38,6 +38,7 @@ DEFAULT_REGEN = (
     / "evidence"
     / "extraction"
     / "situation_summary"
+    / "outputs"
     / "regenerated_situations.json"
 )
 

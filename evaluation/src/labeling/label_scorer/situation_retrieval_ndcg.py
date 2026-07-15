@@ -36,6 +36,7 @@ GOLDEN_LABELS_PATH = (
     / "evidence"
     / "extraction"
     / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 STORE_DIR = REPO_ROOT / "memory_stores" / "v4_deduped_v2"

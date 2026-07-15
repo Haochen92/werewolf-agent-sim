@@ -129,8 +129,8 @@ The iteration's endpoints graduated; the metric's staleness did not get fixed:
 | Beat | Artifact | What it holds |
 |---|---|---|
 | §1 | `model_comparison/outputs_*.jsonl`, `judge_pairwise_*.jsonl`, `rubric_judge_*.jsonl` | 4-model outputs + pairwise + rubric judge results |
-| §2-§4 | `retrieval_golden_labels.json` | the graded-relevance golden (⚠️ shared asset — also read by reranker training + context_eval; do not move) |
-| §3 | `regenerated_situations_v*.json`, `quality_judge_results*.json`, `prompt_versions/` | per-version regenerated queries + judge scores + checkpointed prompts |
+| §2-§4 | `outputs/retrieval_golden_labels.json` | the graded-relevance golden (⚠️ shared asset — also read by reranker training + context_eval; do not move) |
+| §3 | `outputs/regenerated_situations_v*.json`, `outputs/quality_judge_results*.json`, `prompt_versions/` | per-version regenerated queries + judge scores + checkpointed prompts |
 | §2-§4 | `staging/case_*.json` | per-case labeling inputs (the prompt the model saw) |
 | destination | [report.md](report.md) | current shipped state (v6 cell schema) + freshness/gap tracking |
 | apparatus | [../../evaluation/llm_judge/agent_decision.md](../../evaluation/llm_judge/agent_decision.md) | the L1/L2 measurement write-up (Stage 1) |
@@ -406,7 +406,7 @@ Golden labels are only valid against these exact artifact versions.
   - `label`: records golden situations + graded relevance labels
   - `sample`: balanced case selection across roles
   - `progress`: labeling status tracker
-- Golden labels output: `evidence/extraction/situation_summary/retrieval_golden_labels.json`
+- Golden labels output: `evidence/extraction/situation_summary/outputs/retrieval_golden_labels.json`
 - Next step: select cases and begin co-creating golden situations
 
 ### 2026-05-27 — Structured vs natural prose A/B test

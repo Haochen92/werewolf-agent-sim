@@ -17,6 +17,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 OBS_STORE = REPO_ROOT / "memory_stores" / "v4_deduped_v2" / "observations.json"

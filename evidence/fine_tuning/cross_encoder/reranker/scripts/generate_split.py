@@ -20,6 +20,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[5]
 GOLDEN_LABELS_PATH = (
     REPO_ROOT / "evidence" / "extraction" / "situation_summary"
+    / "outputs"
     / "retrieval_golden_labels.json"
 )
 OUTPUT_PATH = REPO_ROOT / "evidence" / "fine_tuning" / "cross_encoder" / "reranker" / "training_data" / "reranker_split.json"
