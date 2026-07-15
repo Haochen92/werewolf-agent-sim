@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
+from Agents.board_clocks import criticality_from_counts
 from Agents.game_config import GameConfig
 
 # Town wins by removing BOTH threat factions (the wolves and the serial killer),
@@ -116,22 +117,35 @@ def query_criticality(
     surviving_players: Iterable[str], roles: Mapping[str, str]
 ) -> tuple[int, int, bool]:
     """Deterministic query criticality from the frozen board: ``(players_alive,
-    distance_to_parity, is_swing)``. ``distance_to_parity`` is wolf-faction parity
-    (non-wolf eliminations until wolves reach parity); ``is_swing`` = one result from
-    flipping. Town-lensed (wolves are the dominant parity driver; the serial killer is a
-    minority wildcard counted among "others"). Omniscient/offline — computed from the true
-    role map, never shown to an agent; the memory-query fill of the same three dims is what
-    the dimension audit checks against this.
+    distance_to_parity, is_swing)``, mirroring ``determine_winner``'s three terminal
+    clocks (Agents.nodes.orchestrator) — eliminations until each faction's win:
 
-    Shared home (not the criticality-screen experiment) so the dimension audit and the
-    screen compute the criticality truth identically. ``criticality_screen`` re-imports it.
+    - wolf clock = (town + SK) − wolves. Counting the SK among the bodies is exact,
+      not an approximation: wolves cannot win while the SK lives, so its death is one
+      of the eliminations the clock counts.
+    - SK clock = (town + wolves) − 1 (night-immune + a guaranteed kill ⇒ wins at one
+      other survivor); absent when no SK is alive.
+    - town clock = wolves + SK (town wins when both threat factions are gone).
+
+    ``distance_to_parity`` = min of the two EVIL clocks — matching the model-facing
+    field description ("the leading remaining evil faction") the dimension audit grades
+    fills against. ``is_swing`` = min of ALL THREE clocks <= 1: faction-neutral "the
+    game can end within one elimination, in some direction" (2026-07-11 ruling,
+    evidence/credit/report.md §6; both were wolf-only before, which graded correct
+    SK-endgame fills as wrong and under-weighted deceiver do-or-die boards near a town
+    win). Computed here from the true role map, but the values are PUBLIC-derivable
+    (fixed cast + role-revealing deaths -> the census gives the same counts), so the
+    live memory query states them as known board facts; for these dims the dimension
+    audit now checks fill WIRING, not an epistemic gap.
+
+    The clock arithmetic lives in ``Agents.board_clocks`` (shared with the live fill)
+    so the audit, the screens, and the live query can never disagree on the definition.
+    ``criticality_screen`` re-imports this wrapper.
     """
     alive = list(surviving_players)
-    n = len(alive)
     wolves = sum(1 for p in alive if roles.get(p) == "wolf")
-    others = n - wolves
-    distance_to_parity = others - wolves
-    return n, distance_to_parity, distance_to_parity <= 1
+    sk = sum(1 for p in alive if roles.get(p) == "serial_killer")
+    return criticality_from_counts(wolves, sk, len(alive) - wolves - sk)
 
 
 @dataclass(frozen=True)

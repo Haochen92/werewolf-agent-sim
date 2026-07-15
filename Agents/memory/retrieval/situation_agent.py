@@ -13,6 +13,7 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field, create_model
 
+from Agents.board_clocks import criticality_from_census
 from Agents.llm_factory import get_llm
 from Agents.prompts.prompt_inputs import (
     build_agent_prompt_input as _build_agent_prompt_input,
@@ -104,6 +105,15 @@ def _computed_dims(payload: dict, available: dict) -> dict[str, int | bool]:
         dims["bullets_left"] = int(payload["vigilante_bullets"])
     if "ally_revealed" in available and payload.get("initial_wolf_count") is not None:
         dims["ally_revealed"] = len(payload.get("surviving_wolves", [])) < int(payload["initial_wolf_count"])
+    # Criticality is PUBLIC info too (fixed cast + role-revealing deaths -> the census gives the
+    # faction COUNTS the clocks need; identities never enter). None on legacy census-less payloads.
+    crit = criticality_from_census(payload.get("cast_role_counts"), payload.get("dead_roster"))
+    if crit is not None:
+        _, dist, swing = crit
+        if "distance_to_parity" in available:
+            dims["distance_to_parity"] = dist
+        if "is_swing" in available:
+            dims["is_swing"] = swing
     return dims
 
 
@@ -129,11 +139,14 @@ def _override_deterministic_dims(situation: BaseModel, payload: dict) -> None:
     belt-and-suspenders no-op — it still fires when the model ignores the injected fact, and
     `_log_dim_override` records that residual disagreement.
 
-    RESIDUAL: only the numeric/bool dims are corrected. `distance_to_parity` / `is_swing` stay
-    LLM-filled — they need the true role map the live agent cannot see, so they are NOT injected into
-    the prompt either. Any part of `criticality_stakes` that leans on parity/swing therefore still
-    reflects the LLM's estimate, while the players_alive/bullets/ally parts are now written from truth
-    (the prompt saw the real numbers)."""
+    `distance_to_parity` / `is_swing` joined the computed set on 2026-07-11: the old premise ("they
+    need the true role map the live agent cannot see") was falsified by the owner — the cast is fixed
+    and public and every death path announces the dead player's role, so the census (cast minus
+    revealed dead) yields the faction COUNTS the clocks need (Agents.board_clocks). They fall back to
+    the LLM fill only on legacy payloads that carry no `cast_role_counts`.
+
+    RESIDUAL: only the numeric/bool dims are corrected; free-text fields (`criticality_stakes` etc.)
+    are composed by the LLM from the injected facts and are not themselves overridden."""
     for field, computed in _computed_dims(payload, type(situation).model_fields).items():
         _log_dim_override(payload, field, getattr(situation, field), computed)
         setattr(situation, field, computed)
@@ -159,6 +172,16 @@ def _known_board_facts(payload: dict, cell_schema: type[BaseModel]) -> str:
     if "ally_revealed" in facts:
         yn = "yes" if facts["ally_revealed"] else "no"
         lines.append(f"- A wolf partner has been revealed or eliminated: {yn} (set ally_revealed accordingly).")
+    if "distance_to_parity" in facts:
+        lines.append(
+            f"- Eliminations until the leading evil faction can win: {facts['distance_to_parity']} "
+            "(set distance_to_parity to exactly this)."
+        )
+    if "is_swing" in facts:
+        yn = "yes" if facts["is_swing"] else "no"
+        lines.append(
+            f"- The game can end within one more elimination: {yn} (set is_swing accordingly)."
+        )
     return (
         "KNOWN BOARD FACTS (authoritative — computed from the game state; use these EXACT values and "
         "derive the Stakes from them, do not re-estimate):\n" + "\n".join(lines)

@@ -117,6 +117,39 @@ def test_ally_revealed_missing_count_keeps_llm_fill():
     assert cell.ally_revealed is False
 
 
+# ── distance_to_parity / is_swing (public-census promotion, 2026-07-11) ───────────────────────
+_CAST = {"wolf": 2, "serial_killer": 1, "villager": 3, "healer": 1, "investigator": 1, "vigilante": 1}
+
+
+def test_criticality_dims_computed_from_census():
+    # 1 wolf + 1 villager dead: wolves=1, sk=1, town=5 -> wolf clock 5, SK clock 5, town clock 2
+    # -> dist 5, not swing. LLM's wrong fills (0 / True) must both be overridden.
+    payload = {"surviving_players": [f"p{i}" for i in range(1, 8)], "player_id": "p1",
+               "cast_role_counts": dict(_CAST),
+               "dead_roster": [{"role": "wolf"}, {"role": "villager"}]}
+    cell = _make_cell("villager", "day_discussion", distance_to_parity=0, is_swing=True)
+    _override_deterministic_dims(cell, payload)
+    assert cell.distance_to_parity == 5 and cell.is_swing is False
+
+
+def test_criticality_dims_sk_endgame_swing():
+    # Wolves swept, SK + 2 town: the board the wolf-only rule called safe -> dist 1, swing.
+    payload = {"surviving_players": ["p1", "p2", "p3"], "player_id": "p1",
+               "cast_role_counts": dict(_CAST),
+               "dead_roster": [{"role": "wolf"}, {"role": "wolf"}, {"role": "villager"},
+                               {"role": "healer"}, {"role": "investigator"}, {"role": "vigilante"}]}
+    cell = _make_cell("villager", "day_discussion", distance_to_parity=5, is_swing=False)
+    _override_deterministic_dims(cell, payload)
+    assert cell.distance_to_parity == 1 and cell.is_swing is True
+
+
+def test_criticality_dims_missing_census_keeps_llm_fill():
+    payload = {"surviving_players": ["p1", "p2", "p3"], "player_id": "p1"}
+    cell = _make_cell("villager", "day_discussion", distance_to_parity=2, is_swing=True)
+    _override_deterministic_dims(cell, payload)
+    assert cell.distance_to_parity == 2 and cell.is_swing is True
+
+
 # ── _known_board_facts (the prompt-injection half) ─────────────────────────────────────────────
 def test_known_facts_states_players_alive():
     payload = {"surviving_players": ["p1", "p2", "p3", "p4", "p5", "p6"], "player_id": "p1"}
@@ -139,6 +172,22 @@ def test_known_facts_states_ally_revealed():
                "player_id": "w1", "initial_wolf_count": 2}
     facts = _known_board_facts(payload, cell_situation_schema_for("wolf", "day_discussion"))
     assert "revealed or eliminated: yes" in facts
+
+
+def test_known_facts_states_criticality_dims():
+    # SK endgame: the prompt must state dist 1 and "can end within one more elimination: yes",
+    # and the stated values must equal what the override sets (single-source invariant).
+    payload = {"surviving_players": ["p1", "p2", "p3"], "player_id": "p1",
+               "cast_role_counts": dict(_CAST),
+               "dead_roster": [{"role": "wolf"}, {"role": "wolf"}, {"role": "villager"},
+                               {"role": "healer"}, {"role": "investigator"}, {"role": "vigilante"}]}
+    schema = cell_situation_schema_for("villager", "day_discussion")
+    facts = _known_board_facts(payload, schema)
+    assert "leading evil faction can win: 1" in facts
+    assert "end within one more elimination: yes" in facts
+    cell = _make_cell("villager", "day_discussion", distance_to_parity=9, is_swing=False)
+    _override_deterministic_dims(cell, payload)
+    assert cell.distance_to_parity == 1 and cell.is_swing is True
 
 
 def test_known_facts_empty_when_uncomputable():

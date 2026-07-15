@@ -24,14 +24,28 @@ def test_players_alive_true_counts_roster():
     assert players_alive_true(c) == 3
 
 
-def test_query_criticality_town_lens():
-    # 5 alive, 2 wolves -> others=3, dist=3-2=1 -> swing
+def test_query_criticality_wolf_clock_leads():
+    # 5 alive, 2 wolves + SK: wolf clock (2 town + 1 SK) - 2 = 1 beats SK clock 3 -> dist 1, swing
     roles = {"p1": "wolf", "p2": "wolf", "p3": "villager", "p4": "villager", "p5": "serial_killer"}
     assert query_criticality(["p1", "p2", "p3", "p4", "p5"], roles) == (5, 1, True)
-    # 9 alive, 2 wolves -> others=7, dist=5 -> not swing
+    # 9 alive, 2 wolves, no SK: wolf clock 5, town clock 2 -> not swing
     roles9 = {f"p{i}": "villager" for i in range(1, 10)}
     roles9["p1"] = roles9["p2"] = "wolf"
     assert query_criticality(list(roles9), roles9) == (9, 5, False)
+
+
+def test_query_criticality_sk_endgame_is_swing():
+    # The pre-2026-07-11 blind board: wolves swept, SK + 2 town left. The wolf clock
+    # reads a safe 3, but the SK is ONE elimination from winning -> dist 1, swing.
+    roles = {"p1": "serial_killer", "p2": "villager", "p3": "villager"}
+    assert query_criticality(["p1", "p2", "p3"], roles) == (3, 1, True)
+
+
+def test_query_criticality_near_town_win_is_swing():
+    # One wolf left, no SK, town buffer: the evil clock is still 2 away (dist 2), but
+    # the game ends on the next correct lynch (town clock 1) -> swing, faction-neutral.
+    roles = {"p1": "wolf", "p2": "villager", "p3": "villager", "p4": "villager"}
+    assert query_criticality(["p1", "p2", "p3", "p4"], roles) == (4, 2, True)
 
 
 def test_bullets_left_true_counts_prior_night_shots():
