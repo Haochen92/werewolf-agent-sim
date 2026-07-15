@@ -32,6 +32,30 @@ from Agents.turn.action_space import (
 load_dotenv()
 logger = getLogger(__name__)
 prompt_log: list[dict] = []
+# Capture point for the reads leak check (see tests/leak_test.py): every emitted read is recorded
+# here so check_reads_isolation can scan every OTHER agent's prompt_input for its why-text. Cleared
+# at game start alongside prompt_log (Agents/main.py).
+reads_log: list[dict] = []
+
+
+def _reads_coverage(reads: list, payload: dict[str, Any]) -> tuple[float, list[str]]:
+    """Fraction of the enumerated read targets the agent actually covered, plus the missing players.
+
+    Expected targets are enumerated EXACTLY as build_agent_prompt_input builds {read_targets}
+    (surviving_players, or the wolf-day wolves+villagers shape, minus self), so the tripwire measures
+    against what the prompt asked for. Pure/side-effect-free so the completeness policy is unit-testable
+    on its own; the caller only MONITORS on it (T4: enumerate + warn, never retry)."""
+    expected = payload.get("surviving_players") or (
+        payload.get("surviving_wolves", []) + payload.get("surviving_villagers", [])
+    )
+    self_id = payload.get("player_id")
+    expected = [p for p in expected if p != self_id]
+    if not expected:
+        return 1.0, []
+    covered = {getattr(r, "player", None) for r in reads}
+    missing = [p for p in expected if p not in covered]
+    coverage = (len(expected) - len(missing)) / len(expected)
+    return coverage, missing
 
 
 def _run_agent(
@@ -81,6 +105,27 @@ def _run_agent(
         strategy_update = getattr(result, "updated_strategy", None)
         strategy_verdicts = getattr(result, "strategy_verdicts", []) or []
         memory_verdicts = getattr(result, "memory_applicability", []) or []
+        # Per-player reads (T1c). The _reads carrier rides the curated output the same way
+        # _strategy_verdicts does; pipeline.py POPs it so it never reaches graph state (reads are
+        # private), and reads_log records it for the leak check.
+        reads = getattr(result, "reads", []) or []
+        # T4 completeness tripwire: enumerate the read targets and MONITOR coverage — never RETRY on
+        # it. A ~7% soft denominator (occasional under-coverage) was accepted in exchange for zero
+        # added latency (plan T4). Only fires when the schema carries reads (the in-scope roles).
+        if reads or "reads" in output_schema.model_fields:
+            coverage, missing = _reads_coverage(reads, payload)
+            if coverage < 0.85:
+                logger.warning(
+                    "reads under-covered: player=%s phase=%s coverage=%.0f%% missing=%s",
+                    player_id, output_key, coverage * 100, missing,
+                )
+        if reads:
+            reads_log.append({
+                "player_id": player_id,
+                "day": payload.get("current_day", 1),
+                "output_key": output_key,
+                "reads": [r.model_dump() for r in reads],
+            })
 
         if output_key == "day_channel":
             current_day = payload.get("current_day", 1)
@@ -109,6 +154,8 @@ def _run_agent(
                         output["_strategy_verdicts"] = strategy_verdicts
                     if memory_verdicts:
                         output["_memory_applicability"] = memory_verdicts
+                    if reads:
+                        output["_reads"] = reads
                     return output if output else None
                 # Proactive novelty gate: a low-novelty (echo/restatement) proactive turn is
                 # converted to a hidden pass. Reactive turns are never gated (accountability),
@@ -146,6 +193,8 @@ def _run_agent(
                 output["_strategy_verdicts"] = strategy_verdicts
             if memory_verdicts:
                 output["_memory_applicability"] = memory_verdicts
+            if reads:
+                output["_reads"] = reads
             return output
 
         if output_key == "day_votes":
@@ -162,6 +211,8 @@ def _run_agent(
                     output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
+                if reads:
+                    output["_reads"] = reads
                 return output
             logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
             continue
@@ -208,6 +259,8 @@ def _run_agent(
                     output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
+                if reads:
+                    output["_reads"] = reads
                 return output
             logger.warning(f"Healer targeted invalid player: {result.healer_target}")
             continue
@@ -226,6 +279,8 @@ def _run_agent(
                     output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
+                if reads:
+                    output["_reads"] = reads
                 return output
             logger.warning(f"Investigator targeted invalid player: {result.investigator_target}")
             continue
@@ -244,6 +299,8 @@ def _run_agent(
                     output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
+                if reads:
+                    output["_reads"] = reads
                 return output
             logger.warning(f"Serial killer targeted invalid player: {result.serial_killer_target}")
             continue
@@ -263,6 +320,8 @@ def _run_agent(
                     output["_strategy_verdicts"] = strategy_verdicts
                 if memory_verdicts:
                     output["_memory_applicability"] = memory_verdicts
+                if reads:
+                    output["_reads"] = reads
                 return output
             logger.warning(f"Vigilante targeted invalid player: {result.vigilante_target}")
             continue

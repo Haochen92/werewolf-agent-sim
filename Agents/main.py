@@ -5,7 +5,7 @@ wrapper that runs one game and prints the result.
 """
 from dotenv import load_dotenv
 
-from Agents.turn import prompt_log
+from Agents.turn import prompt_log, reads_log
 from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
 from Agents.game_config import GameConfig
 from Agents.graphs.parent import parent_graph_compiled
@@ -68,6 +68,7 @@ def run_game(
     initial_state = {key: value.copy() for key, value in INITIAL_STATE.items()}
 
     prompt_log.clear()
+    reads_log.clear()
 
     with langfuse.start_as_current_observation(
         as_type="span",

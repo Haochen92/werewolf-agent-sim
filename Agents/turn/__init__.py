@@ -22,7 +22,7 @@ from Agents.turn.pipeline import (  # noqa: F401
     _run_memory_informed_action,
     _run_memory_informed_night_action,
 )
-from Agents.turn.decision import _run_agent, prompt_log  # noqa: F401
+from Agents.turn.decision import _run_agent, prompt_log, reads_log  # noqa: F401
 from Agents.turn.novelty_agent import NOVELTY_JUDGE_PROMPT, judge_proactive_novelty  # noqa: F401
 from Agents.turn.scheduler import (  # noqa: F401
     build_reactive_queue,

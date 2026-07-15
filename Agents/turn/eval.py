@@ -35,4 +35,6 @@ def _build_eval_private_context(
         surviving_players=payload.get("surviving_players", []),
         surviving_wolves=payload.get("surviving_wolves", []),
         surviving_villagers=payload.get("surviving_villagers", []),
+        dead_roster=payload.get("dead_roster", []),
+        cast_role_counts=payload.get("cast_role_counts", {}),
     )

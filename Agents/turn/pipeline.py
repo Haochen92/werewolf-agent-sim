@@ -112,6 +112,9 @@ def _run_memory_informed_action(
         # --- Adoption processing ---
         # Capture the full verdict list for the EvalCase BEFORE adoption pops the carrier off `result`.
         strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
+        # Reads are PRIVATE: POP the carrier so it can't ride the returned dict back into graph state —
+        # reads live only in the EvalCase sidecar.
+        player_reads = (result or {}).pop("_reads", []) if result else []
         raw_adopted_indices, adopted_store_keys = _process_strategy_adoption(
             result,
             enriched_payload,
@@ -200,6 +203,7 @@ def _run_memory_informed_action(
             strategy_verdicts=strategy_verdicts,
             strategy_index_to_key=enriched_payload.get("strategy_point_index_map", {}),
             memory_applicability=(result or {}).get("_memory_applicability", []),
+            reads=player_reads,
         )
 
         eval_span.update(
@@ -292,6 +296,9 @@ def _run_memory_informed_night_action(
         )
 
         strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
+        # Reads are PRIVATE: POP the carrier so it can't ride the returned dict back into graph state —
+        # reads live only in the EvalCase sidecar.
+        player_reads = (result or {}).pop("_reads", []) if result else []
         raw_adopted_indices, adopted_store_keys = _process_strategy_adoption(
             result,
             enriched_payload,
@@ -359,6 +366,7 @@ def _run_memory_informed_night_action(
             strategy_verdicts=strategy_verdicts,
             strategy_index_to_key=enriched_payload.get("strategy_point_index_map", {}),
             memory_applicability=(result or {}).get("_memory_applicability", []),
+            reads=player_reads,
         )
 
         eval_span.update(
