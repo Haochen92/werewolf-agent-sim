@@ -117,6 +117,8 @@ The dimension-schema rebuild (Phase B) and the v7 compounding-loop iteration.
 | [phase_b](phase_b/plan_review.md) | Jun 13 – 15 | Phase B design specs + cheap screens: [dimension_schema_build_spec](phase_b/dimension_schema_build_spec.md), [procedural_memory_experiment](phase_b/procedural_memory_experiment.md), [v6_full_store](phase_b/v6_full_store.md), the criticality/forced-schema/dimension-accuracy screens, and the v6-wide migration roadmap |
 | [v7_final](v7_final/experiment_log.md) | Jun 20 – Jul | Build log of the v7 credit / consolidation / discussion-credit work; the compounding loop itself is the one still-un-run paid test (design docs `consolidation_design.md`, `discussion_credit_design.md` hold current state) |
 | [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/discussion_tagger/](evaluation/discussion_tagger/)) |
+| [store_curation](store_curation/report.md) | Jul | The mechanism record for how the three memory stores (observations, strategy points, tells) grow, stay bounded, and improve across games; review basis for the pre-run ownership walkthrough |
+| [credit](credit/report.md) | Jul | The credit layer: how a decision becomes a learning signal (SP ledger, tell ledger, read/tactic redesign) |
 | [execution_plan](execution_plan/compounding_measurement_plan.md) | Jul 4 | Forward-looking plan for the compounding question; PLANNED, not executed — Phase 0 gates all paid runs |
 
 ## Training
