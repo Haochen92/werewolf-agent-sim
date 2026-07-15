@@ -22,6 +22,7 @@ The identity contrast:
 | `dedup_score` | golden-label scorer for the dedup classifier (console `eval-dedup-score`). |
 | `batch_dedup_score` | golden-label scorer for the batch (cluster-merge) dedup pass. |
 | `embedding_canary` | deterministic embedding-drift check — re-embed pinned strings, compare to `embedding_canary_pins.json`. |
+| `role_hallucination_screen` | candidate screen for role-fact hallucinations in agent messages (dead-role misstatement, dead-as-alive, composition counts, claim attribution) vs the structured death/claim timeline; recall-oriented — a confirming read supplies precision (console `eval-role-hallucination`; record: `evidence/generation_prompt/validation/`). |
 
 All are pytest-covered; batch-record loading is shared via `data/sources/batch_records.py`.
 
