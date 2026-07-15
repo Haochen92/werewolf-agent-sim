@@ -171,6 +171,54 @@ def test_bounded_clustering_excludes_below_threshold(monkeypatch):
     assert clusters == [["A", "B"]]
 
 
+# --- clustering: seed_keys restricts which items may SEED (synth: new arrivals only) --------
+
+
+def test_bounded_seed_keys_absorbs_old_neighbour(monkeypatch):
+    # only the NEW arrival seeds, but an OLD obs still joins it as a neighbour.
+    items = _items("new1", "old1")
+    similarity = {"new1": [("old1", 0.95)], "old1": [("new1", 0.95)]}
+    monkeypatch.setattr(
+        clustering, "_search_memory_with_retries", _fake_search(similarity, items),
+    )
+
+    clusters = _bounded_seed_clusters(
+        None, NS, items, threshold=0.9, search_limit=10, max_cluster_size=5, seed_keys={"new1"},
+    )
+
+    assert clusters == [["new1", "old1"]]
+
+
+def test_bounded_seed_keys_excludes_old_only_cluster(monkeypatch):
+    # two old obs that WOULD cluster under full seeding: with seed_keys excluding both, no seed iterates.
+    items = _items("old1", "old2")
+    similarity = {"old1": [("old2", 0.95)], "old2": [("old1", 0.95)]}
+    monkeypatch.setattr(
+        clustering, "_search_memory_with_retries", _fake_search(similarity, items),
+    )
+
+    clusters = _bounded_seed_clusters(
+        None, NS, items, threshold=0.9, search_limit=10, max_cluster_size=5, seed_keys={"new_absent"},
+    )
+
+    assert clusters == []
+
+
+def test_bounded_seed_keys_none_reproduces_full_seeding(monkeypatch):
+    # seed_keys=None (default) = today's behavior: every key may seed, so the old-only pair clusters.
+    items = _items("old1", "old2")
+    similarity = {"old1": [("old2", 0.95)], "old2": [("old1", 0.95)]}
+    monkeypatch.setattr(
+        clustering, "_search_memory_with_retries", _fake_search(similarity, items),
+    )
+
+    clusters = _bounded_seed_clusters(
+        None, NS, items, threshold=0.9, search_limit=10, max_cluster_size=5, seed_keys=None,
+    )
+
+    assert clusters == [["old1", "old2"]]
+
+
 # --- operations: strategy DISCARD merges counts onto the chosen survivor ----
 
 

@@ -67,7 +67,11 @@ def _build_clusters_for_items(
     namespace: tuple[str, str, str],
     items_by_key: dict[str, Any],
     config: BatchDedupRunConfig,
+    seed_keys: set[str] | None = None,
 ) -> list[list[str]]:
+    # seed_keys (synth path: seed clusters from NEW arrivals only) is honored ONLY by the bounded mode.
+    # connected/agglomerative ignore it — they're inactive in the loop, and the _synth_cluster gate still
+    # filters old-only clusters downstream, so correctness holds even when they seed from everything.
     if config.cluster_mode == "connected":
         return _cluster_items(
             target_store,
@@ -92,6 +96,7 @@ def _build_clusters_for_items(
         config.similarity_threshold,
         config.search_limit,
         config.max_cluster_size,
+        seed_keys=seed_keys,
     )
 
 
@@ -177,12 +182,15 @@ def _bounded_seed_clusters(
     threshold: float,
     search_limit: int,
     max_cluster_size: int,
+    seed_keys: set[str] | None = None,
 ) -> list[list[str]]:
-    unprocessed = set(items_by_key)
+    unprocessed = set(items_by_key)   # ALL items stay absorbable as neighbours, even non-seeds
     clusters: list[list[str]] = []
-    seed_keys = sorted(items_by_key, key=lambda key: _seed_sort_key(key, items_by_key))
+    ordered_seeds = sorted(items_by_key, key=lambda key: _seed_sort_key(key, items_by_key))
+    if seed_keys is not None:   # restrict which items may SEED a cluster (synth: new arrivals only)
+        ordered_seeds = [key for key in ordered_seeds if key in seed_keys]
 
-    for seed_key in seed_keys:
+    for seed_key in ordered_seeds:
         if seed_key not in unprocessed:
             continue
 

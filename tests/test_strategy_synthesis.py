@@ -39,7 +39,7 @@ def test_synth_partition_is_gate_key_not_verdict(monkeypatch):
     monkeypatch.setattr(ss, "_fetch_namespace_items", lambda store, ns: items)
     seen_partitions = []
 
-    def fake_build(store, ns, part, config):
+    def fake_build(store, ns, part, config, seed_keys=None):
         seen_partitions.append(set(part))
         return [list(part)] if len(part) > 1 else []
 

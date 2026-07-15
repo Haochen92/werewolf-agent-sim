@@ -33,19 +33,29 @@ from Agents.schemas.memory import cell_strategy_schema_for
 logger = getLogger(__name__)
 
 
+def fetch_observations_for_synth(store: BaseStore, namespace: tuple[str, str, str]) -> dict[str, Any]:
+    """Namespace items only, no clustering — so the loop's admission gates can run before any embedding
+    work."""
+    return _fetch_namespace_items(store, namespace)
+
+
 def cluster_observations_for_synth(
     store: BaseStore, namespace: tuple[str, str, str], config,
+    items: dict[str, Any] | None = None, seed_keys: set[str] | None = None,
 ) -> tuple[dict[str, Any], list[list[str]]]:
     """Observation clusters for SP synthesis: partition by gate_key (situation regime, verdict-agnostic
     so a cluster spans mixed outcomes), then agglomerate within each partition with the shared
-    clustering primitives. Returns (items_by_key, clusters)."""
-    items = _fetch_namespace_items(store, namespace)
+    clustering primitives. Returns (items_by_key, clusters). `items` skips the refetch when the caller
+    already fetched them (gate-before-cluster). `seed_keys` restricts which keys may SEED a cluster (the
+    loop seeds from new arrivals only; old obs still join as neighbours)."""
+    if items is None:
+        items = _fetch_namespace_items(store, namespace)
     partitions: dict[Any, dict[str, Any]] = defaultdict(dict)
     for key, item in items.items():
         partitions[gate_key(item.value)][key] = item
     clusters: list[list[str]] = []
     for part in partitions.values():
-        clusters.extend(_build_clusters_for_items(store, namespace, part, config))
+        clusters.extend(_build_clusters_for_items(store, namespace, part, config, seed_keys=seed_keys))
     return items, clusters
 
 
