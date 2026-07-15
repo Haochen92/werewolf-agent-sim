@@ -1,0 +1,12 @@
+[
+ {"case_id": "pos_1", "days": [3], "notes": "Day 3: player_9 spotlights that players 7 and 8 initiated the Day-2 votes against player_4 and asks the group to hear from them specifically; Day 4 references the same but does not request analysis of the previous day's vote initiators."},
+ {"case_id": "pos_5", "days": [2], "notes": "Day 2 (player_4's only day alive): 'Player 5, you have been remarkably quiet...' directs scrutiny at the quietest player."},
+ {"case_id": "pos_8", "days": [4], "notes": "Day 4: 'I think we need to push for a vote on player 8' then voted player_8; Day 3 he only asked the group to evaluate 7/8, no explicit call to vote a specific target."},
+ {"case_id": "pos_11", "days": [3], "notes": "Day 3: player_1 presses 7 and 8 to 'point to a specific comment by 4' backing their unsubstantiated gut-feeling vote; borderline on 'repeatedly' but core demand-for-evidence present. Day 4/5 he is the accuser, not demanding evidence."},
+ {"case_id": "pos_16", "days": [3, 4], "notes": "Day 4: player_8 questions accuser player_9's motives ('attempt to distract') then votes player_9. Day 3: addresses player_9, casts them as 'using this vote as a diversion,' then votes player_9 (motive-questioning is softer/generalized but present)."},
+ {"case_id": "pos_17", "days": [1], "notes": "Day 1: 'Voting blindly this early... Let's see who the night kill targets' advocates delaying to await future-night info; Day 3 caution is about past voting patterns, not future nights."},
+ {"case_id": "neg_7", "days": [], "notes": "player_2 abstained on Day 2 (the caution day); never the lone non-abstainer, so tell never exhibited."},
+ {"case_id": "neg_11", "days": [], "notes": "player_6 dies night 1 and there is no late-game role claim in the game; tell impossible."},
+ {"case_id": "neg_13", "days": [], "notes": "Day 2 player_7 voted player_4 but players 4, 7, 8 all voted non-abstain, so he was never the ONLY non-abstainer."},
+ {"case_id": "neg_19", "days": [], "notes": "player_8 never abstains in any actual vote (Day2 player_4, Day3/4 player_9), so never advocates decisive voting while abstaining himself."}
+]

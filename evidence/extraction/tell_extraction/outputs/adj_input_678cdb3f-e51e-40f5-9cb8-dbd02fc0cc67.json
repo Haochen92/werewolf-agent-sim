@@ -1,0 +1,44 @@
+[
+ {
+  "case_id": "pos_0",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "tell_text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period."
+ },
+ {
+  "case_id": "pos_9",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_449",
+  "tell_text": "A player characterizes the act of calling for scrutiny on someone as a tactic for rushing an elimination without evidence."
+ },
+ {
+  "case_id": "pos_10",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_56",
+  "tell_text": "votes for a player they have been arguing with throughout the entire discussion session."
+ },
+ {
+  "case_id": "neg_9",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "tell_text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period."
+ },
+ {
+  "case_id": "neg_15",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_24",
+  "tell_text": "Advocates for delaying a vote to wait for more information from future night cycles."
+ },
+ {
+  "case_id": "neg_18",
+  "player": "player_4",
+  "channel": "vote",
+  "tell_id": "vote_0",
+  "tell_text": "A player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day."
+ }
+]

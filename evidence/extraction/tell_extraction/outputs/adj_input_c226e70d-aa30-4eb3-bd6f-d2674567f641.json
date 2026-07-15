@@ -1,0 +1,86 @@
+[
+ {
+  "case_id": "pos_3",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "tell_text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection."
+ },
+ {
+  "case_id": "pos_12",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_46",
+  "tell_text": "votes for a player immediately after they express suspicion toward the voter's own previous voting record."
+ },
+ {
+  "case_id": "pos_13",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_67",
+  "tell_text": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior."
+ },
+ {
+  "case_id": "pos_15",
+  "player": "player_7",
+  "channel": "discussion",
+  "tell_id": "disc_131",
+  "tell_text": "A player proposes monitoring future voting patterns rather than focusing on current verbal arguments."
+ },
+ {
+  "case_id": "neg_1",
+  "player": "player_1",
+  "channel": "vote",
+  "tell_id": "vote_5",
+  "tell_text": "A player who engaged in active discussion against a specific target chooses to abstain from the final vote."
+ },
+ {
+  "case_id": "neg_3",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_124",
+  "tell_text": "Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions."
+ },
+ {
+  "case_id": "neg_4",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_79",
+  "tell_text": "expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision."
+ },
+ {
+  "case_id": "neg_5",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_95",
+  "tell_text": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay."
+ },
+ {
+  "case_id": "neg_6",
+  "player": "player_1",
+  "channel": "vote",
+  "tell_id": "vote_82",
+  "tell_text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves."
+ },
+ {
+  "case_id": "neg_10",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_23",
+  "tell_text": "Advocates for using the history of voting records rather than subjective interpretations of player behavior."
+ },
+ {
+  "case_id": "neg_14",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "tell_text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection."
+ },
+ {
+  "case_id": "neg_17",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_29",
+  "tell_text": "Announces having been the target of a failed night attack."
+ }
+]

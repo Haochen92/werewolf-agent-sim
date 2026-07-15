@@ -1,0 +1,474 @@
+[
+ {
+  "id": "vote_0",
+  "canonical": "a player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_1",
+  "canonical": "a player who is explicitly discussed by others as a potential target for investigation or protection chooses to abstain from voting after the discussion reaches no consensus",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_2",
+  "canonical": "a player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_3",
+  "canonical": "votes to eliminate a player after previously arguing that the group should prioritize evidence over rash accusations during the discussion",
+  "other_wordings": [
+   "votes for a player after publicly discouraging others from focusing on individual accusations",
+   "votes for a player despite having previously stated that the group should be wary of those pushing for an aggressive lynch"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_4",
+  "canonical": "votes for a player after previously spending the discussion period demanding an explanation for why others were accusing that same player",
+  "other_wordings": [
+   "a player casts a vote for a candidate after questioning the evidence against them in the discussion immediately preceding the vote"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_5",
+  "canonical": "a player who engaged in active discussion against a specific target chooses to abstain from the final vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_6",
+  "canonical": "a player who is the primary subject of discussion and accused by others chooses to abstain rather than voting for an alternative or voting for their accuser",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_7",
+  "canonical": "a player continues to cast a vote for a target after a period of intense discussion where the target defended themselves",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_8",
+  "canonical": "votes to eliminate a player who previously participated in the same unanimous consensus vote on a prior day without having expressed suspicion toward them in the immediate discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_9",
+  "canonical": "votes for a player after explicitly debating the history of that player's previous actions and their own participation in past collective decisions during the discussion phase",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_10",
+  "canonical": "votes for a player after having abstained from the previous day's vote while defending the importance of caution and accuracy",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_11",
+  "canonical": "votes to eliminate a player who publicly stated their hesitation to participate in the previous round's voting process",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_12",
+  "canonical": "a player casts a vote for someone they did not express any explicit suspicion of during the final day's discussion",
+  "other_wordings": [
+   "a player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation",
+   "a player votes for a candidate they did not express any suspicion of during the discussion period",
+   "a player votes for a candidate they did not express any suspicion toward during the preceding discussion",
+   "votes for the primary target of the day despite never having voiced any specific suspicion or argument against that individual during the discussion"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_13",
+  "canonical": "a player votes for a candidate while explicitly noting their intent to act as a tie-breaker, following their own previous abstention from a tied vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_14",
+  "canonical": "a player casts a vote for the same person who just voted for them during the final discussion phase",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_15",
+  "canonical": "a player casts a vote for someone who publicly questioned them during the discussion phase",
+  "other_wordings": [
+   "votes for a player they have been arguing with throughout the entire discussion session",
+   "a player casts a retaliatory vote for the individual who has been most actively challenging their conduct",
+   "votes for the specific player who has been publicly accusing them of being a threat throughout the discussion",
+   "a player votes for a target who is actively directing suspicion toward them during the discussion",
+   "votes against a player after repeatedly challenging their line of reasoning during the day's discussion",
+   "casts a vote for a player who is currently leading the accusations against them",
+   "votes for the player who has publicly accused them of being a threat, despite having argued against the accusation throughout the discussion",
+   "votes for a player after having defended themselves against that same player's accusations in the discussion"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_16",
+  "canonical": "a player casts a vote for someone they directly accused in the discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_17",
+  "canonical": "advocates for abstaining from voting based on an asserted lack of sufficient information",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_18",
+  "canonical": "expresses agreement with a policy of abstaining from voting while simultaneously warning against future inaction",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_19",
+  "canonical": "votes for a player immediately after they express suspicion toward the voter's own previous voting record",
+  "other_wordings": [
+   "a player casts a vote against an accuser immediately following a period where that accuser has focused heavily on the player's past voting record"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_20",
+  "canonical": "votes for a player different from the one they were debating, targeting someone who was not the focus of the discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_21",
+  "canonical": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct",
+  "other_wordings": [
+   "votes for a player after spending the entire discussion period critiquing that player's past voting behavior",
+   "a player votes for a specific person immediately after spending the discussion segment criticizing that same person's history of voting behavior",
+   "a player casts a vote for the person who had been actively defending their own past voting record against that player's specific accusations"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_22",
+  "canonical": "votes for a player after having defended them in previous discussions",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_23",
+  "canonical": "votes for an accuser who has explicitly stated an intention to eliminate them",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_24",
+  "canonical": "proposes a concrete mechanism for voting thresholds that differs from the consensus preference for waiting",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_25",
+  "canonical": "expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_26",
+  "canonical": "explicitly rejects a suggested methodology for identifying suspicion as being too subjective while proposing an alternative focus",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_27",
+  "canonical": "advocates for monitoring players who attempt to steer group discussion toward specific voting criteria rather than observing silence",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_28",
+  "canonical": "a player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves",
+  "other_wordings": [
+   "a player calls for a concrete vote to align the group but opts to abstain during the actual voting phase",
+   "advocates strongly for the necessity of voting during discussion but chooses to abstain during the actual vote"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_29",
+  "canonical": "a player suggests looking for inconsistencies in the voting record while choosing to abstain when the vote occurs",
+  "other_wordings": [
+   "a player who actively encourages others to observe voting patterns ultimately chooses to abstain when it comes time to cast a vote",
+   "a player who proposes monitoring voting patterns as a method for finding threats abstains from voting for any candidate when the opportunity arises"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_30",
+  "canonical": "a player casts a vote against someone who had previously accused them of acting in a coordinated bloc during the day's discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_31",
+  "canonical": "a player votes for a candidate despite having just asked the group for their interpretation of that candidate's prior voting record rather than stating a personal suspicion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_32",
+  "canonical": "calls for a vote against a specific player and then casts their vote for that same individual during the voting phase",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_33",
+  "canonical": "switches to support the voting target proposed by another player after expressing agreement with that player's arguments during the discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_34",
+  "canonical": "a player who explicitly argued against focusing on past voting records and advocated for identifying targets based on current stalling, proceeds to vote for the player leading the charge against them",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_35",
+  "canonical": "a player who consistently defended those who voted for the player revealed on death as the investigator, votes for a player who was not previously the focus of their suspicion during the current day's discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_36",
+  "canonical": "a player who advocates for targeting a specific group of abstainers in the discussion proceeds to vote for one of those identified players",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_37",
+  "canonical": "votes for a player after repeatedly directing the discussion toward the need to break a prolonged deadlock between the same group of participants",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_38",
+  "canonical": "votes for a player after spending the entire discussion period accusing that player and another of maintaining a coordinated, exclusionary voting bloc",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_39",
+  "canonical": "votes for a player that matches the vote of a participant who has been leading the accusatory discussion, despite having offered minimal independent justification",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_40",
+  "canonical": "a player who explicitly states that the group needs to be careful about making assumptions or missing potential threats abstains from the vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_41",
+  "canonical": "votes for a player after explicitly dismissing their stated priorities as a distraction earlier in the day",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_42",
+  "canonical": "votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_43",
+  "canonical": "a player casts a vote for the person accusing them while calling that accusation a strategy for survival",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_44",
+  "canonical": "a player makes a role claim while simultaneously demanding the elimination of another player without providing evidence",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_45",
+  "canonical": "a player votes for someone they previously expressed skepticism about after asking for more information",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_46",
+  "canonical": "a player repeatedly questions the timing of a late-game role claim during the discussion phase",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_47",
+  "canonical": "advocates for a quantitative threshold for voting to prevent split outcomes without naming a specific candidate",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_48",
+  "canonical": "proposes a specific criterion for identifying suspicious behavior before the voting process has actually begun",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_49",
+  "canonical": "outlines a specific condition for voting behavior that they intend to monitor during the upcoming voting process",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_50",
+  "canonical": "casts the only non-abstain vote after a discussion where the group consensus was to avoid voting",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_51",
+  "canonical": "warns against picking quiet players for elimination during discussion but then participates in the group-wide decision to abstain",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_52",
+  "canonical": "votes for the consensus target after having warned against the dangers of group-driven voting patterns earlier in the day",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_53",
+  "canonical": "a player votes for a candidate while simultaneously acknowledging the potential risk of the vote being incorrect",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_54",
+  "canonical": "a player abstains from the vote despite being the subject of an active accusation by an influential player",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_55",
+  "canonical": "a player joins the consensus vote against an accused individual after having explicitly suggested that the speed of such a push might be a manipulation tactic",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_56",
+  "canonical": "votes for a player immediately after initiating a line of suspicion against them in the discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_57",
+  "canonical": "votes for the room's consensus target after engaging in a discussion comparing the speed of all players' past voting records",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_58",
+  "canonical": "votes for a player following a discussion segment where they suggested comparing current voting speed to past voting performance",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_59",
+  "canonical": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_60",
+  "canonical": "a player casts a vote against an individual after previously asking for justification from both parties in the same final round",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_61",
+  "canonical": "a player votes for a candidate immediately after accusing them of being a primary driver of a previous controversial elimination",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "vote_62",
+  "canonical": "a player votes for a candidate who had just accused them of being the primary driver of a previous controversial elimination",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ }
+]

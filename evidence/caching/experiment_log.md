@@ -5,9 +5,9 @@ said, and what we shipped vs. deferred. The destination — how caching works in
 is the companion [report.md](report.md); this log keeps the chronology and the bet that didn't pan out.
 
 **Reading contract.** Sections are in time order (2026-06-06 analysis → 2026-06-08 measurement; distilled
-2026-06-25). Designs are shown **as they were proposed**; the central hypothesis was *falsified* and is
-left in place rather than edited away — the falsification is the point. Forward-pointers `(§N)` are
-navigation, not hindsight.
+2026-06-25; a 2026-07-13 postscript, §⑤, when a second consumer adopted the mechanism). Designs are shown
+**as they were proposed**; the central hypothesis was *falsified* and is left in place rather than edited
+away — the falsification is the point. Forward-pointers `(§N)` are navigation, not hindsight.
 
 Sources: `cost_variance_claims_analysis.md` (2026-06-06, analysis-only) and `v5_cache_layout_design.md`
 (2026-06-08, measured), now distilled into this log + `report.md`. Probes: [`scripts/`](scripts/). *(The
@@ -139,3 +139,113 @@ Explicit is billed (creation at full rate, reads at ~10%), so it only pays at **
 5. **Currency: v5 per-role → v6 per-cell** — this investigation reasoned about v5 per-role extraction; the
    live path is now the v6 per-cell fan-out (11 cells). The lever carries forward unchanged: the neutral
    prefix is byte-identical across cells exactly as it was across roles.
+
+---
+
+## ⑤ 2026-07-13 — a second consumer: the tell detector (mechanism verified; a determinism cost discovered)
+
+A year-later postscript in log time, a month in calendar time: the tell-ledger workstream
+(`../extraction/tell_extraction/`) built a **role-blind tell detector** — flash-lite, temp 0,
+per (game, player, channel) — whose 9 per-player calls share a byte-identical
+rules+transcript+checklist prefix (~5.5–8k tokens, clears the 4,096 floor; reuse count 9, well
+past break-even). The forcing function was a billing correction: the detector's 60-game held-out
+pass billed **$13 against a $1.50–2.50 estimate** (~$0.006/call at ~8k-token prompts), so the
+prefix became worth caching. Built as `--cache` in
+[`detector_probe.py`](../extraction/tell_extraction/scripts/detector_probe.py), reusing this
+investigation's exact mechanism (`create_context_cache` → `cached_content`-bound model → delete
+in a finally; per-(game, channel) cache units).
+
+**Verified, two ways — one clean, one not:**
+
+- **The mechanism fires cleanly at the new consumer.** A real game prefix (5,793 est. tokens)
+  cached and referenced: `cache_read = 5,374` of 5,716 input tokens (**94%**), creation and
+  deletion clean, fallback-to-uncached on any failure. The same probe's usage metadata also
+  produced the missing half of the billing diagnosis: **1,051 reasoning tokens per call** at
+  `thinking_level="low"` — the 1,024 thinking budget runs saturated and bills at output rates,
+  which is where the $13 run's non-input cost lived. (Follow-up lever, not yet probed:
+  `minimal` = 128-token budget, ~8× less reasoning spend, accuracy effect unmeasured.)
+- **⭐The catch: cache-bound serving is not bit-deterministic at temp 0.** The uncached detector
+  is exactly reproducible — byte-identical single-string prompts returned row-identical output
+  across separate runs (Jaccard 1.00 over 179 rows, measured 2026-07-12). Under caching that
+  guarantee dies twice over: cached-vs-uncached on the same game agrees at 0.82 (discussion
+  1.00, vote 0.69 — the flicker concentrates in the channel with the most decision-boundary
+  cases), and **two identical cached runs agree with each other at only 0.56 (vote) / 0.77
+  (discussion)**. The cached serving path — not the prompt content — introduces run-to-run
+  nondeterminism that temp 0 does not control. Mechanism unconfirmed (server-side
+  batching/kernel differences for cache-referencing requests is the standard suspect); what is
+  established is the measurement.
+
+**Decision.** The flag ships **opt-in, default OFF**. For the tell detector the trade is real
+and unresolved: caching cuts ~94% of prefix input cost but converts exactly-reproducible counts
+into sampled counts — and bit-reproducibility is a documented guarantee of that workstream's
+uncached configuration. Whether measurement runs adopt caching (accepting stochastic counts
+that average out at lift's aggregation grain) or keep determinism and cut cost via the thinking
+budget instead is deferred to the detector's golden round, where both variants can be scored on
+the same cells. **Extraction is unaffected**: it runs at temp 1.0 and never claimed
+determinism, so its live `cache_prefix=True` stands as-is.
+
+*Catches, for the standing record: (a) "explicit caching works" (§③) and "explicit caching is
+output-neutral" are different claims — this investigation verified the first and §③ already
+flagged prompt-shape non-neutrality for extraction; the detector adds serving-path
+non-determinism as a third, distinct effect. (b) A saturated thinking budget is invisible in
+cost estimates built from input tokens — pull `output_token_details.reasoning` before quoting a
+per-call price.*
+
+### ⑤a Option-C probe (same day): the determinism story inverts, and cheap thinking fails on accuracy
+
+The owner ordered the obvious follow-up: does **cached + `minimal` thinking** restore
+determinism (the reasoning-variance hypothesis)? The full 2×2, two identical runs per cell,
+same game, row Jaccard between them:
+
+| | uncached | cached |
+|---|---|---|
+| **thinking = low** | **0.90–1.00** (and today's run 1 matched *yesterday's* run exactly) | 0.56–0.77 |
+| **thinking = minimal** | 0.67 | 0.83 |
+
+Two findings, both corrections to ⑤ as first written:
+
+1. **Nothing is bit-deterministic — including the uncached baseline.** Yesterday's
+   "temp-0 flash-lite is deterministic (Jaccard 1.00 over 179 rows)" was a real measurement but
+   an overgeneralization from one lucky pair: today the same uncached+low config self-agrees at
+   0.90 while *also* reproducing yesterday's rows exactly on one of the two runs. The honest
+   model: the endpoint is **near-deterministic with occasional serving-side flips in every
+   configuration**; caching *worsens* stability (0.56–0.83) rather than being the sole cause of
+   instability. The serving-path hypothesis was half right.
+2. **`minimal` thinking guts detection recall — Option C rejected on accuracy.** On the probe
+   game's six golden cells, minimal-thinking variants scored **0 true-positive days vs the
+   low-thinking baseline's 2** (consistent across cached/uncached and across repeat runs; they
+   also emit ~30% fewer rows overall). N=6 is direction-grade, but 0-for-4 gold days in every
+   minimal run is not a close call: the 1,051 saturated reasoning tokens are doing the
+   detection work. The "biggest safe-looking lever" of ⑤ is not safe.
+
+**Standing decisions after ⑤a:** the detector's measurement configuration stays
+**uncached + low** (most stable, calibrated accuracy); `--cache` remains opt-in with its
+stability cost now measured *relative to a non-deterministic baseline* (0.56–0.77 vs
+0.90–1.00); and because no configuration reproduces exactly, the reproducibility guarantee
+moves from the model to the artifact — **detected rows are stored outputs, goldens certify the
+stored run, and re-runs are new samples**. (This was already the pipeline's shape — detections
+are JSONL artifacts — so the correction costs nothing operationally.)
+
+### ⑤b The accuracy-parity check flips the default (same day, owner-approved)
+
+The owner drew the pragmatic conclusion of ⑤a: reproducibility was never load-bearing for
+detection's consumers — lift and credit are aggregates, role-blindness makes the flicker
+role-uncorrelated by construction, certification already binds to stored artifacts, and
+**extraction took this exact trade when `cache_prefix=True` shipped**. That left one real gate:
+does the cached configuration score the same against the golden? Decision rule pre-stated:
+within a few points of the uncached union → cached becomes the standing config.
+
+**Result — parity, marginally better.** Cached k=2 union over the 5 calibration games,
+rescored on the same 40 golden cells: vote precision **0.83 vs 0.77** (same tp=10/fp=1, one
+fewer day-slip), vote recall 77% = 77%, discussion **0.93/87% identical**. The run-to-run
+flicker lives in cells the golden scores as noise in either configuration.
+
+**Decision: the detector's standing config is CACHED + low thinking** (`--cache` default ON,
+opt-out via `--no-cache`). Detection re-prices from ~$0.22 to roughly **$0.12–0.14/game**
+(caching discounts input only; the ~1k reasoning tokens that do the detection remain), putting
+the tell system's standing overhead near **$0.17–0.20/game**. Reproducibility-by-artifact
+(goldens certify stored runs) stands unchanged — it was adopted for the uncached config too.
+The one thing this does NOT change: the golden numbers themselves remain temp-golden-grade;
+the owner's detector-blind adjudication still certifies, and should be run against a stored
+CACHED run, since that is now the configuration being certified.
+

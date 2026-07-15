@@ -1,0 +1,4658 @@
+[
+ {
+  "tid": "vote_0",
+  "support": 5,
+  "status": "incumbent",
+  "canonical": "A player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day.",
+  "neighbors": [
+   "vote_297",
+   "vote_261",
+   "vote_262",
+   "vote_563",
+   "vote_691",
+   "vote_692",
+   "vote_14",
+   "vote_221"
+  ]
+ },
+ {
+  "tid": "vote_1",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who is explicitly discussed by others as a potential target for investigation or protection chooses to abstain from voting after the discussion reaches no consensus.",
+  "neighbors": [
+   "vote_5",
+   "vote_6",
+   "vote_7",
+   "vote_622",
+   "vote_505",
+   "vote_426",
+   "vote_152",
+   "vote_266"
+  ]
+ },
+ {
+  "tid": "vote_2",
+  "support": 15,
+  "status": "probation",
+  "canonical": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period.",
+  "neighbors": [
+   "vote_426",
+   "vote_266",
+   "vote_235",
+   "vote_294",
+   "vote_84",
+   "vote_152",
+   "vote_622",
+   "vote_295"
+  ]
+ },
+ {
+  "tid": "vote_3",
+  "support": 5,
+  "status": "incumbent",
+  "canonical": "Votes to eliminate a player after previously arguing that the group should prioritize evidence over rash accusations during the discussion.",
+  "neighbors": [
+   "vote_4",
+   "vote_346",
+   "vote_352",
+   "vote_437",
+   "vote_93",
+   "vote_442",
+   "vote_353",
+   "vote_607"
+  ]
+ },
+ {
+  "tid": "vote_4",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "Votes for a player after previously spending the discussion period demanding an explanation for why others were accusing that same player.",
+  "neighbors": [
+   "vote_3",
+   "vote_346",
+   "vote_93",
+   "vote_442",
+   "vote_437",
+   "vote_607",
+   "vote_127",
+   "vote_154"
+  ]
+ },
+ {
+  "tid": "vote_5",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player who engaged in active discussion against a specific target chooses to abstain from the final vote.",
+  "neighbors": [
+   "vote_6",
+   "vote_1",
+   "vote_426",
+   "vote_398",
+   "vote_7",
+   "vote_505",
+   "vote_91",
+   "vote_294"
+  ]
+ },
+ {
+  "tid": "vote_6",
+  "support": 7,
+  "status": "incumbent",
+  "canonical": "A player who engaged in active discussion against a specific target chooses to abstain from the final vote.",
+  "neighbors": [
+   "vote_5",
+   "vote_1",
+   "vote_426",
+   "vote_398",
+   "vote_7",
+   "vote_505",
+   "vote_91",
+   "vote_294"
+  ]
+ },
+ {
+  "tid": "vote_7",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player who is the primary subject of discussion and accused by others chooses to abstain rather than voting for an alternative or voting for their accuser.",
+  "neighbors": [
+   "vote_152",
+   "vote_505",
+   "vote_1",
+   "vote_5",
+   "vote_6",
+   "vote_719",
+   "vote_622",
+   "vote_536"
+  ]
+ },
+ {
+  "tid": "vote_8",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player continues to cast a vote for a target after a period of intense discussion where the target defended themselves.",
+  "neighbors": [
+   "vote_9",
+   "vote_402",
+   "vote_492",
+   "vote_299",
+   "vote_298",
+   "vote_193",
+   "vote_627",
+   "vote_323"
+  ]
+ },
+ {
+  "tid": "vote_9",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player continues to cast a vote for a target after a period of intense discussion where the target defended themselves.",
+  "neighbors": [
+   "vote_8",
+   "vote_402",
+   "vote_492",
+   "vote_299",
+   "vote_298",
+   "vote_193",
+   "vote_627",
+   "vote_323"
+  ]
+ },
+ {
+  "tid": "vote_10",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes to eliminate a player who previously participated in the same unanimous consensus vote on a prior day without having expressed suspicion toward them in the immediate discussion.",
+  "neighbors": [
+   "vote_442",
+   "vote_4",
+   "vote_640",
+   "vote_436",
+   "vote_437",
+   "vote_345",
+   "vote_352",
+   "vote_346"
+  ]
+ },
+ {
+  "tid": "vote_11",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player after explicitly debating the history of that player's previous actions and their own participation in past collective decisions during the discussion phase.",
+  "neighbors": [
+   "vote_442",
+   "vote_270",
+   "vote_49",
+   "vote_345",
+   "vote_93",
+   "vote_645",
+   "vote_492",
+   "vote_487"
+  ]
+ },
+ {
+  "tid": "vote_12",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Votes for a player after having abstained from the previous day's vote while defending the importance of caution and accuracy.",
+  "neighbors": [
+   "vote_353",
+   "vote_354",
+   "vote_723",
+   "vote_3",
+   "vote_437",
+   "vote_123",
+   "vote_124",
+   "vote_436"
+  ]
+ },
+ {
+  "tid": "vote_13",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes to eliminate a player who publicly stated their hesitation to participate in the previous round's voting process.",
+  "neighbors": [
+   "vote_723",
+   "vote_345",
+   "vote_12",
+   "vote_161",
+   "vote_354",
+   "vote_271",
+   "vote_160",
+   "vote_725"
+  ]
+ },
+ {
+  "tid": "vote_14",
+  "support": 10,
+  "status": "incumbent",
+  "canonical": "A player casts a vote for someone they did not express any explicit suspicion of during the final day's discussion.",
+  "neighbors": [
+   "vote_261",
+   "vote_262",
+   "vote_54",
+   "vote_53",
+   "vote_52",
+   "vote_51",
+   "vote_563",
+   "vote_297"
+  ]
+ },
+ {
+  "tid": "vote_15",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for a candidate while explicitly noting their intent to act as a tie-breaker, following their own previous abstention from a tied vote.",
+  "neighbors": [
+   "vote_84",
+   "vote_324",
+   "vote_2",
+   "vote_405",
+   "vote_5",
+   "vote_6",
+   "vote_294",
+   "vote_91"
+  ]
+ },
+ {
+  "tid": "vote_16",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for the same person who just voted for them during the final discussion phase.",
+  "neighbors": [
+   "vote_322",
+   "vote_607",
+   "vote_159",
+   "vote_298",
+   "vote_154",
+   "vote_344",
+   "vote_237",
+   "vote_643"
+  ]
+ },
+ {
+  "tid": "vote_39",
+  "support": 9,
+  "status": "incumbent",
+  "canonical": "A player casts a vote for someone who publicly questioned them during the discussion phase.",
+  "neighbors": [
+   "vote_40",
+   "vote_41",
+   "vote_476",
+   "vote_672",
+   "vote_267",
+   "vote_196",
+   "vote_555",
+   "vote_508"
+  ]
+ },
+ {
+  "tid": "vote_40",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "A player casts a vote for someone who publicly questioned them during the discussion phase.",
+  "neighbors": [
+   "vote_39",
+   "vote_41",
+   "vote_476",
+   "vote_672",
+   "vote_267",
+   "vote_196",
+   "vote_555",
+   "vote_508"
+  ]
+ },
+ {
+  "tid": "vote_41",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player casts a vote for someone they directly accused in the discussion.",
+  "neighbors": [
+   "vote_555",
+   "vote_40",
+   "vote_39",
+   "vote_267",
+   "vote_476",
+   "vote_122",
+   "vote_556",
+   "vote_492"
+  ]
+ },
+ {
+  "tid": "vote_42",
+  "support": 2,
+  "status": "queued",
+  "canonical": "Advocates for abstaining from voting based on an asserted lack of sufficient information.",
+  "neighbors": [
+   "vote_44",
+   "vote_43",
+   "vote_479",
+   "vote_694",
+   "vote_721",
+   "vote_82",
+   "vote_294",
+   "vote_45"
+  ]
+ },
+ {
+  "tid": "vote_43",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Advocates for abstaining from voting based on an asserted lack of sufficient information.",
+  "neighbors": [
+   "vote_42",
+   "vote_44",
+   "vote_479",
+   "vote_694",
+   "vote_721",
+   "vote_82",
+   "vote_294",
+   "vote_45"
+  ]
+ },
+ {
+  "tid": "vote_44",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Advocates for abstaining from voting based on an asserted lack of sufficient information.",
+  "neighbors": [
+   "vote_42",
+   "vote_43",
+   "vote_479",
+   "vote_694",
+   "vote_721",
+   "vote_82",
+   "vote_294",
+   "vote_45"
+  ]
+ },
+ {
+  "tid": "vote_45",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses agreement with a policy of abstaining from voting while simultaneously warning against future inaction.",
+  "neighbors": [
+   "vote_504",
+   "vote_721",
+   "vote_397",
+   "vote_503",
+   "vote_43",
+   "vote_42",
+   "vote_44",
+   "vote_720"
+  ]
+ },
+ {
+  "tid": "vote_46",
+  "support": 2,
+  "status": "archived",
+  "canonical": "votes for a player immediately after they express suspicion toward the voter's own previous voting record.",
+  "neighbors": [
+   "vote_196",
+   "vote_155",
+   "vote_50",
+   "vote_154",
+   "vote_442",
+   "vote_4",
+   "vote_346",
+   "vote_86"
+  ]
+ },
+ {
+  "tid": "vote_47",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player different from the one they were debating, targeting someone who was not the focus of the discussion.",
+  "neighbors": [
+   "vote_563",
+   "vote_221",
+   "vote_565",
+   "vote_487",
+   "vote_56",
+   "vote_437",
+   "vote_222",
+   "vote_224"
+  ]
+ },
+ {
+  "tid": "vote_48",
+  "support": 1,
+  "status": "archived",
+  "canonical": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct.",
+  "neighbors": [
+   "vote_648",
+   "vote_49",
+   "vote_487",
+   "vote_4",
+   "vote_601",
+   "vote_602",
+   "vote_723",
+   "vote_462"
+  ]
+ },
+ {
+  "tid": "vote_49",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "votes for a player after spending the entire discussion period critiquing that player's past voting behavior.",
+  "neighbors": [
+   "vote_200",
+   "vote_345",
+   "vote_93",
+   "vote_647",
+   "vote_442",
+   "vote_487",
+   "vote_4",
+   "vote_155"
+  ]
+ },
+ {
+  "tid": "vote_50",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player casts a vote against an accuser immediately following a period where that accuser has focused heavily on the player's past voting record.",
+  "neighbors": [
+   "vote_46",
+   "vote_643",
+   "vote_672",
+   "vote_85",
+   "vote_154",
+   "vote_462",
+   "vote_4",
+   "vote_459"
+  ]
+ },
+ {
+  "tid": "vote_51",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation.",
+  "neighbors": [
+   "vote_52",
+   "vote_53",
+   "vote_54",
+   "vote_563",
+   "vote_299",
+   "vote_14",
+   "vote_262",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_52",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation.",
+  "neighbors": [
+   "vote_51",
+   "vote_53",
+   "vote_54",
+   "vote_563",
+   "vote_299",
+   "vote_14",
+   "vote_262",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_53",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation.",
+  "neighbors": [
+   "vote_51",
+   "vote_52",
+   "vote_54",
+   "vote_563",
+   "vote_299",
+   "vote_14",
+   "vote_262",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_54",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation.",
+  "neighbors": [
+   "vote_51",
+   "vote_52",
+   "vote_53",
+   "vote_563",
+   "vote_299",
+   "vote_14",
+   "vote_262",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_55",
+  "support": 2,
+  "status": "archived",
+  "canonical": "votes for a player after having defended them in previous discussions.",
+  "neighbors": [
+   "vote_436",
+   "vote_154",
+   "vote_607",
+   "vote_642",
+   "vote_12",
+   "vote_224",
+   "vote_222",
+   "vote_223"
+  ]
+ },
+ {
+  "tid": "vote_56",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "votes for a player they have been arguing with throughout the entire discussion session.",
+  "neighbors": [
+   "vote_149",
+   "vote_327",
+   "vote_220",
+   "vote_49",
+   "vote_224",
+   "vote_223",
+   "vote_222",
+   "vote_487"
+  ]
+ },
+ {
+  "tid": "vote_57",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "votes for an accuser who has explicitly stated an intention to eliminate them.",
+  "neighbors": [
+   "vote_149",
+   "vote_697",
+   "vote_154",
+   "vote_459",
+   "vote_650",
+   "vote_460",
+   "vote_220",
+   "vote_267"
+  ]
+ },
+ {
+  "tid": "vote_78",
+  "support": 1,
+  "status": "archived",
+  "canonical": "proposes a concrete mechanism for voting thresholds that differs from the consensus preference for waiting.",
+  "neighbors": [
+   "vote_144",
+   "vote_503",
+   "vote_145",
+   "vote_158",
+   "vote_190",
+   "vote_533",
+   "vote_268",
+   "vote_79"
+  ]
+ },
+ {
+  "tid": "vote_79",
+  "support": 2,
+  "status": "archived",
+  "canonical": "expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision.",
+  "neighbors": [
+   "vote_81",
+   "vote_190",
+   "vote_489",
+   "vote_82",
+   "vote_639",
+   "vote_537",
+   "vote_642",
+   "vote_405"
+  ]
+ },
+ {
+  "tid": "vote_80",
+  "support": 1,
+  "status": "archived",
+  "canonical": "explicitly rejects a suggested methodology for identifying suspicion as being too subjective while proposing an alternative focus.",
+  "neighbors": [
+   "vote_502",
+   "vote_145",
+   "vote_598",
+   "vote_190",
+   "vote_397",
+   "vote_443",
+   "vote_79",
+   "vote_192"
+  ]
+ },
+ {
+  "tid": "vote_81",
+  "support": 1,
+  "status": "archived",
+  "canonical": "advocates for monitoring players who attempt to steer group discussion toward specific voting criteria rather than observing silence.",
+  "neighbors": [
+   "vote_294",
+   "vote_79",
+   "vote_639",
+   "vote_489",
+   "vote_295",
+   "vote_398",
+   "vote_190",
+   "vote_623"
+  ]
+ },
+ {
+  "tid": "vote_82",
+  "support": 8,
+  "status": "incumbent",
+  "canonical": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves.",
+  "neighbors": [
+   "vote_195",
+   "vote_377",
+   "vote_294",
+   "vote_84",
+   "vote_379",
+   "vote_489",
+   "vote_623",
+   "vote_83"
+  ]
+ },
+ {
+  "tid": "vote_83",
+  "support": 8,
+  "status": "incumbent",
+  "canonical": "A player suggests looking for inconsistencies in the voting record while choosing to abstain when the vote occurs.",
+  "neighbors": [
+   "vote_536",
+   "vote_294",
+   "vote_195",
+   "vote_398",
+   "vote_84",
+   "vote_2",
+   "vote_505",
+   "vote_82"
+  ]
+ },
+ {
+  "tid": "vote_84",
+  "support": 7,
+  "status": "probation",
+  "canonical": "A player calls for a concrete vote to align the group but opts to abstain during the actual voting phase.",
+  "neighbors": [
+   "vote_294",
+   "vote_2",
+   "vote_82",
+   "vote_83",
+   "vote_623",
+   "vote_195",
+   "vote_377",
+   "vote_426"
+  ]
+ },
+ {
+  "tid": "vote_85",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player casts a vote against someone who had previously accused them of acting in a coordinated bloc during the day's discussion.",
+  "neighbors": [
+   "vote_93",
+   "vote_161",
+   "vote_160",
+   "vote_564",
+   "vote_50",
+   "vote_298",
+   "vote_149",
+   "vote_263"
+  ]
+ },
+ {
+  "tid": "vote_86",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player votes for a candidate despite having just asked the group for their interpretation of that candidate's prior voting record rather than stating a personal suspicion.",
+  "neighbors": [
+   "vote_46",
+   "vote_4",
+   "vote_261",
+   "vote_262",
+   "vote_346",
+   "vote_127",
+   "vote_508",
+   "vote_425"
+  ]
+ },
+ {
+  "tid": "vote_87",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase.",
+  "neighbors": [
+   "vote_405",
+   "vote_122",
+   "vote_196",
+   "vote_198",
+   "vote_564",
+   "vote_40",
+   "vote_39",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_88",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Switches to support the voting target proposed by another player after expressing agreement with that player's arguments during the discussion.",
+  "neighbors": [
+   "vote_556",
+   "vote_273",
+   "vote_271",
+   "vote_401",
+   "vote_646",
+   "vote_402",
+   "vote_722",
+   "vote_490"
+  ]
+ },
+ {
+  "tid": "vote_89",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player who explicitly argued against focusing on past voting records and advocated for identifying targets based on current stalling, proceeds to vote for the player leading the charge against them.",
+  "neighbors": [
+   "vote_437",
+   "vote_353",
+   "vote_442",
+   "vote_438",
+   "vote_93",
+   "vote_425",
+   "vote_647",
+   "vote_422"
+  ]
+ },
+ {
+  "tid": "vote_90",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who consistently defended those who voted for the player revealed on death as the investigator, votes for a player who was not previously the focus of their suspicion during the current day's discussion.",
+  "neighbors": [
+   "vote_199",
+   "vote_346",
+   "vote_4",
+   "vote_14",
+   "vote_272",
+   "vote_643",
+   "vote_154",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_91",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who advocates for targeting a specific group of abstainers in the discussion proceeds to vote for one of those identified players.",
+  "neighbors": [
+   "vote_627",
+   "vote_5",
+   "vote_6",
+   "vote_1",
+   "vote_376",
+   "vote_294",
+   "vote_194",
+   "vote_398"
+  ]
+ },
+ {
+  "tid": "vote_92",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player after repeatedly directing the discussion toward the need to break a prolonged deadlock between the same group of participants.",
+  "neighbors": [
+   "vote_93",
+   "vote_723",
+   "vote_345",
+   "vote_382",
+   "vote_462",
+   "vote_442",
+   "vote_725",
+   "vote_49"
+  ]
+ },
+ {
+  "tid": "vote_93",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player after spending the entire discussion period accusing that player and another of maintaining a coordinated, exclusionary voting bloc.",
+  "neighbors": [
+   "vote_4",
+   "vote_442",
+   "vote_346",
+   "vote_49",
+   "vote_85",
+   "vote_3",
+   "vote_492",
+   "vote_425"
+  ]
+ },
+ {
+  "tid": "vote_94",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Votes for a player that matches the vote of a participant who has been leading the accusatory discussion, despite having offered minimal independent justification.",
+  "neighbors": [
+   "vote_562",
+   "vote_691",
+   "vote_692",
+   "vote_556",
+   "vote_402",
+   "vote_262",
+   "vote_261",
+   "vote_155"
+  ]
+ },
+ {
+  "tid": "vote_120",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player who explicitly states that the group needs to be careful about making assumptions or missing potential threats abstains from the vote.",
+  "neighbors": [
+   "vote_1",
+   "vote_536",
+   "vote_505",
+   "vote_398",
+   "vote_625",
+   "vote_5",
+   "vote_6",
+   "vote_266"
+  ]
+ },
+ {
+  "tid": "vote_121",
+  "support": 3,
+  "status": "probation",
+  "canonical": "Votes against a player after repeatedly challenging their line of reasoning during the day's discussion.",
+  "neighbors": [
+   "vote_93",
+   "vote_487",
+   "vote_442",
+   "vote_492",
+   "vote_723",
+   "vote_49",
+   "vote_4",
+   "vote_200"
+  ]
+ },
+ {
+  "tid": "vote_122",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Casts a vote for a player who is currently leading the accusations against them.",
+  "neighbors": [
+   "vote_41",
+   "vote_555",
+   "vote_476",
+   "vote_267",
+   "vote_196",
+   "vote_87",
+   "vote_237",
+   "vote_40"
+  ]
+ },
+ {
+  "tid": "vote_123",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Votes for a player after explicitly dismissing their stated priorities as a distraction earlier in the day.",
+  "neighbors": [
+   "vote_353",
+   "vote_352",
+   "vote_647",
+   "vote_437",
+   "vote_3",
+   "vote_4",
+   "vote_345",
+   "vote_93"
+  ]
+ },
+ {
+  "tid": "vote_124",
+  "support": 4,
+  "status": "probation",
+  "canonical": "Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions.",
+  "neighbors": [
+   "vote_354",
+   "vote_353",
+   "vote_12",
+   "vote_3",
+   "vote_123",
+   "vote_352",
+   "vote_725",
+   "vote_345"
+  ]
+ },
+ {
+  "tid": "vote_125",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for the person accusing them while calling that accusation a strategy for survival.",
+  "neighbors": [
+   "vote_476",
+   "vote_237",
+   "vote_643",
+   "vote_41",
+   "vote_149",
+   "vote_267",
+   "vote_39",
+   "vote_40"
+  ]
+ },
+ {
+  "tid": "vote_126",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player makes a role claim while simultaneously demanding the elimination of another player without providing evidence.",
+  "neighbors": [
+   "vote_128",
+   "vote_4",
+   "vote_259",
+   "vote_562",
+   "vote_400",
+   "vote_264",
+   "vote_265",
+   "vote_262"
+  ]
+ },
+ {
+  "tid": "vote_127",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for someone they previously expressed skepticism about after asking for more information.",
+  "neighbors": [
+   "vote_4",
+   "vote_298",
+   "vote_86",
+   "vote_508",
+   "vote_436",
+   "vote_437",
+   "vote_640",
+   "vote_46"
+  ]
+ },
+ {
+  "tid": "vote_128",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player repeatedly questions the timing of a late-game role claim during the discussion phase.",
+  "neighbors": [
+   "vote_126",
+   "vote_259",
+   "vote_400",
+   "vote_561",
+   "vote_462",
+   "vote_266",
+   "vote_401",
+   "vote_671"
+  ]
+ },
+ {
+  "tid": "vote_144",
+  "support": 1,
+  "status": "archived",
+  "canonical": "advocates for a quantitative threshold for voting to prevent split outcomes without naming a specific candidate.",
+  "neighbors": [
+   "vote_78",
+   "vote_44",
+   "vote_43",
+   "vote_42",
+   "vote_396",
+   "vote_190",
+   "vote_146",
+   "vote_503"
+  ]
+ },
+ {
+  "tid": "vote_145",
+  "support": 1,
+  "status": "archived",
+  "canonical": "proposes a specific criterion for identifying suspicious behavior before the voting process has actually begun.",
+  "neighbors": [
+   "vote_146",
+   "vote_190",
+   "vote_78",
+   "vote_639",
+   "vote_503",
+   "vote_144",
+   "vote_81",
+   "vote_397"
+  ]
+ },
+ {
+  "tid": "vote_146",
+  "support": 1,
+  "status": "archived",
+  "canonical": "outlines a specific condition for voting behavior that they intend to monitor during the upcoming voting process.",
+  "neighbors": [
+   "vote_145",
+   "vote_503",
+   "vote_144",
+   "vote_396",
+   "vote_79",
+   "vote_81",
+   "vote_504",
+   "vote_650"
+  ]
+ },
+ {
+  "tid": "vote_147",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting.",
+  "neighbors": [
+   "vote_693",
+   "vote_720",
+   "vote_721",
+   "vote_323",
+   "vote_354",
+   "vote_489",
+   "vote_295",
+   "vote_353"
+  ]
+ },
+ {
+  "tid": "vote_148",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Warns against picking quiet players for elimination during discussion but then participates in the group-wide decision to abstain.",
+  "neighbors": [
+   "vote_354",
+   "vote_353",
+   "vote_3",
+   "vote_352",
+   "vote_489",
+   "vote_12",
+   "vote_693",
+   "vote_725"
+  ]
+ },
+ {
+  "tid": "vote_149",
+  "support": 6,
+  "status": "incumbent",
+  "canonical": "votes for the player who has publicly accused them of being a threat, despite having argued against the accusation throughout the discussion.",
+  "neighbors": [
+   "vote_154",
+   "vote_267",
+   "vote_57",
+   "vote_220",
+   "vote_438",
+   "vote_492",
+   "vote_56",
+   "vote_698"
+  ]
+ },
+ {
+  "tid": "vote_150",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for the consensus target after having warned against the dangers of group-driven voting patterns earlier in the day.",
+  "neighbors": [
+   "vote_269",
+   "vote_158",
+   "vote_268",
+   "vote_353",
+   "vote_147",
+   "vote_647",
+   "vote_156",
+   "vote_650"
+  ]
+ },
+ {
+  "tid": "vote_151",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for a candidate while simultaneously acknowledging the potential risk of the vote being incorrect.",
+  "neighbors": [
+   "vote_566",
+   "vote_325",
+   "vote_508",
+   "vote_557",
+   "vote_296",
+   "vote_127",
+   "vote_507",
+   "vote_82"
+  ]
+ },
+ {
+  "tid": "vote_152",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player abstains from the vote despite being the subject of an active accusation by an influential player.",
+  "neighbors": [
+   "vote_7",
+   "vote_266",
+   "vote_505",
+   "vote_2",
+   "vote_426",
+   "vote_719",
+   "vote_1",
+   "vote_5"
+  ]
+ },
+ {
+  "tid": "vote_153",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player joins the consensus vote against an accused individual after having explicitly suggested that the speed of such a push might be a manipulation tactic.",
+  "neighbors": [
+   "vote_560",
+   "vote_425",
+   "vote_353",
+   "vote_4",
+   "vote_156",
+   "vote_93",
+   "vote_649",
+   "vote_602"
+  ]
+ },
+ {
+  "tid": "vote_154",
+  "support": 3,
+  "status": "probation",
+  "canonical": "votes for a player after having defended themselves against that same player's accusations in the discussion.",
+  "neighbors": [
+   "vote_149",
+   "vote_46",
+   "vote_4",
+   "vote_643",
+   "vote_196",
+   "vote_459",
+   "vote_155",
+   "vote_607"
+  ]
+ },
+ {
+  "tid": "vote_155",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player immediately after initiating a line of suspicion against them in the discussion.",
+  "neighbors": [
+   "vote_196",
+   "vote_46",
+   "vote_403",
+   "vote_488",
+   "vote_442",
+   "vote_462",
+   "vote_640",
+   "vote_487"
+  ]
+ },
+ {
+  "tid": "vote_156",
+  "support": 2,
+  "status": "archived",
+  "canonical": "votes for the room's consensus target after engaging in a discussion comparing the speed of all players' past voting records.",
+  "neighbors": [
+   "vote_382",
+   "vote_649",
+   "vote_89",
+   "vote_348",
+   "vote_487",
+   "vote_647",
+   "vote_157",
+   "vote_158"
+  ]
+ },
+ {
+  "tid": "vote_157",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player following a discussion segment where they suggested comparing current voting speed to past voting performance.",
+  "neighbors": [
+   "vote_224",
+   "vote_223",
+   "vote_222",
+   "vote_49",
+   "vote_156",
+   "vote_487",
+   "vote_647",
+   "vote_648"
+  ]
+ },
+ {
+  "tid": "vote_158",
+  "support": 2,
+  "status": "archived",
+  "canonical": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation.",
+  "neighbors": [
+   "vote_268",
+   "vote_156",
+   "vote_150",
+   "vote_649",
+   "vote_269",
+   "vote_646",
+   "vote_348",
+   "vote_274"
+  ]
+ },
+ {
+  "tid": "vote_159",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote against an individual after previously asking for justification from both parties in the same final round.",
+  "neighbors": [
+   "vote_607",
+   "vote_16",
+   "vote_127",
+   "vote_4",
+   "vote_298",
+   "vote_508",
+   "vote_723",
+   "vote_300"
+  ]
+ },
+ {
+  "tid": "vote_160",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for a candidate immediately after accusing them of being a primary driver of a previous controversial elimination.",
+  "neighbors": [
+   "vote_161",
+   "vote_85",
+   "vote_564",
+   "vote_93",
+   "vote_345",
+   "vote_462",
+   "vote_442",
+   "vote_4"
+  ]
+ },
+ {
+  "tid": "vote_161",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "A player votes for a candidate who had just accused them of being the primary driver of a previous controversial elimination.",
+  "neighbors": [
+   "vote_160",
+   "vote_85",
+   "vote_149",
+   "vote_723",
+   "vote_648",
+   "vote_93",
+   "vote_437",
+   "vote_350"
+  ]
+ },
+ {
+  "tid": "vote_187",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for the person who has most recently accused them of being an obstruction to progress.",
+  "neighbors": [
+   "vote_188",
+   "vote_476",
+   "vote_39",
+   "vote_40",
+   "vote_555",
+   "vote_41",
+   "vote_149",
+   "vote_267"
+  ]
+ },
+ {
+  "tid": "vote_188",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for the person who has most recently accused them of being an obstruction to progress.",
+  "neighbors": [
+   "vote_187",
+   "vote_476",
+   "vote_39",
+   "vote_40",
+   "vote_555",
+   "vote_41",
+   "vote_149",
+   "vote_267"
+  ]
+ },
+ {
+  "tid": "vote_189",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player joins a specific vote after explicitly stating during the discussion that they are acting based on a characterization of the target rather than proof.",
+  "neighbors": [
+   "vote_401",
+   "vote_262",
+   "vote_261",
+   "vote_691",
+   "vote_692",
+   "vote_264",
+   "vote_86",
+   "vote_562"
+  ]
+ },
+ {
+  "tid": "vote_190",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "Advocates for a delayed voting process before any specific suspicions are raised during the discussion phase.",
+  "neighbors": [
+   "vote_639",
+   "vote_191",
+   "vote_486",
+   "vote_79",
+   "vote_155",
+   "vote_536",
+   "vote_649",
+   "vote_199"
+  ]
+ },
+ {
+  "tid": "vote_191",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Suggests abstaining from early votes to prevent the elimination of potentially useful roles without evidence.",
+  "neighbors": [
+   "vote_120",
+   "vote_536",
+   "vote_671",
+   "vote_376",
+   "vote_190",
+   "vote_639",
+   "vote_83",
+   "vote_1"
+  ]
+ },
+ {
+  "tid": "vote_192",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Resists suggestions to disclose information or roles during the initial discussion period.",
+  "neighbors": [
+   "vote_502",
+   "vote_190",
+   "vote_533",
+   "vote_721",
+   "vote_718",
+   "vote_377",
+   "vote_623",
+   "vote_81"
+  ]
+ },
+ {
+  "tid": "vote_193",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for someone despite having expressed a preference for not debating and staying unified.",
+  "neighbors": [
+   "vote_298",
+   "vote_563",
+   "vote_381",
+   "vote_296",
+   "vote_200",
+   "vote_323",
+   "vote_93",
+   "vote_345"
+  ]
+ },
+ {
+  "tid": "vote_194",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player actively pushes the conversation toward targeting others and then abstains when a vote is finally cast against them.",
+  "neighbors": [
+   "vote_5",
+   "vote_6",
+   "vote_294",
+   "vote_152",
+   "vote_7",
+   "vote_1",
+   "vote_719",
+   "vote_91"
+  ]
+ },
+ {
+  "tid": "vote_195",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player argues against the consensus regarding how to interpret past strategy and ultimately chooses to abstain in the vote.",
+  "neighbors": [
+   "vote_82",
+   "vote_489",
+   "vote_83",
+   "vote_294",
+   "vote_84",
+   "vote_621",
+   "vote_623",
+   "vote_398"
+  ]
+ },
+ {
+  "tid": "vote_196",
+  "support": 9,
+  "status": "incumbent",
+  "canonical": "votes for a player immediately after that player directs suspicion at them during the discussion phase.",
+  "neighbors": [
+   "vote_155",
+   "vote_46",
+   "vote_154",
+   "vote_476",
+   "vote_672",
+   "vote_198",
+   "vote_488",
+   "vote_40"
+  ]
+ },
+ {
+  "tid": "vote_197",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player immediately after that player identifies the exhibitor's behavior as an attempt to steer the room.",
+  "neighbors": [
+   "vote_155",
+   "vote_196",
+   "vote_649",
+   "vote_49",
+   "vote_198",
+   "vote_487",
+   "vote_220",
+   "vote_476"
+  ]
+ },
+ {
+  "tid": "vote_198",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player after having explicitly requested input on whether to target that specific person during the discussion phase.",
+  "neighbors": [
+   "vote_155",
+   "vote_196",
+   "vote_487",
+   "vote_640",
+   "vote_49",
+   "vote_649",
+   "vote_4",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_199",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who advocates for decisive action throughout the discussion and voices skepticism of the room's prevailing rhetoric casts a vote for a player who they had not previously singled out for suspicion.",
+  "neighbors": [
+   "vote_425",
+   "vote_492",
+   "vote_53",
+   "vote_52",
+   "vote_51",
+   "vote_54",
+   "vote_14",
+   "vote_299"
+  ]
+ },
+ {
+  "tid": "vote_200",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who consistently criticizes the voting behavior of others during the discussion proceeds to vote against a player who they are actively debating at the moment of the vote.",
+  "neighbors": [
+   "vote_49",
+   "vote_422",
+   "vote_345",
+   "vote_425",
+   "vote_4",
+   "vote_93",
+   "vote_193",
+   "vote_462"
+  ]
+ },
+ {
+  "tid": "vote_220",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player who was actively aggressive in their accusations during the discussion.",
+  "neighbors": [
+   "vote_221",
+   "vote_149",
+   "vote_267",
+   "vote_155",
+   "vote_461",
+   "vote_492",
+   "vote_56",
+   "vote_488"
+  ]
+ },
+ {
+  "tid": "vote_221",
+  "support": 2,
+  "status": "archived",
+  "canonical": "votes for a player who was the primary focus of accusations during the discussion despite not participating in the accusation themselves.",
+  "neighbors": [
+   "vote_220",
+   "vote_488",
+   "vote_565",
+   "vote_461",
+   "vote_155",
+   "vote_149",
+   "vote_459",
+   "vote_267"
+  ]
+ },
+ {
+  "tid": "vote_222",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player following a day of discussion where the player was explicitly identified as a point of contention.",
+  "neighbors": [
+   "vote_223",
+   "vote_224",
+   "vote_155",
+   "vote_461",
+   "vote_487",
+   "vote_56",
+   "vote_345",
+   "vote_437"
+  ]
+ },
+ {
+  "tid": "vote_223",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player following a day of discussion where the player was explicitly identified as a point of contention.",
+  "neighbors": [
+   "vote_222",
+   "vote_224",
+   "vote_155",
+   "vote_461",
+   "vote_487",
+   "vote_56",
+   "vote_345",
+   "vote_437"
+  ]
+ },
+ {
+  "tid": "vote_224",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player following a day of discussion where the player was explicitly identified as a point of contention.",
+  "neighbors": [
+   "vote_222",
+   "vote_223",
+   "vote_155",
+   "vote_461",
+   "vote_487",
+   "vote_56",
+   "vote_345",
+   "vote_437"
+  ]
+ },
+ {
+  "tid": "vote_235",
+  "support": 5,
+  "status": "probation",
+  "canonical": "A player casts a non-abstain vote while the rest of the table chooses to abstain.",
+  "neighbors": [
+   "vote_2",
+   "vote_323",
+   "vote_84",
+   "vote_295",
+   "vote_426",
+   "vote_294",
+   "vote_489",
+   "vote_195"
+  ]
+ },
+ {
+  "tid": "vote_236",
+  "support": 11,
+  "status": "incumbent",
+  "canonical": "A player who proposes a structure for evaluating threats ultimately votes to abstain.",
+  "neighbors": [
+   "vote_718",
+   "vote_489",
+   "vote_536",
+   "vote_623",
+   "vote_379",
+   "vote_82",
+   "vote_377",
+   "vote_195"
+  ]
+ },
+ {
+  "tid": "vote_237",
+  "support": 7,
+  "status": "incumbent",
+  "canonical": "A player who is the subject of intense group scrutiny casts a vote for their primary accuser at the final vote.",
+  "neighbors": [
+   "vote_559",
+   "vote_476",
+   "vote_672",
+   "vote_40",
+   "vote_39",
+   "vote_267",
+   "vote_300",
+   "vote_125"
+  ]
+ },
+ {
+  "tid": "vote_238",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player joins a near-unanimous lynch consensus at the last moment without having actively participated in the preceding discussion.",
+  "neighbors": [
+   "vote_691",
+   "vote_692",
+   "vote_94",
+   "vote_401",
+   "vote_562",
+   "vote_404",
+   "vote_263",
+   "vote_2"
+  ]
+ },
+ {
+  "tid": "vote_239",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who self-identifies as the healer directs their vote toward the person leading the accusation against another individual.",
+  "neighbors": [
+   "vote_122",
+   "vote_476",
+   "vote_643",
+   "vote_41",
+   "vote_555",
+   "vote_125",
+   "vote_267",
+   "vote_196"
+  ]
+ },
+ {
+  "tid": "vote_240",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player continues to aggressively pursue the elimination of an opponent despite other participants calling for a change in strategy.",
+  "neighbors": [
+   "vote_9",
+   "vote_8",
+   "vote_477",
+   "vote_601",
+   "vote_602",
+   "vote_323",
+   "vote_193",
+   "vote_243"
+  ]
+ },
+ {
+  "tid": "vote_241",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player pivots to voting for a candidate only after identifying them as a source of past suspicion in the current discussion.",
+  "neighbors": [
+   "vote_672",
+   "vote_442",
+   "vote_601",
+   "vote_602",
+   "vote_492",
+   "vote_46",
+   "vote_155",
+   "vote_51"
+  ]
+ },
+ {
+  "tid": "vote_242",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player aligns their vote with another participant by explicitly referencing the past voting record of both candidates.",
+  "neighbors": [
+   "vote_696",
+   "vote_271",
+   "vote_586",
+   "vote_645",
+   "vote_490",
+   "vote_94",
+   "vote_88",
+   "vote_11"
+  ]
+ },
+ {
+  "tid": "vote_243",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who is being heavily pressured by multiple participants responds by accusing those participants of coordinating to achieve a quick elimination.",
+  "neighbors": [
+   "vote_153",
+   "vote_462",
+   "vote_125",
+   "vote_85",
+   "vote_126",
+   "vote_477",
+   "vote_564",
+   "vote_93"
+  ]
+ },
+ {
+  "tid": "vote_259",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses significant doubt about a specific role claim and demands accountability for the outcome of the vote if the target is innocent.",
+  "neighbors": [
+   "vote_304",
+   "vote_126",
+   "vote_260",
+   "vote_400",
+   "vote_535",
+   "vote_264",
+   "vote_508",
+   "vote_562"
+  ]
+ },
+ {
+  "tid": "vote_260",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player publicly prompts another participant to reveal their role or evidence during a dispute, thereby creating a threshold for the group to follow their vote.",
+  "neighbors": [
+   "vote_259",
+   "vote_304",
+   "vote_265",
+   "vote_126",
+   "vote_535",
+   "vote_645",
+   "vote_649",
+   "vote_557"
+  ]
+ },
+ {
+  "tid": "vote_261",
+  "support": 18,
+  "status": "incumbent",
+  "canonical": "A player casts a vote for another player despite having made no mention of suspicion toward them throughout the entire preceding discussion period.",
+  "neighbors": [
+   "vote_262",
+   "vote_691",
+   "vote_692",
+   "vote_0",
+   "vote_14",
+   "vote_563",
+   "vote_297",
+   "vote_54"
+  ]
+ },
+ {
+  "tid": "vote_262",
+  "support": 11,
+  "status": "probation",
+  "canonical": "A player casts a vote for another player despite having made no mention of suspicion toward them throughout the entire preceding discussion period.",
+  "neighbors": [
+   "vote_261",
+   "vote_691",
+   "vote_692",
+   "vote_0",
+   "vote_14",
+   "vote_563",
+   "vote_297",
+   "vote_54"
+  ]
+ },
+ {
+  "tid": "vote_263",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player joins a majority-bloc vote to eliminate another player after that target was accused of being a specific role, despite remaining silent during the accusatory discussion.",
+  "neighbors": [
+   "vote_264",
+   "vote_93",
+   "vote_261",
+   "vote_262",
+   "vote_692",
+   "vote_691",
+   "vote_51",
+   "vote_52"
+  ]
+ },
+ {
+  "tid": "vote_264",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player joins a majority-bloc vote to eliminate another player after that target was accused of being a specific role, despite expressing uncertainty about the validity of the evidence provided.",
+  "neighbors": [
+   "vote_263",
+   "vote_458",
+   "vote_4",
+   "vote_93",
+   "vote_127",
+   "vote_3",
+   "vote_401",
+   "vote_189"
+  ]
+ },
+ {
+  "tid": "vote_265",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who claims to have information from a night action casts a vote for the subject of their claim while simultaneously urging the rest of the group to do the same.",
+  "neighbors": [
+   "vote_562",
+   "vote_556",
+   "vote_400",
+   "vote_272",
+   "vote_41",
+   "vote_649",
+   "vote_266",
+   "vote_126"
+  ]
+ },
+ {
+  "tid": "vote_266",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player abstains from voting despite having initiated public inquiry into the legitimacy of a specific claim made by another player regarding a night action.",
+  "neighbors": [
+   "vote_152",
+   "vote_2",
+   "vote_505",
+   "vote_426",
+   "vote_376",
+   "vote_1",
+   "vote_479",
+   "vote_7"
+  ]
+ },
+ {
+  "tid": "vote_267",
+  "support": 3,
+  "status": "probation",
+  "canonical": "Votes for the player who has been publicly accusing them during the discussion phase.",
+  "neighbors": [
+   "vote_476",
+   "vote_149",
+   "vote_220",
+   "vote_272",
+   "vote_40",
+   "vote_39",
+   "vote_41",
+   "vote_492"
+  ]
+ },
+ {
+  "tid": "vote_268",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for the consensus target after expressing hesitation about the information provided in the discussion.",
+  "neighbors": [
+   "vote_269",
+   "vote_158",
+   "vote_274",
+   "vote_150",
+   "vote_458",
+   "vote_646",
+   "vote_147",
+   "vote_721"
+  ]
+ },
+ {
+  "tid": "vote_269",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for the consensus target after previously noting that the information presented was difficult to evaluate.",
+  "neighbors": [
+   "vote_268",
+   "vote_150",
+   "vote_158",
+   "vote_274",
+   "vote_147",
+   "vote_720",
+   "vote_693",
+   "vote_642"
+  ]
+ },
+ {
+  "tid": "vote_270",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for the player who was recently identified by a claim, while simultaneously critiquing that player's past voting history.",
+  "neighbors": [
+   "vote_442",
+   "vote_49",
+   "vote_272",
+   "vote_4",
+   "vote_492",
+   "vote_89",
+   "vote_487",
+   "vote_93"
+  ]
+ },
+ {
+  "tid": "vote_271",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player after expressing agreement with those advocating for that specific elimination throughout the discussion.",
+  "neighbors": [
+   "vote_558",
+   "vote_436",
+   "vote_93",
+   "vote_353",
+   "vote_345",
+   "vote_10",
+   "vote_352",
+   "vote_4"
+  ]
+ },
+ {
+  "tid": "vote_272",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for the player who was publicly identified as a target by an investigator claim earlier in the discussion.",
+  "neighbors": [
+   "vote_267",
+   "vote_492",
+   "vote_438",
+   "vote_221",
+   "vote_220",
+   "vote_461",
+   "vote_270",
+   "vote_437"
+  ]
+ },
+ {
+  "tid": "vote_273",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes in alignment with the investigator claim after having publicly supported that role's credibility during the discussion.",
+  "neighbors": [
+   "vote_90",
+   "vote_346",
+   "vote_4",
+   "vote_643",
+   "vote_88",
+   "vote_272",
+   "vote_266",
+   "vote_401"
+  ]
+ },
+ {
+  "tid": "vote_274",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for the consensus target after participating in the discussion confirming the investigation result.",
+  "neighbors": [
+   "vote_268",
+   "vote_556",
+   "vote_269",
+   "vote_158",
+   "vote_463",
+   "vote_273",
+   "vote_646",
+   "vote_156"
+  ]
+ },
+ {
+  "tid": "vote_294",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player advocates for a specific discussion topic and then opts to abstain when the vote occurs.",
+  "neighbors": [
+   "vote_84",
+   "vote_623",
+   "vote_426",
+   "vote_398",
+   "vote_82",
+   "vote_5",
+   "vote_6",
+   "vote_2"
+  ]
+ },
+ {
+  "tid": "vote_295",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player shifts from actively challenging others during discussion to casting the only non-abstain vote.",
+  "neighbors": [
+   "vote_2",
+   "vote_558",
+   "vote_5",
+   "vote_6",
+   "vote_535",
+   "vote_294",
+   "vote_194",
+   "vote_323"
+  ]
+ },
+ {
+  "tid": "vote_296",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for someone they previously explicitly identified as an adversary in the debate.",
+  "neighbors": [
+   "vote_298",
+   "vote_193",
+   "vote_508",
+   "vote_436",
+   "vote_490",
+   "vote_127",
+   "vote_607",
+   "vote_696"
+  ]
+ },
+ {
+  "tid": "vote_297",
+  "support": 7,
+  "status": "probation",
+  "canonical": "A player casts a vote against a participant who had not been discussed as a primary suspect throughout the current day.",
+  "neighbors": [
+   "vote_0",
+   "vote_563",
+   "vote_261",
+   "vote_262",
+   "vote_14",
+   "vote_324",
+   "vote_692",
+   "vote_691"
+  ]
+ },
+ {
+  "tid": "vote_298",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player casts a vote against someone they engaged with in a collaborative discussion immediately prior to the vote.",
+  "neighbors": [
+   "vote_563",
+   "vote_640",
+   "vote_193",
+   "vote_462",
+   "vote_296",
+   "vote_127",
+   "vote_93",
+   "vote_299"
+  ]
+ },
+ {
+  "tid": "vote_299",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a non-consensus vote against an individual they had previously scrutinized, even while the rest of the group is focused on a separate, high-probability target.",
+  "neighbors": [
+   "vote_54",
+   "vote_53",
+   "vote_52",
+   "vote_51",
+   "vote_563",
+   "vote_492",
+   "vote_298",
+   "vote_199"
+  ]
+ },
+ {
+  "tid": "vote_300",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who had been the target of criticism in the previous discussion cycle casts the final vote for the person who had been actively pushing suspicion against them.",
+  "neighbors": [
+   "vote_492",
+   "vote_438",
+   "vote_149",
+   "vote_14",
+   "vote_267",
+   "vote_220",
+   "vote_272",
+   "vote_237"
+  ]
+ },
+ {
+  "tid": "vote_301",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly warns against placing too much weight on voting patterns immediately after a player is revealed on death to have been a specific role.",
+  "neighbors": [
+   "vote_440",
+   "vote_346",
+   "vote_90",
+   "vote_649",
+   "vote_462",
+   "vote_46",
+   "vote_155",
+   "vote_561"
+  ]
+ },
+ {
+  "tid": "vote_302",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player publicly questions why their accuser has not challenged a third party who also directed criticism toward the player.",
+  "neighbors": [
+   "vote_443",
+   "vote_480",
+   "vote_260",
+   "vote_304",
+   "vote_478",
+   "vote_259",
+   "vote_326",
+   "vote_161"
+  ]
+ },
+ {
+  "tid": "vote_303",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies their previous vote by claiming it was an attempt to disrupt perceived group consensus.",
+  "neighbors": [
+   "vote_646",
+   "vote_462",
+   "vote_4",
+   "vote_195",
+   "vote_299",
+   "vote_723",
+   "vote_93",
+   "vote_353"
+  ]
+ },
+ {
+  "tid": "vote_304",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly asks for objective evidence before committing to a vote against one of two participants in a mutual accusation.",
+  "neighbors": [
+   "vote_259",
+   "vote_479",
+   "vote_459",
+   "vote_266",
+   "vote_557",
+   "vote_127",
+   "vote_505",
+   "vote_126"
+  ]
+ },
+ {
+  "tid": "vote_322",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for the same individual who has been actively pushing for their own elimination during the discussion phase.",
+  "neighbors": [
+   "vote_16",
+   "vote_344",
+   "vote_607",
+   "vote_436",
+   "vote_161",
+   "vote_298",
+   "vote_200",
+   "vote_193"
+  ]
+ },
+ {
+  "tid": "vote_323",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player casts the sole non-abstaining vote against another player despite a lack of consensus from the rest of the group.",
+  "neighbors": [
+   "vote_381",
+   "vote_299",
+   "vote_235",
+   "vote_558",
+   "vote_193",
+   "vote_535",
+   "vote_563",
+   "vote_295"
+  ]
+ },
+ {
+  "tid": "vote_324",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player casts a vote for a candidate who has not been mentioned in their own prior contributions during the discussion.",
+  "neighbors": [
+   "vote_297",
+   "vote_563",
+   "vote_54",
+   "vote_53",
+   "vote_52",
+   "vote_51",
+   "vote_0",
+   "vote_565"
+  ]
+ },
+ {
+  "tid": "vote_325",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for a candidate while simultaneously advising the group that the current focus of the discussion may be a distraction.",
+  "neighbors": [
+   "vote_624",
+   "vote_565",
+   "vote_294",
+   "vote_324",
+   "vote_563",
+   "vote_295",
+   "vote_398",
+   "vote_151"
+  ]
+ },
+ {
+  "tid": "vote_326",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player immediately focuses their suspicion on the person who had accused them in the preceding discussion.",
+  "neighbors": [
+   "vote_672",
+   "vote_476",
+   "vote_643",
+   "vote_196",
+   "vote_492",
+   "vote_50",
+   "vote_125",
+   "vote_344"
+  ]
+ },
+ {
+  "tid": "vote_327",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a deciding vote against someone they had been scrutinizing during the discussion for their argumentative conflict with others.",
+  "neighbors": [
+   "vote_56",
+   "vote_492",
+   "vote_382",
+   "vote_300",
+   "vote_200",
+   "vote_299",
+   "vote_298",
+   "vote_425"
+  ]
+ },
+ {
+  "tid": "vote_328",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for a candidate who has been the subject of a prolonged, high-intensity argument between two other players.",
+  "neighbors": [
+   "vote_624",
+   "vote_161",
+   "vote_160",
+   "vote_327",
+   "vote_92",
+   "vote_56",
+   "vote_508",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_344",
+  "support": 3,
+  "status": "probation",
+  "canonical": "A player votes for an individual who had previously suggested the player should be a suspect.",
+  "neighbors": [
+   "vote_154",
+   "vote_46",
+   "vote_196",
+   "vote_4",
+   "vote_643",
+   "vote_492",
+   "vote_16",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_345",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player whose behavior they did not explicitly criticize during the preceding discussion.",
+  "neighbors": [
+   "vote_49",
+   "vote_563",
+   "vote_436",
+   "vote_200",
+   "vote_51",
+   "vote_52",
+   "vote_53",
+   "vote_54"
+  ]
+ },
+ {
+  "tid": "vote_346",
+  "support": 3,
+  "status": "queued",
+  "canonical": "Votes for a player after explicitly cautioning against using past voting patterns to build new accusations.",
+  "neighbors": [
+   "vote_4",
+   "vote_442",
+   "vote_3",
+   "vote_93",
+   "vote_437",
+   "vote_46",
+   "vote_352",
+   "vote_86"
+  ]
+ },
+ {
+  "tid": "vote_347",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player after arguing against the relevance of the investigator's elimination to the current game state.",
+  "neighbors": [
+   "vote_90",
+   "vote_440",
+   "vote_121",
+   "vote_93",
+   "vote_346",
+   "vote_3",
+   "vote_492",
+   "vote_425"
+  ]
+ },
+ {
+  "tid": "vote_348",
+  "support": 1,
+  "status": "archived",
+  "canonical": "joins a voting consensus against a player who was actively challenging the group's current analytical focus during the discussion.",
+  "neighbors": [
+   "vote_353",
+   "vote_647",
+   "vote_644",
+   "vote_224",
+   "vote_222",
+   "vote_223",
+   "vote_649",
+   "vote_461"
+  ]
+ },
+ {
+  "tid": "vote_349",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player they had previously characterized as someone who might be settling personal scores rather than seeking evidence.",
+  "neighbors": [
+   "vote_12",
+   "vote_461",
+   "vote_487",
+   "vote_458",
+   "vote_348",
+   "vote_149",
+   "vote_725",
+   "vote_647"
+  ]
+ },
+ {
+  "tid": "vote_350",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes to eliminate the player who initiated the day's primary argument about past voting behavior.",
+  "neighbors": [
+   "vote_725",
+   "vote_355",
+   "vote_461",
+   "vote_648",
+   "vote_161",
+   "vote_723",
+   "vote_487",
+   "vote_56"
+  ]
+ },
+ {
+  "tid": "vote_351",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes to eliminate the player who explicitly identified them as the main source of procedural noise.",
+  "neighbors": [
+   "vote_461",
+   "vote_382",
+   "vote_348",
+   "vote_492",
+   "vote_56",
+   "vote_222",
+   "vote_223",
+   "vote_224"
+  ]
+ },
+ {
+  "tid": "vote_352",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes to eliminate a player after previously articulating that a past vote by that same player is the most significant lead for the group.",
+  "neighbors": [
+   "vote_3",
+   "vote_354",
+   "vote_353",
+   "vote_607",
+   "vote_4",
+   "vote_346",
+   "vote_437",
+   "vote_442"
+  ]
+ },
+ {
+  "tid": "vote_353",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Joins a voting consensus against a player shortly after describing the recent voting volatility as a major concern.",
+  "neighbors": [
+   "vote_352",
+   "vote_354",
+   "vote_647",
+   "vote_12",
+   "vote_3",
+   "vote_123",
+   "vote_89",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_354",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Casts a vote for a player after publicly cautioning the group against focusing on a single voting record as an overly simplistic lead.",
+  "neighbors": [
+   "vote_352",
+   "vote_353",
+   "vote_124",
+   "vote_3",
+   "vote_12",
+   "vote_723",
+   "vote_93",
+   "vote_148"
+  ]
+ },
+ {
+  "tid": "vote_355",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Casts a vote for a player that matches a tie partner from the previous day after arguing that the tie was part of a larger manipulation tactic.",
+  "neighbors": [
+   "vote_354",
+   "vote_350",
+   "vote_352",
+   "vote_12",
+   "vote_353",
+   "vote_725",
+   "vote_161",
+   "vote_648"
+  ]
+ },
+ {
+  "tid": "vote_376",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player strongly advocates for waiting for future data during the discussion phase but then votes to abstain when no specific player was successfully pressured to become a target.",
+  "neighbors": [
+   "vote_266",
+   "vote_1",
+   "vote_91",
+   "vote_294",
+   "vote_5",
+   "vote_6",
+   "vote_194",
+   "vote_2"
+  ]
+ },
+ {
+  "tid": "vote_377",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player demands that all participants go on the record with their perspectives to prevent the group from being misled, but votes to abstain despite not receiving clear commitments from everyone.",
+  "neighbors": [
+   "vote_82",
+   "vote_84",
+   "vote_294",
+   "vote_195",
+   "vote_379",
+   "vote_489",
+   "vote_83",
+   "vote_623"
+  ]
+ },
+ {
+  "tid": "vote_378",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player participates in an exercise to identify difficult-to-read players and frames their logic around observing consistency, but contributes to a unanimous abstention.",
+  "neighbors": [
+   "vote_195",
+   "vote_82",
+   "vote_489",
+   "vote_377",
+   "vote_379",
+   "vote_83",
+   "vote_148",
+   "vote_621"
+  ]
+ },
+ {
+  "tid": "vote_379",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player pushes for a structured activity to break the deadlock by having everyone name a neutral player, yet ends the discussion by voting to abstain.",
+  "neighbors": [
+   "vote_82",
+   "vote_294",
+   "vote_623",
+   "vote_718",
+   "vote_489",
+   "vote_84",
+   "vote_377",
+   "vote_195"
+  ]
+ },
+ {
+  "tid": "vote_380",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player who is not the primary candidate around whom the room's consensus has converged.",
+  "neighbors": [
+   "vote_624",
+   "vote_563",
+   "vote_47",
+   "vote_324",
+   "vote_647",
+   "vote_235",
+   "vote_323",
+   "vote_404"
+  ]
+ },
+ {
+  "tid": "vote_381",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player casts a vote that deviates from the consensus majority on the day of an elimination.",
+  "neighbors": [
+   "vote_563",
+   "vote_193",
+   "vote_323",
+   "vote_14",
+   "vote_10",
+   "vote_298",
+   "vote_723",
+   "vote_345"
+  ]
+ },
+ {
+  "tid": "vote_382",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player votes for a target they had spent the discussion phase analyzing for their role in previous procedural delays.",
+  "neighbors": [
+   "vote_492",
+   "vote_487",
+   "vote_327",
+   "vote_89",
+   "vote_438",
+   "vote_93",
+   "vote_49",
+   "vote_425"
+  ]
+ },
+ {
+  "tid": "vote_396",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Advocates for a specific outcome of no elimination before the vote occurs.",
+  "neighbors": [
+   "vote_271",
+   "vote_190",
+   "vote_693",
+   "vote_405",
+   "vote_294",
+   "vote_558",
+   "vote_533",
+   "vote_81"
+  ]
+ },
+ {
+  "tid": "vote_397",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses skepticism toward a strategy that avoids voting while noting the potential for others to use it as cover.",
+  "neighbors": [
+   "vote_721",
+   "vote_45",
+   "vote_83",
+   "vote_268",
+   "vote_536",
+   "vote_294",
+   "vote_694",
+   "vote_623"
+  ]
+ },
+ {
+  "tid": "vote_398",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player who provides a critique of potential voting strategies during the discussion chooses to abstain when the vote occurs.",
+  "neighbors": [
+   "vote_5",
+   "vote_6",
+   "vote_294",
+   "vote_426",
+   "vote_1",
+   "vote_505",
+   "vote_83",
+   "vote_536"
+  ]
+ },
+ {
+  "tid": "vote_399",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player immediately votes for their accuser upon being presented with a role-based accusation.",
+  "neighbors": [
+   "vote_559",
+   "vote_643",
+   "vote_476",
+   "vote_555",
+   "vote_196",
+   "vote_41",
+   "vote_556",
+   "vote_237"
+  ]
+ },
+ {
+  "tid": "vote_400",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote for someone who has just claimed a special role, after having spent the discussion period questioning the legitimacy of that claim.",
+  "neighbors": [
+   "vote_492",
+   "vote_261",
+   "vote_262",
+   "vote_40",
+   "vote_39",
+   "vote_4",
+   "vote_155",
+   "vote_425"
+  ]
+ },
+ {
+  "tid": "vote_401",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player joins a majority vote against a target despite having explicitly declared in the discussion that they were holding their action until more evidence emerged.",
+  "neighbors": [
+   "vote_691",
+   "vote_692",
+   "vote_189",
+   "vote_4",
+   "vote_261",
+   "vote_262",
+   "vote_298",
+   "vote_263"
+  ]
+ },
+ {
+  "tid": "vote_402",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses strong inclination toward a specific target during discussion and follows through with a vote for that same target.",
+  "neighbors": [
+   "vote_8",
+   "vote_9",
+   "vote_535",
+   "vote_198",
+   "vote_155",
+   "vote_299",
+   "vote_562",
+   "vote_53"
+  ]
+ },
+ {
+  "tid": "vote_403",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player immediately after initiating a call for urgency in the discussion without having previously stated any suspicion of the target.",
+  "neighbors": [
+   "vote_155",
+   "vote_262",
+   "vote_261",
+   "vote_692",
+   "vote_691",
+   "vote_196",
+   "vote_198",
+   "vote_562"
+  ]
+ },
+ {
+  "tid": "vote_404",
+  "support": 2,
+  "status": "archived",
+  "canonical": "votes for a player as part of a final consensus wave after remaining silent during the discussion period.",
+  "neighbors": [
+   "vote_263",
+   "vote_2",
+   "vote_722",
+   "vote_295",
+   "vote_5",
+   "vote_6",
+   "vote_221",
+   "vote_649"
+  ]
+ },
+ {
+  "tid": "vote_405",
+  "support": 2,
+  "status": "archived",
+  "canonical": "initiates a call for ending the practice of abstaining and immediately casts a vote for a specific player when the voting phase begins.",
+  "neighbors": [
+   "vote_87",
+   "vote_91",
+   "vote_5",
+   "vote_6",
+   "vote_295",
+   "vote_535",
+   "vote_463",
+   "vote_235"
+  ]
+ },
+ {
+  "tid": "vote_421",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that the village should abstain from voting after having been the primary target of an active vote in the same session.",
+  "neighbors": [
+   "vote_5",
+   "vote_6",
+   "vote_1",
+   "vote_7",
+   "vote_505",
+   "vote_152",
+   "vote_426",
+   "vote_266"
+  ]
+ },
+ {
+  "tid": "vote_422",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who spends the discussion criticizing others for calling for a voting test without criteria casts a vote for a player who had just been debating them about that specific topic.",
+  "neighbors": [
+   "vote_423",
+   "vote_425",
+   "vote_200",
+   "vote_647",
+   "vote_89",
+   "vote_49",
+   "vote_345",
+   "vote_4"
+  ]
+ },
+ {
+  "tid": "vote_423",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who expresses skepticism about the effectiveness of voting tests during discussion proceeds to vote for a player who was central to the debate about those tests.",
+  "neighbors": [
+   "vote_422",
+   "vote_425",
+   "vote_89",
+   "vote_200",
+   "vote_93",
+   "vote_127",
+   "vote_647",
+   "vote_199"
+  ]
+ },
+ {
+  "tid": "vote_424",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who initiates a confrontational exchange regarding logical consistency switches their vote to an opponent at the last moment when the room converges on that target.",
+  "neighbors": [
+   "vote_508",
+   "vote_298",
+   "vote_401",
+   "vote_425",
+   "vote_299",
+   "vote_492",
+   "vote_490",
+   "vote_200"
+  ]
+ },
+ {
+  "tid": "vote_425",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who spends the discussion emphasizing the need to scrutinize logical inconsistencies casts a vote for a player who had actively questioned their reluctance to initiate a vote.",
+  "neighbors": [
+   "vote_422",
+   "vote_423",
+   "vote_199",
+   "vote_492",
+   "vote_508",
+   "vote_93",
+   "vote_4",
+   "vote_200"
+  ]
+ },
+ {
+  "tid": "vote_426",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player chooses to abstain from voting after having actively participated in the discussion during the day.",
+  "neighbors": [
+   "vote_622",
+   "vote_5",
+   "vote_6",
+   "vote_2",
+   "vote_294",
+   "vote_1",
+   "vote_505",
+   "vote_152"
+  ]
+ },
+ {
+  "tid": "vote_436",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player who they previously defended or urged caution against during the discussion phase.",
+  "neighbors": [
+   "vote_607",
+   "vote_55",
+   "vote_4",
+   "vote_345",
+   "vote_437",
+   "vote_298",
+   "vote_127",
+   "vote_154"
+  ]
+ },
+ {
+  "tid": "vote_437",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Votes for a player who they explicitly stated was not a target of suspicion earlier in the same day.",
+  "neighbors": [
+   "vote_4",
+   "vote_3",
+   "vote_442",
+   "vote_89",
+   "vote_346",
+   "vote_640",
+   "vote_461",
+   "vote_436"
+  ]
+ },
+ {
+  "tid": "vote_438",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who explicitly argued against prioritizing active players as targets casts a vote for the player who had been most vocal in accusing them.",
+  "neighbors": [
+   "vote_149",
+   "vote_300",
+   "vote_492",
+   "vote_89",
+   "vote_461",
+   "vote_272",
+   "vote_220",
+   "vote_267"
+  ]
+ },
+ {
+  "tid": "vote_439",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who has been the subject of repeated night attacks announces their status as a survivor and uses it as a basis to interrogate others.",
+  "neighbors": [
+   "vote_125",
+   "vote_128",
+   "vote_492",
+   "vote_326",
+   "vote_126",
+   "vote_265",
+   "vote_272",
+   "vote_461"
+  ]
+ },
+ {
+  "tid": "vote_440",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who was part of the voting block that eliminated a player later revealed on death to be the investigator argues against analyzing that same voting history.",
+  "neighbors": [
+   "vote_301",
+   "vote_90",
+   "vote_346",
+   "vote_3",
+   "vote_89",
+   "vote_425",
+   "vote_442",
+   "vote_520"
+  ]
+ },
+ {
+  "tid": "vote_441",
+  "support": 1,
+  "status": "archived",
+  "canonical": "maintains a consistent stance of accusing players who voted for an earlier target that was subsequently revealed on death as having been on the same team as the accuser.",
+  "neighbors": [
+   "vote_4",
+   "vote_442",
+   "vote_93",
+   "vote_155",
+   "vote_346",
+   "vote_3",
+   "vote_46",
+   "vote_270"
+  ]
+ },
+ {
+  "tid": "vote_442",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Votes for a player after explicitly calling out that player's past voting history as suspicious during the discussion.",
+  "neighbors": [
+   "vote_346",
+   "vote_4",
+   "vote_93",
+   "vote_155",
+   "vote_270",
+   "vote_46",
+   "vote_49",
+   "vote_437"
+  ]
+ },
+ {
+  "tid": "vote_443",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Attempts to pivot suspicion onto the accuser while being directly challenged for past voting records.",
+  "neighbors": [
+   "vote_650",
+   "vote_478",
+   "vote_50",
+   "vote_720",
+   "vote_601",
+   "vote_602",
+   "vote_241",
+   "vote_46"
+  ]
+ },
+ {
+  "tid": "vote_458",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player after expressing significant hesitation and doubt regarding the credibility of the primary accuser during the discussion.",
+  "neighbors": [
+   "vote_459",
+   "vote_4",
+   "vote_155",
+   "vote_487",
+   "vote_264",
+   "vote_149",
+   "vote_221",
+   "vote_649"
+  ]
+ },
+ {
+  "tid": "vote_459",
+  "support": 3,
+  "status": "probation",
+  "canonical": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase.",
+  "neighbors": [
+   "vote_458",
+   "vote_154",
+   "vote_506",
+   "vote_487",
+   "vote_4",
+   "vote_221",
+   "vote_508",
+   "vote_149"
+  ]
+ },
+ {
+  "tid": "vote_460",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for their primary accuser throughout the discussion phase until the final vote is cast.",
+  "neighbors": [
+   "vote_697",
+   "vote_724",
+   "vote_57",
+   "vote_559",
+   "vote_459",
+   "vote_237",
+   "vote_154",
+   "vote_650"
+  ]
+ },
+ {
+  "tid": "vote_461",
+  "support": 2,
+  "status": "queued",
+  "canonical": "votes for a player who was the subject of their own active interrogation throughout the day's discussion.",
+  "neighbors": [
+   "vote_487",
+   "vote_220",
+   "vote_437",
+   "vote_149",
+   "vote_221",
+   "vote_223",
+   "vote_222",
+   "vote_224"
+  ]
+ },
+ {
+  "tid": "vote_462",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player initiates a new line of questioning regarding previous voting patterns and then immediately casts a vote against a player involved in that discussion.",
+  "neighbors": [
+   "vote_155",
+   "vote_298",
+   "vote_563",
+   "vote_54",
+   "vote_53",
+   "vote_52",
+   "vote_51",
+   "vote_442"
+  ]
+ },
+ {
+  "tid": "vote_463",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player supports a call to analyze abstentions and then votes for the primary target identified by the group consensus.",
+  "neighbors": [
+   "vote_91",
+   "vote_556",
+   "vote_405",
+   "vote_84",
+   "vote_693",
+   "vote_5",
+   "vote_6",
+   "vote_88"
+  ]
+ },
+ {
+  "tid": "vote_476",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player votes for the person who has been most vocal in accusing them immediately after a direct confrontation.",
+  "neighbors": [
+   "vote_267",
+   "vote_40",
+   "vote_39",
+   "vote_555",
+   "vote_237",
+   "vote_559",
+   "vote_41",
+   "vote_196"
+  ]
+ },
+ {
+  "tid": "vote_477",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for the most aggressive participant after criticizing that participant's focus as contradictory and risky.",
+  "neighbors": [
+   "vote_647",
+   "vote_327",
+   "vote_49",
+   "vote_124",
+   "vote_345",
+   "vote_723",
+   "vote_200",
+   "vote_348"
+  ]
+ },
+ {
+  "tid": "vote_478",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player pivots from discussing the general voting history to focusing on specific abstainers after being challenged about their own voting behavior.",
+  "neighbors": [
+   "vote_602",
+   "vote_601",
+   "vote_295",
+   "vote_195",
+   "vote_241",
+   "vote_480",
+   "vote_194",
+   "vote_462"
+  ]
+ },
+ {
+  "tid": "vote_479",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player abstains from the vote while explicitly stating they are avoiding taking a side due to insufficient evidence.",
+  "neighbors": [
+   "vote_426",
+   "vote_505",
+   "vote_266",
+   "vote_622",
+   "vote_152",
+   "vote_1",
+   "vote_294",
+   "vote_719"
+  ]
+ },
+ {
+  "tid": "vote_480",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player shifts from analyzing group patterns to directly calling out the specific questioning techniques of another participant.",
+  "neighbors": [
+   "vote_478",
+   "vote_602",
+   "vote_601",
+   "vote_462",
+   "vote_644",
+   "vote_487",
+   "vote_326",
+   "vote_348"
+  ]
+ },
+ {
+  "tid": "vote_486",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes delaying all accusations until after the first night cycle.",
+  "neighbors": [
+   "vote_190",
+   "vote_191",
+   "vote_669",
+   "vote_505",
+   "vote_559",
+   "vote_671",
+   "vote_304",
+   "vote_152"
+  ]
+ },
+ {
+  "tid": "vote_487",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player after questioning their shift in behavior and justification for a specific target during the discussion.",
+  "neighbors": [
+   "vote_461",
+   "vote_155",
+   "vote_648",
+   "vote_49",
+   "vote_198",
+   "vote_488",
+   "vote_382",
+   "vote_224"
+  ]
+ },
+ {
+  "tid": "vote_488",
+  "support": 1,
+  "status": "archived",
+  "canonical": "votes for a player after failing to generate support for their targeted suspicion during the discussion.",
+  "neighbors": [
+   "vote_155",
+   "vote_221",
+   "vote_196",
+   "vote_487",
+   "vote_220",
+   "vote_492",
+   "vote_267",
+   "vote_459"
+  ]
+ },
+ {
+  "tid": "vote_489",
+  "support": 2,
+  "status": "queued",
+  "canonical": "abstains from the vote after questioning the reasoning of the most vocal player during the discussion.",
+  "neighbors": [
+   "vote_195",
+   "vote_623",
+   "vote_82",
+   "vote_718",
+   "vote_294",
+   "vote_379",
+   "vote_2",
+   "vote_5"
+  ]
+ },
+ {
+  "tid": "vote_490",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player joins a voting bloc to eliminate a candidate after having previously engaged in debating that candidate's logic during the discussion period.",
+  "neighbors": [
+   "vote_508",
+   "vote_296",
+   "vote_298",
+   "vote_696",
+   "vote_93",
+   "vote_425",
+   "vote_85",
+   "vote_200"
+  ]
+ },
+ {
+  "tid": "vote_491",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses hesitation and neutrality regarding a group decision but ultimately votes for the candidate that the majority of the group converges on.",
+  "neighbors": [
+   "vote_295",
+   "vote_2",
+   "vote_84",
+   "vote_82",
+   "vote_88",
+   "vote_294",
+   "vote_624",
+   "vote_623"
+  ]
+ },
+ {
+  "tid": "vote_492",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player votes for the only individual who has voiced persistent and structured suspicion of them throughout the preceding discussion.",
+  "neighbors": [
+   "vote_300",
+   "vote_93",
+   "vote_155",
+   "vote_425",
+   "vote_261",
+   "vote_262",
+   "vote_149",
+   "vote_267"
+  ]
+ },
+ {
+  "tid": "vote_502",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Advocates for passivity and explicitly discourages identifying potential targets during the initial discussion phase.",
+  "neighbors": [
+   "vote_192",
+   "vote_190",
+   "vote_81",
+   "vote_533",
+   "vote_693",
+   "vote_670",
+   "vote_599",
+   "vote_504"
+  ]
+ },
+ {
+  "tid": "vote_503",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a procedural framework for future voting logic while simultaneously cautioning against the risks of inaction.",
+  "neighbors": [
+   "vote_45",
+   "vote_78",
+   "vote_534",
+   "vote_146",
+   "vote_144",
+   "vote_533",
+   "vote_145",
+   "vote_236"
+  ]
+ },
+ {
+  "tid": "vote_504",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Publicly agrees with an expressed preference for passivity while simultaneously endorsing a requirement for transparency in later voting justifications.",
+  "neighbors": [
+   "vote_45",
+   "vote_721",
+   "vote_397",
+   "vote_269",
+   "vote_82",
+   "vote_158",
+   "vote_268",
+   "vote_377"
+  ]
+ },
+ {
+  "tid": "vote_505",
+  "support": 5,
+  "status": "queued",
+  "canonical": "A player who actively questioned the basis of a candidate's accusation chooses to abstain from voting entirely.",
+  "neighbors": [
+   "vote_622",
+   "vote_7",
+   "vote_5",
+   "vote_6",
+   "vote_152",
+   "vote_266",
+   "vote_1",
+   "vote_426"
+  ]
+ },
+ {
+  "tid": "vote_506",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who questioned the logic of a specific accuser during the discussion ends up casting the deciding vote against that accuser.",
+  "neighbors": [
+   "vote_459",
+   "vote_521",
+   "vote_520",
+   "vote_522",
+   "vote_300",
+   "vote_508",
+   "vote_425",
+   "vote_149"
+  ]
+ },
+ {
+  "tid": "vote_507",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for a candidate after spending the preceding discussion period directly defending them or questioning their accusers.",
+  "neighbors": [
+   "vote_41",
+   "vote_556",
+   "vote_555",
+   "vote_492",
+   "vote_695",
+   "vote_125",
+   "vote_460",
+   "vote_40"
+  ]
+ },
+ {
+  "tid": "vote_508",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player votes for a candidate after explicitly questioning the logic used by others to target that same player.",
+  "neighbors": [
+   "vote_425",
+   "vote_40",
+   "vote_39",
+   "vote_86",
+   "vote_127",
+   "vote_298",
+   "vote_459",
+   "vote_4"
+  ]
+ },
+ {
+  "tid": "vote_518",
+  "support": 1,
+  "status": "archived",
+  "canonical": "suggests that the group track who pushes for specific votes during the discussion phase but then votes to abstain.",
+  "neighbors": [
+   "vote_83",
+   "vote_721",
+   "vote_294",
+   "vote_84",
+   "vote_91",
+   "vote_377",
+   "vote_398",
+   "vote_5"
+  ]
+ },
+ {
+  "tid": "vote_519",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player acknowledges the potential risk of a public claim and suggests observing the outcome of a vote before fully committing to the accuser's narrative.",
+  "neighbors": [
+   "vote_557",
+   "vote_458",
+   "vote_560",
+   "vote_602",
+   "vote_601",
+   "vote_649",
+   "vote_459",
+   "vote_304"
+  ]
+ },
+ {
+  "tid": "vote_520",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a deciding vote for someone who had earlier challenged the credibility of the now-eliminated investigator.",
+  "neighbors": [
+   "vote_521",
+   "vote_522",
+   "vote_506",
+   "vote_300",
+   "vote_400",
+   "vote_90",
+   "vote_492",
+   "vote_327"
+  ]
+ },
+ {
+  "tid": "vote_521",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a deciding vote for someone who had earlier challenged the credibility of the now-eliminated investigator.",
+  "neighbors": [
+   "vote_520",
+   "vote_522",
+   "vote_506",
+   "vote_300",
+   "vote_400",
+   "vote_90",
+   "vote_492",
+   "vote_327"
+  ]
+ },
+ {
+  "tid": "vote_522",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a deciding vote for someone who had earlier challenged the credibility of the now-eliminated investigator.",
+  "neighbors": [
+   "vote_520",
+   "vote_521",
+   "vote_506",
+   "vote_300",
+   "vote_400",
+   "vote_90",
+   "vote_492",
+   "vote_327"
+  ]
+ },
+ {
+  "tid": "vote_533",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Supports the call for delaying the first vote despite being prompted to initiate or contribute to evaluation criteria.",
+  "neighbors": [
+   "vote_158",
+   "vote_190",
+   "vote_268",
+   "vote_721",
+   "vote_269",
+   "vote_396",
+   "vote_147",
+   "vote_720"
+  ]
+ },
+ {
+  "tid": "vote_534",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses concern about the lack of progress and suggests specific criteria for evaluating players to break the voting deadlock.",
+  "neighbors": [
+   "vote_489",
+   "vote_79",
+   "vote_503",
+   "vote_725",
+   "vote_380",
+   "vote_82",
+   "vote_379",
+   "vote_81"
+  ]
+ },
+ {
+  "tid": "vote_535",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts the only non-abstain vote after actively pushing a confrontational line of inquiry against that specific target during the discussion.",
+  "neighbors": [
+   "vote_492",
+   "vote_558",
+   "vote_402",
+   "vote_299",
+   "vote_323",
+   "vote_295",
+   "vote_155",
+   "vote_54"
+  ]
+ },
+ {
+  "tid": "vote_536",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player who proactively initiates a strategy of identifying suspected players for evaluation chooses to abstain when the time comes to cast a vote.",
+  "neighbors": [
+   "vote_83",
+   "vote_7",
+   "vote_1",
+   "vote_120",
+   "vote_623",
+   "vote_505",
+   "vote_398",
+   "vote_152"
+  ]
+ },
+ {
+  "tid": "vote_537",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who strongly argues against making a premature or uninformed decision chooses to abstain as predicted.",
+  "neighbors": [
+   "vote_489",
+   "vote_718",
+   "vote_195",
+   "vote_623",
+   "vote_82",
+   "vote_236",
+   "vote_294",
+   "vote_377"
+  ]
+ },
+ {
+  "tid": "vote_555",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for the person who has publicly declared an investigation result accusing them.",
+  "neighbors": [
+   "vote_41",
+   "vote_476",
+   "vote_267",
+   "vote_40",
+   "vote_39",
+   "vote_122",
+   "vote_559",
+   "vote_272"
+  ]
+ },
+ {
+  "tid": "vote_556",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for the consensus target after participating in discussion that supports the accuser's claim.",
+  "neighbors": [
+   "vote_41",
+   "vote_645",
+   "vote_94",
+   "vote_555",
+   "vote_643",
+   "vote_263",
+   "vote_585",
+   "vote_88"
+  ]
+ },
+ {
+  "tid": "vote_557",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses caution and requests corroboration for a high-stakes claim before ultimately casting a vote for the accused.",
+  "neighbors": [
+   "vote_519",
+   "vote_458",
+   "vote_304",
+   "vote_259",
+   "vote_12",
+   "vote_127",
+   "vote_425",
+   "vote_601"
+  ]
+ },
+ {
+  "tid": "vote_558",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts the only non-abstain vote after strongly arguing for an elimination throughout the discussion.",
+  "neighbors": [
+   "vote_535",
+   "vote_295",
+   "vote_323",
+   "vote_271",
+   "vote_381",
+   "vote_327",
+   "vote_235",
+   "vote_492"
+  ]
+ },
+ {
+  "tid": "vote_559",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player votes for their primary accuser immediately after being publicly accused by them during the final discussion of the day.",
+  "neighbors": [
+   "vote_237",
+   "vote_476",
+   "vote_399",
+   "vote_41",
+   "vote_267",
+   "vote_40",
+   "vote_39",
+   "vote_555"
+  ]
+ },
+ {
+  "tid": "vote_560",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player acknowledges the suspicious timing of a late-game reveal but shifts their vote to align with the accuser's claim to support the emergent consensus.",
+  "neighbors": [
+   "vote_153",
+   "vote_643",
+   "vote_561",
+   "vote_649",
+   "vote_556",
+   "vote_88",
+   "vote_646",
+   "vote_602"
+  ]
+ },
+ {
+  "tid": "vote_561",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly chooses to trust a late-game role claim as justification for their vote, citing the danger of the alternative scenario.",
+  "neighbors": [
+   "vote_562",
+   "vote_400",
+   "vote_560",
+   "vote_492",
+   "vote_189",
+   "vote_425",
+   "vote_265",
+   "vote_649"
+  ]
+ },
+ {
+  "tid": "vote_562",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player commits their vote to a specific individual immediately following a high-stakes role claim without voicing independent investigative reasons for the choice.",
+  "neighbors": [
+   "vote_94",
+   "vote_692",
+   "vote_691",
+   "vote_403",
+   "vote_402",
+   "vote_265",
+   "vote_262",
+   "vote_261"
+  ]
+ },
+ {
+  "tid": "vote_563",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote against an individual who was not the focus of their discussion just before the vote.",
+  "neighbors": [
+   "vote_51",
+   "vote_54",
+   "vote_53",
+   "vote_52",
+   "vote_297",
+   "vote_261",
+   "vote_262",
+   "vote_345"
+  ]
+ },
+ {
+  "tid": "vote_564",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player casts a vote against a specific target after accusing them of orchestrating a previous voting tie.",
+  "neighbors": [
+   "vote_85",
+   "vote_160",
+   "vote_161",
+   "vote_41",
+   "vote_93",
+   "vote_237",
+   "vote_40",
+   "vote_39"
+  ]
+ },
+ {
+  "tid": "vote_565",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player requests a focus on individuals who discouraged votes and then casts a vote for a player who participated in the discussion without being explicitly called out by them.",
+  "neighbors": [
+   "vote_563",
+   "vote_221",
+   "vote_345",
+   "vote_53",
+   "vote_51",
+   "vote_54",
+   "vote_52",
+   "vote_438"
+  ]
+ },
+ {
+  "tid": "vote_566",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses concern about the difficulty of committing to a vote in an uncertain game but then casts a vote that contributes to a tie.",
+  "neighbors": [
+   "vote_82",
+   "vote_353",
+   "vote_352",
+   "vote_423",
+   "vote_425",
+   "vote_723",
+   "vote_303",
+   "vote_127"
+  ]
+ },
+ {
+  "tid": "vote_585",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who has been active in questioning others throughout the discussion casts the final deciding vote for the group's consensus target.",
+  "neighbors": [
+   "vote_556",
+   "vote_645",
+   "vote_644",
+   "vote_237",
+   "vote_492",
+   "vote_5",
+   "vote_6",
+   "vote_535"
+  ]
+ },
+ {
+  "tid": "vote_586",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies their vote by referencing the voting consistency of the person they are targeting relative to previously eliminated players.",
+  "neighbors": [
+   "vote_271",
+   "vote_487",
+   "vote_303",
+   "vote_200",
+   "vote_242",
+   "vote_160",
+   "vote_89",
+   "vote_270"
+  ]
+ },
+ {
+  "tid": "vote_598",
+  "support": 1,
+  "status": "queued",
+  "canonical": "suggests waiting for more information while explicitly stating a lack of suspicion toward anyone.",
+  "neighbors": [
+   "vote_190",
+   "vote_479",
+   "vote_669",
+   "vote_519",
+   "vote_397",
+   "vote_536",
+   "vote_623",
+   "vote_304"
+  ]
+ },
+ {
+  "tid": "vote_599",
+  "support": 1,
+  "status": "queued",
+  "canonical": "cautions against the group's desire to form specific information-sharing protocols openly.",
+  "neighbors": [
+   "vote_502",
+   "vote_192",
+   "vote_598",
+   "vote_504",
+   "vote_81",
+   "vote_236",
+   "vote_397",
+   "vote_533"
+  ]
+ },
+ {
+  "tid": "vote_600",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who publicly acknowledges being targeted by a night action chooses to abstain from the subsequent day's vote.",
+  "neighbors": [
+   "vote_6",
+   "vote_5",
+   "vote_1",
+   "vote_266",
+   "vote_426",
+   "vote_627",
+   "vote_91",
+   "vote_194"
+  ]
+ },
+ {
+  "tid": "vote_601",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player pivots to an aggressive voting stance for a specific individual after previously advocating for general caution.",
+  "neighbors": [
+   "vote_602",
+   "vote_241",
+   "vote_4",
+   "vote_127",
+   "vote_353",
+   "vote_48",
+   "vote_199",
+   "vote_3"
+  ]
+ },
+ {
+  "tid": "vote_602",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player pivots to an aggressive voting stance for a specific individual after previously advocating for general caution.",
+  "neighbors": [
+   "vote_601",
+   "vote_241",
+   "vote_4",
+   "vote_127",
+   "vote_353",
+   "vote_48",
+   "vote_199",
+   "vote_3"
+  ]
+ },
+ {
+  "tid": "vote_603",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player casts a vote for someone who had only just begun to participate in the conversation during the current session.",
+  "neighbors": [
+   "vote_606",
+   "vote_605",
+   "vote_604",
+   "vote_262",
+   "vote_261",
+   "vote_692",
+   "vote_691",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_604",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player casts a vote for someone who had only just begun to participate in the conversation during the current session.",
+  "neighbors": [
+   "vote_606",
+   "vote_605",
+   "vote_603",
+   "vote_262",
+   "vote_261",
+   "vote_692",
+   "vote_691",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_605",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player casts a vote for someone who had only just begun to participate in the conversation during the current session.",
+  "neighbors": [
+   "vote_606",
+   "vote_604",
+   "vote_603",
+   "vote_262",
+   "vote_261",
+   "vote_692",
+   "vote_691",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_606",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player casts a vote for someone who had only just begun to participate in the conversation during the current session.",
+  "neighbors": [
+   "vote_605",
+   "vote_604",
+   "vote_603",
+   "vote_262",
+   "vote_261",
+   "vote_692",
+   "vote_691",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_607",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Votes for a player after having defended that same player's previous actions during the final discussion phase.",
+  "neighbors": [
+   "vote_436",
+   "vote_4",
+   "vote_352",
+   "vote_3",
+   "vote_159",
+   "vote_154",
+   "vote_442",
+   "vote_93"
+  ]
+ },
+ {
+  "tid": "vote_621",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who is explicitly asked to provide a read on the game instead chooses to abstain from the final vote.",
+  "neighbors": [
+   "vote_5",
+   "vote_6",
+   "vote_2",
+   "vote_195",
+   "vote_426",
+   "vote_266",
+   "vote_84",
+   "vote_152"
+  ]
+ },
+ {
+  "tid": "vote_622",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player opts to abstain from voting after having participated in the discussion without naming specific suspects.",
+  "neighbors": [
+   "vote_426",
+   "vote_505",
+   "vote_1",
+   "vote_2",
+   "vote_5",
+   "vote_6",
+   "vote_7",
+   "vote_479"
+  ]
+ },
+ {
+  "tid": "vote_623",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player initiates discussion by proposing a wait-and-see approach and subsequently abstains during the vote.",
+  "neighbors": [
+   "vote_294",
+   "vote_718",
+   "vote_489",
+   "vote_2",
+   "vote_84",
+   "vote_536",
+   "vote_82",
+   "vote_379"
+  ]
+ },
+ {
+  "tid": "vote_624",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player votes for a candidate who was not the focus of the main conflict between the other active participants.",
+  "neighbors": [
+   "vote_328",
+   "vote_325",
+   "vote_563",
+   "vote_324",
+   "vote_7",
+   "vote_426",
+   "vote_565",
+   "vote_152"
+  ]
+ },
+ {
+  "tid": "vote_625",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who explicitly calls for caution against forming a consensus on a specific target joins the unanimous vote against that same target.",
+  "neighbors": [
+   "vote_120",
+   "vote_5",
+   "vote_6",
+   "vote_1",
+   "vote_649",
+   "vote_401",
+   "vote_645",
+   "vote_299"
+  ]
+ },
+ {
+  "tid": "vote_626",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who consistently emphasizes the need to establish a voting record as the primary goal participates in a lynch of the only person currently being scrutinized.",
+  "neighbors": [
+   "vote_425",
+   "vote_89",
+   "vote_353",
+   "vote_423",
+   "vote_3",
+   "vote_93",
+   "vote_438",
+   "vote_4"
+  ]
+ },
+ {
+  "tid": "vote_627",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who spends the discussion phase demanding that a target defend their history of abstention casts a vote for that same target.",
+  "neighbors": [
+   "vote_91",
+   "vote_5",
+   "vote_6",
+   "vote_1",
+   "vote_600",
+   "vote_200",
+   "vote_198",
+   "vote_266"
+  ]
+ },
+ {
+  "tid": "vote_628",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who frames the discussion as a search for leads while suggesting that the group should look for behaviors joins the room's consensus vote without introducing a new suspect.",
+  "neighbors": [
+   "vote_649",
+   "vote_644",
+   "vote_625",
+   "vote_669",
+   "vote_199",
+   "vote_536",
+   "vote_1",
+   "vote_556"
+  ]
+ },
+ {
+  "tid": "vote_638",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Proposes specific voting strategies immediately at the start of the game while simultaneously suggesting they are difficult to implement.",
+  "neighbors": [
+   "vote_353",
+   "vote_566",
+   "vote_352",
+   "vote_82",
+   "vote_346",
+   "vote_3",
+   "vote_601",
+   "vote_602"
+  ]
+ },
+ {
+  "tid": "vote_639",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Advocates for monitoring voting behavior as a metric while explicitly discouraging early role claims.",
+  "neighbors": [
+   "vote_190",
+   "vote_191",
+   "vote_81",
+   "vote_79",
+   "vote_671",
+   "vote_649",
+   "vote_265",
+   "vote_128"
+  ]
+ },
+ {
+  "tid": "vote_640",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player after having engaged them in strategic conversation earlier in the same day without voicing suspicion of them.",
+  "neighbors": [
+   "vote_155",
+   "vote_298",
+   "vote_437",
+   "vote_4",
+   "vote_93",
+   "vote_442",
+   "vote_49",
+   "vote_198"
+  ]
+ },
+ {
+  "tid": "vote_641",
+  "support": 1,
+  "status": "queued",
+  "canonical": "switches to a target for a lynch vote after having spent the previous day voting for a different player and suggesting focus on the current target's accuser.",
+  "neighbors": [
+   "vote_722",
+   "vote_437",
+   "vote_602",
+   "vote_601",
+   "vote_4",
+   "vote_626",
+   "vote_461",
+   "vote_487"
+  ]
+ },
+ {
+  "tid": "vote_642",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player despite having previously initiated discussion with that same player regarding the necessity of creating a voting record.",
+  "neighbors": [
+   "vote_123",
+   "vote_4",
+   "vote_647",
+   "vote_49",
+   "vote_222",
+   "vote_223",
+   "vote_224",
+   "vote_353"
+  ]
+ },
+ {
+  "tid": "vote_643",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player votes for the person who is accusing them immediately after arguing against the prevailing consensus during the discussion.",
+  "neighbors": [
+   "vote_154",
+   "vote_4",
+   "vote_149",
+   "vote_50",
+   "vote_46",
+   "vote_196",
+   "vote_492",
+   "vote_298"
+  ]
+ },
+ {
+  "tid": "vote_644",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins the consensus vote after spending the discussion period identifying and critiquing another player's attempt to redirect the group.",
+  "neighbors": [
+   "vote_348",
+   "vote_646",
+   "vote_645",
+   "vote_585",
+   "vote_649",
+   "vote_295",
+   "vote_398",
+   "vote_628"
+  ]
+ },
+ {
+  "tid": "vote_645",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins the consensus vote after asking a direct question to the target about their previous voting history during the discussion.",
+  "neighbors": [
+   "vote_556",
+   "vote_40",
+   "vote_39",
+   "vote_198",
+   "vote_487",
+   "vote_442",
+   "vote_462",
+   "vote_644"
+  ]
+ },
+ {
+  "tid": "vote_646",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins the consensus vote after having actively challenged another player's justification for their previous non-consensus vote.",
+  "neighbors": [
+   "vote_644",
+   "vote_295",
+   "vote_348",
+   "vote_303",
+   "vote_88",
+   "vote_645",
+   "vote_490",
+   "vote_625"
+  ]
+ },
+ {
+  "tid": "vote_647",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player after explicitly criticizing the consensus-driven voting pattern of the room.",
+  "neighbors": [
+   "vote_49",
+   "vote_353",
+   "vote_723",
+   "vote_725",
+   "vote_422",
+   "vote_123",
+   "vote_487",
+   "vote_345"
+  ]
+ },
+ {
+  "tid": "vote_648",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player immediately after questioning that player's previous voting shift as a strategic move.",
+  "neighbors": [
+   "vote_487",
+   "vote_723",
+   "vote_48",
+   "vote_49",
+   "vote_647",
+   "vote_161",
+   "vote_46",
+   "vote_462"
+  ]
+ },
+ {
+  "tid": "vote_649",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player while explicitly discussing how the room should evaluate voting consensus versus individual suspicion.",
+  "neighbors": [
+   "vote_492",
+   "vote_155",
+   "vote_487",
+   "vote_198",
+   "vote_488",
+   "vote_459",
+   "vote_458",
+   "vote_220"
+  ]
+ },
+ {
+  "tid": "vote_650",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for an accuser who had recently questioned their consistency in voting.",
+  "neighbors": [
+   "vote_697",
+   "vote_57",
+   "vote_443",
+   "vote_460",
+   "vote_149",
+   "vote_349",
+   "vote_724",
+   "vote_154"
+  ]
+ },
+ {
+  "tid": "vote_669",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player encourages the group to avoid early accusations while simultaneously positioning the discussion toward broad strategic suggestions rather than specific player analysis.",
+  "neighbors": [
+   "vote_628",
+   "vote_649",
+   "vote_191",
+   "vote_536",
+   "vote_486",
+   "vote_326",
+   "vote_478",
+   "vote_519"
+  ]
+ },
+ {
+  "tid": "vote_670",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player echoes a previous speaker's sentiment that there are no leads to justify a lack of urgency in identifying targets.",
+  "neighbors": [
+   "vote_463",
+   "vote_502",
+   "vote_693",
+   "vote_534",
+   "vote_82",
+   "vote_489",
+   "vote_625",
+   "vote_628"
+  ]
+ },
+ {
+  "tid": "vote_671",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player suggests delaying the use of information gathering roles and advocates for prioritizing post-elimination data over current discussion.",
+  "neighbors": [
+   "vote_191",
+   "vote_639",
+   "vote_128",
+   "vote_190",
+   "vote_376",
+   "vote_301",
+   "vote_486",
+   "vote_669"
+  ]
+ },
+ {
+  "tid": "vote_672",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who is the primary focus of collective suspicion for a past vote shifts their vote onto a participant who questioned them during the discussion.",
+  "neighbors": [
+   "vote_40",
+   "vote_39",
+   "vote_196",
+   "vote_241",
+   "vote_46",
+   "vote_237",
+   "vote_50",
+   "vote_643"
+  ]
+ },
+ {
+  "tid": "vote_673",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+  "neighbors": [
+   "vote_678",
+   "vote_674",
+   "vote_675",
+   "vote_677",
+   "vote_676",
+   "vote_161",
+   "vote_353",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_674",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+  "neighbors": [
+   "vote_678",
+   "vote_673",
+   "vote_675",
+   "vote_677",
+   "vote_676",
+   "vote_161",
+   "vote_353",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_675",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+  "neighbors": [
+   "vote_678",
+   "vote_673",
+   "vote_674",
+   "vote_677",
+   "vote_676",
+   "vote_161",
+   "vote_353",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_676",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+  "neighbors": [
+   "vote_678",
+   "vote_673",
+   "vote_674",
+   "vote_677",
+   "vote_675",
+   "vote_161",
+   "vote_353",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_677",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+  "neighbors": [
+   "vote_678",
+   "vote_673",
+   "vote_674",
+   "vote_676",
+   "vote_675",
+   "vote_161",
+   "vote_353",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_678",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+  "neighbors": [
+   "vote_677",
+   "vote_673",
+   "vote_674",
+   "vote_676",
+   "vote_675",
+   "vote_161",
+   "vote_353",
+   "vote_723"
+  ]
+ },
+ {
+  "tid": "vote_691",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player votes for the target of a major accusation without having participated in the discussion leading up to that vote.",
+  "neighbors": [
+   "vote_692",
+   "vote_262",
+   "vote_261",
+   "vote_563",
+   "vote_0",
+   "vote_403",
+   "vote_401",
+   "vote_297"
+  ]
+ },
+ {
+  "tid": "vote_692",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player votes for the target of a major accusation without having participated in the discussion leading up to that vote.",
+  "neighbors": [
+   "vote_691",
+   "vote_262",
+   "vote_261",
+   "vote_563",
+   "vote_0",
+   "vote_403",
+   "vote_401",
+   "vote_297"
+  ]
+ },
+ {
+  "tid": "vote_693",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Abstains from voting despite having acknowledged that the group needs to identify and eliminate a final target.",
+  "neighbors": [
+   "vote_147",
+   "vote_489",
+   "vote_148",
+   "vote_5",
+   "vote_6",
+   "vote_12",
+   "vote_694",
+   "vote_720"
+  ]
+ },
+ {
+  "tid": "vote_694",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Abstains from voting while simultaneously maintaining the position that they have information about the identity of the remaining threats.",
+  "neighbors": [
+   "vote_120",
+   "vote_266",
+   "vote_2",
+   "vote_536",
+   "vote_152",
+   "vote_479",
+   "vote_194",
+   "vote_1"
+  ]
+ },
+ {
+  "tid": "vote_695",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who spends the discussion period defending another player ends up voting for a third party who had also been involved in the defense dialogue.",
+  "neighbors": [
+   "vote_298",
+   "vote_154",
+   "vote_300",
+   "vote_425",
+   "vote_506",
+   "vote_643",
+   "vote_436",
+   "vote_423"
+  ]
+ },
+ {
+  "tid": "vote_696",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who actively engages in mutual analysis and debate with another player about their voting record ultimately votes for that same player.",
+  "neighbors": [
+   "vote_298",
+   "vote_490",
+   "vote_425",
+   "vote_296",
+   "vote_16",
+   "vote_423",
+   "vote_200",
+   "vote_695"
+  ]
+ },
+ {
+  "tid": "vote_697",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for their primary accuser immediately after being accused by them.",
+  "neighbors": [
+   "vote_460",
+   "vote_57",
+   "vote_650",
+   "vote_724",
+   "vote_559",
+   "vote_154",
+   "vote_149",
+   "vote_643"
+  ]
+ },
+ {
+  "tid": "vote_698",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player they publicly claimed to have identified as a threat during the final discussion phase.",
+  "neighbors": [
+   "vote_149",
+   "vote_607",
+   "vote_49",
+   "vote_723",
+   "vote_487",
+   "vote_56",
+   "vote_220",
+   "vote_155"
+  ]
+ },
+ {
+  "tid": "vote_718",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who initiates the discussion by proposing a method for analysis ultimately votes to abstain.",
+  "neighbors": [
+   "vote_623",
+   "vote_236",
+   "vote_489",
+   "vote_379",
+   "vote_294",
+   "vote_82",
+   "vote_536",
+   "vote_195"
+  ]
+ },
+ {
+  "tid": "vote_719",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player publicly defends an accused participant from suspicion but abstains from the vote instead of supporting them.",
+  "neighbors": [
+   "vote_152",
+   "vote_7",
+   "vote_6",
+   "vote_5",
+   "vote_194",
+   "vote_479",
+   "vote_505",
+   "vote_294"
+  ]
+ },
+ {
+  "tid": "vote_720",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Abstains from the vote after actively defending their own prior voting record against sustained criticism during the day's discussion.",
+  "neighbors": [
+   "vote_721",
+   "vote_147",
+   "vote_489",
+   "vote_693",
+   "vote_12",
+   "vote_443",
+   "vote_195",
+   "vote_650"
+  ]
+ },
+ {
+  "tid": "vote_721",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Abstains from voting despite being an active participant in the discussion about past voting history.",
+  "neighbors": [
+   "vote_720",
+   "vote_147",
+   "vote_294",
+   "vote_693",
+   "vote_694",
+   "vote_489",
+   "vote_2",
+   "vote_426"
+  ]
+ },
+ {
+  "tid": "vote_722",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for a player other than the one they were the sole accuser of in the final vote, switching away from the consensus target.",
+  "neighbors": [
+   "vote_488",
+   "vote_237",
+   "vote_4",
+   "vote_641",
+   "vote_643",
+   "vote_154",
+   "vote_221",
+   "vote_149"
+  ]
+ },
+ {
+  "tid": "vote_723",
+  "support": 1,
+  "status": "queued",
+  "canonical": "casts a vote against a player who previously expressed doubt about the current voting pressure.",
+  "neighbors": [
+   "vote_648",
+   "vote_647",
+   "vote_353",
+   "vote_354",
+   "vote_487",
+   "vote_49",
+   "vote_436",
+   "vote_13"
+  ]
+ },
+ {
+  "tid": "vote_724",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes for the primary accuser of their close associate in the conversation after that associate receives multiple votes.",
+  "neighbors": [
+   "vote_460",
+   "vote_697",
+   "vote_57",
+   "vote_476",
+   "vote_149",
+   "vote_154",
+   "vote_459",
+   "vote_237"
+  ]
+ },
+ {
+  "tid": "vote_725",
+  "support": 1,
+  "status": "queued",
+  "canonical": "votes to eliminate a player after previously arguing that constant deadlock and abstention were the primary problems facing the group.",
+  "neighbors": [
+   "vote_647",
+   "vote_352",
+   "vote_350",
+   "vote_353",
+   "vote_723",
+   "vote_3",
+   "vote_354",
+   "vote_124"
+  ]
+ }
+]

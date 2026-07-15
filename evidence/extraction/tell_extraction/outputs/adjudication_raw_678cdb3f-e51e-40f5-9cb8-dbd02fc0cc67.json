@@ -1,0 +1,8 @@
+[
+ {"case_id": "pos_0", "days": [2], "notes": "Day 2: player_8 abstained with the majority and never spoke in Day 2 discussion; Day 3 he voted player_4 and was vocal."},
+ {"case_id": "pos_9", "days": [3], "notes": "Day 3: player_4 frames player_8's push as 'trying to force a lynch... pushing for an elimination based on nothing'; Day 4 is only self-defense, no such framing."},
+ {"case_id": "pos_10", "days": [4], "notes": "Day 4: player_9 argued with player_4 across multiple messages then voted him; Day 3 was one challenge, Day 5 opened agreeing, Day 6 diffuse three-way."},
+ {"case_id": "neg_9", "days": [2], "notes": "Day 2: player_5 abstained with majority while silent; Day 4 he abstained with majority but was vocal in discussion, so excluded."},
+ {"case_id": "neg_15", "days": [], "notes": "player_2 lived only through Day 2 and never advocated delaying a vote for future night information."},
+ {"case_id": "neg_18", "days": [], "notes": "player_4's only non-abstain vote was Day 3 against player_8, who was the central subject of that day's discussion."}
+]

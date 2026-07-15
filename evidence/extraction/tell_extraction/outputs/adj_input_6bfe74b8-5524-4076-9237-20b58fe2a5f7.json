@@ -1,0 +1,44 @@
+[
+ {
+  "case_id": "pos_2",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "tell_text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period."
+ },
+ {
+  "case_id": "pos_4",
+  "player": "player_1",
+  "channel": "vote",
+  "tell_id": "vote_382",
+  "tell_text": "A player votes for a target they had spent the discussion phase analyzing for their role in previous procedural delays."
+ },
+ {
+  "case_id": "pos_7",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "tell_text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection."
+ },
+ {
+  "case_id": "pos_14",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_459",
+  "tell_text": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase."
+ },
+ {
+  "case_id": "neg_2",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_48",
+  "tell_text": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct."
+ },
+ {
+  "case_id": "neg_8",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_95",
+  "tell_text": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay."
+ }
+]

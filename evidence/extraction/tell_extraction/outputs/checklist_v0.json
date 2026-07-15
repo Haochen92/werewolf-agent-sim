@@ -1,0 +1,390 @@
+{
+ "vote": [
+  {
+   "tell_id": "vote_39",
+   "text": "A player casts a vote for someone who publicly questioned them during the discussion phase."
+  },
+  {
+   "tell_id": "vote_14",
+   "text": "A player casts a vote for someone they did not express any explicit suspicion of during the final day's discussion."
+  },
+  {
+   "tell_id": "vote_83",
+   "text": "A player suggests looking for inconsistencies in the voting record while choosing to abstain when the vote occurs."
+  },
+  {
+   "tell_id": "vote_2",
+   "text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period."
+  },
+  {
+   "tell_id": "vote_82",
+   "text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves."
+  },
+  {
+   "tell_id": "vote_147",
+   "text": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting."
+  },
+  {
+   "tell_id": "vote_79",
+   "text": "expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision."
+  },
+  {
+   "tell_id": "vote_0",
+   "text": "A player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day."
+  },
+  {
+   "tell_id": "vote_48",
+   "text": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct."
+  },
+  {
+   "tell_id": "vote_56",
+   "text": "votes for a player they have been arguing with throughout the entire discussion session."
+  },
+  {
+   "tell_id": "vote_124",
+   "text": "Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions."
+  },
+  {
+   "tell_id": "vote_5",
+   "text": "A player who engaged in active discussion against a specific target chooses to abstain from the final vote."
+  },
+  {
+   "tell_id": "vote_150",
+   "text": "votes for the consensus target after having warned against the dangers of group-driven voting patterns earlier in the day."
+  },
+  {
+   "tell_id": "vote_272",
+   "text": "Votes for the player who was publicly identified as a target by an investigator claim earlier in the discussion."
+  },
+  {
+   "tell_id": "vote_46",
+   "text": "votes for a player immediately after they express suspicion toward the voter's own previous voting record."
+  },
+  {
+   "tell_id": "vote_489",
+   "text": "abstains from the vote after questioning the reasoning of the most vocal player during the discussion."
+  },
+  {
+   "tell_id": "vote_55",
+   "text": "votes for a player after having defended them in previous discussions."
+  },
+  {
+   "tell_id": "vote_120",
+   "text": "A player who explicitly states that the group needs to be careful about making assumptions or missing potential threats abstains from the vote."
+  },
+  {
+   "tell_id": "vote_264",
+   "text": "A player joins a majority-bloc vote to eliminate another player after that target was accused of being a specific role, despite expressing uncertainty about the validity of the evidence provided."
+  },
+  {
+   "tell_id": "vote_51",
+   "text": "A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation."
+  },
+  {
+   "tell_id": "vote_673",
+   "text": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction."
+  },
+  {
+   "tell_id": "vote_238",
+   "text": "A player joins a near-unanimous lynch consensus at the last moment without having actively participated in the preceding discussion."
+  },
+  {
+   "tell_id": "vote_3",
+   "text": "Votes to eliminate a player after previously arguing that the group should prioritize evidence over rash accusations during the discussion."
+  },
+  {
+   "tell_id": "vote_42",
+   "text": "Advocates for abstaining from voting based on an asserted lack of sufficient information."
+  },
+  {
+   "tell_id": "vote_380",
+   "text": "votes for a player who is not the primary candidate around whom the room's consensus has converged."
+  },
+  {
+   "tell_id": "vote_426",
+   "text": "A player chooses to abstain from voting after having actively participated in the discussion during the day."
+  },
+  {
+   "tell_id": "vote_603",
+   "text": "A player casts a vote for someone who had only just begun to participate in the conversation during the current session."
+  },
+  {
+   "tell_id": "vote_161",
+   "text": "A player votes for a candidate who had just accused them of being the primary driver of a previous controversial elimination."
+  },
+  {
+   "tell_id": "vote_194",
+   "text": "A player actively pushes the conversation toward targeting others and then abstains when a vote is finally cast against them."
+  },
+  {
+   "tell_id": "vote_298",
+   "text": "A player casts a vote against someone they engaged with in a collaborative discussion immediately prior to the vote."
+  },
+  {
+   "tell_id": "vote_459",
+   "text": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase."
+  },
+  {
+   "tell_id": "vote_520",
+   "text": "A player casts a deciding vote for someone who had earlier challenged the credibility of the now-eliminated investigator."
+  },
+  {
+   "tell_id": "vote_87",
+   "text": "Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase."
+  },
+  {
+   "tell_id": "vote_12",
+   "text": "Votes for a player after having abstained from the previous day's vote while defending the importance of caution and accuracy."
+  },
+  {
+   "tell_id": "vote_123",
+   "text": "Votes for a player after explicitly dismissing their stated priorities as a distraction earlier in the day."
+  },
+  {
+   "tell_id": "vote_126",
+   "text": "A player makes a role claim while simultaneously demanding the elimination of another player without providing evidence."
+  },
+  {
+   "tell_id": "vote_152",
+   "text": "A player abstains from the vote despite being the subject of an active accusation by an influential player."
+  },
+  {
+   "tell_id": "vote_156",
+   "text": "votes for the room's consensus target after engaging in a discussion comparing the speed of all players' past voting records."
+  },
+  {
+   "tell_id": "vote_158",
+   "text": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation."
+  },
+  {
+   "tell_id": "vote_195",
+   "text": "A player argues against the consensus regarding how to interpret past strategy and ultimately chooses to abstain in the vote."
+  },
+  {
+   "tell_id": "vote_221",
+   "text": "votes for a player who was the primary focus of accusations during the discussion despite not participating in the accusation themselves."
+  },
+  {
+   "tell_id": "vote_294",
+   "text": "A player advocates for a specific discussion topic and then opts to abstain when the vote occurs."
+  },
+  {
+   "tell_id": "vote_382",
+   "text": "A player votes for a target they had spent the discussion phase analyzing for their role in previous procedural delays."
+  },
+  {
+   "tell_id": "vote_398",
+   "text": "A player who provides a critique of potential voting strategies during the discussion chooses to abstain when the vote occurs."
+  },
+  {
+   "tell_id": "vote_4",
+   "text": "Votes for a player after previously spending the discussion period demanding an explanation for why others were accusing that same player."
+  },
+  {
+   "tell_id": "vote_405",
+   "text": "initiates a call for ending the practice of abstaining and immediately casts a vote for a specific player when the voting phase begins."
+  },
+  {
+   "tell_id": "vote_41",
+   "text": "A player casts a vote for someone they directly accused in the discussion."
+  },
+  {
+   "tell_id": "vote_601",
+   "text": "A player pivots to an aggressive voting stance for a specific individual after previously advocating for general caution."
+  }
+ ],
+ "discussion": [
+  {
+   "tell_id": "disc_23",
+   "text": "Advocates for using the history of voting records rather than subjective interpretations of player behavior."
+  },
+  {
+   "tell_id": "disc_103",
+   "text": "A player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process."
+  },
+  {
+   "tell_id": "disc_29",
+   "text": "Announces having been the target of a failed night attack."
+  },
+  {
+   "tell_id": "disc_140",
+   "text": "A player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion."
+  },
+  {
+   "tell_id": "disc_285",
+   "text": "A player suggests focusing scrutiny on individuals who have been the quietest or most ambiguous during the discussion."
+  },
+  {
+   "tell_id": "disc_176",
+   "text": "A player proposes analyzing the timing of past votes to identify patterns of hesitation or acceleration among the participants."
+  },
+  {
+   "tell_id": "disc_24",
+   "text": "Advocates for delaying a vote to wait for more information from future night cycles."
+  },
+  {
+   "tell_id": "disc_283",
+   "text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection."
+  },
+  {
+   "tell_id": "disc_412",
+   "text": "advocates for ending a period of consensus abstention by highlighting the risk of inactivity."
+  },
+  {
+   "tell_id": "disc_67",
+   "text": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior."
+  },
+  {
+   "tell_id": "disc_95",
+   "text": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay."
+  },
+  {
+   "tell_id": "disc_106",
+   "text": "When directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior."
+  },
+  {
+   "tell_id": "disc_116",
+   "text": "deflects onto their accuser rather than addressing the substance of the accusation when directly challenged."
+  },
+  {
+   "tell_id": "disc_143",
+   "text": "A player explains their silence throughout the game as a calculated strategy to survive while gathering information."
+  },
+  {
+   "tell_id": "disc_284",
+   "text": "A player discourages the group from relying solely on voting records, suggesting that such analysis may be a distraction or ineffective."
+  },
+  {
+   "tell_id": "disc_335",
+   "text": "A player justifies their previous failure to vote as a precautionary measure due to a lack of evidence."
+  },
+  {
+   "tell_id": "disc_336",
+   "text": "A player challenges the neutrality of abstaining from a vote, characterizing the refusal to act as a protection mechanism."
+  },
+  {
+   "tell_id": "disc_36",
+   "text": "A player suggests that current voting patterns are the primary indicator of role alignment and requests a re-examination of past records to find patterns."
+  },
+  {
+   "tell_id": "disc_493",
+   "text": "Advocates for a passive strategy of observation instead of active discussion during the opening phase of the game."
+  },
+  {
+   "tell_id": "disc_131",
+   "text": "A player proposes monitoring future voting patterns rather than focusing on current verbal arguments."
+  },
+  {
+   "tell_id": "disc_167",
+   "text": "A player advises caution against making a decision based on the silence or inactivity of others."
+  },
+  {
+   "tell_id": "disc_169",
+   "text": "A player suggests a specific, rigid condition for evaluating other players in future rounds."
+  },
+  {
+   "tell_id": "disc_203",
+   "text": "Advocates for focusing on current contribution patterns rather than re-analyzing past agreements when the group debates previous strategy."
+  },
+  {
+   "tell_id": "disc_21",
+   "text": "Repeatedly demands evidence from a player who makes an unsubstantiated accusation."
+  },
+  {
+   "tell_id": "disc_211",
+   "text": "expresses wariness of players who demonstrate high-energy certainty in proposing a lynch target."
+  },
+  {
+   "tell_id": "disc_231",
+   "text": "A player asserts high confidence in an accusation while refusing to disclose the source of their information."
+  },
+  {
+   "tell_id": "disc_247",
+   "text": "A player suggests focusing on the historical voting record to identify group sentiment after a player is revealed on death to have been a specific role."
+  },
+  {
+   "tell_id": "disc_250",
+   "text": "A player claims that their previous voting record was intended to gather information after being questioned about it."
+  },
+  {
+   "tell_id": "disc_332",
+   "text": "Explicitly shifts the focus of the discussion from the primary suspect to the person pushing the suspicion."
+  },
+  {
+   "tell_id": "disc_449",
+   "text": "A player characterizes the act of calling for scrutiny on someone as a tactic for rushing an elimination without evidence."
+  },
+  {
+   "tell_id": "disc_464",
+   "text": "A player claims a specific investigative role early in the game to justify an immediate demand for another player's elimination."
+  },
+  {
+   "tell_id": "disc_530",
+   "text": "A player who is being accused of holding a hostile role counter-accuses their accuser of using the role claim as a distraction to protect themselves."
+  },
+  {
+   "tell_id": "disc_104",
+   "text": "A player argues that an opponent's reliance on past voting history is a strategy to avoid current scrutiny."
+  },
+  {
+   "tell_id": "disc_110",
+   "text": "Deflects from direct suspicion of a specific past voting record by claiming that criticizing those who voted is unproductive."
+  },
+  {
+   "tell_id": "disc_111",
+   "text": "Defends a past voting record against a player now known to be the investigator by characterizing it as a simple act of breaking a stalemate."
+  },
+  {
+   "tell_id": "disc_118",
+   "text": "defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock."
+  },
+  {
+   "tell_id": "disc_165",
+   "text": "A player claims a special role during a public discussion."
+  },
+  {
+   "tell_id": "disc_166",
+   "text": "A player actively pushes the group to move from discussion to a formal vote."
+  },
+  {
+   "tell_id": "disc_175",
+   "text": "A player defends their own track record by citing their past support for another player's accusations."
+  },
+  {
+   "tell_id": "disc_180",
+   "text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day."
+  },
+  {
+   "tell_id": "disc_183",
+   "text": "A player focuses their argument against another participant by citing that player's history of initiating past group votes."
+  },
+  {
+   "tell_id": "disc_185",
+   "text": "A player frames a conflict between two others as a potential distraction while explicitly questioning how to verify which of them is the genuine threat."
+  },
+  {
+   "tell_id": "disc_20",
+   "text": "Claims a player is a confirmed role without providing evidence from the public record."
+  },
+  {
+   "tell_id": "disc_208",
+   "text": "labels questioning of past meta-strategy as an intentional distraction from finding active threats."
+  },
+  {
+   "tell_id": "disc_214",
+   "text": "Labels the cautious behavior of other players as an intentional rhetorical strategy used to obstruct progress."
+  },
+  {
+   "tell_id": "disc_218",
+   "text": "The player frames their past voting record as a logical reaction to the behavior of others rather than as a consistent strategy."
+  },
+  {
+   "tell_id": "disc_226",
+   "text": "Proposes establishing a formal procedural framework for how the group should manage future role claims before any have occurred."
+  },
+  {
+   "tell_id": "disc_232",
+   "text": "A player attempts to justify an accusation by claiming that their status as a target proves their own innocence."
+  }
+ ]
+}

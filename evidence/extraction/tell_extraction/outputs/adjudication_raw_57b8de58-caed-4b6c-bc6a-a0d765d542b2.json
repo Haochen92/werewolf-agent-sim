@@ -1,0 +1,32 @@
+[
+ {
+  "case_id": "pos_6",
+  "days": [4, 5],
+  "notes": "Day 4: urges checking who was hesitant to vote for player_3 and who piled on fast, then votes player_2 (consensus). Day 5: urges reviewing Day-4 vote order and player_4's hesitation, then votes player_4 (consensus). Day 6 excluded: discussed past votes but voted player_6, not the room's consensus target (player_5)."
+ },
+ {
+  "case_id": "pos_18",
+  "days": [3],
+  "notes": "Day 3: directly accuses player_7 of deflecting/manipulating as a wolf, then votes player_7. Day 2 excluded: voted player_6 without ever accusing them in discussion."
+ },
+ {
+  "case_id": "pos_19",
+  "days": [5],
+  "notes": "Day 5: 're-examine the voting order from yesterday to see who jumped on the bandwagon against player_2 the fastest' requests analysis of the initiator of the prior-day sequence. Day 4 excluded: asks early-vs-late voters on player_3, not the initiator. Day 6 excluded: 'who pushed hardest' across Day 4 and 5, not a single prior-day initiator."
+ },
+ {
+  "case_id": "neg_0",
+  "days": [],
+  "notes": "player_7 repeatedly urges breaking stalemates as future action but never claims a past vote of theirs was motivated by resolving deadlocks."
+ },
+ {
+  "case_id": "neg_12",
+  "days": [],
+  "notes": "No day where player_8 votes someone they argued with throughout: Day 3 voted player_3 while agreeing with them; Days 4/5 votes followed analysis, not a sustained argument with the target."
+ },
+ {
+  "case_id": "neg_16",
+  "days": [],
+  "notes": "player_1 was killed (not saved) and never announces surviving a night attack; only speaks Days 1-2 with no such claim."
+ }
+]

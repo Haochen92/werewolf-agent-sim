@@ -1,0 +1,413 @@
+{
+ "clusters": [
+  {
+   "tids": [
+    "vote_5",
+    "vote_6"
+   ],
+   "reason": "Identical wording: engaged in active discussion against a specific target, then abstains from the vote."
+  },
+  {
+   "tids": [
+    "vote_8",
+    "vote_9"
+   ],
+   "reason": "Identical wording: keeps voting a target after that target defended itself in intense discussion."
+  },
+  {
+   "tids": [
+    "vote_39",
+    "vote_40",
+    "vote_57",
+    "vote_122",
+    "vote_125",
+    "vote_149",
+    "vote_154",
+    "vote_187",
+    "vote_188",
+    "vote_196",
+    "vote_197",
+    "vote_237",
+    "vote_267",
+    "vote_300",
+    "vote_322",
+    "vote_326",
+    "vote_344",
+    "vote_399",
+    "vote_438",
+    "vote_460",
+    "vote_476",
+    "vote_492",
+    "vote_506",
+    "vote_555",
+    "vote_559",
+    "vote_643",
+    "vote_672",
+    "vote_697"
+   ],
+   "reason": "Retaliation vote: a player under accusation/questioning/suspicion casts their vote for the very person accusing, questioning, or pushing to eliminate them."
+  },
+  {
+   "tids": [
+    "vote_46",
+    "vote_50",
+    "vote_650"
+   ],
+   "reason": "Votes for an accuser whose accusation specifically targeted the voter's own past voting record/consistency."
+  },
+  {
+   "tids": [
+    "vote_238",
+    "vote_404",
+    "vote_691",
+    "vote_692"
+   ],
+   "reason": "A player who stayed silent during discussion joins the final consensus/majority lynch vote."
+  },
+  {
+   "tids": [
+    "vote_14",
+    "vote_261",
+    "vote_262",
+    "vote_324",
+    "vote_345",
+    "vote_563"
+   ],
+   "reason": "Voter-centric: votes a player the voter personally never voiced any suspicion/criticism of during discussion."
+  },
+  {
+   "tids": [
+    "vote_298",
+    "vote_640"
+   ],
+   "reason": "Votes a player they had just been in collaborative/strategic conversation with, having voiced no suspicion of them."
+  },
+  {
+   "tids": [
+    "vote_0",
+    "vote_297"
+   ],
+   "reason": "Room-level: votes a target who had not been discussed as a suspect by anyone during the day."
+  },
+  {
+   "tids": [
+    "vote_603",
+    "vote_604",
+    "vote_605",
+    "vote_606"
+   ],
+   "reason": "Identical wording: votes for someone who had only just begun participating in the session."
+  },
+  {
+   "tids": [
+    "vote_673",
+    "vote_674",
+    "vote_675",
+    "vote_676",
+    "vote_677",
+    "vote_678"
+   ],
+   "reason": "Identical wording: joins a near-unanimous block against a player with a prior controversial interaction."
+  },
+  {
+   "tids": [
+    "vote_520",
+    "vote_521",
+    "vote_522"
+   ],
+   "reason": "Identical wording: casts the deciding vote for someone who had challenged the now-dead investigator's credibility."
+  },
+  {
+   "tids": [
+    "vote_51",
+    "vote_52",
+    "vote_53",
+    "vote_54"
+   ],
+   "reason": "Identical wording: votes a heavily-scrutinized target without having announced the vote intent earlier."
+  },
+  {
+   "tids": [
+    "vote_42",
+    "vote_43",
+    "vote_44"
+   ],
+   "reason": "Identical wording: advocates abstaining on the grounds of insufficient information."
+  },
+  {
+   "tids": [
+    "vote_82",
+    "vote_84"
+   ],
+   "reason": "Calls for/urges a decisive, concrete vote to align the group but then abstains."
+  },
+  {
+   "tids": [
+    "vote_83",
+    "vote_236",
+    "vote_378",
+    "vote_379",
+    "vote_536",
+    "vote_718"
+   ],
+   "reason": "Proposes an analytical structure/method/exercise for evaluating players or threats, then abstains."
+  },
+  {
+   "tids": [
+    "vote_79",
+    "vote_190",
+    "vote_376",
+    "vote_533",
+    "vote_537",
+    "vote_598",
+    "vote_623"
+   ],
+   "reason": "Advocates delaying/waiting on the vote (wait-and-see, wait for more info) rather than deciding now."
+  },
+  {
+   "tids": [
+    "vote_489",
+    "vote_505"
+   ],
+   "reason": "Questions the accuser/most-vocal player's basis during discussion, then abstains from the vote."
+  },
+  {
+   "tids": [
+    "vote_147",
+    "vote_235",
+    "vote_295",
+    "vote_323",
+    "vote_535",
+    "vote_558"
+   ],
+   "reason": "Casts the lone non-abstaining vote while the rest of the table abstains."
+  },
+  {
+   "tids": [
+    "vote_380",
+    "vote_381",
+    "vote_624"
+   ],
+   "reason": "Casts a vote for a target off the room's converging consensus/main-conflict candidate."
+  },
+  {
+   "tids": [
+    "vote_48",
+    "vote_49",
+    "vote_270",
+    "vote_442",
+    "vote_462",
+    "vote_648"
+   ],
+   "reason": "Votes a player after spending discussion interrogating/critiquing that player's past voting record."
+  },
+  {
+   "tids": [
+    "vote_56",
+    "vote_121",
+    "vote_200",
+    "vote_461"
+   ],
+   "reason": "Votes the player they had been arguing/debating/interrogating with throughout the discussion."
+  },
+  {
+   "tids": [
+    "vote_55",
+    "vote_436",
+    "vote_507",
+    "vote_508",
+    "vote_607"
+   ],
+   "reason": "Votes a player they had earlier defended or urged caution about (defense-to-vote reversal)."
+  },
+  {
+   "tids": [
+    "vote_124",
+    "vote_346",
+    "vote_354"
+   ],
+   "reason": "Votes a player after urging the group not to rely on past voting records/patterns to accuse."
+  },
+  {
+   "tids": [
+    "vote_272",
+    "vote_273",
+    "vote_274",
+    "vote_556",
+    "vote_560",
+    "vote_561",
+    "vote_562"
+   ],
+   "reason": "Votes the target designated by an investigator/role claim, following/trusting that claim."
+  },
+  {
+   "tids": [
+    "vote_126",
+    "vote_265"
+   ],
+   "reason": "Uses their own role/night-action claim to demand or push the elimination of a specific target."
+  },
+  {
+   "tids": [
+    "vote_264",
+    "vote_268",
+    "vote_269",
+    "vote_491",
+    "vote_557"
+   ],
+   "reason": "Votes the consensus/accused target despite having voiced hesitation about the evidence."
+  },
+  {
+   "tids": [
+    "vote_601",
+    "vote_602"
+   ],
+   "reason": "Identical wording: pivots to an aggressive vote for a target after previously advocating general caution."
+  },
+  {
+   "tids": [
+    "vote_150",
+    "vote_153",
+    "vote_401",
+    "vote_625"
+   ],
+   "reason": "Voiced skepticism about the bandwagon/consensus (its speed, or a pledge to wait) then joins it anyway."
+  },
+  {
+   "tids": [
+    "vote_120",
+    "vote_191"
+   ],
+   "reason": "Abstains while citing caution about wrongful elimination / missing/protecting hidden roles."
+  },
+  {
+   "tids": [
+    "vote_87",
+    "vote_402",
+    "vote_698"
+   ],
+   "reason": "Announces an intent/inclination to vote a specific player and follows through voting that same player."
+  },
+  {
+   "tids": [
+    "vote_88",
+    "vote_271"
+   ],
+   "reason": "Adopts another player's proposed target after voicing agreement with that player's argument."
+  },
+  {
+   "tids": [
+    "vote_720",
+    "vote_721"
+   ],
+   "reason": "Abstains after being an active participant in the day's discussion about voting-history."
+  }
+ ],
+ "borderline": [
+  {
+   "pair": [
+    "vote_261",
+    "vote_297"
+   ],
+   "note": "Voter-never-voiced-suspicion (voter-centric) vs target-not-a-discussed-suspect (room-level) may pick out different moments."
+  },
+  {
+   "pair": [
+    "vote_0",
+    "vote_14"
+   ],
+   "note": "Undiscussed-by-anyone vs merely-not-voiced-by-this-voter differ when others discussed the target."
+  },
+  {
+   "pair": [
+    "vote_85",
+    "vote_161"
+   ],
+   "note": "Both vote an accuser who blamed them for a prior elimination/bloc, but the specific accusation content differs."
+  },
+  {
+   "pair": [
+    "vote_82",
+    "vote_236"
+   ],
+   "note": "Calling for a decisive vote vs proposing an evaluation structure, both ending in abstention."
+  },
+  {
+   "pair": [
+    "vote_294",
+    "vote_236"
+   ],
+   "note": "Advocating a discussion topic vs proposing an evaluation method, both then abstaining."
+  },
+  {
+   "pair": [
+    "vote_377",
+    "vote_83"
+   ],
+   "note": "Demanding on-record transparency vs proposing an analysis method, both then abstaining."
+  },
+  {
+   "pair": [
+    "vote_3",
+    "vote_124"
+   ],
+   "note": "Preaching evidence-over-rash-accusation vs preaching current-over-past, both then voting."
+  },
+  {
+   "pair": [
+    "vote_459",
+    "vote_506"
+   ],
+   "note": "Questioning an accuser then voting is ambiguous as to whether the accuser or the accused is voted."
+  },
+  {
+   "pair": [
+    "vote_479",
+    "vote_42"
+   ],
+   "note": "Abstaining while citing insufficient evidence (the act) vs advocating abstention for insufficient info (the proposal)."
+  },
+  {
+   "pair": [
+    "vote_263",
+    "vote_404"
+   ],
+   "note": "Silent join framed around a role-accusation vs a generic silent join of the consensus."
+  },
+  {
+   "pair": [
+    "vote_151",
+    "vote_264"
+   ],
+   "note": "Voting while acknowledging risk generally vs voting the consensus target despite hesitation about the evidence."
+  },
+  {
+   "pair": [
+    "vote_16",
+    "vote_196"
+   ],
+   "note": "Voting the person who just voted for you (mutual vote) vs voting a verbal accuser."
+  },
+  {
+   "pair": [
+    "vote_299",
+    "vote_381"
+   ],
+   "note": "Off-consensus vote justified by prior personal scrutiny vs a bare deviation from the majority."
+  },
+  {
+   "pair": [
+    "vote_490",
+    "vote_56"
+   ],
+   "note": "Joining a bloc after debating a candidate's logic vs voting the person one was arguing with."
+  },
+  {
+   "pair": [
+    "vote_155",
+    "vote_160"
+   ],
+   "note": "Voting immediately after initiating suspicion vs voting immediately after accusing of driving an elimination."
+  }
+ ]
+}

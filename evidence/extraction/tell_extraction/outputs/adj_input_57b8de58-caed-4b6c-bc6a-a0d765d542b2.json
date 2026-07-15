@@ -1,0 +1,44 @@
+[
+ {
+  "case_id": "pos_6",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "tell_text": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation."
+ },
+ {
+  "case_id": "pos_18",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "tell_text": "A player casts a vote for someone they directly accused in the discussion."
+ },
+ {
+  "case_id": "pos_19",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_180",
+  "tell_text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day."
+ },
+ {
+  "case_id": "neg_0",
+  "player": "player_7",
+  "channel": "discussion",
+  "tell_id": "disc_103",
+  "tell_text": "A player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process."
+ },
+ {
+  "case_id": "neg_12",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_56",
+  "tell_text": "votes for a player they have been arguing with throughout the entire discussion session."
+ },
+ {
+  "case_id": "neg_16",
+  "player": "player_1",
+  "channel": "discussion",
+  "tell_id": "disc_29",
+  "tell_text": "Announces having been the target of a failed night attack."
+ }
+]

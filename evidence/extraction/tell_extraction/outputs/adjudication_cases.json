@@ -1,0 +1,443 @@
+[
+ {
+  "case_id": "pos_0",
+  "kind": "positive",
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "tell_text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period.",
+  "detector_days": [
+   2
+  ]
+ },
+ {
+  "case_id": "pos_1",
+  "kind": "positive",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_180",
+  "tell_text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_2",
+  "kind": "positive",
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "tell_text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period.",
+  "detector_days": [
+   2
+  ]
+ },
+ {
+  "case_id": "pos_3",
+  "kind": "positive",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "tell_text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_4",
+  "kind": "positive",
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_1",
+  "channel": "vote",
+  "tell_id": "vote_382",
+  "tell_text": "A player votes for a target they had spent the discussion phase analyzing for their role in previous procedural delays.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_5",
+  "kind": "positive",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_285",
+  "tell_text": "A player suggests focusing scrutiny on individuals who have been the quietest or most ambiguous during the discussion.",
+  "detector_days": [
+   2
+  ]
+ },
+ {
+  "case_id": "pos_6",
+  "kind": "positive",
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "tell_text": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation.",
+  "detector_days": [
+   5
+  ]
+ },
+ {
+  "case_id": "pos_7",
+  "kind": "positive",
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "tell_text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection.",
+  "detector_days": [
+   4
+  ]
+ },
+ {
+  "case_id": "pos_8",
+  "kind": "positive",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_87",
+  "tell_text": "Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase.",
+  "detector_days": [
+   4
+  ]
+ },
+ {
+  "case_id": "pos_9",
+  "kind": "positive",
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_449",
+  "tell_text": "A player characterizes the act of calling for scrutiny on someone as a tactic for rushing an elimination without evidence.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_10",
+  "kind": "positive",
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_56",
+  "tell_text": "votes for a player they have been arguing with throughout the entire discussion session.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_11",
+  "kind": "positive",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_1",
+  "channel": "discussion",
+  "tell_id": "disc_21",
+  "tell_text": "Repeatedly demands evidence from a player who makes an unsubstantiated accusation.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_12",
+  "kind": "positive",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_46",
+  "tell_text": "votes for a player immediately after they express suspicion toward the voter's own previous voting record.",
+  "detector_days": [
+   5
+  ]
+ },
+ {
+  "case_id": "pos_13",
+  "kind": "positive",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_67",
+  "tell_text": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior.",
+  "detector_days": [
+   5,
+   6
+  ]
+ },
+ {
+  "case_id": "pos_14",
+  "kind": "positive",
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_459",
+  "tell_text": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase.",
+  "detector_days": [
+   4
+  ]
+ },
+ {
+  "case_id": "pos_15",
+  "kind": "positive",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_7",
+  "channel": "discussion",
+  "tell_id": "disc_131",
+  "tell_text": "A player proposes monitoring future voting patterns rather than focusing on current verbal arguments.",
+  "detector_days": [
+   2
+  ]
+ },
+ {
+  "case_id": "pos_16",
+  "kind": "positive",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_459",
+  "tell_text": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase.",
+  "detector_days": [
+   4
+  ]
+ },
+ {
+  "case_id": "pos_17",
+  "kind": "positive",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_5",
+  "channel": "discussion",
+  "tell_id": "disc_24",
+  "tell_text": "Advocates for delaying a vote to wait for more information from future night cycles.",
+  "detector_days": [
+   1
+  ]
+ },
+ {
+  "case_id": "pos_18",
+  "kind": "positive",
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "tell_text": "A player casts a vote for someone they directly accused in the discussion.",
+  "detector_days": [
+   3
+  ]
+ },
+ {
+  "case_id": "pos_19",
+  "kind": "positive",
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_180",
+  "tell_text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day.",
+  "detector_days": [
+   5
+  ]
+ },
+ {
+  "case_id": "neg_0",
+  "kind": "negative",
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_7",
+  "channel": "discussion",
+  "tell_id": "disc_103",
+  "tell_text": "A player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_1",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_1",
+  "channel": "vote",
+  "tell_id": "vote_5",
+  "tell_text": "A player who engaged in active discussion against a specific target chooses to abstain from the final vote.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_2",
+  "kind": "negative",
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_48",
+  "tell_text": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_3",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_124",
+  "tell_text": "Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_4",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_79",
+  "tell_text": "expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_5",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_95",
+  "tell_text": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_6",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_1",
+  "channel": "vote",
+  "tell_id": "vote_82",
+  "tell_text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_7",
+  "kind": "negative",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_147",
+  "tell_text": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_8",
+  "kind": "negative",
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_95",
+  "tell_text": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_9",
+  "kind": "negative",
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "tell_text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_10",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_23",
+  "tell_text": "Advocates for using the history of voting records rather than subjective interpretations of player behavior.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_11",
+  "kind": "negative",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_140",
+  "tell_text": "A player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_12",
+  "kind": "negative",
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_56",
+  "tell_text": "votes for a player they have been arguing with throughout the entire discussion session.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_13",
+  "kind": "negative",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_7",
+  "channel": "vote",
+  "tell_id": "vote_147",
+  "tell_text": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_14",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "tell_text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_15",
+  "kind": "negative",
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_24",
+  "tell_text": "Advocates for delaying a vote to wait for more information from future night cycles.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_16",
+  "kind": "negative",
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_1",
+  "channel": "discussion",
+  "tell_id": "disc_29",
+  "tell_text": "Announces having been the target of a failed night attack.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_17",
+  "kind": "negative",
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_29",
+  "tell_text": "Announces having been the target of a failed night attack.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_18",
+  "kind": "negative",
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_4",
+  "channel": "vote",
+  "tell_id": "vote_0",
+  "tell_text": "A player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day.",
+  "detector_days": []
+ },
+ {
+  "case_id": "neg_19",
+  "kind": "negative",
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_82",
+  "tell_text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves.",
+  "detector_days": []
+ }
+]

@@ -1,0 +1,754 @@
+[
+ {
+  "id": "disc_0",
+  "canonical": "suggests scrutinizing specific participants from previous days as a strategy to identify threats",
+  "other_wordings": [],
+  "n_instances": 1,
+  "exhibitor_roles": {
+   "villager": 1
+  }
+ },
+ {
+  "id": "disc_1",
+  "canonical": "suggests analyzing players who remained silent during periods of consensus building",
+  "other_wordings": [],
+  "n_instances": 1,
+  "exhibitor_roles": {
+   "serial_killer": 1
+  }
+ },
+ {
+  "id": "disc_2",
+  "canonical": "frames the lack of available information as the primary justification for a previous unanimous abstention",
+  "other_wordings": [],
+  "n_instances": 1,
+  "exhibitor_roles": {
+   "wolf": 1
+  }
+ },
+ {
+  "id": "disc_3",
+  "canonical": "argues against shifting the topic toward analyzing the actions of a player revealed on death to have been the serial killer, labeling it a distraction",
+  "other_wordings": [],
+  "n_instances": 1,
+  "exhibitor_roles": {
+   "villager": 1
+  }
+ },
+ {
+  "id": "disc_4",
+  "canonical": "proposes using the target of an outside actor, whose role is unknown, as a data point to identify potential threats",
+  "other_wordings": [],
+  "n_instances": 1,
+  "exhibitor_roles": {
+   "wolf": 1
+  }
+ },
+ {
+  "id": "disc_5",
+  "canonical": "a player references a specific night event that targeted them or another player to validate their status",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_6",
+  "canonical": "a player proactively agrees with the framing that they are a priority target for night actors",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_7",
+  "canonical": "a player cautions the group against interpreting specific night events as a rationale for immediate elimination",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_8",
+  "canonical": "claims a player is a confirmed role without providing evidence from the public record",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_9",
+  "canonical": "repeatedly demands evidence from a player who makes an unsubstantiated accusation",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_10",
+  "canonical": "deflects from an error in communication by accusing the person who pointed it out of being overly defensive",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_11",
+  "canonical": "advocates for using the history of voting records rather than subjective interpretations of player behavior",
+  "other_wordings": [
+   "a player suggests that current voting patterns are the primary indicator of role alignment and requests a re-examination of past records to find patterns",
+   "a player proposes a specific methodology for analyzing the voting records of others to identify potential targets",
+   "advocates for using actual voting results as the primary metric for analysis, while downplaying the importance of verbal debate between other participants",
+   "the player consistently centers their argument around specific voting records from previous days rather than current ongoing discussion"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_12",
+  "canonical": "advocates for delaying a vote to wait for more information from future night cycles",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_13",
+  "canonical": "when directly challenged regarding a past interaction with a player who was subsequently removed from the game, the player repeatedly attempts to redirect the focus of the discussion onto the behavior of other group members",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_14",
+  "canonical": "the player challenges the defensive posture of another participant by framing their previous actions as a potential tactical attempt to discredit the investigator who was later revealed on death as the investigator",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_15",
+  "canonical": "the player highlights the outcome of a past voting cycle to draw attention to a specific player's personal conflict with a player revealed on death as the investigator",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_16",
+  "canonical": "the player asks a direct, pointed question about the perceived risk-reward balance of the current suspects' actions in relation to recent night events",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_17",
+  "canonical": "announces having been the target of a failed night attack",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_18",
+  "canonical": "justifies a previous decision to abstain from voting by explaining their reasoning for the inaction",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_19",
+  "canonical": "publicly acknowledges and reflects on their part in a past voting error that removed a player revealed on death as the investigator",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_20",
+  "canonical": "challenges other players for opting to abstain from voting during a period where a confirmed threat had been identified",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_21",
+  "canonical": "deflects a challenge regarding their voting behavior by shifting the focus to identifying who initiated the consensus on a past failed vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_22",
+  "canonical": "proposes delaying action until more information is available from the progression of the game",
+  "other_wordings": [
+   "discourages taking action based on current information while suggesting a passive observation strategy",
+   "expresses alignment with a cautious approach while explicitly stating that available data is insufficient",
+   "a player suggests a preference for delaying voting until more information is available"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_23",
+  "canonical": "suggests that the group should maintain future accountability despite agreeing with the consensus to wait",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_24",
+  "canonical": "a player frames their own previous behavior as an attempt to prevent snap decisions or chaos rather than as an attempt to protect a specific person",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_25",
+  "canonical": "a player highlights their own unique position in a vote to emphasize their own independence and lack of involvement in past deadlock situations",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_26",
+  "canonical": "a player directs other players to focus on the strategic incentives and win conditions of different factions to justify why a specific past action occurred",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_27",
+  "canonical": "a player refuses to commit to an elimination until receiving more arguments or evidence from other remaining players in the final moments of a game",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_28",
+  "canonical": "a player confronts a specific individual regarding their lack of participation in the ongoing discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_29",
+  "canonical": "a player justifies their relative lack of recent engagement as a deliberate effort to avoid creating noise or speculation without evidence",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_30",
+  "canonical": "a player justifies their previous vote by characterizing the target's behavior as an erratic distraction from the group's goals",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_31",
+  "canonical": "a player justifies their previous vote by characterizing the target's behavior as an attempt to force a binary choice on the village",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_32",
+  "canonical": "a player points out that the individuals who voted for a target are the same ones who are now being scrutinized following that target's death",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_33",
+  "canonical": "a player deflects an accusation of wrongdoing by arguing that those who abstained from voting are just as responsible for the outcome as those who cast a vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_34",
+  "canonical": "a player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_35",
+  "canonical": "a player suggests that labeling those who voted for a deceased player as suspicious is a counterproductive method that only increases group confusion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_36",
+  "canonical": "when under sustained pressure to justify a past vote against a player revealed on death to be the investigator, the player repeatedly attempts to redirect the conversation toward the voting behavior of other living participants",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_37",
+  "canonical": "a player insists on holding others accountable for the outcome of a specific past vote, repeatedly dismissing the justifications offered by the accused participant",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_38",
+  "canonical": "a player actively probes for group consensus regarding the potential coordination of past votes between a participant and a player revealed on death to have been a serial killer",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_39",
+  "canonical": "a player characterizes their own previous controversial action as an act of transparency rather than a strategic mistake when challenged",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_40",
+  "canonical": "a player questions why a previously cast vote aligned with the target of a known night-action threat, framing it as evidence of a potential partnership",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_41",
+  "canonical": "insists that the remaining players in the room are all on the same team as a method of forcing an elimination",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_42",
+  "canonical": "counters an accusation by claiming the accuser is attempting to frame the remaining players to secure their own victory",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_43",
+  "canonical": "defends against an accusation by citing past voting actions against a player who was revealed on death to be a serial killer",
+  "other_wordings": [
+   "a player defends their own voting record by highlighting their subsequent participation in the elimination of a previously revealed threat"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_44",
+  "canonical": "justifies a current vote by referencing the voting record of an opponent on a previous day",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_45",
+  "canonical": "a player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay",
+  "other_wordings": [
+   "a player proposes establishing a specific numeric threshold or protocol for casting votes to manage the group's voting outcome"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_46",
+  "canonical": "a player proposes a specific group activity to evaluate others based on a subjective behavioral metric",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_47",
+  "canonical": "a player critiques a proposed method of analysis by labeling it as potentially projecting subjective intent",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_48",
+  "canonical": "a player expresses suspicion regarding those who define new metrics for identifying suspicious behavior",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_49",
+  "canonical": "repeatedly demands that a specific player address past voting behavior and procedural suggestions to deflect from the current conversation",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_50",
+  "canonical": "frames procedural suggestions as logical necessity while dismissing concerns about their own past behavior as a misinterpretation of their intent",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_51",
+  "canonical": "expresses skepticism toward active participants while redirecting the focus of the group toward those who have remained quiet during discussions",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_52",
+  "canonical": "a player announces they were the target of a night attack to justify their claims",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_53",
+  "canonical": "a player characterizes an opponent's appeal to their own survival as a manipulative narrative tactic",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_54",
+  "canonical": "a player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_55",
+  "canonical": "a player argues that an opponent's reliance on past voting history is a strategy to avoid current scrutiny",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_56",
+  "canonical": "a player explicitly declares their intention to follow a specific push by another player to break a voting stalemate",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_57",
+  "canonical": "when directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_58",
+  "canonical": "the player frames their past voting behavior as a necessary logical response to a deadlock to defend against accusations of collusion",
+  "other_wordings": [
+   "defends a past voting record against a player now known to be the investigator by characterizing it as a simple act of breaking a stalemate"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_59",
+  "canonical": "the player explicitly cites their own history of initiating or driving votes as proof of their desire to resolve the game, as a rebuttal to suspicion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_60",
+  "canonical": "when challenged to provide alternative suspects, the player directs focus back to the same subset of players they had previously accused",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_61",
+  "canonical": "deflects from direct suspicion of a specific past voting record by claiming that criticizing those who voted is unproductive",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_62",
+  "canonical": "counters an accusation by suggesting that those who abstained from past votes are the ones actually hiding their roles",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_63",
+  "canonical": "proposes selecting a target specifically from the group of players who previously abstained to force a resolution",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_64",
+  "canonical": "warns against a group of players who seem to be coordinating their defense in response to criticism of a past vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_65",
+  "canonical": "challenges the idea of targeting players solely based on their previous voting history rather than current inconsistencies in their arguments",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_66",
+  "canonical": "deflects onto their accuser rather than addressing the substance of the accusation when directly challenged",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_67",
+  "canonical": "cites the consistency of voting patterns between two other players as primary evidence of a coordinated group",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_68",
+  "canonical": "defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_69",
+  "canonical": "acknowledges a lack of active participation in the discussion while explaining it as a reaction to repeated circular arguments",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_70",
+  "canonical": "a player frames a night-time event as a strategic opportunity to fish for information from the group",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_71",
+  "canonical": "a player suggests that specific observations about the game flow are meant to hide a failed attack",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_72",
+  "canonical": "a player proposes monitoring future voting patterns rather than focusing on current verbal arguments",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_73",
+  "canonical": "a player acknowledges their own status as a high-priority target for attacks while discouraging the group from assigning specific roles to them",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_74",
+  "canonical": "a player suggests that the timing of night attacks may provide information about which players possess defensive capabilities",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_75",
+  "canonical": "a player who claims a high-information role late in the game presents a list of other players they claim to have already cleared",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_76",
+  "canonical": "a player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion",
+  "other_wordings": [
+   "a player challenges an accuser by highlighting the suspicious timing of a late-game reveal"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_77",
+  "canonical": "a player expresses concern that being publicly named by a role-claimer makes them a priority target for remaining threats",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_78",
+  "canonical": "a player addresses a role-claimer by demanding specific, verifiable evidence to support their accusation against another player",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_79",
+  "canonical": "a player explains their silence throughout the game as a calculated strategy to survive while gathering information",
+  "other_wordings": [
+   "a player justifies their decision to withhold information by claiming it is necessary to preserve their own survival"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_80",
+  "canonical": "a player proposes a specific criteria for identifying deceptive behavior by suggesting that votes made without accompanying reasoning are indicators of hidden roles",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_81",
+  "canonical": "a player suggests forcing a nomination early in the discussion to compel other players to reveal their positions",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_82",
+  "canonical": "a player specifies a narrow and exclusionary criteria for suspicious voting, targeting only those who push for eliminations of quiet players",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_83",
+  "canonical": "a player claims a special role during a public discussion",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_84",
+  "canonical": "a player actively pushes the group to move from discussion to a formal vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_85",
+  "canonical": "a player advises caution against making a decision based on the silence or inactivity of others",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_86",
+  "canonical": "a player characterizes the actions of others as being an attempt to manipulate or steer the group",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_87",
+  "canonical": "a player suggests a specific, rigid condition for evaluating other players in future rounds",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_88",
+  "canonical": "a player reveals information about their role and a target only after the group has already moved past a period of inactivity",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_89",
+  "canonical": "a player explicitly conditions their support for a target on the future outcome of the game's revealed information",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_90",
+  "canonical": "a player acknowledges that a role claim is convenient but argues that testing the claim is a necessary risk to end a stalemate",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_91",
+  "canonical": "a player claims to have successfully investigated specific players who were subsequently voted out",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_92",
+  "canonical": "a player defends their own track record by citing their past support for another player's accusations",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_93",
+  "canonical": "a player proposes analyzing the timing of past votes to identify patterns of hesitation or acceleration among the participants",
+  "other_wordings": [
+   "a player suggests looking at the speed at which other players committed to a previous vote to distinguish between consensus-building and distancing"
+  ],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_94",
+  "canonical": "a player highlights the potential negative consequences for the group if an accusation against them is followed",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_95",
+  "canonical": "defends their own previous voting timing by claiming they were waiting for more information before committing to the consensus",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_96",
+  "canonical": "directly requests that the group analyze the initiator of a specific voting sequence from the previous day",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_97",
+  "canonical": "suggests cross-referencing a player's current behavior with their past voting patterns to determine if their caution is consistent or situational",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_98",
+  "canonical": "questions why a player did not voice concerns about a consensus target before the majority was reached",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_99",
+  "canonical": "a player focuses their argument against another participant by citing that player's history of initiating past group votes",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_100",
+  "canonical": "a player characterizes an opponent's previous voting logic as a calculated attempt to gain credibility rather than a genuine effort to identify threats",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_101",
+  "canonical": "a player frames a conflict between two others as a potential distraction while explicitly questioning how to verify which of them is the genuine threat",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ },
+ {
+  "id": "disc_102",
+  "canonical": "a player reverses an accusation when challenged by suggesting that the person accusing them is actually the one who drove the speed of a past controversial vote",
+  "other_wordings": [],
+  "n_instances": 0,
+  "exhibitor_roles": {}
+ }
+]

@@ -1,0 +1,33 @@
+{
+  "_protocol_note": "Owner adjudication, recorded from chat 2026-07-13. Per-game incremental unsealing (g1 phase 2 opened only after g1 phase 1 was verbally frozen); cross-game anchoring risk accepted and on record. Verdict vocabulary: y = behavior factually exhibited as worded; y_dup = exhibited but judged a redundant fragment of the named canonical id (counts for detection accuracy, flags a fold-merge); n_wording = clause as worded did not fit the record.",
+  "g1_phase1": {
+    "g1_player_5_vote": "none found (blind read: barely spoke, abstained d2, joined pile d3 — read as 'nothing telling')",
+    "g1_player_5_discussion": "none found",
+    "g1_player_6_vote": "none found beyond ordinary votes (died night 2)",
+    "g1_player_6_discussion": "none found"
+  },
+  "g1_phase2": [
+    {"cell": "g1_player_5_vote", "tell_id": "vote_2", "day": 2, "verdict": "y",
+     "note": "Owner: the real behavior is 'abstain when no information is available' — the joined-the-majority clause is immaterial to what this observes."},
+    {"cell": "g1_player_5_vote", "tell_id": "vote_673", "day": 3, "verdict": "y",
+     "note": "Owner: canonical id for the d3 event — silent all day, then joined the block against the day's accusation focus (bandwagoning)."},
+    {"cell": "g1_player_5_vote", "tell_id": "vote_221", "day": 3, "verdict": "y_dup",
+     "canonical": "vote_673", "note": "Same single d3 behavior; clause holds but is a fragment of vote_673."},
+    {"cell": "g1_player_5_vote", "tell_id": "vote_51", "day": 3, "verdict": "y_dup",
+     "canonical": "vote_673", "note": "Same single d3 behavior; clause holds but is a fragment of vote_673."},
+    {"cell": "g1_player_5_vote", "tell_id": "vote_238", "day": 3, "verdict": "n_wording",
+     "note": "Owner: 'at the last moment' implies a change of heart (from abstain or another target); player_5 never stated any position, so the clause misdescribes silence-then-join."},
+    {"cell": "g1_player_6_vote", "tell_id": "vote_0", "day": 2, "verdict": "y",
+     "note": "Owner: good tell, read as effectively random voting (target had drawn no discussion)."},
+    {"cell": "g1_player_6_vote", "tell_id": "vote_14", "day": 2, "verdict": "y",
+     "note": "Owner: a different version of the same observation — said nothing but still voted; variant of vote_0, borderline merge candidate."},
+    {"cell": "g1_player_6_vote", "tell_id": "vote_380", "day": 2, "verdict": "y",
+     "note": "Owner: yes a tell (off-consensus vote)."}
+  ],
+  "g1_owner_observations": [
+    "The d3 silent-bandwagon family (238/221/51/673) is one behavior stored as four ids — fold-merge candidate; vote_673 is the most general phrasing.",
+    "Distinct real tells in this cell were only two: abstain-without-information and silent-bandwagon-onto-the-accused.",
+    "Structural concern: many agents never speak or have no reason to — the silence-conditioned tell family may fire on a large fraction of quiet players, so its value rests entirely on measured lift, not plausibility.",
+    "Dialogue quality is low/robotic; few genuinely rational discussions — discussion-channel signal is thinner than the checklist implies."
+  ]
+}

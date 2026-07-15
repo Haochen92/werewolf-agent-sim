@@ -1,0 +1,50 @@
+# VOTE checklist (frozen v0 — the detector saw exactly these)
+
+- **[vote_39]** A player casts a vote for someone who publicly questioned them during the discussion phase.
+- **[vote_14]** A player casts a vote for someone they did not express any explicit suspicion of during the final day's discussion.
+- **[vote_83]** A player suggests looking for inconsistencies in the voting record while choosing to abstain when the vote occurs.
+- **[vote_2]** A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period.
+- **[vote_82]** A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves.
+- **[vote_147]** Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting.
+- **[vote_79]** expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision.
+- **[vote_0]** A player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day.
+- **[vote_48]** switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct.
+- **[vote_56]** votes for a player they have been arguing with throughout the entire discussion session.
+- **[vote_124]** Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions.
+- **[vote_5]** A player who engaged in active discussion against a specific target chooses to abstain from the final vote.
+- **[vote_150]** votes for the consensus target after having warned against the dangers of group-driven voting patterns earlier in the day.
+- **[vote_272]** Votes for the player who was publicly identified as a target by an investigator claim earlier in the discussion.
+- **[vote_46]** votes for a player immediately after they express suspicion toward the voter's own previous voting record.
+- **[vote_489]** abstains from the vote after questioning the reasoning of the most vocal player during the discussion.
+- **[vote_55]** votes for a player after having defended them in previous discussions.
+- **[vote_120]** A player who explicitly states that the group needs to be careful about making assumptions or missing potential threats abstains from the vote.
+- **[vote_264]** A player joins a majority-bloc vote to eliminate another player after that target was accused of being a specific role, despite expressing uncertainty about the validity of the evidence provided.
+- **[vote_51]** A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation.
+- **[vote_673]** A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.
+- **[vote_238]** A player joins a near-unanimous lynch consensus at the last moment without having actively participated in the preceding discussion.
+- **[vote_3]** Votes to eliminate a player after previously arguing that the group should prioritize evidence over rash accusations during the discussion.
+- **[vote_42]** Advocates for abstaining from voting based on an asserted lack of sufficient information.
+- **[vote_380]** votes for a player who is not the primary candidate around whom the room's consensus has converged.
+- **[vote_426]** A player chooses to abstain from voting after having actively participated in the discussion during the day.
+- **[vote_603]** A player casts a vote for someone who had only just begun to participate in the conversation during the current session.
+- **[vote_161]** A player votes for a candidate who had just accused them of being the primary driver of a previous controversial elimination.
+- **[vote_194]** A player actively pushes the conversation toward targeting others and then abstains when a vote is finally cast against them.
+- **[vote_298]** A player casts a vote against someone they engaged with in a collaborative discussion immediately prior to the vote.
+- **[vote_459]** votes for a player after specifically questioning the accuser's logic and motives during the discussion phase.
+- **[vote_520]** A player casts a deciding vote for someone who had earlier challenged the credibility of the now-eliminated investigator.
+- **[vote_87]** Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase.
+- **[vote_12]** Votes for a player after having abstained from the previous day's vote while defending the importance of caution and accuracy.
+- **[vote_123]** Votes for a player after explicitly dismissing their stated priorities as a distraction earlier in the day.
+- **[vote_126]** A player makes a role claim while simultaneously demanding the elimination of another player without providing evidence.
+- **[vote_152]** A player abstains from the vote despite being the subject of an active accusation by an influential player.
+- **[vote_156]** votes for the room's consensus target after engaging in a discussion comparing the speed of all players' past voting records.
+- **[vote_158]** votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation.
+- **[vote_195]** A player argues against the consensus regarding how to interpret past strategy and ultimately chooses to abstain in the vote.
+- **[vote_221]** votes for a player who was the primary focus of accusations during the discussion despite not participating in the accusation themselves.
+- **[vote_294]** A player advocates for a specific discussion topic and then opts to abstain when the vote occurs.
+- **[vote_382]** A player votes for a target they had spent the discussion phase analyzing for their role in previous procedural delays.
+- **[vote_398]** A player who provides a critique of potential voting strategies during the discussion chooses to abstain when the vote occurs.
+- **[vote_4]** Votes for a player after previously spending the discussion period demanding an explanation for why others were accusing that same player.
+- **[vote_405]** initiates a call for ending the practice of abstaining and immediately casts a vote for a specific player when the voting phase begins.
+- **[vote_41]** A player casts a vote for someone they directly accused in the discussion.
+- **[vote_601]** A player pivots to an aggressive voting stance for a specific individual after previously advocating for general caution.

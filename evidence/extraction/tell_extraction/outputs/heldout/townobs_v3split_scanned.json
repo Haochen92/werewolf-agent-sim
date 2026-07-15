@@ -1,0 +1,1082 @@
+[
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "678cdb3f-e51e-40f5-9cb8-dbd02fc0cc67",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "c226e70d-aa30-4eb3-bd6f-d2674567f641",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "6bfe74b8-5524-4076-9237-20b58fe2a5f7",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "57b8de58-caed-4b6c-bc6a-a0d765d542b2",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "3a158d63-db14-4c9e-9271-038e40cc2eba",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "b86e9a79-5415-46bc-ad4f-4754c222df1d",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "594acdc7-5b7a-4504-ae88-c060fe61629c",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "1c381f2e-314c-422c-af17-339d24c95c2a",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_1",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_2",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_1",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_3",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_3",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_2",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_4",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_6",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_6",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_4",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_7",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_5",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_5",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_8",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_8",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_9",
+  "channel": "vote"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_7",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "acd81aa9-6082-4fd4-99a5-7e3f65bfb1f8",
+  "player": "player_9",
+  "channel": "discussion"
+ },
+ {
+  "game_id": "cb298a71-1a5f-4a09-9bb3-1b4df71e65aa",
+  "player": "player_4",
+  "channel": "vote"
+ }
+]

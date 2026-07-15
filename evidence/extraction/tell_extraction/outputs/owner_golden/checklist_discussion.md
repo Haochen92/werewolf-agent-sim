@@ -1,0 +1,50 @@
+# DISCUSSION checklist (frozen v0 — the detector saw exactly these)
+
+- **[disc_23]** Advocates for using the history of voting records rather than subjective interpretations of player behavior.
+- **[disc_103]** A player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process.
+- **[disc_29]** Announces having been the target of a failed night attack.
+- **[disc_140]** A player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion.
+- **[disc_285]** A player suggests focusing scrutiny on individuals who have been the quietest or most ambiguous during the discussion.
+- **[disc_176]** A player proposes analyzing the timing of past votes to identify patterns of hesitation or acceleration among the participants.
+- **[disc_24]** Advocates for delaying a vote to wait for more information from future night cycles.
+- **[disc_283]** A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection.
+- **[disc_412]** advocates for ending a period of consensus abstention by highlighting the risk of inactivity.
+- **[disc_67]** A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior.
+- **[disc_95]** A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay.
+- **[disc_106]** When directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior.
+- **[disc_116]** deflects onto their accuser rather than addressing the substance of the accusation when directly challenged.
+- **[disc_143]** A player explains their silence throughout the game as a calculated strategy to survive while gathering information.
+- **[disc_284]** A player discourages the group from relying solely on voting records, suggesting that such analysis may be a distraction or ineffective.
+- **[disc_335]** A player justifies their previous failure to vote as a precautionary measure due to a lack of evidence.
+- **[disc_336]** A player challenges the neutrality of abstaining from a vote, characterizing the refusal to act as a protection mechanism.
+- **[disc_36]** A player suggests that current voting patterns are the primary indicator of role alignment and requests a re-examination of past records to find patterns.
+- **[disc_493]** Advocates for a passive strategy of observation instead of active discussion during the opening phase of the game.
+- **[disc_131]** A player proposes monitoring future voting patterns rather than focusing on current verbal arguments.
+- **[disc_167]** A player advises caution against making a decision based on the silence or inactivity of others.
+- **[disc_169]** A player suggests a specific, rigid condition for evaluating other players in future rounds.
+- **[disc_203]** Advocates for focusing on current contribution patterns rather than re-analyzing past agreements when the group debates previous strategy.
+- **[disc_21]** Repeatedly demands evidence from a player who makes an unsubstantiated accusation.
+- **[disc_211]** expresses wariness of players who demonstrate high-energy certainty in proposing a lynch target.
+- **[disc_231]** A player asserts high confidence in an accusation while refusing to disclose the source of their information.
+- **[disc_247]** A player suggests focusing on the historical voting record to identify group sentiment after a player is revealed on death to have been a specific role.
+- **[disc_250]** A player claims that their previous voting record was intended to gather information after being questioned about it.
+- **[disc_332]** Explicitly shifts the focus of the discussion from the primary suspect to the person pushing the suspicion.
+- **[disc_449]** A player characterizes the act of calling for scrutiny on someone as a tactic for rushing an elimination without evidence.
+- **[disc_464]** A player claims a specific investigative role early in the game to justify an immediate demand for another player's elimination.
+- **[disc_530]** A player who is being accused of holding a hostile role counter-accuses their accuser of using the role claim as a distraction to protect themselves.
+- **[disc_104]** A player argues that an opponent's reliance on past voting history is a strategy to avoid current scrutiny.
+- **[disc_110]** Deflects from direct suspicion of a specific past voting record by claiming that criticizing those who voted is unproductive.
+- **[disc_111]** Defends a past voting record against a player now known to be the investigator by characterizing it as a simple act of breaking a stalemate.
+- **[disc_118]** defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock.
+- **[disc_165]** A player claims a special role during a public discussion.
+- **[disc_166]** A player actively pushes the group to move from discussion to a formal vote.
+- **[disc_175]** A player defends their own track record by citing their past support for another player's accusations.
+- **[disc_180]** Directly requests that the group analyze the initiator of a specific voting sequence from the previous day.
+- **[disc_183]** A player focuses their argument against another participant by citing that player's history of initiating past group votes.
+- **[disc_185]** A player frames a conflict between two others as a potential distraction while explicitly questioning how to verify which of them is the genuine threat.
+- **[disc_20]** Claims a player is a confirmed role without providing evidence from the public record.
+- **[disc_208]** labels questioning of past meta-strategy as an intentional distraction from finding active threats.
+- **[disc_214]** Labels the cautious behavior of other players as an intentional rhetorical strategy used to obstruct progress.
+- **[disc_218]** The player frames their past voting record as a logical reaction to the behavior of others rather than as a consistent strategy.
+- **[disc_226]** Proposes establishing a formal procedural framework for how the group should manage future role claims before any have occurred.
+- **[disc_232]** A player attempts to justify an accusation by claiming that their status as a target proves their own innocence.

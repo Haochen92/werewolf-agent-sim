@@ -1,0 +1,72 @@
+[
+ {
+  "case_id": "pos_1",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_180",
+  "tell_text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day."
+ },
+ {
+  "case_id": "pos_5",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_285",
+  "tell_text": "A player suggests focusing scrutiny on individuals who have been the quietest or most ambiguous during the discussion."
+ },
+ {
+  "case_id": "pos_8",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_87",
+  "tell_text": "Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase."
+ },
+ {
+  "case_id": "pos_11",
+  "player": "player_1",
+  "channel": "discussion",
+  "tell_id": "disc_21",
+  "tell_text": "Repeatedly demands evidence from a player who makes an unsubstantiated accusation."
+ },
+ {
+  "case_id": "pos_16",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_459",
+  "tell_text": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase."
+ },
+ {
+  "case_id": "pos_17",
+  "player": "player_5",
+  "channel": "discussion",
+  "tell_id": "disc_24",
+  "tell_text": "Advocates for delaying a vote to wait for more information from future night cycles."
+ },
+ {
+  "case_id": "neg_7",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_147",
+  "tell_text": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting."
+ },
+ {
+  "case_id": "neg_11",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_140",
+  "tell_text": "A player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion."
+ },
+ {
+  "case_id": "neg_13",
+  "player": "player_7",
+  "channel": "vote",
+  "tell_id": "vote_147",
+  "tell_text": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting."
+ },
+ {
+  "case_id": "neg_19",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_82",
+  "tell_text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves."
+ }
+]

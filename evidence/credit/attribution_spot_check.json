@@ -1,0 +1,180 @@
+{
+ "date": "2026-07-13",
+ "seed": 20260713,
+ "n": 15,
+ "sampling": "all memory_enabled agent_action_eval cases with a followed strategy_verdict mapping via strategy_index_to_key to a store key, across v6ab_townobs/v6ab_townsp/v6ab_sksp (2387 eligible pairs; townobs contributed none - its memory arms carry no SP mappings); random.Random(20260713).sample(pairs, 15); phase mix 7 day_discussion / 4 day_vote / 4 night_action",
+ "rows": [
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "95b72de4",
+   "phase": "night_action",
+   "player_role": "vigilante",
+   "sp_key": "d24426cf-746",
+   "sp_action": "Do not shoot. Firing while under direct suspicion is extremely risky. If you hit a villager, you confirm the accusations",
+   "decision": "night: hold_fire",
+   "verdict": "enacted",
+   "why": "Vigilante under active accusation held fire, exactly the SP's 'do not shoot while under direct suspicion' prescription."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "94b6a0e3",
+   "phase": "night_action",
+   "player_role": "vigilante",
+   "sp_key": "f3988321-5be",
+   "sp_action": "When an unconfirmed information role pushes a target but the day's vote is fractured and chaotic, do not automatically t",
+   "decision": "night: hold_fire",
+   "verdict": "enacted",
+   "why": "SP says withhold the bullet when an unverified claim meets a fractured/tie vote; the agent held fire citing exactly that lack of consensus."
+  },
+  {
+   "game_file": "v6ab_sksp.jsonl",
+   "game_id": "fafccca9",
+   "phase": "day_discussion",
+   "player_role": "serial_killer",
+   "sp_key": "5b273ec7-4d3",
+   "sp_action": "Consistently adopt the persona of a detached, logical analyst. When discussions get heated, interject with calls for str",
+   "decision": "discussion: backs testing player_1 'to generate data'",
+   "verdict": "enacted",
+   "why": "Message is a detached, process-structuring interjection ('we are spinning in circles... commit to a vote to see how the room shifts'), a plausible instance of the analyst-persona SP."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "6bfe74b8",
+   "phase": "day_vote",
+   "player_role": "investigator",
+   "sp_key": "257dfb1a-e01",
+   "sp_action": "If you have revealed your role but the vote is fracturing into a tie, do not waste your vote on a fringe candidate. Publ",
+   "decision": "vote: player_2",
+   "verdict": "enacted",
+   "why": "player_2 was the focal candidate of the day's central conflict (the investigator's standing target), so the vote consolidates on a major bloc rather than a fringe candidate, as the SP advises."
+  },
+  {
+   "game_file": "v6ab_sksp.jsonl",
+   "game_id": "b86e9a79",
+   "phase": "day_discussion",
+   "player_role": "serial_killer",
+   "sp_key": "2ec3213d-850",
+   "sp_action": "When a major conflict between other players erupts early in the game, do not take a strong side. Instead, adopt a 'cauti",
+   "decision": "discussion: passed (silent)",
+   "verdict": "enacted",
+   "why": "Weak but consistent: passing enacts the SP's 'do not take a strong side / stay out of the crossfire' prohibition, though the affirmative half (publicly advocating for process) was not performed."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "ac82cd2f",
+   "phase": "day_vote",
+   "player_role": "villager",
+   "sp_key": "94ee5105-a83",
+   "sp_action": "In an information-starved early game with a fractured village, resist the urge to abstain. Abstaining cedes tempo to evi",
+   "decision": "vote: player_1",
+   "verdict": "enacted",
+   "why": "SP's core is 'resist the urge to abstain, cast a calculated vote'; the agent broke the abstention pattern with a vote, citing exactly the cede-tempo rationale."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "fafccca9",
+   "phase": "night_action",
+   "player_role": "vigilante",
+   "sp_key": "d32205f9-509",
+   "sp_action": "When a player makes a credible Investigator claim but the village fails to eliminate their target, use your bullet to re",
+   "decision": "night: shoot player_1",
+   "verdict": "enacted",
+   "why": "Day 5 ended in a player_1/player_2 tie with no elimination, and player_1 carried the game's only investigator-derived lead; shooting player_1 to break the deadlock is the SP's prescribed move."
+  },
+  {
+   "game_file": "v6ab_sksp.jsonl",
+   "game_id": "6bfe74b8",
+   "phase": "day_discussion",
+   "player_role": "serial_killer",
+   "sp_key": "29c38c18-813",
+   "sp_action": "In the mid-to-late game, when suspicion falls on you for past actions, pivot from defense to offense. Use a past pro-tow",
+   "decision": "discussion: shield-then-attack player_1",
+   "verdict": "enacted",
+   "why": "Textbook enactment: uses its wolf-elimination vote record as a shield ('my votes were instrumental'), then pivots to attack player_1's lack of contribution."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "3a158d63",
+   "phase": "night_action",
+   "player_role": "healer",
+   "sp_key": "228b2c51-f65",
+   "sp_action": "Recognize that your public saves tie your credibility to the saved player. If you save someone and their subsequent acti",
+   "decision": "night: heal player_1 (prev night healed player_8)",
+   "verdict": "enacted",
+   "why": "The SP's operative advice is 'deliberately protect someone else the next night' after a save tied to a bad outcome; the agent switched from player_8 to player_1."
+  },
+  {
+   "game_file": "v6ab_sksp.jsonl",
+   "game_id": "f7d9b589",
+   "phase": "day_discussion",
+   "player_role": "serial_killer",
+   "sp_key": "d346de43-564",
+   "sp_action": "If an unverified power role (e.g., Investigator, Vigilante) accuses you, immediately pivot the debate away from the accu",
+   "decision": "discussion: PASSED (empty message)",
+   "verdict": "not_enacted",
+   "why": "The SP prescribes immediately and aggressively discrediting the accuser; the agent claimed 'I must discredit' but passed its speaking slot and said nothing - the follow claim did not shape any action."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "a9ef7f4b",
+   "phase": "day_discussion",
+   "player_role": "villager",
+   "sp_key": "d3a67082-3d5",
+   "sp_action": "If you are accused of causing a mislynch you abstained from, do not just point to your abstention. Aggressively pivot on",
+   "decision": "discussion: conciliatory defense to player_2, redirects at silent players",
+   "verdict": "not_enacted",
+   "why": "The SP says aggressively pivot onto the ACCUSER using their vote record; the agent instead disavows attacking them ('wasn't about attacking you', 'we all fell for the same trap') and redirects suspicion to uninvolved quiet players - the advice's operative move is contradicted."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "f7d9b589",
+   "phase": "day_discussion",
+   "player_role": "healer",
+   "sp_key": "e1cd8fc4-7e8",
+   "sp_action": "When the village is directionless in an info-starved game, instead of proposing a high-visibility strategy yourself, gui",
+   "decision": "discussion: supports existing push for a target, offers criterion",
+   "verdict": "enacted",
+   "why": "Weak but consistent: the agent stays a background supporter ('I agree we need a target today') rather than proposing a high-visibility plan of its own, matching the SP's steer-without-becoming-the-face posture, though the leading-question tactic is absent."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "f3ec4a95",
+   "phase": "day_vote",
+   "player_role": "investigator",
+   "sp_key": "7b6516cc-5f7",
+   "sp_action": "If you have high credibility from a previous correct call and find a new evil, push the accusation immediately. Proactiv",
+   "decision": "vote: player_1 (own night-1 investigation: wolf)",
+   "verdict": "enacted",
+   "why": "The SP's operative advice is to push/vote out the evil your investigation found; the agent voted its confirmed wolf, though the SP's situation premise (credibility from a PRIOR correct call) did not hold on day 2."
+  },
+  {
+   "game_file": "v6ab_sksp.jsonl",
+   "game_id": "94b6a0e3",
+   "phase": "day_vote",
+   "player_role": "serial_killer",
+   "sp_key": "2e485a95-fcd",
+   "sp_action": "When a major conflict arises that you are not part of (e.g., a claimed Investigator vs. their target), use your vote to ",
+   "decision": "vote: player_9 (got 6/7 votes)",
+   "verdict": "enacted",
+   "why": "SP branch A is 'align with the emerging majority to blend in'; player_9 drew 6 of 7 votes, so the SK's vote rode the consensus exactly as claimed."
+  },
+  {
+   "game_file": "v6ab_townsp.jsonl",
+   "game_id": "213a8d16",
+   "phase": "day_discussion",
+   "player_role": "villager",
+   "sp_key": "cab421c3-734",
+   "sp_action": "If a debate becomes overly aggressive and emotional, especially near the endgame, intervene to cool it down. State, 'Thi",
+   "decision": "discussion: intervenes in player_9/player_4 clash, calls it a smokescreen",
+   "verdict": "enacted",
+   "why": "The agent stepped into the heated two-player conflict, framed the aggression as cover for the killers, and refocused the room - a plausible instance of the SP's cool-the-emotional-debate intervention, minus the verbatim evidence restatement."
+  }
+ ],
+ "counts": {
+  "enacted": 13,
+  "not_enacted": 2,
+  "unjudgeable": 0,
+  "orphan": 0
+ },
+ "bound": "k=2 not_enacted in n=15. Rule of three applies only at k=0 (95% upper bound = 3/n = 20%); for k=2 the exact one-sided 95% Clopper-Pearson upper bound is BetaInv(0.95; k+1, n-k) = BetaInv(0.95; 3, 13) = 36.3%. Point estimate 13.3% wrong-signed follow attributions; both misses are same-shaped (agent claims 'follow' on an aggressive-speech SP, then passes or speaks conciliatorily)."
+}

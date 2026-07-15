@@ -1,9 +1,11 @@
 # Prompt caching — how it works in the pipeline
 
-**Orientation.** The pipeline caches exactly **one** thing: the shared game-transcript prefix of
+**Orientation.** The live pipeline caches exactly **one** thing: the shared game-transcript prefix of
 post-game extraction, via *explicit* Vertex context caching. Everything else — every in-game agent
-turn — pays full input price, by deliberate decision. This doc states what holds today and why;
-the path that got here (what was hoped, measured, and dropped) is the companion
+turn — pays full input price, by deliberate decision. (A second, probe-stage consumer exists as of
+2026-07-13: the tell detector caches its per-(game, channel) prefix **by default** — adopted after
+a golden accuracy-parity check; see *Verification*, gap 0, and the log's §⑤a–⑤b.) This doc states what holds today and
+why; the path that got here (what was hoped, measured, and dropped) is the companion
 [experiment_log.md](experiment_log.md).
 
 Companion code: extraction fan-out [`Agents/memory/extraction/extraction_agent.py`](../../Agents/memory/extraction/extraction_agent.py),
@@ -85,6 +87,17 @@ reproducible probes in [`scripts/`](scripts/):
 Live confirmation: the per-cell extractor runs with `cache_prefix=True` and reports **~97% cache_read**
 across the 11-cell fan-out (`prefix_cache.py`).
 
+**Added 2026-07-13 — a second consumer verified the mechanism and found a new cost.** The tell
+detector ([`../extraction/tell_extraction/scripts/detector_probe.py`](../extraction/tell_extraction/scripts/detector_probe.py)
+`--cache`, opt-in) caches its per-(game, channel) rules+transcript+checklist prefix (~5.5–8k tokens,
+9 per-player reuses):
+
+| question | measured result |
+|---|---|
+| Does the extraction mechanism transfer? | **Yes** — `cache_read = 5,374` of 5,716 input tokens (94%) on a real game prefix; create/reference/delete clean; uncached fallback on any failure. |
+| Is cache-bound serving **bit-deterministic** at temp 0? | **No — and neither is anything else** (superseded same-day by the §⑤a matrix): uncached+low self-agrees at 0.90–1.00 (occasionally exact), cached+low at 0.56–0.77, cached+minimal 0.83, uncached+minimal 0.67. Caching *degrades* stability; it isn't the sole source. |
+| Where did the detector's surprise cost live? | `output_token_details.reasoning` = **1,051 tokens/call** at `thinking_level="low"` (1,024 budget, saturated) — billed at output rates and invisible to input-only cost estimates. |
+
 ---
 
 ## Evidence — verdict, then forensics
@@ -108,7 +121,21 @@ reuse-count economics in *Model*. The two design conclusions that follow:
 
 ---
 
-## Known gaps (criticality-ordered; freshness 2026-06-25)
+## Known gaps (criticality-ordered; freshness 2026-06-25, gap 0 added 2026-07-13)
+
+0. **No temp-0 configuration is bit-deterministic; caching makes it worse** (measured 2026-07-13,
+   detector probe, full 2×2 in the log §⑤a). Identical-run row agreement: uncached+low **0.90–1.00**
+   (occasionally exact — an early 1.00 was overgeneralized into a determinism claim, since
+   corrected), cached+low 0.56–0.77, cached+minimal 0.83, uncached+minimal 0.67. The Option-C escape
+   (cached + `minimal` thinking) was probed and **rejected on accuracy**: minimal-thinking variants
+   scored 0 true-positive golden days vs the low-thinking baseline's 2 (N=6 cells,
+   direction-grade) — the saturated ~1k reasoning tokens are doing the detection work. Severity:
+   **medium, consumer-dependent** — irrelevant to extraction (temp 1.0, no determinism claim; live
+   `cache_prefix=True` stands). Standing consequence for the detector (revised ⑤b, same day): the golden accuracy-parity
+   check passed (cached union = 0.83/77% vote, 0.93/87% discussion vs 0.77/77%, 0.93/87%
+   uncached), so the standing config is **cached + low** — the stability gap is real but scores
+   as noise, and reproducibility lives in the stored detection artifacts (goldens certify a
+   stored run, re-runs are new samples), not in the model.
 
 1. **The extraction reorder's output-neutrality is unvalidated.** Caching requires a role-agnostic
    prefix, so the extraction prompt ships **transcript-first / perspective-last** rather than the older
@@ -137,6 +164,7 @@ reuse-count economics in *Model*. The two design conclusions that follow:
 ## Provenance
 
 - Investigation dates: 2026-06-06 (analysis) → 2026-06-08 (measurement). Consolidated 2026-06-25.
+  Detector-consumer postscript (94% cache_read; determinism finding) measured 2026-07-13.
 - Backend/model under test: `gemini-3.1-flash-lite`, Vertex, location `global` (the live game config).
 - Probes: [`scripts/`](scripts/) (run `PYTHONPATH=. .venv/bin/python evidence/caching/scripts/<probe>.py`).
 - Live enforcement: `ExtractionConfig.cache_prefix=True` (`config.py:73`) → `orchestrator.py:432` →

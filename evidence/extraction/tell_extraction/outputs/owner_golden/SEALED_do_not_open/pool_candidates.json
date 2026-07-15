@@ -1,0 +1,1693 @@
+[
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_166",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I will vote for whoever is the first to actually commit to a target with a clear reason, because even a misguided vote is better than another day of silence."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_176",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 2, you said voting was unanimous yesterday, but did you notice anyone shifting their stance right before the final vote was cast?"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I'm carefully reviewing the past voting patterns to see if anyone's alignment shifted suspiciously."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_412",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We have to break this cycle. Constant abstention is handing the win to the wolves and the SK."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_95",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree with player 2 that we need a concrete test. If we don't have enough to vote with certainty, we should at least agree on a criteria"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_14",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I'm carefully reviewing the past voting patterns to see if anyone's alignment shifted suspiciously."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "Does anyone have a specific, measurable reason to target a player based on the voting records from the previous days?"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_382",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We need to start looking at who has been consistently pushing for inaction or trying to steer us away from specific players."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_398",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I agree with focusing on consistency in behavior rather than just voting patterns alone."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_426",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "It is good to have some clarity after last night, even if the circumstances were chaotic."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_106",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "Everyone here, including yourself, has participated in the same cycle of abstention, yet you only choose to single me out now."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_116",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "Player 5, that is a baseless accusation. Just because I proposed caution doesn't make me a wolf."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_21",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "If you have any real reason to suspect me, lay it out, otherwise you're just deflecting from your own lack of contribution."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_332",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "Player 1, if you are looking for a concrete target, consider player 9. ... their push to force a vote while keeping their own hands clean"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_335",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We have all been playing cautiously given the lack of concrete leads"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_67",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "labeling me as a wolf without any evidence is exactly the kind of disruptive behavior that helps the actual threats hide."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_380",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_6 voted for player_9"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_398",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I agree with the focus on caution, but we should also think about whether the remaining wolf might try to push for an early"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "consider player 9. While they talk about ending the cycle, their suggestions have consistently been vague calls to action without actually naming anyone themselves."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_42",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I agree with the focus on caution, but we should also think about whether the remaining wolf might try to push for an early"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "1b8bb2ee-ed67-4baa-9de1-0fa6f6cb321a",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_426",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I agree with the focus on caution, but we should also think about whether the remaining wolf might try to push for an early"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_106",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, saying you wanted to be 'cautious' is exactly what someone avoiding scrutiny would say while we lose roles."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_116",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, questioning why the serial killer's targets are shielded is a classic redirection tactic."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_118",
+  "days": [
+   3,
+   4
+  ],
+  "quotes": {
+   "3": "Since the majority of us abstained, we were all basically playing it safe.",
+   "4": "I voted for player 8 because the momentum was clearly shifting that way and I wanted to be part of the consensus to avoid being an outlier."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_218",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I voted for player 8 because the momentum was clearly shifting that way and I wanted to be part of the consensus to avoid being an outlier."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_23",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we need to scrutinize the voting history now, but we have to be careful about pinning blame on abstainers"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_332",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, you are pivoting from accusing me of silence to labeling my logic as redirection, which is exactly the kind of circular conflict I'm wary of."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_156",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we need to scrutinize the voting history now"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we need to scrutinize the voting history now"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_382",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we need to scrutinize the voting history now, but we have to be careful about pinning blame on abstainers"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_39",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, you are placing a lot of emphasis on my silence to deflect from the fact that you have been driving the most aggressive narratives"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_398",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "watching how everyone reacts to the pressure of finding the killer seems like the most logical path forward."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, saying you wanted to be 'cautious' is exactly what someone avoiding scrutiny would say while we lose roles."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_42",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Since we have no other leads, watching how everyone reacts to the pressure of finding the killer seems like the most logical path forward."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_426",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Since we have no other leads, watching how everyone reacts to the pressure of finding the killer seems like the most logical path forward."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_56",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, questioning why the serial killer's targets are shielded is a classic redirection tactic."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_180",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "player_2, you initiated the focus on the voting history, but you also voted for player_8 yourself. Why should we view your current concern as genuine"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_247",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We need to look closely at everyone who abstained or failed to push for player_1's elimination yesterday, as that caution might be covering for their alignment."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We need to look closely at everyone who abstained or failed to push for player_1's elimination, as that caution might be covering for their alignment."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_285",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 7, you've been avoiding the discourse. Remaining passive is the easiest way for a wolf to blend in."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_332",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "player_2, you initiated the focus on the voting history, but you also voted for player_8 yourself. Why should we view your current concern as genuine?"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_36",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "I am ready to review how you and player 7 voted on every single day to see who stood in the way of village progress."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We need to look closely at everyone who abstained or failed to push for player_1's elimination yesterday, as that caution might be covering for their alignment."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   4,
+   5
+  ],
+  "quotes": {
+   "5": "I need to know why that was, as it's the most concrete data point we have left.",
+   "4": "player_9 voted for player_2"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_426",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_9 voted for abstain"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "49137931-55a2-4d77-afdf-cd4d524aa85e",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_459",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Why should we view your current concern as genuine rather than an attempt to shift blame now that the village is dwindling?"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "4f416ff8-1c78-45f5-b789-cc9c7a687f79",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_5 voted for abstain"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "4f416ff8-1c78-45f5-b789-cc9c7a687f79",
+  "player": "player_5",
+  "channel": "vote",
+  "tell_id": "vote_238",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_5 voted for player_7"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "4f416ff8-1c78-45f5-b789-cc9c7a687f79",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_0",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_6 voted for player_8"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "4f416ff8-1c78-45f5-b789-cc9c7a687f79",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_14",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_6 voted for player_8"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "4f416ff8-1c78-45f5-b789-cc9c7a687f79",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_380",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_6 voted for player_8"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "discussion",
+  "tell_id": "disc_20",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Since we know player_8 is our healer, we have at least one confirmed role."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "vote",
+  "tell_id": "vote_194",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Let's look at the voting or lack thereof yesterday; did anyone attempt to push for a lynch that might indicate they were trying to hide something"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "vote",
+  "tell_id": "vote_398",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Let's look at the voting or lack thereof yesterday; did anyone attempt to push for a lynch that might indicate they were trying to hide something"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "vote",
+  "tell_id": "vote_426",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_4 voted for abstain"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_4",
+  "channel": "vote",
+  "tell_id": "vote_82",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I want to refocus us: we have two confirmed deaths and a clear threat in the serial killer. Let's look at the voting"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "discussion",
+  "tell_id": "disc_24",
+  "days": [
+   1
+  ],
+  "quotes": {
+   "1": "Perhaps we should just keep an open mind and see who starts pushing for specific targets once the first night concludes."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "discussion",
+  "tell_id": "disc_332",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_4, that was a very strange slip of the tongue. Why would you specifically name me when you don't have that information?"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_39",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_4, that was a very strange slip of the tongue. Why would you specifically name me when you don't have that information?"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "It makes me wonder if you are trying to stir up trouble or just fishing for a reaction."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_51",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Why would you specifically name me when you don't have that information? It makes me wonder if you are trying to stir up trouble"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v1"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_673",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_8 voted for player_4"
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "a9ef7f4b-5a58-49df-ae11-469f45d84014",
+  "player": "player_8",
+  "channel": "vote",
+  "tell_id": "vote_79",
+  "days": [
+   1
+  ],
+  "quotes": {
+   "1": "Perhaps we should just keep an open mind and see who starts pushing for specific targets once the first night concludes."
+  },
+  "sources": [
+   "cached_union",
+   "heldout_v3split"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_106",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "Player 7, calling my caution 'hesitance' ignores the fact that I was actively analyzing the board while you were merely pushing for any outcome to end the game."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_116",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "Player 7, calling my caution 'hesitance' ignores the fact that I was actively analyzing the board while you were merely pushing for any outcome to end the game."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_176",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I'm going to re-read the voting logs to see who exactly joined in the final surge to confirm if it was truly a coordinated effort"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_208",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "That kind of frantic behavior is exactly what shifts focus away from real threats."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_23",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I agree with focusing on the voting record, as that's the most concrete data we have left."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I think we should focus on the voting record of Day 3 specifically; whoever initiated or steered the vote against the vigilante, player_2, effectively crippled our defense."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "discussion",
+  "tell_id": "disc_36",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I have been trying to weigh everyone's voting patterns, and honestly, the remaining players seem to have all been part of those confusing abstention cycles."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_14",
+  "days": [
+   3,
+   4
+  ],
+  "quotes": {
+   "3": "player_6 voted for player_4",
+   "4": "player_6 voted for player_1"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "Player 7, calling my caution 'hesitance' ignores the fact that I was actively analyzing the board while you were merely pushing for any outcome"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_6 voted for abstain"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_382",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "Player 7 has been consistently pushing to keep the village in flux, which is exactly the kind of chaos that a wolf thrives in."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "Player 7 has been consistently pushing to keep the village in flux, which is exactly the kind of chaos that a wolf thrives in."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_6",
+  "channel": "vote",
+  "tell_id": "vote_48",
+  "days": [
+   5
+  ],
+  "quotes": {
+   "5": "Player 7, calling my caution 'hesitance' ignores the fact that I was actively analyzing the board while you were merely pushing for any outcome"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_166",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We need a concrete target today to avoid another night of losses."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_176",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "maybe we should analyze who started the trend of stalling, rather than just pointing fingers at player_4's skepticism."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_335",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "I waited because I wanted to ensure I wasn't just following a potential wolf-driven pile-on."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "discussion",
+  "tell_id": "disc_412",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we can't keep abstaining. Looking at the day 2 votes, the majority of us chose to abstain, which effectively stalled our progress."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_14",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we can't keep abstaining. Looking at the day 2 votes, the majority of us chose to abstain"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_158",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we can't keep abstaining. Looking at the day 2 votes, the majority of us chose to abstain"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_2",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "player_9 voted for abstain"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_380",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "player_9 voted for player_3"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_405",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "I agree that we can't keep abstaining."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "bff31a5b-0a33-4149-a7b0-582de8734084",
+  "player": "player_9",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "Player 3, your reasoning about waiting to avoid a pile-on is understandable, but it also describes exactly how a killer might operate"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_106",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "If you were the investigator, why wait for the village to be this desperate to speak up?"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_116",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "It looks much more like you are trying to manipulate the vote to save your own skin."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_140",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "If you really had those results, why wait until now to reveal them?"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_21",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "If you have a specific, evidence-based reason to suspect someone right now, please share it."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_335",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "My 'caution' is just a suggestion to keep us from hurting ourselves this early."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_530",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "This feels like a blatant attempt to force a lynch based on unverified information to suit your own agenda."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "discussion",
+  "tell_id": "disc_67",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "It looks much more like you are trying to manipulate the vote to save your own skin."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_120",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I'm not trying to set rules, just expressing how I see things to avoid reckless lynches."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_39",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_2 voted for player_4"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_2 voted for player_4"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_42",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Since we don't have enough data to pin anyone down, I'd suggest we keep a close eye on who might try to steer the group"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_426",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "I'm not trying to set rules, just expressing how I see things to avoid reckless lynches."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_2",
+  "channel": "vote",
+  "tell_id": "vote_56",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_2 voted for player_4"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_176",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_4 was the only one who didn't abstain yesterday, which makes them either the most committed to finding wolves or the most desperate to manipulate the lynch."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_180",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_4 was the only one who didn't abstain yesterday, which makes them either the most committed to finding wolves... Let's re-examine that specific vote."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_23",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "We have to stop guessing based on personality and start looking at the gaps."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_283",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "Let's re-examine that specific vote."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_36",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "Let's re-examine that specific vote."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "discussion",
+  "tell_id": "disc_95",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "let's just agree that whoever initiates the first real lynch vote needs to provide a clear, evidence-based reason for it."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_272",
+  "days": [
+   3
+  ],
+  "quotes": {
+   "3": "player_3 voted for player_2"
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_398",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "We're spinning our wheels. Player 2 and Player 4, your back-and-forth about who is steering the room isn't helping us find the wolves."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_41",
+  "days": [
+   4
+  ],
+  "quotes": {
+   "4": "The investigator specifically singled you out, and as we know, the serial killer is a lone wolf playing their own game."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ },
+ {
+  "game_id": "f7d9b589-40cc-4fb9-b874-16727f148296",
+  "player": "player_3",
+  "channel": "vote",
+  "tell_id": "vote_82",
+  "days": [
+   2
+  ],
+  "quotes": {
+   "2": "Let's just agree that whoever initiates the first real lynch vote needs to provide a clear, evidence-based reason for it."
+  },
+  "sources": [
+   "cached_union"
+  ]
+ }
+]

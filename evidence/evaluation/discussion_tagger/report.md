@@ -5,7 +5,7 @@
 > covers *what it extracts, what depends on it, and how far to trust it* — a companion to the
 > [`../loop/report.md`](../loop/report.md) apparatus report, which frames the same tagger inside the
 > compounding-slope machinery. Design lineage + current mechanism:
-> [`../../metrics/discussion_tagger/`](../../metrics/discussion_tagger/) (report.md + experiment_log.md);
+> [`../../discussion_tagger/`](../../discussion_tagger/) (report.md + experiment_log.md);
 > frozen design + run records: [`../../v7_final/`](../../v7_final/).
 > Lens + skeleton: [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
@@ -13,6 +13,13 @@
 > verdict predicts the win beyond the vote proxy (wolf +0.56 / SK +0.60, N=24), survives blinding and
 > a verbosity control, and its outcome-leak is negligible (N=6). But it is correlational, single-epoch,
 > uncalibrated at the per-field level, and one residual night-leak is untested.
+>
+> **2026-07-11 — consumer change (wiring pending):** the read/tactic credit redesign
+> ([`../../discussion_tagger/read_tactic_credit_redesign.md`](../../discussion_tagger/read_tactic_credit_redesign.md))
+> retires the tagger's credit role — `credit.py::_tagger_ledger` and the night read-quality override
+> become diagnostic-only; day-discussion credit moves to the day-vote endpoint + move-grain advocacy.
+> The tagger remains exactly what this verdict says it is: a validated deceiver-skill *diagnostic*.
+> The trust findings below are unaffected.
 
 ## Objective the apparatus targets
 
@@ -63,7 +70,7 @@ merit the vote proxy is blind to — which is exactly why its trust matters.
   wolf SP/obs A/B, which has never been run. The retracted "+0.556" halo was a *different quantity*
   (undifferenced **town** credit-level), not this wolf/SK correlation-with-win, so there is no
   contradiction; the retest's +0.02 town row agrees with that retraction.
-- **⚠️ Per-field accuracy is designed but not persisted.** `evidence/v7_final/tagger_accuracy.py` cross-
+- **⚠️ Per-field accuracy is designed but not persisted.** `evidence/v7_final/discussion_credit/tagger_accuracy.py` cross-
   checks `role_reveal` against a deterministic self-claim detector and the day-summary prose, and prints
   `framing`/`credibility` distributions by faction — but it writes to stdout only, so **no per-field
   accuracy number is on record** and none is cited here. On the v6ab validation epoch the structured
@@ -104,10 +111,10 @@ evidence, per the freeze rule.
   `evaluation/src/loop/credit.py::_tagger_ledger` (its consumer); tests `tests/test_tagger_inputs.py`
   (forced-failure counter + `strict` re-raise + cache provenance).
 - **L2 artifacts (pointed-at, the tagger's KEY proof):**
-  [`../../v7_final/v2_full/tagger_skill_retest.py`](../../v7_final/v2_full/tagger_skill_retest.py)
+  [`../../v7_final/runs/v2_full/tagger_skill_retest.py`](../../v7_final/runs/v2_full/tagger_skill_retest.py)
   (N=24 blinded + verbosity retest) and
-  [`tagger_deleak_ablation.py`](../../v7_final/v2_full/tagger_deleak_ablation.py) (N=6 2×2);
-  the accuracy check [`../../v7_final/tagger_accuracy.py`](../../v7_final/tagger_accuracy.py). The durable
+  [`tagger_deleak_ablation.py`](../../v7_final/runs/v2_full/tagger_deleak_ablation.py) (N=6 2×2);
+  the accuracy check [`../../v7_final/discussion_credit/tagger_accuracy.py`](../../v7_final/discussion_credit/tagger_accuracy.py). The durable
   numbers live in `../../v7_final/experiment_log.md` §12g (the `*_results.json` appear on next execution).
   Hardening context: [`../hardening_pass/experiment_log.md`](../hardening_pass/experiment_log.md) §2.3, §4.2–4.4.
 

@@ -1,0 +1,8 @@
+[
+ {"case_id": "pos_2", "days": [2], "notes": "Day 2: player_2 never spoke in the discussion yet abstained with the unanimous room; Day 3 they voted player_8 and were vocal, Day 4 dead."},
+ {"case_id": "pos_4", "days": [3], "notes": "Day 3: player_1 spent discussion analyzing player_2's role in the Day-2 abstention/stalemate (procedural delay) then voted player_2; Day 4 player_6 analysis was about the investigator claim, not delays."},
+ {"case_id": "pos_7", "days": [3, 4], "notes": "Day 3: player_9 pushed analyzing player_4's voting history for alignment/steering; Day 4: pushed examining yesterday's voting patterns for who hesitated/hid; Day 2 concerned the healer save, not voting records."},
+ {"case_id": "pos_14", "days": [3], "notes": "Day 3: player_5 questioned accuser player_8's logic and motives ('most desperate to point fingers') then voted player_8; Day 4 questioning of player_7 was mild/deferential and the vote went to the accused player_6, not the questioned accuser."},
+ {"case_id": "neg_2", "days": [3], "notes": "Day 3: player_8 interrogated player_2 over the Day-2 abstention/'avoiding a vote again' (prior voting conduct) then voted player_2; borderline on 'switches' but interrogate-then-vote pattern present; Day 2 abstained, Day 4 dead."},
+ {"case_id": "neg_8", "days": [], "notes": "Player_3 appears only Day 2 and merely urged monitoring vote-shift patterns; never advocated a concrete metric or threshold for voting."}
+]

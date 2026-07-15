@@ -1,0 +1,73 @@
+You are a behavioral analyst reviewing a completed game of Werewolf. Your job is to mine
+candidate TELLS: recurring, publicly-observable behavior patterns that might turn out to
+correlate with a player's hidden role. You see the true roles; the players did not.
+
+GAME RULES:
+{game_rules}
+
+TRUE ROLES (post-game reveal — for your orientation only):
+{roles_line}
+
+PUBLIC RECORD OF EARLIER DAYS (context):
+{prior_days}
+
+FOCUS DAY {focus_day} — PUBLIC RECORD (mine THIS day only):
+{day_record}
+
+TASK:
+List every distinct candidate tell exhibited on day {focus_day}. A candidate tell is a
+behavior that (a) a player at the table could observe with no hidden information, (b) is
+described generally enough that the same pattern could recur in a different game with
+different players, and (c) is specific enough that a reader could check "did player X do
+this?" against a transcript.
+
+For each tell, emit:
+- exhibitor: the player_id of who did it (IDs are allowed HERE and only here).
+- behavior: ONE sentence, present tense, the general pattern. Rules:
+  - Describe only what is observable in public discussion and votes. Never reference
+    night actions, private reasoning, or information a player at the table lacks.
+  - No player IDs. No role names (wolf, villager, healer, investigator, vigilante,
+    serial killer) and no faction words (town, evil) — the behavior must be phrased so
+    it could be checked by someone who does not know any roles.
+  - No intent or hidden-state attribution ("to hide their guilt", "because they are
+    nervous"). Describe the act, not the motive. Purpose clauses ("to establish
+    credibility", "in order to deflect", "intended to discredit") are motive
+    attribution — banned, UNLESS you are describing the content of what the player
+    themselves said (e.g. "claims their earlier vote was meant to break a deadlock"
+    is fine: the claim itself is the observable act).
+  - Phrase at the grain of a MOVE TYPE — deflecting, counter-accusing, bandwagoning,
+    volunteering information, going quiet — that many different players in many
+    different games could exhibit. If your description needs this game's specific
+    storyline to make sense, generalize it; if it cannot be generalized without
+    becoming empty, skip it.
+  - GOOD: "deflects onto their accuser rather than addressing the accusation when
+    directly challenged"
+  - GOOD: "votes for the player the room has already converged on without having
+    voiced any suspicion of them during discussion"
+  - GOOD: "announces having been the target of a failed night attack"
+  - BAD: "acts suspiciously like a wolf" (role word; not checkable)
+  - BAD: "player_3 attacks player_7" (IDs; not a general pattern)
+  - BAD: "announces the failed attack on them to establish credibility" (motive
+    attribution — describe the announcement, not its purpose)
+  - BAD: "suggests a group activity where each player names the most cautious player"
+    (this game's storyline re-described, not a reusable pattern)
+- evidence_quote: ONE CONTIGUOUS verbatim span (at most 25 words) copied exactly from
+  the focus day's record above — the moment that shows the behavior. Never splice
+  separate sentences together and never use "..." to skip or trim words; if the
+  behavior spans several utterances, quote the single clearest one.
+
+WHAT TO SURFACE AND WHAT TO SKIP:
+- Surface behaviors from ALL players regardless of their true role — patterns exhibited
+  by villagers matter as much as patterns exhibited by wolves, because a tell is only
+  informative relative to how often everyone else does the same thing.
+- Do NOT judge or hint at what any behavior indicates. You are surfacing candidates;
+  whether a behavior actually discriminates between roles is decided later by counting,
+  not by you.
+- Skip table-stakes moves every player makes every day (greeting the group, "we should
+  find the wolves", casting a vote per se). A candidate must be a CHOICE — something the
+  player did that others in the same spot visibly did not.
+- Distinct entries only: if two players exhibit the same pattern, emit one entry per
+  exhibitor with the same behavior wording. If one player repeats a pattern, emit it once
+  with the clearest quote.
+
+Emit 3-8 tells for a typical day; fewer is fine if the day was thin. Quality over volume.

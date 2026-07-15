@@ -1,0 +1,2316 @@
+{
+ "provenance": {
+  "games": 60,
+  "arms": "v6ab memory arms: 12 PAIRED boards x 5 arms (same casts; arms are behaviorally distinct games but not fully independent samples)",
+  "detector": "det_v1 full-view UNION det_v2 split-view (temp-golden grade)",
+  "status": "PROVISIONAL \u2014 owner golden pending",
+  "shrink_k": 5,
+  "prior": 0.3333333333333333
+ },
+ "tells": [
+  {
+   "tell_id": "disc_530",
+   "channel": "disc",
+   "text": "A player who is being accused of holding a hostile role counter-accuses their accuser of using the role claim as a distraction to protect themselves.",
+   "n": 30,
+   "evil": 27,
+   "raw_share": 0.9,
+   "shrunk_share": 0.8190476190476191,
+   "shrunk_lift": 0.4857142857142858,
+   "roles": {
+    "serial_killer": 6,
+    "wolf": 21,
+    "investigator": 2,
+    "villager": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.005555555555555556,
+    "wolf": 0.175,
+    "serial_killer": 0.1,
+    "healer": 0.0,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_284",
+   "channel": "disc",
+   "text": "A player discourages the group from relying solely on voting records, suggesting that such analysis may be a distraction or ineffective.",
+   "n": 48,
+   "evil": 41,
+   "raw_share": 0.8541666666666666,
+   "shrunk_share": 0.8050314465408804,
+   "shrunk_lift": 0.4716981132075471,
+   "roles": {
+    "wolf": 30,
+    "serial_killer": 11,
+    "vigilante": 3,
+    "investigator": 1,
+    "healer": 2,
+    "villager": 1
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.005555555555555556,
+    "wolf": 0.25,
+    "serial_killer": 0.18333333333333332,
+    "healer": 0.03333333333333333,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_67",
+   "channel": "disc",
+   "text": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior.",
+   "n": 76,
+   "evil": 60,
+   "raw_share": 0.7894736842105263,
+   "shrunk_share": 0.7613168724279835,
+   "shrunk_lift": 0.4279835390946502,
+   "roles": {
+    "serial_killer": 15,
+    "wolf": 45,
+    "villager": 6,
+    "vigilante": 2,
+    "investigator": 7,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.03333333333333333,
+    "wolf": 0.375,
+    "serial_killer": 0.25,
+    "healer": 0.016666666666666666,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_111",
+   "channel": "disc",
+   "text": "Defends a past voting record against a player now known to be the investigator by characterizing it as a simple act of breaking a stalemate.",
+   "n": 12,
+   "evil": 11,
+   "raw_share": 0.9166666666666666,
+   "shrunk_share": 0.7450980392156863,
+   "shrunk_lift": 0.411764705882353,
+   "roles": {
+    "wolf": 8,
+    "serial_killer": 3,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.06666666666666667,
+    "serial_killer": 0.05,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_380",
+   "channel": "vote",
+   "text": "votes for a player who is not the primary candidate around whom the room's consensus has converged.",
+   "n": 70,
+   "evil": 52,
+   "raw_share": 0.7428571428571429,
+   "shrunk_share": 0.7155555555555555,
+   "shrunk_lift": 0.3822222222222222,
+   "roles": {
+    "wolf": 37,
+    "serial_killer": 15,
+    "villager": 8,
+    "vigilante": 3,
+    "healer": 3,
+    "investigator": 4
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.044444444444444446,
+    "wolf": 0.30833333333333335,
+    "serial_killer": 0.25,
+    "healer": 0.05,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_46",
+   "channel": "vote",
+   "text": "votes for a player immediately after they express suspicion toward the voter's own previous voting record.",
+   "n": 27,
+   "evil": 21,
+   "raw_share": 0.7777777777777778,
+   "shrunk_share": 0.7083333333333334,
+   "shrunk_lift": 0.37500000000000006,
+   "roles": {
+    "wolf": 14,
+    "serial_killer": 7,
+    "villager": 3,
+    "healer": 2,
+    "investigator": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.016666666666666666,
+    "wolf": 0.11666666666666667,
+    "serial_killer": 0.11666666666666667,
+    "healer": 0.03333333333333333,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_118",
+   "channel": "disc",
+   "text": "defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock.",
+   "n": 84,
+   "evil": 61,
+   "raw_share": 0.7261904761904762,
+   "shrunk_share": 0.7041198501872659,
+   "shrunk_lift": 0.37078651685393255,
+   "roles": {
+    "wolf": 40,
+    "serial_killer": 21,
+    "villager": 12,
+    "healer": 7,
+    "vigilante": 4
+   },
+   "role_rates": {
+    "vigilante": 0.06666666666666667,
+    "villager": 0.06666666666666667,
+    "wolf": 0.3333333333333333,
+    "serial_killer": 0.35,
+    "healer": 0.11666666666666667,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_116",
+   "channel": "disc",
+   "text": "deflects onto their accuser rather than addressing the substance of the accusation when directly challenged.",
+   "n": 75,
+   "evil": 53,
+   "raw_share": 0.7066666666666667,
+   "shrunk_share": 0.6833333333333333,
+   "shrunk_lift": 0.35000000000000003,
+   "roles": {
+    "serial_killer": 19,
+    "vigilante": 5,
+    "wolf": 34,
+    "investigator": 9,
+    "villager": 5,
+    "healer": 3
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.027777777777777776,
+    "wolf": 0.2833333333333333,
+    "serial_killer": 0.31666666666666665,
+    "healer": 0.05,
+    "investigator": 0.15
+   }
+  },
+  {
+   "tell_id": "disc_110",
+   "channel": "disc",
+   "text": "Deflects from direct suspicion of a specific past voting record by claiming that criticizing those who voted is unproductive.",
+   "n": 15,
+   "evil": 12,
+   "raw_share": 0.8,
+   "shrunk_share": 0.6833333333333333,
+   "shrunk_lift": 0.35000000000000003,
+   "roles": {
+    "wolf": 8,
+    "serial_killer": 4,
+    "healer": 1,
+    "villager": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.011111111111111112,
+    "wolf": 0.06666666666666667,
+    "serial_killer": 0.06666666666666667,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_140",
+   "channel": "disc",
+   "text": "A player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion.",
+   "n": 42,
+   "evil": 30,
+   "raw_share": 0.7142857142857143,
+   "shrunk_share": 0.6737588652482269,
+   "shrunk_lift": 0.3404255319148936,
+   "roles": {
+    "serial_killer": 8,
+    "wolf": 22,
+    "villager": 8,
+    "healer": 1,
+    "vigilante": 3
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.044444444444444446,
+    "wolf": 0.18333333333333332,
+    "serial_killer": 0.13333333333333333,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_103",
+   "channel": "disc",
+   "text": "A player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process.",
+   "n": 41,
+   "evil": 29,
+   "raw_share": 0.7073170731707317,
+   "shrunk_share": 0.6666666666666667,
+   "shrunk_lift": 0.3333333333333334,
+   "roles": {
+    "investigator": 1,
+    "wolf": 20,
+    "vigilante": 2,
+    "healer": 4,
+    "serial_killer": 9,
+    "villager": 5
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.027777777777777776,
+    "wolf": 0.16666666666666666,
+    "serial_killer": 0.15,
+    "healer": 0.06666666666666667,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_106",
+   "channel": "disc",
+   "text": "When directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior.",
+   "n": 51,
+   "evil": 35,
+   "raw_share": 0.6862745098039216,
+   "shrunk_share": 0.6547619047619048,
+   "shrunk_lift": 0.32142857142857145,
+   "roles": {
+    "investigator": 6,
+    "vigilante": 4,
+    "wolf": 23,
+    "serial_killer": 12,
+    "healer": 4,
+    "villager": 2
+   },
+   "role_rates": {
+    "vigilante": 0.06666666666666667,
+    "villager": 0.011111111111111112,
+    "wolf": 0.19166666666666668,
+    "serial_killer": 0.2,
+    "healer": 0.06666666666666667,
+    "investigator": 0.1
+   }
+  },
+  {
+   "tell_id": "disc_165",
+   "channel": "disc",
+   "text": "A player claims a special role during a public discussion.",
+   "n": 28,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.0505050505050505,
+   "shrunk_lift": -0.2828282828282828,
+   "roles": {
+    "healer": 6,
+    "investigator": 16,
+    "vigilante": 6
+   },
+   "role_rates": {
+    "vigilante": 0.1,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.1,
+    "investigator": 0.26666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_218",
+   "channel": "disc",
+   "text": "The player frames their past voting record as a logical reaction to the behavior of others rather than as a consistent strategy.",
+   "n": 36,
+   "evil": 23,
+   "raw_share": 0.6388888888888888,
+   "shrunk_share": 0.6016260162601627,
+   "shrunk_lift": 0.26829268292682934,
+   "roles": {
+    "wolf": 17,
+    "serial_killer": 6,
+    "villager": 6,
+    "healer": 7
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.03333333333333333,
+    "wolf": 0.14166666666666666,
+    "serial_killer": 0.1,
+    "healer": 0.11666666666666667,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_39",
+   "channel": "vote",
+   "text": "A player casts a vote for someone who publicly questioned them during the discussion phase.",
+   "n": 82,
+   "evil": 50,
+   "raw_share": 0.6097560975609756,
+   "shrunk_share": 0.5938697318007663,
+   "shrunk_lift": 0.260536398467433,
+   "roles": {
+    "investigator": 7,
+    "serial_killer": 17,
+    "villager": 17,
+    "wolf": 33,
+    "healer": 5,
+    "vigilante": 3
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.09444444444444444,
+    "wolf": 0.275,
+    "serial_killer": 0.2833333333333333,
+    "healer": 0.08333333333333333,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_124",
+   "channel": "vote",
+   "text": "Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions.",
+   "n": 13,
+   "evil": 9,
+   "raw_share": 0.6923076923076923,
+   "shrunk_share": 0.5925925925925926,
+   "shrunk_lift": 0.25925925925925924,
+   "roles": {
+    "wolf": 6,
+    "serial_killer": 3,
+    "villager": 2,
+    "vigilante": 1,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.011111111111111112,
+    "wolf": 0.05,
+    "serial_killer": 0.05,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_161",
+   "channel": "vote",
+   "text": "A player votes for a candidate who had just accused them of being the primary driver of a previous controversial elimination.",
+   "n": 12,
+   "evil": 8,
+   "raw_share": 0.6666666666666666,
+   "shrunk_share": 0.5686274509803921,
+   "shrunk_lift": 0.23529411764705882,
+   "roles": {
+    "serial_killer": 3,
+    "villager": 4,
+    "wolf": 5
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.022222222222222223,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.05,
+    "healer": 0.0,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_5",
+   "channel": "vote",
+   "text": "A player who engaged in active discussion against a specific target chooses to abstain from the final vote.",
+   "n": 5,
+   "evil": 4,
+   "raw_share": 0.8,
+   "shrunk_share": 0.5666666666666667,
+   "shrunk_lift": 0.23333333333333334,
+   "roles": {
+    "wolf": 2,
+    "serial_killer": 2,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.03333333333333333,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_208",
+   "channel": "disc",
+   "text": "labels questioning of past meta-strategy as an intentional distraction from finding active threats.",
+   "n": 53,
+   "evil": 31,
+   "raw_share": 0.5849056603773585,
+   "shrunk_share": 0.5632183908045977,
+   "shrunk_lift": 0.22988505747126436,
+   "roles": {
+    "investigator": 7,
+    "healer": 2,
+    "wolf": 23,
+    "villager": 9,
+    "serial_killer": 8,
+    "vigilante": 4
+   },
+   "role_rates": {
+    "vigilante": 0.06666666666666667,
+    "villager": 0.05,
+    "wolf": 0.19166666666666668,
+    "serial_killer": 0.13333333333333333,
+    "healer": 0.03333333333333333,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_231",
+   "channel": "disc",
+   "text": "A player asserts high confidence in an accusation while refusing to disclose the source of their information.",
+   "n": 11,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.10416666666666666,
+   "shrunk_lift": -0.22916666666666666,
+   "roles": {
+    "investigator": 10,
+    "vigilante": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.16666666666666666
+   }
+  },
+  {
+   "tell_id": "vote_3",
+   "channel": "vote",
+   "text": "Votes to eliminate a player after previously arguing that the group should prioritize evidence over rash accusations during the discussion.",
+   "n": 48,
+   "evil": 28,
+   "raw_share": 0.5833333333333334,
+   "shrunk_share": 0.559748427672956,
+   "shrunk_lift": 0.22641509433962265,
+   "roles": {
+    "serial_killer": 10,
+    "wolf": 18,
+    "vigilante": 4,
+    "healer": 4,
+    "villager": 11,
+    "investigator": 1
+   },
+   "role_rates": {
+    "vigilante": 0.06666666666666667,
+    "villager": 0.06111111111111111,
+    "wolf": 0.15,
+    "serial_killer": 0.16666666666666666,
+    "healer": 0.06666666666666667,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_214",
+   "channel": "disc",
+   "text": "Labels the cautious behavior of other players as an intentional rhetorical strategy used to obstruct progress.",
+   "n": 29,
+   "evil": 2,
+   "raw_share": 0.06896551724137931,
+   "shrunk_share": 0.10784313725490195,
+   "shrunk_lift": -0.22549019607843135,
+   "roles": {
+    "vigilante": 3,
+    "villager": 9,
+    "serial_killer": 1,
+    "investigator": 13,
+    "healer": 2,
+    "wolf": 1
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.05,
+    "wolf": 0.008333333333333333,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.03333333333333333,
+    "investigator": 0.21666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_150",
+   "channel": "vote",
+   "text": "votes for the consensus target after having warned against the dangers of group-driven voting patterns earlier in the day.",
+   "n": 20,
+   "evil": 12,
+   "raw_share": 0.6,
+   "shrunk_share": 0.5466666666666666,
+   "shrunk_lift": 0.21333333333333332,
+   "roles": {
+    "serial_killer": 7,
+    "vigilante": 2,
+    "wolf": 5,
+    "healer": 3,
+    "villager": 3
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.016666666666666666,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.11666666666666667,
+    "healer": 0.05,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_56",
+   "channel": "vote",
+   "text": "votes for a player they have been arguing with throughout the entire discussion session.",
+   "n": 101,
+   "evil": 56,
+   "raw_share": 0.5544554455445545,
+   "shrunk_share": 0.5440251572327044,
+   "shrunk_lift": 0.21069182389937108,
+   "roles": {
+    "serial_killer": 21,
+    "wolf": 35,
+    "villager": 22,
+    "vigilante": 8,
+    "investigator": 15
+   },
+   "role_rates": {
+    "vigilante": 0.13333333333333333,
+    "villager": 0.12222222222222222,
+    "wolf": 0.2916666666666667,
+    "serial_killer": 0.35,
+    "healer": 0.0,
+    "investigator": 0.25
+   }
+  },
+  {
+   "tell_id": "disc_104",
+   "channel": "disc",
+   "text": "A player argues that an opponent's reliance on past voting history is a strategy to avoid current scrutiny.",
+   "n": 24,
+   "evil": 14,
+   "raw_share": 0.5833333333333334,
+   "shrunk_share": 0.5402298850574713,
+   "shrunk_lift": 0.20689655172413796,
+   "roles": {
+    "wolf": 12,
+    "vigilante": 1,
+    "villager": 6,
+    "investigator": 2,
+    "serial_killer": 2,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.03333333333333333,
+    "wolf": 0.1,
+    "serial_killer": 0.03333333333333333,
+    "healer": 0.016666666666666666,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_20",
+   "channel": "disc",
+   "text": "Claims a player is a confirmed role without providing evidence from the public record.",
+   "n": 8,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.1282051282051282,
+   "shrunk_lift": -0.20512820512820512,
+   "roles": {
+    "investigator": 8
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.13333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_14",
+   "channel": "vote",
+   "text": "A player casts a vote for someone they did not express any explicit suspicion of during the final day's discussion.",
+   "n": 109,
+   "evil": 59,
+   "raw_share": 0.5412844036697247,
+   "shrunk_share": 0.5321637426900585,
+   "shrunk_lift": 0.1988304093567252,
+   "roles": {
+    "wolf": 39,
+    "serial_killer": 20,
+    "villager": 26,
+    "healer": 12,
+    "vigilante": 8,
+    "investigator": 4
+   },
+   "role_rates": {
+    "vigilante": 0.13333333333333333,
+    "villager": 0.14444444444444443,
+    "wolf": 0.325,
+    "serial_killer": 0.3333333333333333,
+    "healer": 0.2,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_336",
+   "channel": "disc",
+   "text": "A player challenges the neutrality of abstaining from a vote, characterizing the refusal to act as a protection mechanism.",
+   "n": 21,
+   "evil": 2,
+   "raw_share": 0.09523809523809523,
+   "shrunk_share": 0.14102564102564102,
+   "shrunk_lift": -0.1923076923076923,
+   "roles": {
+    "villager": 12,
+    "vigilante": 3,
+    "investigator": 3,
+    "healer": 1,
+    "wolf": 2
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.06666666666666667,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.0,
+    "healer": 0.016666666666666666,
+    "investigator": 0.05
+   }
+  },
+  {
+   "tell_id": "vote_298",
+   "channel": "vote",
+   "text": "A player casts a vote against someone they engaged with in a collaborative discussion immediately prior to the vote.",
+   "n": 2,
+   "evil": 2,
+   "raw_share": 1.0,
+   "shrunk_share": 0.5238095238095238,
+   "shrunk_lift": 0.19047619047619052,
+   "roles": {
+    "wolf": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_152",
+   "channel": "vote",
+   "text": "A player abstains from the vote despite being the subject of an active accusation by an influential player.",
+   "n": 2,
+   "evil": 2,
+   "raw_share": 1.0,
+   "shrunk_share": 0.5238095238095238,
+   "shrunk_lift": 0.19047619047619052,
+   "roles": {
+    "wolf": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_29",
+   "channel": "disc",
+   "text": "Announces having been the target of a failed night attack.",
+   "n": 47,
+   "evil": 6,
+   "raw_share": 0.1276595744680851,
+   "shrunk_share": 0.1474358974358974,
+   "shrunk_lift": -0.1858974358974359,
+   "roles": {
+    "villager": 26,
+    "vigilante": 8,
+    "wolf": 6,
+    "investigator": 7
+   },
+   "role_rates": {
+    "vigilante": 0.13333333333333333,
+    "villager": 0.14444444444444443,
+    "wolf": 0.05,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_36",
+   "channel": "disc",
+   "text": "A player suggests that current voting patterns are the primary indicator of role alignment and requests a re-examination of past records to find patterns.",
+   "n": 40,
+   "evil": 5,
+   "raw_share": 0.125,
+   "shrunk_share": 0.14814814814814814,
+   "shrunk_lift": -0.18518518518518517,
+   "roles": {
+    "villager": 20,
+    "healer": 7,
+    "serial_killer": 5,
+    "investigator": 5,
+    "vigilante": 3
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.1111111111111111,
+    "wolf": 0.0,
+    "serial_killer": 0.08333333333333333,
+    "healer": 0.11666666666666667,
+    "investigator": 0.08333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_335",
+   "channel": "disc",
+   "text": "A player justifies their previous failure to vote as a precautionary measure due to a lack of evidence.",
+   "n": 113,
+   "evil": 59,
+   "raw_share": 0.5221238938053098,
+   "shrunk_share": 0.5141242937853107,
+   "shrunk_lift": 0.18079096045197734,
+   "roles": {
+    "healer": 19,
+    "wolf": 39,
+    "serial_killer": 20,
+    "investigator": 2,
+    "vigilante": 13,
+    "villager": 20
+   },
+   "role_rates": {
+    "vigilante": 0.21666666666666667,
+    "villager": 0.1111111111111111,
+    "wolf": 0.325,
+    "serial_killer": 0.3333333333333333,
+    "healer": 0.31666666666666665,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_48",
+   "channel": "vote",
+   "text": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct.",
+   "n": 37,
+   "evil": 5,
+   "raw_share": 0.13513513513513514,
+   "shrunk_share": 0.15873015873015872,
+   "shrunk_lift": -0.1746031746031746,
+   "roles": {
+    "villager": 25,
+    "serial_killer": 2,
+    "healer": 1,
+    "wolf": 3,
+    "investigator": 4,
+    "vigilante": 2
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.1388888888888889,
+    "wolf": 0.025,
+    "serial_killer": 0.03333333333333333,
+    "healer": 0.016666666666666666,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_167",
+   "channel": "disc",
+   "text": "A player advises caution against making a decision based on the silence or inactivity of others.",
+   "n": 18,
+   "evil": 10,
+   "raw_share": 0.5555555555555556,
+   "shrunk_share": 0.5072463768115941,
+   "shrunk_lift": 0.1739130434782608,
+   "roles": {
+    "wolf": 7,
+    "vigilante": 2,
+    "villager": 4,
+    "healer": 2,
+    "serial_killer": 3
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.022222222222222223,
+    "wolf": 0.058333333333333334,
+    "serial_killer": 0.05,
+    "healer": 0.03333333333333333,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_87",
+   "channel": "vote",
+   "text": "Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase.",
+   "n": 43,
+   "evil": 6,
+   "raw_share": 0.13953488372093023,
+   "shrunk_share": 0.1597222222222222,
+   "shrunk_lift": -0.1736111111111111,
+   "roles": {
+    "villager": 9,
+    "vigilante": 4,
+    "investigator": 24,
+    "wolf": 5,
+    "serial_killer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.06666666666666667,
+    "villager": 0.05,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.0,
+    "investigator": 0.4
+   }
+  },
+  {
+   "tell_id": "disc_449",
+   "channel": "disc",
+   "text": "A player characterizes the act of calling for scrutiny on someone as a tactic for rushing an elimination without evidence.",
+   "n": 29,
+   "evil": 15,
+   "raw_share": 0.5172413793103449,
+   "shrunk_share": 0.4901960784313726,
+   "shrunk_lift": 0.15686274509803927,
+   "roles": {
+    "serial_killer": 4,
+    "vigilante": 5,
+    "wolf": 11,
+    "villager": 7,
+    "healer": 1,
+    "investigator": 1
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.03888888888888889,
+    "wolf": 0.09166666666666666,
+    "serial_killer": 0.06666666666666667,
+    "healer": 0.016666666666666666,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "vote_12",
+   "channel": "vote",
+   "text": "Votes for a player after having abstained from the previous day's vote while defending the importance of caution and accuracy.",
+   "n": 19,
+   "evil": 10,
+   "raw_share": 0.5263157894736842,
+   "shrunk_share": 0.4861111111111111,
+   "shrunk_lift": 0.1527777777777778,
+   "roles": {
+    "wolf": 4,
+    "serial_killer": 6,
+    "healer": 3,
+    "villager": 3,
+    "vigilante": 3
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.016666666666666666,
+    "wolf": 0.03333333333333333,
+    "serial_killer": 0.1,
+    "healer": 0.05,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_126",
+   "channel": "vote",
+   "text": "A player makes a role claim while simultaneously demanding the elimination of another player without providing evidence.",
+   "n": 4,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.18518518518518517,
+   "shrunk_lift": -0.14814814814814814,
+   "roles": {
+    "investigator": 4
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_123",
+   "channel": "vote",
+   "text": "Votes for a player after explicitly dismissing their stated priorities as a distraction earlier in the day.",
+   "n": 11,
+   "evil": 6,
+   "raw_share": 0.5454545454545454,
+   "shrunk_share": 0.47916666666666663,
+   "shrunk_lift": 0.14583333333333331,
+   "roles": {
+    "wolf": 6,
+    "vigilante": 2,
+    "villager": 2,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.011111111111111112,
+    "wolf": 0.05,
+    "serial_killer": 0.0,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_601",
+   "channel": "vote",
+   "text": "A player pivots to an aggressive voting stance for a specific individual after previously advocating for general caution.",
+   "n": 30,
+   "evil": 15,
+   "raw_share": 0.5,
+   "shrunk_share": 0.4761904761904762,
+   "shrunk_lift": 0.1428571428571429,
+   "roles": {
+    "wolf": 9,
+    "serial_killer": 6,
+    "healer": 7,
+    "vigilante": 5,
+    "villager": 3
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.016666666666666666,
+    "wolf": 0.075,
+    "serial_killer": 0.1,
+    "healer": 0.11666666666666667,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_180",
+   "channel": "disc",
+   "text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day.",
+   "n": 45,
+   "evil": 8,
+   "raw_share": 0.17777777777777778,
+   "shrunk_share": 0.19333333333333333,
+   "shrunk_lift": -0.13999999999999999,
+   "roles": {
+    "wolf": 4,
+    "villager": 26,
+    "healer": 6,
+    "vigilante": 3,
+    "serial_killer": 4,
+    "investigator": 2
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.14444444444444443,
+    "wolf": 0.03333333333333333,
+    "serial_killer": 0.06666666666666667,
+    "healer": 0.1,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_83",
+   "channel": "vote",
+   "text": "A player suggests looking for inconsistencies in the voting record while choosing to abstain when the vote occurs.",
+   "n": 50,
+   "evil": 9,
+   "raw_share": 0.18,
+   "shrunk_share": 0.19393939393939394,
+   "shrunk_lift": -0.13939393939393938,
+   "roles": {
+    "serial_killer": 4,
+    "villager": 23,
+    "healer": 8,
+    "wolf": 5,
+    "vigilante": 7,
+    "investigator": 3
+   },
+   "role_rates": {
+    "vigilante": 0.11666666666666667,
+    "villager": 0.12777777777777777,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.06666666666666667,
+    "healer": 0.13333333333333333,
+    "investigator": 0.05
+   }
+  },
+  {
+   "tell_id": "vote_82",
+   "channel": "vote",
+   "text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves.",
+   "n": 24,
+   "evil": 4,
+   "raw_share": 0.16666666666666666,
+   "shrunk_share": 0.1954022988505747,
+   "shrunk_lift": -0.13793103448275862,
+   "roles": {
+    "wolf": 4,
+    "villager": 16,
+    "vigilante": 2,
+    "investigator": 1,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.08888888888888889,
+    "wolf": 0.03333333333333333,
+    "serial_killer": 0.0,
+    "healer": 0.016666666666666666,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "vote_459",
+   "channel": "vote",
+   "text": "votes for a player after specifically questioning the accuser's logic and motives during the discussion phase.",
+   "n": 104,
+   "evil": 49,
+   "raw_share": 0.47115384615384615,
+   "shrunk_share": 0.4648318042813455,
+   "shrunk_lift": 0.1314984709480122,
+   "roles": {
+    "investigator": 4,
+    "wolf": 34,
+    "villager": 37,
+    "serial_killer": 15,
+    "healer": 3,
+    "vigilante": 11
+   },
+   "role_rates": {
+    "vigilante": 0.18333333333333332,
+    "villager": 0.20555555555555555,
+    "wolf": 0.2833333333333333,
+    "serial_killer": 0.25,
+    "healer": 0.05,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_405",
+   "channel": "vote",
+   "text": "initiates a call for ending the practice of abstaining and immediately casts a vote for a specific player when the voting phase begins.",
+   "n": 52,
+   "evil": 10,
+   "raw_share": 0.19230769230769232,
+   "shrunk_share": 0.2046783625730994,
+   "shrunk_lift": -0.1286549707602339,
+   "roles": {
+    "investigator": 6,
+    "wolf": 7,
+    "healer": 6,
+    "villager": 21,
+    "vigilante": 9,
+    "serial_killer": 3
+   },
+   "role_rates": {
+    "vigilante": 0.15,
+    "villager": 0.11666666666666667,
+    "wolf": 0.058333333333333334,
+    "serial_killer": 0.05,
+    "healer": 0.1,
+    "investigator": 0.1
+   }
+  },
+  {
+   "tell_id": "disc_183",
+   "channel": "disc",
+   "text": "A player focuses their argument against another participant by citing that player's history of initiating past group votes.",
+   "n": 8,
+   "evil": 1,
+   "raw_share": 0.125,
+   "shrunk_share": 0.20512820512820512,
+   "shrunk_lift": -0.1282051282051282,
+   "roles": {
+    "villager": 4,
+    "investigator": 3,
+    "wolf": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.022222222222222223,
+    "wolf": 0.008333333333333333,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.05
+   }
+  },
+  {
+   "tell_id": "vote_272",
+   "channel": "vote",
+   "text": "Votes for the player who was publicly identified as a target by an investigator claim earlier in the discussion.",
+   "n": 51,
+   "evil": 10,
+   "raw_share": 0.19607843137254902,
+   "shrunk_share": 0.20833333333333331,
+   "shrunk_lift": -0.125,
+   "roles": {
+    "vigilante": 6,
+    "villager": 22,
+    "serial_killer": 5,
+    "wolf": 5,
+    "healer": 9,
+    "investigator": 4
+   },
+   "role_rates": {
+    "vigilante": 0.1,
+    "villager": 0.12222222222222222,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.08333333333333333,
+    "healer": 0.15,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_226",
+   "channel": "disc",
+   "text": "Proposes establishing a formal procedural framework for how the group should manage future role claims before any have occurred.",
+   "n": 3,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.20833333333333331,
+   "shrunk_lift": -0.125,
+   "roles": {
+    "villager": 3
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.016666666666666666,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_0",
+   "channel": "vote",
+   "text": "A player casts a non-abstaining vote against a participant who has not been the subject of any discussion or suspicion throughout the day.",
+   "n": 3,
+   "evil": 2,
+   "raw_share": 0.6666666666666666,
+   "shrunk_share": 0.4583333333333333,
+   "shrunk_lift": 0.125,
+   "roles": {
+    "wolf": 2,
+    "vigilante": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.0,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_166",
+   "channel": "disc",
+   "text": "A player actively pushes the group to move from discussion to a formal vote.",
+   "n": 87,
+   "evil": 18,
+   "raw_share": 0.20689655172413793,
+   "shrunk_share": 0.213768115942029,
+   "shrunk_lift": -0.11956521739130432,
+   "roles": {
+    "investigator": 20,
+    "villager": 30,
+    "wolf": 15,
+    "serial_killer": 3,
+    "vigilante": 13,
+    "healer": 6
+   },
+   "role_rates": {
+    "vigilante": 0.21666666666666667,
+    "villager": 0.16666666666666666,
+    "wolf": 0.125,
+    "serial_killer": 0.05,
+    "healer": 0.1,
+    "investigator": 0.3333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_131",
+   "channel": "disc",
+   "text": "A player proposes monitoring future voting patterns rather than focusing on current verbal arguments.",
+   "n": 16,
+   "evil": 3,
+   "raw_share": 0.1875,
+   "shrunk_share": 0.22222222222222218,
+   "shrunk_lift": -0.11111111111111113,
+   "roles": {
+    "investigator": 1,
+    "wolf": 2,
+    "villager": 8,
+    "vigilante": 3,
+    "serial_killer": 1,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.044444444444444446,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.016666666666666666,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_211",
+   "channel": "disc",
+   "text": "expresses wariness of players who demonstrate high-energy certainty in proposing a lynch target.",
+   "n": 33,
+   "evil": 7,
+   "raw_share": 0.21212121212121213,
+   "shrunk_share": 0.22807017543859648,
+   "shrunk_lift": -0.10526315789473684,
+   "roles": {
+    "vigilante": 5,
+    "healer": 5,
+    "wolf": 4,
+    "villager": 15,
+    "serial_killer": 3,
+    "investigator": 1
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.08333333333333333,
+    "wolf": 0.03333333333333333,
+    "serial_killer": 0.05,
+    "healer": 0.08333333333333333,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_332",
+   "channel": "disc",
+   "text": "Explicitly shifts the focus of the discussion from the primary suspect to the person pushing the suspicion.",
+   "n": 52,
+   "evil": 23,
+   "raw_share": 0.4423076923076923,
+   "shrunk_share": 0.43274853801169594,
+   "shrunk_lift": 0.09941520467836262,
+   "roles": {
+    "investigator": 8,
+    "vigilante": 6,
+    "wolf": 14,
+    "serial_killer": 9,
+    "villager": 13,
+    "healer": 2
+   },
+   "role_rates": {
+    "vigilante": 0.1,
+    "villager": 0.07222222222222222,
+    "wolf": 0.11666666666666667,
+    "serial_killer": 0.15,
+    "healer": 0.03333333333333333,
+    "investigator": 0.13333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_294",
+   "channel": "vote",
+   "text": "A player advocates for a specific discussion topic and then opts to abstain when the vote occurs.",
+   "n": 32,
+   "evil": 7,
+   "raw_share": 0.21875,
+   "shrunk_share": 0.23423423423423423,
+   "shrunk_lift": -0.09909909909909909,
+   "roles": {
+    "villager": 14,
+    "wolf": 5,
+    "serial_killer": 2,
+    "vigilante": 3,
+    "investigator": 6,
+    "healer": 2
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.07777777777777778,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.03333333333333333,
+    "healer": 0.03333333333333333,
+    "investigator": 0.1
+   }
+  },
+  {
+   "tell_id": "vote_194",
+   "channel": "vote",
+   "text": "A player actively pushes the conversation toward targeting others and then abstains when a vote is finally cast against them.",
+   "n": 2,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.23809523809523808,
+   "shrunk_lift": -0.09523809523809523,
+   "roles": {
+    "vigilante": 1,
+    "investigator": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "disc_464",
+   "channel": "disc",
+   "text": "A player claims a specific investigative role early in the game to justify an immediate demand for another player's elimination.",
+   "n": 2,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.23809523809523808,
+   "shrunk_lift": -0.09523809523809523,
+   "roles": {
+    "investigator": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_147",
+   "channel": "vote",
+   "text": "Casts the only non-abstain vote after a discussion where the group consensus was to avoid voting.",
+   "n": 6,
+   "evil": 3,
+   "raw_share": 0.5,
+   "shrunk_share": 0.4242424242424242,
+   "shrunk_lift": 0.09090909090909088,
+   "roles": {
+    "wolf": 3,
+    "villager": 1,
+    "investigator": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.005555555555555556,
+    "wolf": 0.025,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_24",
+   "channel": "disc",
+   "text": "Advocates for delaying a vote to wait for more information from future night cycles.",
+   "n": 77,
+   "evil": 33,
+   "raw_share": 0.42857142857142855,
+   "shrunk_share": 0.4227642276422764,
+   "shrunk_lift": 0.08943089430894308,
+   "roles": {
+    "wolf": 20,
+    "serial_killer": 13,
+    "healer": 14,
+    "villager": 20,
+    "investigator": 4,
+    "vigilante": 6
+   },
+   "role_rates": {
+    "vigilante": 0.1,
+    "villager": 0.1111111111111111,
+    "wolf": 0.16666666666666666,
+    "serial_killer": 0.21666666666666667,
+    "healer": 0.23333333333333334,
+    "investigator": 0.06666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_247",
+   "channel": "disc",
+   "text": "A player suggests focusing on the historical voting record to identify group sentiment after a player is revealed on death to have been a specific role.",
+   "n": 165,
+   "evil": 40,
+   "raw_share": 0.24242424242424243,
+   "shrunk_share": 0.24509803921568626,
+   "shrunk_lift": -0.08823529411764705,
+   "roles": {
+    "villager": 85,
+    "wolf": 16,
+    "healer": 22,
+    "serial_killer": 24,
+    "vigilante": 13,
+    "investigator": 5
+   },
+   "role_rates": {
+    "vigilante": 0.21666666666666667,
+    "villager": 0.4722222222222222,
+    "wolf": 0.13333333333333333,
+    "serial_killer": 0.4,
+    "healer": 0.36666666666666664,
+    "investigator": 0.08333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_120",
+   "channel": "vote",
+   "text": "A player who explicitly states that the group needs to be careful about making assumptions or missing potential threats abstains from the vote.",
+   "n": 23,
+   "evil": 10,
+   "raw_share": 0.43478260869565216,
+   "shrunk_share": 0.41666666666666663,
+   "shrunk_lift": 0.08333333333333331,
+   "roles": {
+    "wolf": 4,
+    "serial_killer": 6,
+    "healer": 4,
+    "vigilante": 5,
+    "investigator": 2,
+    "villager": 2
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.011111111111111112,
+    "wolf": 0.03333333333333333,
+    "serial_killer": 0.1,
+    "healer": 0.06666666666666667,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_493",
+   "channel": "disc",
+   "text": "Advocates for a passive strategy of observation instead of active discussion during the opening phase of the game.",
+   "n": 52,
+   "evil": 22,
+   "raw_share": 0.4230769230769231,
+   "shrunk_share": 0.41520467836257313,
+   "shrunk_lift": 0.08187134502923982,
+   "roles": {
+    "wolf": 12,
+    "villager": 15,
+    "serial_killer": 10,
+    "vigilante": 2,
+    "healer": 10,
+    "investigator": 3
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.08333333333333333,
+    "wolf": 0.1,
+    "serial_killer": 0.16666666666666666,
+    "healer": 0.16666666666666666,
+    "investigator": 0.05
+   }
+  },
+  {
+   "tell_id": "disc_203",
+   "channel": "disc",
+   "text": "Advocates for focusing on current contribution patterns rather than re-analyzing past agreements when the group debates previous strategy.",
+   "n": 16,
+   "evil": 7,
+   "raw_share": 0.4375,
+   "shrunk_share": 0.4126984126984127,
+   "shrunk_lift": 0.07936507936507936,
+   "roles": {
+    "wolf": 6,
+    "serial_killer": 1,
+    "investigator": 2,
+    "villager": 5,
+    "healer": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.027777777777777776,
+    "wolf": 0.05,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.03333333333333333,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_232",
+   "channel": "disc",
+   "text": "A player attempts to justify an accusation by claiming that their status as a target proves their own innocence.",
+   "n": 26,
+   "evil": 11,
+   "raw_share": 0.4230769230769231,
+   "shrunk_share": 0.4086021505376344,
+   "shrunk_lift": 0.07526881720430106,
+   "roles": {
+    "villager": 7,
+    "wolf": 10,
+    "serial_killer": 1,
+    "investigator": 7,
+    "vigilante": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.03888888888888889,
+    "wolf": 0.08333333333333333,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.0,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_250",
+   "channel": "disc",
+   "text": "A player claims that their previous voting record was intended to gather information after being questioned about it.",
+   "n": 4,
+   "evil": 2,
+   "raw_share": 0.5,
+   "shrunk_share": 0.4074074074074074,
+   "shrunk_lift": 0.07407407407407407,
+   "roles": {
+    "villager": 1,
+    "wolf": 2,
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.005555555555555556,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.0,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_673",
+   "channel": "vote",
+   "text": "A player joins a near-unanimous voting block against an individual who was previously involved in a controversial interaction.",
+   "n": 46,
+   "evil": 19,
+   "raw_share": 0.41304347826086957,
+   "shrunk_share": 0.40522875816993464,
+   "shrunk_lift": 0.07189542483660133,
+   "roles": {
+    "wolf": 12,
+    "vigilante": 6,
+    "villager": 15,
+    "serial_killer": 7,
+    "healer": 6
+   },
+   "role_rates": {
+    "vigilante": 0.1,
+    "villager": 0.08333333333333333,
+    "wolf": 0.1,
+    "serial_killer": 0.11666666666666667,
+    "healer": 0.1,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_158",
+   "channel": "vote",
+   "text": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation.",
+   "n": 127,
+   "evil": 33,
+   "raw_share": 0.25984251968503935,
+   "shrunk_share": 0.2626262626262626,
+   "shrunk_lift": -0.07070707070707072,
+   "roles": {
+    "villager": 57,
+    "healer": 18,
+    "wolf": 15,
+    "serial_killer": 18,
+    "vigilante": 13,
+    "investigator": 6
+   },
+   "role_rates": {
+    "vigilante": 0.21666666666666667,
+    "villager": 0.31666666666666665,
+    "wolf": 0.125,
+    "serial_killer": 0.3,
+    "healer": 0.3,
+    "investigator": 0.1
+   }
+  },
+  {
+   "tell_id": "disc_176",
+   "channel": "disc",
+   "text": "A player proposes analyzing the timing of past votes to identify patterns of hesitation or acceleration among the participants.",
+   "n": 95,
+   "evil": 25,
+   "raw_share": 0.2631578947368421,
+   "shrunk_share": 0.26666666666666666,
+   "shrunk_lift": -0.06666666666666665,
+   "roles": {
+    "villager": 49,
+    "wolf": 10,
+    "serial_killer": 15,
+    "healer": 11,
+    "vigilante": 7,
+    "investigator": 3
+   },
+   "role_rates": {
+    "vigilante": 0.11666666666666667,
+    "villager": 0.2722222222222222,
+    "wolf": 0.08333333333333333,
+    "serial_killer": 0.25,
+    "healer": 0.18333333333333332,
+    "investigator": 0.05
+   }
+  },
+  {
+   "tell_id": "disc_169",
+   "channel": "disc",
+   "text": "A player suggests a specific, rigid condition for evaluating other players in future rounds.",
+   "n": 5,
+   "evil": 1,
+   "raw_share": 0.2,
+   "shrunk_share": 0.26666666666666666,
+   "shrunk_lift": -0.06666666666666665,
+   "roles": {
+    "villager": 3,
+    "healer": 1,
+    "wolf": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.016666666666666666,
+    "wolf": 0.008333333333333333,
+    "serial_killer": 0.0,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_283",
+   "channel": "disc",
+   "text": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection.",
+   "n": 205,
+   "evil": 55,
+   "raw_share": 0.2682926829268293,
+   "shrunk_share": 0.2698412698412698,
+   "shrunk_lift": -0.06349206349206349,
+   "roles": {
+    "healer": 28,
+    "villager": 88,
+    "serial_killer": 32,
+    "wolf": 23,
+    "investigator": 14,
+    "vigilante": 20
+   },
+   "role_rates": {
+    "vigilante": 0.3333333333333333,
+    "villager": 0.4888888888888889,
+    "wolf": 0.19166666666666668,
+    "serial_killer": 0.5333333333333333,
+    "healer": 0.4666666666666667,
+    "investigator": 0.23333333333333334
+   }
+  },
+  {
+   "tell_id": "disc_412",
+   "channel": "disc",
+   "text": "advocates for ending a period of consensus abstention by highlighting the risk of inactivity.",
+   "n": 156,
+   "evil": 42,
+   "raw_share": 0.2692307692307692,
+   "shrunk_share": 0.2712215320910973,
+   "shrunk_lift": -0.06211180124223603,
+   "roles": {
+    "investigator": 19,
+    "healer": 13,
+    "villager": 65,
+    "wolf": 28,
+    "serial_killer": 14,
+    "vigilante": 17
+   },
+   "role_rates": {
+    "vigilante": 0.2833333333333333,
+    "villager": 0.3611111111111111,
+    "wolf": 0.23333333333333334,
+    "serial_killer": 0.23333333333333334,
+    "healer": 0.21666666666666667,
+    "investigator": 0.31666666666666665
+   }
+  },
+  {
+   "tell_id": "vote_238",
+   "channel": "vote",
+   "text": "A player joins a near-unanimous lynch consensus at the last moment without having actively participated in the preceding discussion.",
+   "n": 22,
+   "evil": 9,
+   "raw_share": 0.4090909090909091,
+   "shrunk_share": 0.3950617283950617,
+   "shrunk_lift": 0.06172839506172839,
+   "roles": {
+    "serial_killer": 5,
+    "villager": 7,
+    "wolf": 4,
+    "vigilante": 2,
+    "healer": 4
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.03888888888888889,
+    "wolf": 0.03333333333333333,
+    "serial_killer": 0.08333333333333333,
+    "healer": 0.06666666666666667,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_143",
+   "channel": "disc",
+   "text": "A player explains their silence throughout the game as a calculated strategy to survive while gathering information.",
+   "n": 17,
+   "evil": 7,
+   "raw_share": 0.4117647058823529,
+   "shrunk_share": 0.3939393939393939,
+   "shrunk_lift": 0.06060606060606061,
+   "roles": {
+    "investigator": 8,
+    "healer": 2,
+    "serial_killer": 5,
+    "wolf": 2
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.08333333333333333,
+    "healer": 0.03333333333333333,
+    "investigator": 0.13333333333333333
+   }
+  },
+  {
+   "tell_id": "disc_285",
+   "channel": "disc",
+   "text": "A player suggests focusing scrutiny on individuals who have been the quietest or most ambiguous during the discussion.",
+   "n": 84,
+   "evil": 33,
+   "raw_share": 0.39285714285714285,
+   "shrunk_share": 0.38951310861423216,
+   "shrunk_lift": 0.05617977528089885,
+   "roles": {
+    "wolf": 22,
+    "serial_killer": 11,
+    "villager": 30,
+    "investigator": 7,
+    "healer": 11,
+    "vigilante": 3
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.16666666666666666,
+    "wolf": 0.18333333333333332,
+    "serial_killer": 0.18333333333333332,
+    "healer": 0.18333333333333332,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_4",
+   "channel": "vote",
+   "text": "Votes for a player after previously spending the discussion period demanding an explanation for why others were accusing that same player.",
+   "n": 1,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.27777777777777773,
+   "shrunk_lift": -0.05555555555555558,
+   "roles": {
+    "vigilante": 1
+   },
+   "role_rates": {
+    "vigilante": 0.016666666666666666,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.0,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_175",
+   "channel": "disc",
+   "text": "A player defends their own track record by citing their past support for another player's accusations.",
+   "n": 1,
+   "evil": 0,
+   "raw_share": 0.0,
+   "shrunk_share": 0.27777777777777773,
+   "shrunk_lift": -0.05555555555555558,
+   "roles": {
+    "healer": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.0,
+    "serial_killer": 0.0,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_195",
+   "channel": "vote",
+   "text": "A player argues against the consensus regarding how to interpret past strategy and ultimately chooses to abstain in the vote.",
+   "n": 7,
+   "evil": 3,
+   "raw_share": 0.42857142857142855,
+   "shrunk_share": 0.38888888888888884,
+   "shrunk_lift": 0.055555555555555525,
+   "roles": {
+    "vigilante": 2,
+    "villager": 1,
+    "healer": 1,
+    "serial_killer": 1,
+    "wolf": 2
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.005555555555555556,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_42",
+   "channel": "vote",
+   "text": "Advocates for abstaining from voting based on an asserted lack of sufficient information.",
+   "n": 121,
+   "evil": 47,
+   "raw_share": 0.3884297520661157,
+   "shrunk_share": 0.3862433862433862,
+   "shrunk_lift": 0.05291005291005291,
+   "roles": {
+    "healer": 17,
+    "wolf": 28,
+    "serial_killer": 19,
+    "villager": 33,
+    "investigator": 7,
+    "vigilante": 17
+   },
+   "role_rates": {
+    "vigilante": 0.2833333333333333,
+    "villager": 0.18333333333333332,
+    "wolf": 0.23333333333333334,
+    "serial_killer": 0.31666666666666665,
+    "healer": 0.2833333333333333,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_382",
+   "channel": "vote",
+   "text": "A player votes for a target they had spent the discussion phase analyzing for their role in previous procedural delays.",
+   "n": 119,
+   "evil": 34,
+   "raw_share": 0.2857142857142857,
+   "shrunk_share": 0.2876344086021505,
+   "shrunk_lift": -0.04569892473118281,
+   "roles": {
+    "investigator": 13,
+    "villager": 47,
+    "wolf": 22,
+    "healer": 11,
+    "serial_killer": 12,
+    "vigilante": 14
+   },
+   "role_rates": {
+    "vigilante": 0.23333333333333334,
+    "villager": 0.2611111111111111,
+    "wolf": 0.18333333333333332,
+    "serial_killer": 0.2,
+    "healer": 0.18333333333333332,
+    "investigator": 0.21666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_398",
+   "channel": "vote",
+   "text": "A player who provides a critique of potential voting strategies during the discussion chooses to abstain when the vote occurs.",
+   "n": 83,
+   "evil": 24,
+   "raw_share": 0.2891566265060241,
+   "shrunk_share": 0.2916666666666667,
+   "shrunk_lift": -0.04166666666666663,
+   "roles": {
+    "serial_killer": 5,
+    "wolf": 19,
+    "vigilante": 14,
+    "healer": 10,
+    "investigator": 6,
+    "villager": 29
+   },
+   "role_rates": {
+    "vigilante": 0.23333333333333334,
+    "villager": 0.16111111111111112,
+    "wolf": 0.15833333333333333,
+    "serial_killer": 0.08333333333333333,
+    "healer": 0.16666666666666666,
+    "investigator": 0.1
+   }
+  },
+  {
+   "tell_id": "vote_79",
+   "channel": "vote",
+   "text": "expresses a strong preference against immediate voting while focusing on monitoring player behavior rather than reaching a decision.",
+   "n": 80,
+   "evil": 30,
+   "raw_share": 0.375,
+   "shrunk_share": 0.37254901960784315,
+   "shrunk_lift": 0.03921568627450983,
+   "roles": {
+    "vigilante": 10,
+    "serial_killer": 15,
+    "wolf": 15,
+    "villager": 21,
+    "investigator": 7,
+    "healer": 12
+   },
+   "role_rates": {
+    "vigilante": 0.16666666666666666,
+    "villager": 0.11666666666666667,
+    "wolf": 0.125,
+    "serial_killer": 0.25,
+    "healer": 0.2,
+    "investigator": 0.11666666666666667
+   }
+  },
+  {
+   "tell_id": "disc_95",
+   "channel": "disc",
+   "text": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay.",
+   "n": 41,
+   "evil": 12,
+   "raw_share": 0.2926829268292683,
+   "shrunk_share": 0.2971014492753623,
+   "shrunk_lift": -0.03623188405797101,
+   "roles": {
+    "wolf": 10,
+    "villager": 16,
+    "vigilante": 5,
+    "investigator": 5,
+    "serial_killer": 2,
+    "healer": 3
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.08888888888888889,
+    "wolf": 0.08333333333333333,
+    "serial_killer": 0.03333333333333333,
+    "healer": 0.05,
+    "investigator": 0.08333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_264",
+   "channel": "vote",
+   "text": "A player joins a majority-bloc vote to eliminate another player after that target was accused of being a specific role, despite expressing uncertainty about the validity of the evidence provided.",
+   "n": 35,
+   "evil": 13,
+   "raw_share": 0.37142857142857144,
+   "shrunk_share": 0.36666666666666664,
+   "shrunk_lift": 0.033333333333333326,
+   "roles": {
+    "serial_killer": 6,
+    "wolf": 7,
+    "healer": 5,
+    "villager": 12,
+    "vigilante": 5
+   },
+   "role_rates": {
+    "vigilante": 0.08333333333333333,
+    "villager": 0.06666666666666667,
+    "wolf": 0.058333333333333334,
+    "serial_killer": 0.1,
+    "healer": 0.08333333333333333,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_51",
+   "channel": "vote",
+   "text": "A player casts a vote for someone who had been the focus of persistent scrutiny throughout the discussion period without having explicitly stated their intent to vote for them earlier in the conversation.",
+   "n": 27,
+   "evil": 10,
+   "raw_share": 0.37037037037037035,
+   "shrunk_share": 0.3645833333333333,
+   "shrunk_lift": 0.03125,
+   "roles": {
+    "serial_killer": 5,
+    "wolf": 5,
+    "villager": 7,
+    "healer": 5,
+    "vigilante": 3,
+    "investigator": 2
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.03888888888888889,
+    "wolf": 0.041666666666666664,
+    "serial_killer": 0.08333333333333333,
+    "healer": 0.08333333333333333,
+    "investigator": 0.03333333333333333
+   }
+  },
+  {
+   "tell_id": "vote_426",
+   "channel": "vote",
+   "text": "A player chooses to abstain from voting after having actively participated in the discussion during the day.",
+   "n": 246,
+   "evil": 75,
+   "raw_share": 0.3048780487804878,
+   "shrunk_share": 0.3054448871181939,
+   "shrunk_lift": -0.027888446215139417,
+   "roles": {
+    "healer": 23,
+    "villager": 97,
+    "wolf": 49,
+    "serial_killer": 26,
+    "investigator": 19,
+    "vigilante": 32
+   },
+   "role_rates": {
+    "vigilante": 0.5333333333333333,
+    "villager": 0.5388888888888889,
+    "wolf": 0.4083333333333333,
+    "serial_killer": 0.43333333333333335,
+    "healer": 0.38333333333333336,
+    "investigator": 0.31666666666666665
+   }
+  },
+  {
+   "tell_id": "disc_23",
+   "channel": "disc",
+   "text": "Advocates for using the history of voting records rather than subjective interpretations of player behavior.",
+   "n": 184,
+   "evil": 57,
+   "raw_share": 0.30978260869565216,
+   "shrunk_share": 0.31040564373897706,
+   "shrunk_lift": -0.02292768959435626,
+   "roles": {
+    "villager": 73,
+    "wolf": 29,
+    "serial_killer": 28,
+    "investigator": 13,
+    "healer": 21,
+    "vigilante": 20
+   },
+   "role_rates": {
+    "vigilante": 0.3333333333333333,
+    "villager": 0.40555555555555556,
+    "wolf": 0.24166666666666667,
+    "serial_killer": 0.4666666666666667,
+    "healer": 0.35,
+    "investigator": 0.21666666666666667
+   }
+  },
+  {
+   "tell_id": "vote_2",
+   "channel": "vote",
+   "text": "A player elects to abstain from voting alongside the majority of the room despite having remained silent during the preceding discussion period.",
+   "n": 163,
+   "evil": 58,
+   "raw_share": 0.3558282208588957,
+   "shrunk_share": 0.3551587301587301,
+   "shrunk_lift": 0.021825396825396803,
+   "roles": {
+    "investigator": 17,
+    "healer": 27,
+    "serial_killer": 27,
+    "villager": 48,
+    "wolf": 31,
+    "vigilante": 13
+   },
+   "role_rates": {
+    "vigilante": 0.21666666666666667,
+    "villager": 0.26666666666666666,
+    "wolf": 0.25833333333333336,
+    "serial_killer": 0.45,
+    "healer": 0.45,
+    "investigator": 0.2833333333333333
+   }
+  },
+  {
+   "tell_id": "disc_185",
+   "channel": "disc",
+   "text": "A player frames a conflict between two others as a potential distraction while explicitly questioning how to verify which of them is the genuine threat.",
+   "n": 13,
+   "evil": 4,
+   "raw_share": 0.3076923076923077,
+   "shrunk_share": 0.31481481481481477,
+   "shrunk_lift": -0.018518518518518545,
+   "roles": {
+    "villager": 6,
+    "healer": 1,
+    "serial_killer": 1,
+    "wolf": 3,
+    "vigilante": 2
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.03333333333333333,
+    "wolf": 0.025,
+    "serial_killer": 0.016666666666666666,
+    "healer": 0.016666666666666666,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_156",
+   "channel": "vote",
+   "text": "votes for the room's consensus target after engaging in a discussion comparing the speed of all players' past voting records.",
+   "n": 19,
+   "evil": 6,
+   "raw_share": 0.3157894736842105,
+   "shrunk_share": 0.3194444444444444,
+   "shrunk_lift": -0.013888888888888895,
+   "roles": {
+    "healer": 2,
+    "serial_killer": 4,
+    "wolf": 2,
+    "villager": 9,
+    "vigilante": 2
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.05,
+    "wolf": 0.016666666666666666,
+    "serial_killer": 0.06666666666666667,
+    "healer": 0.03333333333333333,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "disc_21",
+   "channel": "disc",
+   "text": "Repeatedly demands evidence from a player who makes an unsubstantiated accusation.",
+   "n": 47,
+   "evil": 15,
+   "raw_share": 0.3191489361702128,
+   "shrunk_share": 0.32051282051282054,
+   "shrunk_lift": -0.012820512820512775,
+   "roles": {
+    "serial_killer": 7,
+    "vigilante": 3,
+    "villager": 25,
+    "wolf": 8,
+    "healer": 3,
+    "investigator": 1
+   },
+   "role_rates": {
+    "vigilante": 0.05,
+    "villager": 0.1388888888888889,
+    "wolf": 0.06666666666666667,
+    "serial_killer": 0.11666666666666667,
+    "healer": 0.05,
+    "investigator": 0.016666666666666666
+   }
+  },
+  {
+   "tell_id": "vote_221",
+   "channel": "vote",
+   "text": "votes for a player who was the primary focus of accusations during the discussion despite not participating in the accusation themselves.",
+   "n": 29,
+   "evil": 10,
+   "raw_share": 0.3448275862068966,
+   "shrunk_share": 0.3431372549019608,
+   "shrunk_lift": 0.009803921568627472,
+   "roles": {
+    "wolf": 6,
+    "healer": 8,
+    "serial_killer": 4,
+    "villager": 9,
+    "vigilante": 2
+   },
+   "role_rates": {
+    "vigilante": 0.03333333333333333,
+    "villager": 0.05,
+    "wolf": 0.05,
+    "serial_killer": 0.06666666666666667,
+    "healer": 0.13333333333333333,
+    "investigator": 0.0
+   }
+  },
+  {
+   "tell_id": "vote_41",
+   "channel": "vote",
+   "text": "A player casts a vote for someone they directly accused in the discussion.",
+   "n": 240,
+   "evil": 78,
+   "raw_share": 0.325,
+   "shrunk_share": 0.3251700680272109,
+   "shrunk_lift": -0.008163265306122436,
+   "roles": {
+    "healer": 16,
+    "wolf": 52,
+    "investigator": 43,
+    "villager": 78,
+    "serial_killer": 26,
+    "vigilante": 25
+   },
+   "role_rates": {
+    "vigilante": 0.4166666666666667,
+    "villager": 0.43333333333333335,
+    "wolf": 0.43333333333333335,
+    "serial_killer": 0.43333333333333335,
+    "healer": 0.26666666666666666,
+    "investigator": 0.7166666666666667
+   }
+  },
+  {
+   "tell_id": "vote_489",
+   "channel": "vote",
+   "text": "abstains from the vote after questioning the reasoning of the most vocal player during the discussion.",
+   "n": 3,
+   "evil": 1,
+   "raw_share": 0.3333333333333333,
+   "shrunk_share": 0.3333333333333333,
+   "shrunk_lift": 0.0,
+   "roles": {
+    "healer": 2,
+    "wolf": 1
+   },
+   "role_rates": {
+    "vigilante": 0.0,
+    "villager": 0.0,
+    "wolf": 0.008333333333333333,
+    "serial_killer": 0.0,
+    "healer": 0.03333333333333333,
+    "investigator": 0.0
+   }
+  }
+ ]
+}

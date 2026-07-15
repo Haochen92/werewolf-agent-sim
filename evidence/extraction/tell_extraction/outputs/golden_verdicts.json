@@ -1,0 +1,292 @@
+[
+ {
+  "case_id": "pos_6",
+  "days": [
+   4,
+   5
+  ],
+  "notes": "Day 4: urges checking who was hesitant to vote for player_3 and who piled on fast, then votes player_2 (consensus). Day 5: urges reviewing Day-4 vote order and player_4's hesitation, then votes player_4 (consensus). Day 6 excluded: discussed past votes but voted player_6, not the room's consensus target (player_5).",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_18",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: directly accuses player_7 of deflecting/manipulating as a wolf, then votes player_7. Day 2 excluded: voted player_6 without ever accusing them in discussion.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_19",
+  "days": [
+   5
+  ],
+  "notes": "Day 5: 're-examine the voting order from yesterday to see who jumped on the bandwagon against player_2 the fastest' requests analysis of the initiator of the prior-day sequence. Day 4 excluded: asks early-vs-late voters on player_3, not the initiator. Day 6 excluded: 'who pushed hardest' across Day 4 and 5, not a single prior-day initiator.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_0",
+  "days": [],
+  "notes": "player_7 repeatedly urges breaking stalemates as future action but never claims a past vote of theirs was motivated by resolving deadlocks.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_12",
+  "days": [],
+  "notes": "No day where player_8 votes someone they argued with throughout: Day 3 voted player_3 while agreeing with them; Days 4/5 votes followed analysis, not a sustained argument with the target.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_16",
+  "days": [],
+  "notes": "player_1 was killed (not saved) and never announces surviving a night attack; only speaks Days 1-2 with no such claim.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_0",
+  "days": [
+   2
+  ],
+  "notes": "Day 2: player_8 abstained with the majority and never spoke in Day 2 discussion; Day 3 he voted player_4 and was vocal.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_9",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: player_4 frames player_8's push as 'trying to force a lynch... pushing for an elimination based on nothing'; Day 4 is only self-defense, no such framing.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_10",
+  "days": [
+   4
+  ],
+  "notes": "Day 4: player_9 argued with player_4 across multiple messages then voted him; Day 3 was one challenge, Day 5 opened agreeing, Day 6 diffuse three-way.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_9",
+  "days": [
+   2
+  ],
+  "notes": "Day 2: player_5 abstained with majority while silent; Day 4 he abstained with majority but was vocal in discussion, so excluded.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_15",
+  "days": [],
+  "notes": "player_2 lived only through Day 2 and never advocated delaying a vote for future night information.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_18",
+  "days": [],
+  "notes": "player_4's only non-abstain vote was Day 3 against player_8, who was the central subject of that day's discussion.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_2",
+  "days": [
+   2
+  ],
+  "notes": "Day 2: player_2 never spoke in the discussion yet abstained with the unanimous room; Day 3 they voted player_8 and were vocal, Day 4 dead.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_4",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: player_1 spent discussion analyzing player_2's role in the Day-2 abstention/stalemate (procedural delay) then voted player_2; Day 4 player_6 analysis was about the investigator claim, not delays.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_7",
+  "days": [
+   3,
+   4
+  ],
+  "notes": "Day 3: player_9 pushed analyzing player_4's voting history for alignment/steering; Day 4: pushed examining yesterday's voting patterns for who hesitated/hid; Day 2 concerned the healer save, not voting records.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_14",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: player_5 questioned accuser player_8's logic and motives ('most desperate to point fingers') then voted player_8; Day 4 questioning of player_7 was mild/deferential and the vote went to the accused player_6, not the questioned accuser.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_2",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: player_8 interrogated player_2 over the Day-2 abstention/'avoiding a vote again' (prior voting conduct) then voted player_2; borderline on 'switches' but interrogate-then-vote pattern present; Day 2 abstained, Day 4 dead.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_8",
+  "days": [],
+  "notes": "Player_3 appears only Day 2 and merely urged monitoring vote-shift patterns; never advocated a concrete metric or threshold for voting.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_1",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: player_9 spotlights that players 7 and 8 initiated the Day-2 votes against player_4 and asks the group to hear from them specifically; Day 4 references the same but does not request analysis of the previous day's vote initiators.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_5",
+  "days": [
+   2
+  ],
+  "notes": "Day 2 (player_4's only day alive): 'Player 5, you have been remarkably quiet...' directs scrutiny at the quietest player.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_8",
+  "days": [
+   4
+  ],
+  "notes": "Day 4: 'I think we need to push for a vote on player 8' then voted player_8; Day 3 he only asked the group to evaluate 7/8, no explicit call to vote a specific target.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_11",
+  "days": [
+   3
+  ],
+  "notes": "Day 3: player_1 presses 7 and 8 to 'point to a specific comment by 4' backing their unsubstantiated gut-feeling vote; borderline on 'repeatedly' but core demand-for-evidence present. Day 4/5 he is the accuser, not demanding evidence.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_16",
+  "days": [
+   3,
+   4
+  ],
+  "notes": "Day 4: player_8 questions accuser player_9's motives ('attempt to distract') then votes player_9. Day 3: addresses player_9, casts them as 'using this vote as a diversion,' then votes player_9 (motive-questioning is softer/generalized but present).",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_17",
+  "days": [
+   1
+  ],
+  "notes": "Day 1: 'Voting blindly this early... Let's see who the night kill targets' advocates delaying to await future-night info; Day 3 caution is about past voting patterns, not future nights.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_7",
+  "days": [],
+  "notes": "player_2 abstained on Day 2 (the caution day); never the lone non-abstainer, so tell never exhibited.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_11",
+  "days": [],
+  "notes": "player_6 dies night 1 and there is no late-game role claim in the game; tell impossible.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_13",
+  "days": [],
+  "notes": "Day 2 player_7 voted player_4 but players 4, 7, 8 all voted non-abstain, so he was never the ONLY non-abstainer.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_19",
+  "days": [],
+  "notes": "player_8 never abstains in any actual vote (Day2 player_4, Day3/4 player_9), so never advocates decisive voting while abstaining himself.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_3",
+  "days": [
+   3
+  ],
+  "notes": "Day 3 player_2 pushes analysis of the day-2 voting record to find who pushed against the investigator (patterns of protection); Day 2 focused on narrative/quiet players, not records.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_12",
+  "days": [],
+  "notes": "player_9 votes (d3->p2, d4/5/6->p1) never immediately follow the target attacking player_9's OWN voting record; on d3 it was player_1 (not the voted p2) who cited player_9's abstaining, and d4-6 attacks were on narrative/passivity not his record.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_13",
+  "days": [
+   3,
+   5
+  ],
+  "notes": "Day 3 player_4 reframes accusers as 'hiding behind an abstain vote' (diversion from their own behavior); Day 5 explicit 'trying to cast suspicion on me to deflect from your own situation'; Day 6 deflection framed as 'no proof' not scrutiny-avoidance, excluded.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "pos_15",
+  "days": [
+   2
+  ],
+  "notes": "Day 2 player_7: 'look for inconsistencies in tonight's vote rather than focusing on past arguments' proposes monitoring future voting over verbal argument; Day 1's 'see how conversation develops' not specifically voting-pattern monitoring.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_1",
+  "days": [],
+  "notes": "player_1 cast a decisive vote every day (d2->p6, d3->p8, d4/5/6->p9) and never abstained, so engaging-against-target-then-abstaining never occurs.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_3",
+  "days": [],
+  "notes": "player_2 was the past-record advocate; his d3 vote for player_7 followed suspicion of 'consistently abstained' players (itself past behavior), not a suggestion to avoid past behavior for current actions.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_4",
+  "days": [],
+  "notes": "player_3 cast decisive votes both days (d2->p6, d3->p2); his day-2 'let's see how everyone votes' rhetoric is contradicted by the decisive vote, so the vote shows no preference against immediate voting.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_5",
+  "days": [],
+  "notes": "player_3 never advocates a concrete voting metric/threshold; the threshold idea was player_5's on Day 1, and player_3 only urges others to 'suggest a specific criteria' defensively.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_6",
+  "days": [],
+  "notes": "player_1 never abstained on any day, so advocating-decisive-vote-while-abstaining cannot hold.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_10",
+  "days": [
+   4,
+   5,
+   6
+  ],
+  "notes": "Day 4 'focusing on the record because it's the only thing that isn't just talk', Day 5 'the evidence is in the history', Day 6 'that synchronization is the evidence' all advocate voting records over subjective talk; Day 3 excluded as he ends by advocating 'current arguments rather than previous voting history'.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_14",
+  "days": [],
+  "notes": "player_4 is on defense against voting-record analysis throughout (dismisses it as hindsight/speculation) rather than shifting focus toward it for protection patterns.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ },
+ {
+  "case_id": "neg_17",
+  "days": [],
+  "notes": "player_6 (investigator) died night 2 and never announced surviving a night attack; the survived-attack announcements belong to player_9, not player_6.",
+  "review": "fable-ratified 2026-07-12; temp golden (owner adjudication remains the run gate)"
+ }
+]

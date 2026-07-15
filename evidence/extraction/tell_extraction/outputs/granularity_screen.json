@@ -1,0 +1,90 @@
+{
+ "params": {
+  "n_floor": 10,
+  "j_merge": 0.5,
+  "j_contain": 0.7,
+  "lift_gap": 0.05,
+  "grain": "(arm, game, player, day) within channel",
+  "source": "held-out k=2 union (PROVISIONAL detector grade)"
+ },
+ "merge_proposals": [],
+ "hierarchy_flags": [
+  {
+   "a": "vote_294",
+   "b": "vote_426",
+   "n_a": 33,
+   "n_b": 266,
+   "jaccard": 0.11,
+   "containment": 0.91,
+   "lift_a": -0.099,
+   "lift_b": -0.028,
+   "lift_gap": 0.071
+  },
+  {
+   "a": "vote_41",
+   "b": "vote_87",
+   "n_a": 312,
+   "n_b": 56,
+   "jaccard": 0.16,
+   "containment": 0.89,
+   "lift_a": -0.008,
+   "lift_b": -0.174,
+   "lift_gap": 0.165
+  },
+  {
+   "a": "vote_120",
+   "b": "vote_426",
+   "n_a": 26,
+   "n_b": 266,
+   "jaccard": 0.09,
+   "containment": 0.88,
+   "lift_a": 0.083,
+   "lift_b": -0.028,
+   "lift_gap": 0.111
+  },
+  {
+   "a": "vote_426",
+   "b": "vote_82",
+   "n_a": 266,
+   "n_b": 24,
+   "jaccard": 0.08,
+   "containment": 0.88,
+   "lift_a": -0.028,
+   "lift_b": -0.138,
+   "lift_gap": 0.11
+  },
+  {
+   "a": "vote_426",
+   "b": "vote_83",
+   "n_a": 266,
+   "n_b": 53,
+   "jaccard": 0.16,
+   "containment": 0.83,
+   "lift_a": -0.028,
+   "lift_b": -0.139,
+   "lift_gap": 0.112
+  },
+  {
+   "a": "disc_530",
+   "b": "disc_67",
+   "n_a": 31,
+   "n_b": 80,
+   "jaccard": 0.28,
+   "containment": 0.77,
+   "lift_a": 0.486,
+   "lift_b": 0.428,
+   "lift_gap": 0.058
+  },
+  {
+   "a": "vote_41",
+   "b": "vote_56",
+   "n_a": 312,
+   "n_b": 114,
+   "jaccard": 0.24,
+   "containment": 0.73,
+   "lift_a": -0.008,
+   "lift_b": 0.211,
+   "lift_gap": 0.219
+  }
+ ]
+}

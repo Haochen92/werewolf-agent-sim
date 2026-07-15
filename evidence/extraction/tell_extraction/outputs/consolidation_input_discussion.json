@@ -1,0 +1,7186 @@
+[
+ {
+  "tid": "disc_17",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player references a specific night event that targeted them or another player to validate their status.",
+  "neighbors": [
+   "disc_390",
+   "disc_703",
+   "disc_278",
+   "disc_282",
+   "disc_578",
+   "disc_246",
+   "disc_717",
+   "disc_614"
+  ]
+ },
+ {
+  "tid": "disc_18",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player proactively agrees with the framing that they are a priority target for night actors.",
+  "neighbors": [
+   "disc_141",
+   "disc_330",
+   "disc_482",
+   "disc_727",
+   "disc_132",
+   "disc_579",
+   "disc_282",
+   "disc_709"
+  ]
+ },
+ {
+  "tid": "disc_19",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player cautions the group against interpreting specific night events as a rationale for immediate elimination.",
+  "neighbors": [
+   "disc_570",
+   "disc_656",
+   "disc_682",
+   "disc_446",
+   "disc_253",
+   "disc_409",
+   "disc_410",
+   "disc_207"
+  ]
+ },
+ {
+  "tid": "disc_20",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Claims a player is a confirmed role without providing evidence from the public record.",
+  "neighbors": [
+   "disc_467",
+   "disc_231",
+   "disc_569",
+   "disc_331",
+   "disc_715",
+   "disc_142",
+   "disc_21",
+   "disc_165"
+  ]
+ },
+ {
+  "tid": "disc_21",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "Repeatedly demands evidence from a player who makes an unsubstantiated accusation.",
+  "neighbors": [
+   "disc_142",
+   "disc_316",
+   "disc_516",
+   "disc_683",
+   "disc_202",
+   "disc_682",
+   "disc_728",
+   "disc_99"
+  ]
+ },
+ {
+  "tid": "disc_22",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Deflects from an error in communication by accusing the person who pointed it out of being overly defensive.",
+  "neighbors": [
+   "disc_116",
+   "disc_514",
+   "disc_391",
+   "disc_332",
+   "disc_593",
+   "disc_100",
+   "disc_106",
+   "disc_67"
+  ]
+ },
+ {
+  "tid": "disc_23",
+  "support": 10,
+  "status": "incumbent",
+  "canonical": "Advocates for using the history of voting records rather than subjective interpretations of player behavior.",
+  "neighbors": [
+   "disc_36",
+   "disc_707",
+   "disc_115",
+   "disc_368",
+   "disc_104",
+   "disc_511",
+   "disc_738",
+   "disc_181"
+  ]
+ },
+ {
+  "tid": "disc_24",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "Advocates for delaying a vote to wait for more information from future night cycles.",
+  "neighbors": [
+   "disc_383",
+   "disc_681",
+   "disc_206",
+   "disc_446",
+   "disc_179",
+   "disc_60",
+   "disc_58",
+   "disc_547"
+  ]
+ },
+ {
+  "tid": "disc_25",
+  "support": 1,
+  "status": "archived",
+  "canonical": "When directly challenged regarding a past interaction with a player who was subsequently removed from the game, the player repeatedly attempts to redirect the focus of the discussion onto the behavior of other group members.",
+  "neighbors": [
+   "disc_99",
+   "disc_457",
+   "disc_388",
+   "disc_485",
+   "disc_69",
+   "disc_308",
+   "disc_106",
+   "disc_70"
+  ]
+ },
+ {
+  "tid": "disc_26",
+  "support": 1,
+  "status": "archived",
+  "canonical": "The player challenges the defensive posture of another participant by framing their previous actions as a potential tactical attempt to discredit the investigator who was later revealed on death as the investigator.",
+  "neighbors": [
+   "disc_171",
+   "disc_27",
+   "disc_69",
+   "disc_418",
+   "disc_427",
+   "disc_731",
+   "disc_704",
+   "disc_316"
+  ]
+ },
+ {
+  "tid": "disc_27",
+  "support": 1,
+  "status": "archived",
+  "canonical": "The player highlights the outcome of a past voting cycle to draw attention to a specific player's personal conflict with a player revealed on death as the investigator.",
+  "neighbors": [
+   "disc_731",
+   "disc_225",
+   "disc_247",
+   "disc_26",
+   "disc_69",
+   "disc_455",
+   "disc_427",
+   "disc_590"
+  ]
+ },
+ {
+  "tid": "disc_28",
+  "support": 1,
+  "status": "archived",
+  "canonical": "The player asks a direct, pointed question about the perceived risk-reward balance of the current suspects' actions in relation to recent night events.",
+  "neighbors": [
+   "disc_630",
+   "disc_418",
+   "disc_687",
+   "disc_632",
+   "disc_316",
+   "disc_407",
+   "disc_592",
+   "disc_704"
+  ]
+ },
+ {
+  "tid": "disc_29",
+  "support": 7,
+  "status": "incumbent",
+  "canonical": "Announces having been the target of a failed night attack.",
+  "neighbors": [
+   "disc_386",
+   "disc_407",
+   "disc_366",
+   "disc_726",
+   "disc_330",
+   "disc_395",
+   "disc_133",
+   "disc_446"
+  ]
+ },
+ {
+  "tid": "disc_30",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Justifies a previous decision to abstain from voting by explaining their reasoning for the inaction.",
+  "neighbors": [
+   "disc_136",
+   "disc_365",
+   "disc_335",
+   "disc_118",
+   "disc_179",
+   "disc_336",
+   "disc_617",
+   "disc_392"
+  ]
+ },
+ {
+  "tid": "disc_31",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Publicly acknowledges and reflects on their part in a past voting error that removed a player revealed on death as the investigator.",
+  "neighbors": [
+   "disc_665",
+   "disc_731",
+   "disc_69",
+   "disc_27",
+   "disc_111",
+   "disc_590",
+   "disc_414",
+   "disc_246"
+  ]
+ },
+ {
+  "tid": "disc_32",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Challenges other players for opting to abstain from voting during a period where a confirmed threat had been identified.",
+  "neighbors": [
+   "disc_336",
+   "disc_316",
+   "disc_545",
+   "disc_411",
+   "disc_714",
+   "disc_597",
+   "disc_335",
+   "disc_687"
+  ]
+ },
+ {
+  "tid": "disc_33",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Deflects a challenge regarding their voting behavior by shifting the focus to identifying who initiated the consensus on a past failed vote.",
+  "neighbors": [
+   "disc_110",
+   "disc_106",
+   "disc_183",
+   "disc_663",
+   "disc_369",
+   "disc_99",
+   "disc_434",
+   "disc_457"
+  ]
+ },
+ {
+  "tid": "disc_34",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player frames their own previous behavior as an attempt to prevent snap decisions or chaos rather than as an attempt to protect a specific person.",
+  "neighbors": [
+   "disc_218",
+   "disc_546",
+   "disc_256",
+   "disc_391",
+   "disc_72",
+   "disc_433",
+   "disc_613",
+   "disc_468"
+  ]
+ },
+ {
+  "tid": "disc_35",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player highlights their own unique position in a vote to emphasize their own independence and lack of involvement in past deadlock situations.",
+  "neighbors": [
+   "disc_635",
+   "disc_103",
+   "disc_107",
+   "disc_690",
+   "disc_550",
+   "disc_432",
+   "disc_450",
+   "disc_485"
+  ]
+ },
+ {
+  "tid": "disc_36",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player suggests that current voting patterns are the primary indicator of role alignment and requests a re-examination of past records to find patterns.",
+  "neighbors": [
+   "disc_420",
+   "disc_247",
+   "disc_513",
+   "disc_283",
+   "disc_714",
+   "disc_543",
+   "disc_23",
+   "disc_707"
+  ]
+ },
+ {
+  "tid": "disc_37",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player directs other players to focus on the strategic incentives and win conditions of different factions to justify why a specific past action occurred.",
+  "neighbors": [
+   "disc_512",
+   "disc_217",
+   "disc_543",
+   "disc_713",
+   "disc_218",
+   "disc_256",
+   "disc_372",
+   "disc_394"
+  ]
+ },
+ {
+  "tid": "disc_38",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player refuses to commit to an elimination until receiving more arguments or evidence from other remaining players in the final moments of a game.",
+  "neighbors": [
+   "disc_206",
+   "disc_596",
+   "disc_715",
+   "disc_277",
+   "disc_547",
+   "disc_74",
+   "disc_637",
+   "disc_682"
+  ]
+ },
+ {
+  "tid": "disc_58",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Discourages taking action based on current information while suggesting a passive observation strategy.",
+  "neighbors": [
+   "disc_59",
+   "disc_383",
+   "disc_167",
+   "disc_60",
+   "disc_501",
+   "disc_493",
+   "disc_610",
+   "disc_317"
+  ]
+ },
+ {
+  "tid": "disc_59",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses alignment with a cautious approach while explicitly stating that available data is insufficient.",
+  "neighbors": [
+   "disc_58",
+   "disc_136",
+   "disc_608",
+   "disc_215",
+   "disc_360",
+   "disc_60",
+   "disc_664",
+   "disc_383"
+  ]
+ },
+ {
+  "tid": "disc_60",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Suggests that the group should maintain future accountability despite agreeing with the consensus to wait.",
+  "neighbors": [
+   "disc_179",
+   "disc_494",
+   "disc_58",
+   "disc_392",
+   "disc_24",
+   "disc_383",
+   "disc_681",
+   "disc_412"
+  ]
+ },
+ {
+  "tid": "disc_61",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player confronts a specific individual regarding their lack of participation in the ongoing discussion.",
+  "neighbors": [
+   "disc_550",
+   "disc_527",
+   "disc_70",
+   "disc_448",
+   "disc_308",
+   "disc_101",
+   "disc_257",
+   "disc_316"
+  ]
+ },
+ {
+  "tid": "disc_62",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player justifies their relative lack of recent engagement as a deliberate effort to avoid creating noise or speculation without evidence.",
+  "neighbors": [
+   "disc_433",
+   "disc_608",
+   "disc_661",
+   "disc_338",
+   "disc_618",
+   "disc_167",
+   "disc_683",
+   "disc_708"
+  ]
+ },
+ {
+  "tid": "disc_63",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player justifies their previous vote by characterizing the target's behavior as an erratic distraction from the group's goals.",
+  "neighbors": [
+   "disc_64",
+   "disc_373",
+   "disc_584",
+   "disc_457",
+   "disc_255",
+   "disc_218",
+   "disc_593",
+   "disc_343"
+  ]
+ },
+ {
+  "tid": "disc_64",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies their previous vote by characterizing the target's behavior as an attempt to force a binary choice on the village.",
+  "neighbors": [
+   "disc_63",
+   "disc_255",
+   "disc_584",
+   "disc_69",
+   "disc_528",
+   "disc_111",
+   "disc_373",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_65",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player points out that the individuals who voted for a target are the same ones who are now being scrutinized following that target's death.",
+  "neighbors": [
+   "disc_225",
+   "disc_455",
+   "disc_68",
+   "disc_568",
+   "disc_512",
+   "disc_247",
+   "disc_513",
+   "disc_232"
+  ]
+ },
+ {
+  "tid": "disc_66",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player deflects an accusation of wrongdoing by arguing that those who abstained from voting are just as responsible for the outcome as those who cast a vote.",
+  "neighbors": [
+   "disc_434",
+   "disc_471",
+   "disc_106",
+   "disc_336",
+   "disc_112",
+   "disc_457",
+   "disc_362",
+   "disc_70"
+  ]
+ },
+ {
+  "tid": "disc_67",
+  "support": 5,
+  "status": "incumbent",
+  "canonical": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior.",
+  "neighbors": [
+   "disc_728",
+   "disc_574",
+   "disc_457",
+   "disc_314",
+   "disc_106",
+   "disc_485",
+   "disc_419",
+   "disc_25"
+  ]
+ },
+ {
+  "tid": "disc_68",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that labeling those who voted for a deceased player as suspicious is a counterproductive method that only increases group confusion.",
+  "neighbors": [
+   "disc_247",
+   "disc_65",
+   "disc_549",
+   "disc_225",
+   "disc_548",
+   "disc_409",
+   "disc_285",
+   "disc_162"
+  ]
+ },
+ {
+  "tid": "disc_69",
+  "support": 1,
+  "status": "archived",
+  "canonical": "When under sustained pressure to justify a past vote against a player revealed on death to be the investigator, the player repeatedly attempts to redirect the conversation toward the voting behavior of other living participants.",
+  "neighbors": [
+   "disc_731",
+   "disc_111",
+   "disc_473",
+   "disc_451",
+   "disc_427",
+   "disc_99",
+   "disc_283",
+   "disc_543"
+  ]
+ },
+ {
+  "tid": "disc_70",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player insists on holding others accountable for the outcome of a specific past vote, repeatedly dismissing the justifications offered by the accused participant.",
+  "neighbors": [
+   "disc_252",
+   "disc_731",
+   "disc_372",
+   "disc_512",
+   "disc_373",
+   "disc_183",
+   "disc_432",
+   "disc_99"
+  ]
+ },
+ {
+  "tid": "disc_71",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player actively probes for group consensus regarding the potential coordination of past votes between a participant and a player revealed on death to have been a serial killer.",
+  "neighbors": [
+   "disc_76",
+   "disc_525",
+   "disc_137",
+   "disc_247",
+   "disc_427",
+   "disc_702",
+   "disc_731",
+   "disc_69"
+  ]
+ },
+ {
+  "tid": "disc_72",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes their own previous controversial action as an act of transparency rather than a strategic mistake when challenged.",
+  "neighbors": [
+   "disc_256",
+   "disc_343",
+   "disc_613",
+   "disc_217",
+   "disc_713",
+   "disc_391",
+   "disc_218",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_73",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player questions why a previously cast vote aligned with the target of a known night-action threat, framing it as evidence of a potential partnership.",
+  "neighbors": [
+   "disc_512",
+   "disc_455",
+   "disc_473",
+   "disc_451",
+   "disc_584",
+   "disc_250",
+   "disc_454",
+   "disc_582"
+  ]
+ },
+ {
+  "tid": "disc_74",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Insists that the remaining players in the room are all on the same team as a method of forcing an elimination.",
+  "neighbors": [
+   "disc_329",
+   "disc_464",
+   "disc_569",
+   "disc_467",
+   "disc_38",
+   "disc_550",
+   "disc_715",
+   "disc_686"
+  ]
+ },
+ {
+  "tid": "disc_75",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Counters an accusation by claiming the accuser is attempting to frame the remaining players to secure their own victory.",
+  "neighbors": [
+   "disc_530",
+   "disc_232",
+   "disc_419",
+   "disc_687",
+   "disc_112",
+   "disc_465",
+   "disc_418",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_76",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "Defends against an accusation by citing past voting actions against a player who was revealed on death to be a serial killer.",
+  "neighbors": [
+   "disc_455",
+   "disc_319",
+   "disc_71",
+   "disc_255",
+   "disc_525",
+   "disc_414",
+   "disc_137",
+   "disc_528"
+  ]
+ },
+ {
+  "tid": "disc_77",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Justifies a current vote by referencing the voting record of an opponent on a previous day.",
+  "neighbors": [
+   "disc_104",
+   "disc_373",
+   "disc_110",
+   "disc_183",
+   "disc_255",
+   "disc_33",
+   "disc_584",
+   "disc_175"
+  ]
+ },
+ {
+  "tid": "disc_95",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "A player advocates for establishing a concrete metric or threshold for voting to avoid aimless gameplay.",
+  "neighbors": [
+   "disc_659",
+   "disc_707",
+   "disc_162",
+   "disc_509",
+   "disc_229",
+   "disc_131",
+   "disc_284",
+   "disc_176"
+  ]
+ },
+ {
+  "tid": "disc_96",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player proposes a specific group activity to evaluate others based on a subjective behavioral metric.",
+  "neighbors": [
+   "disc_169",
+   "disc_509",
+   "disc_287",
+   "disc_251",
+   "disc_532",
+   "disc_168",
+   "disc_329",
+   "disc_548"
+  ]
+ },
+ {
+  "tid": "disc_97",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player critiques a proposed method of analysis by labeling it as potentially projecting subjective intent.",
+  "neighbors": [
+   "disc_391",
+   "disc_499",
+   "disc_357",
+   "disc_98",
+   "disc_281",
+   "disc_23",
+   "disc_636",
+   "disc_130"
+  ]
+ },
+ {
+  "tid": "disc_98",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses suspicion regarding those who define new metrics for identifying suspicious behavior.",
+  "neighbors": [
+   "disc_497",
+   "disc_469",
+   "disc_391",
+   "disc_185",
+   "disc_287",
+   "disc_728",
+   "disc_736",
+   "disc_636"
+  ]
+ },
+ {
+  "tid": "disc_99",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Repeatedly demands that a specific player address past voting behavior and procedural suggestions to deflect from the current conversation.",
+  "neighbors": [
+   "disc_485",
+   "disc_25",
+   "disc_457",
+   "disc_252",
+   "disc_473",
+   "disc_334",
+   "disc_106",
+   "disc_70"
+  ]
+ },
+ {
+  "tid": "disc_100",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Frames procedural suggestions as logical necessity while dismissing concerns about their own past behavior as a misinterpretation of their intent.",
+  "neighbors": [
+   "disc_218",
+   "disc_34",
+   "disc_214",
+   "disc_99",
+   "disc_391",
+   "disc_256",
+   "disc_212",
+   "disc_663"
+  ]
+ },
+ {
+  "tid": "disc_101",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses skepticism toward active participants while redirecting the focus of the group toward those who have remained quiet during discussions.",
+  "neighbors": [
+   "disc_285",
+   "disc_61",
+   "disc_201",
+   "disc_254",
+   "disc_359",
+   "disc_332",
+   "disc_550",
+   "disc_554"
+  ]
+ },
+ {
+  "tid": "disc_102",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes an opponent's appeal to their own survival as a manipulative narrative tactic.",
+  "neighbors": [
+   "disc_184",
+   "disc_483",
+   "disc_292",
+   "disc_168",
+   "disc_465",
+   "disc_468",
+   "disc_419",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_103",
+  "support": 6,
+  "status": "incumbent",
+  "canonical": "A player claims their past voting behavior was motivated by a desire to resolve persistent deadlocks in the voting process.",
+  "neighbors": [
+   "disc_107",
+   "disc_635",
+   "disc_250",
+   "disc_511",
+   "disc_104",
+   "disc_118",
+   "disc_218",
+   "disc_485"
+  ]
+ },
+ {
+  "tid": "disc_104",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player argues that an opponent's reliance on past voting history is a strategy to avoid current scrutiny.",
+  "neighbors": [
+   "disc_512",
+   "disc_485",
+   "disc_372",
+   "disc_183",
+   "disc_334",
+   "disc_457",
+   "disc_252",
+   "disc_371"
+  ]
+ },
+ {
+  "tid": "disc_105",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly declares their intention to follow a specific push by another player to break a voting stalemate.",
+  "neighbors": [
+   "disc_293",
+   "disc_166",
+   "disc_450",
+   "disc_578",
+   "disc_290",
+   "disc_305",
+   "disc_363",
+   "disc_635"
+  ]
+ },
+ {
+  "tid": "disc_106",
+  "support": 4,
+  "status": "probation",
+  "canonical": "When directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior.",
+  "neighbors": [
+   "disc_457",
+   "disc_473",
+   "disc_283",
+   "disc_334",
+   "disc_255",
+   "disc_485",
+   "disc_99",
+   "disc_451"
+  ]
+ },
+ {
+  "tid": "disc_107",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "The player frames their past voting behavior as a necessary logical response to a deadlock to defend against accusations of collusion.",
+  "neighbors": [
+   "disc_103",
+   "disc_218",
+   "disc_613",
+   "disc_635",
+   "disc_658",
+   "disc_104",
+   "disc_111",
+   "disc_118"
+  ]
+ },
+ {
+  "tid": "disc_108",
+  "support": 1,
+  "status": "archived",
+  "canonical": "The player explicitly cites their own history of initiating or driving votes as proof of their desire to resolve the game, as a rebuttal to suspicion.",
+  "neighbors": [
+   "disc_584",
+   "disc_255",
+   "disc_175",
+   "disc_658",
+   "disc_635",
+   "disc_716",
+   "disc_183",
+   "disc_103"
+  ]
+ },
+ {
+  "tid": "disc_109",
+  "support": 1,
+  "status": "archived",
+  "canonical": "When challenged to provide alternative suspects, the player directs focus back to the same subset of players they had previously accused.",
+  "neighbors": [
+   "disc_687",
+   "disc_316",
+   "disc_69",
+   "disc_106",
+   "disc_473",
+   "disc_543",
+   "disc_232",
+   "disc_332"
+  ]
+ },
+ {
+  "tid": "disc_110",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Deflects from direct suspicion of a specific past voting record by claiming that criticizing those who voted is unproductive.",
+  "neighbors": [
+   "disc_33",
+   "disc_485",
+   "disc_663",
+   "disc_730",
+   "disc_314",
+   "disc_106",
+   "disc_104",
+   "disc_66"
+  ]
+ },
+ {
+  "tid": "disc_111",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Defends a past voting record against a player now known to be the investigator by characterizing it as a simple act of breaking a stalemate.",
+  "neighbors": [
+   "disc_69",
+   "disc_107",
+   "disc_255",
+   "disc_690",
+   "disc_731",
+   "disc_635",
+   "disc_528",
+   "disc_658"
+  ]
+ },
+ {
+  "tid": "disc_112",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Counters an accusation by suggesting that those who abstained from past votes are the ones actually hiding their roles.",
+  "neighbors": [
+   "disc_106",
+   "disc_255",
+   "disc_530",
+   "disc_455",
+   "disc_75",
+   "disc_687",
+   "disc_451",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_113",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes selecting a target specifically from the group of players who previously abstained to force a resolution.",
+  "neighbors": [
+   "disc_550",
+   "disc_166",
+   "disc_617",
+   "disc_385",
+   "disc_105",
+   "disc_544",
+   "disc_688",
+   "disc_244"
+  ]
+ },
+ {
+  "tid": "disc_114",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Warns against a group of players who seem to be coordinating their defense in response to criticism of a past vote.",
+  "neighbors": [
+   "disc_714",
+   "disc_582",
+   "disc_290",
+   "disc_340",
+   "disc_511",
+   "disc_656",
+   "disc_117",
+   "disc_411"
+  ]
+ },
+ {
+  "tid": "disc_115",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Challenges the idea of targeting players solely based on their previous voting history rather than current inconsistencies in their arguments.",
+  "neighbors": [
+   "disc_104",
+   "disc_512",
+   "disc_485",
+   "disc_252",
+   "disc_511",
+   "disc_23",
+   "disc_372",
+   "disc_218"
+  ]
+ },
+ {
+  "tid": "disc_116",
+  "support": 1,
+  "status": "archived",
+  "canonical": "deflects onto their accuser rather than addressing the substance of the accusation when directly challenged.",
+  "neighbors": [
+   "disc_514",
+   "disc_22",
+   "disc_332",
+   "disc_574",
+   "disc_699",
+   "disc_106",
+   "disc_732",
+   "disc_730"
+  ]
+ },
+ {
+  "tid": "disc_117",
+  "support": 1,
+  "status": "archived",
+  "canonical": "cites the consistency of voting patterns between two other players as primary evidence of a coordinated group.",
+  "neighbors": [
+   "disc_582",
+   "disc_290",
+   "disc_114",
+   "disc_174",
+   "disc_594",
+   "disc_584",
+   "disc_337",
+   "disc_596"
+  ]
+ },
+ {
+  "tid": "disc_118",
+  "support": 2,
+  "status": "archived",
+  "canonical": "defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock.",
+  "neighbors": [
+   "disc_633",
+   "disc_107",
+   "disc_103",
+   "disc_111",
+   "disc_367",
+   "disc_203",
+   "disc_318",
+   "disc_218"
+  ]
+ },
+ {
+  "tid": "disc_119",
+  "support": 1,
+  "status": "archived",
+  "canonical": "acknowledges a lack of active participation in the discussion while explaining it as a reaction to repeated circular arguments.",
+  "neighbors": [
+   "disc_657",
+   "disc_62",
+   "disc_30",
+   "disc_101",
+   "disc_589",
+   "disc_661",
+   "disc_61",
+   "disc_342"
+  ]
+ },
+ {
+  "tid": "disc_129",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player frames a night-time event as a strategic opportunity to fish for information from the group.",
+  "neighbors": [
+   "disc_19",
+   "disc_250",
+   "disc_253",
+   "disc_334",
+   "disc_483",
+   "disc_143",
+   "disc_133",
+   "disc_554"
+  ]
+ },
+ {
+  "tid": "disc_130",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that specific observations about the game flow are meant to hide a failed attack.",
+  "neighbors": [
+   "disc_133",
+   "disc_313",
+   "disc_258",
+   "disc_391",
+   "disc_407",
+   "disc_98",
+   "disc_281",
+   "disc_97"
+  ]
+ },
+ {
+  "tid": "disc_131",
+  "support": 3,
+  "status": "incumbent",
+  "canonical": "A player proposes monitoring future voting patterns rather than focusing on current verbal arguments.",
+  "neighbors": [
+   "disc_485",
+   "disc_707",
+   "disc_253",
+   "disc_659",
+   "disc_176",
+   "disc_337",
+   "disc_284",
+   "disc_509"
+  ]
+ },
+ {
+  "tid": "disc_132",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player acknowledges their own status as a high-priority target for attacks while discouraging the group from assigning specific roles to them.",
+  "neighbors": [
+   "disc_18",
+   "disc_141",
+   "disc_567",
+   "disc_178",
+   "disc_251",
+   "disc_444",
+   "disc_708",
+   "disc_685"
+  ]
+ },
+ {
+  "tid": "disc_133",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that the timing of night attacks may provide information about which players possess defensive capabilities.",
+  "neighbors": [
+   "disc_482",
+   "disc_407",
+   "disc_258",
+   "disc_130",
+   "disc_129",
+   "disc_253",
+   "disc_615",
+   "disc_726"
+  ]
+ },
+ {
+  "tid": "disc_134",
+  "support": 1,
+  "status": "archived",
+  "canonical": "suggests scrutinizing specific participants from previous days as a strategy to identify threats",
+  "neighbors": [
+   "disc_138",
+   "disc_551",
+   "disc_406",
+   "disc_387",
+   "disc_393",
+   "disc_285",
+   "disc_287",
+   "disc_580"
+  ]
+ },
+ {
+  "tid": "disc_135",
+  "support": 1,
+  "status": "archived",
+  "canonical": "suggests analyzing players who remained silent during periods of consensus building",
+  "neighbors": [
+   "disc_249",
+   "disc_177",
+   "disc_393",
+   "disc_707",
+   "disc_285",
+   "disc_493",
+   "disc_618",
+   "disc_167"
+  ]
+ },
+ {
+  "tid": "disc_136",
+  "support": 1,
+  "status": "archived",
+  "canonical": "frames the lack of available information as the primary justification for a previous unanimous abstention",
+  "neighbors": [
+   "disc_30",
+   "disc_392",
+   "disc_664",
+   "disc_661",
+   "disc_608",
+   "disc_471",
+   "disc_179",
+   "disc_59"
+  ]
+ },
+ {
+  "tid": "disc_137",
+  "support": 1,
+  "status": "archived",
+  "canonical": "argues against shifting the topic toward analyzing the actions of a player revealed on death to have been the serial killer, labeling it a distraction",
+  "neighbors": [
+   "disc_76",
+   "disc_370",
+   "disc_71",
+   "disc_314",
+   "disc_225",
+   "disc_419",
+   "disc_364",
+   "disc_340"
+  ]
+ },
+ {
+  "tid": "disc_138",
+  "support": 1,
+  "status": "archived",
+  "canonical": "proposes using the target of an outside actor, whose role is unknown, as a data point to identify potential threats",
+  "neighbors": [
+   "disc_134",
+   "disc_387",
+   "disc_406",
+   "disc_415",
+   "disc_610",
+   "disc_732",
+   "disc_98",
+   "disc_208"
+  ]
+ },
+ {
+  "tid": "disc_139",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who claims a high-information role late in the game presents a list of other players they claim to have already cleared.",
+  "neighbors": [
+   "disc_467",
+   "disc_715",
+   "disc_711",
+   "disc_416",
+   "disc_288",
+   "disc_464",
+   "disc_275",
+   "disc_140"
+  ]
+ },
+ {
+  "tid": "disc_140",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player responds to a late-game role claim by questioning why the information was withheld throughout previous days of discussion.",
+  "neighbors": [
+   "disc_171",
+   "disc_704",
+   "disc_418",
+   "disc_417",
+   "disc_416",
+   "disc_512",
+   "disc_577",
+   "disc_316"
+  ]
+ },
+ {
+  "tid": "disc_141",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses concern that being publicly named by a role-claimer makes them a priority target for remaining threats.",
+  "neighbors": [
+   "disc_18",
+   "disc_549",
+   "disc_482",
+   "disc_464",
+   "disc_569",
+   "disc_165",
+   "disc_178",
+   "disc_282"
+  ]
+ },
+ {
+  "tid": "disc_142",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player addresses a role-claimer by demanding specific, verifiable evidence to support their accusation against another player.",
+  "neighbors": [
+   "disc_21",
+   "disc_277",
+   "disc_316",
+   "disc_390",
+   "disc_233",
+   "disc_467",
+   "disc_202",
+   "disc_418"
+  ]
+ },
+ {
+  "tid": "disc_143",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "A player explains their silence throughout the game as a calculated strategy to survive while gathering information.",
+  "neighbors": [
+   "disc_250",
+   "disc_285",
+   "disc_707",
+   "disc_658",
+   "disc_416",
+   "disc_529",
+   "disc_472",
+   "disc_662"
+  ]
+ },
+ {
+  "tid": "disc_162",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player proposes a specific criteria for identifying deceptive behavior by suggesting that votes made without accompanying reasoning are indicators of hidden roles.",
+  "neighbors": [
+   "disc_707",
+   "disc_164",
+   "disc_285",
+   "disc_409",
+   "disc_420",
+   "disc_36",
+   "disc_184",
+   "disc_584"
+  ]
+ },
+ {
+  "tid": "disc_163",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests forcing a nomination early in the discussion to compel other players to reveal their positions.",
+  "neighbors": [
+   "disc_409",
+   "disc_727",
+   "disc_204",
+   "disc_549",
+   "disc_548",
+   "disc_464",
+   "disc_285",
+   "disc_552"
+  ]
+ },
+ {
+  "tid": "disc_164",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player specifies a narrow and exclusionary criteria for suspicious voting, targeting only those who push for eliminations of quiet players.",
+  "neighbors": [
+   "disc_162",
+   "disc_285",
+   "disc_584",
+   "disc_707",
+   "disc_549",
+   "disc_686",
+   "disc_637",
+   "disc_409"
+  ]
+ },
+ {
+  "tid": "disc_165",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player claims a special role during a public discussion.",
+  "neighbors": [
+   "disc_467",
+   "disc_569",
+   "disc_204",
+   "disc_251",
+   "disc_310",
+   "disc_464",
+   "disc_727",
+   "disc_715"
+  ]
+ },
+ {
+  "tid": "disc_166",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player actively pushes the group to move from discussion to a formal vote.",
+  "neighbors": [
+   "disc_544",
+   "disc_450",
+   "disc_538",
+   "disc_432",
+   "disc_509",
+   "disc_653",
+   "disc_545",
+   "disc_550"
+  ]
+ },
+ {
+  "tid": "disc_167",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player advises caution against making a decision based on the silence or inactivity of others.",
+  "neighbors": [
+   "disc_285",
+   "disc_411",
+   "disc_312",
+   "disc_493",
+   "disc_707",
+   "disc_338",
+   "disc_408",
+   "disc_207"
+  ]
+ },
+ {
+  "tid": "disc_168",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes the actions of others as being an attempt to manipulate or steer the group.",
+  "neighbors": [
+   "disc_468",
+   "disc_588",
+   "disc_214",
+   "disc_256",
+   "disc_448",
+   "disc_25",
+   "disc_287",
+   "disc_391"
+  ]
+ },
+ {
+  "tid": "disc_169",
+  "support": 3,
+  "status": "archived",
+  "canonical": "A player suggests a specific, rigid condition for evaluating other players in future rounds.",
+  "neighbors": [
+   "disc_509",
+   "disc_96",
+   "disc_172",
+   "disc_544",
+   "disc_526",
+   "disc_707",
+   "disc_573",
+   "disc_373"
+  ]
+ },
+ {
+  "tid": "disc_170",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player reveals information about their role and a target only after the group has already moved past a period of inactivity.",
+  "neighbors": [
+   "disc_330",
+   "disc_577",
+   "disc_291",
+   "disc_282",
+   "disc_275",
+   "disc_288",
+   "disc_715",
+   "disc_204"
+  ]
+ },
+ {
+  "tid": "disc_171",
+  "support": 3,
+  "status": "probation",
+  "canonical": "A player challenges an accuser by highlighting the suspicious timing of a late-game reveal.",
+  "neighbors": [
+   "disc_292",
+   "disc_704",
+   "disc_419",
+   "disc_417",
+   "disc_140",
+   "disc_455",
+   "disc_26",
+   "disc_571"
+  ]
+ },
+ {
+  "tid": "disc_172",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly conditions their support for a target on the future outcome of the game's revealed information.",
+  "neighbors": [
+   "disc_579",
+   "disc_290",
+   "disc_509",
+   "disc_532",
+   "disc_169",
+   "disc_501",
+   "disc_105",
+   "disc_577"
+  ]
+ },
+ {
+  "tid": "disc_173",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player acknowledges that a role claim is convenient but argues that testing the claim is a necessary risk to end a stalemate.",
+  "neighbors": [
+   "disc_417",
+   "disc_571",
+   "disc_579",
+   "disc_528",
+   "disc_416",
+   "disc_111",
+   "disc_420",
+   "disc_705"
+  ]
+ },
+ {
+  "tid": "disc_174",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player claims to have successfully investigated specific players who were subsequently voted out.",
+  "neighbors": [
+   "disc_464",
+   "disc_467",
+   "disc_569",
+   "disc_250",
+   "disc_715",
+   "disc_584",
+   "disc_409",
+   "disc_420"
+  ]
+ },
+ {
+  "tid": "disc_175",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player defends their own track record by citing their past support for another player's accusations.",
+  "neighbors": [
+   "disc_716",
+   "disc_255",
+   "disc_658",
+   "disc_584",
+   "disc_104",
+   "disc_717",
+   "disc_455",
+   "disc_76"
+  ]
+ },
+ {
+  "tid": "disc_176",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player proposes analyzing the timing of past votes to identify patterns of hesitation or acceleration among the participants.",
+  "neighbors": [
+   "disc_177",
+   "disc_131",
+   "disc_206",
+   "disc_714",
+   "disc_36",
+   "disc_547",
+   "disc_337",
+   "disc_511"
+  ]
+ },
+ {
+  "tid": "disc_177",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests looking at the speed at which other players committed to a previous vote to distinguish between consensus-building and distancing.",
+  "neighbors": [
+   "disc_176",
+   "disc_249",
+   "disc_659",
+   "disc_131",
+   "disc_707",
+   "disc_552",
+   "disc_285",
+   "disc_637"
+  ]
+ },
+ {
+  "tid": "disc_178",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player highlights the potential negative consequences for the group if an accusation against them is followed.",
+  "neighbors": [
+   "disc_411",
+   "disc_495",
+   "disc_276",
+   "disc_571",
+   "disc_468",
+   "disc_682",
+   "disc_465",
+   "disc_496"
+  ]
+ },
+ {
+  "tid": "disc_179",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Defends their own previous voting timing by claiming they were waiting for more information before committing to the consensus.",
+  "neighbors": [
+   "disc_318",
+   "disc_383",
+   "disc_596",
+   "disc_660",
+   "disc_456",
+   "disc_367",
+   "disc_416",
+   "disc_33"
+  ]
+ },
+ {
+  "tid": "disc_180",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day.",
+  "neighbors": [
+   "disc_33",
+   "disc_365",
+   "disc_633",
+   "disc_369",
+   "disc_257",
+   "disc_592",
+   "disc_475",
+   "disc_183"
+  ]
+ },
+ {
+  "tid": "disc_181",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Suggests cross-referencing a player's current behavior with their past voting patterns to determine if their caution is consistent or situational.",
+  "neighbors": [
+   "disc_707",
+   "disc_207",
+   "disc_652",
+   "disc_511",
+   "disc_283",
+   "disc_23",
+   "disc_36",
+   "disc_512"
+  ]
+ },
+ {
+  "tid": "disc_182",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Questions why a player did not voice concerns about a consensus target before the majority was reached.",
+  "neighbors": [
+   "disc_527",
+   "disc_369",
+   "disc_668",
+   "disc_554",
+   "disc_257",
+   "disc_475",
+   "disc_512",
+   "disc_61"
+  ]
+ },
+ {
+  "tid": "disc_183",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player focuses their argument against another participant by citing that player's history of initiating past group votes.",
+  "neighbors": [
+   "disc_252",
+   "disc_104",
+   "disc_512",
+   "disc_388",
+   "disc_457",
+   "disc_485",
+   "disc_373",
+   "disc_334"
+  ]
+ },
+ {
+  "tid": "disc_184",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes an opponent's previous voting logic as a calculated attempt to gain credibility rather than a genuine effort to identify threats.",
+  "neighbors": [
+   "disc_104",
+   "disc_343",
+   "disc_584",
+   "disc_457",
+   "disc_483",
+   "disc_250",
+   "disc_542",
+   "disc_465"
+  ]
+ },
+ {
+  "tid": "disc_185",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player frames a conflict between two others as a potential distraction while explicitly questioning how to verify which of them is the genuine threat.",
+  "neighbors": [
+   "disc_553",
+   "disc_735",
+   "disc_341",
+   "disc_497",
+   "disc_340",
+   "disc_576",
+   "disc_308",
+   "disc_666"
+  ]
+ },
+ {
+  "tid": "disc_186",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player reverses an accusation when challenged by suggesting that the person accusing them is actually the one who drove the speed of a past controversial vote.",
+  "neighbors": [
+   "disc_455",
+   "disc_106",
+   "disc_473",
+   "disc_465",
+   "disc_171",
+   "disc_388",
+   "disc_432",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_201",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Continually pivots back to questioning the initial consensus of the group after being challenged on the validity of that line of inquiry.",
+  "neighbors": [
+   "disc_101",
+   "disc_99",
+   "disc_212",
+   "disc_388",
+   "disc_25",
+   "disc_33",
+   "disc_429",
+   "disc_527"
+  ]
+ },
+ {
+  "tid": "disc_202",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Directly confronts another player by labeling their specific line of questioning as a contradiction or a transparent attempt to cast suspicion.",
+  "neighbors": [
+   "disc_316",
+   "disc_689",
+   "disc_687",
+   "disc_21",
+   "disc_308",
+   "disc_419",
+   "disc_588",
+   "disc_465"
+  ]
+ },
+ {
+  "tid": "disc_203",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Advocates for focusing on current contribution patterns rather than re-analyzing past agreements when the group debates previous strategy.",
+  "neighbors": [
+   "disc_209",
+   "disc_118",
+   "disc_485",
+   "disc_23",
+   "disc_252",
+   "disc_679",
+   "disc_524",
+   "disc_372"
+  ]
+ },
+ {
+  "tid": "disc_204",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player initiates a discussion about sharing role information during the first round of the game.",
+  "neighbors": [
+   "disc_205",
+   "disc_165",
+   "disc_680",
+   "disc_467",
+   "disc_282",
+   "disc_727",
+   "disc_163",
+   "disc_170"
+  ]
+ },
+ {
+  "tid": "disc_205",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly warns against the danger of revealing roles during the opening discussion.",
+  "neighbors": [
+   "disc_204",
+   "disc_411",
+   "disc_227",
+   "disc_408",
+   "disc_165",
+   "disc_285",
+   "disc_19",
+   "disc_570"
+  ]
+ },
+ {
+  "tid": "disc_206",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests delaying the voting process to gather more information.",
+  "neighbors": [
+   "disc_207",
+   "disc_547",
+   "disc_277",
+   "disc_340",
+   "disc_682",
+   "disc_176",
+   "disc_408",
+   "disc_656"
+  ]
+ },
+ {
+  "tid": "disc_207",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player reinforces another player's suggestion to maintain caution and delay voting.",
+  "neighbors": [
+   "disc_206",
+   "disc_340",
+   "disc_656",
+   "disc_277",
+   "disc_570",
+   "disc_545",
+   "disc_19",
+   "disc_408"
+  ]
+ },
+ {
+  "tid": "disc_208",
+  "support": 1,
+  "status": "archived",
+  "canonical": "labels questioning of past meta-strategy as an intentional distraction from finding active threats.",
+  "neighbors": [
+   "disc_620",
+   "disc_732",
+   "disc_683",
+   "disc_214",
+   "disc_314",
+   "disc_67",
+   "disc_499",
+   "disc_203"
+  ]
+ },
+ {
+  "tid": "disc_209",
+  "support": 1,
+  "status": "archived",
+  "canonical": "prioritizes outcomes and current participation over analyzing the reasoning behind previous collective decisions.",
+  "neighbors": [
+   "disc_203",
+   "disc_118",
+   "disc_367",
+   "disc_524",
+   "disc_664",
+   "disc_318",
+   "disc_212",
+   "disc_23"
+  ]
+ },
+ {
+  "tid": "disc_210",
+  "support": 1,
+  "status": "archived",
+  "canonical": "explicitly links their current hesitation to vote with the outcome of a previous vote against a player revealed on death as a villager.",
+  "neighbors": [
+   "disc_414",
+   "disc_733",
+   "disc_320",
+   "disc_247",
+   "disc_665",
+   "disc_731",
+   "disc_319",
+   "disc_335"
+  ]
+ },
+ {
+  "tid": "disc_211",
+  "support": 2,
+  "status": "archived",
+  "canonical": "expresses wariness of players who demonstrate high-energy certainty in proposing a lynch target.",
+  "neighbors": [
+   "disc_234",
+   "disc_736",
+   "disc_682",
+   "disc_409",
+   "disc_114",
+   "disc_652",
+   "disc_164",
+   "disc_389"
+  ]
+ },
+ {
+  "tid": "disc_212",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Repeatedly characterizes the collective discussion as unproductive stalling to justify calls for an immediate vote.",
+  "neighbors": [
+   "disc_214",
+   "disc_99",
+   "disc_166",
+   "disc_201",
+   "disc_663",
+   "disc_179",
+   "disc_545",
+   "disc_100"
+  ]
+ },
+ {
+  "tid": "disc_213",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Cites voting patterns and past death reveals to frame previous lynch decisions as evidence of manipulated consensus.",
+  "neighbors": [
+   "disc_590",
+   "disc_247",
+   "disc_65",
+   "disc_584",
+   "disc_356",
+   "disc_76",
+   "disc_27",
+   "disc_36"
+  ]
+ },
+ {
+  "tid": "disc_214",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Labels the cautious behavior of other players as an intentional rhetorical strategy used to obstruct progress.",
+  "neighbors": [
+   "disc_431",
+   "disc_546",
+   "disc_168",
+   "disc_391",
+   "disc_394",
+   "disc_545",
+   "disc_471",
+   "disc_212"
+  ]
+ },
+ {
+  "tid": "disc_215",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses neutrality and uncertainty about which player to support while simultaneously questioning the certainty of others.",
+  "neighbors": [
+   "disc_608",
+   "disc_280",
+   "disc_736",
+   "disc_661",
+   "disc_510",
+   "disc_172",
+   "disc_185",
+   "disc_384"
+  ]
+ },
+ {
+  "tid": "disc_216",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Responds to accusations of causing delay by claiming their stance was about preventing the elimination of role-holders revealed on death.",
+  "neighbors": [
+   "disc_179",
+   "disc_364",
+   "disc_596",
+   "disc_494",
+   "disc_431",
+   "disc_228",
+   "disc_545",
+   "disc_730"
+  ]
+ },
+ {
+  "tid": "disc_217",
+  "support": 1,
+  "status": "archived",
+  "canonical": "When challenged, the player justifies their past actions by pointing to the negative outcomes associated with the accuser's previous strategies.",
+  "neighbors": [
+   "disc_713",
+   "disc_72",
+   "disc_106",
+   "disc_613",
+   "disc_666",
+   "disc_218",
+   "disc_175",
+   "disc_37"
+  ]
+ },
+ {
+  "tid": "disc_218",
+  "support": 2,
+  "status": "archived",
+  "canonical": "The player frames their past voting record as a logical reaction to the behavior of others rather than as a consistent strategy.",
+  "neighbors": [
+   "disc_456",
+   "disc_107",
+   "disc_104",
+   "disc_512",
+   "disc_584",
+   "disc_613",
+   "disc_283",
+   "disc_250"
+  ]
+ },
+ {
+  "tid": "disc_219",
+  "support": 1,
+  "status": "archived",
+  "canonical": "The player demands that others explain why they interacted with certain players who were later revealed on death as having been on the same team.",
+  "neighbors": [
+   "disc_668",
+   "disc_731",
+   "disc_65",
+   "disc_26",
+   "disc_568",
+   "disc_666",
+   "disc_497",
+   "disc_512"
+  ]
+ },
+ {
+  "tid": "disc_225",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to focus the group's attention on those who were most vocal in criticizing a player who was later revealed on death as a power role.",
+  "neighbors": [
+   "disc_65",
+   "disc_247",
+   "disc_473",
+   "disc_27",
+   "disc_451",
+   "disc_427",
+   "disc_361",
+   "disc_571"
+  ]
+ },
+ {
+  "tid": "disc_226",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Proposes establishing a formal procedural framework for how the group should manage future role claims before any have occurred.",
+  "neighbors": [
+   "disc_385",
+   "disc_509",
+   "disc_230",
+   "disc_251",
+   "disc_356",
+   "disc_358",
+   "disc_430",
+   "disc_679"
+  ]
+ },
+ {
+  "tid": "disc_227",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Suggests specific tactical constraints on how players should reveal their roles if pressured, specifically advocating for partial disclosures.",
+  "neighbors": [
+   "disc_609",
+   "disc_228",
+   "disc_652",
+   "disc_651",
+   "disc_205",
+   "disc_662",
+   "disc_204",
+   "disc_170"
+  ]
+ },
+ {
+  "tid": "disc_228",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Argues against the use of partial role reveals, maintaining that any claim of a power role should require a full disclosure to avoid stalling.",
+  "neighbors": [
+   "disc_227",
+   "disc_230",
+   "disc_651",
+   "disc_571",
+   "disc_609",
+   "disc_229",
+   "disc_288",
+   "disc_139"
+  ]
+ },
+ {
+  "tid": "disc_229",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes the creation of a numerical threshold based on vote counts to trigger mandatory role reveals.",
+  "neighbors": [
+   "disc_651",
+   "disc_356",
+   "disc_162",
+   "disc_163",
+   "disc_228",
+   "disc_227",
+   "disc_95",
+   "disc_204"
+  ]
+ },
+ {
+  "tid": "disc_230",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Explicitly warns against setting standardized rules for role claims, arguing that such rules assist in managing group strategy for those with hidden roles.",
+  "neighbors": [
+   "disc_228",
+   "disc_227",
+   "disc_662",
+   "disc_609",
+   "disc_611",
+   "disc_610",
+   "disc_652",
+   "disc_226"
+  ]
+ },
+ {
+  "tid": "disc_231",
+  "support": 3,
+  "status": "probation",
+  "canonical": "A player asserts high confidence in an accusation while refusing to disclose the source of their information.",
+  "neighbors": [
+   "disc_275",
+   "disc_389",
+   "disc_467",
+   "disc_496",
+   "disc_20",
+   "disc_715",
+   "disc_139",
+   "disc_529"
+  ]
+ },
+ {
+  "tid": "disc_232",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player attempts to justify an accusation by claiming that their status as a target proves their own innocence.",
+  "neighbors": [
+   "disc_75",
+   "disc_530",
+   "disc_255",
+   "disc_419",
+   "disc_65",
+   "disc_572",
+   "disc_482",
+   "disc_389"
+  ]
+ },
+ {
+  "tid": "disc_233",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player frames an accuser's refusal to provide evidence as a logical fallacy and an attempt to force a reckless lynch.",
+  "neighbors": [
+   "disc_465",
+   "disc_682",
+   "disc_234",
+   "disc_496",
+   "disc_142",
+   "disc_335",
+   "disc_613",
+   "disc_474"
+  ]
+ },
+ {
+  "tid": "disc_234",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player discourages early lynches by emphasizing the danger of acting on accusations without concrete evidence.",
+  "neighbors": [
+   "disc_408",
+   "disc_682",
+   "disc_652",
+   "disc_656",
+   "disc_466",
+   "disc_233",
+   "disc_570",
+   "disc_411"
+  ]
+ },
+ {
+  "tid": "disc_244",
+  "support": 1,
+  "status": "archived",
+  "canonical": "proposes a voting threshold to the group to prevent inaction.",
+  "neighbors": [
+   "disc_166",
+   "disc_633",
+   "disc_430",
+   "disc_412",
+   "disc_113",
+   "disc_617",
+   "disc_118",
+   "disc_509"
+  ]
+ },
+ {
+  "tid": "disc_245",
+  "support": 1,
+  "status": "archived",
+  "canonical": "cautions against setting procedural constraints early in the day.",
+  "neighbors": [
+   "disc_58",
+   "disc_134",
+   "disc_444",
+   "disc_412",
+   "disc_610",
+   "disc_679",
+   "disc_230",
+   "disc_681"
+  ]
+ },
+ {
+  "tid": "disc_246",
+  "support": 1,
+  "status": "archived",
+  "canonical": "makes a public acknowledgement regarding the outcome of a night action that saved another player.",
+  "neighbors": [
+   "disc_614",
+   "disc_330",
+   "disc_711",
+   "disc_293",
+   "disc_31",
+   "disc_289",
+   "disc_282",
+   "disc_17"
+  ]
+ },
+ {
+  "tid": "disc_247",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player suggests focusing on the historical voting record to identify group sentiment after a player is revealed on death to have been a specific role.",
+  "neighbors": [
+   "disc_36",
+   "disc_513",
+   "disc_225",
+   "disc_68",
+   "disc_420",
+   "disc_427",
+   "disc_27",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_248",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player points out that the entire group participated in a past consensus vote and concludes that the target group must be among them.",
+  "neighbors": [
+   "disc_65",
+   "disc_257",
+   "disc_552",
+   "disc_717",
+   "disc_434",
+   "disc_232",
+   "disc_420",
+   "disc_373"
+  ]
+ },
+ {
+  "tid": "disc_249",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests looking back at early interactions for subtle steering or manipulation before a consensus was reached.",
+  "neighbors": [
+   "disc_177",
+   "disc_287",
+   "disc_135",
+   "disc_369",
+   "disc_543",
+   "disc_485",
+   "disc_552",
+   "disc_312"
+  ]
+ },
+ {
+  "tid": "disc_250",
+  "support": 3,
+  "status": "probation",
+  "canonical": "A player claims that their previous voting record was intended to gather information after being questioned about it.",
+  "neighbors": [
+   "disc_456",
+   "disc_334",
+   "disc_473",
+   "disc_104",
+   "disc_512",
+   "disc_103",
+   "disc_511",
+   "disc_335"
+  ]
+ },
+ {
+  "tid": "disc_251",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player voluntarily claims a specific role during a period of disagreement in the group.",
+  "neighbors": [
+   "disc_165",
+   "disc_467",
+   "disc_500",
+   "disc_464",
+   "disc_567",
+   "disc_569",
+   "disc_173",
+   "disc_74"
+  ]
+ },
+ {
+  "tid": "disc_252",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player maintains a singular focus on criticizing another participant's past voting history despite new information being introduced.",
+  "neighbors": [
+   "disc_70",
+   "disc_183",
+   "disc_738",
+   "disc_485",
+   "disc_512",
+   "disc_104",
+   "disc_334",
+   "disc_372"
+  ]
+ },
+ {
+  "tid": "disc_253",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests shifting the focus of discussion away from interpersonal arguments toward evaluating the implications of night event information.",
+  "neighbors": [
+   "disc_254",
+   "disc_131",
+   "disc_19",
+   "disc_408",
+   "disc_659",
+   "disc_285",
+   "disc_707",
+   "disc_334"
+  ]
+ },
+ {
+  "tid": "disc_254",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player encourages the group to identify and examine individuals who consistently attempt to redirect discussions about night activities.",
+  "neighbors": [
+   "disc_287",
+   "disc_253",
+   "disc_285",
+   "disc_334",
+   "disc_473",
+   "disc_407",
+   "disc_580",
+   "disc_283"
+  ]
+ },
+ {
+  "tid": "disc_255",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies their own voting history by contrasting it with the voting choices made by an accused player.",
+  "neighbors": [
+   "disc_584",
+   "disc_455",
+   "disc_175",
+   "disc_658",
+   "disc_716",
+   "disc_473",
+   "disc_106",
+   "disc_528"
+  ]
+ },
+ {
+  "tid": "disc_256",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player argues against their own recent actions by re-characterizing them as attempts to gain information or test others.",
+  "neighbors": [
+   "disc_72",
+   "disc_689",
+   "disc_456",
+   "disc_250",
+   "disc_572",
+   "disc_416",
+   "disc_218",
+   "disc_613"
+  ]
+ },
+ {
+  "tid": "disc_257",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player points out that a specific participant's vote on a previous day deviated from the rest of the group's consensus.",
+  "neighbors": [
+   "disc_512",
+   "disc_432",
+   "disc_554",
+   "disc_552",
+   "disc_70",
+   "disc_183",
+   "disc_527",
+   "disc_373"
+  ]
+ },
+ {
+  "tid": "disc_258",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that past survival of an attack does not provide evidence of alignment because attackers sometimes coordinate targets.",
+  "neighbors": [
+   "disc_133",
+   "disc_482",
+   "disc_703",
+   "disc_130",
+   "disc_615",
+   "disc_614",
+   "disc_36",
+   "disc_389"
+  ]
+ },
+ {
+  "tid": "disc_275",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player makes a strong accusation against another player while initially withholding the source of their information until later in the discussion.",
+  "neighbors": [
+   "disc_231",
+   "disc_727",
+   "disc_715",
+   "disc_171",
+   "disc_467",
+   "disc_140",
+   "disc_495",
+   "disc_170"
+  ]
+ },
+ {
+  "tid": "disc_276",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly warns the group that they will hold the accuser accountable if the target of the accusation is revealed on death to be innocent.",
+  "neighbors": [
+   "disc_178",
+   "disc_731",
+   "disc_455",
+   "disc_418",
+   "disc_701",
+   "disc_532",
+   "disc_389",
+   "disc_530"
+  ]
+ },
+ {
+  "tid": "disc_277",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player advises an accuser to share specific information or investigation results to validate their claims before the group proceeds with an elimination.",
+  "neighbors": [
+   "disc_682",
+   "disc_206",
+   "disc_466",
+   "disc_408",
+   "disc_142",
+   "disc_207",
+   "disc_710",
+   "disc_570"
+  ]
+ },
+ {
+  "tid": "disc_278",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player announces having performed an action against another player during the night phase and shares the result of that action as proof of their target's role.",
+  "neighbors": [
+   "disc_282",
+   "disc_711",
+   "disc_17",
+   "disc_390",
+   "disc_288",
+   "disc_684",
+   "disc_467",
+   "disc_726"
+  ]
+ },
+ {
+  "tid": "disc_279",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player positions themselves as an objective observer by stating they are waiting for their own upcoming night action results before committing to a side in a conflict.",
+  "neighbors": [
+   "disc_501",
+   "disc_253",
+   "disc_710",
+   "disc_408",
+   "disc_547",
+   "disc_466",
+   "disc_336",
+   "disc_330"
+  ]
+ },
+ {
+  "tid": "disc_280",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses skepticism about a dramatic claim by questioning whether the outcome relies entirely on the claimant's testimony rather than objective corroboration.",
+  "neighbors": [
+   "disc_700",
+   "disc_281",
+   "disc_231",
+   "disc_516",
+   "disc_728",
+   "disc_215",
+   "disc_689",
+   "disc_316"
+  ]
+ },
+ {
+  "tid": "disc_281",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges the validity of a stated proof by suggesting that alternative game mechanics could explain the outcome observed by the claimant.",
+  "neighbors": [
+   "disc_484",
+   "disc_729",
+   "disc_280",
+   "disc_316",
+   "disc_572",
+   "disc_390",
+   "disc_171",
+   "disc_689"
+  ]
+ },
+ {
+  "tid": "disc_282",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player shares specific information gathered from a night action that identifies the role of another living player.",
+  "neighbors": [
+   "disc_278",
+   "disc_467",
+   "disc_711",
+   "disc_715",
+   "disc_170",
+   "disc_204",
+   "disc_17",
+   "disc_727"
+  ]
+ },
+ {
+  "tid": "disc_283",
+  "support": 5,
+  "status": "probation",
+  "canonical": "A player attempts to shift the group's focus towards analyzing past voting records for defensive behavior or patterns of protection.",
+  "neighbors": [
+   "disc_334",
+   "disc_473",
+   "disc_451",
+   "disc_543",
+   "disc_457",
+   "disc_512",
+   "disc_485",
+   "disc_453"
+  ]
+ },
+ {
+  "tid": "disc_284",
+  "support": 4,
+  "status": "incumbent",
+  "canonical": "A player discourages the group from relying solely on voting records, suggesting that such analysis may be a distraction or ineffective.",
+  "neighbors": [
+   "disc_656",
+   "disc_485",
+   "disc_337",
+   "disc_131",
+   "disc_286",
+   "disc_340",
+   "disc_19",
+   "disc_738"
+  ]
+ },
+ {
+  "tid": "disc_285",
+  "support": 7,
+  "status": "incumbent",
+  "canonical": "A player suggests focusing scrutiny on individuals who have been the quietest or most ambiguous during the discussion.",
+  "neighbors": [
+   "disc_580",
+   "disc_409",
+   "disc_707",
+   "disc_552",
+   "disc_254",
+   "disc_162",
+   "disc_287",
+   "disc_164"
+  ]
+ },
+ {
+  "tid": "disc_286",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player warns against group thinking or searching for 'hesitant' voters, labeling such efforts as potential red herrings.",
+  "neighbors": [
+   "disc_284",
+   "disc_656",
+   "disc_114",
+   "disc_285",
+   "disc_409",
+   "disc_19",
+   "disc_552",
+   "disc_580"
+  ]
+ },
+ {
+  "tid": "disc_287",
+  "support": 2,
+  "status": "probation",
+  "canonical": "A player proposes that the group should identify and scrutinize individuals who appear to be attempting to control the narrative or steer the conversation.",
+  "neighbors": [
+   "disc_254",
+   "disc_285",
+   "disc_249",
+   "disc_580",
+   "disc_131",
+   "disc_485",
+   "disc_483",
+   "disc_168"
+  ]
+ },
+ {
+  "tid": "disc_288",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who claims a specific role reveals their findings only after a previously accused player is removed.",
+  "neighbors": [
+   "disc_577",
+   "disc_139",
+   "disc_170",
+   "disc_710",
+   "disc_464",
+   "disc_282",
+   "disc_467",
+   "disc_291"
+  ]
+ },
+ {
+  "tid": "disc_289",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player confirms their role and states their intention to protect a specific other player for the duration of the game.",
+  "neighbors": [
+   "disc_293",
+   "disc_567",
+   "disc_246",
+   "disc_542",
+   "disc_165",
+   "disc_105",
+   "disc_276",
+   "disc_290"
+  ]
+ },
+ {
+  "tid": "disc_290",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player links their current voting inclination to another player's public admission of a coordinated protective strategy.",
+  "neighbors": [
+   "disc_582",
+   "disc_315",
+   "disc_542",
+   "disc_218",
+   "disc_114",
+   "disc_117",
+   "disc_184",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_291",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player reveals new information about a player's role only after another major threat has been eliminated from the game.",
+  "neighbors": [
+   "disc_170",
+   "disc_686",
+   "disc_339",
+   "disc_715",
+   "disc_577",
+   "disc_275",
+   "disc_288",
+   "disc_570"
+  ]
+ },
+ {
+  "tid": "disc_292",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes an accuser's late-game reveal as a tactical move to maintain influence after the accuser's previous narrative was challenged.",
+  "neighbors": [
+   "disc_171",
+   "disc_419",
+   "disc_465",
+   "disc_473",
+   "disc_704",
+   "disc_483",
+   "disc_470",
+   "disc_571"
+  ]
+ },
+ {
+  "tid": "disc_293",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly confirms their support for another player based on the history of protection between them during the night phase.",
+  "neighbors": [
+   "disc_289",
+   "disc_578",
+   "disc_290",
+   "disc_246",
+   "disc_105",
+   "disc_175",
+   "disc_579",
+   "disc_716"
+  ]
+ },
+ {
+  "tid": "disc_305",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player immediately echoes and validates a proposal made by another participant to avoid taking a unique stance early in the discussion.",
+  "neighbors": [
+   "disc_539",
+   "disc_538",
+   "disc_708",
+   "disc_501",
+   "disc_309",
+   "disc_363",
+   "disc_579",
+   "disc_166"
+  ]
+ },
+ {
+  "tid": "disc_306",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to steer the discussion toward abstract topics or meta-level strategies when challenged to provide specific suspicions.",
+  "neighbors": [
+   "disc_543",
+   "disc_307",
+   "disc_254",
+   "disc_69",
+   "disc_540",
+   "disc_316",
+   "disc_283",
+   "disc_275"
+  ]
+ },
+ {
+  "tid": "disc_307",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player focuses their commentary on criticizing the communicative style or engagement level of another specific player rather than proposing suspects.",
+  "neighbors": [
+   "disc_727",
+   "disc_306",
+   "disc_543",
+   "disc_540",
+   "disc_252",
+   "disc_329",
+   "disc_448",
+   "disc_164"
+  ]
+ },
+ {
+  "tid": "disc_308",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly challenges an accuser for questioning another person's attempt to lead the conversation, characterizing the accusation as a distraction.",
+  "neighbors": [
+   "disc_530",
+   "disc_314",
+   "disc_465",
+   "disc_468",
+   "disc_25",
+   "disc_457",
+   "disc_171",
+   "disc_484"
+  ]
+ },
+ {
+  "tid": "disc_309",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player positions themselves as a neutral mediator between two conflicting parties to suggest that both sides are essentially making the same point.",
+  "neighbors": [
+   "disc_500",
+   "disc_510",
+   "disc_305",
+   "disc_501",
+   "disc_539",
+   "disc_341",
+   "disc_384",
+   "disc_251"
+  ]
+ },
+ {
+  "tid": "disc_310",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player makes a self-referential error regarding their own secret status during a public discussion.",
+  "neighbors": [
+   "disc_165",
+   "disc_715",
+   "disc_170",
+   "disc_205",
+   "disc_204",
+   "disc_282",
+   "disc_330",
+   "disc_31"
+  ]
+ },
+ {
+  "tid": "disc_311",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player explicitly suggests that the room move away from discussing specific past arguments or disagreements between players.",
+  "neighbors": [
+   "disc_485",
+   "disc_99",
+   "disc_253",
+   "disc_314",
+   "disc_334",
+   "disc_25",
+   "disc_543",
+   "disc_370"
+  ]
+ },
+ {
+  "tid": "disc_312",
+  "support": 2,
+  "status": "incumbent",
+  "canonical": "A player warns the group against focusing on a specific, easy-to-spot interaction while neglecting the broader context of other player interactions.",
+  "neighbors": [
+   "disc_167",
+   "disc_19",
+   "disc_284",
+   "disc_576",
+   "disc_249",
+   "disc_497",
+   "disc_287",
+   "disc_114"
+  ]
+ },
+ {
+  "tid": "disc_313",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player acknowledges the lack of information in the game and suggests that creating a narrative may be a trap.",
+  "neighbors": [
+   "disc_357",
+   "disc_130",
+   "disc_287",
+   "disc_483",
+   "disc_185",
+   "disc_408",
+   "disc_523",
+   "disc_167"
+  ]
+ },
+ {
+  "tid": "disc_314",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Deflects direct questioning about a previous vote by labeling the accusation as a distraction from the broader game state.",
+  "neighbors": [
+   "disc_473",
+   "disc_485",
+   "disc_457",
+   "disc_308",
+   "disc_106",
+   "disc_451",
+   "disc_99",
+   "disc_530"
+  ]
+ },
+ {
+  "tid": "disc_315",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Frames a specific non-consensus vote from a previous day as an act of deliberate protection for the player eventually eliminated.",
+  "neighbors": [
+   "disc_542",
+   "disc_290",
+   "disc_483",
+   "disc_250",
+   "disc_107",
+   "disc_371",
+   "disc_735",
+   "disc_453"
+  ]
+ },
+ {
+  "tid": "disc_316",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Challenges another player for failing to articulate the specific reasons behind their previous suspicion when that suspicion is brought up later.",
+  "neighbors": [
+   "disc_592",
+   "disc_202",
+   "disc_687",
+   "disc_689",
+   "disc_526",
+   "disc_21",
+   "disc_584",
+   "disc_632"
+  ]
+ },
+ {
+  "tid": "disc_317",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Suggests that the current focus of the group discussion is too narrow and potentially harmful by ignoring the possibility of tunnel vision.",
+  "neighbors": [
+   "disc_312",
+   "disc_101",
+   "disc_679",
+   "disc_58",
+   "disc_359",
+   "disc_201",
+   "disc_392",
+   "disc_340"
+  ]
+ },
+ {
+  "tid": "disc_318",
+  "support": 1,
+  "status": "archived",
+  "canonical": "characterizes their own previous vote against the group consensus as a way to avoid being led into a coordinated trap.",
+  "neighbors": [
+   "disc_179",
+   "disc_118",
+   "disc_218",
+   "disc_367",
+   "disc_667",
+   "disc_554",
+   "disc_582",
+   "disc_117"
+  ]
+ },
+ {
+  "tid": "disc_319",
+  "support": 1,
+  "status": "archived",
+  "canonical": "references their own history of voting for players subsequently revealed on death to have been the serial killer and a wolf as evidence of their own trustworthiness.",
+  "neighbors": [
+   "disc_414",
+   "disc_76",
+   "disc_702",
+   "disc_255",
+   "disc_210",
+   "disc_584",
+   "disc_175",
+   "disc_71"
+  ]
+ },
+ {
+  "tid": "disc_320",
+  "support": 2,
+  "status": "archived",
+  "canonical": "expresses hesitation to finalize a vote due to the risk of eliminating a non-wolf player in a high-stakes scenario.",
+  "neighbors": [
+   "disc_210",
+   "disc_207",
+   "disc_466",
+   "disc_335",
+   "disc_414",
+   "disc_211",
+   "disc_411",
+   "disc_178"
+  ]
+ },
+ {
+  "tid": "disc_321",
+  "support": 1,
+  "status": "archived",
+  "canonical": "challenges the accusation of being a wolf by claiming that performing a disruptive act would be too obvious a strategy for a wolf to use.",
+  "neighbors": [
+   "disc_666",
+   "disc_613",
+   "disc_414",
+   "disc_390",
+   "disc_465",
+   "disc_75",
+   "disc_32",
+   "disc_171"
+  ]
+ },
+ {
+  "tid": "disc_329",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Repeatedly focuses on a single player's lack of contribution as the primary basis for initiating an elimination attempt.",
+  "neighbors": [
+   "disc_252",
+   "disc_70",
+   "disc_25",
+   "disc_727",
+   "disc_448",
+   "disc_373",
+   "disc_686",
+   "disc_74"
+  ]
+ },
+ {
+  "tid": "disc_330",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Publicly discloses having been targeted by a night action to justify previous inactivity.",
+  "neighbors": [
+   "disc_170",
+   "disc_18",
+   "disc_726",
+   "disc_386",
+   "disc_407",
+   "disc_246",
+   "disc_278",
+   "disc_282"
+  ]
+ },
+ {
+  "tid": "disc_331",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Defends a player under fire by citing an external event as proof they are not a specific role.",
+  "neighbors": [
+   "disc_20",
+   "disc_175",
+   "disc_728",
+   "disc_574",
+   "disc_419",
+   "disc_67",
+   "disc_496",
+   "disc_390"
+  ]
+ },
+ {
+  "tid": "disc_332",
+  "support": 2,
+  "status": "probation",
+  "canonical": "Explicitly shifts the focus of the discussion from the primary suspect to the person pushing the suspicion.",
+  "neighbors": [
+   "disc_514",
+   "disc_473",
+   "disc_314",
+   "disc_457",
+   "disc_109",
+   "disc_116",
+   "disc_106",
+   "disc_574"
+  ]
+ },
+ {
+  "tid": "disc_333",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Calls for a shift in group strategy by arguing that the current debate is a disagreement over playstyles rather than evidence.",
+  "neighbors": [
+   "disc_387",
+   "disc_393",
+   "disc_683",
+   "disc_253",
+   "disc_576",
+   "disc_203",
+   "disc_358",
+   "disc_712"
+  ]
+ },
+ {
+  "tid": "disc_334",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to shift the focus of discussion away from recent night-time events and onto the past voting records of participants.",
+  "neighbors": [
+   "disc_283",
+   "disc_485",
+   "disc_451",
+   "disc_473",
+   "disc_457",
+   "disc_512",
+   "disc_104",
+   "disc_388"
+  ]
+ },
+ {
+  "tid": "disc_335",
+  "support": 4,
+  "status": "probation",
+  "canonical": "A player justifies their previous failure to vote as a precautionary measure due to a lack of evidence.",
+  "neighbors": [
+   "disc_456",
+   "disc_474",
+   "disc_528",
+   "disc_255",
+   "disc_250",
+   "disc_656",
+   "disc_596",
+   "disc_682"
+  ]
+ },
+ {
+  "tid": "disc_336",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player challenges the neutrality of abstaining from a vote, characterizing the refusal to act as a protection mechanism.",
+  "neighbors": [
+   "disc_471",
+   "disc_32",
+   "disc_411",
+   "disc_66",
+   "disc_542",
+   "disc_661",
+   "disc_335",
+   "disc_734"
+  ]
+ },
+ {
+  "tid": "disc_337",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player argues that analyzing non-voting patterns is a diversionary tactic used to create conflict among the remaining participants.",
+  "neighbors": [
+   "disc_735",
+   "disc_457",
+   "disc_334",
+   "disc_104",
+   "disc_473",
+   "disc_283",
+   "disc_131",
+   "disc_485"
+  ]
+ },
+ {
+  "tid": "disc_338",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player warns against potential paranoia caused by the loss of a high-value player and cautions against attributing blame based on non-action.",
+  "neighbors": [
+   "disc_167",
+   "disc_62",
+   "disc_685",
+   "disc_736",
+   "disc_19",
+   "disc_408",
+   "disc_114",
+   "disc_411"
+  ]
+ },
+ {
+  "tid": "disc_339",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Attempts to pivot suspicion toward a player who previously questioned them after an elimination reveals that a player they had targeted was innocent.",
+  "neighbors": [
+   "disc_454",
+   "disc_686",
+   "disc_473",
+   "disc_451",
+   "disc_291",
+   "disc_250",
+   "disc_455",
+   "disc_687"
+  ]
+ },
+ {
+  "tid": "disc_340",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Urges the group to avoid rushing into a vote by framing the current conflict between other players as a potential distraction.",
+  "neighbors": [
+   "disc_207",
+   "disc_206",
+   "disc_735",
+   "disc_485",
+   "disc_656",
+   "disc_682",
+   "disc_99",
+   "disc_284"
+  ]
+ },
+ {
+  "tid": "disc_341",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Explicitly asks for opinions on a specific conflict occurring between two other players to gauge the room.",
+  "neighbors": [
+   "disc_500",
+   "disc_185",
+   "disc_501",
+   "disc_497",
+   "disc_340",
+   "disc_309",
+   "disc_168",
+   "disc_630"
+  ]
+ },
+ {
+  "tid": "disc_342",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player provides an explanation for their past refusal to participate in the elimination process after being challenged.",
+  "neighbors": [
+   "disc_250",
+   "disc_526",
+   "disc_335",
+   "disc_72",
+   "disc_371",
+   "disc_103",
+   "disc_668",
+   "disc_316"
+  ]
+ },
+ {
+  "tid": "disc_343",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes an opponent's earlier aggressive vote as a misdirection rather than a mistake.",
+  "neighbors": [
+   "disc_457",
+   "disc_184",
+   "disc_72",
+   "disc_473",
+   "disc_465",
+   "disc_451",
+   "disc_104",
+   "disc_250"
+  ]
+ },
+ {
+  "tid": "disc_356",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a formal, structural methodology for gathering and tracking player reasoning before any lynch targets are established.",
+  "neighbors": [
+   "disc_651",
+   "disc_543",
+   "disc_36",
+   "disc_213",
+   "disc_609",
+   "disc_229",
+   "disc_23",
+   "disc_162"
+  ]
+ },
+ {
+  "tid": "disc_357",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Challenges a proposed analytical method by raising the risk that players might fabricate consistent narratives to appear transparent.",
+  "neighbors": [
+   "disc_387",
+   "disc_393",
+   "disc_313",
+   "disc_97",
+   "disc_499",
+   "disc_98",
+   "disc_72",
+   "disc_689"
+  ]
+ },
+ {
+  "tid": "disc_358",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Rejects theoretical discussion frameworks in favor of implementing a specific, time-bound testing task for all players.",
+  "neighbors": [
+   "disc_681",
+   "disc_385",
+   "disc_23",
+   "disc_333",
+   "disc_21",
+   "disc_444",
+   "disc_618",
+   "disc_430"
+  ]
+ },
+ {
+  "tid": "disc_359",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses skepticism toward a consensus-based testing procedure by suggesting it is an attempt to steer or manipulate the group's conversation flow.",
+  "neighbors": [
+   "disc_101",
+   "disc_168",
+   "disc_287",
+   "disc_358",
+   "disc_201",
+   "disc_444",
+   "disc_317",
+   "disc_249"
+  ]
+ },
+ {
+  "tid": "disc_360",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Declines to participate in a proposed suspect-naming exercise, citing the lack of evidence as a reason to avoid guessing.",
+  "neighbors": [
+   "disc_384",
+   "disc_596",
+   "disc_654",
+   "disc_408",
+   "disc_364",
+   "disc_335",
+   "disc_629",
+   "disc_631"
+  ]
+ },
+ {
+  "tid": "disc_361",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to direct the group toward a specific methodology of analysis after a death occurs.",
+  "neighbors": [
+   "disc_427",
+   "disc_225",
+   "disc_370",
+   "disc_568",
+   "disc_247",
+   "disc_429",
+   "disc_253",
+   "disc_68"
+  ]
+ },
+ {
+  "tid": "disc_362",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player points to the consensus of abstaining on the previous day as a reason for a negative outcome.",
+  "neighbors": [
+   "disc_257",
+   "disc_66",
+   "disc_657",
+   "disc_612",
+   "disc_434",
+   "disc_661",
+   "disc_392",
+   "disc_737"
+  ]
+ },
+ {
+  "tid": "disc_363",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly agrees with a specific prior speaker's logic while transitioning into a call for immediate action.",
+  "neighbors": [
+   "disc_539",
+   "disc_305",
+   "disc_166",
+   "disc_105",
+   "disc_494",
+   "disc_309",
+   "disc_578",
+   "disc_509"
+  ]
+ },
+ {
+  "tid": "disc_364",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Rejects retrospective analysis of past votes by claiming such discussions are intended to settle personal scores rather than find killers.",
+  "neighbors": [
+   "disc_137",
+   "disc_371",
+   "disc_596",
+   "disc_76",
+   "disc_360",
+   "disc_111",
+   "disc_23",
+   "disc_110"
+  ]
+ },
+ {
+  "tid": "disc_365",
+  "support": 2,
+  "status": "probation",
+  "canonical": "Publicly requests that others explain the reasoning behind their participation in a past voting consensus.",
+  "neighbors": [
+   "disc_475",
+   "disc_592",
+   "disc_688",
+   "disc_30",
+   "disc_180",
+   "disc_33",
+   "disc_367",
+   "disc_179"
+  ]
+ },
+ {
+  "tid": "disc_366",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Suggests that the survivors of repeated night attacks might be using those survival events as a pretext to sow discord.",
+  "neighbors": [
+   "disc_29",
+   "disc_446",
+   "disc_452",
+   "disc_133",
+   "disc_395",
+   "disc_185",
+   "disc_429",
+   "disc_407"
+  ]
+ },
+ {
+  "tid": "disc_367",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Attributes participation in a past voting consensus to the pressure of following general group momentum during a period of perceived deadlock.",
+  "neighbors": [
+   "disc_118",
+   "disc_103",
+   "disc_179",
+   "disc_432",
+   "disc_524",
+   "disc_318",
+   "disc_633",
+   "disc_737"
+  ]
+ },
+ {
+  "tid": "disc_368",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player repeatedly points to a specific past procedural methodology as the primary driver of current confusion instead of engaging with present voting data.",
+  "neighbors": [
+   "disc_99",
+   "disc_252",
+   "disc_372",
+   "disc_738",
+   "disc_104",
+   "disc_485",
+   "disc_23",
+   "disc_70"
+  ]
+ },
+ {
+  "tid": "disc_369",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player frequently requests that others identify who specifically initiated a shift toward a target during a period of consensus.",
+  "neighbors": [
+   "disc_182",
+   "disc_527",
+   "disc_249",
+   "disc_497",
+   "disc_481",
+   "disc_33",
+   "disc_544",
+   "disc_543"
+  ]
+ },
+ {
+  "tid": "disc_370",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to steer the conversation away from historical procedural debates toward focusing on the serial killer's current target selection.",
+  "neighbors": [
+   "disc_485",
+   "disc_361",
+   "disc_253",
+   "disc_137",
+   "disc_543",
+   "disc_334",
+   "disc_457",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_371",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player categorizes the scrutiny of past voting records as an attempt to settle personal scores rather than seeking out those responsible for eliminations.",
+  "neighbors": [
+   "disc_104",
+   "disc_334",
+   "disc_252",
+   "disc_512",
+   "disc_372",
+   "disc_250",
+   "disc_70",
+   "disc_184"
+  ]
+ },
+ {
+  "tid": "disc_372",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges another for prioritizing re-litigating early game events over analyzing more recent, concrete voting dynamics.",
+  "neighbors": [
+   "disc_104",
+   "disc_512",
+   "disc_485",
+   "disc_252",
+   "disc_70",
+   "disc_388",
+   "disc_334",
+   "disc_714"
+  ]
+ },
+ {
+  "tid": "disc_373",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player uses a specific vote from a previous round as the primary justification for calling for another player's removal.",
+  "neighbors": [
+   "disc_584",
+   "disc_183",
+   "disc_70",
+   "disc_255",
+   "disc_252",
+   "disc_257",
+   "disc_99",
+   "disc_63"
+  ]
+ },
+ {
+  "tid": "disc_374",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player frames a complex situation as having only a limited number of logical possibilities to guide the group's decision-making.",
+  "neighbors": [
+   "disc_218",
+   "disc_168",
+   "disc_613",
+   "disc_361",
+   "disc_509",
+   "disc_100",
+   "disc_129",
+   "disc_481"
+  ]
+ },
+ {
+  "tid": "disc_375",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges the logic of a group decision by pointing out that the proposed outcome would have put two potential suspects at equal risk.",
+  "neighbors": [
+   "disc_472",
+   "disc_572",
+   "disc_316",
+   "disc_178",
+   "disc_526",
+   "disc_554",
+   "disc_65",
+   "disc_171"
+  ]
+ },
+ {
+  "tid": "disc_383",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Advocates for delaying action or voting until more information becomes available through future voting records.",
+  "neighbors": [
+   "disc_179",
+   "disc_617",
+   "disc_24",
+   "disc_58",
+   "disc_664",
+   "disc_547",
+   "disc_60",
+   "disc_413"
+  ]
+ },
+ {
+  "tid": "disc_384",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Maintains a neutral middle-ground position when asked to choose between opposing strategies or suspects.",
+  "neighbors": [
+   "disc_360",
+   "disc_309",
+   "disc_501",
+   "disc_596",
+   "disc_510",
+   "disc_215",
+   "disc_279",
+   "disc_408"
+  ]
+ },
+ {
+  "tid": "disc_385",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a procedural exercise to target specific players for analysis without committing to a vote.",
+  "neighbors": [
+   "disc_509",
+   "disc_113",
+   "disc_358",
+   "disc_430",
+   "disc_23",
+   "disc_368",
+   "disc_393",
+   "disc_394"
+  ]
+ },
+ {
+  "tid": "disc_386",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Publicly confirms having been targeted by a night action which resulted in survival.",
+  "neighbors": [
+   "disc_29",
+   "disc_330",
+   "disc_395",
+   "disc_452",
+   "disc_614",
+   "disc_246",
+   "disc_366",
+   "disc_407"
+  ]
+ },
+ {
+  "tid": "disc_387",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Suggests that the primary indicator of potential threats should be inconsistencies in how players apply their own stated criteria for evidence.",
+  "neighbors": [
+   "disc_393",
+   "disc_333",
+   "disc_357",
+   "disc_115",
+   "disc_517",
+   "disc_683",
+   "disc_287",
+   "disc_23"
+  ]
+ },
+ {
+  "tid": "disc_388",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player immediately pivots back to the group's collective history on a previous day when challenged about their own voting behavior.",
+  "neighbors": [
+   "disc_512",
+   "disc_473",
+   "disc_457",
+   "disc_485",
+   "disc_334",
+   "disc_183",
+   "disc_283",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_389",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player asserts certainty about another player's alignment based on their reaction to being accused.",
+  "neighbors": [
+   "disc_231",
+   "disc_465",
+   "disc_455",
+   "disc_419",
+   "disc_255",
+   "disc_584",
+   "disc_202",
+   "disc_530"
+  ]
+ },
+ {
+  "tid": "disc_390",
+  "support": 2,
+  "status": "probation",
+  "canonical": "A player explicitly refutes claims that their survival during the night is proof of a specific role.",
+  "neighbors": [
+   "disc_703",
+   "disc_17",
+   "disc_530",
+   "disc_142",
+   "disc_451",
+   "disc_278",
+   "disc_482",
+   "disc_711"
+  ]
+ },
+ {
+  "tid": "disc_391",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player frames another player's defensiveness as an indicator of an intent to obscure their own position.",
+  "neighbors": [
+   "disc_587",
+   "disc_471",
+   "disc_72",
+   "disc_546",
+   "disc_419",
+   "disc_34",
+   "disc_613",
+   "disc_168"
+  ]
+ },
+ {
+  "tid": "disc_392",
+  "support": 1,
+  "status": "archived",
+  "canonical": "challenges the consensus narrative of the group by cautioning against over-interpreting the unanimous abstain vote from a previous day.",
+  "neighbors": [
+   "disc_136",
+   "disc_336",
+   "disc_362",
+   "disc_411",
+   "disc_664",
+   "disc_340",
+   "disc_257",
+   "disc_412"
+  ]
+ },
+ {
+  "tid": "disc_393",
+  "support": 1,
+  "status": "archived",
+  "canonical": "proposes a specific investigative methodology of re-examining early transcripts to categorize players based on their past arguments for caution.",
+  "neighbors": [
+   "disc_387",
+   "disc_135",
+   "disc_23",
+   "disc_357",
+   "disc_249",
+   "disc_333",
+   "disc_618",
+   "disc_445"
+  ]
+ },
+ {
+  "tid": "disc_394",
+  "support": 1,
+  "status": "archived",
+  "canonical": "shifts the group focus towards analyzing specific rhetorical framing used by other players in past days to identify patterns of stalling.",
+  "neighbors": [
+   "disc_485",
+   "disc_214",
+   "disc_473",
+   "disc_543",
+   "disc_99",
+   "disc_37",
+   "disc_283",
+   "disc_372"
+  ]
+ },
+ {
+  "tid": "disc_395",
+  "support": 1,
+  "status": "archived",
+  "canonical": "volunteers information about being a recurring target of night actions and frames their personal status as a high-value target for the group to consider.",
+  "neighbors": [
+   "disc_330",
+   "disc_386",
+   "disc_18",
+   "disc_29",
+   "disc_366",
+   "disc_407",
+   "disc_614",
+   "disc_129"
+  ]
+ },
+ {
+  "tid": "disc_406",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a counter-strategy of monitoring who attempts to shift suspicion away from specific individuals.",
+  "neighbors": [
+   "disc_332",
+   "disc_473",
+   "disc_609",
+   "disc_409",
+   "disc_451",
+   "disc_580",
+   "disc_457",
+   "disc_549"
+  ]
+ },
+ {
+  "tid": "disc_407",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Initiates discussion by highlighting the implications of a failed night attack on a specific player.",
+  "neighbors": [
+   "disc_726",
+   "disc_680",
+   "disc_254",
+   "disc_204",
+   "disc_330",
+   "disc_253",
+   "disc_727",
+   "disc_482"
+  ]
+ },
+ {
+  "tid": "disc_408",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player encourages the group to avoid immediate accusations and prioritize consensus-building before any specific information is available.",
+  "neighbors": [
+   "disc_682",
+   "disc_234",
+   "disc_411",
+   "disc_253",
+   "disc_277",
+   "disc_285",
+   "disc_466",
+   "disc_409"
+  ]
+ },
+ {
+  "tid": "disc_409",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests identifying those who are eager to push for an elimination in the absence of evidence.",
+  "neighbors": [
+   "disc_682",
+   "disc_285",
+   "disc_549",
+   "disc_570",
+   "disc_552",
+   "disc_656",
+   "disc_449",
+   "disc_580"
+  ]
+ },
+ {
+  "tid": "disc_410",
+  "support": 2,
+  "status": "probation",
+  "canonical": "A player suggests that the group should abstain from any elimination on the first day to observe who acts aggressively.",
+  "neighbors": [
+   "disc_19",
+   "disc_409",
+   "disc_206",
+   "disc_682",
+   "disc_285",
+   "disc_408",
+   "disc_207",
+   "disc_163"
+  ]
+ },
+ {
+  "tid": "disc_411",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player warns the group against potential risks associated with an abstain consensus while simultaneously discouraging the labeling of passive players as suspicious.",
+  "neighbors": [
+   "disc_408",
+   "disc_178",
+   "disc_234",
+   "disc_336",
+   "disc_32",
+   "disc_205",
+   "disc_167",
+   "disc_19"
+  ]
+ },
+ {
+  "tid": "disc_412",
+  "support": 1,
+  "status": "archived",
+  "canonical": "advocates for ending a period of consensus abstention by highlighting the risk of inactivity.",
+  "neighbors": [
+   "disc_617",
+   "disc_411",
+   "disc_618",
+   "disc_392",
+   "disc_244",
+   "disc_60",
+   "disc_657",
+   "disc_430"
+  ]
+ },
+ {
+  "tid": "disc_413",
+  "support": 1,
+  "status": "archived",
+  "canonical": "proposes analyzing past voting patterns of individuals who previously advocated for abstention.",
+  "neighbors": [
+   "disc_617",
+   "disc_664",
+   "disc_383",
+   "disc_734",
+   "disc_524",
+   "disc_23",
+   "disc_135",
+   "disc_430"
+  ]
+ },
+ {
+  "tid": "disc_414",
+  "support": 2,
+  "status": "archived",
+  "canonical": "attempts to establish trustworthiness by referencing a previous vote for a player revealed on death to be a wolf.",
+  "neighbors": [
+   "disc_319",
+   "disc_210",
+   "disc_665",
+   "disc_702",
+   "disc_76",
+   "disc_733",
+   "disc_590",
+   "disc_584"
+  ]
+ },
+ {
+  "tid": "disc_415",
+  "support": 1,
+  "status": "archived",
+  "canonical": "shifts the focus of the current discussion from voting patterns to the potential threat posed by a specific role.",
+  "neighbors": [
+   "disc_23",
+   "disc_620",
+   "disc_115",
+   "disc_733",
+   "disc_580",
+   "disc_730",
+   "disc_473",
+   "disc_735"
+  ]
+ },
+ {
+  "tid": "disc_416",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who makes a role claim late in the game justifies the delay by characterizing it as a calculated decision to gather more information.",
+  "neighbors": [
+   "disc_140",
+   "disc_417",
+   "disc_139",
+   "disc_577",
+   "disc_529",
+   "disc_528",
+   "disc_467",
+   "disc_292"
+  ]
+ },
+ {
+  "tid": "disc_417",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player challenges the credibility of a late-game role claim by pointing out the convenience of its timing relative to the group's current state of desperation.",
+  "neighbors": [
+   "disc_171",
+   "disc_140",
+   "disc_416",
+   "disc_173",
+   "disc_571",
+   "disc_419",
+   "disc_139",
+   "disc_528"
+  ]
+ },
+ {
+  "tid": "disc_418",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player accused by someone claiming a special role directs the focus back to the accuser by questioning why the role's primary function was not used to prevent prior deaths.",
+  "neighbors": [
+   "disc_140",
+   "disc_530",
+   "disc_26",
+   "disc_225",
+   "disc_571",
+   "disc_455",
+   "disc_687",
+   "disc_632"
+  ]
+ },
+ {
+  "tid": "disc_419",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player under pressure to justify a late-game reveal labels any questioning of their claim as an attempt to deflect from guilt.",
+  "neighbors": [
+   "disc_171",
+   "disc_292",
+   "disc_465",
+   "disc_473",
+   "disc_75",
+   "disc_232",
+   "disc_530",
+   "disc_69"
+  ]
+ },
+ {
+  "tid": "disc_420",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that the accuracy of a disputed role claim can be validated by observing the subsequent voting patterns of other group members.",
+  "neighbors": [
+   "disc_36",
+   "disc_247",
+   "disc_513",
+   "disc_714",
+   "disc_162",
+   "disc_473",
+   "disc_131",
+   "disc_467"
+  ]
+ },
+ {
+  "tid": "disc_427",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to steer the group's discussion toward analyzing the activity levels of survivors relative to the loss of a player revealed on death as the investigator.",
+  "neighbors": [
+   "disc_361",
+   "disc_69",
+   "disc_247",
+   "disc_513",
+   "disc_225",
+   "disc_26",
+   "disc_27",
+   "disc_568"
+  ]
+ },
+ {
+  "tid": "disc_428",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Criticizes proponents of a voting test by characterizing their suggestions as tactics to force an uninformed and dangerous elimination.",
+  "neighbors": [
+   "disc_681",
+   "disc_430",
+   "disc_358",
+   "disc_415",
+   "disc_212",
+   "disc_629",
+   "disc_447",
+   "disc_110"
+  ]
+ },
+ {
+  "tid": "disc_429",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Attempts to pivot the discussion toward the specific timing and circumstances of a death that occurred during the previous night.",
+  "neighbors": [
+   "disc_361",
+   "disc_201",
+   "disc_370",
+   "disc_568",
+   "disc_427",
+   "disc_407",
+   "disc_473",
+   "disc_334"
+  ]
+ },
+ {
+  "tid": "disc_430",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a change in strategy toward conducting a voting test as a mechanism to break the current cycle of inaction.",
+  "neighbors": [
+   "disc_617",
+   "disc_244",
+   "disc_385",
+   "disc_428",
+   "disc_358",
+   "disc_118",
+   "disc_412",
+   "disc_633"
+  ]
+ },
+ {
+  "tid": "disc_431",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Explicitly challenges another player's stated desire for caution by framing their reluctance as a method to preserve the status quo.",
+  "neighbors": [
+   "disc_214",
+   "disc_545",
+   "disc_471",
+   "disc_316",
+   "disc_546",
+   "disc_689",
+   "disc_540",
+   "disc_202"
+  ]
+ },
+ {
+  "tid": "disc_432",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player asserts that a specific previous vote was forced by another player's momentum rather than a collective decision.",
+  "neighbors": [
+   "disc_70",
+   "disc_257",
+   "disc_635",
+   "disc_737",
+   "disc_183",
+   "disc_448",
+   "disc_512",
+   "disc_485"
+  ]
+ },
+ {
+  "tid": "disc_433",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player frames their own previous high activity level as a defensive measure against being perceived as giving up on the game.",
+  "neighbors": [
+   "disc_546",
+   "disc_34",
+   "disc_391",
+   "disc_62",
+   "disc_708",
+   "disc_471",
+   "disc_685",
+   "disc_67"
+  ]
+ },
+ {
+  "tid": "disc_434",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player counters an accusation by pointing to the unanimity of a past vote to distribute responsibility for the outcome.",
+  "neighbors": [
+   "disc_66",
+   "disc_70",
+   "disc_186",
+   "disc_658",
+   "disc_432",
+   "disc_255",
+   "disc_582",
+   "disc_457"
+  ]
+ },
+ {
+  "tid": "disc_435",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly avoids endorsing the previous elimination by distancing themselves from the reasoning behind it after the fact.",
+  "neighbors": [
+   "disc_456",
+   "disc_335",
+   "disc_218",
+   "disc_72",
+   "disc_528",
+   "disc_343",
+   "disc_451",
+   "disc_554"
+  ]
+ },
+ {
+  "tid": "disc_444",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Expresses skepticism toward establishing early group constraints or protocols for gameplay.",
+  "neighbors": [
+   "disc_523",
+   "disc_654",
+   "disc_431",
+   "disc_214",
+   "disc_408",
+   "disc_168",
+   "disc_358",
+   "disc_98"
+  ]
+ },
+ {
+  "tid": "disc_445",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a specific observational strategy for tracking player behavior to gain future insights.",
+  "neighbors": [
+   "disc_523",
+   "disc_393",
+   "disc_23",
+   "disc_493",
+   "disc_357",
+   "disc_135",
+   "disc_651",
+   "disc_249"
+  ]
+ },
+ {
+  "tid": "disc_446",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Describes a night event as evidence to urge caution in subsequent voting.",
+  "neighbors": [
+   "disc_19",
+   "disc_656",
+   "disc_207",
+   "disc_340",
+   "disc_629",
+   "disc_114",
+   "disc_596",
+   "disc_570"
+  ]
+ },
+ {
+  "tid": "disc_447",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a general observational criterion for others to use when evaluating potential candidates for elimination.",
+  "neighbors": [
+   "disc_681",
+   "disc_387",
+   "disc_707",
+   "disc_651",
+   "disc_445",
+   "disc_23",
+   "disc_406",
+   "disc_356"
+  ]
+ },
+ {
+  "tid": "disc_448",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player labels another specific player's contributions as an attempt to delay progress during a discussion about whom to vote for.",
+  "neighbors": [
+   "disc_542",
+   "disc_457",
+   "disc_485",
+   "disc_99",
+   "disc_184",
+   "disc_432",
+   "disc_252",
+   "disc_70"
+  ]
+ },
+ {
+  "tid": "disc_449",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes the act of calling for scrutiny on someone as a tactic for rushing an elimination without evidence.",
+  "neighbors": [
+   "disc_409",
+   "disc_682",
+   "disc_465",
+   "disc_371",
+   "disc_104",
+   "disc_570",
+   "disc_549",
+   "disc_184"
+  ]
+ },
+ {
+  "tid": "disc_450",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player expresses an explicit willingness to end a prolonged period of no-elimination voting by initiating a shift in voting focus.",
+  "neighbors": [
+   "disc_166",
+   "disc_686",
+   "disc_550",
+   "disc_334",
+   "disc_659",
+   "disc_635",
+   "disc_485",
+   "disc_457"
+  ]
+ },
+ {
+  "tid": "disc_451",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to redirect scrutiny from their own previous voting record by bringing up the survival of another player during night phases.",
+  "neighbors": [
+   "disc_334",
+   "disc_453",
+   "disc_283",
+   "disc_473",
+   "disc_457",
+   "disc_69",
+   "disc_455",
+   "disc_106"
+  ]
+ },
+ {
+  "tid": "disc_452",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Repeatedly references personal survival of night events as a central point in their argument.",
+  "neighbors": [
+   "disc_366",
+   "disc_446",
+   "disc_386",
+   "disc_703",
+   "disc_29",
+   "disc_24",
+   "disc_102",
+   "disc_395"
+  ]
+ },
+ {
+  "tid": "disc_453",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Deflects criticism of their past voting record by shifting the focus to a player who has survived multiple night attacks.",
+  "neighbors": [
+   "disc_451",
+   "disc_283",
+   "disc_473",
+   "disc_334",
+   "disc_615",
+   "disc_457",
+   "disc_106",
+   "disc_255"
+  ]
+ },
+ {
+  "tid": "disc_454",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player pivots to scrutinize a specific long-surviving target immediately after their previous alliances are called into question.",
+  "neighbors": [
+   "disc_339",
+   "disc_473",
+   "disc_686",
+   "disc_73",
+   "disc_451",
+   "disc_497",
+   "disc_291",
+   "disc_334"
+  ]
+ },
+ {
+  "tid": "disc_455",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges an accuser by highlighting the accuser's previous voting alignment with a player who was later revealed on death as a threat.",
+  "neighbors": [
+   "disc_255",
+   "disc_171",
+   "disc_76",
+   "disc_186",
+   "disc_451",
+   "disc_687",
+   "disc_65",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_456",
+  "support": 2,
+  "status": "probation",
+  "canonical": "A player attempts to justify a past voting record by claiming their actions were a reaction to a lack of information rather than alignment with a specific group.",
+  "neighbors": [
+   "disc_250",
+   "disc_218",
+   "disc_335",
+   "disc_528",
+   "disc_613",
+   "disc_255",
+   "disc_584",
+   "disc_474"
+  ]
+ },
+ {
+  "tid": "disc_457",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player characterizes an opponent's shift in focus toward other participants as an attempt to divert attention from their own documented voting history.",
+  "neighbors": [
+   "disc_334",
+   "disc_473",
+   "disc_485",
+   "disc_106",
+   "disc_388",
+   "disc_451",
+   "disc_104",
+   "disc_283"
+  ]
+ },
+ {
+  "tid": "disc_464",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player claims a specific investigative role early in the game to justify an immediate demand for another player's elimination.",
+  "neighbors": [
+   "disc_569",
+   "disc_727",
+   "disc_174",
+   "disc_467",
+   "disc_570",
+   "disc_165",
+   "disc_409",
+   "disc_715"
+  ]
+ },
+ {
+  "tid": "disc_465",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player characterizes an accuser's claim as an aggressive strategy to manipulate the group into a blind vote rather than addressing the accusation directly.",
+  "neighbors": [
+   "disc_682",
+   "disc_468",
+   "disc_457",
+   "disc_530",
+   "disc_308",
+   "disc_343",
+   "disc_473",
+   "disc_419"
+  ]
+ },
+ {
+  "tid": "disc_466",
+  "support": 2,
+  "status": "archived",
+  "canonical": "A player expresses caution about acting on an unverified role claim, suggesting that the village wait for further information before taking definitive action.",
+  "neighbors": [
+   "disc_277",
+   "disc_570",
+   "disc_408",
+   "disc_234",
+   "disc_705",
+   "disc_207",
+   "disc_652",
+   "disc_682"
+  ]
+ },
+ {
+  "tid": "disc_467",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player claims to have specific information about the roles of multiple other players and urges the group to act on these claims.",
+  "neighbors": [
+   "disc_139",
+   "disc_569",
+   "disc_282",
+   "disc_165",
+   "disc_464",
+   "disc_715",
+   "disc_727",
+   "disc_174"
+  ]
+ },
+ {
+  "tid": "disc_468",
+  "support": 2,
+  "status": "probation",
+  "canonical": "A player characterizes a specific set of accusations against them as an attempt to create chaos within the group.",
+  "neighbors": [
+   "disc_168",
+   "disc_465",
+   "disc_308",
+   "disc_495",
+   "disc_737",
+   "disc_457",
+   "disc_178",
+   "disc_448"
+  ]
+ },
+ {
+  "tid": "disc_469",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player questions the consistency of an accuser who adds new targets to their list over time.",
+  "neighbors": [
+   "disc_470",
+   "disc_576",
+   "disc_574",
+   "disc_67",
+   "disc_728",
+   "disc_666",
+   "disc_716",
+   "disc_484"
+  ]
+ },
+ {
+  "tid": "disc_470",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player highlights a change in an accuser's narrative as a reason for skepticism.",
+  "neighbors": [
+   "disc_469",
+   "disc_292",
+   "disc_574",
+   "disc_484",
+   "disc_67",
+   "disc_728",
+   "disc_716",
+   "disc_175"
+  ]
+ },
+ {
+  "tid": "disc_471",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges another's past abstention by framing it as a strategic effort to avoid public record rather than a cautious choice.",
+  "neighbors": [
+   "disc_104",
+   "disc_336",
+   "disc_391",
+   "disc_66",
+   "disc_431",
+   "disc_72",
+   "disc_106",
+   "disc_661"
+  ]
+ },
+ {
+  "tid": "disc_472",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player defends their past silence during a group vote by arguing they would have been more actively disruptive if they had malicious intent.",
+  "neighbors": [
+   "disc_572",
+   "disc_658",
+   "disc_554",
+   "disc_375",
+   "disc_335",
+   "disc_528",
+   "disc_255",
+   "disc_250"
+  ]
+ },
+ {
+  "tid": "disc_473",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who was previously the subject of accusation pivots to focus the conversation on analyzing the voting history of others.",
+  "neighbors": [
+   "disc_283",
+   "disc_334",
+   "disc_457",
+   "disc_451",
+   "disc_388",
+   "disc_485",
+   "disc_543",
+   "disc_106"
+  ]
+ },
+ {
+  "tid": "disc_474",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies their shift in voting behavior by citing the lack of a credible counter-defense from the accused rather than internal discovery of evidence.",
+  "neighbors": [
+   "disc_335",
+   "disc_255",
+   "disc_106",
+   "disc_456",
+   "disc_473",
+   "disc_69",
+   "disc_233",
+   "disc_584"
+  ]
+ },
+ {
+  "tid": "disc_475",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player requests that others verify if any silent or hesitant participants had specific reasons for not committing to a previous consensus vote.",
+  "neighbors": [
+   "disc_592",
+   "disc_365",
+   "disc_554",
+   "disc_527",
+   "disc_688",
+   "disc_550",
+   "disc_630",
+   "disc_182"
+  ]
+ },
+ {
+  "tid": "disc_481",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player insists on a single target despite repeated questioning and lack of external evidence from others.",
+  "neighbors": [
+   "disc_369",
+   "disc_21",
+   "disc_231",
+   "disc_182",
+   "disc_70",
+   "disc_497",
+   "disc_583",
+   "disc_516"
+  ]
+ },
+ {
+  "tid": "disc_482",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player argues that being targeted by a night kill could be a calculated defensive play by the target.",
+  "neighbors": [
+   "disc_133",
+   "disc_232",
+   "disc_390",
+   "disc_615",
+   "disc_18",
+   "disc_614",
+   "disc_726",
+   "disc_662"
+  ]
+ },
+ {
+  "tid": "disc_483",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that other participants are attempting to frame a specific type of voting behavior as suspicious to create a narrative.",
+  "neighbors": [
+   "disc_184",
+   "disc_473",
+   "disc_584",
+   "disc_457",
+   "disc_337",
+   "disc_735",
+   "disc_315",
+   "disc_218"
+  ]
+ },
+ {
+  "tid": "disc_484",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges an accuser by asserting they are selectively highlighting certain patterns while ignoring others that might suggest a different conclusion.",
+  "neighbors": [
+   "disc_728",
+   "disc_308",
+   "disc_576",
+   "disc_729",
+   "disc_171",
+   "disc_465",
+   "disc_705",
+   "disc_255"
+  ]
+ },
+ {
+  "tid": "disc_485",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to steer the group away from debating past voting records and toward current behaviors of those driving the conversation.",
+  "neighbors": [
+   "disc_334",
+   "disc_457",
+   "disc_99",
+   "disc_104",
+   "disc_512",
+   "disc_473",
+   "disc_388",
+   "disc_252"
+  ]
+ },
+ {
+  "tid": "disc_493",
+  "support": 3,
+  "status": "queued",
+  "canonical": "Advocates for a passive strategy of observation instead of active discussion during the opening phase of the game.",
+  "neighbors": [
+   "disc_523",
+   "disc_652",
+   "disc_167",
+   "disc_538",
+   "disc_408",
+   "disc_285",
+   "disc_205",
+   "disc_501"
+  ]
+ },
+ {
+  "tid": "disc_494",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Formally agrees with multiple preceding speakers to support a strategy of delaying accusations.",
+  "neighbors": [
+   "disc_60",
+   "disc_179",
+   "disc_363",
+   "disc_305",
+   "disc_596",
+   "disc_340",
+   "disc_547",
+   "disc_207"
+  ]
+ },
+ {
+  "tid": "disc_495",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player breaks a previous consensus of group caution to initiate an accusation against another player without new evidence.",
+  "neighbors": [
+   "disc_727",
+   "disc_682",
+   "disc_569",
+   "disc_408",
+   "disc_178",
+   "disc_275",
+   "disc_540",
+   "disc_468"
+  ]
+ },
+ {
+  "tid": "disc_496",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies a lack of concrete evidence for their target by framing their accusation as a necessary intuition-based risk.",
+  "neighbors": [
+   "disc_613",
+   "disc_233",
+   "disc_231",
+   "disc_728",
+   "disc_335",
+   "disc_465",
+   "disc_232",
+   "disc_584"
+  ]
+ },
+ {
+  "tid": "disc_497",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player actively questions the timing and motivation of another player's sudden shift in focus toward a specific individual.",
+  "neighbors": [
+   "disc_454",
+   "disc_668",
+   "disc_574",
+   "disc_369",
+   "disc_391",
+   "disc_457",
+   "disc_25",
+   "disc_512"
+  ]
+ },
+ {
+  "tid": "disc_498",
+  "support": 2,
+  "status": "queued",
+  "canonical": "Attempts to normalize previous neutral voting patterns by framing them as common attempts to avoid errors.",
+  "neighbors": [
+   "disc_664",
+   "disc_218",
+   "disc_179",
+   "disc_368",
+   "disc_634",
+   "disc_118",
+   "disc_23",
+   "disc_471"
+  ]
+ },
+ {
+  "tid": "disc_499",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges the validity of a proposed analytical framework by characterizing it as a potential distraction or a tactical tool used by others to manipulate priorities.",
+  "neighbors": [
+   "disc_683",
+   "disc_185",
+   "disc_168",
+   "disc_308",
+   "disc_214",
+   "disc_97",
+   "disc_357",
+   "disc_431"
+  ]
+ },
+ {
+  "tid": "disc_500",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player prompts a neutral or less active participant to mediate between two conflicting perspectives during a heated disagreement.",
+  "neighbors": [
+   "disc_309",
+   "disc_341",
+   "disc_550",
+   "disc_61",
+   "disc_501",
+   "disc_251",
+   "disc_340",
+   "disc_311"
+  ]
+ },
+ {
+  "tid": "disc_501",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly delays taking a stance in a conflict to observe how the remaining discourse unfolds.",
+  "neighbors": [
+   "disc_279",
+   "disc_305",
+   "disc_510",
+   "disc_341",
+   "disc_500",
+   "disc_493",
+   "disc_539",
+   "disc_538"
+  ]
+ },
+ {
+  "tid": "disc_509",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player proposes a specific procedural framework for how all participants should justify their future votes.",
+  "neighbors": [
+   "disc_131",
+   "disc_169",
+   "disc_688",
+   "disc_485",
+   "disc_99",
+   "disc_545",
+   "disc_162",
+   "disc_103"
+  ]
+ },
+ {
+  "tid": "disc_510",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly aligns with the passive stance of one participant while simultaneously endorsing the procedural demands of another.",
+  "neighbors": [
+   "disc_309",
+   "disc_501",
+   "disc_539",
+   "disc_305",
+   "disc_251",
+   "disc_500",
+   "disc_708",
+   "disc_384"
+  ]
+ },
+ {
+  "tid": "disc_511",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player highlights the need to analyze past voting records to identify potentially deceptive behavior while acknowledging their own participation in a past controversial vote.",
+  "neighbors": [
+   "disc_104",
+   "disc_103",
+   "disc_250",
+   "disc_512",
+   "disc_714",
+   "disc_115",
+   "disc_473",
+   "disc_667"
+  ]
+ },
+ {
+  "tid": "disc_512",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player questions others about their reasoning for past voting behavior while pointing out potential inconsistencies in their current focus on the group's history.",
+  "neighbors": [
+   "disc_388",
+   "disc_104",
+   "disc_485",
+   "disc_334",
+   "disc_183",
+   "disc_372",
+   "disc_252",
+   "disc_283"
+  ]
+ },
+ {
+  "tid": "disc_513",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests that the remaining players should re-examine the voting patterns of those who previously contributed to the elimination of the investigator.",
+  "neighbors": [
+   "disc_247",
+   "disc_36",
+   "disc_427",
+   "disc_420",
+   "disc_551",
+   "disc_714",
+   "disc_65",
+   "disc_285"
+  ]
+ },
+ {
+  "tid": "disc_514",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Deflects an accusation by shifting the focus to the accuser's alleged manipulative logic and lack of evidence.",
+  "neighbors": [
+   "disc_699",
+   "disc_116",
+   "disc_332",
+   "disc_106",
+   "disc_22",
+   "disc_729",
+   "disc_75",
+   "disc_574"
+  ]
+ },
+ {
+  "tid": "disc_515",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Defines an earlier statement as an assessment of behavioral patterns after being challenged for making a vague or unsupported claim.",
+  "neighbors": [
+   "disc_100",
+   "disc_63",
+   "disc_730",
+   "disc_732",
+   "disc_201",
+   "disc_593",
+   "disc_256",
+   "disc_22"
+  ]
+ },
+ {
+  "tid": "disc_516",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Questions a player who claims to have information for failing to distinguish between personal intuition and verified findings.",
+  "neighbors": [
+   "disc_21",
+   "disc_316",
+   "disc_689",
+   "disc_231",
+   "disc_517",
+   "disc_202",
+   "disc_683",
+   "disc_481"
+  ]
+ },
+ {
+  "tid": "disc_517",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Highlights a player's inconsistency by pointing out their shift from claiming clear information to admitting it is a personal conviction.",
+  "neighbors": [
+   "disc_516",
+   "disc_689",
+   "disc_470",
+   "disc_469",
+   "disc_231",
+   "disc_713",
+   "disc_541",
+   "disc_484"
+  ]
+ },
+ {
+  "tid": "disc_523",
+  "support": 2,
+  "status": "archived",
+  "canonical": "Expresses a desire to observe and categorize player reactions as a primary method for gathering information early in the game.",
+  "neighbors": [
+   "disc_493",
+   "disc_445",
+   "disc_444",
+   "disc_313",
+   "disc_408",
+   "disc_341",
+   "disc_651",
+   "disc_739"
+  ]
+ },
+ {
+  "tid": "disc_524",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Proposes a systematic method for evaluating future behavior by suggesting that the group track individual pressure on voting decisions.",
+  "neighbors": [
+   "disc_367",
+   "disc_203",
+   "disc_633",
+   "disc_118",
+   "disc_23",
+   "disc_209",
+   "disc_318",
+   "disc_664"
+  ]
+ },
+ {
+  "tid": "disc_525",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies their previous vote against a player revealed on death as the investigator by claiming they suspected that player of being the serial killer.",
+  "neighbors": [
+   "disc_76",
+   "disc_731",
+   "disc_69",
+   "disc_26",
+   "disc_528",
+   "disc_71",
+   "disc_255",
+   "disc_702"
+  ]
+ },
+ {
+  "tid": "disc_526",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player challenges a fellow participant to explain their specific logic regarding the motivations of other players.",
+  "neighbors": [
+   "disc_316",
+   "disc_689",
+   "disc_592",
+   "disc_668",
+   "disc_636",
+   "disc_512",
+   "disc_545",
+   "disc_527"
+  ]
+ },
+ {
+  "tid": "disc_527",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player questions a peer about why they did not change their stance once other participants reached a consensus.",
+  "neighbors": [
+   "disc_182",
+   "disc_554",
+   "disc_257",
+   "disc_369",
+   "disc_512",
+   "disc_61",
+   "disc_475",
+   "disc_526"
+  ]
+ },
+ {
+  "tid": "disc_528",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player defends their past vote by claiming that they were acting against what they perceived to be a dangerous late-game role claim.",
+  "neighbors": [
+   "disc_456",
+   "disc_255",
+   "disc_335",
+   "disc_419",
+   "disc_218",
+   "disc_455",
+   "disc_416",
+   "disc_250"
+  ]
+ },
+ {
+  "tid": "disc_529",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player asserts that they withheld critical information for a period of time in order to ensure the accuracy of their findings before disclosing them to the group.",
+  "neighbors": [
+   "disc_416",
+   "disc_706",
+   "disc_275",
+   "disc_170",
+   "disc_408",
+   "disc_231",
+   "disc_596",
+   "disc_143"
+  ]
+ },
+ {
+  "tid": "disc_530",
+  "support": 3,
+  "status": "queued",
+  "canonical": "A player who is being accused of holding a hostile role counter-accuses their accuser of using the role claim as a distraction to protect themselves.",
+  "neighbors": [
+   "disc_75",
+   "disc_571",
+   "disc_308",
+   "disc_465",
+   "disc_232",
+   "disc_418",
+   "disc_419",
+   "disc_390"
+  ]
+ },
+ {
+  "tid": "disc_531",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player dismisses criticism of their actions by arguing that the person criticizing them is merely attempting to create a stall tactic to avoid elimination.",
+  "neighbors": [
+   "disc_448",
+   "disc_729",
+   "disc_449",
+   "disc_465",
+   "disc_542",
+   "disc_186",
+   "disc_708",
+   "disc_457"
+  ]
+ },
+ {
+  "tid": "disc_532",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests a conditional plan of action where the group moves against a target, but subsequently monitors the accuser based on the outcome of that action.",
+  "neighbors": [
+   "disc_178",
+   "disc_727",
+   "disc_420",
+   "disc_275",
+   "disc_495",
+   "disc_276",
+   "disc_701",
+   "disc_530"
+  ]
+ },
+ {
+  "tid": "disc_538",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player encourages group passivity and delaying action during the first round of discussion.",
+  "neighbors": [
+   "disc_540",
+   "disc_545",
+   "disc_550",
+   "disc_340",
+   "disc_170",
+   "disc_448",
+   "disc_206",
+   "disc_166"
+  ]
+ },
+ {
+  "tid": "disc_539",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player actively echoes and validates another player's call for inaction.",
+  "neighbors": [
+   "disc_305",
+   "disc_363",
+   "disc_708",
+   "disc_501",
+   "disc_167",
+   "disc_661",
+   "disc_510",
+   "disc_309"
+  ]
+ },
+ {
+  "tid": "disc_540",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player repeatedly challenges the urgency of the group's proposed actions without offering alternative concrete suggestions or suspects.",
+  "neighbors": [
+   "disc_538",
+   "disc_545",
+   "disc_495",
+   "disc_637",
+   "disc_316",
+   "disc_653",
+   "disc_306",
+   "disc_254"
+  ]
+ },
+ {
+  "tid": "disc_541",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player justifies a radical change in their stated position by referencing the loss of other players rather than new information or evidence.",
+  "neighbors": [
+   "disc_474",
+   "disc_256",
+   "disc_218",
+   "disc_713",
+   "disc_435",
+   "disc_456",
+   "disc_175",
+   "disc_72"
+  ]
+ },
+ {
+  "tid": "disc_542",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player labels another person's reluctance to vote as an active attempt to protect others in the game.",
+  "neighbors": [
+   "disc_448",
+   "disc_315",
+   "disc_184",
+   "disc_290",
+   "disc_457",
+   "disc_104",
+   "disc_453",
+   "disc_343"
+  ]
+ },
+ {
+  "tid": "disc_543",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to steer the discussion toward historical interaction patterns between specific participants rather than immediate accusations.",
+  "neighbors": [
+   "disc_283",
+   "disc_473",
+   "disc_306",
+   "disc_334",
+   "disc_727",
+   "disc_485",
+   "disc_512",
+   "disc_69"
+  ]
+ },
+ {
+  "tid": "disc_544",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player aggressively demands that others provide specific names or candidates to break a state of group inaction.",
+  "neighbors": [
+   "disc_166",
+   "disc_550",
+   "disc_573",
+   "disc_369",
+   "disc_709",
+   "disc_61",
+   "disc_688",
+   "disc_545"
+  ]
+ },
+ {
+  "tid": "disc_545",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player repeatedly challenges others to explain why they are promoting a cautious or slow approach to voting.",
+  "neighbors": [
+   "disc_688",
+   "disc_431",
+   "disc_207",
+   "disc_540",
+   "disc_592",
+   "disc_32",
+   "disc_316",
+   "disc_538"
+  ]
+ },
+ {
+  "tid": "disc_546",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player frames their own push for caution as a defensive measure to avoid making reckless mistakes that benefit opponents.",
+  "neighbors": [
+   "disc_433",
+   "disc_34",
+   "disc_391",
+   "disc_214",
+   "disc_431",
+   "disc_708",
+   "disc_471",
+   "disc_72"
+  ]
+ },
+ {
+  "tid": "disc_547",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player proposes delaying all voting until a later point when an aggressive or contradictory move might create more concrete evidence.",
+  "neighbors": [
+   "disc_206",
+   "disc_408",
+   "disc_335",
+   "disc_207",
+   "disc_710",
+   "disc_176",
+   "disc_277",
+   "disc_275"
+  ]
+ },
+ {
+  "tid": "disc_548",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests forcing all participants to name one person they currently find least helpful or most suspicious.",
+  "neighbors": [
+   "disc_68",
+   "disc_549",
+   "disc_163",
+   "disc_285",
+   "disc_409",
+   "disc_580",
+   "disc_686",
+   "disc_653"
+  ]
+ },
+ {
+  "tid": "disc_549",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player argues against the suggestion of naming suspicious individuals, claiming it creates easy targets for opponents to push an elimination on innocent players.",
+  "neighbors": [
+   "disc_409",
+   "disc_682",
+   "disc_164",
+   "disc_68",
+   "disc_686",
+   "disc_570",
+   "disc_19",
+   "disc_285"
+  ]
+ },
+ {
+  "tid": "disc_550",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to break a deadlock by specifically calling out players who have not yet participated in the discussion.",
+  "neighbors": [
+   "disc_61",
+   "disc_544",
+   "disc_538",
+   "disc_285",
+   "disc_450",
+   "disc_448",
+   "disc_99",
+   "disc_35"
+  ]
+ },
+ {
+  "tid": "disc_551",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player calls for focusing on the history of interactions between those who were eliminated to identify the remaining threats.",
+  "neighbors": [
+   "disc_409",
+   "disc_247",
+   "disc_543",
+   "disc_512",
+   "disc_686",
+   "disc_513",
+   "disc_580",
+   "disc_36"
+  ]
+ },
+ {
+  "tid": "disc_552",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests looking for those who attempted to blend into a consensus vote during the previous day's discussion.",
+  "neighbors": [
+   "disc_409",
+   "disc_285",
+   "disc_580",
+   "disc_257",
+   "disc_334",
+   "disc_714",
+   "disc_473",
+   "disc_451"
+  ]
+ },
+ {
+  "tid": "disc_553",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player identifies the risk of players turning on one another while expressing concern that the remaining threats benefit from such infighting.",
+  "neighbors": [
+   "disc_185",
+   "disc_19",
+   "disc_551",
+   "disc_178",
+   "disc_468",
+   "disc_141",
+   "disc_548",
+   "disc_549"
+  ]
+ },
+ {
+  "tid": "disc_554",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player attempts to reframe their previous vote by asking who else had reservations about that decision compared to those who just followed the group.",
+  "neighbors": [
+   "disc_512",
+   "disc_527",
+   "disc_257",
+   "disc_485",
+   "disc_250",
+   "disc_388",
+   "disc_473",
+   "disc_592"
+  ]
+ },
+ {
+  "tid": "disc_567",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who previously claimed a protective role asserts they are monitoring a specific target to ensure their safety.",
+  "neighbors": [
+   "disc_289",
+   "disc_34",
+   "disc_497",
+   "disc_542",
+   "disc_141",
+   "disc_251",
+   "disc_246",
+   "disc_467"
+  ]
+ },
+ {
+  "tid": "disc_568",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player asks the group to reflect on who might have changed their narrative or expressed suspicious intent after a death reveal.",
+  "neighbors": [
+   "disc_65",
+   "disc_225",
+   "disc_427",
+   "disc_361",
+   "disc_247",
+   "disc_513",
+   "disc_26",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_569",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player claims a special role and immediately calls for a specific elimination based on an unverified finding.",
+  "neighbors": [
+   "disc_464",
+   "disc_570",
+   "disc_467",
+   "disc_165",
+   "disc_727",
+   "disc_715",
+   "disc_495",
+   "disc_174"
+  ]
+ },
+ {
+  "tid": "disc_570",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who claims a special role cautions against rushing into an elimination based on another player's role claim without further evidence.",
+  "neighbors": [
+   "disc_569",
+   "disc_19",
+   "disc_682",
+   "disc_656",
+   "disc_409",
+   "disc_466",
+   "disc_464",
+   "disc_207"
+  ]
+ },
+ {
+  "tid": "disc_571",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player who is being accused of a role-based infraction attacks the accuser's credibility by pointing out the risks of claiming a power role early.",
+  "neighbors": [
+   "disc_530",
+   "disc_171",
+   "disc_465",
+   "disc_225",
+   "disc_727",
+   "disc_418",
+   "disc_417",
+   "disc_455"
+  ]
+ },
+ {
+  "tid": "disc_572",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player responds to a challenge regarding their motives by insisting that the accused party would behave differently if they were innocent.",
+  "neighbors": [
+   "disc_472",
+   "disc_232",
+   "disc_256",
+   "disc_419",
+   "disc_728",
+   "disc_389",
+   "disc_729",
+   "disc_689"
+  ]
+ },
+ {
+  "tid": "disc_573",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player repeatedly asserts that a specific course of action is required to avoid losing the game by default.",
+  "neighbors": [
+   "disc_544",
+   "disc_70",
+   "disc_21",
+   "disc_481",
+   "disc_545",
+   "disc_214",
+   "disc_74",
+   "disc_539"
+  ]
+ },
+ {
+  "tid": "disc_574",
+  "support": 2,
+  "status": "queued",
+  "canonical": "A player publicly questions the motives of an accuser rather than directly addressing the content of the suspicion.",
+  "neighbors": [
+   "disc_728",
+   "disc_67",
+   "disc_470",
+   "disc_666",
+   "disc_729",
+   "disc_497",
+   "disc_683",
+   "disc_469"
+  ]
+ },
+ {
+  "tid": "disc_575",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly labels another player's behavior as performative during a disagreement.",
+  "neighbors": [
+   "disc_448",
+   "disc_202",
+   "disc_168",
+   "disc_61",
+   "disc_587",
+   "disc_70",
+   "disc_391",
+   "disc_468"
+  ]
+ },
+ {
+  "tid": "disc_576",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player counters a demand for immediate action by questioning why the other player is focusing on specific individuals instead of broader evidence.",
+  "neighbors": [
+   "disc_469",
+   "disc_484",
+   "disc_683",
+   "disc_666",
+   "disc_682",
+   "disc_21",
+   "disc_497",
+   "disc_728"
+  ]
+ },
+ {
+  "tid": "disc_577",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player reveals a previously withheld role claim or information only after a specific game event makes the previous situation change.",
+  "neighbors": [
+   "disc_170",
+   "disc_416",
+   "disc_288",
+   "disc_140",
+   "disc_275",
+   "disc_291",
+   "disc_139",
+   "disc_529"
+  ]
+ },
+ {
+  "tid": "disc_578",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player explicitly aligns their support for a current claim with the historical context of observed night events.",
+  "neighbors": [
+   "disc_293",
+   "disc_716",
+   "disc_579",
+   "disc_17",
+   "disc_175",
+   "disc_255",
+   "disc_543",
+   "disc_36"
+  ]
+ },
+ {
+  "tid": "disc_579",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player openly identifies the risks associated with the timing of a claim while simultaneously choosing to support that claim based on observed voting patterns.",
+  "neighbors": [
+   "disc_578",
+   "disc_172",
+   "disc_652",
+   "disc_420",
+   "disc_173",
+   "disc_716",
+   "disc_543",
+   "disc_571"
+  ]
+ },
+ {
+  "tid": "disc_580",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player suggests shifting focus to identify individuals who actively discouraged voting and promoted neutrality in previous rounds.",
+  "neighbors": [
+   "disc_285",
+   "disc_714",
+   "disc_409",
+   "disc_552",
+   "disc_287",
+   "disc_551",
+   "disc_254",
+   "disc_707"
+  ]
+ },
+ {
+  "tid": "disc_581",
+  "support": 1,
+  "status": "archived",
+  "canonical": "A player requests a comparative analysis of the intensity of caution voiced by different participants regarding abstention.",
+  "neighbors": [
+   "disc_618",
+   "disc_661",
+   "disc_411",
+   "disc_336",
+   "disc_619",
+   "disc_167",
+   "disc_176",
+   "disc_471"
+  ]
+ },
+ {
+  "tid": "disc_582",
+  "support": 1,
+  "status": "archived",
+  "canonical": "When challenged on a past voting pattern, the player points to the coordination of others to suggest the presence of a larger strategy or group motive.",
+  "neighbors": [
+   "disc_290",
+   "disc_117",
+   "disc_218",
+   "disc_104",
+   "disc_584",
+   "disc_543",
+   "disc_512",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_583",
+  "support": 1,
+  "status": "archived",
+  "canonical": "When questioned about the logic behind a specific target, the player frames their decision as an inevitable response to the state of the game rather than a personal choice.",
+  "neighbors": [
+   "disc_613",
+   "disc_481",
+   "disc_668",
+   "disc_34",
+   "disc_182",
+   "disc_218",
+   "disc_369",
+   "disc_497"
+  ]
+ },
+ {
+  "tid": "disc_584",
+  "support": 1,
+  "status": "archived",
+  "canonical": "The player justifies their current suspicion by citing the specific past voting record and alleged behavioral justifications of another player.",
+  "neighbors": [
+   "disc_255",
+   "disc_512",
+   "disc_373",
+   "disc_716",
+   "disc_175",
+   "disc_183",
+   "disc_104",
+   "disc_473"
+  ]
+ },
+ {
+  "tid": "disc_587",
+  "support": 1,
+  "status": "archived",
+  "canonical": "labels another player's behavior as an attempt to hide or remain in the shadows during a direct confrontation.",
+  "neighbors": [
+   "disc_391",
+   "disc_575",
+   "disc_168",
+   "disc_214",
+   "disc_497",
+   "disc_471",
+   "disc_448",
+   "disc_202"
+  ]
+ },
+ {
+  "tid": "disc_588",
+  "support": 1,
+  "status": "archived",
+  "canonical": "accuses another player of manufacturing evidence or creating false leads to serve their own objectives.",
+  "neighbors": [
+   "disc_202",
+   "disc_168",
+   "disc_468",
+   "disc_75",
+   "disc_495",
+   "disc_21",
+   "disc_316",
+   "disc_728"
+  ]
+ },
+ {
+  "tid": "disc_589",
+  "support": 1,
+  "status": "archived",
+  "canonical": "characterizes a specific line of argument as circular during a debate.",
+  "neighbors": [
+   "disc_119",
+   "disc_201",
+   "disc_116",
+   "disc_22",
+   "disc_636",
+   "disc_514",
+   "disc_593",
+   "disc_729"
+  ]
+ },
+ {
+  "tid": "disc_590",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Continues to frame a player previously voted out as a source of legitimate information despite the death reveal that the player was the investigator.",
+  "neighbors": [
+   "disc_731",
+   "disc_69",
+   "disc_414",
+   "disc_27",
+   "disc_76",
+   "disc_715",
+   "disc_174",
+   "disc_26"
+  ]
+ },
+ {
+  "tid": "disc_591",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Publicly calls for a shift in focus to analyze which players benefited most from a specific past elimination.",
+  "neighbors": [
+   "disc_551",
+   "disc_450",
+   "disc_473",
+   "disc_686",
+   "disc_334",
+   "disc_454",
+   "disc_371",
+   "disc_315"
+  ]
+ },
+ {
+  "tid": "disc_592",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Challenges another player to explain their specific reasoning for a previous vote immediately after that vote is mentioned in conversation.",
+  "neighbors": [
+   "disc_688",
+   "disc_316",
+   "disc_687",
+   "disc_632",
+   "disc_512",
+   "disc_597",
+   "disc_475",
+   "disc_554"
+  ]
+ },
+ {
+  "tid": "disc_593",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Defends their previous vote by characterizing the target's behavior as bullying rather than citing evidence or logic.",
+  "neighbors": [
+   "disc_63",
+   "disc_99",
+   "disc_252",
+   "disc_64",
+   "disc_70",
+   "disc_115",
+   "disc_663",
+   "disc_373"
+  ]
+ },
+ {
+  "tid": "disc_594",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Validates the voting record of another player as being consistently aligned with the elimination of players who were later revealed on death as threats.",
+  "neighbors": [
+   "disc_455",
+   "disc_184",
+   "disc_453",
+   "disc_76",
+   "disc_73",
+   "disc_117",
+   "disc_290",
+   "disc_658"
+  ]
+ },
+ {
+  "tid": "disc_595",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Offers a specific justification for a voting deviation when directly asked to explain why they targeted a player other than the main suspect.",
+  "neighbors": [
+   "disc_687",
+   "disc_584",
+   "disc_69",
+   "disc_111",
+   "disc_316",
+   "disc_255",
+   "disc_592",
+   "disc_164"
+  ]
+ },
+ {
+  "tid": "disc_596",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Claims a prior hesitation during a group vote was based on a desire to weigh evidence before committing to an elimination.",
+  "neighbors": [
+   "disc_335",
+   "disc_682",
+   "disc_656",
+   "disc_206",
+   "disc_250",
+   "disc_737",
+   "disc_315",
+   "disc_340"
+  ]
+ },
+ {
+  "tid": "disc_597",
+  "support": 1,
+  "status": "archived",
+  "canonical": "Challenges the voting record of another player by questioning their timing during a past elimination vote.",
+  "neighbors": [
+   "disc_687",
+   "disc_592",
+   "disc_512",
+   "disc_334",
+   "disc_186",
+   "disc_372",
+   "disc_316",
+   "disc_171"
+  ]
+ },
+ {
+  "tid": "disc_608",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Initiates a discussion by highlighting a lack of information to justify not taking a stance on any specific players.",
+  "neighbors": [
+   "disc_215",
+   "disc_62",
+   "disc_681",
+   "disc_618",
+   "disc_136",
+   "disc_661",
+   "disc_408",
+   "disc_493"
+  ]
+ },
+ {
+  "tid": "disc_609",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Proposes a complex strategy for information management and role protection during the early stage of the game.",
+  "neighbors": [
+   "disc_651",
+   "disc_227",
+   "disc_652",
+   "disc_662",
+   "disc_356",
+   "disc_228",
+   "disc_493",
+   "disc_467"
+  ]
+ },
+ {
+  "tid": "disc_610",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Cautions against specific strategic proposals by arguing that they might inadvertently provide information to opposing factions.",
+  "neighbors": [
+   "disc_58",
+   "disc_611",
+   "disc_230",
+   "disc_227",
+   "disc_493",
+   "disc_357",
+   "disc_406",
+   "disc_387"
+  ]
+ },
+ {
+  "tid": "disc_611",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Suggests that key information roles should share findings with only a subset of the players rather than the entire group.",
+  "neighbors": [
+   "disc_227",
+   "disc_610",
+   "disc_230",
+   "disc_467",
+   "disc_609",
+   "disc_529",
+   "disc_493",
+   "disc_228"
+  ]
+ },
+ {
+  "tid": "disc_612",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player highlights a specific, previously announced negative event and attributes it to a player based on their previous argumentative posture.",
+  "neighbors": [
+   "disc_584",
+   "disc_468",
+   "disc_183",
+   "disc_362",
+   "disc_70",
+   "disc_168",
+   "disc_178",
+   "disc_225"
+  ]
+ },
+ {
+  "tid": "disc_613",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player responds to a direct accusation by framing their previous strategy as a logical necessity due to the lack of available information.",
+  "neighbors": [
+   "disc_107",
+   "disc_72",
+   "disc_456",
+   "disc_496",
+   "disc_218",
+   "disc_465",
+   "disc_419",
+   "disc_713"
+  ]
+ },
+ {
+  "tid": "disc_614",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who was publicly confirmed as a target of an attack during the preceding night cycle discusses the implications of their own survival for the group.",
+  "neighbors": [
+   "disc_726",
+   "disc_703",
+   "disc_482",
+   "disc_246",
+   "disc_407",
+   "disc_390",
+   "disc_330",
+   "disc_17"
+  ]
+ },
+ {
+  "tid": "disc_615",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Suggests focusing on a specific player because they have survived multiple night attacks.",
+  "neighbors": [
+   "disc_453",
+   "disc_482",
+   "disc_407",
+   "disc_703",
+   "disc_285",
+   "disc_614",
+   "disc_733",
+   "disc_174"
+  ]
+ },
+ {
+  "tid": "disc_616",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Calls for a specific player to reveal whether they have been using a protective ability.",
+  "neighbors": [
+   "disc_567",
+   "disc_630",
+   "disc_632",
+   "disc_21",
+   "disc_202",
+   "disc_61",
+   "disc_330",
+   "disc_684"
+  ]
+ },
+ {
+  "tid": "disc_617",
+  "support": 4,
+  "status": "queued",
+  "canonical": "Advocates for ending a pattern of abstaining to force a decisive vote.",
+  "neighbors": [
+   "disc_383",
+   "disc_412",
+   "disc_413",
+   "disc_430",
+   "disc_113",
+   "disc_30",
+   "disc_23",
+   "disc_336"
+  ]
+ },
+ {
+  "tid": "disc_618",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Suggests examining the motives of players who advocate for continued abstention.",
+  "neighbors": [
+   "disc_657",
+   "disc_581",
+   "disc_661",
+   "disc_471",
+   "disc_62",
+   "disc_336",
+   "disc_135",
+   "disc_412"
+  ]
+ },
+ {
+  "tid": "disc_619",
+  "support": 1,
+  "status": "queued",
+  "canonical": "labels the voting hesitation of other participants as a significant anomaly that warrants investigation.",
+  "neighbors": [
+   "disc_257",
+   "disc_176",
+   "disc_545",
+   "disc_596",
+   "disc_581",
+   "disc_664",
+   "disc_392",
+   "disc_475"
+  ]
+ },
+ {
+  "tid": "disc_620",
+  "support": 1,
+  "status": "queued",
+  "canonical": "argues that the current conversation is being steered away from relevant threats by focusing on a resolved voting event.",
+  "neighbors": [
+   "disc_415",
+   "disc_208",
+   "disc_110",
+   "disc_732",
+   "disc_735",
+   "disc_392",
+   "disc_485",
+   "disc_314"
+  ]
+ },
+ {
+  "tid": "disc_629",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Advises the group against voting for any candidate without explicit evidence.",
+  "neighbors": [
+   "disc_446",
+   "disc_656",
+   "disc_284",
+   "disc_114",
+   "disc_360",
+   "disc_340",
+   "disc_162",
+   "disc_411"
+  ]
+ },
+ {
+  "tid": "disc_630",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Directly probes a silent player for their perspective on who is suspicious.",
+  "neighbors": [
+   "disc_687",
+   "disc_28",
+   "disc_592",
+   "disc_632",
+   "disc_316",
+   "disc_282",
+   "disc_285",
+   "disc_680"
+  ]
+ },
+ {
+  "tid": "disc_631",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Suggests that the group analyze social behavior and reaction patterns given the lack of hard evidence.",
+  "neighbors": [
+   "disc_360",
+   "disc_101",
+   "disc_408",
+   "disc_58",
+   "disc_333",
+   "disc_629",
+   "disc_409",
+   "disc_285"
+  ]
+ },
+ {
+  "tid": "disc_632",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Challenges a player who is under scrutiny to provide their own perspective on why they were previously targeted by an investigator.",
+  "neighbors": [
+   "disc_592",
+   "disc_687",
+   "disc_316",
+   "disc_630",
+   "disc_418",
+   "disc_668",
+   "disc_704",
+   "disc_26"
+  ]
+ },
+ {
+  "tid": "disc_633",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Suggests that the group look at the history of voting to identify who pushed for previous deadlocks.",
+  "neighbors": [
+   "disc_118",
+   "disc_103",
+   "disc_33",
+   "disc_23",
+   "disc_244",
+   "disc_249",
+   "disc_524",
+   "disc_367"
+  ]
+ },
+ {
+  "tid": "disc_634",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Frames the decision to vote for a specific target as a necessary action to generate a voting record rather than as a reaction to evidence.",
+  "neighbors": [
+   "disc_663",
+   "disc_498",
+   "disc_77",
+   "disc_218",
+   "disc_471",
+   "disc_110",
+   "disc_115",
+   "disc_509"
+  ]
+ },
+ {
+  "tid": "disc_635",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player asserts their previous actions were the primary catalyst for resolving a previous voting deadlock.",
+  "neighbors": [
+   "disc_103",
+   "disc_35",
+   "disc_690",
+   "disc_107",
+   "disc_432",
+   "disc_111",
+   "disc_686",
+   "disc_660"
+  ]
+ },
+ {
+  "tid": "disc_636",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player characterizes the act of scrutinizing other players' motives as a self-defeating or circular strategy.",
+  "neighbors": [
+   "disc_526",
+   "disc_256",
+   "disc_391",
+   "disc_689",
+   "disc_104",
+   "disc_184",
+   "disc_613",
+   "disc_72"
+  ]
+ },
+ {
+  "tid": "disc_637",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player defines a criteria for suspicion based on being the most hesitant or late to join a consensus.",
+  "neighbors": [
+   "disc_495",
+   "disc_164",
+   "disc_285",
+   "disc_540",
+   "disc_727",
+   "disc_547",
+   "disc_162",
+   "disc_170"
+  ]
+ },
+ {
+  "tid": "disc_651",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Proposes a systematic approach to identifying roles or voting patterns immediately at the start of the game.",
+  "neighbors": [
+   "disc_356",
+   "disc_609",
+   "disc_36",
+   "disc_227",
+   "disc_652",
+   "disc_247",
+   "disc_162",
+   "disc_176"
+  ]
+ },
+ {
+  "tid": "disc_652",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Advocates for a cautious strategy that avoids early role claims in favor of monitoring voting records.",
+  "neighbors": [
+   "disc_234",
+   "disc_609",
+   "disc_227",
+   "disc_408",
+   "disc_466",
+   "disc_181",
+   "disc_579",
+   "disc_651"
+  ]
+ },
+ {
+  "tid": "disc_653",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who suggests a procedural method for forcing player participation, such as having everyone identify the least suspicious player.",
+  "neighbors": [
+   "disc_540",
+   "disc_285",
+   "disc_166",
+   "disc_637",
+   "disc_509",
+   "disc_543",
+   "disc_538",
+   "disc_548"
+  ]
+ },
+ {
+  "tid": "disc_654",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who expresses skepticism about naming suspects early because it feels like guessing rather than observation.",
+  "neighbors": [
+   "disc_540",
+   "disc_637",
+   "disc_316",
+   "disc_360",
+   "disc_444",
+   "disc_234",
+   "disc_652",
+   "disc_630"
+  ]
+ },
+ {
+  "tid": "disc_655",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player expresses contrition after a vote they cast leads to an elimination that does not align with the group's current strategy.",
+  "neighbors": [
+   "disc_665",
+   "disc_554",
+   "disc_339",
+   "disc_528",
+   "disc_737",
+   "disc_343",
+   "disc_435",
+   "disc_31"
+  ]
+ },
+ {
+  "tid": "disc_656",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player cautions against shifting votes based on pressure rather than evidence.",
+  "neighbors": [
+   "disc_682",
+   "disc_207",
+   "disc_19",
+   "disc_570",
+   "disc_409",
+   "disc_284",
+   "disc_335",
+   "disc_234"
+  ]
+ },
+ {
+  "tid": "disc_657",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player explicitly acknowledges that their previous decision to abstain resulted in game stagnation.",
+  "neighbors": [
+   "disc_618",
+   "disc_362",
+   "disc_661",
+   "disc_103",
+   "disc_734",
+   "disc_342",
+   "disc_335",
+   "disc_635"
+  ]
+ },
+ {
+  "tid": "disc_658",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player defends their own voting record after being accused of silence by noting that they voted with the majority in past rounds.",
+  "neighbors": [
+   "disc_255",
+   "disc_175",
+   "disc_107",
+   "disc_660",
+   "disc_472",
+   "disc_250",
+   "disc_104",
+   "disc_455"
+  ]
+ },
+ {
+  "tid": "disc_659",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player suggests shifting the focus of the discussion away from voting history and toward the frequency of participant contributions.",
+  "neighbors": [
+   "disc_485",
+   "disc_131",
+   "disc_334",
+   "disc_253",
+   "disc_707",
+   "disc_714",
+   "disc_473",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_660",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player disputes an accusation of being a latecomer to a consensus by claiming that their vote was one of the first cast.",
+  "neighbors": [
+   "disc_658",
+   "disc_432",
+   "disc_528",
+   "disc_635",
+   "disc_186",
+   "disc_372",
+   "disc_175",
+   "disc_179"
+  ]
+ },
+ {
+  "tid": "disc_661",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player justifies a history of abstaining by citing it as a shared period of uncertainty among multiple participants.",
+  "neighbors": [
+   "disc_471",
+   "disc_618",
+   "disc_336",
+   "disc_62",
+   "disc_657",
+   "disc_362",
+   "disc_581",
+   "disc_335"
+  ]
+ },
+ {
+  "tid": "disc_662",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player argues that being vocal about aggressive strategies is a self-serving behavior that helps hide a hidden role.",
+  "neighbors": [
+   "disc_571",
+   "disc_227",
+   "disc_482",
+   "disc_162",
+   "disc_465",
+   "disc_205",
+   "disc_609",
+   "disc_143"
+  ]
+ },
+ {
+  "tid": "disc_663",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Deflects from direct challenges to their previous voting record by characterizing the challenge as binary thinking or groupthink.",
+  "neighbors": [
+   "disc_33",
+   "disc_110",
+   "disc_593",
+   "disc_212",
+   "disc_64",
+   "disc_179",
+   "disc_100",
+   "disc_730"
+  ]
+ },
+ {
+  "tid": "disc_664",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Highlights the scarcity of available information to justify focusing on any deviation from the current consensus in voting history.",
+  "neighbors": [
+   "disc_23",
+   "disc_498",
+   "disc_368",
+   "disc_136",
+   "disc_392",
+   "disc_179",
+   "disc_619",
+   "disc_383"
+  ]
+ },
+ {
+  "tid": "disc_665",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Admits to an earlier voting choice being a mistake after a player was revealed to be a wolf on death, while maintaining the choice was initially made to avoid group consensus.",
+  "neighbors": [
+   "disc_414",
+   "disc_31",
+   "disc_655",
+   "disc_528",
+   "disc_210",
+   "disc_702",
+   "disc_596",
+   "disc_247"
+  ]
+ },
+ {
+  "tid": "disc_666",
+  "support": 1,
+  "status": "queued",
+  "canonical": "When directly accused of being a threat, the player shifts the burden of proof by questioning why the accusers did not challenge each other earlier.",
+  "neighbors": [
+   "disc_668",
+   "disc_418",
+   "disc_217",
+   "disc_574",
+   "disc_171",
+   "disc_32",
+   "disc_316",
+   "disc_106"
+  ]
+ },
+ {
+  "tid": "disc_667",
+  "support": 1,
+  "status": "queued",
+  "canonical": "The player justifies their prior vote by emphasizing their consistent focus on identifying threats rather than blending into the group consensus.",
+  "neighbors": [
+   "disc_511",
+   "disc_528",
+   "disc_63",
+   "disc_255",
+   "disc_658",
+   "disc_115",
+   "disc_218",
+   "disc_107"
+  ]
+ },
+ {
+  "tid": "disc_668",
+  "support": 1,
+  "status": "queued",
+  "canonical": "The player frames their line of questioning by asking others to explain why they targeted a specific player instead of challenging each other.",
+  "neighbors": [
+   "disc_666",
+   "disc_182",
+   "disc_526",
+   "disc_497",
+   "disc_632",
+   "disc_219",
+   "disc_527",
+   "disc_65"
+  ]
+ },
+ {
+  "tid": "disc_679",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Proposes criteria for future behavior rather than analyzing current events to guide the group's focus.",
+  "neighbors": [
+   "disc_203",
+   "disc_317",
+   "disc_485",
+   "disc_209",
+   "disc_100",
+   "disc_524",
+   "disc_201",
+   "disc_212"
+  ]
+ },
+ {
+  "tid": "disc_680",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Initiates a strategic discussion regarding how a role with hidden information should handle their night actions.",
+  "neighbors": [
+   "disc_204",
+   "disc_407",
+   "disc_630",
+   "disc_282",
+   "disc_165",
+   "disc_254",
+   "disc_205",
+   "disc_28"
+  ]
+ },
+ {
+  "tid": "disc_681",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Argues for delaying discussion until after the first elimination has provided concrete data.",
+  "neighbors": [
+   "disc_24",
+   "disc_596",
+   "disc_608",
+   "disc_447",
+   "disc_358",
+   "disc_428",
+   "disc_206",
+   "disc_591"
+  ]
+ },
+ {
+  "tid": "disc_682",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player advocates for gathering more perspectives before committing to an elimination when an accuser acts aggressively without evidence.",
+  "neighbors": [
+   "disc_408",
+   "disc_409",
+   "disc_277",
+   "disc_570",
+   "disc_656",
+   "disc_465",
+   "disc_234",
+   "disc_495"
+  ]
+ },
+ {
+  "tid": "disc_683",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player dismisses requests for evidence as a tactical distraction rather than addressing the substance of the questioning.",
+  "neighbors": [
+   "disc_21",
+   "disc_499",
+   "disc_308",
+   "disc_574",
+   "disc_576",
+   "disc_67",
+   "disc_99",
+   "disc_314"
+  ]
+ },
+ {
+  "tid": "disc_684",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who identifies as having performed a special action that resulted in a player death shares this information with the group.",
+  "neighbors": [
+   "disc_282",
+   "disc_278",
+   "disc_568",
+   "disc_361",
+   "disc_246",
+   "disc_225",
+   "disc_170",
+   "disc_27"
+  ]
+ },
+ {
+  "tid": "disc_685",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player describes their lack of active participation as a result of processing the loss of key players revealed on death.",
+  "neighbors": [
+   "disc_361",
+   "disc_338",
+   "disc_684",
+   "disc_219",
+   "disc_657",
+   "disc_529",
+   "disc_433",
+   "disc_568"
+  ]
+ },
+ {
+  "tid": "disc_686",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player explicitly suggests that the person who initiated momentum for a past elimination is the primary suspect for remaining threats.",
+  "neighbors": [
+   "disc_339",
+   "disc_409",
+   "disc_454",
+   "disc_473",
+   "disc_291",
+   "disc_584",
+   "disc_551",
+   "disc_432"
+  ]
+ },
+ {
+  "tid": "disc_687",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Directs suspicion toward players who are currently questioning them when challenged on a past voting decision.",
+  "neighbors": [
+   "disc_592",
+   "disc_316",
+   "disc_473",
+   "disc_630",
+   "disc_632",
+   "disc_455",
+   "disc_451",
+   "disc_597"
+  ]
+ },
+ {
+  "tid": "disc_688",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Repeatedly presses a specific player to explain the logic of a past vote until they provide an explanation that satisfies their own standard of consistency.",
+  "neighbors": [
+   "disc_592",
+   "disc_545",
+   "disc_99",
+   "disc_70",
+   "disc_316",
+   "disc_512",
+   "disc_687",
+   "disc_115"
+  ]
+ },
+ {
+  "tid": "disc_689",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Questions the sincerity of another player's stated reasoning by pointing out logical contradictions in their narrative.",
+  "neighbors": [
+   "disc_316",
+   "disc_202",
+   "disc_729",
+   "disc_256",
+   "disc_526",
+   "disc_592",
+   "disc_512",
+   "disc_516"
+  ]
+ },
+ {
+  "tid": "disc_690",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Uses the mathematical results of a previous vote to refute a player's claims about their own role in breaking a deadlock.",
+  "neighbors": [
+   "disc_635",
+   "disc_111",
+   "disc_107",
+   "disc_103",
+   "disc_35",
+   "disc_473",
+   "disc_597",
+   "disc_174"
+  ]
+ },
+ {
+  "tid": "disc_699",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Counters an accusation by highlighting the lack of verifiable information and questioning the accuser's motivations.",
+  "neighbors": [
+   "disc_514",
+   "disc_574",
+   "disc_729",
+   "disc_728",
+   "disc_116",
+   "disc_484",
+   "disc_75",
+   "disc_332"
+  ]
+ },
+ {
+  "tid": "disc_700",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Emphasizes the binary nature of a high-stakes claim while questioning whether other participants have corroborating information.",
+  "neighbors": [
+   "disc_280",
+   "disc_215",
+   "disc_101",
+   "disc_142",
+   "disc_576",
+   "disc_475",
+   "disc_699",
+   "disc_231"
+  ]
+ },
+ {
+  "tid": "disc_701",
+  "support": 1,
+  "status": "queued",
+  "canonical": "Invites the group to target the accuser if their own elimination reveals them to be a villager.",
+  "neighbors": [
+   "disc_687",
+   "disc_75",
+   "disc_530",
+   "disc_418",
+   "disc_455",
+   "disc_276",
+   "disc_532",
+   "disc_288"
+  ]
+ },
+ {
+  "tid": "disc_702",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who has previously identified a player revealed on death as a serial killer claims to have identified another player as being on the wolf team.",
+  "neighbors": [
+   "disc_414",
+   "disc_76",
+   "disc_282",
+   "disc_319",
+   "disc_525",
+   "disc_665",
+   "disc_174",
+   "disc_715"
+  ]
+ },
+ {
+  "tid": "disc_703",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who publicly claims to be the investigator references their survival of a night-time attack as evidence of their own reliability.",
+  "neighbors": [
+   "disc_390",
+   "disc_17",
+   "disc_614",
+   "disc_232",
+   "disc_615",
+   "disc_330",
+   "disc_482",
+   "disc_453"
+  ]
+ },
+ {
+  "tid": "disc_704",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player accused by someone claiming to be the investigator questions the timing and the motive behind the delayed revelation of the investigation result.",
+  "neighbors": [
+   "disc_171",
+   "disc_140",
+   "disc_292",
+   "disc_26",
+   "disc_275",
+   "disc_419",
+   "disc_418",
+   "disc_632"
+  ]
+ },
+ {
+  "tid": "disc_705",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player acknowledges a previous successful identification by an accuser while simultaneously urging the group to avoid jumping to conclusions based only on claims.",
+  "neighbors": [
+   "disc_682",
+   "disc_408",
+   "disc_466",
+   "disc_234",
+   "disc_570",
+   "disc_484",
+   "disc_571",
+   "disc_277"
+  ]
+ },
+ {
+  "tid": "disc_706",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player claims to have pending information from an unverified action while delaying the disclosure of that information to the rest of the group.",
+  "neighbors": [
+   "disc_529",
+   "disc_275",
+   "disc_170",
+   "disc_231",
+   "disc_547",
+   "disc_416",
+   "disc_139",
+   "disc_538"
+  ]
+ },
+ {
+  "tid": "disc_707",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player suggests specific, objective criteria for evaluating other players' past voting behaviors rather than relying on current levels of silence.",
+  "neighbors": [
+   "disc_131",
+   "disc_162",
+   "disc_285",
+   "disc_485",
+   "disc_164",
+   "disc_659",
+   "disc_714",
+   "disc_181"
+  ]
+ },
+ {
+  "tid": "disc_708",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player attempts to rationalize their own passivity by claiming it serves to avoid disrupting a perceived leader's progress.",
+  "neighbors": [
+   "disc_305",
+   "disc_546",
+   "disc_538",
+   "disc_34",
+   "disc_214",
+   "disc_531",
+   "disc_539",
+   "disc_542"
+  ]
+ },
+ {
+  "tid": "disc_709",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player actively prompts a specific, self-identified investigator to provide a new target for the group to eliminate.",
+  "neighbors": [
+   "disc_513",
+   "disc_630",
+   "disc_370",
+   "disc_369",
+   "disc_427",
+   "disc_544",
+   "disc_18",
+   "disc_467"
+  ]
+ },
+ {
+  "tid": "disc_710",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who has claimed the investigator role explicitly requests additional time and night cycles before committing to a new accusation.",
+  "neighbors": [
+   "disc_277",
+   "disc_547",
+   "disc_288",
+   "disc_466",
+   "disc_704",
+   "disc_408",
+   "disc_206",
+   "disc_416"
+  ]
+ },
+ {
+  "tid": "disc_711",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player claims to have cleared another player of being a specific role through a private action.",
+  "neighbors": [
+   "disc_282",
+   "disc_139",
+   "disc_278",
+   "disc_390",
+   "disc_288",
+   "disc_467",
+   "disc_165",
+   "disc_246"
+  ]
+ },
+ {
+  "tid": "disc_712",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who previously advocated for a specific strategy acknowledges it was potentially misguided when challenged.",
+  "neighbors": [
+   "disc_713",
+   "disc_72",
+   "disc_511",
+   "disc_546",
+   "disc_217",
+   "disc_470",
+   "disc_657",
+   "disc_517"
+  ]
+ },
+ {
+  "tid": "disc_713",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player who previously advocated for a specific strategy justifies their past actions by citing the context of the game.",
+  "neighbors": [
+   "disc_712",
+   "disc_217",
+   "disc_72",
+   "disc_613",
+   "disc_218",
+   "disc_175",
+   "disc_37",
+   "disc_34"
+  ]
+ },
+ {
+  "tid": "disc_714",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player prompts others to analyze the voting records of those who have been accusing other players of passivity.",
+  "neighbors": [
+   "disc_473",
+   "disc_512",
+   "disc_283",
+   "disc_580",
+   "disc_485",
+   "disc_106",
+   "disc_372",
+   "disc_104"
+  ]
+ },
+ {
+  "tid": "disc_715",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player asserts that they have information confirming the identity of another player immediately before a final vote.",
+  "neighbors": [
+   "disc_467",
+   "disc_139",
+   "disc_275",
+   "disc_569",
+   "disc_282",
+   "disc_174",
+   "disc_727",
+   "disc_464"
+  ]
+ },
+ {
+  "tid": "disc_716",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player justifies their choice to support a specific accusation by citing the historical record and perceived consistency of the accuser.",
+  "neighbors": [
+   "disc_175",
+   "disc_255",
+   "disc_584",
+   "disc_578",
+   "disc_658",
+   "disc_389",
+   "disc_613",
+   "disc_512"
+  ]
+ },
+ {
+  "tid": "disc_717",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player references their own previous participation in identifying other eliminated players to argue for the credibility of their current information.",
+  "neighbors": [
+   "disc_175",
+   "disc_373",
+   "disc_658",
+   "disc_584",
+   "disc_255",
+   "disc_635",
+   "disc_139",
+   "disc_686"
+  ]
+ },
+ {
+  "tid": "disc_726",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player announces they were the target of a failed night attack at the beginning of the discussion.",
+  "neighbors": [
+   "disc_407",
+   "disc_614",
+   "disc_330",
+   "disc_482",
+   "disc_727",
+   "disc_278",
+   "disc_390",
+   "disc_204"
+  ]
+ },
+ {
+  "tid": "disc_727",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player initiates an accusation against another specific individual early in the discussion session.",
+  "neighbors": [
+   "disc_495",
+   "disc_464",
+   "disc_543",
+   "disc_275",
+   "disc_569",
+   "disc_467",
+   "disc_571",
+   "disc_715"
+  ]
+ },
+ {
+  "tid": "disc_728",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player responds to being accused by suggesting the accuser is trying to point fingers without evidence.",
+  "neighbors": [
+   "disc_574",
+   "disc_67",
+   "disc_484",
+   "disc_465",
+   "disc_729",
+   "disc_613",
+   "disc_496",
+   "disc_21"
+  ]
+ },
+ {
+  "tid": "disc_729",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player challenges the validity of an accusation against another player by dismissing the reasoning used by the accuser.",
+  "neighbors": [
+   "disc_689",
+   "disc_316",
+   "disc_484",
+   "disc_728",
+   "disc_308",
+   "disc_574",
+   "disc_202",
+   "disc_531"
+  ]
+ },
+ {
+  "tid": "disc_730",
+  "support": 1,
+  "status": "queued",
+  "canonical": "responds to a direct accusation of persistent voting patterns by questioning the motivation of the accuser rather than engaging with the evidence presented.",
+  "neighbors": [
+   "disc_110",
+   "disc_33",
+   "disc_732",
+   "disc_574",
+   "disc_116",
+   "disc_106",
+   "disc_663",
+   "disc_415"
+  ]
+ },
+ {
+  "tid": "disc_731",
+  "support": 1,
+  "status": "queued",
+  "canonical": "repeatedly demands accountability for a specific past vote against a player revealed on death to have been the investigator.",
+  "neighbors": [
+   "disc_69",
+   "disc_27",
+   "disc_70",
+   "disc_31",
+   "disc_590",
+   "disc_111",
+   "disc_26",
+   "disc_414"
+  ]
+ },
+ {
+  "tid": "disc_732",
+  "support": 1,
+  "status": "queued",
+  "canonical": "claims that being a target of suspicion is indicative of being a threat, rather than addressing the specific points raised by the accuser.",
+  "neighbors": [
+   "disc_116",
+   "disc_730",
+   "disc_666",
+   "disc_332",
+   "disc_208",
+   "disc_406",
+   "disc_387",
+   "disc_699"
+  ]
+ },
+ {
+  "tid": "disc_733",
+  "support": 1,
+  "status": "queued",
+  "canonical": "suggests that focusing on specific players who cast a particular vote in a previous round serves the interests of those who wish to mislead the village.",
+  "neighbors": [
+   "disc_210",
+   "disc_473",
+   "disc_414",
+   "disc_687",
+   "disc_247",
+   "disc_64",
+   "disc_420",
+   "disc_36"
+  ]
+ },
+ {
+  "tid": "disc_734",
+  "support": 1,
+  "status": "queued",
+  "canonical": "volunteers their own past voting behavior, specifically identifying as one of the players who chose to abstain in a previous round.",
+  "neighbors": [
+   "disc_411",
+   "disc_290",
+   "disc_336",
+   "disc_657",
+   "disc_32",
+   "disc_580",
+   "disc_658",
+   "disc_471"
+  ]
+ },
+ {
+  "tid": "disc_735",
+  "support": 1,
+  "status": "queued",
+  "canonical": "frames the previous conflict between two specific players as a distraction from the larger voting patterns of other participants.",
+  "neighbors": [
+   "disc_337",
+   "disc_457",
+   "disc_340",
+   "disc_485",
+   "disc_483",
+   "disc_334",
+   "disc_473",
+   "disc_185"
+  ]
+ },
+ {
+  "tid": "disc_736",
+  "support": 1,
+  "status": "queued",
+  "canonical": "expresses skepticism toward the loudest voices currently advocating for an immediate, emotional lynch of other players.",
+  "neighbors": [
+   "disc_211",
+   "disc_682",
+   "disc_234",
+   "disc_656",
+   "disc_98",
+   "disc_114",
+   "disc_19",
+   "disc_338"
+  ]
+ },
+ {
+  "tid": "disc_737",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player characterizes an earlier, controversial vote as a result of a chaotic and unavoidable group atmosphere rather than individual choice.",
+  "neighbors": [
+   "disc_432",
+   "disc_468",
+   "disc_63",
+   "disc_218",
+   "disc_343",
+   "disc_596",
+   "disc_371",
+   "disc_103"
+  ]
+ },
+ {
+  "tid": "disc_738",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player maintains that a past day's vote is the only objective data point available for analysis and rejects alternative suggestions for identifying threats.",
+  "neighbors": [
+   "disc_252",
+   "disc_70",
+   "disc_283",
+   "disc_372",
+   "disc_284",
+   "disc_368",
+   "disc_104",
+   "disc_218"
+  ]
+ },
+ {
+  "tid": "disc_739",
+  "support": 1,
+  "status": "queued",
+  "canonical": "A player explicitly states they are withholding or conserving resources while claiming to prioritize the identification of threats.",
+  "neighbors": [
+   "disc_529",
+   "disc_214",
+   "disc_431",
+   "disc_391",
+   "disc_256",
+   "disc_546",
+   "disc_708",
+   "disc_471"
+  ]
+ }
+]
