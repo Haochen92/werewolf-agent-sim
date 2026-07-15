@@ -6,8 +6,10 @@ from pydantic import BaseModel
 
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
 from Agents.prompts.prompt_formatters import (
+    format_alive_roles,
     format_day_channel_for_day,
     format_day_summaries,
+    format_dead_roster,
     format_investigator_results,
     format_retrieved_observations,
     format_strategy_points,
@@ -106,6 +108,24 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),
+        "dead_roster": format_dead_roster(payload.get("dead_roster", [])),
+        # Roles still in play = the fixed public cast census minus every revealed-dead role (public,
+        # deterministic — see format_alive_roles). "" when no census rode the payload (legacy replay).
+        "alive_roles": format_alive_roles(
+            payload.get("cast_role_counts", {}),
+            payload.get("dead_roster", []),
+        ),
+        # The exact living players (minus self) the reads instruction enumerates — derived here, never
+        # hard-coded, so it stays complete as players die (the T4 completeness mechanism). The fallback
+        # covers the wolf day payload, which splits survivors into wolves + villagers.
+        "read_targets": ", ".join(
+            p
+            for p in (
+                payload.get("surviving_players")
+                or (payload.get("surviving_wolves", []) + payload.get("surviving_villagers", []))
+            )
+            if p != payload.get("player_id")
+        ),
         "day_channel": format_day_channel_for_day(
             payload.get("day_channel", []),
             payload.get("current_day", 1),
@@ -138,4 +158,14 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "role_lens": SITUATION_ROLE_LENS.get(role, ""),
         "adoption_instruction": STRATEGY_VERDICT_INSTRUCTION,
         "synergy_instruction": synergy_instruction,
+        # The v1 tell book (2026-07-13): "" unless the arm sets WW_TELL_BOOK — see
+        # Agents/memory/tell_book.py for the env gating + the per-turn roles-alive filter.
+        # (imported lazily: Agents.memory's package init imports retrieval, which imports this module)
+        "tell_book": _tell_book_block()(
+            payload.get("dead_roster", []), payload.get("cast_role_counts", {})
+        ),
     }
+
+def _tell_book_block():
+    from Agents.memory.tell_book import tell_book_block
+    return tell_book_block

@@ -11,7 +11,7 @@ the discuss phase uses them.
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import GAME_PREAMBLE, build_system_prompt
+from Agents.prompts.common import GAME_PREAMBLE, READS_COMMIT_INSTRUCTION, build_system_prompt
 from Agents.prompts.memory import DAY_DISCUSSION_MEMORY_CONTEXT
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
@@ -52,6 +52,19 @@ specific contradiction, or track the voting record once there is one.
 """
 
 
+ENGAGE_WITH_DISCUSSION_RULE = """
+Engage with what has already been said. Read the transcript above before you speak. Do NOT restate a
+point another player has already made — an opener like "I agree we can't keep abstaining", "we should
+be careful", or "X seems suspicious" adds nothing once someone has already said it, and four players
+saying the same thing wastes the day. When you speak, do exactly one of:
+- add genuinely NEW information: a specific fact, a concrete read, a challenge, or a proposal not yet
+  raised, or
+- explicitly build on a prior point by NAMING the player who made it and advancing it — give a new
+  reason, draw out a consequence, or push it to a concrete next step. Naming-and-advancing is not the
+  same as seconding: "I agree with X" on its own is a restatement, not engagement.
+"""
+
+
 DAY_DISCUSS_RESPONSE_FORMAT = """
 You must respond with a valid JSON.
 
@@ -59,6 +72,7 @@ When speaking:
 {{
     "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
+    "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}],
     "pass_turn": false,
     "message": "your discussion message",
     "updated_strategy": "your updated private strategy note for future turns",
@@ -69,6 +83,7 @@ When declining to speak (only if you were NOT directly addressed):
 {{
     "strategy_verdicts": [{{"strategy_index": 1, "verdict": "not_relevant", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "does_not_apply", "why": "short reason vs your current board"}}],
+    "reads": [{{"player": "player_2", "why": "unchanged", "suspected_role": "unclear", "confidence": "low"}}],
     "pass_turn": true,
     "message": "",
     "updated_strategy": "your updated private strategy note for future turns",
@@ -85,6 +100,12 @@ Day {current_day} discussion.
 """
 
 _DISCUSS_TRANSCRIPT = """
+== Dead so far (public) ==
+{dead_roster}
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+{alive_roles}
+
 == Previous days summary ==
 {day_summaries}
 
@@ -117,12 +138,17 @@ def _discuss_template(core_strategy, framing, context, *, trailer=""):
             ),
             (
                 "human",
-                _DISCUSS_HEADER
+                # {tell_book}: above the reads instruction (evidence before belief); empty unless the
+                # arm configures a book (Agents/memory/tell_book.py).
+                "{tell_book}"
+                + READS_COMMIT_INSTRUCTION
+                + _DISCUSS_HEADER
                 + context
                 + _DISCUSS_TRANSCRIPT
                 + trailer
                 + DAY_DISCUSSION_MEMORY_CONTEXT
-                + DISCUSSION_SILENCE_RULE,
+                + DISCUSSION_SILENCE_RULE
+                + ENGAGE_WITH_DISCUSSION_RULE,
             ),
         ]
     )

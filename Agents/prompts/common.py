@@ -3,6 +3,18 @@ def build_system_prompt(*sections: str) -> str:
     return "\n\n".join(section.strip() for section in sections)
 
 
+# Human-turn instruction that pairs with the schema `reads` field (Agents.schemas.output.PlayerRead)
+# and the {read_targets} key filled by build_agent_prompt_input: it names the exact living players
+# the agent must commit a read for BEFORE its decision. Deliberately terse — the schema field
+# description and the JSON example carry the fuller spec; the load-bearing part is the {read_targets}
+# enumeration (the T4 completeness mechanism the decision.py tripwire scores against). Exact tested
+# text (T1c replay) — do not reword.
+READS_COMMIT_INSTRUCTION = (
+    "\nBefore your decision, record your current read — one entry each for: "
+    "{read_targets} (best-guess role, or 'unclear').\n"
+)
+
+
 # Canonical game rules — the single source of truth for the role line-up, abilities,
 # win conditions, and flow. Composed into GAME_PREAMBLE (play prompt) AND the
 # extraction-family prompts (postgame / per-role / day-summary) so the rules can never

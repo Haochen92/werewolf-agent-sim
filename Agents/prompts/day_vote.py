@@ -10,7 +10,7 @@ their win conditions make "remove an anti-village threat" wrong.
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import GAME_PREAMBLE, build_system_prompt
+from Agents.prompts.common import GAME_PREAMBLE, READS_COMMIT_INSTRUCTION, build_system_prompt
 from Agents.prompts.memory import DAY_VOTE_MEMORY_CONTEXT
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
@@ -27,6 +27,12 @@ from Agents.prompts.roles import (
 _VOTE_HEADER = "Day {current_day}. Time to vote!\n\n"
 
 _VOTE_TRANSCRIPT = """
+== Dead so far (public) ==
+{dead_roster}
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+{alive_roles}
+
 == Previous days summary ==
 {day_summaries}
 
@@ -48,7 +54,7 @@ You cannot vote for yourself.
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """
 
 
@@ -67,7 +73,12 @@ def _vote_template(context, closing, *, core_strategy=None, system=None):
             ("system", sys_block),
             (
                 "human",
-                _VOTE_HEADER + context + _VOTE_TRANSCRIPT + DAY_VOTE_MEMORY_CONTEXT + closing,
+                # {tell_book} sits ABOVE the reads instruction (evidence before belief — the book is
+                # the how-to-read manual, the reads are the output it should improve); renders empty
+                # unless the arm configures a book (Agents/memory/tell_book.py).
+                "{tell_book}"
+                + READS_COMMIT_INSTRUCTION
+                + _VOTE_HEADER + context + _VOTE_TRANSCRIPT + DAY_VOTE_MEMORY_CONTEXT + closing,
             ),
         ]
     )
@@ -116,7 +127,7 @@ You may also vote "abstain" when it is offered (an abstain plurality means no el
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
     ),
 )
@@ -137,7 +148,7 @@ You may also vote "abstain" when it is offered (an abstain plurality means no el
 {abstain_instruction}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vote_target": "exact player_id from the surviving players list, or \\"abstain\\"", "updated_strategy": "your updated private strategy note"}}
 """,
     ),
 )

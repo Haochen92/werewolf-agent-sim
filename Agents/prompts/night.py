@@ -10,7 +10,7 @@ wolf-channel discussion → vote), so its human turn has a different shape.
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.prompts.common import GAME_PREAMBLE, build_system_prompt
+from Agents.prompts.common import GAME_PREAMBLE, READS_COMMIT_INSTRUCTION, build_system_prompt
 from Agents.prompts.memory import NIGHT_ACTION_MEMORY_CONTEXT
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
@@ -24,6 +24,12 @@ from Agents.prompts.roles import (
 # --- Shared night framing (the four single-actor roles) ---
 
 _NIGHT_TRANSCRIPT = """
+== Dead so far (public) ==
+{dead_roster}
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+{alive_roles}
+
 === Day summaries ===
 {day_summaries}
 
@@ -54,7 +60,11 @@ def _night_template(core_strategy, action_suffix, context, closing):
             ),
             (
                 "human",
-                "Night of Day {current_day}.\n\n" + context + _NIGHT_TRANSCRIPT + closing,
+                # {tell_book}: above the reads instruction (evidence before belief); empty unless the
+                # arm configures a book (Agents/memory/tell_book.py).
+                "{tell_book}"
+                + READS_COMMIT_INSTRUCTION
+                + "Night of Day {current_day}.\n\n" + context + _NIGHT_TRANSCRIPT + closing,
             ),
         ]
     )
@@ -69,7 +79,7 @@ You cannot protect yourself.
 Choose wisely based on who you think the wolves or the serial killer might target.
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "healer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "Surviving players you can protect: {surviving_players}\n",
     "Choose a player to protect tonight.",
@@ -85,7 +95,7 @@ Use your past results and day discussions to choose your target wisely.
 The result will be revealed to you at the start of the next day.
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"investigator_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "investigator_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "Surviving players: {surviving_players}\nYour past investigation results: {investigator_results}\n",
     "Choose a player to investigate tonight.",
@@ -101,7 +111,7 @@ You are immune to being killed at night, but you can still be voted out during t
 Choose your target based on who most threatens your survival or your path to being the last one standing.
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "serial_killer_target": "exact player_id from the surviving players list", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "Surviving players you can target: {surviving_players}\n",
     "Choose a player to eliminate tonight.",
@@ -125,7 +135,7 @@ What you have learned from your past shots:
 {vigilante_results}
 
 You must respond with a valid JSON:
-{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],"vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
+{{"strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}], "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}], "reads": [{{"player": "player_2", "why": "pushed the only counted lynch with no evidence", "suspected_role": "wolf", "confidence": "low"}}], "vigilante_target": "exact player_id from the surviving players list, or \\"hold_fire\\"", "updated_strategy": "your updated private strategy note for future turns"}}
 """,
     "You have {vigilante_bullets} bullet(s) remaining.\nSurviving players you could shoot: {surviving_players}\n",
     "Decide whether to take a shot tonight, and at whom.",

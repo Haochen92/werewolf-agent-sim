@@ -1,11 +1,52 @@
+from Agents.board_clocks import alive_role_counts
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
     DayVote,
+    DeathRecord,
     InvestigatorResult,
     WolfChannel,
 )
+
+
+def format_dead_roster(roster: list[DeathRecord]) -> str:
+    """Render the public dead roster as one compact line: who is dead, their revealed role, and
+    when/how they died — e.g. "player_2 (villager, night 1), player_5 (wolf, lynched day 2)".
+
+    This is deterministic PUBLIC info (every death path announces the role), so it replaces the
+    error-prone habit of re-parsing the game_master's death prose out of the transcript."""
+    if not roster:
+        return "No one has died yet."
+    parts = []
+    for d in roster:
+        role = d.role or "role not revealed"
+        when = f"night {d.day}" if d.phase == "night" else f"lynched day {d.day}"
+        parts.append(f"{d.player} ({role}, {when})")
+    return ", ".join(parts)
+
+
+_ALIVE_ROLE_ORDER = ["wolf", "serial_killer", "healer", "investigator", "vigilante", "villager"]
+
+
+def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecord]) -> str:
+    """Render the roles still in play as one line — e.g. "2 wolf, 1 serial killer, 3 villager".
+
+    Like format_dead_roster this is deterministic PUBLIC info: the cast is fixed and public, and every
+    death announces the dead player's role, so the fixed cast minus the revealed-dead roles is exactly
+    what remains (census math shared with board_clocks, which derives criticality from the same
+    subtraction). Render the survivors in a fixed role order (no pluralization — matches the tested
+    study text). Returns "" when no census is available (legacy replay payloads that never carried
+    cast_role_counts), or "none" if nothing is left."""
+    if not cast_role_counts:
+        return ""
+    remaining = alive_role_counts(cast_role_counts, roster)
+    parts = [
+        f"{remaining[role]} {role.replace('_', ' ')}"
+        for role in _ALIVE_ROLE_ORDER
+        if remaining.get(role, 0) > 0
+    ]
+    return ", ".join(parts) or "none"
 
 
 def format_day_channel(messages: list[DayChannel]) -> str:
