@@ -18,8 +18,13 @@ detail lives in code docstrings and package READMEs (e.g.
    night subgraphs, the discussion scheduler, node wiring) and the end-to-end flow
    of a single game.
 2. **Roles & win logic** — the 3-faction casting, night/day phases, win resolution.
+   - [`generation_prompt.md`](generation_prompt.md) — how an agent's action prompt is
+     assembled (payload boundary → formatters → scaffold), the block inventory, and
+     the rules for adding a block.
 3. **Memory pipeline** — extract → store → dedup → retrieve → enrich, and the
    v7 compounding loop that learns across games.
 4. **Evaluation pipeline** — game generation, scoring, and the de-luck credit
-   signal. See also [`../evaluation/README.md`](../evaluation/README.md).
+   signal. See also [`../evaluation/README.md`](../evaluation/README.md); the credit
+   layer's mechanism + rationale doc is
+   [`../evidence/credit/report.md`](../evidence/credit/report.md).
 5. **Running it** — playing a single game, running a batch, running the loop.
