@@ -122,3 +122,22 @@ class DayVote(BaseModel):
     """Voting player_id."""
     votee: str
     """Voted-for player_id, or "abstain"."""
+
+
+class DeathRecord(BaseModel):
+    """One player's death as it was PUBLICLY announced — the authoritative, ordered dead roster.
+
+    Appended (in death order) at each death site: night_kill_resolution for a night kill, and
+    day_resolution for a lynch. Every current death path announces the dead player's role (see
+    the game_master messages), so `role` is public information — this whole record is rendered
+    into every role's day payload, no leak gating. Deriving the roster from this field is the
+    deterministic alternative to re-parsing the game_master's prose out of the day transcript."""
+
+    player: str
+    """The dead player's player_id."""
+    role: str
+    """The role the announcement publicly revealed (empty only if a future path stops revealing it)."""
+    day: int
+    """1-based game day of the death (for a night kill: the night belonging to that day)."""
+    phase: Literal["night", "day"]
+    """"night" = killed overnight (wolves / serial killer / vigilante); "day" = lynched by vote."""

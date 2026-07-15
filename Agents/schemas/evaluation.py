@@ -17,11 +17,12 @@ from Agents.schemas.game_events import (
     DayChannel,
     DaySummary,
     DayVote,
+    DeathRecord,
     InvestigatorResult,
     WolfChannel,
 )
 from Agents.schemas.memory import RetrievedObservation, RetrievedStrategyPoint
-from Agents.schemas.output import MemoryVerdict, StrategyVerdict
+from Agents.schemas.output import MemoryVerdict, PlayerRead, StrategyVerdict
 
 
 class EvalPrivateContext(BaseModel):
@@ -36,6 +37,15 @@ class EvalPrivateContext(BaseModel):
     surviving_players: list[str] = Field(default_factory=list)
     surviving_wolves: list[str] = Field(default_factory=list)
     surviving_villagers: list[str] = Field(default_factory=list)
+    dead_roster: list[DeathRecord] = Field(default_factory=list)
+    """Public dead roster the turn saw (dead player -> revealed role + when) — the board block the
+    reads bundle renders. Public, not private, but captured so a frozen case reproduces the exact
+    prompt without rejoining the game record (the T1c study had to rebuild it from run records).
+    Empty on pre-2026-07-09 records."""
+    cast_role_counts: dict[str, int] = Field(default_factory=dict)
+    """Public fixed-cast census (role -> count, no identities) the alive-roles line derives from;
+    with dead_roster this reproduces the '== Roles still in play ==' text exactly (see
+    format_alive_roles). Empty on pre-2026-07-09 records."""
 
 
 class NightAction(BaseModel):
@@ -120,6 +130,12 @@ class EvalCase(BaseModel):
     """The agent's per-observation applicability verdicts (one per retrieved memory it judged),
     captured from the structured output for offline analysis. Empty when memory was off or none
     retrieved. See Agents/turn/decision.py (the _memory_applicability carrier)."""
+    reads: list[PlayerRead] = Field(default_factory=list)
+    """The agent's per-player suspicion commitments (player, why, suspected_role, confidence),
+    captured from the structured output BEFORE its strategy/action. Empty on legacy records
+    (pre-2026-07-09) and on wolf-night turns (out of the shipped scope). See
+    Agents/turn/decision.py (the _reads carrier); consumed by the parked reads-scoring +
+    composition-coherence analyses (validation plan T3(b))."""
 
     @property
     def game_phase_key(self) -> tuple[str, str, int, ActionPhase]:

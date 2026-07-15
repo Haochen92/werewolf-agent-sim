@@ -15,6 +15,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from Agents.schemas.game_events import AddressedTarget
+from Agents.schemas.roles import READ_ROLE_ENUM
 
 
 # Per-memory applicability verdict. Emitted BEFORE the action field (prospective commitment: the
@@ -45,6 +46,19 @@ class StrategyVerdict(BaseModel):
     why: str = Field(description="One-line reason, grounded in your current board.")
 
 
+# Per-player suspicion commitment (one entry per living player other than yourself). Emitted BEFORE
+# the free-text strategy note, so the read is a prospective commitment (like MemoryVerdict /
+# StrategyVerdict) rather than a post-hoc rationalisation. The field order verdicts -> reads ->
+# strategy -> action is the tested lever, validated by the T1c decision-replay A/B (role-fact
+# hallucinations 48%->30%, p=0.003). The read-role enum is sourced from Agents.schemas.roles so it
+# can't drift from the cast. Model-visible: no class docstring.
+class PlayerRead(BaseModel):
+    player: str = Field(description="A living player's ID (never your own).")
+    why: str = Field(description="One line of evidence for this read; write 'unchanged' if your read has not moved.")
+    suspected_role: READ_ROLE_ENUM = Field(description="Your best guess of this player's role; 'unclear' if you cannot tell.")
+    confidence: Literal["low", "high"] = Field(description="How sure you are.")
+
+
 class WolfNightDiscussOutput(BaseModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
@@ -68,6 +82,9 @@ class DayDiscussOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
+    reads: list[PlayerRead] = Field(
+        description="One read per living player other than yourself.",
+    )
     updated_strategy: str
     pass_turn: bool = Field(
         description="True only if you have nothing new to add and decline to speak. False when answering/defending.",
@@ -86,6 +103,9 @@ class DayVoteOutput(BaseModel):
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    )
+    reads: list[PlayerRead] = Field(
+        description="One read per living player other than yourself.",
     )
     updated_strategy: str
     vote_target: str
@@ -170,6 +190,9 @@ class HealerOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
+    reads: list[PlayerRead] = Field(
+        description="One read per living player other than yourself.",
+    )
     updated_strategy: str
     healer_target: str
 
@@ -182,6 +205,9 @@ class InvestigatorOutput(BaseModel):
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    )
+    reads: list[PlayerRead] = Field(
+        description="One read per living player other than yourself.",
     )
     updated_strategy: str
     investigator_target: str
@@ -196,6 +222,9 @@ class SerialKillerOutput(BaseModel):
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
     )
+    reads: list[PlayerRead] = Field(
+        description="One read per living player other than yourself.",
+    )
     updated_strategy: str
     serial_killer_target: str
 
@@ -208,6 +237,9 @@ class VigilanteOutput(BaseModel):
     memory_applicability: list[MemoryVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    )
+    reads: list[PlayerRead] = Field(
+        description="One read per living player other than yourself.",
     )
     updated_strategy: str
     vigilante_target: str

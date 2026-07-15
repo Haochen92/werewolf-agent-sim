@@ -11,6 +11,23 @@ from typing import Literal
 
 roles = ["villager", "wolf", "investigator", "healer", "serial_killer", "vigilante"]
 
+# Role-guess vocabulary for a per-player "read": every castable role, plus "unclear" for no call.
+# Reconstructed from `roles` (the single source) so a newly-cast role can never silently drop out of
+# the read enum — this is the model-visible enum on Agents.schemas.output.PlayerRead (the T1c reads
+# field). Deriving it here, not restating the list in output.py, keeps the two from drifting apart.
+READ_ROLE_ENUM = Literal[("unclear", *roles)]
+
+
+def cast_role_counts(role_map: dict[str, str]) -> dict[str, int]:
+    """Public role->count census of a cast (counts only, no identities) — the payload-safe form of
+    the true role map. The line-up is common knowledge while the assignment is not, so payload
+    builders (day fan-out, single-actor night phases) put THIS on agent payloads to feed the
+    alive-roles line (cast minus revealed dead), never ``role_map`` itself."""
+    counts: dict[str, int] = {}
+    for role in role_map.values():
+        counts[role] = counts.get(role, 0) + 1
+    return counts
+
 
 @dataclass(frozen=True)
 class RoleSpec:
