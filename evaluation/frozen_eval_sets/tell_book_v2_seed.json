@@ -1,0 +1,308 @@
+[
+ {
+  "tell_id": "disc_231",
+  "channel": "disc",
+  "text": "A player asserts high confidence in an accusation while refusing to disclose the source of their information.",
+  "subject_role": "investigator",
+  "subject_count": 10,
+  "n": 11,
+  "subject_lift": 0.5486
+ },
+ {
+  "tell_id": "disc_20",
+  "channel": "disc",
+  "text": "Claims a player is a confirmed role without providing evidence from the public record.",
+  "subject_role": "investigator",
+  "subject_count": 8,
+  "n": 8,
+  "subject_lift": 0.547
+ },
+ {
+  "tell_id": "disc_530",
+  "channel": "disc",
+  "text": "A player who is being accused of holding a hostile role counter-accuses their accuser of using the role claim as a distraction to protect themselves.",
+  "subject_role": "wolf",
+  "subject_count": 21,
+  "n": 30,
+  "subject_lift": 0.4095
+ },
+ {
+  "tell_id": "vote_87",
+  "channel": "vote",
+  "text": "Calls for a vote against a specific player and then casts their vote for that same individual during the voting phase.",
+  "subject_role": "investigator",
+  "subject_count": 24,
+  "n": 43,
+  "subject_lift": 0.4005
+ },
+ {
+  "tell_id": "disc_165",
+  "channel": "disc",
+  "text": "A player claims a special role during a public discussion.",
+  "subject_role": "investigator",
+  "subject_count": 16,
+  "n": 28,
+  "subject_lift": 0.3906
+ },
+ {
+  "tell_id": "disc_284",
+  "channel": "disc",
+  "text": "A player discourages the group from relying solely on voting records, suggesting that such analysis may be a distraction or ineffective.",
+  "subject_role": "wolf",
+  "subject_count": 30,
+  "n": 48,
+  "subject_lift": 0.3648
+ },
+ {
+  "tell_id": "disc_67",
+  "channel": "disc",
+  "text": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior.",
+  "subject_role": "wolf",
+  "subject_count": 45,
+  "n": 76,
+  "subject_lift": 0.3471
+ },
+ {
+  "tell_id": "vote_48",
+  "channel": "vote",
+  "text": "switches to vote for a player after spending the discussion segment interrogating them about their prior voting conduct.",
+  "subject_role": "villager",
+  "subject_count": 25,
+  "n": 37,
+  "subject_lift": 0.3016
+ },
+ {
+  "tell_id": "vote_380",
+  "channel": "vote",
+  "text": "votes for a player who is not the primary candidate around whom the room's consensus has converged.",
+  "subject_role": "wolf",
+  "subject_count": 37,
+  "n": 70,
+  "subject_lift": 0.2859
+ },
+ {
+  "tell_id": "vote_82",
+  "channel": "vote",
+  "text": "A player advocates for the necessity of a decisive vote to avoid confusion while choosing to abstain themselves.",
+  "subject_role": "villager",
+  "subject_count": 16,
+  "n": 24,
+  "subject_lift": 0.2759
+ },
+ {
+  "tell_id": "vote_46",
+  "channel": "vote",
+  "text": "votes for a player immediately after they express suspicion toward the voter's own previous voting record.",
+  "subject_role": "wolf",
+  "subject_count": 14,
+  "n": 27,
+  "subject_lift": 0.25
+ },
+ {
+  "tell_id": "vote_123",
+  "channel": "vote",
+  "text": "Votes for a player after explicitly dismissing their stated priorities as a distraction earlier in the day.",
+  "subject_role": "wolf",
+  "subject_count": 6,
+  "n": 11,
+  "subject_lift": 0.2222
+ },
+ {
+  "tell_id": "disc_180",
+  "channel": "disc",
+  "text": "Directly requests that the group analyze the initiator of a specific voting sequence from the previous day.",
+  "subject_role": "villager",
+  "subject_count": 26,
+  "n": 45,
+  "subject_lift": 0.22
+ },
+ {
+  "tell_id": "disc_29",
+  "channel": "disc",
+  "text": "Announces having been the target of a failed night attack.",
+  "subject_role": "villager",
+  "subject_count": 26,
+  "n": 47,
+  "subject_lift": 0.1987
+ },
+ {
+  "tell_id": "disc_336",
+  "channel": "disc",
+  "text": "A player challenges the neutrality of abstaining from a vote, characterizing the refusal to act as a protection mechanism.",
+  "subject_role": "villager",
+  "subject_count": 12,
+  "n": 21,
+  "subject_lift": 0.1923
+ },
+ {
+  "tell_id": "vote_150",
+  "channel": "vote",
+  "text": "votes for the consensus target after having warned against the dangers of group-driven voting patterns earlier in the day.",
+  "subject_role": "serial_killer",
+  "subject_count": 7,
+  "n": 20,
+  "subject_lift": 0.1911
+ },
+ {
+  "tell_id": "vote_12",
+  "channel": "vote",
+  "text": "Votes for a player after having abstained from the previous day's vote while defending the importance of caution and accuracy.",
+  "subject_role": "serial_killer",
+  "subject_count": 6,
+  "n": 19,
+  "subject_lift": 0.162
+ },
+ {
+  "tell_id": "vote_221",
+  "channel": "vote",
+  "text": "votes for a player who was the primary focus of accusations during the discussion despite not participating in the accusation themselves.",
+  "subject_role": "healer",
+  "subject_count": 8,
+  "n": 29,
+  "subject_lift": 0.1405
+ },
+ {
+  "tell_id": "disc_116",
+  "channel": "disc",
+  "text": "deflects onto their accuser rather than addressing the substance of the accusation when directly challenged.",
+  "subject_role": "serial_killer",
+  "subject_count": 19,
+  "n": 75,
+  "subject_lift": 0.1333
+ },
+ {
+  "tell_id": "disc_118",
+  "channel": "disc",
+  "text": "defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock.",
+  "subject_role": "serial_killer",
+  "subject_count": 21,
+  "n": 84,
+  "subject_lift": 0.1311
+ },
+ {
+  "tell_id": "vote_120",
+  "channel": "vote",
+  "text": "A player who explicitly states that the group needs to be careful about making assumptions or missing potential threats abstains from the vote.",
+  "subject_role": "serial_killer",
+  "subject_count": 6,
+  "n": 23,
+  "subject_lift": 0.123
+ },
+ {
+  "tell_id": "disc_106",
+  "channel": "disc",
+  "text": "When directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior.",
+  "subject_role": "serial_killer",
+  "subject_count": 12,
+  "n": 51,
+  "subject_lift": 0.1131
+ },
+ {
+  "tell_id": "vote_158",
+  "channel": "vote",
+  "text": "votes for the room's consensus target after explicitly suggesting a review of past voting sequences and participant hesitation.",
+  "subject_role": "villager",
+  "subject_count": 57,
+  "n": 127,
+  "subject_lift": 0.1111
+ },
+ {
+  "tell_id": "vote_601",
+  "channel": "vote",
+  "text": "A player pivots to an aggressive voting stance for a specific individual after previously advocating for general caution.",
+  "subject_role": "healer",
+  "subject_count": 7,
+  "n": 30,
+  "subject_lift": 0.1048
+ },
+ {
+  "tell_id": "vote_41",
+  "channel": "vote",
+  "text": "A player casts a vote for someone they directly accused in the discussion.",
+  "subject_role": "investigator",
+  "subject_count": 43,
+  "n": 240,
+  "subject_lift": 0.0667
+ },
+ {
+  "tell_id": "disc_24",
+  "channel": "disc",
+  "text": "Advocates for delaying a vote to wait for more information from future night cycles.",
+  "subject_role": "healer",
+  "subject_count": 14,
+  "n": 77,
+  "subject_lift": 0.0664
+ },
+ {
+  "tell_id": "vote_294",
+  "channel": "vote",
+  "text": "A player advocates for a specific discussion topic and then opts to abstain when the vote occurs.",
+  "subject_role": "investigator",
+  "subject_count": 6,
+  "n": 32,
+  "subject_lift": 0.0661
+ },
+ {
+  "tell_id": "vote_272",
+  "channel": "vote",
+  "text": "Votes for the player who was publicly identified as a target by an investigator claim earlier in the discussion.",
+  "subject_role": "healer",
+  "subject_count": 9,
+  "n": 51,
+  "subject_lift": 0.0595
+ },
+ {
+  "tell_id": "disc_131",
+  "channel": "disc",
+  "text": "A player proposes monitoring future voting patterns rather than focusing on current verbal arguments.",
+  "subject_role": "vigilante",
+  "subject_count": 3,
+  "n": 16,
+  "subject_lift": 0.0582
+ },
+ {
+  "tell_id": "disc_36",
+  "channel": "disc",
+  "text": "A player suggests that current voting patterns are the primary indicator of role alignment and requests a re-examination of past records to find patterns.",
+  "subject_role": "healer",
+  "subject_count": 7,
+  "n": 40,
+  "subject_lift": 0.0568
+ },
+ {
+  "tell_id": "vote_405",
+  "channel": "vote",
+  "text": "initiates a call for ending the practice of abstaining and immediately casts a vote for a specific player when the voting phase begins.",
+  "subject_role": "vigilante",
+  "subject_count": 9,
+  "n": 52,
+  "subject_lift": 0.0565
+ },
+ {
+  "tell_id": "vote_398",
+  "channel": "vote",
+  "text": "A player who provides a critique of potential voting strategies during the discussion chooses to abstain when the vote occurs.",
+  "subject_role": "vigilante",
+  "subject_count": 14,
+  "n": 83,
+  "subject_lift": 0.0543
+ },
+ {
+  "tell_id": "disc_211",
+  "channel": "disc",
+  "text": "expresses wariness of players who demonstrate high-energy certainty in proposing a lynch target.",
+  "subject_role": "vigilante",
+  "subject_count": 5,
+  "n": 33,
+  "subject_lift": 0.0351
+ },
+ {
+  "tell_id": "disc_185",
+  "channel": "disc",
+  "text": "A player frames a conflict between two others as a potential distraction while explicitly questioning how to verify which of them is the genuine threat.",
+  "subject_role": "vigilante",
+  "subject_count": 2,
+  "n": 13,
+  "subject_lift": 0.0309
+ }
+]

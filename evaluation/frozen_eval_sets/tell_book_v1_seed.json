@@ -1,0 +1,110 @@
+[
+ {
+  "tell_id": "disc_530",
+  "channel": "disc",
+  "text": "A player who is being accused of holding a hostile role counter-accuses their accuser of using the role claim as a distraction to protect themselves.",
+  "subject_role": "wolf",
+  "evil": 27,
+  "n": 30,
+  "shrunk_lift": 0.4857
+ },
+ {
+  "tell_id": "disc_284",
+  "channel": "disc",
+  "text": "A player discourages the group from relying solely on voting records, suggesting that such analysis may be a distraction or ineffective.",
+  "subject_role": "wolf",
+  "evil": 41,
+  "n": 48,
+  "shrunk_lift": 0.4717
+ },
+ {
+  "tell_id": "disc_67",
+  "channel": "disc",
+  "text": "A player suggests that current accusations against them are merely a diversionary tactic used by others to avoid scrutiny on their own current behavior.",
+  "subject_role": "wolf",
+  "evil": 60,
+  "n": 76,
+  "shrunk_lift": 0.428
+ },
+ {
+  "tell_id": "vote_380",
+  "channel": "vote",
+  "text": "votes for a player who is not the primary candidate around whom the room's consensus has converged.",
+  "subject_role": "wolf",
+  "evil": 52,
+  "n": 70,
+  "shrunk_lift": 0.3822
+ },
+ {
+  "tell_id": "vote_46",
+  "channel": "vote",
+  "text": "votes for a player immediately after they express suspicion toward the voter's own previous voting record.",
+  "subject_role": "wolf",
+  "evil": 21,
+  "n": 27,
+  "shrunk_lift": 0.375
+ },
+ {
+  "tell_id": "vote_124",
+  "channel": "vote",
+  "text": "Votes for a player after suggesting that the group should avoid focusing on past behavior and instead focus on current actions.",
+  "subject_role": "wolf",
+  "evil": 9,
+  "n": 13,
+  "shrunk_lift": 0.2593
+ },
+ {
+  "tell_id": "disc_118",
+  "channel": "disc",
+  "text": "defends a voting history by characterizing the group's past actions as a logical response to a state of deadlock.",
+  "subject_role": "serial_killer",
+  "evil": 61,
+  "n": 84,
+  "shrunk_lift": 0.3708
+ },
+ {
+  "tell_id": "disc_116",
+  "channel": "disc",
+  "text": "deflects onto their accuser rather than addressing the substance of the accusation when directly challenged.",
+  "subject_role": "serial_killer",
+  "evil": 53,
+  "n": 75,
+  "shrunk_lift": 0.35
+ },
+ {
+  "tell_id": "disc_106",
+  "channel": "disc",
+  "text": "When directly challenged regarding past voting history, the player attempts to shift the focus toward the accuser's own lack of activity or current behavior.",
+  "subject_role": "serial_killer",
+  "evil": 35,
+  "n": 51,
+  "shrunk_lift": 0.3214
+ },
+ {
+  "tell_id": "vote_39",
+  "channel": "vote",
+  "text": "A player casts a vote for someone who publicly questioned them during the discussion phase.",
+  "subject_role": "serial_killer",
+  "evil": 50,
+  "n": 82,
+  "shrunk_lift": 0.2605
+ },
+ {
+  "tell_id": "vote_161",
+  "channel": "vote",
+  "text": "A player votes for a candidate who had just accused them of being the primary driver of a previous controversial elimination.",
+  "subject_role": "serial_killer",
+  "evil": 8,
+  "n": 12,
+  "shrunk_lift": 0.2353
+ },
+ {
+  "tell_id": "vote_3",
+  "channel": "vote",
+  "text": "Votes to eliminate a player after previously arguing that the group should prioritize evidence over rash accusations during the discussion.",
+  "subject_role": "serial_killer",
+  "evil": 28,
+  "n": 48,
+  "shrunk_lift": 0.2264
+ }
+]
