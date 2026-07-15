@@ -18,6 +18,7 @@ from langgraph.types import Send
 
 from Agents.game_config import game_config_from_runnable
 from Agents.schemas import DaySummary, FiringReason
+from Agents.schemas.roles import cast_role_counts
 from Agents.state import (
     DayGraphState,
 )
@@ -115,6 +116,12 @@ def build_speaker_send(
         "human_player": speaker_id == state["human_player"],
         "day_channel": state["day_channel"],
         "day_summaries": state.get("day_summaries", []),
+        # Public dead roster — attached to EVERY role's payload (no leak gating; the dead
+        # players' roles were announced publicly). Renders the who-died-and-as-what block.
+        "dead_roster": state.get("dead_roster", []),
+        # Public fixed-cast census (counts only, no identities) — feeds the alive-roles line
+        # (cast minus revealed deaths). Same no-leak rationale as dead_roster.
+        "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": surviving_players,
         "player_id": speaker_id,
         "player_role": role,
@@ -175,6 +182,10 @@ def fan_out_day(
             "human_player": is_human,
             "day_channel": state["day_channel"],
             "day_summaries": state.get("day_summaries", []),
+            # Public dead roster on every role's payload (see build_speaker_send).
+            "dead_roster": state.get("dead_roster", []),
+            # Public fixed-cast census feeding the alive-roles line (see build_speaker_send).
+            "cast_role_counts": cast_role_counts(state.get("roles", {})),
             "surviving_players": surviving_players,
             "player_id": player,
             "player_role": role,

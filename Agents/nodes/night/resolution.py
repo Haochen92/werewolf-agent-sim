@@ -17,7 +17,7 @@ from typing import Literal
 
 from langgraph.runtime import Runtime
 
-from Agents.schemas import DayChannel, DaySummary, InvestigatorResult, WolfChannel
+from Agents.schemas import DayChannel, DaySummary, DeathRecord, InvestigatorResult, WolfChannel
 from Agents.state import (
     OrchestratorGraph,
 )
@@ -164,6 +164,7 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
 
     lines: list[str] = []
     announced_save = False
+    dead_roster: list[DeathRecord] = []
     for target in sorted(attacks_on):
         outcome = outcomes[target]
         if outcome == "immune":
@@ -179,7 +180,15 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
             lines.append(
                 f"{target} was {verb} by {phrase} last night. They were a {roles[target]}."
             )
+            # The announcement above publicly reveals the dead player's role, so record it
+            # on the deterministic dead roster (death order = sorted attack order this night).
+            dead_roster.append(
+                DeathRecord(player=target, role=roles[target], day=current_day, phase="night")
+            )
             _nullify_special_roles(state_update, target, state)
+
+    if dead_roster:
+        state_update["dead_roster"] = dead_roster
 
     if not deaths and not announced_save:
         lines.append("No one died last night.")

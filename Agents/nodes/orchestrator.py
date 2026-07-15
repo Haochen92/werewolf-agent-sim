@@ -20,7 +20,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
-from Agents.schemas import DayChannel, DaySummary
+from Agents.schemas import DayChannel, DaySummary, DeathRecord
 from Agents.state import (
     OrchestratorGraph,
 )
@@ -209,6 +209,16 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
             ],
             "day_summaries": [
                 DaySummary(day=current_day, summary=message)
+            ],
+            # The announcement above publicly reveals the lynched player's role — record it on
+            # the deterministic dead roster (phase="day").
+            "dead_roster": [
+                DeathRecord(
+                    player=lynched,
+                    role=state["roles"][lynched],
+                    day=current_day,
+                    phase="day",
+                )
             ],
         }
         _nullify_special_roles(state_update, lynched, state)

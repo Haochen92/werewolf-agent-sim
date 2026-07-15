@@ -48,6 +48,7 @@ from Agents.state import (
 )
 from Agents.game_config import game_config_from_runnable
 from Agents.memory import store
+from Agents.schemas.roles import cast_role_counts
 from Agents.tracing import GraphContext
 
 
@@ -82,6 +83,7 @@ def day_phase(
         "current_day": state["current_day"],
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        "dead_roster": state.get("dead_roster", []),
         "wolf_channel": state.get("wolf_channel", []),
         "roles": state["roles"],
         "human_player": state["human_player"],
@@ -164,6 +166,9 @@ def healer_night_phase(
         "current_round": 0,
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
+        "dead_roster": state.get("dead_roster", []),
+        "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": [
             p
             for p in state["surviving_wolves"] + state["surviving_villagers"]
@@ -202,6 +207,9 @@ def investigator_night_phase(
         "current_round": 0,
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
+        "dead_roster": state.get("dead_roster", []),
+        "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "investigator_results": state.get("investigator_results", []),
         "surviving_players": [
             p
@@ -242,6 +250,9 @@ def serial_killer_night_phase(
         "current_round": 0,
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
+        "dead_roster": state.get("dead_roster", []),
+        "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": [
             p
             for p in state["surviving_wolves"] + state["surviving_villagers"]
@@ -284,6 +295,9 @@ def vigilante_night_phase(
         "current_round": 0,
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
+        # Both public: the dead roster is announced, the cast census is counts-only (no identities).
+        "dead_roster": state.get("dead_roster", []),
+        "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "surviving_players": [
             p
             for p in state["surviving_wolves"] + state["surviving_villagers"]
