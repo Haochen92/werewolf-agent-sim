@@ -10,7 +10,7 @@
 >
 > **Companion docs.** The final design, destination-first, is in [`report.md`](report.md). What a tell is
 > *for* — the credit redesign that makes accuracy-counted facts the currency — is the design record at
-> [`../../discussion_tagger/read_tactic_credit_redesign.md`](../../discussion_tagger/read_tactic_credit_redesign.md)
+> [`../../credit/read_tactic_credit_redesign.md`](../../credit/read_tactic_credit_redesign.md)
 > §3, and the run this gates is planned in
 > [`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md)
 > §R. Guiding principle: **the miner surfaces candidates; the counting decides what they mean** — we build

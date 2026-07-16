@@ -15,7 +15,7 @@
 > uncalibrated at the per-field level, and one residual night-leak is untested.
 >
 > **2026-07-11 — consumer change (wiring pending):** the read/tactic credit redesign
-> ([`../../discussion_tagger/read_tactic_credit_redesign.md`](../../discussion_tagger/read_tactic_credit_redesign.md))
+> ([`../../credit/read_tactic_credit_redesign.md`](../../credit/read_tactic_credit_redesign.md))
 > retires the tagger's credit role — `credit.py::_tagger_ledger` and the night read-quality override
 > become diagnostic-only; day-discussion credit moves to the day-vote endpoint + move-grain advocacy.
 > The tagger remains exactly what this verdict says it is: a validated deceiver-skill *diagnostic*.

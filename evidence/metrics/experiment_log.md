@@ -432,7 +432,7 @@ vigilante evil-shots) stays parked, not pre-registered.
 ## 2026-07-11 — consumer-side supersession: the credit redesign retires the tagger's credit role
 
 A pointer entry, not a metrics change: the read/tactic credit redesign
-([`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md))
+([`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md))
 retires the LLM tagger as a credit source — day-discussion credit adopts the validated day-vote endpoint
 (M1, held-out +0.51) plus a move-grain advocacy rule; the night read-quality override is replaced by a
 read-partition over the deterministic outcome; the tagger stays as a standing diagnostic. **The ruler this

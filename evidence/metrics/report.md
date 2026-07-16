@@ -297,7 +297,7 @@ rather than boilerplate.
 ## 5. The LLM-tagged family — the second instrument tier
 
 > **Superseded as a credit source (2026-07-11, wiring pending).** The read/tactic credit redesign
-> ([`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md))
+> ([`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md))
 > retires this family's one consumer role: the tagger becomes a **standing diagnostic** (its validated
 > wolf/SK partial readout is what is kept), day-discussion credit adopts the validated day-vote
 > **endpoint** (plus a move-grain advocacy rule) as *the* discussion credit rather than a fallback tier,
@@ -438,7 +438,7 @@ credit numbers.
 | Healer | — | none | deliberately uncredited: absent from `NIGHT_CREDIT_ROLES`; a healer lens exists only screen-locally in [`checkpoint_replay.py`](../../evaluation/src/replay/decision_screen/checkpoint_replay.py) `_healer_night_credit`, and promoting it into production credit is a gated change |
 
 > **2026-07-11 — channel table superseded by the read/tactic credit redesign**
-> ([`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md),
+> ([`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md),
 > wiring pending). The two tagger rows are retired from credit (the tagger becomes a standing
 > diagnostic). The day-vote row becomes the *endpoint* grain of day credit and gains a move-grain
 > **advocacy** rule (persuasion-success × the same faction-relative target value `_vote_credit`

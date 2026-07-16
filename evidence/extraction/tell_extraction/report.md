@@ -5,7 +5,7 @@ games, deduplicated and stored, promoted onto a bounded checklist, counted by a 
 detector, and prepared for accuracy-based credit. Covers the **final v1 design** (decided
 2026-07-12) and the probe evidence behind each decision. What tells are *for* — the credit
 currency and its valence rules — lives in the design record
-([`../../discussion_tagger/read_tactic_credit_redesign.md`](../../discussion_tagger/read_tactic_credit_redesign.md)
+([`../../credit/read_tactic_credit_redesign.md`](../../credit/read_tactic_credit_redesign.md)
 §3) and the credit mechanism doc ([`../../credit/report.md`](../../credit/report.md)); this
 document is the storage-and-measurement half. **Companion:** the chronological build journey,
 including everything the data overruled, is [`experiment_log.md`](experiment_log.md).

@@ -10,7 +10,7 @@
 > with tests — `evaluation/src/loop/` (credit, read_ledger, first_link, tells/tell_credit/tell_fold)
 > plus the live book channel `Agents/memory/tell_book.py`.
 > **Companions:** the *why* of the redesign, with alternatives and rejections, is the design record
-> ([`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md));
+> ([`read_tactic_credit_redesign.md`](read_tactic_credit_redesign.md));
 > the game-grain, win-validated A/B ruler is [`../metrics/report.md`](../metrics/report.md); how far
 > to trust the surrounding loop machinery is the eval hub's job
 > ([`../evaluation/loop/report.md`](../evaluation/loop/report.md)).
@@ -368,6 +368,6 @@ Ordered by criticality; all freshness-dated 2026-07-13.
   reproduction (same package), the proxy campaigns
   ([`../metrics/candidate_ledger.md`](../metrics/candidate_ledger.md)), detector goldens
   (`../extraction/tell_extraction/`, log §13–16).
-- Design lineage: [`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md)
+- Design lineage: [`read_tactic_credit_redesign.md`](read_tactic_credit_redesign.md)
   (the 2026-07-11 decision record this doc implements) · owner rulings 2026-07-11→13 recorded
   inline above.

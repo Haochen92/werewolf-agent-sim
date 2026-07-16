@@ -7,7 +7,7 @@
 >
 > **Status:** revised 2026-07-11. Phase 0 executed (§0.1–0.5 stamped in place); the credit mechanism was
 > then superseded by the read/tactic redesign
-> (`../discussion_tagger/read_tactic_credit_redesign.md`), and this plan now carries the final pre-run
+> (`../credit/read_tactic_credit_redesign.md`), and this plan now carries the final pre-run
 > program — see **§R** below. No paid run yet.
 > **Genre:** execution plan, not an experiment report — it *precedes* the work rather than recording it.
 > Each completed piece graduates to its own `evidence/<topic>/` folder; this doc is the map.
@@ -60,7 +60,7 @@ Phase 2.
 
 > Everything below §R is the 2026-07-04/05 plan with its execution stamps; it stays as the record. This
 > section is what changed on 2026-07-10/11 and the program that now precedes the paid run. Design record:
-> [`../discussion_tagger/read_tactic_credit_redesign.md`](../discussion_tagger/read_tactic_credit_redesign.md)
+> [`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md)
 > (v1 scope in its §8).
 
 **What changed since the 2026-07-05 stamps:**
@@ -90,7 +90,7 @@ Phase 2.
   > revises — the same reformatted process the decision_scoring gate used), NOT a blind write-first
   > derivation. Scope = **both compounding mechanisms**: SP consolidation (`loop/consolidate.py`)
   > AND the tell epoch fold (`loop/tell_fold.py`), which had no unified mechanism record. Review
-  > basis and record home: `evidence/consolidation/` (report.md = the presentation, §6 = the
+  > basis and record home: `evidence/store_curation/` (folder renamed from evidence/consolidation, 2026-07-15) (report.md = the presentation, §6 = the
   > agenda; walkthrough revisions land in its experiment_log.md). The synthesis-golden anchor
   > points remain a required output of the session.
 
@@ -595,6 +595,11 @@ wall; do not re-grow a slope readout mid-run.
 **Bottom line (2026-07-11):** ~1–2 gated days — two user derivations, one AI-prelabeled load-bearing
 golden, the v1 credit build, two cheap screens — then run town-only and wolf-only on instruments that
 are deterministic or explicitly bounded, with the tagger watching as a diagnostic.
+
+**§6.8 obs-injection fix built (2026-07-15):** the loop no longer injects observations —
+`LoopConfig.retrieval_types` defaults to `strategy_points_only`, the driver passes `--retrieval-types`
+on both arms, and a per-generation invariant asserts the obs block is absent (recorded config +
+sampled prompt input). Clears the store-curation §6.8 launch blocker; the pre-reg config pin still stands.
 
 ---
 

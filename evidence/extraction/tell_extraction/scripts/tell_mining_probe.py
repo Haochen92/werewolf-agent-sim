@@ -3,7 +3,7 @@ read/tactic v1 adopts it; see evidence/extraction/tell_extraction/experiment_log
 
 Mines candidate TELLS (recurring, publicly-observable behavior patterns that might correlate
 with hidden role) from finished v6ab games, one omniscient LLM call per game-day. Design
-constraints from evidence/discussion_tagger/read_tactic_credit_redesign.md §3:
+constraints from evidence/credit/read_tactic_credit_redesign.md §3:
 
 - The miner sees the PUBLIC record only (day transcripts, votes, GM announcements) plus the
   true-roles header. Detectability-by-construction: behaviors invisible at the table (night

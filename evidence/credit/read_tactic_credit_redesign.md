@@ -4,7 +4,7 @@
 > The 2026-07-10 draft was a proposal with five open gates; a 2026-07-11 design review resolved the
 > open day-credit questions and scoped a **v1 build** (§8) — what ships, what is accepted as a named
 > limitation, and what stays future work. It supersedes the credit approach documented in
-> [report.md](report.md) (the shipped tagger) and its trust apparatus in
+> [report.md](../discussion_tagger/report.md) (the shipped tagger) and its trust apparatus in
 > [../evaluation/discussion_tagger/report.md](../evaluation/discussion_tagger/report.md); the tagger
 > itself survives as a diagnostic instrument (§7).
 > **Guiding principle:** a skill you can score against ground truth should never be credited by an LLM
@@ -47,7 +47,7 @@
 
 The tagger is one omniscient end-of-day LLM pass. For each player it emits a holistic **discussion
 verdict** and, for night actors, a **read-quality verdict** that overrides the deterministic night
-credit (the full mechanism is in [report.md](report.md)). Both verdicts answer the same shape of
+credit (the full mechanism is in [report.md](../discussion_tagger/report.md)). Both verdicts answer the same shape of
 question: *did this player advance their faction, judged on merit rather than luck?*
 
 That question silently bundles two different competences:
@@ -65,7 +65,7 @@ number that already blended them. The only instrument left is a holistic LLM jud
 This is the root cause behind the honest caveats the tagger's own reports carry. Its discussion verdict
 is validated only as a *correlational metric* (partial *r* with the faction win, N=24, single-epoch),
 never as a credit signal that demonstrably improves agents. Its **night override — the one place it
-discards a working deterministic signal — has no accuracy check at all** ([report.md](report.md),
+discards a working deterministic signal — has no accuracy check at all** ([report.md](../discussion_tagger/report.md),
 gap 4). Both gaps trace to the same source: a fused verdict is un-attributable, so it can only be
 trusted correlationally, never decomposed and checked.
 
@@ -237,7 +237,7 @@ it as **both, with only one credited**:
   target exists:* when a followed SP produced a stance-tagged accusation at a specific player, that
   instance is instead scored against the target's true value (the previously-validated advocacy signal),
   under the valence rule below. The endpoint is the validated free floor (held-out Pearson +0.51, n=51
-  SPs, v6ab; [experiment_log.md](experiment_log.md) §1).
+  SPs, v6ab; [experiment_log.md](../discussion_tagger/experiment_log.md) §1).
 - **First-link read-delta runs as a diagnostic, uncredited.** It is computed on the same run data
   (mechanics below), its snapshots riding existing calls — an addressee's next speaking turn or, failing
   that, its vote-time read list; the daily vote covers non-addressed players at day grain. Its
@@ -331,7 +331,7 @@ Diffuse deceiver skill — never becoming worth accusing at all — produces no 
 the endpoint refinement nor first-link can see it. The tagger's post-mortem showed why the obvious
 deterministic score is a trap: "concealed = low heat + survived" collapses into "won," most completely
 for the serial killer, whose heat, lynch, and death are one channel
-([experiment_log.md](experiment_log.md) §2). v1 still credits a bounded slice of it, with the guards
+([experiment_log.md](../discussion_tagger/experiment_log.md) §2). v1 still credits a bounded slice of it, with the guards
 that keep the floor from becoming that tautology:
 
 - **The signal:** per-day heat-delta (suspicion drawn that day), credited to a followed
@@ -649,7 +649,7 @@ carries one night credit mechanism instead of two. And its per-day verdict keeps
 diagnostic metric** — a diagnostic may explain a result and flag what credit cannot see; it never feeds
 prune, protect, or synthesis track records. This keeps the one validated instrument for deceiver
 day-craft (discussion verdict partial *r* +0.56 wolf / +0.60 SK with faction win, blinded and
-verbosity-controlled, N=24, single epoch — [report.md](report.md)) pointed at exactly the residual the
+verbosity-controlled, N=24, single epoch — [report.md](../discussion_tagger/report.md)) pointed at exactly the residual the
 credited channels do not cover: believed-vs-unscrutinized credibility, tone, the concealment beyond the
 §3 floor. Because it no longer carries credit, its uncalibrated sub-tags stop being load-bearing, and
 its golden set stops gating anything. The decomposition itself still owes the downstream comparison
