@@ -1,67 +1,67 @@
 {
-  "model": "gemini-embedding-001",
+  "model": "gemini-embedding-2",
   "dims": 1536,
   "epsilon": 0.02,
   "pairs": [
     {
       "a": "The investigator publicly claimed their role on day two.",
       "b": "On the second day, the seer revealed they were the investigator.",
-      "sim": 0.899387
+      "sim": 0.880968
     },
     {
       "a": "A wolf voted to lynch a townsperson to build trust.",
       "b": "The werewolf cast a vote against a villager to appear helpful.",
-      "sim": 0.909707
+      "sim": 0.877141
     },
     {
       "a": "The healer protected the same player two nights running.",
       "b": "The doctor guarded one target on consecutive nights.",
-      "sim": 0.841424
+      "sim": 0.77313
     },
     {
       "a": "The serial killer struck alone at night, immune to the wolves.",
       "b": "The lone night-killer, unaffected by the pack, made a solo kill.",
-      "sim": 0.883692
+      "sim": 0.813167
     },
     {
       "a": "With four players left, one mislynch hands the game to evil.",
       "b": "At the final four, a single wrong vote loses town the game.",
-      "sim": 0.896686
+      "sim": 0.897695
     },
     {
       "a": "The vigilante held their last bullet for the endgame.",
       "b": "The vigilante saved a shot, banking the bullet for later.",
-      "sim": 0.890074
+      "sim": 0.80157
     },
     {
       "a": "Everyone piled their votes onto the quiet player.",
       "b": "The consensus swung hard toward the silent suspect.",
-      "sim": 0.84527
+      "sim": 0.73969
     },
     {
       "a": "The investigator publicly claimed their role on day two.",
       "b": "The vigilante held their last bullet for the endgame.",
-      "sim": 0.729508
+      "sim": 0.632346
     },
     {
       "a": "A wolf voted to lynch a townsperson to build trust.",
       "b": "The healer protected the same player two nights running.",
-      "sim": 0.775336
+      "sim": 0.618883
     },
     {
       "a": "With four players left, one mislynch hands the game to evil.",
       "b": "Everyone piled their votes onto the quiet player.",
-      "sim": 0.80487
+      "sim": 0.653778
     },
     {
       "a": "The serial killer struck alone at night, immune to the wolves.",
       "b": "The investigator publicly claimed their role on day two.",
-      "sim": 0.69637
+      "sim": 0.588349
     },
     {
       "a": "The doctor guarded one target on consecutive nights.",
       "b": "The consensus swung hard toward the silent suspect.",
-      "sim": 0.727961
+      "sim": 0.614079
     }
   ]
 }

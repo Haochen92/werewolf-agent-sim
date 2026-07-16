@@ -170,7 +170,10 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Loop
     obs_path, sp_path = memory_store_paths(store_dir)
     seed_memory_from_json_files_cached(observations_path=obs_path, strategy_points_path=sp_path,
                                        target_store=store, cache_dir=store_dir)
-    cfgd = BatchDedupRunConfig(similarity_threshold=0.70, cluster_mode="bounded", max_cluster_size=15)
+    # 0.65 ≡ 0.70 on -001 (below every real obs pair on both scales — the gate deliberately never
+    # binds; neighbor ranking + the cluster cap do the selection). Remapped 2026-07-16 for
+    # gemini-embedding-2's lower similarity scale.
+    cfgd = BatchDedupRunConfig(similarity_threshold=0.65, cluster_mode="bounded", max_cluster_size=15)
     prev = prev_obs_counts or {}
     # "New obs since last synth" must count ARRIVALS (by first-seen generation), NOT the net count change.
     # Net change cancels additions against obs DECAY (removals), so once decay >= additions the trigger

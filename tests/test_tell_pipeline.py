@@ -346,3 +346,23 @@ def test_tripwire_external_head_archive_tamper_trips(tmp_path):
     (tmp_path / "canon.json").write_text(json.dumps(canon, indent=1))
     with pytest.raises(RuntimeError, match="head"):
         fold(tmp_path, [], [_det("g3", "p3", "vote_1")], [], _games(4), **_TW_KW)
+
+
+def test_default_embedder_signature(monkeypatch):
+    """Regression: the fold's default embedder must pass the shared embedding model through to
+    embed_texts — smoke #3 (2026-07-16) crashed the first live fold on the missing argument, a path
+    every other test bypasses by injecting a fake embedder."""
+    import Agents.memory.vectors as vectors
+    from evaluation.src.loop.tell_fold import _default_embedder
+
+    seen = {}
+
+    def fake_embed_texts(texts, embedding_model, task_type=None):
+        seen["texts"], seen["model"] = list(texts), embedding_model
+        return [[0.0] * 4 for _ in texts]
+
+    monkeypatch.setattr(vectors, "embed_texts", fake_embed_texts)
+    out = _default_embedder(["a", "b"])
+    assert len(out) == 2
+    assert seen["texts"] == ["a", "b"]
+    assert seen["model"] is not None

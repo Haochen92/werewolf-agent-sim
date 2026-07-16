@@ -40,7 +40,7 @@ CHECKLIST_CAP = 48
 K_PROBATION = 12          # scanned games before a probation tell must show recurrence
 NULL_LIFT_EPS = 0.03      # |shrunk_lift| below this at trusted support = measured-and-uninformative
 NULL_SUPPORT = 20         # ...where "trusted support" starts
-PREFILTER_THRESHOLD = 0.80
+PREFILTER_THRESHOLD = 0.68  # ≡ 0.80 on -001 (p41 of tell-pair sims); remapped 2026-07-16 for gemini-embedding-2 — PREFILTER_TOP still does the real bounding
 PREFILTER_TOP = 3
 HEAD_N = 10               # per-channel top incumbents (by last published support) the tripwire guards
 # Bounded fuzzy-match index (~65/channel): the embedding+LLM stage matches a new wording against only
@@ -106,11 +106,14 @@ def _default_judge():
 
 
 def _default_embedder(texts: list[str]):
+    # The shared store instance, not a fresh client — same model + output dims as every other
+    # consumer, so fold-time vectors live on the same similarity scale the thresholds assume.
+    from Agents.memory.store import embeddings as _embedding_model
     from Agents.memory.vectors import embed_texts
-    return embed_texts(texts)
+    return embed_texts(texts, _embedding_model)
 
 
-def make_book_collapse(judge=None, embedder=None, *, prefilter_threshold: float = 0.80):
+def make_book_collapse(judge=None, embedder=None, *, prefilter_threshold: float = PREFILTER_THRESHOLD):
     """View-layer same-behavior collapse for the injected book (build_book's `collapse` hook). The book
     seats the top ~3 tells per (subject role, channel); the unwired merge/split audit's fragmentation
     residual (§0) can put two-plus fragments of ONE behavior into those slots, so a role's manual repeats

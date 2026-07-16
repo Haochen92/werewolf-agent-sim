@@ -132,7 +132,7 @@ def partition_proven_first(
 def dedup_gate(
     items: list[T],
     embeddings: list[NDArray[np.float64]],
-    similarity_threshold: float = 0.92,
+    similarity_threshold: float = 0.87,  # ≡ 0.92 on -001 (p96 of real obs-pair sims), remapped for gemini-embedding-2's lower similarity scale — 2026-07-16 percentile check
 ) -> list[T]:
     if len(items) <= 1:
         return list(items)
