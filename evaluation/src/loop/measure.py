@@ -50,6 +50,8 @@ def game_score(record: dict, arm: str = "off", *,
         verdict = _decision_credit(ec, roles, blend_by_day)
         if verdict is None:
             continue
+        if verdict not in VERDICT_VALUE:
+            continue                # read_excluded: the read-partition drops it from this instrument too (credit_backfill does the same)
         val = VERDICT_VALUE[verdict]
         role = ec.get("player_role", "?")
         faction = "town" if role in TOWN else role

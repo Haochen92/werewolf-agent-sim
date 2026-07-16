@@ -57,3 +57,21 @@ def test_generation_score_toggles_recover_raw_view(tmp_path):
     assert s["n_on/town"] == 2 and s["on/town"] == 1.0     # day-1 + day-2 villager, both +1
     assert s["n_on/wolf"] == 1 and s["on/wolf"] == 1.0     # wolf vote stays in on/wolf, NOT off/wolf
     assert not any(k.startswith("off/") for k in s)        # off_glob=None -> no off arm at all
+
+
+def test_generation_score_skips_read_excluded(tmp_path):
+    """Regression: smoke #4 (2026-07-16) crashed measure on the v1 read-partition's 'read_excluded'
+    verdict (KeyError in VERDICT_VALUE). Measure must drop the decision from sum AND count — the same
+    filter credit_backfill applies — so the two instruments stay on identical de-luck semantics."""
+    on = _dump(tmp_path, "gen1_on", [
+        # vigilante shoots a villager while holding a stated high-confidence wolf read on them:
+        # negative reached through a wrong belief -> read_excluded -> must vanish from the score.
+        {"kind": "agent_action_eval", "output": {"eval_case": {
+            "day": 2, "player_role": "vigilante", "action_phase": "night_action",
+            "memory_enabled": True,
+            "agent_night_action": {"target": "p_town"},
+            "reads": [{"player": "p_town", "confidence": "high", "suspected_role": "wolf"}]}}},
+        _case(2, "villager", "p_wolf", True),                # on/town +1 (the only counted decision)
+    ])
+    s = generation_score(on, None)
+    assert s["n_on/town"] == 1 and s["on/town"] == 1.0
