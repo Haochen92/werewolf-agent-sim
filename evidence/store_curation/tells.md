@@ -21,17 +21,66 @@ credit, because a miner that has read the whole game is halo-exposed). Read by e
 injected **book** (§6). Because a tell's evidence is counted over *stored games*, tells need no
 retrieval exploration machinery — candidates mature uninjected (report §4).
 
+## 0. The tell lifecycle, end to end (the generation graph)
+
+A tell's life runs on two clocks. Something happens in *every game*, and curation happens once per
+*fold* — one fold per generation at the run's shape (this batching is what "epoch-quantized" in §2
+means). Reading top to bottom is one full turn:
+
+> **mine + detect** *(inside every game, against the frozen checklist v_k)* → **fold** *(after the
+> generation's games: resolve wordings, append rows, rule verdicts, publish checklist v(k+1))* →
+> **build the book** *(for the next generation)* → **mine + detect** *(next generation)*
+
+Concretely, per generation the driver's tell tick runs (`driver.py::_tell_tick`):
+
+1. **Mine + detect** (`tells.py`) — during each game, an omniscient **mining** pass discovers
+   candidate wordings and a role-blind **detection** pass scans the game against the frozen
+   checklist v_k. Only detected rows feed credit; mining has read the whole game, so it is
+   halo-exposed.
+2. **Fold** (`tell_fold.fold`) — after the generation's games, the single curation step: resolve the
+   epoch's new wordings against the canon, append instance rows to the ledger, advance the probation
+   clock, rule verdicts, and publish the next checklist v(k+1). Its five sub-steps are §3.
+3. **Build the book** (`tell_credit.build_book_file`) — assemble the role-identification manual from
+   the ledger, ready to inject into the next generation's games (§6).
+
+That is the whole per-generation tick: mine + detect, fold, rebuild book. A fourth step is
+*designed but not wired* — a periodic strong-model **audit** that would re-examine existing
+canonicals for merges and splits (§3). The fold only *flags* candidates for it (the split-check
+verdict, §3 step 4); the audit itself is never called from the loop and exists today only as a
+one-shot offline screen (`granularity_screen.py`). So in-run, splits are flagged and deferred, never
+applied.
+
+So detection runs continuously but always against a *frozen* card, while every curation decision is
+batched into the fold. §1 introduces the three data artifacts the fold moves data between; §3 is the
+fold in detail; §6 is the book that closes the loop.
+
 ## 1. Three artifacts, one per job
 
-The fold's main confusion point at the ownership review, so it leads here. The **ledger**
-(`instances.jsonl`) is the append-only event log: every mined and detected instance row, never
-edited, every tally recomputable from it. The **canon** (`canon.json`) is the identity registry:
-every canonical tell ever admitted, with frozen text and a status (incumbent / probation /
-archive); ledger rows point at canon entries, and new wordings resolve against them. The
-**checklist** (`checklist_v{k}.json`) is the bounded published subset of the canon (≤48 per
-channel) that detection actively scans games for. So the canon gives instances somewhere to be
-filed, the ledger gives canon entries their evidence, and the checklist is the active-duty roster
-drawn from the canon at each fold.
+The fold's main confusion point at the ownership review, so it leads here. All three are plain JSON
+the fold reads and writes directly — there is **no ORM or Pydantic model** for them (the Pydantic
+schemas in the pipeline are only the LLM I/O shapes: the mining and detection outputs, and the dedup
+judge's verdict).
+
+The **ledger** (`instances.jsonl`) is the append-only event log, one JSON row per instance, never
+edited. It holds **two kinds of row**, tagged by `source_kind`: **MINED** rows (from the omniscient
+discovery pass — used only to grow the canon, never to price) and **DETECTED** rows (from the
+role-blind detector — the *only* rows lift is computed from). Every tally is recomputed from these
+rows each fold; nothing is accumulated.
+
+The **canon** (`canon.json`) is the identity registry: every canonical tell ever admitted, each a
+row of `{tell_id, channel, text, status, born_fold, games_scanned, last_scanned_fold, split_check}`,
+status one of incumbent / probation / archive. It stores *identity and status, not counts* — n and
+lift live nowhere on disk; they are re-derived from the ledger each fold. A canon entry is born
+**only** when a mined wording fails to resolve to any existing entry (§3 step 1); detected rows never
+mint identities (they can only reference tells already on the checklist).
+
+The **checklist** (`checklist_v{k}.json`) is the bounded published subset of the canon (≤48 per
+channel) that detection actively scans games for. **Do not confuse it with the *match index* of §3
+step 1** — that is a *different* bounded slice of the canon (~65 per channel, different composition)
+used for a different job (comparing a new wording against known ones). §5 tabulates both.
+
+So the canon gives instances somewhere to be filed, the ledger gives canon entries their evidence,
+and the checklist is the active-duty roster drawn from the canon at each fold.
 
 ## 2. The two principles the fold is built on
 
@@ -46,7 +95,8 @@ instance set.
 
 **Epoch-quantized.** Detection always runs against a **frozen checklist v_k**; curation happens
 only at the fold (one per generation — at the run shape of 10 games/generation, the ledger design's
-N=10 cadence), and a strong-model audit runs every ~3 epochs. An online per-game dedup pass existed
+N=10 cadence), and a strong-model audit is meant to run every ~3 epochs (designed, not yet wired —
+§0). An online per-game dedup pass existed
 and was retired (2026-07-12): it was the pipeline's most expensive component (178 LLM calls/game)
 AND its least accurate — incremental one-at-a-time judging fragmented the head 2× (one bandwagon
 tell split 18+11+10 across three canonicals). Tells have no same-game consumer (unlike memory that
@@ -61,40 +111,52 @@ must reach the next prompt), so a ≤10-game consolidation delay costs nothing.
    instances of both; a sub-type with a distinct mechanism is NOT the same"). Unresolved wordings
    become new canonicals on probation.
 
-   The fuzzy stages consult a **bounded match index**, not the whole canon *(§6.3 ruling,
-   2026-07-14 — a hard cap, chosen over the ledger design's unseen-based retirement as "easy to
-   build, easy to explain")*: all incumbents (already bounded by the verdict cycle), the 30 most
-   recent probation entries, and the 10 most recently scanned archive entries — roughly 65
-   candidates per channel, flat as the singleton tail grows. Retirement from *matching* is not
-   deletion: exact-match stays global (an identical wording can never mint a duplicate identity),
-   canon and ledger keep everything, and a wording whose true match was retired from the index
-   re-enters as a new probation canonical that the audit can reunite — tallies recompute from
-   rows, so nothing is permanently lost. The snapshot candidate list also removed a latent crash
-   (the old live-reference list could grow mid-loop past the precomputed embedding array).
+   The fuzzy stages consult a **bounded match index** — a slice of the canon distinct from the
+   published checklist (a different slice for a different job; §1), not the whole canon. The index is
+   three slices per channel: all incumbents (already bounded by the verdict cycle), the 30 most
+   recent probation entries, and the 10 most recently scanned archive entries — roughly 65 candidates
+   in total, and flat as the singleton tail grows. *(This is the §6.3 ruling of 2026-07-14: a hard cap,
+   chosen over the ledger design's unseen-based retirement because it is easy to build and easy to
+   explain.)*
+
+   Retirement from the *match index* is not deletion. Exact-match still runs globally, so an
+   identical wording can never mint a duplicate identity; the canon and ledger keep everything; and a
+   wording whose true match has fallen out of the index re-enters as a new probation canonical, which
+   the audit could later reunite (once wired — §0). Because tallies recompute from rows, nothing is
+   permanently lost.
+   (Snapshotting the candidate list also removed a latent crash: the old live-reference list could
+   grow mid-loop past the precomputed embedding array.)
 2. **Append instance rows** to the ledger. All tallies **recompute from rows** on every fold (set,
    not accumulate — principle 5), so a curation mistake never bakes into a counter. MINED rows are
    discovery only; **lift is computed from DETECTED rows exclusively** — mined rows come from a
    halo-exposed pass, detector rows from the role-blind instrument.
 3. **Advance the probation clock** in *scanned games* — games whose detection ran with this tell on
-   the checklist. Scanning is what produces evidence, so entry to the ledger can never require
-   counts; the clock measures opportunity, not outcome.
-4. **Rule verdicts.** A probation tell still a singleton after `K_PROBATION = 12` scanned games →
-   archive (an evidence-*volume* cut, direction-neutral). An incumbent with fat support (n ≥ 20)
-   and null lift (|shrunk lift| < 0.03) → archive **with a split-check flag** — a null blend can
-   hide two directional sub-tells, so the audit re-examines it before it is trusted dead. The one
-   forbidden move: never *retain-rank* by lift at thin support — that selects on noise (the
-   probe's cleanest town tell began as a lift≈0 singleton).
+   the checklist. Scanning is what gives a tell any chance to be detected, so the window counts
+   *opportunities* (scans), not *hits*: a tell that was rarely scanned hasn't failed, it just wasn't
+   tried — the clock measures opportunity, not outcome.
+4. **Rule verdicts.** A probation tell still a singleton (≤ 1 detected instance) after
+   `K_PROBATION = 12` scanned games → archive (an evidence-*volume* cut, direction-neutral). An incumbent with fat support (n ≥ 20)
+   and null lift (|shrunk lift| < 0.03) → archive **with `split_check` set true**. The fold does no
+   splitting itself — it only writes the boolean. A null blend can hide two directional sub-tells,
+   and *determining* the split (re-partitioning the tell's instance rows and recomputing each
+   sub-tell's lift from the ledger) is the audit's job; since the audit is not yet wired into the
+   loop (§0), `split_check` is at present a durable to-do marker, not an applied operation. The one
+   forbidden move: never *retain-rank* by lift at thin support — that selects on noise (the probe's
+   cleanest town tell began as a lift≈0 singleton).
 5. **Publish checklist v_{k+1}**: per channel, up to 25 incumbents ranked by |shrunk lift| under a
    **direction-balanced quota** (evil-leaning and town-leaning both surface — every role's book
    needs candidates), all live probation (newest first, capped at 15), and spare slots up to the
    48-cap rotated to the **least-recently-scanned archive entries** — a zero-marginal-cost
-   re-audit, so every archived tell eventually re-earns or re-fails on fresh counts.
+   re-trial (just another scan, *not* the strong-model audit), so every archived tell eventually
+   re-earns or re-fails on fresh counts.
 
 **Granularity is settled operationally**, outside the fold's per-epoch loop: two same-channel tells
 are THE SAME iff same instances AND same lift — semantics propose a merge, pooled-lift arithmetic
 ratifies it (a bad merge shows as visible lift dilution). Merging or splitting *existing*
 canonicals is never a fold operation; it belongs to the periodic strong-model audit, on that
-evidence. The one forbidden fold direction: never merge a discriminating child into a ~0-lift
+evidence — an audit not yet part of the running loop (it exists as the one-shot offline
+`granularity_screen.py` that produced these findings; wiring it, or its cadence, is open — §8). The
+one forbidden fold direction: never merge a discriminating child into a ~0-lift
 generic parent (the granularity screen found seven such hierarchy pairs, e.g. a ~0-lift generic
 vote tell containing a +0.21 child).
 
@@ -122,14 +184,16 @@ you lost receipts.)
 disappear from the card: a top-support incumbent may leave only via this fold's *explicit*
 null-lift verdict; any other exit means curation diverged from the fold's own rulings.
 
-On violation the fold raises before anything persists — the appended instance rows remain, because
-the ledger records what happened while the tripwire gates curation. One accepted implementation
+On violation the fold raises before any *curation* persists (canon status, the recomputed counts,
+the published checklist). The appended instance rows are written first, in step 2, so they stay on
+disk — the ledger records what happened, and only curation is gated; a halted fold loses no evidence
+and re-runs after the fix. One accepted implementation
 deviation: the saved counts are scoped to incumbents at persist time and the head derives from
 state rather than being re-filtered against fold-time canon status — this makes the head
 tamper-immune (an external canon edit cannot hide from it) and stops legitimately-archived tells
 from re-tripping later folds. Residual, tracked at report §6.1: wrong keep/discard verdicts at the
-single-wording grain remain possible; the tripwire catches their *systematic* form, and the audit
-stays the semantic backstop.
+single-wording grain remain possible; the tripwire catches their *systematic* form, and the
+(still-unwired) audit is the intended semantic backstop.
 
 ## 5. Bounding — three caps, three surfaces
 
@@ -144,9 +208,12 @@ different surface):
 
 Why the checklist cap is THE tell-side cost control: mining keeps discovering ~16 genuinely new
 singleton wordings per game with no saturation in sight (open vocabulary at move grain — report
-§5), so anything that scales with the *corpus* eventually drowns. Detection cost scales with the
-checklist, wording resolution with the match index, and both are flat; the store itself is never
-capped (rows and identities are cheap and recomputable). The epoch quantization (§2) bounds the
+§5), so anything that scales with the *corpus* eventually drowns. In complexity terms, detection is
+O(players × channels × views) model calls per game — 2 channels × 2 views (the k=2 union) — with the
+≤48-entry checklist carried in context (prefix-cached); wording resolution is one batched embedding
+plus ≤3 judge calls per new wording (the top-3 prefilter) against the ≤65-entry match index. Both
+are flat as the canon grows; the store itself is never capped (rows and identities are
+cheap and recomputable). The epoch quantization (§2) bounds the
 third surface — curation frequency. The append-only ledger still grows by design: inert during
 play, but the fold-time recompute-from-rows scan is linear in total history (trivial at run scale;
 snapshotting is the fix if it ever matters).
@@ -160,6 +227,27 @@ the shared book is symmetric — the same information lets wolves hunt an invest
 protect one, and the investigator learn to conceal). Selection is per (subject role, channel): the
 top ~3 tells by **subject-role concentration** (`subject_lift` — the subject's shrunk share of
 exhibitors over its cast prior) above a support floor of 8.
+
+**The same-behavior collapse** (`make_book_collapse`, `tell_book_dedup` default on, built 2026-07-16).
+The 3-slot budget has a sharp exposure: the unwired audit's fragmentation (§8) lets one behavior
+persist as several canonicals, and because selection ranks by `subject_lift`, the fragments of a
+*popular* discriminating behavior are exactly the high-lift, high-support rows the book pulls in — so
+two or three of a role's three slots can end up saying the same thing. To catch this at the point of
+injection, `build_book` runs the fold's **own** cascade (embedding prefilter → the extensional-
+equivalence judge, §3 step 1) over each (subject role, channel) candidate pool *before* the cut,
+collapses same-behavior fragments into one entry, and lets the freed slots backfill with distinct
+behaviors. The guardrail is structural, not a knob: candidates are lift-sorted, so the survivor of a
+class is always its highest-lift member — the only rows ever dropped are lift-equivalent to a kept
+one, so diversity can never cost lift.
+
+This is a **symptom fix, not the cure, and deliberately scoped as one.** It is *view-layer*: it runs
+on the book candidates only, touches neither canon nor ledger, and — because credit is computed from
+the ledger independently of book membership (see the divergence below) — a collapsed fragment keeps
+its identity, stays scanned, and **keeps paying credit**. What it does *not* do is pool the fragments'
+evidence: each still carries its own partial-support lift, so the credit side stays fragmented. Pooling
+into one accurate lift (and one identity) is the audit's canon merge (§0), still the real cure; this
+only stops the injection budget being spent twice on one behavior. *(Rationale record: report §6; the
+fragmentation risk it addresses is §8 gap 5.)*
 
 Note the deliberate divergence from credit: credit pays **positive evil-lift** tells only (a
 town-marker read backwards double-counts, and "look town" credit is farmable — credit report §6.5),
@@ -203,3 +291,34 @@ Criticality-ordered; agenda items live at report §6 and are not repeated.
 4. **Probation-lane pressure beyond 30 games unmeasured** (report §6.5): the 15-slot lane is
    permanently contested under open vocabulary; rotation/starvation behavior is a post-run
    readout.
+5. **The merge/split audit is unwired.** The fold flags null-lift incumbents (`split_check`) and
+   never rewrites text, both on the premise that a periodic strong-model audit will later apply the
+   merges and splits — but that audit is not called from the loop; it exists only as the one-shot
+   offline `granularity_screen.py`. Until it is wired (or run between generations by hand), splits
+   are flagged and deferred and `split_check` accumulates on archived tells unread.
+
+   The failure mode over a ≤10-generation run is **fragmentation, not corruption.** The never-destroy
+   invariants (freeze-text, recompute-from-rows, archive-not-delete) and the §4 tripwire hold with or
+   without the audit, so no published count is ever wrong — but the fold can only *add* identities and
+   coarsely *archive* them, never *re-grain*, so grain drifts monotonically toward over-fragmentation
+   with no counter-force. Concretely: (a) near-dup probation singletons the fold's judge missed crowd
+   the newest-first 15-slot lane, pushing older honest probation tells off the checklist, where they
+   stop being scanned and stall below K=12 for as long as the lane stays oversubscribed (compounds
+   gap 4 below); (b) a `split_check` archival that is really two directional sub-tells stays merged and
+   semi-retired — a real discriminator becomes a standing measurement blind spot (a false-negative on
+   signal, the one cost worse than clutter). Nothing published is wrong; the store is just messier and
+   some real tells never mature.
+
+   **Partly mitigated at the injection point** (`tell_book_dedup`, 2026-07-16 — §6): the book now
+   collapses same-behavior fragments before the 3-slot cut, so failure mode (a)'s worst consequence —
+   a role's manual repeating one behavior across its slots — no longer reaches the prompt. This is a
+   *symptom fix only*: it is view-layer, does not pool the fragments' evidence, and leaves the
+   credit-side fragmentation and the lane starvation untouched. The audit is still the cure. *(Raised
+   2026-07-16.)*
+6. **Lifecycle verdicts barely fire within the run horizon.** The tell lifecycle is slow relative to
+   a ≤10-generation run: probation→archive needs `K_PROBATION = 12` scanned games (§3 step 4), so
+   across ~10 folds most probation tells never resolve. The tell store is better off than the other
+   two on *size* — the checklist's 48/channel cap is a hard bound that binds regardless of
+   generation count (§5) — but the canon and probation lane still grow near-monotonically in-run, and
+   whether the lifecycle reaches a steady state at this fold cadence is unestimated. Post-run
+   readout. *(Raised 2026-07-15.)*

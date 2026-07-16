@@ -18,6 +18,30 @@ RAG retrieval (§5); graded by the credit layer after each generation. Because t
 an LLM writing new text, this store is the only one that can *create* bad content — which is why
 most of the system's guards concentrate here (report §4).
 
+## 0. The SP lifecycle, end to end (the generation graph)
+
+An SP's whole life is a single loop that spans a generation's games and the curation tick after
+them. Reading it top to bottom is reading one full turn of the compounding cycle:
+
+> **retrieve & follow** *(inside each game)* → **credit** *(after the games)* →
+> **consolidate** *(the tick)* → **retrieve & follow** *(next generation)*
+
+Concretely, per generation the driver runs these in order (`driver.py`):
+
+1. **Retrieve & follow** — inside each game, agents retrieve SPs for their situation and either
+   follow or reject each one; those choices are recorded (§5).
+2. **Credit** (`credit.credit_apply`) — after the generation's games, each *followed* SP is graded
+   by the outcome, updating its `follow_count / positive_count / negative_count` against a
+   memory-OFF baseline (the credit layer, [`../credit/report.md`](../credit/report.md)).
+3. **Consolidate** (`consolidate.consolidate`) — the SP tick: observation decay → synthesis → SP
+   dedup → prune/evict, in that fixed order (§1).
+4. The next generation's agents retrieve the updated store, and the loop repeats.
+
+Steps 2 and 3 are the whole point — credit *measures* each SP, and consolidation *acts* on that
+measurement, so the store improves rather than merely growing. The sections below zoom into step 3:
+§1 is the tick as a whole, §2 its growth step, §3 its dedup, §4 its removal steps, and §5 is the
+retrieval (step 1) that closes the loop.
+
 ## 1. The tick — four steps, order load-bearing
 
 One call (`consolidate`) runs four steps in a deliberate order:
@@ -38,55 +62,88 @@ distills surviving evidence.
 
 ## 2. Growth — credit-aware synthesis
 
-Synthesis distills a cell's observation clusters into new SPs. Uncontrolled, this step is the bloat
-engine (report §5, pathologies 1–3), so three gates sit in front of it:
+Synthesis distills a cell's observation clusters into new SPs. First, what a *cluster* is and how it
+is built — it is the same greedy, seed-based routine batch dedup uses (`cluster_mode = "bounded"`),
+*not* a connected-components sweep. A cell's observations are first partitioned by **situation
+regime** (a `gate_key`: is-swing × alive-bucket × consensus-direction), so a cluster never mixes
+regimes. Within a regime, observations are taken as *seeds* most-reinforced first (highest
+`observation_count`); each seed runs a similarity search, and neighbours scoring above cosine 0.70
+join it, up to 15 per cluster. Each observation is claimed by exactly one cluster — the first seed
+to reach it, never merged transitively — and a seed with no neighbour above 0.70 forms no cluster,
+leaving its observation a lone *singleton* that is never synthesized alone. A cluster is therefore
+one recurring lesson in slightly different words, and synthesis writes at most one new SP per
+cluster. (In the loop only *new arrivals* may seed — old observations still join as neighbours —
+which is the seed-from-new optimization described below.)
 
-- **The new-evidence gate.** A cell re-synthesizes only when it gained ≥ `synth_min_new_obs = 4`
-  new observations — counted by **arrival** (first-seen generation), not by net count change. The
-  net-change version silently stalls: once decay removes as many obs as arrive, the trigger reads
-  "no new obs" even though fresh evidence did arrive (the gen-6 stall, fixed in place). A *depleted*
-  cell (fewer than `synth_replenish_floor = 3` SPs, because prune/evict culled it) is exempt, so the
-  replenish path still refills it.
-- **The new-clusters-only gate.** Within an admitted cell, only clusters carrying a new obs are
-  re-synthesized. Without this, every cluster in an admitted cell regenerated SP variants of
-  already-distilled lessons each tick — variants that don't exact-dedup — and the store compounded
-  ~6× per run (5.4 → 34 SPs/cell).
-- **The hard cap — on the contested lane.** A cell whose *unproven* SPs already number ≥
-  `synth_cell_unproven_cap = 12` skips synthesis entirely (depleted cells exempt). Proven SPs
-  (positive lift, ≥2 follows — the same predicate as the §4 exemption, via a shared helper) occupy
-  earned slots outside the quota, so a cell full of proven SPs still admits synthesis and keeps
-  exploring; the cap only blocks piling more untested candidates onto an already-full contested
-  lane. *(Re-scoped 2026-07-14 from a total-size cap — §6.7 ruling, log §5; the knob was renamed
-  from `synth_cell_sp_cap`.)* 12 is anchored on the bloat record: ~2.4× the healthy ~5, well under
-  the ~34 runaway — and the record's runaway population was overwhelmingly unproven duplicates, so
-  the same value protects against the same failure. The cap gates *growth*, not size: culls run
-  every generation and synthesis only every k, so a capped cell resumes growing once credit drains
-  its lane (an unproven SP leaves by proving out, souring, or eviction). Capped cells are counted
-  and printed per generation, so the gate biting is observable, not silent.
+Uncontrolled, synthesis is the bloat engine (report §5, pathologies 1–3), so three **admission
+checks** sit in front of it (the code calls them "gates," but they are guard conditions, unrelated to
+the `gate_key` above) — two decide whether a whole *cell* synthesizes at all, and one decides which
+*clusters* inside an admitted cell do:
 
-The gates run **before any clustering work** *(2026-07-14 store-bounding review, log §4)*.
-Admission needs only record keys, the generation sidecar, and the cell's SP lane counts — all
-deterministic arithmetic — so a skipped cell pays zero embedding cost. Previously every cell was
-fully clustered first (one embedding search per obs) and the gates only cut the LLM calls, which
-left the clustering bill scaling with total store size. An admitted cell then seeds its clusters
-**from the new arrivals only**: each new obs pulls in its neighbors, and old obs still join
-clusters as members. This reproduces exactly the new-bearing clusters the new-clusters-only gate
-keeps, without building the all-old clusters it would discard. A depleted cell keeps full seeding,
-because its replenish path must re-synthesize from old clusters. By construction, the per-tick
-clustering cost now scales with the generation's new-obs inflow rather than with store size.
-(Unchanged: a new obs with no similarity-0.70 neighbor stays a singleton, and singletons are never
-synthesized — a lone observation waits for corroborating evidence before it can fire.)
+- **The new-evidence check** *(per cell)*. A cell re-synthesizes only when it gained ≥
+  `synth_min_new_obs = 4` new observations — counted by **arrival** (first-seen generation), not by
+  net count change. The net-change version silently stalls: once decay removes as many obs as arrive,
+  the trigger reads "no new obs" even though fresh evidence did arrive (the gen-6 stall, fixed in
+  place). A *depleted* cell (fewer than `synth_replenish_floor = 3` SPs total, because prune/evict
+  culled it) is exempt, so the replenish path can still refill it.
+- **The hard cap** *(per cell, on the contested lane)*. A cell whose *unproven* SPs already number ≥
+  `synth_cell_unproven_cap = 12` skips synthesis entirely (depleted cells exempt). Proven SPs sit in
+  earned slots *outside* this quota — "proven" here is positive lift with ≥2 follows, the same
+  predicate as the §4 exemption — so a cell full of proven SPs still admits synthesis and keeps
+  exploring; the cap only blocks piling more untested candidates onto an already-full contested lane.
+  The value 12 is anchored on the run-1 bloat record (report §1): a *healthy* cell held about 5 SPs
+  and a *bloated* one about 34, so 12 sits ~2.4× the healthy size and well under the runaway. Since
+  that runaway was overwhelmingly unproven duplicates, the same value guards the same failure. Note
+  the cap limits *growth*, not size: culls run every generation while synthesis runs only every k, so a
+  capped cell resumes growing as soon as credit drains its lane (an unproven SP leaves by proving out,
+  souring, or being evicted). Capped cells are counted and printed each generation, so the cap biting
+  is observable, not silent. *(Re-scoped 2026-07-14 from a total-size cap — §6.7 ruling, log §5; knob
+  renamed from `synth_cell_sp_cap`.)*
+- **The new-clusters-only check** *(per cluster)*. Within an admitted cell, only clusters that carry a
+  new obs are re-synthesized. Without it, every cluster in an admitted cell would regenerate SP
+  variants of already-distilled lessons each tick — variants that don't exact-dedup — and the store
+  compounded ~6× per run (5.4 → 34 SPs/cell).
 
-What makes the synthesis credit-*aware* is the **track record**: the realized lift of every cell SP
-with ≥ `synth_track_min_follow = 5` follows is rendered into the synthesis prompt ("realized lift
-+0.26, followed 9×: <action>…"), so the model revises toward what measured well rather than
-re-summarizing the observations blind. Without it, synthesis regenerates what prune killed, because
-observation outcome tags track faction-won — luck (report §5, pathology 11). Two pieces of
-bookkeeping make this auditable: the `with_track_record` counter exposes per generation how many
-cells actually synthesized with a track record (0 means the thesis mechanism is silently not firing
-yet), and every new SP carries `distilled_from` — the keys of the SPs whose record fed its
-synthesis — so a revised SP joins back to its parents' credit history offline (lineage, never shown
-to agents).
+**Why the checks run before clustering — a before-and-after.** Clustering runs a similarity search
+for each *seed* observation to gather its neighbours; it is the expensive, store-size-scaling part of
+the tick (the embeddings themselves are cached, but each search scans the cell). The two *cell-level*
+checks above are computable from cheap counts alone (record keys, the generation sidecar, the SP lane
+sizes), so they can run *first* and let a skipped cell pay no search cost. Take a cell holding **30
+old observations and 2 new ones**:
+
+- *Before* (pre-2026-07-14, the store-bounding review — log §4): every cell was clustered in full
+  first, and only then did the checks cut the LLM synthesis calls. With every obs seeding a search,
+  our cell paid ~32 searches every tick — even if the checks then skipped it — so the clustering bill
+  grew with the whole store.
+- *After:* the checks decide first, from counts; only an admitted cell clusters; and it seeds its
+  clusters **from the new arrivals only**. The same cell now runs ~2 searches — one per new
+  observation — and the 30 old obs still join those clusters as members. The new-bearing clusters
+  come out identical, without ever building the all-old clusters the new-clusters-only check would
+  have discarded anyway. (A *depleted* cell is the exception: it re-clusters in full, because it has
+  to replenish from its old clusters.)
+
+The net effect: per-tick clustering cost dropped from O(cell size²) to O(new obs × cell size), so it
+now tracks the generation's new-obs inflow rather than the accumulated store. (A new obs with no
+neighbour above cosine 0.70 stays a singleton, and singletons are never synthesized — a lone
+observation waits for corroborating evidence before it can fire.)
+
+What makes synthesis credit-*aware* is the **track record** it is handed. For every SP already in the
+cell with at least `synth_track_min_follow = 5` follows, that SP's realized (de-luck) lift is rendered
+into the synthesis prompt — for example, "realized lift +0.26, followed 9×: <action>…". The prompt
+then instructs the model to weight *that* signal, not the observations' own outcome tags (which track
+faction-won, i.e. luck — report §5, pathology 11). Concretely, a directive the track record shows
+*under*performed is treated as a **corrective** — do the opposite or a refinement, never re-prescribe
+the loser — while one that measured well is reinforced. This is not a filter and not wording mimicry:
+the model still writes new IF-THEN strategy points from the cluster, and the track record only steers
+*which advice* they give. Without it, synthesis tends to regenerate exactly what prune just killed,
+because it would be trusting those luck-laden observation tags.
+
+Two pieces of bookkeeping keep this auditable. The `with_track_record` counter reports, each
+generation, how many cells actually synthesized *with* a track record; a value of 0 means the
+credit-aware mechanism the whole thesis rests on is silently not firing yet. And every new SP
+carries `distilled_from` — the keys of the SPs whose record fed its synthesis — so a revised SP can
+be joined back to its parents' credit history offline. (That lineage is for offline audit only; it
+is never shown to agents.)
 
 ## 3. Admission — SP dedup, keep/discard, freeze-old
 
@@ -146,6 +203,14 @@ the read path has no base rates; the loop side (`consolidate.py`) uses lift with
 `protect_min_follow = 2`. The lane pieces *not* adopted from the tell ledger, with standing
 reasons, are recorded at report §6.7.
 
+**Currency caveat.** This whole read-path filter stack — proven tiering, the exploration slot, and
+the `_sp_is_proven` heuristic — is *wired and default-on* (flags in `retrieval/plan_gating.py`,
+applied in `retrieval/pipeline.py`), and its predicate was updated for v7's de-lucked counts
+(execution plan §0.5). But it has never shaped a live v7 store: no fold-bearing loop run has
+exercised it (§7 gap 1), and the read-path judges are the least-measured surface in the eval sweep.
+So its applicability to v7 is asserted by construction, not verified in a run — treat this section as
+the *intended* read path, pending the first live fold.
+
 The exploration slot changes live-game retrieval behavior, so it is an epoch-bundle member exactly
 like proven tiering (execution plan §0.4): it ships with the next prompt-epoch bundle, never
 mid-baseline.
@@ -166,7 +231,7 @@ items carry the most weight for this store:
   a 61% base rate; the one flip sat at 3 follows, below the prune rule's ≥8 floor (all 4 flagged
   SPs at ≥8 follows stayed negative). Direction-credible at small n — a directional check, not a
   calibration.
-- **Synthesis *quality* is unjudged.** The mechanism is suite-verified (gates, cap, track record,
+- **Synthesis *quality* is unjudged.** The mechanism is suite-verified (checks, cap, track record,
   lineage), but no judge has scored whether synthesized SPs are *good* distillations — the
   extraction judge has zero references from the loop. Tracked since the eval sweep; the planned
   closure is the SP-synthesis golden authored during the ownership walkthrough (execution plan
@@ -183,3 +248,12 @@ Criticality-ordered; the walkthrough agenda items live in report §6 and are not
 3. **Design-anchored knobs unswept** — `prune_tau` is the only checked knob (§6); the follow/
    retrieve floors (8/8/2) and the cap value 12 are pinned as design-anchored in the pre-reg with
    a post-run sensitivity readout.
+4. **Removal may not even trigger within the run horizon; store convergence is unproven.** Prune
+   needs ≥8 follows and evict needs ≥8 retrievals (§4). Inside a ≤10-generation experiment many SPs
+   will never accumulate 8 of either, so the removal machinery is largely a *limit* property the run
+   cannot exercise. Within the run the store grows close to monotonically, held mainly by the
+   contested-lane cap (§2), not by prune/evict. Whether any of the three stores plateaus at this
+   eviction-vs-generation rate is an open question we have not estimated: a crude projection off the
+   v2 smoke's follow/arrival distributions is conceivable, but ~6 generations of smoke won't fit a
+   convergence curve. Deferred; a post-run store read should expect near-monotonic growth and judge
+   whether that is a problem at the run's scale. *(Raised 2026-07-15.)*
