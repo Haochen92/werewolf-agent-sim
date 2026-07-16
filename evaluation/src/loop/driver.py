@@ -191,7 +191,7 @@ def _run_arms_parallel(run_dir: Path, on_jsonl: Path, off_jsonl: Path, cfg: Loop
     return dump_dirs
 
 
-def _tell_tick(run_dir: Path, gen: int, on_jsonl: Path) -> dict:
+def _tell_tick(run_dir: Path, gen: int, on_jsonl: Path, cfg: LoopConfig) -> dict:
     """One generation's tell pipeline (v1, 2026-07-13): mine + role-blind k=2 detect the ON arm's games
     against the CURRENT frozen checklist, fold (wording dedup into canon, probation/null verdicts,
     publish checklist v_{k+1}), then rebuild the injected book from ALL detected instances to date.
@@ -199,7 +199,7 @@ def _tell_tick(run_dir: Path, gen: int, on_jsonl: Path) -> dict:
     because lift denominators span every generation's games. Lazy imports: the tell modules pull LLM
     deps only when the pipeline is ON."""
     from evaluation.src.loop.tell_credit import build_book_file, cast_prior_base, lift_table
-    from evaluation.src.loop.tell_fold import fold
+    from evaluation.src.loop.tell_fold import fold, make_book_collapse
     from evaluation.src.loop.tells import detect_games, load_games, mine_games
 
     store_dir = run_dir / "tell_store"
@@ -226,8 +226,9 @@ def _tell_tick(run_dir: Path, gen: int, on_jsonl: Path) -> dict:
     all_detected = [r for r in all_detected if r.get("source_kind") == "DETECTED"]
     canon = json.loads((store_dir / "canon.json").read_text())
     text_of = {c["tell_id"]: c["text"] for c in canon}
+    collapse = make_book_collapse() if cfg.tell_book_dedup else None
     n_book = build_book_file(lift_table(all_detected, roles_by_game), text_of,
-                             store_dir / "book.json")
+                             store_dir / "book.json", collapse=collapse)
     return {**{k: rep[k] for k in ("fold", "new_wordings", "new_canonicals",
                                    "archived_singletons", "archived_null_lift", "checklist")},
             "mined": n_mined, "detected": len(detected), "book": n_book,
@@ -383,7 +384,7 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
                   f"  credit_dist: {cdist}", flush=True)
         tstats = {}
         if cfg.tells:
-            tstats = _tell_tick(run_dir, gen, on_jsonl)
+            tstats = _tell_tick(run_dir, gen, on_jsonl, cfg)
             print(f"  tells: {tstats}", flush=True)
         cons = {}
         if cfg.prune or cfg.evict or cfg.synthesize or cfg.evict_observations:

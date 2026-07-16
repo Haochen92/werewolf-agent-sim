@@ -138,6 +138,13 @@ class LoopConfig:
     tells: bool = False
     tell_seed_checklist: str = ""   # {channel: [{tell_id, text}]} — required when tells=True (cold store)
     tell_seed_book: str = ""        # optional gen-1 book (built from the held-out lift table)
+    tell_book_dedup: bool = True    # collapse same-behavior fragments in the injected book (view-layer):
+    #   the book seats top ~3 tells per (subject role, channel), and the unwired merge/split audit lets a
+    #   fragmented behavior take several of those slots (a role's manual repeats itself). This runs the
+    #   fold's own embedding+judge cascade over the book candidates, keeping the highest-lift member of each
+    #   same-behavior class so freed slots backfill with DISTINCT behaviors. Guardrail is structural (drops
+    #   only lift-equivalent members). SYMPTOM FIX — canon/ledger/credit untouched, nothing pooled; evidence
+    #   pooling stays the audit's canon merge. False = today's raw top-3 (an A/B knob).
 
     def env(self) -> dict:
         """Env overrides pinning EVERY paid model in a run to the cheap tier — the pro-2.5 cost guard.
