@@ -15,6 +15,7 @@ from evaluation.src.loop.tell_credit import (
 )
 from evaluation.src.loop.tell_fold import (
     INDEX_ARCHIVE_RECENT, INDEX_PROBATION_RECENT, _resolve_wordings, fold, init_store,
+    make_book_collapse,
 )
 from evaluation.src.loop.tells import _norm
 
@@ -90,6 +91,43 @@ def test_book_is_a_role_identification_manual():
     # (§6.5 credits positive evil-lift only)
     elig = {t["tell_id"] for t in credit_eligible(table, support_floor=5)}
     assert "vote_w" in elig and "disc_inv" not in elig
+
+
+def test_book_collapse_backfills_freed_slot_with_distinct_behavior():
+    """The book seats top-3 per (subject, channel); a fragmented behavior can take two of those slots.
+    make_book_collapse drops the lower-lift fragment so a DISTINCT behavior backfills. View-layer only —
+    subject_lift ordering is unchanged and the collapsed tell keeps its lift-table row (credit intact)."""
+    games = _games(12)
+    def wolf_rows(tell, n_games):
+        return [_det(f"g{i}", p, tell) for i in range(n_games) for p in ("p0", "p1")]  # pure wolf-marker
+    # pure wolf-markers: more exhibitors => higher subject_lift, so w1 > w2 > w3 > w4
+    rows = (wolf_rows("vote_w1", 12) + wolf_rows("vote_w2", 10)
+            + wolf_rows("vote_w3", 9) + wolf_rows("vote_w4", 8))
+    table = lift_table(rows, games)
+    assert [t["tell_id"] for t in sorted(table, key=lambda t: -subject_lift(t))] == \
+        ["vote_w1", "vote_w2", "vote_w3", "vote_w4"]
+    text_of = {"vote_w1": "bandwagon vote piles on", "vote_w2": "bandwagon vote joins the pile",
+               "vote_w3": "silence when accused", "vote_w4": "defends the accused"}
+    judge = lambda new, canon: new.split()[0] == canon.split()[0]  # noqa: E731 — first word = behavior class
+
+    raw = build_book(table, {"wolf"}, per_role_cap=3)                     # collapse=None -> today's behavior
+    assert [t["tell_id"] for t in raw] == ["vote_w1", "vote_w2", "vote_w3"]  # dup crowds; w4 excluded
+
+    collapse = make_book_collapse(judge=judge, embedder=_stub_embedder)
+    deduped = build_book(table, {"wolf"}, per_role_cap=3, collapse=collapse, text_of=text_of)
+    ids = [t["tell_id"] for t in deduped]
+    assert ids == ["vote_w1", "vote_w3", "vote_w4"]   # w2 (bandwagon dup) dropped; w4 backfills -> 3 distinct
+    assert "vote_w1" in ids and "vote_w2" not in ids  # GUARDRAIL: the class survivor is the HIGHER-lift one
+
+
+def test_book_collapse_is_non_transitive_safe():
+    """A~B and B~C but A≁C: greedy-keep compares a candidate only against already-kept SURVIVORS, so B
+    (dup of kept A) is dropped and C is still kept — never wrongly folded away via the dropped B."""
+    judge = lambda new, canon: {new.split()[0], canon.split()[0]} in ({"a", "b"}, {"b", "c"})  # noqa: E731
+    collapse = make_book_collapse(judge=judge, embedder=_stub_embedder)
+    cands = [{"tell_id": "A"}, {"tell_id": "B"}, {"tell_id": "C"}]        # lift-sorted (A highest)
+    kept = [t["tell_id"] for t in collapse(cands, {"A": "a x", "B": "b x", "C": "c x"})]
+    assert kept == ["A", "C"]
 
 
 def test_cast_prior_base_registers_selfkeyed():

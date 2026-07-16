@@ -106,7 +106,7 @@ def subject_lift(entry: dict) -> float:
 
 
 def build_book(table: list[dict], unrevealed_roles: set[str], *, per_role_cap: int = 3,
-               support_floor: int = 8) -> list[dict]:
+               support_floor: int = 8, collapse=None, text_of: Mapping[str, str] | None = None) -> list[dict]:
     """The injected tell book — a role-identification manual for EVERY unrevealed role (owner ruling
     2026-07-14: no role-revealing exclusion; the shared book is symmetric — see the module docstring).
     Per (subject role, channel): the top per_role_cap tells by subject_lift over the support floor.
@@ -115,17 +115,30 @@ def build_book(table: list[dict], unrevealed_roles: set[str], *, per_role_cap: i
     Ranked by subject-role concentration, NOT credit's evil-lift: §6.5 decides what pays, this decides
     what informs, and the two deliberately disagree on town-subject tells. Deterministic
     filter-and-rank — no retrieval, no exploration slot (tell credit is off-policy: candidates mature
-    without injection, and an unvalidated tell in the book actively misleads live reads)."""
-    picked: dict[tuple, list[dict]] = defaultdict(list)
+    without injection, and an unvalidated tell in the book actively misleads live reads).
+
+    `collapse` (optional): a view-layer same-behavior de-duplicator run PER (subject role, channel) on
+    the lift-sorted candidate pool BEFORE the per_role_cap cut, so a behavior that fragmented into
+    several canonicals (the unwired audit's residual reaching the prompt) takes ONE slot and the freed
+    slots backfill with distinct behaviors. INJECTED, never imported here (this module stays LLM-free):
+    the driver passes the fold's judge+embedder cascade (`make_book_collapse`); `collapse=None` is
+    today's exact behavior. It keeps the highest-lift member of each class (candidates arrive
+    lift-sorted), so diversity never costs lift, and is view-layer only (canon/ledger/credit untouched —
+    nothing pooled)."""
+    groups: dict[tuple, list[dict]] = defaultdict(list)
     for t in sorted(table, key=lambda t: -subject_lift(t)):
         subj = subject_role(t)
         if subj is None or subj not in unrevealed_roles:
             continue
         if t["n"] < support_floor or subject_lift(t) <= 0:
             continue
-        if len(picked[(subj, t["channel"])]) < per_role_cap:
-            picked[(subj, t["channel"])].append(t)
-    return [t for group in picked.values() for t in group]
+        groups[(subj, t["channel"])].append(t)
+    picked: list[dict] = []
+    for cands in groups.values():
+        if collapse is not None:
+            cands = collapse(cands, text_of or {})
+        picked.extend(cands[:per_role_cap])
+    return picked
 
 
 def render_book(book: list[dict], text_of: Mapping[str, str]) -> str:
@@ -142,18 +155,18 @@ def render_book(book: list[dict], text_of: Mapping[str, str]) -> str:
 
 
 def build_book_file(table: list[dict], text_of: Mapping[str, str], out_path,
-                    unrevealed_roles: set[str] | None = None, **book_kwargs) -> int:
+                    unrevealed_roles: set[str] | None = None, *, collapse=None, **book_kwargs) -> int:
     """Emit the live-injection book artifact (Agents/memory/tell_book.py consumes it via WW_TELL_BOOK):
     the built book's entries with their text, subject role, and subject-grain calibration, so the live
     side's only per-turn logic is the roles-alive filter. Build-time selection (subject concentration,
-    support floor, per-(role, channel) cap) happens here, in build_book. `unrevealed_roles` defaults to
-    every role in the table's rates (game start)."""
+    support floor, per-(role, channel) cap, and the optional same-behavior `collapse`) happens here, in
+    build_book. `unrevealed_roles` defaults to every role in the table's rates (game start)."""
     import json
 
     roles = unrevealed_roles
     if roles is None:
         roles = {r for t in table for r in (t.get("role_rates") or {})}
-    book = build_book(table, roles, **book_kwargs)
+    book = build_book(table, roles, collapse=collapse, text_of=text_of, **book_kwargs)
     entries = [{"tell_id": t["tell_id"], "channel": t["channel"],
                 "text": text_of.get(t["tell_id"], t["tell_id"]),
                 "subject_role": subject_role(t),

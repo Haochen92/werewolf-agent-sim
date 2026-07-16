@@ -110,6 +110,43 @@ def _default_embedder(texts: list[str]):
     return embed_texts(texts)
 
 
+def make_book_collapse(judge=None, embedder=None, *, prefilter_threshold: float = 0.80):
+    """View-layer same-behavior collapse for the injected book (build_book's `collapse` hook). The book
+    seats the top ~3 tells per (subject role, channel); the unwired merge/split audit's fragmentation
+    residual (§0) can put two-plus fragments of ONE behavior into those slots, so a role's manual repeats
+    itself and its effective slot count shrinks. This drops the redundant fragments so the freed slots
+    backfill with DISTINCT behaviors. It reuses the fold's OWN cascade — embedding prefilter (>= threshold)
+    then the extensional-equivalence judge — over the handful of book candidates, once per fold.
+
+    GUARDRAIL (structural, not a knob): candidates arrive sorted by subject_lift, so the first member of a
+    class is its highest-lift one and is kept; a later member is dropped ONLY when the judge rules it the
+    SAME behavior as an already-kept survivor. Diversity therefore never costs lift — every dropped tell is
+    lift-equivalent to a kept one by construction.
+
+    SYMPTOM FIX, not the cure. View-layer only: canon, ledger, and CREDIT are untouched — a dropped fragment
+    keeps its identity, stays scanned, and keeps paying credit; nothing is pooled. Pooling the fragments'
+    evidence into one accurate lift is the audit's canon merge (§0); this only stops one behavior taking
+    several book slots. Returns a `collapse(candidates, text_of)` callable."""
+    judge = judge or _default_judge()
+    embedder = embedder or _default_embedder
+
+    def collapse(candidates: list[dict], text_of) -> list[dict]:
+        if len(candidates) <= 1:
+            return list(candidates)
+        texts = [text_of.get(t["tell_id"], t["tell_id"]) for t in candidates]
+        vecs = embedder(texts)
+        kept: list[dict] = []
+        kept_idx: list[int] = []
+        for i, t in enumerate(candidates):   # candidates are lift-sorted: first seen of a class = survivor
+            if any(_cos(vecs[i], vecs[j]) >= prefilter_threshold and judge(texts[i], texts[j])
+                   for j in kept_idx):
+                continue                     # same behavior as a kept higher-lift survivor -> drop from book
+            kept.append(t)
+            kept_idx.append(i)
+        return kept
+    return collapse
+
+
 def _resolve_wordings(new_wordings: list[dict], canon: list[dict], judge=None, embedder=None,
                       fold_no: int = 0) -> tuple[dict, list[dict]]:
     """Resolve distinct new mined wordings against the same-channel canon: normalized exact-match
