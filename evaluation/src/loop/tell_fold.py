@@ -92,7 +92,10 @@ def _default_judge():
                            "transcript reader would count the same moments as instances of both.")
         reason: str = Field(description="One short sentence for the call.")
 
-    llm = get_llm_dedup().with_structured_output(SameTellVerdict)
+    # with_retry: the tick path runs in the driver with no game-engine retry above it — a single
+    # transient Vertex 429 here killed the 2026-07-16 run at gen 1 (fold judge, bare invoke).
+    llm = (get_llm_dedup().with_structured_output(SameTellVerdict)
+           .with_retry(stop_after_attempt=8, wait_exponential_jitter=True))
 
     def judge(new_text: str, canon_text: str) -> bool:
         v = llm.invoke(

@@ -172,7 +172,8 @@ def mine_games(games: list[dict], out_path: Path, version: str = "v4",
 
     templates = {ch: (PROMPTS_DIR / f"{version}_{ch}.txt").read_text()
                  for ch in ("discussion", "vote")}
-    llm = llm or get_llm_pro().with_structured_output(DayTells)
+    llm = llm or (get_llm_pro().with_structured_output(DayTells)
+                  .with_retry(stop_after_attempt=8, wait_exponential_jitter=True))  # tick path: no retry above (see tell_fold judge)
     tasks = [(rec, day, _game_days(rec), ch)
              for rec in games for day in _game_days(rec) for ch in templates]
     n_rows = 0
@@ -215,8 +216,9 @@ def _make_llm(cached_content: str | None = None, thinking: str = "low"):
     from Agents.llm_factory.backends import create_chat_model
 
     kwargs = {"cached_content": cached_content} if cached_content else {}
-    return create_chat_model(DETECTOR_MODEL, temperature=0.0,
-                             thinking_level=thinking, **kwargs).with_structured_output(PlayerDetections)
+    return (create_chat_model(DETECTOR_MODEL, temperature=0.0,
+                              thinking_level=thinking, **kwargs).with_structured_output(PlayerDetections)
+            .with_retry(stop_after_attempt=8, wait_exponential_jitter=True))  # tick path: no retry above (see tell_fold judge)
 
 
 def _create_prefix_cache(prefix: str) -> str | None:
