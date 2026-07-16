@@ -1,8 +1,8 @@
 # v7 compounding run — pre-registration (DRAFT, awaiting owner signature)
 
-> **Status: DRAFT** — authored by the agent 2026-07-13 while the owner recovers; unsigned.
+> **Status: SIGNED 2026-07-16** (owner, in-session; boxes ticked with §8 adopted as drafted — no modifications noted). Originally authored 2026-07-13.
 > Everything unmarked restates the plan of record (`compounding_measurement_plan.md` §R and the
-> read/tactic design record). Every `☐ [SIGN]` box is an owner decision — the draft proposes a
+> read/tactic design record). Every `☑ [SIGNED 2026-07-16]` box is an owner decision — the draft proposes a
 > default with its reason, and signing means adopting it. Nothing launches before every box is
 > ticked and this header says SIGNED with a date.
 
@@ -23,7 +23,7 @@ current budget, final attempt.
 - **Baseline arm**: same harness, memory OFF (the ambient base-rate arm credit already consumes).
 - Arm guard `--expect-factions` ON for every batch (the run-2 confound tripwire).
 
-☐ [SIGN] **Arms as stated** (any additional arm = new money; the design intends exactly these two).
+☑ [SIGNED 2026-07-16] **Arms as stated** (any additional arm = new money; the design intends exactly these two).
 
 ## 3. Primary endpoint (ONE, fixed now)
 
@@ -32,7 +32,7 @@ baseline — on identical boards/seeds, and compare the **town decision basket**
 proxy basket; |r|≈0.6 vote-basket family). Direction + magnitude reported with N; no other
 endpoint may be promoted to primary after data exists.
 
-☐ [SIGN] **Primary = town decision basket on the end-point A/B.**
+☑ [SIGNED 2026-07-16] **Primary = town decision basket on the end-point A/B.**
 
 Secondary (reported, never promoted): per-role basket splits; store-quality trajectory (SP-lineage
 lift, prune/evict census, lift-weighted composition — the $0 "does the store improve" battery);
@@ -49,7 +49,7 @@ reported with that caveat.
   tripwires (arm-guard failure, leak-check failure, epoch-fold failure) — a halted run reports as
   halted, never as a result.
 
-☐ [SIGN] **N = 4×10 + 2×10 and the no-peeking stopping rule.** (Shrink to 3 generations if you
+☑ [SIGNED 2026-07-16] **N = 4×10 + 2×10 and the no-peeking stopping rule.** (Shrink to 3 generations if you
 want more reserve; say so at signing.)
 
 ## 5. Injection policy — RULED (owner, 2026-07-14; no signature box)
@@ -86,8 +86,54 @@ experiment, i.e., the run ends).
 - Cross-arm comparisons only within this run's epoch; no comparison to any pre-epoch batch.
 - Any number from a halted or guard-tripped batch is quarantined, never pooled.
 
+## 8. 2026-07-16 pre-launch revision (agent-drafted; supersedes conflicting lines above at signing)
+
+**Owner decisions taken 2026-07-16 (recorded, not proposed):** town arm ONLY this run — the wolf/SK
+arm is deferred to a later self-contained run (own OFF baseline, own epoch; nothing here compares
+across runs). Budget reserve raised to $150; flash-lite-only unchanged.
+
+**Two items the signature must resolve (from §3/§4 as drafted):**
+
+- **End-point control.** §3 above says final store vs *baseline*; the plan of record's adopted design
+  (plan §R / ladder note) is final store vs the *gen-1 store* — the contrast that isolates
+  compounding from the static effect. Draft default for signing: **three conditions on shared
+  boards — final vs gen-1 (PRIMARY) vs memory-OFF (secondary: "does the tells+SP channel help at
+  all", a claim the obs-injection retirement makes new)** — at **20 boards per condition** (60
+  endpoint games). Note the old static-memory result rode observation injection and does not carry.
+- **Size.** Build 4 × 10 + 10 OFF (80 games ≈ $44–56 at the smoke-measured ~$0.50–0.56/ON-game) +
+  endpoint 60 ≈ **$77–98 total**, well inside $150.
+
+**Frozen-at-launch (re-stamp; the §6 2026-07-13 pin is superseded):**
+
+- **Embedding model: `gemini-embedding-2` @1536 dims, Vertex, ADC** (quota-forced 2026-07-16: the
+  new project caps `-001` at an unmodifiable 5 req/min; `-2`'s embedContent bucket is granted
+  50/min). Alias canary **re-pinned** on `-2` same day (the documented legitimate re-pin: intentional
+  model change; cold-start run owes no store rebuild). Absolute cosine knobs **percentile-remapped**
+  to `-2`'s scale (check: 80 obs + 96 tell texts, per-text embeds, pair counts verified): retrieval
+  `dedup_gate` 0.92→**0.87** (p96 preserved) · tell `PREFILTER_THRESHOLD` 0.80→**0.68** (p41
+  preserved; top-3 cap unchanged) · synthesis clustering 0.70→**0.65** (never-binds preserved).
+  Client workaround: a batch-collapse guard re-embeds per text when the installed langchain client
+  returns one vector per batch under `-2` (logged when it fires); the offline batch-dedup default
+  (legacy `-001` stores) is deliberately NOT remapped.
+- **Two latent wiring fixes from the smoke campaign** (each with a regression test): the tell fold's
+  default embedder now passes the shared store embedding model (first-ever live fold caught the
+  missing argument), and `measure.game_score` drops `read_excluded` verdicts from sum AND count
+  (mirroring credit_backfill — the two instruments stay on one de-luck semantics).
+- **Smoke gate: PASSED 2026-07-16** — smoke #8 (`batch_results/v7_tells_smoke8/`, cold start, 1 gen
+  × 2 games/arm, tells on, seed checklist 48/channel + v2 book): full tick end-to-end — games (arm
+  guard + leak tests green) → merge 33 obs → credit (cold zeros) → mine 43 / detect 131 → **fold 1
+  published checklist v1 (40 disc / 37 vote)** → book rebuilt (4 entries — the ledger-built book is
+  thin at 2 games; ramps with support at run shape) → consolidate → generation score printed →
+  loop_history written. Realized cost $1.01. Invariants all fail-loud and none fired.
+- Suite **694**; runs launch as **systemd user units** (session-tethered processes die with the
+  session — measured twice). **Git SHA at signing: `6ae7865`** (measure fix `38bb568` + embedding
+  bundle `6ae7865` on `feature-dimension-schema`).
+
+☑ [SIGNED 2026-07-16] **§8 as drafted** (endpoint = 3 conditions × 20 boards, final-vs-gen-1 primary; note any
+modification inline).
+
 ---
 
-**Owner signature**: ____________  **Date**: ____________
+**Owner signature**: SIGNED (owner, in-session)  **Date**: 2026-07-16
 (Sign by replacing this line with "SIGNED <date>" and ticking every ☐ above; note any modification
 inline next to its box.)
