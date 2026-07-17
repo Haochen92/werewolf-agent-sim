@@ -182,9 +182,21 @@ def check_reads_isolation(
          scanned as substrings, but only against OTHER players' prompts (the author's own strategy
          note legitimately echoes its own reads) and only when the why does not itself appear in
          ``public_text`` (the game's public channel + summaries — shared vocabulary can't be
-         attributed to a leak)."""
+         attributed to a leak). The prose pass also EXCLUDES the recipient's own-prose fields
+         (``previous_strategy``): text the recipient authored can independently converge on the
+         same phrasing of a public event as someone else's why — 2026-07-17, this exact case
+         (needle at the 40-char floor, "abstained during the serial killer lynch") false-halted
+         the v7 run. A match inside recipient-authored prose is convergence, not receipt."""
     leaks: list[str] = []
     blobs = [(entry, repr(entry.get("prompt_input", {}))) for entry in prompt_log]
+    # Recipient-authored-by-construction fields: excluded from the PROSE pass only (the structural
+    # pass still sees the full prompt_input — a rendered read OBJECT anywhere stays a leak).
+    _OWN_PROSE_FIELDS = ("previous_strategy",)
+    prose_blobs = [
+        (entry, repr({k: v for k, v in entry.get("prompt_input", {}).items()
+                      if k not in _OWN_PROSE_FIELDS}))
+        for entry in prompt_log
+    ]
 
     for entry, blob in blobs:
         for token in _READ_STRUCT_TOKENS:
@@ -205,7 +217,7 @@ def check_reads_isolation(
         ]
         if not needles:
             continue
-        for entry, blob in blobs:
+        for entry, blob in prose_blobs:
             if entry["player_id"] == author:
                 continue
             for needle in needles:

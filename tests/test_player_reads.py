@@ -290,3 +290,20 @@ def test_eval_private_context_captures_board_inputs():
     # Legacy payloads (pre-board) still snapshot cleanly with empty defaults.
     legacy = _build_eval_private_context({"player_id": "player_1"}, day=1)
     assert legacy.dead_roster == [] and legacy.cast_role_counts == {}
+
+
+def test_check_reads_isolation_recipient_own_strategy_convergence_exempt():
+    """Regression (2026-07-17 v7 run false-halt): a RECIPIENT's own strategy note independently
+    phrased a public event identically to another player's read why ("abstained during the serial
+    killer lynch", exactly the 40-char floor). Recipient-authored prose (previous_strategy) is
+    convergence, not receipt — excluded from the prose pass. The same needle in any OTHER field
+    still leaks, and a rendered read object in previous_strategy still trips the structural pass."""
+    needle = "abstained during the serial killer lynch"
+    convergent = _log({"previous_strategy": f"Focus scrutiny on the players who {needle}, as they"},
+                      player="player_4")
+    assert check_reads_isolation(convergent, _reads_of("player_9", needle)) == []
+    foreign = _log({"day_summaries": f"note: {needle}"}, player="player_4")
+    assert check_reads_isolation(foreign, _reads_of("player_9", needle))
+    rendered = _log({"previous_strategy": "[{'player': 'p9', 'suspected_role': 'wolf'}]"},
+                    player="player_4")
+    assert check_reads_isolation(rendered, _reads_of("player_9", needle))
