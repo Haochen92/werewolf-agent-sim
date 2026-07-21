@@ -83,7 +83,24 @@ def _majority_vote(day_res: dict) -> str | None:
     return max(vc, key=vc.get) if vc else None
 
 
-def _vote_credit(role: str, votee: str | None, roles: dict, majority: str | None = None) -> str:
+def _town_abstain_credit(day_res: dict | None) -> str:
+    """The "deadlock_negative" abstain rule for TOWN voters: an abstain is scored by what the room's day
+    actually resolved to. No-lynch day => NEGATIVE — the abstain fed a deadlock with a threat still
+    votable (a threat is alive by construction while the game runs), and the v7 endpoint forensics
+    showed 95% of ON-arm town abstains sat on exactly these days. Any lynch that landed => NEUTRAL:
+    abstaining from a mislynch is defensible (the 2% case), and abstaining while the room correctly
+    lynched a threat carries no realized harm. Missing resolution row => neutral (degrade, never guess).
+    This closes the opportunity-cost blind spot: under the legacy "neutral" rule an always-abstain SP
+    pins at utility 0.00 forever and prune can never see it."""
+    if day_res is None:
+        return "neutral"
+    if day_res.get("no_vote") or not day_res.get("voted_player"):
+        return "negative"
+    return "neutral"
+
+
+def _vote_credit(role: str, votee: str | None, roles: dict, majority: str | None = None, *,
+                 abstain_rule: str = "neutral", day_res: dict | None = None) -> str:
     """Faction-RELATIVE day-vote credit: 'did this vote advance the voter's own win condition?'
     Town wants threats lynched; the last-standing SK wants anyone but itself gone.
 
@@ -91,11 +108,19 @@ def _vote_credit(role: str, votee: str | None, roles: dict, majority: str | None
     majority" audit r=+0.20). Voting the room's plurality choice = concealment, and it is bussing-aware
     by construction: when the majority is taking down an ally, blending means voting the ally too (the
     correct cover play that the old 'ally=negative' rule wrongly punished); off-consensus voting draws
-    heat. `majority` None (no consensus, or called as a day-vote ENDPOINT) => the old target fallback."""
+    heat. `majority` None (no consensus, or called as a day-vote ENDPOINT) => the old target fallback.
+
+    `abstain_rule` selects the town-abstain grading (LoopConfig.abstain_credit): "neutral" = the frozen
+    legacy bucket (what measure.py and every pre-registered instrument keep using via the default);
+    "deadlock_negative" = _town_abstain_credit on `day_res` (that day's resolution row). Keyword-only so
+    no positional caller can drift onto the new rule. Deceiver abstains stay on their own semantics
+    (wolf blend / SK neutral) under either rule — the caution blind spot is town's."""
     if role == "wolf" and majority is not None:
         return "positive" if votee == majority else "negative"  # blend with the room (bussing-aware)
     o = score_vote(votee, roles)
     if o.is_abstain:
+        if abstain_rule == "deadlock_negative" and role in TOWN_VOTE_ROLES:
+            return _town_abstain_credit(day_res)
         return "neutral"  # abstain is its own bucket
     if role == "wolf":
         return "negative" if o.votee_role == "wolf" else "positive"  # no-consensus fallback (old rule)
@@ -196,10 +221,13 @@ class SPCredit:
         return self.lift * self.follow / (self.follow + SHRINK_K) if self.follow else 0.0
 
 
-def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
+def compute_base_rates(dumps_glob: str, *,
+                       abstain_rule: str = "neutral") -> dict[str, tuple[float, int]]:
     """Per (role/phase) channel: the mean creditable outcome of MEMORY-OFF decisions = the ambient
     'how this decision goes with no notes'. This is the free, cell-level stand-in for a per-turn
-    memory-on-vs-off replay (which would be paid). Returns channel -> (mean_value, n)."""
+    memory-on-vs-off replay (which would be paid). Returns channel -> (mean_value, n).
+    abstain_rule must match the ledger's (baseline coherence: the base is produced by the SAME grading
+    function as the counts it de-lucks) — credit_apply threads one value into both."""
     totals: dict[str, list[float]] = defaultdict(list)
     for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
@@ -211,6 +239,7 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
                 continue
             blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
             night_by_day = {nr.get("day"): nr for nr in g.get("night_resolutions", [])}
+            day_res_by_day = {dr.get("day"): dr for dr in g.get("day_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -220,16 +249,18 @@ def compute_base_rates(dumps_glob: str) -> dict[str, tuple[float, int]]:
                 ec = (env.get("output") or {}).get("eval_case")
                 if not ec or ec.get("memory_enabled"):  # base rate = memory-OFF only
                     continue
-                verdict = _decision_credit(ec, roles, blend_by_day, night_by_day)
+                verdict = _decision_credit(ec, roles, blend_by_day, night_by_day,
+                                           abstain_rule=abstain_rule, day_res_by_day=day_res_by_day)
                 if verdict in VERDICT_VALUE:  # read_excluded drops from the base too (same instrument)
                     totals[f"{ec['player_role']}/{ec['action_phase']}"].append(VERDICT_VALUE[verdict])
     return {ch: (sum(vs) / len(vs), len(vs)) for ch, vs in totals.items() if vs}
 
 
 def _iter_cases(dumps_glob: str):
-    """Yield (game_roles, blend_by_day, night_by_day, eval_case) for every memory-on agent-action case
-    with follow verdicts. blend_by_day = day -> room plurality vote (the wolf blend reference);
-    night_by_day = day -> that night's resolution row (the healer attack-join)."""
+    """Yield (game_roles, blend_by_day, night_by_day, day_res_by_day, eval_case) for every memory-on
+    agent-action case with follow verdicts. blend_by_day = day -> room plurality vote (the wolf blend
+    reference); night_by_day = day -> that night's resolution row (the healer attack-join);
+    day_res_by_day = day -> that day's full resolution row (the abstain-rule join)."""
     for dump in _expand_dumps(dumps_glob):
         for line in open(dump):
             if not line.strip():
@@ -240,6 +271,7 @@ def _iter_cases(dumps_glob: str):
                 continue
             blend_by_day = {dr.get("day"): _majority_vote(dr) for dr in g.get("day_resolutions", [])}
             night_by_day = {nr.get("day"): nr for nr in g.get("night_resolutions", [])}
+            day_res_by_day = {dr.get("day"): dr for dr in g.get("day_resolutions", [])}
             for cl in open(path):
                 if not cl.strip():
                     continue
@@ -248,20 +280,27 @@ def _iter_cases(dumps_glob: str):
                     continue
                 ec = (env.get("output") or {}).get("eval_case")
                 if ec and ec.get("memory_enabled") and ec.get("strategy_verdicts"):
-                    yield roles, blend_by_day, night_by_day, ec
+                    yield roles, blend_by_day, night_by_day, day_res_by_day, ec
 
 
 def _decision_credit(ec: dict, roles: dict, blend_by_day: dict | None = None,
-                     night_by_day: dict | None = None) -> str | None:
+                     night_by_day: dict | None = None, *,
+                     abstain_rule: str = "neutral",
+                     day_res_by_day: dict | None = None) -> str | None:
     """The de-lucked credit verdict for this decision's channel; None = not creditable this round;
     "read_excluded" = the read-partition dropped it (a negative reached through a stated-and-wrong
     threat-read — counted separately, never valued). blend_by_day: day -> room plurality vote (the wolf
     BLEND reference); night_by_day: day -> that night's resolution row (the healer attack-join). Either
-    None => the dependent channel degrades gracefully (wolf falls back to the target rule, healer skips)."""
+    None => the dependent channel degrades gracefully (wolf falls back to the target rule, healer skips).
+    abstain_rule/day_res_by_day (keyword-only, defaults = frozen legacy): the town-abstain grading and
+    the day -> day_resolutions row it needs — see _vote_credit. Callers that never pass them (measure.py,
+    the pre-registered instruments) are byte-identical to the pre-knob behavior."""
     phase, role = ec.get("action_phase"), ec.get("player_role")
     if phase == "day_vote" and ec.get("agent_vote"):
         majority = (blend_by_day or {}).get(ec.get("day"))
-        return _vote_credit(role, ec["agent_vote"].get("votee"), roles, majority)
+        return _vote_credit(role, ec["agent_vote"].get("votee"), roles, majority,
+                            abstain_rule=abstain_rule,
+                            day_res=(day_res_by_day or {}).get(ec.get("day")))
     if phase == "night_action" and ec.get("agent_night_action"):
         if role not in NIGHT_CREDIT_ROLES:
             return None
@@ -273,11 +312,13 @@ def _decision_credit(ec: dict, roles: dict, blend_by_day: dict | None = None,
     return None
 
 
-def build_ledger(dumps_glob: str, base_rates: dict[str, tuple[float, int]]) -> tuple[dict[str, SPCredit], Counter]:
+def build_ledger(dumps_glob: str, base_rates: dict[str, tuple[float, int]], *,
+                 abstain_rule: str = "neutral") -> tuple[dict[str, SPCredit], Counter]:
     ledger: dict[str, SPCredit] = defaultdict(SPCredit)
     skipped: Counter = Counter()
-    for roles, blend_by_day, night_by_day, ec in _iter_cases(dumps_glob):
-        verdict = _decision_credit(ec, roles, blend_by_day, night_by_day)
+    for roles, blend_by_day, night_by_day, day_res_by_day, ec in _iter_cases(dumps_glob):
+        verdict = _decision_credit(ec, roles, blend_by_day, night_by_day,
+                                   abstain_rule=abstain_rule, day_res_by_day=day_res_by_day)
         if verdict == "read_excluded":
             skipped[f"read_excluded/{ec.get('player_role')}/{ec.get('action_phase')}"] += 1
             continue

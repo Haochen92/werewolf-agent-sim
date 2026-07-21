@@ -333,7 +333,8 @@ def _grading_of(cell: str) -> str:
 
 def credit_apply(store_sp_path: str | Path, dumps_glob: str,
                  base_rates: dict | None = None, discussion: bool = True,
-                 off_window: str | None = None) -> dict:
+                 off_window: str | None = None, *,
+                 abstain_rule: str = "neutral") -> dict:
     """Recompute the de-luck ledger over `dumps_glob` and SET positive/neutral/negative/follow counts on
     matching SPs in `store_sp_path` (strategy_points.json). Returns stats incl. `credited_channels`
     ({channel: grading}) for the baseline-coherence invariant and `read_excluded` (the partition's drops).
@@ -343,14 +344,18 @@ def credit_apply(store_sp_path: str | Path, dumps_glob: str,
     dumps) supplies the SAME-INSTRUMENT OFF baseline for the discussion + concealment channels — without
     it those fall back to base 0 (the level-not-lift bug the driver's baseline-coherence invariant then
     catches). `discussion` additionally credits day_discussion SPs (endpoint + move grain + the
-    concealment floor for typed SPs)."""
+    concealment floor for typed SPs). `abstain_rule` (LoopConfig.abstain_credit, keyword-only) threads
+    ONE grading rule into both the ledger and the default base-rate computation — baseline coherence by
+    construction. NOTE: a caller passing frozen `base_rates` under "deadlock_negative" must have computed
+    them under the same rule."""
     store_sp_path = Path(store_sp_path)
     store = json.loads(store_sp_path.read_text())
     conceal_keys = frozenset(
         r["key"] for recs in store.get("namespaces", {}).values() for r in recs
         if r.get("value", {}).get("sp_type") == "concealment")
-    base_rates = dict(base_rates if base_rates is not None else compute_base_rates(dumps_glob))
-    ledger, det_skipped = build_ledger(dumps_glob, base_rates)
+    base_rates = dict(base_rates if base_rates is not None
+                      else compute_base_rates(dumps_glob, abstain_rule=abstain_rule))
+    ledger, det_skipped = build_ledger(dumps_glob, base_rates, abstain_rule=abstain_rule)
     skipped = Counter({k: n for k, n in det_skipped.items() if k.startswith("read_excluded/")})
     disc_credited = 0
     if discussion:
