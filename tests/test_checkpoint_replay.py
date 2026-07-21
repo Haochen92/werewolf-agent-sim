@@ -93,7 +93,7 @@ def _stub_retrieval_by_arm(monkeypatch, verdicts: dict[str, dict[str, bool]]):
     call so ordering + empty-arm injection can be asserted."""
     calls: list[tuple[str, str, int]] = []
 
-    def fake_retrieve(store, case, top_k, keep):
+    def fake_retrieve(store, case, top_k, keep, retrieval_types="both"):
         # a snapshot arm hands the decision a sentinel obs list carrying the arm label
         return [store], []  # store is the arm label string in these tests
 
@@ -249,10 +249,10 @@ def test_night_cases_scored_through_night_credit_in_sweep(monkeypatch):
     }
     current_arm: dict[str, str] = {}
 
-    def fake_retrieve(store, case, top_k, keep):
+    def fake_retrieve(store, case, top_k, keep, retrieval_types="both"):
         return [], []  # no memory needed; the arm is tracked via the wrapper below
 
-    def tracking_replay_all_arms(spec, arms, sts, top_k, keep):
+    def tracking_replay_all_arms(spec, arms, sts, top_k, keep, retrieval_types="both"):
         # record which arm each _replay_night call belongs to via a per-case shim
         results = {}
         for arm in arms:

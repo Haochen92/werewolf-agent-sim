@@ -389,26 +389,34 @@ def assert_no_leakage(specs: list[_CaseSpec], snapshots: list[_Snapshot]) -> Non
 
 
 def _retrieve_for_case(
-    store: Any, case: EvalCase, top_k: int, keep: int
+    store: Any, case: EvalCase, top_k: int, keep: int, retrieval_types: str = "both"
 ) -> tuple[list[Any], list[Any]]:
     """Live embedding search of the frozen query (``case.situations``) against one
-    snapshot store, pinned to the loop's production read config."""
-    observations = cap_per_situation(
-        retrieve_observations_for_agent(
-            store, case.player_role, case.action_phase, case.situations, top_k=top_k
-        ),
-        get_situation=lambda o: o.matched_situation,
-        get_score=lambda o: o.score or 0.0,
-        keep=keep,
-    )
-    strategy_points = cap_per_situation(
-        retrieve_strategy_points_for_agent(
-            store, case.player_role, case.action_phase, case.situations, top_k=top_k
-        ),
-        get_situation=lambda sp: sp.matched_situation,
-        get_score=lambda sp: sp.score or 0.0,
-        keep=keep,
-    )
+    snapshot store, pinned to the loop's production read config. ``retrieval_types``
+    mirrors run_batch's injection knob (RETRIEVAL_TYPES_CONFIGS names): the v7 loop runs
+    "strategy_points_only" (obs are synthesis substrate, never injected — store_curation
+    report §6.8), so a sweep matched to a v7 condition must pin it; "both" = the
+    v5/v6-era default this screen originally shipped with."""
+    observations: list[Any] = []
+    if retrieval_types != "strategy_points_only":
+        observations = cap_per_situation(
+            retrieve_observations_for_agent(
+                store, case.player_role, case.action_phase, case.situations, top_k=top_k
+            ),
+            get_situation=lambda o: o.matched_situation,
+            get_score=lambda o: o.score or 0.0,
+            keep=keep,
+        )
+    strategy_points: list[Any] = []
+    if retrieval_types != "observations_only":
+        strategy_points = cap_per_situation(
+            retrieve_strategy_points_for_agent(
+                store, case.player_role, case.action_phase, case.situations, top_k=top_k
+            ),
+            get_situation=lambda sp: sp.matched_situation,
+            get_score=lambda sp: sp.score or 0.0,
+            keep=keep,
+        )
     return observations, strategy_points
 
 
@@ -464,6 +472,7 @@ def _replay_case_all_arms(
     stores: dict[str, Any],
     top_k: int,
     keep: int,
+    retrieval_types: str = "both",
 ) -> dict[str, dict[str, Any] | None]:
     """Score ONE case across every arm back-to-back (case-major anti-drift). The
     empty arm injects [] (no retrieval); each snapshot arm re-retrieves from its store."""
@@ -473,7 +482,7 @@ def _replay_case_all_arms(
             observations, strategy_points = [], []
         else:
             observations, strategy_points = _retrieve_for_case(
-                stores[arm], spec.case, top_k, keep
+                stores[arm], spec.case, top_k, keep, retrieval_types
             )
         results[arm] = _decide_and_score(spec, observations, strategy_points)
     return results
@@ -486,6 +495,7 @@ def run_sweep(
     top_k: int = PROD_RETRIEVAL_TOP_K,
     keep: int = RETRIEVAL_KEEP_PER_SITUATION,
     max_workers: int = 6,
+    retrieval_types: str = "both",
 ) -> list[dict[str, dict[str, Any] | None]]:
     """Run the full case-major sweep. Cases run concurrently (I/O-bound), but each
     case's arms are scored together inside one worker, so drift stays common-mode
@@ -494,11 +504,14 @@ def run_sweep(
     every arm → paired)."""
     if max_workers <= 1:
         return [
-            _replay_case_all_arms(spec, arm_order, stores, top_k, keep) for spec in specs
+            _replay_case_all_arms(spec, arm_order, stores, top_k, keep, retrieval_types)
+            for spec in specs
         ]
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         futures = [
-            ex.submit(_replay_case_all_arms, spec, arm_order, stores, top_k, keep)
+            ex.submit(
+                _replay_case_all_arms, spec, arm_order, stores, top_k, keep, retrieval_types
+            )
             for spec in specs
         ]
         return [f.result() for f in futures]
@@ -615,6 +628,7 @@ def _manifest(
     top_k: int,
     keep: int,
     factions: str,
+    retrieval_types: str = "both",
 ) -> dict[str, Any]:
     """Provenance stamp: git SHA, the pinned retrieval config, the case-set hash, and
     the snapshot source paths — the pointer back to what produced this readout."""
@@ -629,6 +643,7 @@ def _manifest(
             "pinned_to": "loop production read path (raw, non-wide)",
             "top_k": top_k,
             "keep_per_situation": keep,
+            "retrieval_types": retrieval_types,
             "rerank": False,
             "filter": False,
             "dimension_gating": False,
@@ -698,6 +713,7 @@ def run_checkpoint_replay(
     keep: int = RETRIEVAL_KEEP_PER_SITUATION,
     max_workers: int = 6,
     seed: int = 0,
+    retrieval_types: str = "both",
 ) -> dict[str, Any]:
     """Full sweep: select the exam, load snapshots, guard against leakage, replay
     case-major, summarize, and write the JSON + markdown artifacts. Makes real LLM /
@@ -715,10 +731,11 @@ def run_checkpoint_replay(
         f"({', '.join(arm_order)})",
         flush=True,
     )
-    per_case = run_sweep(specs, arm_order, stores, top_k, keep, max_workers)
+    per_case = run_sweep(specs, arm_order, stores, top_k, keep, max_workers, retrieval_types)
     summary = summarize(per_case, arm_order)
     result = {
-        "manifest": _manifest(cases_path, specs, snapshots, top_k, keep, factions),
+        "manifest": _manifest(cases_path, specs, snapshots, top_k, keep, factions,
+                              retrieval_types),
         "summary": summary,
         "per_case": per_case,
     }
@@ -774,6 +791,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-k", type=int, default=PROD_RETRIEVAL_TOP_K)
     parser.add_argument("--max-workers", type=int, default=6)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--retrieval-types", default="both",
+                        choices=["both", "strategy_points_only", "observations_only"],
+                        help="Injection mode per arm (run_batch's knob): pin "
+                             "strategy_points_only to match a v7 SP-only condition.")
     return parser.parse_args()
 
 
@@ -790,6 +811,7 @@ def main() -> None:
         top_k=args.top_k,
         max_workers=args.max_workers,
         seed=args.seed,
+        retrieval_types=args.retrieval_types,
     )
 
 
