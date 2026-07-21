@@ -21,11 +21,14 @@ dependencies = [
     "matplotlib (>=3.10.9,<4.0.0)",
     "langchain-google-vertexai (>=3.2.3,<4.0.0)",
     "sentence-transformers (>=5.5.1,<6.0.0)",
+    "psycopg[binary,pool]==3.3.4",
+    "langgraph-checkpoint-postgres==3.1.0",
 ]
 
 [project.scripts]
 werewolf-game = "Agents.main:main"
 memory-batch-dedup = "Agents.memory.batch_deduplication:main"
+memory-tick = "Agents.memory.consolidation.tick:main"
 eval-build-dataset = "evaluation.src.data.builders.agent_decision:main"
 eval-summary = "evaluation.src.cli_runner.regen_replay.both.situation_summary_pairwise:main"
 eval-summary-rubric = "evaluation.src.cli_runner.regen_replay.both.situation_summary_rubric:main"
