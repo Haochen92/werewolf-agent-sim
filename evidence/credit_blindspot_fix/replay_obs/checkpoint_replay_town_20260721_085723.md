@@ -1,0 +1,21 @@
+# Checkpoint replay — compounding readout
+
+- cases: `batch_results/v7_endpoint_ab/endpoint_on.jsonl` (factions=town, N=100)
+- git: `a010dc688cb6242c61520e1959ecdd336bb8b635` (dirty)
+- retrieval: loop production read path (raw, non-wide) (top_k=5, keep=3, rerank=off)
+- case-set hash: `b95957cd85cbee4b`
+
+## Curve (per-arm, identical case set — both verdict-mapping readouts)
+
+accuracy = positive-rate (the McNemar correctness convention: night neutral/
+negative count as not-correct); mean value = raw −1/0/+1 verdict mean
+(VERDICT_VALUE convention), which keeps friendly-fire regressions visible.
+
+| arm | N | accuracy | mean value (−1..+1) |
+| --- | --- | --- | --- |
+| empty | 100 | 0.31 | 0.14 |
+| obs_v7 | 100 | 0.31 | 0.14 |
+
+## SECONDARY — static store (empty vs gen-1, paired McNemar)
+
+- gen1 helped=1, hurt=1 → p=1.0

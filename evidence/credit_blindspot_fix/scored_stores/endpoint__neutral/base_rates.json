@@ -1,0 +1,82 @@
+{
+  "wolf/night_action": [
+    0.6518987341772152,
+    316
+  ],
+  "healer/night_action": [
+    0.34210526315789475,
+    76
+  ],
+  "serial_killer/night_action": [
+    0.7472527472527473,
+    91
+  ],
+  "vigilante/night_action": [
+    0.13253012048192772,
+    83
+  ],
+  "investigator/night_action": [
+    0.6888888888888889,
+    45
+  ],
+  "vigilante/day_vote": [
+    0.136986301369863,
+    73
+  ],
+  "investigator/day_vote": [
+    0.7333333333333333,
+    45
+  ],
+  "villager/day_vote": [
+    0.14361702127659576,
+    188
+  ],
+  "serial_killer/day_vote": [
+    0.6626506024096386,
+    83
+  ],
+  "wolf/day_vote": [
+    0.16666666666666666,
+    132
+  ],
+  "healer/day_vote": [
+    0.23333333333333334,
+    60
+  ],
+  "investigator/day_discussion": [
+    0.13043478260869565,
+    184
+  ],
+  "wolf/day_discussion": [
+    0.05698005698005698,
+    351
+  ],
+  "vigilante/day_discussion": [
+    0.14173228346456693,
+    127
+  ],
+  "serial_killer/day_discussion": [
+    0.028846153846153848,
+    208
+  ],
+  "villager/day_discussion": [
+    -0.06097560975609756,
+    328
+  ],
+  "healer/day_discussion": [
+    0.036036036036036036,
+    111
+  ],
+  "conceal/wolf/day_discussion": [
+    0.047619047619047616,
+    105
+  ],
+  "conceal/serial_killer/day_discussion": [
+    0.22727272727272727,
+    66
+  ],
+  "conversion/investigator": [
+    0.38461538461538464,
+    26
+  ]
+}

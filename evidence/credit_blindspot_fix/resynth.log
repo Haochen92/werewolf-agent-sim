@@ -1,0 +1,24 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+sp_synth_vigilante_night_action primary attempt 1 failed: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+{
+ "prune_evict": {
+  "pruned": 1,
+  "evicted": 0,
+  "kept": 142,
+  "spared": 5
+ },
+ "obs_evict": {},
+ "synth": {
+  "added": 131,
+  "cells_synthed": 5,
+  "with_track_record": 4,
+  "cells_capped": 6
+ },
+ "sp_dedup": {
+  "ran": true,
+  "namespaces": 17
+ }
+}
+SPs: 168 -> 142

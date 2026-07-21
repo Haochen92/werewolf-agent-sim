@@ -119,6 +119,7 @@ The dimension-schema rebuild (Phase B) and the v7 compounding-loop iteration.
 | [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/discussion_tagger/](evaluation/discussion_tagger/)) |
 | [store_curation](store_curation/report.md) | Jul | The mechanism record for how the three memory stores (observations, strategy points, tells) grow, stay bounded, and improve across games; review basis for the pre-run ownership walkthrough |
 | [credit](credit/report.md) | Jul | The credit layer: how a decision becomes a learning signal (SP ledger, tell ledger, read/tactic redesign) |
+| [credit_blindspot_fix](credit_blindspot_fix/experiment_log.md) | Jul 21 | Post-endpoint fix pair for the credit blind spot (contextual abstain rule + find→lynch conversion channel), validated on owned data ($0 re-score + replay screen); step-3 rerun NOT authorized |
 | [execution_plan](execution_plan/compounding_measurement_plan.md) | Jul 4 | Forward-looking plan for the compounding question; PLANNED, not executed — Phase 0 gates all paid runs |
 
 ## Training

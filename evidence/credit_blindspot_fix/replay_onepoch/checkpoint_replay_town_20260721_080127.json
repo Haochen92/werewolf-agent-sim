@@ -1,0 +1,2295 @@
+{
+  "manifest": {
+    "generated_at": "2026-07-21T08:01:27",
+    "git_commit": "a010dc688cb6242c61520e1959ecdd336bb8b635",
+    "git_dirty": true,
+    "cases_batch": "batch_results/v7_endpoint_ab/endpoint_on.jsonl",
+    "factions": "town",
+    "case_set_hash": "b95957cd85cbee4b",
+    "n_cases": 100,
+    "retrieval_config": {
+      "pinned_to": "loop production read path (raw, non-wide)",
+      "top_k": 5,
+      "keep_per_situation": 3,
+      "retrieval_types": "strategy_points_only",
+      "rerank": false,
+      "filter": false,
+      "dimension_gating": false
+    },
+    "snapshots": [
+      {
+        "label": "full_store",
+        "path": "evidence/credit_blindspot_fix/replay_arms/full_store",
+        "n_source_games": 0
+      },
+      {
+        "label": "legacy_pruned",
+        "path": "evidence/credit_blindspot_fix/replay_arms/legacy_pruned",
+        "n_source_games": 0
+      },
+      {
+        "label": "fixed_pruned",
+        "path": "evidence/credit_blindspot_fix/replay_arms/fixed_pruned",
+        "n_source_games": 0
+      },
+      {
+        "label": "fixed_resynth",
+        "path": "evidence/credit_blindspot_fix/replay_arms/fixed_resynth",
+        "n_source_games": 0
+      }
+    ]
+  },
+  "summary": {
+    "n_cases": 100,
+    "arm_order": [
+      "empty",
+      "full_store",
+      "legacy_pruned",
+      "fixed_pruned",
+      "fixed_resynth"
+    ],
+    "curve": {
+      "empty": {
+        "n": 100,
+        "accuracy": 0.31,
+        "mean_value": 0.13
+      },
+      "full_store": {
+        "n": 100,
+        "accuracy": 0.27,
+        "mean_value": 0.04
+      },
+      "legacy_pruned": {
+        "n": 100,
+        "accuracy": 0.32,
+        "mean_value": 0.12
+      },
+      "fixed_pruned": {
+        "n": 100,
+        "accuracy": 0.33,
+        "mean_value": 0.14
+      },
+      "fixed_resynth": {
+        "n": 100,
+        "accuracy": 0.31,
+        "mean_value": 0.1
+      }
+    },
+    "primary_gen_final_vs_gen1": {
+      "before": "full_store",
+      "after": "fixed_resynth",
+      "helped": 4,
+      "hurt": 0,
+      "mcnemar_p": 0.125
+    },
+    "secondary_empty_vs_gen1": {
+      "before": "empty",
+      "after": "full_store",
+      "helped": 1,
+      "hurt": 5,
+      "mcnemar_p": 0.2188
+    }
+  },
+  "per_case": [
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": -1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": -1.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": -1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": -1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": true,
+        "value": 1.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": true,
+        "value": 1.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_pruned": {
+        "correct": true,
+        "value": 1.0
+      },
+      "fixed_resynth": {
+        "correct": true,
+        "value": 1.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    },
+    {
+      "empty": {
+        "correct": false,
+        "value": 0.0
+      },
+      "full_store": {
+        "correct": false,
+        "value": 0.0
+      },
+      "legacy_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_pruned": {
+        "correct": false,
+        "value": 0.0
+      },
+      "fixed_resynth": {
+        "correct": false,
+        "value": 0.0
+      }
+    }
+  ]
+}
