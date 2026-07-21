@@ -21,7 +21,7 @@ rules, and every death path announces the dead player's role (``DeathRecord``), 
 cast minus the revealed dead is exactly what remains — and the clocks need only COUNTS, never
 identities. That is why the live memory-query fill states them as known board facts
 (``Agents.memory.retrieval.situation_agent``) and why the eval-side truth
-(``evaluation.src.loop.decision_scoring.query_criticality``) computes the same arithmetic from
+(``Agents.memory.consolidation.decision_scoring.query_criticality``) computes the same arithmetic from
 the true role map: the two must agree wherever the census exists.
 """
 
