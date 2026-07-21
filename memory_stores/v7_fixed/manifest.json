@@ -1,0 +1,39 @@
+{
+  "store_id": "v7_fixed",
+  "created": "2026-07-21",
+  "runtime_fingerprint": {
+    "git_sha": "ed138728343f7b799826872ceeb64f51b0635b81",
+    "branch": "feature-dimension-schema"
+  },
+  "contents": {
+    "strategy_points.json": {
+      "count": 142,
+      "cells": 17,
+      "source": "evidence/credit_blindspot_fix/scored_stores/endpoint__deadlock_negative/pruned_strategy_points.json",
+      "derivation": "v7 endpoint-run ON store, re-credited under the FIXED rule (abstain_credit=deadlock_negative + conversion channel) against the endpoint corpus, then pruned. Identical bytes to the validated fixed_pruned replay arm (evidence/credit_blindspot_fix/replay_arms/fixed_pruned)."
+    },
+    "tell_book.json": {
+      "count": 33,
+      "source": "batch_results/v7_endpoint_ab/tell_book_final.json",
+      "serving": "set WW_TELL_BOOK to this file's path"
+    },
+    "base_rates.json": {
+      "source": "evidence/credit_blindspot_fix/scored_stores/endpoint__deadlock_negative/base_rates.json",
+      "grading_rule": "abstain_credit=deadlock_negative (baseline coherence: base rates and ledger graded under the same rule)"
+    },
+    "observations.json": {
+      "count": 0,
+      "note": "intentionally empty: ship config is strategy_points_only injection; the v7-epoch observations were measured harmless-but-worthless in SP-only replay (experiment_log §④d) and are 34% caution-flavored (SP-era contamination), so they are not shipped."
+    }
+  },
+  "ship_config": {
+    "memory_config": "town_only",
+    "retrieval_types": "strategy_points_only",
+    "credit_rule": "FIXED, hard-coded in Agents/memory (deadlock_negative abstain + conversion channel); no legacy-credit config exists in production"
+  },
+  "claims": "This store ships as a research showcase. NO mode or surface claims memory improves agent play; the v7 pre-registered endpoint was negative (evidence/credit_blindspot_fix/experiment_log.md §⑥ closure, 2026-07-21).",
+  "validation": {
+    "instrument": "evidence/credit_blindspot_fix/step1_validation.md (abstain SP 0.00→−0.83, pruned; good SPs protected; false-penalty ≈0)",
+    "on_epoch_replay": "evidence/credit_blindspot_fix/experiment_log.md §④b — fixed_pruned recovers the harm fully on the 100-case endpoint sweep (+0.14 vs full_store +0.04, empty +0.13)"
+  }
+}

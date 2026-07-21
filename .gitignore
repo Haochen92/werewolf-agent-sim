@@ -48,7 +48,10 @@ batch_results/
 
 # Memory store snapshots — regenerable from games/seeding; never source of truth.
 # Versioned dirs (v5_*, v6_*, _ab_*, _checkpoints/) hold observations/strategy_points JSON.
-memory_stores/
+# EXCEPTION: v7_fixed is the promoted PRODUCTION ship artifact (142 fixed-credit SPs + tell book
+# + base rates + provenance manifest) — tracked so the deployable store travels with the code.
+memory_stores/*
+!memory_stores/v7_fixed/
 
 # Model weights live under /models/ (download from Modal volume instead).
 # Single rule survives experiment-folder reorganizations.
