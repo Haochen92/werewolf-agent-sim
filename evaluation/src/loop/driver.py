@@ -30,6 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from evaluation.src.data import batch_layout
+from evaluation.src.loop.conversion_credit import conversion_apply
 from evaluation.src.loop.credit_backfill import compute_base_rates
 from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import consolidate
@@ -365,14 +366,15 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             off_window = None
             if cfg.off_baseline:
                 off_window = " ".join(expand_window(run_dir, gens, "off"))
-                base_rates = compute_base_rates(off_window)
+                base_rates = compute_base_rates(off_window, abstain_rule=cfg.abstain_credit)
                 assert_base_rates(base_rates, off_ran=True)   # empty base_rates => silent halo
             # OPTION A (decision 2026-07-05): pass the OFF window so credit_apply can score the SAME
             # instrument on the OFF arm (endpoint floor + concealment heat) — the same-instrument base
             # that makes discussion credit a LIFT, not a level. Free since the tagger mode's retirement
             # (2026-07-13): every discussion instrument is deterministic.
             cstats = credit_apply(sp_path, window, base_rates=base_rates,
-                                  discussion=cfg.discussion_credit, off_window=off_window)
+                                  discussion=cfg.discussion_credit, off_window=off_window,
+                                  abstain_rule=cfg.abstain_credit)
             follows = assert_credit_engaged(win_on, cstats.get("ledger_keys", 0))  # dead-credit guard
             disc_follows = assert_discussion_credit_engaged(  # discussion analog (build_ledger is blind to it)
                 win_on, cstats.get("disc_credited", 0), enabled=cfg.discussion_credit)
@@ -382,6 +384,11 @@ def run_loop(run_dir: str | Path, cfg: LoopConfig, *, base_store: str | None = "
             cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)  # did credit ENGAGE?
             print(f"  credit: {cstats} window_follows={follows} disc_follows={disc_follows}\n"
                   f"  credit_dist: {cdist}", flush=True)
+            if cfg.conversion_credit:  # fix-2 channel: after credit_apply (it read-modify-writes the
+                cvstats = conversion_apply(  # base_rates.json sidecar credit_apply just wrote)
+                    sp_path, window, off_window=off_window, window_days=cfg.conversion_window_days)
+                cstats = {**cstats, "conversion": cvstats}
+                print(f"  conversion: {cvstats}", flush=True)
         tstats = {}
         if cfg.tells:
             tstats = _tell_tick(run_dir, gen, on_jsonl, cfg)

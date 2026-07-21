@@ -46,6 +46,25 @@ class LoopConfig:
 
     # (a) credit
     credit: bool = True
+    abstain_credit: str = "neutral"        # town-abstain grading in the credit LEDGER (fix 1 of the v7
+    #   endpoint blind-spot pair; evidence/credit_blindspot_fix/). "neutral" = frozen legacy bucket —
+    #   abstain never moves an SP's utility, which is how the endpoint's always-abstain SPs pinned at
+    #   0.00 and survived prune. "deadlock_negative" = an abstain on a day that resolved to NO LYNCH
+    #   scores negative (the opportunity-cost/deadlock case, 95% of ON-arm abstains in the endpoint);
+    #   abstaining while a lynch landed stays neutral (abstaining from a mislynch is defensible).
+    #   LEDGER-ONLY by construction: measure.py calls _decision_credit without the keyword, so the
+    #   pre-registered measurement proxy is frozen at "neutral" regardless of this knob.
+    conversion_credit: bool = False        # fix 2: the find→claim→lynch CONVERSION endpoint
+    #   (conversion_credit.py). Deterministic: an investigator find (night target whose true role is a
+    #   threat) either converts (target lynched within conversion_window_days) or doesn't; every SP the
+    #   finder RETRIEVED during the open window inherits the tally (retrieval-based on purpose —
+    #   concealment SPs are never "followed", which is exactly why the old ledger couldn't see them:
+    #   "maintain silence" retrieved 179x / follow=0 in the endpoint store). When True, consolidate's
+    #   prune gains the conversion term (negative conversion lift at enough tallies ⇒ prunable).
+    conversion_window_days: int = 2        # a night-d find must convert by day d+1..d+window (night-d
+    #   results are visible from day d+1; beyond ~2 days the board has churned past the find)
+    conversion_min_n: int = 5              # min conversion tallies before the term can prune (noise floor,
+    #   same spirit as prune_min_follow; an oft-retrieved SP accrues ~1 tally per open find-window)
     window_generations: int = 6            # rolling de-luck window (generations). At N=5 the binding
     #   concern is credit DENSITY not recency: W=6 pools ~30 games/tick so SPs clear the follow>=8 prune
     #   threshold (W=4 -> ~20 games -> median ~3 follows -> prune barely fires -> a flat result is

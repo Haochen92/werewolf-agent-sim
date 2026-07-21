@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from evaluation.src.loop.config import LoopConfig
+from evaluation.src.loop.conversion_credit import CONVERSION_CHANNEL, conversion_lift
 from evaluation.src.loop.credit import base_for, sp_lift
 
 
@@ -76,6 +77,16 @@ def prune_and_evict(sp_namespaces: dict, base_rates: dict, cfg: LoopConfig) -> d
             if cfg.prune and lift is not None and lift < cfg.prune_tau and follow >= cfg.prune_min_follow:
                 pruned += 1
                 continue
+            # CONVERSION term (blind-spot fix 2, behind cfg.conversion_credit): an SP whose presence in
+            # investigator find-windows tracks failed conversions is prunable even at follow==0 — the
+            # concealment class the follow ledger structurally can't reach. Sits AFTER the proven
+            # exemption on purpose: a vote-proven SP is never deleted by the diffuse channel alone.
+            if cfg.conversion_credit:
+                clift = conversion_lift(v, base_for(base_rates, CONVERSION_CHANNEL))
+                conv_n = v.get("conversion_pos_count", 0) + v.get("conversion_neg_count", 0)
+                if clift is not None and clift < cfg.prune_tau and conv_n >= cfg.conversion_min_n:
+                    pruned += 1
+                    continue
             if cfg.evict and follow == 0 and retrieved >= cfg.evict_min_retrieved:
                 if _evict_ok(v, cfg):
                     evicted += 1
