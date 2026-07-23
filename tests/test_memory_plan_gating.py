@@ -298,12 +298,13 @@ def test_partition_flag_off_leaves_order_unchanged():
 # tiering-off runs indistinguishable in the artifacts — the whole point of the embedded-config stamp.
 
 def test_recorded_game_config_carries_sp_tiering_default():
-    from Agents.tracing import DEFAULT_SP_PROVEN_TIERING, build_game_config
+    from Agents.config import DEFAULT_SP_PROVEN_TIERING, RunConfig, build_runnable_config
 
-    recorded = build_game_config()["configurable"]
+    recorded = build_runnable_config(RunConfig())["configurable"]
     assert recorded["sp_proven_tiering"] is DEFAULT_SP_PROVEN_TIERING is True
-    # False is a valid, recordable off-arm (the None-check, not `or`, keeps it from snapping to True).
-    assert build_game_config(sp_proven_tiering=False)["configurable"]["sp_proven_tiering"] is False
+    # False is a valid, recordable off-arm (a bool field keeps it from snapping to the True default).
+    conf = build_runnable_config(RunConfig(sp_proven_tiering=False))["configurable"]
+    assert conf["sp_proven_tiering"] is False
 
 
 def test_retrieval_metadata_carries_resolved_sp_tiering():
@@ -407,8 +408,9 @@ def test_plan_carries_exploration_slot():
 
 
 def test_recorded_game_config_carries_exploration_slot_default():
-    from Agents.tracing import DEFAULT_SP_EXPLORATION_SLOT, build_game_config
+    from Agents.config import DEFAULT_SP_EXPLORATION_SLOT, RunConfig, build_runnable_config
 
-    recorded = build_game_config()["configurable"]
+    recorded = build_runnable_config(RunConfig())["configurable"]
     assert recorded["sp_exploration_slot"] is DEFAULT_SP_EXPLORATION_SLOT is True
-    assert build_game_config(sp_exploration_slot=False)["configurable"]["sp_exploration_slot"] is False
+    conf = build_runnable_config(RunConfig(sp_exploration_slot=False))["configurable"]
+    assert conf["sp_exploration_slot"] is False

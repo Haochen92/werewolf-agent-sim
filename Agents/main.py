@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from Agents.turn import prompt_log, reads_log
 from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
-from Agents.game_config import GameConfig
+from Agents.config import GameConfig, RunConfig, build_runnable_config
 from Agents.graphs.parent import parent_graph_compiled
 from Agents.memory import store
 from Agents.memory.persistence import (
@@ -15,10 +15,11 @@ from Agents.memory.persistence import (
     seed_memory_from_config,
 )
 from Agents.observability import EvalCaseSink
+from Agents.run_fingerprint import runtime_fingerprint
 from Agents.schemas.metrics import GameOutcome
 from Agents.tracing import (
     Metrics,
-    build_game_config,
+    create_langfuse_handler,
     flush,
     langfuse,
 )
@@ -48,15 +49,23 @@ def run_game(
     """Run one game: seed the store from config, invoke the compiled parent graph under a Langfuse
     trace, compute + push metrics, and return the GameOutcome (result + metrics + eval records)."""
     seed_memory_from_config(memory_persistence_config, target_store=store)
-    config = build_game_config(
-        memory_config,
-        session_id,
-        game_config,
-        memory_persistence_config,
-        reranking_config,
-        filtering_config,
-        retrieval_types_config,
+    # Compose the run settings, then adapt to a RunnableConfig — injecting observability (the
+    # Langfuse handler) + the runtime fingerprint here at the entry point, so the config layer stays
+    # framework/tracing-free. None options fall back to defaults via RunConfig's before-validator.
+    run = RunConfig(
+        game=game_config,
+        memory_config=memory_config,
+        reranking_config=reranking_config,
+        filtering_config=filtering_config,
+        retrieval_types_config=retrieval_types_config,
+        memory_persistence=memory_persistence_config,
         game_id=game_id,
+        session_id=session_id,
+    )
+    config = build_runnable_config(
+        run,
+        callbacks=[create_langfuse_handler()],
+        metadata={"runtime_fingerprint": runtime_fingerprint()},
     )
     game_id = config["configurable"]["game_id"]
     normalized_game_config = config["configurable"]["game_config"]

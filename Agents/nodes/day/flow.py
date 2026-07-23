@@ -262,7 +262,7 @@ def summarize_day_discussion(
         {"player": m.player, "round": m.seq, "message": m.message}
         for m in current_day_messages
     ]
-    # game_id lives in config.configurable (pinned by build_game_config), not in
+    # game_id lives in config.configurable (pinned by build_runnable_config), not in
     # graph state — reading state here left the span name + case with an empty
     # game_id slot for every pre-2026-06-11 game (join those via trace_id).
     configurable = config.get("configurable", {}) if config else {}

@@ -6,8 +6,9 @@ seed, and the run identity. It is application settings ONLY: no LangGraph object
 handlers, no tracing. Conversion to a LangGraph `RunnableConfig` (and attaching observability) is
 `Agents.config.langgraph`'s job — this keeps settings serializable and framework-free.
 
-The pipeline-arm default dicts live here (their only consumer is `RunConfig`); they are re-exported
-from `Agents.tracing` for backward compat with existing call sites and tests.
+The pipeline-arm default dicts live here (their only consumer is `RunConfig`) and are re-exported
+from `Agents.config`. Loose optional-arg callers (run_game) construct `RunConfig(**opts)` directly:
+a before-validator drops None options so field defaults apply — there is no separate builder.
 """
 from __future__ import annotations
 
@@ -84,41 +85,14 @@ class RunConfig(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _backfill_game_id(cls, data: Any) -> Any:
-        """A missing OR empty game_id is minted a fresh uuid — `""` and `None` both mean "give me a
-        seed anchor". (A plain default_factory only fires on an omitted field, not an explicit "".)"""
-        if isinstance(data, dict) and not data.get("game_id"):
-            data = {**data, "game_id": str(uuid4())}
+    def _coalesce_options(cls, data: Any) -> Any:
+        """Support loose optional-arg entry points (run_game passes each unset option as None): a
+        None means "use the default", so drop it and let the field default apply. Then backfill an
+        empty OR absent game_id with a fresh uuid — `""` and `None` both mean "mint me a seed
+        anchor" (a plain default_factory only fires on an omitted field, not an explicit ""). An
+        explicit False (the SP off-arm) is not None, so it is preserved, not dropped."""
+        if isinstance(data, dict):
+            data = {k: v for k, v in data.items() if v is not None}
+            if not data.get("game_id"):
+                data["game_id"] = str(uuid4())
         return data
-
-    @classmethod
-    def from_options(
-        cls,
-        *,
-        game_config: Any = None,
-        memory_config: dict | None = None,
-        reranking_config: dict | None = None,
-        filtering_config: dict | None = None,
-        retrieval_types_config: dict | None = None,
-        memory_persistence_config: Any = None,
-        sp_proven_tiering: bool | None = None,
-        sp_exploration_slot: bool | None = None,
-        game_id: str | None = None,
-        session_id: str | None = None,
-    ) -> "RunConfig":
-        """Build a RunConfig from loose optional options (the legacy build_game_config surface):
-        a None value means "use the default", so it is dropped and the field default applies.
-        An explicit False on the SP flags is a real off-arm choice and is preserved."""
-        provided = {
-            "game": game_config,
-            "memory_config": memory_config,
-            "reranking_config": reranking_config,
-            "filtering_config": filtering_config,
-            "retrieval_types_config": retrieval_types_config,
-            "memory_persistence": memory_persistence_config,
-            "sp_proven_tiering": sp_proven_tiering,
-            "sp_exploration_slot": sp_exploration_slot,
-            "game_id": game_id,
-            "session_id": session_id,
-        }
-        return cls(**{k: v for k, v in provided.items() if v is not None})
