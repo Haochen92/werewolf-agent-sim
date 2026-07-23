@@ -38,7 +38,7 @@ from Agents.state import (
     VillagerDayState,
     WolfDayState,
 )
-from Agents.turn.decision import _run_agent
+from Agents.turn.agent_player import _run_agent
 from Agents.turn.adoption import _process_strategy_adoption
 from Agents.turn.eval import _build_eval_private_context
 

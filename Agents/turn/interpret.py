@@ -1,35 +1,25 @@
-"""The agent decision runner — the single chokepoint every agent decision routes through.
+"""Decision -> legal state delta — the interpretation BOTH player seats share.
 
-``_run_agent`` turns "it's this agent's turn to decide X" into a legal, game-ready action: it
-constrains the answer space, GENERATEs a decision (one LLM call, retried), and INTERPRETs it into a
-validated state delta, falling back to a random legal move so the game never stalls. The
-generate/interpret seam is where a human seat branches in — ``interrupt()`` for the decision instead
-of ``_generate``, then the same ``_interpret`` path.
+An agent's LLM output and a human's interrupt response are shaped into the same decision object, and
+``_interpret`` turns either into a validated state delta (a day/wolf message, a vote, a night target),
+applying the pass / novelty-gate / target-validation rules uniformly. It is split out from the
+agent-generation path (``agent_player.py``) and the human path (``human_turn.py``) so both import ONE
+interpretation — that shared path is exactly what keeps agent and human seats behaviourally identical
+downstream of the decision.
 
-This file holds only the input->output decision path. The turn's instrumentation — the leak-test
-prompt/reads logs and the reads-completeness monitor — lives in ``eval.py``; ``_run_agent`` calls
-``_log_prompt`` / ``_record_reads`` as side channels that never touch the returned delta.
+``_extract_side_outputs`` / ``_attach_side_outputs`` shape the strategy note (real state) and the
+private eval carriers (``_``-prefixed, popped in pipeline.py before graph state) onto that delta.
 """
+
 from logging import getLogger
 from typing import Any
-import random
 
-from dotenv import load_dotenv
-from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
-from Agents.llm_factory import get_llm
-from Agents.prompts.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
 from Agents.schemas.game_events import DayChannel, DayVote, WolfChannel
-from Agents.turn.eval import _log_prompt, _record_reads
+from Agents.turn.action_space import _validate_target
 from Agents.turn.novelty_agent import judge_proactive_novelty
-from Agents.turn.action_space import (
-    _valid_targets_for_action,
-    _validate_target,
-    _output_schema_with_legal_targets,
-)
 
-load_dotenv()
 logger = getLogger(__name__)
 
 # _interpret sentinel: the decision was rejected (invalid target) — re-generate.
@@ -40,61 +30,6 @@ NIGHT_TARGET_KEYS = (
     "serial_killer_target",
     "vigilante_target",
 )
-
-
-def _run_agent(
-    payload: dict[str, Any],
-    prompt_template: ChatPromptTemplate,
-    output_schema: type[BaseModel],
-    output_key: str,
-    max_retries: int = 1,
-) -> dict[str, Any] | None:
-    """Run one agent decision: constrain -> generate -> interpret, retrying on an LLM error or a
-    rejected (invalid-target) decision, with a random legal fallback if every attempt fails.
-
-    A human seat branches in here: ``interrupt()`` for the decision instead of ``_generate``, then
-    the same ``_interpret`` path. Insert before the chain is built — the human gets no LLM prompt.
-    """
-    valid_targets = _valid_targets_for_action(payload, output_key)
-    player_id = payload.get("player_id", "")
-
-    # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
-    schema = _output_schema_with_legal_targets(output_schema, output_key, valid_targets)
-    chain = prompt_template | get_llm().with_structured_output(schema)
-    prompt_input = _build_agent_prompt_input(payload)
-    _log_prompt(payload, output_key, prompt_input)
-
-    for _ in range(max_retries + 1):
-        result = _generate(chain, prompt_input, output_key, player_id)
-        if result is None:
-            continue
-        side_outputs = _extract_side_outputs(result)
-        _record_reads(side_outputs["reads"], payload, output_key, output_schema)
-        outcome = _interpret(result, side_outputs, output_key, payload, valid_targets)
-        if outcome is not _RETRY:
-            return outcome
-
-    # Exhausted: random legal fallback so the game progresses (day discussion may skip -> None).
-    logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")
-    if output_key == "day_votes":
-        return {"day_votes": [DayVote(voter=player_id, votee=random.choice(valid_targets))]}
-    if output_key in NIGHT_TARGET_KEYS:
-        return {output_key: random.choice(valid_targets)}
-    if output_key == "wolf_channel":
-        return {"wolf_channel": [WolfChannel(
-            day=payload.get("current_day", 1), round=payload.get("current_round", 1),
-            wolf=player_id, message="...", vote=random.choice(valid_targets),
-        )]}
-    return None
-
-
-def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
-    """One structured LLM call. Returns the parsed decision, or None on an API/parse error."""
-    try:
-        return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
-    except Exception as e:
-        logger.warning(f"LLM call failed for {player_id}: {e}")
-        return None
 
 
 def _interpret(result: BaseModel, side_outputs: dict[str, Any], output_key: str,
@@ -122,13 +57,15 @@ def _interpret(result: BaseModel, side_outputs: dict[str, Any], output_key: str,
 
         # Proactive novelty gate: an echo/restatement proactive turn becomes a hidden pass. Reactive
         # turns are never gated; the day's first opener_floor real utterances bypass the gate so every
-        # day opens substantively before echo-gating engages.
+        # day opens substantively before echo-gating engages. A human seat is never gated — we don't
+        # silence a person's message as an "echo".
         is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
         today_real = sum(
             1 for m in payload.get("day_channel", [])
             if m.day == current_day and m.player != "game_master" and not getattr(m, "passed", False)
         )
         if (is_proactive and today_real >= payload.get("opener_floor", 0)
+                and not payload.get("human_player")
                 and not judge_proactive_novelty(message, payload, current_day)):
             # Gated silence: substantive enough to write but judged an echo. gated_candidate is kept
             # for a selectivity audit and MUST stay out of every agent prompt (DayChannel leak note).

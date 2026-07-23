@@ -29,7 +29,7 @@ from Agents.schemas.output import (
     PlayerRead,
 )
 from Agents.schemas.roles import cast_role_counts
-from Agents.turn import decision as decision_mod
+from Agents.turn import agent_player as agent_mod
 from Agents.turn.action_space import _output_schema_with_legal_targets
 from Agents.turn.eval import _build_eval_private_context, _reads_coverage
 from tests.leak_test import check_reads_isolation
@@ -186,9 +186,9 @@ def _healer_result(read_players):
 def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
     payload = _healer_payload()
     result = _healer_result([f"player_{i}" for i in range(2, 8)])  # 6 of 8 -> 0.75
-    monkeypatch.setattr(decision_mod, "get_llm", lambda: _FakeLLM(result))
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
-        out = decision_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
     assert out["healer_target"] == "player_3"
     assert "reads under-covered" in caplog.text
     assert "player_8" in caplog.text and "player_9" in caplog.text
@@ -197,9 +197,9 @@ def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
 def test_tripwire_silent_on_full_coverage(monkeypatch, caplog):
     payload = _healer_payload()
     result = _healer_result(payload["surviving_players"])  # all 8
-    monkeypatch.setattr(decision_mod, "get_llm", lambda: _FakeLLM(result))
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
-        decision_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+        agent_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
     assert "reads under-covered" not in caplog.text
 
 
