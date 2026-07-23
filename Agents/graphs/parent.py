@@ -51,7 +51,7 @@ from Agents.config import (
     discussion_recursion_limit,
     game_config_from_runnable,
 )
-from Agents.memory import store
+from Agents.memory import store, checkpointer
 from Agents.schemas.roles import cast_role_counts
 from Agents.tracing import GraphContext
 
@@ -364,4 +364,4 @@ def build_parent_graph():
     return parent_graph
 
 parent_graph = build_parent_graph()
-parent_graph_compiled = parent_graph.compile(store=store)
+parent_graph_compiled = parent_graph.compile(store=store, checkpointer=checkpointer)
