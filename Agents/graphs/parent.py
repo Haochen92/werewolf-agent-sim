@@ -46,21 +46,14 @@ from Agents.state import (
     VigilanteNightGraph,
     WolfNightGraph,
 )
-from Agents.game_config import game_config_from_runnable
+from Agents.config import (
+    child_runnable_config,
+    discussion_recursion_limit,
+    game_config_from_runnable,
+)
 from Agents.memory import store
 from Agents.schemas.roles import cast_role_counts
 from Agents.tracing import GraphContext
-
-
-def _child_config(config: RunnableConfig) -> RunnableConfig:
-    """Inherit the parent config but guarantee a recursion_limit for the subgraph.
-
-    Subgraphs self-loop (the day scheduler, the wolf-night rounds), so they need their own
-    budget; callers may override the default (day_phase sets a cap-derived limit).
-    """
-    child_config = dict(config) if config else {}
-    child_config.setdefault("recursion_limit", 100)
-    return child_config
 
 
 def day_phase(
@@ -76,7 +69,7 @@ def day_phase(
     day *added* — channel/summary entries sliced past what we sent — plus votes, strategy
     updates, and adoptions.
     """
-    num_survivors = len(state["surviving_wolves"]) + len(state["surviving_villagers"])
+    num_survivors = len(state["surviving_wolves"]) + len(state["surviving_villagers"]) 
     game_config = game_config_from_runnable(config)
     payload: DayGraphState = {
         "agent_strategies": state.get("agent_strategies", {}),
@@ -99,7 +92,9 @@ def day_phase(
     result = day_graph_compiled.invoke(
         payload,
         # Bound the SCHEDULE self-loop: derive from the cap so graceful terminate fires first.
-        config={**_child_config(config), "recursion_limit": game_config.discussion_recursion_limit(num_survivors)},
+        config=child_runnable_config(
+            config, recursion_limit=discussion_recursion_limit(game_config, num_survivors)
+        ),
         context=runtime.context,
     )
 
@@ -133,7 +128,7 @@ def wolf_night_phase(
     }
     result = wolf_night_graph_compiled.invoke(
         payload,
-        config=_child_config(config),
+        config=child_runnable_config(config),
         context=runtime.context,
     )
 
@@ -180,7 +175,7 @@ def healer_night_phase(
     }
     result = healer_graph_compiled.invoke(
         payload,
-        config=_child_config(config),
+        config=child_runnable_config(config),
         context=runtime.context,
     )
     updates = {"healer_target": result.get("healer_target")}
@@ -222,7 +217,7 @@ def investigator_night_phase(
     }
     result = investigator_graph_compiled.invoke(
         payload,
-        config=_child_config(config),
+        config=child_runnable_config(config),
         context=runtime.context,
     )
 
@@ -264,7 +259,7 @@ def serial_killer_night_phase(
     }
     result = serial_killer_graph_compiled.invoke(
         payload,
-        config=_child_config(config),
+        config=child_runnable_config(config),
         context=runtime.context,
     )
 
@@ -311,7 +306,7 @@ def vigilante_night_phase(
     }
     result = vigilante_graph_compiled.invoke(
         payload,
-        config=_child_config(config),
+        config=child_runnable_config(config),
         context=runtime.context,
     )
 
