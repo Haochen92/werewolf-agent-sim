@@ -70,7 +70,16 @@ def child_runnable_config(
 
 
 def game_config_from_runnable(config: dict[str, Any] | None) -> GameConfig:
-    """Read the GameConfig back out of a RunnableConfig's `configurable` bag (stored as a dict)."""
+    """Read the game rules back out of the runtime config, INSIDE a graph node.
+
+    This is a per-node READ accessor, not part of config assembly — the inverse of
+    build_runnable_config's one-time write. build_runnable_config dumps the GameConfig into
+    `configurable["game_config"]` as a plain dict at the root; every node that needs a rule (voting
+    logic, the discussion scheduler) receives only the serialized `config` LangGraph threads down,
+    and calls this to recover a typed GameConfig from that dict. It lives beside the builders because
+    it is the same RunnableConfig<->domain adaptation concern, but it runs at node execution time,
+    not at graph-build time.
+    """
     configurable = config.get("configurable", {}) if config else {}
     return normalize_game_config(configurable.get("game_config"))
 
