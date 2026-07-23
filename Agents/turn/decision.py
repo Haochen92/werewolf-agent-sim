@@ -26,7 +26,7 @@ from Agents.turn.novelty_agent import judge_proactive_novelty
 from Agents.turn.action_space import (
     _valid_targets_for_action,
     _validate_target,
-    _with_dynamic_target_enum,
+    _output_schema_with_legal_targets,
 )
 
 load_dotenv()
@@ -59,7 +59,7 @@ def _run_agent(
     player_id = payload.get("player_id", "")
 
     # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
-    schema = _with_dynamic_target_enum(output_schema, output_key, valid_targets)
+    schema = _output_schema_with_legal_targets(output_schema, output_key, valid_targets)
     chain = prompt_template | get_llm().with_structured_output(schema)
     prompt_input = _build_agent_prompt_input(payload)
     _log_prompt(payload, output_key, prompt_input)

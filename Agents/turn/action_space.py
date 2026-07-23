@@ -4,7 +4,7 @@ Two halves of one concern — keep the LLM inside the game's rules:
   - ``_valid_targets_for_action`` / ``_validate_target`` compute who is a legal
     target for an ``output_key`` (surviving players/villagers, plus the
     ``abstain`` and ``hold_fire`` sentinels) and check a chosen target.
-  - ``_with_dynamic_target_enum`` rewrites the output schema so the target field
+  - ``_output_schema_with_legal_targets`` rewrites the output schema so the target field
     is a ``Literal[valid_targets]`` the model structurally cannot violate.
 """
 
@@ -57,7 +57,7 @@ _TARGET_FIELD_BY_OUTPUT_KEY = {
 }
 
 
-def _with_dynamic_target_enum(
+def _output_schema_with_legal_targets(
     output_schema: type[BaseModel],
     output_key: str,
     valid_targets: list[str],

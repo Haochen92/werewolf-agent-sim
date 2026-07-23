@@ -27,7 +27,7 @@ from Agents.schemas.evaluation import EvalCase
 from Agents.llm_factory import get_llm
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.turn import _run_agent
-from Agents.turn.action_space import _valid_targets_for_action, _with_dynamic_target_enum
+from Agents.turn.action_space import _valid_targets_for_action, _output_schema_with_legal_targets
 from evaluation.src.replay.turn_action import action_spec_for
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
 from evaluation.src.replay.decision_screen.schemas import DayVoteOutputStructuredApplicability
@@ -115,7 +115,7 @@ def _replay_vote_structured(
     payload["allow_abstain"] = allow_abstain
     spec = action_spec_for(case)
     valid_targets = _valid_targets_for_action(payload, spec.output_key)
-    schema = _with_dynamic_target_enum(
+    schema = _output_schema_with_legal_targets(
         DayVoteOutputStructuredApplicability, spec.output_key, valid_targets
     )
     chain = spec.prompt_template | get_llm().with_structured_output(schema)

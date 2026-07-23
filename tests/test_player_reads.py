@@ -30,7 +30,7 @@ from Agents.schemas.output import (
 )
 from Agents.schemas.roles import cast_role_counts
 from Agents.turn import decision as decision_mod
-from Agents.turn.action_space import _with_dynamic_target_enum
+from Agents.turn.action_space import _output_schema_with_legal_targets
 from Agents.turn.eval import _build_eval_private_context, _reads_coverage
 from tests.leak_test import check_reads_isolation
 
@@ -73,7 +73,7 @@ def test_eval_case_loads_without_reads():
 # --- (3) dynamic target-enum rewrite keeps reads (required) ------------------
 
 def test_dynamic_target_enum_preserves_required_reads():
-    schema = _with_dynamic_target_enum(
+    schema = _output_schema_with_legal_targets(
         DayVoteOutput, "day_votes", ["player_1", "player_2", "abstain"]
     )
     assert "reads" in schema.model_fields
