@@ -1,9 +1,14 @@
-"""The decision-LLM runner — the single chokepoint every agent decision call routes through.
+"""The agent decision runner — the single chokepoint every agent decision routes through.
 
-``_run_agent`` builds the prompt, enforces the dynamic target enum, invokes the model (with retry and
-pass handling), and returns the structured decision. ``prompt_log`` is the leak-test capture point:
-every prompt sent to the model is appended here so the boundary tests can assert no private state
-leaked into an agent's context.
+``_run_agent`` turns "it's this agent's turn to decide X" into a legal, game-ready action: it
+constrains the answer space, GENERATEs a decision (one LLM call, retried), and INTERPRETs it into a
+validated state delta, falling back to a random legal move so the game never stalls. The
+generate/interpret seam is where a human seat branches in — ``interrupt()`` for the decision instead
+of ``_generate``, then the same ``_interpret`` path.
+
+This file holds only the input->output decision path. The turn's instrumentation — the leak-test
+prompt/reads logs and the reads-completeness monitor — lives in ``eval.py``; ``_run_agent`` calls
+``_log_prompt`` / ``_record_reads`` as side channels that never touch the returned delta.
 """
 from logging import getLogger
 from typing import Any
@@ -14,14 +19,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 from Agents.llm_factory import get_llm
-
-
 from Agents.prompts.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
-from Agents.schemas.game_events import (
-    DayChannel,
-    DayVote,
-    WolfChannel,
-)
+from Agents.schemas.game_events import DayChannel, DayVote, WolfChannel
+from Agents.turn.eval import _log_prompt, _record_reads
 from Agents.turn.novelty_agent import judge_proactive_novelty
 from Agents.turn.action_space import (
     _valid_targets_for_action,
@@ -31,31 +31,15 @@ from Agents.turn.action_space import (
 
 load_dotenv()
 logger = getLogger(__name__)
-prompt_log: list[dict] = []
-# Capture point for the reads leak check (see tests/leak_test.py): every emitted read is recorded
-# here so check_reads_isolation can scan every OTHER agent's prompt_input for its why-text. Cleared
-# at game start alongside prompt_log (Agents/main.py).
-reads_log: list[dict] = []
 
-
-def _reads_coverage(reads: list, payload: dict[str, Any]) -> tuple[float, list[str]]:
-    """Fraction of the enumerated read targets the agent actually covered, plus the missing players.
-
-    Expected targets are enumerated EXACTLY as build_agent_prompt_input builds {read_targets}
-    (surviving_players, or the wolf-day wolves+villagers shape, minus self), so the tripwire measures
-    against what the prompt asked for. Pure/side-effect-free so the completeness policy is unit-testable
-    on its own; the caller only MONITORS on it (T4: enumerate + warn, never retry)."""
-    expected = payload.get("surviving_players") or (
-        payload.get("surviving_wolves", []) + payload.get("surviving_villagers", [])
-    )
-    self_id = payload.get("player_id")
-    expected = [p for p in expected if p != self_id]
-    if not expected:
-        return 1.0, []
-    covered = {getattr(r, "player", None) for r in reads}
-    missing = [p for p in expected if p not in covered]
-    coverage = (len(expected) - len(missing)) / len(expected)
-    return coverage, missing
+# _interpret sentinel: the decision was rejected (invalid target) — re-generate.
+_RETRY = object()
+NIGHT_TARGET_KEYS = (
+    "healer_target",
+    "investigator_target",
+    "serial_killer_target",
+    "vigilante_target",
+)
 
 
 def _run_agent(
@@ -63,292 +47,163 @@ def _run_agent(
     prompt_template: ChatPromptTemplate,
     output_schema: type[BaseModel],
     output_key: str,
-    max_retries: int = 1
+    max_retries: int = 1,
 ) -> dict[str, Any] | None:
+    """Run one agent decision: constrain -> generate -> interpret, retrying on an LLM error or a
+    rejected (invalid-target) decision, with a random legal fallback if every attempt fails.
+
+    A human seat branches in here: ``interrupt()`` for the decision instead of ``_generate``, then
+    the same ``_interpret`` path. Insert before the chain is built — the human gets no LLM prompt.
+    """
     valid_targets = _valid_targets_for_action(payload, output_key)
-    effective_output_schema = _with_dynamic_target_enum(
-        output_schema,
-        output_key,
-        valid_targets,
-    )
-    chain = prompt_template | get_llm().with_structured_output(effective_output_schema)
-    prompt_input = _build_agent_prompt_input(payload)
-
     player_id = payload.get("player_id", "")
-    prompt_log.append(
-        {
-            "player_id": player_id,
-            "player_role": payload.get("player_role", ""),
-            "output_key": output_key,
-            "day": payload.get("current_day", 1),
-            "round": payload.get("current_round", 1),
-            "prompt_input": prompt_input.copy(),
-        }
-    )
 
-    for attempt in range(max_retries + 1):
-        try:
-            result = chain.invoke(
-                prompt_input,
-                config={"run_name": f"{output_key}_{player_id}"},
-            )
-        except Exception as e:
-            logger.warning(f"LLM call failed for {player_id}: {e}")
-            if attempt < max_retries:
-                continue
-            break
+    # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
+    schema = _with_dynamic_target_enum(output_schema, output_key, valid_targets)
+    chain = prompt_template | get_llm().with_structured_output(schema)
+    prompt_input = _build_agent_prompt_input(payload)
+    _log_prompt(payload, output_key, prompt_input)
 
-        # Extract strategy note + the two per-item verdict lists (strategy points / observations) if
-        # present on the result. The _strategy_verdicts and _memory_applicability carriers ride the
-        # curated output — _run_agent drops everything off `result` that isn't explicitly carried, and
-        # actions.py reads these carriers into the EvalCase (and adoption.py applies the SP verdicts).
-        strategy_update = getattr(result, "updated_strategy", None)
-        strategy_verdicts = getattr(result, "strategy_verdicts", []) or []
-        memory_verdicts = getattr(result, "memory_applicability", []) or []
-        # Per-player reads (T1c). The _reads carrier rides the curated output the same way
-        # _strategy_verdicts does; pipeline.py POPs it so it never reaches graph state (reads are
-        # private), and reads_log records it for the leak check.
-        reads = getattr(result, "reads", []) or []
-        # T4 completeness tripwire: enumerate the read targets and MONITOR coverage — never RETRY on
-        # it. A ~7% soft denominator (occasional under-coverage) was accepted in exchange for zero
-        # added latency (plan T4). Only fires when the schema carries reads (the in-scope roles).
-        if reads or "reads" in output_schema.model_fields:
-            coverage, missing = _reads_coverage(reads, payload)
-            if coverage < 0.85:
-                logger.warning(
-                    "reads under-covered: player=%s phase=%s coverage=%.0f%% missing=%s",
-                    player_id, output_key, coverage * 100, missing,
-                )
-        if reads:
-            reads_log.append({
-                "player_id": player_id,
-                "day": payload.get("current_day", 1),
-                "output_key": output_key,
-                "reads": [r.model_dump() for r in reads],
-            })
-
-        if output_key == "day_channel":
-            current_day = payload.get("current_day", 1)
-            firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
-            seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
-
-            # Reactive picks must answer: a reactive pass wouldn't discharge the obligation,
-            # so the scheduler would just re-pick them. Honor pass_turn only when not reactive.
-            is_reactive = firing_reason is not None and firing_reason.tier == "reactive"
-            pass_turn = getattr(result, "pass_turn", False) and not is_reactive
-
-            if pass_turn:
-                # Proactive decline -> hidden pass marker (the stateless scheduler reads it).
-                # gated=False: this is a VOLUNTARY pass, not a novelty-gate silence.
-                entry = DayChannel(
-                    day=current_day, seq=seq, player=player_id,
-                    message="", passed=True, firing_reason=firing_reason, gated=False,
-                )
-            else:
-                message = result.message.strip() if result.message else None
-                if not message or message.lower() == "null":
-                    output = {}
-                    if strategy_update:
-                        output["agent_strategies"] = {player_id: strategy_update}
-                    if strategy_verdicts:
-                        output["_strategy_verdicts"] = strategy_verdicts
-                    if memory_verdicts:
-                        output["_memory_applicability"] = memory_verdicts
-                    if reads:
-                        output["_reads"] = reads
-                    return output if output else None
-                # Proactive novelty gate: a low-novelty (echo/restatement) proactive turn is
-                # converted to a hidden pass. Reactive turns are never gated (accountability),
-                # and the day's first `opener_floor` real utterances bypass the gate so every
-                # day gets a substantive opening before echo-gating engages.
-                is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
-                today_real = sum(
-                    1 for m in payload.get("day_channel", [])
-                    if m.day == current_day and m.player != "game_master" and not getattr(m, "passed", False)
-                )
-                past_opener_floor = today_real >= payload.get("opener_floor", 0)
-                if (is_proactive and past_opener_floor
-                        and not judge_proactive_novelty(message, payload, current_day)):
-                    # Novelty-gate SILENCE: the candidate was substantive-enough to write but
-                    # judged an echo/restatement. gated=True + the discarded text is persisted for
-                    # a future gate-selectivity audit — and MUST stay out of every agent prompt
-                    # (see DayChannel.gated_candidate leak-boundary note).
-                    entry = DayChannel(
-                        day=current_day, seq=seq, player=player_id,
-                        message="", passed=True, firing_reason=firing_reason,
-                        gated=True, gated_candidate=message,
-                    )
-                else:
-                    entry = DayChannel(
-                        day=current_day, seq=seq, player=player_id,
-                        message=message,
-                        addressed_targets=getattr(result, "addressed_targets", []),
-                        firing_reason=firing_reason,
-                    )
-
-            output = {"day_channel": [entry]}
-            if strategy_update:
-                output["agent_strategies"] = {player_id: strategy_update}
-            if strategy_verdicts:
-                output["_strategy_verdicts"] = strategy_verdicts
-            if memory_verdicts:
-                output["_memory_applicability"] = memory_verdicts
-            if reads:
-                output["_reads"] = reads
-            return output
-
-        if output_key == "day_votes":
-            validated = _validate_target(
-                result.vote_target,
-                valid_targets,
-                player_id,
-            )
-            if validated:
-                output = {"day_votes": [DayVote(voter=player_id, votee=validated)]}
-                if strategy_update:
-                    output["agent_strategies"] = {player_id: strategy_update}
-                if strategy_verdicts:
-                    output["_strategy_verdicts"] = strategy_verdicts
-                if memory_verdicts:
-                    output["_memory_applicability"] = memory_verdicts
-                if reads:
-                    output["_reads"] = reads
-                return output
-            logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
+    for _ in range(max_retries + 1):
+        result = _generate(chain, prompt_input, output_key, player_id)
+        if result is None:
             continue
+        side_outputs = _extract_side_outputs(result)
+        _record_reads(side_outputs["reads"], payload, output_key, output_schema)
+        outcome = _interpret(result, side_outputs, output_key, payload, valid_targets)
+        if outcome is not _RETRY:
+            return outcome
 
-        if output_key == "wolf_channel":
-            validated = _validate_target(
-                result.vote_target,
-                valid_targets,
-                player_id,
-            )
-            if validated:
-                output = {
-                    "wolf_channel": [
-                        WolfChannel(
-                            day=payload.get("current_day", 1),
-                            round=payload.get("current_round", 1),
-                            wolf=player_id,
-                            message=result.message,
-                            vote=validated,
-                        )
-                    ]
-                }
-                if strategy_update:
-                    output["agent_strategies"] = {player_id: strategy_update}
-                if strategy_verdicts:
-                    output["_strategy_verdicts"] = strategy_verdicts
-                if memory_verdicts:
-                    output["_memory_applicability"] = memory_verdicts
-                return output
-            logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
-            continue
-
-        if output_key == "healer_target":
-            validated = _validate_target(
-                result.healer_target,
-                valid_targets,
-                player_id,
-            )
-            if validated:
-                output = {"healer_target": validated}
-                if strategy_update:
-                    output["updated_strategy"] = strategy_update
-                if strategy_verdicts:
-                    output["_strategy_verdicts"] = strategy_verdicts
-                if memory_verdicts:
-                    output["_memory_applicability"] = memory_verdicts
-                if reads:
-                    output["_reads"] = reads
-                return output
-            logger.warning(f"Healer targeted invalid player: {result.healer_target}")
-            continue
-
-        if output_key == "investigator_target":
-            validated = _validate_target(
-                result.investigator_target,
-                valid_targets,
-                player_id,
-            )
-            if validated:
-                output = {"investigator_target": validated}
-                if strategy_update:
-                    output["updated_strategy"] = strategy_update
-                if strategy_verdicts:
-                    output["_strategy_verdicts"] = strategy_verdicts
-                if memory_verdicts:
-                    output["_memory_applicability"] = memory_verdicts
-                if reads:
-                    output["_reads"] = reads
-                return output
-            logger.warning(f"Investigator targeted invalid player: {result.investigator_target}")
-            continue
-
-        if output_key == "serial_killer_target":
-            validated = _validate_target(
-                result.serial_killer_target,
-                valid_targets,
-                player_id,
-            )
-            if validated:
-                output = {"serial_killer_target": validated}
-                if strategy_update:
-                    output["updated_strategy"] = strategy_update
-                if strategy_verdicts:
-                    output["_strategy_verdicts"] = strategy_verdicts
-                if memory_verdicts:
-                    output["_memory_applicability"] = memory_verdicts
-                if reads:
-                    output["_reads"] = reads
-                return output
-            logger.warning(f"Serial killer targeted invalid player: {result.serial_killer_target}")
-            continue
-
-        if output_key == "vigilante_target":
-            # "hold_fire" is a valid sentinel target (the vigilante banks the bullet).
-            validated = _validate_target(
-                result.vigilante_target,
-                valid_targets,
-                player_id,
-            )
-            if validated:
-                output = {"vigilante_target": validated}
-                if strategy_update:
-                    output["updated_strategy"] = strategy_update
-                if strategy_verdicts:
-                    output["_strategy_verdicts"] = strategy_verdicts
-                if memory_verdicts:
-                    output["_memory_applicability"] = memory_verdicts
-                if reads:
-                    output["_reads"] = reads
-                return output
-            logger.warning(f"Vigilante targeted invalid player: {result.vigilante_target}")
-            continue
-
-    # All retries exhausted — random fallback
-    logger.error(f"{player_id} failed all retries, using random fallback")
+    # Exhausted: random legal fallback so the game progresses (day discussion may skip -> None).
+    logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")
     if output_key == "day_votes":
-        fallback = random.choice(valid_targets)
-        return {"day_votes": [DayVote(voter=player_id, votee=fallback)]}
-    if output_key in (
-        "healer_target",
-        "investigator_target",
-        "serial_killer_target",
-        "vigilante_target",
-    ):
-        fallback = random.choice(valid_targets)
-        return {output_key: fallback}
+        return {"day_votes": [DayVote(voter=player_id, votee=random.choice(valid_targets))]}
+    if output_key in NIGHT_TARGET_KEYS:
+        return {output_key: random.choice(valid_targets)}
     if output_key == "wolf_channel":
-        fallback = random.choice(valid_targets)
         return {"wolf_channel": [WolfChannel(
-            day=payload.get("current_day", 1),
-            round=payload.get("current_round", 1),
-            wolf=player_id,
-            message="...",
-            vote=fallback,
+            day=payload.get("current_day", 1), round=payload.get("current_round", 1),
+            wolf=player_id, message="...", vote=random.choice(valid_targets),
         )]}
+    return None
+
+
+def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
+    """One structured LLM call. Returns the parsed decision, or None on an API/parse error."""
+    try:
+        return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
+    except Exception as e:
+        logger.warning(f"LLM call failed for {player_id}: {e}")
+        return None
+
+
+def _interpret(result: BaseModel, side_outputs: dict[str, Any], output_key: str,
+               payload: dict[str, Any], valid_targets: list[str]):
+    """A decision -> a legal state delta. Returns the delta (dict), None (valid but no delta — a
+    null-message day turn), or _RETRY (invalid target — re-generate)."""
+    player_id = payload.get("player_id", "")
+
+    if output_key == "day_channel":
+        current_day = payload.get("current_day", 1)
+        firing_reason = payload.get("firing_reason")  # scheduler trace; rides the Send
+        seq = sum(1 for m in payload.get("day_channel", []) if m.day == current_day)
+
+        # Reactive picks must answer (a pass wouldn't discharge the obligation) — honor a pass only
+        # when not reactive.
+        is_reactive = firing_reason is not None and firing_reason.tier == "reactive"
+        if getattr(result, "pass_turn", False) and not is_reactive:
+            entry = DayChannel(day=current_day, seq=seq, player=player_id,
+                               message="", passed=True, firing_reason=firing_reason, gated=False)
+            return _attach_side_outputs({"day_channel": [entry]}, side_outputs, player_id, strategy_as_map=True)
+
+        message = result.message.strip() if result.message else None
+        if not message or message.lower() == "null":
+            return _attach_side_outputs({}, side_outputs, player_id, strategy_as_map=True) or None
+
+        # Proactive novelty gate: an echo/restatement proactive turn becomes a hidden pass. Reactive
+        # turns are never gated; the day's first opener_floor real utterances bypass the gate so every
+        # day opens substantively before echo-gating engages.
+        is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
+        today_real = sum(
+            1 for m in payload.get("day_channel", [])
+            if m.day == current_day and m.player != "game_master" and not getattr(m, "passed", False)
+        )
+        if (is_proactive and today_real >= payload.get("opener_floor", 0)
+                and not judge_proactive_novelty(message, payload, current_day)):
+            # Gated silence: substantive enough to write but judged an echo. gated_candidate is kept
+            # for a selectivity audit and MUST stay out of every agent prompt (DayChannel leak note).
+            entry = DayChannel(day=current_day, seq=seq, player=player_id, message="", passed=True,
+                               firing_reason=firing_reason, gated=True, gated_candidate=message)
+        else:
+            entry = DayChannel(day=current_day, seq=seq, player=player_id, message=message,
+                               addressed_targets=getattr(result, "addressed_targets", []),
+                               firing_reason=firing_reason)
+        return _attach_side_outputs({"day_channel": [entry]}, side_outputs, player_id, strategy_as_map=True)
+
+    if output_key == "day_votes":
+        validated = _validate_target(result.vote_target, valid_targets, player_id)
+        if not validated:
+            logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
+            return _RETRY
+        return _attach_side_outputs({"day_votes": [DayVote(voter=player_id, votee=validated)]},
+                                    side_outputs, player_id, strategy_as_map=True)
+
+    if output_key == "wolf_channel":
+        validated = _validate_target(result.vote_target, valid_targets, player_id)
+        if not validated:
+            logger.warning(f"{player_id} voted for invalid target: {result.vote_target}")
+            return _RETRY
+        output = {"wolf_channel": [WolfChannel(
+            day=payload.get("current_day", 1), round=payload.get("current_round", 1),
+            wolf=player_id, message=result.message, vote=validated,
+        )]}
+        return _attach_side_outputs(output, side_outputs, player_id, strategy_as_map=True, include_reads=False)
+
+    if output_key in NIGHT_TARGET_KEYS:
+        # vigilante "hold_fire" is a valid sentinel (bank the bullet); _validate_target accepts it.
+        target = getattr(result, output_key)
+        validated = _validate_target(target, valid_targets, player_id)
+        if not validated:
+            logger.warning(f"{player_id} chose an invalid {output_key}: {target}")
+            return _RETRY
+        return _attach_side_outputs({output_key: validated}, side_outputs, player_id, strategy_as_map=False)
 
     return None
 
 
+def _extract_side_outputs(result: BaseModel) -> dict[str, Any]:
+    """The outputs an agent emits ALONGSIDE its action: its strategy note (real gameplay state) and
+    the private eval carriers — its per-item strategy/memory verdicts and per-player reads. Anything
+    on ``result`` not pulled out here is dropped."""
+    return {
+        "strategy": getattr(result, "updated_strategy", None),
+        "strategy_verdicts": getattr(result, "strategy_verdicts", []) or [],
+        "memory_verdicts": getattr(result, "memory_applicability", []) or [],
+        "reads": getattr(result, "reads", []) or [],
+    }
+
+
+def _attach_side_outputs(
+    output: dict[str, Any],
+    side_outputs: dict[str, Any],
+    player_id: str,
+    *,
+    strategy_as_map: bool,
+    include_reads: bool = True,
+) -> dict[str, Any]:
+    """Attach the side outputs to a state delta (every branch routes through here, so a new return
+    can't forget one). The strategy note is real state: day/wolf write it as a {player_id: note} map
+    (merge_strategies channel), night writes a bare ``updated_strategy``. The verdicts/reads are
+    private eval CARRIERS — ``_``-prefixed, POPped downstream (pipeline.py) before graph state."""
+    if side_outputs["strategy"]:
+        if strategy_as_map:
+            output["agent_strategies"] = {player_id: side_outputs["strategy"]}
+        else:
+            output["updated_strategy"] = side_outputs["strategy"]
+    if side_outputs["strategy_verdicts"]:
+        output["_strategy_verdicts"] = side_outputs["strategy_verdicts"]
+    if side_outputs["memory_verdicts"]:
+        output["_memory_applicability"] = side_outputs["memory_verdicts"]
+    if include_reads and side_outputs["reads"]:
+        output["_reads"] = side_outputs["reads"]
+    return output

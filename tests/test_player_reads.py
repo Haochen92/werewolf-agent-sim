@@ -31,7 +31,7 @@ from Agents.schemas.output import (
 from Agents.schemas.roles import cast_role_counts
 from Agents.turn import decision as decision_mod
 from Agents.turn.action_space import _with_dynamic_target_enum
-from Agents.turn.eval import _build_eval_private_context
+from Agents.turn.eval import _build_eval_private_context, _reads_coverage
 from tests.leak_test import check_reads_isolation
 
 
@@ -137,7 +137,7 @@ def test_reads_coverage_helper():
     payload = {"player_id": "player_1", "surviving_players": [f"player_{i}" for i in range(1, 9)]}
     reads = [PlayerRead(player=f"player_{i}", why="unchanged", suspected_role="unclear",
                         confidence="low") for i in range(2, 7)]  # covers 5 of 7 non-self
-    coverage, missing = decision_mod._reads_coverage(reads, payload)
+    coverage, missing = _reads_coverage(reads, payload)
     assert missing == ["player_7", "player_8"]
     assert coverage == 5 / 7
 
@@ -147,11 +147,11 @@ def test_reads_coverage_full_and_wolf_shape():
     payload = {"player_id": "player_1", "surviving_players": ["player_1", "player_2", "player_3"]}
     reads = [PlayerRead(player="player_2", why="unchanged", suspected_role="unclear", confidence="low"),
              PlayerRead(player="player_3", why="unchanged", suspected_role="unclear", confidence="low")]
-    assert decision_mod._reads_coverage(reads, payload) == (1.0, [])
+    assert _reads_coverage(reads, payload) == (1.0, [])
     # Wolf-shaped payload (wolves + villagers, no surviving_players) enumerates the same way.
     wolf_payload = {"player_id": "player_1", "surviving_wolves": ["player_1", "player_2"],
                     "surviving_villagers": ["player_3"]}
-    coverage, missing = decision_mod._reads_coverage([], wolf_payload)
+    coverage, missing = _reads_coverage([], wolf_payload)
     assert coverage == 0.0 and missing == ["player_2", "player_3"]
 
 
@@ -187,7 +187,7 @@ def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
     payload = _healer_payload()
     result = _healer_result([f"player_{i}" for i in range(2, 8)])  # 6 of 8 -> 0.75
     monkeypatch.setattr(decision_mod, "get_llm", lambda: _FakeLLM(result))
-    with caplog.at_level(logging.WARNING, logger="Agents.turn.decision"):
+    with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
         out = decision_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
     assert out["healer_target"] == "player_3"
     assert "reads under-covered" in caplog.text
@@ -198,7 +198,7 @@ def test_tripwire_silent_on_full_coverage(monkeypatch, caplog):
     payload = _healer_payload()
     result = _healer_result(payload["surviving_players"])  # all 8
     monkeypatch.setattr(decision_mod, "get_llm", lambda: _FakeLLM(result))
-    with caplog.at_level(logging.WARNING, logger="Agents.turn.decision"):
+    with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
         decision_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
     assert "reads under-covered" not in caplog.text
 

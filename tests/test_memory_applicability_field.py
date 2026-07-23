@@ -110,12 +110,12 @@ def test_eval_case_captures_memory_applicability_and_roundtrips():
 
 
 def test_run_agent_carries_memory_applicability_in_every_return():
-    # the _memory_applicability carrier must ride EVERY output branch (mirrors _strategy_verdicts)
+    # The _memory_applicability carrier must ride EVERY output branch (mirrors _strategy_verdicts).
+    # Every branch now routes through _attach_carriers, so the invariant is enforced in one place:
+    # assert that helper attaches both carriers (parity) rather than that each return re-lists them.
     import inspect
 
     from Agents.turn import decision
 
-    src = inspect.getsource(decision._run_agent)
-    assert src.count('output["_memory_applicability"] = memory_verdicts') == src.count(
-        'output["_strategy_verdicts"] = strategy_verdicts'
-    )
+    src = inspect.getsource(decision._attach_side_outputs)
+    assert src.count('output["_memory_applicability"]') == src.count('output["_strategy_verdicts"]') == 1
