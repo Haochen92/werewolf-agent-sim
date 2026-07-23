@@ -59,7 +59,8 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     survivor *buckets* (surviving_wolves, surviving_villagers = the non-wolf
     bucket of town + the solo SK) and the per-role *markers* (healer_player, …,
     serial_killer_player) that the rest of the game reads role-aliveness off.
-    human_player is chosen but vestigial — eval runs have no human player.
+    A human seat is assigned only when the run opts in (RunConfig.human_player); default off leaves it
+    "" so eval/batch runs stay fully automated (no interrupt()).
     """
     game_config = game_config_from_runnable(config)
     # Role assignment is seeded off game_id — the single master seed (the scheduler's
@@ -75,10 +76,30 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     characters = [
         f"{game_config.player_id_prefix}_{i}" for i in range(1, len(roles) + 1)
     ]
-    human_player = rng.choice(characters)
+    # Draw a candidate seat UNCONDITIONALLY so the role shuffle's rng sequence stays byte-identical
+    # to historical runs (same game_id -> same role draw) — then only SEAT the human when the run
+    # opted in (RunConfig.human_player). Default off -> "" -> no seat is flagged human downstream, so
+    # _run_agent never hits interrupt() (fully automated all-LLM game).
+    human_candidate = rng.choice(characters)
+    human_player = human_candidate if configurable.get("human_player") else ""
 
     rng.shuffle(roles)
     assigned_roles = dict(zip(characters, roles, strict=True))
+
+    # Optional role preference: seat is random, but the human may opt to play a specific role. Swap
+    # that role onto the human's seat (with whatever seat drew it) — a swap preserves the exact cast
+    # counts, and derives before the *_player markers below so they stay consistent. Only fires with a
+    # human seat AND a requested role; agent-only / random-role runs keep the untouched shuffle.
+    human_role = configurable.get("human_role")
+    if human_player and human_role:
+        if human_role not in roles:
+            raise ValueError(f"Unknown human role: {human_role} (not in the cast)")
+        if assigned_roles[human_player] != human_role:
+            donor = next(p for p, r in assigned_roles.items() if r == human_role)
+            assigned_roles[human_player], assigned_roles[donor] = (
+                assigned_roles[donor],
+                assigned_roles[human_player],
+            )
 
     def _first_with_role(role: str) -> str | None:
         players = [p for p, r in assigned_roles.items() if r == role]

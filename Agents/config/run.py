@@ -7,8 +7,8 @@ handlers, no tracing. Conversion to a LangGraph `RunnableConfig` (and attaching 
 `Agents.config.langgraph`'s job — this keeps settings serializable and framework-free.
 
 The pipeline-arm default dicts live here (their only consumer is `RunConfig`) and are re-exported
-from `Agents.config`. Loose optional-arg callers (run_game) construct `RunConfig(**opts)` directly:
-a before-validator drops None options so field defaults apply — there is no separate builder.
+from `Agents.config`. ``normalize_run_config`` is the coercion boundary used by the application
+entry point; a before-validator drops explicit ``None`` options so field defaults apply.
 """
 from __future__ import annotations
 
@@ -82,17 +82,35 @@ class RunConfig(BaseModel):
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
     game_id: str = ""
     session_id: str | None = None
+    human_player: bool = False
+    """Seat a human: when True, initialize_game assigns ONE random seat to the human, whose turns
+    pause the graph for input via interrupt(). Default False = a fully automated all-LLM game (every
+    eval/batch run) — no seat is flagged human, so interrupt() never fires."""
+    human_role: str | None = None
+    """Optional role preference for the human seat (e.g. "wolf"). None = play whatever role the random
+    seat drew. Ignored unless human_player is True; must be a role present in the cast."""
 
     @model_validator(mode="before")
     @classmethod
     def _coalesce_options(cls, data: Any) -> Any:
-        """Support loose optional-arg entry points (run_game passes each unset option as None): a
-        None means "use the default", so drop it and let the field default apply. Then backfill an
-        empty OR absent game_id with a fresh uuid — `""` and `None` both mean "mint me a seed
-        anchor" (a plain default_factory only fires on an omitted field, not an explicit ""). An
-        explicit False (the SP off-arm) is not None, so it is preserved, not dropped."""
+        """Treat ``None`` as "use the default", then ensure every run has a game ID.
+
+        An empty, absent, or null game_id means "mint a seed anchor". Explicit ``False`` values (for
+        example an SP off-arm) are preserved.
+        """
         if isinstance(data, dict):
             data = {k: v for k, v in data.items() if v is not None}
             if not data.get("game_id"):
                 data["game_id"] = str(uuid4())
         return data
+
+
+def normalize_run_config(
+    config: RunConfig | dict[str, Any] | None,
+) -> RunConfig:
+    """Return one validated application-level configuration for a game run."""
+    if config is None:
+        return RunConfig()
+    if isinstance(config, RunConfig):
+        return config
+    return RunConfig.model_validate(config)

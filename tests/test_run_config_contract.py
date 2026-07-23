@@ -15,6 +15,7 @@ from Agents.config import (
     DEFAULT_RETRIEVAL_TYPES_CONFIG,
     RunConfig,
     build_runnable_config,
+    normalize_run_config,
 )
 
 EXPECTED_TOP_KEYS = {"callbacks", "configurable", "metadata", "recursion_limit"}
@@ -22,6 +23,8 @@ EXPECTED_CONFIGURABLE_KEYS = {
     "filtering_config",
     "game_config",
     "game_id",
+    "human_player",
+    "human_role",
     "memory_config",
     "memory_persistence_config",
     "reranking_config",
@@ -77,11 +80,25 @@ def test_defaults_applied_when_omitted():
 
 
 def test_none_options_fall_back_to_defaults():
-    """run_game passes each unset option as None; RunConfig's before-validator drops None so the
-    field default applies (rather than storing a null)."""
+    """Explicit None values use field defaults rather than becoming null configuration."""
     conf = _config(memory_config=None, session_id=None)["configurable"]
     assert conf["memory_config"] == DEFAULT_MEMORY_CONFIG
     assert conf["session_id"] is None
+
+
+def test_normalize_run_config_accepts_none_model_and_dict():
+    defaulted = normalize_run_config(None)
+    supplied = RunConfig(game_id="game-model")
+    from_model = normalize_run_config(supplied)
+    from_dict = normalize_run_config(
+        {"game_id": "game-dict", "sp_proven_tiering": False}
+    )
+
+    assert isinstance(defaulted, RunConfig)
+    assert defaulted.game_id
+    assert from_model is supplied
+    assert from_dict.game_id == "game-dict"
+    assert from_dict.sp_proven_tiering is False
 
 
 def test_supplied_overrides_win():
