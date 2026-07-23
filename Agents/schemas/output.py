@@ -311,6 +311,16 @@ class SituationSummary(BaseModel):
         return [s.composed for s in self.situations]
 
 
+# Post-hoc extraction of whom a message addresses — run over a HUMAN turn's free text so the
+# reactive/proactive scheduler treats human speech like an LLM's self-tagged addressed_targets.
+# Reuses AddressedTarget (same form/stance vocabulary the scheduler consumes). Model-visible: no
+# class docstring; the list field is required (flash-lite rejects optional/nullable fields).
+class AddressingExtraction(BaseModel):
+    addressed_targets: list[AddressedTarget] = Field(
+        description="Every player this message addresses; empty list if it addresses no one specific.",
+    )
+
+
 class NoveltyJudgment(BaseModel):
     novel: bool = Field(
         description=(

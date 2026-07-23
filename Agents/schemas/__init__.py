@@ -27,6 +27,10 @@ from Agents.schemas.game_events import (
     InvestigatorResult,
     WolfChannel,
 )
+from Agents.schemas.human_player import (
+    HumanTurnRequest,
+    HumanTurnResponse,
+)
 from Agents.schemas.memory import (
     CandidateRelevance,
     GameStrategyOutput,
@@ -48,6 +52,7 @@ from Agents.schemas.metrics import (
     NightResolutionMetric,
 )
 from Agents.schemas.output import (
+    AddressingExtraction,
     DayDiscussOutput,
     DaySummaryOutput,
     DayVoteOutput,
@@ -69,6 +74,7 @@ from Agents.schemas.scheduler import (
 __all__ = [
     "ActionPhase",
     "AddressedTarget",
+    "AddressingExtraction",
     "Balance",
     "CandidateRelevance",
     "ComputedGameMetrics",
@@ -94,6 +100,8 @@ __all__ = [
     "GameStrategyOutput",
     "GraphContext",
     "HealerOutput",
+    "HumanTurnRequest",
+    "HumanTurnResponse",
     "InvestigatorOutput",
     "InvestigatorResult",
     "Metrics",
