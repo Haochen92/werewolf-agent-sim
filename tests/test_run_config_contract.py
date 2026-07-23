@@ -29,6 +29,7 @@ EXPECTED_CONFIGURABLE_KEYS = {
     "session_id",
     "sp_exploration_slot",
     "sp_proven_tiering",
+    "thread_id",
 }
 
 
@@ -101,6 +102,13 @@ def test_sp_flags_explicit_false_preserved():
 def test_game_id_supplied_is_used():
     conf = _config(game_id="game-abc")["configurable"]
     assert conf["game_id"] == "game-abc"
+
+
+def test_thread_id_is_derived_from_game_id():
+    """The parent graph compiles with a checkpointer, so every run needs a thread_id; it is derived
+    from game_id so one game == one resumable checkpoint thread."""
+    conf = _config(game_id="game-abc")["configurable"]
+    assert conf["thread_id"] == "game-abc" == conf["game_id"]
 
 
 def test_game_id_generated_when_omitted_is_unique_nonempty():

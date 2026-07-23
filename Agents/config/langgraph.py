@@ -34,6 +34,10 @@ def build_runnable_config(
         "metadata": metadata or {},
         "configurable": {
             "game_id": run.game_id,
+            # One checkpoint thread per game. REQUIRED: the parent graph is compiled with a
+            # checkpointer, so every invoke must carry a thread_id or LangGraph raises. Deriving it
+            # from game_id (the replay anchor) keeps one game == one resumable thread.
+            "thread_id": run.game_id,
             "memory_config": run.memory_config,
             "reranking_config": run.reranking_config,
             "filtering_config": run.filtering_config,
