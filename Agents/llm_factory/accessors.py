@@ -85,6 +85,20 @@ def get_llm_judge():
     )
 
 
+def get_llm_extractor():
+    """Cheap, deterministic flash-lite for post-hoc tagging (e.g. addressed-target extraction on a
+    human turn). Classification, not generation — temp 0 so the same message tags identically every
+    run; a non-deterministic tag would make the reactive scheduler non-reproducible."""
+    return create_chat_model(
+        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        temperature=0.0,
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_EXTRACTOR_THINKING_LEVEL",
+            "minimal",
+        ),
+    )
+
+
 @lru_cache(maxsize=1)
 def get_llm_pro():
     return create_chat_model(
