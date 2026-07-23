@@ -39,6 +39,7 @@ from Agents.state import (
     WolfDayState,
 )
 from Agents.turn.agent_player import _run_agent
+from Agents.turn.human_turn import _run_human_decision
 from Agents.turn.adoption import _process_strategy_adoption
 from Agents.turn.eval import _build_eval_private_context
 
@@ -54,6 +55,11 @@ def _run_memory_informed_action(
     output_schema: type[BaseModel],
     output_key: str,
 ) -> dict[str, Any] | None:
+    # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
+    # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
+    if payload.get("human_player"):
+        return _run_human_decision(payload, output_key)
+
     player_id = payload["player_id"]
     role = payload["player_role"]
     day = payload["current_day"]
@@ -249,6 +255,10 @@ def _run_memory_informed_night_action(
     ``agent_vote``. Retrieval, adoption bookkeeping, and the eval span are
     otherwise identical to the day path (and gated by the same ``memory_config``).
     """
+    # Human seat: same early exit as the day path — skip span / retrieval / adoption / EvalCase.
+    if payload.get("human_player"):
+        return _run_human_decision(payload, output_key)
+
     player_id = payload["player_id"]
     role = payload["player_role"]
     day = payload["current_day"]
