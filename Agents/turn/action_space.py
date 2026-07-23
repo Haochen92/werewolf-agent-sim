@@ -45,17 +45,16 @@ def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[
     return valid
 
 
-def _target_field_for_output_key(output_key: str) -> str | None:
-    if output_key in {"day_votes", "wolf_channel"}:
-        return "vote_target"
-    if output_key in {
-        "healer_target",
-        "investigator_target",
-        "serial_killer_target",
-        "vigilante_target",
-    }:
-        return output_key
-    return None
+# Which field on the output schema holds the chosen target, per output_key. Day votes and the
+# wolf-night channel name it "vote_target"; every night role names the field after its own key.
+_TARGET_FIELD_BY_OUTPUT_KEY = {
+    "day_votes": "vote_target",
+    "wolf_channel": "vote_target",
+    "healer_target": "healer_target",
+    "investigator_target": "investigator_target",
+    "serial_killer_target": "serial_killer_target",
+    "vigilante_target": "vigilante_target",
+}
 
 
 def _with_dynamic_target_enum(
@@ -63,20 +62,35 @@ def _with_dynamic_target_enum(
     output_key: str,
     valid_targets: list[str],
 ) -> type[BaseModel]:
-    target_field = _target_field_for_output_key(output_key)
-    if not target_field or not valid_targets:
+    """Rebuild ``output_schema`` so its target field is a ``Literal`` of exactly ``valid_targets``.
+
+    Binding the model to that literal makes an illegal target (a dead player, self) structurally
+    impossible to generate, rather than something we catch afterwards.
+    """
+    target_field = _TARGET_FIELD_BY_OUTPUT_KEY.get(output_key)
+    if target_field is None:
+        # This action names no target (day discussion) — nothing to constrain; the schema is
+        # already correct as-is.
         return output_schema
 
-    target_literal = Literal[tuple(valid_targets)]
-    fields: dict[str, tuple[Any, Any]] = {}
-    for field_name, field in output_schema.model_fields.items():
-        annotation = target_literal if field_name == target_field else field.annotation
-        default = ... if field.is_required() else field.default
-        fields[field_name] = (annotation, default)
+    if not valid_targets:
+        # A target action reached with an empty legal set means the win-condition check failed to
+        # end the game first (e.g. no surviving villagers = wolves already won). Never normal —
+        # fail here, at the broken invariant, not later as an IndexError in the random fallback.
+        raise ValueError(
+            f"{output_key}: no legal targets — the win-condition check should have ended "
+            f"the game before this action ran"
+        )
 
+    # Subclass the original schema, overriding ONLY the target field's type with a Literal of the
+    # legal set. Reusing the original FieldInfo keeps the field's description, validators, and
+    # required status; every other field and the model config is inherited unchanged.
+    target_literal = Literal[tuple(valid_targets)]
+    original_target = output_schema.model_fields[target_field]
     return create_model(
         f"{output_schema.__name__}_{output_key}_TargetEnum",
-        **fields,
+        __base__=output_schema,
+        **{target_field: (target_literal, original_target)},
     )
 
 
