@@ -20,6 +20,7 @@ from Agents.schemas.game_events import (
     InvestigatorResult,
     WolfChannel,
 )
+from Agents.state.reducers import merge_strategies
 
 
 class OrchestratorGraph(TypedDict, total=False):
@@ -37,8 +38,10 @@ class OrchestratorGraph(TypedDict, total=False):
     day_resolution) so agents read who died + their revealed role from state, not GM prose."""
 
     # Cast & identity.
-    agent_strategies: dict[str, str]
-    """player_id -> that agent's private strategy note."""
+    agent_strategies: Annotated[dict[str, str], merge_strategies]
+    """player_id -> that agent's private strategy note. Per-key merge (merge_strategies), so a
+    single-actor night phase folding back {player: note} updates only that seat instead of
+    overwriting the whole map — matching how the day/wolf subgraph channels already reduce it."""
     roles: dict[str, str]
     """player_id -> true role (ground truth; never shown to other agents)."""
     human_player: str
