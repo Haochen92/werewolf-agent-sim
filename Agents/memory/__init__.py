@@ -14,6 +14,7 @@ from Agents.memory.retrieval import (
     retrieve_strategy_points_for_agent,
 )
 from Agents.memory.store import embeddings, store
+from Agents.memory.checkpointer import checkpointer
 
 __all__ = [
     "RETRIEVAL_KEEP_PER_SITUATION",
@@ -21,4 +22,5 @@ __all__ = [
     "retrieve_observations_for_agent",
     "retrieve_strategy_points_for_agent",
     "store",
+    "checkpointer",
 ]
