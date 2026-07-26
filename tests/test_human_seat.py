@@ -9,7 +9,7 @@ import pytest
 
 from Agents.config import RunConfig, build_runnable_config
 from Agents.nodes.orchestrator import initialize_game
-from Agents.schemas.game_events import AddressedTarget, DayVote, FiringReason
+from Agents.schemas.game_events import AddressedTarget, DayChannel, DayVote, FiringReason
 from Agents.schemas.human_player import HumanTurnRequest, HumanTurnResponse
 from Agents.turn import human_turn as h
 from Agents.turn import pipeline as pl
@@ -62,20 +62,20 @@ def test_human_role_preference_lands_on_the_human_seat():
 # ---- pipeline gating (no span / retrieval / adoption / EvalCase for a human) ----------------------
 
 def test_day_pipeline_routes_human_before_retrieval(monkeypatch):
-    monkeypatch.setattr(pl, "_run_human_decision", lambda payload, output_key: {"routed": output_key})
+    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key: {"routed": output_key})
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: pytest.fail("retrieval ran for a human seat"))
-    out = pl._run_memory_informed_action(
+    out = pl.run_memory_informed_action(
         _human_payload(), None, None, "day_vote", None, None, "day_votes"
     )
     assert out == {"routed": "day_votes"}
 
 
 def test_night_pipeline_routes_human_before_retrieval(monkeypatch):
-    monkeypatch.setattr(pl, "_run_human_decision", lambda payload, output_key: {"routed": output_key})
+    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key: {"routed": output_key})
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: pytest.fail("retrieval ran for a human seat"))
-    out = pl._run_memory_informed_night_action(
+    out = pl.run_memory_informed_night_action(
         _human_payload(human_player=True), None, None, None, None, "healer_target"
     )
     assert out == {"routed": "healer_target"}
@@ -83,12 +83,12 @@ def test_night_pipeline_routes_human_before_retrieval(monkeypatch):
 
 def test_agent_seat_does_not_take_the_human_path(monkeypatch):
     # A non-human payload must fall THROUGH the gate into the normal (retrieval) path.
-    monkeypatch.setattr(pl, "_run_human_decision",
+    monkeypatch.setattr(pl, "run_human_decision",
                         lambda *a, **k: pytest.fail("human path taken for an agent seat"))
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: (_ for _ in ()).throw(RuntimeError("reached-retrieval")))
     with pytest.raises(RuntimeError, match="reached-retrieval"):
-        pl._run_memory_informed_action(
+        pl.run_memory_informed_action(
             _human_payload(human_player=False), None, None, "day_vote", None, None, "day_votes"
         )
 
@@ -116,12 +116,40 @@ def test_extra_field_rejected():
         validate_human_response(_request(), {"target": "p2", "sneaky": 1})
 
 
-def test_proactive_pass_ok_reactive_pass_rejected():
-    proactive = _request(phase="day_channel", can_pass=True, valid_targets=[])
-    assert validate_human_response(proactive, {"pass_turn": True}).pass_turn is True
-    reactive = _request(phase="day_channel", can_pass=False, valid_targets=[])
+def test_pass_honored_when_offered_rejected_when_not():
+    # Every human discussion turn now offers a pass (reactive included — a mention isn't a
+    # demand); the validator still hard-rejects a pass against a request that didn't offer one.
+    offered = _request(phase="day_channel", can_pass=True, valid_targets=[])
+    assert validate_human_response(offered, {"pass_turn": True}).pass_turn is True
+    not_offered = _request(phase="day_channel", can_pass=False, valid_targets=[])
     with pytest.raises(HumanTurnContractError):
-        validate_human_response(reactive, {"pass_turn": True})
+        validate_human_response(not_offered, {"pass_turn": True})
+
+
+def test_reactive_request_offers_a_pass():
+    payload = _human_payload(firing_reason=FiringReason(tier="reactive", owes=["p2"]))
+    request = h._build_human_request(payload, "day_channel", [])
+    assert request.can_pass is True
+
+
+def test_human_reactive_pass_discharges_the_obligation(monkeypatch):
+    # A declined reactive turn must close the ledger debt — the pass entry carries synthetic
+    # neutral responses to everyone owed, or the scheduler would re-fire the turn forever.
+    from Agents.turn.scheduler import build_reactive_queue
+
+    monkeypatch.setattr(h, "interrupt", lambda req: {"pass_turn": True})
+    ask = DayChannel(day=1, seq=0, player="p2", message="p1, thoughts?",
+                       addressed_targets=[AddressedTarget(
+                           target="p1", addressed_form="question", stance="neutral")])
+    payload = _human_payload(day_channel=[ask],
+                             firing_reason=FiringReason(tier="reactive", owes=["p2"]))
+    out = h.run_human_decision(payload, "day_channel")
+
+    entry = out["day_channel"][0]
+    assert entry.passed and entry.message == ""
+    assert [(t.target, t.addressed_form) for t in entry.addressed_targets] == [("p2", "response")]
+    assert build_reactive_queue([ask, entry], per_pair_cap=2, reengagement_cooldown=10,
+                                valid_players={"p1", "p2", "p3"}) == []
 
 
 def test_discussion_message_ok_but_target_forbidden():
@@ -135,7 +163,7 @@ def test_discussion_message_ok_but_target_forbidden():
 
 def test_human_vote_produces_delta(monkeypatch):
     monkeypatch.setattr(h, "interrupt", lambda req: {"target": "p2"})
-    out = h._run_human_decision(_human_payload(), "day_votes")
+    out = h.run_human_decision(_human_payload(), "day_votes")
     assert out == {"day_votes": [DayVote(voter="p1", votee="p2")]}
 
 
@@ -143,7 +171,7 @@ def test_driver_contract_breach_raises_not_silently_dropped(monkeypatch):
     # An illegal resumed target (driver skipped validation) must raise, never degrade to None.
     monkeypatch.setattr(h, "interrupt", lambda req: {"target": "ghost"})
     with pytest.raises(HumanTurnContractError):
-        h._run_human_decision(_human_payload(), "day_votes")
+        h.run_human_decision(_human_payload(), "day_votes")
 
 
 # ---- addressed-target sanitization ----------------------------------------------------------------

@@ -114,6 +114,18 @@ def test_cooldown_resets_cap_after_untouched_gap():
     assert [(i.agent_id, i.latest_sequence) for i in q] == [("B", 10)]
 
 
+def test_counter_question_discharges_and_opens_reverse():
+    # Regression (live 2026-07-26): B's reply tagged as pure `question` must still discharge
+    # B's debt — excluding it re-fired B into near-duplicate turns (reactive turns bypass the
+    # novelty gate), and the repeats read as "B never answered" to the rest of the table.
+    q = queue([
+        msg(0, "A", [at("B", "question", "accusation")]),  # B owes A
+        msg(1, "B", [at("A", "question")]),                # B counter-asks: engagement
+    ])
+    # B's debt discharged; B's question opens the reverse -> A owes B, no B re-fire.
+    assert [(i.agent_id, i.creditors, i.latest_sequence) for i in q] == [("A", ["B"], 1)]
+
+
 # --- counter-accusation: one message discharges AND opens the reverse ---------
 
 def test_counter_accusation_discharges_and_opens_reverse():

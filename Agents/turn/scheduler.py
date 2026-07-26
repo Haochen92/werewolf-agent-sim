@@ -46,16 +46,18 @@ def build_reactive_queue(
             # surviving player can owe/be-owed and therefore be scheduled.
             if valid_players is not None and target.target not in valid_players:
                 continue
-            # Close the speaker's own open debt to this target. (B) Any non-question
-            # engagement of the creditor discharges -- a `mention` of who you owe counts,
-            # not just a `response` -- so a correctly-aimed turn always clears the debt
-            # even when the agent mislabels the form.
-            if target.addressed_form in ("response", "mention"):
-                balance = debt_ledger[(target.target, entry.player)]
-                if balance.open_sequence is not None:
-                    balance.cycles += 1
-                    balance.open_sequence = None
-                    balance.last_touch_sequence = entry.seq
+            # Close the speaker's own open debt to this target: ANY engagement of the
+            # creditor discharges — response, mention, or question. A counter-question IS
+            # engagement (it opens a fresh debt on the creditor below, so the exchange keeps
+            # flowing); excluding it trapped debtors whose replies were tagged all-question
+            # in a re-fire loop of near-duplicate turns (reactive turns bypass the novelty
+            # gate), seen live 2026-07-26: three consecutive player_7 turns re-asserting
+            # "you haven't answered", which the table then treated as evidence.
+            balance = debt_ledger[(target.target, entry.player)]
+            if balance.open_sequence is not None:
+                balance.cycles += 1
+                balance.open_sequence = None
+                balance.last_touch_sequence = entry.seq
 
             # Open (or, if already open, leave alone) an obligation on the target.
             if target.addressed_form == "question" or target.stance == "accusation":
