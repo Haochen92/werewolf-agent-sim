@@ -10,7 +10,7 @@
 > **Companion docs.** The shipped design, stated destination-first, is in [`report.md`](report.md). The
 > acceptance study has its own record: [`quality_gate/`](quality_gate/experiment_log.md) (the
 > concurrent-vs-sequential acceptance A/B). A related generation-prompt cleanup that followed lives in
-> [`prompt_boundary/`](../prompt_boundary/experiment_log.md) (see §10). Guiding principle throughout:
+> [`prompt_boundary/`](../generation_prompt/prompt_boundary/experiment_log.md) (see §10). Guiding principle throughout:
 > **deterministic where reliable; LLM only where necessary.**
 
 ---
@@ -599,7 +599,7 @@ Immediately after the gate (before the role-casting work) a generation-prompt cl
 were prescribing a degenerate "tone/silence policing" pseudo-strategy, which floods transcripts and would
 contaminate the memory store. It enforces **prompt = how to talk + the rules; memory = what to conclude** —
 a prompt/memory concern, not a scheduler one, so it has since been **hoisted out of this folder to its own
-home at [`evidence/prompt_boundary/`](../prompt_boundary/experiment_log.md)**. It does *not* reopen the gate
+home at [`evidence/generation_prompt/prompt_boundary/`](../generation_prompt/prompt_boundary/experiment_log.md)**. It does *not* reopen the gate
 (that was concurrent-vs-sequential on identical prompts — internally valid); it is noted here only because
 it followed chronologically. Full record, method, and the honest board-confound caveat live in that folder.
 

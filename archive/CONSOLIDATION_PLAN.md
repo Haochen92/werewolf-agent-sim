@@ -297,9 +297,9 @@ chapter from your notes, to dig into any folder, or to execute the tidy flags on
 **prompt_claims_audit/**  *(→ Ch.3 supporting / cat ⑤ · kind: experiment)*
 - `experiment_log.md` — investigator "conceal" FALSIFIED; wolf "blend" VALIDATED; targeted investigator rewrite + A/B. (2026-06-17)
 
-**prompt_versioning/**  *(→ Ch.1–2 infra, kind: record → `docs/` / cat ⑥ provenance)*
-- `prompt_versioning_analysis.md` — `runtime_fingerprint` (git SHA + bundle hash + model IDs); floating alias pinned.
-- `rendering_layer_bundle_transition.md` — content-neutral bundle-hash change record (formatters moved into `prompts/`).
+**tracing/fingerprinting/**  *(→ Ch.1–2 infra, kind: journey + reference / cat ⑥ provenance)*
+- `experiment_log.md` — chronological fingerprint and artifact-lineage build journey, including the rendering-layer transition.
+- `report.md` — current contract for RunConfig, runtime fingerprinting, and artifact manifests.
 
 **memory_system/**  *(→ Ch.3 / cat ① + ④ — THE 1↔4 seam · kind: experiment)*
 - `store_progression.md` — ⚠️ **SPINE**: narrative across 8 store versions (4-phase constraint migration). Sits above categories → candidate for `writeup/`.

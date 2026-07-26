@@ -15,7 +15,7 @@ Two corpora, because the fixes were DESIGNED on the endpoint: the loop run's gam
 (v7_compound_town5) are different games and blunt the circularity. Passing here is necessary, not
 sufficient — generalization needs a fresh run (step 3, not authorized). Labels live in this file
 (FLAGSHIPS) as action-text prefixes resolved against the store at runtime; the 07-20 forensics are
-the label source, quoted in evidence/credit_blindspot_fix/experiment_log.md.
+the label source, quoted in evidence/credit/blindspot_fix/experiment_log.md.
 
   poetry run python evaluation/experiments/credit_blindspot_validation.py
 """
@@ -167,7 +167,7 @@ def main() -> int:
     ap.add_argument("--endpoint", type=Path, default=Path("batch_results/v7_endpoint_ab"))
     ap.add_argument("--store", type=Path,
                     default=Path("batch_results/v7_endpoint_ab/final_store_snapshot/strategy_points.json"))
-    ap.add_argument("--out", type=Path, default=Path("evidence/credit_blindspot_fix"))
+    ap.add_argument("--out", type=Path, default=Path("evidence/credit/blindspot_fix"))
     ap.add_argument("--window-days", type=int, default=LoopConfig.conversion_window_days)
     args = ap.parse_args()
 

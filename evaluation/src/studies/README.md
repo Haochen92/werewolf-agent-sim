@@ -21,12 +21,12 @@ Grouped by era. Verdicts and evidence pointers are carried verbatim from the ret
 
 | module | question it answered | verdict | evidence |
 |---|---|---|---|
-| `criticality_screen` | criticality-conditioned vs flat retrieval | within noise → v6 skipped query-time conditioning | evidence/phase_b/criticality_screen/ |
-| `forced_schema_screen` | forced per-memory applicability reasoning | negative → not adopted | evidence/phase_b/forced_schema_screen/ |
-| `dimension_gating_screen` | dimension-gated retrieval | negative, shipped default-off (frozen verdict); RE-OPENED 2026-07-02 by the dimension audit → standing-again, MOVED 2026-07-04 to `evaluation/src/instrument_validation/dimensions/dimension_gating_screen.py` | evidence/v7_final/review_map.md + evidence/phase_b/dimension_accuracy_audit/ |
-| `reextract_villager_day` | build v6 store from historical games (extraction) | (store build) → v6/v6_1 | evidence/phase_b/v6_full_store.md |
-| `reextract_cells` | build v6 store from historical games (full DAG) | (store build) → v6/v6_1 | evidence/phase_b/v6_full_store.md |
-| `synthesize_cell_sp` | build v6 store from historical games (SP synthesis) | (store build) → v6/v6_1 | evidence/phase_b/v6_full_store.md |
+| `criticality_screen` | criticality-conditioned vs flat retrieval | within noise → v6 skipped query-time conditioning | evidence/extraction/situation_dimensions/criticality_screen/ |
+| `forced_schema_screen` | forced per-memory applicability reasoning | harmful on v5, safe on v6; prompt-body delivery adopted | evidence/memory_system/strategy_adoption/forced_schema_screen/ |
+| `dimension_gating_screen` | dimension-gated retrieval | negative, shipped default-off (frozen verdict); RE-OPENED 2026-07-02 by the dimension audit → standing-again, MOVED 2026-07-04 to `evaluation/src/instrument_validation/dimensions/dimension_gating_screen.py` | evidence/v7_final/review_map.md + evidence/extraction/situation_dimensions/dimension_accuracy_audit/ |
+| `reextract_villager_day` | build v6 store from historical games (extraction) | (store build) → v6/v6_1 | evidence/extraction/situation_dimensions/v6_full_store.md |
+| `reextract_cells` | build v6 store from historical games (full DAG) | (store build) → v6/v6_1 | evidence/extraction/situation_dimensions/v6_full_store.md |
+| `synthesize_cell_sp` | build v6 store from historical games (SP synthesis) | (store build) → v6/v6_1 | evidence/extraction/situation_dimensions/v6_full_store.md |
 
 ## v7 credit-loop trials
 

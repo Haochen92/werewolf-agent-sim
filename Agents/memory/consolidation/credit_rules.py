@@ -2,7 +2,7 @@
 
 This is the graduated form of ``evaluation/src/loop/credit_backfill.py`` with the rule knobs
 removed: production grades town abstains with the deadlock-negative rule unconditionally (the v7
-endpoint blind-spot fix, validated in ``evidence/credit_blindspot_fix/``), and there is no switch
+endpoint blind-spot fix, validated in ``evidence/credit/blindspot_fix/``), and there is no switch
 back to the legacy neutral bucket anywhere in this package. The eval-side module keeps its knobbed
 form so the frozen research runs reproduce; a parity test pins this module byte-equal to the eval
 grader under the fixed settings.

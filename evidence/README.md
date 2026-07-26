@@ -31,7 +31,7 @@ Tuning how memories are retrieved at game time: filtering, reranking, and capaci
 | [reranking](retrieval/reranking/report.md) | n=5 | May 23 | Strategy-only reranking on v4_deduped; small sample |
 | [capacity_limits](retrieval/capacity_limits/report.md) | n=120 | May 24 | Observations-only, top_k=3 vs 5 |
 | [context_eval](retrieval/context_eval/experiment_log.md) | — | Jun 1 | Context-based retrieval eval; methodology final, execution DEFERRED (golds conditioned on the v4_deduped_v2 substrate) |
-| [per_day_discussion_retrieval](per_day_discussion_retrieval/experiment_log.md) | 3,916 agent-days, $0 | Jul 7 | Design variant (retrieve once per day, not per turn) gated on a recompute pre-test: within-day retrievals almost never identical (0–9%), but the churn is substantially query-paraphrase noise, not adaptation; PARKED as a config-flag candidate |
+| [per_day_discussion](retrieval/per_day_discussion/experiment_log.md) | 3,916 agent-days, $0 | Jul 7 | Design variant (retrieve once per day, not per turn) gated on a recompute pre-test: within-day retrievals almost never identical (0–9%), but the churn is substantially query-paraphrase noise, not adaptation; PARKED as a config-flag candidate |
 
 `filtering` and `reranking` used n=5 on v4_deduped (v0 prompts). Their directional findings hold but absolute numbers are noisy.
 
@@ -46,11 +46,11 @@ Quality of what goes into the memory store and what queries are generated at ret
 | [situation_dimensions](extraction/situation_dimensions/report.md) | 4 apparatus | May 24 – Jul 2 | Design + reliability arc of the state-descriptor dimension schema (prose → per-cell schema; retrieval + gating + criticality proxy); NDCG golden, criticality/forced screens, $0 accuracy audit (journey in [experiment_log.md](extraction/situation_dimensions/experiment_log.md)) |
 | [day_summary](extraction/day_summary/report.md) | — | — | How the end-of-day summary works today: a structured digest that bounds context and turns discussion into signal |
 
-### [extraction_selection/](extraction_selection/) — Selecting Which Turns to Extract
+### [extraction/selection/](extraction/selection/) — Selecting Which Turns to Extract
 
 | Experiment | Date | Notes |
 |---|---|---|
-| [experiment_log](extraction_selection/experiment_log.md) | Jun 17 | Does extraction infer turn pivotalness, and should we steer it? Diagnostic done (net_verdict calibration); steering recommendation = anchor-injection, gated by the memory-pipeline prompt freeze |
+| [experiment_log](extraction/selection/experiment_log.md) | Jun 17 | Does extraction infer turn pivotalness, and should we steer it? Diagnostic done (net_verdict calibration); steering recommendation = anchor-injection, gated by the memory-pipeline prompt freeze |
 
 ### [caching/](caching/) — Prompt Caching
 
@@ -77,8 +77,8 @@ The rules the agents play under and the prompt discipline that keeps the eval ho
 |---|---|---|
 | [role_set](role_set/experiment_log.md) | Jun 1 | Phase A #2: 9-player 3-faction casting design; casting + voting LOCKED, no role implemented yet |
 | [sequential_discussion](sequential_discussion/report.md) | May 31 – Jun 5 | Phase A #1, SHIPPED: concurrent → sequential day-discussion engine; acceptance A/B in [quality_gate](sequential_discussion/quality_gate/experiment_log.md) |
-| [prompt_boundary](prompt_boundary/experiment_log.md) | — | Enforced the prompt (how-to + facts) vs memory (what-signals-mean) division before the roles phase, so the generator isn't baking strategy into the store it will be A/B-tested against |
-| [prompt_claims_audit](prompt_claims_audit/experiment_log.md) | Jun 17 | Are the hand-authored PLAYSTYLE tactics actually true? Audit complete; one falsified claim → investigator rewrite drafted behind a default-off flag, ready to A/B |
+| [prompt_boundary](generation_prompt/prompt_boundary/experiment_log.md) | — | Enforced the prompt (how-to + facts) vs memory (what-signals-mean) division before the roles phase, so the generator isn't baking strategy into the store it will be A/B-tested against |
+| [prompt_claims_audit](generation_prompt/prompt_claims_audit/experiment_log.md) | Jun 17 | Are the hand-authored PLAYSTYLE tactics actually true? Audit complete; one falsified claim → investigator rewrite drafted behind a default-off flag, ready to A/B |
 | [agent_boundaries](agent_boundaries/report.md) | Jun 6 | Information-boundary guarantee: each agent's prompt contains only what its role may know; the leak-regression smoke logs are colocated as the proof |
 
 ## Evaluation Apparatus
@@ -105,21 +105,28 @@ This folder is the metric **design** journey; its instrument-**trust** twin is [
 | Topic | Date | Notes |
 |---|---|---|
 | [tracing](tracing/report.md) | Jun 27 | The capture half of eval: agent decisions, extraction, dedup, and day summaries emitted as four case types to a Langfuse trace + local JSONL sidecar, then frozen into reproducible eval sets |
-| [prompt_versioning](prompt_versioning/prompt_versioning_analysis.md) | Jun 6 | Reproducibility unit = prompt version + pinned model + generation params; claims verification + the minimal defensible fix for a prompts-as-code setup |
+| [experiment provenance](tracing/fingerprinting/report.md) ([journey](tracing/fingerprinting/experiment_log.md)) | Jun 6–Jul 23 | How run settings, runtime fingerprints, and artifact hashes identify what produced a result; includes current limitations and the build history |
 | [model_drift](model_drift/drift_surfaces_and_guards.md) | Jun 12 | Reference note: unpinnable-alias epoch-drift surface map + the interleave-arms guard (never compare to historical runs) |
 
 ## The v6/v7 Campaign
 
-The dimension-schema rebuild (Phase B) and the v7 compounding-loop iteration.
+The retired “Phase B” codename is represented by records in their owning subsystems rather than a
+standalone folder: the dimension build and screens live in
+[extraction/situation_dimensions](extraction/situation_dimensions/), forced applicability in
+[memory_system/strategy_adoption](memory_system/strategy_adoption/), the procedural-memory precursor in
+[memory_system/effectiveness/v6_sp_ab](memory_system/effectiveness/v6_sp_ab/), its clustering plan in
+[dedup](dedup/), and its roadmaps in [execution_plan](execution_plan/).
 
 | Topic | Date | Notes |
 |---|---|---|
-| [phase_b](phase_b/plan_review.md) | Jun 13 – 15 | Phase B design specs + cheap screens: [dimension_schema_build_spec](phase_b/dimension_schema_build_spec.md), [procedural_memory_experiment](phase_b/procedural_memory_experiment.md), [v6_full_store](phase_b/v6_full_store.md), the criticality/forced-schema/dimension-accuracy screens, and the v6-wide migration roadmap |
+| [v6 dimension build](extraction/situation_dimensions/dimension_schema_build_spec.md) | Jun 13 – Jul 2 | Per-cell schema and store-build journey; criticality screen and deterministic accuracy audit are colocated with the situation-dimensions record |
+| [forced applicability](memory_system/strategy_adoption/forced_schema_screen/experiment_log.md) | Jun 16 | Store × schema screen and the prompt-body delivery result that raised per-memory verdict coverage from 0.27 to 0.97 |
+| [Phase B plan record](execution_plan/phase_b_plan_review.md) | Jun 12 – 16 | Historical cross-subsystem plan plus the v6-wide migration roadmap |
 | [v7_final](v7_final/experiment_log.md) | Jun 20 – Jul | Build log of the v7 credit / consolidation / discussion-credit work; the compounding loop itself is the one still-un-run paid test (design docs `consolidation_design.md`, `discussion_credit_design.md` hold current state) |
 | [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/discussion_tagger/](evaluation/discussion_tagger/)) |
 | [store_curation](store_curation/report.md) | Jul | The mechanism record for how the three memory stores (observations, strategy points, tells) grow, stay bounded, and improve across games; review basis for the pre-run ownership walkthrough |
 | [credit](credit/report.md) | Jul | The credit layer: how a decision becomes a learning signal (SP ledger, tell ledger, read/tactic redesign) |
-| [credit_blindspot_fix](credit_blindspot_fix/experiment_log.md) | Jul 21 | Post-endpoint fix pair for the credit blind spot (contextual abstain rule + find→lynch conversion channel), validated on owned data ($0 re-score + replay screen); step-3 rerun NOT authorized |
+| [credit/blindspot_fix](credit/blindspot_fix/experiment_log.md) | Jul 21 | Post-endpoint fix pair for the credit blind spot (contextual abstain rule + find→lynch conversion channel), validated on owned data ($0 re-score + replay screen); step-3 rerun NOT authorized |
 | [execution_plan](execution_plan/compounding_measurement_plan.md) | Jul 4 | Forward-looking plan for the compounding question; PLANNED, not executed — Phase 0 gates all paid runs |
 
 ## Training
@@ -143,7 +150,7 @@ Off-the-critical-path training tracks (learning-project tier), each with its own
 | Note | Date | Notes |
 |---|---|---|
 | [structure_audit](refactor/structure_audit.md) | Jun 6 | Pre-v5 repo structure audit (no code moved) |
-| [eval_architecture_convention](refactor/eval_architecture_convention.md), [node_factory_pattern](refactor/node_factory_pattern.md), [provenance_lineage_rationale](refactor/provenance_lineage_rationale.md) | — | Design/convention reference notes underpinning the refactor |
+| [eval_architecture_convention](refactor/eval_architecture_convention.md), [node_factory_pattern](refactor/node_factory_pattern.md) | — | Design/convention reference notes underpinning the refactor; provenance is documented under [tracing/fingerprinting](tracing/fingerprinting/report.md) |
 
 ## Reading Guide
 

@@ -389,7 +389,7 @@ They decide the "same situation?" call **deterministically, before the LLM**, on
 unreliably — so today's pipeline resolves many pairs the per-extraction LLM here had to judge by hand.
 That granularity is much of why current dedup looks different from the experiments above; the mechanism is
 the overview's [§9](../experiment_log.md) and the
-[dimension build spec](../../phase_b/dimension_schema_build_spec.md).
+[dimension build spec](../../extraction/situation_dimensions/dimension_schema_build_spec.md).
 
 ## Current live state (2026-06-25)
 

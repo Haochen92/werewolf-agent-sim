@@ -3,7 +3,8 @@
 > **Scope: the apparatus, not the design.** Covers *how we measure* extraction quality (post-game mining of
 > obs/SP + v7 synthesis) and *how far to trust it* (L1 + L2). The extraction **design** (per-role fan-out,
 > v7 credit-aware synthesis) stays in [`../../extraction/post_game/`](../../extraction/post_game/) (destination
-> → `report.md`, journey → `experiment_log.md`), [`../../phase_b/`](../../phase_b/),
+> → `report.md`, journey → `experiment_log.md`),
+> [`../../extraction/situation_dimensions/`](../../extraction/situation_dimensions/),
 > [`../../v7_final/`](../../v7_final/). Lens + skeleton:
 > [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
@@ -127,8 +128,9 @@ exists; it's simply never aimed at synthesis (which is currently outcome-only).
   (Runs 1-3), `../../extraction/post_game/model_comparison/` (May study) + `.../model_comparison/v7_refresh/`
   (v7 model-A/B generated obs on v6_1) + `../../v7_final/extraction_coverage_ab_spec.md` (v7 spec/tables), the
   player-ID verification txts;
-  `../../extraction_selection/experiment_log.md` (net_verdict halo);
-  `../../phase_b/{criticality_screen,forced_schema_screen}/experiment_log.md`. ⚠️ the evidence manifest's
+  `../../extraction/selection/experiment_log.md` (net_verdict halo);
+  `../../extraction/situation_dimensions/criticality_screen/experiment_log.md` and
+  `../../memory_system/strategy_adoption/forced_schema_screen/experiment_log.md`. ⚠️ the evidence manifest's
   `dataset_path` is a stale absolute path; the report's `scripts/per_role_*` paths graduated to
   `evaluation/src/experiments/`.
 

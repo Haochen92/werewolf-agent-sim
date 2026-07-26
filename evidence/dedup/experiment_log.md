@@ -197,7 +197,7 @@ key (`is_swing` + alive-bucket + `consensus_direction`) and the hard pair-checks
 `info_landscape_class` / `exposure_class`; strategy points: `direction` / `honesty`) are exactly the
 situation differences a bi-encoder can't see, made deterministic. It only became possible because **v6
 grew `situation` from one prose blob into many structured dimensions**
-([dimension build spec](../phase_b/dimension_schema_build_spec.md)) — that granularity is much of why
+([dimension build spec](../extraction/situation_dimensions/dimension_schema_build_spec.md)) — that granularity is much of why
 current dedup looks different from the v4-era prompt work above. The freeze-old fix from §8 also shipped
 here. Current state: [report.md](report.md).
 
@@ -211,7 +211,7 @@ here. Current state: [report.md](report.md).
 - **Situation granularity** (§9) — `situation` grew from one prose blob into many dimensions (decomposed
   early for distinguishability; dimensionalized at v6 to mark critical moments); the structured dims are
   what made the deterministic gate possible. Schema history:
-  [dimension build spec](../phase_b/dimension_schema_build_spec.md).
+  [dimension build spec](../extraction/situation_dimensions/dimension_schema_build_spec.md).
 - **Discard vs keep** (§6) — the open lever; tactic settled (targeted > directional), strategy deferred.
 - **Conservative beats aggressive** (§5) — the reason `bounded` clustering is the batch default.
 

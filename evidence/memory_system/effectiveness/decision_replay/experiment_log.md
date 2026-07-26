@@ -428,7 +428,7 @@ null** — a point slightly FOR running one cheap screen before writing off the 
 ## 2026-06-15 — dimension design CRYSTALLIZED into a build spec (fork #2 chosen)
 
 Stopping-point fork decided: **#2 dimensions-first then freeze**. The full role×phase dimension
-expansion is now written up as a concrete build spec → **`evidence/phase_b/dimension_schema_build_spec.md`**
+expansion is now written up as a concrete build spec → **`evidence/extraction/situation_dimensions/dimension_schema_build_spec.md`**
 (the old→new field mapping, the mixin DAG, per-field embed/enum/numeric markers, composable-prompt
 registry, modules-touched + downstream ripple, cheap-first build order). DESIGN LOCKED, **no code
 written** pending sign-off. Key resolutions captured there (from the design discussion):
@@ -465,7 +465,7 @@ written** pending sign-off. Key resolutions captured there (from the design disc
 ## 2026-06-15 (s2) — first-principles cell-by-cell walkthrough → spec FINALIZED
 
 Re-walked every role×phase from the cell's actual goal (user drove the goals; not mechanical gating).
-Spec rewritten to v2 (`evidence/phase_b/dimension_schema_build_spec.md`). Outcomes:
+Spec rewritten to v2 (`evidence/extraction/situation_dimensions/dimension_schema_build_spec.md`). Outcomes:
 
 - **Gate collapsed to (role × {day, night}); 17→11 cells.** `day_discussion`+`day_vote` merge per role
   — same goal (the discussion is the target-finding process for the vote); the difference is the
@@ -511,8 +511,9 @@ Spec rewritten to v2 (`evidence/phase_b/dimension_schema_build_spec.md`). Outcom
   numbers within the SAME output (single-source, no drift). Pure-numeric + clean-negation extraction
   matters ONLY for the FT cross-encoder (fork-#3); the default reasoning-judge reranker reads
   prose+numbers holistically. (Logged in dimension spec §3.)
-- **⭐⭐PROCEDURAL MEMORY = the untested deceiver channel (new doc `evidence/phase_b/`
-  `procedural_memory_experiment.md`).** The system is TWO-TIER: episodic (`observations`: events+outcomes
+- **⭐⭐PROCEDURAL MEMORY = the untested deceiver channel (design record
+  `evidence/memory_system/effectiveness/v6_sp_ab/procedural_memory_experiment.md`).** The system is
+  TWO-TIER: episodic (`observations`: events+outcomes
   → inference → villager) + procedural (`strategy_points`: weighted situation→action rules → execution →
   deceiver). EVERY effectiveness measurement to date (paired A/B, decision-replay screen, wolf/SK
   diagnosis) used `observations` ONLY → the wolf/SK null is plausibly a CHANNEL MISMATCH, not a ceiling.

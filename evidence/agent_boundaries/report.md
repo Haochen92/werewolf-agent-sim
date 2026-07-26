@@ -193,7 +193,7 @@ superset is unsafe — i.e. the layer-2 enforcement the §2 model demands.
 **Verification.** Post-fix live game with all six checks active (`leakfix_smoke.log`):
 `=== Running Leak Tests ===` → 0 flags, `leak_check: {passed: true, leaks: []}`, batch exit 0; test
 suite 27 passed. Both smoke records carry the runtime fingerprint
-(`evidence/prompt_versioning/`), so they're self-describing.
+([experiment-provenance report](../tracing/fingerprinting/report.md)), so they're self-describing.
 
 **Lessons.**
 - **A boundary that doesn't reject isn't a boundary.** State schemas and `ChatPromptTemplate` both

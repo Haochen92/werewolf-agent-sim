@@ -151,7 +151,7 @@ forward:
 What did not carry forward: per-game **strategy points**. Under v7 the per-game SP extraction was dropped
 entirely — an SP earns its place only by generalizing across games, so SPs are now synthesized from cross-game
 observation clusters in consolidation, not minted per game. That decision, and the v6 dimensional schema, are
-documented in their own evidence folders (`phase_b/`, `v7_final/`); this study is the quality groundwork they
+documented in their owning evidence folders (`extraction/situation_dimensions/`, `v7_final/`); this study is the quality groundwork they
 built on.
 
 ## 8 · The v7 refresh (2026-06-19) — model A/B on the live store

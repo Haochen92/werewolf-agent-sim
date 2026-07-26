@@ -1,4 +1,4 @@
-"""Blind-spot fix pair (evidence/credit_blindspot_fix/): the contextual abstain rule and the
+"""Blind-spot fix pair (evidence/credit/blindspot_fix/): the contextual abstain rule and the
 find→lynch conversion channel — plus the freeze guards that keep every pre-registered instrument on
 the legacy grading.
 

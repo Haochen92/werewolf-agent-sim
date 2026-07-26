@@ -195,7 +195,7 @@ trustworthy numbers are the deterministic and outcome-anchored ones.**
    **[valid; a *different* experiment — measures having memory, not compounding]**
 4. `evidence/evaluation/source_map.md` — apparatus ledger of record. **[trust ledger]**
 5. Design docs: `evidence/v7_final/{plan.md, consolidation_design.md, discussion_credit_design.md,
-   production_design.md}`, `evidence/phase_b/dimension_schema_build_spec.md`. **[design current-state]**
+   production_design.md}`, `evidence/extraction/situation_dimensions/dimension_schema_build_spec.md`. **[design current-state]**
 6. Raw invalid-run data: `evidence/v7_final/{town_only_run1, town_only_run2, v2_full}/`
    (`v2_full/v2_salvage.py` = the repositioned all-memory-on A/B). **[invalid / confounded]**
 7. Executed validation harnesses (what actually *ran* vs what is specced):

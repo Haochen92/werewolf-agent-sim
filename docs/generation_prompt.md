@@ -52,7 +52,7 @@ table entry). Day discussion, in template order:
 **Human message**
 4. Turn header — `current_day`, `firing_brief`.
 5. Memory context — retrieved observations / strategy points + the verdict instructions
-   ([`prompts/memory.py`](../Agents/prompts/memory.py)); `previous_strategy` (the agent's own running
+   ([`prompts/memory/`](../Agents/prompts/memory/)); `previous_strategy` (the agent's own running
    notes, fed back privately).
 6. Shared transcript block (`_DISCUSS_TRANSCRIPT`):
    - `== Dead so far (public) ==` — the structured **dead roster** (player, revealed role, when/how
@@ -90,7 +90,7 @@ single-actor roles share `_night_template`; the 2-round wolf night discussion is
    construction is the boundary; templates are not trusted to filter.
 2. **Content boundary.** Prompt = rules + deterministic public facts + how-to-behave. Interpretations
    ("what signals mean") belong to memory, never hardcoded into prompts —
-   [`evidence/prompt_boundary/`](../evidence/prompt_boundary/experiment_log.md). The dead roster passes
+   [`evidence/generation_prompt/prompt_boundary/`](../evidence/generation_prompt/prompt_boundary/experiment_log.md). The dead roster passes
    this test (deterministic public fact); a "who is suspicious" hint would not.
 3. **Stable-early, volatile-late.** Static role-agnostic text at the head, per-turn content at the tail.
    Implicit caching currently doesn't fire on the game backend (see
@@ -101,7 +101,7 @@ single-actor roles share `_night_template`; the 2-round wolf night discussion is
    all-required fields (flash-lite drops optionals). Pre-action fields come **before** the action
    (prospective commitment: verdicts → strategy → action), so reasoning conditions the act.
 5. **Any prompt change is a new epoch.** Run records carry the `runtime_fingerprint` (prompt hash);
-   never compare across it ([`evidence/prompt_versioning/`](../evidence/prompt_versioning/)).
+   never compare across it ([fingerprinting build journey](../evidence/tracing/fingerprinting/experiment_log.md)).
 
 ## Current deltas (freshness: 2026-07-07)
 

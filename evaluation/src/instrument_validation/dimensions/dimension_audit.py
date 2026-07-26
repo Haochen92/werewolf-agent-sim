@@ -408,7 +408,7 @@ def main() -> int:
     ap.add_argument("--store", type=Path, default=Path("memory_stores/v6_1"),
                     help="v6 store for the stored-side internal-consistency bound")
     ap.add_argument("--out", type=Path,
-                    default=Path("evidence/phase_b/dimension_accuracy_audit/data"),
+                    default=Path("evidence/extraction/situation_dimensions/dimension_accuracy_audit/data"),
                     help="directory for the JSON artifact")
     ap.add_argument("--loadout", type=int, default=GameConfig.model_fields["vigilante_bullets"].default,
                     help="vigilante bullet loadout (game_config is not persisted; defaults to the "

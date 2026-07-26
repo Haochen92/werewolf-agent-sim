@@ -190,8 +190,8 @@ Lineage rides a manifest instead: embedded top-level keys for JSON-object artifa
 (`eval_results`, `batch_results`), a `<id>.manifest.json` **sidecar** for
 envelope-less JSONL `eval_sets`. Inputs are referenced by content hash
 (`{path, sha256, count}`) so staleness is detectable, forming a chain
-result → eval_set → batch run. Rationale + the staged design:
-[`evidence/refactor/provenance_lineage_rationale.md`](../evidence/refactor/provenance_lineage_rationale.md).
+result → eval_set → batch run. Current contract and build journey:
+[`evidence/tracing/fingerprinting/report.md`](../evidence/tracing/fingerprinting/report.md).
 (The manifest writer is forward-looking — legacy artifacts keep their original names
 and missing lineage.)
 

@@ -2,9 +2,9 @@
 
 > **Scope: the apparatus, not the retrieval verdict.** Covers how the v6 situation-**dimension** fills
 > are produced and, for the first time, *audited* against ground truth — plus what that audit re-opened.
-> The retrieval/gating design conclusions live in `phase_b/`; this spoke is the measurement of whether
+> The retrieval/gating design conclusions live in `extraction/situation_dimensions/`; this spoke is the measurement of whether
 > the fills those screens gated on were even correct. Source of record:
-> [`../../phase_b/dimension_accuracy_audit/experiment_log.md`](../../phase_b/dimension_accuracy_audit/experiment_log.md).
+> [`../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md`](../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md).
 > Lens + skeleton: [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
 > **Verdict: ⚠️ the fills were never checked, and the $0 audit found some BROKEN.** `players_alive`
@@ -127,10 +127,10 @@ re-screen).
   `_computed_players_alive`) + threading in `Agents/nodes/day/flow.py`, `Agents/graphs/parent.py`,
   `Agents/state/day.py`. Tests: `tests/test_dimension_audit.py`, `tests/test_situation_dim_override.py`.
 - **L2 artifacts (pointed-at):**
-  [`../../phase_b/dimension_accuracy_audit/experiment_log.md`](../../phase_b/dimension_accuracy_audit/experiment_log.md)
+  [`../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md`](../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md)
   (§4 tables, §5 RE-OPEN, §6 fill fix) + `data/dimension_audit_20260702_105203.json`. Motivating finding
   + schema spec: [`../hardening_pass/experiment_log.md`](../hardening_pass/experiment_log.md) §2.1, §5, §6;
-  `phase_b/dimension_schema_build_spec.md`.
+  `extraction/situation_dimensions/dimension_schema_build_spec.md`.
 
 *Written 2026-07-02 from the dimension-accuracy audit + hardening pass. Apparatus characterised; whether
 retrieval gating actually helps is chapter 3, and is now RE-OPENED pending the held re-screen.*

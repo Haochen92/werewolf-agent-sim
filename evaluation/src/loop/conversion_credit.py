@@ -1,6 +1,6 @@
 """v7 blind-spot fix 2 — the find→claim→lynch CONVERSION endpoint (deterministic, zero spend).
 
-Why this channel exists (evidence/credit_blindspot_fix/): the v7 endpoint showed the credit ledger is
+Why this channel exists (evidence/credit/blindspot_fix/): the v7 endpoint showed the credit ledger is
 structurally blind to concealment advice. "Maintain silence re: investigation results" was retrieved
 179x with follow_count=0 — a concealment SP is never "followed" as a discrete creditable act, so the
 follow-joined ledger gives it zero utility signal and prune/evict can never touch it. Meanwhile the

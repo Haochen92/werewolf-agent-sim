@@ -1,7 +1,7 @@
 """Full v6 mixin-DAG cells (step 4A). Guards the invariants across all 11 concrete cells: the
 registry covers exactly the valid (role, action_phase) combinations, every cell is all-required
 (flash-lite), the criticality numbers + direction enums stay OUT of the embedding string, and the
-`_Embed` marker never reaches a model. See evidence/phase_b/dimension_schema_build_spec.md §2."""
+`_Embed` marker never reaches a model. See evidence/extraction/situation_dimensions/dimension_schema_build_spec.md §2."""
 
 import json
 import typing

@@ -190,8 +190,9 @@ consensus-direction hindsight leak was found and driven to 0%). But the critical
 only weakly — the headline endgame-concentration effect rested on a held-out subset of **n=7**, too
 underpowered to call a clean win. The honest call was HOLD.
 
-*Source: `phase_b/dimension_schema_build_spec.md`; `phase_b/v6_full_store.md`;
-`phase_b/criticality_screen/experiment_log.md`.*
+*Source: `extraction/situation_dimensions/dimension_schema_build_spec.md`;
+`extraction/situation_dimensions/v6_full_store.md`;
+`extraction/situation_dimensions/criticality_screen/experiment_log.md`.*
 
 ### v6_1 — the *second* paired A/B (on the dimension store): the content reframe
 
@@ -315,7 +316,8 @@ surviving to a $65 null. Honest negatives and a retracted claim beat a fragile p
 - **This document produces no new data** — it is a pointer-and-narrative layer over existing records.
   Authoritative numbers and their provenance live in the cited source folders:
   `evidence/memory_system/effectiveness/` (Phase 0–2, v5, v6_1), `evidence/dedup/` (Phase 2),
-  `evidence/phase_b/` (v6), `evidence/v7_final/` (v7), and the loop code at `evaluation/src/loop/`.
+  `evidence/extraction/situation_dimensions/` (v6), `evidence/v7_final/` (v7), and the loop code at
+  `evaluation/src/loop/`.
 - Where this synthesis restates a statistic (e.g. 70%→97% p=0.012; v7 town +17→+33pp win, reranked +33pp p=0.013), the figure is
   quoted from those folders, not recomputed here; the effectiveness A/B and v5 pilot figures were
   independently re-verified against the raw JSONLs during this synthesis.

@@ -47,7 +47,7 @@ class LoopConfig:
     # (a) credit
     credit: bool = True
     abstain_credit: str = "neutral"        # town-abstain grading in the credit LEDGER (fix 1 of the v7
-    #   endpoint blind-spot pair; evidence/credit_blindspot_fix/). "neutral" = frozen legacy bucket —
+    #   endpoint blind-spot pair; evidence/credit/blindspot_fix/). "neutral" = frozen legacy bucket —
     #   abstain never moves an SP's utility, which is how the endpoint's always-abstain SPs pinned at
     #   0.00 and survived prune. "deadlock_negative" = an abstain on a day that resolved to NO LYNCH
     #   scores negative (the opportunity-cost/deadlock case, 95% of ON-arm abstains in the endpoint);

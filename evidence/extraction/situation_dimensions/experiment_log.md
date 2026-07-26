@@ -224,7 +224,7 @@ to close.
 ## §5 · The v6 design — a per-cell schema from two rules
 
 A first-principles, cell-by-cell walkthrough (2026-06-15; design frozen in
-[`../../phase_b/dimension_schema_build_spec.md`](../../phase_b/dimension_schema_build_spec.md)) rebuilt the
+[`dimension_schema_build_spec.md`](dimension_schema_build_spec.md)) rebuilt the
 dimensions from two generative rules — a **cell** being one situation schema per (role, phase), the unit the
 rest of this section builds on. Design virtues below are stated **by construction**; whether they
 *hold* is §6–§7.
@@ -292,7 +292,7 @@ The build was gated cheap-first (spec §9): build one cell, screen it, roll the 
 
 **Step 1–3 — villager·day cell → `v6_0` store → the criticality screen.** 119 raw villager·day
 observations, re-mined from the 20 frozen v5 games. The screen
-([`../../phase_b/criticality_screen/experiment_log.md`](../../phase_b/criticality_screen/experiment_log.md))
+([`criticality_screen/experiment_log.md`](criticality_screen/experiment_log.md))
 asks the schema's core question: *if you condition retrieval on the criticality regime, do villager
 day-votes improve?* Both arms rank the same candidate pool with the same embedding; the only delta is a
 conditioning term (`cosine − λ·|Δplayers_alive| … + μ·[is_swing match]`); query criticality is computed
@@ -324,7 +324,7 @@ rewrite is actually credited on:
   +0.120** (n=125, paired). The dimensional rewrite made *retrieval* genuinely better, independent of any
   conditioning.
 - **The schema is safe where the old content was harmful** (the forced-schema screen,
-  [`../../phase_b/forced_schema_screen/experiment_log.md`](../../phase_b/forced_schema_screen/experiment_log.md)).
+  [`../../memory_system/strategy_adoption/forced_schema_screen/experiment_log.md`](../../memory_system/strategy_adoption/forced_schema_screen/experiment_log.md)).
   Forcing the model to rule each retrieved memory applicable **hurt the vote on v5 content (−0.104)** via
   over-caution, but was **neutral on v6 (+0.021)**, and v6 beat v5 *specifically under the forced schema*
   (paired flips 8→v6 vs 3→v5) — the dimensions help when *engaged*, not when passively dumped.
@@ -342,7 +342,7 @@ reranker, the gate, and the reward channel — **but do not claim criticality-co
 lever.** The store was built out (17 namespaces, ~919 obs), with two defects logged and one fixed: player-ID
 naming violations concentrated in night cells (**22.1%** — degrade recall, no cross-game leak; accepted +
 flagged), and a `consensus_direction` hindsight leak (set against the outcome, not the agent's expressed
-read) fixed to ~0% detectable ([`../../phase_b/v6_full_store.md`](../../phase_b/v6_full_store.md)).
+read) fixed to ~0% detectable ([`v6_full_store.md`](v6_full_store.md)).
 
 ## §7 · The reliability audit — the fills were never checked, and two are worse than a constant
 
@@ -356,7 +356,7 @@ because production dimension gating keys on `players_alive`(bucketed) / `is_swin
 inaccurate, those screens tested noise, and their nulls are *uninformative rather than negative*.**
 
 The $0, deterministic audit that followed
-([`../../phase_b/dimension_accuracy_audit/experiment_log.md`](../../phase_b/dimension_accuracy_audit/experiment_log.md))
+([`dimension_accuracy_audit/experiment_log.md`](dimension_accuracy_audit/experiment_log.md))
 scored ~20k query-side situation objects against truth computed from each case's own frozen board, with a
 **pre-registered** rule (RE-OPEN if any gated dim < 0.80) and a mandatory epistemic split (agent-knowable
 fill error vs vs-omniscient disagreement):
@@ -447,7 +447,7 @@ Criticality-ordered by how much each caps a claim; freshness 2026-07-04.
    threshold collapses whole namespaces into one blob, because the shared section-label scaffolding
    ("Information landscape: … Stakes: …") inflates baseline similarity. The structured gate-fields are
    well-distributed and the fix is an *explicit predicate over the structured fields* rather than a cosine
-   threshold — designed ([`../../phase_b/dedup_clustering_and_sp_extraction_plan.md`](../../phase_b/dedup_clustering_and_sp_extraction_plan.md)),
+   threshold — designed ([`../../dedup/dedup_clustering_and_sp_extraction_plan.md`](../../dedup/dedup_clustering_and_sp_extraction_plan.md)),
    not built. It also implies the embed text should be a label-stripped representation distinct from the
    display text.
 6. **The reward channel is designed, not exercised.** The valenced-subset procedural reward (§5) is the
@@ -504,13 +504,13 @@ ride the v1 credit-wiring batch; existing stores keep their LLM-era fills.
 - **Primary dated records** (the sources; one representative artifact from each is pulled inline above):
   situation-summary golden study
   [`../situation_summary/experiment_log.md`](../situation_summary/experiment_log.md) · v6 build spec
-  [`../../phase_b/dimension_schema_build_spec.md`](../../phase_b/dimension_schema_build_spec.md) · design
+  [`dimension_schema_build_spec.md`](dimension_schema_build_spec.md) · design
   walkthrough [`../../memory_system/effectiveness/decision_replay/experiment_log.md`](../../memory_system/effectiveness/decision_replay/experiment_log.md)
-  · screens [`criticality_screen`](../../phase_b/criticality_screen/experiment_log.md) /
-  [`forced_schema_screen`](../../phase_b/forced_schema_screen/experiment_log.md) · store build
-  [`../../phase_b/v6_full_store.md`](../../phase_b/v6_full_store.md) · hardening pass
+  · screens [`criticality_screen`](criticality_screen/experiment_log.md) /
+  [`forced_schema_screen`](../../memory_system/strategy_adoption/forced_schema_screen/experiment_log.md) · store build
+  [`v6_full_store.md`](v6_full_store.md) · hardening pass
   [`../../evaluation/hardening_pass/experiment_log.md`](../../evaluation/hardening_pass/experiment_log.md) ·
-  dimension audit [`../../phase_b/dimension_accuracy_audit/experiment_log.md`](../../phase_b/dimension_accuracy_audit/experiment_log.md).
+  dimension audit [`dimension_accuracy_audit/experiment_log.md`](dimension_accuracy_audit/experiment_log.md).
 - **Live code (current paths).** Schema + mixin DAG + `compose_situation_embed`:
   [`Agents/schemas/memory.py`](../../../Agents/schemas/memory.py). Live query + deterministic override:
   [`Agents/memory/retrieval/situation_agent.py`](../../../Agents/memory/retrieval/situation_agent.py).

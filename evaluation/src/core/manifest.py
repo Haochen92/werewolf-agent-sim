@@ -3,7 +3,7 @@
 One writer for the whole eval data plane. A manifest answers "what produced
 this?": the git commit, the literal config, and the input datasets by content
 hash — so silent drift (an input regenerated under the same name) is detectable.
-Rationale and the staged design: ``evidence/refactor/provenance_lineage_rationale.md``;
+Current contract and build journey: ``evidence/tracing/fingerprinting/``;
 the layer rule (where lineage lives): ``CLAUDE.md`` → Eval Architecture.
 
 Two carriers, chosen by the artifact's shape:

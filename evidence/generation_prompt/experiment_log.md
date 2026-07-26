@@ -156,7 +156,7 @@ the shape of an agent turn:
   silence instead of playing. Stripping the prescriptive prose halved police-style messages and
   set the neutral CORE_STRATEGY template every later role block follows. The principle that
   survived: **the prompt teaches how to talk and what the rules are; memory owns what signals
-  mean** ([../prompt_boundary/experiment_log.md](../prompt_boundary/experiment_log.md)).
+  mean** ([prompt_boundary/experiment_log.md](prompt_boundary/experiment_log.md)).
 - **`firing_brief`** (`5672e22`). Live runs showed a domination loop: an agent cleared of its
   obligation re-derived what to say from scratch and re-landed on the same generic line. The fix
   injects the scheduler's firing reason as a one-line turn brief ("you were addressed by X —
@@ -243,7 +243,7 @@ wolf's copy silently left out the serial killer — the kind of bug prose hides,
 schema to catch an omission. It is now generated from the role registry (`bbc7c5b`), so a new role
 shows up in every faction's brief automatically.
 
-The second was the [prompt-claims audit](../prompt_claims_audit/experiment_log.md), which took
+The second was the [prompt-claims audit](prompt_claims_audit/experiment_log.md), which took
 every remaining tactical claim in the role prose and tested it against metrics the games already
 track. The investigator's "conceal your findings, let consensus build" framing turned out to be
 actively harmful. It suppressed the sharing of results, the suppression traced back to the prompt,
@@ -450,6 +450,6 @@ for legibility 2026-07-08 (no verdicts or numbers changed); the owning records l
 above (strategy_adoption, sequential_discussion §7, prompt_boundary, role_set, caching,
 decision_replay, v6_sp_ab, prompt_claims_audit, prompt_versioning). Current-state reference:
 [`docs/generation_prompt.md`](../../docs/generation_prompt.md). Prompt provenance mechanism: every
-run record carries `prompt_bundle_hash` + git SHA ([../prompt_versioning/](../prompt_versioning/))
+run record carries `prompt_bundle_hash` + git SHA ([../tracing/fingerprinting/](../tracing/fingerprinting/))
 — with its known gap: output schemas live outside `Agents/prompts/`, so schema changes are covered
 only by the git SHA, not the bundle hash.*

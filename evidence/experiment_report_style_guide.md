@@ -199,7 +199,7 @@ Table of files produced (eval sets, results, configs). Keep it factual.
 number a reader cannot trace back to the commit and config that made it is not reproducible, and the
 report is where that pointer naturally lives. This is the same back-reference the eval-architecture
 convention requires of every record — see `CLAUDE.md → Eval Architecture` and
-`evidence/refactor/provenance_lineage_rationale.md`.
+`evidence/tracing/fingerprinting/report.md`.
 
 **Co-locate artifacts with the report.** All files that support the report — eval sets, eval results, eval configs — should live in the same `evidence/<experiment>/` folder alongside the report. This keeps the experiment self-contained and reviewable without hunting across directories. When artifacts are generated elsewhere (e.g., `eval_results/`), move them into the evidence folder and clean up the originals.
 

@@ -226,7 +226,7 @@ one analysis a false "field is empty everywhere" conclusion.
 The §2.1 finding put to the test: recompute deterministic truth for every LLM-filled query-side
 dimension in the loop-era sidecars and compare. Suite 413 → 421 passed. Full design, pre-registered
 decision rule, and interpreted tables live in the audit's own log —
-[`../../phase_b/dimension_accuracy_audit/experiment_log.md`](../../phase_b/dimension_accuracy_audit/experiment_log.md)
+[`../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md`](../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md)
 — this beat records the verdict and what it changes.
 
 **What was built.** `evaluation/src/experiments/dimension_audit.py` ($0, deterministic; the paid
@@ -281,7 +281,7 @@ and `bullets_left` should come from the game record.
 
 The §5 structural corollary, green-lit as a $0 item (the paid re-screen stays held). Suite
 421 → 431 passed (10 new tests). Detail section lives in the audit's own log
-([`../../phase_b/dimension_accuracy_audit/experiment_log.md`](../../phase_b/dimension_accuracy_audit/experiment_log.md) §6).
+([`../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md`](../../extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md) §6).
 
 **The change.** At query time, after the situation LLM returns, `situation_agent.py` now
 overwrites the agent-knowable dimensions from game state before dims and embeds are composed:

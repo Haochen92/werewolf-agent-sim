@@ -305,7 +305,7 @@ every other variable constant and staying re-runnable; re-reading the trace each
 nondeterministic retrieval and possibly-drifted models, and a *mutable* set silently orphans every result
 computed against its old contents. So cases are sampled into immutable, hash-linked frozen sets — the
 stable input to all replay/judging/training (`decision_replay/`, the same-seed `paired_ab/`, hash-lineage
-in `refactor/provenance_lineage_rationale.md`).
+in `tracing/fingerprinting/report.md`).
 
 The flow is four stages, not duplicated stores (`evaluation/README.md` "Data plane"):
 
@@ -333,7 +333,7 @@ and *unattributable confounds* — exactly why win-rate alone can mislead. Concr
 store/namespace change underneath it — invisible without a stamp. The honest boundary: this buys
 *traceability and drift-detection, not byte-reproducibility* — LLM output isn't byte-reproducible (temp-0
 even differs across backends), so the target is statistical equivalence from a provably-identical setup
-(`refactor/provenance_lineage_rationale.md`, `model_drift/drift_surfaces_and_guards.md`).
+(`tracing/fingerprinting/report.md`, `model_drift/drift_surfaces_and_guards.md`).
 
 The mechanism produces four terms, easily confused:
 
@@ -342,14 +342,15 @@ The mechanism produces four terms, easily confused:
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | --------------------------------- |
 | **git SHA** (`git_commit`) | the full commit hash (`git rev-parse HEAD`), plus a `git_dirty` flag for uncommitted edits to tracked files                  | inside`runtime_fingerprint`            | code is committed (or dirtied)    |
 | **release**                | that*same SHA*, promoted to Langfuse's first-class, filterable trace field (§2.1)                                           | trace`release` column                  | = the SHA                         |
-| **prompt_bundle_hash**     | SHA-256 (16 hex) over every`Agents/prompts/*.py` — a targeted fingerprint of just the prompts + rendering layer             | inside`runtime_fingerprint`            | a prompt / formatter file changes |
-| **runtime_fingerprint**    | the*full bundle*: `git_commit` + `git_dirty` + `prompt_bundle_hash` + model IDs + temps/thinking + backend + embedding model | trace**metadata** + every batch record | any of the above                  |
+| **prompt_bundle_hash**     | SHA-256 (16 hex) over top-level `Agents/prompts/*.py`; nested-package gap documented in the fingerprinting report            | inside`runtime_fingerprint`            | a covered prompt / formatter file changes |
+| **runtime_fingerprint**    | the run-level bundle declaration: Git state + prompt hash + principal model IDs, params, backend, and embedding settings     | trace **metadata** + every batch record | any recorded field changes        |
 
 **The join key.** The same `git_commit` SHA is written into *three* places: the trace's `release` field,
 the trace metadata's `runtime_fingerprint`, and every `batch_results` JSONL record. Because the value is
 identical in all three, it stitches them together. The workflow: filter traces by `release` in the UI,
-read the full fingerprint from the trace metadata, line that up with the batch records, then
-`git checkout` the exact code. Each form has its own job — **`release` is the cheap one-field filter,
+read the full fingerprint from the trace metadata, line that up with the batch records, then, for a
+clean-tree run, `git checkout` the exact committed code. Each form has its own job —
+**`release` is the cheap one-field filter,
 `runtime_fingerprint` is the complete record, and the SHA is the join key between them.**
 (`prompt_bundle_hash` is the sharper signal when you specifically care whether two runs had identical
 prompts — e.g. comparing A/B arms across a code change that didn't touch prompts.)
@@ -357,7 +358,8 @@ prompts — e.g. comparing A/B arms across a code change that didn't touch promp
 Two layers, by design — **code vs data:**
 
 - **Code level (git-versioned):** the `runtime_fingerprint` above. Model / prompt / backend are *code*,
-  so they're versioned in git, not copied into the data. (Details: `evidence/prompt_versioning/`.)
+  so they're versioned in git, not copied into the data. (Current details and limitations:
+  `evidence/tracing/fingerprinting/report.md`.)
 - **Data level (case-stamped):** `EvalProvenance{store_dir, reranking_enabled, filtering_enabled}` on
   every `EvalCase`. The frozen dataset embeds the case but strips it from the trace, so without this the
   store/config that *conditioned a retrieval* is only recoverable by re-joining the trace. Stamping it

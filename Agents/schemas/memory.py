@@ -50,7 +50,7 @@ def _compose_outcome(impact_on_final_game_outcome: str, immediate_response: str 
 
 
 # ── v6 dimension schema (Phase B cell build) ────────────────────────────────────────────────
-# A per-cell `SituationSchema` mixin DAG (build spec: evidence/phase_b/dimension_schema_build_spec.md).
+# A per-cell `SituationSchema` mixin DAG (build spec: evidence/extraction/situation_dimensions/dimension_schema_build_spec.md).
 # `_Embed` marks which dimension fields fold into the searchable embedding string; the unmarked
 # numeric/enum fields (criticality numbers, direction enums) are reranker-only — the embedding
 # bi-encoder mangles magnitudes/signs, so they are pulled out (their *implication* is phrased into a

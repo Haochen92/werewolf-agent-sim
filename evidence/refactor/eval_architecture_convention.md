@@ -4,7 +4,7 @@
 **Status:** Decision record. The operational form of this convention lives in `CLAUDE.md`
 ("Eval Architecture"); this is the narrative — the tension and why it was resolved this way.
 Companion to [structure_audit.md](structure_audit.md) and
-[provenance_lineage_rationale.md](provenance_lineage_rationale.md).
+[the experiment-provenance report](../tracing/fingerprinting/report.md).
 
 ---
 
@@ -53,11 +53,12 @@ experiment-record begins."
 | `evidence/<experiment>/` | the **record** | narrative + data artifacts + a **pointer** back to the code that produced it. Store the pointer, never a copy of the function. |
 | `evaluation/config/ evaluation/frozen_eval_sets/ evaluation/eval_results/ batch_results/` | pipeline **I/O** | the conveyor belt between the two; see the *Data plane* section in `evaluation/README.md`. |
 
-The pointer is not aspirational: the provenance manifest's `runtime_fingerprint` (git SHA) + embedded
-config *is* the back-reference from an evidence artifact to the exact `evaluation/` code and version
-that produced it (see [provenance_lineage_rationale.md](provenance_lineage_rationale.md)). That is
-what makes "evidence points at code" a mechanism rather than a hope — and what lets the record avoid
-carrying its own copy of the function.
+The pointer is not aspirational: provenance records carry a Git revision and embedded config, while
+batch records additionally carry the fuller `runtime_fingerprint`. Together they are the
+back-reference from an evidence artifact to the `evaluation/` code and settings that produced it
+(see [the experiment-provenance report](../tracing/fingerprinting/report.md)). That is what makes
+"evidence points at code" a mechanism rather than a hope — and what lets the record avoid carrying
+its own copy of the function.
 
 ## 3. The lifecycle that keeps the layers honest
 

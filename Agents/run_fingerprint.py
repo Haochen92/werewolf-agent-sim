@@ -1,15 +1,18 @@
-"""Runtime fingerprint: stamp results with the exact bundle that produced them.
+"""Runtime fingerprint: stamp results with an execution-bundle provenance label.
 
 A game result is only meaningful relative to the (code, prompts, models, params,
 backend) bundle that generated it — model identity, prompt text, sampling params,
 and even the API backend (Google AI vs Vertex differ at temp=0) all condition
 outputs. Prompts here are code, versioned in git, so instead of an external
-prompt registry the fingerprint records the git commit plus a content hash of
-the prompt modules, alongside the resolved model IDs and generation params.
+prompt registry the fingerprint records the git commit/dirty state plus a content
+hash of the covered prompt modules, alongside principal model IDs and generation
+params. A clean commit is reconstructable; a dirty stamp detects drift but does
+not preserve the diff.
 
 Consumed by ``Agents.tracing`` (trace metadata + Langfuse release field) and
 ``scripts/run_batch.py`` (per-game JSONL records). See
-``evidence/prompt_versioning/`` for the analysis behind this design.
+``evidence/tracing/fingerprinting/report.md`` for the current contract and
+``experiment_log.md`` beside it for the build journey.
 """
 
 from __future__ import annotations
@@ -58,16 +61,18 @@ def git_revision() -> dict:
 
 @lru_cache(maxsize=1)
 def prompt_bundle_hash() -> str:
-    """SHA-256 over the prompt modules (sorted), truncated to 16 hex chars.
+    """SHA-256 over top-level prompt modules (sorted), truncated to 16 hex chars.
 
     This is the prompt surface as content: it changes whenever any prompt text
-    changes, including uncommitted edits the git SHA alone would miss. The glob
-    covers all of ``Agents/prompts/``, so the bundle spans both the prompt
-    *strings* and the *rendering layer* (formatters.py / prompt_inputs.py) that
-    assembles them into model-visible text — a formatter edit changes what the
-    model sees and correctly bumps this hash. (Records stamped before the
-    rendering layer joined the bundle, 2026-06-10, carry the older hash purely
-    from the smaller glob, not a prompt change — see evidence/prompt_versioning/.)
+    in a covered top-level file changes, including uncommitted edits the git SHA
+    alone would miss. The bundle includes the top-level prompt strings and
+    rendering layer (prompt_formatters.py / prompt_inputs.py). It currently does
+    NOT recurse into ``prompts/extraction/`` or ``prompts/memory/``; that known
+    coverage gap is documented in evidence/tracing/fingerprinting/report.md.
+
+    Records stamped before the rendering layer joined the bundle, 2026-06-10,
+    carry an older hash purely from the smaller glob, not a prompt change — see
+    the companion experiment_log.md.
     """
     digest = hashlib.sha256()
     for path in sorted(_PROMPTS_DIR.glob("*.py")):
@@ -77,12 +82,12 @@ def prompt_bundle_hash() -> str:
 
 
 def runtime_fingerprint() -> dict:
-    """Resolve the full generation bundle from env vars + factory defaults.
+    """Resolve the principal generation settings from env vars + factory defaults.
 
-    Mirrors exactly how the model factories in ``Agents.llm_factory`` resolve
-    their configuration (same env vars, same defaults, imported constants) so the
-    stamp can't drift from the behavior. The import is lazy to keep ``tracing``
-    (which calls this) import-light.
+    Mirrors the original Google/Vertex accessors in ``Agents.llm_factory`` using
+    the same env vars, defaults, and imported constants. Newer backend/per-call
+    paths require separate coverage; see the report's known gaps. The import is
+    lazy to keep ``tracing`` (which calls this) import-light.
     """
     from Agents.llm_factory import (
         DEFAULT_EMBEDDING_DIMS,

@@ -80,6 +80,7 @@ def compute_metrics(day_channel: list[dict]) -> dict:
 
 
 def run_game_and_dump(out_path: Path, memory: bool = False) -> list[dict]:
+    from Agents.config import RunConfig
     from Agents.main import run_game
 
     if memory:
@@ -94,9 +95,11 @@ def run_game_and_dump(out_path: Path, memory: bool = False) -> list[dict]:
         mpc = {"seed_enabled": False, "dump_enabled": False}
 
     outcome = run_game(
-        memory_config=memory_config,
-        session_id="smoke_discussion",
-        memory_persistence_config=mpc,
+        RunConfig(
+            memory_config=memory_config,
+            session_id="smoke_discussion",
+            memory_persistence=mpc,
+        )
     )
     day_channel = [
         m.model_dump() if hasattr(m, "model_dump") else m

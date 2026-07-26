@@ -1,0 +1,41 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+<frozen runpy>:128: RuntimeWarning: 'evaluation.src.replay.decision_screen.checkpoint_replay' found in sys.modules after import of package 'evaluation.src.replay.decision_screen', but prior to execution of 'evaluation.src.replay.decision_screen.checkpoint_replay'; this may result in unpredictable behaviour
+Loading snapshot 'full_store' from evidence/credit/blindspot_fix/replay_arms/full_store
+  Indexing 168 memory items from observations.json and strategy_points.json
+    indexed 25/168 items
+    indexed 50/168 items
+    indexed 75/168 items
+    indexed 100/168 items
+    indexed 125/168 items
+    indexed 150/168 items
+    indexed 168/168 items
+Loading snapshot 'legacy_pruned' from evidence/credit/blindspot_fix/replay_arms/legacy_pruned
+  Indexing 152 memory items from observations.json and strategy_points.json
+    indexed 25/152 items
+    indexed 50/152 items
+    indexed 75/152 items
+    indexed 100/152 items
+    indexed 125/152 items
+    indexed 150/152 items
+    indexed 152/152 items
+Loading snapshot 'fixed_pruned' from evidence/credit/blindspot_fix/replay_arms/fixed_pruned
+  Indexing 142 memory items from observations.json and strategy_points.json
+    indexed 25/142 items
+    indexed 50/142 items
+    indexed 75/142 items
+    indexed 100/142 items
+    indexed 125/142 items
+    indexed 142/142 items
+Loading snapshot 'fixed_resynth' from evidence/credit/blindspot_fix/replay_arms/fixed_resynth
+  Indexing 142 memory items from observations.json and strategy_points.json
+    indexed 25/142 items
+    indexed 50/142 items
+    indexed 75/142 items
+    indexed 100/142 items
+    indexed 125/142 items
+    indexed 142/142 items
+Sweeping 100 cases x 5 arms (empty, full_store, legacy_pruned, fixed_pruned, fixed_resynth)
+Wrote evidence/credit/blindspot_fix/replay_onepoch/checkpoint_replay_town_20260721_080127.json
+Wrote evidence/credit/blindspot_fix/replay_onepoch/checkpoint_replay_town_20260721_080127.md

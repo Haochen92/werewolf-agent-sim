@@ -1,0 +1,64 @@
+
+==========================================================================
+evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl  [all_disabled]   (2 games, 119 discussion messages)
+==========================================================================
+  STOCK  msgs:  26 / 119  (21.8%)   total marker hits: 44
+  POLICE msgs:  24 / 119  (20.2%)   total marker hits: 27
+  top STOCK : [('i agree', 21), ('i agree with', 15), ('good point', 4), ('throw', 2), ('exactly what the wolves want', 1), ('valid point', 1)]
+  top POLICE: [('deflect', 10), ('defensive', 8), ('been quiet', 2), ('stayed quiet', 2), ('too passive', 1), ('suspiciously quiet', 1), ('too quiet', 1), ('just agreeing', 1)]
+  -- STOCK examples --
+    d1 player_2 ['i agree with', 'i agree']: "I agree with player_5. It is way too early to start pointing fingers, we don't want to accidentally eliminate a villager on day one based on nothing. Let's just"
+    d1 player_3 ['i agree with', 'i agree', 'good point']: 'I agree with the need for caution, but player_8 makes a good point about not staying silent. Maybe we should each just share who we are watching closely, even i'
+    d1 player_7 ['i agree with', 'i agree', 'exactly what the wolves want']: "I agree with player_8. While we shouldn't rush, sitting back is exactly what the wolves want. Let's ask each other questions to provoke reactions. Does anyone e"
+    d1 player_2 ['throw']: "I don't think suggesting caution is playing it safe, player_7. It is just common sense on day one. I'd rather wait until we have a reason to suspect someone tha"
+    d2 player_3 ['good point']: "It's a good point, player_4. If we look at who was trying to redirect the conversation away from player_2 yesterday, that might show us who their allies are. I'"
+    d2 player_6 ['i agree']: "It is interesting to note the focus on player_2's caution. While I agree we need to be careful about Day 1 dynamics, player_2's defense that they would not draw"
+    d2 player_7 ['i agree with', 'i agree']: "It's telling that I was targeted after pressing player_2. Whether or not player_2 is a wolf, their persistence in stalling is blocking us from identifying patte"
+    d2 player_8 ['i agree']: 'Player 7, I agree that the target selection is telling. Regarding the quiet players, player 5 and player 1 have been relatively passive while others debate. We '
+  -- POLICE examples --
+    d1 player_1 ['too passive']: 'I see the tension between player_2 and player_7. player_2, your insistence on total caution is understandable, but playing too passively is also a classic way f'
+    d1 player_6 ['defensive']: "I think we need to balance both sides here. While player_2 wants to avoid mistakes, player_7 and player_1 are right that we need some engagement. Let's start by"
+    d2 player_6 ['defensive', 'suspiciously quiet']: "It is interesting to note the focus on player_2's caution. While I agree we need to be careful about Day 1 dynamics, player_2's defense that they would not draw"
+    d2 player_1 ['been quiet']: "I haven't been quiet intentionally, I've just been observing the arguments between player 2 and player 7 to see if any real evidence emerged. If player 7 was at"
+    d2 player_4 ['deflect']: "Player 1, your point about focusing on player 2's potential defenders is sharper than just looking at silence. If player 2 is a wolf, they wouldn't necessarily "
+    d2 player_3 ['deflect']: "Player 5, I understand the need for caution, but it's not just about being loud. It's about consistency. Player 2 has been consistently dismissive of any lines "
+    d2 player_4 ['defensive']: "Player 5, you're misinterpreting our scrutiny as 'building a narrative' just to lynch someone. It's not about how loud they are, it's about the consistency of t"
+    d2 player_5 ['defensive']: "Player 4, I'm not defending a specific person, I'm defending the process. If we lynch someone based on 'defensive rhetoric' alone, we're guessing, not solving. "
+
+==========================================================================
+evidence/generation_prompt/prompt_boundary/post_seq.jsonl  [all_disabled]   (2 games, 79 discussion messages)
+==========================================================================
+  STOCK  msgs:  11 / 79  (13.9%)   total marker hits: 19
+  POLICE msgs:   8 / 79  (10.1%)   total marker hits: 8
+  top STOCK : [('i agree', 10), ('i agree with', 8), ('fair point', 1)]
+  top POLICE: [('deflect', 6), ('stayed quiet', 1), ('defensive', 1)]
+  -- STOCK examples --
+    d1 player_3 ['i agree with', 'i agree']: "I agree with player_5, we don't have enough information to go on right now. Rushing to find a wolf this early usually just creates chaos. Let's see who is quiet"
+    d2 player_8 ['i agree with', 'i agree']: 'I agree with player 2 that we need specific reads. Player 5, you advocated heavily for caution yesterday. Given the loss of player 4, does that still seem like '
+    d2 player_5 ['i agree']: 'Caution is still our best bet because guessing blindly just gives the wolves an easier path to winning. Getting aggressive without any actual evidence is exactl'
+    d2 player_3 ['i agree with', 'i agree']: "Caution is sensible, but I agree with player 2 that we need to stop looping on strategy and start putting names down. We're running out of days to gather inform"
+    d2 player_6 ['i agree with', 'i agree']: "I agree with player 3's proposal for a deadline. To force information, maybe we should all explicitly state who we find most suspicious by the end of this perio"
+    d2 player_8 ['i agree with', 'i agree']: "I agree with the idea of a soft deadline to force some engagement. Since we are all looking for patterns, I think it's fair that everyone puts a name forward. P"
+    d2 player_3 ['i agree with', 'i agree']: "Player 5, pinning suspicion on player 6 just for having a theory seems a bit premature, especially since we're all trying to make sense of the same limited data"
+    d2 player_7 ['i agree with', 'i agree']: "I agree with the soft deadline. If we don't have a voting record, we create one through pressure. Player 5, your suspicion of player 6 feels like you're trying "
+  -- POLICE examples --
+    d2 player_2 ['deflect']: 'I support the soft deadline proposal. Since we have no voting record, we need to force players to take a stand. If someone refuses to provide a name or deflects'
+    d2 player_6 ['deflect']: 'Player 5, pinning me as suspicious simply because I offered a theory on kill patterns while you were the one championing extreme caution feels like a deflection'
+    d2 player_5 ['deflect']: "I'm not trying to deflect, I'm simply responding to the group's request for a name. I pointed to your theory because it framed the night kill in a way that didn"
+    d2 player_8 ['deflect']: 'Player 5, you mention being open to changing your mind, but you were quite quick to select player 6 as your primary target when asked. If this is truly about ga'
+    d3 player_8 ['deflect']: 'I voted for player_5 because their defense against the initial accusations felt performative and inconsistent compared to their previous push for caution. Now t'
+    d2 player_6 ['stayed quiet']: "The healer's death immediately after questioning player 7 is statistically concerning, but focusing solely on them might be falling into a trap. We have no voti"
+    d2 player_1 ['defensive']: "The healer's death targeting player 4, who explicitly challenged the alliance of player 7 and player 8, is the only lead we currently have. While player 7 argue"
+    d3 player_8 ['deflect']: 'Player 2, claiming to be the investigator after waiting until the final moment is exactly the kind of move used to force an elimination without facing scrutiny.'
+
+##########################################################################
+# PHASE SPLIT (defuses easy-board confound: day 1 is zero-info everywhere)
+##########################################################################
+
+  evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl [all_disabled] — phase split:
+    day 1 (zero-info)  n= 19  STOCK 10 (52.6%)  POLICE  2 (10.5%)
+    day >=2            n=100  STOCK 16 (16.0%)  POLICE 22 (22.0%)
+
+  evidence/generation_prompt/prompt_boundary/post_seq.jsonl [all_disabled] — phase split:
+    day 1 (zero-info)  n= 14  STOCK  2 (14.3%)  POLICE  0 ( 0.0%)
+    day >=2            n= 65  STOCK  9 (13.8%)  POLICE  8 (12.3%)

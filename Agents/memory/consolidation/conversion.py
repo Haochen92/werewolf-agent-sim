@@ -1,6 +1,6 @@
 """The find→claim→lynch CONVERSION endpoint (deterministic, zero spend) — production form.
 
-Why this channel exists (evidence/credit_blindspot_fix/): the follow-joined ledger is structurally
+Why this channel exists (evidence/credit/blindspot_fix/): the follow-joined ledger is structurally
 blind to concealment advice — a concealment SP is never "followed" as a discrete creditable act
 ("maintain silence" was retrieved 179x with follow=0 in the v7 endpoint store), so prune could
 never touch it while the harm was real one hop downstream (ON converted investigator finds to

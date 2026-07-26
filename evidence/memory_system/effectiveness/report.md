@@ -153,7 +153,7 @@ The 06-17 *no-memory* baseline already plays at roughly the level `v5` memory ha
 there was no headroom left to show — flat, not harmful.
 
 **A same-epoch control exonerates the store.** An off-policy replay screen
-([`../../phase_b/forced_schema_screen/`](../../phase_b/forced_schema_screen/experiment_log.md)) scores
+([`../strategy_adoption/forced_schema_screen/`](../strategy_adoption/forced_schema_screen/experiment_log.md)) scores
 both stores in *one* epoch: v5-store 0.625 ≈ v6-store 0.604, both below the no-memory floor 0.667
 (McNemar p=1.0). Even the `v5_0` store that "worked" reads flat in the later epoch — the flatness is the
 epoch, not the schema.

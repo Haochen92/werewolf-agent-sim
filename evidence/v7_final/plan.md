@@ -14,9 +14,9 @@ either too hard to build or too costly to verify — we **stop** (then freeze �
 = stop iterating on the memory architecture, NOT stop the repo.
 
 > Reads alongside: the literature v7 report (external, literature-grounded — keep its synthesis, apply
-> the corrections below); `evidence/phase_b/procedural_memory_experiment.md` (other agent's
+> the corrections below); `evidence/memory_system/effectiveness/v6_sp_ab/procedural_memory_experiment.md` (other agent's
 > overlapping design); `evidence/memory_system/effectiveness/decision_replay/` (the harness);
-> `evidence/prompt_claims_audit/` + `evidence/extraction_selection/` (the prompt-audit and extraction-selection findings).
+> `evidence/generation_prompt/prompt_claims_audit/` + `evidence/extraction/selection/` (the prompt-audit and extraction-selection findings).
 
 ---
 
@@ -118,7 +118,7 @@ measurement of whether credit has recoverable signal before consolidation is bui
 
 ## 2. What was VALIDATED (the findings v7 builds on)
 
-- **Prompt-claims audit** (`evidence/prompt_claims_audit/`): the hand-authored PLAYSTYLE tactics were
+- **Prompt-claims audit** (`evidence/generation_prompt/prompt_claims_audit/`): the hand-authored PLAYSTYLE tactics were
   never held to the facts-only bar. Tested two: **investigator "conceal / let consensus build" =
   FALSIFIED** (caps the investigator→lynch transmission chain; provenance-suppression watched
   directly); **wolf "blend with majority" = VALIDATED** (r=+0.20 p=.003 n=220 prior; +0.16 p=.07 v6ab).
@@ -130,7 +130,7 @@ measurement of whether credit has recoverable signal before consolidation is bui
   threat-brief). v7 doesn't re-mine a static store — the **loop rebuilds the store on-policy** on the
   de-capped substrate (observations extracted per game as it runs). Reframe: garbage-in
   root is one layer upstream — **prompt tactic → play → extraction → memory**.
-- **net_verdict = OUTCOME HALO** (`evidence/extraction_selection/`): extraction's hindsight verdict is
+- **net_verdict = OUTCOME HALO** (`evidence/extraction/selection/`): extraction's hindsight verdict is
   strongly calibrated to `role_faction_won` (sep +0.84, every role) — so outcome-conditioning is real,
   but it's "did your side win?" stamped on every action, NOT "did THIS move matter?" Validates
   *labeling*, not pivotalness *selection*. → steer **selection** with a deterministic leverage anchor;

@@ -37,7 +37,7 @@ authorized by the rule but awaits spend sign-off.
    strict mode, tag-cache provenance, persisted tagger-validation artifacts, deceiver replay
    coverage + `--lens wolf`, day-stratified sampling, echo-proxy retirement, metric tiering with a
    `dnu_` quarantine, the embedding-canary check (live in `run_batch.py`), sidecar-shape docs.
-2. **The dimension audit** (log §5; `evidence/phase_b/dimension_accuracy_audit/`): 6,267 cases,
+2. **The dimension audit** (log §5; `evidence/extraction/situation_dimensions/dimension_accuracy_audit/`): 6,267 cases,
    pre-registered rule, RE-OPEN fired. Reusable runner + 8 tests.
 3. **Computed fills** (log §6): `players_alive`/`bullets_left`/`ally_revealed` overridden from
    game state at query time; two payload defects found and fixed along the way (night-roster

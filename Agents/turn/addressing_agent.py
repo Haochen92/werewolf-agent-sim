@@ -28,8 +28,8 @@ ADDRESSING_EXTRACTOR_PROMPT = ChatPromptTemplate.from_messages(
             """You tag whom a Werewolf day-discussion message addresses, for turn scheduling.
 
 For each player the message addresses, emit one entry:
-- addressed_form: question=asks the target; response=replies to the target; mention=refers to the target.
-- stance: accusation=suspects/blames; defense=supports/protects; agreement=agrees; neutral=no clear stance.
+- addressed_form: question=directly asks the target something that expects their reply; response=replies to the target; mention=talks about the target in the third person.
+- stance: accusation=suspects/blames the target of being evil or lying; defense=supports/protects; agreement=agrees; neutral=no clear stance. Passing commentary (e.g. noting someone has been quiet) is neutral, not accusation.
 
 Only tag a player named or clearly referred to. A general remark to the room, addressing no one
 specific, gets an empty list. Never invent a player who is not in the roster.""",

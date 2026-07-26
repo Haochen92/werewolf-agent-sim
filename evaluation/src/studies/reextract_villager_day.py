@@ -5,7 +5,7 @@ target landscape) and a scoped villager·day prompt, and writes RAW observations
 — the criticality screen reads retrieval, not dedup; rerank≈raw) into memory_stores/v6_0.
 
 Only villager·day is migrated to the v6 schema; the live extraction path and the other roles are
-untouched (see evidence/phase_b/dimension_schema_build_spec.md §8b). After the criticality screen
+untouched (see evidence/extraction/situation_dimensions/dimension_schema_build_spec.md §8b). After the criticality screen
 shows the lever, the full DAG + live rewiring follow.
 
   poetry run python evaluation/src/studies/reextract_villager_day.py --limit 2   # smoke
