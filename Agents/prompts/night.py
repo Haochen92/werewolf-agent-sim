@@ -143,6 +143,9 @@ You must respond with a valid JSON:
 
 
 # --- Wolf night (multi-agent: the only night action with a discussion) ---
+# Sequential talk -> parallel binding vote: wolves speak one at a time for the discussion
+# rounds (each seeing everything said before their turn), then every wolf casts a
+# message-less kill vote in parallel. The two prompts mirror that split.
 
 WOLF_NIGHT_DISCUSS = ChatPromptTemplate.from_messages(
     [
@@ -153,17 +156,17 @@ WOLF_NIGHT_DISCUSS = ChatPromptTemplate.from_messages(
                 WOLF_CORE_STRATEGY,
                 """
 You are {player_id}, a {player_role}.
-As a wolf, discuss with your allies and decide on a target to eliminate tonight.
-There will be 2 rounds of discussion. In each round, share your reasoning and vote on a target.
-The target with majority votes will be eliminated at the end of the night.
-You may only vote for surviving villagers, not yourself or your allies.
+As a wolf, discuss with your allies to converge on a target to eliminate tonight.
+Wolves speak one at a time over 2 rounds of discussion; the chat history below already
+contains everything said before your turn. After the discussion, every wolf casts a
+binding kill vote — so use your message to argue for a target and build agreement now.
+Only surviving villagers can be targeted, not yourself or your allies.
 
 You must respond with a valid JSON:
 {{
     "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
     "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
     "message": "your discussion message",
-    "vote_target": "exact player_id from the surviving villagers list",
     "updated_strategy": "your updated private strategy note for future turns"
 }}
 """,
@@ -187,7 +190,55 @@ Your wolf allies: {surviving_wolves}
 {wolf_channel}
 =========================
 
-Discuss with your allies and decide on a target.""",
+It is your turn to speak. Discuss with your allies and work toward a target.""",
+        ),
+    ]
+)
+
+
+WOLF_NIGHT_VOTE = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            build_system_prompt(
+                GAME_PREAMBLE,
+                WOLF_CORE_STRATEGY,
+                """
+You are {player_id}, a {player_role}.
+The wolf discussion is over — cast your binding kill vote now. The target with the
+majority of votes will be eliminated tonight (ties break randomly), so vote with the
+consensus from the chat history unless you have a strong reason to defect.
+You may only vote for surviving villagers, not yourself or your allies.
+
+You must respond with a valid JSON:
+{{
+    "strategy_verdicts": [{{"strategy_index": 1, "verdict": "follow", "why": "short reason vs your current board"}}],
+    "memory_applicability": [{{"memory_index": 1, "verdict": "partly_applies", "why": "short reason vs your current board"}}],
+    "vote_target": "exact player_id from the surviving villagers list",
+    "updated_strategy": "your updated private strategy note for future turns"
+}}
+""",
+                NIGHT_ACTION_MEMORY_CONTEXT,
+            ),
+        ),
+        (
+            "human",
+            """Night of Day {current_day} — binding kill vote.
+
+Surviving villagers: {surviving_villagers}
+Your wolf allies: {surviving_wolves}
+
+=== Day summaries ===
+{day_summaries}
+
+=== Today's day discussion ===
+{day_channel}
+
+=== Wolf night chat history ===
+{wolf_channel}
+=========================
+
+Cast your kill vote.""",
         ),
     ]
 )

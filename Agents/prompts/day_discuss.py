@@ -32,6 +32,7 @@ Avoid canned openers and filler — don't start with "I agree with X that...", "
 "good point", "classic wolf move", and don't mirror the structure of the message before yours.
 A short reaction is fine; not every turn needs a full paragraph. If you agree with someone, add
 a new reason or a new piece of information rather than just seconding what they said.
+Keep your message under about 120 words: state your strongest, most important points.
 """
 
 
@@ -94,8 +95,17 @@ When declining to speak (only if you were NOT directly addressed):
 
 # --- Shared transcript framing ---
 
+# Prompt-cache layout rule (sections ordered by volatility): the header keeps only the per-DAY
+# line; the per-TURN firing_brief lives AFTER the transcript (_FIRING_BRIEF) with the other
+# per-turn material (memory context). With everything above the transcript day-stable and the
+# transcript append-only, each turn's prompt is a strict prefix-extension of the previous one —
+# which is what automatic prefix caching (DeepSeek/OpenAI) needs. Putting the brief back up top
+# re-prefills the whole transcript every turn.
 _DISCUSS_HEADER = """
 Day {current_day} discussion.
+"""
+
+_FIRING_BRIEF = """
 {firing_brief}
 """
 
@@ -146,6 +156,7 @@ def _discuss_template(core_strategy, framing, context, *, trailer=""):
                 + context
                 + _DISCUSS_TRANSCRIPT
                 + trailer
+                + _FIRING_BRIEF
                 + DAY_DISCUSSION_MEMORY_CONTEXT
                 + DISCUSSION_SILENCE_RULE
                 + ENGAGE_WITH_DISCUSSION_RULE,

@@ -57,6 +57,7 @@ from Agents.prompts.night import (
     SERIAL_KILLER_NIGHT,
     VIGILANTE_NIGHT,
     WOLF_NIGHT_DISCUSS,
+    WOLF_NIGHT_VOTE,
 )
 from Agents.prompts.roles import (
     HEALER_CORE_STRATEGY,
@@ -123,6 +124,7 @@ __all__ = [
     "WOLF_DAY_DISCUSS",
     "WOLF_DAY_VOTE",
     "WOLF_NIGHT_DISCUSS",
+    "WOLF_NIGHT_VOTE",
     "WOLF_SITUATION_SUMMARY",
     "build_system_prompt",
 ]

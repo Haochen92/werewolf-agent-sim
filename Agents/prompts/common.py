@@ -7,7 +7,7 @@ def build_system_prompt(*sections: str) -> str:
 # and the {read_targets} key filled by build_agent_prompt_input: it names the exact living players
 # the agent must commit a read for BEFORE its decision. Deliberately terse — the schema field
 # description and the JSON example carry the fuller spec; the load-bearing part is the {read_targets}
-# enumeration (the T4 completeness mechanism the decision.py tripwire scores against). Exact tested
+# enumeration (the T4 completeness mechanism the turn/eval.py tripwire scores against). Exact tested
 # text (T1c replay) — do not reword.
 READS_COMMIT_INSTRUCTION = (
     "\nBefore your decision, record your current read — one entry each for: "
@@ -52,7 +52,9 @@ Game flow:
 What is public vs. hidden:
 - Votes are public and permanent — who voted for whom each day stays on the record.
 - Night actions (who killed, healed, investigated, or shot whom) are hidden; only the outcomes are announced.
-- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role."""
+- A player can claim any role, but the game cannot verify a role claim — only an elimination reveals a role.
+
+The world is closed: the only roles and abilities in this game are the ones listed above."""
 
 
 # Play-side preamble = a second-person intro + the canonical rules. Reconstructed to be

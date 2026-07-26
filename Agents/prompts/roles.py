@@ -28,7 +28,7 @@ Voting & Logic: Your vote matters as much as your protection. Decide it from you
 """
 
 
-# BASELINE investigator block. The prompt-claims audit (evidence/prompt_claims_audit) found its
+# BASELINE investigator block. The prompt-claims audit (evidence/generation_prompt/prompt_claims_audit) found its
 # "survival is primary / worthless if you die before you can use it" framing and "let consensus build,
 # don't accuse the moment you have a result" Information-Management steer are FALSE and HARMFUL: they
 # cap the investigator->lynch transmission chain (the read never reaches the village; provenance is

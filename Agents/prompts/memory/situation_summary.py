@@ -17,7 +17,7 @@ SITUATION_ROLE_LENS = {
 
 SITUATION_SUMMARY_PROMPT = """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Recent game events and discussion:
 {recent_events}
@@ -91,7 +91,7 @@ VILLAGER_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving players: {surviving_players}
 
@@ -113,7 +113,7 @@ HEALER_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving players: {surviving_players}
 
@@ -135,7 +135,7 @@ INVESTIGATOR_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving players: {surviving_players}
 Your private investigation results:
@@ -159,7 +159,7 @@ WOLF_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving villagers: {surviving_villagers}
 Known surviving wolf allies: {surviving_wolves}
@@ -185,7 +185,7 @@ SERIAL_KILLER_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving players: {surviving_players}
 
@@ -207,7 +207,7 @@ VIGILANTE_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving players: {surviving_players}
 
@@ -261,7 +261,7 @@ V6_SITUATION_SUMMARY = ChatPromptTemplate.from_messages(
             "human",
             """You are an AI agent playing Werewolf.
 Your role: {player_role}
-Current day: {current_day}, Round: {current_round}
+Current day: {current_day}
 
 Surviving players: {surviving_players}
 
