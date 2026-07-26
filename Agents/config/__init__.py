@@ -30,6 +30,7 @@ from Agents.config.run import (
     DEFAULT_SP_EXPLORATION_SLOT,
     DEFAULT_SP_PROVEN_TIERING,
     RunConfig,
+    normalize_run_config,
 )
 
 __all__ = [
@@ -38,6 +39,7 @@ __all__ = [
     "normalize_game_config",
     "game_config_dict",
     "RunConfig",
+    "normalize_run_config",
     "DEFAULT_MEMORY_CONFIG",
     "DEFAULT_RERANKING_CONFIG",
     "DEFAULT_FILTERING_CONFIG",

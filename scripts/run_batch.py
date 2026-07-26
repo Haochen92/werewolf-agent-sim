@@ -478,6 +478,7 @@ def run_batch(args: argparse.Namespace) -> int:
     if args.dry_run:
         return 0
 
+    from Agents.config import RunConfig
     from Agents.turn import prompt_log, reads_log
     from Agents.main import run_game
     from Agents.run_fingerprint import runtime_fingerprint
@@ -557,14 +558,16 @@ def run_batch(args: argparse.Namespace) -> int:
         game_id = game_ids[run_index - 1] if game_ids else None
         try:
             outcome = run_game(
-                memory_config=memory_config,
-                session_id=session_id,
-                game_config=game_config,
-                memory_persistence_config=memory_persistence_config,
-                reranking_config=reranking_config,
-                filtering_config=filtering_config,
-                retrieval_types_config=retrieval_types_config,
-                game_id=game_id,
+                RunConfig(
+                    memory_config=memory_config,
+                    session_id=session_id,
+                    game=game_config,
+                    memory_persistence=memory_persistence_config,
+                    reranking_config=reranking_config,
+                    filtering_config=filtering_config,
+                    retrieval_types_config=retrieval_types_config,
+                    game_id=game_id,
+                )
             )
             result = outcome.result
             duration_seconds = perf_counter() - started_timer

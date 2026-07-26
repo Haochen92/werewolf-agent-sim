@@ -79,7 +79,7 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     # Draw a candidate seat UNCONDITIONALLY so the role shuffle's rng sequence stays byte-identical
     # to historical runs (same game_id -> same role draw) — then only SEAT the human when the run
     # opted in (RunConfig.human_player). Default off -> "" -> no seat is flagged human downstream, so
-    # _run_agent never hits interrupt() (fully automated all-LLM game).
+    # run_agent never hits interrupt() (fully automated all-LLM game).
     human_candidate = rng.choice(characters)
     human_player = human_candidate if configurable.get("human_player") else ""
 
@@ -415,6 +415,13 @@ def post_game_analysis(
     store = runtime.store
     if store is None:
         raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
+
+    # POISONING GUARD: a human-involved game is never mined — human play is out-of-distribution for
+    # the store (and the memory-config role filter below can't be trusted to exclude it: roles absent
+    # from the config dict default to True). Replayable, never extracted.
+    if state.get("human_player"):
+        logger.info("Human seat in game; skipping post-game extraction (poisoning guard).")
+        return {}
 
     memory_persistence_config = memory_persistence_config_from_runnable(config)
     extraction_config = memory_persistence_config.extraction

@@ -1,5 +1,6 @@
 import os
 
+from dotenv import load_dotenv
 from langfuse import get_client
 from langfuse.langchain import CallbackHandler
 
@@ -11,6 +12,11 @@ from Agents.schemas.metrics import (  # noqa: F401 — re-exported for backward 
     NightResolutionMetric,
 )
 
+
+# The client reads LANGFUSE_* from the environment at creation, and this module is imported before
+# any entry point runs its own load_dotenv() — so load here or the process runs with a disabled
+# (keyless) client.
+load_dotenv()
 
 # Stamp every trace with the code version via Langfuse's first-class `release`
 # field (filterable in the UI). Must be set before the first get_client() —
