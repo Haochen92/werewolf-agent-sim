@@ -10,7 +10,7 @@ from Agents.state.reducers import merge_strategies
 
 class WolfNightGraph(TypedDict, total=False):
     """Working state of the wolf-night loop: wolf_channel accumulates across rounds,
-    current_round tracks the 2-round discuss->vote, wolves_kill_target is set once resolved."""
+    current_round tracks the sequential talk rounds then the vote round, wolves_kill_target is set once resolved."""
 
     day_channel: list[DayChannel]
     """Public day-discussion transcript carried into the night for context."""
@@ -34,7 +34,7 @@ class WolfNightGraph(TypedDict, total=False):
     """Resolved kill target once the binding vote completes (None mid-night)."""
 
     current_round: int
-    """Wolf-night round (1=open discussion, 2=binding vote)."""
+    """Wolf-night round (talk rounds first, then the binding-vote round — see nodes/night/wolf.py)."""
 
 
 class WolfNightState(TypedDict):
@@ -66,4 +66,4 @@ class WolfNightState(TypedDict):
     current_day: int
     """1-based current game day."""
     current_round: int
-    """Wolf-night round (1=discussion, 2=vote)."""
+    """Wolf-night round (talk rounds first, then the binding-vote round)."""

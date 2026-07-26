@@ -8,7 +8,7 @@ night/<role>.py — each role's night action node (single-actor roles are one-li
 night/wolf.py   — the multi-node wolf night discussion flow
 night/resolution.py — cross-role night kill resolution + routing
 
-The turn system itself (speaker scheduling, _run_agent, the memory-informed
+The turn system itself (speaker scheduling, run_agent, the memory-informed
 actions, the proactive-novelty gate) lives in Agents.turn, not here — these
 are only the graph nodes that call into it.
 
@@ -64,6 +64,7 @@ from Agents.nodes.night.wolf import (  # noqa: F401
     prepare_wolf_night,
     wolf_fan_out,
     wolf_night_discuss,
+    wolf_night_vote,
 )
 from Agents.nodes.night.healer import healer_act  # noqa: F401
 from Agents.nodes.night.investigator import investigator_act  # noqa: F401
