@@ -79,14 +79,37 @@ Caveats before citing any of these: DiploBench's own authors state it "is not a 
 discipline, which is a real seat requirement here (DeepSeek's unconstrained tool-calling needed a
 lenient-parse base + enum folds + a fallback model before it could hold a seat reliably).
 
-**Scores: UNFILLED as of 2026-07-26.** The leaderboards are JS-rendered and not fetchable
-programmatically at write time; transcribe from the browser when consulting. Candidates to record:
-`deepseek-v4-pro`, `deepseek-v4-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`,
-`gemini-3.6-flash`, plus any shortlist candidate before spending a measured game on it.
+**EQ-Bench 4 Elo, owner-transcribed from the browser 2026-07-26** (JS-rendered leaderboard, not
+fetchable programmatically; per-trait columns not recorded here). Selected rows relevant to seat
+selection — our measured models plus the standouts:
 
-| Model | EQ-Bench 4 | Creative Writing v3 | Slop | DiploBench | (date checked) |
-|---|---|---|---|---|---|
-| *(fill from eqbench.com)* | | | | | |
+| Model | EQ-Bench 4 Elo | Note |
+|---|---|---|
+| claude-opus-5 | 1385 | board leader |
+| kimi-k3 | 1339 | PRICED OUT same day: $3/$15 per M with reasoning always-on, effort locked max, billed as output → est. $3-5/game (15-20× v4-pro) + slow turns |
+| glm-5.2 | 1222 | **shortlist**: outscores v4-pro here; earlier dismissed on list price, but cached input $0.26/M + our cache layout → plausibly $0.50-0.70/game |
+| kimi-k2.6 | 1202 | backup shortlist: K2-class pricing is far below K3's |
+| deepseek-v4-pro | 1166 | mid-pack — see divergence note below |
+| gemini-3.1-pro-preview | 1142 | |
+| gemini-3.5-flash | 1087 | |
+| claude-haiku-4-5 | 1064 | |
+| gemini-3.5-flash-lite / 3.1-flash-lite / 3.6-flash / deepseek-v4-flash | not listed | absent from the board 2026-07-26 |
+
+**The divergence that matters:** v4-pro is our best-observed werewolf table but only mid-pack
+here, while the Gemini family scores low yet holds seats fine. One plausible reading: EQ-Bench 4
+scores *supportive/empathetic* multi-turn conversation (rapport, attunement, emotion management);
+werewolf rewards *adversarial* argumentation and strategic pressure — adjacent, not identical,
+abilities. Either way the ordering did not predict our table reads, which is why scores here
+shortlist candidates and never select them.
+
+Refinement (owner, same day): the benchmark DOES track one seat axis — **naturalness of
+register**. Gemini's low placement matches the long-standing "dialogue reads cryptic/robotic"
+observation on flash-lite seats, and the models we found conversational (v4-pro) sit higher. So
+read the Elo as a *naturalness prior* (predictive) that is silent on the *strategy* axis (not
+predictive) — and a high scorer like kimi-k3 predicts a human-sounding table, with strategic
+play unknown until a measured game.
+
+Creative Writing v3 / Slop / DiploBench columns: still untranscribed (2026-07-26).
 
 Intended use: a model that scores well here earns a **measured HITL game** (one cheap game ≈
 $0.10–0.55); the game, not the benchmark, decides. Never select on benchmark rank alone — our
