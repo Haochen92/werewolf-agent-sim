@@ -25,11 +25,11 @@ class AddressedTarget(BaseModel):
     )
 
     addressed_form: Literal["question", "response", "mention"] = Field(
-        description="question=asks target; response=replies to target; mention=refers to target."
+        description="question=directly asks the target something that expects their reply; response=replies to the target; mention=talks about the target in the third person."
     )
 
     stance: Literal["accusation", "defense", "agreement", "neutral"] = Field(
-        description="accusation=suspects/blames; defense=supports/protects; agreement=agrees; neutral=no clear stance."
+        description="accusation=suspects/blames the target of being evil or lying; defense=supports/protects; agreement=agrees; neutral=no clear stance (passing commentary, e.g. noting someone has been quiet, is neutral, not accusation)."
     )
 
 
@@ -90,12 +90,12 @@ class DaySummary(BaseModel):
 
 
 class WolfChannel(BaseModel):
-    """One wolf's message + kill vote in a wolf-night discussion round."""
+    """One wolf-night channel entry: a talk message (vote="") or a binding vote (message="")."""
 
     day: int
     """Game day of this night."""
     round: int
-    """Wolf-night round (1=open discussion, 2=binding vote)."""
+    """Wolf-night round (talk rounds, then the binding-vote round)."""
     wolf: str
     """Speaking wolf's player_id."""
     message: str

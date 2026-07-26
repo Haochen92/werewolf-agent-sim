@@ -10,19 +10,53 @@ AddressedTarget (game_events.py), which is embedded in DayDiscussOutput.
 
 from __future__ import annotations
 
-from typing import Literal
+import json
+from typing import Literal, get_origin
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from Agents.schemas.game_events import AddressedTarget
 from Agents.schemas.roles import READ_ROLE_ENUM
+
+
+def _expects_structure(annotation) -> bool:
+    # A field whose declared type is a nested model / list / dict — i.e. a place where a JSON
+    # string can only be an encoding accident, never a legal value.
+    if get_origin(annotation) in (list, dict):
+        return True
+    return isinstance(annotation, type) and issubclass(annotation, BaseModel)
+
+
+# Base for every schema in this module. Unconstrained tool-calling backends (DeepSeek — Gemini's
+# structured mode constrains generation and never triggers this) sometimes emit a nested object or
+# list as a JSON STRING. That deformity is lossless, so it is normalized here generically: parse the
+# string back before validation. Parse failures and wrong shapes still fail loudly into the normal
+# retry. LOSSY repairs (e.g. off-enum folding) are deliberately NOT generalized — each lives as an
+# explicit per-field validator (see PlayerRead.confidence). Model-visible: no class docstring
+# (every class in this module gets __doc__=None automatically, so nothing leaks into JSON schemas).
+class LenientToolCallModel(BaseModel):
+    @model_validator(mode="before")
+    @classmethod
+    def _parse_stringified_structures(cls, data):
+        if not isinstance(data, dict):
+            return data
+        for name, value in data.items():
+            field = cls.model_fields.get(name)
+            if field is None or not isinstance(value, str):
+                continue
+            if _expects_structure(field.annotation):
+                try:
+                    data[name] = json.loads(value)
+                except ValueError:
+                    pass  # leave it; the field's own validation rejects loudly
+        return data
 
 
 # Per-memory applicability verdict. Emitted BEFORE the action field (prospective commitment: the
 # vote/message/target follows the reasoning rather than rationalising it). The "one verdict per
 # numbered observation" instruction lives in the PROMPT BODY (memory-context block), not here — these
 # descriptions stay terse. Model-visible: no class docstring.
-class MemoryVerdict(BaseModel):
+class MemoryVerdict(LenientToolCallModel):
     memory_index: int = Field(
         description="1-based position of the observation in the numbered list shown.",
     )
@@ -35,7 +69,7 @@ class MemoryVerdict(BaseModel):
 # Per-strategy-point adoption verdict. Emitted BEFORE the action (prospective commitment), like
 # MemoryVerdict. The "one verdict per numbered strategy point" instruction lives in the PROMPT BODY
 # (memory-context block), not here — these descriptions stay terse. Model-visible: no class docstring.
-class StrategyVerdict(BaseModel):
+class StrategyVerdict(LenientToolCallModel):
     strategy_index: int = Field(
         description="1-based position of the strategy point in the numbered list shown.",
     )
@@ -52,14 +86,24 @@ class StrategyVerdict(BaseModel):
 # strategy -> action is the tested lever, validated by the T1c decision-replay A/B (role-fact
 # hallucinations 48%->30%, p=0.003). The read-role enum is sourced from Agents.schemas.roles so it
 # can't drift from the cast. Model-visible: no class docstring.
-class PlayerRead(BaseModel):
+class PlayerRead(LenientToolCallModel):
     player: str = Field(description="A living player's ID (never your own).")
     why: str = Field(description="One line of evidence for this read; write 'unchanged' if your read has not moved.")
     suspected_role: READ_ROLE_ENUM = Field(description="Your best guess of this player's role; 'unclear' if you cannot tell.")
     confidence: Literal["low", "high"] = Field(description="How sure you are.")
 
+    # Tool-calling backends (DeepSeek) describe the enum but don't constrain generation to it,
+    # and "medium" is the standard off-menu invention — fold it to "low" instead of burning a
+    # retry. Validators never enter the JSON schema, so the model still sees a clean low|high.
+    @field_validator("confidence", mode="before")
+    @classmethod
+    def _fold_medium_to_low(cls, value):
+        if isinstance(value, str) and value.strip().lower() == "medium":
+            return "low"
+        return value
 
-class WolfNightDiscussOutput(BaseModel):
+
+class WolfNightDiscussOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -70,10 +114,22 @@ class WolfNightDiscussOutput(BaseModel):
     )
     updated_strategy: str
     message: str
+
+
+class WolfNightVoteOutput(LenientToolCallModel):
+    strategy_verdicts: list[StrategyVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
+    )
+    memory_applicability: list[MemoryVerdict] = Field(
+        default_factory=list,
+        description="One verdict per numbered observation shown, in order; empty list if none shown.",
+    )
+    updated_strategy: str
     vote_target: str
 
 
-class DayDiscussOutput(BaseModel):
+class DayDiscussOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -95,7 +151,7 @@ class DayDiscussOutput(BaseModel):
     )
 
 
-class DayVoteOutput(BaseModel):
+class DayVoteOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -111,7 +167,7 @@ class DayVoteOutput(BaseModel):
     vote_target: str
 
 
-class Accusation(BaseModel):
+class Accusation(LenientToolCallModel):
     accusers: list[str] = Field(
         description="ALL player IDs who participated in this accusation (e.g. ['player_1', 'player_3'])",
     )
@@ -126,7 +182,7 @@ class Accusation(BaseModel):
     )
 
 
-class RoleClaim(BaseModel):
+class RoleClaim(LenientToolCallModel):
     player: str = Field(description="Player ID who made the claim")
     claimed_role: str = Field(description="The role claimed")
     evidence: str = Field(
@@ -137,12 +193,12 @@ class RoleClaim(BaseModel):
     )
 
 
-class Alliance(BaseModel):
+class Alliance(LenientToolCallModel):
     players: list[str] = Field(description="Player IDs in this alliance or bloc")
     basis: str = Field(description="What the alignment is based on (1 sentence)")
 
 
-class VillageDynamics(BaseModel):
+class VillageDynamics(LenientToolCallModel):
     information_landscape: str = Field(
         description=(
             "Information-rich or information-starved? What type of evidence "
@@ -165,7 +221,7 @@ class VillageDynamics(BaseModel):
     )
 
 
-class DaySummaryOutput(BaseModel):
+class DaySummaryOutput(LenientToolCallModel):
     accusations: list[Accusation] = Field(
         default_factory=list,
         description="All distinct accusations from the discussion. List every accusation separately.",
@@ -181,7 +237,7 @@ class DaySummaryOutput(BaseModel):
     village_dynamics: VillageDynamics
 
 
-class HealerOutput(BaseModel):
+class HealerOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -197,7 +253,7 @@ class HealerOutput(BaseModel):
     healer_target: str
 
 
-class InvestigatorOutput(BaseModel):
+class InvestigatorOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -213,7 +269,7 @@ class InvestigatorOutput(BaseModel):
     investigator_target: str
 
 
-class SerialKillerOutput(BaseModel):
+class SerialKillerOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -229,7 +285,7 @@ class SerialKillerOutput(BaseModel):
     serial_killer_target: str
 
 
-class VigilanteOutput(BaseModel):
+class VigilanteOutput(LenientToolCallModel):
     strategy_verdicts: list[StrategyVerdict] = Field(
         default_factory=list,
         description="One verdict per numbered strategy point shown, in order; empty list if none shown.",
@@ -245,7 +301,7 @@ class VigilanteOutput(BaseModel):
     vigilante_target: str
 
 
-class SituationEntry(BaseModel):
+class SituationEntry(LenientToolCallModel):
     situation: str = Field(
         description=(
             "The core game dynamic — what happened and who is involved. "
@@ -296,7 +352,7 @@ class SituationEntry(BaseModel):
         )
 
 
-class SituationSummary(BaseModel):
+class SituationSummary(LenientToolCallModel):
     situations: list[SituationEntry] = Field(
         description=(
             "1-2 distinct situations the player currently faces, each with "
@@ -315,13 +371,13 @@ class SituationSummary(BaseModel):
 # reactive/proactive scheduler treats human speech like an LLM's self-tagged addressed_targets.
 # Reuses AddressedTarget (same form/stance vocabulary the scheduler consumes). Model-visible: no
 # class docstring; the list field is required (flash-lite rejects optional/nullable fields).
-class AddressingExtraction(BaseModel):
+class AddressingExtraction(LenientToolCallModel):
     addressed_targets: list[AddressedTarget] = Field(
         description="Every player this message addresses; empty list if it addresses no one specific.",
     )
 
 
-class NoveltyJudgment(BaseModel):
+class NoveltyJudgment(LenientToolCallModel):
     novel: bool = Field(
         description=(
             "True if the message adds a new argument, observation, piece of evidence, "

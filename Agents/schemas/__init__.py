@@ -63,6 +63,7 @@ from Agents.schemas.output import (
     SituationSummary,
     VigilanteOutput,
     WolfNightDiscussOutput,
+    WolfNightVoteOutput,
 )
 from Agents.schemas.scheduler import (
     Balance,
@@ -121,4 +122,5 @@ __all__ = [
     "StrategyPoint",
     "WolfChannel",
     "WolfNightDiscussOutput",
+    "WolfNightVoteOutput",
 ]

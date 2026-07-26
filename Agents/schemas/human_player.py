@@ -8,6 +8,7 @@ request/response shape covers discussion, votes, and night actions, with ``phase
 """
 
 from pydantic import BaseModel, ConfigDict
+from typing import Optional
 
 
 class HumanTurnRequest(BaseModel):
@@ -36,6 +37,10 @@ class HumanTurnRequest(BaseModel):
     """Why the human is up this turn / whom they owe a response to (reactive)."""
     wolf_channel: str
     """Wolf-pack night transcript (non-empty only for a wolf seat)."""
+    pack: str = ""
+    """The wolf roster, comma-joined (non-empty only for a wolf seat — the payload is role-gated
+    upstream, so other seats never carry it). Without it a night-1 wolf can only infer their own
+    partner from the kill menu's exclusions."""
     investigator_results: str
     """Past investigation results (investigator seat only)."""
     vigilante_results: str
