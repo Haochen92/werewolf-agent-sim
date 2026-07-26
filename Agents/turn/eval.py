@@ -2,7 +2,7 @@
 
 Everything here is a SIDE CHANNEL: it observes a turn (snapshots context, logs the prompt, records
 reads, monitors read completeness) but never contributes to the state delta the node returns — that
-belongs in ``decision.py``. Split out so ``decision.py`` holds only the input->output decision path.
+belongs in ``agent_player.py``/``resolve.py``. Split out so the decision path holds only input->output.
 
 ``prompt_log`` / ``reads_log`` are the leak-test capture points (tests/leak_test.py): every prompt
 sent and read emitted is recorded so the boundary tests can assert no private state reached another
@@ -24,7 +24,7 @@ prompt_log: list[dict] = []
 reads_log: list[dict] = []
 
 
-def _log_prompt(payload: dict[str, Any], output_key: str, prompt_input: dict) -> None:
+def log_prompt(payload: dict[str, Any], output_key: str, prompt_input: dict) -> None:
     """Record the prompt an agent was sent, for the leak check (a snapshot copy of prompt_input)."""
     prompt_log.append({
         "player_id": payload.get("player_id", ""),
@@ -36,7 +36,7 @@ def _log_prompt(payload: dict[str, Any], output_key: str, prompt_input: dict) ->
     })
 
 
-def _record_reads(
+def record_reads(
     reads: list, payload: dict[str, Any], output_key: str, output_schema: type[BaseModel]
 ) -> None:
     """T4 completeness tripwire (MONITOR only — never retry) + reads_log capture for the leak check.
@@ -76,7 +76,7 @@ def _reads_coverage(reads: list, payload: dict[str, Any]) -> tuple[float, list[s
     return (len(expected) - len(missing)) / len(expected), missing
 
 
-def _build_eval_private_context(
+def build_eval_private_context(
     payload: dict[str, Any],
     day: int,
 ) -> EvalPrivateContext:

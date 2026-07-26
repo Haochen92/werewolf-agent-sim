@@ -1,13 +1,13 @@
 """The agent seat — an agent's LLM turn.
 
-``_run_agent`` turns "it's this agent's turn to decide X" into a legal, game-ready action: it
+``run_agent`` turns "it's this agent's turn to decide X" into a legal, game-ready action: it
 constrains the answer space, GENERATEs a decision (one LLM call, retried), and hands it to the shared
-``_interpret`` (``interpret.py``), which turns it into a validated state delta — with a random legal
+``resolve_decision`` (``resolve.py``), which turns it into a validated state delta — with a random legal
 fallback so the game never stalls. The human seat's parallel path is ``human_turn.py``; both route
-through the same ``_interpret``, so agent and human decisions resolve identically.
+through the same ``resolve_decision``, so agent and human decisions resolve identically.
 
 The turn's instrumentation — the leak-test prompt/reads logs and the reads-completeness monitor —
-lives in ``eval.py``; ``_run_agent`` calls ``_log_prompt`` / ``_record_reads`` as side channels that
+lives in ``eval.py``; ``run_agent`` calls ``log_prompt`` / ``record_reads`` as side channels that
 never touch the returned delta.
 """
 from logging import getLogger
@@ -18,56 +18,71 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
-from Agents.llm_factory import get_llm
-from Agents.prompts.prompt_inputs import build_agent_prompt_input as _build_agent_prompt_input
+from Agents.llm_factory import get_llm, get_llm_game_fallback
+from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import DayVote, WolfChannel
 from Agents.turn.action_space import (
-    _valid_targets_for_action,
-    _output_schema_with_legal_targets,
+    valid_targets_for_action,
+    output_schema_with_legal_targets,
 )
-from Agents.turn.eval import _log_prompt, _record_reads
-from Agents.turn.interpret import (
+from Agents.turn.eval import log_prompt, record_reads
+from Agents.turn.resolve import (
     NIGHT_TARGET_KEYS,
-    _RETRY,
-    _extract_side_outputs,
-    _interpret,
+    RETRY,
+    extract_agent_reasoning,
+    resolve_decision,
 )
 
 load_dotenv()
 logger = getLogger(__name__)
 
 
-def _run_agent(
+def run_agent(
     payload: dict[str, Any],
     prompt_template: ChatPromptTemplate,
     output_schema: type[BaseModel],
     output_key: str,
     max_retries: int = 1,
 ) -> dict[str, Any] | None:
-    """Run one agent decision: constrain -> generate -> interpret, retrying on an LLM error or a
+    """Run one agent decision: constrain -> generate -> resolve, retrying on an LLM error or a
     rejected (invalid-target) decision, with a random legal fallback if every attempt fails.
 
-    The human seat's counterpart is ``_run_human_decision`` (human_turn.py): it swaps ``_generate``
-    for ``interrupt()`` but takes the same ``_interpret`` path.
+    The human seat's counterpart is ``run_human_decision`` (human_turn.py): it swaps ``_generate``
+    for ``interrupt()`` but takes the same ``resolve_decision`` path.
     """
-    valid_targets = _valid_targets_for_action(payload, output_key)
+    valid_targets = valid_targets_for_action(payload, output_key)
     player_id = payload.get("player_id", "")
 
     # Constrain: bind the model to the legal-targets schema; build + log the prompt once.
-    schema = _output_schema_with_legal_targets(output_schema, output_key, valid_targets)
+    schema = output_schema_with_legal_targets(output_schema, output_key, valid_targets)
     chain = prompt_template | get_llm().with_structured_output(schema)
-    prompt_input = _build_agent_prompt_input(payload)
-    _log_prompt(payload, output_key, prompt_input)
+    prompt_input = build_agent_prompt_input(payload)
+    log_prompt(payload, output_key, prompt_input)
 
     for _ in range(max_retries + 1):
         result = _generate(chain, prompt_input, output_key, player_id)
         if result is None:
             continue
-        side_outputs = _extract_side_outputs(result)
-        _record_reads(side_outputs["reads"], payload, output_key, output_schema)
-        outcome = _interpret(result, side_outputs, output_key, payload, valid_targets)
-        if outcome is not _RETRY:
+        reasoning = extract_agent_reasoning(result)
+        record_reads(reasoning["reads"], payload, output_key, output_schema)
+        outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+        if outcome is not RETRY:
             return outcome
+
+    # Exhausted on the primary model: one shot on the fallback backend before resorting to a
+    # random action — a different provider fails differently (DeepSeek's unconstrained
+    # tool-calling emits off-schema output that Gemini's constrained decoding cannot).
+    fallback_llm = get_llm_game_fallback()
+    if fallback_llm is not None:
+        fallback_chain = prompt_template | fallback_llm.with_structured_output(schema)
+        result = _generate(fallback_chain, prompt_input, output_key, player_id)
+        if result is not None:
+            reasoning = extract_agent_reasoning(result)
+            record_reads(reasoning["reads"], payload, output_key, output_schema)
+            outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+            if outcome is not RETRY:
+                logger.warning(f"{player_id} rescued by the fallback model on {output_key}")
+                return outcome
 
     # Exhausted: random legal fallback so the game progresses (day discussion may skip -> None).
     logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")

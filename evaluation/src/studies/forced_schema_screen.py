@@ -47,7 +47,7 @@ from Agents.llm_factory import get_llm
 from Agents.llm_factory.embeddings import create_embeddings
 from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
-from Agents.turn.action_space import _valid_targets_for_action, _output_schema_with_legal_targets
+from Agents.turn.action_space import valid_targets_for_action, output_schema_with_legal_targets
 from evaluation.src.replay.turn_action import action_spec_for
 from evaluation.src.loop.decision_scoring import allow_abstain_for, score_vote
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload
@@ -147,9 +147,9 @@ def _forced_variant(case, retrieved, allow, roles, *, prompt_body: bool, pin_len
     payload["allow_abstain"] = allow
     spec = action_spec_for(case)
     n = len(retrieved)
-    schema = _output_schema_with_legal_targets(
+    schema = output_schema_with_legal_targets(
         DayVoteOutputStructuredApplicability, spec.output_key,
-        _valid_targets_for_action(payload, spec.output_key),
+        valid_targets_for_action(payload, spec.output_key),
     )
     if pin_length and n > 0:
         schema = _pin_length_schema(schema, n)
@@ -263,7 +263,7 @@ def run_variants(
 
 # ── Discussion-phase coverage (the production DayDiscussOutput now carries the field natively) ──
 # Validates the day-vote coverage win generalises to discussion (which we never measured). Direct chain
-# call because _run_agent's mapping drops memory_applicability. Also keeps the message to eyeball that
+# call because run_agent's mapping drops memory_applicability. Also keeps the message to eyeball that
 # forced per-memory reasoning didn't make discussion robotic.
 
 def iter_town_day_discussion(batch_path: Path, roles: frozenset[str]):

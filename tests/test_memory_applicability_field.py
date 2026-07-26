@@ -23,6 +23,7 @@ from Agents.schemas.output import (
     SerialKillerOutput,
     VigilanteOutput,
     WolfNightDiscussOutput,
+    WolfNightVoteOutput,
 )
 
 # (schema, the action field memory_applicability must precede)
@@ -34,6 +35,7 @@ SCHEMAS = [
     (SerialKillerOutput, "serial_killer_target"),
     (VigilanteOutput, "vigilante_target"),
     (WolfNightDiscussOutput, "message"),
+    (WolfNightVoteOutput, "vote_target"),
 ]
 
 
@@ -115,7 +117,7 @@ def test_run_agent_carries_memory_applicability_in_every_return():
     # assert that helper attaches both carriers (parity) rather than that each return re-lists them.
     import inspect
 
-    from Agents.turn import interpret
+    from Agents.turn import resolve
 
-    src = inspect.getsource(interpret._attach_side_outputs)
+    src = inspect.getsource(resolve._attach_agent_reasoning)
     assert src.count('output["_memory_applicability"]') == src.count('output["_strategy_verdicts"]') == 1

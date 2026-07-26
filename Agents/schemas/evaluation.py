@@ -120,7 +120,7 @@ class EvalCase(BaseModel):
     strategy_verdicts: list[StrategyVerdict] = Field(default_factory=list)
     """The agent's per-strategy-point verdicts (follow/override/not_relevant, one per retrieved SP it
     judged), captured from the structured output for offline analysis + the follow-vs-override credit
-    signal. Empty when memory was off or no SPs retrieved. See Agents/turn/interpret.py (_strategy_verdicts carrier)."""
+    signal. Empty when memory was off or no SPs retrieved. See Agents/turn/resolve.py (_strategy_verdicts carrier)."""
     strategy_index_to_key: dict[int, str] = Field(default_factory=dict)
     """1-based prompt index -> stored-SP key for EVERY retrieved strategy point this decision (the
     adoption index_map). Lets each strategy_verdict — follow, override, AND not_relevant — be joined
@@ -129,12 +129,12 @@ class EvalCase(BaseModel):
     memory_applicability: list[MemoryVerdict] = Field(default_factory=list)
     """The agent's per-observation applicability verdicts (one per retrieved memory it judged),
     captured from the structured output for offline analysis. Empty when memory was off or none
-    retrieved. See Agents/turn/interpret.py (the _memory_applicability carrier)."""
+    retrieved. See Agents/turn/resolve.py (the _memory_applicability carrier)."""
     reads: list[PlayerRead] = Field(default_factory=list)
     """The agent's per-player suspicion commitments (player, why, suspected_role, confidence),
     captured from the structured output BEFORE its strategy/action. Empty on legacy records
     (pre-2026-07-09) and on wolf-night turns (out of the shipped scope). See
-    Agents/turn/interpret.py (the _reads carrier); consumed by the parked reads-scoring +
+    Agents/turn/resolve.py (the _reads carrier); consumed by the parked reads-scoring +
     composition-coherence analyses (validation plan T3(b))."""
 
     @property

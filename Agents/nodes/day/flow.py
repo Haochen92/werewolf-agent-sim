@@ -106,7 +106,7 @@ def build_speaker_send(
 
     Private fields (wolf roster, investigator results, vigilante results) are only
     attached to the role they belong to, mirroring fan_out_day. They must NOT ride
-    along in a universal superset: _run_agent builds the prompt-input dict straight
+    along in a universal superset: run_agent builds the prompt-input dict straight
     from this payload, so extra private keys reach every role's prompt input and are
     one template edit away from leaking (tests/leak_test.py guards this invariant).
     This replaces the old per-role fan-out branching.

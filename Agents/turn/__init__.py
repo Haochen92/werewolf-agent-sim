@@ -9,9 +9,9 @@ is nothing to schedule):
                  pass-based termination. Pure functions, no LLM.
 
 HOW (the execution pipeline: enrich → decide → record — all actions, day + night):
-  pipeline.py      — _run_memory_informed_action / _night_action: the pipeline
-  interpret.py     — _interpret: decision → legal state delta (SHARED by agent + human seats)
-  agent_player.py  — _run_agent: an agent's LLM turn (constrain → generate → _interpret)
+  pipeline.py      — run_memory_informed_action / _night_action: the pipeline
+  resolve.py     — resolve_decision: decision → legal state delta (SHARED by agent + human seats)
+  agent_player.py  — run_agent: an agent's LLM turn (constrain → generate → resolve_decision)
   human_turn.py    — the human seat: interrupt() for a human's action, shaped like an LLM decision
   action_space.py  — legal-move enforcement (valid targets + dynamic target enum)
   novelty_agent.py — the proactive-novelty speak-gate (judge llm.invoke + prompt)
@@ -22,11 +22,11 @@ HOW (the execution pipeline: enrich → decide → record — all actions, day +
 """
 
 from Agents.turn.pipeline import (  # noqa: F401
-    _run_memory_informed_action,
-    _run_memory_informed_night_action,
+    run_memory_informed_action,
+    run_memory_informed_night_action,
 )
-from Agents.turn.agent_player import _run_agent  # noqa: F401
-from Agents.turn.human_turn import _run_human_decision  # noqa: F401
+from Agents.turn.agent_player import run_agent  # noqa: F401
+from Agents.turn.human_turn import run_human_decision  # noqa: F401
 from Agents.turn.eval import prompt_log, reads_log  # noqa: F401
 from Agents.turn.addressing_agent import (  # noqa: F401
     ADDRESSING_EXTRACTOR_PROMPT,

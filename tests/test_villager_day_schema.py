@@ -2,7 +2,7 @@
 mixin DAG: the embedding composition includes only the marked free-text dims (in marker order),
 the criticality numbers + direction enum stay OUT of the embed (reranker-only) and out of nothing
 the model can't supply (all-required), and the `_Embed` marker never reaches a model. See
-evidence/phase_b/dimension_schema_build_spec.md."""
+evidence/extraction/situation_dimensions/dimension_schema_build_spec.md."""
 
 import json
 

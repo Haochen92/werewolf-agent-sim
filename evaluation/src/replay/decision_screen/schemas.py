@@ -88,7 +88,7 @@ class DayVoteOutputStructuredApplicability(BaseModel):
     """Forced-structured applicability variant: ONE verdict row per retrieved
     observation (the model cannot skip the assessment), emitted BEFORE the vote.
     Capability probe — does the game model produce sensible per-memory verdicts? Captured
-    by a direct chain call (a new field is dropped by _run_agent's mapping). No
+    by a direct chain call (a new field is dropped by run_agent's mapping). No
     adopted_strategy_keys (vestigial here). Replay input only."""
 
     memory_applicability: list[MemoryVerdict] = Field(

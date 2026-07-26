@@ -4,7 +4,7 @@ from langgraph.runtime import Runtime
 from Agents.tracing import GraphContext
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
-from Agents.turn import _run_memory_informed_action
+from Agents.turn import run_memory_informed_action
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
@@ -35,7 +35,7 @@ def _make_discuss_node(prompt: str, state_type=VillagerDayState):
         config: RunnableConfig,
         runtime: Runtime[GraphContext],
     ):
-        return _run_memory_informed_action(
+        return run_memory_informed_action(
             payload,
             config,
             runtime,
@@ -54,7 +54,7 @@ def _make_vote_node(prompt: str, state_type=VillagerDayState):
         config: RunnableConfig,
         runtime: Runtime[GraphContext],
     ):
-        return _run_memory_informed_action(
+        return run_memory_informed_action(
             payload,
             config,
             runtime,

@@ -1,6 +1,6 @@
 """Per-turn action orchestrator — the pipeline every agent turn runs, day and night.
 
-``_run_memory_informed_action`` and ``_run_memory_informed_night_action`` are the two entry points:
+``run_memory_informed_action`` and ``run_memory_informed_night_action`` are the two entry points:
 each enriches the payload with retrieved memory, routes the decision through the LLM runner, and
 records the result (EvalCase snapshot + strategy-adoption write-back). enrich → decide → record.
 """
@@ -38,15 +38,15 @@ from Agents.state import (
     VillagerDayState,
     WolfDayState,
 )
-from Agents.turn.agent_player import _run_agent
-from Agents.turn.human_turn import _run_human_decision
-from Agents.turn.adoption import _process_strategy_adoption
-from Agents.turn.eval import _build_eval_private_context
+from Agents.turn.agent_player import run_agent
+from Agents.turn.human_turn import run_human_decision
+from Agents.turn.adoption import process_strategy_adoption
+from Agents.turn.eval import build_eval_private_context
 
 logger = getLogger(__name__)
 
 
-def _run_memory_informed_action(
+def run_memory_informed_action(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
@@ -58,7 +58,7 @@ def _run_memory_informed_action(
     # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
     # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
     if payload.get("human_player"):
-        return _run_human_decision(payload, output_key)
+        return run_human_decision(payload, output_key)
 
     player_id = payload["player_id"]
     role = payload["player_role"]
@@ -108,7 +108,7 @@ def _run_memory_informed_action(
             runtime,
             action_phase,
         )
-        result = _run_agent(
+        result = run_agent(
             enriched_payload,
             prompt_template,
             output_schema,
@@ -121,7 +121,7 @@ def _run_memory_informed_action(
         # Reads are PRIVATE: POP the carrier so it can't ride the returned dict back into graph state —
         # reads live only in the EvalCase sidecar.
         player_reads = (result or {}).pop("_reads", []) if result else []
-        raw_adopted_indices, adopted_store_keys = _process_strategy_adoption(
+        raw_adopted_indices, adopted_store_keys = process_strategy_adoption(
             result,
             enriched_payload,
             runtime,
@@ -187,7 +187,7 @@ def _run_memory_informed_action(
             round=round_num,
             action_phase=action_phase,
             visible_discussion=recent_messages,
-            private_context=_build_eval_private_context(payload, day),
+            private_context=build_eval_private_context(payload, day),
             memory_enabled=retrieval_meta["memory_enabled"],
             retrieval_skipped_reason=retrieval_meta["retrieval_skipped_reason"],
             situations=retrieval_meta["situations"],
@@ -240,7 +240,7 @@ def _run_memory_informed_action(
     return result
 
 
-def _run_memory_informed_night_action(
+def run_memory_informed_night_action(
     payload: dict[str, Any],
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
@@ -248,7 +248,7 @@ def _run_memory_informed_night_action(
     output_schema: type[BaseModel],
     output_key: str,
 ) -> dict[str, Any] | None:
-    """Night counterpart of ``_run_memory_informed_action`` for single-target roles.
+    """Night counterpart of ``run_memory_informed_action`` for single-target roles.
 
     A night action selects a target instead of producing a message/vote, so the
     eval case carries ``agent_night_action`` rather than ``agent_message``/
@@ -257,7 +257,7 @@ def _run_memory_informed_night_action(
     """
     # Human seat: same early exit as the day path — skip span / retrieval / adoption / EvalCase.
     if payload.get("human_player"):
-        return _run_human_decision(payload, output_key)
+        return run_human_decision(payload, output_key)
 
     player_id = payload["player_id"]
     role = payload["player_role"]
@@ -298,7 +298,7 @@ def _run_memory_informed_night_action(
             runtime,
             action_phase,
         )
-        result = _run_agent(
+        result = run_agent(
             enriched_payload,
             prompt_template,
             output_schema,
@@ -309,7 +309,7 @@ def _run_memory_informed_night_action(
         # Reads are PRIVATE: POP the carrier so it can't ride the returned dict back into graph state —
         # reads live only in the EvalCase sidecar.
         player_reads = (result or {}).pop("_reads", []) if result else []
-        raw_adopted_indices, adopted_store_keys = _process_strategy_adoption(
+        raw_adopted_indices, adopted_store_keys = process_strategy_adoption(
             result,
             enriched_payload,
             runtime,
@@ -325,11 +325,12 @@ def _run_memory_informed_night_action(
         updated_strategy = ""
         if result:
             applied_game_update = {}
-            if output_key == "wolf_channel":
-                # Wolf night is a discussion turn that carries a kill vote; the
-                # decision we evaluate is this wolf's vote. The turn produces a
-                # WolfChannel (message + vote) and folds its strategy update into
-                # agent_strategies (not a flat updated_strategy), so unpack both.
+            if output_key in ("wolf_channel", "wolf_vote"):
+                # Both wolf-night turns ride the wolf channel: the sequential talk turn
+                # (message, vote="") and the binding vote turn (vote, message="") — the
+                # vote entry is the decision the EvalCase evaluates (talk turns carry no
+                # target). Both fold their strategy update into agent_strategies (not a
+                # flat updated_strategy), so unpack both.
                 messages = result.get("wolf_channel", [])
                 applied_game_update["wolf_channel"] = messages
                 if messages:
@@ -355,7 +356,7 @@ def _run_memory_informed_night_action(
             round=round_num,
             action_phase=action_phase,
             visible_discussion=[],
-            private_context=_build_eval_private_context(payload, day),
+            private_context=build_eval_private_context(payload, day),
             memory_enabled=retrieval_meta["memory_enabled"],
             retrieval_skipped_reason=retrieval_meta["retrieval_skipped_reason"],
             situations=retrieval_meta["situations"],

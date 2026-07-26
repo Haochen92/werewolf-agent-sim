@@ -30,7 +30,7 @@ def _read_verdict(v: Any) -> tuple[int | None, str | None]:
     return getattr(v, "strategy_index", None), getattr(v, "verdict", None)
 
 
-def _process_strategy_adoption(
+def process_strategy_adoption(
     result: dict[str, Any] | None,
     enriched_payload: dict[str, Any],
     runtime: Runtime[GraphContext],

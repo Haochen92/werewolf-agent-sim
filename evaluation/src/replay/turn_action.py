@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from Agents.turn import _run_agent
+from Agents.turn import run_agent
 from Agents.prompts import (
     HEALER_DAY_DISCUSS,
     HEALER_DAY_VOTE,
@@ -107,7 +107,7 @@ def run_application_action(
         payload["strategy_points"] = strategy_points
 
     spec = action_spec_for(case)
-    result = _run_agent(
+    result = run_agent(
         payload,
         spec.prompt_template,
         spec.output_schema,

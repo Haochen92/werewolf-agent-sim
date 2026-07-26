@@ -30,8 +30,8 @@ from Agents.schemas.output import (
 )
 from Agents.schemas.roles import cast_role_counts
 from Agents.turn import agent_player as agent_mod
-from Agents.turn.action_space import _output_schema_with_legal_targets
-from Agents.turn.eval import _build_eval_private_context, _reads_coverage
+from Agents.turn.action_space import output_schema_with_legal_targets
+from Agents.turn.eval import build_eval_private_context, _reads_coverage
 from tests.leak_test import check_reads_isolation
 
 
@@ -73,7 +73,7 @@ def test_eval_case_loads_without_reads():
 # --- (3) dynamic target-enum rewrite keeps reads (required) ------------------
 
 def test_dynamic_target_enum_preserves_required_reads():
-    schema = _output_schema_with_legal_targets(
+    schema = output_schema_with_legal_targets(
         DayVoteOutput, "day_votes", ["player_1", "player_2", "abstain"]
     )
     assert "reads" in schema.model_fields
@@ -157,7 +157,7 @@ def test_reads_coverage_full_and_wolf_shape():
 
 class _FakeLLM:
     """Stand-in for get_llm(): with_structured_output returns a runnable that ignores its input and
-    yields a canned decision, so _run_agent exercises the tripwire branch without a real model call."""
+    yields a canned decision, so run_agent exercises the tripwire branch without a real model call."""
 
     def __init__(self, result):
         self._result = result
@@ -188,7 +188,7 @@ def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
     result = _healer_result([f"player_{i}" for i in range(2, 8)])  # 6 of 8 -> 0.75
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
-        out = agent_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
     assert out["healer_target"] == "player_3"
     assert "reads under-covered" in caplog.text
     assert "player_8" in caplog.text and "player_9" in caplog.text
@@ -199,7 +199,7 @@ def test_tripwire_silent_on_full_coverage(monkeypatch, caplog):
     result = _healer_result(payload["surviving_players"])  # all 8
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
-        agent_mod._run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+        agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
     assert "reads under-covered" not in caplog.text
 
 
@@ -282,13 +282,13 @@ def test_cast_role_counts_is_name_free():
 
 def test_eval_private_context_captures_board_inputs():
     roster = [DeathRecord(player="player_2", role="villager", day=1, phase="night")]
-    ctx = _build_eval_private_context(
+    ctx = build_eval_private_context(
         {**_healer_payload(), "dead_roster": roster}, day=2,
     )
     assert ctx.dead_roster == roster
     assert ctx.cast_role_counts == _FULL_CAST
     # Legacy payloads (pre-board) still snapshot cleanly with empty defaults.
-    legacy = _build_eval_private_context({"player_id": "player_1"}, day=1)
+    legacy = build_eval_private_context({"player_id": "player_1"}, day=1)
     assert legacy.dead_roster == [] and legacy.cast_role_counts == {}
 
 

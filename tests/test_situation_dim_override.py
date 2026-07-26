@@ -1,7 +1,7 @@
 """Query-time override of the agent-knowable situation dims (players_alive / bullets_left /
 ally_revealed). These are computed from game state, never trusted from the LLM's structured output —
 the structural corollary of the 2026-07 dimension-accuracy audit
-(evidence/phase_b/dimension_accuracy_audit/). No LLM: we hand the override a synthetic parsed cell
+(evidence/extraction/situation_dimensions/dimension_accuracy_audit/). No LLM: we hand the override a synthetic parsed cell
 + payload and assert the corrected dims. See Agents/memory/retrieval/situation_agent.py."""
 
 from typing import Literal, get_args, get_origin

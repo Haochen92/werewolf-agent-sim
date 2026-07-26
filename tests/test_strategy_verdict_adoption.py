@@ -5,7 +5,7 @@ The full per-decision verdict record (incl. override/not_relevant) lives in the 
 from types import SimpleNamespace
 
 from Agents.schemas.output import StrategyVerdict
-from Agents.turn.adoption import _process_strategy_adoption
+from Agents.turn.adoption import process_strategy_adoption
 
 NS = ("strategy_points", "villager", "day_vote")
 
@@ -26,7 +26,7 @@ def _run(verdicts, keys=("ka", "kb", "kc")):
     store = FakeStore(keys)
     index_map = {i + 1: k for i, k in enumerate(keys)}  # 1-based index -> store key
     result = {"_strategy_verdicts": verdicts}
-    followed_idx, followed_keys = _process_strategy_adoption(
+    followed_idx, followed_keys = process_strategy_adoption(
         result, {"strategy_point_index_map": index_map}, SimpleNamespace(store=store),
         player_id="player_1", role="villager", action_phase="day_vote", day=2, round_num=0,
     )

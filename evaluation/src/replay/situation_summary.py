@@ -49,7 +49,7 @@ def eval_case_to_agent_payload(case: EvalCase) -> dict[str, Any]:
 
     The replay runner must use the same formatting path as the game graph, so
     this function maps frozen EvalCase fields back into the keys expected by
-    Agents.nodes._build_agent_prompt_input.
+    Agents.prompts.prompt_inputs.build_agent_prompt_input.
     """
     private = case.private_context
     return {

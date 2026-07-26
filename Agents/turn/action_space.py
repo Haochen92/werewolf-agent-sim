@@ -1,10 +1,10 @@
 """Legal-move enforcement for an agent action.
 
 Two halves of one concern — keep the LLM inside the game's rules:
-  - ``_valid_targets_for_action`` / ``_validate_target`` compute who is a legal
+  - ``valid_targets_for_action`` / ``validate_target`` compute who is a legal
     target for an ``output_key`` (surviving players/villagers, plus the
     ``abstain`` and ``hold_fire`` sentinels) and check a chosen target.
-  - ``_output_schema_with_legal_targets`` rewrites the output schema so the target field
+  - ``output_schema_with_legal_targets`` rewrites the output schema so the target field
     is a ``Literal[valid_targets]`` the model structurally cannot violate.
 """
 
@@ -13,16 +13,16 @@ from typing import Any, Literal
 from pydantic import BaseModel, create_model
 
 
-def _validate_target(target: str, valid_targets: list[str], player_id: str) -> str | None:
+def validate_target(target: str, valid_targets: list[str], player_id: str) -> str | None:
     """Returns the target if valid, None if not."""
     if target in valid_targets and target != player_id:
         return target
     return None
 
 
-def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[str]:
+def valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[str]:
     player_id = payload.get("player_id", "")
-    if output_key == "wolf_channel":
+    if output_key == "wolf_vote":
         targets = payload.get("surviving_villagers", [])
     elif output_key in {
         "day_votes",
@@ -46,10 +46,11 @@ def _valid_targets_for_action(payload: dict[str, Any], output_key: str) -> list[
 
 
 # Which field on the output schema holds the chosen target, per output_key. Day votes and the
-# wolf-night channel name it "vote_target"; every night role names the field after its own key.
-_TARGET_FIELD_BY_OUTPUT_KEY = {
+# wolf-night vote name it "vote_target"; every night role names the field after its own key.
+# The wolf-night talk turn (wolf_channel) has no target — it is message-only.
+TARGET_FIELD_BY_OUTPUT_KEY = {
     "day_votes": "vote_target",
-    "wolf_channel": "vote_target",
+    "wolf_vote": "vote_target",
     "healer_target": "healer_target",
     "investigator_target": "investigator_target",
     "serial_killer_target": "serial_killer_target",
@@ -57,7 +58,7 @@ _TARGET_FIELD_BY_OUTPUT_KEY = {
 }
 
 
-def _output_schema_with_legal_targets(
+def output_schema_with_legal_targets(
     output_schema: type[BaseModel],
     output_key: str,
     valid_targets: list[str],
@@ -67,7 +68,7 @@ def _output_schema_with_legal_targets(
     Binding the model to that literal makes an illegal target (a dead player, self) structurally
     impossible to generate, rather than something we catch afterwards.
     """
-    target_field = _TARGET_FIELD_BY_OUTPUT_KEY.get(output_key)
+    target_field = TARGET_FIELD_BY_OUTPUT_KEY.get(output_key)
     if target_field is None:
         # This action names no target (day discussion) — nothing to constrain; the schema is
         # already correct as-is.

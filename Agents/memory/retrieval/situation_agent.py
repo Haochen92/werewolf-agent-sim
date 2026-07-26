@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, create_model
 from Agents.board_clocks import criticality_from_census
 from Agents.llm_factory import get_llm
 from Agents.prompts.prompt_inputs import (
-    build_agent_prompt_input as _build_agent_prompt_input,
+    build_agent_prompt_input,
     compose_cell_guidance,
 )
 from Agents.prompts import (
@@ -131,7 +131,7 @@ def _log_dim_override(payload: dict, field: str, llm_value, computed_value) -> N
 def _override_deterministic_dims(situation: BaseModel, payload: dict) -> None:
     """Guarantee the agent-KNOWABLE dims (`players_alive` / `bullets_left` / `ally_revealed`) equal the
     values computed from game state, never the LLM's structured output. The 2026-07 dimension-accuracy
-    audit (`evidence/phase_b/dimension_accuracy_audit/`) measured the LLM mis-filling `players_alive`
+    audit (`evidence/extraction/situation_dimensions/dimension_accuracy_audit/`) measured the LLM mis-filling `players_alive`
     ~3% for no epistemic reason and systematically UNDER-counting `bullets_left` (0.164 exact, day-2
     acc 0.0); all three are in the agent's own information set, so they are computed here for free.
 
@@ -225,7 +225,7 @@ def _generate_situations_for_agent(
     for attempt in range(max_retries + 1):
         try:
             result = chain.invoke(
-                {**_build_agent_prompt_input(payload), **extra}, config={"run_name": run_name}
+                {**build_agent_prompt_input(payload), **extra}, config={"run_name": run_name}
             )
             if cell_schema is not None:
                 # Correct the agent-knowable dims from game state before composing the dims/embeds

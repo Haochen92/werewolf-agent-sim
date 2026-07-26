@@ -15,7 +15,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 from pydantic import BaseModel
 
-from Agents.turn import _run_memory_informed_night_action
+from Agents.turn import run_memory_informed_night_action
 from Agents.tracing import GraphContext
 
 
@@ -30,7 +30,7 @@ def make_night_act_node(
         config: RunnableConfig,
         runtime: Runtime[GraphContext],
     ):
-        return _run_memory_informed_night_action(
+        return run_memory_informed_night_action(
             payload, config, runtime, prompt, output_schema, output_key
         )
 
