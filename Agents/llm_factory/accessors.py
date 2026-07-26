@@ -15,6 +15,9 @@ from functools import lru_cache
 from .backends import create_chat_model
 
 DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
+# Different-backend rescue when a seat exhausts its structured-output retries (seen with
+# DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
+DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.5-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
 DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
 DEFAULT_PRO_MODEL = "gemini-2.5-pro"
@@ -52,6 +55,23 @@ def _thinking_level_from_env(
 def get_llm():
     return create_chat_model(
         os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+        thinking_level=_thinking_level_from_env(
+            "GOOGLE_GENAI_THINKING_LEVEL",
+            DEFAULT_GAME_THINKING_LEVEL,
+        ),
+    )
+
+
+@lru_cache(maxsize=1)
+def get_llm_game_fallback():
+    """The retry-exhaustion rescue seat model (``GAME_FALLBACK_MODEL`` env override), or None when
+    it would be the same model as the primary — a re-roll on the identical model isn't a rescue."""
+    model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
+    if model == os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL):
+        return None
+    return create_chat_model(
+        model,
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_THINKING_LEVEL",

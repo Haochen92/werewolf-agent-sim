@@ -1,7 +1,7 @@
 """Centralized factory for LLM chat models and embeddings.
 
 All LLM instantiation across the project should go through this package.
-Supports four backends:
+Supports five backends:
 
 - **vertex** (default): Uses Vertex AI via Application Default Credentials
   on the ``global`` endpoint.  Active when ``LLM_BACKEND=vertex`` or when
@@ -11,6 +11,9 @@ Supports four backends:
 - **nim**: Uses NVIDIA NIM via the OpenAI-compatible API.
   Set model prefix ``nim/`` (e.g. ``"nim/deepseek-ai/deepseek-v4-flash"``).
   Requires ``NVIDIA_API_KEY``.
+- **deepseek**: Uses the official DeepSeek API (OpenAI-compatible).
+  Set model prefix ``deepseek/`` (e.g. ``"deepseek/deepseek-v4-flash"``).
+  Requires ``DEEPSEEK_API_KEY``.
 - **mistral**: Uses the Mistral API (OpenAI-compatible).
   Set model prefix ``mistral/`` (e.g. ``"mistral/mistral-small-2506"``).
   Requires ``MISTRAL_API_KEY``.
@@ -38,7 +41,6 @@ load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 from .backends import (  # noqa: E402
     MistralChatModel,
-    NIMChatModel,
     THINKING_LEVEL_TO_BUDGET,
     _use_vertex as _use_vertex,  # private but imported externally; re-export
     create_chat_model,
@@ -57,6 +59,7 @@ from .accessors import (  # noqa: E402
     get_llm_batch_dedup,
     get_llm_dedup,
     get_llm_extractor,
+    get_llm_game_fallback,
     get_llm_judge,
     get_llm_pro,
     get_llm_pro_backup,
@@ -71,7 +74,6 @@ from .embeddings import (  # noqa: E402
 __all__ = [
     # backends
     "MistralChatModel",
-    "NIMChatModel",
     "THINKING_LEVEL_TO_BUDGET",
     "create_chat_model",
     # accessors
@@ -87,6 +89,7 @@ __all__ = [
     "get_llm_batch_dedup",
     "get_llm_dedup",
     "get_llm_extractor",
+    "get_llm_game_fallback",
     "get_llm_judge",
     "get_llm_pro",
     "get_llm_pro_backup",

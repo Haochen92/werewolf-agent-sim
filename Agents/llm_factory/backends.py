@@ -1,6 +1,6 @@
-"""Chat-model construction across the four supported backends.
+"""Chat-model construction across the five supported backends.
 
-vertex (default) / google (API-key) / nim / mistral — selected by ``LLM_BACKEND``
+vertex (default) / google (API-key) / nim / deepseek / mistral — selected by ``LLM_BACKEND``
 and the model prefix. Instances are memoised by construction args (building one is
 non-trivial: client + auth setup), so callers in hot loops reuse a shared,
 thread-safe instance. See the package docstring for backend selection rules.
@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ THINKING_LEVEL_TO_BUDGET: dict[str, int] = {
 
 
 _NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
+_DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
 _MISTRAL_BASE_URL = "https://api.mistral.ai/v1"
 
 
@@ -43,30 +45,39 @@ class _OpenAICompatResponse:
     content: str
 
 
-class NIMChatModel:
-    """Thin wrapper around NVIDIA NIM API with LangChain-compatible .invoke()."""
+class _ToolCallStructuredChatOpenAI(ChatOpenAI):
+    """ChatOpenAI whose ``with_structured_output`` defaults to tool calling.
 
-    def __init__(self, model: str, *, temperature: float = 0.0):
-        from openai import OpenAI
+    LangChain's default method is ``json_schema`` (the OpenAI ``response_format``),
+    which OpenAI-compatible providers don't reliably serve — DeepSeek 400s it
+    outright — while their tool-calling path is solid. Callers that pass an
+    explicit ``method=`` still win.
+    """
 
-        api_key = os.getenv("NVIDIA_API_KEY")
-        if not api_key:
-            raise ValueError("NVIDIA_API_KEY not set")
-        self._client = OpenAI(base_url=_NIM_BASE_URL, api_key=api_key)
-        self._model = model
-        self._temperature = temperature
+    def with_structured_output(self, schema=None, **kwargs):
+        kwargs.setdefault("method", "function_calling")
+        return super().with_structured_output(schema, **kwargs)
 
-    def invoke(self, prompt: str) -> _OpenAICompatResponse:
-        if isinstance(prompt, str):
-            messages = [{"role": "user", "content": prompt}]
-        else:
-            messages = prompt
-        response = self._client.chat.completions.create(
-            model=self._model,
-            messages=messages,
-            temperature=self._temperature,
-        )
-        return _OpenAICompatResponse(content=response.choices[0].message.content)
+
+def _build_openai_compat_chat_model(
+    model: str, base_url: str, key_env: str, *, temperature: float = 0.0, **kwargs: Any
+) -> ChatOpenAI:
+    """OpenAI-protocol providers (NVIDIA NIM, DeepSeek) via LangChain's ChatOpenAI.
+
+    A real ChatModel — not the thin ``.invoke()``-only wrapper Mistral still uses —
+    because game seats bind Pydantic schemas via ``with_structured_output``, which
+    rides the provider's tool-calling support.
+    """
+    api_key = os.getenv(key_env)
+    if not api_key:
+        raise ValueError(f"{key_env} not set")
+    return _ToolCallStructuredChatOpenAI(
+        model=model,
+        base_url=base_url,
+        api_key=api_key,
+        temperature=temperature,
+        **kwargs,
+    )
 
 
 class MistralChatModel:
@@ -111,7 +122,7 @@ def create_chat_model(
     thinking_level: str | None = None,
     thinking_budget: int | None = None,
     **kwargs: Any,
-) -> ChatGoogleGenerativeAI | NIMChatModel:
+) -> ChatGoogleGenerativeAI | ChatOpenAI:
     """Create (or reuse) a chat model using the configured backend.
 
     Instances are memoized by construction args (see ``_MODEL_CACHE``); repeated
@@ -127,12 +138,12 @@ def create_chat_model(
         Sampling temperature.
     thinking_level:
         Symbolic thinking level (``"minimal"``, ``"low"``, ``"medium"``,
-        ``"high"``).  Ignored for NIM models.
+        ``"high"``).  Ignored for NIM/DeepSeek models.
     thinking_budget:
         Explicit thinking token budget.  Takes precedence over
-        ``thinking_level`` when both are provided.  Ignored for NIM models.
+        ``thinking_level`` when both are provided.  Ignored for NIM/DeepSeek models.
     **kwargs:
-        Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM).
+        Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM/DeepSeek).
     """
     try:
         cache_key: Any = (
@@ -162,10 +173,29 @@ def _build_chat_model(
     thinking_level: str | None = None,
     thinking_budget: int | None = None,
     **kwargs: Any,
-) -> ChatGoogleGenerativeAI | NIMChatModel:
+) -> ChatGoogleGenerativeAI | ChatOpenAI:
     """Construct a fresh chat model (uncached). See ``create_chat_model``."""
     if model.startswith("nim/"):
-        return NIMChatModel(model.removeprefix("nim/"), temperature=temperature)
+        return _build_openai_compat_chat_model(
+            model.removeprefix("nim/"), _NIM_BASE_URL, "NVIDIA_API_KEY",
+            temperature=temperature,
+        )
+
+    if model.startswith("deepseek/"):
+        # Thinking is ALWAYS disabled: V4's thinking mode rejects the forced
+        # tool_choice that with_structured_output sends, and every game call is
+        # structured — a thinking DeepSeek seat 400s on its first turn (seen live
+        # with the summary agent's default "medium" level).
+        if thinking_level not in (None, "minimal"):
+            logger.info(
+                "DeepSeek: thinking_level=%s ignored (thinking mode is incompatible "
+                "with structured output on this endpoint).", thinking_level,
+            )
+        return _build_openai_compat_chat_model(
+            model.removeprefix("deepseek/"), _DEEPSEEK_BASE_URL, "DEEPSEEK_API_KEY",
+            temperature=temperature,
+            extra_body={"thinking": {"type": "disabled"}},
+        )
 
     if model.startswith("mistral/"):
         return MistralChatModel(model.removeprefix("mistral/"), temperature=temperature)
