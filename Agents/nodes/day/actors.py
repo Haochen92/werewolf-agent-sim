@@ -19,12 +19,32 @@ from Agents.prompts import (
     WOLF_DAY_DISCUSS,
     WOLF_DAY_VOTE,
 )
-from Agents.schemas import DayDiscussOutput, DayVoteOutput
+from typing import TypedDict, cast
+
+from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
 from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
 
 # The Send-payload shape: one of the role-gated payload TypedDicts built by flow.py's
 # builders (documentation-only — Send payloads are not runtime-validated; see state/day.py).
 DayActorPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
+
+
+# The commit contracts: exactly what a turn's superstep can fold into graph state (shape
+# decided in turn/resolve._attach_agent_reasoning; documented at run_memory_informed_action).
+# Together with DayActorPayload these make the node signature the full turn contract:
+# payload in, delta out — everything else in the call chain is implementation.
+class DiscussDelta(TypedDict, total=False):
+    day_channel: list[DayChannel]
+    """One entry: the speech, or a pass marker (voluntary or novelty-gated)."""
+    agent_strategies: dict[str, str]
+    """{player_id: updated strategy note} — present only when the strategy changed."""
+
+
+class VoteDelta(TypedDict, total=False):
+    day_votes: list[DayVote]
+    """One vote (random-target fallback if every retry failed)."""
+    agent_strategies: dict[str, str]
+    """{player_id: updated strategy note} — present only when the strategy changed."""
 
 
 # Every role's day-discuss / day-vote turn makes the identical call into the shared
@@ -57,8 +77,8 @@ def discuss(
     payload: DayActorPayload,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
-):
-    return run_memory_informed_action(
+) -> DiscussDelta | None:
+    return cast(DiscussDelta | None, run_memory_informed_action(
         payload,
         config,
         runtime,
@@ -66,15 +86,15 @@ def discuss(
         DISCUSS_PROMPTS[payload["player_role"]],
         DayDiscussOutput,
         "day_channel",
-    )
+    ))
 
 
 def vote(
     payload: DayActorPayload,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
-):
-    return run_memory_informed_action(
+) -> VoteDelta | None:
+    return cast(VoteDelta | None, run_memory_informed_action(
         payload,
         config,
         runtime,
@@ -82,4 +102,4 @@ def vote(
         VOTE_PROMPTS[payload["player_role"]],
         DayVoteOutput,
         "day_votes",
-    )
+    ))
