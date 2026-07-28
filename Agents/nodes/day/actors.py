@@ -20,6 +20,11 @@ from Agents.prompts import (
     WOLF_DAY_VOTE,
 )
 from Agents.schemas import DayDiscussOutput, DayVoteOutput
+from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
+
+# The Send-payload shape: one of the role-gated payload TypedDicts built by flow.py's
+# builders (documentation-only — Send payloads are not runtime-validated; see state/day.py).
+DayActorPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
 
 
 # Every role's day-discuss / day-vote turn makes the identical call into the shared
@@ -47,9 +52,9 @@ VOTE_PROMPTS: dict[str, str] = {
 
 
 # The payload is the explicitly-built dict from build_speaker_send / fan_out_day (role-gated
-# there — the leak boundary), not raw graph state, so the arg is typed as a plain dict.
+# there — the leak boundary), not raw graph state.
 def discuss(
-    payload: dict,
+    payload: DayActorPayload,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
@@ -65,7 +70,7 @@ def discuss(
 
 
 def vote(
-    payload: dict,
+    payload: DayActorPayload,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ):
