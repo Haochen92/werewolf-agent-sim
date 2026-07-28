@@ -169,7 +169,9 @@ def _attach_agent_reasoning(
     """Attach the agent reasoning to a state delta (every branch routes through here, so a new return
     can't forget one). The strategy note is real state: day/wolf write it as a {player_id: note} map
     (merge_strategies channel), night writes a bare ``updated_strategy``. The verdicts/reads are
-    private eval CARRIERS — ``_``-prefixed, POPped downstream (pipeline.py) before graph state."""
+    private eval CARRIERS — ``_``-prefixed, kept out of graph state downstream (_reads popped in
+    pipeline.py, _strategy_verdicts popped in adoption.py, _memory_applicability dropped by the
+    engine — LangGraph silently discards unknown keys in a node's return)."""
     if reasoning["strategy"]:
         if strategy_as_map:
             output["agent_strategies"] = {player_id: reasoning["strategy"]}

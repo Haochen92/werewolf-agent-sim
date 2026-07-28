@@ -55,6 +55,18 @@ def run_memory_informed_action(
     output_schema: type[BaseModel],
     output_key: str,
 ) -> dict[str, Any] | None:
+    """One day turn -> the state delta the superstep commits. Most of this function is
+    observability (Langfuse span, applied_game_update mirror, EvalCase); the state path is only:
+    the human short-circuit, run_agent, the _reads pop, and the return.
+
+    Returns (shape decided in resolve._attach_agent_reasoning, the single chokepoint):
+      discuss -> {"day_channel": [one DayChannel (speech or pass marker)]}
+      vote    -> {"day_votes": [one DayVote]}   (random-target fallback if all retries fail)
+      both    -> + {"agent_strategies": {player_id: note}} when the strategy changed
+      discuss w/ all retries failed -> None (= no state update; the turn never happened)
+    ``_``-prefixed eval carriers never reach graph state: _reads is popped here,
+    _strategy_verdicts in adoption, _memory_applicability is dropped by the engine
+    (unknown keys in a node's return are silently discarded)."""
     # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
     # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
     if payload.get("human_player"):
