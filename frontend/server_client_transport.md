@@ -518,6 +518,16 @@ which is true the moment the node starts, and commits us to nothing about what (
 X will say. The typewriter gives token-streaming's *feel* with none of its truthfulness
 problems.
 
+**Mechanism (ruled):** a `get_stream_writer()` one-liner at the top of each turn node — the
+single sanctioned graph-code touch in this design. The alternative (listening to the engine's
+debug/task-start records) was rejected: those records carry the full role-gated Send payload,
+turning a typing indicator into a standing filter-the-firehose security obligation, and their
+shape is semi-internal API. The writer emits only what we author (`player`, `day`) — private
+data never enters the stream, safe by construction (§6). It fires for human turns too (other
+seats see "X is thinking" while the human deliberates); note the interrupt-resume replay
+re-runs the node top, so human turns double-fire it — the client treats the typing indicator
+idempotently (or the translator dedupes).
+
 ### Night pacing: there is deliberately no `night_progress` event
 
 At night, seats without an action (villagers) or whose action resolved early would otherwise
