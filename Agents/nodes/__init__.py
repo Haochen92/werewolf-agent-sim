@@ -1,7 +1,7 @@
 """Graph node functions + routers, grouped by phase.
 
 day/flow.py     — day discussion/vote control flow (scheduler hop, routers, fan-out, summary)
-day/actors.py   — per-role day discuss/vote nodes, built from two factories
+day/actors.py   — the two generic day actor nodes (discuss/vote); role rides the payload
 orchestrator.py — game setup, day resolution, winner/terminal logic, postgame
 night/<role>.py — each role's night action node (single-actor roles are one-line
                   bindings over night/factory.py:make_night_act_node)
@@ -32,23 +32,13 @@ from Agents.nodes.day import (  # noqa: F401
     _serialize_day_summary,
     collect_votes,
     day_scheduler,
+    discuss,
     fan_out_vote,
-    healer_discuss,
-    healer_vote,
-    investigator_discuss,
-    investigator_vote,
     route_after_day_summary,
     route_speaker,
-    serial_killer_discuss,
-    serial_killer_vote,
     start_voting,
     summarize_day_discussion,
-    vigilante_discuss,
-    vigilante_vote,
-    villager_discuss,
-    villager_vote,
-    wolf_discuss,
-    wolf_vote,
+    vote,
 )
 from Agents.nodes.night.resolution import (  # noqa: F401
     night_finalize,

@@ -14,16 +14,6 @@ from Agents.nodes.day.summary_agent import (  # noqa: F401
     run_day_summary_agent,
 )
 from Agents.nodes.day.actors import (  # noqa: F401
-    healer_discuss,
-    healer_vote,
-    investigator_discuss,
-    investigator_vote,
-    serial_killer_discuss,
-    serial_killer_vote,
-    vigilante_discuss,
-    vigilante_vote,
-    villager_discuss,
-    villager_vote,
-    wolf_discuss,
-    wolf_vote,
+    discuss,
+    vote,
 )

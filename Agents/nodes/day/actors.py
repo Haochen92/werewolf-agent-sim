@@ -20,65 +20,61 @@ from Agents.prompts import (
     WOLF_DAY_VOTE,
 )
 from Agents.schemas import DayDiscussOutput, DayVoteOutput
-from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
 
 
-# Every role's day-discuss / day-vote node makes the identical call into the
-# shared engine — only the prompt differs (the state-type hint is cosmetic). The
-# nodes are reached via Send(f"{role}_discuss", payload) / Send(f"{role}_vote",
-# payload) with an explicitly-built payload, so the first-arg annotation is
-# documentation, not input filtering. So we build them from one factory per phase
-# rather than hand-repeating 12 near-identical bodies. Adding a role = one line.
-def _make_discuss_node(prompt: str, state_type=VillagerDayState):
-    def discuss(
-        payload: state_type,
-        config: RunnableConfig,
-        runtime: Runtime[GraphContext],
-    ):
-        return run_memory_informed_action(
-            payload,
-            config,
-            runtime,
-            "day_discussion",
-            prompt,
-            DayDiscussOutput,
-            "day_channel",
-        )
+# Every role's day-discuss / day-vote turn makes the identical call into the shared
+# engine — only the prompt differs. So the graph registers ONE generic node per phase
+# and the role rides the Send payload (player_role, already attached by the role-gated
+# payload builders in flow.py). Role-specific behaviour is data (the prompt tables),
+# not code: adding a role = one prompt entry per phase.
+DISCUSS_PROMPTS: dict[str, str] = {
+    "villager": VILLAGER_DAY_DISCUSS,
+    "healer": HEALER_DAY_DISCUSS,
+    "wolf": WOLF_DAY_DISCUSS,
+    "investigator": INVESTIGATOR_DAY_DISCUSS,
+    "serial_killer": SERIAL_KILLER_DAY_DISCUSS,
+    "vigilante": VIGILANTE_DAY_DISCUSS,
+}
 
-    return discuss
-
-
-def _make_vote_node(prompt: str, state_type=VillagerDayState):
-    def vote(
-        payload: state_type,
-        config: RunnableConfig,
-        runtime: Runtime[GraphContext],
-    ):
-        return run_memory_informed_action(
-            payload,
-            config,
-            runtime,
-            "day_vote",
-            prompt,
-            DayVoteOutput,
-            "day_votes",
-        )
-
-    return vote
+VOTE_PROMPTS: dict[str, str] = {
+    "villager": VILLAGER_DAY_VOTE,
+    "healer": HEALER_DAY_VOTE,
+    "wolf": WOLF_DAY_VOTE,
+    "investigator": INVESTIGATOR_DAY_VOTE,
+    "serial_killer": SERIAL_KILLER_DAY_VOTE,
+    "vigilante": VIGILANTE_DAY_VOTE,
+}
 
 
-# Discussion nodes per role.
-villager_discuss = _make_discuss_node(VILLAGER_DAY_DISCUSS, VillagerDayState)
-healer_discuss = _make_discuss_node(HEALER_DAY_DISCUSS, HealerDayState)
-wolf_discuss = _make_discuss_node(WOLF_DAY_DISCUSS, WolfDayState)
-investigator_discuss = _make_discuss_node(INVESTIGATOR_DAY_DISCUSS, InvestigatorDayState)
-serial_killer_discuss = _make_discuss_node(SERIAL_KILLER_DAY_DISCUSS)  # uses VillagerDayState
-vigilante_discuss = _make_discuss_node(VIGILANTE_DAY_DISCUSS)  # uses VillagerDayState
+# The payload is the explicitly-built dict from build_speaker_send / fan_out_day (role-gated
+# there — the leak boundary), not raw graph state, so the arg is typed as a plain dict.
+def discuss(
+    payload: dict,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_discussion",
+        DISCUSS_PROMPTS[payload["player_role"]],
+        DayDiscussOutput,
+        "day_channel",
+    )
 
-# Vote nodes per role.
-villager_vote = _make_vote_node(VILLAGER_DAY_VOTE, VillagerDayState)
-healer_vote = _make_vote_node(HEALER_DAY_VOTE, HealerDayState)
-wolf_vote = _make_vote_node(WOLF_DAY_VOTE, WolfDayState)
-investigator_vote = _make_vote_node(INVESTIGATOR_DAY_VOTE, InvestigatorDayState)
-serial_killer_vote = _make_vote_node(SERIAL_KILLER_DAY_VOTE)  # uses VillagerDayState
-vigilante_vote = _make_vote_node(VIGILANTE_DAY_VOTE)  # uses VillagerDayState
+
+def vote(
+    payload: dict,
+    config: RunnableConfig,
+    runtime: Runtime[GraphContext],
+):
+    return run_memory_informed_action(
+        payload,
+        config,
+        runtime,
+        "day_vote",
+        VOTE_PROMPTS[payload["player_role"]],
+        DayVoteOutput,
+        "day_votes",
+    )

@@ -102,7 +102,7 @@ def build_speaker_send(
     firing_reason: FiringReason,
     opener_floor: int = 0,
 ) -> Send:
-    """Dispatch one speaker's role node with a common payload + role-gated private fields.
+    """Dispatch the discuss node for one speaker with a common payload + role-gated private fields.
 
     Private fields (wolf roster, investigator results, vigilante results) are only
     attached to the role they belong to, mirroring fan_out_day. They must NOT ride
@@ -148,7 +148,7 @@ def build_speaker_send(
         # Deterministic bullets_left fill (situation_agent): the vigilante day cell carries
         # bullets_left, but VillagerDayState otherwise drops the counter — thread it explicitly.
         payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
-    return Send(f"{role}_discuss", payload)
+    return Send("discuss", payload)
 
 
 # Roles with day discuss/vote nodes registered in the day graph.
@@ -167,7 +167,7 @@ def fan_out_day(
     phase: Literal["discuss", "vote"],
     allow_abstain: bool = False,
 ):
-    """Build a concurrent Send to every surviving acting player's {role}_{phase} node.
+    """Build a concurrent Send to the generic {phase} node for every surviving acting player.
 
     The shared fan-out used for voting (discussion now goes one speaker at a time
     via route_speaker). Same role-gated private-field rule as build_speaker_send:
@@ -216,7 +216,7 @@ def fan_out_day(
             payload["vigilante_results"] = state.get("vigilante_results", [])
             payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
 
-        concurrent_nodes.append(Send(f"{role}_{phase}", payload))
+        concurrent_nodes.append(Send(phase, payload))
 
     return concurrent_nodes
 

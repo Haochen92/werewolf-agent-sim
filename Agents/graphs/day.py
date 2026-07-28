@@ -1,28 +1,33 @@
 """Day subgraph topology: sequential discussion, then concurrent voting.
 
-Discussion is one-speaker-at-a-time: SCHEDULE picks the next speaker (route_speaker) and each
-``{role}_discuss`` node loops straight back to SCHEDULE, until route_speaker terminates to
-SUMMARIZE_DAY_DISCUSSION. Voting is concurrent: START_VOTING fans every survivor out to its
-``{role}_vote`` node (fan_out_vote) and COLLECT_VOTES is the rejoin barrier. The node *bodies*
-live in Agents.nodes (day/actors.py + day/flow.py); this file is wiring only.
+Discussion is one-speaker-at-a-time: SCHEDULE picks the next speaker (route_speaker) and the
+``discuss`` node loops straight back to SCHEDULE, until route_speaker terminates to
+SUMMARIZE_DAY_DISCUSSION. Voting is concurrent: START_VOTING fans every survivor out to the
+``vote`` node (fan_out_vote, one Send per survivor) and COLLECT_VOTES is the rejoin barrier.
+There is ONE generic node per phase — the role rides the Send payload (``player_role``) and
+selects the prompt inside the node; role-specific *content* is payload data, not topology.
+The node *bodies* live in Agents.nodes (day/actors.py + day/flow.py); this file is wiring only.
+
+Trace of one discussion turn (the call chain spans four files by design — scheduling, the
+audited payload boundary, the actor node, and the shared turn engine are deliberately
+separate layers):
+
+    SCHEDULE                     no-op loop anchor (flow.day_scheduler)
+    -> route_speaker             EDGE: picks speaker or terminates; edges never commit,
+       (flow)                    which is why firing_reason must ride the Send to survive
+    -> build_speaker_send        builds the role-gated payload -- THE leak boundary
+       (flow)                    (tests/leak_test.py check_* target this layer)
+    -> discuss                   (actors) generic node; payload["player_role"] selects the prompt
+    -> run_memory_informed_action(turn/pipeline.py)  retrieval -> prompt -> LLM -> validate;
+       its return value is the DayChannel delta the superstep commits
 """
 
 from langgraph.graph import END, START, StateGraph
 
 from Agents.memory import store
 from Agents.nodes import (
-    healer_discuss,
-    healer_vote,
-    investigator_discuss,
-    investigator_vote,
-    serial_killer_discuss,
-    serial_killer_vote,
-    vigilante_discuss,
-    vigilante_vote,
-    villager_discuss,
-    villager_vote,
-    wolf_discuss,
-    wolf_vote,
+    discuss,
+    vote,
 )
 from Agents.nodes import (
     collect_votes,
@@ -38,9 +43,9 @@ from Agents.tracing import GraphContext
 
 
 def build_day_graph():
-    """Wire the day topology: START -> SCHEDULE -(route_speaker)-> a {role}_discuss node (which
-    loops back to SCHEDULE) | SUMMARIZE_DAY_DISCUSSION -(route_after_day_summary)-> START_VOTING
-    | END; START_VOTING fans out to the {role}_vote nodes -> COLLECT_VOTES -> END."""
+    """Wire the day topology: START -> SCHEDULE -(route_speaker)-> discuss (which loops back
+    to SCHEDULE) | SUMMARIZE_DAY_DISCUSSION -(route_after_day_summary)-> START_VOTING | END;
+    START_VOTING fans the survivors out to vote -> COLLECT_VOTES -> END."""
     day_graph = StateGraph(DayGraphState, context_schema=GraphContext)
 
     day_graph.add_node("SCHEDULE", day_scheduler)
@@ -48,51 +53,21 @@ def build_day_graph():
     day_graph.add_node("START_VOTING", start_voting)
     day_graph.add_node("COLLECT_VOTES", collect_votes)
 
-    day_graph.add_node("villager_discuss", villager_discuss)
-    day_graph.add_node("healer_discuss", healer_discuss)
-    day_graph.add_node("wolf_discuss", wolf_discuss)
-    day_graph.add_node("investigator_discuss", investigator_discuss)
-    day_graph.add_node("serial_killer_discuss", serial_killer_discuss)
-    day_graph.add_node("vigilante_discuss", vigilante_discuss)
-
-    day_graph.add_node("villager_vote", villager_vote)
-    day_graph.add_node("healer_vote", healer_vote)
-    day_graph.add_node("wolf_vote", wolf_vote)
-    day_graph.add_node("investigator_vote", investigator_vote)
-    day_graph.add_node("serial_killer_vote", serial_killer_vote)
-    day_graph.add_node("vigilante_vote", vigilante_vote)
-
-    discuss_nodes = [
-        "villager_discuss",
-        "healer_discuss",
-        "wolf_discuss",
-        "investigator_discuss",
-        "serial_killer_discuss",
-        "vigilante_discuss",
-    ]
-    vote_nodes = [
-        "villager_vote",
-        "healer_vote",
-        "wolf_vote",
-        "investigator_vote",
-        "serial_killer_vote",
-        "vigilante_vote",
-    ]
+    day_graph.add_node("discuss", discuss)
+    day_graph.add_node("vote", vote)
 
     day_graph.add_edge(START, "SCHEDULE")
     day_graph.add_conditional_edges(
         "SCHEDULE",
         route_speaker,
-        discuss_nodes + ["SUMMARIZE_DAY_DISCUSSION"],
+        ["discuss", "SUMMARIZE_DAY_DISCUSSION"],
     )
-    # Self-loops to route back to scheduler after each speech
-    for node in discuss_nodes:
-        day_graph.add_edge(node, "SCHEDULE")
+    # Self-loop to route back to the scheduler after each speech
+    day_graph.add_edge("discuss", "SCHEDULE")
 
     day_graph.add_conditional_edges("SUMMARIZE_DAY_DISCUSSION", route_after_day_summary)
-    day_graph.add_conditional_edges("START_VOTING", fan_out_vote, vote_nodes)
-    for node in vote_nodes:
-        day_graph.add_edge(node, "COLLECT_VOTES")
+    day_graph.add_conditional_edges("START_VOTING", fan_out_vote, ["vote"])
+    day_graph.add_edge("vote", "COLLECT_VOTES")
     day_graph.add_edge("COLLECT_VOTES", END)
 
     return day_graph
