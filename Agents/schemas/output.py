@@ -26,22 +26,26 @@ def _expects_structure(annotation) -> bool:
         return True
     return isinstance(annotation, type) and issubclass(annotation, BaseModel)
 
-
-# Base for every schema in this module. Unconstrained tool-calling backends (DeepSeek — Gemini's
-# structured mode constrains generation and never triggers this) sometimes emit a nested object or
-# list as a JSON STRING. That deformity is lossless, so it is normalized here generically: parse the
-# string back before validation. Parse failures and wrong shapes still fail loudly into the normal
-# retry. LOSSY repairs (e.g. off-enum folding) are deliberately NOT generalized — each lives as an
-# explicit per-field validator (see PlayerRead.confidence). Model-visible: no class docstring
-# (every class in this module gets __doc__=None automatically, so nothing leaks into JSON schemas).
 class LenientToolCallModel(BaseModel):
+
+    # Base for every schema in this module. Handle models with unconstrained tool-calling backends which sometimes
+    # emit a nested object or list as a JSON string. Normalising by parsing the string back before validation. Parse failures and
+    # wrong shapes still fail loudly. LOSSY repairs (e.g. off-enum folding) are deliberately NOT
+    # generalized — each lives as an explicit per-field validator (see PlayerRead.confidence).
+    # Model-visible: NEVER add a class docstring in this module (it folds into the JSON schema
+    # sent to the model → leaks); comments only.
+
+
     @model_validator(mode="before")
     @classmethod
     def _parse_stringified_structures(cls, data):
         if not isinstance(data, dict):
+            # rejects non dictionary 
             return data
         for name, value in data.items():
+            # find and check original field exists and type
             field = cls.model_fields.get(name)
+            # Skip if value is not json-parsable string
             if field is None or not isinstance(value, str):
                 continue
             if _expects_structure(field.annotation):
