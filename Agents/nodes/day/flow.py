@@ -7,11 +7,10 @@ The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
 """
 
 from logging import getLogger as _getLogger
-logger = _getLogger(__name__)
-
 from typing import Literal
 
 from langchain_core.runnables import RunnableConfig
+from langgraph.config import get_stream_writer
 from langgraph.graph import END
 from langgraph.runtime import Runtime
 from langgraph.types import Send
@@ -33,6 +32,9 @@ from Agents.tracing import (
     GraphContext,
     langfuse,
 )
+
+logger = _getLogger(__name__)
+
 
 def day_scheduler(state: DayGraphState):
     """No-op hub node: the fixed return point every speaker self-loops back to, so
@@ -84,10 +86,18 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         current_day, seq, fr.tier, route_decision.speaker, fr.owes,
     )
     role = state["roles"][route_decision.speaker]
+    # turn_started for the "X is thinking" UI. Emitted from the edge, not the node: resume
+    # after interrupt() re-runs the node but not this routing, so it can't double-fire.
+    try:
+        get_stream_writer()(
+            {"event": "turn_started", "player": route_decision.speaker, "day": current_day}
+        )
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
     return build_speaker_send(state, route_decision.speaker, role, fr, game_config.opener_floor)
-    
-    
-    
+
+
+
 def _initial_wolf_count(state: DayGraphState) -> int:
     """How many wolves the game was CAST with (from the true role map). Used only to fill the wolf
     day cell's deterministic `ally_revealed` — a scalar count, so no wolf identity rides the payload
