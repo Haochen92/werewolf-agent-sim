@@ -170,7 +170,7 @@ def check_reads_isolation(
 ) -> list[str]:
     """Reads are PRIVATE — an agent's honest role suspicions (a wolf's read labels its packmate
     "wolf") must never reach another agent's prompt_input. Reads never enter graph state by
-    construction (the _reads carrier is popped in Agents/turn/pipeline.py), so this is a standing
+    construction (they live on typed TurnEffects and actor nodes do not commit them), so this is a standing
     regression guard against a formatter/template regression.
 
     Two passes, tuned by the 2026-07-09 smoke (the naive why-substring scan false-positived on

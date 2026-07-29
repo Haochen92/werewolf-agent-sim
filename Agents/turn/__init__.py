@@ -10,7 +10,7 @@ is nothing to schedule):
 
 HOW (the execution pipeline: enrich → decide → record — all actions, day + night):
   pipeline.py      — run_memory_informed_action / _night_action: the pipeline
-  resolve.py     — resolve_decision: decision → legal state delta (SHARED by agent + human seats)
+  resolve.py       — resolve_decision: decision → typed legal turn (SHARED by agent + human seats)
   agent_player.py  — run_agent: an agent's LLM turn (constrain → generate → resolve_decision)
   human_turn.py    — the human seat: interrupt() for a human's action, shaped like an LLM decision
   action_space.py  — legal-move enforcement (valid targets + dynamic target enum)

@@ -19,9 +19,10 @@ from Agents.prompts import (
     WOLF_DAY_DISCUSS,
     WOLF_DAY_VOTE,
 )
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from Agents.schemas import DayChannel, DayDiscussOutput, DayVote, DayVoteOutput
+from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedDayVote
 from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState, WolfDayState
 
 # The Send-payload shape: one of the role-gated payload TypedDicts built by flow.py's
@@ -29,8 +30,7 @@ from Agents.state import HealerDayState, InvestigatorDayState, VillagerDayState,
 DayActorPayload = VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState
 
 
-# The commit contracts: exactly what a turn's superstep can fold into graph state (shape
-# decided in turn/resolve._attach_agent_reasoning; documented at run_memory_informed_action).
+# The commit contracts: exactly what a turn's superstep can fold into graph state.
 # Together with DayActorPayload these make the node signature the full turn contract:
 # payload in, delta out — everything else in the call chain is implementation.
 class DiscussDelta(TypedDict, total=False):
@@ -78,7 +78,7 @@ def discuss(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ) -> DiscussDelta | None:
-    return cast(DiscussDelta | None, run_memory_informed_action(
+    turn = run_memory_informed_action(
         payload,
         config,
         runtime,
@@ -86,7 +86,21 @@ def discuss(
         DISCUSS_PROMPTS[payload["player_role"]],
         DayDiscussOutput,
         "day_channel",
-    ))
+    )
+    if turn is None:
+        return None
+    if not isinstance(turn, ResolvedDayDiscussion):
+        raise TypeError(f"day discussion resolved to unexpected turn: {turn.kind}")
+
+    updates: DiscussDelta = {}
+    if turn.entry is not None:
+        # DayGraphState.day_channel is an append-reduced list; this invocation contributes one entry.
+        updates["day_channel"] = [turn.entry]
+    if turn.effects.strategy:
+        updates["agent_strategies"] = {
+            payload["player_id"]: turn.effects.strategy,
+        }
+    return updates or None
 
 
 def vote(
@@ -94,7 +108,7 @@ def vote(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
 ) -> VoteDelta | None:
-    return cast(VoteDelta | None, run_memory_informed_action(
+    turn = run_memory_informed_action(
         payload,
         config,
         runtime,
@@ -102,4 +116,18 @@ def vote(
         VOTE_PROMPTS[payload["player_role"]],
         DayVoteOutput,
         "day_votes",
-    ))
+    )
+    if turn is None:
+        return None
+    if not isinstance(turn, ResolvedDayVote):
+        raise TypeError(f"day vote resolved to unexpected turn: {turn.kind}")
+
+    updates: VoteDelta = {
+        # Parallel voter invocations each contribute one item to the add-reduced vote channel.
+        "day_votes": [turn.entry],
+    }
+    if turn.effects.strategy:
+        updates["agent_strategies"] = {
+            payload["player_id"]: turn.effects.strategy,
+        }
+    return updates

@@ -65,7 +65,11 @@ def build_day_graph():
     # Self-loop to route back to the scheduler after each speech
     day_graph.add_edge("discuss", "SCHEDULE")
 
-    day_graph.add_conditional_edges("SUMMARIZE_DAY_DISCUSSION", route_after_day_summary)
+    day_graph.add_conditional_edges(
+        "SUMMARIZE_DAY_DISCUSSION",
+        route_after_day_summary,
+        ["START_VOTING", END],
+    )
     day_graph.add_conditional_edges("START_VOTING", fan_out_vote, ["vote"])
     day_graph.add_edge("vote", "COLLECT_VOTES")
     day_graph.add_edge("COLLECT_VOTES", END)

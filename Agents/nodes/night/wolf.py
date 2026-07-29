@@ -12,7 +12,7 @@ an EvalCase.
 
 import random
 from collections import Counter
-from typing import Literal
+from typing import Literal, TypedDict
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
@@ -32,7 +32,19 @@ from Agents.tracing import (
 from Agents.turn import run_memory_informed_night_action
 from Agents.prompts import WOLF_NIGHT_DISCUSS, WOLF_NIGHT_VOTE
 from Agents.schemas import WolfNightDiscussOutput, WolfNightVoteOutput
+from Agents.schemas.turn import ResolvedWolfDiscussion, ResolvedWolfVote
+from Agents.schemas.game_events import WolfChannel
 from Agents.state import WolfNightState
+
+
+# The commit contract for both wolf night turns (talk and binding vote): one entry
+# appended to the wolf channel, plus the strategy-note map when it changed.
+class WolfNightDelta(TypedDict, total=False):
+    wolf_channel: list[WolfChannel]
+    """One entry: the talk message (vote="") or the binding vote (message="")."""
+    agent_strategies: dict[str, str]
+    """{player_id: updated strategy note} — present only when the strategy changed."""
+
 
 # Talk rounds before the binding vote; the vote itself is the round after the last talk round.
 WOLF_TALK_ROUNDS = 2
@@ -134,27 +146,49 @@ def wolf_night_discuss(
     payload: WolfNightState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
-):
+) -> WolfNightDelta | None:
     """One wolf's sequential talk turn: a memory-informed message into the wolf channel
     (no vote — the binding vote is its own turn).
 
     Routed through the same night engine as the single-target roles so it does
     flag-gated retrieval and emits an EvalCase (action_phase "night_action").
     """
-    return run_memory_informed_night_action(
+    turn = run_memory_informed_night_action(
         payload, config, runtime,
         WOLF_NIGHT_DISCUSS, WolfNightDiscussOutput, "wolf_channel",
     )
+    if turn is None:
+        return None
+    if not isinstance(turn, ResolvedWolfDiscussion):
+        raise TypeError(f"wolf discussion resolved to unexpected turn: {turn.kind}")
+
+    updates: WolfNightDelta = {"wolf_channel": [turn.entry]}
+    if turn.effects.strategy:
+        updates["agent_strategies"] = {
+            payload["player_id"]: turn.effects.strategy,
+        }
+    return updates
 
 
 def wolf_night_vote(
     payload: WolfNightState,
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
-):
+) -> WolfNightDelta | None:
     """One wolf's binding kill vote after the talk rounds: message-less, cast in parallel
     with the pack — this is the decision the wolf-night EvalCase evaluates."""
-    return run_memory_informed_night_action(
+    turn = run_memory_informed_night_action(
         payload, config, runtime,
         WOLF_NIGHT_VOTE, WolfNightVoteOutput, "wolf_vote",
     )
+    if turn is None:
+        return None
+    if not isinstance(turn, ResolvedWolfVote):
+        raise TypeError(f"wolf vote resolved to unexpected turn: {turn.kind}")
+
+    updates: WolfNightDelta = {"wolf_channel": [turn.entry]}
+    if turn.effects.strategy:
+        updates["agent_strategies"] = {
+            payload["player_id"]: turn.effects.strategy,
+        }
+    return updates

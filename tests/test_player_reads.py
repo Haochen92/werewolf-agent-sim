@@ -189,7 +189,7 @@ def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
         out = agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out["healer_target"] == "player_3"
+    assert out.entry == "player_3"
     assert "reads under-covered" in caplog.text
     assert "player_8" in caplog.text and "player_9" in caplog.text
 

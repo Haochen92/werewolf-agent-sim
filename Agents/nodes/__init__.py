@@ -3,8 +3,7 @@
 day/flow.py     — day discussion/vote control flow (scheduler hop, routers, fan-out, summary)
 day/actors.py   — the two generic day actor nodes (discuss/vote); role rides the payload
 orchestrator.py — game setup, day resolution, winner/terminal logic, postgame
-night/<role>.py — each role's night action node (single-actor roles are one-line
-                  bindings over night/factory.py:make_night_act_node)
+night/<role>.py — each single-role night actor explicitly commits its resolved turn
 night/wolf.py   — the multi-node wolf night discussion flow
 night/resolution.py — cross-role night kill resolution + routing
 

@@ -21,19 +21,20 @@ from langgraph.types import interrupt
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import AddressedTarget
 from Agents.schemas.human_player import HumanTurnRequest, HumanTurnResponse
+from Agents.schemas.turn import ResolvedTurn
 from Agents.turn.action_space import TARGET_FIELD_BY_OUTPUT_KEY, valid_targets_for_action
 from Agents.turn.addressing_agent import extract_addressed_targets
 from Agents.turn.resolve import RETRY, extract_agent_reasoning, resolve_decision
 
 
-def run_human_decision(payload: dict[str, Any], output_key: str) -> dict[str, Any] | None:
+def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn | None:
     """The human seat's whole turn — the counterpart of ``run_agent``, taking the SAME
     ``resolve_decision`` path but none of the agent scaffolding. The pipeline routes here BEFORE the
     span / memory retrieval / adoption / EvalCase, so a human turn pays for none of them (they'd feed
     a prompt/eval the human never participates in).
 
     ``_human_player_action`` pauses for input (interrupt) and returns an object shaped like an LLM
-    decision; ``resolve_decision`` turns it into the same legal state delta. No retry, no random
+    decision; ``resolve_decision`` turns it into the same legal resolved turn. No retry, no random
     fallback — an invalid resumed action means the driver breached its contract, so raise rather than
     degrade.
     """
@@ -159,8 +160,8 @@ def _human_result_shaped(
 ) -> SimpleNamespace:
     """Shape the human's response into an object indistinguishable from an LLM decision to the
     consumers: they read the action via attributes, so expose exactly those — the target under the
-    field name ``resolve_decision`` expects for this ``output_key``. No reads/verdicts/strategy note
-    is set, so ``extract_agent_reasoning`` finds no private carriers (a human has none)."""
+    field name ``resolve_decision`` expects for this ``output_key``. No reads, verdicts, or strategy
+    note is set, so the resolved turn has empty effects (a human has none)."""
     result = SimpleNamespace(
         message=response.message,
         pass_turn=response.pass_turn,

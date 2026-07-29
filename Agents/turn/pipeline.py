@@ -32,6 +32,17 @@ from Agents.schemas.game_events import (
     DayChannel,
     DayVote,
 )
+from Agents.schemas.turn import (
+    ResolvedDayDiscussion,
+    ResolvedDayVote,
+    ResolvedHealerTarget,
+    ResolvedInvestigatorTarget,
+    ResolvedSerialKillerTarget,
+    ResolvedTurn,
+    ResolvedVigilanteTarget,
+    ResolvedWolfDiscussion,
+    ResolvedWolfVote,
+)
 from Agents.state import (
     HealerDayState,
     InvestigatorDayState,
@@ -54,19 +65,12 @@ def run_memory_informed_action(
     prompt_template: ChatPromptTemplate,
     output_schema: type[BaseModel],
     output_key: str,
-) -> dict[str, Any] | None:
-    """One day turn -> the state delta the superstep commits. Most of this function is
-    observability (Langfuse span, applied_game_update mirror, EvalCase); the state path is only:
-    the human short-circuit, run_agent, the _reads pop, and the return.
+) -> ResolvedTurn | None:
+    """Run one memory-informed day turn and return a typed resolved domain action.
 
-    Returns (shape decided in resolve._attach_agent_reasoning, the single chokepoint):
-      discuss -> {"day_channel": [one DayChannel (speech or pass marker)]}
-      vote    -> {"day_votes": [one DayVote]}   (random-target fallback if all retries fail)
-      both    -> + {"agent_strategies": {player_id: note}} when the strategy changed
-      discuss w/ all retries failed -> None (= no state update; the turn never happened)
-    ``_``-prefixed eval carriers never reach graph state: _reads is popped here,
-    _strategy_verdicts in adoption, _memory_applicability is dropped by the engine
-    (unknown keys in a node's return are silently discarded)."""
+    Retrieval, generation, validation, adoption, and EvalCase recording live here. The registered
+    day actor node owns the final conversion from this result into a LangGraph state delta.
+    """
     # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
     # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
     if payload.get("human_player"):
@@ -127,14 +131,11 @@ def run_memory_informed_action(
             output_key,
         )
 
-        # --- Adoption processing ---
-        # Capture the full verdict list for the EvalCase BEFORE adoption pops the carrier off `result`.
-        strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
-        # Reads are PRIVATE: POP the carrier so it can't ride the returned dict back into graph state —
-        # reads live only in the EvalCase sidecar.
-        player_reads = (result or {}).pop("_reads", []) if result else []
+        effects = result.effects if result else None
+        strategy_verdicts = effects.strategy_verdicts if effects else []
+        player_reads = effects.reads if effects else []
         raw_adopted_indices, adopted_store_keys = process_strategy_adoption(
-            result,
+            effects.strategy_verdicts if effects else None,
             enriched_payload,
             runtime,
             player_id=player_id,
@@ -144,52 +145,15 @@ def run_memory_informed_action(
             round_num=round_num,
         )
 
-        # --- Process output for graph state ---
-        applied_output = None
-        applied_game_update: dict[str, Any] | None = None
+        # Extract the typed domain action for the EvalCase. Graph channel assembly happens in the
+        # registered actor node after this function returns.
         agent_message: DayChannel | None = None
         agent_vote: DayVote | None = None
-        updated_strategy = ""
-        if result:
-            applied_game_update = {}
-            if output_key == "day_channel":
-                messages = result.get("day_channel", [])
-                if messages:
-                    agent_message = messages[0]
-                applied_output = [
-                    message.model_dump(mode="json")
-                    if hasattr(message, "model_dump")
-                    else message
-                    for message in messages
-                ]
-                if applied_output:
-                    applied_game_update["day_channel"] = applied_output
-                strategies = result.get("agent_strategies", {})
-                if isinstance(strategies, dict):
-                    updated_strategy = strategies.get(player_id, "") or ""
-                if updated_strategy:
-                    applied_game_update["agent_strategies"] = {
-                        player_id: updated_strategy
-                    }
-            elif output_key == "day_votes":
-                votes = result.get("day_votes", [])
-                if votes:
-                    agent_vote = votes[0]
-                applied_output = [
-                    vote.model_dump(mode="json")
-                    if hasattr(vote, "model_dump")
-                    else vote
-                    for vote in votes
-                ]
-                if applied_output:
-                    applied_game_update["day_votes"] = applied_output
-                strategies = result.get("agent_strategies", {})
-                if isinstance(strategies, dict):
-                    updated_strategy = strategies.get(player_id, "") or ""
-                if updated_strategy:
-                    applied_game_update["agent_strategies"] = {
-                        player_id: updated_strategy
-                    }
+        updated_strategy = (effects.strategy or "") if effects else ""
+        if isinstance(result, ResolvedDayDiscussion):
+            agent_message = result.entry
+        elif isinstance(result, ResolvedDayVote):
+            agent_vote = result.entry
 
         eval_case = EvalCase(
             span_name=span_name,
@@ -220,7 +184,7 @@ def run_memory_informed_action(
             adopted_strategy_store_keys=adopted_store_keys,
             strategy_verdicts=strategy_verdicts,
             strategy_index_to_key=enriched_payload.get("strategy_point_index_map", {}),
-            memory_applicability=(result or {}).get("_memory_applicability", []),
+            memory_applicability=effects.memory_verdicts if effects else [],
             reads=player_reads,
         )
 
@@ -233,7 +197,7 @@ def run_memory_informed_action(
                     case_key="eval_case",
                     sink=runtime.context.get("eval_sink"),
                 ),
-                "applied_game_update": applied_game_update,
+                "resolved_turn": result.model_dump(mode="json") if result else None,
             },
             metadata={
                 "eval_schema": eval_case.schema_version,
@@ -259,7 +223,7 @@ def run_memory_informed_night_action(
     prompt_template: ChatPromptTemplate,
     output_schema: type[BaseModel],
     output_key: str,
-) -> dict[str, Any] | None:
+) -> ResolvedTurn | None:
     """Night counterpart of ``run_memory_informed_action`` for single-target roles.
 
     A night action selects a target instead of producing a message/vote, so the
@@ -317,12 +281,11 @@ def run_memory_informed_night_action(
             output_key,
         )
 
-        strategy_verdicts = (result or {}).get("_strategy_verdicts", [])
-        # Reads are PRIVATE: POP the carrier so it can't ride the returned dict back into graph state —
-        # reads live only in the EvalCase sidecar.
-        player_reads = (result or {}).pop("_reads", []) if result else []
+        effects = result.effects if result else None
+        strategy_verdicts = effects.strategy_verdicts if effects else []
+        player_reads = effects.reads if effects else []
         raw_adopted_indices, adopted_store_keys = process_strategy_adoption(
-            result,
+            effects.strategy_verdicts if effects else None,
             enriched_payload,
             runtime,
             player_id=player_id,
@@ -332,34 +295,22 @@ def run_memory_informed_night_action(
             round_num=round_num,
         )
 
-        applied_game_update: dict[str, Any] | None = None
         target: str | None = None
-        updated_strategy = ""
-        if result:
-            applied_game_update = {}
-            if output_key in ("wolf_channel", "wolf_vote"):
-                # Both wolf-night turns ride the wolf channel: the sequential talk turn
-                # (message, vote="") and the binding vote turn (vote, message="") — the
-                # vote entry is the decision the EvalCase evaluates (talk turns carry no
-                # target). Both fold their strategy update into agent_strategies (not a
-                # flat updated_strategy), so unpack both.
-                messages = result.get("wolf_channel", [])
-                applied_game_update["wolf_channel"] = messages
-                if messages:
-                    first = messages[0]
-                    target = (
-                        first.get("vote") if isinstance(first, dict)
-                        else getattr(first, "vote", None)
-                    )
-                strategies = result.get("agent_strategies", {})
-                if isinstance(strategies, dict):
-                    updated_strategy = strategies.get(player_id, "") or ""
-                if updated_strategy:
-                    applied_game_update["agent_strategies"] = strategies
-            else:
-                target = result.get(output_key)
-                applied_game_update[output_key] = target
-                updated_strategy = result.get("updated_strategy", "") or ""
+        updated_strategy = (effects.strategy or "") if effects else ""
+        if isinstance(result, ResolvedWolfVote):
+            target = result.entry.vote
+        elif isinstance(
+            result,
+            (
+                ResolvedHealerTarget,
+                ResolvedInvestigatorTarget,
+                ResolvedSerialKillerTarget,
+                ResolvedVigilanteTarget,
+            ),
+        ):
+            target = result.entry
+        elif isinstance(result, ResolvedWolfDiscussion):
+            target = None
         eval_case = EvalCase(
             span_name=span_name,
             player_id=player_id,
@@ -388,7 +339,7 @@ def run_memory_informed_night_action(
             adopted_strategy_store_keys=adopted_store_keys,
             strategy_verdicts=strategy_verdicts,
             strategy_index_to_key=enriched_payload.get("strategy_point_index_map", {}),
-            memory_applicability=(result or {}).get("_memory_applicability", []),
+            memory_applicability=effects.memory_verdicts if effects else [],
             reads=player_reads,
         )
 
@@ -401,7 +352,7 @@ def run_memory_informed_night_action(
                     case_key="eval_case",
                     sink=runtime.context.get("eval_sink"),
                 ),
-                "applied_game_update": applied_game_update,
+                "resolved_turn": result.model_dump(mode="json") if result else None,
             },
             metadata={
                 "eval_schema": eval_case.schema_version,
@@ -418,5 +369,3 @@ def run_memory_informed_night_action(
         )
 
     return result
-
-

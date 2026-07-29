@@ -145,7 +145,8 @@ def test_human_reactive_pass_discharges_the_obligation(monkeypatch):
                              firing_reason=FiringReason(tier="reactive", owes=["p2"]))
     out = h.run_human_decision(payload, "day_channel")
 
-    entry = out["day_channel"][0]
+    entry = out.entry
+    assert entry is not None
     assert entry.passed and entry.message == ""
     assert [(t.target, t.addressed_form) for t in entry.addressed_targets] == [("p2", "response")]
     assert build_reactive_queue([ask, entry], per_pair_cap=2, reengagement_cooldown=10,
@@ -161,10 +162,10 @@ def test_discussion_message_ok_but_target_forbidden():
 
 # ---- end-to-end decision path (stubbed interrupt) -------------------------------------------------
 
-def test_human_vote_produces_delta(monkeypatch):
+def test_human_vote_produces_resolved_turn(monkeypatch):
     monkeypatch.setattr(h, "interrupt", lambda req: {"target": "p2"})
     out = h.run_human_decision(_human_payload(), "day_votes")
-    assert out == {"day_votes": [DayVote(voter="p1", votee="p2")]}
+    assert out.entry == DayVote(voter="p1", votee="p2")
 
 
 def test_driver_contract_breach_raises_not_silently_dropped(monkeypatch):

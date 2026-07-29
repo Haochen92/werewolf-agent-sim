@@ -2,7 +2,7 @@
 
 ``run_agent`` turns "it's this agent's turn to decide X" into a legal, game-ready action: it
 constrains the answer space, GENERATEs a decision (one LLM call, retried), and hands it to the shared
-``resolve_decision`` (``resolve.py``), which turns it into a validated state delta — with a random legal
+``resolve_decision`` (``resolve.py``), which turns it into a typed resolved turn — with a random legal
 fallback so the game never stalls. The human seat's parallel path is ``human_turn.py``; both route
 through the same ``resolve_decision``, so agent and human decisions resolve identically.
 
@@ -21,6 +21,16 @@ from pydantic import BaseModel
 from Agents.llm_factory import get_llm, get_llm_game_fallback
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import DayVote, WolfChannel
+from Agents.schemas.turn import (
+    ResolvedDayVote,
+    ResolvedHealerTarget,
+    ResolvedInvestigatorTarget,
+    ResolvedSerialKillerTarget,
+    ResolvedTurn,
+    ResolvedVigilanteTarget,
+    ResolvedWolfDiscussion,
+    ResolvedWolfVote,
+)
 from Agents.turn.action_space import (
     valid_targets_for_action,
     output_schema_with_legal_targets,
@@ -43,9 +53,9 @@ def run_agent(
     output_schema: type[BaseModel],
     output_key: str,
     max_retries: int = 1,
-) -> dict[str, Any] | None:
+) -> ResolvedTurn | None:
     """Run one agent decision: constrain -> generate -> resolve, retrying on an LLM error or a
-    rejected (invalid-target) decision, with a random legal fallback if every attempt fails.
+    rejected decision, with a legal typed fallback if every attempt fails.
 
     The human seat's counterpart is ``run_human_decision`` (human_turn.py): it swaps ``_generate``
     for ``interrupt()`` but takes the same ``resolve_decision`` path.
@@ -87,14 +97,32 @@ def run_agent(
     # Exhausted: random legal fallback so the game progresses (day discussion may skip -> None).
     logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")
     if output_key == "day_votes":
-        return {"day_votes": [DayVote(voter=player_id, votee=random.choice(valid_targets))]}
+        return ResolvedDayVote(
+            entry=DayVote(voter=player_id, votee=random.choice(valid_targets))
+        )
     if output_key in NIGHT_TARGET_KEYS:
-        return {output_key: random.choice(valid_targets)}
+        result_type = _NIGHT_RESULT_BY_KEY[output_key]
+        return result_type(entry=random.choice(valid_targets))
     if output_key == "wolf_channel":
-        return {"wolf_channel": [WolfChannel(
-            day=payload.get("current_day", 1), round=payload.get("current_round", 1),
-            wolf=player_id, message="...", vote=random.choice(valid_targets),
-        )]}
+        return ResolvedWolfDiscussion(
+            entry=WolfChannel(
+                day=payload.get("current_day", 1),
+                round=payload.get("current_round", 1),
+                wolf=player_id,
+                message="...",
+                vote="",
+            )
+        )
+    if output_key == "wolf_vote":
+        return ResolvedWolfVote(
+            entry=WolfChannel(
+                day=payload.get("current_day", 1),
+                round=payload.get("current_round", 1),
+                wolf=player_id,
+                message="",
+                vote=random.choice(valid_targets),
+            )
+        )
     return None
 
 
@@ -105,3 +133,11 @@ def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
     except Exception as e:
         logger.warning(f"LLM call failed for {player_id}: {e}")
         return None
+
+
+_NIGHT_RESULT_BY_KEY = {
+    "healer_target": ResolvedHealerTarget,
+    "investigator_target": ResolvedInvestigatorTarget,
+    "serial_killer_target": ResolvedSerialKillerTarget,
+    "vigilante_target": ResolvedVigilanteTarget,
+}

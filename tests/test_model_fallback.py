@@ -52,7 +52,7 @@ def test_fallback_model_rescues_an_exhausted_seat(monkeypatch, caplog):
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
     with caplog.at_level("WARNING"):
         out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out["healer_target"] == "player_3"
+    assert out.entry == "player_3"
     assert any("rescued by the fallback model" in r.message for r in caplog.records)
     assert not any("random fallback" in r.message for r in caplog.records)
 
@@ -62,7 +62,7 @@ def test_no_fallback_model_still_degrades_to_random(monkeypatch, caplog):
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: None)
     with caplog.at_level("ERROR"):
         out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out["healer_target"] in ("player_2", "player_3")
+    assert out.entry in ("player_2", "player_3")
     assert any("random fallback" in r.message for r in caplog.records)
 
 
@@ -70,7 +70,7 @@ def test_broken_fallback_still_degrades_to_random(monkeypatch):
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
     out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
-    assert out["healer_target"] in ("player_2", "player_3")
+    assert out.entry in ("player_2", "player_3")
 
 
 def test_same_model_configuration_skips_the_rescue(monkeypatch):

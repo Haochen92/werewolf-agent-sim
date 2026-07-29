@@ -31,7 +31,7 @@ def _read_verdict(v: Any) -> tuple[int | None, str | None]:
 
 
 def process_strategy_adoption(
-    result: dict[str, Any] | None,
+    verdicts: list[Any] | None,
     enriched_payload: dict[str, Any],
     runtime: Runtime[GraphContext],
     *,
@@ -48,16 +48,17 @@ def process_strategy_adoption(
     Returns ``(followed_indices, followed_store_keys)`` — the FOLLOW verdicts. The full per-decision
     verdict record (incl. override/not_relevant) lives in the EvalCase (``strategy_verdicts`` +
     ``strategy_index_to_key``); this function's job is the store write-back. Shared by the day and night
-    memory-informed paths. Mutates ``result`` by popping the ``_strategy_verdicts`` marker.
+    memory-informed paths. Verdicts arrive as typed turn effects, never as graph-state carriers.
     """
     index_map = enriched_payload.get("strategy_point_index_map", {})
     followed_indices: list[int] = []
     followed_store_keys: list[str] = []
 
-    if not (result and index_map):
+    # None means the turn never resolved. An empty list is still a successful decision: every
+    # surfaced strategy point counts as retrieved even when the model emitted no verdicts.
+    if verdicts is None or not index_map:
         return followed_indices, followed_store_keys
 
-    verdicts = result.pop("_strategy_verdicts", [])
     sp_namespace = ("strategy_points", role, action_phase)
     active_store = runtime.store
     if active_store is None:

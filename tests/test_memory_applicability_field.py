@@ -111,13 +111,20 @@ def test_eval_case_captures_memory_applicability_and_roundtrips():
     assert EvalCase(**dumped).memory_applicability[0].verdict == "does_not_apply"
 
 
-def test_run_agent_carries_memory_applicability_in_every_return():
-    # The _memory_applicability carrier must ride EVERY output branch (mirrors _strategy_verdicts).
-    # Every branch now routes through _attach_carriers, so the invariant is enforced in one place:
-    # assert that helper attaches both carriers (parity) rather than that each return re-lists them.
-    import inspect
-
+def test_resolved_turn_effects_carry_memory_applicability_without_state_keys():
     from Agents.turn import resolve
 
-    src = inspect.getsource(resolve._attach_agent_reasoning)
-    assert src.count('output["_memory_applicability"]') == src.count('output["_strategy_verdicts"]') == 1
+    verdict = MemoryVerdict(
+        memory_index=1,
+        verdict="partly_applies",
+        why="matches",
+    )
+    effects = resolve._turn_effects({
+        "strategy": "keep pressure",
+        "strategy_verdicts": [],
+        "memory_verdicts": [verdict],
+        "reads": [],
+    })
+
+    assert effects.memory_verdicts == [verdict]
+    assert "_memory_applicability" not in effects.model_dump()

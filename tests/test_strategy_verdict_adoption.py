@@ -25,9 +25,8 @@ class FakeStore:
 def _run(verdicts, keys=("ka", "kb", "kc")):
     store = FakeStore(keys)
     index_map = {i + 1: k for i, k in enumerate(keys)}  # 1-based index -> store key
-    result = {"_strategy_verdicts": verdicts}
     followed_idx, followed_keys = process_strategy_adoption(
-        result, {"strategy_point_index_map": index_map}, SimpleNamespace(store=store),
+        verdicts, {"strategy_point_index_map": index_map}, SimpleNamespace(store=store),
         player_id="player_1", role="villager", action_phase="day_vote", day=2, round_num=0,
     )
     return store, followed_idx, followed_keys
@@ -58,6 +57,13 @@ def test_retrieved_count_bumps_on_every_surfaced_point():
     # all three surfaced points get retrieved_count, regardless of verdict (kc had no verdict at all)
     for k in ("ka", "kb", "kc"):
         assert store.data[(NS, k)]["retrieved_count"] == 1
+
+
+def test_empty_verdicts_still_count_every_surfaced_point_as_retrieved():
+    store, followed_idx, followed_keys = _run([])
+    for k in ("ka", "kb", "kc"):
+        assert store.data[(NS, k)]["retrieved_count"] == 1
+    assert followed_idx == [] and followed_keys == []
 
 
 def test_hallucinated_index_skipped():

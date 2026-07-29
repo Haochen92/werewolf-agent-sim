@@ -2,7 +2,7 @@
 
 Everything here is a SIDE CHANNEL: it observes a turn (snapshots context, logs the prompt, records
 reads, monitors read completeness) but never contributes to the state delta the node returns — that
-belongs in ``agent_player.py``/``resolve.py``. Split out so the decision path holds only input->output.
+belongs in the registered actor node. Split out so the decision path holds only input->output.
 
 ``prompt_log`` / ``reads_log`` are the leak-test capture points (tests/leak_test.py): every prompt
 sent and read emitted is recorded so the boundary tests can assert no private state reached another
