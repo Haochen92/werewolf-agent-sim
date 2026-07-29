@@ -70,6 +70,19 @@ from Agents.schemas.scheduler import (
     Decision,
     ReactiveItem,
 )
+from Agents.schemas.turn import (
+    ResolvedDayDiscussion,
+    ResolvedDayVote,
+    ResolvedHealerTarget,
+    ResolvedInvestigatorTarget,
+    ResolvedSerialKillerTarget,
+    ResolvedTurn,
+    ResolvedVigilanteTarget,
+    ResolvedWolfDiscussion,
+    ResolvedWolfVote,
+    TurnEffects,
+    TurnKind,
+)
 
 
 __all__ = [
@@ -110,6 +123,15 @@ __all__ = [
     "NoveltyJudgment",
     "Observation",
     "ReactiveItem",
+    "ResolvedDayDiscussion",
+    "ResolvedDayVote",
+    "ResolvedHealerTarget",
+    "ResolvedInvestigatorTarget",
+    "ResolvedSerialKillerTarget",
+    "ResolvedTurn",
+    "ResolvedVigilanteTarget",
+    "ResolvedWolfDiscussion",
+    "ResolvedWolfVote",
     "SerialKillerOutput",
     "VigilanteOutput",
     "RerankResult",
@@ -120,6 +142,8 @@ __all__ = [
     "StoredStrategy",
     "StoredStrategyPoint",
     "StrategyPoint",
+    "TurnEffects",
+    "TurnKind",
     "WolfChannel",
     "WolfNightDiscussOutput",
     "WolfNightVoteOutput",
