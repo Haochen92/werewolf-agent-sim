@@ -127,7 +127,7 @@ class DayVote(BaseModel):
 class DeathRecord(BaseModel):
     """One player's death as it was PUBLICLY announced — the authoritative, ordered dead roster.
 
-    Appended (in death order) at each death site: night_kill_resolution for a night kill, and
+    Appended (in death order) at each death site: night_resolution for a night kill, and
     day_resolution for a lynch. Every current death path announces the dead player's role (see
     the game_master messages), so `role` is public information — this whole record is rendered
     into every role's day payload, no leak gating. Deriving the roster from this field is the

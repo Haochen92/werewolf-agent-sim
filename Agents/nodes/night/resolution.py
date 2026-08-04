@@ -1,19 +1,10 @@
-"""Cross-role night resolution: turns the roles' individual night actions into deaths.
+"""Cross-role night resolution: turns the roles' individual night actions into outcomes.
 
-The night runs in two groups. GROUP 1 — all the killers plus the healer — acts
-first, because their choices determine who dies; a phase is skipped only when its
-actor is absent, and the group ends at KILL_RESOLUTION:
-
-    wolves -> healer -> serial killer -> vigilante -> KILL_RESOLUTION
-
-GROUP 2 — the pure-information investigator — runs AFTER kills resolve, and only
-if it survived the night (and the game is not already decided): a dead
-investigator's result is moot, so its phase is skipped to save the call.
-NIGHT_FINALIZE then records the investigation and emits the night's single metric
-span (one span carrying both kill and investigation data).
+All present night actors (wolves / healer / SK / vigilante / investigator) act in ONE
+parallel superstep — the fan-out list comes from check_game_end_day, and every phase
+edges into NIGHT_RESOLUTION, the barrier, which resolves the kills AND the investigation
+(delivered only if the investigator survived) in one node with one metric span.
 """
-
-from typing import Literal
 
 from langgraph.runtime import Runtime
 
@@ -33,7 +24,6 @@ from Agents.tracing import (
 from Agents.nodes.orchestrator import (
     _faction_counts,
     _nullify_special_roles,
-    determine_winner,
 )
 
 
@@ -54,17 +44,16 @@ def _join(items: list[str]) -> str:
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 
-def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
-    """Resolve the night's kills (wolves / SK / vigilante) jointly.
+def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
+    """Resolve the whole night: kills (wolves / SK / vigilante) plus the investigation.
 
-    Runs BEFORE the investigator phase so a player killed this night does not act
-    (the investigator is gated on surviving this resolution — its result would be
-    moot). The healer is exempt: it acts in the pre-resolution group, so its
-    protection still applies even if the healer itself dies tonight.
-
-    Builds this night's NightResolutionMetric (investigator fields filled later in
-    night_finalize) and appends it without emitting the langfuse span yet, so the
-    night gets a single span carrying both kill and investigation data.
+    The BSP barrier after the parallel night fan-out: every actor's target is already
+    committed when this runs. All actions are simultaneous — a killed healer's protection
+    still applies, and a killed investigator's probe still happened but is NOT delivered
+    (a dead investigator learns nothing). A probe on a player who died the same night IS
+    delivered: the role is fixed truth, redundant with the dawn reveal. Emits the night's
+    single metric span (kill + investigation data; the metric records the act even when
+    the result goes undelivered).
     """
     current_day = state.get("current_day", 1)
     wolves_target = state.get("wolves_kill_target")
@@ -104,14 +93,14 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
     serial_killer_kill_landed = bool(serial_killer_target and serial_killer_target in deaths)
     vigilante_kill_landed = bool(vigilante_target and vigilante_target in deaths)
 
-    # Investigator fields are filled in night_finalize (it acts after this resolution).
+    investigator_target = state.get("investigator_target")
     metric = NightResolutionMetric(
         day=current_day,
         wolves_target=wolves_target,
         wolf_target_role=roles.get(wolves_target) if wolves_target else None,
         healer_target=healer_target,
-        investigator_target=None,
-        investigator_target_role=None,
+        investigator_target=investigator_target,
+        investigator_target_role=roles.get(investigator_target) if investigator_target else None,
         kill_successful=kill_successful,
         healer_saved=healer_saved,
         serial_killer_target=serial_killer_target,
@@ -126,8 +115,25 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
         sk_before=sk_before,
     )
     runtime.context["metrics"].night_resolutions.append(metric)
+    with langfuse.start_as_current_observation(
+        as_type="span",
+        name=f"night_resolution_day_{current_day}",
+    ) as span:
+        span.update(metadata=metric.model_dump())
 
     state_update: dict = {}
+
+    # Survival-gated delivery: the probe happened regardless (it's on the metric above),
+    # but only a living investigator receives the result.
+    investigator = state.get("investigator_player")
+    if investigator_target and investigator and investigator not in deaths:
+        state_update["investigator_results"] = [
+            InvestigatorResult(
+                day=current_day,
+                player_investigated=investigator_target,
+                role_revealed=roles.get(investigator_target, "unknown"),
+            )
+        ]
 
     # The vigilante spends a bullet whenever it takes a shot, even if healed or whiffed.
     if vigilante_target:
@@ -212,115 +218,3 @@ def night_kill_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContex
     ]
     state_update["day_summaries"] = [DaySummary(day=current_day, summary=message)]
     return state_update
-
-
-def night_finalize(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
-    """Record the investigator's result (if it acted) and emit the night's metric span.
-
-    The investigator runs only when it survived night_kill_resolution and the game is
-    not already decided, so reaching here with an investigator_target means a live
-    investigation. One langfuse span per night carries both kill and investigation data.
-    """
-    current_day = state.get("current_day", 1)
-    investigator_target = state.get("investigator_target")
-    roles = state["roles"]
-
-    investigator_update = (
-        [
-            InvestigatorResult(
-                day=current_day,
-                player_investigated=investigator_target,
-                role_revealed=roles.get(investigator_target, "unknown"),
-            )
-        ]
-        if investigator_target
-        else []
-    )
-
-    night_metrics = runtime.context["metrics"].night_resolutions
-    if night_metrics:
-        nr = night_metrics[-1]
-        nr.investigator_target = investigator_target
-        nr.investigator_target_role = (
-            roles.get(investigator_target) if investigator_target else None
-        )
-        with langfuse.start_as_current_observation(
-            as_type="span",
-            name=f"night_resolution_day_{current_day}",
-        ) as span:
-            span.update(metadata=nr.model_dump())
-
-    return {"investigator_results": investigator_update} if investigator_update else {}
-
-
-
-
-def _vigilante_can_act(state: OrchestratorGraph) -> bool:
-    """True iff a living vigilante still has a bullet — gates whether its phase runs."""
-    return bool(state.get("vigilante_player")) and state.get("vigilante_bullets", 0) > 0
-
-
-def _next_night_phase(state: OrchestratorGraph, after: str) -> str:
-    """Shared night router: the next present actor's phase after `after`, in the fixed
-    group-1 order (wolves → healer → SK → vigilante), skipping absent/spent actors;
-    falls through to KILL_RESOLUTION when none remain."""
-    order = [
-        ("wolves", "WOLF_NIGHT_PHASE"),
-        ("healer", "HEALER_NIGHT_PHASE"),
-        ("serial_killer", "SERIAL_KILLER_NIGHT_PHASE"),
-        ("vigilante", "VIGILANTE_NIGHT_PHASE"),
-    ]
-    present = {
-        "healer": bool(state.get("healer_player")),
-        "serial_killer": bool(state.get("serial_killer_player")),
-        "vigilante": _vigilante_can_act(state),
-    }
-    start = next(i for i, (key, _) in enumerate(order) if key == after) + 1
-    for key, node in order[start:]:
-        if present.get(key):
-            return node
-    return "KILL_RESOLUTION"
-
-
-def route_after_wolf_night(
-    state: OrchestratorGraph,
-) -> Literal[
-    "HEALER_NIGHT_PHASE",
-    "SERIAL_KILLER_NIGHT_PHASE",
-    "VIGILANTE_NIGHT_PHASE",
-    "KILL_RESOLUTION",
-]:
-    """Route out of the wolf phase to the next present group-1 actor."""
-    return _next_night_phase(state, "wolves")
-
-
-def route_after_healer_night(
-    state: OrchestratorGraph,
-) -> Literal[
-    "SERIAL_KILLER_NIGHT_PHASE",
-    "VIGILANTE_NIGHT_PHASE",
-    "KILL_RESOLUTION",
-]:
-    """Route out of the healer phase to the next present group-1 actor."""
-    return _next_night_phase(state, "healer")
-
-
-def route_after_serial_killer_night(
-    state: OrchestratorGraph,
-) -> Literal["VIGILANTE_NIGHT_PHASE", "KILL_RESOLUTION"]:
-    """Route out of the serial-killer phase to the next present group-1 actor."""
-    return _next_night_phase(state, "serial_killer")
-
-
-def route_after_kill_resolution(
-    state: OrchestratorGraph,
-) -> Literal["INVESTIGATOR_NIGHT_PHASE", "NIGHT_FINALIZE"]:
-    """Group-2 gate: run the investigator only if the game is still undecided and the
-    investigator survived the night's kills — otherwise its result is moot, so finalize."""
-    if determine_winner(state) is not None:
-        return "NIGHT_FINALIZE"
-    if state.get("investigator_player"):
-        return "INVESTIGATOR_NIGHT_PHASE"
-    return "NIGHT_FINALIZE"
-
-

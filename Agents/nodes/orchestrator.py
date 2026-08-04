@@ -150,7 +150,7 @@ def _nullify_special_roles(
     _faction_counts reads serial_killer_player to count the SK, and night routing
     skips a role whose marker is None. Removing a dead player from the survivor
     buckets does NOT touch the markers, so both death paths — day_resolution
-    (lynch) and night_kill_resolution — call this to keep the two layers in sync.
+    (lynch) and night_resolution — call this to keep the two layers in sync.
     Mutates state_update in place.
     """
     if player == state.get("healer_player"):
@@ -252,6 +252,7 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
         outcome = "The village chose to abstain. No one is eliminated today."
     else:
         outcome = f"It's a tie between {candidates}. No one is voted out this day."
+
     message = f"""
 Here's the vote result for day {current_day}:
 {vote_summary}
@@ -371,15 +372,31 @@ def end_game(state: OrchestratorGraph, config: RunnableConfig):
 def check_game_end_day(
     state: OrchestratorGraph,
     config: RunnableConfig,
-) -> Literal["END_GAME", "WOLF_NIGHT_PHASE"]:
+) -> Literal["END_GAME"] | list[str]:
     """Router after the day phase: END_GAME if a faction has won or the day limit
-    is reached, otherwise proceed into the wolf night phase."""
+    is reached, otherwise fan out every present night actor in one parallel superstep
+    (NIGHT_RESOLUTION is the barrier)."""
     game_config = game_config_from_runnable(config)
     if determine_winner(state) is not None:
         return "END_GAME"
     if state.get("current_day", 1) >= game_config.max_days:
         return "END_GAME"
-    return "WOLF_NIGHT_PHASE"
+
+    alive_phases = []
+    if state.get("surviving_wolves"):
+        alive_phases.append("WOLF_NIGHT_PHASE")
+    if state.get("healer_player"):
+        alive_phases.append("HEALER_NIGHT_PHASE")
+    if state.get("serial_killer_player"):
+        alive_phases.append("SERIAL_KILLER_NIGHT_PHASE")
+    if state.get("vigilante_player") and state.get("vigilante_bullets", 0) > 0:
+        alive_phases.append("VIGILANTE_NIGHT_PHASE")
+    if state.get("investigator_player"):
+        alive_phases.append("INVESTIGATOR_NIGHT_PHASE")
+    # An undecided game always has a live killer faction (wolves or SK).
+    assert alive_phases, "night fan-out is empty but no winner was determined"
+    return alive_phases
+
 
 
 def check_game_end_night(

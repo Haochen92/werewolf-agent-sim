@@ -13,7 +13,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from Agents.nodes.day.flow import build_speaker_send, fan_out_day
-from Agents.nodes.night.resolution import night_kill_resolution
+from Agents.nodes.night.resolution import night_resolution
 from Agents.nodes.orchestrator import day_resolution
 from Agents.prompts.day_discuss import VILLAGER_DAY_DISCUSS, WOLF_DAY_DISCUSS
 from Agents.prompts.day_vote import VILLAGER_DAY_VOTE, WOLF_DAY_VOTE
@@ -51,7 +51,7 @@ def test_night_kill_records_dead_with_revealed_role():
         "serial_killer_target": None,
         "vigilante_target": None,
     }
-    update = night_kill_resolution(night_state, _runtime())
+    update = night_resolution(night_state, _runtime())
     roster = update["dead_roster"]
     assert roster == [DeathRecord(player="t0", role="villager", day=1, phase="night")]
 
@@ -73,7 +73,7 @@ def test_healed_target_produces_no_dead_record():
         "serial_killer_target": None,
         "vigilante_target": None,
     }
-    update = night_kill_resolution(night_state, _runtime())
+    update = night_resolution(night_state, _runtime())
     assert "dead_roster" not in update  # no death this night
 
 

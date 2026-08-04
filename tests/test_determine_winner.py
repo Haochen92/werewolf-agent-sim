@@ -15,7 +15,7 @@ Accounting fact under test: ``surviving_villagers`` is the *non-wolf* bucket and
 INCLUDES the serial killer; town = non_wolf - sk. The builder below mirrors that.
 
 Why the invariant test only covers the day lynch: the SK is night-immune
-(``_resolved`` returns "immune" for ``sk_player`` in night_kill_resolution), so a
+(``_resolved`` returns "immune" for ``sk_player`` in night_resolution), so a
 day lynch is the ONLY path that can remove the SK from the bucket. And the SK is
 the only faction ``_faction_counts`` subtracts out — healer/investigator/vigilante
 are plain town in the count — so the lynch path is the whole count-affecting surface.

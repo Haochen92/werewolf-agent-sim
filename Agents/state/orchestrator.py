@@ -34,7 +34,7 @@ class OrchestratorGraph(TypedDict, total=False):
     wolf_channel: Annotated[list[WolfChannel], add]
     """Wolf-night discussion + kill-vote transcript; accumulates across nights."""
     dead_roster: Annotated[list[DeathRecord], add]
-    """Ordered PUBLIC dead roster; a DeathRecord is appended at each death (night_kill_resolution /
+    """Ordered PUBLIC dead roster; a DeathRecord is appended at each death (night_resolution /
     day_resolution) so agents read who died + their revealed role from state, not GM prose."""
 
     # Cast & identity.

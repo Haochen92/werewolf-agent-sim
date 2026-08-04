@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from Agents.nodes.night.resolution import night_kill_resolution
+from Agents.nodes.night.resolution import night_resolution
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.metrics import Metrics
 from tests.leak_test import check_wolf_channel_isolation
@@ -66,7 +66,7 @@ def _public_message(update: dict) -> str:
 # --- (a) wolves hit the SK -> private note, silent public line --------------
 
 def test_wolf_kill_on_sk_writes_private_note():
-    update = night_kill_resolution(_state(wolves_kill_target="sk"), _runtime())
+    update = night_resolution(_state(wolves_kill_target="sk"), _runtime())
 
     notes = update.get("wolf_channel", [])
     assert len(notes) == 1
@@ -78,7 +78,7 @@ def test_wolf_kill_on_sk_writes_private_note():
 
 
 def test_wolf_kill_on_sk_public_transcript_stays_silent():
-    update = night_kill_resolution(_state(wolves_kill_target="sk"), _runtime())
+    update = night_resolution(_state(wolves_kill_target="sk"), _runtime())
 
     message = _public_message(update)
     # The immune whiff is never announced (announcing it would out the SK): the public
@@ -93,7 +93,7 @@ def test_wolf_kill_on_sk_public_transcript_stays_silent():
 
 def test_healed_wolf_target_writes_no_note():
     # Wolves hit t0, healer protects t0: outcome "saved", not "immune".
-    update = night_kill_resolution(
+    update = night_resolution(
         _state(wolves_kill_target="t0", healer_target="t0"), _runtime()
     )
     assert "wolf_channel" not in update
@@ -105,7 +105,7 @@ def test_healed_wolf_target_writes_no_note():
 def test_healed_sk_would_still_be_immune_only_note_gates_on_immune():
     # Defensive: even if the healer covers the SK, outcome is "immune" (SK check precedes
     # heal), so the note fires — the gate is `outcomes == "immune"`, not "unhealed".
-    update = night_kill_resolution(
+    update = night_resolution(
         _state(wolves_kill_target="sk", healer_target="sk"), _runtime()
     )
     assert len(update.get("wolf_channel", [])) == 1
@@ -114,7 +114,7 @@ def test_healed_sk_would_still_be_immune_only_note_gates_on_immune():
 # --- (c) an ordinary landed kill -> no note ---------------------------------
 
 def test_normal_kill_writes_no_note():
-    update = night_kill_resolution(_state(wolves_kill_target="t0"), _runtime())
+    update = night_resolution(_state(wolves_kill_target="t0"), _runtime())
     assert "wolf_channel" not in update
 
     message = _public_message(update)
@@ -122,7 +122,7 @@ def test_normal_kill_writes_no_note():
 
 
 def test_no_wolf_target_writes_no_note():
-    update = night_kill_resolution(_state(wolves_kill_target=None), _runtime())
+    update = night_resolution(_state(wolves_kill_target=None), _runtime())
     assert "wolf_channel" not in update
 
 
@@ -132,7 +132,7 @@ def test_whiff_note_is_isolated_to_wolf_prompts():
     """The note rides wolf_channel: it must reach wolf prompts and NO town prompt / public
     transcript. Build the real prompt_input both roles would receive and run the standing
     wolf_channel leak check over them."""
-    update = night_kill_resolution(_state(wolves_kill_target="sk"), _runtime())
+    update = night_resolution(_state(wolves_kill_target="sk"), _runtime())
     note = update["wolf_channel"][0]
     note_text = _note_text("sk")
 
@@ -168,7 +168,7 @@ def test_whiff_note_is_isolated_to_wolf_prompts():
 def test_leak_check_would_catch_the_note_in_a_town_payload():
     """Negative control: if the note ever leaked into a non-wolf payload, the standing check
     must flag it — proving the guard above is live, not vacuous."""
-    note = night_kill_resolution(_state(wolves_kill_target="sk"), _runtime())["wolf_channel"][0]
+    note = night_resolution(_state(wolves_kill_target="sk"), _runtime())["wolf_channel"][0]
     leaked_town_entry = {
         "player_id": "t0",
         "player_role": "villager",

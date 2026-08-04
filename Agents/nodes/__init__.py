@@ -40,12 +40,7 @@ from Agents.nodes.day import (  # noqa: F401
     vote,
 )
 from Agents.nodes.night.resolution import (  # noqa: F401
-    night_finalize,
-    night_kill_resolution,
-    route_after_healer_night,
-    route_after_kill_resolution,
-    route_after_serial_killer_night,
-    route_after_wolf_night,
+    night_resolution,
 )
 from Agents.nodes.night.wolf import (  # noqa: F401
     check_night_end,

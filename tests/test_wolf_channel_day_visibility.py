@@ -10,7 +10,7 @@ re-scoped leak check accepts legit wolf day exposure but still flags a town leak
 from __future__ import annotations
 
 from Agents.nodes.day.flow import build_speaker_send, fan_out_day
-from Agents.nodes.night.resolution import night_kill_resolution
+from Agents.nodes.night.resolution import night_resolution
 from Agents.prompts.day_discuss import VILLAGER_DAY_DISCUSS, WOLF_DAY_DISCUSS
 from Agents.prompts.day_vote import WOLF_DAY_VOTE
 from Agents.prompts.prompt_formatters import format_wolf_channel
@@ -127,7 +127,7 @@ def test_night_whiff_note_reaches_wolf_next_day_payload():
         "serial_killer_target": None,
         "vigilante_target": None,
     }
-    update = night_kill_resolution(night_state, _runtime())
+    update = night_resolution(night_state, _runtime())
     note = update["wolf_channel"][0]
 
     # Day N+1: the accumulated wolf_channel is seeded into the day state; a wolf speaker's payload

@@ -28,14 +28,9 @@ from Agents.nodes import (
     day_resolution,
     end_game,
     initialize_game,
-    night_finalize,
-    night_kill_resolution,
+    night_resolution,
     one_more_day,
     post_game_analysis,
-    route_after_healer_night,
-    route_after_kill_resolution,
-    route_after_serial_killer_night,
-    route_after_wolf_night,
 )
 from Agents.state import (
     DayGraphState,
@@ -324,10 +319,9 @@ def build_parent_graph():
     """Wire the orchestration topology.
 
     START -> INITIALIZE_GAME -> DAY_PHASE -> DAY_RESOLUTION -> (check_game_end_day: END_GAME |
-    the first present night phase). Night runs as two groups: group 1 (wolves -> healer ->
-    serial_killer -> vigilante) routes actor-to-actor via route_after_* down to KILL_RESOLUTION;
-    group 2 is the investigator after kills resolve, gated by route_after_kill_resolution, then
-    NIGHT_FINALIZE. NIGHT_FINALIZE -> (check_game_end_night: ONE_MORE_DAY -> DAY_PHASE | END_GAME).
+    the list of present night phases, run in ONE parallel superstep — the codebase's static
+    fan-out). Every phase edges into NIGHT_RESOLUTION, the barrier, which resolves kills +
+    investigation and -> (check_game_end_night: ONE_MORE_DAY -> DAY_PHASE | END_GAME).
     END_GAME -> POST_GAME_ANALYSIS -> END.
     """
     parent_graph = StateGraph(OrchestratorGraph, context_schema=GraphContext)
@@ -340,8 +334,7 @@ def build_parent_graph():
     parent_graph.add_node("SERIAL_KILLER_NIGHT_PHASE", serial_killer_night_phase)
     parent_graph.add_node("INVESTIGATOR_NIGHT_PHASE", investigator_night_phase)
     parent_graph.add_node("VIGILANTE_NIGHT_PHASE", vigilante_night_phase)
-    parent_graph.add_node("KILL_RESOLUTION", night_kill_resolution)
-    parent_graph.add_node("NIGHT_FINALIZE", night_finalize)
+    parent_graph.add_node("NIGHT_RESOLUTION", night_resolution)
     parent_graph.add_node("ONE_MORE_DAY", one_more_day)
     parent_graph.add_node("END_GAME", end_game)
     parent_graph.add_node("POST_GAME_ANALYSIS", post_game_analysis)
@@ -349,14 +342,28 @@ def build_parent_graph():
     parent_graph.add_edge(START, "INITIALIZE_GAME")
     parent_graph.add_edge("INITIALIZE_GAME", "DAY_PHASE")
     parent_graph.add_edge("DAY_PHASE", "DAY_RESOLUTION")
-    parent_graph.add_conditional_edges("DAY_RESOLUTION", check_game_end_day)
-    parent_graph.add_conditional_edges("WOLF_NIGHT_PHASE", route_after_wolf_night)
-    parent_graph.add_conditional_edges("HEALER_NIGHT_PHASE", route_after_healer_night)
-    parent_graph.add_conditional_edges("SERIAL_KILLER_NIGHT_PHASE", route_after_serial_killer_night)
-    parent_graph.add_edge("VIGILANTE_NIGHT_PHASE", "KILL_RESOLUTION")
-    parent_graph.add_conditional_edges("KILL_RESOLUTION", route_after_kill_resolution)
-    parent_graph.add_edge("INVESTIGATOR_NIGHT_PHASE", "NIGHT_FINALIZE")
-    parent_graph.add_conditional_edges("NIGHT_FINALIZE", check_game_end_night)
+    # List-returning router: check_game_end_day fans out every present night actor in one
+    # parallel superstep. path_map is explicit because a list return defeats Literal inference.
+    parent_graph.add_conditional_edges(
+        "DAY_RESOLUTION",
+        check_game_end_day,
+        [
+            "END_GAME",
+            "WOLF_NIGHT_PHASE",
+            "HEALER_NIGHT_PHASE",
+            "SERIAL_KILLER_NIGHT_PHASE",
+            "VIGILANTE_NIGHT_PHASE",
+            "INVESTIGATOR_NIGHT_PHASE",
+        ],
+    )
+    # BSP barrier: all fan-out branches complete before the next superstep, so
+    # NIGHT_RESOLUTION sees every actor's committed target (collect_votes precedent).
+    parent_graph.add_edge("WOLF_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    parent_graph.add_edge("HEALER_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    parent_graph.add_edge("SERIAL_KILLER_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    parent_graph.add_edge("VIGILANTE_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    parent_graph.add_edge("INVESTIGATOR_NIGHT_PHASE", "NIGHT_RESOLUTION")
+    parent_graph.add_conditional_edges("NIGHT_RESOLUTION", check_game_end_night)
     parent_graph.add_edge("ONE_MORE_DAY", "DAY_PHASE")
     parent_graph.add_edge("END_GAME", "POST_GAME_ANALYSIS")
     parent_graph.add_edge("POST_GAME_ANALYSIS", END)
