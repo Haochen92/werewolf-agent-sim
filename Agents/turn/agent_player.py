@@ -20,8 +20,14 @@ from pydantic import BaseModel
 
 from Agents.llm_factory import get_llm, get_llm_game_fallback
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
-from Agents.schemas.game_events import DayVote, WolfChannel
+from Agents.schemas.game_events import (
+    DayChannel,
+    DayVote,
+    DiscussionPassReason,
+    WolfChannel,
+)
 from Agents.schemas.turn import (
+    ResolvedDayDiscussion,
     ResolvedDayVote,
     ResolvedHealerTarget,
     ResolvedInvestigatorTarget,
@@ -94,7 +100,50 @@ def run_agent(
                 logger.warning(f"{player_id} rescued by the fallback model on {output_key}")
                 return outcome
 
-    # Exhausted: random legal fallback so the game progresses (day discussion may skip -> None).
+    # Exhausted discussion becomes a typed technical pass. Persisting the classification advances
+    # the stateless day/wolf scheduler and makes failures countable without putting operational
+    # attempt details in graph state; those remain in logs/traces. Target actions still need a
+    # random legal move so their phase can complete.
+    if output_key == "day_channel":
+        current_day = payload.get("current_day", 1)
+        seq = sum(
+            1 for message in payload.get("day_channel", [])
+            if message.day == current_day
+        )
+        logger.error(
+            "%s failed all decision attempts on %s; recording technical pass",
+            player_id,
+            output_key,
+        )
+        return ResolvedDayDiscussion(
+            entry=DayChannel(
+                day=current_day,
+                seq=seq,
+                player=player_id,
+                message="",
+                passed=True,
+                pass_reason=DiscussionPassReason.GENERATION_FAILED,
+                firing_reason=payload.get("firing_reason"),
+            )
+        )
+    if output_key == "wolf_channel":
+        logger.error(
+            "%s failed all decision attempts on %s; recording technical pass",
+            player_id,
+            output_key,
+        )
+        return ResolvedWolfDiscussion(
+            entry=WolfChannel(
+                day=payload.get("current_day", 1),
+                round=payload.get("current_round", 1),
+                wolf=player_id,
+                message="",
+                vote="",
+                passed=True,
+                pass_reason=DiscussionPassReason.GENERATION_FAILED,
+            )
+        )
+
     logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")
     if output_key == "day_votes":
         return ResolvedDayVote(
@@ -103,16 +152,6 @@ def run_agent(
     if output_key in NIGHT_TARGET_KEYS:
         result_type = _NIGHT_RESULT_BY_KEY[output_key]
         return result_type(entry=random.choice(valid_targets))
-    if output_key == "wolf_channel":
-        return ResolvedWolfDiscussion(
-            entry=WolfChannel(
-                day=payload.get("current_day", 1),
-                round=payload.get("current_round", 1),
-                wolf=player_id,
-                message="...",
-                vote="",
-            )
-        )
     if output_key == "wolf_vote":
         return ResolvedWolfVote(
             entry=WolfChannel(

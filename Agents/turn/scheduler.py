@@ -11,7 +11,14 @@ import random
 import zlib
 
 from Agents.game_config import GameConfig
-from Agents.schemas import Balance, DayChannel, Decision, FiringReason, ReactiveItem
+from Agents.schemas import (
+    Balance,
+    DayChannel,
+    Decision,
+    DiscussionPassReason,
+    FiringReason,
+    ReactiveItem,
+)
 
 
 def cycle_seed(game_id: str, day: int, cycle: int) -> int:
@@ -40,7 +47,26 @@ def build_reactive_queue(
     """
     debt_ledger: defaultdict[tuple[str, str], Balance] = defaultdict(Balance)
 
+    def close_open_debt(creditor: str, debtor: str, sequence: int) -> None:
+        balance = debt_ledger[(creditor, debtor)]
+        if balance.open_sequence is not None:
+            balance.cycles += 1
+            balance.open_sequence = None
+            balance.last_touch_sequence = sequence
+
     for entry in day_channel:
+        # A reactive model failure is an attempted turn, not speech. Close exactly the obligations
+        # which caused the turn so an unavailable provider cannot re-fire the same debtor forever;
+        # do this explicitly rather than fabricating AddressedTarget responses the agent never made.
+        if (
+            entry.passed
+            and entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
+            and entry.firing_reason is not None
+            and entry.firing_reason.tier == "reactive"
+        ):
+            for creditor in entry.firing_reason.owes:
+                close_open_debt(creditor, entry.player, entry.seq)
+
         for target in entry.addressed_targets:
             # Skip non-player addressees ("all"/"everyone") and dead players: only a real
             # surviving player can owe/be-owed and therefore be scheduled.
@@ -53,11 +79,7 @@ def build_reactive_queue(
             # in a re-fire loop of near-duplicate turns (reactive turns bypass the novelty
             # gate), seen live 2026-07-26: three consecutive player_7 turns re-asserting
             # "you haven't answered", which the table then treated as evidence.
-            balance = debt_ledger[(target.target, entry.player)]
-            if balance.open_sequence is not None:
-                balance.cycles += 1
-                balance.open_sequence = None
-                balance.last_touch_sequence = entry.seq
+            close_open_debt(target.target, entry.player, entry.seq)
 
             # Open (or, if already open, leave alone) an obligation on the target.
             if target.addressed_form == "question" or target.stance == "accusation":
@@ -164,8 +186,3 @@ def select_next_speaker(
     if not ranked:
         return Decision(terminate=True, terminate_reason="no_eligible")
     return Decision(speaker=ranked[0], firing_reason=FiringReason(tier="proactive"))
-
-
-    
-    
-    

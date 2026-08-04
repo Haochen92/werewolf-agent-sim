@@ -15,7 +15,7 @@ from Agents.nodes.night.wolf import (
     prepare_wolf_night,
     wolf_fan_out,
 )
-from Agents.schemas.game_events import WolfChannel
+from Agents.schemas.game_events import DiscussionPassReason, WolfChannel
 from Agents.schemas.human_player import HumanTurnRequest
 from Agents.turn.human_turn import HumanTurnContractError, validate_human_response
 
@@ -45,6 +45,22 @@ def test_talk_round_sends_exactly_one_wolf_in_order():
 def test_second_speaker_fires_after_first_spoke():
     sends = wolf_fan_out(_state(wolf_channel=[_entry("w1", 1)]))
     assert [s.arg["player_id"] for s in sends] == ["w2"]
+
+
+def test_generation_failure_pass_advances_to_next_wolf():
+    failed = WolfChannel(
+        day=1,
+        round=1,
+        wolf="w1",
+        message="",
+        vote="",
+        passed=True,
+        pass_reason=DiscussionPassReason.GENERATION_FAILED,
+    )
+
+    sends = wolf_fan_out(_state(wolf_channel=[failed]))
+
+    assert [send.arg["player_id"] for send in sends] == ["w2"]
 
 
 def test_vote_round_fans_out_every_wolf_in_parallel():

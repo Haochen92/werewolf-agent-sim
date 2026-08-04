@@ -11,7 +11,13 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from Agents.schemas.game_events import AddressedTarget, DayChannel, DayVote, WolfChannel
+from Agents.schemas.game_events import (
+    AddressedTarget,
+    DayChannel,
+    DayVote,
+    DiscussionPassReason,
+    WolfChannel,
+)
 from Agents.schemas.turn import (
     ResolvedDayDiscussion,
     ResolvedDayVote,
@@ -72,6 +78,7 @@ def resolve_decision(
                     player=player_id,
                     message="",
                     passed=True,
+                    pass_reason=DiscussionPassReason.VOLUNTARY,
                     firing_reason=firing_reason,
                     gated=False,
                 )
@@ -91,6 +98,7 @@ def resolve_decision(
                     player=player_id,
                     message="",
                     passed=True,
+                    pass_reason=DiscussionPassReason.VOLUNTARY,
                     addressed_targets=discharges,
                     firing_reason=firing_reason,
                     gated=False,
@@ -125,6 +133,7 @@ def resolve_decision(
                 player=player_id,
                 message="",
                 passed=True,
+                pass_reason=DiscussionPassReason.NOVELTY_GATED,
                 firing_reason=firing_reason,
                 gated=True,
                 gated_candidate=message,

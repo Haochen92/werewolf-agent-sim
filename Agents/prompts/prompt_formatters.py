@@ -73,16 +73,18 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
 
 
 def format_wolf_channel(messages: list[WolfChannel]) -> str:
-    if not messages:
+    visible = [message for message in messages if not message.passed]
+    if not visible:
         return "No messages yet."
     # Talk entries carry a message and vote="" (also GM whiff notes); binding-vote entries
-    # carry a vote and message="". Render each without the other's dangling suffix.
+    # carry a vote and message="". Technical passes are observer-only and filtered above.
+    # Render each visible entry without the other's dangling suffix.
     return "\n".join(
         f"[Day {m.day}, Round {m.round}] {m.wolf} votes: {m.vote}"
         if not m.message
         else f"[Day {m.day}, Round {m.round}] {m.wolf}: {m.message}."
         + (f"  vote: {m.vote}" if m.vote else "")
-        for m in messages
+        for m in visible
     )
 
 

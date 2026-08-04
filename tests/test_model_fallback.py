@@ -9,9 +9,14 @@ fallback model avoids.
 from langchain_core.runnables import RunnableLambda
 
 from Agents.llm_factory import accessors
+from Agents.prompts.day_discuss import VILLAGER_DAY_DISCUSS
 from Agents.prompts.night import HEALER_NIGHT
+from Agents.prompts.night import WOLF_NIGHT_DISCUSS
+from Agents.schemas.game_events import DiscussionPassReason, FiringReason
+from Agents.schemas.output import DayDiscussOutput, WolfNightDiscussOutput
 from Agents.schemas.output import PlayerRead
 from Agents.schemas.output import HealerOutput
+from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedWolfDiscussion
 from Agents.turn import agent_player as agent_mod
 
 
@@ -71,6 +76,63 @@ def test_broken_fallback_still_degrades_to_random(monkeypatch):
     monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
     out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
     assert out.entry in ("player_2", "player_3")
+
+
+def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
+    payload = {
+        **_payload(),
+        "day_channel": [],
+        "day_summaries": [],
+        "firing_reason": FiringReason(tier="reactive", owes=["player_2"]),
+    }
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+
+    with caplog.at_level("ERROR"):
+        out = agent_mod.run_agent(
+            payload,
+            VILLAGER_DAY_DISCUSS,
+            DayDiscussOutput,
+            "day_channel",
+        )
+
+    assert isinstance(out, ResolvedDayDiscussion)
+    assert out.entry is not None
+    assert out.entry.passed is True
+    assert out.entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
+    assert out.entry.firing_reason == payload["firing_reason"]
+    assert any("recording technical pass" in record.message for record in caplog.records)
+
+
+def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
+    payload = {
+        "player_id": "wolf_1",
+        "player_role": "wolf",
+        "current_day": 2,
+        "current_round": 1,
+        "surviving_wolves": ["wolf_1", "wolf_2"],
+        "surviving_villagers": ["player_2", "player_3"],
+        "day_channel": [],
+        "day_summaries": [],
+        "wolf_channel": [],
+        "dead_roster": [],
+        "cast_role_counts": {},
+    }
+    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
+    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: None)
+
+    out = agent_mod.run_agent(
+        payload,
+        WOLF_NIGHT_DISCUSS,
+        WolfNightDiscussOutput,
+        "wolf_channel",
+    )
+
+    assert isinstance(out, ResolvedWolfDiscussion)
+    assert out.entry.passed is True
+    assert out.entry.message == ""
+    assert out.entry.vote == ""
+    assert out.entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
 
 
 def test_same_model_configuration_skips_the_rescue(monkeypatch):

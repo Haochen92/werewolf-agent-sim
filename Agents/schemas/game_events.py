@@ -12,6 +12,7 @@ model). AddressedTarget keeps Field(description=...) because those strings ARE s
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -43,6 +44,14 @@ class FiringReason(BaseModel):
     """Creditors the speaker owes a response to (reactive only). Empty for proactive."""
 
 
+class DiscussionPassReason(str, Enum):
+    """Why a discussion turn produced a hidden pass marker instead of speech."""
+
+    VOLUNTARY = "voluntary"
+    NOVELTY_GATED = "novelty_gated"
+    GENERATION_FAILED = "generation_failed"
+
+
 class DayChannel(BaseModel):
     """One entry in the public day-discussion transcript (a spoken message or a pass marker)."""
 
@@ -57,7 +66,9 @@ class DayChannel(BaseModel):
     addressed_targets: list[AddressedTarget] = Field(default_factory=list)
     """Structured who-this-addresses tags parsed from the speech (empty for narration/passes)."""
     passed: bool = False
-    """True = proactive pass marker (hidden, not counted)."""
+    """True = hidden pass marker (voluntary, novelty-gated, or generation failure)."""
+    pass_reason: DiscussionPassReason | None = None
+    """Observer classification for a pass. None on speech and legacy pass records."""
     firing_reason: FiringReason | None = None
     """Scheduler trace for why this turn fired; observability only, hidden from agents. None for
     non-scheduler (e.g. legacy/human) messages."""
@@ -90,7 +101,7 @@ class DaySummary(BaseModel):
 
 
 class WolfChannel(BaseModel):
-    """One wolf-night channel entry: a talk message (vote="") or a binding vote (message="")."""
+    """One wolf-night entry: talk, a binding vote, or a hidden technical-pass marker."""
 
     day: int
     """Game day of this night."""
@@ -99,9 +110,13 @@ class WolfChannel(BaseModel):
     wolf: str
     """Speaking wolf's player_id."""
     message: str
-    """The wolf's discussion text."""
+    """The wolf's discussion text; empty for a vote or technical pass."""
     vote: str
     """The wolf's current kill-target vote (a surviving villager)."""
+    passed: bool = False
+    """True only when wolf discussion exhausted every model attempt; hidden from pack prompts."""
+    pass_reason: DiscussionPassReason | None = None
+    """Observer classification for a pass; currently generation_failed is the only wolf value."""
 
 
 class InvestigatorResult(BaseModel):

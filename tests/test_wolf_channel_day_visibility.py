@@ -15,7 +15,11 @@ from Agents.prompts.day_discuss import VILLAGER_DAY_DISCUSS, WOLF_DAY_DISCUSS
 from Agents.prompts.day_vote import WOLF_DAY_VOTE
 from Agents.prompts.prompt_formatters import format_wolf_channel
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
-from Agents.schemas.game_events import FiringReason, WolfChannel
+from Agents.schemas.game_events import (
+    DiscussionPassReason,
+    FiringReason,
+    WolfChannel,
+)
 from Agents.schemas.metrics import Metrics
 from tests.leak_test import check_wolf_channel_isolation
 
@@ -157,6 +161,21 @@ def test_format_wolf_channel_conditional_vote_suffix():
     assert "vote:" not in rendered_empty
     # no dangling suffix, but the message itself still renders
     assert "confirms sk is the serial killer" in rendered_empty
+
+
+def test_format_wolf_channel_hides_generation_failure_pass():
+    technical_pass = WolfChannel(
+        day=1,
+        round=1,
+        wolf="w0",
+        message="",
+        vote="",
+        passed=True,
+        pass_reason=DiscussionPassReason.GENERATION_FAILED,
+    )
+
+    assert format_wolf_channel([technical_pass]) == "No messages yet."
+    assert "generation_failed" not in format_wolf_channel([NOTE, technical_pass])
 
 
 # --- (5) re-scoped leak check -----------------------------------------------

@@ -8,7 +8,12 @@ select_next_speaker flow (cap -> reactive -> trailing-pass -> proactive).
 from __future__ import annotations
 
 from Agents.game_config import DEFAULT_GAME_CONFIG
-from Agents.schemas import AddressedTarget, DayChannel
+from Agents.schemas import (
+    AddressedTarget,
+    DayChannel,
+    DiscussionPassReason,
+    FiringReason,
+)
 from Agents.turn.scheduler import (
     build_reactive_queue,
     rank_proactive,
@@ -55,6 +60,25 @@ def test_response_discharges_open_obligation():
         msg(1, "B", [at("A", "response", "defense")]),
     ])
     assert q == []  # B answered A -> nothing open
+
+
+def test_reactive_generation_failure_discharges_without_fake_response():
+    failed_turn = DayChannel(
+        day=1,
+        seq=1,
+        player="B",
+        message="",
+        passed=True,
+        pass_reason=DiscussionPassReason.GENERATION_FAILED,
+        firing_reason=FiringReason(tier="reactive", owes=["A"]),
+    )
+    q = queue([
+        msg(0, "A", [at("B", "question")]),
+        failed_turn,
+    ])
+
+    assert failed_turn.addressed_targets == []
+    assert q == []
 
 
 def test_bare_response_with_no_debt_is_inert():
