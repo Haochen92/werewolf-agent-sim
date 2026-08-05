@@ -1,18 +1,21 @@
-"""Wolf night: the one multi-agent night action — a sequential discussion → parallel kill vote.
+"""Wolf night: the one multi-agent night action, shaped as a miniature of the day phase.
 
-A round loop: PREPARE_WOLF_NIGHT → one wolf at a time through WOLF_NIGHT_DISCUSS for the talk
-rounds (each speaker sees everything said before their turn) → once the talk rounds are spent,
-every wolf fans out to WOLF_NIGHT_VOTE in parallel for the message-less binding vote → collect
-tallies the plurality target (random tiebreak). A lone wolf skips the talk entirely — a solo
-discussion is theater. Speaker order is the surviving_wolves list order, recomputed statelessly
-from the wolf channel each pass (the same recompute-from-channel philosophy as the day scheduler).
-Each turn still runs through the shared night engine, so it does flag-gated retrieval and emits
-an EvalCase.
+The structure mirrors day on purpose (one pattern to know, not two):
+PREPARE_WOLF_NIGHT is the scheduler hub (day_scheduler analog — except it commits the talk
+round, wolf night's one piece of non-derivable bookkeeping); route_wolf_speaker is the
+scheduler hop (route_speaker analog: ONE wolf at a time through WOLF_NIGHT_DISCUSS, each
+speaker reading everything said before their turn); START_WOLF_VOTE is the phase marker
+(START_VOTING analog); wolf_fan_out_vote dispatches every wolf's message-less binding vote in
+parallel (fan_out_vote analog); collect_wolf_votes tallies the plurality target with a random
+tiebreak (COLLECT_VOTES analog). A lone wolf skips the talk entirely — a solo discussion is
+theater. Speaker order is the surviving_wolves list order, recomputed statelessly from the
+wolf channel each pass. Each turn still runs through the shared night engine, so it does
+flag-gated retrieval and emits an EvalCase.
 """
 
 import random
 from collections import Counter
-from typing import Literal, TypedDict
+from typing import TypedDict
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END
@@ -62,11 +65,18 @@ def _spoken_this_round(state: WolfNightGraph) -> set[str]:
 
 
 def prepare_wolf_night(state: WolfNightGraph):
-    """Set this pass's round; a lone surviving wolf jumps straight to the binding vote
-    since there is nothing to discuss."""
-    current_round = state.get("current_round", 1)
+    """The scheduler hub (day_scheduler analog): every talk turn loops back here. Commits
+    this pass's round — advancing when every wolf has spoken in it; a lone surviving wolf
+    jumps straight to the binding vote since there is nothing to discuss."""
     if len(state["surviving_wolves"]) == 1:
-        current_round = WOLF_VOTE_ROUND
+        return {"current_round": WOLF_VOTE_ROUND}
+    current_round = state.get("current_round", 1)
+    if (
+        current_round < WOLF_VOTE_ROUND
+        and state["surviving_wolves"]
+        and _spoken_this_round(state) >= set(state["surviving_wolves"])
+    ):
+        current_round += 1
     return {"current_round": current_round}
 
 
@@ -90,56 +100,53 @@ def _wolf_payload(state: WolfNightGraph, wolf: str) -> dict:
     }
 
 
-def wolf_fan_out(state: WolfNightGraph):
-    """Route this pass's turns: during the talk rounds, ONE Send to the next unspoken wolf
-    (surviving_wolves order — sequential, so the later speaker reads the earlier one); on the
-    vote round, every wolf in parallel to WOLF_NIGHT_VOTE (votes are blind to each other,
-    the discussion already happened)."""
-    # Wolves extinct (SK kill + lynch can wipe the pack while the game continues): no turns,
-    # the subgraph ends with no kill target — the pre-split fan-out no-oped the same way.
+def route_wolf_speaker(state: WolfNightGraph):
+    """The scheduler hop (route_speaker analog): ONE Send to the next unspoken wolf during
+    the talk rounds (surviving_wolves order — sequential, so the later speaker reads the
+    earlier one); once the talk is spent, hop to the START_WOLF_VOTE marker."""
+    # Wolves extinct (SK kill + lynch can wipe the pack while the game continues): end the
+    # subgraph with no kill target — the pre-split fan-out no-oped the same way.
     if not state["surviving_wolves"]:
-        return []
+        return END
 
     if state["current_round"] >= WOLF_VOTE_ROUND:
-        return [Send("WOLF_NIGHT_VOTE", _wolf_payload(state, wolf))
-                for wolf in state["surviving_wolves"]]
+        return "START_WOLF_VOTE"
 
     spoken = _spoken_this_round(state)
     next_speaker = next((w for w in state["surviving_wolves"] if w not in spoken), None)
     if next_speaker is None:
-        # Every wolf already spoke this round — collect advances the round, so reaching here
-        # means a stale pass; emit no turn rather than crash the night.
+        # Prepare advances the round when every wolf spoke, so reaching here means a stale
+        # pass; emit no turn rather than crash the night.
         return []
     return [Send("WOLF_NIGHT_DISCUSS", _wolf_payload(state, next_speaker))]
 
 
-def collect_wolf_night_discussion(state: WolfNightGraph):
-    """Barrier after each pass: tally the binding votes once the vote round ran (plurality,
-    random tiebreak); during the talk rounds, advance the round only when every wolf has
-    spoken in it — otherwise loop back for the next sequential speaker."""
-    if state["current_round"] >= WOLF_VOTE_ROUND:
-        final_votes = [
-            msg.vote
-            for msg in state["wolf_channel"]
-            if msg.round == WOLF_VOTE_ROUND and msg.day == state["current_day"] and msg.vote
-        ]
-        msg_count = Counter(final_votes)
-        max_votes = max(msg_count.values(), default=0)
-        candidates = [player for player, votes in msg_count.items() if votes == max_votes]
-        return {"wolves_kill_target": random.choice(candidates)} if candidates else {}
-    if _spoken_this_round(state) >= set(state["surviving_wolves"]):
-        return {"current_round": state["current_round"] + 1}
+def start_wolf_vote(state: WolfNightGraph):
+    """Phase-marker no-op (START_VOTING analog): the talk is spent, the binding vote begins.
+    Also the natural anchor if the pack vote ever needs a wire event."""
     return {}
 
 
-def check_night_end(state: WolfNightGraph) -> Literal["PREPARE_WOLF_NIGHT", "__end__"]:
-    """Loop control: end the wolf night once a kill target is set, else run another
-    PREPARE_WOLF_NIGHT pass."""
-    if state.get("wolves_kill_target") is not None:
-        return END
-    return "PREPARE_WOLF_NIGHT"
+def wolf_fan_out_vote(state: WolfNightGraph):
+    """Every wolf to WOLF_NIGHT_VOTE in parallel (fan_out_vote analog): votes are blind to
+    each other — the discussion already happened."""
+    return [Send("WOLF_NIGHT_VOTE", _wolf_payload(state, wolf))
+            for wolf in state["surviving_wolves"]]
 
 
+def collect_wolf_votes(state: WolfNightGraph):
+    """Barrier after the parallel vote (COLLECT_VOTES analog): tally the binding votes —
+    plurality, random tiebreak. No re-vote loop: wolf_night_vote's random-legal fallback
+    guarantees a ballot from every wolf that fanned out."""
+    final_votes = [
+        msg.vote
+        for msg in state["wolf_channel"]
+        if msg.round == WOLF_VOTE_ROUND and msg.day == state["current_day"] and msg.vote
+    ]
+    msg_count = Counter(final_votes)
+    max_votes = max(msg_count.values(), default=0)
+    candidates = [player for player, votes in msg_count.items() if votes == max_votes]
+    return {"wolves_kill_target": random.choice(candidates)} if candidates else {}
 
 
 def wolf_night_discuss(

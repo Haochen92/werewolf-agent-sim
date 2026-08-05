@@ -4,8 +4,9 @@ day/flow.py     — day discussion/vote control flow (scheduler hop, routers, fa
 day/actors.py   — the two generic day actor nodes (discuss/vote); role rides the payload
 orchestrator.py — game setup, day resolution, winner/terminal logic, postgame
 night/<role>.py — each single-role night actor explicitly commits its resolved turn
-night/wolf.py   — the multi-node wolf night discussion flow
-night/resolution.py — cross-role night kill resolution + routing
+night/wolf.py   — the wolf night flow, a miniature of the day pattern (scheduler hub ->
+                  sequential talk -> vote marker -> parallel vote -> collect)
+night/resolution.py — the NIGHT_RESOLUTION barrier: cross-role kill + investigation resolution
 
 The turn system itself (speaker scheduling, run_agent, the memory-informed
 actions, the proactive-novelty gate) lives in Agents.turn, not here — these
@@ -43,10 +44,11 @@ from Agents.nodes.night.resolution import (  # noqa: F401
     night_resolution,
 )
 from Agents.nodes.night.wolf import (  # noqa: F401
-    check_night_end,
-    collect_wolf_night_discussion,
+    collect_wolf_votes,
     prepare_wolf_night,
-    wolf_fan_out,
+    route_wolf_speaker,
+    start_wolf_vote,
+    wolf_fan_out_vote,
     wolf_night_discuss,
     wolf_night_vote,
 )
