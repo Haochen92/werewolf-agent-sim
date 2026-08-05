@@ -37,7 +37,7 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `player_voted {voter}` — indicator only, no votee |
+| Ephemeral | `phase_progress {stage: "day_vote", done, total}` — anonymous voting-progress snapshot (RE-RULED 2026-08-05: replaces the durable `player_voted {voter}` indicator; progress ticks are replay noise, and the pattern unifies with night pacing. Denominator = surviving roster, public, no padding needed. Loss accepted: no per-player "waiting on X" checkmarks — reversible additively.) |
 | Seat | `input_request` (interrupt) |
 | Observer | `strategy_update` |
 - Ballots buffered server-side (entitlement deferral — wire is the boundary, not the render).
@@ -110,7 +110,9 @@
 
 ## Ephemeral pacing channel (translator-derived, not node-anchored)
 
-`phase_change("night")` starts the wait; anonymous snapshots `night_progress {done, total}` pace it.
+One snapshot event paces both waits: `phase_progress {stage: "night" | "day_vote", done, total}`.
+Night: `phase_change("night")` starts the wait, denominator = padded alive-role census (below).
+Day vote: START_VOTING starts it, denominator = surviving roster (public, unpadded).
 
 - **Durable vs ephemeral split is structural**: separate event union with no `seq`, distinct SSE event name (`event: pacing` vs `event: game`), so the exporter *cannot* persist it and the game reducer never sees it. Replay doesn't wait — pacing has no place in the log.
 - **Denominator from public knowledge only** (special roles not on the dead roster; wolf pack = 1) — never the real fan-out list. A naive count leaks the silent SK-whiff: missing vigilante slot + public shot count < 2 ⇒ the vig shot someone immune ⇒ SK confirmed alive + vig disarmed. The UX layer must not break a silence the engine maintains.
@@ -123,14 +125,14 @@
 | Value | Current frontend derivation |
 | --- | --- |
 | Vote tally | Count received `vote_cast.votee` values |
-| Who hasn't voted | `surviving_players − received voter_ids` |
+| Who hasn't voted | NOT derivable live since the 2026-08-05 re-ruling (anonymous `phase_progress` replaced `player_voted`); post-batch, `surviving_players − vote_cast voters` |
 | Alive-role census | Initial public cast counts − publicly revealed deaths by role (`lynch_result` + `night_result`) |
 
 ## Derived (night)
 
 | Value | Current frontend derivation |
 | --- | --- |
-| Night actor progress | ephemeral `night_progress` snapshots only — never derivable from game events (by design) |
+| Night actor progress | ephemeral `phase_progress` snapshots only — never derivable from game events (by design) |
 | Pacing denominator | alive-role census above (public knowledge) |
 | Human wolf's kill-vote view | buffered `wolf_vote` batch + `wolf_kill_decided`, flushed together at the tally |
 | Full chat history | the client's own event log (`speech`/`gm_message` accumulate; `day_channel` is append-only server-side, but the client never re-fetches) |
