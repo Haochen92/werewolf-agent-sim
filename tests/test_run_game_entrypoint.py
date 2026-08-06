@@ -26,11 +26,16 @@ def _stub_run_dependencies(monkeypatch):
         captured["seed_config"] = config
         captured["seed_store"] = target_store
 
-    def invoke(initial_state, *, config, context):
+    def invoke(initial_state, *, config, context, version):
         captured["initial_state"] = initial_state
         captured["runnable_config"] = config
         captured["context"] = context
-        return {"winner": "town", "current_day": 1}
+        captured["invoke_version"] = version
+        # run_game invokes with version="v2": GraphOutput(value, interrupts), no
+        # __interrupt__ key in the state dict.
+        return SimpleNamespace(
+            value={"winner": "town", "current_day": 1}, interrupts=()
+        )
 
     @contextmanager
     def observation(**kwargs):

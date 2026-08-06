@@ -141,17 +141,26 @@ def run_game(
         flush()
 
         try:
-            result = parent_graph_compiled.invoke(
+            # version="v2": invoke returns GraphOutput(value, interrupts) — pending interrupts
+            # live on .interrupts, not as an __interrupt__ key inside the state dict.
+            output = parent_graph_compiled.invoke(
                 initial_state,
                 config=config,
                 context={"metrics": metrics, "eval_sink": eval_sink},
+                version="v2",
             )
-            
-            while "__interrupt__" in result:
-                request = HumanTurnRequest.model_validate(result["__interrupt__"][0].value)
+
+            while output.interrupts:
+                request = HumanTurnRequest.model_validate(output.interrupts[0].value)
                 human_action: HumanTurnResponse = collect_human_response(request)
-                
-                result = parent_graph_compiled.invoke(Command(resume=human_action.model_dump()), config=config, context={"metrics": metrics, "eval_sink": eval_sink})
+
+                output = parent_graph_compiled.invoke(
+                    Command(resume=human_action.model_dump()),
+                    config=config,
+                    context={"metrics": metrics, "eval_sink": eval_sink},
+                    version="v2",
+                )
+            result = output.value
         except Exception as exc:
             error_output = {
                 "status": "error",
