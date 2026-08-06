@@ -28,7 +28,7 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `day_summary {day, summary}` — shown next morning: client render rule, **no buffer** (buffers gate entitlement; render timing gates pacing) |
+| Public | `day_summary {day, summary}` — shown next morning: client render rule, **no buffer** (buffers gate entitlement; render timing gates pacing). RULED 2026-08-06: renders as a "Previously…" recap card at the TOP of day D+1's page (mirrors the LLM payload: full current day + summaries of prior days); the full transcript stays readable per day — the summary is a header, never a replacement |
 | Observer | `day_summary_structured {day, role_claims/accusations}` |
 
 **START_VOTING** — public `phase_change` (self-disambiguating: anchored on the routed-to node).
@@ -98,7 +98,7 @@
 - `*_player` marker clears → IGNORED (fold doctrine: ship the client-facing form, fold the internal form — committed→shipped governs INFORMATION, not raw keys).
 - Metric append + langfuse span → diagnostic plane, never the wire.
 
-**one_more_day** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it).
+**one_more_day** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it). Also commits the new-day RESETS — `healer_target` / `investigator_target` / `serial_killer_target` / `vigilante_target` / `wolves_kill_target` / `day_votes` / `voted_player` all cleared → IGNORED (blank-slate bookkeeping, zero information; hole found by the 2026-08-06 chunk-catalogue exhaustiveness check).
 
 **END_GAME**
 
