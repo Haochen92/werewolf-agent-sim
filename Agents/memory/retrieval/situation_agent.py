@@ -13,7 +13,7 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field, create_model
 
-from Agents.board_clocks import criticality_from_census
+from Agents.rules.board_clocks import criticality_from_census
 from Agents.llm_factory import get_llm
 from Agents.prompts.prompt_inputs import (
     build_agent_prompt_input,
@@ -142,7 +142,7 @@ def _override_deterministic_dims(situation: BaseModel, payload: dict) -> None:
     `distance_to_parity` / `is_swing` joined the computed set on 2026-07-11: the old premise ("they
     need the true role map the live agent cannot see") was falsified by the owner — the cast is fixed
     and public and every death path announces the dead player's role, so the census (cast minus
-    revealed dead) yields the faction COUNTS the clocks need (Agents.board_clocks). They fall back to
+    revealed dead) yields the faction COUNTS the clocks need (Agents.rules.board_clocks). They fall back to
     the LLM fill only on legacy payloads that carry no `cast_role_counts`.
 
     RESIDUAL: only the numeric/bool dims are corrected; free-text fields (`criticality_stakes` etc.)

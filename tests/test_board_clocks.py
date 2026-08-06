@@ -3,7 +3,7 @@ faction clocks, and the invariant that made the 2026-07-11 promotion sound — t
 criticality must equal the true-role-map criticality (deaths reveal roles truthfully, so the two
 count paths cannot diverge). No LLM, pure fixtures."""
 
-from Agents.board_clocks import (
+from Agents.rules.board_clocks import (
     alive_role_counts,
     criticality_from_census,
     criticality_from_counts,

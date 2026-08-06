@@ -1,4 +1,4 @@
-from Agents.board_clocks import alive_role_counts
+from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
 from Agents.schemas.game_events import (
     DayChannel,

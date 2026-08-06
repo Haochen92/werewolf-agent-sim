@@ -25,6 +25,7 @@ from Agents.nodes.orchestrator import (
     _faction_counts,
     _nullify_special_roles,
 )
+from Agents.rules.resolution import collect_attacks, resolve_attacks
 
 
 # Public death-announcement flavor per attacker: (verb, subject phrase). Reveals the
@@ -65,27 +66,10 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     roles = state["roles"]
     wolves_before, town_before, sk_before = _faction_counts(state)
 
-    # Who attacked whom this night (a target may be hit by more than one killer).
-    attacks_on: dict[str, list[str]] = {}
-    for target, attacker in (
-        (wolves_target, "wolves"),
-        (serial_killer_target, "serial_killer"),
-        (vigilante_target, "vigilante"),
-    ):
-        if target:
-            attacks_on.setdefault(target, []).append(attacker)
-
-    # Resolve protection + SK night-immunity once over the whole set. A player attacked
-    # by multiple killers still dies at most once; the immune SK never dies at night and
-    # such whiffs are SILENT (announcing them would out the SK).
-    def _resolved(target: str) -> str:
-        if target == sk_player:
-            return "immune"  # silent whiff
-        if target == healer_target:
-            return "saved"
-        return "killed"
-
-    outcomes = {t: _resolved(t) for t in attacks_on}
+    # The shared kernel (Agents.rules.resolution) owns attack collection + precedence —
+    # the wire translator calls the SAME functions, so game and wire cannot drift.
+    attacks_on = collect_attacks(wolves_target, serial_killer_target, vigilante_target)
+    outcomes = resolve_attacks(attacks_on, healer_target, sk_player)
     deaths = sorted(t for t, o in outcomes.items() if o == "killed")
 
     kill_successful = bool(wolves_target and wolves_target in deaths)

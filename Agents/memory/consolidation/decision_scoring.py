@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
-from Agents.board_clocks import criticality_from_counts
+from Agents.rules.board_clocks import criticality_from_counts
 from Agents.game_config import GameConfig
 
 # Town wins by removing BOTH threat factions (the wolves and the serial killer),
@@ -138,7 +138,7 @@ def query_criticality(
     live memory query states them as known board facts; for these dims the dimension
     audit now checks fill WIRING, not an epistemic gap.
 
-    The clock arithmetic lives in ``Agents.board_clocks`` (shared with the live fill)
+    The clock arithmetic lives in ``Agents.rules.board_clocks`` (shared with the live fill)
     so the audit, the screens, and the live query can never disagree on the definition.
     ``criticality_screen`` re-imports this wrapper.
     """

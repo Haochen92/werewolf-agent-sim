@@ -12,7 +12,6 @@ logger = _getLogger(__name__)
 
 import random
 import zlib
-from collections import Counter
 from typing import Literal
 from datetime import datetime
 
@@ -20,6 +19,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
+from Agents.rules.resolution import tally_day_vote
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
 from Agents.state import (
     OrchestratorGraph,
@@ -176,13 +176,10 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
     """
     current_day = state.get("current_day", 1)
     day_votes = state.get("day_votes", [])
-    vote_counts = Counter(vote.votee for vote in day_votes)
-    max_votes = max(vote_counts.values(), default=0)
-    candidates = [player for player, votes in vote_counts.items() if votes == max_votes]
-    plurality = candidates[0] if len(candidates) == 1 else None
-    # A real lynch only when the unique plurality is a player; an "abstain" plurality (or
-    # a tie, or no votes) is a no-lynch day.
-    lynched = plurality if (plurality and plurality != "abstain") else None
+    # The shared kernel (Agents.rules.resolution) owns the plurality classification — the
+    # wire translator tallies with the SAME function, so game and wire cannot drift.
+    tally = tally_day_vote(vote.votee for vote in day_votes)
+    vote_counts, candidates, lynched = tally.vote_counts, tally.candidates, tally.lynched
 
     prev_streak = state.get("no_lynch_streak", 0)
     no_lynch_streak = 0 if lynched else prev_streak + 1
@@ -246,9 +243,9 @@ Player {lynched} has been voted out and was a {state['roles'][lynched]}.
         return state_update
 
     # No lynch: no votes, an abstain plurality, or a tie.
-    if not day_votes:
+    if tally.outcome == "no_vote":
         outcome = "No vote was held today; no one is eliminated."
-    elif plurality == "abstain":
+    elif tally.outcome == "abstain":
         outcome = "The village chose to abstain. No one is eliminated today."
     else:
         outcome = f"It's a tie between {candidates}. No one is voted out this day."
