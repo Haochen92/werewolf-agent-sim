@@ -22,6 +22,18 @@ The load-bearing rules, each verified against notebooks/fixtures/chunk_catalogue
   wrong (or leaky) event.
 - **Exhaustiveness**: every (scope, node, key) must be consumed by a handler or listed in
   _FOLDS. Anything else raises TranslationError — silence is never accidental.
+- **Handler = node, in game order**: each ``_h_<node>`` converts that node's delta into 0..N
+  events (initialize_game -> ~13; post_game_analysis -> 0), declared in the order the
+  derivation doc walks the graph. The buffers are the one deliberate break in locality:
+  ballot content arrives in one handler and ships from another.
+- **State = a part-driven shadow, never graph.get_state()**: translator fields mirror the few
+  parent-state keys the derivation needs (roles, current_day, targets, the vote buffers) plus
+  wire-only counters the engine rightly lacks (seq). Rebuilt purely from the parts, because
+  the checkpoint clock and the part clock disagree in both directions — mid-superstep, task
+  writes stream before any checkpoint holds them (the spike's wolf-vote finding); under
+  consumer lag, get_state() would answer from supersteps the client hasn't been shown yet
+  (cleared ballots, bumped day). Stream-only input is also what makes the fixture tests and
+  frontend mock data possible: no graph, no LLM, no checkpointer.
 
 Not yet emitted (schema rows without a stream source, deferred): day_summary_structured (the
 structured summary never reaches state — summarizer returns prose only).
@@ -40,7 +52,7 @@ class TranslationError(RuntimeError):
     """A stream part the wire contract does not account for — fail loudly, never skip."""
 
 
-def _field(obj: Any, name: str, default: Any = None) -> Any:
+def _read_field(obj: Any, name: str, default: Any = None) -> Any:
     """Tolerant accessor: live parts carry Pydantic models, fixture replays carry dicts."""
     if isinstance(obj, Mapping):
         return obj.get(name, default)
@@ -69,14 +81,6 @@ _WRAPPER_NODES = {
     "SERIAL_KILLER_NIGHT_PHASE",
     "VIGILANTE_NIGHT_PHASE",
 }
-_NIGHT_SCOPES = {
-    "WOLF_NIGHT_PHASE",
-    "HEALER_NIGHT_PHASE",
-    "INVESTIGATOR_NIGHT_PHASE",
-    "SERIAL_KILLER_NIGHT_PHASE",
-    "VIGILANTE_NIGHT_PHASE",
-}
-
 # Explicitly-folded keys per (scope, node): committed state whose information content already
 # ships in another form (or is pure engine bookkeeping). See frontend/event_derivation.md.
 _FOLDS: dict[tuple[str, str], set[str]] = {
@@ -118,7 +122,6 @@ class Translator:
         self._wolf_votes: list[tuple[str, str]] = []
         # Tonight's committed targets, tracked for the kernel-derived night_result.
         self._targets: dict[str, str | None] = {}
-        self._night_announced = False
 
     # ---- context helpers --------------------------------------------------------------
 
@@ -137,19 +140,13 @@ class Translator:
             return self._custom(data)
         if part["type"] != "updates":
             raise TranslationError(f"unexpected stream part type: {part['type']}")
-        if isinstance(data, Mapping) and _field(_field(data, "__metadata__", {}), "cached"):
+        if isinstance(data, Mapping) and _read_field(_read_field(data, "__metadata__", {}), "cached"):
             return []  # replayed part: its events already shipped (spike verdict b)
 
         ns = part.get("ns") or ()
         scope = ns[0].split(":")[0] if ns else "root"
 
         out: list[ev.DurableEvent] = []
-        # Night entry marker is lazy: the first night-scoped part opens the night — emitting
-        # at DAY_RESOLUTION would need winner lookahead (END_GAME emits no night).
-        if scope in _NIGHT_SCOPES and not self._night_announced:
-            self._night_announced = True
-            out.append(self._emit(ev.PhaseChange, phase="night"))
-
         for node, delta in data.items():
             if node == "__interrupt__":
                 out.extend(self._interrupt(delta))
@@ -162,25 +159,25 @@ class Translator:
     # ---- per-source translation -------------------------------------------------------
 
     def _custom(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
-        if _field(payload, "event") == "turn_started":
+        if _read_field(payload, "event") == "turn_started":
             return [self._emit(ev.TurnStarted,
-                               day=_field(payload, "day"), player=_field(payload, "player"))]
+                               day=_read_field(payload, "day"), player=_read_field(payload, "player"))]
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
     def _interrupt(self, interrupts) -> list[ev.DurableEvent]:
         out = []
         for item in interrupts:
-            req = _field(item, "value", item)
-            phase = _field(req, "phase")
+            req = _read_field(item, "value", item)
+            phase = _read_field(req, "phase")
             kind = _ACTION_KINDS.get(phase)
             if kind is None:
                 raise TranslationError(f"unknown human-turn phase: {phase!r}")
             out.append(self._emit(
                 ev.InputRequest,
-                day=_field(req, "day"),
-                player=_field(req, "player_id"),
+                day=_read_field(req, "day"),
+                player=_read_field(req, "player_id"),
                 action_kind=kind,
-                candidates=list(_field(req, "valid_targets", []) or []),
+                candidates=list(_read_field(req, "valid_targets", []) or []),
             ))
         return out
 
@@ -208,10 +205,10 @@ class Translator:
     # ---- handlers: lifecycle ----------------------------------------------------------
 
     def _h_initialize_game(self, scope, node, delta):
-        self.roles = dict(_field(delta, "roles", {}))
+        self.roles = dict(_read_field(delta, "roles", {}))
         self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
-        self.current_day = _field(delta, "current_day", 1)
-        bullets = _field(delta, "vigilante_bullets", 0)
+        self.current_day = _read_field(delta, "current_day", 1)
+        bullets = _read_field(delta, "vigilante_bullets", 0)
         cast_counts: dict[str, int] = {}
         for role in self.roles.values():
             cast_counts[role] = cast_counts.get(role, 0) + 1
@@ -233,16 +230,21 @@ class Translator:
         return out
 
     def _h_one_more_day(self, scope, node, delta):
-        self.current_day = _field(delta, "current_day", self.current_day + 1)
+        self.current_day = _read_field(delta, "current_day", self.current_day + 1)
         self._targets = {}
         self._wolf_votes.clear()
-        self._night_announced = False
         self._check_folds(scope, node, delta, consumed={"current_day"})
         return [self._emit(ev.PhaseChange, phase="day")]
 
+    def _h_night_start(self, scope, node, delta):
+        # The night anchor node (added 2026-08-08): runs only when check_game_end_day routes
+        # past END_GAME, so emitting here can never ghost a night after a game-ending day.
+        self._check_folds(scope, node, delta, consumed=set())
+        return [self._emit(ev.PhaseChange, phase="night")]
+
     def _h_end_game(self, scope, node, delta):
         out = self._gm_messages(delta)
-        out.append(self._emit(ev.GameOver, winner=_field(delta, "winner")))
+        out.append(self._emit(ev.GameOver, winner=_read_field(delta, "winner")))
         self._check_folds(scope, node, delta, consumed={"day_channel", "winner"})
         return out
 
@@ -253,33 +255,33 @@ class Translator:
 
     def _h_discuss(self, scope, node, delta):
         out = []
-        for entry in _field(delta, "day_channel", []) or []:
-            day, cseq, player = _field(entry, "day"), _field(entry, "seq"), _field(entry, "player")
-            if _field(entry, "passed"):
+        for entry in _read_field(delta, "day_channel", []) or []:
+            day, cseq, player = _read_field(entry, "day"), _read_field(entry, "seq"), _read_field(entry, "player")
+            if _read_field(entry, "passed"):
                 out.append(self._emit(
                     ev.PassMarker, day=day, channel_seq=cseq, player=player,
-                    pass_reason=_field(entry, "pass_reason"),
-                    gated=bool(_field(entry, "gated")),
-                    gated_candidate=_field(entry, "gated_candidate") or None,
+                    pass_reason=_read_field(entry, "pass_reason"),
+                    gated=bool(_read_field(entry, "gated")),
+                    gated_candidate=_read_field(entry, "gated_candidate") or None,
                 ))
             else:
                 out.append(self._emit(ev.Speech, day=day, channel_seq=cseq,
-                                      player=player, message=_field(entry, "message")))
-            firing = _field(entry, "firing_reason")
+                                      player=player, message=_read_field(entry, "message")))
+            firing = _read_field(entry, "firing_reason")
             if firing is not None:
                 out.append(self._emit(
                     ev.FiringReasonAnnotation, day=day, about_channel_seq=cseq, player=player,
-                    tier=_field(firing, "tier"), owes=list(_field(firing, "owes", []) or []),
+                    tier=_read_field(firing, "tier"), owes=list(_read_field(firing, "owes", []) or []),
                 ))
-            targets = _field(entry, "addressed_targets", []) or []
+            targets = _read_field(entry, "addressed_targets", []) or []
             if targets:
                 out.append(self._emit(
                     ev.AddressedTargetsAnnotation, day=day, about_channel_seq=cseq,
                     player=player,
                     targets=[ev.WireAddressedTarget(
-                        target=_field(t, "target"),
-                        addressed_form=_field(t, "addressed_form"),
-                        stance=_field(t, "stance"),
+                        target=_read_field(t, "target"),
+                        addressed_form=_read_field(t, "addressed_form"),
+                        stance=_read_field(t, "stance"),
                     ) for t in targets],
                 ))
         out.extend(self._strategy_updates(delta))
@@ -287,8 +289,8 @@ class Translator:
         return out
 
     def _h_vote(self, scope, node, delta):
-        for ballot in _field(delta, "day_votes", []) or []:
-            self._day_ballots.append((_field(ballot, "voter"), _field(ballot, "votee")))
+        for ballot in _read_field(delta, "day_votes", []) or []:
+            self._day_ballots.append((_read_field(ballot, "voter"), _read_field(ballot, "votee")))
         out = self._strategy_updates(delta)
         self._check_folds(scope, node, delta, consumed={"day_votes", "agent_strategies"})
         return out
@@ -307,15 +309,15 @@ class Translator:
         return out
 
     def _h_summarize_day_discussion(self, scope, node, delta):
-        out = [self._emit(ev.DaySummary, day=_field(s, "day"), summary=_field(s, "summary"))
-               for s in _field(delta, "day_summaries", []) or []]
+        out = [self._emit(ev.DaySummary, day=_read_field(s, "day"), summary=_read_field(s, "summary"))
+               for s in _read_field(delta, "day_summaries", []) or []]
         self._check_folds(scope, node, delta, consumed={"day_summaries"})
         return out
 
     def _h_day_resolution(self, scope, node, delta):
         out = self._gm_messages(delta)
         tally = tally_day_vote(votee for _, votee in self._last_day_ballots)
-        voted = _field(delta, "voted_player")
+        voted = _read_field(delta, "voted_player")
         if tally.lynched != voted:
             raise TranslationError(
                 f"kernel/delta mismatch: tally lynched {tally.lynched!r} but the node "
@@ -327,7 +329,7 @@ class Translator:
             player=voted,
             role=self.roles.get(voted) if voted else None,
             vote_counts=tally.vote_counts,
-            no_lynch_streak=_field(delta, "no_lynch_streak", 0),
+            no_lynch_streak=_read_field(delta, "no_lynch_streak", 0),
         ))
         out.extend(self._roster_updates(delta))
         # dead_roster: the lynch death record rides INSIDE lynch_result (player + role).
@@ -352,7 +354,7 @@ class Translator:
 
     def _night_act(self, role, target_key, scope, node, delta):
         out = []
-        target = _field(delta, target_key)
+        target = _read_field(delta, target_key)
         # The vigilante's no-shot sentinel: the wrapper node normalizes it to None before
         # root state (Agents/graphs/parent.py) — the subgraph part carries it raw, so the
         # translator applies the same normalization. No act -> no event, matching state.
@@ -362,7 +364,7 @@ class Translator:
             self._targets[target_key] = target
             out.append(self._emit(ev.NightAction,
                                   actor=self._role_holder(role), role=role, target=target))
-        strategy = _field(delta, "updated_strategy")
+        strategy = _read_field(delta, "updated_strategy")
         if strategy:
             out.append(self._emit(ev.StrategyUpdate,
                                   player=self._role_holder(role), strategy=strategy))
@@ -371,12 +373,12 @@ class Translator:
 
     def _h_wolf_night_discuss(self, scope, node, delta):
         out = []
-        for entry in _field(delta, "wolf_channel", []) or []:
-            if _field(entry, "passed"):
+        for entry in _read_field(delta, "wolf_channel", []) or []:
+            if _read_field(entry, "passed"):
                 continue  # technical pass: hidden from the pack, no wire event defined
             out.append(self._emit(
-                ev.WolfMessage, day=_field(entry, "day"), round=_field(entry, "round"),
-                wolf=_field(entry, "wolf"), message=_field(entry, "message"),
+                ev.WolfMessage, day=_read_field(entry, "day"), round=_read_field(entry, "round"),
+                wolf=_read_field(entry, "wolf"), message=_read_field(entry, "message"),
             ))
         out.extend(self._strategy_updates(delta))
         self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
@@ -385,9 +387,9 @@ class Translator:
     def _h_wolf_night_vote(self, scope, node, delta):
         # Buffered: blind while voting, flushed with the tally (ruled R2; the spike proved
         # the runtime streams sibling votes mid-superstep, so we must hold them).
-        for entry in _field(delta, "wolf_channel", []) or []:
-            if _field(entry, "vote"):
-                self._wolf_votes.append((_field(entry, "wolf"), _field(entry, "vote")))
+        for entry in _read_field(delta, "wolf_channel", []) or []:
+            if _read_field(entry, "vote"):
+                self._wolf_votes.append((_read_field(entry, "wolf"), _read_field(entry, "vote")))
         out = self._strategy_updates(delta)
         self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
         return out
@@ -396,7 +398,7 @@ class Translator:
         out = [self._emit(ev.WolfVote, wolf=wolf, votee=votee)
                for wolf, votee in self._wolf_votes]
         self._wolf_votes.clear()
-        target = _field(delta, "wolves_kill_target")
+        target = _read_field(delta, "wolves_kill_target")
         if target is not None:
             self._targets["wolves_kill_target"] = target
             out.append(self._emit(ev.WolfKillDecided, target=target))
@@ -415,7 +417,7 @@ class Translator:
         deaths = [ev.NightDeath(player=t, role=self.roles.get(t, ""),
                                 attacker_types=attacks[t])
                   for t in sorted(attacks) if verdicts[t] == "killed"]
-        recorded = {_field(d, "player") for d in _field(delta, "dead_roster", []) or []}
+        recorded = {_read_field(d, "player") for d in _read_field(delta, "dead_roster", []) or []}
         if {d.player for d in deaths} != recorded:
             raise TranslationError(
                 f"kernel/delta mismatch: derived night deaths {[d.player for d in deaths]} "
@@ -426,22 +428,22 @@ class Translator:
         out.append(self._emit(ev.NightResult, deaths=deaths, save=save))
 
         # Faction: the GM whiff note rides the wolf channel.
-        for entry in _field(delta, "wolf_channel", []) or []:
+        for entry in _read_field(delta, "wolf_channel", []) or []:
             out.append(self._emit(
-                ev.WolfMessage, day=_field(entry, "day"), round=_field(entry, "round"),
-                wolf=_field(entry, "wolf"), message=_field(entry, "message"),
+                ev.WolfMessage, day=_read_field(entry, "day"), round=_read_field(entry, "round"),
+                wolf=_read_field(entry, "wolf"), message=_read_field(entry, "message"),
             ))
 
         # Seats: investigation (survival-gated in the node — absent delta, absent event),
         # the vigilante's private confirmation, and the bullet count.
-        for result in _field(delta, "investigator_results", []) or []:
+        for result in _read_field(delta, "investigator_results", []) or []:
             out.append(self._emit(
-                ev.InvestigationResult, day=_field(result, "day"),
+                ev.InvestigationResult, day=_read_field(result, "day"),
                 player=self._role_holder("investigator"),
-                target=_field(result, "player_investigated"),
-                role=_field(result, "role_revealed"),
+                target=_read_field(result, "player_investigated"),
+                role=_read_field(result, "role_revealed"),
             ))
-        for _note in _field(delta, "vigilante_results", []) or []:
+        for _note in _read_field(delta, "vigilante_results", []) or []:
             out.append(self._emit(
                 ev.VigilanteConfirmation, player=self._role_holder("vigilante"),
                 target=self._targets.get("vigilante_target"),
@@ -449,7 +451,7 @@ class Translator:
         if "vigilante_bullets" in delta:
             out.append(self._emit(ev.BulletsRemaining,
                                   player=self._role_holder("vigilante"),
-                                  count=_field(delta, "vigilante_bullets")))
+                                  count=_read_field(delta, "vigilante_bullets")))
 
         out.extend(self._roster_updates(delta))
         self._check_folds(scope, node, delta, consumed={
@@ -462,19 +464,19 @@ class Translator:
     # ---- shared fragments -------------------------------------------------------------
 
     def _gm_messages(self, delta):
-        return [self._emit(ev.GmMessage, day=_field(e, "day"), channel_seq=_field(e, "seq"),
-                           text=_field(e, "message"))
-                for e in _field(delta, "day_channel", []) or []
-                if _field(e, "player") == "game_master"]
+        return [self._emit(ev.GmMessage, day=_read_field(e, "day"), channel_seq=_read_field(e, "seq"),
+                           text=_read_field(e, "message"))
+                for e in _read_field(delta, "day_channel", []) or []
+                if _read_field(e, "player") == "game_master"]
 
     def _strategy_updates(self, delta):
-        strategies = _field(delta, "agent_strategies", {}) or {}
+        strategies = _read_field(delta, "agent_strategies", {}) or {}
         return [self._emit(ev.StrategyUpdate, player=player, strategy=text)
                 for player, text in strategies.items()]
 
     def _roster_updates(self, delta):
-        wolves = _field(delta, "surviving_wolves")
-        villagers = _field(delta, "surviving_villagers")
+        wolves = _read_field(delta, "surviving_wolves")
+        villagers = _read_field(delta, "surviving_villagers")
         if wolves is None and villagers is None:
             return []  # no-death resolution: rosters unchanged, no event
         if wolves is None or villagers is None:

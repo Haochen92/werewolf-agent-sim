@@ -29,7 +29,9 @@ from Agents.nodes import (
     end_game,
     initialize_game,
     night_resolution,
+    night_start,
     one_more_day,
+    route_night_actors,
     post_game_analysis,
 )
 from Agents.state import (
@@ -319,9 +321,10 @@ def build_parent_graph():
     """Wire the orchestration topology.
 
     START -> INITIALIZE_GAME -> DAY_PHASE -> DAY_RESOLUTION -> (check_game_end_day: END_GAME |
-    the list of present night phases, run in ONE parallel superstep — the codebase's static
-    fan-out). Every phase edges into NIGHT_RESOLUTION, the barrier, which resolves kills +
-    investigation and -> (check_game_end_night: ONE_MORE_DAY -> DAY_PHASE | END_GAME).
+    NIGHT_START). NIGHT_START is the no-op night anchor -> (route_night_actors: the list of
+    present night phases, run in ONE parallel superstep — the codebase's static fan-out).
+    Every phase edges into NIGHT_RESOLUTION, the barrier, which resolves kills + investigation
+    and -> (check_game_end_night: ONE_MORE_DAY -> DAY_PHASE | END_GAME).
     END_GAME -> POST_GAME_ANALYSIS -> END.
     """
     parent_graph = StateGraph(OrchestratorGraph, context_schema=GraphContext)
@@ -334,6 +337,7 @@ def build_parent_graph():
     parent_graph.add_node("SERIAL_KILLER_NIGHT_PHASE", serial_killer_night_phase)
     parent_graph.add_node("INVESTIGATOR_NIGHT_PHASE", investigator_night_phase)
     parent_graph.add_node("VIGILANTE_NIGHT_PHASE", vigilante_night_phase)
+    parent_graph.add_node("NIGHT_START", night_start)
     parent_graph.add_node("NIGHT_RESOLUTION", night_resolution)
     parent_graph.add_node("ONE_MORE_DAY", one_more_day)
     parent_graph.add_node("END_GAME", end_game)
@@ -342,13 +346,17 @@ def build_parent_graph():
     parent_graph.add_edge(START, "INITIALIZE_GAME")
     parent_graph.add_edge("INITIALIZE_GAME", "DAY_PHASE")
     parent_graph.add_edge("DAY_PHASE", "DAY_RESOLUTION")
-    # List-returning router: check_game_end_day fans out every present night actor in one
-    # parallel superstep. path_map is explicit because a list return defeats Literal inference.
     parent_graph.add_conditional_edges(
         "DAY_RESOLUTION",
         check_game_end_day,
+        ["END_GAME", "NIGHT_START"],
+    )
+    # List-returning router: NIGHT_START fans out every present night actor in one parallel
+    # superstep. path_map is explicit because a list return defeats Literal inference.
+    parent_graph.add_conditional_edges(
+        "NIGHT_START",
+        route_night_actors,
         [
-            "END_GAME",
             "WOLF_NIGHT_PHASE",
             "HEALER_NIGHT_PHASE",
             "SERIAL_KILLER_NIGHT_PHASE",

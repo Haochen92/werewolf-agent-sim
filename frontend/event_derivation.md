@@ -18,10 +18,10 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `speech {day, seq, player, message}` |
+| Public | `speech {day, channel_seq, player, message}` — `channel_seq` = position in the day transcript (the state-side DayChannel seq), renamed on the wire because the durable base class already owns the global `seq` |
 | Faction | — |
-| Seat | `input_request` (interrupt source; human seat only) |
-| Observer | `strategy_update` · `pass_marker {passed, gated, gated_candidate}` · `firing_reason` · `addressed_targets` — annotations join the speech via `about_seq` |
+| Seat | `input_request {player, action_kind, candidates}` (interrupt source; human seat only) — `action_kind` + legal-target list lifted from `HumanTurnRequest` so the client can render the right control; the full prompt payload deliberately stays server-side (it duplicates the event log as prose and churns with every prompt epoch) |
+| Observer | `strategy_update` · `pass_marker {pass_reason: voluntary\|novelty_gated\|generation_failed, gated, gated_candidate}` (the engine's typed reason, not a bare `passed` bool) · `firing_reason` · `addressed_targets` — annotations join the speech via `about_channel_seq` |
 - One delta → speech **or** pass_marker (branch on `entry.passed`). `None` return = no events (turn_started is not a promise).
 
 **SUMMARIZE_DAY_DISCUSSION**
@@ -29,7 +29,7 @@
 | Tier | Events |
 | --- | --- |
 | Public | `day_summary {day, summary}` — shown next morning: client render rule, **no buffer** (buffers gate entitlement; render timing gates pacing). RULED 2026-08-06: renders as a "Previously…" recap card at the TOP of day D+1's page (mirrors the LLM payload: full current day + summaries of prior days); the full transcript stays readable per day — the summary is a header, never a replacement |
-| Observer | `day_summary_structured {day, role_claims/accusations}` |
+| Observer | `day_summary_structured {day, data}` — `data` is the summarizer's structured output verbatim (PROVISIONAL `dict`; typed once the summarizer schema freezes). ⚠️ Currently never fires: no node streams this key — needs a node commit if wanted. |
 
 **START_VOTING** — public `phase_change` (self-disambiguating: anchored on the routed-to node).
 
@@ -48,15 +48,21 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `gm_message {day, seq, text}` — verbatim narration (record fidelity outranks derivability for authored text) |
+| Public | `gm_message {day, channel_seq, text}` — verbatim narration (record fidelity outranks derivability for authored text) |
 | Public | `lynch_result {outcome: lynched\|tie\|abstain\|no_vote, player?, role?, vote_counts, no_lynch_streak, day}` — the death atom (= the dead_roster delta) + the free-rider fields the node already computed |
 | Public | `roster_update {surviving_players}` — **union only**: translator merges the wolf-partitioned lists before the public tier |
 | Faction | `pack_roster_update {surviving_wolves}` |
 | Public | `day_summary` — this node also appends the vote-result to `day_summaries`; same key → same event |
-- `phase_change("night")` **only if no winner** (the one content-disambiguated marker).
 - `voted_player` delta → IGNORED (inside `lynch_result`).
 
-**check_game_end_day edge (static night fan-out)** — router → IGNORED (no marker: `phase_change("night")` already anchored on day_resolution). The real actor list this router computes must **never** reach the wire — the pacing denominator comes from public knowledge only (see Ephemeral channel).
+**check_game_end_day edge → NIGHT_START node → route_night_actors edge** (RE-RULED 2026-08-08:
+owner added the NIGHT_START anchor, superseding the translator's lazy first-night-part inference).
+`check_game_end_day` is now binary (END_GAME | NIGHT_START); NIGHT_START is a no-op marker node
+(START_VOTING analog) anchoring public `phase_change("night")` — it runs only past the END_GAME
+check, so a game-ending day can never ghost a night marker. `route_night_actors` fans out the
+present night actors; the real actor list this router computes must **never** reach the wire —
+the pacing denominator comes from public knowledge only (see Ephemeral channel). ⚠️ The captured
+chunk-catalogue fixture predates NIGHT_START; re-capture at the next real-game run.
 
 **healer_act · investigator_act · serial_killer_act · vigilante_act** — one pattern ×4 (structural clones)
 

@@ -369,16 +369,28 @@ def end_game(state: OrchestratorGraph, config: RunnableConfig):
 def check_game_end_day(
     state: OrchestratorGraph,
     config: RunnableConfig,
-) -> Literal["END_GAME"] | list[str]:
+) -> Literal["END_GAME", "NIGHT_START"]:
     """Router after the day phase: END_GAME if a faction has won or the day limit
-    is reached, otherwise fan out every present night actor in one parallel superstep
-    (NIGHT_RESOLUTION is the barrier)."""
+    is reached, otherwise NIGHT_START (which fans out the night actors)."""
     game_config = game_config_from_runnable(config)
     if determine_winner(state) is not None:
         return "END_GAME"
     if state.get("current_day", 1) >= game_config.max_days:
         return "END_GAME"
+    return "NIGHT_START"
 
+
+def night_start(state: OrchestratorGraph):
+    """Phase-marker no-op (START_VOTING analog): day is settled and the game continues, so
+    night begins. Runs only when check_game_end_day routes past END_GAME — the single anchor
+    for the night phase, which the graph otherwise encodes only positionally."""
+    return {}
+
+
+def route_night_actors(state: OrchestratorGraph) -> list[str]:
+    """Fan out every present night actor in one parallel superstep (NIGHT_RESOLUTION is the
+    barrier). The real actor list computed here must never reach the wire — routers don't
+    commit, which is what keeps the silent SK-whiff silent."""
     alive_phases = []
     if state.get("surviving_wolves"):
         alive_phases.append("WOLF_NIGHT_PHASE")

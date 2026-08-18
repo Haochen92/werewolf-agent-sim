@@ -87,7 +87,7 @@ class RolesAssigned(DurableEvent, frozen=True):
 
 class PhaseChange(DurableEvent, frozen=True):
     """Node-identity marker: anchored on initialize_game/one_more_day (day), START_VOTING
-    (voting), and the first night-scoped part (night)."""
+    (voting), and NIGHT_START (night)."""
 
     type: Literal["phase_change"] = "phase_change"
     phase: Literal["day", "voting", "night"]
