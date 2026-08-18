@@ -1,0 +1,254 @@
+"""The thin HTTP surface: an APIRouter over the runtime layer, composed by create_app().
+
+GET  /health               -> liveness probe for the container/proxy
+GET  /models               -> the BYOK menu: tested game models + their rescue models
+POST /games                -> start a game (LLM-only or with a human seat; optional BYOK
+                              api_key + model from the tested list fund the game's model
+                              calls — key held in memory only)
+GET  /games/{id}           -> status snapshot (human seat, pending input, public census)
+GET  /games/{id}/events    -> SSE: tier-filtered durable events (`event: game`, id = seq,
+                              catch-up via ?last_seq=) + ephemeral pacing (`event: pacing`).
+                              At game_over the withheld observer backlog flushes (R7).
+POST /games/{id}/turns     -> the human's action; validated against the pending
+                              input_request via the CLI driver's HITL contract, then resumed.
+
+The games registry lives on app.state (created by the lifespan, which also cancels live
+game tasks on shutdown); routes resolve it through server.dependencies. CORS origins come
+from server.config (the browser frontend is a different origin). Viewers identify by
+?seat=<player_id> (no auth — the demo trusts the query string; a real deployment would
+mint per-seat tokens at POST /games). Run: uvicorn server.app:app
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from typing import Annotated, AsyncIterator
+
+from fastapi import APIRouter, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+
+from Agents.config import RunConfig
+from Agents.turn.human_turn import HumanTurnContractError
+
+from server.config import server_settings
+from server.dependencies import Game, GamesRegistry
+from server.runtime import SUPPORTED_GAME_MODELS, GameSession, entitled
+from server.schemas.requests import (
+    GameCreated,
+    GameStatus,
+    ModelRow,
+    ModelsMenu,
+    NewGame,
+    TurnAccepted,
+)
+
+logger = logging.getLogger(__name__)
+
+_HEARTBEAT_SECONDS = 15.0
+
+router = APIRouter(tags=["games"])
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Owns the games registry: created at startup, live game tasks cancelled at shutdown
+    (without this, uvicorn exit abandons mid-flight tasks with pending destructor noise)."""
+    app.state.games = {}
+    yield
+    sessions: list[GameSession] = list(app.state.games.values())
+    if sessions:
+        logger.info("shutting down %d game session(s)", len(sessions))
+        await asyncio.gather(*(s.shutdown() for s in sessions))
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(title="werewolf-agent-sim server", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=server_settings.cors_allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    app.include_router(router)
+    return app
+
+
+@router.get("/health", summary="Liveness probe")
+async def health_check() -> dict:
+    return {"status": "healthy"}
+
+
+@router.get("/models", response_model=ModelsMenu,
+            summary="The BYOK selection menu (tested game models only)")
+async def supported_models() -> ModelsMenu:
+    """Tested game models, display labels, and their same-credential rescue models.
+    First entry = the default for a bare key."""
+    return ModelsMenu(models=[
+        ModelRow(model=model, label=row.label, rescue_model=row.rescue)
+        for model, row in SUPPORTED_GAME_MODELS.items()
+    ])
+
+
+@router.post("/games", response_model=GameCreated,
+             summary="Start a game (optional human seat / BYOK)")
+async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
+    if body.model and not body.api_key:
+        raise HTTPException(status_code=422, detail="model selection requires api_key")
+    if body.model and body.model not in SUPPORTED_GAME_MODELS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"unsupported model; pick from GET /models: {sorted(SUPPORTED_GAME_MODELS)}",
+        )
+    session = GameSession(RunConfig(
+        human_player=body.human or body.human_role is not None,
+        human_role=body.human_role,
+        # A served game is never mined into the memory store (the CLI human-game rule).
+        memory_persistence={"dump_enabled": False},
+    ), api_key=body.api_key, model=body.model)
+    games[session.game_id] = session
+    session.start()
+    return GameCreated(game_id=session.game_id)
+
+
+@router.get("/games/{game_id}", response_model=GameStatus, summary="Status snapshot")
+async def game_status(session: Game) -> GameStatus:
+    return GameStatus(
+        game_id=session.game_id,
+        human_player=session.human_player,
+        pending_input=session.pending_request is not None,
+        game_over=session.game_over,
+        last_seq=session.log[-1].seq if session.log else 0,
+        alive_role_counts=session.public_alive_counts(),
+        error=session.error,
+    )
+
+
+@router.post("/games/{game_id}/turns", response_model=TurnAccepted,
+             summary="Submit the human seat's action")
+async def submit_turn(session: Game, body: dict) -> TurnAccepted:
+    # Body stays an untyped dict on purpose: validation is delegated to the HITL
+    # contract (validate_human_response) — the one source of truth for action shapes.
+    try:
+        session.submit_turn(body)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except HumanTurnContractError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return TurnAccepted()
+
+
+@router.get("/games/{game_id}/events", summary="SSE event stream")
+async def event_stream(
+    session: Game, seat: str = "", last_seq: int = 0,
+    last_event_id: Annotated[str | None, Header()] = None,
+) -> StreamingResponse:
+    """Endpoint for the SSE connection — the response never ends; _sse yields frames
+    for the connection's lifetime.
+    seat: str -> the viewer's claimed seat id ("player_3"); "" = spectator (public tier only)
+    last_seq: int -> the client's own cursor: the last event id it already has; frozen at
+                    connection time. First connection to game starts at 0.
+    Last-Event-ID header -> the living cursor (ruled 2026-08-18): the browser's auto-
+                    reconnect reuses the ORIGINAL url verbatim (query cursor = a fossil
+                    from construction) and carries its real position in this header.
+                    Header wins when present; only durable seqs ever land in it because
+                    pacing frames carry no id line.
+    """
+    if last_event_id is not None:
+        try:
+            last_seq = int(last_event_id)
+        except ValueError:
+            pass  # garbage header -> fall back to the query cursor
+    return StreamingResponse(
+        _sse(session, seat, last_seq),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _frame(kind: str, event) -> str:
+    """Format one event as an SSE frame (text protocol: id/event/data + blank line).
+    kind: str -> the SSE channel: "game" (durable) or "pacing" (ephemeral)
+    event -> the event object; its JSON becomes the data: line
+    The id line is conditional: only events with a seq get one — pacing must never
+    advance the browser's reconnect cursor (Last-Event-ID).
+    """
+    seq = getattr(event, "seq", None)
+    id_line = f"id: {seq}\n" if seq is not None else ""
+    return f"{id_line}event: {kind}\ndata: {event.model_dump_json()}\n\n"
+
+
+async def _sse(session: GameSession, seat: str, last_seq: int) -> AsyncIterator[str]:
+    """Subscribe FIRST, then replay the log, then go live — the sent-set bridges the overlap.
+
+    The load-bearing whys, one per line:
+    - Subscribe before replaying: every event lands in the snapshot or the queue (or both);
+      the failure mode left possible is duplication, which `sent` erases — a gap would be
+      silent and unfixable.
+    - list(session.log): we suspend at every yield; the game may append mid-iteration, and
+      iterating a mutating list skips or repeats entries. The photo freezes our view.
+    - The 15s heartbeat is for the pipes, not the players: proxies kill silent connections
+      (30-60s idle defaults), and a failed keep-alive write is how ghost viewers get
+      detected and unsubscribed. Players may think for minutes; nothing times out for them.
+    - Pacing frames skip the seq/dedupe/entitlement gates: no identity, not in the log,
+      public by construction.
+    - Entitlement is asked per delivery (never cached), so a post-game connection replays
+      everything and a live connection flushes the withheld backlog the moment game_over
+      passes through — `sent` doubles as the ledger the R7 flush inverts.
+    - The cursor is tier-aware (ruled 2026-08-18): last_seq means "I have every event
+      <= N that I was entitled to WHEN IT WAS SENT" — withheld events were never sent,
+      so cursor_skips() refuses to skip them in both the replay and the R7 flush.
+      Otherwise a reconnecting viewer's reveal silently misses the backlog below their
+      cursor (both variants: reconnect after game over, and reconnect mid-game with the
+      unlock arriving live).
+    """
+    q = session.subscribe()
+    sent: set[int] = set()
+    logger.debug("game %s: viewer connected (seat=%r, cursor=%d)",
+                 session.game_id, seat, last_seq)
+
+    def may_see(event) -> bool:
+        return entitled(event, seat, session.translator.roles, session.game_over)
+
+    def cursor_skips(event) -> bool:
+        # "Client already has this" — true only if it was entitled LIVE (game_over=False):
+        # the cursor cannot cover events that were never sent, whatever their seq.
+        return (event.seq <= last_seq
+                and entitled(event, seat, session.translator.roles, False))
+
+    try:
+        # reconnection, fast-forward all completed stream events
+        for event in list(session.log):
+            if not cursor_skips(event) and may_see(event):
+                sent.add(event.seq)
+                yield _frame("game", event)
+
+        while True:
+            try:
+                kind, event = await asyncio.wait_for(q.get(), timeout=_HEARTBEAT_SECONDS)
+            except asyncio.TimeoutError:
+                yield ": keep-alive\n\n"
+                continue
+            if kind == "pacing":
+                yield _frame("pacing", event)
+                continue
+            if event.seq in sent or cursor_skips(event):
+                continue
+            if may_see(event):
+                sent.add(event.seq)
+                yield _frame("game", event)
+            if event.type == "game_over":
+                # The R7 unlock: everything withheld during play ships now, in seq order.
+                for held in list(session.log):
+                    if held.seq not in sent and not cursor_skips(held):
+                        sent.add(held.seq)
+                        yield _frame("game", held)
+    finally:
+        session.unsubscribe(q)
+        logger.debug("game %s: viewer disconnected (seat=%r)", session.game_id, seat)
+
+
+app = create_app()
