@@ -9,29 +9,18 @@ cached drop, and the two kernel cross-checks (which must RAISE, never mis-ship).
 """
 from __future__ import annotations
 
-import json
-import pathlib
-
 import pytest
 
 from server.schemas import events as ev
 from server.translate import TranslationError, Translator
-
-FIXTURE = pathlib.Path(__file__).parent.parent / "notebooks/fixtures/chunk_catalogue.jsonl"
-
-
-def _fixture_parts():
-    with FIXTURE.open() as f:
-        header = json.loads(f.readline())["_header"]
-        assert header["stream"]["version"] == "v2"
-        return [json.loads(line) for line in f]
+from tests.fixtures.stream import load_fixture_parts
 
 
 @pytest.fixture(scope="module")
 def replay():
     translator = Translator()
     events = []
-    for part in _fixture_parts():
+    for part in load_fixture_parts():
         events.extend(translator.translate(part))
     return translator, events
 
@@ -124,13 +113,14 @@ def test_wolf_votes_flush_before_the_kill_decision(replay):
 
 
 def test_phase_changes_cover_every_day(replay):
+    # The fixture predates the NIGHT_START anchor (2026-08-08), so it carries no night
+    # marker — the night phase_change is unit-tested below; re-capture restores it here.
     _, events = replay
     phases = [e for e in events if e.type == "phase_change"]
     days = {e.day for e in events}
     day_marks = {e.day for e in phases if e.phase == "day"}
     assert day_marks == days, "every game day opens with a phase_change(day)"
     assert any(e.phase == "voting" for e in phases)
-    assert any(e.phase == "night" for e in phases)
 
 
 # ---- unit tests: paths the LLM-only fixture cannot reach ---------------------------------
@@ -151,6 +141,14 @@ def test_cached_parts_are_dropped_whole():
         "__metadata__": {"cached": True},
     }}
     assert t.translate(part) == []
+
+
+def test_night_start_anchors_the_night_marker():
+    # The NIGHT_START no-op (added 2026-08-08) is the single once-per-night anchor: it runs
+    # only when check_game_end_day routes past END_GAME, so no ghost night after a final day.
+    t = _seeded_translator()
+    (event,) = t.translate({"type": "updates", "ns": [], "data": {"NIGHT_START": None}})
+    assert (event.type, event.phase) == ("phase_change", "night")
 
 
 def test_interrupt_becomes_input_request():
