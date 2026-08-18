@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 import threading
+from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any
 
@@ -18,6 +19,42 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 
 logger = logging.getLogger(__name__)
+
+@dataclass(frozen=True)
+class GameLLM:
+    """A served game's BYOK selection: the player's key, the game model it funds, and the
+    same-credential rescue model (None = no rescue; the typed technical-pass path still
+    keeps the game moving). Empty model/key = the environment decides (CLI, batch, eval).
+    """
+
+    api_key: str = ""
+    model: str = ""
+    rescue_model: str | None = None
+
+
+# BYOK (pattern 2, ephemeral pass-through): the per-game player key + model selection. The
+# server's GameSession sets it inside the game's asyncio task; LangGraph copies the task
+# context into its worker threads, so every node's factory call sees its own game's
+# selection — no argument threading through the call chain. The default empty GameLLM
+# (every non-server entry point) = use the environment. A ContextVar, NOT config: keys
+# must never reach RunConfig, which gets fingerprint-stamped into run records. The key is
+# applied ONLY to the provider family of the selected game model, so an off-family call
+# (e.g. a Gemini extraction model during a DeepSeek game) falls back to env credentials
+# instead of sending the player's key to the wrong provider.
+GAME_LLM: ContextVar[GameLLM] = ContextVar("GAME_LLM", default=GameLLM())
+
+
+def _provider_family(model: str) -> str:
+    """The credential pool a model id draws from: its prefix, or google for bare Gemini ids."""
+    return model.split("/", 1)[0] if "/" in model else "google"
+
+
+def _game_key_for(family: str) -> str:
+    """The BYOK key, iff the game's selected model belongs to this provider family."""
+    override = GAME_LLM.get()
+    if override.api_key and _provider_family(override.model) == family:
+        return override.api_key
+    return ""
 
 # Chat-model instances are immutable after construction and safe to reuse across
 # threads (the underlying SDK/httpx clients are thread-safe). Memoize by
@@ -60,7 +97,8 @@ class _ToolCallStructuredChatOpenAI(ChatOpenAI):
 
 
 def _build_openai_compat_chat_model(
-    model: str, base_url: str, key_env: str, *, temperature: float = 0.0, **kwargs: Any
+    model: str, base_url: str, key_env: str, *, temperature: float = 0.0,
+    api_key_override: str = "", **kwargs: Any
 ) -> ChatOpenAI:
     """OpenAI-protocol providers (NVIDIA NIM, DeepSeek) via LangChain's ChatOpenAI.
 
@@ -68,7 +106,7 @@ def _build_openai_compat_chat_model(
     because game seats bind Pydantic schemas via ``with_structured_output``, which
     rides the provider's tool-calling support.
     """
-    api_key = os.getenv(key_env)
+    api_key = api_key_override or os.getenv(key_env)
     if not api_key:
         raise ValueError(f"{key_env} not set")
     return _ToolCallStructuredChatOpenAI(
@@ -146,9 +184,11 @@ def create_chat_model(
         Forwarded to ``ChatGoogleGenerativeAI`` (ignored for NIM/DeepSeek).
     """
     try:
+        # The BYOK key in the cache key: a game must never be handed a client built with
+        # another game's (or the server's) credentials.
         cache_key: Any = (
             model, temperature, thinking_level, thinking_budget,
-            tuple(sorted(kwargs.items())),
+            _game_key_for(_provider_family(model)), tuple(sorted(kwargs.items())),
         )
         hash(cache_key)
     except TypeError:
@@ -194,6 +234,7 @@ def _build_chat_model(
         return _build_openai_compat_chat_model(
             model.removeprefix("deepseek/"), _DEEPSEEK_BASE_URL, "DEEPSEEK_API_KEY",
             temperature=temperature,
+            api_key_override=_game_key_for("deepseek"),
             extra_body={"thinking": {"type": "disabled"}},
         )
 
@@ -205,20 +246,24 @@ def _build_chat_model(
         "temperature": temperature,
     }
 
-    if _use_vertex():
+    # A per-game BYOK key forces the google (API-key) backend regardless of LLM_BACKEND:
+    # the player's key is a Developer-API key, and billing the run to it is the point.
+    game_key = _game_key_for("google")
+    use_vertex = not game_key and _use_vertex()
+    if use_vertex:
         build_kwargs["vertexai"] = True
         build_kwargs["location"] = os.getenv(
             "VERTEX_LOCATION", _DEFAULT_VERTEX_LOCATION
         )
     else:
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = game_key or os.getenv("GOOGLE_API_KEY")
         if api_key:
             build_kwargs["google_api_key"] = api_key
 
     if thinking_budget is not None:
         build_kwargs["thinking_budget"] = thinking_budget
     elif thinking_level:
-        if _use_vertex():
+        if use_vertex:
             budget = THINKING_LEVEL_TO_BUDGET.get(thinking_level)
             if budget is not None:
                 build_kwargs["thinking_budget"] = budget

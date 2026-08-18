@@ -40,6 +40,8 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 from .backends import (  # noqa: E402
+    GAME_LLM,
+    GameLLM,
     MistralChatModel,
     THINKING_LEVEL_TO_BUDGET,
     _use_vertex as _use_vertex,  # private but imported externally; re-export
@@ -73,6 +75,8 @@ from .embeddings import (  # noqa: E402
 
 __all__ = [
     # backends
+    "GAME_LLM",
+    "GameLLM",
     "MistralChatModel",
     "THINKING_LEVEL_TO_BUDGET",
     "create_chat_model",

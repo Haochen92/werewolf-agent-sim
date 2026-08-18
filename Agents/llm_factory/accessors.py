@@ -1,18 +1,22 @@
 """Game model accessors + the model-config constants they resolve.
 
-The cached chat models the game graph and pipelines run on. Model-config
-constants (model id, default thinking level) live HERE, next to their accessor —
+The chat models the game graph and pipelines run on. Model-config constants
+(model id, default thinking level) live HERE, next to their accessor —
 NOT in per-package ``config.py`` (those hold domain knobs). ``run_fingerprint``
 imports the constants and ``_thinking_level_from_env`` to stamp the generation
 bundle without drift.
+
+Accessors are deliberately uncached: memoization lives in ``create_chat_model``,
+whose cache key includes the per-game BYOK key (``backends.GAME_LLM``) — an
+accessor-level ``lru_cache`` would freeze the first caller's client process-wide
+and hand one game's credentials to every later game.
 """
 
 from __future__ import annotations
 
 import os
-from functools import lru_cache
 
-from .backends import create_chat_model
+from .backends import GAME_LLM, create_chat_model
 
 DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
 # Different-backend rescue when a seat exhausts its structured-output retries (seen with
@@ -34,6 +38,12 @@ DEFAULT_DEDUP_THINKING_LEVEL = "low"
 VALID_THINKING_LEVELS = {"minimal", "low", "medium", "high"}
 
 
+def _game_model() -> str:
+    """The in-game model: a served game's BYOK selection wins; otherwise the env/default —
+    which is what .env has always really been, the local-dev/CLI configuration."""
+    return GAME_LLM.get().model or os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
+
+
 def _thinking_level_from_env(
     env_var: str,
     default: str | None = None,
@@ -51,10 +61,9 @@ def _thinking_level_from_env(
     return normalized
 
 
-@lru_cache(maxsize=1)
 def get_llm():
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        _game_model(),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_THINKING_LEVEL",
@@ -63,10 +72,26 @@ def get_llm():
     )
 
 
-@lru_cache(maxsize=1)
 def get_llm_game_fallback():
-    """The retry-exhaustion rescue seat model (``GAME_FALLBACK_MODEL`` env override), or None when
-    it would be the same model as the primary — a re-roll on the identical model isn't a rescue."""
+    """The retry-exhaustion rescue seat model, or None when no rescue applies.
+
+    A served (BYOK) game uses its registry-assigned rescue — same credential as the primary
+    by construction, so the rescue bills the player, never the server; None = no tested
+    same-credential rescue exists, and the typed technical-pass path absorbs failures.
+    Otherwise the env pair (``GAME_FALLBACK_MODEL``), or None when it would equal the
+    primary — a re-roll on the identical model isn't a rescue."""
+    override = GAME_LLM.get()
+    if override.model or override.api_key:
+        if not override.rescue_model:
+            return None
+        return create_chat_model(
+            override.rescue_model,
+            temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
+            thinking_level=_thinking_level_from_env(
+                "GOOGLE_GENAI_THINKING_LEVEL",
+                DEFAULT_GAME_THINKING_LEVEL,
+            ),
+        )
     model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
     if model == os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL):
         return None
@@ -80,10 +105,9 @@ def get_llm_game_fallback():
     )
 
 
-@lru_cache(maxsize=1)
 def get_llm_summary():
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        _game_model(),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
@@ -92,11 +116,10 @@ def get_llm_summary():
     )
 
 
-@lru_cache(maxsize=1)
 def get_llm_judge():
     """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking."""
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        _game_model(),
         temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
@@ -110,7 +133,7 @@ def get_llm_extractor():
     human turn). Classification, not generation — temp 0 so the same message tags identically every
     run; a non-deterministic tag would make the reactive scheduler non-reproducible."""
     return create_chat_model(
-        os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        _game_model(),
         temperature=0.0,
         thinking_level=_thinking_level_from_env(
             "GOOGLE_GENAI_EXTRACTOR_THINKING_LEVEL",
@@ -119,7 +142,6 @@ def get_llm_extractor():
     )
 
 
-@lru_cache(maxsize=1)
 def get_llm_pro():
     return create_chat_model(
         os.getenv("GOOGLE_GENAI_PRO_MODEL", DEFAULT_PRO_MODEL),
@@ -127,7 +149,6 @@ def get_llm_pro():
     )
 
 
-@lru_cache(maxsize=1)
 def get_llm_pro_backup():
     return create_chat_model(
         os.getenv("GOOGLE_GENAI_PRO_BACKUP_MODEL", DEFAULT_PRO_BACKUP_MODEL),
