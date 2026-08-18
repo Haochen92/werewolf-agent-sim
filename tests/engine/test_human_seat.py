@@ -10,11 +10,12 @@ import pytest
 from Agents.config import RunConfig, build_runnable_config
 from Agents.nodes.orchestrator import initialize_game
 from Agents.schemas.game_events import AddressedTarget, DayChannel, DayVote, FiringReason
-from Agents.schemas.human_player import HumanTurnRequest, HumanTurnResponse
+from Agents.schemas.human_player import HumanTurnResponse
 from Agents.turn import human_turn as h
 from Agents.turn import pipeline as pl
 from Agents.turn.addressing_agent import _sanitize_against_roster
 from Agents.turn.human_turn import HumanTurnContractError, validate_human_response
+from tests.factories.builders import human_turn_request as _request
 
 
 def _state(**run_kwargs):
@@ -29,17 +30,6 @@ def _human_payload(**over):
     )
     payload.update(over)
     return payload
-
-
-def _request(**over):
-    base = dict(
-        player_id="p1", role="villager", phase="day_votes", day=1, instruction="",
-        valid_targets=["p2", "p3"], can_pass=False, dialogue="", day_summaries="",
-        surviving_players=["p1", "p2", "p3"], dead_roster="", alive_roles="", firing_brief="",
-        wolf_channel="", investigator_results="", vigilante_results="", previous_strategy="",
-    )
-    base.update(over)
-    return HumanTurnRequest(**base)
 
 
 # ---- opt-in seating -------------------------------------------------------------------------------

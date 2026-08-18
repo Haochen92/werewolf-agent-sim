@@ -8,7 +8,7 @@ records the act either way.
 """
 from __future__ import annotations
 
-from types import SimpleNamespace
+from tests.factories.builders import night_runtime as _runtime
 
 from Agents.nodes.night.resolution import night_resolution
 from Agents.schemas.metrics import Metrics
@@ -20,10 +20,6 @@ ROLES = {
     "h": "healer",
     "t0": "villager",
 }
-
-
-def _runtime(metrics: Metrics | None = None) -> SimpleNamespace:
-    return SimpleNamespace(context={"metrics": metrics or Metrics()})
 
 
 def _state(**overrides) -> dict:

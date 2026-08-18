@@ -20,10 +20,9 @@ from Agents.schemas.game_events import (
     FiringReason,
     WolfChannel,
 )
-from Agents.schemas.metrics import Metrics
 from tests.leak_test import check_wolf_channel_isolation
 
-from types import SimpleNamespace
+from tests.factories.builders import night_runtime as _runtime
 
 
 NOTE = WolfChannel(
@@ -109,10 +108,6 @@ def test_wolf_day_prompts_render_channel_town_does_not():
 
 
 # --- (3) end-to-end-ish: night-N whiff note reaches a wolf's day-(N+1) payload ---
-
-def _runtime() -> SimpleNamespace:
-    return SimpleNamespace(context={"metrics": Metrics()})
-
 
 def test_night_whiff_note_reaches_wolf_next_day_payload():
     night_state = {

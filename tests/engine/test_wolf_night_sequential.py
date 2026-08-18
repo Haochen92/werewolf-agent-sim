@@ -21,7 +21,7 @@ from Agents.nodes.night.wolf import (
     wolf_fan_out_vote,
 )
 from Agents.schemas.game_events import DiscussionPassReason, WolfChannel
-from Agents.schemas.human_player import HumanTurnRequest
+from tests.factories.builders import human_turn_request
 from Agents.turn.human_turn import HumanTurnContractError, validate_human_response
 
 
@@ -141,14 +141,10 @@ def test_split_vote_breaks_randomly_between_candidates():
 # ---- human contract for the split phases ----------------------------------------------------------
 
 def _request(**over):
-    base = dict(
-        player_id="w1", role="wolf", phase="wolf_channel", day=1, instruction="",
-        valid_targets=[], can_pass=False, dialogue="", day_summaries="",
-        surviving_players=["w1", "w2", "v1"], dead_roster="", alive_roles="", firing_brief="",
-        wolf_channel="", investigator_results="", vigilante_results="", previous_strategy="",
-    )
+    base = dict(player_id="w1", role="wolf", phase="wolf_channel", valid_targets=[],
+                surviving_players=["w1", "w2", "v1"])
     base.update(over)
-    return HumanTurnRequest(**base)
+    return human_turn_request(**base)
 
 
 def test_human_wolf_talk_is_message_only():

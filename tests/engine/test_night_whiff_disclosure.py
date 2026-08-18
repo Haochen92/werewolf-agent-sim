@@ -9,11 +9,10 @@ leak_test.check_wolf_channel_isolation already fence it to wolf prompts.
 """
 from __future__ import annotations
 
-from types import SimpleNamespace
+from tests.factories.builders import night_runtime as _runtime
 
 from Agents.nodes.night.resolution import night_resolution
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
-from Agents.schemas.metrics import Metrics
 from tests.leak_test import check_wolf_channel_isolation
 
 # --- fixtures ---------------------------------------------------------------
@@ -25,10 +24,6 @@ ROLES = {
     "h": "healer",
     "t0": "villager",
 }
-
-
-def _runtime() -> SimpleNamespace:
-    return SimpleNamespace(context={"metrics": Metrics()})
 
 
 def _state(**targets) -> dict:

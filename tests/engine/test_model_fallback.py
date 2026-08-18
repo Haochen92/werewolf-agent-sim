@@ -137,10 +137,8 @@ def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
 
 def test_same_model_configuration_skips_the_rescue(monkeypatch):
     # Fallback == primary -> accessor returns None (a re-roll on the same model isn't a rescue).
+    # Accessors are uncached since BYOK (memoization lives in create_chat_model, keyed by
+    # the per-game key), so the env change takes effect with no cache_clear.
     monkeypatch.setenv("GOOGLE_GENAI_MODEL", "gemini-3.5-flash-lite")
     monkeypatch.setenv("GAME_FALLBACK_MODEL", "gemini-3.5-flash-lite")
-    accessors.get_llm_game_fallback.cache_clear()
-    try:
-        assert accessors.get_llm_game_fallback() is None
-    finally:
-        accessors.get_llm_game_fallback.cache_clear()
+    assert accessors.get_llm_game_fallback() is None

@@ -27,6 +27,9 @@ from evaluation.src.loop.credit_backfill import (
     _decision_credit, _town_abstain_credit, _vote_credit, compute_base_rates,
 )
 from evaluation.src.loop.measure import game_score
+from tests.factories.builders import (day_vote_case as _vote_case,
+                                      eval_case_part as _ec,
+                                      strategy_point as _sp)
 
 ROLES = {"player_1": "villager", "player_2": "wolf", "player_3": "villager",
          "player_4": "investigator", "player_5": "serial_killer"}
@@ -36,10 +39,6 @@ LYNCHED_TOWN = {"day": 2, "no_vote": False, "voted_player": "player_3",
                 "voted_player_role": "villager", "vote_counts": {"player_3": 4}}
 LYNCHED_THREAT = {"day": 2, "no_vote": False, "voted_player": "player_2",
                   "voted_player_role": "wolf", "vote_counts": {"player_2": 4}}
-
-
-def _ec(case: dict) -> dict:
-    return {"kind": "agent_action_eval", "output": {"eval_case": case}}
 
 
 def _game(tmp: Path, name: str, cases: list, *, roles: dict, day_res=None, night_res=None) -> str:
@@ -53,22 +52,6 @@ def _game(tmp: Path, name: str, cases: list, *, roles: dict, day_res=None, night
     gp = tmp / f"{name}.jsonl"
     gp.write_text(json.dumps(rec))
     return str(gp)
-
-
-def _vote_case(role, pid, votee, key=None, day=2, mem=True):
-    c = {"action_phase": "day_vote", "player_role": role, "player_id": pid, "day": day,
-         "memory_enabled": mem, "agent_vote": {"votee": votee}}
-    if key:
-        c["strategy_index_to_key"] = {"0": key}
-        c["strategy_verdicts"] = [{"verdict": "follow", "strategy_index": 0}]
-    return c
-
-
-def _sp(key, cell="villager/day_vote", **counts):
-    v = {"action": key, "follow_count": 0, "positive_count": 0, "negative_count": 0,
-         "neutral_count": 0, "retrieved_count": 0, "override_count": 0, "not_relevant_count": 0}
-    v.update(counts)
-    return {"key": key, "value": v, "namespace": ["strategy_points", *cell.split("/")]}
 
 
 # --- (a) the frozen default: no keyword => legacy neutral, everywhere -------------------------------

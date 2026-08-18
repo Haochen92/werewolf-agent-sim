@@ -12,18 +12,7 @@ import pytest
 
 from Agents.driver import hitl_loop
 from Agents.driver.hitl_loop import MAX_ATTEMPTS, _resolve_target, _send_request, collect_human_response
-from Agents.schemas.human_player import HumanTurnRequest
-
-
-def _request(**over):
-    base = dict(
-        player_id="p1", role="villager", phase="day_votes", day=1, instruction="",
-        valid_targets=["p2", "p3"], can_pass=False, dialogue="", day_summaries="",
-        surviving_players=["p1", "p2", "p3"], dead_roster="", alive_roles="", firing_brief="",
-        wolf_channel="", investigator_results="", vigilante_results="", previous_strategy="",
-    )
-    base.update(over)
-    return HumanTurnRequest(**base)
+from tests.factories.builders import human_turn_request as _request
 
 
 def _feed_inputs(monkeypatch, answers):

@@ -10,7 +10,7 @@ on the public roster does NOT trip the wolf-identity leak check (its role was an
 """
 from __future__ import annotations
 
-from types import SimpleNamespace
+from tests.factories.builders import night_runtime as _runtime
 
 from Agents.nodes.day.flow import build_speaker_send, fan_out_day
 from Agents.nodes.night.resolution import night_resolution
@@ -20,12 +20,7 @@ from Agents.prompts.day_vote import VILLAGER_DAY_VOTE, WOLF_DAY_VOTE
 from Agents.prompts.prompt_formatters import format_dead_roster
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import DayVote, DeathRecord, FiringReason
-from Agents.schemas.metrics import Metrics
 from tests.leak_test import check_wolf_identity_isolation
-
-
-def _runtime() -> SimpleNamespace:
-    return SimpleNamespace(context={"metrics": Metrics()})
 
 
 def _fr() -> FiringReason:

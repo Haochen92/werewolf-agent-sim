@@ -32,6 +32,9 @@ from Agents.memory.consolidation.store_ops import prune_and_evict as prod_prune_
 from evaluation.src.loop.conversion_credit import conversion_apply as eval_conversion_apply
 from evaluation.src.loop.credit import credit_apply as eval_credit_apply
 from evaluation.src.loop.credit_backfill import compute_base_rates as eval_base_rates
+from tests.factories.builders import (day_vote_case as _vote_case,
+                                      eval_case_part as _ec,
+                                      strategy_point as _sp)
 
 load_dotenv()
 DSN = os.environ.get("WW_POSTGRES_DSN")
@@ -42,10 +45,6 @@ ROLES = {"player_1": "villager", "player_2": "wolf", "player_3": "villager",
 NO_LYNCH = {"day": 2, "no_vote": True, "voted_player": None, "vote_counts": {}}
 LYNCHED_THREAT = {"day": 2, "no_vote": False, "voted_player": "player_2",
                   "voted_player_role": "wolf", "vote_counts": {"player_2": 4}}
-
-
-def _ec(case: dict) -> dict:
-    return {"kind": "agent_action_eval", "output": {"eval_case": case}}
 
 
 def _game(tmp: Path, name: str, cases: list, *, roles: dict = ROLES, day_res=None, night_res=None,
@@ -62,22 +61,6 @@ def _game(tmp: Path, name: str, cases: list, *, roles: dict = ROLES, day_res=Non
     gp = tmp / f"{name}.jsonl"
     gp.write_text(json.dumps(rec))
     return str(gp)
-
-
-def _vote_case(role, pid, votee, key=None, day=2, mem=True):
-    c = {"action_phase": "day_vote", "player_role": role, "player_id": pid, "day": day,
-         "memory_enabled": mem, "agent_vote": {"votee": votee}}
-    if key:
-        c["strategy_index_to_key"] = {"0": key}
-        c["strategy_verdicts"] = [{"verdict": "follow", "strategy_index": 0}]
-    return c
-
-
-def _sp(key, cell="villager/day_vote", **counts):
-    v = {"action": key, "follow_count": 0, "positive_count": 0, "negative_count": 0,
-         "neutral_count": 0, "retrieved_count": 0, "override_count": 0, "not_relevant_count": 0}
-    v.update(counts)
-    return {"key": key, "value": v, "namespace": ["strategy_points", *cell.split("/")]}
 
 
 def _sp_store(tmp: Path, name: str, sps: dict) -> Path:

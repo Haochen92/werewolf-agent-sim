@@ -20,13 +20,10 @@ from evaluation.src.loop.config import LoopConfig
 from evaluation.src.loop.consolidate import prune_and_evict
 from evaluation.src.loop.credit import base_for, credit_apply, sp_lift
 from evaluation.src.loop.invariants import assert_baseline_coherence
+from tests.factories.builders import eval_case_part as _ec
 
 
 # --- fixtures --------------------------------------------------------------------------------------
-def _ec(case: dict) -> dict:
-    return {"kind": "agent_action_eval", "output": {"eval_case": case}}
-
-
 def _game(tmp: Path, name: str, cases: list, *, roles: dict, day_res=None, night_res=None,
           day_channel=None, extra=None) -> str:
     """A (game record, eval-cases) pair on disk; returns the game-record path (a single-line jsonl)."""
