@@ -99,3 +99,20 @@ class OrchestratorGraph(TypedDict, total=False):
     """Discussion round within the current day."""
     winner: str | None
     """Winning faction once decided; None while the game is live."""
+
+
+def fresh_game_state() -> dict:
+    """A new game's initial state: just the accumulator channels, as fresh empty lists.
+
+    Everything decided (roles, roster, day counter) is INITIALIZE_GAME's output delta;
+    what needs seeding is only the append-over-time lists, so accumulation has a starting
+    point. A factory, not a shared constant: each game must get its own list objects —
+    a module-level template's containers would be silently shared across concurrent games.
+    """
+    return {
+        "day_channel": [],
+        "day_summaries": [],
+        "wolf_channel": [],
+        "investigator_results": [],
+        "day_votes": [],
+    }

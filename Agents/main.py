@@ -24,6 +24,7 @@ from Agents.run_fingerprint import runtime_fingerprint
 from Agents.schemas.metrics import GameOutcome
 from Agents.schemas.human_player import HumanTurnRequest, HumanTurnResponse
 from Agents.driver.hitl_loop import collect_human_response
+from Agents.state import fresh_game_state
 from Agents.tracing import (
     Metrics,
     create_langfuse_handler,
@@ -31,14 +32,6 @@ from Agents.tracing import (
     langfuse,
 )
 
-
-INITIAL_STATE = {
-    "day_channel": [],
-    "day_summaries": [],
-    "wolf_channel": [],
-    "investigator_results": [],
-    "day_votes": [],
-}
 
 _LEGACY_RUN_GAME_OPTION_MAP = {
     "memory_config": "memory_config",
@@ -113,7 +106,7 @@ def run_game(
     ]
     metrics = Metrics()
     eval_sink = EvalCaseSink()
-    initial_state = {key: value.copy() for key, value in INITIAL_STATE.items()}
+    initial_state = fresh_game_state()
 
     prompt_log.clear()
     reads_log.clear()
