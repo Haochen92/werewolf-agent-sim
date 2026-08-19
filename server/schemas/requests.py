@@ -8,7 +8,7 @@ the API. New request/response DTOs belong here, never in the contract module.
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class NewGame(BaseModel):
@@ -16,6 +16,11 @@ class NewGame(BaseModel):
 
     human: bool = False
     human_role: str | None = None
+    lobby: bool = False
+    """True = create a waiting room instead of starting at once: humans join via
+    POST /join, the host starts via POST /start. Mutually exclusive with the
+    instant-start human fields above — rooms deal random seats; role choice
+    (human_role) is solo-only, on the instant-start path."""
     api_key: str = ""
     """BYOK (optional): the player's own key funds this game's model calls.
     Ephemeral pass-through — held in session memory for the run, never stored or
@@ -43,25 +48,60 @@ class ModelsMenu(BaseModel):
 
 
 class GameCreated(BaseModel):
-    """POST /games response."""
+    """POST /games and POST /games/{id}/start response."""
 
     game_id: str
+    host_key: str = ""
+    """The creator's credential for POST /start — returned exactly once, here
+    (never in status). Empty for instant-start games and the /start response."""
+
+
+class JoinGame(BaseModel):
+    """POST /games/{id}/join body. No role field on purpose: rooms deal random
+    seats (role choice is solo-only, on the instant-start path)."""
+
+    name: str = "human"
+    """Display name for the room roster (public to the room)."""
+
+
+class SeatJoined(BaseModel):
+    """POST /games/{id}/join response. Slice 3 adds the per-seat token here."""
+
+    position: int
+    """1-based join order — the roster index, not an engine seat (the engine
+    assigns player ids only at game start)."""
 
 
 class GameStatus(BaseModel):
-    """GET /games/{id} response: the poll-side snapshot (the stream carries the rest)."""
+    """GET /games/{id} response: the poll-side snapshot (the stream carries the rest).
+
+    One shape for both registry phases — a lobby fills only the header trio
+    (game_id, state, players) and leaves the game fields at their defaults."""
 
     game_id: str
-    human_player: str
-    """The seat the engine assigned the human; "" until INITIALIZE_GAME lands
+    state: str
+    """Lifecycle: "waiting" (lobby) | "running" | "finished" (game_over). A dead
+    task stays "running" with the error field set — error is orthogonal."""
+    players: list[str] = Field(default_factory=list)
+    """The lobby roster (display names). Empty once running: engine seats
+    replace the roster at start."""
+    max_seats: int = 0
+    """Human-seat capacity of a waiting room — the client's "room full" signal
+    (len(players) == max_seats). 0 once running; the server 409 stays the
+    authority either way."""
+    human_players: list[str] = Field(default_factory=list)
+    """The seats the engine dealt to humans; empty until INITIALIZE_GAME lands
     (or for an LLM-only game)."""
-    pending_input: bool
-    game_over: bool
-    last_seq: int
+    pending_input: bool = False
+    pending_seats: list[str] = Field(default_factory=list)
+    """Which seats owe input right now — several at once when a parallel superstep
+    (night fan-out, votes) interrupts for more than one human."""
+    game_over: bool = False
+    last_seq: int = 0
     """High-water mark of the durable log — a reconnect cursor for ?last_seq=."""
-    alive_role_counts: dict[str, int]
+    alive_role_counts: dict[str, int] = Field(default_factory=dict)
     """Public census only: fixed cast minus announced deaths, never engine state."""
-    error: str | None
+    error: str | None = None
     """The session's death report (key-redacted); None while healthy."""
 
 

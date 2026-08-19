@@ -4,8 +4,14 @@ GET  /health               -> liveness probe for the container/proxy
 GET  /models               -> the BYOK menu: tested game models + their rescue models
 POST /games                -> start a game (LLM-only or with a human seat; optional BYOK
                               api_key + model from the tested list fund the game's model
-                              calls — key held in memory only)
-GET  /games/{id}           -> status snapshot (human seat, pending input, public census)
+                              calls — key held in memory only). lobby=true creates a
+                              waiting room instead (response carries the host_key).
+POST /games/{id}/join      -> claim a human seat in a waiting room (rooms deal
+                              random roles; role choice is solo-only, via POST /games)
+POST /games/{id}/start     -> the host starts the room's game (?host_key=); the
+                              GameLobby is swapped for a GameSession under the same id
+GET  /games/{id}           -> status snapshot (state, lobby roster / human seat,
+                              pending input, public census)
 GET  /games/{id}/events    -> SSE: tier-filtered durable events (`event: game`, id = seq,
                               catch-up via ?last_seq=) + ephemeral pacing (`event: pacing`).
                               At game_over the withheld observer backlog flushes (R7).
@@ -34,14 +40,17 @@ from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
 
 from server.config import server_settings
-from server.dependencies import Game, GamesRegistry
+from server.dependencies import Game, GamesRegistry, Room
+from server.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.runtime import SUPPORTED_GAME_MODELS, GameSession, entitled
 from server.schemas.requests import (
     GameCreated,
     GameStatus,
+    JoinGame,
     ModelRow,
     ModelsMenu,
     NewGame,
+    SeatJoined,
     TurnAccepted,
 )
 
@@ -58,7 +67,8 @@ async def lifespan(app: FastAPI):
     (without this, uvicorn exit abandons mid-flight tasks with pending destructor noise)."""
     app.state.games = {}
     yield
-    sessions: list[GameSession] = list(app.state.games.values())
+    # Only started sessions hold a task; waiting lobbies have nothing to cancel.
+    sessions = [s for s in app.state.games.values() if isinstance(s, GameSession)]
     if sessions:
         logger.info("shutting down %d game session(s)", len(sessions))
         await asyncio.gather(*(s.shutdown() for s in sessions))
@@ -94,7 +104,7 @@ async def supported_models() -> ModelsMenu:
 
 
 @router.post("/games", response_model=GameCreated,
-             summary="Start a game (optional human seat / BYOK)")
+             summary="Start a game, or create a waiting room (optional BYOK)")
 async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
     if body.model and not body.api_key:
         raise HTTPException(status_code=422, detail="model selection requires api_key")
@@ -103,6 +113,14 @@ async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
             status_code=422,
             detail=f"unsupported model; pick from GET /models: {sorted(SUPPORTED_GAME_MODELS)}",
         )
+    if body.lobby:
+        if body.human or body.human_role is not None:
+            raise HTTPException(status_code=422,
+                                detail="a lobby seats humans via POST /join, "
+                                       "not the create body")
+        room = GameLobby(api_key=body.api_key, model=body.model)
+        games[room.game_id] = room
+        return GameCreated(game_id=room.game_id, host_key=room.host_key)
     session = GameSession(RunConfig(
         human_player=body.human or body.human_role is not None,
         human_role=body.human_role,
@@ -114,12 +132,49 @@ async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
     return GameCreated(game_id=session.game_id)
 
 
+@router.post("/games/{game_id}/join", response_model=SeatJoined,
+             summary="Claim a human seat in a waiting room")
+async def join_game(room: Room, body: JoinGame) -> SeatJoined:
+    if not isinstance(room, GameLobby):
+        raise HTTPException(status_code=409, detail="game already started")
+    try:
+        position = room.join(body.name)
+    except LookupError as exc:  # seats full
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return SeatJoined(position=position)
+
+
+@router.post("/games/{game_id}/start", response_model=GameCreated,
+             summary="Start the waiting room's game (host only)")
+async def start_game(room: Room, games: GamesRegistry, host_key: str = "") -> GameCreated:
+    """The registry swap: the GameLobby is replaced by a real GameSession under the
+    same game_id (the room URL survives). Check-then-swap is atomic — no await
+    between them, so a concurrent /start or /join cannot interleave."""
+    if not isinstance(room, GameLobby):
+        raise HTTPException(status_code=409, detail="game already started")
+    if host_key != room.host_key:
+        raise HTTPException(status_code=403, detail="only the host may start the game")
+    session = GameSession(room.run_config(), api_key=room.api_key, model=room.model)
+    games[session.game_id] = session
+    session.start()
+    return GameCreated(game_id=session.game_id)
+
+
 @router.get("/games/{game_id}", response_model=GameStatus, summary="Status snapshot")
-async def game_status(session: Game) -> GameStatus:
+async def game_status(session: Room) -> GameStatus:
+    if isinstance(session, GameLobby):
+        return GameStatus(
+            game_id=session.game_id,
+            state="waiting",
+            players=list(session.players),
+            max_seats=MAX_HUMAN_SEATS,
+        )
     return GameStatus(
         game_id=session.game_id,
-        human_player=session.human_player,
-        pending_input=session.pending_request is not None,
+        state="finished" if session.game_over else "running",
+        human_players=session.human_players,
+        pending_input=bool(session.pending_requests),
+        pending_seats=sorted(session.pending_requests),
         game_over=session.game_over,
         last_seq=session.log[-1].seq if session.log else 0,
         alive_role_counts=session.public_alive_counts(),
@@ -129,11 +184,12 @@ async def game_status(session: Game) -> GameStatus:
 
 @router.post("/games/{game_id}/turns", response_model=TurnAccepted,
              summary="Submit the human seat's action")
-async def submit_turn(session: Game, body: dict) -> TurnAccepted:
+async def submit_turn(session: Game, body: dict, seat: str = "") -> TurnAccepted:
     # Body stays an untyped dict on purpose: validation is delegated to the HITL
     # contract (validate_human_response) — the one source of truth for action shapes.
+    # ?seat= routes the action when several seats owe input; optional while one does.
     try:
-        session.submit_turn(body)
+        session.submit_turn(body, seat=seat)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except HumanTurnContractError as exc:
