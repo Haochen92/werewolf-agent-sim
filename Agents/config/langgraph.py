@@ -7,6 +7,7 @@ config -> (game, run) and never config -> tracing, so settings stay framework/ob
 """
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from langchain_core.runnables import RunnableConfig
@@ -16,6 +17,30 @@ from Agents.config.game import GameConfig, game_config_dict, normalize_game_conf
 from Agents.config.run import RunConfig
 
 DEFAULT_RECURSION_LIMIT = 100
+
+# Node-cache TTL for the parallel LLM turn nodes (day vote / wolf vote). The cache's job
+# is to survive from an LLM sibling finishing until the human answers and the aborted
+# superstep re-executes (imperative-invoke geometry) — so it must outlive human think
+# time; it also bounds cache growth on a long-running server (the compiled graphs and
+# their InMemoryCache are process-level singletons shared across games).
+TURN_CACHE_TTL_SECONDS = 6 * 3600
+
+
+def turn_cache_key(payload: dict[str, Any]) -> bytes:
+    """Cache key for the parallel LLM turn nodes: canonical JSON of the Send payload.
+
+    LangGraph's default key pickles the input, and pickle is identity-sensitive: the
+    re-executed superstep's payloads are checkpoint-ROUND-TRIPPED stored Sends whose
+    pydantic entries carry a different ``__pydantic_fields_set__`` than the originals
+    (same values, different bytes) — so the default key never hits exactly when the
+    cache is needed (proven offline, 2026-08-19). Hash VALUES, not object state.
+    """
+    def jsonable(obj: Any) -> Any:
+        if hasattr(obj, "model_dump"):
+            return obj.model_dump(mode="json")
+        raise TypeError(f"unhashable turn-payload value: {type(obj)!r}")
+
+    return json.dumps(payload, sort_keys=True, default=jsonable).encode()
 
 
 def build_runnable_config(

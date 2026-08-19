@@ -218,3 +218,37 @@ def test_reactive_debt_discharged_from_owes(monkeypatch):
     payload = _human_payload(firing_reason=FiringReason(tier="reactive", owes=["p2"]))
     out = h._human_addressed_targets(HumanTurnResponse(message="not me"), payload, "day_channel")
     assert [(t.target, t.addressed_form) for t in out] == [("p2", "response")]
+
+
+# ---- cache/interrupt node split (2026-08-19): humans vote through the UNCACHED twin ----------
+
+def _day_vote_state(human_players):
+    return {
+        "surviving_villagers": ["p1", "p2"], "surviving_wolves": ["p3"],
+        "roles": {"p1": "villager", "p2": "healer", "p3": "wolf"},
+        "human_players": human_players, "agent_strategies": {},
+        "day_channel": [], "day_summaries": [], "dead_roster": [],
+        "current_round": 0, "current_day": 1, "no_lynch_streak": 0,
+    }
+
+
+def test_day_vote_fanout_routes_humans_to_the_uncached_twin():
+    from Agents.nodes.day.flow import fan_out_day
+
+    sends = fan_out_day(_day_vote_state(["p2"]), "vote", True)
+    assert {(s.node, s.arg["player_id"]) for s in sends} == {
+        ("vote", "p1"), ("vote_human", "p2"), ("vote", "p3")}
+
+
+def test_wolf_vote_fanout_routes_human_wolves_to_the_uncached_twin():
+    from Agents.nodes.night.wolf import wolf_fan_out_vote
+
+    state = {
+        "surviving_wolves": ["p3", "p4"], "surviving_villagers": ["p1"],
+        "human_players": ["p4"], "agent_strategies": {},
+        "day_channel": [], "day_summaries": [], "wolf_channel": [],
+        "current_day": 1, "current_round": 3,
+    }
+    sends = wolf_fan_out_vote(state)
+    assert {(s.node, s.arg["player_id"]) for s in sends} == {
+        ("WOLF_NIGHT_VOTE", "p3"), ("WOLF_NIGHT_VOTE_HUMAN", "p4")}

@@ -226,7 +226,10 @@ def fan_out_day(
             payload["vigilante_results"] = state.get("vigilante_results", [])
             payload["vigilante_bullets"] = state.get("vigilante_bullets", 0)
 
-        concurrent_nodes.append(Send(phase, payload))
+        # Humans go to the UNCACHED twin node: a human resume aborts and re-runs this
+        # superstep, and the cached LLM nodes then replay their results instead of
+        # re-billing; a cache wrapped around interrupt() crashes this langgraph version.
+        concurrent_nodes.append(Send(f"{phase}_human" if is_human else phase, payload))
 
     return concurrent_nodes
 

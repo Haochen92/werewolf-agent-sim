@@ -129,8 +129,10 @@ def start_wolf_vote(state: WolfNightGraph):
 
 def wolf_fan_out_vote(state: WolfNightGraph):
     """Every wolf to WOLF_NIGHT_VOTE in parallel (fan_out_vote analog): votes are blind to
-    each other — the discussion already happened."""
-    return [Send("WOLF_NIGHT_VOTE", _wolf_payload(state, wolf))
+    each other — the discussion already happened. Human wolves go to the uncached twin
+    (same node body): see the day fan-out for the cache/interrupt rationale."""
+    return [Send("WOLF_NIGHT_VOTE_HUMAN" if wolf in state["human_players"]
+                 else "WOLF_NIGHT_VOTE", _wolf_payload(state, wolf))
             for wolf in state["surviving_wolves"]]
 
 

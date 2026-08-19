@@ -22,8 +22,11 @@ separate layers):
        its return value is the DayChannel delta the superstep commits
 """
 
+from langgraph.cache.memory import InMemoryCache
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import CachePolicy
 
+from Agents.config.langgraph import TURN_CACHE_TTL_SECONDS, turn_cache_key
 from Agents.memory import store
 from Agents.nodes import (
     discuss,
@@ -54,7 +57,15 @@ def build_day_graph():
     day_graph.add_node("COLLECT_VOTES", collect_votes)
 
     day_graph.add_node("discuss", discuss)
-    day_graph.add_node("vote", vote)
+    # The LLM vote node is CACHED: a human-vote resume aborts and re-executes this whole
+    # superstep (imperative-invoke geometry), and the cache turns each sibling re-run into
+    # a replay of its recorded result — no re-billed calls, no vote flip-flops. Humans vote
+    # through the UNCACHED twin (same body): wrapping interrupt() in a cache_policy crashes
+    # this langgraph version on resume (empty-writes cache entry). Probes: scratchpad
+    # cache_policy_probe.py / cache_split_probe.py, 2026-08-19.
+    day_graph.add_node("vote", vote, cache_policy=CachePolicy(
+        ttl=TURN_CACHE_TTL_SECONDS, key_func=turn_cache_key))
+    day_graph.add_node("vote_human", vote)
 
     day_graph.add_edge(START, "SCHEDULE")
     day_graph.add_conditional_edges(
@@ -70,12 +81,13 @@ def build_day_graph():
         route_after_day_summary,
         ["START_VOTING", END],
     )
-    day_graph.add_conditional_edges("START_VOTING", fan_out_vote, ["vote"])
+    day_graph.add_conditional_edges("START_VOTING", fan_out_vote, ["vote", "vote_human"])
     day_graph.add_edge("vote", "COLLECT_VOTES")
+    day_graph.add_edge("vote_human", "COLLECT_VOTES")
     day_graph.add_edge("COLLECT_VOTES", END)
 
     return day_graph
 
 
 day_graph = build_day_graph()
-day_graph_compiled = day_graph.compile(store=store)
+day_graph_compiled = day_graph.compile(store=store, cache=InMemoryCache())
