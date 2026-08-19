@@ -44,8 +44,9 @@ class OrchestratorGraph(TypedDict, total=False):
     overwriting the whole map — matching how the day/wolf subgraph channels already reduce it."""
     roles: dict[str, str]
     """player_id -> true role (ground truth; never shown to other agents)."""
-    human_player: str
-    """player_id of the human seat, or "" when fully agent-played."""
+    human_players: list[str]
+    """player_ids of the human seats (multi-human rooms hold several); empty when
+    fully agent-played."""
     # Role markers: source of truth for special-role aliveness (None once that player dies).
     healer_player: str | None
     """Healer's player_id while alive; None once dead/absent."""

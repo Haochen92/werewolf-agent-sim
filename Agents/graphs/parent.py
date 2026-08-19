@@ -76,7 +76,7 @@ def day_phase(
         "dead_roster": state.get("dead_roster", []),
         "wolf_channel": state.get("wolf_channel", []),
         "roles": state["roles"],
-        "human_player": state["human_player"],
+        "human_players": state["human_players"],
         "investigator_results": state.get("investigator_results", []),
         "vigilante_results": state.get("vigilante_results", []),
         "vigilante_bullets": state.get("vigilante_bullets", 0),
@@ -120,7 +120,7 @@ def wolf_night_phase(
         "wolf_channel": state.get("wolf_channel", []),
         "surviving_villagers": state["surviving_villagers"],
         "surviving_wolves": state["surviving_wolves"],
-        "human_player": state["human_player"],
+        "human_players": state["human_players"],
         "current_day": state["current_day"],
     }
     result = wolf_night_graph_compiled.invoke(
@@ -168,7 +168,7 @@ def healer_night_phase(
         ],
         "player_id": healer,
         "player_role": "healer",
-        "human_player": healer == state["human_player"],
+        "human_player": healer in state["human_players"],
     }
     result = healer_graph_compiled.invoke(
         payload,
@@ -210,7 +210,7 @@ def investigator_night_phase(
         ],
         "player_id": investigator,
         "player_role": "investigator",
-        "human_player": investigator == state["human_player"],
+        "human_player": investigator in state["human_players"],
     }
     result = investigator_graph_compiled.invoke(
         payload,
@@ -252,7 +252,7 @@ def serial_killer_night_phase(
         ],
         "player_id": serial_killer,
         "player_role": "serial_killer",
-        "human_player": serial_killer == state["human_player"],
+        "human_player": serial_killer in state["human_players"],
     }
     result = serial_killer_graph_compiled.invoke(
         payload,
@@ -299,7 +299,7 @@ def vigilante_night_phase(
         "vigilante_results": state.get("vigilante_results", []),
         "player_id": vigilante,
         "player_role": "vigilante",
-        "human_player": vigilante == state["human_player"],
+        "human_player": vigilante in state["human_players"],
     }
     result = vigilante_graph_compiled.invoke(
         payload,

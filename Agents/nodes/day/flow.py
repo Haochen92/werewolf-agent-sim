@@ -123,7 +123,7 @@ def build_speaker_send(
     """
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
     payload = {
-        "human_player": speaker_id == state["human_player"],
+        "human_player": speaker_id in state["human_players"],
         "day_channel": state["day_channel"],
         "day_summaries": state.get("day_summaries", []),
         # Public dead roster — attached to EVERY role's payload (no leak gating; the dead
@@ -208,7 +208,7 @@ def fan_out_day(
 
     for player in surviving_players:
         role = state["roles"][player]
-        is_human = player == state["human_player"]
+        is_human = player in state["human_players"]
         if role not in _DAY_ACTING_ROLES:
             continue
 

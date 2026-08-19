@@ -59,8 +59,8 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     survivor *buckets* (surviving_wolves, surviving_villagers = the non-wolf
     bucket of town + the solo SK) and the per-role *markers* (healer_player, …,
     serial_killer_player) that the rest of the game reads role-aliveness off.
-    A human seat is assigned only when the run opts in (RunConfig.human_player); default off leaves it
-    "" so eval/batch runs stay fully automated (no interrupt()).
+    Human seats are dealt only when the run opts in (RunConfig.human_player = the seat count);
+    default 0 leaves the list empty so eval/batch runs stay fully automated (no interrupt()).
     """
     game_config = game_config_from_runnable(config)
     # Role assignment is seeded off game_id — the single master seed (the scheduler's
@@ -78,20 +78,29 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
     ]
     # Draw a candidate seat UNCONDITIONALLY so the role shuffle's rng sequence stays byte-identical
     # to historical runs (same game_id -> same role draw) — then only SEAT the human when the run
-    # opted in (RunConfig.human_player). Default off -> "" -> no seat is flagged human downstream, so
+    # opted in (RunConfig.human_player). Default 0 -> [] -> no seat is flagged human downstream, so
     # run_agent never hits interrupt() (fully automated all-LLM game).
     human_candidate = rng.choice(characters)
-    human_player = human_candidate if configurable.get("human_player") else ""
+    human_seats = min(int(configurable.get("human_player") or 0), len(characters))
+    human_players = [human_candidate] if human_seats else []
 
     rng.shuffle(roles)
     assigned_roles = dict(zip(characters, roles, strict=True))
 
+    # Extra human seats (multi-human rooms) draw AFTER the shuffle: post-shuffle draws can't
+    # perturb the role assignment, so 0-vs-1-vs-N humans on one game_id share the same cast.
+    if human_seats > 1:
+        remaining = [c for c in characters if c != human_candidate]
+        human_players += rng.sample(remaining, human_seats - 1)
+
     # Optional role preference: seat is random, but the human may opt to play a specific role. Swap
     # that role onto the human's seat (with whatever seat drew it) — a swap preserves the exact cast
-    # counts, and derives before the *_player markers below so they stay consistent. Only fires with a
-    # human seat AND a requested role; agent-only / random-role runs keep the untouched shuffle.
+    # counts, and derives before the *_player markers below so they stay consistent. SOLO-ONLY:
+    # honored only with exactly one human seat AND a requested role — in a shared room role choice
+    # leaks/races (server rule mirrored here), so multi-human games keep the untouched shuffle.
     human_role = configurable.get("human_role")
-    if human_player and human_role:
+    if len(human_players) == 1 and human_role:
+        human_player = human_players[0]
         if human_role not in roles:
             raise ValueError(f"Unknown human role: {human_role} (not in the cast)")
         if assigned_roles[human_player] != human_role:
@@ -123,7 +132,7 @@ def initialize_game(state: OrchestratorGraph, config: RunnableConfig):
             player for player, role in assigned_roles.items() if role != "wolf"
         ],
         "current_day": game_config.starting_day,
-        "human_player": human_player,
+        "human_players": human_players,
         "healer_player": healer_player,
         "investigator_player": investigator_player,
         "serial_killer_player": serial_killer_player,
@@ -445,7 +454,7 @@ def post_game_analysis(
     # POISONING GUARD: a human-involved game is never mined — human play is out-of-distribution for
     # the store (and the memory-config role filter below can't be trusted to exclude it: roles absent
     # from the config dict default to True). Replayable, never extracted.
-    if state.get("human_player"):
+    if state.get("human_players"):
         logger.info("Human seat in game; skipping post-game extraction (poisoning guard).")
         return {}
 

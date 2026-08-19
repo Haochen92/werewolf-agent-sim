@@ -82,13 +82,15 @@ class RunConfig(BaseModel):
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
     game_id: str = ""
     session_id: str | None = None
-    human_player: bool = False
-    """Seat a human: when True, initialize_game assigns ONE random seat to the human, whose turns
-    pause the graph for input via interrupt(). Default False = a fully automated all-LLM game (every
-    eval/batch run) — no seat is flagged human, so interrupt() never fires."""
+    human_player: int = 0
+    """How many human seats initialize_game deals (random distinct seats; each human turn pauses
+    the graph via interrupt()). Legacy bool call sites still work — True coerces to 1. Default 0 =
+    a fully automated all-LLM game (every eval/batch run) — no seat is flagged human, so
+    interrupt() never fires."""
     human_role: str | None = None
-    """Optional role preference for the human seat (e.g. "wolf"). None = play whatever role the random
-    seat drew. Ignored unless human_player is True; must be a role present in the cast."""
+    """Optional role preference for the human seat (e.g. "wolf"). None = play whatever role the
+    random seat drew. Honored only when human_player is exactly 1 (solo) — in a shared room role
+    choice leaks/races, so multi-human games always deal random roles; must be in the cast."""
 
     @model_validator(mode="before")
     @classmethod

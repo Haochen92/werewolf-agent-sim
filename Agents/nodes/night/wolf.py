@@ -92,7 +92,7 @@ def _wolf_payload(state: WolfNightGraph, wolf: str) -> dict:
         "surviving_wolves": state["surviving_wolves"],
         "player_id": wolf,
         "player_role": "wolf",
-        "human_player": wolf == state["human_player"],
+        "human_player": wolf in state["human_players"],
         "current_day": state["current_day"],
         "current_round": state["current_round"],
         "previous_strategy": strategies.get(wolf, ""),

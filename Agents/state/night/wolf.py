@@ -25,8 +25,8 @@ class WolfNightGraph(TypedDict, total=False):
     agent_strategies: Annotated[dict[str, str], merge_strategies]
     """player_id -> private strategy note; merged per-key across parallel wolf turns."""
 
-    human_player: str
-    """player_id of the human seat, or "" when fully agent-played."""
+    human_players: list[str]
+    """player_ids of the human seats; empty when fully agent-played."""
 
     current_day: int
     """1-based current game day."""

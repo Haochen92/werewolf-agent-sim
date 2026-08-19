@@ -33,7 +33,7 @@ def _state(wolf_channel=(), round_=1, wolves=("w1", "w2")):
     return {
         "day_channel": [], "day_summaries": [], "wolf_channel": list(wolf_channel),
         "surviving_wolves": list(wolves), "surviving_villagers": ["v1", "v2", "v3"],
-        "agent_strategies": {}, "human_player": "", "current_day": 1,
+        "agent_strategies": {}, "human_players": [], "current_day": 1,
         "current_round": round_,
     }
 

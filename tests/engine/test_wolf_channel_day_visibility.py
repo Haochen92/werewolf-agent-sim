@@ -39,7 +39,7 @@ def _day_state(**overrides) -> dict:
         "current_day": 2,
         "current_round": 0,
         "roles": {"w0": "wolf", "w1": "wolf", "t0": "villager", "inv": "investigator"},
-        "human_player": "",
+        "human_players": [],
         "day_channel": [],
         "day_summaries": [],
         "wolf_channel": [NOTE],

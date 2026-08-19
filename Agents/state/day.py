@@ -52,8 +52,8 @@ class DayGraphState(TypedDict, total=False):
     """player_id -> private strategy note; merged per-key so concurrent votes don't clobber."""
     roles: dict[str, str]
     """player_id -> true role (ground truth; never shown to other agents)."""
-    human_player: str
-    """player_id of the human seat, or "" when fully agent-played."""
+    human_players: list[str]
+    """player_ids of the human seats; empty when fully agent-played."""
 
     investigator_player: str | None
     """Investigator's player_id while alive; None once dead/absent."""

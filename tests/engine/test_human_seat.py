@@ -35,18 +35,44 @@ def _human_payload(**over):
 # ---- opt-in seating -------------------------------------------------------------------------------
 
 def test_agent_only_run_flags_no_human_seat():
-    # THE regression guard: default (agent-only) leaves human_player "" so interrupt() never fires.
-    assert _state()["human_player"] == ""
+    # THE regression guard: default (agent-only) deals no human seats so interrupt() never fires.
+    assert _state()["human_players"] == []
 
 
 def test_human_opt_in_assigns_a_real_seat():
-    state = _state(human_player=True)
-    assert state["human_player"] in state["roles"]
+    state = _state(human_player=True)  # legacy bool call sites coerce to 1 seat
+    assert len(state["human_players"]) == 1
+    assert state["human_players"][0] in state["roles"]
 
 
 def test_human_role_preference_lands_on_the_human_seat():
     state = _state(human_player=True, human_role="wolf")
-    assert state["roles"][state["human_player"]] == "wolf"
+    assert state["roles"][state["human_players"][0]] == "wolf"
+
+
+def test_multi_human_deals_distinct_seats():
+    state = _state(human_player=3)
+    seats = state["human_players"]
+    assert len(seats) == len(set(seats)) == 3
+    assert all(seat in state["roles"] for seat in seats)
+
+
+def test_extra_humans_do_not_perturb_the_role_draw():
+    # The reproducibility contract: seats 2..N draw AFTER the shuffle, so one game_id
+    # deals the same cast whether 0, 1, or N humans sit down — and the first human is
+    # the same historical pre-shuffle candidate in all of them.
+    solo, multi = _state(human_player=1), _state(human_player=3)
+    assert _state()["roles"] == solo["roles"] == multi["roles"]
+    assert solo["human_players"][0] == multi["human_players"][0]
+
+
+def test_role_preference_is_ignored_for_multi_human_games():
+    # The solo-only rule at the engine root: a shared room always deals random roles.
+    assert _state(human_player=2, human_role="wolf")["roles"] == _state()["roles"]
+
+
+def test_human_seat_count_caps_at_the_cast():
+    assert len(_state(human_player=99)["human_players"]) == len(_state()["roles"])
 
 
 # ---- pipeline gating (no span / retrieval / adoption / EvalCase for a human) ----------------------
