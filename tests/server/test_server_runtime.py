@@ -196,7 +196,7 @@ async def test_live_unlock_flushes_withheld_backlog_below_a_reconnect_cursor(
     session = quiet_session(FakeGraph(fixture_parts[:split_at] + [_interrupt_part()],
                                       fixture_parts[split_at:]))
     session.start()
-    while session.pending_request is None:
+    while not session.pending_requests:
         await asyncio.sleep(0.01)
 
     roles = session.translator.roles
@@ -236,13 +236,13 @@ def _interrupt_part() -> dict:
 async def test_interrupt_parks_validates_and_resumes(quiet_session):
     session = quiet_session(FakeGraph([_interrupt_part()], []))
     session.start()
-    while session.pending_request is None:
+    while not session.pending_requests:
         await asyncio.sleep(0.01)
 
     # A contract-violating action bounces AND the request stays pending for a retry.
     with pytest.raises(HumanTurnContractError):
         session.submit_turn({"message": "   "})
-    assert session.pending_request is not None
+    assert session.pending_requests
 
     session.submit_turn({"message": "hello table"})
     await asyncio.wait_for(session.wait_finished(), timeout=10)
@@ -252,6 +252,64 @@ async def test_interrupt_parks_validates_and_resumes(quiet_session):
     (request_event,) = [e for e in session.log if e.type == "input_request"]
     assert request_event.player == "player_3"
     assert request_event.action_kind == "discuss"
+    # A lone answer resumes as a bare value — the path proven in live HITL games.
+    assert session._graph.calls[1].resume == {"message": "hello table", "pass_turn": False,
+                                              "target": None}
+
+
+async def test_child_namespace_interrupt_mirrors_park_and_ship_once(quiet_session):
+    """subgraphs=True streams each interrupt twice — child ns first, root mirror after
+    (parallel-interrupt probe, 2026-08-19). Only the root copy parks the seat and ships
+    an input_request; the child copy is dropped, or every request doubles on the wire."""
+    root = _interrupt_part()
+    child = {**root, "ns": ["DAY_PHASE:abc123"]}
+    session = quiet_session(FakeGraph([child, root], []))
+    session.start()
+    while not session.pending_requests:
+        await asyncio.sleep(0.01)
+
+    assert len([e for e in session.log if e.type == "input_request"]) == 1
+    assert sorted(session.pending_requests) == ["player_3"]
+    session.submit_turn({"message": "hello table"})
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+
+
+def _two_seat_interrupt_part() -> dict:
+    """One parallel superstep interrupting for two human seats (multi-human room)."""
+    def item(player, interrupt_id):
+        value = human_turn_request(player_id=player, phase="day_votes",
+                                   valid_targets=["p9"]).model_dump()
+        return {"value": value, "id": interrupt_id}
+    return {"type": "updates", "ns": [], "data": {
+        "__interrupt__": [item("player_3", "int-a"), item("player_5", "int-b")]}}
+
+
+async def test_parallel_interrupts_park_per_seat_and_resume_as_one_batch(quiet_session):
+    session = quiet_session(FakeGraph([_two_seat_interrupt_part()], []))
+    session.start()
+    while len(session.pending_requests) < 2:
+        await asyncio.sleep(0.01)
+
+    # Ambiguous (two seats owe) and unknown-seat submissions bounce, state intact.
+    with pytest.raises(LookupError, match="several seats owe"):
+        session.submit_turn({"target": "p9"})
+    with pytest.raises(LookupError, match="player_8"):
+        session.submit_turn({"target": "p9"}, seat="player_8")
+
+    # First answer: accepted, but the game stays parked on the second seat.
+    session.submit_turn({"target": "p9"}, seat="player_3")
+    await asyncio.sleep(0.05)
+    assert sorted(session.pending_requests) == ["player_5"]
+    assert not session._finished.is_set()
+
+    # Last answer completes the batch: one id-addressed mapping resumes the graph.
+    session.submit_turn({"target": "p9"}, seat="player_5")
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+    resume = session._graph.calls[1].resume
+    assert set(resume) == {"int-a", "int-b"}
+    assert all(answer["target"] == "p9" for answer in resume.values())
 
 
 async def test_shutdown_cancels_a_parked_game(quiet_session):

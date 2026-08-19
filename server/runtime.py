@@ -15,9 +15,10 @@ touching RunConfig, the event log, or disk; if the key dies mid-game the error s
 (redacted) and the player restarts with a valid one.
 
 Every part goes through the Translator; the resulting events are appended to the game's
-in-memory log and pushed to each connected viewer's queue. When the game needs the human's
-action, the graph interrupts: the task awaits a queue. POST /turns validates the submitted
-action (same rules as the CLI game) and puts it there, which resumes the graph.
+in-memory log and pushed to each connected viewer's queue. When the game needs human
+action, the graph interrupts — one write-once Future per interrupted seat. POST /turns
+validates the submitted action (same rules as the CLI game) and fulfils that seat's
+promise; once every promise resolves, the batch resumes the graph.
 
 Who may see an event is decided at delivery time, per viewer: `entitled()` checks the event's
 tier (public / wolves-only / one seat / observer) against the viewer's seat. At game_over
@@ -244,14 +245,24 @@ class GameSession:
                    every viewer as an observer and the withheld backlog may flush.
 
     The human seat (HITL):
-      human_player     which seat the ENGINE assigned the human (read from the
+      human_players    which seats the ENGINE dealt to humans (read from the
                        INITIALIZE_GAME part); served by GET /games so the client
-                       knows whose seat to render.
-      pending_request  the parked interrupt payload. The full prompt-bearing request
-                       stays server-side; the wire carries only the slim
-                       input_request event.
-      _resume_q        the hand-off: POST /turns validates the action and puts it
-                       here; the game task is parked awaiting it.
+                       knows whose seats to render.
+      pending_requests the parked interrupt payloads, keyed by seat — a dict because a
+                       parallel superstep (night fan-out, votes) can interrupt for
+                       several human seats at once; sequential phases just hold one
+                       entry. The full prompt-bearing request stays server-side; the
+                       wire carries only the slim input_request event.
+      _pending_ids     seat -> LangGraph interrupt id, for the id-addressed batch
+                       resume (multi-seat only; a lone answer resumes bare-value,
+                       the path proven in live HITL games).
+      _promises        the hand-off: one write-once Future per parked seat (created
+                       at park time). submit_turn crosses the seat off pending and
+                       fulfils its promise; _collect_answers awaits them all
+                       (gather = the barrier) and resumes the graph with the batch
+                       in one Command. The future object is the wire between the
+                       HTTP world and the game task — always fulfil it in place,
+                       never replace the registry entry.
 
     Delivery + lifecycle:
       _subscribers  one queue per connected viewer; _deliver fans events into these.
@@ -288,9 +299,10 @@ class GameSession:
         self.game_over = False
 
         # The human seat (HITL).
-        self.human_player: str = ""
-        self.pending_request: HumanTurnRequest | None = None
-        self._resume_q: asyncio.Queue = asyncio.Queue()
+        self.human_players: list[str] = []
+        self.pending_requests: dict[str, HumanTurnRequest] = {}
+        self._pending_ids: dict[str, str] = {}
+        self._promises: dict[str, asyncio.Future] = {}
 
         # Delivery + lifecycle.
         self._subscribers: set[asyncio.Queue] = set()
@@ -339,8 +351,8 @@ class GameSession:
                         interrupted = True
                 if not interrupted:
                     break
-                # Resume with user input
-                graph_input = Command(resume=await self._resume_q.get())
+                # Resume with user input, once every interrupted seat has answered
+                graph_input = Command(resume=await self._collect_answers())
         except Exception as exc:  # surface, don't vanish: the session reports its death
             detail = repr(exc)
             if self._api_key:
@@ -366,19 +378,34 @@ class GameSession:
 
         # Pacing ticks ride part identity: a root wrapper part = that night branch finished;
         # a vote-node part = one ballot cast. (Both are otherwise ignored/buffered.)
+        # Cached parts are re-deliveries (post-resume replays / cache hits) — their events
+        # were dropped by the translator and their ticks must not double the bars.
+        if isinstance(data, dict) and _read_field(
+                _read_field(data, "__metadata__", {}) or {}, "cached"):
+            return False
         ns = part.get("ns") or ()
         scope = ns[0].split(":")[0] if ns else "root"
         for node in data:
             if scope == "root" and node in _BRANCH_UNITS:
                 self._tracker.on_branch_done(_BRANCH_UNITS[node])
-            if node == "vote" and scope == "DAY_PHASE":
+            if node in ("vote", "vote_human") and scope == "DAY_PHASE":
                 self._tracker.on_ballot()
             if node == "INITIALIZE_GAME":
-                self.human_player = _read_field(data[node], "human_player", "") or ""
+                self.human_players = list(
+                    _read_field(data[node], "human_players", ()) or ())
 
-        if "__interrupt__" in data:
-            value = _read_field(data["__interrupt__"][0], "value")
-            self.pending_request = HumanTurnRequest.model_validate(value)
+        if "__interrupt__" in data and not (part.get("ns") or ()):
+            # A parallel superstep can carry several interrupts (one per human seat);
+            # park each under its seat, from the ROOT mirror part only — subgraphs=True
+            # streams each interrupt twice (child ns + root), and parking the child copy
+            # could re-park a seat that answered in the gap. Falling back to the seat as
+            # the answer key covers interrupt items without ids (fixture/fake parts).
+            for item in data["__interrupt__"]:
+                request = HumanTurnRequest.model_validate(_read_field(item, "value"))
+                self.pending_requests[request.player_id] = request
+                self._pending_ids[request.player_id] = (
+                    _read_field(item, "id", "") or request.player_id)
+                self._promises[request.player_id] = asyncio.get_running_loop().create_future()
             return True
         return False
 
@@ -406,15 +433,49 @@ class GameSession:
 
     # -- the human turn (from POST /turns) ------------------------------------------------
 
-    def submit_turn(self, body: dict) -> None:
-        """Validate against the pending request (the CLI's HITL contract, reused) and
-        resume the parked game task. Raises HumanTurnContractError on a bad action."""
-        if self.pending_request is None:
+    def submit_turn(self, body: dict, seat: str = "") -> None:
+        """Validate against the seat's pending request (the CLI's HITL contract, reused)
+        and, once every interrupted seat has answered, resume the parked game task.
+        Raises HumanTurnContractError on a bad action, LookupError on a bad seat."""
+        if not self.pending_requests:
             raise LookupError("no pending input_request for this game")
-        response = validate_human_response(self.pending_request, body)
-        self.pending_request = None
-        self._resume_q.put_nowait(response.model_dump())
-        logger.info("game %s: human turn accepted, resuming", self.game_id)
+        if not seat:
+            # A lone pending seat needs no addressing (the solo-game path).
+            if len(self.pending_requests) > 1:
+                raise LookupError(
+                    f"several seats owe input ({sorted(self.pending_requests)}); "
+                    "identify one with ?seat=")
+            seat = next(iter(self.pending_requests))
+        request = self.pending_requests.get(seat)
+        if request is None:
+            raise LookupError(f"no pending input_request for seat {seat!r}")
+        response = validate_human_response(request, body)
+        # Cross the seat off FIRST: a duplicate submission then bounces at the
+        # LookupError above and can never reach set_result (futures are write-once —
+        # a second set would raise InvalidStateError).
+        del self.pending_requests[seat]
+        self._promises[seat].set_result(response.model_dump())
+        logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
+                    self.game_id, seat, len(self.pending_requests))
+
+    async def _collect_answers(self) -> Any:
+        """Await every seat's promise, then hand the batch to the graph.
+
+        gather is the barrier (eager answers are already-resolved futures and cost
+        nothing); each future then carries its own value, so the harvest is
+        self-describing — no ordering to trust. Iterating the live registry (no
+        snapshot) and wholesale reset are safe because no park can happen between
+        the stream settling and this return: submit_turn fulfils futures, it never
+        adds or removes registry entries."""
+        await asyncio.gather(*self._promises.values())
+        answers = {self._pending_ids.pop(seat): fut.result()
+                   for seat, fut in self._promises.items()}
+        self._promises = {}
+        if len(answers) == 1:
+            # The bare-value resume — the single-interrupt path proven in live HITL
+            # games. The id-addressed mapping only engages for true parallel batches.
+            return next(iter(answers.values()))
+        return answers
 
     # -- census exposure (GET /games/{id}) ------------------------------------------------
 
