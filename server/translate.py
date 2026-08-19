@@ -7,8 +7,21 @@ pacing channel is NOT built here (it needs asyncio timers → server layer).
 
 The load-bearing rules, each verified against notebooks/fixtures/chunk_catalogue.jsonl:
 
-- **Cached drop**: a replayed part (interrupt resume / crash recovery) arrives tagged
-  ``__metadata__: {cached: True}`` and is dropped whole — its events already shipped.
+- **Abort-and-re-execute: pre-resume sibling parts are RETRACTED truth** (2-human smoke
+  tape, 2026-08-19). A human interrupt ABORTS its superstep: completed sibling tasks'
+  writes are DISCARDED by the engine and the tasks RE-EXECUTE on resume — fresh LLM
+  calls, possibly different outputs (the tape's day-3 vote: player_2 streamed player_9
+  pre-interrupt, the engine's GM recap shows its kept vote was player_5). Committed
+  EARLIER supersteps re-stream tagged ``__metadata__: {cached: True}`` and are dropped
+  whole. Consequences here: the buffered kinds apply LAST-write-wins per natural key
+  (one ballot per voter — the re-execution's ballot replaces the aborted one before the
+  tally flush); sequential discussion has no siblings to abort; wolf-chat lines dedupe
+  first-wins per (day, round, wolf) — KNOWN GAP: with a human wolf sharing a round, an
+  aborted sibling line ships and the re-generated text is dropped (fix = buffer rounds
+  to their commit, deferred until a human-wolf game is actually served). Corollary for
+  engine authors: node-internal ``get_stream_writer`` customs in a fan-out superstep
+  re-fire on resume — emit them from routing edges (committed a superstep earlier), as
+  ``turn_started`` already does.
 - **One authoritative scope per key**: every subgraph commit streams twice (fine-grained under
   its namespace, then the wrapper node's folded delta at root). Per-turn keys translate from
   the subgraph parts; the root wrapper re-emissions are ignored wholesale.
@@ -87,7 +100,8 @@ _FOLDS: dict[tuple[str, str], set[str]] = {
     ("root", "INITIALIZE_GAME"): {
         "day_channel", "day_summaries", "wolf_channel", "day_votes",
         "investigator_results", "surviving_wolves", "surviving_villagers",
-        "current_day", "human_player", "no_lynch_streak", "winner",
+        "current_day", "human_players", "no_lynch_streak", "winner",
+        "human_player",  # pre-rename spelling: the frozen fixture tape predates multi-human
     },
     ("root", "DAY_RESOLUTION"): {
         "day_summaries", "voted_player", "no_lynch_streak",
@@ -116,12 +130,19 @@ class Translator:
         # Captured at INITIALIZE_GAME; the context single parts don't carry.
         self.roles: dict[str, str] = {}
         self.wolves: list[str] = []
-        # Entitlement buffers (flushed at the respective tally commit).
-        self._day_ballots: list[tuple[str, str]] = []
+        # Entitlement buffers (flushed at the respective tally commit). Keyed by actor,
+        # LAST write wins: an interrupt aborts the superstep and the engine re-executes
+        # the sibling tasks on resume, keeping only the re-run's writes — the buffer
+        # must converge to the same final ballot per voter (see the module docstring).
+        self._day_ballots: dict[str, str] = {}        # voter -> final votee
         self._last_day_ballots: list[tuple[str, str]] = []
-        self._wolf_votes: list[tuple[str, str]] = []
+        self._wolf_votes: dict[str, str] = {}         # wolf -> final kill vote
         # Tonight's committed targets, tracked for the kernel-derived night_result.
         self._targets: dict[str, str | None] = {}
+        # Ship-once guards for kinds that emit immediately (abort-and-re-execute model).
+        self._seen_day_entries: set[tuple[int, int]] = set()      # (day, channel seq)
+        self._seen_wolf_msgs: set[tuple[int, int, str]] = set()   # (day, round, wolf)
+        self._strategies: dict[str, str] = {}  # last shipped note per player (overwrite)
 
     # ---- context helpers --------------------------------------------------------------
 
@@ -149,7 +170,12 @@ class Translator:
         out: list[ev.DurableEvent] = []
         for node, delta in data.items():
             if node == "__interrupt__":
-                out.extend(self._interrupt(delta))
+                # subgraphs=True streams every interrupt TWICE: once under the child
+                # namespace, once mirrored at the root (probe 2026-08-19). The root
+                # mirror is the authoritative copy — emitting both would ship every
+                # input_request to the wire twice under two seqs.
+                if not ns:
+                    out.extend(self._interrupt(delta))
                 continue
             if node.startswith("__"):
                 continue
@@ -257,6 +283,9 @@ class Translator:
         out = []
         for entry in _read_field(delta, "day_channel", []) or []:
             day, cseq, player = _read_field(entry, "day"), _read_field(entry, "seq"), _read_field(entry, "player")
+            if (day, cseq) in self._seen_day_entries:
+                continue  # replayed sibling entry (post-resume); its events already shipped
+            self._seen_day_entries.add((day, cseq))
             if _read_field(entry, "passed"):
                 out.append(self._emit(
                     ev.PassMarker, day=day, channel_seq=cseq, player=player,
@@ -290,10 +319,17 @@ class Translator:
 
     def _h_vote(self, scope, node, delta):
         for ballot in _read_field(delta, "day_votes", []) or []:
-            self._day_ballots.append((_read_field(ballot, "voter"), _read_field(ballot, "votee")))
+            # Last write wins: a ballot streamed before a human interrupt is retracted
+            # by the abort — the voter's re-executed ballot (possibly different!) is
+            # the one the engine keeps, so it must overwrite ours before the flush.
+            self._day_ballots[_read_field(ballot, "voter")] = _read_field(ballot, "votee")
         out = self._strategy_updates(delta)
         self._check_folds(scope, node, delta, consumed={"day_votes", "agent_strategies"})
         return out
+
+    # The human seat votes through the uncached twin node (cache/interrupt split in the
+    # day graph) — same delta shape, same handling.
+    _h_vote_human = _h_vote
 
     def _h_start_voting(self, scope, node, delta):
         self._check_folds(scope, node, delta, consumed=set())
@@ -302,8 +338,8 @@ class Translator:
     def _h_collect_votes(self, scope, node, delta):
         # Content from the buffer, timing from node identity (its own delta is empty).
         out = [self._emit(ev.VoteCast, voter=voter, votee=votee)
-               for voter, votee in self._day_ballots]
-        self._last_day_ballots = list(self._day_ballots)
+               for voter, votee in self._day_ballots.items()]
+        self._last_day_ballots = list(self._day_ballots.items())
         self._day_ballots.clear()
         self._check_folds(scope, node, delta, consumed=set())
         return out
@@ -376,9 +412,14 @@ class Translator:
         for entry in _read_field(delta, "wolf_channel", []) or []:
             if _read_field(entry, "passed"):
                 continue  # technical pass: hidden from the pack, no wire event defined
+            key = (_read_field(entry, "day"), _read_field(entry, "round"),
+                   _read_field(entry, "wolf"))
+            if key in self._seen_wolf_msgs:
+                continue  # replayed sibling wolf turn (post-resume)
+            self._seen_wolf_msgs.add(key)
             out.append(self._emit(
-                ev.WolfMessage, day=_read_field(entry, "day"), round=_read_field(entry, "round"),
-                wolf=_read_field(entry, "wolf"), message=_read_field(entry, "message"),
+                ev.WolfMessage, day=key[0], round=key[1],
+                wolf=key[2], message=_read_field(entry, "message"),
             ))
         out.extend(self._strategy_updates(delta))
         self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
@@ -389,14 +430,18 @@ class Translator:
         # the runtime streams sibling votes mid-superstep, so we must hold them).
         for entry in _read_field(delta, "wolf_channel", []) or []:
             if _read_field(entry, "vote"):
-                self._wolf_votes.append((_read_field(entry, "wolf"), _read_field(entry, "vote")))
+                # Last write wins per wolf (abort-and-re-execute, same as day ballots).
+                self._wolf_votes[_read_field(entry, "wolf")] = _read_field(entry, "vote")
         out = self._strategy_updates(delta)
         self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
         return out
 
+    # A human wolf votes through the uncached twin node (see the wolf graph wiring).
+    _h_wolf_night_vote_human = _h_wolf_night_vote
+
     def _h_collect_wolf_votes(self, scope, node, delta):
         out = [self._emit(ev.WolfVote, wolf=wolf, votee=votee)
-               for wolf, votee in self._wolf_votes]
+               for wolf, votee in self._wolf_votes.items()]
         self._wolf_votes.clear()
         target = _read_field(delta, "wolves_kill_target")
         if target is not None:
@@ -470,9 +515,14 @@ class Translator:
                 if _read_field(e, "player") == "game_master"]
 
     def _strategy_updates(self, delta):
+        # A strategy note is an overwrite, so idempotence is content equality: a replayed
+        # part re-delivers the identical note and ships nothing new.
         strategies = _read_field(delta, "agent_strategies", {}) or {}
-        return [self._emit(ev.StrategyUpdate, player=player, strategy=text)
-                for player, text in strategies.items()]
+        out = [self._emit(ev.StrategyUpdate, player=player, strategy=text)
+               for player, text in strategies.items()
+               if self._strategies.get(player) != text]
+        self._strategies.update(strategies)
+        return out
 
     def _roster_updates(self, delta):
         wolves = _read_field(delta, "surviving_wolves")
