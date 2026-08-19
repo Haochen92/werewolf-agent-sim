@@ -8,19 +8,17 @@ the API. New request/response DTOs belong here, never in the contract module.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class NewGame(BaseModel):
-    """POST /games body."""
+    """POST /games body: the instant-start (solo / LLM-only) door. Multiplayer
+    rooms are created at POST /rooms — a deliberately separate contract."""
 
     human: bool = False
     human_role: str | None = None
-    lobby: bool = False
-    """True = create a waiting room instead of starting at once: humans join via
-    POST /join, the host starts via POST /start. Mutually exclusive with the
-    instant-start human fields above — rooms deal random seats; role choice
-    (human_role) is solo-only, on the instant-start path."""
+    """Role choice lives ONLY here: solo has no other players to leak it to.
+    Rooms always deal random seats."""
     api_key: str = ""
     """BYOK (optional): the player's own key funds this game's model calls.
     Ephemeral pass-through — held in session memory for the run, never stored or
@@ -51,9 +49,32 @@ class GameCreated(BaseModel):
     """POST /games and POST /games/{id}/start response."""
 
     game_id: str
-    host_key: str = ""
+
+
+class NewRoom(BaseModel):
+    """POST /rooms body: the multiplayer door. No human/role fields ON PURPOSE —
+    a room seats humans only via POST /join and always deals random roles, so the
+    concept is unrepresentable here instead of guarded; extra="forbid" turns a
+    client sending instant-start fields into a clean 422."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: str = ""
+    """BYOK (optional): the creator's key funds the whole game. Same semantics as
+    the instant-start door."""
+    model: str = ""
+    """Game model from SUPPORTED_GAME_MODELS; requires api_key; empty = default."""
+
+
+class RoomCreated(BaseModel):
+    """POST /rooms response."""
+
+    game_id: str
+    """Also the room id: the registry swap at /start keeps it, so the room URL is
+    the game URL before and after."""
+    host_key: str
     """The creator's credential for POST /start — returned exactly once, here
-    (never in status). Empty for instant-start games and the /start response."""
+    (never in status)."""
 
 
 class JoinGame(BaseModel):

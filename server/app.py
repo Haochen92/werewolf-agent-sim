@@ -2,10 +2,11 @@
 
 GET  /health               -> liveness probe for the container/proxy
 GET  /models               -> the BYOK menu: tested game models + their rescue models
-POST /games                -> start a game (LLM-only or with a human seat; optional BYOK
-                              api_key + model from the tested list fund the game's model
-                              calls — key held in memory only). lobby=true creates a
-                              waiting room instead (response carries the host_key).
+POST /games                -> instant start (solo human with optional role choice, or
+                              LLM-only; optional BYOK api_key + model from the tested
+                              list fund the game's calls — key held in memory only)
+POST /rooms                -> create a multiplayer waiting room (BYOK only; humans join
+                              via /join, roles always random; response carries host_key)
 POST /games/{id}/join      -> claim a human seat in a waiting room (rooms deal
                               random roles; role choice is solo-only, via POST /games)
 POST /games/{id}/start     -> the host starts the room's game (?host_key=); the
@@ -50,6 +51,8 @@ from server.schemas.requests import (
     ModelRow,
     ModelsMenu,
     NewGame,
+    NewRoom,
+    RoomCreated,
     SeatJoined,
     TurnAccepted,
 )
@@ -103,24 +106,21 @@ async def supported_models() -> ModelsMenu:
     ])
 
 
-@router.post("/games", response_model=GameCreated,
-             summary="Start a game, or create a waiting room (optional BYOK)")
-async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
-    if body.model and not body.api_key:
+def _check_byok(api_key: str, model: str) -> None:
+    """The BYOK gate, shared by both creation doors."""
+    if model and not api_key:
         raise HTTPException(status_code=422, detail="model selection requires api_key")
-    if body.model and body.model not in SUPPORTED_GAME_MODELS:
+    if model and model not in SUPPORTED_GAME_MODELS:
         raise HTTPException(
             status_code=422,
             detail=f"unsupported model; pick from GET /models: {sorted(SUPPORTED_GAME_MODELS)}",
         )
-    if body.lobby:
-        if body.human or body.human_role is not None:
-            raise HTTPException(status_code=422,
-                                detail="a lobby seats humans via POST /join, "
-                                       "not the create body")
-        room = GameLobby(api_key=body.api_key, model=body.model)
-        games[room.game_id] = room
-        return GameCreated(game_id=room.game_id, host_key=room.host_key)
+
+
+@router.post("/games", response_model=GameCreated,
+             summary="Instant start: solo human (role choice) or LLM-only")
+async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
+    _check_byok(body.api_key, body.model)
     session = GameSession(RunConfig(
         human_player=body.human or body.human_role is not None,
         human_role=body.human_role,
@@ -130,6 +130,19 @@ async def create_game(body: NewGame, games: GamesRegistry) -> GameCreated:
     games[session.game_id] = session
     session.start()
     return GameCreated(game_id=session.game_id)
+
+
+@router.post("/rooms", response_model=RoomCreated,
+             summary="Create a multiplayer waiting room (humans join via /join)")
+async def create_room(body: NewRoom, games: GamesRegistry) -> RoomCreated:
+    """The multiplayer door: no human/role fields exist in its contract — a room
+    seats humans only through POST /join and always deals random roles. All
+    per-id routes stay under /games/{id}: the /start swap keeps the id, so the
+    room URL is the game URL for its whole life."""
+    _check_byok(body.api_key, body.model)
+    room = GameLobby(api_key=body.api_key, model=body.model)
+    games[room.game_id] = room
+    return RoomCreated(game_id=room.game_id, host_key=room.host_key)
 
 
 @router.post("/games/{game_id}/join", response_model=SeatJoined,

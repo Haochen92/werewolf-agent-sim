@@ -40,10 +40,11 @@ def test_models_menu_serves_the_registry(api_client):
 
 # ---- POST /games: the registry gate (BYOK v1.5) -----------------------------------------
 
-def test_model_selection_without_a_key_is_rejected(api_client):
-    r = api_client.post("/games", json={"model": GEMINI})
-    assert r.status_code == 422
-    assert "requires api_key" in r.json()["detail"]
+def test_model_selection_without_a_key_is_rejected_at_both_doors(api_client):
+    for door in ("/games", "/rooms"):
+        r = api_client.post(door, json={"model": GEMINI})
+        assert r.status_code == 422
+        assert "requires api_key" in r.json()["detail"]
 
 
 def test_untested_models_are_rejected(api_client):
@@ -84,8 +85,8 @@ def test_turn_without_a_pending_request_is_409(api_client, quiet_session):
 
 # ---- the lobby: create -> join -> start (slice 2) ----------------------------------------
 
-def _make_lobby(api_client, **extra):
-    body = api_client.post("/games", json={"lobby": True, **extra}).json()
+def _make_room(api_client, **extra):
+    body = api_client.post("/rooms", json=extra).json()
     return body["game_id"], body["host_key"]
 
 
@@ -104,7 +105,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
 
-    game_id, host_key = _make_lobby(api_client)
+    game_id, host_key = _make_room(api_client)
     assert host_key  # the create response is the ONLY carrier of the host credential
 
     status = api_client.get(f"/games/{game_id}").json()
@@ -134,7 +135,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
 
 
 def test_lobby_seat_cap(api_client):
-    game_id, _ = _make_lobby(api_client)
+    game_id, _ = _make_room(api_client)
 
     for i in range(MAX_HUMAN_SEATS):
         assert api_client.post(f"/games/{game_id}/join",
@@ -144,17 +145,18 @@ def test_lobby_seat_cap(api_client):
 
 
 def test_lobby_blocks_turns_and_events_until_started(api_client):
-    game_id, _ = _make_lobby(api_client)
+    game_id, _ = _make_room(api_client)
 
     r = api_client.post(f"/games/{game_id}/turns", json={"message": "hi"})
     assert r.status_code == 409 and "not started" in r.json()["detail"]
     assert api_client.get(f"/games/{game_id}/events").status_code == 409
 
 
-def test_lobby_rejects_instant_start_human_fields(api_client):
-    r = api_client.post("/games", json={"lobby": True, "human": True})
-    assert r.status_code == 422
-    assert "via POST /join" in r.json()["detail"]
+def test_room_contract_has_no_human_fields(api_client):
+    # Not a hand-written guard: NewRoom simply has no human/role fields and forbids
+    # extras, so instant-start fields sent to /rooms fail schema validation.
+    assert api_client.post("/rooms", json={"human": True}).status_code == 422
+    assert api_client.post("/rooms", json={"human_role": "wolf"}).status_code == 422
 
 
 def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
@@ -171,7 +173,7 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
 
-    game_id, host_key = _make_lobby(api_client)
+    game_id, host_key = _make_room(api_client)
     assert api_client.post(f"/games/{game_id}/start?host_key={host_key}").status_code == 200
     assert (launched[0].human_player, launched[0].human_role) == (0, None)
 
@@ -190,6 +192,6 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
 
-    game_id, host_key = _make_lobby(api_client, api_key="sk-room", model=GEMINI)
+    game_id, host_key = _make_room(api_client, api_key="sk-room", model=GEMINI)
     api_client.post(f"/games/{game_id}/start?host_key={host_key}")
     assert seen == {"api_key": "sk-room", "model": GEMINI}
