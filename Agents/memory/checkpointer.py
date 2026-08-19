@@ -23,6 +23,7 @@ load_dotenv()
 _STATE_MODEL_ALLOWLIST = [
     game_events.AddressedTarget,
     game_events.FiringReason,
+    game_events.DiscussionPassReason,  # str-Enum inside DayChannel (pass markers)
     game_events.DayChannel,
     game_events.DaySummary,
     game_events.WolfChannel,
