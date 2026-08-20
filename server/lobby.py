@@ -22,6 +22,7 @@ the host_key check lives in the route (403).
 
 from __future__ import annotations
 
+from typing import NamedTuple
 from uuid import uuid4
 
 from Agents.config import RunConfig
@@ -33,12 +34,20 @@ from Agents.config.game import GameConfig
 MAX_HUMAN_SEATS = len(GameConfig().initial_roles)
 
 
-class GameLobby:
-    """One waiting room: identity + host credential + the joined seats (names only).
+class HumanSeat(NamedTuple):
+    """One claimed seat: the public roster name + the private proof of ownership."""
 
-    host_key is returned once, in the create response — the creator's proof for
-    /start ("creator starts manually" ruling). Slice 3 replaces this and the seat
-    identity story with real per-seat tokens.
+    name: str
+    token: str
+
+
+class GameLobby:
+    """One waiting room: identity + host credential + the joined seats.
+
+    Two credentials, both uuid4, both delivered exactly once in a response body:
+    host_key (create response) proves "may start the game"; each seat's token
+    (join response + HttpOnly cookie) proves "owns this seat" for turns, private
+    events, and rejoin — there are no accounts, so holding the token IS the identity.
     """
 
     def __init__(self, *, api_key: str = "", model: str = "") -> None:
@@ -47,16 +56,36 @@ class GameLobby:
         # BYOK travels creation -> start: the creator funds the game.
         self.api_key = api_key
         self.model = model
-        self.players: list[str] = []
+        self.seats: list[HumanSeat] = []
 
-    def join(self, name: str) -> int:
-        """Claim a human seat; returns the 1-based seat position."""
-        if len(self.players) >= MAX_HUMAN_SEATS:
+    @property
+    def players(self) -> list[str]:
+        """The public roster: display names only, never the tokens."""
+        return [s.name for s in self.seats]
+
+    @property
+    def tokens(self) -> list[str]:
+        """Seat tokens in join order. Join order IS deal order (the orchestrator
+        builds human_players deterministically), so at start the GameSession maps
+        token i -> human_players[i]."""
+        return [s.token for s in self.seats]
+
+    def join(self, name: str) -> tuple[int, str]:
+        """Claim a human seat; returns (1-based position, the seat's secret token)."""
+        if len(self.seats) >= MAX_HUMAN_SEATS:
             raise LookupError(
                 "all human seats are taken — spectate via GET /games/{id}/events "
                 "(spectators need no seat)")
-        self.players.append(name)
-        return len(self.players)
+        seat = HumanSeat(name=name, token=str(uuid4()))
+        self.seats.append(seat)
+        return len(self.seats), seat.token
+
+    def position_of(self, token: str) -> int | None:
+        """1-based join position owning this token; None = unknown (403 material)."""
+        for i, seat in enumerate(self.seats, start=1):
+            if seat.token == token:
+                return i
+        return None
 
     def run_config(self) -> RunConfig:
         """Assemble the started game's config. Passing our game_id through keeps the
@@ -64,7 +93,7 @@ class GameLobby:
         No human_role ever: rooms deal random seats (see the module docstring)."""
         return RunConfig(
             game_id=self.game_id,
-            human_player=len(self.players),
+            human_player=len(self.seats),
             # A served game is never mined into the memory store (the CLI human-game rule).
             memory_persistence={"dump_enabled": False},
         )

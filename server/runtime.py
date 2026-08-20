@@ -35,7 +35,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
-from typing import Any, Callable, NamedTuple
+from typing import Any, Callable, NamedTuple, Sequence
 
 from langgraph.types import Command
 
@@ -248,6 +248,10 @@ class GameSession:
       human_players    which seats the ENGINE dealt to humans (read from the
                        INITIALIZE_GAME part); served by GET /games so the client
                        knows whose seats to render.
+      _seat_tokens     the per-joiner secrets, in join order. Join order IS deal
+                       order, so token i owns human_players[i] — seat_for_token()
+                       is the proof-of-identity lookup behind turns, private event
+                       tiers, and the status "you" field.
       pending_requests the parked interrupt payloads, keyed by seat — a dict because a
                        parallel superstep (night fan-out, votes) can interrupt for
                        several human seats at once; sequential phases just hold one
@@ -274,7 +278,8 @@ class GameSession:
     """
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
-                 api_key: str = "", model: str = "", graph=None) -> None:
+                 api_key: str = "", model: str = "",
+                 seat_tokens: Sequence[str] = (), graph=None) -> None:
         # BYOK billing (memory-only; model must come from SUPPORTED_GAME_MODELS).
         self._api_key = api_key
         if api_key and not model:
@@ -299,6 +304,7 @@ class GameSession:
         self.game_over = False
 
         # The human seat (HITL).
+        self._seat_tokens = list(seat_tokens)
         self.human_players: list[str] = []
         self.pending_requests: dict[str, HumanTurnRequest] = {}
         self._pending_ids: dict[str, str] = {}
@@ -430,6 +436,29 @@ class GameSession:
 
     async def wait_finished(self) -> None:
         await self._finished.wait()
+
+    # -- seat identity (the token minted at /join or the solo /games door) -----------------
+
+    def seat_for_token(self, token: str) -> str | None:
+        """Resolve a seat token to its proven engine seat.
+
+        None = unknown token (the routes 403). "" = valid token but INITIALIZE_GAME
+        hasn't dealt seats yet — a real window: viewers connect to /events the moment
+        /start returns, so SSE re-resolves per entitlement check rather than freezing
+        the connect-time answer (the same lesson as the roles rebind)."""
+        try:
+            i = self._seat_tokens.index(token)
+        except ValueError:
+            return None
+        return self.human_players[i] if i < len(self.human_players) else ""
+
+    def position_of(self, token: str) -> int | None:
+        """1-based join position owning this token (mirrors GameLobby.position_of,
+        so /rejoin serves both registry phases through one call)."""
+        try:
+            return self._seat_tokens.index(token) + 1
+        except ValueError:
+            return None
 
     # -- the human turn (from POST /turns) ------------------------------------------------
 
