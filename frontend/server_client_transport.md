@@ -409,6 +409,83 @@ Consequences, all following from that one sentence:
 
 ---
 
+## 6b. Seat authentication: proving a seat, not a person (decided 2026-08-20)
+
+§6 decides what a *seat* may see; this section is how a connection proves **which seat it
+is**. Until this decision the answer was "it says so in the URL" — `?seat=player_3` was
+trusted verbatim, an explicitly-admitted demo hole: anyone with the game URL could read any
+seat's role and night results, unlock wolf chat by claiming a wolf seat, or answer another
+player's turn.
+
+### The design: a per-seat secret token, and no accounts
+
+There is no login. Each human seat gets a **uuid4 token minted when the seat is claimed**
+(`POST /join`, or game creation on the solo door). Holding the token IS the identity — it
+proves "owns this seat in this game," nothing more. No cross-game identity, no person
+behind it, no password to reset. This is deliberately the same shape as the room's
+`host_key` (the sibling credential: "may start this game"): both are delivered exactly once
+in a response body and never appear in any later response.
+
+The token maps to an engine seat by **join order**: the orchestrator deals human seats
+deterministically (first the pre-shuffle candidate, then post-shuffle extras), so token *i*
+owns `human_players[i]`. The mapping resolves lazily — identity binds at INITIALIZE_GAME,
+like the roles map, and is re-asked per entitlement check rather than frozen at connect
+time (a player's EventSource connects before seats are dealt).
+
+### Why an HttpOnly cookie, not a header or the query string
+
+The constraint that decides everything: **SSE must carry identity, and `EventSource`
+cannot set headers.** Whatever channel authenticates the stream has to be one the browser
+attaches automatically.
+
+| Channel | Verdict | Why |
+|---|---|---|
+| `Authorization` header | ❌ | `EventSource` can't set headers — the one connection that most needs identity couldn't carry it |
+| Query string (`?token=`) | ❌ | Tokens land in server logs, browser history, and proxies; it's also literally the hole being fixed |
+| **HttpOnly cookie** | ✅ | Browsers attach cookies to SSE and `fetch` automatically; `HttpOnly` keeps it out of page JavaScript's reach entirely — an XSS can't exfiltrate seats |
+
+Cookie shape: named per game (`seat_<game_id>`) so one browser can hold seats in several
+games; `Path=/games/<id>` so it only rides requests to its own game; `Max-Age` 24h
+(comfortably outlives any in-memory game); `SameSite=Lax`.
+
+**The accepted constraint:** `SameSite=Lax` requires the frontend and API to be
+**same-site** — localhost ports in dev, sibling subdomains deployed — and the client must
+send credentialed requests (`fetch(..., {credentials: "include"})`,
+`new EventSource(url, {withCredentials: true})`). CORS is already credential-enabled with
+explicit origins. Truly cross-site hosting would force `SameSite=None; Secure`; we chose
+the constraint over the weaker cookie.
+
+### Loss and recovery: the token has two copies
+
+A cookie dies with its browser: switch devices mid-game, clear browsing data, close an
+incognito window — the seat's proof is gone. Without accounts there is no "verify it's
+really you," so recovery is a **reclaim door, not re-verification**:
+
+1. The join response carries the token **once in the body** alongside the Set-Cookie. The
+   frontend stashes it in localStorage — a different lifecycle from cookies, so one copy
+   usually survives.
+2. `POST /games/{id}/rejoin {token}` re-proves ownership and re-sets the cookie. It works
+   in both registry phases (waiting room and running game).
+3. Both copies gone (a genuinely new device): the seat is orphaned. The game must not
+   stall for it — an orphaned seat and an AFK player are the *same failure mode*, and the
+   AFK timer's deterministic defaults (slice 4) keep the game moving either way. That
+   convergence is why accounts aren't needed for the demo.
+
+**403 is loud on purpose.** A presented-but-unknown token is rejected everywhere — turns,
+events, status — never silently downgraded to spectator ("I can't see my role" is a
+confusing bug; a 403 is an instruction). Status doubles as the auth probe: the client's
+poll hitting 403 is exactly the trigger for its rejoin UX.
+
+### What reconnect costs under this scheme: nothing
+
+`EventSource` auto-reconnect (§7) reuses the original URL and attaches both
+`Last-Event-ID` *and* the cookie automatically — identity and cursor both survive a
+dropped connection with zero client code. This composability is the quiet payoff of
+putting identity in the cookie rather than the URL: the reconnect story (§7) and the
+authentication story never had to learn about each other.
+
+---
+
 ## 7. Reconnect and catch-up: replay the log, never send the checkpoint
 
 **How reconnect works:** every event carries a per-game monotonic `seq`, sent as the SSE
