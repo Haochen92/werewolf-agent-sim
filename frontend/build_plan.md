@@ -9,9 +9,11 @@
 > and `server/schemas/events.py`.
 >
 > **Scope note: this document covers architecture, stack, and build phasing only. Visual / UX
-> design (layout, table view, séance-noir styling, mobile ergonomics) is deliberately NOT covered
-> — it is the next design discussion. The theme-slice structure below is where that pass will
-> plug in without touching app code.**
+> design lives in [`ux_baseline.md`](ux_baseline.md) (ruled 2026-08-20) — the v1 UX spec, the
+> token-level aesthetic baseline (art-direction pick deliberately deferred), and the future
+> parking lot. The two documents together are the complete implementation handoff. The
+> theme-slice structure below is where the later styling pass plugs in without touching app
+> code.**
 
 ---
 
