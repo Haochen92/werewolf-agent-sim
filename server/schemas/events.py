@@ -182,6 +182,10 @@ class InputRequest(DurableEvent, frozen=True):
     ]
     candidates: list[str] = Field(default_factory=list)
     """Legal targets where the action needs one; empty for free-text turns."""
+    deadline: str | None = None
+    """When the AFK timer will delegate this turn to the seat's agent (ISO-8601 UTC),
+    the client's countdown source. None = no timer armed (solo games — the lone human
+    may think forever). Additive optional field, ruled 2026-08-20."""
 
 
 class DaySummary(DurableEvent, frozen=True):

@@ -346,6 +346,10 @@ async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch)
     while not session.pending_requests:
         await asyncio.sleep(0.01)
     assert list(session.turn_deadlines) == ["player_3"]  # the client's countdown source
+    # The input_request translated from the SAME part carries the deadline (parking
+    # runs before translation): the countdown rides the push channel, no poll needed.
+    (request_event,) = [e for e in session.log if e.type == "input_request"]
+    assert request_event.deadline == session.turn_deadlines["player_3"]
 
     # Nobody answers: the stopwatch rings, the delegate sentinel resumes the game.
     await asyncio.wait_for(session.wait_finished(), timeout=10)
@@ -362,6 +366,8 @@ async def test_afk_timer_never_arms_in_solo(quiet_session, monkeypatch):
     while not session.pending_requests:
         await asyncio.sleep(0.01)
     assert session.turn_deadlines == {}
+    (request_event,) = [e for e in session.log if e.type == "input_request"]
+    assert request_event.deadline is None  # no timer, no countdown to render
     await asyncio.sleep(0.1)  # several windows pass; the seat still owes input
     assert sorted(session.pending_requests) == ["player_3"]
 

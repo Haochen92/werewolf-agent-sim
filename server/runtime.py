@@ -386,8 +386,30 @@ class GameSession:
     def _on_part(self, part) -> bool:
         """Translate, record, publish. Returns True on an interrupt part."""
         data = part.get("data") or {}
+
+        # Park BEFORE translating: the input_request events translated from this very
+        # part must carry their seats' AFK deadlines, so the timers are armed first.
+        # Root mirror only — subgraphs=True streams each interrupt twice (child ns +
+        # root), and parking the child copy could re-park a seat that answered in the
+        # gap. Falling back to the seat as the answer key covers items without ids.
+        interrupted = "__interrupt__" in data and not (part.get("ns") or ())
+        if interrupted:
+            # A parallel superstep can carry several interrupts (one per human seat).
+            for item in data["__interrupt__"]:
+                request = HumanTurnRequest.model_validate(_read_field(item, "value"))
+                self.pending_requests[request.player_id] = request
+                self._pending_ids[request.player_id] = (
+                    _read_field(item, "id", "") or request.player_id)
+                self._promises[request.player_id] = asyncio.get_running_loop().create_future()
+                if len(self._seat_tokens) > 1:  # multi-human only; solo thinks forever
+                    self._arm_afk_timer(request)
+
         events = self.translator.translate(part)
         for event in events:
+            if event.type == "input_request" and event.player in self.turn_deadlines:
+                # Events are frozen; the stamped copy (same seq) is what gets recorded.
+                event = event.model_copy(
+                    update={"deadline": self.turn_deadlines[event.player]})
             self.log.append(event)
             if event.type == "game_over":
                 self.game_over = True
@@ -399,7 +421,7 @@ class GameSession:
         # were dropped by the translator and their ticks must not double the bars.
         if isinstance(data, dict) and _read_field(
                 _read_field(data, "__metadata__", {}) or {}, "cached"):
-            return False
+            return interrupted
         ns = part.get("ns") or ()
         scope = ns[0].split(":")[0] if ns else "root"
         for node in data:
@@ -410,23 +432,7 @@ class GameSession:
             if node == "INITIALIZE_GAME":
                 self.human_players = list(
                     _read_field(data[node], "human_players", ()) or ())
-
-        if "__interrupt__" in data and not (part.get("ns") or ()):
-            # A parallel superstep can carry several interrupts (one per human seat);
-            # park each under its seat, from the ROOT mirror part only — subgraphs=True
-            # streams each interrupt twice (child ns + root), and parking the child copy
-            # could re-park a seat that answered in the gap. Falling back to the seat as
-            # the answer key covers interrupt items without ids (fixture/fake parts).
-            for item in data["__interrupt__"]:
-                request = HumanTurnRequest.model_validate(_read_field(item, "value"))
-                self.pending_requests[request.player_id] = request
-                self._pending_ids[request.player_id] = (
-                    _read_field(item, "id", "") or request.player_id)
-                self._promises[request.player_id] = asyncio.get_running_loop().create_future()
-                if len(self._seat_tokens) > 1:  # multi-human only; solo thinks forever
-                    self._arm_afk_timer(request)
-            return True
-        return False
+        return interrupted
 
     def _arm_afk_timer(self, request: HumanTurnRequest) -> None:
         seat = request.player_id
