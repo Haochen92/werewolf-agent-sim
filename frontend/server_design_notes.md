@@ -272,3 +272,55 @@ recovery problems.
   entitlement (not metered API), are restricted to the provider's own/approved clients,
   and exist for no backend in our factory — a raw key is the only credential every
   provider shares.
+
+## 7. The AFK fail-safe: delegate the turn to the seat's own agent (ruled 2026-08-20)
+
+A solo game can wait forever — leave for lunch mid-turn and the game is simply paused for
+you; nobody minds. Multiplayer breaks that luxury: the moment two humans share a table, one
+absent player at a vote freezes everyone else, indefinitely. So multiplayer games carry a
+pre-planned fail-safe — designed in from the start, not a patch — that keeps the game moving
+without a missing player's input.
+
+**The design that was discarded first.** The obvious fail-safe is a table of scripted
+defaults, one per kind of turn: silently pass the discussion, abstain from the vote, hold
+the vigilante's fire, pick a random legal target where the game demands one. Writing that
+table out surfaced two facts that reshaped the plan. First, a pleasant one: a human may
+*always* decline to speak in day discussion — even when directly called out — because the
+engine deliberately treats a human's silence as an answer. Second, an awkward one: wolf
+night-talk **cannot be passed at all** under the game's own rules. The rule-checker demands
+a real message from a wolf, and the engine re-checks every answer on resume — there is no
+way to sneak a silent default past it. The scripted-table design was therefore stuck
+choosing between weakening that rule or putting canned words in an absent wolf's mouth for
+the other wolves' AIs to read and react to as if their packmate had really said them.
+
+**The ruling.** Neither. When the clock runs out, **hand the turn to the seat's own AI**.
+One special answer — "delegate" — is legal for *every* kind of turn, and it tells the
+engine: play this one turn for me, the normal AI way. Everything hard about that already
+existed: the AI path's retries, its backup model, its last-resort technical pass if
+generation fails entirely, and the billing plumbing that charges the game's own API key.
+The absent wolf doesn't get canned words — their AI argues and votes with the pack for
+real. About thirty lines of code, most of them the words "if the answer says delegate,
+fall through to the AI path."
+
+**The mechanics.** A 120-second stopwatch starts whenever the game asks a human for input —
+but only in games with two or more human seats; solo games never arm it. Two details keep
+it honest. The stopwatch is tied to the *exact question* it was started for, not to the
+player: if you answer at second 119 and the game immediately asks you something new, the
+old stopwatch — ringing at second 120 — recognizes that its question is gone and dies
+quietly, so the new question gets its full two minutes. And if a real answer arrives at the
+very moment the clock rings, whoever is second simply bounces off the same guard that
+already ignores an accidental double-click. The "it's your turn" message sent to the screen
+also carries *"and you have until 14:32:05"*, so the client renders a countdown without a
+follow-up request. (The field is named `deadline`, not `timeout` — it is a moment in time,
+not a number of seconds.)
+
+**What to know.** Delegated turns are indistinguishable from AI play to everyone else at
+the table — by design. The fail-safe also completes the lost-seat story from the
+authentication design (transport doc §6b): a player who loses their seat credential on a
+dead phone stops being a crisis — after each 120-second window their seat plays itself, the
+table never stalls, and if they recover the credential they resume from their next turn.
+That convergence — disconnection and absence being the *same* failure with the *same*
+remedy — is the reason this game gets away with having no user accounts at all. One
+boundary to respect: the timer never needs to know what kind of turn it is defaulting,
+*because* the delegate answer is legal everywhere. If a future turn type ever makes
+delegation illegal, the timer design breaks — don't do that.
