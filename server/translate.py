@@ -144,6 +144,39 @@ class Translator:
         self._seen_wolf_msgs: set[tuple[int, int, str]] = set()   # (day, round, wolf)
         self._strategies: dict[str, str] = {}  # last shipped note per player (overwrite)
 
+    def hydrate(self, log: list) -> None:
+        """Rebuild the shadow state from a durable event log (server-restart recovery).
+
+        What rebuilds vs what deliberately stays empty:
+        - seq counter, current_day, roles/wolves, ship-once guards, strategy notes:
+          all derivable from shipped events — REBUILT (without the guards, the resume's
+          abort-and-re-execute re-run would re-ship every already-delivered message
+          under fresh seqs).
+        - ballot buffers and tonight's targets: LEFT EMPTY on purpose — an in-flight
+          round's buffers are provisional state that the resume re-run re-streams from
+          scratch, which is exactly the in-process abort-and-re-execute behavior; a
+          committed round's ballots already shipped as tally events and never re-run.
+        """
+        dead: set[str] = set()
+        for e in log:
+            self.seq = max(self.seq, e.seq)
+            self.current_day = max(self.current_day, e.day)
+            if e.type == "roles_assigned":
+                self.roles = dict(e.roles)
+                self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
+            elif e.type in ("speech", "pass_marker"):
+                self._seen_day_entries.add((e.day, e.channel_seq))
+            elif e.type == "wolf_message":
+                self._seen_wolf_msgs.add((e.day, e.round, e.wolf))
+            elif e.type == "strategy_update":
+                self._strategies[e.player] = e.strategy
+            elif e.type == "night_result":
+                dead.update(d.player for d in e.deaths)
+            elif e.type == "lynch_result" and e.player:
+                dead.add(e.player)
+        # wolves tracks SURVIVING wolves live (the parts update it); replay the deaths.
+        self.wolves = [w for w in self.wolves if w not in dead]
+
     # ---- context helpers --------------------------------------------------------------
 
     def _role_holder(self, role: str) -> str | None:
@@ -402,8 +435,12 @@ class Translator:
                                   actor=self._role_holder(role), role=role, target=target))
         strategy = _read_field(delta, "updated_strategy")
         if strategy:
-            out.append(self._emit(ev.StrategyUpdate,
-                                  player=self._role_holder(role), strategy=strategy))
+            # Through the SAME guard as the day path (one rule: ship on content
+            # change, store what shipped) — emitting without storing left the
+            # guard's memory stale after night notes, and made the stored map
+            # unrecoverable from the wire log (restart hydration).
+            out.extend(self._strategy_updates(
+                {"agent_strategies": {self._role_holder(role): strategy}}))
         self._check_folds(scope, node, delta, consumed={target_key, "updated_strategy"})
         return out
 
