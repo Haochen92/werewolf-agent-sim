@@ -22,7 +22,13 @@ Entry = GameSession | GameLobby
 
 
 def get_games(request: Request) -> dict[str, Entry]:
-    """The in-process registry of live game machines (see design notes 5b)."""
+    """The app's registry of every waiting room and running game, keyed by game_id.
+
+    One plain dict on app.state — created empty by the lifespan at startup, torn
+    down by it at shutdown (running game tasks get cancelled). In-memory only: a
+    server restart forgets all games. Inject this (rather than the id-resolving
+    providers below) when a route must ADD or SWAP an entry: POST /games,
+    POST /rooms, and /start's lobby-for-session swap."""
     return request.app.state.games
 
 
