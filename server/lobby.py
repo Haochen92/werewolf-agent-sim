@@ -22,6 +22,7 @@ the host_key check lives in the route (403).
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import NamedTuple
 from uuid import uuid4
 
@@ -50,12 +51,21 @@ class GameLobby:
     events, and rejoin — there are no accounts, so holding the token IS the identity.
     """
 
-    def __init__(self, *, api_key: str = "", model: str = "") -> None:
+    def __init__(self, *, api_key: str = "", model: str = "", name: str = "") -> None:
         self.game_id = str(uuid4())
         self.host_key = str(uuid4())
         # BYOK travels creation -> start: the creator funds the game.
         self.api_key = api_key
         self.model = model
+        self.name = name
+        """Public room title for the GET /rooms browser; "" = unnamed."""
+        self.locked = False
+        """Host-set (POST /lock): a locked room bounces joins but keeps its seats —
+        the invite-link era's implicit lock ("don't share the link"), made explicit
+        now that rooms are publicly listed."""
+        self.created_at = datetime.now(timezone.utc)
+        """Listing TTL anchor: old rooms drop out of GET /rooms (browse filter only
+        — the direct room URL keeps working)."""
         self.seats: list[HumanSeat] = []
 
     @property
@@ -72,6 +82,8 @@ class GameLobby:
 
     def join(self, name: str) -> tuple[int, str]:
         """Claim a human seat; returns (1-based position, the seat's secret token)."""
+        if self.locked:
+            raise LookupError("room is locked — ask the host to unlock it")
         if len(self.seats) >= MAX_HUMAN_SEATS:
             raise LookupError(
                 "all human seats are taken — spectate via GET /games/{id}/events "

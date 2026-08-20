@@ -27,6 +27,12 @@ class ServerSettings(BaseSettings):
     one container; split into a dedicated var only the day the deploy splits DBs).
     Empty = archiving disabled (games still run; /replays answers 503)."""
 
+    ROOM_LIST_TTL_SECONDS: int = 7200
+    """How long a waiting room stays visible in GET /rooms (default 2h). A browse
+    filter, not expiry: the direct room URL keeps working past the TTL. Needed
+    because durability revives waiting rooms across restarts — without a cutoff,
+    abandoned rooms would accumulate in the public list forever."""
+
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [o.strip() for o in self.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]

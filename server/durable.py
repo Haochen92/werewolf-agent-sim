@@ -106,6 +106,15 @@ class SessionRow(SQLModel, table=True):
     """[{name, token}] in join order — join order IS deal order (the seat identity)."""
     human_players: list[str] = Field(default_factory=list,
                                      sa_column=Column(JSONB, nullable=False))
+    room_name: str = ""
+    """The waiting room's public title (GET /rooms); "" for solo/instant games."""
+    locked: bool = False
+    """Host-set join bounce — must survive a restart or the lock silently reopens."""
+    created_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=False,
+                         server_default=func.now()))
+    """Room-listing TTL anchor (set by the route from the lobby's own stamp)."""
     error: str | None = None
     updated_at: datetime | None = Field(
         default=None,

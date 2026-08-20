@@ -145,12 +145,19 @@ async def _recover(monkeypatch, rows, graph):
 
 
 async def test_waiting_room_revives_with_its_identity(monkeypatch):
-    row = _row(phase="waiting", host_key="hk-9")
+    from datetime import datetime, timezone
+
+    stamp = datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc)
+    row = _row(phase="waiting", host_key="hk-9",
+               room_name="wolves den", locked=True, created_at=stamp)
     games, _ = await _recover(monkeypatch, [row], FakeDurableGraph(None))
 
     lobby = games["g-1"]
     assert (lobby.game_id, lobby.host_key) == ("g-1", "hk-9")
     assert lobby.players == ["hao"] and lobby.tokens == ["tok-1"]
+    # The browser/lock facts survive too: a restart must not silently unlock a
+    # room or reset its listing-TTL clock to boot time.
+    assert (lobby.name, lobby.locked, lobby.created_at) == ("wolves den", True, stamp)
 
 
 async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatch):

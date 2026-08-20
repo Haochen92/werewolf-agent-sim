@@ -68,6 +68,26 @@ class NewRoom(BaseModel):
     the instant-start door."""
     model: str = ""
     """Game model from SUPPORTED_GAME_MODELS; requires api_key; empty = default."""
+    name: str = Field(default="", max_length=40)
+    """Public room title shown in the GET /rooms browser; "" renders as unnamed
+    client-side. Capped server-side — it is the one free-text field strangers see."""
+
+
+class RoomSummary(BaseModel):
+    """One row of GET /rooms: the public face of a waiting room. Also the POST /lock
+    response (the host's fresh view after flipping the flag). Never any secret —
+    no host_key, no tokens."""
+
+    game_id: str
+    name: str
+    players: list[str]
+    """Display names in join order (the roster is public — see server/lobby.py)."""
+    max_seats: int
+    locked: bool
+    """Locked rooms still list (the client renders them unjoinable) — vanishing
+    mid-browse reads as a bug; a visible lock reads as a full table."""
+    created_at: str
+    """ISO-8601 UTC creation time — the client's 'created N min ago' source."""
 
 
 class RoomCreated(BaseModel):
@@ -125,6 +145,10 @@ class GameStatus(BaseModel):
     """Human-seat capacity of a waiting room — the client's "room full" signal
     (len(players) == max_seats). 0 once running; the server 409 stays the
     authority either way."""
+    name: str = ""
+    """The room title (waiting rooms only; "" once running)."""
+    locked: bool = False
+    """Waiting rooms only: joins currently bounce (the host may unlock)."""
     human_players: list[str] = Field(default_factory=list)
     """The seats the engine dealt to humans; empty until INITIALIZE_GAME lands
     (or for an LLM-only game)."""

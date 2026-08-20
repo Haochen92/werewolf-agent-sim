@@ -86,7 +86,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
         "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
         "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
-        "error": None,
+        "error": None, "name": "", "locked": False,
     }
 
 
@@ -309,3 +309,61 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     game_id, host_key = _make_room(api_client, api_key="sk-room", model=GEMINI)
     api_client.post(f"/games/{game_id}/start?host_key={host_key}")
     assert seen == {"api_key": "sk-room", "model": GEMINI}
+
+
+# ---- the room browser + lock (slice 7) ----------------------------------------------------
+
+def test_room_browser_lists_waiting_rooms_newest_first(api_client, seated_session):
+    """Only lobbies list (the seated_session fixture plants a RUNNING game in the
+    same registry — it must not appear); rows are public-safe and newest first."""
+    a, _ = _make_room(api_client, name="wolves den")
+    b, _ = _make_room(api_client)
+
+    r = api_client.get("/rooms")
+    rows = r.json()
+    assert [row["game_id"] for row in rows] == [b, a]  # newest first
+    assert rows[1]["name"] == "wolves den" and rows[0]["name"] == ""
+    assert all(row["max_seats"] == MAX_HUMAN_SEATS and row["locked"] is False
+               for row in rows)
+    assert "host_key" not in r.text and "token" not in r.text  # public face only
+
+    api_client.post(f"/games/{a}/join", json={"name": "hao"})
+    listed = {row["game_id"]: row for row in api_client.get("/rooms").json()}
+    assert listed[a]["players"] == ["hao"]
+
+
+def test_room_name_is_capped(api_client):
+    assert api_client.post("/rooms", json={"name": "x" * 41}).status_code == 422
+    assert api_client.post("/rooms", json={"name": "x" * 40}).status_code == 200
+
+
+def test_stale_rooms_hide_from_the_list_but_keep_their_url(api_client):
+    from datetime import timedelta
+
+    from server.config import server_settings
+
+    game_id, _ = _make_room(api_client, name="abandoned")
+    room = api_client.app.state.games[game_id]
+    room.created_at -= timedelta(seconds=server_settings.ROOM_LIST_TTL_SECONDS + 1)
+
+    assert api_client.get("/rooms").json() == []  # a browse filter...
+    assert api_client.get(f"/games/{game_id}").status_code == 200  # ...not expiry
+
+
+def test_lock_bounces_joins_until_the_host_unlocks(api_client):
+    game_id, host_key = _make_room(api_client, name="den")
+
+    assert api_client.post(f"/games/{game_id}/lock?host_key=wrong").status_code == 403
+
+    r = api_client.post(f"/games/{game_id}/lock?host_key={host_key}")
+    assert r.json()["locked"] is True  # the host's fresh RoomSummary view
+    assert api_client.get(f"/games/{game_id}").json()["locked"] is True
+
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "late"})
+    assert r.status_code == 409 and "locked" in r.json()["detail"]
+    # Locked rooms still list — visibly locked, not vanished mid-browse.
+    assert api_client.get("/rooms").json()[0]["locked"] is True
+
+    api_client.post(f"/games/{game_id}/lock?host_key={host_key}&locked=false")
+    assert api_client.post(f"/games/{game_id}/join",
+                           json={"name": "ontime"}).status_code == 200

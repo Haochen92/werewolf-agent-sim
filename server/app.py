@@ -7,8 +7,12 @@ POST /games                -> instant start (solo human with optional role choic
                               list fund the game's calls — key held in memory only)
 POST /rooms                -> create a multiplayer waiting room (BYOK only; humans join
                               via /join, roles always random; response carries host_key)
+GET  /rooms                -> the public room browser: joinable waiting rooms, newest
+                              first, TTL-filtered (server.config.ROOM_LIST_TTL_SECONDS)
 POST /games/{id}/join      -> claim a human seat in a waiting room (rooms deal
                               random roles; role choice is solo-only, via POST /games)
+POST /games/{id}/lock      -> host flips joinability (?host_key=&locked=); a locked
+                              room bounces /join with 409 but keeps its seats
 POST /games/{id}/rejoin    -> restore a lost seat cookie from the token's body copy
 POST /games/{id}/start     -> the host starts the room's game (?host_key=); the
                               GameLobby is swapped for a GameSession under the same id
@@ -35,6 +39,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import Annotated, AsyncIterator, Callable
 from uuid import uuid4
 
@@ -61,6 +66,7 @@ from server.schemas.requests import (
     NewRoom,
     RejoinGame,
     RoomCreated,
+    RoomSummary,
     SeatJoined,
     TurnAccepted,
 )
@@ -180,11 +186,50 @@ async def create_room(body: NewRoom, games: GamesRegistry) -> RoomCreated:
     per-id routes stay under /games/{id}: the /start swap keeps the id, so the
     room URL is the game URL for its whole life."""
     _check_byok(body.api_key, body.model)
-    room = GameLobby(api_key=body.api_key, model=body.model)
+    room = GameLobby(api_key=body.api_key, model=body.model, name=body.name)
     games[room.game_id] = room
     await durable.upsert_session(room.game_id, phase="waiting", host_key=room.host_key,
-                                 model=body.model, byok=bool(body.api_key), seats=[])
+                                 model=body.model, byok=bool(body.api_key), seats=[],
+                                 room_name=room.name, created_at=room.created_at)
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)
+
+
+def _room_summary(room: GameLobby) -> RoomSummary:
+    return RoomSummary(
+        game_id=room.game_id, name=room.name, players=list(room.players),
+        max_seats=MAX_HUMAN_SEATS, locked=room.locked,
+        created_at=room.created_at.isoformat(),
+    )
+
+
+@router.get("/rooms", response_model=list[RoomSummary],
+            summary="Browse waiting rooms (public)")
+async def list_rooms(games: GamesRegistry) -> list[RoomSummary]:
+    """Waiting rooms only, newest first. Rooms older than ROOM_LIST_TTL_SECONDS are
+    hidden, not expired — durability revives abandoned rooms across restarts, so an
+    unfiltered list would fill with the undead; the direct room URL keeps working."""
+    cutoff = server_settings.ROOM_LIST_TTL_SECONDS
+    now = datetime.now(timezone.utc)
+    rooms = [g for g in games.values() if isinstance(g, GameLobby)
+             and (now - g.created_at).total_seconds() < cutoff]
+    return [_room_summary(r) for r in
+            sorted(rooms, key=lambda r: r.created_at, reverse=True)]
+
+
+@router.post("/games/{game_id}/lock", response_model=RoomSummary,
+             summary="Lock or unlock a waiting room (host only)")
+async def lock_room(room: Room, host_key: str = "", locked: bool = True) -> RoomSummary:
+    """The host's door policy: locked bounces /join (409) without touching seated
+    players. Kicking a seated player is deliberately NOT offered (deferred ruling
+    2026-08-20): pre-start, lock covers the griefing case; post-start, the AFK
+    delegate already absorbs deserters."""
+    if not isinstance(room, GameLobby):
+        raise HTTPException(status_code=409, detail="game already started")
+    if host_key != room.host_key:
+        raise HTTPException(status_code=403, detail="only the host may lock the room")
+    room.locked = locked
+    await durable.upsert_session(room.game_id, locked=locked)
+    return _room_summary(room)
 
 
 @router.post("/games/{game_id}/join", response_model=SeatJoined,
@@ -247,6 +292,8 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
             state="waiting",
             players=list(session.players),
             max_seats=MAX_HUMAN_SEATS,
+            name=session.name,
+            locked=session.locked,
         )
     return GameStatus(
         game_id=session.game_id,

@@ -58,9 +58,12 @@ async def _revive(row: durable.SessionRow):
         if row.byok:
             await durable.upsert_session(row.game_id, phase="dead", error=_BYOK_EPITAPH)
             return None
-        lobby = GameLobby(model=row.model)
+        lobby = GameLobby(model=row.model, name=row.room_name)
         lobby.game_id = row.game_id  # identity comes from the row, not fresh uuids
         lobby.host_key = row.host_key
+        lobby.locked = row.locked
+        if row.created_at is not None:  # keep the original TTL clock, not boot time
+            lobby.created_at = row.created_at
         lobby.seats = [HumanSeat(**s) for s in row.seats]
         return lobby
 
