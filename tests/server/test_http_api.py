@@ -85,7 +85,8 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     assert body == {
         "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
         "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
-        "game_over": False, "last_seq": 0, "alive_role_counts": {}, "error": None,
+        "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
+        "error": None,
     }
 
 

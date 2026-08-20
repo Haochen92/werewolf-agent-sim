@@ -235,6 +235,7 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
         you=(session.seat_for_token(token) or None) if token else None,
         pending_input=bool(session.pending_requests),
         pending_seats=sorted(session.pending_requests),
+        deadlines=dict(session.turn_deadlines),
         game_over=session.game_over,
         last_seq=session.log[-1].seq if session.log else 0,
         alive_role_counts=session.public_alive_counts(),

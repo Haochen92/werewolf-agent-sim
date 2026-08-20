@@ -35,6 +35,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, NamedTuple, Sequence
 
 from langgraph.types import Command
@@ -88,6 +89,11 @@ _BRANCH_UNITS = {
     "VIGILANTE_NIGHT_PHASE": "vigilante",
 }
 _PAD_SECONDS = (20.0, 30.0)
+
+# The AFK window: how long a MULTI-human game waits on a parked seat before the turn
+# is delegated to the seat's agent (one absent player must not hold the table hostage).
+# Solo games never arm it — the lone human may think forever, nobody is waiting.
+AFK_TIMEOUT_SECONDS = 120.0
 
 
 def entitled(event: ev.DurableEvent, seat: str, roles: dict[str, str],
@@ -309,6 +315,9 @@ class GameSession:
         self.pending_requests: dict[str, HumanTurnRequest] = {}
         self._pending_ids: dict[str, str] = {}
         self._promises: dict[str, asyncio.Future] = {}
+        # AFK: per-seat delegation deadlines (served in status) + the live stopwatches.
+        self.turn_deadlines: dict[str, str] = {}
+        self._afk_tasks: set[asyncio.Task] = set()
 
         # Delivery + lifecycle.
         self._subscribers: set[asyncio.Queue] = set()
@@ -331,6 +340,8 @@ class GameSession:
         task's next await; a sync node already inside LangGraph's executor runs its
         current step to completion in its worker thread — accepted, since the game's
         state is RAM-only anyway (durability is the parked M2)."""
+        for timer in list(self._afk_tasks):  # sleeping stopwatches die with the game
+            timer.cancel()
         if self._task is not None and not self._task.done():
             self._task.cancel()
             try:
@@ -412,8 +423,39 @@ class GameSession:
                 self._pending_ids[request.player_id] = (
                     _read_field(item, "id", "") or request.player_id)
                 self._promises[request.player_id] = asyncio.get_running_loop().create_future()
+                if len(self._seat_tokens) > 1:  # multi-human only; solo thinks forever
+                    self._arm_afk_timer(request)
             return True
         return False
+
+    def _arm_afk_timer(self, request: HumanTurnRequest) -> None:
+        seat = request.player_id
+        self.turn_deadlines[seat] = (
+            datetime.now(timezone.utc) + timedelta(seconds=AFK_TIMEOUT_SECONDS)
+        ).isoformat()
+        task = asyncio.get_running_loop().create_task(
+            self._afk_default(seat, request), name=f"afk-{self.game_id}-{seat}")
+        self._afk_tasks.add(task)
+        task.add_done_callback(self._afk_tasks.discard)
+
+    async def _afk_default(self, seat: str, request: HumanTurnRequest) -> None:
+        """The stopwatch: sleep out the window, then default THIS question.
+
+        The expiry check is request IDENTITY, not seat membership: if the seat answered
+        at 119s and its next turn parked at 119.5s, the seat is pending again — but on a
+        different question, which has its own stopwatch. This one must die quietly.
+        No await sits between the check and submit_turn, so a real answer racing the
+        expiry either lands first (identity check fails) or second (LookupError inside
+        submit_turn — the same bounce as a double-click)."""
+        await asyncio.sleep(AFK_TIMEOUT_SECONDS)
+        if self.pending_requests.get(seat) is not request:
+            return
+        logger.info("game %s: seat %s AFK on %s — delegating the turn to its agent",
+                    self.game_id, seat, request.phase)
+        try:
+            self.submit_turn({"delegate": True}, seat=seat)
+        except Exception:  # a failed default must be loud, never a vanished task error
+            logger.exception("game %s: AFK delegation for %s failed", self.game_id, seat)
 
     # -- fan-out --------------------------------------------------------------------------
 
@@ -483,6 +525,7 @@ class GameSession:
         # LookupError above and can never reach set_result (futures are write-once —
         # a second set would raise InvalidStateError).
         del self.pending_requests[seat]
+        self.turn_deadlines.pop(seat, None)
         self._promises[seat].set_result(response.model_dump())
         logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
                     self.game_id, seat, len(self.pending_requests))

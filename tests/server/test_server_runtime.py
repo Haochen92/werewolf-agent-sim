@@ -337,6 +337,52 @@ async def test_parallel_interrupts_park_per_seat_and_resume_as_one_batch(quiet_s
     assert all(answer["target"] == "p9" for answer in resume.values())
 
 
+# ---- the AFK timer: multi-human games delegate a parked seat's turn ----------------------
+
+async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch):
+    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 0.05)
+    session = quiet_session(FakeGraph([_interrupt_part()], []), seat_tokens=["t1", "t2"])
+    session.start()
+    while not session.pending_requests:
+        await asyncio.sleep(0.01)
+    assert list(session.turn_deadlines) == ["player_3"]  # the client's countdown source
+
+    # Nobody answers: the stopwatch rings, the delegate sentinel resumes the game.
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+    assert session._graph.calls[1].resume["delegate"] is True
+    assert session.turn_deadlines == {}
+
+
+async def test_afk_timer_never_arms_in_solo(quiet_session, monkeypatch):
+    """One human seat = nobody is held hostage; the lone human may think forever."""
+    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 0.02)
+    session = quiet_session(FakeGraph([_interrupt_part()], []), seat_tokens=["t1"])
+    session.start()
+    while not session.pending_requests:
+        await asyncio.sleep(0.01)
+    assert session.turn_deadlines == {}
+    await asyncio.sleep(0.1)  # several windows pass; the seat still owes input
+    assert sorted(session.pending_requests) == ["player_3"]
+
+    session.submit_turn({"message": "took my time"})
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+
+
+async def test_afk_stopwatch_dies_with_its_own_question(quiet_session, monkeypatch):
+    """Identity, not membership: the stopwatch for an ANSWERED question must not fire
+    into the seat's NEXT question (answered at 119s, next turn parks at 119.5s, the
+    old stopwatch rings at 120s — the new question keeps its full window)."""
+    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 0.01)
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
+    answered = human_turn_request(player_id="p1")
+    next_question = human_turn_request(player_id="p1", day=2)
+    session.pending_requests["p1"] = next_question  # the seat owes input — but not THIS
+    await session._afk_default("p1", answered)      # the stale stopwatch rings
+    assert session.pending_requests == {"p1": next_question}  # untouched
+
+
 async def test_shutdown_cancels_a_parked_game(quiet_session):
     """Lifespan teardown path: a game parked mid-stream is cancelled cleanly —
     _finished still fires (the finally), no pending-task noise on server exit."""

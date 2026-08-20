@@ -136,6 +136,10 @@ class GameStatus(BaseModel):
     pending_seats: list[str] = Field(default_factory=list)
     """Which seats owe input right now — several at once when a parallel superstep
     (night fan-out, votes) interrupts for more than one human."""
+    deadlines: dict[str, str] = Field(default_factory=dict)
+    """Per-seat AFK deadlines (ISO-8601 UTC): when each pending seat's turn will be
+    delegated to its agent — the client's countdown source. Empty in solo games
+    (no timer) and whenever nobody owes input."""
     game_over: bool = False
     last_seq: int = 0
     """High-water mark of the durable log — a reconnect cursor for ?last_seq=."""
