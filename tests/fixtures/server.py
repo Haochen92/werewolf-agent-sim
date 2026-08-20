@@ -44,6 +44,28 @@ class HangingGraph:
         yield
 
 
+@pytest.fixture(autouse=True)
+def _no_real_replay_db():
+    """Hermetic guard: the dev .env carries the LIVE WW_POSTGRES_DSN (the memory
+    tick's database), and any test that finishes a game cleanly triggers the archive
+    hook — without this, tests would write real rows. Force the archive layer
+    unconfigured everywhere; a test that wants a database opts in explicitly.
+
+    Deliberately NOT via the monkeypatch fixture: an autouse dependency on it changes
+    fixture teardown order so the api_client lifespan would exit while a test's own
+    GameSession patch is still applied (isinstance TypeError at shutdown)."""
+    from server import db
+
+    old = db.server_settings.WW_POSTGRES_DSN
+    db.server_settings.WW_POSTGRES_DSN = ""
+    db._engine = None
+    db._sessions = None
+    yield
+    db.server_settings.WW_POSTGRES_DSN = old
+    db._engine = None
+    db._sessions = None
+
+
 @pytest.fixture
 def quiet_session(monkeypatch):
     """GameSession factory with the memory-seeding side effect silenced."""

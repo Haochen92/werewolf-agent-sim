@@ -45,6 +45,7 @@ from fastapi.responses import StreamingResponse
 from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
 
+from server import db, replays
 from server.config import server_settings
 from server.dependencies import Game, GamesRegistry, Room, SeatToken, seat_cookie_name
 from server.lobby import MAX_HUMAN_SEATS, GameLobby
@@ -81,6 +82,7 @@ async def lifespan(app: FastAPI):
     if sessions:
         logger.info("shutting down %d game session(s)", len(sessions))
         await asyncio.gather(*(s.shutdown() for s in sessions))
+    await db.dispose()  # the replay archive's pool; safe when never configured
 
 
 def create_app() -> FastAPI:
@@ -93,6 +95,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(router)
+    app.include_router(replays.router)
     return app
 
 

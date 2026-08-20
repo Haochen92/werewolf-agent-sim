@@ -52,6 +52,7 @@ from Agents.state import fresh_game_state
 from Agents.tracing import Metrics
 from Agents.turn.human_turn import validate_human_response
 
+from server.replays import archive_game
 from server.schemas import events as ev
 from server.translate import Translator, _read_field
 
@@ -370,6 +371,11 @@ class GameSession:
                     break
                 # Resume with user input, once every interrupted seat has answered
                 graph_input = Command(resume=await self._collect_answers())
+            if self.game_over:
+                # Clean finishes only reach here (errors jump to except and are never
+                # archived — no game_over means no winner, no ending). archive_game
+                # never raises; a failed archive costs one replay, not the game.
+                await archive_game(self.game_id, self.log, len(self.human_players))
         except Exception as exc:  # surface, don't vanish: the session reports its death
             detail = repr(exc)
             if self._api_key:
