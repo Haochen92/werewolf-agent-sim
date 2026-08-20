@@ -279,7 +279,7 @@ async def test_interrupt_parks_validates_and_resumes(quiet_session):
     assert request_event.action_kind == "discuss"
     # A lone answer resumes as a bare value — the path proven in live HITL games.
     assert session._graph.calls[1].resume == {"message": "hello table", "pass_turn": False,
-                                              "target": None}
+                                              "target": None, "delegate": False}
 
 
 async def test_child_namespace_interrupt_mirrors_park_and_ship_once(quiet_session):

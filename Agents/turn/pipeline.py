@@ -73,8 +73,12 @@ def run_memory_informed_action(
     """
     # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
     # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
+    # None = the human delegated (AFK): fall through and play the seat as an agent.
     if payload.get("human_player"):
-        return run_human_decision(payload, output_key)
+        outcome = run_human_decision(payload, output_key)
+        if outcome is not None:
+            return outcome
+        logger.info("%s delegated %s to the agent (AFK)", payload.get("player_id"), output_key)
 
     player_id = payload["player_id"]
     role = payload["player_role"]
@@ -232,8 +236,12 @@ def run_memory_informed_night_action(
     otherwise identical to the day path (and gated by the same ``memory_config``).
     """
     # Human seat: same early exit as the day path — skip span / retrieval / adoption / EvalCase.
+    # None = the human delegated (AFK): fall through and play the seat as an agent.
     if payload.get("human_player"):
-        return run_human_decision(payload, output_key)
+        outcome = run_human_decision(payload, output_key)
+        if outcome is not None:
+            return outcome
+        logger.info("%s delegated %s to the agent (AFK)", payload.get("player_id"), output_key)
 
     player_id = payload["player_id"]
     role = payload["player_role"]

@@ -176,6 +176,32 @@ def test_discussion_message_ok_but_target_forbidden():
         validate_human_response(req, {"message": "hi", "target": "p2"})
 
 
+# ---- delegate: the AFK default hands the turn to the agent path -----------------------------------
+
+def test_delegate_is_legal_for_every_phase():
+    # The server's AFK timer submits the same sentinel whatever the turn asks for —
+    # the phase rules apply to what the AGENT then produces, not to this response.
+    for phase in ("day_channel", "day_votes", "wolf_channel", "wolf_vote",
+                  "healer_target", "investigator_target", "serial_killer_target",
+                  "vigilante_target"):
+        req = _request(phase=phase, can_pass=(phase == "day_channel"))
+        assert validate_human_response(req, {"delegate": True}).delegate
+
+
+def test_delegate_carries_nothing_else():
+    req = _request(phase="day_votes")
+    for extra in ({"message": "hi"}, {"target": "p2"}, {"pass_turn": True}):
+        with pytest.raises(HumanTurnContractError, match="no other content"):
+            validate_human_response(req, {"delegate": True, **extra})
+
+
+def test_delegate_resume_returns_none_for_the_agent_fallthrough(monkeypatch):
+    # None is the pipeline's cue to fall through to run_agent (retry/rescue ladder,
+    # BYOK billing) instead of resolving a human decision.
+    monkeypatch.setattr(h, "interrupt", lambda req: {"delegate": True})
+    assert h.run_human_decision(_human_payload(), "day_votes") is None
+
+
 # ---- end-to-end decision path (stubbed interrupt) -------------------------------------------------
 
 def test_human_vote_produces_resolved_turn(monkeypatch):

@@ -36,10 +36,15 @@ def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn
     ``_human_player_action`` pauses for input (interrupt) and returns an object shaped like an LLM
     decision; ``resolve_decision`` turns it into the same legal resolved turn. No retry, no random
     fallback — an invalid resumed action means the driver breached its contract, so raise rather than
-    degrade.
+    degrade. Returns None when the human DELEGATED the turn (the server's AFK default): the caller
+    falls through to the agent path, which plays the seat with the full retry/rescue ladder.
     """
     valid_targets = valid_targets_for_action(payload, output_key)
     result = _human_player_action(payload, output_key, valid_targets)
+    if result is None:
+        # Delegate (the AFK default): None tells the pipeline to fall through to the
+        # agent path, inheriting its retry/rescue/technical-pass ladder and billing.
+        return None
     reasoning = extract_agent_reasoning(result)
     outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
     if outcome is RETRY:
@@ -54,8 +59,15 @@ def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> Hum
     Discussion (day_channel): a pass needs ``can_pass``; otherwise a non-empty message is required and
     no target may be set. Wolf-night talk (wolf_channel) is message-only: no pass, no target. Every
     other phase (votes incl. wolf_vote, night actions): no pass, and the target must be one of the
-    request's ``valid_targets`` (which already includes the abstain / hold_fire sentinels)."""
+    request's ``valid_targets`` (which already includes the abstain / hold_fire sentinels).
+    A bare ``delegate`` is legal for EVERY phase — it hands the turn to the agent path, so the
+    phase rules apply to what the agent produces, not to this response."""
     response = HumanTurnResponse.model_validate(raw_response)
+
+    if response.delegate:
+        if response.pass_turn or response.message or response.target is not None:
+            raise HumanTurnContractError("A delegate response carries no other content.")
+        return response
 
     if request.phase == "day_channel":
         if response.pass_turn:
@@ -103,10 +115,10 @@ _PHASE_INSTRUCTION = {
 
 def _human_player_action(
     payload: dict[str, Any], output_key: str, valid_targets: list[str]
-) -> SimpleNamespace:
+) -> SimpleNamespace | None:
     """The human seat's substitute for ``_generate``: pause the graph, collect the human's action,
     and return it shaped exactly like an LLM decision so the shared ``extract_agent_reasoning`` ->
-    ``resolve_decision`` path treats it identically.
+    ``resolve_decision`` path treats it identically. None = the human delegated the turn.
 
     The human's free text is tagged for ``addressed_targets`` after the fact so day discussion drives
     the reactive scheduler the same way an agent's self-tagged output would.
@@ -114,6 +126,8 @@ def _human_player_action(
     request = _build_human_request(payload, output_key, valid_targets)
     raw_action = interrupt(request.model_dump())
     response = validate_human_response(request, raw_action) # Defensive re-validation: the driver validates before resuming, so a failure here means the
+    if response.delegate:
+        return None
     addressed = _human_addressed_targets(response, payload, output_key)
     return _human_result_shaped(response, output_key, addressed)
 

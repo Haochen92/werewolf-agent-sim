@@ -60,3 +60,7 @@ class HumanTurnResponse(BaseModel):
     """The chosen vote/action target; must be one of the request's valid_targets."""
     pass_turn: bool = False
     """Day discussion only: decline to speak."""
+    delegate: bool = False
+    """Hand this turn to the agent path: the seat's LLM plays it instead (the server's
+    AFK-timeout default). A delegate response carries nothing else — no message,
+    target, or pass — and is legal for every phase."""
