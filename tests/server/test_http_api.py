@@ -7,11 +7,25 @@ graph); the runtime machine itself is pinned in test_server_runtime.py.
 """
 from __future__ import annotations
 
+import pytest
+
 from server.lobby import MAX_HUMAN_SEATS
 from server.runtime import SUPPORTED_GAME_MODELS
 from tests.fixtures.server import FakeGraph
 
 GEMINI = "gemini-3.1-flash-lite"
+
+
+@pytest.fixture
+def seated_session(api_client, quiet_session):
+    """A running session with one proven human seat: token registered with the
+    session, seats already dealt, and the cookie on the client — the state a real
+    joiner is in mid-game. Returns (session, token)."""
+    session = quiet_session(FakeGraph([]), seat_tokens=["tok-1"])
+    session.human_players = ["player_3"]  # what INITIALIZE_GAME would set
+    api_client.app.state.games[session.game_id] = session
+    api_client.cookies.set(f"seat_{session.game_id}", "tok-1")
+    return session, "tok-1"
 
 
 # ---- wiring: factory, lifespan registry, CORS -------------------------------------------
@@ -59,6 +73,7 @@ def test_unknown_game_is_404_everywhere(api_client):
     assert api_client.get("/games/nope").status_code == 404
     assert api_client.post("/games/nope/turns", json={}).status_code == 404
     assert api_client.post("/games/nope/join", json={}).status_code == 404
+    assert api_client.post("/games/nope/rejoin", json={"token": "t"}).status_code == 404
     assert api_client.post("/games/nope/start").status_code == 404
 
 
@@ -69,14 +84,13 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     body = api_client.get(f"/games/{session.game_id}").json()
     assert body == {
         "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
-        "human_players": [], "pending_input": False, "pending_seats": [],
+        "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
         "game_over": False, "last_seq": 0, "alive_role_counts": {}, "error": None,
     }
 
 
-def test_turn_without_a_pending_request_is_409(api_client, quiet_session):
-    session = quiet_session(FakeGraph([]))
-    api_client.app.state.games[session.game_id] = session
+def test_turn_without_a_pending_request_is_409(api_client, seated_session):
+    session, _ = seated_session
 
     r = api_client.post(f"/games/{session.game_id}/turns", json={"message": "hi"})
     assert r.status_code == 409
@@ -113,11 +127,13 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     assert status["max_seats"] == MAX_HUMAN_SEATS  # the client's "room full" denominator
 
     r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
-    assert r.json() == {"position": 1}
+    seat_token = r.json()["token"]
+    assert r.json() == {"position": 1, "token": seat_token}
 
     status = api_client.get(f"/games/{game_id}")
     assert status.json()["players"] == ["hao"]
     assert host_key not in status.text  # the host credential never leaves the create response
+    assert seat_token not in status.text  # seat secrets never ride the public snapshot
 
     # Only the host may start; the swap keeps the id; rooms deal random seats
     # (role choice is solo-only, on the instant-start path).
@@ -157,6 +173,99 @@ def test_room_contract_has_no_human_fields(api_client):
     # extras, so instant-start fields sent to /rooms fail schema validation.
     assert api_client.post("/rooms", json={"human": True}).status_code == 422
     assert api_client.post("/rooms", json={"human_role": "wolf"}).status_code == 422
+
+
+# ---- seat tokens: proof of ownership (slice 3) -------------------------------------------
+
+def test_join_sets_an_httponly_seat_cookie_matching_the_body_token(api_client):
+    game_id, _ = _make_room(api_client)
+
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    token = r.json()["token"]
+    set_cookie = r.headers["set-cookie"]
+    assert token and api_client.cookies.get(f"seat_{game_id}") == token
+    assert "HttpOnly" in set_cookie          # out of page JavaScript's reach
+    assert f"Path=/games/{game_id}" in set_cookie  # rides only this game's requests
+    assert "SameSite=lax" in set_cookie
+
+
+def test_turns_demand_a_proven_seat(api_client, seated_session):
+    session, _ = seated_session
+    url = f"/games/{session.game_id}/turns"
+
+    api_client.cookies.clear()  # no cookie at all
+    r = api_client.post(url, json={"message": "hi"})
+    assert r.status_code == 403 and "seat cookie" in r.json()["detail"]
+
+    api_client.cookies.set(f"seat_{session.game_id}", "forged")
+    r = api_client.post(url, json={"message": "hi"})
+    assert r.status_code == 403 and "unknown seat token" in r.json()["detail"]
+
+
+def test_events_and_status_reject_a_forged_cookie(api_client, seated_session):
+    session, _ = seated_session
+    api_client.cookies.set(f"seat_{session.game_id}", "forged")
+
+    assert api_client.get(f"/games/{session.game_id}/events").status_code == 403
+    assert api_client.get(f"/games/{session.game_id}").status_code == 403
+
+
+def test_status_resolves_you_from_the_cookie(api_client, seated_session):
+    session, _ = seated_session
+    assert api_client.get(f"/games/{session.game_id}").json()["you"] == "player_3"
+
+    api_client.cookies.clear()  # spectators get the same snapshot, minus identity
+    assert api_client.get(f"/games/{session.game_id}").json()["you"] is None
+
+
+def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session):
+    # Waiting room: the stashed body-copy token re-proves the seat.
+    game_id, _ = _make_room(api_client)
+    token = api_client.post(f"/games/{game_id}/join", json={"name": "hao"}).json()["token"]
+    api_client.cookies.clear()  # the "new device" moment
+
+    r = api_client.post(f"/games/{game_id}/rejoin", json={"token": token})
+    assert r.json() == {"position": 1, "token": token}
+    assert api_client.cookies.get(f"seat_{game_id}") == token
+
+    assert api_client.post(f"/games/{game_id}/rejoin",
+                           json={"token": "forged"}).status_code == 403
+
+    # Running game: same door, served by GameSession.position_of.
+    session, seat_token = seated_session
+    api_client.cookies.clear()
+    r = api_client.post(f"/games/{session.game_id}/rejoin", json={"token": seat_token})
+    assert r.json() == {"position": 1, "token": seat_token}
+    assert api_client.get(f"/games/{session.game_id}").json()["you"] == "player_3"
+
+
+def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
+    """POST /games {human} gets a token + cookie exactly like a room joiner (one
+    identity mechanism at both doors); an LLM-only game mints nothing."""
+    import server.app as app_mod
+    from server import runtime as rt
+
+    monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
+    launched = []
+
+    def fake_session(run, **kw):
+        launched.append((run, kw))
+        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+
+    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+
+    r = api_client.post("/games", json={"human": True})
+    body = r.json()
+    assert body["seat_token"]
+    assert api_client.cookies.get(f"seat_{body['game_id']}") == body["seat_token"]
+    assert launched[0][0].human_player == 1
+    assert launched[0][1]["seat_tokens"] == [body["seat_token"]]
+
+    api_client.cookies.clear()
+    r = api_client.post("/games", json={})
+    assert r.json()["seat_token"] is None
+    assert "set-cookie" not in r.headers
+    assert launched[1][0].human_player == 0
 
 
 def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):

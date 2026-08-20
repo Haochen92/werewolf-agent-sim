@@ -56,6 +56,31 @@ def test_observer_reaches_nobody_live_and_everybody_after_game_over():
     assert all(entitled(e, seat, ROLES, True) for seat in ("", "v1", "w0"))
 
 
+# ---- seat_for_token(): the proof-of-identity lookup -------------------------------------
+
+
+def test_token_maps_to_the_dealt_seat_in_join_order(quiet_session):
+    """Join order IS deal order: token i owns human_players[i] (the orchestrator
+    builds the list deterministically — pre-shuffle candidate, then extras)."""
+    session = quiet_session(FakeGraph([]), seat_tokens=["tok-a", "tok-b"])
+
+    # Before INITIALIZE_GAME lands: valid tokens resolve to "" (seatless), not None.
+    assert session.seat_for_token("tok-a") == ""
+    assert session.seat_for_token("forged") is None
+    assert session.seat_for_token("") is None  # no cookie is never a valid token
+
+    session.human_players = ["player_4", "player_7"]  # what INITIALIZE_GAME sets
+    assert session.seat_for_token("tok-a") == "player_4"
+    assert session.seat_for_token("tok-b") == "player_7"
+    assert session.seat_for_token("forged") is None
+
+
+def test_position_of_mirrors_the_lobby_contract(quiet_session):
+    session = quiet_session(FakeGraph([]), seat_tokens=["tok-a", "tok-b"])
+    assert session.position_of("tok-b") == 2
+    assert session.position_of("forged") is None
+
+
 # ---- the session over the real captured game --------------------------------------------
 
 async def test_session_replays_the_fixture_end_to_end(quiet_session, fixture_parts):
@@ -78,7 +103,7 @@ async def test_sse_replays_the_whole_log_after_game_over(quiet_session, fixture_
     await session.wait_finished()
 
     frames = []
-    gen = _sse(session, seat="", last_seq=0)
+    gen = _sse(session, lambda: "", last_seq=0)
     async for frame in gen:
         frames.append(frame)
         if len(frames) == len(session.log):
@@ -101,7 +126,7 @@ async def test_pre_start_subscriber_still_gets_faction_events(quiet_session, fix
     wolf_seat = next(s for s, r in expected.roles.items() if r == "wolf")
 
     session = quiet_session(FakeGraph(fixture_parts))
-    gen = _sse(session, seat=wolf_seat, last_seq=0)
+    gen = _sse(session, lambda: wolf_seat, last_seq=0)
 
     async def collect():
         async for frame in gen:
@@ -134,7 +159,7 @@ async def test_postgame_reconnect_cursor_does_not_skip_the_withheld_backlog(
     assert withheld, "fixture must contain withheld events for this test to mean anything"
 
     frames = []
-    gen = _sse(session, seat="", last_seq=cursor)
+    gen = _sse(session, lambda: "", last_seq=cursor)
     async for frame in gen:
         frames.append(frame)
         if len(frames) == len(withheld):
@@ -161,7 +186,7 @@ async def test_reconnect_header_overrides_the_frozen_query_cursor(
 
     # Stale query cursor (0) + living header cursor: header must be used. (The Game
     # dependency is resolved by FastAPI in production; here the session is passed direct.)
-    response = await event_stream(session, seat="", last_seq=0, last_event_id=str(cursor))
+    response = await event_stream(session, token="", last_seq=0, last_event_id=str(cursor))
     frames = []
     gen = response.body_iterator
     async for frame in gen:
@@ -205,7 +230,7 @@ async def test_live_unlock_flushes_withheld_backlog_below_a_reconnect_cursor(
                          if e.type == "wolf_message" and e.seq <= cursor}
     assert wolf_below_cursor, "phase 1 must hold withheld wolf chat below the cursor"
 
-    gen = _sse(session, seat="", last_seq=cursor)  # mid-game reconnector
+    gen = _sse(session, lambda: "", last_seq=cursor)  # mid-game reconnector
 
     async def collect():
         got: set[int] = set()
