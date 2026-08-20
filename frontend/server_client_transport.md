@@ -484,6 +484,37 @@ dropped connection with zero client code. This composability is the quiet payoff
 putting identity in the cookie rather than the URL: the reconnect story (§7) and the
 authentication story never had to learn about each other.
 
+## 6c. The room browser: from invite links to a public list (decided 2026-08-20)
+
+Rooms were originally invite-link-only: creating a room gave you a URL, and "who may
+join" was decided by who you sent it to — not sharing the link *was* the door policy.
+The frontend design upgraded this to a public **room browser** (`GET /rooms`): anyone
+on the site can see the waiting rooms and join one. That one change drags three small
+features with it, because each replaces something the invite link used to do for free:
+
+- **Room names.** A browsable list of bare UUIDs is unusable, so `POST /rooms` takes an
+  optional `name` (capped at 40 characters — it is the one free-text field strangers
+  see). Unnamed rooms are legal; the client renders a fallback.
+- **The lock (`POST /games/{id}/lock`, host-key-gated).** With invite links, a full
+  table stopped getting gate-crashed because nobody else had the link. On a public
+  list, the host needs an explicit door: locking bounces new joins (409) without
+  touching anyone already seated, and is reversible (`?locked=false`). Locked rooms
+  still *appear* in the list, visibly locked — a room vanishing mid-browse reads as a
+  bug, a padlock reads as a full table.
+- **A listing TTL.** Durability (§6b's sibling work) revives waiting rooms across
+  server restarts — which means an abandoned room now lives forever. Left alone, the
+  public list would slowly fill with the undead. So the browser hides rooms older than
+  `ROOM_LIST_TTL_SECONDS` (default 2 h). Deliberately a *browse filter, not expiry*:
+  the direct room URL keeps working past the cutoff, so a slow-gathering friend group
+  loses nothing — their room just stops advertising itself to strangers.
+
+**What was deliberately left out: kicking a seated player** (deferred ruling
+2026-08-20). Pre-start, the lock already covers the griefing case at a fraction of the
+machinery (a kick must also invalidate the kicked seat's token, or their cookie walks
+right back in at start). Post-start, a kick is meaningless — a vanished human's seat
+is already absorbed by the AFK delegate ladder. If moderation needs ever grow real,
+kick slots in beside lock as a second host-key-gated endpoint.
+
 ---
 
 ## 7. Reconnect and catch-up: replay the log, never send the checkpoint
