@@ -26,6 +26,8 @@ dependencies = [
     "fastapi==0.141.1",
     "uvicorn==0.52.1",
     "pydantic-settings==2.15.0",
+    "sqlmodel (>=0.0.39,<0.0.40)",
+    "alembic (>=1.19.1,<2.0.0)",
 ]
 
 [project.scripts]
