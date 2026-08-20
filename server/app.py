@@ -45,8 +45,9 @@ from fastapi.responses import StreamingResponse
 from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
 
-from server import db, replays
+from server import db, durable, replays
 from server.config import server_settings
+from server.recovery import recover_registry
 from server.dependencies import Game, GamesRegistry, Room, SeatToken, seat_cookie_name
 from server.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.runtime import SUPPORTED_GAME_MODELS, GameSession, entitled
@@ -76,12 +77,18 @@ async def lifespan(app: FastAPI):
     """Owns the games registry: created at startup, live game tasks cancelled at shutdown
     (without this, uvicorn exit abandons mid-flight tasks with pending destructor noise)."""
     app.state.games = {}
+    # The durable plane (Postgres checkpointer + sessions/events) comes up first,
+    # then recovery refills the registry from it — both no-ops without a DSN.
+    await durable.startup()
+    await recover_registry(app.state.games)
     yield
     # Only started sessions hold a task; waiting lobbies have nothing to cancel.
+    # Cancellation deliberately leaves durable rows 'running' for the next boot.
     sessions = [s for s in app.state.games.values() if isinstance(s, GameSession)]
     if sessions:
         logger.info("shutting down %d game session(s)", len(sessions))
         await asyncio.gather(*(s.shutdown() for s in sessions))
+    await durable.shutdown()
     await db.dispose()  # the replay archive's pool; safe when never configured
 
 
@@ -152,8 +159,12 @@ async def create_game(body: NewGame, games: GamesRegistry, response: Response) -
         human_role=body.human_role,
         # A served game is never mined into the memory store (the CLI human-game rule).
         memory_persistence={"dump_enabled": False},
-    ), api_key=body.api_key, model=body.model, seat_tokens=seat_tokens)
+    ), api_key=body.api_key, model=body.model, seat_tokens=seat_tokens,
+       graph=durable.graph())
     games[session.game_id] = session
+    await durable.upsert_session(
+        session.game_id, phase="running", model=body.model, byok=bool(body.api_key),
+        seats=[{"name": "human", "token": t} for t in seat_tokens])
     session.start()
     if seat_tokens:
         _set_seat_cookie(response, session.game_id, seat_tokens[0])
@@ -171,6 +182,8 @@ async def create_room(body: NewRoom, games: GamesRegistry) -> RoomCreated:
     _check_byok(body.api_key, body.model)
     room = GameLobby(api_key=body.api_key, model=body.model)
     games[room.game_id] = room
+    await durable.upsert_session(room.game_id, phase="waiting", host_key=room.host_key,
+                                 model=body.model, byok=bool(body.api_key), seats=[])
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)
 
 
@@ -183,6 +196,8 @@ async def join_game(room: Room, body: JoinGame, response: Response) -> SeatJoine
         position, token = room.join(body.name)
     except LookupError as exc:  # seats full
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await durable.upsert_session(room.game_id,
+                                 seats=[s._asdict() for s in room.seats])
     _set_seat_cookie(response, room.game_id, token)
     return SeatJoined(position=position, token=token)
 
@@ -212,8 +227,10 @@ async def start_game(room: Room, games: GamesRegistry, host_key: str = "") -> Ga
     if host_key != room.host_key:
         raise HTTPException(status_code=403, detail="only the host may start the game")
     session = GameSession(room.run_config(), api_key=room.api_key, model=room.model,
-                          seat_tokens=room.tokens)
+                          seat_tokens=room.tokens, graph=durable.graph())
     games[session.game_id] = session
+    await durable.upsert_session(session.game_id, phase="running",
+                                 seats=[s._asdict() for s in room.seats])
     session.start()
     return GameCreated(game_id=session.game_id)
 

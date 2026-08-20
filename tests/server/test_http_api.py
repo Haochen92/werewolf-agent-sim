@@ -116,6 +116,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
 
     def fake_session(run, **kw):
         launched.append(run)
+        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
@@ -251,6 +252,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
 
     def fake_session(run, **kw):
         launched.append((run, kw))
+        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
@@ -279,6 +281,7 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
 
     def fake_session(run, **kw):
         launched.append(run)
+        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
@@ -298,6 +301,7 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
 
     def fake_session(run, *, api_key="", model="", **kw):
         seen.update(api_key=api_key, model=model)
+        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
     monkeypatch.setattr(app_mod, "GameSession", fake_session)
