@@ -52,6 +52,7 @@ from Agents.state import fresh_game_state
 from Agents.tracing import Metrics
 from Agents.turn.human_turn import validate_human_response
 
+from server import durable
 from server.replays import archive_game
 from server.schemas import events as ev
 from server.translate import Translator, _read_field
@@ -309,6 +310,9 @@ class GameSession:
         self.translator = Translator()
         self.log: list[ev.DurableEvent] = []
         self.game_over = False
+        # Durable-plane cursors: how much of the log / seat knowledge is on disk.
+        self._persisted = 0
+        self._persisted_humans: list[str] = []
 
         # The human seat (HITL).
         self._seat_tokens = list(seat_tokens)
@@ -331,10 +335,22 @@ class GameSession:
 
     def start(self) -> None:
         self._task = asyncio.get_running_loop().create_task(
-            self._run(), name=f"game-{self.game_id}")
+            self._run(fresh_game_state()), name=f"game-{self.game_id}")
         logger.info("game %s: task started (byok=%s, model=%s)",
                     self.game_id, bool(self._api_key),
                     self._llm_override.model if self._llm_override else "server-default")
+
+    def start_recovered(self, *, waiting_on_humans: bool) -> None:
+        """Resume a revived session (server restart). Parked-at-interrupt games wait
+        for /turns first — the caller re-parked pending_requests from the checkpoint —
+        while mid-generation crashes continue from the last committed superstep
+        (astream(None) on an existing thread). Probe-verified 2026-08-20: the resume
+        re-runs the interrupted phase (abort-and-re-execute across the grave)."""
+        self._task = asyncio.get_running_loop().create_task(
+            self._run(None, wait_answers_first=waiting_on_humans),
+            name=f"game-{self.game_id}")
+        logger.info("game %s: recovered (waiting_on_humans=%s, %d events rehydrated)",
+                    self.game_id, waiting_on_humans, len(self.log))
 
     async def shutdown(self) -> None:
         """Cancel the running game task (server shutdown). Cancellation lands at the
@@ -351,12 +367,14 @@ class GameSession:
                 pass
             logger.info("game %s: cancelled on server shutdown", self.game_id)
 
-    async def _run(self) -> None:
+    async def _run(self, graph_input: Any, wait_answers_first: bool = False) -> None:
         if self._llm_override is not None:
             GAME_LLM.set(self._llm_override)
-        # Fresh state initialization each game
-        graph_input: Any = fresh_game_state()
         try:
+            if wait_answers_first:
+                # Recovered at an interrupt: the seats were re-parked from the
+                # checkpoint before this task started; wait for their answers.
+                graph_input = Command(resume=await self._collect_answers())
             while True:
                 interrupted = False
                 async for part in self._graph.astream(
@@ -367,6 +385,8 @@ class GameSession:
                         # Sticky: the interrupt part is often NOT last (siblings keep
                         # streaming after it), so keep consuming and remember it.
                         interrupted = True
+                    # Synchronous per part: a crash loses at most this part's events.
+                    await self._persist_tail()
                 if not interrupted:
                     break
                 # Resume with user input, once every interrupted seat has answered
@@ -376,6 +396,7 @@ class GameSession:
                 # archived — no game_over means no winner, no ending). archive_game
                 # never raises; a failed archive costs one replay, not the game.
                 await archive_game(self.game_id, self.log, len(self.human_players))
+                await durable.upsert_session(self.game_id, phase="finished")
         except Exception as exc:  # surface, don't vanish: the session reports its death
             detail = repr(exc)
             if self._api_key:
@@ -383,11 +404,25 @@ class GameSession:
                 detail = detail.replace(self._api_key, "***")
             self.error = detail
             logger.error("game %s: task died: %s", self.game_id, detail)
+            await durable.upsert_session(self.game_id, phase="dead", error=detail)
         finally:
+            # No phase upsert here: a CancelledError (server shutdown) must leave the
+            # durable row 'running' so the next boot's recovery picks the game up.
             self._finished.set()
             if self.error is None:
                 logger.info("game %s: finished (game_over=%s, %d events)",
                             self.game_id, self.game_over, len(self.log))
+
+    async def _persist_tail(self) -> None:
+        """Push the log's unpersisted suffix + newly-learned human seats to the
+        durable plane (both helpers no-op when Postgres is unconfigured and never
+        raise — durability failing must not cost the running game)."""
+        if len(self.log) > self._persisted:
+            await durable.record_events(self.game_id, self.log[self._persisted:])
+            self._persisted = len(self.log)
+        if self.human_players != self._persisted_humans:
+            await durable.upsert_session(self.game_id, human_players=self.human_players)
+            self._persisted_humans = list(self.human_players)
 
     def _on_part(self, part) -> bool:
         """Translate, record, publish. Returns True on an interrupt part."""
