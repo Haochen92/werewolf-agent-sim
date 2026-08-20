@@ -49,6 +49,23 @@ def get_game(game_id: str, request: Request) -> GameSession:
     return entry
 
 
+def seat_cookie_name(game_id: str) -> str:
+    """Per-game cookie name — one browser can hold seats in several games at once."""
+    return f"seat_{game_id}"
+
+
+def get_seat_token(game_id: str, request: Request) -> str:
+    """The viewer's seat-token cookie for THIS game; "" = no cookie (a spectator).
+
+    The token is minted at /join (or the solo POST /games door), delivered as an
+    HttpOnly cookie plus a one-time body copy, and rides back automatically on every
+    same-game request — including SSE, which cannot set headers but does send cookies.
+    Extraction only: whether the token is KNOWN is the session's call
+    (seat_for_token / position_of), made in the routes."""
+    return request.cookies.get(seat_cookie_name(game_id), "")
+
+
 GamesRegistry = Annotated[dict[str, Entry], Depends(get_games)]
 Room = Annotated[Entry, Depends(get_room)]
 Game = Annotated[GameSession, Depends(get_game)]
+SeatToken = Annotated[str, Depends(get_seat_token)]

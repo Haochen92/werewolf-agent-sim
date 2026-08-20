@@ -49,6 +49,10 @@ class GameCreated(BaseModel):
     """POST /games and POST /games/{id}/start response."""
 
     game_id: str
+    seat_token: str | None = None
+    """Solo door only: the body copy of the seat cookie set on this response (stash
+    it client-side; POST /rejoin restores a lost cookie from it). None for LLM-only
+    games and for /start — room seats received their tokens at /join."""
 
 
 class NewRoom(BaseModel):
@@ -86,11 +90,22 @@ class JoinGame(BaseModel):
 
 
 class SeatJoined(BaseModel):
-    """POST /games/{id}/join response. Slice 3 adds the per-seat token here."""
+    """POST /games/{id}/join and POST /games/{id}/rejoin response."""
 
     position: int
     """1-based join order — the roster index, not an engine seat (the engine
     assigns player ids only at game start)."""
+    token: str
+    """The seat's secret — proof of ownership (no accounts: holding it IS the
+    identity). Also set as an HttpOnly cookie on this response; this body copy is
+    the client's backup (localStorage) for POST /rejoin after cookie loss."""
+
+
+class RejoinGame(BaseModel):
+    """POST /games/{id}/rejoin body: re-prove seat ownership after cookie loss
+    (new device, cleared browsing data) with the stashed body-copy token."""
+
+    token: str
 
 
 class GameStatus(BaseModel):
@@ -113,6 +128,10 @@ class GameStatus(BaseModel):
     human_players: list[str] = Field(default_factory=list)
     """The seats the engine dealt to humans; empty until INITIALIZE_GAME lands
     (or for an LLM-only game)."""
+    you: str | None = None
+    """The requester's OWN engine seat, resolved from their seat cookie — how the
+    client learns which player it is. None for spectators, waiting rooms, and the
+    moment before seats are dealt."""
     pending_input: bool = False
     pending_seats: list[str] = Field(default_factory=list)
     """Which seats owe input right now — several at once when a parallel superstep
