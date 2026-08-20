@@ -32,6 +32,13 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.DeathRecord,
 ]
 
-checkpointer = MemorySaver(
-    serde=JsonPlusSerializer(allowed_msgpack_modules=_STATE_MODEL_ALLOWLIST)
-)
+def durable_serde() -> JsonPlusSerializer:
+    """The serde for ANY checkpointer backing the game graph — one allowlist, shared
+    by the in-memory singleton below (CLI/dev) and the server's Postgres saver
+    (durability slice). Probe-verified 2026-08-20: allowlisted models round-trip the
+    Postgres saver across process boundaries; blocked classes degrade to plain data.
+    Must be passed at saver CONSTRUCTION (assigning .serde after bypasses wrapping)."""
+    return JsonPlusSerializer(allowed_msgpack_modules=_STATE_MODEL_ALLOWLIST)
+
+
+checkpointer = MemorySaver(serde=durable_serde())
