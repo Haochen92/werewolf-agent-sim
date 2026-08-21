@@ -54,7 +54,10 @@ services:
       wolf-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      # 127.0.0.1, NOT localhost: Next's standalone server binds IPv4 only, while
+      # `localhost` resolves to ::1 first inside this image — so the check failed with
+      # "connection refused" against a container that was serving perfectly.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3
