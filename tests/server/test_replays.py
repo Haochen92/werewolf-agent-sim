@@ -104,6 +104,37 @@ def test_replays_answer_503_when_unconfigured(api_client):
     assert api_client.get("/replays/some-id").status_code == 503
 
 
+# ---- the wire model: typed events (ruled 2026-08-20, the frontend codegen contract) --------
+
+
+def test_replay_game_parses_stored_dicts_into_typed_events():
+    # The table keeps list[dict] (JSONB); the wire model re-validates through the
+    # discriminated union, so archive drift fails loudly instead of shipping mystery dicts.
+    raw = [e.model_dump(mode="json") for e in _log()]
+    game = replays.ReplayGame(game_id="g", winner="wolves", days=3, n_events=3,
+                              n_humans=0, cast_role_counts={"wolf": 1}, events=raw)
+    assert isinstance(game.events[0], ev.GameStarted)
+    assert isinstance(game.events[-1], ev.GameOver)
+
+    with pytest.raises(Exception):  # unknown discriminator = drifted row, never served
+        replays.ReplayGame(game_id="g", winner="wolves", days=1, n_events=1,
+                           n_humans=0, cast_role_counts={},
+                           events=[{"type": "not_an_event", "seq": 1, "day": 1}])
+
+
+def test_event_union_reaches_openapi():
+    # The whole point of the typed field: the frontend's TS event types are generated
+    # from /openapi.json, so every union member must appear there as a oneOf ref.
+    from typing import get_args
+
+    from server.app import create_app
+
+    items = (create_app().openapi()["components"]["schemas"]
+             ["ReplayGame"]["properties"]["events"]["items"])
+    n_members = len(get_args(get_args(ev.DurableGameEvent)[0]))
+    assert len(items["oneOf"]) == n_members
+
+
 # ---- optional integration (explicit opt-in var; NEVER the live DSN) -------------------------
 
 

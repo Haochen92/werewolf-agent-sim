@@ -71,9 +71,15 @@ class Replay(ReplayBase, table=True):
 
 
 class ReplayGame(ReplayBase):
-    """GET /replays/{id}: the summary plus the full event log."""
+    """GET /replays/{id}: the summary plus the full event log.
 
-    events: list[dict]
+    ``events`` is declared as the discriminated union (not ``list[dict]``, which the
+    table keeps for its JSONB column) so the 27-member event schema lands in
+    /openapi.json — the frontend's TS event types are generated from it (ruled
+    2026-08-20). Side effect: stored rows re-validate on the way out, so archive
+    drift fails loudly here instead of shipping mystery dicts."""
+
+    events: list[ev.DurableGameEvent]
 
 
 # ---- the archive hook (called by GameSession at a clean finish) ---------------------------
