@@ -5,6 +5,10 @@
 > Idea source: [`design_log.md`](design_log.md) §3/§7 (aesthetics) and §2/§6/§8 (UX); wire
 > contract: [`server_client_transport.md`](server_client_transport.md). Everything in §6
 > (the parking lot) is OUT of v1 — do not build affordances for it.
+> Screen-by-screen grain: [`ux_journeys.md`](ux_journeys.md) — the journey-trace
+> derivation (D1–D24). Ruled 2026-08-21: its §0 is binding, D1–D24 are provisional
+> build-on-these defaults, adjusted against the running app post-MVP (not pre-ruled
+> on paper); as-built outcomes distill back here.
 
 ---
 
