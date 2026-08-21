@@ -1,29 +1,38 @@
 'use client';
 
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { listReplays } from '@/lib/api';
 import { ApiError } from '@/lib/request';
 import { queryKeys } from '@/lib/queryKeys';
+import { ReplayGrid } from '@/components/ReplayCard';
+import pageClasses from '@/app/page.module.css';
 
 /**
- * Walking-skeleton replay browser: a plain list, no cards, no pagination chrome. Its only
- * job is proving that a real archive row reaches the browser (P0's done-when). D2's
- * responsive card component replaces the markup in the presentational pass.
+ * The replay browser. `limit` exists so the landing page can reuse this exact component for
+ * its rail of latest replays (D1) rather than growing a second, drifting copy.
  */
-export function ReplayListClient() {
+export function ReplayListClient({ limit }: { limit?: number }) {
   const { data, isPending, error } = useQuery({
-    queryKey: queryKeys.replays.list(),
-    queryFn: () => listReplays(),
+    queryKey: queryKeys.replays.list({ limit }),
+    queryFn: () => listReplays(limit === undefined ? {} : { limit }),
   });
 
-  if (isPending) return <p>Loading replays…</p>;
+  if (isPending) {
+    return (
+      <div className={pageClasses.doors}>
+        <div className={pageClasses.skeletonCard} />
+        <div className={pageClasses.skeletonCard} />
+        <div className={pageClasses.skeletonCard} />
+      </div>
+    );
+  }
 
   if (error) {
-    // 503 is the archive-not-configured case and deserves its own words (ux_baseline §3).
+    // 503 is specifically "the archive isn't configured", which is an operator problem and
+    // deserves its own words rather than a generic failure (ux_baseline §3).
     const unavailable = error instanceof ApiError && error.isUnavailable;
     return (
-      <p role="alert">
+      <p role="alert" className={pageClasses.note}>
         {unavailable
           ? 'The replay archive is not configured on this server.'
           : `Could not load replays: ${error.message}`}
@@ -31,18 +40,9 @@ export function ReplayListClient() {
     );
   }
 
-  if (data.length === 0) return <p>No replays archived yet.</p>;
+  if (data.length === 0) {
+    return <p className={pageClasses.note}>No games have been archived yet.</p>;
+  }
 
-  return (
-    <ul>
-      {data.map((replay) => (
-        <li key={replay.game_id}>
-          <Link href={`/replays/${replay.game_id}`}>{replay.game_id}</Link> —{' '}
-          {replay.winner} won · {replay.days} days · {replay.n_events} events ·{' '}
-          {Object.values(replay.cast_role_counts).reduce((a, b) => a + b, 0)} seats
-          {replay.n_humans > 0 ? ` · ${replay.n_humans} human` : ''}
-        </li>
-      ))}
-    </ul>
-  );
+  return <ReplayGrid replays={data} />;
 }

@@ -1,31 +1,51 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+/**
+ * The replay theater — the portfolio centerpiece (build_plan P1).
+ *
+ * The fold happens ONCE for the whole log; the scrubber selects a page out of the result
+ * rather than re-folding to a position. That is what makes `?day=` cheap, and why the X-ray
+ * is available from the first paint of a finished game instead of only after the scrubber
+ * reaches `game_over`.
+ *
+ * Nothing here gates on entitlement. The archive serves every tier for a finished game, so
+ * the X-ray toggle is an ARRANGEMENT control — it decides what is shown at once, never what
+ * the viewer is allowed to know. If a log carried no observer data the toggle disables
+ * itself, because there would be nothing behind it (never because we decided to withhold).
+ */
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getReplay } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { ApiError } from '@/lib/request';
 import { foldEvents } from '@/game/foldEvents';
+import { useNumberFilter } from '@/hooks/useFilterState';
+import { ghostGuesses } from '@/lib/storage';
+import { DayTranscript } from '@/components/DayTranscript';
+import {
+  AgentInspector,
+  DayScrubber,
+  GhostGuess,
+  RosterRail,
+  VoteMatrix,
+  WinnerChip,
+  XrayToggle,
+} from '@/components/theater-parts';
+import { describeCast, timeAgo } from '@/lib/format';
 import type { DurableGameEvent } from '@/types/contracts';
+import classes from '@/components/Theater.module.css';
 
-/**
- * WALKING SKELETON — the whole point of this file is to close the loop
- * fetch → fold → render end-to-end, with zero design, before a single real component
- * exists. Every piece of markup here is scaffolding to be replaced by the §9 component
- * inventory; what must survive is the data path it proves.
- *
- * The fold happens ONCE for the whole log and the day switcher merely selects a page out
- * of the result — it is not a re-fold. That is what keeps `?day=` cheap and is why
- * `xray.available` is true from the first render of a finished game.
- */
 export function TheaterClient({ gameId }: { gameId: string }) {
-  const [day, setDay] = useState(1);
+  const [day, setDay] = useNumberFilter('day', 1);
   const [xray, setXray] = useState(false);
+  const [inspecting, setInspecting] = useState<string | null>(null);
+  const [guesses, setGuesses] = useState<Record<string, string>>({});
 
   const { data, isPending, error } = useQuery({
     queryKey: queryKeys.replays.detail(gameId),
     queryFn: () => getReplay(gameId),
-    staleTime: Infinity, // a finished replay never changes
+    staleTime: Infinity, // a finished replay is immutable
   });
 
   const view = useMemo(
@@ -33,187 +53,100 @@ export function TheaterClient({ gameId }: { gameId: string }) {
     [data],
   );
 
-  if (isPending) return <p>Loading replay…</p>;
-  if (error) return <p role="alert">Could not load replay: {error.message}</p>;
-  if (!view) return null;
+  // localStorage is client-only; read it after mount so the markup matches on hydration.
+  useEffect(() => setGuesses(ghostGuesses.get(gameId)), [gameId]);
 
-  const dayNumbers = Object.keys(view.days)
-    .map(Number)
-    .sort((a, b) => a - b);
-  const page = view.days[day];
+  if (isPending) return <p className={classes.meta}>Loading replay…</p>;
+  if (error) {
+    const missing = error instanceof ApiError && error.status === 404;
+    return (
+      <p role="alert" className={classes.meta}>
+        {missing ? 'No such replay.' : `Could not load this replay: ${error.message}`}
+      </p>
+    );
+  }
+  if (!view || !data) return null;
+
+  const days = Object.values(view.days).sort((a, b) => a.day - b.day);
+  const current = view.days[day] ?? days[0];
+  const previous = view.days[current.day - 1];
+  const deadByNow = new Set(
+    view.dead.filter((d) => d.day <= current.day).map((d) => d.player),
+  );
+
+  const recordGuess = (seat: string) => {
+    const next = { ...guesses, [`day-${current.day}`]: seat };
+    setGuesses(next);
+    ghostGuesses.set(gameId, next);
+  };
 
   return (
-    <div>
-      <p>
-        <Link href="/replays">← replays</Link>
-      </p>
-      <h1>{gameId}</h1>
-      <p>
-        <strong>{view.winner}</strong> won · {dayNumbers.length} days · {view.seats.length}{' '}
-        seats · {view.lastSeq} events
-      </p>
-      <p>
-        alive at the end: {view.alive.join(', ') || '—'}
-        <br />
-        dead:{' '}
-        {view.dead.map((d) => `${d.player} (${d.role}, ${d.causes.join('+')})`).join(' · ')}
-      </p>
+    <div className={classes.shell}>
+      <header className={classes.header}>
+        <div className={classes.headerTop}>
+          <Link href="/replays" className={classes.back}>
+            ← replays
+          </Link>
+          <h1 className={classes.title}>Day {current.day}</h1>
+          {view.winner ? <WinnerChip winner={view.winner} /> : null}
+          <span className={classes.spacer} />
+          <XrayToggle
+            on={xray}
+            available={view.xray.available}
+            showHint={!xray}
+            onToggle={() => setXray((v) => !v)}
+          />
+        </div>
+        <div className={classes.meta}>
+          <span>{data.days} days</span>
+          <span>{view.seats.length} seats</span>
+          <span>{describeCast(data.cast_role_counts)}</span>
+          {data.finished_at ? <span>{timeAgo(data.finished_at)}</span> : null}
+        </div>
+        <DayScrubber days={days} current={current.day} onSelect={setDay} />
+      </header>
 
-      <p>
-        {dayNumbers.map((n) => (
-          <button
-            key={n}
-            onClick={() => setDay(n)}
-            disabled={n === day}
-            style={{ marginRight: 6 }}
-          >
-            Day {n}
-          </button>
-        ))}
-      </p>
+      <div className={classes.body}>
+        <aside className={classes.rail}>
+          <RosterRail
+            view={view}
+            xray={xray}
+            upToDay={current.day}
+            onInspect={xray ? setInspecting : undefined}
+          />
+        </aside>
 
-      <label>
-        <input
-          type="checkbox"
-          checked={xray}
-          onChange={(e) => setXray(e.target.checked)}
-          disabled={!view.xray.available}
-        />{' '}
-        X-ray {view.xray.available ? '' : '(no observer data in this log)'}
-      </label>
+        <div className={classes.center}>
+          <DayTranscript
+            day={current}
+            previousDay={previous}
+            roles={view.xray.roles}
+            xray={xray}
+            deadSeats={deadByNow}
+            onInspect={xray ? setInspecting : undefined}
+          />
+        </div>
 
-      {!page ? (
-        <p>No day {day}.</p>
-      ) : (
-        <>
-          <h2>
-            Day {page.day} · phases: {page.phases.join(' → ')}
-          </h2>
-
-          {page.summary && xray ? (
-            <p>
-              <em>summary emitted this day (renders next morning): {page.summary}</em>
-            </p>
+        <aside className={classes.inspector}>
+          <GhostGuess
+            day={current.day}
+            seats={view.seats}
+            deadSeats={deadByNow}
+            guess={guesses[`day-${current.day}`]}
+            truth={view.xray.roles}
+            revealed={view.winner !== null}
+            onGuess={recordGuess}
+          />
+          {inspecting ? (
+            <AgentInspector
+              seat={inspecting}
+              view={view}
+              onClose={() => setInspecting(null)}
+            />
           ) : null}
-
-          <h3>Transcript</h3>
-          <ol>
-            {page.slots.map((slot) => {
-              const annotation = page.annotations[slot.channelSeq];
-              if (slot.kind === 'gm') {
-                return (
-                  <li key={slot.seq}>
-                    <em>GM: {slot.text}</em>
-                  </li>
-                );
-              }
-              if (slot.kind === 'pass') {
-                if (!xray) return null; // observer tier; hidden with the toggle off
-                return (
-                  <li key={slot.seq}>
-                    <strong>{slot.player}</strong> passed ({slot.passReason ?? 'no reason'})
-                    {slot.gated && slot.gatedCandidate ? (
-                      <blockquote>
-                        <small>vetoed by the novelty gate — would have said:</small>
-                        <br />
-                        {slot.gatedCandidate}
-                      </blockquote>
-                    ) : null}
-                    {xray && annotation?.firing ? (
-                      <small>
-                        {' '}
-                        [fired {annotation.firing.tier}
-                        {annotation.firing.owes.length
-                          ? `, owes ${annotation.firing.owes.join(', ')}`
-                          : ''}
-                        ]
-                      </small>
-                    ) : null}
-                  </li>
-                );
-              }
-              return (
-                <li key={slot.seq}>
-                  <strong>{slot.player}</strong>
-                  {xray && view.xray.roles[slot.player]
-                    ? ` (${view.xray.roles[slot.player]})`
-                    : ''}
-                  : {slot.message}
-                  {xray && annotation?.firing ? (
-                    <small>
-                      {' '}
-                      [fired {annotation.firing.tier}
-                      {annotation.firing.owes.length
-                        ? `, owes ${annotation.firing.owes.join(', ')}`
-                        : ''}
-                      ]
-                    </small>
-                  ) : null}
-                  {xray && annotation?.addressed.length ? (
-                    <small>
-                      {' '}
-                      [addresses{' '}
-                      {annotation.addressed
-                        .map((t) => `${t.target}:${t.stance}/${t.addressed_form}`)
-                        .join(', ')}
-                      ]
-                    </small>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ol>
-
-          <h3>Vote</h3>
-          {page.vote.outcome === null ? (
-            <p>no vote recorded</p>
-          ) : (
-            <p>
-              outcome: <strong>{page.vote.outcome}</strong>
-              {page.vote.lynched
-                ? ` — ${page.vote.lynched} (${page.vote.lynchedRole})`
-                : ''}
-              <br />
-              ballots:{' '}
-              {page.vote.ballots.map((b) => `${b.voter}→${b.votee}`).join(', ') || '—'}
-            </p>
-          )}
-
-          <h3>Night {page.day}</h3>
-          {!page.night ? (
-            <p>no night</p>
-          ) : (
-            <div>
-              <p>
-                {page.night.deaths.length
-                  ? `died: ${page.night.deaths
-                      .map((d) => `${d.player} (${d.role}, ${d.attacker_types.join('+')})`)
-                      .join(', ')}`
-                  : 'a quiet night'}
-                {page.night.save ? ` · saved: ${page.night.save.player}` : ''}
-              </p>
-              {xray ? (
-                <>
-                  <p>wolf kill decided: {page.night.wolfKill ?? '—'}</p>
-                  <ul>
-                    {page.night.wolfChannel.map((w) => (
-                      <li key={w.seq}>
-                        <strong>{w.wolf}</strong> (round {w.round}): {w.message}
-                      </li>
-                    ))}
-                  </ul>
-                  <p>
-                    night actions:{' '}
-                    {page.night.actions
-                      .map((a) => `${a.actor}/${a.role}→${a.target}`)
-                      .join(', ') || '—'}
-                  </p>
-                </>
-              ) : null}
-            </div>
-          )}
-        </>
-      )}
+          <VoteMatrix view={view} day={current} />
+        </aside>
+      </div>
     </div>
   );
 }

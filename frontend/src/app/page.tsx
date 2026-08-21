@@ -1,19 +1,64 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
+import { ReplayListClient } from './replays/_components/ReplayListClient';
+import classes from './page.module.css';
 
 /**
- * Walking-skeleton landing. Deliberately unstyled: D1's three-door hierarchy and the replay
- * rail arrive in the presentational pass. This exists so the route tree is navigable.
+ * Landing (D1). A recruiter with zero context must reach the X-ray in two clicks, so
+ * "watch a replay" is visually primary — it needs no key and no waiting — and the latest
+ * replays sit right below as a rail that deep-links straight into the theater. No
+ * screenshots or marketing sections: the replay rail IS the demo.
+ *
+ * Quick play and Rooms are P2/P3 surfaces. They render as inert doors rather than being
+ * hidden, so the shape of the app is honest about what is coming without pretending the
+ * buttons work.
  */
 export default function HomePage() {
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui' }}>
-      <h1>Werewolf — agent sim</h1>
-      <p>Watch AI agents deceive each other — and see exactly why.</p>
-      <ul>
-        <li>
-          <Link href="/replays">Watch a replay</Link>
-        </li>
-      </ul>
+    <main className={classes.page}>
+      <section className={classes.hero}>
+        <h1 className={classes.heroTitle}>
+          Watch AIs deceive each other — and see exactly why.
+        </h1>
+        <p className={classes.heroLead}>
+          Nine LLM agents play werewolf: they scheme, lie, build cases and vote each other
+          out. When a game ends, the X-ray opens every agent’s private reasoning — including
+          the lines a novelty gate stopped them from saying.
+        </p>
+      </section>
+
+      <div className={classes.doors}>
+        <Link href="/replays" className={`${classes.door} ${classes.doorPrimary}`}>
+          <h2 className={classes.doorTitle}>Watch a replay</h2>
+          <p className={classes.doorBody}>
+            A finished game, start to finish, with the X-ray. No sign-up, no API key,
+            nothing to wait for.
+          </p>
+        </Link>
+        <span className={`${classes.door} ${classes.doorDisabled}`} aria-disabled="true">
+          <h2 className={classes.doorTitle}>Quick game</h2>
+          <p className={classes.doorBody}>Take a seat against the agents. Coming next.</p>
+        </span>
+        <span className={`${classes.door} ${classes.doorDisabled}`} aria-disabled="true">
+          <h2 className={classes.doorTitle}>Rooms</h2>
+          <p className={classes.doorBody}>Play with other people. Coming next.</p>
+        </span>
+      </div>
+
+      <div className={classes.sectionHead}>
+        <h2 className={classes.sectionTitle}>Latest games</h2>
+        <Link href="/replays" className={classes.sectionLink}>
+          all replays →
+        </Link>
+      </div>
+      <Suspense fallback={<div className={classes.skeletonCard} />}>
+        <ReplayListClient limit={6} />
+      </Suspense>
+
+      <footer className={classes.footer}>
+        A research project on whether LLM agents can accumulate useful memory across games.
+        The replay theater is the instrument that made the behaviour legible.
+      </footer>
     </main>
   );
 }

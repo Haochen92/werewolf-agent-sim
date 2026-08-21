@@ -1,0 +1,149 @@
+/* Landing (D1) and the replay browser share this page furniture. */
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.hero {
+  margin-bottom: var(--space-6);
+}
+
+.heroTitle {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 1.5rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin: 0 0 var(--space-3);
+}
+
+.heroLead {
+  color: var(--text-dim);
+  max-width: 54ch;
+  margin: 0;
+}
+
+.doors {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+
+@media (min-width: 48em) {
+  .doors {
+    /* Watch-a-replay is visually primary: it needs no key and no waiting, and it is the
+       portfolio centerpiece. The other two doors are equal secondaries (D1). */
+    grid-template-columns: 1.6fr 1fr 1fr;
+  }
+}
+
+.door {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  background: var(--ink-800);
+  padding: var(--space-4);
+  transition: border-color 120ms ease;
+}
+
+.door:hover {
+  border-color: var(--amber-dim);
+  background: var(--ink-700);
+}
+
+.doorPrimary {
+  border-color: var(--amber-dim);
+  background: linear-gradient(160deg, var(--amber-wash), transparent 60%), var(--ink-800);
+}
+
+.doorPrimary:hover {
+  border-color: var(--amber);
+}
+
+.doorTitle {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--amber);
+  margin: 0 0 var(--space-2);
+}
+
+.doorBody {
+  color: var(--text-faint);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* Doors with no backend behind them yet are shown as inert, not hidden: pretending the
+   app has fewer doors than it does would be its own kind of lie. */
+.doorDisabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.sectionTitle {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin: 0;
+}
+
+.sectionLink {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.sectionLink:hover {
+  color: var(--amber);
+}
+
+.note {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+}
+
+.footer {
+  margin-top: var(--space-7);
+  padding-top: var(--space-4);
+  border-top: var(--hairline) solid var(--ink-600);
+  color: var(--text-faint);
+  font-size: 0.78rem;
+}
+
+.skeletonCard {
+  height: 120px;
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--ink-800), var(--ink-700), var(--ink-800));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonCard {
+    animation: none;
+  }
+}

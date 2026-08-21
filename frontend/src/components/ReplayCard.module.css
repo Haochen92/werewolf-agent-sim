@@ -1,0 +1,73 @@
+/*
+ * D2: ONE responsive card component, not a desktop-table / mobile-card pair. Replay rows
+ * are browsed casually rather than compared column-wise, so a card grid serves both widths
+ * and there is only one component to keep honest.
+ */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+@media (min-width: 48em) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+.card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--ink-800);
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  transition: border-color 120ms ease;
+}
+
+.card:hover {
+  border-color: var(--amber-dim);
+  background: var(--ink-700);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.days {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.humans {
+  border: var(--hairline) solid var(--amber-dim);
+  color: var(--amber);
+  border-radius: var(--radius);
+  font-size: 0.65rem;
+  padding: 0 var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cast {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.foot {
+  margin-top: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  font-family: var(--mantine-font-family-monospace);
+}
