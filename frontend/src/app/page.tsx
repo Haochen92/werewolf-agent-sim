@@ -9,9 +9,7 @@ import classes from './page.module.css';
  * replays sit right below as a rail that deep-links straight into the theater. No
  * screenshots or marketing sections: the replay rail IS the demo.
  *
- * Quick play and Rooms are P2/P3 surfaces. They render as inert doors rather than being
- * hidden, so the shape of the app is honest about what is coming without pretending the
- * buttons work.
+ * All three doors are live as of the P2/P3 build.
  */
 export default function HomePage() {
   return (
@@ -35,14 +33,18 @@ export default function HomePage() {
             nothing to wait for.
           </p>
         </Link>
-        <span className={`${classes.door} ${classes.doorDisabled}`} aria-disabled="true">
+        <Link href="/play" className={classes.door}>
           <h2 className={classes.doorTitle}>Quick game</h2>
-          <p className={classes.doorBody}>Take a seat against the agents. Coming next.</p>
-        </span>
-        <span className={`${classes.door} ${classes.doorDisabled}`} aria-disabled="true">
+          <p className={classes.doorBody}>
+            Take a seat against eight agents. Pick a role or let the deal decide.
+          </p>
+        </Link>
+        <Link href="/rooms" className={classes.door}>
           <h2 className={classes.doorTitle}>Rooms</h2>
-          <p className={classes.doorBody}>Play with other people. Coming next.</p>
-        </span>
+          <p className={classes.doorBody}>
+            Play with other people. Open a table and share the link.
+          </p>
+        </Link>
       </div>
 
       <div className={classes.sectionHead}>
