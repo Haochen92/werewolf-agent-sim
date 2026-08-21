@@ -1,0 +1,101 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px var(--space-2) 2px 2px;
+  border: var(--hairline) solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  text-align: left;
+  cursor: default;
+}
+
+.interactive {
+  cursor: pointer;
+}
+
+.interactive:hover {
+  background: var(--ink-700);
+  border-color: var(--ink-600);
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink-900);
+  /* Deterministic per-seat hue, set inline from hashSeat — face and fallback share an identity. */
+}
+
+.large .avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 0.8rem;
+}
+
+.name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* "you" — the answer to "which seat am I?" must be one glance away (D9). */
+.self {
+  border-color: var(--amber-dim);
+  background: var(--amber-wash);
+}
+
+.selfTag {
+  font-size: 0.65rem;
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Deaths desaturate + dim everywhere at once (ux_baseline §1). */
+.dead {
+  opacity: 0.55;
+}
+
+.dead .avatar {
+  filter: var(--death-desaturate);
+}
+
+.dead .name {
+  text-decoration: line-through;
+  text-decoration-color: var(--death-border);
+  color: var(--text-faint);
+}
+
+.role {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Role knowledge is machine-world knowledge: it reads cold even inside the story world. */
+.roleXray {
+  color: var(--cyan);
+  font-family: var(--mantine-font-family-monospace);
+}
+
+.wolfRole {
+  color: var(--faction-wolves);
+}
+
+.skRole {
+  color: var(--faction-serial-killer);
+}
