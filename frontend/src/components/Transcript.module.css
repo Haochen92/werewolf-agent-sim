@@ -1,0 +1,409 @@
+/* The transcript's anatomy — ux_journeys D10–D15, D19–D20. */
+
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--reading-measure);
+  margin: 0 auto;
+  padding: var(--space-4) 0 var(--space-7);
+}
+
+/* --- D10 speech bubbles --------------------------------------------------- */
+
+/*
+ * ALL speeches align left, including your own. A werewolf transcript is a TABLE RECORD,
+ * not a DM thread: own-right alignment would break the table metaphor and desync the
+ * replay view, which has no "own" at all. Ownership is marked, not mirrored.
+ */
+.speech {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.speaker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bubble {
+  background: var(--ink-800);
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+/* Consecutive speeches by one speaker merge under a single chip. */
+.merged .speaker {
+  display: none;
+}
+
+.merged .bubble {
+  margin-top: calc(-1 * var(--space-3));
+}
+
+.ownSpeech .bubble {
+  border-left: 2px solid var(--amber);
+  background: var(--amber-wash);
+}
+
+/* --- D11 GM narration ----------------------------------------------------- */
+
+/*
+ * No bubble. GM lines are the day page's structural punctuation — they must read as
+ * BETWEEN the players, never as a player. Still body sans, not monospace: narration is
+ * story world (ux_baseline §1 is explicit that GM text is body text).
+ */
+.gm {
+  align-self: center;
+  max-width: 52ch;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  font-style: italic;
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  justify-content: center;
+}
+
+.gmMark {
+  color: var(--amber-dim);
+  font-style: normal;
+  flex-shrink: 0;
+}
+
+/* --- D12 turn markers (X-ray only in replay) ------------------------------ */
+
+.turnMarker {
+  align-self: center;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.7rem;
+  color: var(--cyan-dim);
+  letter-spacing: 0.04em;
+}
+
+/* --- pass rows and the gated candidate ------------------------------------ */
+
+/*
+ * Machine world: a pass is scheduler mechanics, not table talk. The gated candidate — the
+ * speech the novelty gate vetoed — is the single most distinctive thing this app can show,
+ * so the row is discoverable (a summary you can open), not buried.
+ */
+.pass {
+  border: var(--hairline) solid var(--machine-border);
+  border-left: 2px solid var(--cyan-dim);
+  background: var(--machine-surface);
+  border-radius: var(--radius);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.passHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.passReason {
+  color: var(--cyan);
+}
+
+.gatedToggle {
+  margin-left: auto;
+  background: none;
+  border: var(--hairline) solid var(--cyan-dim);
+  border-radius: var(--radius);
+  color: var(--cyan);
+  font: inherit;
+  padding: 1px var(--space-2);
+  cursor: pointer;
+}
+
+.gatedToggle:hover {
+  background: var(--cyan-wash);
+}
+
+.gatedBody {
+  border-top: var(--hairline) dashed var(--machine-border);
+  padding: var(--space-3);
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  font-family: var(--mantine-font-family);
+  font-size: 0.9rem;
+}
+
+.gatedLabel {
+  display: block;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.7rem;
+  color: var(--cyan-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
+}
+
+/* --- annotations (firing reason, addressed targets) ----------------------- */
+
+.annotations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.68rem;
+  color: var(--cyan-dim);
+  padding-left: var(--space-1);
+}
+
+.tag {
+  border: var(--hairline) solid var(--machine-border);
+  border-radius: var(--radius);
+  padding: 0 4px;
+  background: var(--cyan-wash);
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
+.tagAccusation {
+  color: var(--faction-wolves);
+  border-color: var(--death-border);
+}
+
+/* --- D15/D20 death banners ------------------------------------------------ */
+
+/*
+ * Full-width and the loudest thing in the flow — but still IN the flow. Deaths are not a
+ * takeover; §0 reserves those for the role reveal and the game-over banner, and overlay
+ * inflation is exactly how game UIs get noisy.
+ */
+.deathBanner {
+  border: var(--hairline) solid var(--death-border);
+  border-left: 3px solid var(--faction-wolves);
+  background: linear-gradient(90deg, rgba(168, 60, 60, 0.1), transparent 70%);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.deathGlyphs {
+  display: flex;
+  gap: var(--space-1);
+  color: var(--faction-wolves);
+}
+
+.deathText {
+  font-size: 0.95rem;
+}
+
+.deathRole {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+/* A quiet outcome is a GM line, not a banner (D15). */
+.quietLine {
+  composes: gm;
+}
+
+/* --- D14 the vote block --------------------------------------------------- */
+
+.voteBlock {
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  background: var(--ink-850);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.voteHead {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.voteRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.voteArrow {
+  color: var(--text-faint);
+}
+
+.voteCount {
+  font-family: var(--mantine-font-family-monospace);
+  color: var(--amber);
+  font-size: 0.8rem;
+}
+
+.voters {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+/* --- D13 recap card ------------------------------------------------------- */
+
+.recap {
+  border: var(--hairline) dashed var(--ink-500);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ink-850);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.recapSummary {
+  cursor: pointer;
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  list-style: none;
+}
+
+.recapSummary::-webkit-details-marker {
+  display: none;
+}
+
+.recapSummary::before {
+  content: '▸ ';
+  color: var(--amber-dim);
+}
+
+details[open] > .recapSummary::before {
+  content: '▾ ';
+}
+
+.recapBody {
+  padding-top: var(--space-2);
+  white-space: pre-wrap;
+}
+
+/* --- D19 night ------------------------------------------------------------ */
+
+.nightCard {
+  align-self: center;
+  text-align: center;
+  color: var(--night-text-dim);
+  border: var(--hairline) solid var(--night-border);
+  border-radius: var(--radius);
+  background: var(--night-surface);
+  padding: var(--space-4) var(--space-6);
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.wolfChannel {
+  border: var(--hairline) solid rgba(168, 60, 60, 0.35);
+  border-radius: var(--radius);
+  background: var(--wolf-wash);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.wolfHead {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faction-wolves);
+}
+
+.wolfEntry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.wolfBubble {
+  background: rgba(168, 60, 60, 0.07);
+  border: var(--hairline) solid rgba(168, 60, 60, 0.25);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+}
+
+/* The GM's SK-whiff note renders as a GM line INSIDE the tint (wolf === "game_master"). */
+.wolfGm {
+  composes: gm;
+  color: var(--faction-wolves);
+  opacity: 0.85;
+}
+
+.packBanner {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.8rem;
+  color: var(--faction-wolves);
+  border-top: var(--hairline) dashed rgba(168, 60, 60, 0.3);
+  padding-top: var(--space-2);
+}
+
+/* --- machine-world cards (private results, night actions) ----------------- */
+
+.machineCard {
+  border: var(--hairline) solid var(--machine-border);
+  border-left: 2px solid var(--cyan-dim);
+  background: var(--machine-surface);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.8rem;
+  color: var(--cyan);
+}
+
+.machineLabel {
+  color: var(--cyan-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  display: block;
+}
+
+/* --- section headings ----------------------------------------------------- */
+
+.sectionRule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-faint);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: var(--space-3);
+}
+
+.sectionRule::before,
+.sectionRule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ink-500);
+}
+
+.empty {
+  color: var(--text-faint);
+  text-align: center;
+  font-size: 0.9rem;
+  padding: var(--space-5) 0;
+}
