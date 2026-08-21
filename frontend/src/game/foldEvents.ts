@@ -74,6 +74,7 @@ export function emptyGameView(options: FoldOptions = {}): GameView {
     phase: 'day',
     timeline: [],
     winner: null,
+    winnerSeq: null,
     alive: [],
     dead: [],
     packRoster: [],
@@ -82,6 +83,7 @@ export function emptyGameView(options: FoldOptions = {}): GameView {
     me: {
       seat: options.mySeat ?? null,
       role: null,
+      roleSeq: null,
       pending: null,
       privateResults: [],
       alive: true,
@@ -227,7 +229,7 @@ export function foldEvent(
       // half-populated with a single entry that isn't observer knowledge at all. Your
       // own role lives on `me.role`; the view reads that for your own badge.
       if (event.player === mySeat) {
-        next = { ...next, me: { ...next.me, role: card } };
+        next = { ...next, me: { ...next.me, role: card, roleSeq: event.seq } };
         if (event.pack) next = { ...next, packRoster: event.pack };
       }
       return next;
@@ -256,7 +258,7 @@ export function foldEvent(
     }
 
     case 'game_over': {
-      return { ...next, winner: event.winner };
+      return { ...next, winner: event.winner, winnerSeq: event.seq };
     }
 
     case 'turn_started': {

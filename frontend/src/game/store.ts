@@ -52,9 +52,22 @@ interface SessionState {
   ) => void;
   /** Fold one event that just arrived on the wire. Marks it live — beats may fire. */
   applyLive: (event: DurableGameEvent) => void;
+  /**
+   * Fold one event that arrived as CATCH-UP, not as news. Marks nothing live.
+   *
+   * The SSE stream replays the log from the client's cursor before going live, and on a
+   * first connection that cursor is 0 — so the entire history arrives through the same
+   * socket as the future. Without this split, refreshing mid-game would re-fire the role
+   * reveal and the game-over takeover for events that happened an hour ago, which is
+   * exactly what ux_journeys §0 forbids. The boundary is the `last_seq` from the status
+   * snapshot taken at connect time: at or below it is history, above it is news.
+   */
+  applyCatchUp: (event: DurableGameEvent) => void;
   /** Ephemeral pacing snapshot; duplicates and stale values are harmless by design. */
   applyPacing: (progress: PhaseProgress) => void;
   setConnection: (connection: ConnectionState) => void;
+  /** Name the seat this client owns (from GameStatus.you); re-folds so `me` resolves. */
+  setMySeat: (seat: string | null) => void;
   reset: () => void;
 
   /** Did this seq arrive live? The beat layer's only question. */
@@ -84,6 +97,16 @@ export const useGameSession = create<SessionState>((set, get) => ({
       // Deliberately NOT merged with any existing liveSeqs: a hydrate re-folds from
       // scratch, so every seq in the new view is history by definition.
       liveSeqs: new Set(),
+    });
+  },
+
+  applyCatchUp: (event) => {
+    const { view, events } = get();
+    if (event.seq <= view.lastSeq) return;
+    set({
+      events: [...events, event],
+      view: foldEvent(view, event, { mySeat: view.me.seat }),
+      // liveSeqs untouched: this event is history that merely arrived late.
     });
   },
 
@@ -121,6 +144,18 @@ export const useGameSession = create<SessionState>((set, get) => ({
   },
 
   setConnection: (connection) => set({ connection }),
+
+  /**
+   * Name the seat this client owns, from `GameStatus.you`. Re-folds the log, because
+   * `me.role` and `me.alive` are derived from the seat and every event already folded was
+   * folded without knowing it. Cheap (the log is in memory) and far safer than patching
+   * `me` in place and hoping nothing else depended on the seat.
+   */
+  setMySeat: (seat) => {
+    const { view, events } = get();
+    if (view.me.seat === seat) return;
+    set({ view: foldEvents(events, { mySeat: seat }) });
+  },
 
   reset: () => set({ ...initial, view: emptyGameView(), liveSeqs: new Set(), pacing: {} }),
 

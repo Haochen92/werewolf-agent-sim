@@ -186,6 +186,12 @@ export interface MeView {
   /** From the caller (`GameStatus.you`), never guessed — see the fold options. */
   seat: string | null;
   role: RoleCard | null;
+  /**
+   * Seq of MY `role_assigned`. The beat layer asks the store whether this seq arrived live
+   * before firing D8 — "we have a role now" is also true after a refresh, and would replay
+   * the reveal on every reload.
+   */
+  roleSeq: number | null;
   pending: {
     seq: number;
     day: number;
@@ -228,6 +234,8 @@ export interface GameView {
   /** Every phase entered, in order: the scrubber's step list. */
   timeline: { day: number; phase: Phase; seq: number }[];
   winner: Winner | null;
+  /** Seq of `game_over` — same live-vs-folded question as `me.roleSeq`, for D22. */
+  winnerSeq: number | null;
   alive: string[];
   dead: DeathRecord[];
   /** Wolf pack survivors (faction tier). */
