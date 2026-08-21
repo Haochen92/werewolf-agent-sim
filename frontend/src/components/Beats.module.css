@@ -1,0 +1,143 @@
+/*
+ * The two earned takeovers (ux_journeys §0): the role reveal (D8) and the game-over banner
+ * (D22). No third one is ever added here — deaths, votes and dawns all live in the
+ * transcript flow. Overlay inflation is how game UIs get noisy, and the scarcity is what
+ * makes these two land.
+ *
+ * Both are gated on LIVE ARRIVAL by the caller. During any catch-up fold — refresh,
+ * reconnect, replay scrub — they must not render at all.
+ */
+
+.takeover {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(6, 5, 4, 0.93);
+  animation: fadeIn var(--dur-slow) var(--ease) both;
+}
+
+/* --- D8 role reveal -------------------------------------------------------- */
+
+.card {
+  width: min(420px, 100%);
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius-lg);
+  background: var(--ink-800);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  text-align: center;
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+
+/* The card edge carries the faction — the first thing you learn about yourself. */
+.village {
+  border-top: 3px solid var(--faction-villagers);
+}
+.wolf {
+  border-top: 3px solid var(--faction-wolves);
+}
+.sk {
+  border-top: 3px solid var(--faction-serial-killer);
+}
+
+.portrait {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto var(--space-4);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.roleName {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-3);
+  color: var(--text);
+}
+
+.ability {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-2);
+}
+
+/* The role-conditional third line: pack roster, bullet count, SK immunity. */
+.detail {
+  color: var(--amber);
+  font-size: 0.85rem;
+  margin: 0 0 var(--space-5);
+}
+
+.dismiss {
+  background: var(--amber);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--ink-900);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.dismiss:hover {
+  background: var(--amber-bright);
+}
+
+/* --- D22 game over --------------------------------------------------------- */
+
+.winner {
+  text-align: center;
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+
+.winnerHeadline {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: clamp(1.4rem, 6vw, 2.4rem);
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-4);
+}
+
+.winnerVillagers {
+  color: var(--faction-villagers);
+}
+.winnerWolves {
+  color: var(--faction-wolves);
+}
+.winnerSerialKiller {
+  color: var(--faction-serial-killer);
+}
+
+.winnerSub {
+  color: var(--text-dim);
+  margin: 0 0 var(--space-6);
+  font-size: 0.9rem;
+}
+
+/* --- D9 the persistent role chip ------------------------------------------ */
+
+.roleChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: var(--hairline) solid var(--amber-dim);
+  background: var(--amber-wash);
+  border-radius: var(--radius);
+  padding: 2px var(--space-2);
+  color: var(--amber);
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.roleChip:hover {
+  border-color: var(--amber);
+}

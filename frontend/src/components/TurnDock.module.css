@@ -1,0 +1,284 @@
+/* The turn dock (D17/D18) — pinned bottom on mobile, in-column on desktop. */
+
+.dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+  background: var(--ink-850);
+  border-top: var(--hairline) solid var(--amber-dim);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  animation: riseIn var(--dur) var(--ease) both;
+}
+
+/* The wolf variant lives inside the pack's tint, not the public dock skin (D17). */
+.wolfDock {
+  background: linear-gradient(0deg, var(--wolf-wash), transparent), var(--ink-850);
+  border-top-color: var(--faction-wolves);
+}
+
+.prompt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: var(--space-2);
+}
+
+.wolfDock .prompt {
+  color: var(--faction-wolves);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  background: var(--ink-900);
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.55;
+  padding: var(--space-3);
+}
+
+.textarea:focus {
+  border-color: var(--amber-dim);
+  outline: none;
+}
+
+.targets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 240px;
+  overflow-y: auto;
+  margin-bottom: var(--space-3);
+}
+
+.target {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: var(--hairline) solid var(--ink-600);
+  background: var(--ink-900);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  font: inherit;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
+}
+
+.target:hover {
+  border-color: var(--amber-dim);
+}
+
+.targetPicked {
+  border-color: var(--amber);
+  background: var(--amber-wash);
+}
+
+/* abstain / hold_fire are sentinels the SERVER lists, not player seats — they read as
+   choices, not as people, so they get their own treatment rather than a fake portrait. */
+.sentinel {
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--amber);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--ink-900);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--amber-bright);
+}
+
+.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: none;
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.8rem;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--amber-dim);
+  color: var(--text);
+}
+
+.secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* --- D18 the countdown ring ------------------------------------------------ */
+
+.ring {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.ringSvg {
+  transform: rotate(-90deg);
+}
+
+.ringTrack {
+  stroke: var(--ink-600);
+}
+
+.ringProgress {
+  stroke: var(--amber);
+  transition: stroke-dashoffset 250ms linear;
+}
+
+/* The last ten seconds go red. Colour only — no flashing, which reads as panic and is a
+   real accessibility hazard. */
+.ringUrgent .ringProgress {
+  stroke: var(--faction-wolves);
+}
+
+.ringLabel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+}
+
+/* --- errors ---------------------------------------------------------------- */
+
+/* 422 messages render VERBATIM: the server's wording is the contract's own explanation
+   and paraphrasing it would be inventing rules the engine did not state (D17). */
+.error {
+  margin-top: var(--space-2);
+  border: var(--hairline) solid var(--death-border);
+  border-left: 2px solid var(--faction-wolves);
+  border-radius: var(--radius);
+  background: rgba(168, 60, 60, 0.08);
+  color: var(--text);
+  font-size: 0.82rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+/* --- D21 the ghost bar ----------------------------------------------------- */
+
+.ghostBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+  background: var(--ink-850);
+  border-top: var(--hairline) solid var(--ink-600);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-faint);
+  font-size: 0.82rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* --- D18 pacing strip ------------------------------------------------------ */
+
+.pacing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  padding: var(--space-2) var(--space-4);
+}
+
+.pacingTrack {
+  flex: 1;
+  height: 2px;
+  background: var(--ink-600);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.pacingFill {
+  height: 100%;
+  background: var(--amber-dim);
+  transition: width var(--dur-slow) var(--ease);
+}
+
+/* --- D12 thinking row ------------------------------------------------------ */
+
+.thinking {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  font-style: italic;
+  animation: fadeIn var(--dur) var(--ease) both;
+}
+
+.thinkingDots span {
+  animation: blink 1.4s infinite both;
+}
+
+.thinkingDots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinkingDots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
