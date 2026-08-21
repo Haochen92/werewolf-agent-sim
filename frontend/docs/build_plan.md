@@ -74,6 +74,8 @@ frontend/
 │                                           #  design_log.md, the wire-contract docs) — NOT app code
 ├── Dockerfile  next.config.mjs  postcss.config.cjs  tsconfig.json  vitest.config.ts
 ├── .env.local.dev (→ cp to .env.local)  .env.production
+├── public/
+│   └── og/                                 # OG share cards ONLY (need stable URLs; P4) — nothing else
 └── src/
     ├── app/
     │   ├── layout.tsx  page.tsx            # landing: replays · quick play · create room
@@ -84,6 +86,8 @@ frontend/
     │   ├── rooms/{page.tsx, _components/}  # public room browser (GET /rooms, slice 7)
     │   ├── rooms/new/{page.tsx, _components/}
     │   └── games/[gameId]/{page.tsx, _components/}     # ONE route, three states (§5)
+    ├── assets/                             # imported art: portraits/ glyphs/ backgrounds/
+    │   └── manifest.ts                     # the ONE import site → typed handles (no paths in components)
     ├── components/                         # cross-route: table view, transcript, xray, forms
     ├── game/                               # THE core: reducer + store (pure TS, vitest home)
     │   ├── foldEvents.ts                   # (GameView, DurableGameEvent) → GameView
@@ -111,6 +115,19 @@ non-components, `PascalCase.tsx` components; responsive via `visibleFrom`/`hidde
 Type codegen: `"generate-api-types": "openapi-typescript http://localhost:8000/openapi.json -o src/types/contracts/api.ts"`
 — committed output; the façade `contracts/index.ts` renames generated types so app code never
 imports `api.ts` directly (regeneration can't ripple).
+
+**Image assets (ruled 2026-08-21; direction = `ux_baseline.md` §1).** Art ships via static
+imports + `next/image` — content-hashed URLs (regenerated art can never get stuck behind a
+browser's cached copy), inferred dimensions (no layout shift), automatic optimization. NOT
+`public/`: it serves verbatim with none of that; `public/og/` is the sole exception (share
+cards need stable URLs for `generateMetadata`; favicons use Next's `app/icon.png` file
+convention, not `public/`). `src/assets/manifest.ts` is the only file that imports image
+files; it exports typed handles (`PORTRAITS: StaticImageData[]`, `KILL_GLYPHS:
+Record<AttackerType, …>`) so components never hold path strings — `SeatChip` picks
+`PORTRAITS[hash(seat) % len]` and falls back to the initials `Avatar` while `portraits/` is
+empty, so the build never blocks on art and an art swap is files + manifest, zero component
+edits. Generated assets land as WebP at ~2× display size (portraits are chip/card scale, so
+~512px square — never raw multi-MB gen output), one palette, one canvas ratio.
 
 ### Rendering model (Next.js specifics — ruled 2026-08-20)
 

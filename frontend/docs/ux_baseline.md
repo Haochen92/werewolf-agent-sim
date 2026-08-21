@@ -8,16 +8,30 @@
 
 ---
 
-## 1. Aesthetic ruling for v1: tokens, not assets
+## 1. Aesthetic ruling: hi-bit pixel × séance noir (ruled 2026-08-21)
 
-The design log holds two competing art directions — §3 "séance noir" tarot-card portraits
-and §7 hi-bit pixel art (Coffee Talk formula). **Neither is picked for v1.** Both require
-custom asset production; the log itself rules "ship with placeholders, art is a timeboxed
-later pass" (§12). The pick happens at the styling pass, plugging into the theme slices
-(`build_plan.md` §3) without touching app code.
+The design log holds two art directions — §3 "séance noir" tarot-card portraits and §7
+hi-bit pixel art (Coffee Talk formula). **v1 takes the fusion §7 itself anticipated:
+hi-bit pixel is the MEDIUM, séance noir is the MOOD** — "pixel tavern + amber pooled
+light"; large moody-lit pixel portraits in the Coffee Talk / VA-11 Hall-A register,
+dark-mystery palette, never bright-retro. (Supersedes the 2026-08-20 "neither picked"
+deferral; §3's tarot-card framing is dropped.)
 
-What v1 DOES bake in — the mood at the token level, because it costs nothing and the
-two-world contrast is the visual thesis of the whole project:
+Hard rules (from §7, non-negotiable — this is a reading app):
+
+- Portraits big and detailed; sprite-scale minimalism would hurt a dialogue game.
+- ALL dialogue + UI text stays on the clean sans stack; pixel display type for
+  titles/chrome ONLY (the contrast collapses if pixel type leaks into body text).
+
+The v1 asset set (generated; ONE palette, ONE canvas ratio — consistency is enforced at
+generation time, not in code; structure + manifest rule = `build_plan.md` §3): ~12 seat
+portraits · 4 kill glyphs (wolf / SK / vigilante / lynch) · optional table backdrop
+(day + night variants). **The build never blocks on art**: the manifest's
+initials-`Avatar` fallback ships in P0, portraits land whenever ready with zero
+component edits — asset generation is its own timeboxed pass, not a P0 dependency.
+
+What the tokens bake in (unchanged by the pixel ruling — pixels change assets, not
+tokens; the two-world contrast is the visual thesis of the whole project):
 
 - **Story world (table, transcript, lobby)**: Mantine dark scheme tuned warm — deep
   ink/charcoal surfaces (not Mantine's default blue-gray), one amber accent (`--amber`)
@@ -29,15 +43,17 @@ two-world contrast is the visual thesis of the whole project:
   blue-black tint (CSS class on the phase wrapper, driven by the fold's `phase`). Cheap,
   werewolf-native, and the single most atmospheric thing tokens can do.
 - **Typography**: clean sans (Mantine default stack) for ALL dialogue and UI — both art
-  directions agree readability rules; a serif display face is allowed ONLY for page
-  titles and GM narration lines. Monospace reserved exclusively for machine-world panes
-  (the contrast collapses if monospace leaks into story chrome).
+  directions agree readability rules; the display face for page titles/chrome is the
+  pixel face per the §1 ruling (GM narration stays clean sans — it is body text).
+  Monospace reserved exclusively for machine-world panes (the contrast collapses if
+  monospace leaks into story chrome).
 - **Deaths**: dead players desaturate + dim (CSS filter on the portrait/name chip);
   death notices carry the attacker type (wolf / SK / vigilante / lynch — the data is
   attacker-typed) as a small typed glyph + distinct accent, not just gray text.
-- **Portraits v1**: Mantine `Avatar` with initials on a per-seat deterministic hue
-  (hash of seat name), role icon overlay (tabler) where the viewer is entitled to see
-  the role. No generated art.
+- **Portraits**: pixel portraits from the asset manifest, per-seat deterministic pick
+  (`PORTRAITS[hash(seat) % len]`); until the set lands, the fallback is Mantine `Avatar`
+  with initials on a per-seat deterministic hue (same hash). Role icon overlay (tabler)
+  where the viewer is entitled to see the role, in either mode.
 
 ## 2. Layout system
 
@@ -146,9 +162,10 @@ showcase modes (live memory-ON, store changelog explorer, deep memory X-ray from
 eval-case exports — gated on the memory-research posture) · kick-player · raised-hand
 proactive speaking · coach mode · achievements · guess-the-human mode.
 
-**Pure frontend, deliberately later** (styling/polish pass): the art-direction pick
-(tarot vs hi-bit pixel — §1) and all asset production · replay autoplay with staged
+**Pure frontend, deliberately later** (styling/polish pass): replay autoplay with staged
 pacing + speed control · dramatic-irony meter · mention graph · vote-chip slide /
 kill-cinematic micro-animations · PWA manifest · "play of the game" deep links ·
-per-seat portrait art. The theme-slice structure is where all of this lands without
-touching app code.
+the §7 green-phosphor-CRT variant of the machine-world (v1 keeps cold cyan). The
+theme-slice structure is where all of this lands without touching app code.
+(The art-direction pick is no longer parked — RULED in §1, 2026-08-21; the generated
+asset set is a scheduled timeboxed pass that can land any time after P0.)
