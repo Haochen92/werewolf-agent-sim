@@ -1,6 +1,6 @@
 """The wire contract: every event a client can ever receive, as one flat discriminated union.
 
-Transcribed from the ruled derivation in frontend/event_derivation.md — every non-IGNORED table
+Transcribed from the ruled derivation in frontend/docs/event_derivation.md — every non-IGNORED table
 row is one frozen model here; nothing else may reach a client. Two ruled structures:
 
 - DurableEvent vs EphemeralEvent base classes: durable events carry the global `seq`, are

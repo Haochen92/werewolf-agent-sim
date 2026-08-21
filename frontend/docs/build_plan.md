@@ -1,4 +1,4 @@
-# Frontend build plan — `webapp/`
+# Frontend build plan — `frontend/`
 
 > Decision record + implementation plan, ruled 2026-08-20. Supersedes the stale
 > `BUILD_BRIEF.md` (2026-07-17, lived in the abandoned `ww-frontend-app` worktree) — that brief
@@ -21,7 +21,7 @@
 
 | # | Question | Ruling |
 |---|---|---|
-| 1 | Where the app lives | `webapp/` in the main repo (name chosen over `frontend_app/` to avoid clashing with the existing `frontend/` docs dir). **No new branch / worktree** — build directly on the active branch; the app is a disjoint folder, commit hygiene by folder-scoped commits. |
+| 1 | Where the app lives | **`frontend/` in the main repo IS the app root** (re-ruled 2026-08-20, superseding the earlier `webapp/` pick); the design/decision docs moved to `frontend/docs/`. **No new branch / worktree** — build directly on the active branch; the app is a disjoint folder, commit hygiene by folder-scoped commits. |
 | 2 | Mantine major | **v8** (current major; dota2pred is on v7 but its patterns port unchanged; greenfield shouldn't inherit a dated major). All `@mantine/*` pinned to the same major. |
 | 3 | Tailwind | **Dropped** from the old locked stack. Mantine props + CSS Modules + `postcss-preset-mantine` only — one styling system. |
 | 4 | Data fetching | **TanStack Query only** (deviation from dota2pred's SWR-primary split-brain; our API is write-heavy — join/start/rejoin/turns — so mutations + invalidation are core). |
@@ -61,12 +61,17 @@ fix its five known warts (dual fetch libs, base-URL copy-pasted ×8, no formatte
   call dota2pred made).
 - **SWR** — replaced by TanStack Query (ruling 4).
 - **Ladle / Storybook, Playwright** — dota2pred barely used them; revisit at the styling pass.
-- **WebSocket anything** — SSE is the wire contract.
+- **WebSocket anything** — not a dota2pred carry-over (dota2pred is SSE-only too); listed
+  because `design_log.md` §8 floated "WebSocket is a fine later swap." Pinning here: SSE + POST
+  is the shipped wire contract, and the traffic pattern (server→client dominates; client acts
+  only on its turn) never needs a socket. Don't add one.
 
 ## 3. Repo layout
 
 ```
-webapp/
+frontend/
+├── docs/                                   # design + decision records (this file, ux_baseline.md,
+│                                           #  design_log.md, the wire-contract docs) — NOT app code
 ├── Dockerfile  next.config.mjs  postcss.config.cjs  tsconfig.json  vitest.config.ts
 ├── .env.local.dev (→ cp to .env.local)  .env.production
 └── src/
@@ -106,6 +111,25 @@ non-components, `PascalCase.tsx` components; responsive via `visibleFrom`/`hidde
 Type codegen: `"generate-api-types": "openapi-typescript http://localhost:8000/openapi.json -o src/types/contracts/api.ts"`
 — committed output; the façade `contracts/index.ts` renames generated types so app code never
 imports `api.ts` directly (regeneration can't ripple).
+
+### Rendering model (Next.js specifics — ruled 2026-08-20)
+
+- **`/games/[gameId]` and `/replays/[gameId]` are dynamic route segments** (App Router `[param]`
+  folders), rendered on demand — nothing is statically generated at build time except the truly
+  static shells (landing, `/play`, `/rooms/new` forms).
+- **Game surfaces are client-rendered.** The `page.tsx` files stay server components (metadata +
+  Suspense + skeleton, the dota2pred pattern), but everything below the boundary is
+  `'use client'`: the live game depends on `EventSource` (browser-only API) and the HttpOnly
+  seat cookie, and the replay theater is interaction-bound (scrubber). Server-side data fetching
+  would add complexity for zero paint benefit — the skeleton IS the first paint.
+- **No parallel/intercepting routes** (dota2pred's `@modal` slot): no modal-over-route use case
+  yet — the X-ray is an in-page pane, not an overlay route. Revisit only if the UX pass creates
+  one.
+- **No PPR / streaming SSR**: the app is interaction-bound, not TTFB-bound.
+- **The one server-rendering win, slotted P4**: `generateMetadata` on `/replays/[gameId]` doing
+  a server-side fetch of the replay summary (public GET, no cookie needed) to emit OG share-card
+  tags ("Wolves won in 5 days · 9 seats") so pasted replay links unfurl. Pure additive polish;
+  nothing else moves server-side for it.
 
 ## 4. State model — the load-bearing design decision
 
@@ -212,22 +236,32 @@ the client never re-routes across the transition.
 `candidates`; `{delegate: true}` legal everywhere (the AFK button). 422 message renders as-is;
 409 = someone (or the AFK timer) already answered — clear the form and re-sync via status.
 
-## 6. Server tweaks shipping with P0 (ruling 5)
+## 6. Server tweaks shipping with P0 (ruling 5) — ⭐BOTH LANDED 2026-08-21
 
-1. `server/replays.py`: `ReplayGame.events: list[DurableGameEvent]` (currently `list[dict]`) —
-   the event union, the most important type in the frontend, currently never appears in
-   `/openapi.json`. One annotation fixes codegen + docs. Verify the discriminated union
-   round-trips through OpenAPI cleanly (pydantic emits `oneOf` + discriminator).
-2. `server/config.py` + `app.py`/`dependencies.py`: env-driven `SEAT_COOKIE_SECURE` (default
-   false for dev) applied everywhere the seat cookie is set.
+1. ✅ `server/replays.py`: `ReplayGame.events: list[DurableGameEvent]` (the table's JSONB
+   column stays `list[dict]`; only the wire model is typed). Verified: the 27-member
+   discriminated union now renders in `/openapi.json` as `oneOf` refs — the frontend TS
+   event types generate from it. Side effect (deliberate): stored rows re-validate on the
+   way out, so archive drift 500s loudly instead of shipping mystery dicts.
+2. ✅ `server/config.py` + `app.py`: `SEAT_COOKIE_SECURE` env knob (default false for
+   plain-HTTP dev; the TLS deploy sets it). `_set_seat_cookie` is the single set-site, so
+   one line covers all three doors (solo create / join / rejoin).
+
+Three regression tests added (Secure-flag knob · typed-event parsing incl. drift rejection ·
+union-reaches-OpenAPI member count). 954 green.
 
 ## 7. Phases (each ends deployable)
 
 **P0 — scaffold + contracts.** The two server tweaks · Next 15 + Mantine 8 scaffold · theme
 slices skeleton · `lib/{config,request,queryKeys}` · codegen wired · Providers/AppShell ·
 Prettier + Vitest config · Dockerfile (4-stage, standalone, `NEXT_PUBLIC_*` build arg) ·
-**archive seeding**: serve ~5–10 cheap LLM-only games through the real server (`POST /games`,
-house key, flash-lite) — fills `/replays` AND doubles as another live soak (ruling 6).
+**archive seeding**: ✅ SEEDED 2026-08-21 at $0 — the recorded fixture game
+(`chunk_catalogue.jsonl`, a real served flash-lite game) replayed through
+`GameSession(FakeGraph)` with the live DSN; row `seed-chunk-catalogue` (wolves, 5 days,
+593 events) verified through both `/replays` endpoints incl. the typed-union parse
+(one-shot script, deleted after per ruling). More rows arrive organically: every cleanly
+finished served game auto-archives. Optionally serve a few cheap real games later for
+browse variety (ruling 6).
 *Done when*: `/replays` renders real rows from the archive in the browser.
 
 **P1 — event reducer + replay theater (the portfolio centerpiece).** `foldEvents` +

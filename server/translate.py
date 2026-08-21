@@ -95,7 +95,7 @@ _WRAPPER_NODES = {
     "VIGILANTE_NIGHT_PHASE",
 }
 # Explicitly-folded keys per (scope, node): committed state whose information content already
-# ships in another form (or is pure engine bookkeeping). See frontend/event_derivation.md.
+# ships in another form (or is pure engine bookkeeping). See frontend/docs/event_derivation.md.
 _FOLDS: dict[tuple[str, str], set[str]] = {
     ("root", "INITIALIZE_GAME"): {
         "day_channel", "day_summaries", "wolf_channel", "day_votes",
@@ -258,7 +258,7 @@ class Translator:
         if unaccounted:
             raise TranslationError(
                 f"({scope}, {node}) committed unaccounted keys {sorted(unaccounted)} — "
-                "add an event or an explicit fold (frontend/event_derivation.md)"
+                "add an event or an explicit fold (frontend/docs/event_derivation.md)"
             )
 
     # ---- handlers: lifecycle ----------------------------------------------------------
