@@ -434,3 +434,55 @@
 .ghostWrong {
   color: var(--faction-wolves);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Motion + atmosphere pass (ux_baseline §6, unparked 2026-08-21).
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/*
+ * The table backdrop. ux_baseline §1 offers a day/night backdrop as an optional generated
+ * asset; with image generation unavailable, the same job is done in CSS — a warm pool of
+ * lamplight over the reading column by day, cold and higher-contrast by night. It costs no
+ * bytes and cannot get stuck behind a stale cache.
+ */
+.shell {
+  background-image: radial-gradient(
+    120% 60% at 50% 0%,
+    rgba(224, 163, 63, 0.055),
+    transparent 60%
+  );
+  background-attachment: fixed;
+}
+
+.step,
+.arrowButton,
+.xrayToggle,
+.card,
+.door {
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+/* The X-ray is the app's one real mode switch, so it earns a visible state change. */
+.xrayOn {
+  box-shadow: 0 0 0 1px var(--cyan-dim);
+}
+
+.xrayDot {
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.xrayOn .xrayDot {
+  box-shadow: 0 0 6px 1px var(--cyan);
+}
+
+/* The discovery hint pulses once on arrival, then stops. Never loops. */
+.hint {
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+
+.machinePanel {
+  animation: fadeIn var(--dur) var(--ease) both;
+}

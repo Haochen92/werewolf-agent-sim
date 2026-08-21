@@ -162,12 +162,21 @@ export function PassRow({
             </button>
           ) : null}
         </div>
-        {open && hasCandidate ? (
-          <div className={classes.gatedBody}>
-            <span className={classes.gatedLabel}>
-              suppressed by the novelty gate — it would have said
-            </span>
-            {slot.gatedCandidate}
+        {hasCandidate ? (
+          // grid-template-rows 0fr→1fr: unrolls to the content's real height without
+          // hard-coding a max-height that would clip a long vetoed line.
+          <div
+            className={`${classes.gatedWrap} ${open ? classes.gatedWrapOpen : ''}`}
+            aria-hidden={!open}
+          >
+            <div className={classes.gatedInner}>
+              <div className={classes.gatedBody}>
+                <span className={classes.gatedLabel}>
+                  suppressed by the novelty gate — it would have said
+                </span>
+                {slot.gatedCandidate}
+              </div>
+            </div>
           </div>
         ) : null}
       </div>
@@ -407,3 +416,41 @@ export function SectionRule({ children }: { children: React.ReactNode }) {
 }
 
 export { classes as transcriptClasses };
+
+// --- the replay ending -------------------------------------------------------
+
+const WINNER_CLASS: Record<string, string> = {
+  villagers: classes.winnerVillagers,
+  wolves: classes.winnerWolves,
+  serial_killer: classes.winnerSerialKiller,
+};
+
+const WINNER_LINE: Record<string, string> = {
+  villagers: 'The village survives',
+  wolves: 'The wolves win',
+  serial_killer: 'The serial killer wins',
+};
+
+/**
+ * A replay's ending. Deliberately a card in the flow, not a takeover: §0 allows exactly two
+ * takeovers and both fire on LIVE arrival only, which a replay viewer never is (D22).
+ */
+export function WinnerCard({
+  winner,
+  days,
+  survivors,
+}: {
+  winner: string;
+  days: number;
+  survivors: string[];
+}) {
+  return (
+    <div className={`${classes.winnerCard} ${WINNER_CLASS[winner] ?? ''}`}>
+      <h2 className={classes.winnerTitle}>{WINNER_LINE[winner] ?? winner}</h2>
+      <p className={classes.winnerSub}>
+        {days} days · {survivors.length} left standing
+        {survivors.length > 0 ? ` — ${survivors.join(', ')}` : ''}
+      </p>
+    </div>
+  );
+}

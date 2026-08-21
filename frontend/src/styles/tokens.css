@@ -110,3 +110,57 @@ body {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Motion.
+ *
+ * ux_baseline §6 parks micro-animation as later polish; this is that pass,
+ * unparked deliberately (2026-08-21) because the built replay read as static.
+ * The discipline it keeps: motion is for STATE CHANGE the reader caused
+ * (opening a pass, stepping a day, toggling the X-ray) or for the arrival of
+ * a page. It is never used to dramatise an event during a fold — ux_journeys
+ * §0 reserves beats for live arrival, and a replay must render settled.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 420ms;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * One global off-switch. Every animated rule below sits inside a class, and this kills
+ * all of them at once — a reader who asked their OS for less motion gets a page that is
+ * merely instant, never one that is subtly broken.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

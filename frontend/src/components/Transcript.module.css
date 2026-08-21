@@ -424,3 +424,120 @@ details[open] > .recapSummary::before {
   font-size: 0.9rem;
   padding: var(--space-5) 0;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Motion pass (ux_baseline §6, unparked 2026-08-21).
+ *
+ * Every rule here is tied to something the READER did — turning to a day,
+ * opening a vetoed line, hovering a row. None of it dramatises a game event:
+ * a replay renders settled, and the two real beats are live-only by §0.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+/*
+ * A day page arrives as a page TURN rather than a repaint. The stagger is capped at the
+ * first handful of children — a 32-slot day would otherwise take most of a second to
+ * finish arriving, which stops being atmosphere and starts being a wait.
+ */
+.dayEnter > * {
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+
+.dayEnter > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.dayEnter > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.dayEnter > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.dayEnter > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.dayEnter > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.dayEnter > *:nth-child(n + 6) {
+  animation-delay: 190ms;
+}
+
+/* The vetoed line unrolls instead of appearing — it is the payoff of a deliberate click. */
+.gatedWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur) var(--ease);
+}
+
+.gatedWrapOpen {
+  grid-template-rows: 1fr;
+}
+
+.gatedInner {
+  overflow: hidden;
+}
+
+.gatedToggle {
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.bubble,
+.pass {
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.speech:hover .bubble {
+  border-color: var(--ink-500);
+}
+
+.pass:hover {
+  border-color: var(--cyan-dim);
+}
+
+/*
+ * The death banner catches the eye once, on arrival, and then sits still. A looping or
+ * repeating treatment would turn the loudest in-flow element into wallpaper.
+ */
+.deathBanner {
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+
+/* --- the winner card (replay's ending) ------------------------------------ */
+
+/*
+ * NOT a takeover. §0 allows exactly two, both live-only, and a replay viewer arriving at
+ * a finished game is explicitly the catch-up case (D22). So the ending is a full-width
+ * in-flow card at the foot of the final day — present, earned, and not a modal.
+ */
+.winnerCard {
+  margin-top: var(--space-5);
+  border: var(--hairline) solid currentColor;
+  border-radius: var(--radius);
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+  animation: fadeIn var(--dur-slow) var(--ease) both;
+}
+
+.winnerTitle {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-2);
+}
+
+.winnerSub {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.winnerVillagers {
+  color: var(--faction-villagers);
+}
+.winnerWolves {
+  color: var(--faction-wolves);
+}
+.winnerSerialKiller {
+  color: var(--faction-serial-killer);
+}

@@ -23,6 +23,7 @@ import { foldEvents } from '@/game/foldEvents';
 import { useNumberFilter } from '@/hooks/useFilterState';
 import { ghostGuesses } from '@/lib/storage';
 import { DayTranscript } from '@/components/DayTranscript';
+import { WinnerCard } from '@/components/transcript-parts';
 import {
   AgentInspector,
   DayScrubber,
@@ -125,6 +126,11 @@ export function TheaterClient({ gameId }: { gameId: string }) {
             deadSeats={deadByNow}
             onInspect={xray ? setInspecting : undefined}
           />
+          {/* The ending belongs at the foot of the LAST day, where the reader arrives at
+              it — not in the header, where it would spoil every earlier day it sits above. */}
+          {view.winner && current.day === days[days.length - 1].day ? (
+            <WinnerCard winner={view.winner} days={days.length} survivors={view.alive} />
+          ) : null}
         </div>
 
         <aside className={classes.inspector}>

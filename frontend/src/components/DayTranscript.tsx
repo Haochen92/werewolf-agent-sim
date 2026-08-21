@@ -59,7 +59,7 @@ export function DayTranscript({
   const hasNight = day.night !== null;
 
   return (
-    <div className={classes.transcript}>
+    <div className={`${classes.transcript} ${classes.dayEnter}`} key={day.day}>
       {previousDay?.summary ? (
         <RecapCard summary={previousDay.summary} defaultOpen={expandRecap} />
       ) : null}

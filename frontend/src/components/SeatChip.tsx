@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { hueFor, initialsFor, portraitFor } from '@/assets/manifest';
 import { humanise } from '@/lib/format';
+import { RoleIcon } from './RoleIcon';
 import classes from './SeatChip.module.css';
 
 export interface SeatChipProps {
@@ -61,6 +62,7 @@ export function SeatChip({
       {isSelf ? <span className={classes.selfTag}>you</span> : null}
       {role ? (
         <span className={`${classes.role} ${classes.roleXray} ${roleClass}`}>
+          <RoleIcon role={role} />
           {humanise(role)}
         </span>
       ) : null}
