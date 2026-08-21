@@ -1,0 +1,112 @@
+/**
+ * Design tokens — hi-bit pixel × séance noir (ux_baseline §1).
+ *
+ * The visual thesis of the project is a TWO-WORLD contrast, and these variables are where
+ * it is spelled out. Everything else in the app refers to them; no component invents a
+ * colour.
+ *
+ * - Story world (table, transcript, lobby): deep warm ink, one amber accent standing in
+ *   for pooled candlelight. Warm, not Mantine's default blue-grey — the tavern has to feel
+ *   like a room with a lamp in it.
+ * - Machine world (X-ray panes, inspector, vote matrix): colder, flatter, thin-bordered,
+ *   monospace, cyan. Flipping into an agent's mind must feel like switching instruments.
+ * - Night: a blue-black wash over the story world. Cheap, werewolf-native, and the single
+ *   most atmospheric thing tokens alone can do.
+ *
+ * Choices left unpinned by the spec were taken toward the quiet end, per the build brief:
+ * low-chroma surfaces, one accent, hard 2px corners (soft radii read modern and fight the
+ * pixel register), and hairline borders rather than shadows.
+ */
+
+:root {
+  /* --- story world: warm ink surfaces ----------------------------------- */
+  --ink-900: #0b0908; /* page ground */
+  --ink-850: #100d0c;
+  --ink-800: #16120f; /* raised surface: cards, bubbles */
+  --ink-700: #1e1815; /* hover / secondary surface */
+  --ink-600: #2a221e; /* borders on raised surfaces */
+  --ink-500: #3a2f29; /* hairline dividers */
+
+  /* --- ink on ink: text ------------------------------------------------- */
+  --text: #e9dfd4; /* body — warm off-white, never pure #fff */
+  --text-dim: #a4948a; /* secondary, GM narration */
+  --text-faint: #6d605a; /* metadata, timestamps, disabled */
+
+  /* --- the one accent: amber, as pooled lamplight ----------------------- */
+  --amber: #e0a33f;
+  --amber-bright: #f5bf62; /* hover / focus only */
+  --amber-dim: #8a6526; /* borders, underlines */
+  --amber-wash: rgba(224, 163, 63, 0.09); /* own-message tint, selected rows */
+
+  /* --- machine world: the instrument panel ------------------------------ */
+  --machine-bg: #07090a;
+  --machine-surface: #0c1114;
+  --machine-border: #1c2a2e;
+  --cyan: #58c6d1;
+  --cyan-dim: #2c6067;
+  --cyan-wash: rgba(88, 198, 209, 0.07);
+
+  /* --- night wash ------------------------------------------------------- */
+  --night-bg: #070a11;
+  --night-surface: #0c111c;
+  --night-border: #1a2334;
+  --night-text-dim: #8c97ad;
+
+  /* --- factions (winner chips, role edges, pack tint) ------------------- */
+  --faction-villagers: #7d9e83; /* muted verdigris — the town, alive and dull */
+  --faction-wolves: #a83c3c; /* crimson */
+  --faction-serial-killer: #7c5aa6; /* violet — the third thing nobody expects */
+  --wolf-wash: rgba(168, 60, 60, 0.08); /* wolf-channel tint */
+
+  /* --- death ------------------------------------------------------------ */
+  --death-desaturate: grayscale(0.85) brightness(0.62);
+  --death-border: #4a2020;
+
+  /* --- geometry: crisp, not soft ---------------------------------------- */
+  --radius: 2px;
+  --radius-lg: 3px;
+  --hairline: 1px;
+  --reading-measure: 64ch; /* the transcript column — this is a reading app */
+
+  /* --- rhythm ----------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+}
+
+/**
+ * Night phase. Applied as a class on the phase wrapper, driven by the fold's phase — the
+ * variables above are re-pointed rather than overridden per-component, so every nested
+ * element shifts together with no component knowing night exists.
+ */
+.nightPhase {
+  --ink-900: var(--night-bg);
+  --ink-850: #090d16;
+  --ink-800: var(--night-surface);
+  --ink-700: #111828;
+  --ink-600: var(--night-border);
+  --ink-500: #202a3d;
+  --text-dim: var(--night-text-dim);
+}
+
+html,
+body {
+  background: var(--ink-900);
+  color: var(--text);
+}
+
+/* The reading app's baseline: generous leading, comfortable measure. */
+body {
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keep the amber focus ring visible against ink — accessibility, not decoration. */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
