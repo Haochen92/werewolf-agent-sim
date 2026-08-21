@@ -115,7 +115,7 @@ function NightSection({
 }) {
   const night = day.night!;
   return (
-    <div className="nightPhase">
+    <div className={`nightPhase ${classes.nightSection}`}>
       <SectionRule>Night {day.day}</SectionRule>
       <div className={classes.transcript} style={{ padding: 0, gap: 'var(--space-4)' }}>
         <NightCard />

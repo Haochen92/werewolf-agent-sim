@@ -298,6 +298,23 @@ details[open] > .recapSummary::before {
 
 /* --- D19 night ------------------------------------------------------------ */
 
+/*
+ * The night wash needs a SURFACE to land on. `.nightPhase` re-points the --ink-* custom
+ * properties, but every element inside the night section reaches for the explicit night and
+ * wolf colours instead, so without this wrapper the re-pointing had nothing to tint and the
+ * day-to-night shift — which ux_baseline §1 calls the most atmospheric thing tokens can do —
+ * was effectively invisible.
+ */
+.nightSection {
+  background: var(--ink-900);
+  border: var(--hairline) solid var(--ink-600);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  margin-top: var(--space-3);
+  /* A faint cold gradient from the top edge: dusk falling over the page, not a flat swap. */
+  background-image: linear-gradient(180deg, rgba(40, 62, 110, 0.22), transparent 220px);
+}
+
 .nightCard {
   align-self: center;
   text-align: center;
