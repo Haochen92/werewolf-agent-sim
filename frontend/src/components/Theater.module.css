@@ -1,0 +1,436 @@
+/*
+ * Theater layout — mobile-first one column, three regions from `md` up (ux_baseline §2).
+ * Same components either way; there are no desktop-only features.
+ */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-900);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ink-850);
+  border-bottom: var(--hairline) solid var(--ink-600);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin: 0;
+}
+
+.back {
+  color: var(--text-faint);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.back:hover {
+  color: var(--amber);
+}
+
+.meta {
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* --- winner chip ---------------------------------------------------------- */
+
+.winnerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: var(--hairline) solid currentColor;
+  border-radius: var(--radius);
+  padding: 1px var(--space-2);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.villagers {
+  color: var(--faction-villagers);
+}
+.wolves {
+  color: var(--faction-wolves);
+}
+.serialKiller {
+  color: var(--faction-serial-killer);
+}
+
+/* --- X-ray toggle --------------------------------------------------------- */
+
+/*
+ * One prominent switch. When it has never been used, a one-time hint rides alongside —
+ * the gated passes and firing reasons are the whole differentiator and must be findable.
+ */
+.xrayToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: var(--hairline) solid var(--cyan-dim);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--cyan-dim);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.xrayToggle:hover:not(:disabled) {
+  background: var(--cyan-wash);
+  color: var(--cyan);
+}
+
+.xrayOn {
+  background: var(--cyan-wash);
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.xrayToggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.xrayDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.hint {
+  font-size: 0.72rem;
+  color: var(--amber);
+  background: var(--amber-wash);
+  border: var(--hairline) solid var(--amber-dim);
+  border-radius: var(--radius);
+  padding: 1px var(--space-2);
+}
+
+/* --- scrubber ------------------------------------------------------------- */
+
+.scrubber {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.step {
+  flex-shrink: 0;
+  border: var(--hairline) solid var(--ink-600);
+  background: var(--ink-800);
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.step:hover {
+  border-color: var(--amber-dim);
+  color: var(--text);
+}
+
+.stepActive {
+  background: var(--amber-wash);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.arrowButton {
+  flex-shrink: 0;
+  border: var(--hairline) solid var(--ink-600);
+  background: var(--ink-800);
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.arrowButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* --- three-region body ---------------------------------------------------- */
+
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 62em) {
+  .body {
+    grid-template-columns: 220px minmax(0, 1fr) 300px;
+  }
+}
+
+.rail {
+  border-bottom: var(--hairline) solid var(--ink-600);
+  padding: var(--space-3) var(--space-4);
+}
+
+@media (min-width: 62em) {
+  .rail {
+    border-bottom: none;
+    border-right: var(--hairline) solid var(--ink-600);
+    position: sticky;
+    top: 96px;
+    align-self: start;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+  }
+}
+
+/* Mobile: the roster is a horizontal strip of chips; desktop: a vertical rail. */
+.rosterStrip {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+}
+
+@media (min-width: 62em) {
+  .rosterStrip {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+}
+
+.railHead {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: var(--space-2);
+}
+
+.center {
+  min-width: 0;
+  padding: 0 var(--space-4);
+}
+
+.inspector {
+  border-top: var(--hairline) solid var(--ink-600);
+  padding: var(--space-4);
+}
+
+@media (min-width: 62em) {
+  .inspector {
+    border-top: none;
+    border-left: var(--hairline) solid var(--ink-600);
+    position: sticky;
+    top: 96px;
+    align-self: start;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+  }
+}
+
+/* --- machine-world panels ------------------------------------------------- */
+
+/*
+ * Flipping into an agent's mind must FEEL like switching instruments (ux_baseline §1):
+ * monospace, thin borders, cold cyan, darker ground. Nothing here borrows story-world warmth.
+ */
+.machinePanel {
+  background: var(--machine-bg);
+  border: var(--hairline) solid var(--machine-border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.78rem;
+  color: var(--cyan);
+  margin-bottom: var(--space-4);
+}
+
+.panelHead {
+  color: var(--cyan-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.66rem;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panelHead::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--machine-border);
+}
+
+.strategyEntry {
+  border-left: var(--hairline) solid var(--cyan-dim);
+  padding: 0 0 var(--space-3) var(--space-3);
+  color: var(--text-dim);
+  font-family: var(--mantine-font-family);
+  font-size: 0.85rem;
+  position: relative;
+}
+
+.strategyDay {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.66rem;
+  color: var(--cyan-dim);
+  display: block;
+}
+
+.closeButton {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--cyan-dim);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.closeButton:hover {
+  color: var(--cyan);
+}
+
+/* --- vote matrix ---------------------------------------------------------- */
+
+/*
+ * The veteran's view. Public data — available WITHOUT the X-ray, in live and replay both,
+ * because votes were never secret (ux_baseline ruling).
+ */
+.matrixScroll {
+  overflow-x: auto;
+}
+
+.matrix {
+  border-collapse: collapse;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.66rem;
+  color: var(--text-dim);
+}
+
+.matrix th,
+.matrix td {
+  border: var(--hairline) solid var(--machine-border);
+  padding: 2px 5px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.matrix th {
+  color: var(--cyan-dim);
+  font-weight: 400;
+}
+
+.matrixVoter {
+  text-align: left !important;
+  color: var(--text-faint);
+}
+
+.matrixHit {
+  background: var(--amber-wash);
+  color: var(--amber);
+}
+
+.matrixDead {
+  opacity: 0.4;
+}
+
+/* --- ghost guess ---------------------------------------------------------- */
+
+.ghost {
+  border: var(--hairline) dashed var(--amber-dim);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.ghostHead {
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: var(--space-2);
+}
+
+.ghostOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.ghostOption {
+  border: var(--hairline) solid var(--ink-600);
+  background: var(--ink-800);
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  font-size: 0.72rem;
+  padding: 2px var(--space-2);
+  cursor: pointer;
+}
+
+.ghostOption:hover {
+  border-color: var(--amber-dim);
+}
+
+.ghostPicked {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: var(--amber-wash);
+}
+
+.ghostVerdict {
+  margin-top: var(--space-2);
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.72rem;
+}
+
+.ghostRight {
+  color: var(--faction-villagers);
+}
+
+.ghostWrong {
+  color: var(--faction-wolves);
+}
