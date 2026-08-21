@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# The real local env, copied from .env.local.dev — never committed.
+.env.local
+.env*.local
+
+# The repo root ignores `.env.*` wholesale (right call for the Python side). These two are
+# deliberate exceptions: they are committed TEMPLATES holding nothing but the API base URL,
+# and a NEXT_PUBLIC_* value is compiled into the client bundle — public by definition.
+!.env.local.dev
+!.env.production
+
+.DS_Store
+npm-debug.log*
