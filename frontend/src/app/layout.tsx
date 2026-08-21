@@ -27,9 +27,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" {...mantineHtmlProps} className={display.variable}>
+    // `mantineHtmlProps` hard-codes data-mantine-color-scheme="light" for SSR and lets the
+    // client correct it after hydration. This app has no light theme — the tokens are a
+    // dark two-world palette — so that default is a visible white flash on every first
+    // paint. Overriding the attribute here (and forcing the scheme in the provider) means
+    // the very first byte is already dark.
+    <html
+      lang="en"
+      {...mantineHtmlProps}
+      data-mantine-color-scheme="dark"
+      className={display.variable}
+    >
       <head>
-        <ColorSchemeScript defaultColorScheme="dark" />
+        <ColorSchemeScript forceColorScheme="dark" />
       </head>
       <body>
         <Providers>{children}</Providers>

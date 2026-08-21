@@ -29,7 +29,8 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme} defaultColorScheme="dark">
+      {/* forced, not default: there is no light theme to switch to (see layout.tsx) */}
+      <MantineProvider theme={theme} forceColorScheme="dark">
         <Notifications position="top-right" />
         {children}
       </MantineProvider>
