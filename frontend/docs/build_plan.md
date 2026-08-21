@@ -21,7 +21,7 @@
 
 | # | Question | Ruling |
 |---|---|---|
-| 1 | Where the app lives | **`frontend/` in the main repo IS the app root** (re-ruled 2026-08-20, superseding the earlier `webapp/` pick); the design/decision docs moved to `frontend/docs/`. **No new branch / worktree** — build directly on the active branch; the app is a disjoint folder, commit hygiene by folder-scoped commits. |
+| 1 | Where the app lives | **`frontend/` in the main repo IS the app root** (re-ruled 2026-08-20, superseding the earlier `webapp/` pick); the design/decision docs moved to `frontend/docs/`. **No worktree.** ~~No new branch~~ → **re-ruled 2026-08-21: build on `feature-frontend-v1`** (cut from `feature-dimension-schema` at `563c7d7`, so it carries the §6 server tweaks). The original "no branch" call was about app *location*, not isolation; a branch costs nothing and buys the thing the build actually wants — the headless core (wire + reducer + tests + walking skeleton) lands as one commit that visual variants fork from. Commit hygiene stays folder-scoped. |
 | 2 | Mantine major | **v8** (current major; dota2pred is on v7 but its patterns port unchanged; greenfield shouldn't inherit a dated major). All `@mantine/*` pinned to the same major. |
 | 3 | Tailwind | **Dropped** from the old locked stack. Mantine props + CSS Modules + `postcss-preset-mantine` only — one styling system. |
 | 4 | Data fetching | **TanStack Query only** (deviation from dota2pred's SWR-primary split-brain; our API is write-heavy — join/start/rejoin/turns — so mutations + invalidation are core). |
