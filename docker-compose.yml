@@ -31,6 +31,12 @@ services:
       # The container user is uid 1001, which is the host `ubuntu` uid that owns this
       # file, so the 0600 permissions carry over unchanged and nothing is loosened.
       - ~/.config/gcloud/application_default_credentials.json:/home/werewolf/.config/gcloud/application_default_credentials.json:ro
+      # The memory store the engine seeds retrieval from. Mounted, not baked into the
+      # image: `memory_stores/v6_1` is 37 MB of machine-local data and is NOT in git, so a
+      # COPY would work on this box and break on any clean checkout. Read-only — the
+      # container reads the store and must never be able to corrupt it. Note that served
+      # games already run with dump_enabled: false, so nothing is ever mined back in.
+      - ./memory_stores:/app/memory_stores:ro
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
       interval: 30s

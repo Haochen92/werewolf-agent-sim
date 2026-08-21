@@ -314,6 +314,28 @@ indicators (`pending_seats`, per-seat deadlines). Kick-player deliberately defer
 (lock covers pre-start griefing; AFK delegate absorbs post-start deserters).
 *Done when*: two browsers play one game found via the public browser OR a shared link.
 
+### Deploy notes (as-built, 2026-08-21 — wolf.liuhaochen.com)
+
+Three things the deploy surfaced that no amount of local testing would have:
+
+1. **Cloudflare buffers SSE unless told not to.** The origin already sent
+   `cache-control: no-cache`, `x-accel-buffering: no` and `content-type: text/event-stream`,
+   and Caddy had `flush_interval -1` — verified present in its *running* config. Bypassing
+   Cloudflare (`--resolve` straight to the origin) the first frame landed in ~20 ms; through
+   Cloudflare not even the response headers arrived within 25 s. The fix is
+   `header_down Cache-Control "no-cache, no-transform"` on the `/api` block: `no-transform`
+   is the documented way to tell Cloudflare to leave a response alone, and transforming is
+   what its buffering hangs off. After it, first frame ≈ 0.02 s and a full game's ~400
+   events stream live. **Any future subdomain serving SSE needs this too.**
+2. **The server cannot start without Google credentials, even for replay-only.** The
+   engine's embeddings factory initialises eagerly at import. ADC is mounted read-only.
+3. **`memory_stores/` must be mounted.** A served game runs with `dump_enabled: false`, but
+   the engine still SEEDS retrieval from `memory_stores/v6_1` at game creation, so a missing
+   store is a 500 on `POST /games`. It is 37 MB and not in git, hence a mount, not a COPY.
+
+Caddy lives in `~/projects/caddy` (its own compose, owns `shared-caddy-network`, holds the
+Cloudflare origin certs) and fronts six other domains — validate before every reload.
+
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
 powers both the replay archive and live-session durability) · landing page · README 60-s replay-theater GIF (survives credit expiry;
