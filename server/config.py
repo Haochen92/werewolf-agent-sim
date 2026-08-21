@@ -27,6 +27,11 @@ class ServerSettings(BaseSettings):
     one container; split into a dedicated var only the day the deploy splits DBs).
     Empty = archiving disabled (games still run; /replays answers 503)."""
 
+    SEAT_COOKIE_SECURE: bool = False
+    """Send the seat cookie with the ``Secure`` flag (HTTPS-only). Off by default so
+    plain-HTTP dev (localhost) keeps working; the production deploy behind Caddy/TLS
+    sets it — without it the seat credential rides any accidental http:// request."""
+
     ROOM_LIST_TTL_SECONDS: int = 7200
     """How long a waiting room stays visible in GET /rooms (default 2h). A browse
     filter, not expiry: the direct room URL keeps working past the TTL. Needed

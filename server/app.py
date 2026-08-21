@@ -135,11 +135,12 @@ def _set_seat_cookie(response: Response, game_id: str, token: str) -> None:
     """The seat credential's transport (ruled: HttpOnly cookie — EventSource can't
     set headers, but browsers attach cookies to SSE). HttpOnly keeps it out of page
     JavaScript's reach; Path scopes it to this one game; SameSite=Lax requires the
-    frontend to be same-site with the API (module docstring)."""
+    frontend to be same-site with the API (module docstring); Secure is an env knob
+    (SEAT_COOKIE_SECURE) — on behind TLS, off for plain-HTTP dev."""
     response.set_cookie(
         key=seat_cookie_name(game_id), value=token,
         max_age=_SEAT_COOKIE_MAX_AGE, path=f"/games/{game_id}",
-        httponly=True, samesite="lax",
+        httponly=True, samesite="lax", secure=server_settings.SEAT_COOKIE_SECURE,
     )
 
 

@@ -191,6 +191,21 @@ def test_join_sets_an_httponly_seat_cookie_matching_the_body_token(api_client):
     assert "SameSite=lax" in set_cookie
 
 
+def test_seat_cookie_secure_flag_is_an_env_knob(api_client, monkeypatch):
+    from server.config import server_settings
+
+    # Default off: plain-HTTP dev must keep working.
+    game_id, _ = _make_room(api_client)
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert "Secure" not in r.headers["set-cookie"]
+
+    # SEAT_COOKIE_SECURE=true (the TLS deploy): the flag rides the cookie.
+    monkeypatch.setattr(server_settings, "SEAT_COOKIE_SECURE", True)
+    game_id, _ = _make_room(api_client)
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert "Secure" in r.headers["set-cookie"]
+
+
 def test_turns_demand_a_proven_seat(api_client, seated_session):
     session, _ = seated_session
     url = f"/games/{session.game_id}/turns"
