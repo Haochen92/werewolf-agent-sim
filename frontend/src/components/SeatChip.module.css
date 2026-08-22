@@ -28,6 +28,8 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
+  object-fit: cover;
+  image-rendering: pixelated;
   border-radius: var(--radius);
   font-size: 0.6rem;
   font-weight: 700;

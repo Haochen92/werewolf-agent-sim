@@ -3,18 +3,42 @@
  * ask this module for a typed handle, so swapping the asset set is files + this file, with
  * zero component edits.
  *
- * Portraits are empty on purpose right now. `portraitFor()` returns null while the set is
- * unpopulated and `SeatChip` falls back to initials on a deterministic hue, so the build
- * never blocks on art and generated portraits can land at any time (ux_baseline §1).
+ * The v1 set is twelve compact pixel avatars, owner-ruled from Sample E on 2026-08-22.
+ * `portraitFor()` still returns null when the list is empty, preserving the deterministic
+ * initials fallback if an asset set is deliberately removed or replaced.
  *
- * When portraits arrive: `import p01 from './portraits/01.webp'` and push into PORTRAITS.
  * Static imports (not `public/`) buy content-hashed URLs — regenerated art can never get
  * stuck behind a cached copy — plus inferred dimensions, so no layout shift.
  */
 import type { StaticImageData } from 'next/image';
 import type { AttackerType } from '@/types/contracts';
+import p01 from './portraits/01.webp';
+import p02 from './portraits/02.webp';
+import p03 from './portraits/03.webp';
+import p04 from './portraits/04.webp';
+import p05 from './portraits/05.webp';
+import p06 from './portraits/06.webp';
+import p07 from './portraits/07.webp';
+import p08 from './portraits/08.webp';
+import p09 from './portraits/09.webp';
+import p10 from './portraits/10.webp';
+import p11 from './portraits/11.webp';
+import p12 from './portraits/12.webp';
 
-export const PORTRAITS: StaticImageData[] = [];
+export const PORTRAITS: StaticImageData[] = [
+  p01,
+  p02,
+  p03,
+  p04,
+  p05,
+  p06,
+  p07,
+  p08,
+  p09,
+  p10,
+  p11,
+  p12,
+];
 
 /** Deterministic per-seat pick, so a seat wears the same face in every view and every session. */
 export function hashSeat(seat: string): number {
