@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+
+# The production API URL is supplied as an explicit build arg. Never let a developer's
+# higher-precedence local dotenv file override it or enter a build layer.
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+.DS_Store
