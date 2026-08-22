@@ -45,6 +45,25 @@ Two rules fall out of this table and never bend:
 Our upstream is a human clicking "vote" a few times per minute at most. That is the textbook
 SSE + POST case.
 
+### Why the FastAPI app does not own an HTTP client
+
+`POST` and SSE describe the wire protocol, not which process needs an HTTP client library.
+The browser initiates both connections: `fetch` sends the ordinary GET/POST requests and
+`EventSource` opens the long-lived SSE request. Uvicorn accepts those connections, FastAPI
+dispatches them to route handlers, and Starlette writes either a finite response or an SSE
+`StreamingResponse` back over the connection the browser already opened. Returning or streaming
+a response does not require FastAPI to initiate a second request to the frontend, so the app does
+not need an app-owned `httpx.AsyncClient` or `aiohttp.ClientSession` for this boundary.
+
+The Docker network does not change that classification: direction is determined by which process
+opens the connection. A browser or frontend-server call to FastAPI is outbound from that caller
+and inbound to FastAPI, even when both containers share a private network. If FastAPI later calls
+another HTTP service directly, that would be outbound from FastAPI and one shared, lifespan-owned
+HTTP client should be added to the app resource container. Today the LLM, embedding, and Langfuse
+SDKs manage their own underlying HTTP transports; Postgres connections are separately owned
+non-HTTP network resources. Starlette's HTTPX-backed `TestClient` is test infrastructure, not a
+production application resource.
+
 ### Why not WebSockets
 
 | Consideration | SSE + POST | WebSockets |

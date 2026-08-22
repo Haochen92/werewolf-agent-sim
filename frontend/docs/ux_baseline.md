@@ -12,24 +12,27 @@
 
 ---
 
-## 1. Aesthetic ruling: hi-bit pixel × séance noir (ruled 2026-08-21)
+## 1. Aesthetic ruling: pixel avatar × séance noir (ruled 2026-08-21; refined 2026-08-22)
 
 The design log holds two art directions — §3 "séance noir" tarot-card portraits and §7
 hi-bit pixel art (Coffee Talk formula). **v1 takes the fusion §7 itself anticipated:
-hi-bit pixel is the MEDIUM, séance noir is the MOOD** — "pixel tavern + amber pooled
-light"; large moody-lit pixel portraits in the Coffee Talk / VA-11 Hall-A register,
-dark-mystery palette, never bright-retro. (Supersedes the 2026-08-20 "neither picked"
-deferral; §3's tarot-card framing is dropped.)
+pixel art is the MEDIUM, séance noir is the MOOD** — "pixel tavern + amber pooled
+light." The owner refined the shipped seat art against the running component on 2026-08-22:
+compact game-avatar portraits with bold silhouettes and simplified faces, rendered on the
+same dark-mystery palette, never bright-retro. (Supersedes the 2026-08-20 "neither picked"
+deferral and the large-portrait assumption; §3's tarot-card framing remains dropped.)
 
 Hard rules (from §7, non-negotiable — this is a reading app):
 
-- Portraits big and detailed; sprite-scale minimalism would hurt a dialogue game.
+- Seat avatars must remain identifiable at their actual 22px/34px render sizes. Use compact
+  bust framing, crisp pixel clusters and distinct silhouettes; any future large dialogue or
+  role-reveal portrait is a separate higher-detail asset tier, not an enlarged seat avatar.
 - ALL dialogue + UI text stays on the clean sans stack; pixel display type for
   titles/chrome ONLY (the contrast collapses if pixel type leaks into body text).
 
 The v1 asset set (generated; ONE palette, ONE canvas ratio — consistency is enforced at
-generation time, not in code; structure + manifest rule = `build_plan.md` §3): ~12 seat
-portraits · 4 kill glyphs (wolf / SK / vigilante / lynch) · optional table backdrop
+generation time, not in code; structure + manifest rule = `build_plan.md` §3): 12 seat
+avatars · 4 kill glyphs (wolf / SK / vigilante / lynch) · optional table backdrop
 (day + night variants). **The build never blocks on art**: the manifest's
 initials-`Avatar` fallback ships in P0, portraits land whenever ready with zero
 component edits — asset generation is its own timeboxed pass, not a P0 dependency.
@@ -54,7 +57,7 @@ tokens; the two-world contrast is the visual thesis of the whole project):
 - **Deaths**: dead players desaturate + dim (CSS filter on the portrait/name chip);
   death notices carry the attacker type (wolf / SK / vigilante / lynch — the data is
   attacker-typed) as a small typed glyph + distinct accent, not just gray text.
-- **Portraits**: pixel portraits from the asset manifest, per-seat deterministic pick
+- **Portraits**: compact 512px WebP pixel avatars from the asset manifest, per-seat deterministic pick
   (`PORTRAITS[hash(seat) % len]`); until the set lands, the fallback is Mantine `Avatar`
   with initials on a per-seat deterministic hue (same hash). Role icon overlay (tabler)
   where the viewer is entitled to see the role, in either mode.

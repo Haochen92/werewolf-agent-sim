@@ -170,14 +170,17 @@ undetected. (Terminology: these are the server's *failure modes*; the list as a 
    key) would continue the game from its last committed step with nothing lost. ~20 lines
    plus policy questions (which errors retryable, how often). Unbuilt by scoping choice,
    not capability.
-3. **The server process dies** (crash, container restart, deploy) — **fatal today;
-   fix specified, unbuilt (M2).** Everything is RAM: the registry, every event log (the
-   truth itself), every graph checkpoint (MemorySaver). Every screen freezes; reconnects
-   404. The fix is continuous persistence, never save-on-crash (a crash grants no notice —
-   write-ahead thinking): engine = compile with the Postgres checkpointer (LangGraph
-   already writes at every superstep commit; the swap only changes WHERE), wire = append
-   each event to storage as it is born, recovery = reload checkpoints + replay logs.
-   Accepted for the demo: live games are twenty minutes and disposable.
+3. **The server process dies** (crash, container restart, deploy) — **recovery built
+   2026-08-20.** Persistence is continuous rather than save-on-crash (a crash grants no
+   notice): each graph superstep commits through `AsyncPostgresSaver`, and each translated
+   durable event is appended to `EventRow` as it is born. On boot, the registry is rebuilt
+   from three deliberately separate authorities: `GameRow` restores identity, lifecycle,
+   seats and room settings; ordered `EventRow`s restore `GameSession.log`, the frontend's
+   replay source and the translator's sequence/ship-once shadow; the LangGraph checkpoint
+   restores executable graph state, pending tasks and interrupts. A running graph resumes
+   from its last committed superstep while reconnecting browsers refold their entitled event
+   suffix. BYOK games remain the explicit exception: their key is process-memory-only, so
+   current recovery marks them dropped; credential resubmission is recorded but not built.
 4. **A game hangs** (provider outage, stuck call — nothing fails, nothing moves) —
    **undetected.** No watchdog notices "no part produced for N minutes"; viewers see
    keep-alives and a frozen board. Missing piece: a stall timeout that converts a hang
@@ -248,6 +251,38 @@ recovery problems.
   Mid-game key death: surfaces via `GameSession.error` (key-redacted before viewers see
   it), player restarts with a valid key — ruled acceptable for v1. Tests: tests/test_byok.py
   (factory isolation, task-local delivery, redaction).
+- **BYOK restart recovery by credential resubmission: DEFERRED; implementation packet recorded
+  2026-08-22.** A browser disconnect does not lose the key because the live server process still
+  owns the `GameSession`; a process restart does. Today boot recovery therefore marks a persisted
+  BYOK game dropped even though its game row, events and LangGraph checkpoint survived. The owner
+  ruled that only the game's original `host_key` may restore funding. Keep lifecycle and blockage
+  orthogonal: the database status remains `waiting` or `running`, while the public status gains an
+  additive `credential_required: bool`; reserve `dropped` for a game that will not resume.
+
+  **Backend build steps.** Keep the API key absent from rows, events, checkpoints and logs. On boot,
+  reconstruct a BYOK lobby normally but without its key; reconstruct a running BYOK session from
+  its event log and checkpoint, including pending interrupts, but do not launch its graph task.
+  Add `POST /games/{game_id}/credential` with a body-carried `host_key` and `api_key` (never query
+  parameters); reject a wrong host key with 403. The session/lobby installs the replacement key
+  only in process memory and clears `credential_required`; a running session resumes exactly once
+  from its existing checkpoint. Put the check-and-start transition behind a per-game lock or one
+  atomic method so concurrent submissions cannot create two graph tasks. Multiplayer rooms already
+  have a persisted host key. Instant `/games` creation must also mint one, return it additively in
+  `GameCreated`, and persist it in the existing `GameRow.host_key`, so solo and LLM-only BYOK games
+  have the same recovery authority. No database migration should be needed.
+
+  **Frontend build steps.** Retain `host_{gameId}` after `/start` instead of clearing it; instant
+  creation stores the newly returned host key through the same storage boundary. When status says
+  `credential_required`, a browser holding the host key renders the existing BYOK input plus a
+  resume action; everyone else sees “Waiting for the host to restore the game.” After success,
+  invalidate status and recreate the SSE connection. Clear the host key when the game finishes.
+
+  **Acceptance tests.** Pin waiting-room and running-game restart recovery, including a graph parked
+  at a human interrupt; 403 for a wrong host key; one graph task after duplicate/concurrent submits;
+  instant-game host-key issuance; non-host waiting UX; and a scan proving the replacement API key
+  never reaches PostgreSQL, checkpoints, events, responses or logs. Scope the first slice to keys
+  lost on process restart. A provider key that dies while the process remains alive can reuse the
+  same recovery door later, after retryability policy is ruled.
 - **BYOK v1.5 same day (owner-ruled): multi-provider = tested-models-only registry.**
   `SUPPORTED_GAME_MODELS` (server/runtime.py) is the support policy as code: a model is
   selectable iff it has carried real games — the full Gemini suite that has (owner-ruled
@@ -324,3 +359,67 @@ remedy — is the reason this game gets away with having no user accounts at all
 boundary to respect: the timer never needs to know what kind of turn it is defaulting,
 *because* the delegate answer is legal everywhere. If a future turn type ever makes
 delegation illegal, the timer design breaks — don't do that.
+
+## 8. One game identity, one event log (normalized 2026-08-22)
+
+The first durability cut stored a live game in `sessions` + one `events` row per wire event,
+then copied the complete event list into a separate `replays.events` JSONB blob at clean finish.
+That worked, but completion meant coordinating two lifecycle rows and two copies of the same
+record. An archive write could succeed while the session phase update failed, or vice versa;
+finished operational rows and their copied event blobs then accumulated independently.
+
+The normalized model makes the lifecycle explicit. `GameRow.game_id` is the sole game identity,
+with status `waiting | running | completed | dropped`; `EventRow(game_id, seq)` is its one-to-many
+child with a real `ON DELETE CASCADE` foreign key. Recovery filters waiting/running games. Replay
+listing filters completed games. Replay detail reads those same ordered event rows—the durable
+live log becomes the permanent replay without being copied. Completion is one parent-row update
+that records winner/days/count metadata and flips status to completed after the final event tail
+has persisted.
+
+Resource ownership follows those responsibility boundaries. `GameRepository(Database)` owns only
+`GameRow`/`EventRow` operations and creates a short-lived SQLAlchemy session per unit of work.
+`GraphRuntime(checkpoint_dsn)` separately owns the Psycopg checkpoint pool,
+`AsyncPostgresSaver`, and shared compiled graph. `ReplayService(Database)` remains a separate
+read-only projection service. All three are app-scoped resources in `AppResources`; each
+`GameSession` receives only the repository and compiled graph it uses. The earlier
+`DurablePlane` bundle was removed because its abstract name hid these two independent concerns.
+
+Storage and exposure remain separate concerns. `GameRow` deliberately retains the complete
+database representation needed by operations and recovery, including host/seat credentials.
+Public Pydantic DTOs (`ReplayBase`, `ReplayGame`, `GameStatus`, `RoomSummary`) are independent
+models and omit fields not belonging to that endpoint; routes still enforce lifecycle and
+entitlement before DTO filtering. The provider API key remains memory-only and is never part of
+the database model.
+
+Migration `0004` preserves deployed data before dropping the redundant table: rename sessions to
+games, merge replay metadata, expand replay JSON arrays into normalized event rows with conflict
+protection, create dropped parents for any historical orphan logs, install the foreign key, then
+remove `replays`. Upgrade and downgrade were exercised against an isolated PostgreSQL instance
+containing live, completed, replay-only, overlapping, and orphaned fixtures.
+
+Retention is deliberately not automatic yet. `dropped` is the cleanup boundary, but the exact
+retention window is a destructive product/operations policy and has not been ruled. A future
+idempotent scheduled task can delete old dropped parents (events cascade) and call LangGraph's
+`adelete_thread()` for checkpoint cleanup; no separate always-on process is structurally required.
+
+## 9. HTTP composition: routers expose resources; they do not own them (2026-08-22)
+
+The first server cut put health/model discovery, rooms, live games, turns and SSE in `app.py`,
+while `replays.py` alone combined a router, its FastAPI dependency provider, and its database
+service. Both styles are valid in isolation, but the mixture hid the boundary: `app.py` called
+itself a thin HTTP surface while containing nearly five hundred lines of handlers, and replay
+storage logic depended directly on FastAPI exceptions.
+
+The API now follows the same explicit shape as the resource graph. `app.py` owns only lifespan,
+middleware and `include_router()` calls. `server/routes/{system,games,rooms,replays}.py` owns HTTP
+translation for one public domain. `dependencies.py` is the single bridge from request scope to
+the app-owned `AppResources`, including `ReplayServiceDep`. `replay_service.py` performs replay
+queries and raises application exceptions; the replay router translates those into the existing
+503/404/500 responses. Router modules may share transport policy (the seat cookie and BYOK gate)
+through `routes/_shared.py`, but they never create database engines, checkpoint pools, repositories
+or services.
+
+This is organization, not a new API version: paths, methods, request/response DTOs, cookies, SSE
+framing and status codes are unchanged. It also makes the dependency direction easy to state in
+an interview: lifespan constructs resources once; FastAPI dependencies resolve them per request;
+routers translate HTTP; services/repositories do the work.

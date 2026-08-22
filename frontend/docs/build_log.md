@@ -9,6 +9,10 @@
 > generalise. Every claim here was verified against a running system; where something is
 > unverified it says so.
 >
+> **Amended 2026-08-21 after the independent handoff review.** Sections 3.8–3.12 record the
+> cross-layer defects that review found, the fixes, and the regression line added for each.
+> Those amendments are verified locally but are not committed, deployed, or live-played yet.
+>
 > The specs are [`build_plan.md`](build_plan.md) (architecture), [`ux_baseline.md`](ux_baseline.md)
 > (visual), [`ux_journeys.md`](ux_journeys.md) (screen-by-screen). This document does not repeat
 > them — it records where reality disagreed with them.
@@ -368,6 +372,102 @@ variables. The rule was present and correct in both source and output — and st
   share-card work, never created.
 - `@eslint/eslintrc` was needed for the flat ESLint config and wasn't installed.
 
+### 3.8 🔴 The live post-game X-ray threw away its own backlog
+
+**What happened.** The store treated `view.lastSeq` as both a high-water mark and a dedupe
+ledger: any arriving event at or below it was rejected. That is valid for an ordinary append
+stream and wrong for the server's deliberate R7 ordering.
+
+**Why.** At game end the server sends the high-sequence `game_over` event first, then flushes
+every previously withheld observer event in sequence order. Those held events have lower
+sequence numbers than `game_over`, but they are new to this viewer. Folding `game_over`
+advanced `lastSeq`; the following X-ray backlog was therefore mistaken for reconnect
+duplicates and dropped. The winner takeover worked, but its “See what really happened” button
+landed on a view with nothing new to see until refresh.
+
+**Settled.** Dedupe is now membership-based (`events` already contains this exact `seq`), not
+high-water-based. A true append still folds incrementally. An unseen lower sequence is inserted
+into the sorted durable log and the view is re-folded, preserving the seat hint and live-seq
+ledger. A store regression reproduces the server exactly: all public events through
+`game_over`, then the lower-sequence held backlog; the resulting view must equal a whole-log
+fold and retain the live winner beat.
+
+**Generalises to:** event identity and event recency are different facts. A monotonic maximum
+cannot deduplicate a stream that intentionally releases withheld history.
+
+### 3.9 🔴 An answered turn stayed actionable forever
+
+**What happened.** `input_request` set `me.pending`, but no reducer event cleared it. A success
+or 409 invalidated the status query without reconciling the returned `pending_seats`; refresh
+was worse, because folding history restored the last request even when it had been answered
+hours ago.
+
+**Cost.** The dock remained after submission, stale refreshes offered expired actions, and a
+second click bounced with 409. AFK delegation had the same residue.
+
+**Settled.** The responsibilities are now explicit: `input_request` owns the form shape;
+`GameStatus.pending_seats` owns whether it is current. Accepted and already-answered submits
+clear immediately, while every status snapshot reconciles the store and refreshes its deadline.
+The reconciliation is sequence-aware: a status request can race SSE, so a snapshot may clear
+only requests at or below its own `last_seq`; it cannot erase a newer request that arrived
+after the snapshot was taken. Tests pin both stale-history clearing and that race.
+
+### 3.10 🔴 The server delivered faction/private information that the UI hid
+
+**What happened.** Wolf messages and votes were folded, but `DayTranscript` rendered the whole
+wolf channel only when the observer X-ray toggle was on. A live wolf cannot enable that toggle,
+so the faction stream arrived and disappeared. Investigation results, vigilante confirmations,
+and ammunition updates were also folded, but the specified `PrivateResultCard` had no render
+consumer at all. `pack_roster_update` was kept globally and never shown.
+
+**Why.** “X-ray” had accidentally become a client permission gate, even though the design's
+security boundary is the wire. The replay requirement (hide machine-world detail while X-ray
+is off) was applied to the live entitled view as well.
+
+**Settled.** Replay still uses the X-ray as an arrangement control. Live mode separately says
+“render entitled machine data”: a spectator receives none, while a wolf receives and now sees
+the current pack, pack talk, binding votes, and chosen kill. Seat-private events are filed by
+recipient: the active player gets inline machine-world cards, and the finished-game agent
+inspector shows the archived cards for that seat. Pack rosters are also stored per night so
+scrubbing an early day never shows the final survivors. Server-rendered component tests prove
+both halves: replay-off hides the data; an entitled live render and the inspector expose it.
+
+### 3.11 🔴 Rejoin restored the cookie but not the open stream
+
+**What happened.** On a refresh with a missing cookie, the anonymous status request opened a
+spectator EventSource. The rejoin call then restored the HttpOnly cookie and status identity,
+but the already-open SSE request kept the credential it began with.
+
+**Why.** The server re-resolves `token → seat` for each event, but `token` itself is captured
+from the EventSource HTTP request. Changing browser cookies cannot mutate an in-flight request.
+The status could therefore say “you are player_4” while role, input, and faction events stayed
+on the public tier.
+
+**Settled.** Stream lifetime is keyed to seat identity as well as game identity. When rejoin
+changes `you: null` to a seat, the anonymous source closes, the store re-hydrates silently at a
+fresh snapshot boundary, and a new credentialled source catches up. A 403 from turn submission
+also performs the promised one-time local-token rejoin and retries the unchanged payload once;
+failed tokens are cleared. Waiting lobbies no longer open an events endpoint that can only 409.
+
+### 3.12 🟠 The smaller review findings, closed together
+
+- **Status fetch failures were invisible.** `useGameStream` discarded the query error, leaving
+  unknown games on an empty “waiting” table. It now surfaces 404/403/network failures; a 404
+  offers the archived replay URL, and a 403 participates in the recovery attempt above.
+- **The corrected AFK clock was fictional.** `recordServerClock` existed but had no caller, and
+  status carried no server clock. `GameStatus.server_time` is now a required generated-contract
+  field sampled in UTC; every snapshot records the offset before a deadline renders.
+- **Pacing leaked across stages and games.** Hydration now clears ephemeral bars, the live view
+  selects the bar matching the current phase rather than the first bar for that day, and width
+  clamps at 100%.
+- **D22 landed on the wrong page.** Dismissing the live winner takeover now selects day 1 as
+  specified. Death styling is filtered through the selected day, so a future casualty is not
+  desaturated while scrubbing earlier history.
+- **The Docker context was over 1 GB.** With no `frontend/.dockerignore`, host `node_modules`
+  (~800 MB), `.next` (~230 MB), and `.env.local` entered the context; `COPY . .` could overwrite
+  Alpine's clean `npm ci` dependencies with host artifacts. The new ignore file excludes all
+  three classes while keeping the explicit production build arg as the API authority.
+
 ---
 
 ## 4. Design decisions and where the specs collided
@@ -429,7 +529,7 @@ Both were found by re-reading the spec against what existed, not by noticing dur
 
 ## 5. Blocked, and why
 
-### 5.1 Portrait generation — external access, not code
+### 5.1 Portrait generation — Google access blocker resolved in-agent
 
 The asset task called for generating ~24 seat portraits with Imagen. The script is written,
 two-phase (generate candidates → owner curates → post-process picks), with a single fixed
@@ -445,10 +545,23 @@ model is reachable on it**:
 | `imagegeneration@006` | 404 |
 | `gemini-2.5-flash-image` | 400 FAILED_PRECONDITION via the Vertex predict path |
 
-**Impact contained by design.** The asset manifest ships an empty portrait list and every seat
-falls back to initials on a deterministic per-seat colour — the degradation `ux_baseline`
-asked to be designed in. Enabling Imagen on the project is the only step needed; no component
-changes.
+**Impact was contained by design.** While blocked, the empty asset manifest made every seat
+fall back to initials on a deterministic per-seat colour — the degradation `ux_baseline`
+asked to be designed in.
+
+**Resolved 2026-08-22.** The owner selected the compact game-avatar direction represented by
+Sample E. The coding agent's built-in image generator produced twelve distinct adult seat
+avatars directly, without Google Cloud, API credentials, or the legacy Imagen script. One
+approved style reference and one fixed prompt scaffold held pixel density, framing, palette,
+lighting and background constant while the persona descriptor varied. The selected PNGs were
+nearest-neighbour downscaled to 512px WebP (20–28KB each), committed under
+`src/assets/portraits/`, and statically imported through the sole asset manifest. The avatar CSS
+uses `image-rendering: pixelated` so the 22px/34px render sizes preserve crisp edges.
+
+This also exposed and closed a design/implementation mismatch: the original aesthetic ruling
+assumed large dialogue portraits, while v1 only renders these assets inside `SeatChip`. The
+binding UX baseline now rules compact seat avatars for v1 and reserves any future large
+dialogue or role-reveal portrait as a separate higher-detail asset tier.
 
 ---
 
@@ -464,10 +577,63 @@ Worth reviewing, because the *cheap* checks caught almost nothing.
 | **Reading the served HTML and built CSS** | the white flash, the invisible night tint — both invisible to every check above |
 | **Driving the real API** (create, stream, submit, rejoin, spectate) | the seat-recovery logic error, confirmation of 409/403 handling |
 | **Testing through the public URL** | the Cloudflare buffering — invisible from every other vantage point |
+| **Independent cross-layer review + exact-order regressions** | the R7 high-water bug, stale input dock, spectator rejoin stream, and rendered-vs-folded private-data gap |
 
 The pattern is stark: **the further the check was from the real running system, the less it
 found.** The build's most serious defects were all invisible to the type checker and the test
 suite, and were caught by looking at bytes actually served over the wire.
+
+### 6.1 Unified game persistence — duplicate archive removed (2026-08-22)
+
+**Issue.** Live durability used `sessions` plus normalized `events`, while replay archival
+copied the same event log into a second `replays.events` JSONB value. A clean finish therefore
+had two parent lifecycle records and two copies of every event to keep consistent. It also left
+operational rows and archive rows with independent retention behavior.
+
+**Solution.** `GameRow.game_id` is now the single identity for the full lifecycle, with status
+`waiting | running | completed | dropped`, and `EventRow(game_id, seq)` is its one-to-many event
+log. Completion updates result metadata and status on the parent; replay reads the already
+persisted child rows instead of copying them. Public replay responses are constructed through
+`ReplayBase`/`ReplayGame` DTOs, so retained recovery fields such as host and seat credentials do
+not enter the API contract. Migration `0004` preserves session rows, replay-only rows, overlapping
+event logs and orphaned event logs before dropping the redundant replay table.
+
+**Verification find and fix.** The unit suite passed, but the optional real-PostgreSQL replay
+round-trip found that the SQLModel table definition lacked the JSON/room-name server defaults
+already present in Alembic migrations. Tables created directly from metadata could consequently
+reject a minimal upsert with a not-null violation. The database model now declares the same
+defaults as the migration. The real round-trip, migration upgrade/downgrade fixture, Alembic
+schema check, focused server tests and full test suite all pass. Automatic deletion remains
+deferred until a retention window is explicitly ruled; no destructive cleanup was smuggled into
+the normalization refactor.
+
+### 6.2 Durability resource split — abstract bundle removed (2026-08-22)
+
+**Issue.** `DurablePlane` mixed two independent responsibilities: SQLAlchemy repository methods
+for game/event rows, and LangGraph infrastructure lifecycle for the Psycopg checkpoint pool,
+saver and compiled graph. Its name explained neither dependency clearly, and a `GameSession`
+received the whole bundle even though it only needed persistence methods plus a graph.
+
+**Solution.** `GameRepository(Database)` now owns game/event reads and writes;
+`GraphRuntime(checkpoint_dsn)` owns checkpoint and graph startup/shutdown; the already separate
+`ReplayService(Database)` remains the replay read boundary. `AppResources` constructs all three
+explicitly, and routes/recovery pass each consumer only what it needs. This is an ownership-only
+refactor: the HTTP contract and database schema are unchanged.
+
+### 6.3 HTTP router split — mixed layering removed (2026-08-22)
+
+**Issue.** `app.py` contained almost the whole API, while `replays.py` was a one-off vertical
+slice containing its router, dependency provider and database service. The result was neither a
+single small API module nor a consistent multi-router design; replay query logic also raised
+FastAPI `HTTPException` directly.
+
+**Solution.** `app.py` is now the composition root only: lifespan, middleware and router
+registration. System, running-game/SSE, room and replay endpoints live under `server/routes/`;
+all request-to-resource providers live in `dependencies.py`; replay reads live in the
+framework-independent `replay_service.py`. Replay application errors are translated back to the
+same HTTP responses at the route boundary. Every public method, path and wire model remains
+unchanged. Focused server tests, OpenAPI route enumeration, Ruff and the full suite verify the
+move.
 
 ### Standing gap
 
@@ -489,4 +655,5 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
    on server event semantics — if the server changes how the day channel is numbered, those
    tests fail before any user sees a misplaced annotation.
 4. **`can_pass` on the wire** would remove the one place the client cannot pre-validate.
-5. **Portraits** are one credential away from landing with zero code changes.
+5. **Portraits are landed.** The twelve-asset WebP set is wired through the manifest; future
+   replacement remains an asset-only swap at that import boundary.

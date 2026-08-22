@@ -240,8 +240,10 @@ never reads any of it; one `lib/storage.ts` module owns the key names):
 | `byok_key` | remembered API key — **opt-in only** | "remember on this device" checked | the "clear saved key" button; also never written unless opted in |
 | `ghost_{gameId}` | ghost-mode guesses keyed by phase | guess widget (ruling 7) | never (it's the user's history) |
 
-BYOK-remember explicitly needs ZERO server support: the key's only wire appearance is the
-create-request body; remember/mask/clear are local operations (ruled 2026-08-20).
+BYOK-remember explicitly needs ZERO additional server support: the key's only wire appearance
+is the create-request body; the server retains it only in the live game object's memory, while
+remember/mask/clear are local operations (ruled 2026-08-20). Restart recovery by resubmitting a
+key is a recorded future design, not part of v1.
 
 **One route, three states**: `/games/[gameId]` renders by `GameStatus.state` — `waiting` →
 lobby (roster poll, share link, start button iff `host_key` held), `running` → live table,
@@ -255,7 +257,7 @@ the client never re-routes across the transition.
 
 ## 6. Server tweaks shipping with P0 (ruling 5) — ⭐BOTH LANDED 2026-08-21
 
-1. ✅ `server/replays.py`: `ReplayGame.events: list[DurableGameEvent]` (the table's JSONB
+1. ✅ `server/schemas/replays.py`: `ReplayGame.events: list[DurableGameEvent]` (the table's JSONB
    column stays `list[dict]`; only the wire model is typed). Verified: the 27-member
    discriminated union now renders in `/openapi.json` as `oneOf` refs — the frontend TS
    event types generate from it. Side effect (deliberate): stored rows re-validate on the
@@ -294,9 +296,10 @@ widget at day boundaries, localStorage-keyed `(game_id, phase)` (ruling 7).
 
 **P2 — live game + solo play.** `useGameStream` + game store feeding the SAME reducer/UI ·
 `/play` solo door (role picker from cast, model menu from `GET /models`, optional BYOK
-key). **BYOK key handling (ruled 2026-08-20)**: the server never stores keys (by design
-— BYOK games even die on restart for exactly this reason), so remembering is purely
-client-side. One shared `ByokField` component (used by `/play` and `/rooms/new`): key
+key). **BYOK key handling (ruled 2026-08-20)**: the server holds a key only in the live
+game object's process memory and never persists it (BYOK games currently die on restart for
+exactly this reason), so remembering is purely client-side. One shared `ByokField` component
+(used by `/play` and `/rooms/new`): key
 input + an OPT-IN "remember on this device" checkbox → `localStorage`; when a saved key
 loads it renders masked with a "clear saved key" button right there in the field. Off
 by default; the key travels only in the create-request body; say all of this in the UI. · turn forms per `action_kind` + AFK
@@ -343,9 +346,10 @@ recruiters watch GIFs, not links).
 
 **Later (each needs new backend, separately scoped):** ghost-guess persistence endpoint →
 daily puzzle (curation/publish) → MVP score/autopsy endpoint → memory-showcase mode 2 (store
-read-path + changelog explorer) → accounts/OAuth/stats → room row GC (listing shipped
+read-path + changelog explorer) → BYOK restart recovery by original-host key resubmission
+(`server_design_notes` §6 implementation packet) → accounts/OAuth/stats → room row GC (listing shipped
 slice 7; the TTL hides stale rooms from browse, but dead rows still accumulate in the
-sessions table) → kick-player (deferred 2026-08-20).
+`games` table) → kick-player (deferred 2026-08-20).
 ~~live-session durability~~ — built 2026-08-20, no longer pending (see §8). **The deep memory X-ray** (retrieval→decision inspector for v7 memory-on
 replays, demo mode 3's enhancement) reads eval-case dumps = a static-export pipeline, NOT this
 server — schedule as its own slice when the memory-showcase mode is taken up.
@@ -364,7 +368,7 @@ server — schedule as its own slice when the memory-showcase mode is taken up.
 | Dramatic irony live (§2 T1) | ❌ by design | roles are observer-tier until game_over; replay-only |
 | Memory X-ray / said-vs-thought (§2 T1) | ⚠️ partial | live is memory-OFF (research closure); wire x-ray = scheduler/roles/strategy/gated passes; deep memory inspector = static eval-case export, later |
 | Ghost guesses (§9), daily puzzle (§7), MVP score (§6.4), accounts (§6.1) | ❌ none | localStorage ghost v1 now; rest = "later" list |
-| Session durability | ✅ full (2026-08-20, post-draft) | Postgres checkpointer + sessions/events tables + boot recovery; a server restart re-parks pending turns and games resume (restart smoke passed). BYOK games are the one exception: the key dies with the process, so they revive dead with a clear `GameStatus.error`. Unset `WW_POSTGRES_DSN` degrades gracefully to RAM-only. |
+| Session durability | ✅ full (2026-08-20, normalized 2026-08-22) | Postgres checkpointer + unified games/events tables + boot recovery; a server restart re-parks pending turns and games resume (restart smoke passed). Completed `GameRow`s and their existing `EventRow`s are the replay—there is no copied replay blob. BYOK games are the one exception: the key dies with the process, so they become dropped with a clear `GameStatus.error`. Unset `WW_POSTGRES_DSN` degrades gracefully to RAM-only. |
 
 ## 9. Testing & quality line (ruling 8)
 
