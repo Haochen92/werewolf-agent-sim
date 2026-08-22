@@ -22,8 +22,8 @@ class ServerSettings(BaseSettings):
     JSON-decodes list-typed fields)."""
 
     WW_POSTGRES_DSN: str = ""
-    """Postgres for server-owned tables (the replay archive; live-session durability
-    later) — the SAME var/database the memory tick uses (ruled 2026-08-20: one knob,
+    """Postgres for server-owned tables (unified games, events, checkpoints)
+    — the SAME var/database the memory tick uses (ruled 2026-08-20: one knob,
     one container; split into a dedicated var only the day the deploy splits DBs).
     Empty = archiving disabled (games still run; /replays answers 503)."""
 

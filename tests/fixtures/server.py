@@ -5,7 +5,7 @@
    Example: session = quiet_session(FakeGraph(parts))
 2. API-LAYER TESTS (routing, validation, serialization): use `api_client` — a
    TestClient over the real create_app() (real lifespan, real registry). Inject
-   prepared sessions via `api_client.app.state.games[id] = session`; never POST
+   prepared sessions via `api_client.app.state.resources.games[id] = session`; never POST
    /games for a success path here — that would launch the real graph.
 """
 
@@ -54,16 +54,12 @@ def _no_real_replay_db():
     Deliberately NOT via the monkeypatch fixture: an autouse dependency on it changes
     fixture teardown order so the api_client lifespan would exit while a test's own
     GameSession patch is still applied (isinstance TypeError at shutdown)."""
-    from server import db
+    from server.config import server_settings
 
-    old = db.server_settings.WW_POSTGRES_DSN
-    db.server_settings.WW_POSTGRES_DSN = ""
-    db._engine = None
-    db._sessions = None
+    old = server_settings.WW_POSTGRES_DSN
+    server_settings.WW_POSTGRES_DSN = ""
     yield
-    db.server_settings.WW_POSTGRES_DSN = old
-    db._engine = None
-    db._sessions = None
+    server_settings.WW_POSTGRES_DSN = old
 
 
 @pytest.fixture

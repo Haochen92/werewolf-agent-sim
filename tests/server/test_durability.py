@@ -12,7 +12,9 @@ from types import SimpleNamespace
 
 from langgraph.types import Command
 
-from server import durable, recovery
+from server import recovery
+from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
+from server.game_repository import derive_completion_metadata
 from server.translate import Translator
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import FakeGraph
@@ -43,58 +45,44 @@ def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_parts):
 # ---- the write path (runtime -> durable) -----------------------------------------------------
 
 
-async def test_run_persists_events_and_final_phase(quiet_session, monkeypatch,
-                                                   fixture_parts):
-    recorded, upserts = [], []
+async def test_run_persists_events_and_finalizes_one_game_row(quiet_session, fixture_parts):
+    repository = RecordingGameRepository()
 
-    async def rec_events(game_id, events):
-        recorded.extend(events)
-
-    async def rec_upsert(game_id, **fields):
-        upserts.append(fields)
-
-    monkeypatch.setattr(durable, "record_events", rec_events)
-    monkeypatch.setattr(durable, "upsert_session", rec_upsert)
-
-    session = quiet_session(FakeGraph(fixture_parts))
+    session = quiet_session(FakeGraph(fixture_parts), repository=repository)
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
 
-    assert [e.seq for e in recorded] == [e.seq for e in session.log]  # full log, in order
-    assert upserts[-1] == {"phase": "finished"}
+    assert [e.seq for e in repository.events] == [e.seq for e in session.log]
+    assert repository.completions == [(session.game_id, len(session.log), 0)]
     # The fixture game is all-LLM: human_players never changes, so no seat upsert.
-    assert all("human_players" not in u for u in upserts)
+    assert all("human_players" not in fields for fields in repository.upserts)
 
 
-async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session,
-                                                                  monkeypatch):
-    upserts = []
-
-    async def rec_upsert(game_id, **fields):
-        upserts.append(fields)
-
-    monkeypatch.setattr(durable, "upsert_session", rec_upsert)
+async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session):
+    repository = RecordingGameRepository()
 
     class ExplodingGraph:
         async def astream(self, payload, **_):
             raise RuntimeError("provider died")
             yield  # pragma: no cover
 
-    session = quiet_session(ExplodingGraph())
+    session = quiet_session(ExplodingGraph(), repository=repository)
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
-    assert upserts[-1]["phase"] == "dead" and "provider died" in upserts[-1]["error"]
+    assert repository.upserts[-1]["status"] == DROPPED
+    assert "provider died" in repository.upserts[-1]["error"]
+    assert repository.completions == []
 
-    # Shutdown cancellation must leave the durable phase untouched ('running'), so
+    # Shutdown cancellation must leave the durable status untouched ('running'), so
     # the next boot recovers the game instead of burying it.
     from tests.fixtures.server import HangingGraph
 
-    upserts.clear()
-    parked = quiet_session(HangingGraph())
+    repository.upserts.clear()
+    parked = quiet_session(HangingGraph(), repository=repository)
     parked.start()
     await asyncio.sleep(0.05)
     await parked.shutdown()
-    assert all("phase" not in u for u in upserts)
+    assert all("status" not in fields for fields in repository.upserts)
 
 
 # ---- boot recovery ---------------------------------------------------------------------------
@@ -116,39 +104,53 @@ class FakeDurableGraph:
         yield  # pragma: no cover
 
 
+class RecordingGameRepository:
+    """The runtime's narrow persistence contract, with no database or globals."""
+
+    def __init__(self, rows=()) -> None:
+        self.rows = list(rows)
+        self.events = []
+        self.completions = []
+        self.upserts = []
+        self.upsert_calls = []
+
+    async def record_events(self, game_id, events):
+        self.events.extend(events)
+
+    async def upsert_game(self, game_id, **fields):
+        self.upserts.append(fields)
+        self.upsert_calls.append((game_id, fields))
+
+    async def complete_game(self, game_id, log, n_humans):
+        self.completions.append((game_id, len(log), n_humans))
+
+    async def load_recoverable_games(self):
+        return self.rows
+
+    async def load_events(self, game_id):
+        return []
+
+
 def _row(**over):
-    base = dict(game_id="g-1", phase="running", host_key="", model="", byok=False,
+    base = dict(game_id="g-1", status=RUNNING, host_key="", model="", byok=False,
                 seats=[{"name": "hao", "token": "tok-1"}], human_players=["player_3"])
     base.update(over)
-    return durable.SessionRow(**base)
+    return GameRow(**base)
 
 
 async def _recover(monkeypatch, rows, graph):
-    async def fake_rows():
-        return rows
-
-    async def fake_events(game_id):
-        return []
-
-    async def rec_upsert(game_id, **fields):
-        rec_upsert.calls.append((game_id, fields))
-
-    rec_upsert.calls = []
-    monkeypatch.setattr(durable, "_graph", graph)
-    monkeypatch.setattr(durable, "load_open_sessions", fake_rows)
-    monkeypatch.setattr(durable, "load_events", fake_events)
-    monkeypatch.setattr(durable, "upsert_session", rec_upsert)
     monkeypatch.setattr("server.runtime.seed_memory_from_config", lambda *a, **k: None)
+    repository = RecordingGameRepository(rows=rows)
     games: dict = {}
-    await recovery.recover_registry(games)
-    return games, rec_upsert.calls
+    await recovery.recover_registry(games, repository, graph)
+    return games, repository
 
 
 async def test_waiting_room_revives_with_its_identity(monkeypatch):
     from datetime import datetime, timezone
 
     stamp = datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc)
-    row = _row(phase="waiting", host_key="hk-9",
+    row = _row(status=WAITING, host_key="hk-9",
                room_name="wolves den", locked=True, created_at=stamp)
     games, _ = await _recover(monkeypatch, [row], FakeDurableGraph(None))
 
@@ -179,15 +181,33 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
 
 
 async def test_byok_game_revives_dead_with_a_clear_epitaph(monkeypatch):
-    games, upserts = await _recover(monkeypatch, [_row(byok=True)],
-                                    FakeDurableGraph(None))
+    games, repository = await _recover(monkeypatch, [_row(byok=True)],
+                                       FakeDurableGraph(None))
     session = games["g-1"]
     assert "API key" in session.error and session._task is None
-    assert ("g-1", {"phase": "dead", "error": session.error}) in upserts
+    assert ("g-1", {"status": DROPPED, "error": session.error}) in repository.upsert_calls
 
 
 async def test_stale_running_row_of_a_finished_game_is_closed(monkeypatch):
     state = SimpleNamespace(next=(), tasks=[])
-    games, upserts = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))
+    games, repository = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))
     assert games["g-1"]._task is None
-    assert ("g-1", {"phase": "finished"}) in upserts
+    assert repository.completions == [("g-1", 0, 1)]
+
+
+def test_completion_metadata_is_lifted_from_the_event_log():
+    from server.schemas import events as ev
+
+    log = [
+        ev.GameStarted(seq=1, day=1, seats=["p1", "p2"],
+                       cast_role_counts={"wolf": 1, "villager": 1}),
+        ev.GmMessage(seq=2, day=2, channel_seq=0, text="dawn"),
+        ev.GameOver(seq=3, day=3, winner="wolves"),
+    ]
+    assert derive_completion_metadata(log) == {
+        "winner": "wolves",
+        "days": 3,
+        "n_events": 3,
+        "cast_role_counts": {"wolf": 1, "villager": 1},
+    }
+    assert derive_completion_metadata(log[:-1]) is None

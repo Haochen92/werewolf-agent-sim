@@ -52,8 +52,7 @@ from Agents.state import fresh_game_state
 from Agents.tracing import Metrics
 from Agents.turn.human_turn import validate_human_response
 
-from server import durable
-from server.replays import archive_game
+from server.game_repository import GameRepository
 from server.schemas import events as ev
 from server.translate import Translator, _read_field
 
@@ -248,7 +247,7 @@ class GameSession:
       translator   the converter MACHINE: stream parts in, 0..N typed events out.
                    Stateful (its own shadow of game state + the global seq counter).
       log          the RECORD: every durable event in seq order. Reconnect = replay
-                   this list. In-memory only for now (durability is the parked M2).
+                   this list; the injected repository persists each streamed tail.
       game_over    the permission flip (ruling R7): once True, entitled() treats
                    every viewer as an observer and the withheld backlog may flush.
 
@@ -287,7 +286,8 @@ class GameSession:
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
                  api_key: str = "", model: str = "",
-                 seat_tokens: Sequence[str] = (), graph=None) -> None:
+                 seat_tokens: Sequence[str] = (), graph=None,
+                 repository: GameRepository | None = None) -> None:
         # BYOK billing (memory-only; model must come from SUPPORTED_GAME_MODELS).
         self._api_key = api_key
         if api_key and not model:
@@ -304,6 +304,7 @@ class GameSession:
         self.config = build_runnable_config(run)
         self.game_id: str = self.config["configurable"]["game_id"]
         self._graph = graph if graph is not None else parent_graph_compiled
+        self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
 
         # The wire: converter machine, durable record, R7 permission flip.
@@ -355,8 +356,8 @@ class GameSession:
     async def shutdown(self) -> None:
         """Cancel the running game task (server shutdown). Cancellation lands at the
         task's next await; a sync node already inside LangGraph's executor runs its
-        current step to completion in its worker thread — accepted, since the game's
-        state is RAM-only anyway (durability is the parked M2)."""
+        current step to completion in its worker thread. Its last committed checkpoint
+        and event tail are recovered on the next startup."""
         for timer in list(self._afk_tasks):  # sleeping stopwatches die with the game
             timer.cancel()
         if self._task is not None and not self._task.done():
@@ -392,11 +393,11 @@ class GameSession:
                 # Resume with user input, once every interrupted seat has answered
                 graph_input = Command(resume=await self._collect_answers())
             if self.game_over:
-                # Clean finishes only reach here (errors jump to except and are never
-                # archived — no game_over means no winner, no ending). archive_game
-                # never raises; a failed archive costs one replay, not the game.
-                await archive_game(self.game_id, self.log, len(self.human_players))
-                await durable.upsert_session(self.game_id, phase="finished")
+                # The existing EventRows become the replay: completion only finalizes
+                # metadata and lifecycle on their parent GameRow, never copies the log.
+                if self._repository is not None:
+                    await self._repository.complete_game(
+                        self.game_id, self.log, len(self.human_players))
         except Exception as exc:  # surface, don't vanish: the session reports its death
             detail = repr(exc)
             if self._api_key:
@@ -404,7 +405,9 @@ class GameSession:
                 detail = detail.replace(self._api_key, "***")
             self.error = detail
             logger.error("game %s: task died: %s", self.game_id, detail)
-            await durable.upsert_session(self.game_id, phase="dead", error=detail)
+            if self._repository is not None:
+                await self._repository.upsert_game(
+                    self.game_id, status="dropped", error=detail)
         finally:
             # No phase upsert here: a CancelledError (server shutdown) must leave the
             # durable row 'running' so the next boot's recovery picks the game up.
@@ -415,13 +418,17 @@ class GameSession:
 
     async def _persist_tail(self) -> None:
         """Push the log's unpersisted suffix + newly-learned human seats to the
-        durable plane (both helpers no-op when Postgres is unconfigured and never
+        game repository (both helpers no-op when Postgres is unconfigured and never
         raise — durability failing must not cost the running game)."""
+        if self._repository is None:
+            return
         if len(self.log) > self._persisted:
-            await durable.record_events(self.game_id, self.log[self._persisted:])
+            await self._repository.record_events(
+                self.game_id, self.log[self._persisted:])
             self._persisted = len(self.log)
         if self.human_players != self._persisted_humans:
-            await durable.upsert_session(self.game_id, human_players=self.human_players)
+            await self._repository.upsert_game(
+                self.game_id, human_players=self.human_players)
             self._persisted_humans = list(self.human_players)
 
     def _on_part(self, part) -> bool:

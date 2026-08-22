@@ -15,34 +15,70 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
+from server.game_repository import GameRepository
+from server.graph_runtime import GraphRuntime
 from server.lobby import GameLobby
+from server.replay_service import ReplayService
+from server.resources import AppResources
 from server.runtime import GameSession
 
 Entry = GameSession | GameLobby
 
 
-def get_games(request: Request) -> dict[str, Entry]:
+def get_resources(request: Request) -> AppResources:
+    """The one process-lifetime container created by the FastAPI lifespan."""
+    return request.app.state.resources
+
+
+Resources = Annotated[AppResources, Depends(get_resources)]
+
+
+def get_games(resources: Resources) -> dict[str, Entry]:
     """The app's registry of every waiting room and running game, keyed by game_id.
 
-    One plain dict on app.state — created empty by the lifespan at startup, torn
-    down by it at shutdown (running game tasks get cancelled). In-memory only: a
-    server restart forgets all games. Inject this (rather than the id-resolving
-    providers below) when a route must ADD or SWAP an entry: POST /games,
-    POST /rooms, and /start's lobby-for-session swap."""
-    return request.app.state.games
+    The dict belongs to ``AppResources``. It starts empty, is rehydrated from the
+    game repository, and is discarded after running tasks stop at shutdown. Inject
+    this (rather than the id-resolving providers below) when a route must ADD or
+    SWAP an entry: POST /games, POST /rooms, and /start's lobby/session swap."""
+    return resources.games
 
 
-def get_room(game_id: str, request: Request) -> Entry:
+GamesRegistry = Annotated[dict[str, Entry], Depends(get_games)]
+
+
+def get_game_repository(resources: Resources) -> GameRepository:
+    return resources.game_repository
+
+
+GameRepositoryDep = Annotated[GameRepository, Depends(get_game_repository)]
+
+
+def get_graph_runtime(resources: Resources) -> GraphRuntime:
+    return resources.graph_runtime
+
+
+GraphRuntimeDep = Annotated[GraphRuntime, Depends(get_graph_runtime)]
+
+
+def get_replay_service(resources: Resources) -> ReplayService:
+    """Return the app-owned replay reader without creating a storage client."""
+    return resources.replays
+
+
+ReplayServiceDep = Annotated[ReplayService, Depends(get_replay_service)]
+
+
+def get_room(game_id: str, games: GamesRegistry) -> Entry:
     """Resolve the ``{game_id}`` path parameter to its registry entry, or 404."""
-    entry = request.app.state.games.get(game_id)
+    entry = games.get(game_id)
     if entry is None:
         raise HTTPException(status_code=404, detail="unknown game")
     return entry
 
 
-def get_game(game_id: str, request: Request) -> GameSession:
+def get_game(game_id: str, games: GamesRegistry) -> GameSession:
     """Like get_room, but the caller needs a RUNNING game: a lobby is 409."""
-    entry = get_room(game_id, request)
+    entry = get_room(game_id, games)
     if isinstance(entry, GameLobby):
         raise HTTPException(status_code=409,
                             detail="game not started yet (waiting room)")
@@ -65,7 +101,6 @@ def get_seat_token(game_id: str, request: Request) -> str:
     return request.cookies.get(seat_cookie_name(game_id), "")
 
 
-GamesRegistry = Annotated[dict[str, Entry], Depends(get_games)]
 Room = Annotated[Entry, Depends(get_room)]
 Game = Annotated[GameSession, Depends(get_game)]
 SeatToken = Annotated[str, Depends(get_seat_token)]

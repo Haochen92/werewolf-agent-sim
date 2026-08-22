@@ -138,6 +138,9 @@ class GameStatus(BaseModel):
     state: str
     """Lifecycle: "waiting" (lobby) | "running" | "finished" (game_over). A dead
     task stays "running" with the error field set — error is orthogonal."""
+    server_time: str
+    """ISO-8601 UTC wall clock sampled with this snapshot. The browser subtracts its
+    own receipt-time clock so AFK deadlines remain honest on devices with clock skew."""
     players: list[str] = Field(default_factory=list)
     """The lobby roster (display names). Empty once running: engine seats
     replace the roster at start."""

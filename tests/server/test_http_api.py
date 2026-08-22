@@ -2,7 +2,7 @@
 
 API-layer tests in the dota2pred sense — the app is real (factory, lifespan, registry,
 middleware), the game engine is not involved. Sessions are injected into
-app.state.games pre-built (never started via POST /games, which would launch the real
+app.state.resources.games pre-built (never started via POST /games, which would launch the real
 graph); the runtime machine itself is pinned in test_server_runtime.py.
 """
 from __future__ import annotations
@@ -23,7 +23,7 @@ def seated_session(api_client, quiet_session):
     joiner is in mid-game. Returns (session, token)."""
     session = quiet_session(FakeGraph([]), seat_tokens=["tok-1"])
     session.human_players = ["player_3"]  # what INITIALIZE_GAME would set
-    api_client.app.state.games[session.game_id] = session
+    api_client.app.state.resources.games[session.game_id] = session
     api_client.cookies.set(f"seat_{session.game_id}", "tok-1")
     return session, "tok-1"
 
@@ -32,7 +32,11 @@ def seated_session(api_client, quiet_session):
 
 def test_health_and_lifespan_registry(api_client):
     assert api_client.get("/health").json() == {"status": "healthy"}
-    assert api_client.app.state.games == {}  # the lifespan created the registry
+    resources = api_client.app.state.resources
+    assert resources.games == {}  # lifespan-owned registry
+    # All storage services share the one app-owned database, never hidden singletons.
+    assert resources.game_repository._database is resources.database
+    assert resources.replays._database is resources.database
 
 
 def test_cors_allows_the_configured_frontend_origin(api_client):
@@ -79,9 +83,10 @@ def test_unknown_game_is_404_everywhere(api_client):
 
 def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     session = quiet_session(FakeGraph([]))  # built, deliberately never started
-    api_client.app.state.games[session.game_id] = session
+    api_client.app.state.resources.games[session.game_id] = session
 
     body = api_client.get(f"/games/{session.game_id}").json()
+    assert body.pop("server_time").endswith("+00:00")
     assert body == {
         "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
         "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
@@ -108,7 +113,7 @@ def _make_room(api_client, **extra):
 def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     """The happy path end to end, with the real GameSession swapped for one on a
     FakeGraph (starting the real graph would call an LLM)."""
-    import server.app as app_mod
+    import server.routes.rooms as rooms_routes
     from server import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
@@ -119,7 +124,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
         kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(rooms_routes, "GameSession", fake_session)
 
     game_id, host_key = _make_room(api_client)
     assert host_key  # the create response is the ONLY carrier of the host credential
@@ -259,7 +264,7 @@ def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session
 def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
     """POST /games {human} gets a token + cookie exactly like a room joiner (one
     identity mechanism at both doors); an LLM-only game mints nothing."""
-    import server.app as app_mod
+    import server.routes.games as games_routes
     from server import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
@@ -270,7 +275,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
         kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(games_routes, "GameSession", fake_session)
 
     r = api_client.post("/games", json={"human": True})
     body = r.json()
@@ -288,7 +293,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
 
 def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
     """An empty room may start: the host runs an all-LLM exhibition game to watch."""
-    import server.app as app_mod
+    import server.routes.rooms as rooms_routes
     from server import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
@@ -299,7 +304,7 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
         kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(rooms_routes, "GameSession", fake_session)
 
     game_id, host_key = _make_room(api_client)
     assert api_client.post(f"/games/{game_id}/start?host_key={host_key}").status_code == 200
@@ -308,7 +313,7 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
 
 def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     """The creator's key/model, given at create time, funds the started game."""
-    import server.app as app_mod
+    import server.routes.rooms as rooms_routes
     from server import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
@@ -319,7 +324,7 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
         kw.pop("graph", None)  # routes pass the durable graph (None in tests)
         return rt.GameSession(run, graph=FakeGraph([]), **kw)
 
-    monkeypatch.setattr(app_mod, "GameSession", fake_session)
+    monkeypatch.setattr(rooms_routes, "GameSession", fake_session)
 
     game_id, host_key = _make_room(api_client, api_key="sk-room", model=GEMINI)
     api_client.post(f"/games/{game_id}/start?host_key={host_key}")
@@ -358,7 +363,7 @@ def test_stale_rooms_hide_from_the_list_but_keep_their_url(api_client):
     from server.config import server_settings
 
     game_id, _ = _make_room(api_client, name="abandoned")
-    room = api_client.app.state.games[game_id]
+    room = api_client.app.state.resources.games[game_id]
     room.created_at -= timedelta(seconds=server_settings.ROOM_LIST_TTL_SECONDS + 1)
 
     assert api_client.get("/rooms").json() == []  # a browse filter...

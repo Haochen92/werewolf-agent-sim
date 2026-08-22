@@ -1,4 +1,4 @@
-"""server/runtime.py + server/app.py — session loop, entitlement, pacing, SSE framing.
+"""Runtime sessions plus the game router's entitlement, pacing, and SSE framing.
 
 The end-to-end test drives a real GameSession over the captured fixture through a fake
 graph (zero LLM), asserting the task → translator → log → fan-out pipeline. The interrupt
@@ -14,7 +14,7 @@ import asyncio
 import pytest
 
 from Agents.turn.human_turn import HumanTurnContractError
-from server.app import _sse, event_stream
+from server.routes.games import _sse, event_stream
 from server.runtime import PacingTracker, entitled
 from server.schemas import events as ev
 from server.translate import Translator

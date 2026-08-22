@@ -23,8 +23,8 @@ from sqlmodel import SQLModel
 # from pyproject's pythonpath; the alembic CLI does not).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-# Imported for the side effect of registering tables on SQLModel.metadata.
-import server.replays  # noqa: F401,E402
+# Imported for the side effect of registering every app-owned table on SQLModel.metadata.
+import server.database_models  # noqa: F401,E402
 
 from server.config import server_settings
 
