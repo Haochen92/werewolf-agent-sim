@@ -17,13 +17,14 @@
  *   atop day N+1.
  */
 import { Fragment } from 'react';
-import type { DayView } from '@/game/types';
+import type { DayView, PrivateResult } from '@/game/types';
 import {
   DawnResults,
   GmLine,
   MachineCard,
   NightCard,
   PassRow,
+  PrivateResultCard,
   RecapCard,
   SectionRule,
   SpeechBubble,
@@ -42,6 +43,10 @@ export interface DayTranscriptProps {
   deadSeats?: Set<string>;
   /** Live view expands the recap (it is a real morning briefing); replay collapses it. */
   expandRecap?: boolean;
+  /** The live seat's own cards; replay exposes every seat's cards in the inspector instead. */
+  privateResults?: PrivateResult[];
+  /** Live faction/seat data is already entitled by the server and must not wait for X-ray. */
+  showEntitledMachine?: boolean;
   onInspect?: (seat: string) => void;
 }
 
@@ -53,6 +58,8 @@ export function DayTranscript({
   mySeat,
   deadSeats,
   expandRecap = false,
+  privateResults = [],
+  showEntitledMachine = false,
   onInspect,
 }: DayTranscriptProps) {
   const visibleSlots = day.slots.filter((slot) => slot.kind !== 'pass' || xray);
@@ -99,7 +106,15 @@ export function DayTranscript({
 
       <VoteBlock vote={day.vote} roles={xray ? roles : {}} />
 
-      {hasNight ? <NightSection day={day} roles={roles} xray={xray} /> : null}
+      {hasNight ? (
+        <NightSection
+          day={day}
+          roles={roles}
+          xray={xray}
+          privateResults={privateResults.filter((result) => result.day === day.day)}
+          showEntitledMachine={showEntitledMachine}
+        />
+      ) : null}
     </div>
   );
 }
@@ -108,23 +123,30 @@ function NightSection({
   day,
   roles,
   xray,
+  privateResults,
+  showEntitledMachine,
 }: {
   day: DayView;
   roles: Record<string, string>;
   xray: boolean;
+  privateResults: PrivateResult[];
+  showEntitledMachine: boolean;
 }) {
   const night = day.night!;
+  const showMachine = xray || showEntitledMachine;
   return (
     <div className={`nightPhase ${classes.nightSection}`}>
       <SectionRule>Night {day.day}</SectionRule>
       <div className={classes.transcript} style={{ padding: 0, gap: 'var(--space-4)' }}>
         <NightCard />
 
-        {xray ? (
+        {showMachine ? (
           <>
             <WolfChannelSection
               entries={night.wolfChannel}
+              votes={night.wolfVotes}
               wolfKill={night.wolfKill}
+              packRoster={night.packRoster}
               roles={roles}
             />
             {night.actions.length > 0 ? (
@@ -137,6 +159,9 @@ function NightSection({
                 ))}
               </MachineCard>
             ) : null}
+            {privateResults.map((result) => (
+              <PrivateResultCard key={result.seq} result={result} />
+            ))}
           </>
         ) : null}
 

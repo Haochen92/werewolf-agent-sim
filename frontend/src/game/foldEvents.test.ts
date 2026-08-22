@@ -293,7 +293,8 @@ describe('seat identity', () => {
   it('never guesses "me" from role_assigned — a replay deals every seat a card', () => {
     expect(view.me.seat).toBeNull();
     expect(view.me.role).toBeNull();
-    expect(view.me.privateResults).toHaveLength(4); // filed regardless; the view decides
+    expect(view.me.privateResults).toHaveLength(0);
+    expect(Object.values(view.xray.privateResults).flat()).toHaveLength(4);
   });
 
   it('resolves the role card when the caller names a seat', () => {
@@ -301,6 +302,15 @@ describe('seat identity', () => {
     expect(seated.me.seat).toBe('player_9');
     expect(seated.me.role).not.toBeNull();
     expect(seated.me.role!.role).toBe(view.xray.roles['player_9']);
+  });
+
+  it('files private results under their recipient and gives me only my own cards', () => {
+    const vigilante = foldEvents(events, { mySeat: 'player_1' });
+    expect(vigilante.me.privateResults).toHaveLength(3);
+    expect(
+      vigilante.me.privateResults.every((result) => result.player === 'player_1'),
+    ).toBe(true);
+    expect(view.xray.privateResults['player_3']).toHaveLength(1);
   });
 
   it('tracks whether my seat is still alive', () => {
@@ -376,6 +386,7 @@ describe('partial and out-of-order logs', () => {
     expect(live.xray.available).toBe(false);
     expect(live.xray.roles).toEqual({});
     expect(live.xray.agents).toEqual({});
+    expect(live.xray.privateResults).toEqual({});
     expect(live.winner).toBe('wolves');
     expect(live.alive).toEqual(['player_8', 'player_9']);
     expect(live.dead).toHaveLength(7); // public deaths are fully knowable
@@ -418,6 +429,7 @@ describe('partial and out-of-order logs', () => {
     expect(wolf.xray.roles).toEqual({}); // own card is NOT observer knowledge
     expect(wolf.xray.available).toBe(false);
     expect(wolf.days[1].night!.wolfChannel.length).toBeGreaterThan(0); // faction tier arrives
+    expect(wolf.days[5].night!.packRoster).toEqual(['player_9']);
   });
 
   it('R7 re-fold: replaying the full log over a public-only view reaches the same place', () => {

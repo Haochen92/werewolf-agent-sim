@@ -19,6 +19,7 @@ import type {
   GmSlot,
   NightView,
   PassSlot,
+  PrivateResult,
   SlotAnnotations,
   SpeechSlot,
   WolfEntry,
@@ -337,17 +338,30 @@ export function NightCard({ children }: { children?: React.ReactNode }) {
 
 export function WolfChannelSection({
   entries,
+  votes,
   wolfKill,
+  packRoster,
   roles,
 }: {
   entries: WolfEntry[];
+  votes: NightView['wolfVotes'];
   wolfKill: string | null;
+  packRoster: string[];
   roles: Record<string, string>;
 }) {
-  if (entries.length === 0 && !wolfKill) return null;
+  if (entries.length === 0 && votes.length === 0 && !wolfKill && packRoster.length === 0) {
+    return null;
+  }
   return (
     <div className={classes.wolfChannel}>
       <div className={classes.wolfHead}>The pack</div>
+      {packRoster.length > 0 ? (
+        <div className={classes.voters}>
+          {packRoster.map((wolf) => (
+            <SeatChip key={wolf} seat={wolf} role={roles[wolf]} />
+          ))}
+        </div>
+      ) : null}
       {entries.map((entry) =>
         entry.wolf === 'game_master' ? (
           // The server-authored SK-whiff note: a GM line INSIDE the tint.
@@ -364,6 +378,16 @@ export function WolfChannelSection({
           </div>
         ),
       )}
+      {votes.length > 0 ? (
+        <div className={classes.machineCard}>
+          <span className={classes.machineLabel}>pack votes</span>
+          {votes.map((vote) => (
+            <div key={vote.seq}>
+              {vote.wolf} → {vote.votee}
+            </div>
+          ))}
+        </div>
+      ) : null}
       {wolfKill ? (
         <div className={classes.packBanner}>the pack has chosen: {wolfKill}</div>
       ) : null}
@@ -383,6 +407,28 @@ export function MachineCard({
       <span className={classes.machineLabel}>{label}</span>
       {children}
     </div>
+  );
+}
+
+export function PrivateResultCard({ result }: { result: PrivateResult }) {
+  if (result.kind === 'investigation') {
+    return (
+      <MachineCard label={`investigation · night ${result.day}`}>
+        {result.target} is {humanise(result.role)}.
+      </MachineCard>
+    );
+  }
+  if (result.kind === 'vigilante_confirmation') {
+    return (
+      <MachineCard label={`shot confirmation · night ${result.day}`}>
+        {result.target} survived the shot — they are the serial killer.
+      </MachineCard>
+    );
+  }
+  return (
+    <MachineCard label={`ammunition · night ${result.day}`}>
+      {result.count} bullet{result.count === 1 ? '' : 's'} remaining.
+    </MachineCard>
   );
 }
 

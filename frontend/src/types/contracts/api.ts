@@ -436,6 +436,8 @@ export interface components {
       game_id: string;
       /** State */
       state: string;
+      /** Server Time */
+      server_time: string;
       /** Players */
       players?: string[];
       /**

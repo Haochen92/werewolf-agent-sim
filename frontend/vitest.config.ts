@@ -1,11 +1,13 @@
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
 
-// Ruling 8: Vitest covers src/game/ only — the reducer is the load-bearing core and the
-// one thing provable without a browser. No component tests, no jsdom, no E2E.
+// The reducer/store stay the load-bearing suite. A small server-rendered component layer
+// additionally proves that entitled faction/private data has an actual render consumer;
+// it needs no browser or jsdom.
 export default defineConfig({
+  esbuild: { jsx: 'automatic' },
   test: {
-    include: ['src/game/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
     environment: 'node',
   },
   resolve: {

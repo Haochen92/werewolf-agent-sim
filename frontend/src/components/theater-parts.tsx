@@ -9,6 +9,7 @@ import type { DayView, DeathRecord, GameView } from '@/game/types';
 import type { Winner } from '@/types/contracts';
 import { humanise } from '@/lib/format';
 import { SeatChip } from './SeatChip';
+import { PrivateResultCard } from './transcript-parts';
 import classes from './Theater.module.css';
 
 // --- winner chip -------------------------------------------------------------
@@ -183,6 +184,7 @@ export function AgentInspector({
   const agent = view.xray.agents[seat];
   const role = view.xray.roles[seat];
   const death = view.dead.find((d) => d.player === seat);
+  const privateResults = view.xray.privateResults[seat] ?? [];
 
   const nightActions = useMemo(
     () =>
@@ -220,6 +222,23 @@ export function AgentInspector({
               <div key={action.seq}>
                 n{action.day}: → {action.target}
               </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {privateResults.length > 0 ? (
+        <>
+          <div className={classes.panelHead}>private results</div>
+          <div
+            style={{
+              display: 'grid',
+              gap: 'var(--space-2)',
+              marginBottom: 'var(--space-3)',
+            }}
+          >
+            {privateResults.map((result) => (
+              <PrivateResultCard key={result.seq} result={result} />
             ))}
           </div>
         </>

@@ -23,6 +23,7 @@ import { apiUrl } from '@/lib/config';
 import { getGameStatus } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useGameSession } from '@/game/store';
+import { recordServerClock } from './useCountdown';
 import type {
   DurableGameEvent,
   GameState,
@@ -35,6 +36,8 @@ export interface GameStream {
   state: GameState | undefined;
   /** Set only when the game task died; the stream cannot tell you this (D23). */
   error: string | null;
+  /** Failure to obtain the status snapshot itself (404, invalid cookie, network, proxy). */
+  statusError: Error | null;
   isPending: boolean;
 }
 
@@ -43,14 +46,18 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
   const applyLive = useGameSession((s) => s.applyLive);
   const applyCatchUp = useGameSession((s) => s.applyCatchUp);
   const applyPacing = useGameSession((s) => s.applyPacing);
+  const syncPending = useGameSession((s) => s.syncPending);
   const setConnection = useGameSession((s) => s.setConnection);
   const setMySeat = useGameSession((s) => s.setMySeat);
 
   // Frozen at connect time; every seq at or below it is history, not news.
   const catchUpThrough = useRef<number>(0);
-  const opened = useRef(false);
 
-  const { data: status, isPending } = useQuery({
+  const {
+    data: status,
+    isPending,
+    error: statusError,
+  } = useQuery({
     queryKey: queryKeys.games.status(gameId),
     queryFn: () => getGameStatus(gameId),
     enabled,
@@ -64,12 +71,22 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
 
   // `you` arrives with the status, often after events have already folded.
   useEffect(() => {
-    if (status?.you !== undefined) setMySeat(status.you ?? null);
-  }, [status?.you, setMySeat]);
+    if (!status) return;
+    const seat = status.you ?? null;
+    recordServerClock(status.server_time);
+    setMySeat(seat);
+    // InputRequest owns the form shape; status owns whether that request is still current.
+    // This clears historical requests after catch-up and refreshes the live deadline.
+    syncPending(
+      seat,
+      status.pending_seats ?? [],
+      status.deadlines ?? {},
+      status.last_seq ?? 0,
+    );
+  }, [status, setMySeat, syncPending]);
 
   useEffect(() => {
-    if (!enabled || !status || opened.current) return;
-    opened.current = true;
+    if (!enabled || !status || status.state === 'waiting') return;
 
     catchUpThrough.current = status.last_seq ?? 0;
     hydrate([], { gameId, mySeat: status.you ?? null });
@@ -116,18 +133,20 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
 
     return () => {
       source.close();
-      opened.current = false;
       setConnection('idle');
     };
-    // Deliberately keyed on gameId alone: re-running this on every status refetch would
-    // tear down and rebuild the stream every twelve seconds.
+    // Reconnect when seat identity changes. Rejoin sets a NEW cookie, but an EventSource's
+    // request credential is frozen at open time; keeping the anonymous source would leave a
+    // recovered player on the spectator tier. Primitive dependencies avoid reconnecting on
+    // every twelve-second status object refresh.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameId, enabled, Boolean(status)]);
+  }, [gameId, enabled, Boolean(status && status.state !== 'waiting'), status?.you]);
 
   return {
     status,
     state: status?.state as GameState | undefined,
     error: status?.error ?? null,
+    statusError,
     isPending,
   };
 }

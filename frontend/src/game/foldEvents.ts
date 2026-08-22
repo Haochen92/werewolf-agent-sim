@@ -28,6 +28,7 @@ import type {
   FoldOptions,
   GameView,
   NightView,
+  PrivateResult,
   SlotAnnotations,
 } from './types';
 
@@ -56,6 +57,7 @@ export function emptyDay(day: number): DayView {
 function emptyNight(day: number): NightView {
   return {
     day,
+    packRoster: [],
     wolfChannel: [],
     wolfVotes: [],
     wolfKill: null,
@@ -88,7 +90,7 @@ export function emptyGameView(options: FoldOptions = {}): GameView {
       privateResults: [],
       alive: true,
     },
-    xray: { available: false, roles: {}, agents: {} },
+    xray: { available: false, roles: {}, agents: {}, privateResults: {} },
     lastSeq: 0,
     droppedEventTypes: [],
   };
@@ -174,6 +176,28 @@ function recordDeaths(view: GameView, deaths: DeathRecord[]): GameView {
     me: {
       ...view.me,
       alive: view.me.seat === null ? true : !deadNames.has(view.me.seat),
+    },
+  };
+}
+
+function recordPrivateResult(
+  view: GameView,
+  result: PrivateResult,
+  mySeat: string | null,
+): GameView {
+  const results = view.xray.privateResults[result.player] ?? [];
+  return {
+    ...view,
+    me:
+      result.player === mySeat
+        ? { ...view.me, privateResults: [...view.me.privateResults, result] }
+        : view.me,
+    xray: {
+      ...view.xray,
+      privateResults: {
+        ...view.xray.privateResults,
+        [result.player]: [...results, result],
+      },
     },
   };
 }
@@ -426,7 +450,11 @@ export function foldEvent(
     }
 
     case 'pack_roster_update': {
-      return { ...next, packRoster: event.surviving_wolves };
+      next = { ...next, packRoster: event.surviving_wolves };
+      return withNight(next, event.day, (night) => ({
+        ...night,
+        packRoster: event.surviving_wolves,
+      }));
     }
 
     case 'night_action': {
@@ -483,53 +511,46 @@ export function foldEvent(
     }
 
     case 'investigation_result': {
-      return {
-        ...next,
-        me: {
-          ...next.me,
-          privateResults: [
-            ...next.me.privateResults,
-            {
-              kind: 'investigation',
-              seq: event.seq,
-              day: event.day,
-              target: event.target,
-              role: event.role,
-            },
-          ],
+      return recordPrivateResult(
+        next,
+        {
+          kind: 'investigation',
+          player: event.player,
+          seq: event.seq,
+          day: event.day,
+          target: event.target,
+          role: event.role,
         },
-      };
+        mySeat,
+      );
     }
 
     case 'vigilante_confirmation': {
-      return {
-        ...next,
-        me: {
-          ...next.me,
-          privateResults: [
-            ...next.me.privateResults,
-            {
-              kind: 'vigilante_confirmation',
-              seq: event.seq,
-              day: event.day,
-              target: event.target,
-            },
-          ],
+      return recordPrivateResult(
+        next,
+        {
+          kind: 'vigilante_confirmation',
+          player: event.player,
+          seq: event.seq,
+          day: event.day,
+          target: event.target,
         },
-      };
+        mySeat,
+      );
     }
 
     case 'bullets_remaining': {
-      next = {
-        ...next,
-        me: {
-          ...next.me,
-          privateResults: [
-            ...next.me.privateResults,
-            { kind: 'bullets', seq: event.seq, day: event.day, count: event.count },
-          ],
+      next = recordPrivateResult(
+        next,
+        {
+          kind: 'bullets',
+          player: event.player,
+          seq: event.seq,
+          day: event.day,
+          count: event.count,
         },
-      };
+        mySeat,
+      );
       // The role chip shows the live count (D19), so the card tracks it too.
       if (event.player === mySeat && next.me.role) {
         next = {

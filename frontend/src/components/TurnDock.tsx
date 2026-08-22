@@ -18,8 +18,9 @@
  */
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { submitTurn, type TurnPayload, isTextTurn } from '@/lib/api';
+import { rejoinGame, submitTurn, type TurnPayload, isTextTurn } from '@/lib/api';
 import { ApiError } from '@/lib/request';
+import { seatToken } from '@/lib/storage';
 import { useCountdown } from '@/hooks/useCountdown';
 import type { MeView } from '@/game/types';
 import type { ActionKind } from '@/types/contracts';
@@ -72,7 +73,24 @@ export function TurnDock({
   }, [pending.seq]);
 
   const mutation = useMutation({
-    mutationFn: (payload: TurnPayload) => submitTurn(gameId, payload),
+    mutationFn: async (payload: TurnPayload) => {
+      try {
+        return await submitTurn(gameId, payload);
+      } catch (err) {
+        if (!(err instanceof ApiError) || !err.isSeatLost) throw err;
+        const token = seatToken.get(gameId);
+        if (!token) throw err;
+        try {
+          await rejoinGame(gameId, token);
+        } catch (rejoinError) {
+          seatToken.clear(gameId);
+          throw rejoinError;
+        }
+        // The payload is immutable and the first request was rejected before reaching the
+        // engine. Re-submit exactly once now that the HttpOnly cookie has been restored.
+        return submitTurn(gameId, payload);
+      }
+    },
     onSuccess: () => {
       setError(null);
       onSubmitted();
@@ -238,7 +256,7 @@ export function PacingStrip({
   total: number;
 }) {
   const label = stage === 'night' ? 'the village stirs' : 'votes are in';
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
   return (
     <div className={classes.pacing}>
       <span>

@@ -123,6 +123,8 @@ export interface WolfEntry {
 
 export interface NightView {
   day: number;
+  /** Surviving pack published for this night/day, so replay scrub does not use the final roster. */
+  packRoster: string[];
   wolfChannel: WolfEntry[];
   wolfVotes: { seq: number; wolf: string; votee: string }[];
   wolfKill: string | null;
@@ -178,9 +180,22 @@ export interface RoleCard {
 }
 
 export type PrivateResult =
-  | { kind: 'investigation'; seq: number; day: number; target: string; role: string }
-  | { kind: 'vigilante_confirmation'; seq: number; day: number; target: string }
-  | { kind: 'bullets'; seq: number; day: number; count: number };
+  | {
+      kind: 'investigation';
+      player: string;
+      seq: number;
+      day: number;
+      target: string;
+      role: string;
+    }
+  | {
+      kind: 'vigilante_confirmation';
+      player: string;
+      seq: number;
+      day: number;
+      target: string;
+    }
+  | { kind: 'bullets'; player: string; seq: number; day: number; count: number };
 
 export interface MeView {
   /** From the caller (`GameStatus.you`), never guessed — see the fold options. */
@@ -218,9 +233,11 @@ export interface XrayView {
    * whole replay from the first fold; flips mid-game exactly when the backlog lands.
    */
   available: boolean;
-  /** player → role, merged from `roles_assigned` (O) and any `role_assigned` (S) seen. */
+  /** player → role, populated only by observer-tier `roles_assigned`. */
   roles: Record<string, string>;
   agents: Record<string, AgentXray>;
+  /** Seat-private results, filed by recipient so the finished-game inspector can show them. */
+  privateResults: Record<string, PrivateResult[]>;
 }
 
 // --- the view --------------------------------------------------------------

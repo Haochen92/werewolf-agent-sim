@@ -22,6 +22,7 @@ import { useGameStream } from '@/hooks/useGameStream';
 import { useGameSession } from '@/game/store';
 import { queryKeys } from '@/lib/queryKeys';
 import { rejoinGame } from '@/lib/api';
+import { ApiError } from '@/lib/request';
 import { seatToken } from '@/lib/storage';
 import { DayTranscript } from '@/components/DayTranscript';
 import { GhostBar, PacingStrip, ThinkingRow, TurnDock } from '@/components/TurnDock';
@@ -39,12 +40,13 @@ import theater from '@/components/Theater.module.css';
 
 export function GameClient({ gameId }: { gameId: string }) {
   const queryClient = useQueryClient();
-  const { status, state, error, isPending } = useGameStream(gameId);
+  const { status, state, error, statusError, isPending } = useGameStream(gameId);
 
   const view = useGameSession((s) => s.view);
   const isLive = useGameSession((s) => s.isLive);
   const connection = useGameSession((s) => s.connection);
   const pacing = useGameSession((s) => s.pacing);
+  const clearPending = useGameSession((s) => s.clearPending);
 
   const [xray, setXray] = useState(false);
   const [inspecting, setInspecting] = useState<string | null>(null);
@@ -62,11 +64,20 @@ export function GameClient({ gameId }: { gameId: string }) {
    * spectator: cross-device rejoin is deliberately v1-out.
    */
   const [rejoinTried, setRejoinTried] = useState(false);
+  const [rejoining, setRejoining] = useState(false);
   useEffect(() => {
-    if (rejoinTried || !status || status.you) return;
+    setRejoinTried(false);
+    setRejoining(false);
+  }, [gameId]);
+
+  useEffect(() => {
+    const seatMissing = Boolean(status && !status.you);
+    const seatRejected = statusError instanceof ApiError && statusError.isSeatLost;
+    if (rejoinTried || (!seatMissing && !seatRejected)) return;
     const token = seatToken.get(gameId);
     if (!token) return;
     setRejoinTried(true);
+    setRejoining(true);
     rejoinGame(gameId, token)
       .then(() =>
         queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) }),
@@ -74,15 +85,38 @@ export function GameClient({ gameId }: { gameId: string }) {
       .catch(() => {
         // The token no longer resolves (game gone, or a different device's seat).
         seatToken.clear(gameId);
-      });
-  }, [gameId, status, rejoinTried, queryClient]);
+      })
+      .finally(() => setRejoining(false));
+  }, [gameId, status, statusError, rejoinTried, queryClient]);
 
   const days = useMemo(
     () => Object.values(view.days).sort((a, b) => a.day - b.day),
     [view.days],
   );
 
-  if (isPending) return <p className={theater.meta}>Joining…</p>;
+  if (isPending || rejoining) {
+    return (
+      <p className={theater.meta}>{rejoining ? 'Reclaiming your seat…' : 'Joining…'}</p>
+    );
+  }
+
+  if (statusError) {
+    const missing = statusError instanceof ApiError && statusError.status === 404;
+    return (
+      <div className={theater.shell}>
+        <p role="alert" className={theater.meta}>
+          {missing ? 'This live game is no longer in the registry.' : statusError.message}
+        </p>
+        <p className={theater.meta}>
+          {missing ? (
+            <Link href={`/replays/${gameId}`}>Open its replay if it was archived →</Link>
+          ) : (
+            <Link href="/">Back to the start →</Link>
+          )}
+        </p>
+      </div>
+    );
+  }
 
   // D23: the game task died. The stream cannot tell us this — only the poll's error field
   // can, because heartbeats keep flowing and `state` stays "running".
@@ -92,7 +126,11 @@ export function GameClient({ gameId }: { gameId: string }) {
 
   const current = day !== null ? view.days[day] : days[days.length - 1];
   const previous = current ? view.days[current.day - 1] : undefined;
-  const deadByNow = new Set(view.dead.map((d) => d.player));
+  const deadByNow = new Set(
+    view.dead
+      .filter((death) => death.day <= (current?.day ?? view.day))
+      .map((d) => d.player),
+  );
   const finished = state === 'finished' || view.winner !== null;
 
   // The two takeovers: rendered only if their event arrived LIVE and has not been dismissed.
@@ -107,7 +145,17 @@ export function GameClient({ gameId }: { gameId: string }) {
   const showWinner =
     !overSeen && view.winner !== null && view.winnerSeq !== null && isLive(view.winnerSeq);
 
-  const activePacing = Object.values(pacing).find((bar) => bar.day === current?.day);
+  const activeStage =
+    view.phase === 'night' ? 'night' : view.phase === 'voting' ? 'day_vote' : null;
+  const activePacing = activeStage
+    ? pacing[`${current?.day ?? view.day}:${activeStage}`]
+    : undefined;
+  const myTurnIsActive = Boolean(
+    view.me.pending &&
+    view.me.seat &&
+    ((status?.pending_seats ?? []).includes(view.me.seat) ||
+      view.me.pending.seq > (status?.last_seq ?? 0)),
+  );
 
   return (
     <div className={theater.shell}>
@@ -134,6 +182,7 @@ export function GameClient({ gameId }: { gameId: string }) {
             setOverSeen(true);
             // The reveal is the point: land them in the X-ray they were just promised.
             setXray(true);
+            setDay(days[0]?.day ?? null);
           }}
         />
       ) : null}
@@ -198,6 +247,8 @@ export function GameClient({ gameId }: { gameId: string }) {
               deadSeats={deadByNow}
               // Live: the recap IS a morning briefing after a night away (D13).
               expandRecap={!finished}
+              privateResults={view.me.privateResults}
+              showEntitledMachine={!finished}
               onInspect={xray ? setInspecting : undefined}
             />
           ) : (
@@ -231,14 +282,15 @@ export function GameClient({ gameId }: { gameId: string }) {
       ) : null}
 
       {/* The dock, the ghost bar, or nothing at all for a spectator. */}
-      {view.me.pending && view.me.alive && !finished ? (
+      {view.me.pending && myTurnIsActive && view.me.alive && !finished ? (
         <TurnDock
           gameId={gameId}
           pending={view.me.pending}
           seats={view.seats}
-          onSubmitted={() =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) })
-          }
+          onSubmitted={() => {
+            clearPending();
+            queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) });
+          }}
         />
       ) : view.me.seat && !view.me.alive ? (
         <GhostBar />

@@ -65,6 +65,15 @@ interface SessionState {
   applyCatchUp: (event: DurableGameEvent) => void;
   /** Ephemeral pacing snapshot; duplicates and stale values are harmless by design. */
   applyPacing: (progress: PhaseProgress) => void;
+  /** Reconcile the folded request with the status snapshot, which owns whether it is active. */
+  syncPending: (
+    seat: string | null,
+    pendingSeats: readonly string[],
+    deadlines?: Readonly<Record<string, string>>,
+    snapshotLastSeq?: number,
+  ) => void;
+  /** Clear immediately after an accepted/already-answered submit; the poll confirms later. */
+  clearPending: () => void;
   setConnection: (connection: ConnectionState) => void;
   /** Name the seat this client owns (from GameStatus.you); re-folds so `me` resolves. */
   setMySeat: (seat: string | null) => void;
@@ -75,6 +84,29 @@ interface SessionState {
 }
 
 const pacingKey = (day: number, stage: PhaseProgress['stage']) => `${day}:${stage}`;
+
+function normaliseEvents(events: readonly DurableGameEvent[]): DurableGameEvent[] {
+  const bySeq = new Map(events.map((event) => [event.seq, event]));
+  return [...bySeq.values()].sort((a, b) => a.seq - b.seq);
+}
+
+function appendDurable(
+  view: GameView,
+  events: DurableGameEvent[],
+  event: DurableGameEvent,
+): { events: DurableGameEvent[]; view: GameView } | null {
+  if (events.some((known) => known.seq === event.seq)) return null;
+
+  const nextEvents = normaliseEvents([...events, event]);
+  // R7 deliberately breaks arrival order: `game_over` arrives first, then the server flushes
+  // withheld observer events with older seqs. Incremental folding is valid only for an append;
+  // an insertion must re-fold the sorted log or the reveal is either dropped or misordered.
+  const nextView =
+    event.seq <= view.lastSeq
+      ? foldEvents(nextEvents, { mySeat: view.me.seat })
+      : foldEvent(view, event, { mySeat: view.me.seat });
+  return { events: nextEvents, view: nextView };
+}
 
 const initial = {
   gameId: null,
@@ -90,36 +122,36 @@ export const useGameSession = create<SessionState>((set, get) => ({
 
   hydrate: (events, options = {}) => {
     const { gameId, ...foldOptions } = options;
+    const ordered = normaliseEvents(events);
     set({
       gameId: gameId ?? get().gameId,
-      events,
-      view: foldEvents(events, foldOptions),
+      events: ordered,
+      view: foldEvents(ordered, foldOptions),
       // Deliberately NOT merged with any existing liveSeqs: a hydrate re-folds from
       // scratch, so every seq in the new view is history by definition.
       liveSeqs: new Set(),
+      // Pacing is ephemeral and belongs to one connection. A re-hydrate/rejoin/new game
+      // must not inherit a completed strip from the previous stream.
+      pacing: {},
     });
   },
 
   applyCatchUp: (event) => {
     const { view, events } = get();
-    if (event.seq <= view.lastSeq) return;
-    set({
-      events: [...events, event],
-      view: foldEvent(view, event, { mySeat: view.me.seat }),
-      // liveSeqs untouched: this event is history that merely arrived late.
-    });
+    const next = appendDurable(view, events, event);
+    if (next) set(next); // liveSeqs untouched: this event is history that arrived late.
   },
 
   applyLive: (event) => {
     const { view, events, liveSeqs } = get();
-    // The server may re-send across a reconnect (Last-Event-ID replays from the cursor);
-    // folding the same seq twice would duplicate transcript slots.
-    if (event.seq <= view.lastSeq) return;
+    const next = appendDurable(view, events, event);
+    // The server may re-send across a reconnect. Dedupe by membership, NOT by the current
+    // high-water mark: the R7 reveal legitimately sends unseen lower seqs after game_over.
+    if (!next) return;
     const nextLive = new Set(liveSeqs);
     nextLive.add(event.seq);
     set({
-      events: [...events, event],
-      view: foldEvent(view, event, { mySeat: view.me.seat }),
+      ...next,
       liveSeqs: nextLive,
     });
   },
@@ -141,6 +173,37 @@ export const useGameSession = create<SessionState>((set, get) => ({
         },
       },
     });
+  },
+
+  syncPending: (
+    seat,
+    pendingSeats,
+    deadlines = {},
+    snapshotLastSeq = Number.MAX_SAFE_INTEGER,
+  ) => {
+    const { view } = get();
+    const pending = view.me.pending;
+    const active = seat !== null && pendingSeats.includes(seat);
+    if (!active) {
+      // A status request and SSE race. Never let an older snapshot erase an input_request
+      // whose seq was emitted after that snapshot's high-water mark.
+      if (pending && pending.seq <= snapshotLastSeq) {
+        set({ view: { ...view, me: { ...view.me, pending: null } } });
+      }
+      return;
+    }
+    if (!pending) return; // the matching input_request supplies action_kind + candidates
+    const deadline = deadlines[seat] ?? pending.deadline;
+    if (deadline !== pending.deadline) {
+      set({
+        view: { ...view, me: { ...view.me, pending: { ...pending, deadline } } },
+      });
+    }
+  },
+
+  clearPending: () => {
+    const { view } = get();
+    if (view.me.pending) set({ view: { ...view, me: { ...view.me, pending: null } } });
   },
 
   setConnection: (connection) => set({ connection }),
