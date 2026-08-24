@@ -66,6 +66,25 @@ saying the same thing wastes the day. When you speak, do exactly one of:
 """
 
 
+OPENING_NO_VOTE_DISCUSSION_RULES = """
+== Opening round: no vote today ==
+No elimination vote occurs after today's discussion. The game proceeds directly to the night phase.
+Your goal today is to create useful, checkable commitments for later days, not to choose an
+elimination target.
+
+- Do not debate abstaining, forcing an elimination, or whom the table should vote out today.
+- Players speak sequentially. Someone absent from the transcript may simply not have received a
+  turn yet; absence is not evidence that they are quiet, avoiding discussion, or suspicious.
+- Do not manufacture suspicion from tone, activity, caution, or the lack of evidence.
+- Do not ask the whole table for "thoughts," announce that the day is a "blank slate," or repeat
+  that the group needs information.
+- If another player made a concrete statement, you may challenge it or ask a specific follow-up.
+  Otherwise, either make one information-generating proposal that creates a checkable commitment
+  for later, or pass.
+- It is valid for every structured player read to remain "unclear" with low confidence.
+"""
+
+
 DAY_DISCUSS_RESPONSE_FORMAT = """
 You must respond with a valid JSON.
 
@@ -107,6 +126,10 @@ Day {current_day} discussion.
 
 _FIRING_BRIEF = """
 {firing_brief}
+"""
+
+_DISCUSSION_STAGE_RULES = """
+{discussion_stage_rules}
 """
 
 _DISCUSS_TRANSCRIPT = """
@@ -155,6 +178,7 @@ def _discuss_template(core_strategy, framing, context, *, trailer=""):
                 + _DISCUSS_HEADER
                 + context
                 + _DISCUSS_TRANSCRIPT
+                + _DISCUSSION_STAGE_RULES
                 + trailer
                 + _FIRING_BRIEF
                 + DAY_DISCUSSION_MEMORY_CONTEXT

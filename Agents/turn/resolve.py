@@ -110,8 +110,9 @@ def resolve_decision(
             return ResolvedDayDiscussion(entry=None, effects=effects)
 
         # Proactive novelty gate: an echo/restatement proactive turn becomes a hidden pass. Reactive
-        # turns are never gated; the day's first opener_floor real utterances bypass the gate so every
-        # day opens substantively before echo-gating engages. A human seat is never gated.
+        # turns are never gated; the day's effective opener_floor real utterances bypass the gate so
+        # it can open before echo-gating engages. The day router lowers that floor for pre-voting
+        # rounds. A human seat is never gated.
         is_proactive = firing_reason is not None and firing_reason.tier == "proactive"
         today_real = sum(
             1

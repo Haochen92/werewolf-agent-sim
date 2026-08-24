@@ -16,10 +16,10 @@ async def health_check() -> dict:
 @router.get(
     "/models",
     response_model=ModelsMenu,
-    summary="The BYOK selection menu (tested game models only)",
+    summary="The served-game model menu (tested models only)",
 )
 async def supported_models() -> ModelsMenu:
-    """Return tested game models and their same-credential rescue models."""
+    """Return tested game models and their compatible rescue models."""
     return ModelsMenu(
         models=[
             ModelRow(model=model, label=row.label, rescue_model=row.rescue)

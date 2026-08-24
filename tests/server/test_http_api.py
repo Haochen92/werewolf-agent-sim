@@ -58,11 +58,24 @@ def test_models_menu_serves_the_registry(api_client):
 
 # ---- POST /games: the registry gate (BYOK v1.5) -----------------------------------------
 
-def test_model_selection_without_a_key_is_rejected_at_both_doors(api_client):
+def test_byok_only_model_selection_without_a_key_is_rejected_at_both_doors(api_client):
     for door in ("/games", "/rooms"):
-        r = api_client.post(door, json={"model": GEMINI})
+        r = api_client.post(door, json={"model": "gemini-2.5-pro"})
         assert r.status_code == 422
         assert "requires api_key" in r.json()["detail"]
+
+
+def test_house_models_are_selectable_without_a_key():
+    from server.routes._shared import check_model_access
+
+    expected = {
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash-lite",
+        "gemini-3.6-flash",
+    }
+    assert {model for model, row in SUPPORTED_GAME_MODELS.items() if row.server_funded} == expected
+    for model in expected:
+        check_model_access("", model)
 
 
 def test_untested_models_are_rejected(api_client):
@@ -209,6 +222,17 @@ def test_seat_cookie_secure_flag_is_an_env_knob(api_client, monkeypatch):
     game_id, _ = _make_room(api_client)
     r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
     assert "Secure" in r.headers["set-cookie"]
+
+
+def test_seat_cookie_path_prefix_is_an_env_knob(api_client, monkeypatch):
+    from server.config import server_settings
+
+    # Caddy exposes /api/games/... to the browser, then strips /api upstream.
+    # The cookie Path must describe the browser-visible URL, not FastAPI's URL.
+    monkeypatch.setattr(server_settings, "SEAT_COOKIE_PATH_PREFIX", "/api/")
+    game_id, _ = _make_room(api_client)
+    r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert f"Path=/api/games/{game_id}" in r.headers["set-cookie"]
 
 
 def test_turns_demand_a_proven_seat(api_client, seated_session):

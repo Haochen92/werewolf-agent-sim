@@ -75,9 +75,9 @@ def get_llm():
 def get_llm_game_fallback():
     """The retry-exhaustion rescue seat model, or None when no rescue applies.
 
-    A served (BYOK) game uses its registry-assigned rescue — same credential as the primary
-    by construction, so the rescue bills the player, never the server; None = no tested
-    same-credential rescue exists, and the typed technical-pass path absorbs failures.
+    A served game uses its registry-assigned rescue on the same credential path as the
+    primary: house-funded stays on the server backend and BYOK stays on the player's key.
+    None = no tested compatible rescue, so the typed technical-pass path absorbs failures.
     Otherwise the env pair (``GAME_FALLBACK_MODEL``), or None when it would equal the
     primary — a re-roll on the identical model isn't a rescue."""
     override = GAME_LLM.get()

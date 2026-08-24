@@ -32,6 +32,14 @@ class ServerSettings(BaseSettings):
     plain-HTTP dev (localhost) keeps working; the production deploy behind Caddy/TLS
     sets it — without it the seat credential rides any accidental http:// request."""
 
+    SEAT_COOKIE_PATH_PREFIX: str = ""
+    """Browser-visible prefix in front of the API's ``/games`` routes.
+
+    Caddy strips ``/api`` before proxying production requests, but browsers match a
+    cookie's Path against the original, unstripped URL. Development calls FastAPI
+    directly and therefore keeps the empty default; production sets this to ``/api``.
+    """
+
     ROOM_LIST_TTL_SECONDS: int = 7200
     """How long a waiting room stays visible in GET /rooms (default 2h). A browse
     filter, not expiry: the direct room URL keeps working past the TTL. Needed
@@ -50,6 +58,12 @@ class ServerSettings(BaseSettings):
             if self.WW_POSTGRES_DSN.startswith(prefix):
                 return self.WW_POSTGRES_DSN.replace(prefix, "postgresql+psycopg://", 1)
         return self.WW_POSTGRES_DSN
+
+    @property
+    def seat_cookie_path_prefix(self) -> str:
+        """Return the configured prefix as either ``""`` or ``/one/path``."""
+        prefix = self.SEAT_COOKIE_PATH_PREFIX.strip().strip("/")
+        return f"/{prefix}" if prefix else ""
 
 
 server_settings = ServerSettings()

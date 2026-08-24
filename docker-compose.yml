@@ -6,9 +6,9 @@ services:
   # external shared-caddy-network, and Caddy addresses them by container name.
   # Caddy's site block routes /api/* to wolf-server (path prefix stripped) and
   # everything else to wolf-frontend, which is what makes the app same-origin —
-  # a hard requirement, not a preference: the seat cookie is
-  # HttpOnly; SameSite=Lax; Path=/games/{id} with no domain, so a split origin
-  # means the cookie is never sent (build_plan §5).
+  # a hard requirement, not a preference: the seat cookie is HttpOnly and
+  # SameSite=Lax. Production also sets SEAT_COOKIE_PATH_PREFIX=/api so its Path
+  # matches the browser-visible URL even though Caddy strips /api upstream.
   #
   # The replay archive lives in the pre-existing standalone `ww-postgres`
   # container, which is deliberately NOT redefined here — it holds live data

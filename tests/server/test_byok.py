@@ -120,6 +120,17 @@ async def test_bare_key_runs_the_default_registry_model(quiet_session):
     assert graph.seen.rescue_model == SUPPORTED_GAME_MODELS[graph.seen.model].rescue
 
 
+async def test_house_model_selection_uses_server_credentials(quiet_session):
+    graph = _SelectionEchoGraph()
+    model = "gemini-3.6-flash"
+    session = quiet_session(graph, model=model)
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    assert graph.seen == GameLLM(
+        model=model, rescue_model=SUPPORTED_GAME_MODELS[model].rescue)
+
+
 # ---- failure: surfaced, but redacted ------------------------------------------------------
 
 class _AuthBoomGraph:

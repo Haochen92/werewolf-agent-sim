@@ -15,24 +15,27 @@ def set_seat_cookie(response: Response, game_id: str, token: str) -> None:
     EventSource cannot set headers, but browsers attach cookies to SSE requests.
     HttpOnly keeps the credential outside page JavaScript; the path scopes it to
     one game; SameSite=Lax requires the deployed UI and API to remain same-site.
+    The optional path prefix is the browser-visible mount point (``/api`` in
+    production), not the prefix-stripped path FastAPI receives from Caddy.
     ``SEAT_COOKIE_SECURE`` stays off for plain-HTTP development and on behind TLS.
     """
     response.set_cookie(
         key=seat_cookie_name(game_id),
         value=token,
         max_age=_SEAT_COOKIE_MAX_AGE,
-        path=f"/games/{game_id}",
+        path=f"{server_settings.seat_cookie_path_prefix}/games/{game_id}",
         httponly=True,
         samesite="lax",
         secure=server_settings.SEAT_COOKIE_SECURE,
     )
 
 
-def check_byok(api_key: str, model: str) -> None:
-    """Apply the BYOK model-selection policy to either game-creation door."""
-    if model and not api_key:
-        raise HTTPException(status_code=422, detail="model selection requires api_key")
-    if model and model not in SUPPORTED_GAME_MODELS:
+def check_model_access(api_key: str, model: str) -> None:
+    """Validate a model selection against house-funded and BYOK-only policy."""
+    if not model:
+        return
+    row = SUPPORTED_GAME_MODELS.get(model)
+    if row is None:
         raise HTTPException(
             status_code=422,
             detail=(
@@ -40,3 +43,5 @@ def check_byok(api_key: str, model: str) -> None:
                 f"{sorted(SUPPORTED_GAME_MODELS)}"
             ),
         )
+    if not api_key and not row.server_funded:
+        raise HTTPException(status_code=422, detail="model selection requires api_key")

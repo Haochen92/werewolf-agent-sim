@@ -7,12 +7,12 @@ runs them in worker threads — their blocking LLM calls never stall the loop (v
 langgraph version: loop stays responsive through a blocking node; part semantics identical to
 sync stream()). Our own code stays entirely on the loop: no hand-rolled threads, no bridge.
 
-A player-supplied API key (BYOK) plus a model choice from SUPPORTED_GAME_MODELS (tested
-models only, each with its same-credential rescue) rides a ContextVar set inside the
-game's task: LangGraph copies the task context into its worker threads, so the factory
-bills this game's key — applied only to the chosen model's provider — with no key ever
-touching RunConfig, the event log, or disk; if the key dies mid-game the error surfaces
-(redacted) and the player restarts with a valid one.
+A model choice from SUPPORTED_GAME_MODELS (tested models only, each with its compatible
+rescue) rides a ContextVar set inside the game's task. House-funded rows use the server's
+configured backend; the others require a player API key (BYOK). LangGraph copies the task
+context into its worker threads, so a BYOK game's key is applied only to the chosen model's
+provider and never touches RunConfig, the event log, or disk; if it dies mid-game the error
+surfaces redacted and the player restarts with a valid one.
 
 Every part goes through the Translator; the resulting events are appended to the game's
 in-memory log and pushed to each connected viewer's queue. When the game needs human
@@ -60,21 +60,27 @@ logger = logging.getLogger(__name__)
 
 
 class GameModel(NamedTuple):
-    """One registry row: the same-credential rescue model (None = no rescue; the typed
-    technical-pass path still keeps the game moving) + the frontend menu label."""
+    """One registry row: rescue model, menu label, and house-credential eligibility.
+
+    ``server_funded`` means the model may run without BYOK, using the server's configured
+    backend (Vertex in production). Models without it still require the player's key.
+    """
 
     rescue: str | None
     label: str
+    server_funded: bool = False
 
 
-# The BYOK support policy as code: only models that have carried real games are selectable
-# (a model enters this registry by surviving live games, not by having a factory branch).
-# First row = the default for a bare key. GET /models serves this as the selection menu.
+# The served-game model policy as code: only models that have carried real games are
+# selectable (a model enters by surviving live games, not by having a factory branch).
+# First row = both the house default and the default for a bare key. GET /models serves it.
 SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
     "gemini-3.1-flash-lite": GameModel("gemini-3.5-flash-lite",
-                                       "Gemini 3.1 Flash-Lite (default)"),
-    "gemini-3.5-flash-lite": GameModel("gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite"),
-    "gemini-3.6-flash": GameModel("gemini-3.5-flash-lite", "Gemini 3.6 Flash"),
+                                       "Gemini 3.1 Flash-Lite (default)", True),
+    "gemini-3.5-flash-lite": GameModel(
+        "gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite", True),
+    "gemini-3.6-flash": GameModel(
+        "gemini-3.5-flash-lite", "Gemini 3.6 Flash", True),
     "gemini-2.5-pro": GameModel("gemini-3.5-flash-lite", "Gemini 2.5 Pro"),
     # DeepSeek official endpoint (CLI games incl. the HITL driver ran on it). No second
     # DeepSeek model is game-tested, so no same-credential rescue exists.
@@ -288,7 +294,9 @@ class GameSession:
                  api_key: str = "", model: str = "",
                  seat_tokens: Sequence[str] = (), graph=None,
                  repository: GameRepository | None = None) -> None:
-        # BYOK billing (memory-only; model must come from SUPPORTED_GAME_MODELS).
+        # A selected model runs task-locally on either the ephemeral BYOK credential or,
+        # for house-funded registry rows, the server's configured backend. No selection
+        # means the environment/default accessor path remains in charge.
         self._api_key = api_key
         if api_key and not model:
             model = next(iter(SUPPORTED_GAME_MODELS))  # a bare key runs the default model
@@ -296,7 +304,7 @@ class GameSession:
         self._llm_override = GameLLM(
             api_key=api_key, model=model,
             rescue_model=row.rescue if row else None,
-        ) if api_key else None
+        ) if api_key or model else None
 
         # Engine bootstrap (+ the memory-seeding side effect).
         run = normalize_run_config(run_config)

@@ -25,7 +25,7 @@ from server.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.runtime import GameSession, entitled
 from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
 
-from ._shared import check_byok, set_seat_cookie
+from ._shared import check_model_access, set_seat_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ async def create_game(
     repository: GameRepositoryDep,
     graph_runtime: GraphRuntimeDep,
 ) -> GameCreated:
-    check_byok(body.api_key, body.model)
+    check_model_access(body.api_key, body.model)
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
     session = GameSession(
         RunConfig(

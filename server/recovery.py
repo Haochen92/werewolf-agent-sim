@@ -73,6 +73,7 @@ async def _revive(row: GameRow, repository: GameRepository, graph):
     session = GameSession(
         RunConfig(game_id=row.game_id, human_player=len(row.seats),
                   memory_persistence={"dump_enabled": False}),
+        model=row.model,
         graph=graph,
         seat_tokens=[s["token"] for s in row.seats],
         repository=repository,

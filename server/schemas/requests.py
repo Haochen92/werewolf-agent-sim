@@ -25,12 +25,12 @@ class NewGame(BaseModel):
     recorded; empty = the server's configured backend pays."""
     model: str = ""
     """Game model, from SUPPORTED_GAME_MODELS only (the tested list; GET /models).
-    Requires api_key — the model choice decides which provider the key must belong
-    to. Empty = the default model."""
+    House-funded rows may use the server backend; all other choices require api_key.
+    Empty = the default model."""
 
 
 class ModelRow(BaseModel):
-    """One entry of the GET /models BYOK menu."""
+    """One entry of the GET /models served-game menu."""
 
     model: str
     label: str
@@ -40,7 +40,7 @@ class ModelRow(BaseModel):
 
 
 class ModelsMenu(BaseModel):
-    """GET /models response. First entry = the default for a bare key."""
+    """GET /models response. First entry = house default and bare-key default."""
 
     models: list[ModelRow]
 
@@ -67,7 +67,8 @@ class NewRoom(BaseModel):
     """BYOK (optional): the creator's key funds the whole game. Same semantics as
     the instant-start door."""
     model: str = ""
-    """Game model from SUPPORTED_GAME_MODELS; requires api_key; empty = default."""
+    """Game model from SUPPORTED_GAME_MODELS. House-funded rows need no api_key;
+    all other choices require one. Empty = default."""
     name: str = Field(default="", max_length=40)
     """Public room title shown in the GET /rooms browser; "" renders as unnamed
     client-side. Capped server-side — it is the one free-text field strangers see."""

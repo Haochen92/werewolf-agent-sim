@@ -176,3 +176,35 @@ classes.
 it. If it ever appears again, it means a new class started riding game state without being
 registered — harmless while nested inside an allowlisted parent, silently wrong if a blocked
 class ever sits directly in state. Treat the warning as a to-do, not noise.
+
+---
+
+## 7) The human turn that looked like an AI thinking forever
+
+**The story.** The first production game served through Caddy stopped at "player_2 is
+thinking." Langfuse showed no model trace, which initially made the new model selection look
+suspect. The server told a different story: player_2 was the human seat, and the engine was
+correctly waiting for that person's input. The browser had silently become a spectator, so
+it rendered the public thinking marker but never received the private `input_request` that
+opens the turn controls.
+
+The lost identity came from two different views of the same URL. The browser calls
+`/api/games/{id}`, while Caddy's `handle_path /api/*` strips the prefix and sends
+`/games/{id}` to FastAPI. FastAPI therefore issued the seat cookie with
+`Path=/games/{id}`. `handle_path` rewrites the incoming request only; it does not rewrite the
+`Set-Cookie` response header. Browsers compare cookie paths against the URL *they* see, so a
+cookie scoped to `/games/{id}` is never attached to `/api/games/{id}`. Rejoining appeared to
+succeed and set the same unusable cookie again.
+
+**The solution.** Cookie paths now include a configurable browser-visible prefix.
+`SEAT_COOKIE_PATH_PREFIX` is empty by default for direct local FastAPI calls and is `/api` in
+production. The cookie is consequently scoped to `/games/{id}` in development and
+`/api/games/{id}` behind Caddy. An HTTP regression test pins the production header, including
+normalisation of a trailing slash, while the original test continues to pin the development
+path.
+
+**What to know.** A reverse proxy's upstream path and a browser's public path are different
+namespaces. Any browser-interpreted response metadata—cookie paths, redirects, generated
+links—must describe the public namespace unless the proxy explicitly rewrites that metadata
+on the way back. Here the application owns the cookie policy, so the deployment supplies its
+public mount prefix and Caddy remains responsible only for routing.

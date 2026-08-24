@@ -22,9 +22,11 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class GameLLM:
-    """A served game's BYOK selection: the player's key, the game model it funds, and the
-    same-credential rescue model (None = no rescue; the typed technical-pass path still
-    keeps the game moving). Empty model/key = the environment decides (CLI, batch, eval).
+    """A served game's model selection and optional player credential.
+
+    An empty key with a non-empty model is a house-funded selection and uses the configured
+    server backend. ``rescue_model=None`` disables rescue; the typed technical-pass path
+    still keeps the game moving. Empty model/key = the environment decides (CLI/batch/eval).
     """
 
     api_key: str = ""
@@ -32,8 +34,8 @@ class GameLLM:
     rescue_model: str | None = None
 
 
-# BYOK (pattern 2, ephemeral pass-through): the per-game player key + model selection. The
-# server's GameSession sets it inside the game's asyncio task; LangGraph copies the task
+# Per-game model selection, optionally BYOK (pattern 2, ephemeral pass-through). The server's
+# GameSession sets it inside the game's asyncio task; LangGraph copies the task
 # context into its worker threads, so every node's factory call sees its own game's
 # selection — no argument threading through the call chain. The default empty GameLLM
 # (every non-server entry point) = use the environment. A ContextVar, NOT config: keys

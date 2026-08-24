@@ -15,7 +15,7 @@ from langgraph.graph import END
 from langgraph.runtime import Runtime
 from langgraph.types import Send
 
-from Agents.game_config import game_config_from_runnable
+from Agents.game_config import GameConfig, game_config_from_runnable
 from Agents.schemas import DaySummary, FiringReason
 from Agents.schemas.roles import cast_role_counts
 from Agents.state import (
@@ -40,6 +40,18 @@ def day_scheduler(state: DayGraphState):
     """No-op hub node: the fixed return point every speaker self-loops back to, so
     route_speaker can re-run from one place until discussion terminates."""
     return {}
+
+
+def discussion_stage_controls(current_day: int, game_config: GameConfig) -> tuple[bool, int]:
+    """Return (voting_available, novelty-bypass floor) for this discussion.
+
+    Pre-voting opening rounds have less public material and no elimination decision to
+    make. They get a dedicated prompt mode and only the first real utterance bypasses
+    the novelty judge; regular voting days retain the configured opener floor.
+    """
+    voting_available = current_day >= game_config.first_voting_day
+    opener_floor = game_config.opener_floor if voting_available else min(game_config.opener_floor, 1)
+    return voting_available, opener_floor
 
 
 def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Literal["SUMMARIZE_DAY_DISCUSSION"]:
@@ -86,6 +98,7 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         current_day, seq, fr.tier, route_decision.speaker, fr.owes,
     )
     role = state["roles"][route_decision.speaker]
+    voting_available, opener_floor = discussion_stage_controls(current_day, game_config)
     # turn_started for the "X is thinking" UI. Emitted from the edge, not the node: resume
     # after interrupt() re-runs the node but not this routing, so it can't double-fire.
     try:
@@ -94,7 +107,14 @@ def route_speaker(state: DayGraphState, config: RunnableConfig) -> Send | Litera
         )
     except RuntimeError:  # direct call outside a graph run (tests)
         pass
-    return build_speaker_send(state, route_decision.speaker, role, fr, game_config.opener_floor)
+    return build_speaker_send(
+        state,
+        route_decision.speaker,
+        role,
+        fr,
+        opener_floor,
+        voting_available=voting_available,
+    )
 
 
 
@@ -111,6 +131,8 @@ def build_speaker_send(
     role: str,
     firing_reason: FiringReason,
     opener_floor: int = 0,
+    *,
+    voting_available: bool = True,
 ) -> Send:
     """Dispatch the discuss node for one speaker with a common payload + role-gated private fields.
 
@@ -138,6 +160,7 @@ def build_speaker_send(
         "current_day": state["current_day"],
         "current_round": 0,  # vestigial until Stage 5 removes round-based prompts
         "opener_floor": opener_floor,  # day's first N real utterances bypass the novelty gate
+        "voting_available": voting_available,
         "previous_strategy": state.get("agent_strategies", {}).get(speaker_id, ""),
         "strategy_points": "",
         "firing_reason": firing_reason,
@@ -341,7 +364,5 @@ def start_voting(state: DayGraphState):
 def collect_votes(state: DayGraphState):
     """No-op barrier node where the fanned-out vote nodes rejoin before day resolution."""
     return {}
-
-
 
 

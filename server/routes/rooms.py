@@ -23,7 +23,7 @@ from server.schemas.requests import (
     SeatJoined,
 )
 
-from ._shared import check_byok, set_seat_cookie
+from ._shared import check_model_access, set_seat_cookie
 
 router = APIRouter(tags=["rooms"])
 
@@ -43,7 +43,7 @@ async def create_room(
     Humans enter only through ``/join`` and roles remain random. The room and its
     eventual running game share one registry/database identity for their full life.
     """
-    check_byok(body.api_key, body.model)
+    check_model_access(body.api_key, body.model)
     room = GameLobby(api_key=body.api_key, model=body.model, name=body.name)
     games[room.game_id] = room
     await repository.upsert_game(

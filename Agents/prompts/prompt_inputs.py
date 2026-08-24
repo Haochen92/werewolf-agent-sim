@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from Agents.prompts.cell_prompt import cell_driver_horizon, dimension_menu
+from Agents.prompts.day_discuss import OPENING_NO_VOTE_DISCUSSION_RULES
 from Agents.prompts.prompt_formatters import (
     format_alive_roles,
     format_day_channel_for_day,
@@ -105,6 +106,10 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
         "abstain_instruction": abstain_instruction,
         "vigilante_bullets": payload.get("vigilante_bullets", 0),
         "firing_brief": _firing_brief(payload.get("firing_reason")),
+        "discussion_stage_rules": (
+            "" if payload.get("voting_available", True)
+            else OPENING_NO_VOTE_DISCUSSION_RULES
+        ),
         "surviving_players": ", ".join(payload.get("surviving_players", [])),
         "surviving_wolves": ", ".join(payload.get("surviving_wolves", [])),
         "surviving_villagers": ", ".join(payload.get("surviving_villagers", [])),

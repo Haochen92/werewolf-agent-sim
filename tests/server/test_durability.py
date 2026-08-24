@@ -188,6 +188,15 @@ async def test_byok_game_revives_dead_with_a_clear_epitaph(monkeypatch):
     assert ("g-1", {"status": DROPPED, "error": session.error}) in repository.upsert_calls
 
 
+async def test_house_selected_model_survives_restart(monkeypatch):
+    model = "gemini-3.6-flash"
+    state = SimpleNamespace(next=("resume",), tasks=[])
+    games, _ = await _recover(
+        monkeypatch, [_row(model=model, byok=False)], FakeDurableGraph(state))
+
+    assert games["g-1"]._llm_override.model == model
+
+
 async def test_stale_running_row_of_a_finished_game_is_closed(monkeypatch):
     state = SimpleNamespace(next=(), tasks=[])
     games, repository = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))

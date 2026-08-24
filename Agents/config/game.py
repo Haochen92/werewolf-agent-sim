@@ -69,8 +69,9 @@ class GameConfig(BaseModel):
     # row on a quiet cycle; any real utterance resets the streak.
     opener_floor: int = Field(default=3, ge=0)
     # The day's first `opener_floor` real utterances bypass the proactive novelty gate, so
-    # every day gets a substantive opening before echo-gating (and trailing-pass termination)
-    # can kick in. Prevents the gate from collapsing a low-material day to ~1 utterance.
+    # a voting day gets a substantive opening before echo-gating (and trailing-pass termination)
+    # can kick in. Pre-voting opening rounds clamp this to at most one: their dedicated prompt
+    # acknowledges the lack of evidence, and three ungated procedural echoes made Day 1 worse.
 
     @model_validator(mode="after")
     def validate_day_order(self) -> "GameConfig":
