@@ -11,6 +11,36 @@ const replay = fixture as unknown as ReplayGame;
 const view = foldEvents(replay.events as DurableGameEvent[]);
 
 describe('entitled machine-world rendering', () => {
+  it('moves a settled night result to dawn of the following day', () => {
+    const day1AtNight = renderToStaticMarkup(
+      <DayTranscript day={view.days[1]} roles={view.xray.roles} xray={false} />,
+    );
+    const day1AfterDay2Exists = renderToStaticMarkup(
+      <DayTranscript
+        day={view.days[1]}
+        nextDay={view.days[2]}
+        roles={view.xray.roles}
+        xray={false}
+      />,
+    );
+    const day2 = renderToStaticMarkup(
+      <DayTranscript
+        day={view.days[2]}
+        previousDay={view.days[1]}
+        nextDay={view.days[3]}
+        roles={view.xray.roles}
+        xray={false}
+      />,
+    );
+
+    expect(day1AtNight).toContain('Someone was attacked in the night — and survived.');
+    expect(day1AfterDay2Exists).not.toContain(
+      'Someone was attacked in the night — and survived.',
+    );
+    expect(day2).toContain('Dawn of Day 2');
+    expect(day2).toContain('Someone was attacked in the night — and survived.');
+  });
+
   it('keeps faction data behind X-ray in replay but shows it on an entitled live surface', () => {
     const day = view.days[3];
     const hidden = renderToStaticMarkup(

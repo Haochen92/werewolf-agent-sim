@@ -71,6 +71,7 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   const days = Object.values(view.days).sort((a, b) => a.day - b.day);
   const current = view.days[day] ?? days[0];
   const previous = view.days[current.day - 1];
+  const next = view.days[current.day + 1];
   const deadByNow = new Set(
     view.dead.filter((d) => d.day <= current.day).map((d) => d.player),
   );
@@ -121,6 +122,7 @@ export function TheaterClient({ gameId }: { gameId: string }) {
           <DayTranscript
             day={current}
             previousDay={previous}
+            nextDay={next}
             roles={view.xray.roles}
             xray={xray}
             deadSeats={deadByNow}

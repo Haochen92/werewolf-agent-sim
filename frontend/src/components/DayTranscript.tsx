@@ -6,12 +6,10 @@
  *
  * Two arrangement decisions worth stating, because the specs leave room:
  *
- * - **Night N renders at the bottom of day N's page, not atop day N+1.** D19 puts the night
- *   section on the current page and D20 puts the night RESULT on the next one; the data
- *   settles it — night N is tagged `day: N` and its GM narration occupies a slot in day N's
- *   own channel. Splitting them would put a day-5 GM line on a day-6 page that does not
- *   exist. Each fact therefore appears in exactly one place, and a scrubber step shows
- *   everything tagged with that day.
+ * - **Night N's actions render on day N; its result renders as dawn atop day N+1.** While
+ *   the next day does not exist yet (or the game ends at night), the result remains at the
+ *   bottom of day N so it cannot disappear. Once day N+1 arrives, the same structured
+ *   result moves to its natural reading position as that day's opening fact.
  * - **`day_summary` is the one thing that DOES cross the boundary**, because the wire says
  *   so in its own docstring ("shown next morning"): day N's summary renders as the recap
  *   atop day N+1.
@@ -37,6 +35,8 @@ export interface DayTranscriptProps {
   day: DayView;
   /** Supplies the recap: day N's page opens with day N−1's summary. */
   previousDay?: DayView;
+  /** Lets the night section move a settled result forward instead of rendering it twice. */
+  nextDay?: DayView;
   roles: Record<string, string>;
   xray: boolean;
   mySeat?: string | null;
@@ -53,6 +53,7 @@ export interface DayTranscriptProps {
 export function DayTranscript({
   day,
   previousDay,
+  nextDay,
   roles,
   xray,
   mySeat,
@@ -67,6 +68,13 @@ export function DayTranscript({
 
   return (
     <div className={`${classes.transcript} ${classes.dayEnter}`} key={day.day}>
+      {previousDay?.night?.resolved ? (
+        <div className={classes.dawnArrival}>
+          <SectionRule>Dawn of Day {day.day}</SectionRule>
+          <DawnResults night={previousDay.night} />
+        </div>
+      ) : null}
+
       {previousDay?.summary ? (
         <RecapCard summary={previousDay.summary} defaultOpen={expandRecap} />
       ) : null}
@@ -113,6 +121,7 @@ export function DayTranscript({
           xray={xray}
           privateResults={privateResults.filter((result) => result.day === day.day)}
           showEntitledMachine={showEntitledMachine}
+          showDawn={!nextDay}
         />
       ) : null}
     </div>
@@ -125,12 +134,14 @@ function NightSection({
   xray,
   privateResults,
   showEntitledMachine,
+  showDawn,
 }: {
   day: DayView;
   roles: Record<string, string>;
   xray: boolean;
   privateResults: PrivateResult[];
   showEntitledMachine: boolean;
+  showDawn: boolean;
 }) {
   const night = day.night!;
   const showMachine = xray || showEntitledMachine;
@@ -165,7 +176,7 @@ function NightSection({
           </>
         ) : null}
 
-        <DawnResults night={night} />
+        {showDawn ? <DawnResults night={night} /> : null}
       </div>
     </div>
   );

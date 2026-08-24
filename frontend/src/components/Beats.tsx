@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * The two earned takeovers, and the role chip that outlives the first one.
+ * The two earned takeovers, the non-modal live resolution beat, and the role chip that
+ * outlives the first takeover.
  *
  * ux_journeys §0 is binding here: full-screen moments are reserved for exactly two beats —
  * the role reveal (D8) and the game over banner (D22) — and both fire on LIVE ARRIVAL only.
@@ -13,6 +14,7 @@ import { hueFor, initialsFor } from '@/assets/manifest';
 import { humanise } from '@/lib/format';
 import { RoleIcon } from './RoleIcon';
 import type { RoleCard } from '@/game/types';
+import { resolutionLabel, type ResolutionEvent } from '@/game/resolutionBeat';
 import type { Winner } from '@/types/contracts';
 import classes from './Beats.module.css';
 
@@ -115,6 +117,36 @@ export function WinnerTakeover({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * A durable live announcement, not a takeover: it stays visible until acknowledged but
+ * never blocks the player's controls. The caller gates it on the store's live-seq set, so
+ * reconnect catch-up and replay hydration do not replay old verdicts as breaking news.
+ */
+export function ResolutionBeat({
+  resolution,
+  announcement,
+  onDismiss,
+}: {
+  resolution: ResolutionEvent;
+  announcement: string;
+  onDismiss: () => void;
+}) {
+  return (
+    <section
+      className={classes.resolutionBeat}
+      aria-live="assertive"
+      aria-atomic="true"
+      aria-label={resolutionLabel(resolution)}
+    >
+      <div className={classes.resolutionLabel}>{resolutionLabel(resolution)}</div>
+      <p className={classes.resolutionText}>{announcement}</p>
+      <button type="button" className={classes.resolutionDismiss} onClick={onDismiss}>
+        Continue
+      </button>
+    </section>
   );
 }
 

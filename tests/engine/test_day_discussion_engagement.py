@@ -61,10 +61,11 @@ def test_engagement_rule_present_in_every_role_discuss_prompt():
 
 def test_opening_no_vote_rules_are_uniform_across_role_prompts():
     normalized_rules = " ".join(OPENING_NO_VOTE_DISCUSSION_RULES.split())
-    assert "No elimination vote occurs" in OPENING_NO_VOTE_DISCUSSION_RULES
-    assert "may simply not have received a" in OPENING_NO_VOTE_DISCUSSION_RULES
-    assert 'ask the whole table for "thoughts,"' in normalized_rules
-    assert 'a "blank slate,"' in normalized_rules
+    assert "little public information" in normalized_rules
+    assert "no elimination vote will be held" in normalized_rules
+    assert "proposal or a role claim" in normalized_rules
+    assert "not required to manufacture a read or commitment" in normalized_rules
+    assert "passing is equally valid" in normalized_rules
 
     for role, tmpl in _ROLE_TEMPLATES:
         opening = "\n".join(
@@ -75,8 +76,8 @@ def test_opening_no_vote_rules_are_uniform_across_role_prompts():
             message.content
             for message in tmpl.format_messages(**_input_for(role, voting_available=True))
         )
-        assert "Opening round: no vote today" in opening, role
-        assert "Opening round: no vote today" not in regular, role
+        assert "Day 1: no vote" in opening, role
+        assert "Day 1: no vote" not in regular, role
 
 
 def test_pre_voting_round_reduces_only_its_novelty_bypass():

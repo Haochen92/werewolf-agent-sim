@@ -1,8 +1,8 @@
 /*
  * The two earned takeovers (ux_journeys §0): the role reveal (D8) and the game-over banner
- * (D22). No third one is ever added here — deaths, votes and dawns all live in the
- * transcript flow. Overlay inflation is how game UIs get noisy, and the scarcity is what
- * makes these two land.
+ * (D22). Resolution beats are deliberately non-modal: persistent breaking-news cards that
+ * keep deaths, votes, and dawns in the transcript flow without letting a fast phase change
+ * hide them.
  *
  * Both are gated on LIVE ARRIVAL by the caller. During any catch-up fold — refresh,
  * reconnect, replay scrub — they must not render at all.
@@ -120,6 +120,57 @@
   color: var(--text-dim);
   margin: 0 0 var(--space-6);
   font-size: 0.9rem;
+}
+
+/* --- live day/night resolution -------------------------------------------- */
+
+.resolutionBeat {
+  position: fixed;
+  z-index: 90;
+  top: var(--space-4);
+  left: 50%;
+  width: min(620px, calc(100vw - 2rem));
+  transform: translateX(-50%);
+  border: var(--hairline) solid var(--amber-dim);
+  border-top: 3px solid var(--amber);
+  border-radius: var(--radius-lg);
+  background: rgba(18, 15, 11, 0.97);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  padding: var(--space-4);
+  animation: riseIn var(--dur-slow) var(--ease) both;
+}
+
+.resolutionLabel {
+  color: var(--amber);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resolutionText {
+  max-height: 38vh;
+  overflow-y: auto;
+  margin: var(--space-2) 0 var(--space-3);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.resolutionDismiss {
+  border: var(--hairline) solid var(--amber-dim);
+  border-radius: var(--radius);
+  background: var(--amber-wash);
+  color: var(--amber);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+.resolutionDismiss:hover {
+  border-color: var(--amber);
 }
 
 /* --- D9 the persistent role chip ------------------------------------------ */

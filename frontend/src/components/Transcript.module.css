@@ -9,6 +9,12 @@
   padding: var(--space-4) 0 var(--space-7);
 }
 
+.dawnArrival {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
 /* --- D10 speech bubbles --------------------------------------------------- */
 
 /*

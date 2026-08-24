@@ -26,7 +26,8 @@ import { ApiError } from '@/lib/request';
 import { seatToken } from '@/lib/storage';
 import { DayTranscript } from '@/components/DayTranscript';
 import { GhostBar, PacingStrip, ThinkingRow, TurnDock } from '@/components/TurnDock';
-import { RoleChip, RoleReveal, WinnerTakeover } from '@/components/Beats';
+import { ResolutionBeat, RoleChip, RoleReveal, WinnerTakeover } from '@/components/Beats';
+import { nextLiveResolution, resolutionAnnouncement } from '@/game/resolutionBeat';
 import { LobbyCard, TerminalError } from '@/components/LobbyCard';
 import {
   AgentInspector,
@@ -46,6 +47,8 @@ export function GameClient({ gameId }: { gameId: string }) {
   const isLive = useGameSession((s) => s.isLive);
   const connection = useGameSession((s) => s.connection);
   const pacing = useGameSession((s) => s.pacing);
+  const events = useGameSession((s) => s.events);
+  const liveSeqs = useGameSession((s) => s.liveSeqs);
   const clearPending = useGameSession((s) => s.clearPending);
 
   const [xray, setXray] = useState(false);
@@ -53,6 +56,7 @@ export function GameClient({ gameId }: { gameId: string }) {
   const [revealSeen, setRevealSeen] = useState(false);
   const [overSeen, setOverSeen] = useState(false);
   const [reopenRole, setReopenRole] = useState(false);
+  const [seenResolutionSeqs, setSeenResolutionSeqs] = useState<Set<number>>(new Set());
   const [day, setDay] = useState<number | null>(null);
 
   /**
@@ -68,6 +72,7 @@ export function GameClient({ gameId }: { gameId: string }) {
   useEffect(() => {
     setRejoinTried(false);
     setRejoining(false);
+    setSeenResolutionSeqs(new Set());
   }, [gameId]);
 
   useEffect(() => {
@@ -126,6 +131,7 @@ export function GameClient({ gameId }: { gameId: string }) {
 
   const current = day !== null ? view.days[day] : days[days.length - 1];
   const previous = current ? view.days[current.day - 1] : undefined;
+  const next = current ? view.days[current.day + 1] : undefined;
   const deadByNow = new Set(
     view.dead
       .filter((death) => death.day <= (current?.day ?? view.day))
@@ -144,6 +150,10 @@ export function GameClient({ gameId }: { gameId: string }) {
     isLive(view.me.roleSeq);
   const showWinner =
     !overSeen && view.winner !== null && view.winnerSeq !== null && isLive(view.winnerSeq);
+  // Keep the final verdict queued behind the winner takeover. React can receive the
+  // resolution and game_over in one render batch; suppressing beats after `finished`
+  // would otherwise make the last death the one result a live viewer never sees.
+  const pendingResolution = nextLiveResolution(events, liveSeqs, seenResolutionSeqs);
 
   const activeStage =
     view.phase === 'night' ? 'night' : view.phase === 'voting' ? 'day_vote' : null;
@@ -184,6 +194,16 @@ export function GameClient({ gameId }: { gameId: string }) {
             setXray(true);
             setDay(days[0]?.day ?? null);
           }}
+        />
+      ) : null}
+
+      {pendingResolution ? (
+        <ResolutionBeat
+          resolution={pendingResolution}
+          announcement={resolutionAnnouncement(pendingResolution, events)}
+          onDismiss={() =>
+            setSeenResolutionSeqs((seen) => new Set(seen).add(pendingResolution.seq))
+          }
         />
       ) : null}
 
@@ -241,6 +261,7 @@ export function GameClient({ gameId }: { gameId: string }) {
             <DayTranscript
               day={current}
               previousDay={previous}
+              nextDay={next}
               roles={view.xray.roles}
               xray={xray}
               mySeat={view.me.seat}
