@@ -73,8 +73,11 @@ may wait forever. What it never asked was *why* the seat was silent. Now it does
   moment its stream dropped mid-turn, whichever is later. Long enough for a browser retry, a
   phone changing networks and the heartbeat lag; short enough that one closed tab does not
   cost the rest of the table two minutes on *every* one of that seat's turns. Reconnecting
-  cancels the grace. The number is to be **measured** (server-side detection lag through the
-  proxy) before it is pinned.
+  cancels the grace. **Pinned at 30 s after measuring** (2026-09-09, through Cloudflare +
+  Caddy, a scripted client killed mid-stream): the server saw the drop after 1.0 s once and
+  10.1 s twice — the slow cases landed exactly on the next 15 s heartbeat write, so the
+  detection bound is the heartbeat. Worst case ≈ 15 s detection + ~5 s browser retry + TLS,
+  leaving ~10 s margin inside 30. Tightening the heartbeat would let the grace shrink.
 - **The deadline is absolute from the ask and absence never extends it.** Back at 29 s means
   91 s left; a fresh 120 s is granted only after a park (§5), because nobody waited during
   it. Pausing the clock for the absentee would favour the one person who is not there over
@@ -167,8 +170,7 @@ their checkpoints is a separate, later ruling.
 
 ## 9. Open rulings
 
-1. **The grace number.** ~30 s pencilled; measure detection lag through Cloudflare + Caddy
-   with a scripted client, then pin.
+1. ~~The grace number~~ — measured and pinned at 30 s (§4).
 2. **Resume UX** (parked 2026-09-09): a "your seats" strip on the home page from the device's
    stored tokens; a copyable seat code on the role card for the cleared-everything case.
    Today the only way back into a game is its URL.

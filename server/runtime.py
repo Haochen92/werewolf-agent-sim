@@ -104,7 +104,8 @@ AFK_TIMEOUT_SECONDS = 120.0
 # The absence grace: a parked seat with NO open stream gets this long to reconnect before
 # its clock fires — enough for a browser retry plus the heartbeat lag, short enough that one
 # closed tab does not cost the table two minutes on every one of that seat's turns. It never
-# extends the thinking deadline (seat_continuity.md §4). Pencilled; measure before pinning.
+# extends the thinking deadline (seat_continuity.md §4). Measured 2026-09-09: detection
+# lag is 1–10 s, bounded by the 15 s heartbeat — 30 s leaves ~10 s of margin.
 ABSENCE_GRACE_SECONDS = 30.0
 
 
