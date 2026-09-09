@@ -46,6 +46,19 @@ class ServerSettings(BaseSettings):
     because durability revives waiting rooms across restarts — without a cutoff,
     abandoned rooms would accumulate in the public list forever."""
 
+    SOLO_PARK_TTL_SECONDS: int = 3600
+    """A solo game parked on its human's question with nobody connected is swept to
+    ``dropped`` after this long (default 1 h). Solo games arm no turn timer, so this is
+    the only way an abandoned one ever ends (seat_continuity.md §7)."""
+
+    MULTI_PARK_TTL_SECONDS: int = 86400
+    """The same shelf life for a multi-human table that parked because every human
+    left (default 1 day). While parked it costs nothing; the sweep just stops recovery
+    reviving it forever."""
+
+    SWEEP_INTERVAL_SECONDS: int = 60
+    """How often the retention sweeper looks for parked games past their shelf life."""
+
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [o.strip() for o in self.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]

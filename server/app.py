@@ -24,13 +24,15 @@ from server.routes.replays import router as replays_router
 from server.routes.rooms import router as rooms_router
 from server.routes.system import router as system_router
 from server.runtime import GameSession
+from server.sweeper import run_sweeper
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Compose resources, recover games, then stop tasks before closing storage."""
+    """Compose resources, recover games, run the retention sweeper, then stop tasks
+    before closing storage."""
     async with app_resources() as resources:
         app.state.resources = resources
         await recover_registry(
@@ -38,9 +40,12 @@ async def lifespan(app: FastAPI):
             resources.game_repository,
             resources.graph_runtime.graph,
         )
+        sweeper = asyncio.create_task(
+            run_sweeper(resources.games, resources.game_repository), name="park-sweeper")
         try:
             yield
         finally:
+            sweeper.cancel()
             sessions = [
                 entry
                 for entry in resources.games.values()
