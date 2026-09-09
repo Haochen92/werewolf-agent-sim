@@ -58,8 +58,22 @@ async def lifespan(app: FastAPI):
                 )
 
 
+def _configure_logging() -> None:
+    """Give the app's loggers a handler and level. Uvicorn only configures its own;
+    an unconfigured root logger drops everything below WARNING on the floor."""
+    root = logging.getLogger()
+    if not root.handlers:
+        logging.basicConfig(
+            level=server_settings.LOG_LEVEL.upper(),
+            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        )
+    else:
+        root.setLevel(server_settings.LOG_LEVEL.upper())
+
+
 def create_app() -> FastAPI:
     """Create the API application and register each domain router."""
+    _configure_logging()
     app = FastAPI(title="werewolf-agent-sim server", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,

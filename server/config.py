@@ -59,6 +59,11 @@ class ServerSettings(BaseSettings):
     SWEEP_INTERVAL_SECONDS: int = 60
     """How often the retention sweeper looks for parked games past their shelf life."""
 
+    LOG_LEVEL: str = "INFO"
+    """Level for the server's own loggers (recovery, AFK clocks, sweep, stream open/close).
+    Uvicorn configures only its own loggers; without this the app's INFO lines never
+    reach the container log and presence — now load-bearing — is invisible in ops."""
+
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [o.strip() for o in self.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]
