@@ -169,9 +169,12 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
         interrupts=[SimpleNamespace(value=request.model_dump(), id="int-9")])])
     graph = FakeDurableGraph(state)
 
-    games, _ = await _recover(monkeypatch, [_row()], graph)
+    from datetime import datetime, timezone
+    stamp = datetime(2026, 8, 24, 3, 32, tzinfo=timezone.utc)
+    games, _ = await _recover(monkeypatch, [_row(updated_at=stamp)], graph)
     session = games["g-1"]
     assert sorted(session.pending_requests) == ["player_3"]  # the returning-player view
+    assert session.parked_since == stamp  # the retention clock survives the restart
     assert session.seat_for_token("tok-1") == "player_3"
 
     session.submit_turn({"message": "back from the dead"}, seat="player_3")

@@ -18,6 +18,7 @@ a BYOK waiting room is simply marked dead (nothing to serve yet).
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
 import logging
 
 from Agents.config import RunConfig
@@ -110,5 +111,9 @@ async def _revive(row: GameRow, repository: GameRepository, graph):
             asyncio.get_running_loop().create_future())
         if len(row.seats) > 1:
             session._arm_afk_timer(request)
+    if session.pending_requests:
+        # The retention clock survives the restart: a row parked for a day before the
+        # reboot is still a day old, not newborn (seat_continuity.md §7).
+        session.parked_since = row.updated_at or datetime.now(timezone.utc)
     session.start_recovered(waiting_on_humans=bool(session.pending_requests))
     return session

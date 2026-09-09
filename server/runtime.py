@@ -101,6 +101,11 @@ _PAD_SECONDS = (20.0, 30.0)
 # is delegated to the seat's agent (one absent player must not hold the table hostage).
 # Solo games never arm it — the lone human may think forever, nobody is waiting.
 AFK_TIMEOUT_SECONDS = 120.0
+# The absence grace: a parked seat with NO open stream gets this long to reconnect before
+# its clock fires — enough for a browser retry plus the heartbeat lag, short enough that one
+# closed tab does not cost the table two minutes on every one of that seat's turns. It never
+# extends the thinking deadline (seat_continuity.md §4). Pencilled; measure before pinning.
+ABSENCE_GRACE_SECONDS = 30.0
 
 
 def entitled(event: ev.DurableEvent, seat: str, roles: dict[str, str],
@@ -330,12 +335,19 @@ class GameSession:
         self.pending_requests: dict[str, HumanTurnRequest] = {}
         self._pending_ids: dict[str, str] = {}
         self._promises: dict[str, asyncio.Future] = {}
-        # AFK: per-seat delegation deadlines (served in status) + the live stopwatches.
+        # AFK (seat_continuity.md §4–§5): the absolute thinking deadline per question, the
+        # EFFECTIVE deadline served to clients (thinking, or the earlier absence grace), and
+        # one stopwatch per seat — rescheduled, never stacked.
+        self._thinking_deadlines: dict[str, datetime] = {}
         self.turn_deadlines: dict[str, str] = {}
-        self._afk_tasks: set[asyncio.Task] = set()
+        self._afk_tasks: dict[str, asyncio.Task] = {}
+        # When the current batch of questions was asked; None while the graph runs. The
+        # retention sweeper reads it: a parked game nobody is watching has a shelf life.
+        self.parked_since: datetime | None = None
 
-        # Delivery + lifecycle.
-        self._subscribers: set[asyncio.Queue] = set()
+        # Delivery + lifecycle. Each viewer queue keeps its seat resolver (re-resolved per
+        # check, never frozen at connect) — that is what makes presence answerable.
+        self._subscribers: dict[asyncio.Queue, Callable[[], str]] = {}
         self._tracker = PacingTracker(self.publish_pacing)
         self.error: str | None = None
         self._finished = asyncio.Event()
@@ -367,7 +379,7 @@ class GameSession:
         task's next await; a sync node already inside LangGraph's executor runs its
         current step to completion in its worker thread. Its last committed checkpoint
         and event tail are recovered on the next startup."""
-        for timer in list(self._afk_tasks):  # sleeping stopwatches die with the game
+        for timer in list(self._afk_tasks.values()):  # stopwatches die with the game
             timer.cancel()
         if self._task is not None and not self._task.done():
             self._task.cancel()
@@ -499,6 +511,7 @@ class GameSession:
         # gap. Falling back to the seat as the answer key covers items without ids.
         interrupted = "__interrupt__" in data and not (part.get("ns") or ())
         if interrupted:
+            self.parked_since = datetime.now(timezone.utc)
             # A parallel superstep can carry several interrupts (one per human seat).
             for item in data["__interrupt__"]:
                 request = HumanTurnRequest.model_validate(_read_field(item, "value"))
@@ -540,26 +553,58 @@ class GameSession:
         return interrupted
 
     def _arm_afk_timer(self, request: HumanTurnRequest) -> None:
+        """A new question: the thinking deadline is absolute from the ask."""
         seat = request.player_id
-        self.turn_deadlines[seat] = (
-            datetime.now(timezone.utc) + timedelta(seconds=AFK_TIMEOUT_SECONDS)
-        ).isoformat()
-        task = asyncio.get_running_loop().create_task(
-            self._afk_default(seat, request), name=f"afk-{self.game_id}-{seat}")
-        self._afk_tasks.add(task)
-        task.add_done_callback(self._afk_tasks.discard)
+        self._thinking_deadlines[seat] = (
+            datetime.now(timezone.utc) + timedelta(seconds=AFK_TIMEOUT_SECONDS))
+        self._schedule_expiry(seat, request)
 
-    async def _afk_default(self, seat: str, request: HumanTurnRequest) -> None:
-        """The stopwatch: sleep out the window, then default THIS question.
+    def _schedule_expiry(self, seat: str, request: HumanTurnRequest) -> None:
+        """(Re)start the seat's one stopwatch at its EFFECTIVE deadline: the thinking
+        deadline, or the absence grace when the seat has no open stream — whichever is
+        earlier. Absence never extends the clock (back at 29 s means 91 s left). Called
+        on the ask, when the seat's stream drops, and when a stream returns (which lifts
+        a grace back to the thinking deadline). The served deadline is the effective
+        one, so the countdown the table sees is the truth."""
+        deadline = self._thinking_deadlines[seat]
+        if not self.seat_present(seat):
+            grace = datetime.now(timezone.utc) + timedelta(seconds=ABSENCE_GRACE_SECONDS)
+            deadline = min(deadline, grace)
+        self.turn_deadlines[seat] = deadline.isoformat()
+        stale = self._afk_tasks.pop(seat, None)
+        if stale is not None:
+            stale.cancel()
+        task = asyncio.get_running_loop().create_task(
+            self._afk_default(seat, request, deadline), name=f"afk-{self.game_id}-{seat}")
+        self._afk_tasks[seat] = task
+        task.add_done_callback(
+            lambda t: self._afk_tasks.pop(seat, None)
+            if self._afk_tasks.get(seat) is t else None)
+
+    async def _afk_default(self, seat: str, request: HumanTurnRequest,
+                           deadline: datetime) -> None:
+        """The stopwatch: sleep to the deadline, then let the TABLE decide this question.
 
         The expiry check is request IDENTITY, not seat membership: if the seat answered
         at 119s and its next turn parked at 119.5s, the seat is pending again — but on a
         different question, which has its own stopwatch. This one must die quietly.
         No await sits between the check and submit_turn, so a real answer racing the
         expiry either lands first (identity check fails) or second (LookupError inside
-        submit_turn — the same bounce as a double-click)."""
-        await asyncio.sleep(AFK_TIMEOUT_SECONDS)
+        submit_turn — the same bounce as a double-click).
+
+        The presence test runs over every human seat (seat_continuity.md §5): someone
+        connected → delegate this one turn to the seat's agent; nobody → PARK. Parking
+        is the absence of delegation — the question keeps waiting exactly as a solo game
+        does, the graph idles, no tokens burn, and the first returning human stream
+        re-arms the clocks (_on_seat_returned)."""
+        await asyncio.sleep(
+            max(0.0, (deadline - datetime.now(timezone.utc)).total_seconds()))
         if self.pending_requests.get(seat) is not request:
+            return
+        if not self.humans_present():
+            self.turn_deadlines.pop(seat, None)  # no countdown while parked
+            logger.info("game %s: seat %s AFK on %s and nobody connected — parking",
+                        self.game_id, seat, request.phase)
             return
         logger.info("game %s: seat %s AFK on %s — delegating the turn to its agent",
                     self.game_id, seat, request.phase)
@@ -567,6 +612,42 @@ class GameSession:
             self.submit_turn({"delegate": True}, seat=seat)
         except Exception:  # a failed default must be loud, never a vanished task error
             logger.exception("game %s: AFK delegation for %s failed", self.game_id, seat)
+
+    def _on_seat_returned(self, seat: str) -> None:
+        """A human seat's stream (re)connected. Lifts that seat's running absence grace
+        back to its thinking deadline, and un-parks a parked table: the returning seat's
+        own question gets a fresh thinking window (nobody waited during the park); every
+        other parked seat gets the grace, after which the presence test finds someone."""
+        if len(self._seat_tokens) <= 1 or not self.pending_requests:
+            return
+        for pending_seat, request in list(self.pending_requests.items()):
+            running = pending_seat in self._afk_tasks
+            if running and pending_seat != seat:
+                continue  # someone else's return does not touch a live clock
+            if not running and pending_seat == seat:
+                self._thinking_deadlines[seat] = (
+                    datetime.now(timezone.utc) + timedelta(seconds=AFK_TIMEOUT_SECONDS))
+            self._schedule_expiry(pending_seat, request)
+
+    async def abandon(self, reason: str) -> None:
+        """Retention (seat_continuity.md §7): stop a parked game nobody is watching. The
+        reason becomes the epitaph viewers see; the caller flips the row to dropped."""
+        self.error = reason
+        await self.shutdown()
+        self._finished.set()  # a never-started shell has no task to settle it
+
+    # -- presence (seat_continuity.md §3) --------------------------------------------------
+
+    def connected_seats(self) -> set[str]:
+        """Human seats with at least one open stream RIGHT NOW. Spectators resolve to
+        "" and never count; a snapshot, not a history of the window."""
+        return {seat for resolve in self._subscribers.values() if (seat := resolve())}
+
+    def seat_present(self, seat: str) -> bool:
+        return seat in self.connected_seats()
+
+    def humans_present(self) -> bool:
+        return bool(self.connected_seats())
 
     # -- fan-out --------------------------------------------------------------------------
 
@@ -579,13 +660,24 @@ class GameSession:
         for q in self._subscribers:
             q.put_nowait(("pacing", snapshot))
 
-    def subscribe(self) -> asyncio.Queue:
+    def subscribe(self, viewer_seat: Callable[[], str] | None = None) -> asyncio.Queue:
+        """Register a viewer queue with its seat resolver. A human seat connecting is the
+        presence signal that lifts a grace or un-parks the table."""
         q: asyncio.Queue = asyncio.Queue()
-        self._subscribers.add(q)
+        self._subscribers[q] = viewer_seat or (lambda: "")
+        seat = self._subscribers[q]()
+        if seat:
+            self._on_seat_returned(seat)
         return q
 
     def unsubscribe(self, q: asyncio.Queue) -> None:
-        self._subscribers.discard(q)
+        """A stream closed. If that was the seat's last stream mid-question, its clock
+        drops to the absence grace — the tab may be retrying, or may be gone."""
+        resolve = self._subscribers.pop(q, None)
+        seat = resolve() if resolve is not None else ""
+        if (seat and seat in self.pending_requests and seat in self._afk_tasks
+                and not self.seat_present(seat)):
+            self._schedule_expiry(seat, self.pending_requests[seat])
 
     async def wait_finished(self) -> None:
         await self._finished.wait()
@@ -637,6 +729,10 @@ class GameSession:
         # a second set would raise InvalidStateError).
         del self.pending_requests[seat]
         self.turn_deadlines.pop(seat, None)
+        self._thinking_deadlines.pop(seat, None)
+        stopwatch = self._afk_tasks.pop(seat, None)
+        if stopwatch is not None:
+            stopwatch.cancel()
         self._promises[seat].set_result(response.model_dump())
         logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
                     self.game_id, seat, len(self.pending_requests))
@@ -651,6 +747,7 @@ class GameSession:
         the stream settling and this return: submit_turn fulfils futures, it never
         adds or removes registry entries."""
         await asyncio.gather(*self._promises.values())
+        self.parked_since = None
         answers = {self._pending_ids.pop(seat): fut.result()
                    for seat, fut in self._promises.items()}
         self._promises = {}

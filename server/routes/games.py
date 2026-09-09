@@ -189,9 +189,9 @@ async def _sse(
     not allowed to receive while the game was live. Heartbeats keep proxy connections
     alive; they do not impose a player turn timeout.
     """
-    q = session.subscribe()
+    q = session.subscribe(viewer_seat)  # the resolver doubles as the presence signal
     sent: set[int] = set()
-    logger.debug(
+    logger.info(
         "game %s: viewer connected (seat=%r, cursor=%d)",
         session.game_id,
         viewer_seat(),
@@ -235,7 +235,7 @@ async def _sse(
                         yield _frame("game", held)
     finally:
         session.unsubscribe(q)
-        logger.debug(
+        logger.info(
             "game %s: viewer disconnected (seat=%r)",
             session.game_id,
             viewer_seat(),
