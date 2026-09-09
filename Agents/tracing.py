@@ -27,11 +27,11 @@ os.environ.setdefault("LANGFUSE_RELEASE", git_revision()["git_commit"])
 langfuse = get_client()
 
 
-def create_langfuse_handler() -> CallbackHandler:
+def create_langfuse_handler(*, trace_context: dict | None = None) -> CallbackHandler:
     """The Langfuse LangChain callback that nests a run under the current trace. A factory (not a
     module singleton) so the entry point injects observability into build_runnable_config rather
     than the config layer importing tracing."""
-    return CallbackHandler()
+    return CallbackHandler(trace_context=trace_context)
 
 
 def flush():

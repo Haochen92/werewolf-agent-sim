@@ -10,10 +10,13 @@ the HTTP layer has its own suite (test_http_api.py). Async tests run on pytest-a
 from __future__ import annotations
 
 import asyncio
+from contextlib import contextmanager
+from types import SimpleNamespace
 
 import pytest
 
 from Agents.turn.human_turn import HumanTurnContractError
+from server import runtime as rt
 from server.routes.games import _sse, event_stream
 from server.runtime import PacingTracker, entitled
 from server.schemas import events as ev
@@ -22,6 +25,62 @@ from tests.factories.builders import human_turn_request
 from tests.fixtures.server import FakeGraph, HangingGraph
 
 ROLES = {"w0": "wolf", "w1": "wolf", "v1": "villager", "inv": "investigator"}
+
+
+class _TraceRoot:
+    trace_id = "stable-game-trace"
+    id = "game-root-span"
+
+    def __init__(self):
+        self.updates = []
+        self.trace_updates = []
+
+    def update(self, **kwargs):
+        self.updates.append(kwargs)
+
+    def update_trace(self, **kwargs):
+        self.trace_updates.append(kwargs)
+
+
+async def test_server_session_owns_one_stable_game_trace(quiet_session, monkeypatch):
+    captured = {}
+    root = _TraceRoot()
+
+    @contextmanager
+    def observation(**kwargs):
+        captured["observation"] = kwargs
+        yield root
+
+    def create_trace_id(*, seed):
+        captured["trace_seed"] = seed
+        return "stable-game-trace"
+
+    monkeypatch.setattr(rt, "langfuse", SimpleNamespace(
+        create_trace_id=create_trace_id,
+        start_as_current_observation=observation,
+    ))
+
+    def create_handler(*, trace_context):
+        captured["handler_context"] = trace_context
+        return "game-handler"
+
+    monkeypatch.setattr(rt, "create_langfuse_handler", create_handler)
+    monkeypatch.setattr(rt, "flush", lambda: captured.setdefault("flushed", True))
+
+    session = quiet_session(FakeGraph([]))
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    assert session.config["callbacks"] == ["game-handler"]
+    assert captured["handler_context"] == {
+        "trace_id": "stable-game-trace", "parent_span_id": "game-root-span"}
+    assert captured["trace_seed"] == f"werewolf-game:{session.game_id}"
+    assert captured["observation"]["trace_context"] == {
+        "trace_id": "stable-game-trace"}
+    assert root.trace_updates[0]["name"] == "werewolf_game"
+    assert root.trace_updates[0]["metadata"]["game_id"] == session.game_id
+    assert root.trace_updates[-1]["output"]["status"] == "success"
+    assert captured["flushed"] is True
 
 
 # ---- entitled(): the tier gate ----------------------------------------------------------

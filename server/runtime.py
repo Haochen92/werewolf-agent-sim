@@ -49,7 +49,7 @@ from Agents.graphs.parent import parent_graph_compiled
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.human_player import HumanTurnRequest
 from Agents.state import fresh_game_state
-from Agents.tracing import Metrics
+from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
 from Agents.turn.human_turn import validate_human_response
 
 from server.game_repository import GameRepository
@@ -311,6 +311,7 @@ class GameSession:
         seed_memory_from_config(run.memory_persistence, target_store=store)
         self.config = build_runnable_config(run)
         self.game_id: str = self.config["configurable"]["game_id"]
+        self._session_id = run.session_id
         self._graph = graph if graph is not None else parent_graph_compiled
         self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
@@ -379,50 +380,98 @@ class GameSession:
     async def _run(self, graph_input: Any, wait_answers_first: bool = False) -> None:
         if self._llm_override is not None:
             GAME_LLM.set(self._llm_override)
+        recovered = graph_input is None
+        trace_input = {"game_id": self.game_id, "recovered": recovered}
+        # Stable across process restarts: a recovered GameSession adds a new root segment to
+        # the SAME game trace rather than creating a second trace for the continuation.
+        trace_id = langfuse.create_trace_id(seed=f"werewolf-game:{self.game_id}")
         try:
-            if wait_answers_first:
-                # Recovered at an interrupt: the seats were re-parked from the
-                # checkpoint before this task started; wait for their answers.
-                graph_input = Command(resume=await self._collect_answers())
-            while True:
-                interrupted = False
-                async for part in self._graph.astream(
-                    graph_input, config=self.config, context=self._context,
-                    stream_mode=["updates", "custom"], subgraphs=True, version="v2",
-                ):
-                    if self._on_part(part):
-                        # Sticky: the interrupt part is often NOT last (siblings keep
-                        # streaming after it), so keep consuming and remember it.
-                        interrupted = True
-                    # Synchronous per part: a crash loses at most this part's events.
-                    await self._persist_tail()
-                if not interrupted:
-                    break
-                # Resume with user input, once every interrupted seat has answered
-                graph_input = Command(resume=await self._collect_answers())
-            if self.game_over:
-                # The existing EventRows become the replay: completion only finalizes
-                # metadata and lifecycle on their parent GameRow, never copies the log.
-                if self._repository is not None:
-                    await self._repository.complete_game(
-                        self.game_id, self.log, len(self.human_players))
-        except Exception as exc:  # surface, don't vanish: the session reports its death
-            detail = repr(exc)
-            if self._api_key:
-                # Provider auth errors can echo the credential; viewers see error text.
-                detail = detail.replace(self._api_key, "***")
-            self.error = detail
-            logger.error("game %s: task died: %s", self.game_id, detail)
-            if self._repository is not None:
-                await self._repository.upsert_game(
-                    self.game_id, status="dropped", error=detail)
+            with langfuse.start_as_current_observation(
+                trace_context={"trace_id": trace_id}, as_type="span",
+                name="werewolf-game", input=trace_input,
+            ) as root:
+                # Pin LangGraph/LangChain observations to this root explicitly. The manual
+                # node spans inherit the active OTEL context; the callback also carries the
+                # IDs, so worker-thread context propagation is not a correctness dependency.
+                self.config["callbacks"] = [create_langfuse_handler(trace_context={
+                    "trace_id": trace_id, "parent_span_id": root.id})]
+                root.update_trace(
+                    name="werewolf_game", session_id=self._session_id,
+                    input=trace_input, output={"status": "running"},
+                    metadata={
+                        "game_id": self.game_id,
+                        "model": (self._llm_override.model if self._llm_override
+                                  else "server-default"),
+                        "byok": bool(self._api_key),
+                        "recovered": recovered,
+                    },
+                )
+                try:
+                    await self._drive_graph(graph_input, wait_answers_first)
+                    final_output = {
+                        "status": "success", "game_over": self.game_over,
+                        "event_count": len(self.log),
+                    }
+                    root.update(output=final_output)
+                    root.update_trace(output=final_output)
+                except asyncio.CancelledError:
+                    # A restart is an interrupted trace segment, not a failed game. The
+                    # recovered process reattaches to trace_id and eventually writes success.
+                    interrupted_output = {
+                        "status": "interrupted", "event_count": len(self.log)}
+                    root.update(output=interrupted_output)
+                    root.update_trace(output=interrupted_output)
+                    raise
+                except Exception as exc:  # surface, don't vanish: report task death
+                    detail = repr(exc)
+                    if self._api_key:
+                        # Provider auth errors can echo the credential; viewers see error text.
+                        detail = detail.replace(self._api_key, "***")
+                    self.error = detail
+                    error_output = {"status": "error", "error": detail}
+                    root.update(output=error_output, level="ERROR", status_message=detail)
+                    root.update_trace(output=error_output)
+                    logger.error("game %s: task died: %s", self.game_id, detail)
+                    if self._repository is not None:
+                        await self._repository.upsert_game(
+                            self.game_id, status="dropped", error=detail)
+                finally:
+                    # No phase upsert here: cancellation must leave the durable row
+                    # 'running' so the next boot's recovery picks the game up.
+                    self._finished.set()
+                    if self.error is None:
+                        logger.info("game %s: finished (game_over=%s, %d events)",
+                                    self.game_id, self.game_over, len(self.log))
         finally:
-            # No phase upsert here: a CancelledError (server shutdown) must leave the
-            # durable row 'running' so the next boot's recovery picks the game up.
-            self._finished.set()
-            if self.error is None:
-                logger.info("game %s: finished (game_over=%s, %d events)",
-                            self.game_id, self.game_over, len(self.log))
+            flush()
+
+    async def _drive_graph(self, graph_input: Any, wait_answers_first: bool) -> None:
+        """Stream/resume the graph while _run owns the one game-level trace context."""
+        if wait_answers_first:
+            # Recovered at an interrupt: the seats were re-parked from the checkpoint
+            # before this task started; wait for their answers.
+            graph_input = Command(resume=await self._collect_answers())
+        while True:
+            interrupted = False
+            async for part in self._graph.astream(
+                graph_input, config=self.config, context=self._context,
+                stream_mode=["updates", "custom"], subgraphs=True, version="v2",
+            ):
+                if self._on_part(part):
+                    # Sticky: the interrupt part is often NOT last (siblings keep
+                    # streaming after it), so keep consuming and remember it.
+                    interrupted = True
+                # Synchronous per part: a crash loses at most this part's events.
+                await self._persist_tail()
+            if not interrupted:
+                break
+            # Resume with user input, once every interrupted seat has answered.
+            graph_input = Command(resume=await self._collect_answers())
+        if self.game_over and self._repository is not None:
+            # Existing EventRows become the replay: completion only finalizes metadata
+            # and lifecycle on their parent GameRow, never copies the log.
+            await self._repository.complete_game(
+                self.game_id, self.log, len(self.human_players))
 
     async def _persist_tail(self) -> None:
         """Push the log's unpersisted suffix + newly-learned human seats to the
