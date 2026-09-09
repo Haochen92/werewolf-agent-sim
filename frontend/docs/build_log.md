@@ -657,3 +657,5 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
 4. **`can_pass` on the wire** would remove the one place the client cannot pre-validate.
 5. **Portraits are landed.** The twelve-asset WebP set is wired through the manifest; future
    replacement remains an asset-only swap at that import boundary.
+6. **Absence, disconnection and recovery have one map:** [`seat_continuity.md`](seat_continuity.md)
+   (2026-09-09). Read it before touching the AFK timer, rejoin, or recovery.

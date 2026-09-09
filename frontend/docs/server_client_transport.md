@@ -503,6 +503,8 @@ dropped connection with zero client code. This composability is the quiet payoff
 putting identity in the cookie rather than the URL: the reconnect story (§7) and the
 authentication story never had to learn about each other.
 
+> Lifecycle map of everything above plus absence and parking: [`seat_continuity.md`](seat_continuity.md).
+
 ## 6c. The room browser: from invite links to a public list (decided 2026-08-20)
 
 Rooms were originally invite-link-only: creating a room gave you a URL, and "who may
@@ -533,6 +535,12 @@ machinery (a kick must also invalidate the kicked seat's token, or their cookie 
 right back in at start). Post-start, a kick is meaningless — a vanished human's seat
 is already absorbed by the AFK delegate ladder. If moderation needs ever grow real,
 kick slots in beside lock as a second host-key-gated endpoint.
+
+## 6d. Absent seats: presence decides between delegating and parking (decided 2026-09-09)
+
+Ruled and recorded in [`seat_continuity.md`](seat_continuity.md) — the lifecycle map for disconnection,
+the two AFK clocks, delegate-or-park, restart recovery and retention. Kept as a heading here
+so the section numbering of the security model stays stable.
 
 ---
 

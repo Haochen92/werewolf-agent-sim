@@ -195,6 +195,9 @@ story — the client layer heals by replay, the game layer by checkpoint, the pr
 by persistence; and the two liveness gaps (stall, AFK) are detection problems, not
 recovery problems.
 
+> 2026-09-09: mode 5 ruled — presence + two clocks + park; the lifecycle map is
+> [`seat_continuity.md`](seat_continuity.md).
+
 ## 6. Smaller ruled arguments worth one paragraph each
 
 - **input_request ships {player, action_kind, candidates}, never HumanTurnRequest**: the prompt
@@ -309,6 +312,8 @@ recovery problems.
   provider shares.
 
 ## 7. The AFK fail-safe: delegate the turn to the seat's own agent (ruled 2026-08-20)
+
+> Extended 2026-09-09 with presence detection and parking — see [`seat_continuity.md`](seat_continuity.md) §4–§5.
 
 A solo game can wait forever — leave for lunch mid-turn and the game is simply paused for
 you; nobody minds. Multiplayer breaks that luxury: the moment two humans share a table, one
