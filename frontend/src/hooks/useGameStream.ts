@@ -61,11 +61,13 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     queryKey: queryKeys.games.status(gameId),
     queryFn: () => getGameStatus(gameId),
     enabled,
-    // Keep polling while the game runs: this is the dead-game detector, and it also
-    // refreshes pending_seats / deadlines for the lobby-ish parts of the UI.
+    // A waiting room has no stream, so this poll is how joiners see the roster fill and
+    // the host press start: keep it quick. Once running the stream carries the game and
+    // the poll is only the dead-game detector and the deadline refresh, so it can relax.
     refetchInterval: (query) => {
       const state = query.state.data?.state;
-      return state === 'running' || state === 'waiting' ? 12_000 : false;
+      if (state === 'waiting') return 3_000;
+      return state === 'running' ? 12_000 : false;
     },
   });
 
