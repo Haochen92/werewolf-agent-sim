@@ -15,8 +15,8 @@ from datetime import datetime, timedelta, timezone
 
 from server.config import ServerSettings, server_settings
 from server.database_models.game import DROPPED
-from server.game_repository import GameRepository
-from server.runtime import GameSession
+from server.storage.game_repository import GameRepository
+from server.game.runtime import GameSession
 
 logger = logging.getLogger(__name__)
 

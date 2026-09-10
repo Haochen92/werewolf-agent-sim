@@ -7,8 +7,8 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 from server.config import ServerSettings
-from server.lobby import GameLobby
-from server.sweeper import is_expired, sweep_parked_games
+from server.game.lobby import GameLobby
+from server.housekeeping.sweeper import is_expired, sweep_parked_games
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import HangingGraph
 

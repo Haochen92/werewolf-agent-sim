@@ -17,14 +17,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from server.config import server_settings
-from server.recovery import recover_registry
+from server.housekeeping.recovery import recover_registry
 from server.resources import app_resources
 from server.routes.games import router as games_router
 from server.routes.replays import router as replays_router
 from server.routes.rooms import router as rooms_router
 from server.routes.system import router as system_router
-from server.runtime import GameSession
-from server.sweeper import run_sweeper
+from server.game.runtime import GameSession
+from server.housekeeping.sweeper import run_sweeper
 
 logger = logging.getLogger(__name__)
 

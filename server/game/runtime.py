@@ -51,12 +51,12 @@ from Agents.state import fresh_game_state
 from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
 from Agents.turn.human_turn import validate_human_response
 
-from server.game_repository import GameRepository
-from server.model_catalog import SUPPORTED_GAME_MODELS
-from server.pacing import BRANCH_UNITS, PacingTracker
+from server.storage.game_repository import GameRepository
+from server.game.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.pacing import BRANCH_UNITS, PacingTracker
 from server.schemas import events as ev
-from server.seat_clocks import SeatClocks
-from server.translate import Translator, _read_field
+from server.game.seat_clocks import SeatClocks
+from server.game.translate import Translator, _read_field
 
 logger = logging.getLogger(__name__)
 

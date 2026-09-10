@@ -15,7 +15,7 @@ import asyncio
 
 from Agents.llm_factory import GAME_LLM, GameLLM, get_llm_game_fallback
 from Agents.llm_factory.backends import create_chat_model
-from server.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import SUPPORTED_GAME_MODELS
 
 GEMINI = "gemini-3.1-flash-lite"
 DEEPSEEK = "deepseek/deepseek-v4-pro"

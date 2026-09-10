@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from server.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import SUPPORTED_GAME_MODELS
 from server.schemas.requests import ModelRow, ModelsMenu
 
 router = APIRouter(tags=["system"])

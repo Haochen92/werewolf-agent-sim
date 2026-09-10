@@ -4,7 +4,7 @@ from fastapi import HTTPException, Response
 
 from server.config import server_settings
 from server.dependencies import seat_cookie_name
-from server.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.model_catalog import SUPPORTED_GAME_MODELS
 
 _SEAT_COOKIE_MAX_AGE = 24 * 3600  # comfortably outlives any in-memory game
 

@@ -12,10 +12,10 @@ from types import SimpleNamespace
 
 from langgraph.types import Command
 
-from server import recovery
+from server.housekeeping import recovery
 from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
-from server.game_repository import derive_completion_metadata
-from server.translate import Translator
+from server.storage.game_repository import derive_completion_metadata
+from server.game.translate import Translator
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import FakeGraph
 
@@ -139,7 +139,7 @@ def _row(**over):
 
 
 async def _recover(monkeypatch, rows, graph):
-    monkeypatch.setattr("server.runtime.seed_memory_from_config", lambda *a, **k: None)
+    monkeypatch.setattr("server.game.runtime.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=rows)
     games: dict = {}
     await recovery.recover_registry(games, repository, graph)

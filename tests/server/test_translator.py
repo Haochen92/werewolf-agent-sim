@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 
 from server.schemas import events as ev
-from server.translate import TranslationError, Translator
+from server.game.translate import TranslationError, Translator
 from tests.fixtures.stream import load_fixture_parts
 
 

@@ -16,8 +16,8 @@ from sqlmodel import select
 
 from server.database_models.game import COMPLETED, RUNNING, EventRow, GameRow
 from server.db import Database
-from server.game_repository import GameRepository
-from server.replay_service import IncompleteReplay, ReplayNotFound, ReplayService
+from server.storage.game_repository import GameRepository
+from server.storage.replay_service import IncompleteReplay, ReplayNotFound, ReplayService
 from server.schemas import events as ev
 from server.schemas.replays import ReplayBase, ReplayGame
 

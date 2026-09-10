@@ -145,7 +145,7 @@ reason in the row's error field:
 across a restart so a reboot does not make an old park newborn), and "nobody connected" is
 the same presence test as §5 — a solo player sitting on an open tab is never swept out from
 under them. Knobs: `SOLO_PARK_TTL_SECONDS`, `MULTI_PARK_TTL_SECONDS`, `SWEEP_INTERVAL_SECONDS`;
-the sweep lives in `server/sweeper.py` and the epitaph reads `abandoned: parked on a human
+the sweep lives in `server/housekeeping/sweeper.py` and the epitaph reads `abandoned: parked on a human
 turn with nobody connected for N min`.
 
 Dropped games never enter the replay list and are never revived. Deleting dropped rows and

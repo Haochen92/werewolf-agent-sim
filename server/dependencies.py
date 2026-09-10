@@ -15,12 +15,12 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
-from server.game_repository import GameRepository
+from server.storage.game_repository import GameRepository
 from server.graph_runtime import GraphRuntime
-from server.lobby import GameLobby
-from server.replay_service import ReplayService
+from server.game.lobby import GameLobby
+from server.storage.replay_service import ReplayService
 from server.resources import AppResources
-from server.runtime import GameSession
+from server.game.runtime import GameSession
 
 Entry = GameSession | GameLobby
 

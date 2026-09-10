@@ -21,8 +21,8 @@ from server.dependencies import (
     Room,
     SeatToken,
 )
-from server.lobby import MAX_HUMAN_SEATS, GameLobby
-from server.runtime import GameSession, entitled
+from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
+from server.game.runtime import GameSession, entitled
 from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
 
 from ._shared import check_model_access, set_seat_cookie

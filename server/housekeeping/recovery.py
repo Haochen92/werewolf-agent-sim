@@ -25,9 +25,9 @@ from Agents.config import RunConfig
 from Agents.schemas.human_player import HumanTurnRequest
 
 from server.database_models.game import DROPPED, WAITING, GameRow
-from server.game_repository import GameRepository
-from server.lobby import GameLobby, HumanSeat
-from server.runtime import GameSession
+from server.storage.game_repository import GameRepository
+from server.game.lobby import GameLobby, HumanSeat
+from server.game.runtime import GameSession
 
 logger = logging.getLogger(__name__)
 

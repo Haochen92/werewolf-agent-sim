@@ -21,13 +21,13 @@ from typing import TYPE_CHECKING, AsyncIterator
 
 from server.config import ServerSettings, server_settings
 from server.db import Database, database_resource
-from server.game_repository import GameRepository
+from server.storage.game_repository import GameRepository
 from server.graph_runtime import GraphRuntime, graph_runtime_resource
-from server.replay_service import ReplayService
+from server.storage.replay_service import ReplayService
 
 if TYPE_CHECKING:
-    from server.lobby import GameLobby
-    from server.runtime import GameSession
+    from server.game.lobby import GameLobby
+    from server.game.runtime import GameSession
 
 
 @dataclass(slots=True)

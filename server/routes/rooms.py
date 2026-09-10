@@ -11,8 +11,8 @@ from server.dependencies import (
     GraphRuntimeDep,
     Room,
 )
-from server.lobby import MAX_HUMAN_SEATS, GameLobby
-from server.runtime import GameSession
+from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
+from server.game.runtime import GameSession
 from server.schemas.requests import (
     GameCreated,
     JoinGame,

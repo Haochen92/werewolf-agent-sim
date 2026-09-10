@@ -287,7 +287,7 @@ recovery problems.
   lost on process restart. A provider key that dies while the process remains alive can reuse the
   same recovery door later, after retryability policy is ruled.
 - **BYOK v1.5 same day (owner-ruled): multi-provider = tested-models-only registry.**
-  `SUPPORTED_GAME_MODELS` (server/runtime.py) is the support policy as code: a model is
+  `SUPPORTED_GAME_MODELS` (server/game/model_catalog.py) is the support policy as code: a model is
   selectable iff it has carried real games — the full Gemini suite that has (owner-ruled
   2026-08-12: 2.5-pro, 3.1-flash-lite default, 3.5-flash-lite, 3.6-flash) +
   deepseek/deepseek-v4-pro (CLI + HITL games) — and each row names its SAME-CREDENTIAL

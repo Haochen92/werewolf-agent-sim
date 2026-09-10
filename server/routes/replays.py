@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 
 from server.dependencies import ReplayServiceDep
-from server.replay_service import (
+from server.storage.replay_service import (
     IncompleteReplay,
     ReplayArchiveNotConfigured,
     ReplayNotFound,

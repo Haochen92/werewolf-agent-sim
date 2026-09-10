@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from server.lobby import MAX_HUMAN_SEATS
-from server.model_catalog import SUPPORTED_GAME_MODELS
+from server.game.lobby import MAX_HUMAN_SEATS
+from server.game.model_catalog import SUPPORTED_GAME_MODELS
 from tests.fixtures.server import FakeGraph
 
 GEMINI = "gemini-3.1-flash-lite"
@@ -127,7 +127,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     """The happy path end to end, with the real GameSession swapped for one on a
     FakeGraph (starting the real graph would call an LLM)."""
     import server.routes.rooms as rooms_routes
-    from server import runtime as rt
+    from server.game import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
@@ -289,7 +289,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
     """POST /games {human} gets a token + cookie exactly like a room joiner (one
     identity mechanism at both doors); an LLM-only game mints nothing."""
     import server.routes.games as games_routes
-    from server import runtime as rt
+    from server.game import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
@@ -318,7 +318,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
 def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
     """An empty room may start: the host runs an all-LLM exhibition game to watch."""
     import server.routes.rooms as rooms_routes
-    from server import runtime as rt
+    from server.game import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
@@ -338,7 +338,7 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
 def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     """The creator's key/model, given at create time, funds the started game."""
     import server.routes.rooms as rooms_routes
-    from server import runtime as rt
+    from server.game import runtime as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     seen = {}
