@@ -73,6 +73,8 @@ testpaths = ["tests"]
 # evaluation/ import without the `python -m` cwd trick).
 pythonpath = ["."]
 asyncio_mode = "auto"
+# Live tests (real models, real credentials) never run by accident: pass `-m live` to run them.
+addopts = "-m 'not live'"
 markers = [
     "slow: long-running tests (deselect with -m 'not slow')",
     "live: needs network/credentials (LLM calls, live Postgres) — excluded from the offline suite",
