@@ -465,13 +465,10 @@ class GameSession:
             return None
         return self.human_players[i] if i < len(self.human_players) else ""
 
-    def position_of(self, token: str) -> int | None:
-        """1-based join position owning this token (mirrors GameLobby.position_of,
-        so /rejoin serves both registry phases through one call)."""
-        try:
-            return self._seat_tokens.index(token) + 1
-        except ValueError:
-            return None
+    def owns(self, token: str) -> bool:
+        """Whether this token belongs to one of the game's human seats. The same
+        question GameLobby.owns answers, so status and rejoin serve both stages alike."""
+        return token in self._seat_tokens
 
     # -- the human turn (from POST /turns) ------------------------------------------------
 

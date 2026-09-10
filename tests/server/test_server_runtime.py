@@ -135,10 +135,10 @@ def test_token_maps_to_the_dealt_seat_in_join_order(quiet_session):
     assert session.seat_for_token("forged") is None
 
 
-def test_position_of_mirrors_the_lobby_contract(quiet_session):
+def test_owns_mirrors_the_lobby_contract(quiet_session):
     session = quiet_session(FakeGraph([]), seat_tokens=["tok-a", "tok-b"])
-    assert session.position_of("tok-b") == 2
-    assert session.position_of("forged") is None
+    assert session.owns("tok-b") is True
+    assert session.owns("forged") is False
 
 
 # ---- the session over the real captured game --------------------------------------------

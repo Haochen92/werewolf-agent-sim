@@ -99,14 +99,14 @@ class GameRegistry:
             created_at=room.created_at)
         return room
 
-    async def join(self, game_id: str, name: str) -> tuple[int, str]:
-        """Claim a seat; returns (1-based position, the seat's secret token).
-        LookupError when the room is locked, full, or already started."""
+    async def join(self, game_id: str, name: str) -> str:
+        """Claim a seat and return its secret token. LookupError when the room is
+        locked, full, or already started."""
         room = self._lobby(game_id)
-        position, token = room.join(name)
+        token = room.join(name)
         await self._repository.upsert_game(
             game_id, seats=[seat._asdict() for seat in room.seats])
-        return position, token
+        return token
 
     async def lock(self, game_id: str, host_key: str, locked: bool) -> GameLobby:
         room = self._lobby(game_id)

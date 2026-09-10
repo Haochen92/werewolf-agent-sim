@@ -82,8 +82,10 @@ class GameLobby:
         that same order, so the first token belongs to the first human player."""
         return [s.token for s in self.seats]
 
-    def join(self, name: str) -> tuple[int, str]:
-        """Claim a human seat; returns (1-based position, the seat's secret token)."""
+    def join(self, name: str) -> str:
+        """Claim a human seat and return its freshly minted secret token. The token is
+        the only proof that a browser owns this seat; nothing else identifies a player.
+        Raises LookupError when the room is locked or full; the route turns that into a 409."""
         if self.locked:
             raise LookupError("room is locked — ask the host to unlock it")
         if len(self.seats) >= MAX_HUMAN_SEATS:
@@ -92,14 +94,11 @@ class GameLobby:
                 "(spectators need no seat)")
         seat = HumanSeat(name=name, token=str(uuid4()))
         self.seats.append(seat)
-        return len(self.seats), seat.token
+        return seat.token
 
-    def position_of(self, token: str) -> int | None:
-        """1-based join position owning this token; None = unknown (403 material)."""
-        for i, seat in enumerate(self.seats, start=1):
-            if seat.token == token:
-                return i
-        return None
+    def owns(self, token: str) -> bool:
+        """Whether this token belongs to one of the room's seats."""
+        return any(seat.token == token for seat in self.seats)
 
     def run_config(self) -> RunConfig:
         """Build the config the started game runs on. The room's own game_id is passed

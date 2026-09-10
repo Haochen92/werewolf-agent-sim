@@ -141,7 +141,7 @@ export interface paths {
      * Restore a lost seat cookie from the token's body copy
      * @description Cookie-loss recovery (new device, cleared browsing data): the stashed body-copy
      *     token re-proves seat ownership and re-sets the cookie. Serves both registry phases
-     *     — position_of lives on GameLobby and GameSession alike. A seat lost for good (both
+     *     — `owns` lives on GameLobby and GameSession alike. A seat lost for good (both
      *     copies gone) is an AFK seat: the game must not stall on it (slice 4's timer).
      */
     post: operations['rejoin_game_games__game_id__rejoin_post'];
@@ -982,8 +982,6 @@ export interface components {
      * @description POST /games/{id}/join and POST /games/{id}/rejoin response.
      */
     SeatJoined: {
-      /** Position */
-      position: number;
       /** Token */
       token: string;
     };

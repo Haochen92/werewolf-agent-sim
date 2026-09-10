@@ -99,11 +99,11 @@ async def join_game(
     games: GamesRegistry,
 ) -> SeatJoined:
     try:
-        position, token = await games.join(room.game_id, body.name)
+        token = await games.join(room.game_id, body.name)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     set_seat_cookie(response, room.game_id, token)
-    return SeatJoined(position=position, token=token)
+    return SeatJoined(token=token)
 
 
 @router.post(
@@ -116,11 +116,10 @@ async def rejoin_game(
     body: RejoinGame,
     response: Response,
 ) -> SeatJoined:
-    position = room.position_of(body.token)
-    if position is None:
+    if not room.owns(body.token):
         raise HTTPException(status_code=403, detail="unknown seat token")
     set_seat_cookie(response, room.game_id, body.token)
-    return SeatJoined(position=position, token=body.token)
+    return SeatJoined(token=body.token)
 
 
 @router.post(

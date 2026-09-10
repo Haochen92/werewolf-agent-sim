@@ -96,7 +96,7 @@ def get_seat_token(game_id: str, request: Request) -> str:
     HttpOnly cookie plus a one-time body copy, and rides back automatically on every
     same-game request — including SSE, which cannot set headers but does send cookies.
     Extraction only: whether the token is KNOWN is the session's call
-    (seat_for_token / position_of), made in the routes."""
+    (seat_for_token / owns), made in the routes."""
     return request.cookies.get(seat_cookie_name(game_id), "")
 
 

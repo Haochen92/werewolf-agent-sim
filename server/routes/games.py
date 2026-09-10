@@ -59,7 +59,7 @@ async def create_game(
 
 @router.get("/games/{game_id}", response_model=GameStatus, summary="Status snapshot")
 async def game_status(session: Room, token: SeatToken) -> GameStatus:
-    if token and session.position_of(token) is None:
+    if token and not session.owns(token):
         raise HTTPException(status_code=403, detail="unknown seat token")
     if isinstance(session, GameLobby):
         return GameStatus(

@@ -148,7 +148,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
 
     r = api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
     seat_token = r.json()["token"]
-    assert r.json() == {"position": 1, "token": seat_token}
+    assert r.json() == {"token": seat_token}
 
     status = api_client.get(f"/games/{game_id}")
     assert status.json()["players"] == ["hao"]
@@ -271,17 +271,17 @@ def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session
     api_client.cookies.clear()  # the "new device" moment
 
     r = api_client.post(f"/games/{game_id}/rejoin", json={"token": token})
-    assert r.json() == {"position": 1, "token": token}
+    assert r.json() == {"token": token}
     assert api_client.cookies.get(f"seat_{game_id}") == token
 
     assert api_client.post(f"/games/{game_id}/rejoin",
                            json={"token": "forged"}).status_code == 403
 
-    # Running game: same door, served by GameSession.position_of.
+    # Running game: same door, served by GameSession.owns.
     session, seat_token = seated_session
     api_client.cookies.clear()
     r = api_client.post(f"/games/{session.game_id}/rejoin", json={"token": seat_token})
-    assert r.json() == {"position": 1, "token": seat_token}
+    assert r.json() == {"token": seat_token}
     assert api_client.get(f"/games/{session.game_id}").json()["you"] == "player_3"
 
 

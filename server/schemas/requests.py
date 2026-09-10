@@ -113,9 +113,6 @@ class JoinGame(BaseModel):
 class SeatJoined(BaseModel):
     """POST /games/{id}/join and POST /games/{id}/rejoin response."""
 
-    position: int
-    """1-based join order — the roster index, not an engine seat (the engine
-    assigns player ids only at game start)."""
     token: str
     """The seat's secret — proof of ownership (no accounts: holding it IS the
     identity). Also set as an HttpOnly cookie on this response; this body copy is
