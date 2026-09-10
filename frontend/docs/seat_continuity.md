@@ -174,6 +174,12 @@ their checkpoints is a separate, later ruling.
 2. **Resume UX** (parked 2026-09-09): a "your seats" strip on the home page from the device's
    stored tokens; a copyable seat code on the role card for the cleared-everything case.
    Today the only way back into a game is its URL.
+   Rule together with the **short join code** (deferred 2026-09-10): a 4–6 character room
+   code minted at creation, shown on the lobby card beside the share link, typed on the
+   rooms page — the "same table / voice call" door that neither the link nor the public
+   list serves well. Searching by the raw uuid was rejected as no easier than the URL.
+   Both are short codes with one input field and the same mechanics (minted, stored on
+   the row for restart, recycled once the game ends), so they share a design session.
 3. **Identity mechanics** (parked 2026-09-09): cookie lifetime, the local-storage copy,
    cross-device — currently "same browser or nothing", by ruling.
 4. **Waiting-room retention** — no sweep yet.
