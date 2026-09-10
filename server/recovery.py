@@ -109,8 +109,7 @@ async def _revive(row: GameRow, repository: GameRepository, graph):
             getattr(item, "id", "") or request.player_id)
         session._promises[request.player_id] = (
             asyncio.get_running_loop().create_future())
-        if len(row.seats) > 1:
-            session._arm_afk_timer(request)
+        session.clocks.arm(request)  # a no-op for solo tables
     if session.pending_requests:
         # The retention clock survives the restart: a row parked for a day before the
         # reboot is still a day old, not newborn (seat_continuity.md §7).

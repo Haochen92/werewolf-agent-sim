@@ -401,8 +401,8 @@ async def test_parallel_interrupts_park_per_seat_and_resume_as_one_batch(quiet_s
 async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch):
     """The seat is absent but ANOTHER human is watching: at expiry the table delegates
     this one turn to the seat's agent (seat_continuity.md §5, "someone connected")."""
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.05)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([_interrupt_part()], []), seat_tokens=["t1", "t2"])
     session.subscribe(lambda: "player_5")  # the other human's open stream
     session.start()
@@ -423,7 +423,7 @@ async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch)
 
 async def test_afk_timer_never_arms_in_solo(quiet_session, monkeypatch):
     """One human seat = nobody is held hostage; the lone human may think forever."""
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 0.02)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 0.02)
     session = quiet_session(FakeGraph([_interrupt_part()], []), seat_tokens=["t1"])
     session.start()
     while not session.pending_requests:
@@ -443,12 +443,12 @@ async def test_afk_stopwatch_dies_with_its_own_question(quiet_session, monkeypat
     """Identity, not membership: the stopwatch for an ANSWERED question must not fire
     into the seat's NEXT question (answered at 119s, next turn parks at 119.5s, the
     old stopwatch rings at 120s — the new question keeps its full window)."""
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 0.01)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     answered = human_turn_request(player_id="p1")
     next_question = human_turn_request(player_id="p1", day=2)
     session.pending_requests["p1"] = next_question  # the seat owes input — but not THIS
-    await session._afk_default("p1", answered, _now())  # the stale stopwatch rings
+    await session.clocks._expire("p1", answered, _now())  # the stale stopwatch rings
     assert session.pending_requests == {"p1": next_question}  # untouched
 
 
@@ -471,29 +471,29 @@ def _park(session, seat="p1", **over):
     session._pending_ids[seat] = seat
     session._promises[seat] = asyncio.get_running_loop().create_future()
     session.parked_since = _now()
-    session._arm_afk_timer(request)
+    session.clocks.arm(request)
     return request
 
 
 async def test_afk_expiry_parks_when_nobody_is_connected(quiet_session, monkeypatch):
     """No human stream at all: the delegate is NOT submitted. The question keeps
     waiting like a solo game, the graph idles, and the countdown is withdrawn."""
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.05)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([_interrupt_part()], []), seat_tokens=["t1", "t2"])
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
     await asyncio.sleep(0.2)  # several grace windows pass
     assert sorted(session.pending_requests) == ["player_3"]  # still parked
-    assert session.turn_deadlines == {} and session._afk_tasks == {}
+    assert session.turn_deadlines == {} and session.clocks._tasks == {}
     assert len(session._graph.calls) == 1  # never resumed
     assert not session._finished.is_set()
 
 
 async def test_connected_seat_keeps_the_full_thinking_window(quiet_session, monkeypatch):
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.5)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     session.subscribe(lambda: "p1")
     _park(session)
@@ -501,8 +501,8 @@ async def test_connected_seat_keeps_the_full_thinking_window(quiet_session, monk
 
 
 async def test_absent_seat_gets_the_grace_not_the_thinking_window(quiet_session, monkeypatch):
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.5)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     _park(session)
     assert 0 < _seconds_left(session, "p1") <= 0.5
@@ -511,8 +511,8 @@ async def test_absent_seat_gets_the_grace_not_the_thinking_window(quiet_session,
 async def test_stream_drop_starts_the_grace_and_a_return_lifts_it(quiet_session, monkeypatch):
     """Mid-turn disconnect: the effective deadline drops to the grace. Reconnect: it
     goes back to the ORIGINAL thinking deadline — absence never extends the clock."""
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.5)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     q = session.subscribe(lambda: "p1")
     _park(session)
@@ -530,13 +530,13 @@ async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session
     """A parked table (two absent seats). One human comes back: their own question gets
     a fresh thinking window; the other absent seat gets the grace, and at ITS expiry
     the presence test now finds someone — so that turn is delegated."""
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.05)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"])
     _park(session, "p1")
     _park(session, "p2")
     await asyncio.sleep(0.2)
-    assert session.turn_deadlines == {} and session._afk_tasks == {}  # parked
+    assert session.turn_deadlines == {} and session.clocks._tasks == {}  # parked
 
     session.subscribe(lambda: "p1")
     assert _seconds_left(session, "p1") > 9        # fresh window for the returner
@@ -547,7 +547,7 @@ async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session
 
 
 async def test_solo_games_ignore_presence(quiet_session, monkeypatch):
-    monkeypatch.setattr("server.runtime.ABSENCE_GRACE_SECONDS", 0.01)
+    monkeypatch.setattr("server.seat_clocks.ABSENCE_GRACE_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1"])
     request = human_turn_request(player_id="p1")
     session.pending_requests["p1"] = request
@@ -555,18 +555,18 @@ async def test_solo_games_ignore_presence(quiet_session, monkeypatch):
     session.unsubscribe(q)
     session.subscribe(lambda: "p1")
     await asyncio.sleep(0.05)
-    assert session.turn_deadlines == {} and session._afk_tasks == {}
+    assert session.turn_deadlines == {} and session.clocks._tasks == {}
     assert session.pending_requests == {"p1": request}
 
 
 async def test_answer_cancels_the_stopwatch(quiet_session, monkeypatch):
-    monkeypatch.setattr("server.runtime.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     session.subscribe(lambda: "p1")
     _park(session, valid_targets=["p2"])
     session.submit_turn({"target": "p2"}, seat="p1")
     await asyncio.sleep(0)
-    assert session._afk_tasks == {} and session._thinking_deadlines == {}
+    assert session.clocks._tasks == {} and session.clocks._thinking == {}
 
 
 def test_spectators_never_count_as_presence(quiet_session):
