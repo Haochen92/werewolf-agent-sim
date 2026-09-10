@@ -1,3 +1,4 @@
-"""The code that knows the table shapes: the write side and recovery reads of the game
-lifecycle (game_repository) and the public read side (replay_service).
+"""The code that talks to the database tables. game_repository.py writes the game and
+event rows and reads them back when the server restarts; replay_service.py reads finished
+games for the public replay pages.
 """

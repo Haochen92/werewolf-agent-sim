@@ -1,23 +1,20 @@
-"""The waiting room: a lobby game starts as a GameLobby and becomes a GameSession.
+"""The waiting room a multiplayer game starts in: one GameLobby per room.
 
-POST /games (lobby=true) puts a GameLobby in the registry; /join claims human seats;
-the host's /start builds the real GameSession under the SAME game_id and swaps it
-into the registry — the room URL is the game URL, before and after.
+POST /rooms creates one, players claim seats with POST /games/{id}/join, and the host
+starts play with POST /games/{id}/start. The game keeps the room's id: the registry in
+game/registry.py builds the running GameSession and puts it where the lobby was, so the
+room link still works once the game has begun.
 
-Rooms are multiplayer-only and deal every human a random seat (owner ruling: role
-choice inside a shared room can't be clean — honored picks make join order a race,
-denied picks leak that a human holds the role. Solo role choice lives on the
-instant-start path, POST /games {human, human_role}, where there is no one to leak
-to). A room therefore carries no per-joiner secrets at all — the roster is public.
+Everyone in a room is dealt a random seat. Picking a role in a shared room cannot be
+fair: if picks are honoured, joining first wins the role, and if one is refused, the
+refusal tells the asker that a human already holds it. Solo players do pick their role,
+on the instant-start door POST /games, where there is nobody to leak to. A room therefore
+keeps no per-player secrets, and its roster is public.
 
-Deliberately NOT a state inside GameSession: session construction fires engine side
-effects (memory seeding, runnable-config minting) that a waiting room must not, and
-a lobby has none of a session's machinery (no stream, no log, no translator).
-Registry values are the union GameLobby | GameSession; server.dependencies sorts
-callers to the right door (status serves both; turns/events demand a session).
-
-Error contract (mapped to HTTP by the routes): LookupError = state conflict (409);
-the host_key check lives in the route (403).
+A lobby is its own object rather than an early state of GameSession because building a
+session starts real engine work (seeding memory, minting a run config) that a room of
+people who have not started yet must not trigger, and because a room has none of a
+session's machinery: no event stream, no log, no translator.
 """
 
 from __future__ import annotations
@@ -29,43 +26,49 @@ from uuid import uuid4
 from Agents.config import RunConfig
 from Agents.config.game import GameConfig
 
-# Human-seat capacity = the cast size (the engine deals RunConfig.human_player seats,
-# capped at the cast; verified end-to-end by the 2-human real-graph smoke 2026-08-19).
-# Derived, not hardcoded: when the cast becomes a room option, the cap follows it.
+# Maximum number of human seats is equal to
+# the maximum number of characters in a game, defined in configuration.
 MAX_HUMAN_SEATS = len(GameConfig().initial_roles)
 
 
 class HumanSeat(NamedTuple):
-    """One claimed seat: the public roster name + the private proof of ownership."""
+    """One claimed seat: the name everyone sees, and the secret token that proves the
+    seat belongs to this player."""
 
     name: str
     token: str
 
 
 class GameLobby:
-    """One waiting room: identity + host credential + the joined seats.
+    """A waiting room for multiplayer games.
 
-    Two credentials, both uuid4, both delivered exactly once in a response body:
-    host_key (create response) proves "may start the game"; each seat's token
-    (join response + HttpOnly cookie) proves "owns this seat" for turns, private
-    events, and rejoin — there are no accounts, so holding the token IS the identity.
+    Key attributes:
+        game_id: The game's id, minted here. The running game keeps it, so the room link
+            still works after the game starts.
+        host_key: A secret handed back once at creation. Presenting it is what allows
+            starting or locking the room.
+        seats: The human players who joined, in join order. Each seat holds the chosen
+            name and a token that uniquely identifies that player. There are no accounts,
+            so holding the token is the only proof that a seat is yours.
     """
 
     def __init__(self, *, api_key: str = "", model: str = "", name: str = "") -> None:
         self.game_id = str(uuid4())
         self.host_key = str(uuid4())
-        # BYOK travels creation -> start: the creator funds the game.
+        # The creator's own API key, held until the game starts: whoever creates the room
+        # pays for the models it runs on.
         self.api_key = api_key
         self.model = model
+        """The model the game will run on, chosen when the room is created."""
         self.name = name
         """Public room title for the GET /rooms browser; "" = unnamed."""
         self.locked = False
-        """Host-set (POST /lock): a locked room bounces joins but keeps its seats —
-        the invite-link era's implicit lock ("don't share the link"), made explicit
-        now that rooms are publicly listed."""
+        """Set by the host through POST /games/{id}/lock. A locked room turns new joins
+        away but keeps the players who are already in it."""
         self.created_at = datetime.now(timezone.utc)
-        """Listing TTL anchor: old rooms drop out of GET /rooms (browse filter only
-        — the direct room URL keeps working)."""
+        """When the room was opened. GET /rooms stops listing rooms older than the
+        browsing window (two hours by default, see ROOM_LIST_TTL_SECONDS);
+        the room's own URL keeps working."""
         self.seats: list[HumanSeat] = []
 
     @property
@@ -75,9 +78,8 @@ class GameLobby:
 
     @property
     def tokens(self) -> list[str]:
-        """Seat tokens in join order. Join order IS deal order (the orchestrator
-        builds human_players deterministically), so at start the GameSession maps
-        token i -> human_players[i]."""
+        """Seat tokens in the order people joined. The engine deals its human seats in
+        that same order, so the first token belongs to the first human player."""
         return [s.token for s in self.seats]
 
     def join(self, name: str) -> tuple[int, str]:
@@ -100,12 +102,12 @@ class GameLobby:
         return None
 
     def run_config(self) -> RunConfig:
-        """Assemble the started game's config. Passing our game_id through keeps the
-        room URL valid across the registry swap (RunConfig only mints when blank).
-        No human_role ever: rooms deal random seats (see the module docstring)."""
+        """Build the config the started game runs on. The room's own game_id is passed
+        through so the room link still works after the swap (RunConfig only invents an id
+        when it is given none). A role is never requested: rooms deal random seats."""
         return RunConfig(
             game_id=self.game_id,
             human_player=len(self.seats),
-            # A served game is never mined into the memory store (the CLI human-game rule).
+            # A game played over the server is never mined into the memory store.
             memory_persistence={"dump_enabled": False},
         )

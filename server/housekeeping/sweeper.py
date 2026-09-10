@@ -1,10 +1,11 @@
-"""Retention for parked games (seat_continuity.md §7).
+"""The timer job that gives up on games nobody ever came back to.
 
-A game parked on a human question with nobody connected costs nothing while it waits,
-but boot recovery would revive it forever. This sweeper is the shelf life: past the
-window it marks the game ``dropped`` — the existing terminal status, reused — with the
-reason as the epitaph viewers see. Idempotent, and never touches a game a human is
-watching, a game that is running, or one that already ended.
+A game left waiting on a human question with nobody connected costs nothing while it
+waits, but boot recovery would keep bringing it back forever. This is its shelf life:
+once a solo game has waited an hour, or a game with several humans a whole day, the
+sweeper marks it ``dropped`` and stores the reason, which is what someone opening the
+game later sees. Running the sweep again is harmless, and it never touches a game
+somebody is watching, one that is actually playing, or one that has already ended.
 """
 
 from __future__ import annotations
@@ -28,8 +29,8 @@ def _shelf_life(session: GameSession, settings: ServerSettings) -> timedelta:
 
 def is_expired(session: GameSession, settings: ServerSettings,
                now: datetime | None = None) -> bool:
-    """Parked, unwatched, and past its shelf life — the three conditions, in order of
-    how cheaply each rules a game out."""
+    """True when the game is waiting on a human, nobody is connected to watch it, and it
+    has been in that state longer than its shelf life. The cheapest checks come first."""
     if session.error is not None or session.game_over or session._finished.is_set():
         return False
     if not session.pending_requests or session.parked_since is None:
@@ -43,7 +44,7 @@ def is_expired(session: GameSession, settings: ServerSettings,
 async def sweep_parked_games(registry: GameRegistry,
                              settings: ServerSettings = server_settings,
                              now: datetime | None = None) -> list[str]:
-    """One pass over the registry. Returns the game ids dropped."""
+    """One pass over every running game. Returns the ids of the games it dropped."""
     dropped: list[str] = []
     for session in registry.sessions():
         if not is_expired(session, settings, now):
@@ -53,7 +54,7 @@ async def sweep_parked_games(registry: GameRegistry,
                   f"{int(idle.total_seconds() // 60)} min")
         try:
             await registry.drop(session.game_id, reason)
-        except Exception:  # one bad row must not stop the sweep
+        except Exception:  # one bad game must not stop the rest of the sweep
             logger.exception("sweep: game %s could not be dropped", session.game_id)
             continue
         logger.info("sweep: game %s dropped (%s)", session.game_id, reason)
@@ -63,7 +64,7 @@ async def sweep_parked_games(registry: GameRegistry,
 
 async def run_sweeper(registry: GameRegistry,
                       settings: ServerSettings = server_settings) -> None:
-    """The lifespan's background loop; cancelled at shutdown."""
+    """The background loop the app starts at boot and cancels at shutdown."""
     while True:
         await asyncio.sleep(settings.SWEEP_INTERVAL_SECONDS)
         try:

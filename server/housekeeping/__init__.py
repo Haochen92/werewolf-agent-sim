@@ -1,3 +1,4 @@
-"""Process-lifecycle jobs that act on every game without being asked: boot recovery
-and the retention sweep. Triggered by the process (boot, a timer), never by a request.
+"""Jobs the process runs by itself, at boot or on a timer, never because of a request.
+recovery.py rebuilds the registry from the database when the server starts; sweeper.py
+drops games that have been left waiting on a human for too long.
 """

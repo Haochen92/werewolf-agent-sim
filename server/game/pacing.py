@@ -1,10 +1,7 @@
-"""The pacing bars: ephemeral phase_progress snapshots from PUBLIC knowledge only.
+"""The progress bars a viewer watches during the night and the day vote.
 
-Night and the day vote deliberately withhold their events (secrecy tiers, blind voting),
-so a live viewer needs proof of motion without proof of content. Denominators come from
-the publicly derivable alive-role census, never the real fan-out; padded 20–30 s
-completions make a non-actor (a vigilante out of bullets) indistinguishable from a slow
-one. Extracted from GameSession, which feeds it public events and part-level ticks.
+The file holds PacingTracker, which one running game keeps for the length of that game,
+and the small table naming the night phases whose completion the bars count.
 """
 
 from __future__ import annotations

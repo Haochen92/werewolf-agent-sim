@@ -1,13 +1,18 @@
-"""The AFK clocks of one game — two clocks, one deadline, and the table's decision at
-expiry (seat_continuity.md §4–§5). Extracted from GameSession, which keeps the graph,
-the log, and the viewers; this class keeps only time.
+"""The clocks that stop one silent player from stalling a game other people are in.
 
-Per parked seat there is one stopwatch, rescheduled and never stacked, running to the
-EFFECTIVE deadline: the thinking deadline (absolute from the ask) or the absence grace
-when the seat has no open stream — whichever is earlier. When it rings, the presence
-test decides: someone connected → delegate this one turn; nobody → park, which is
-simply not delegating. The session supplies presence and the delegate action as
-callables, so this class never touches a stream or the graph.
+When the game asks a human seat a question, that seat has 120 seconds to answer. If the
+seat has no browser connected, it gets 30 seconds instead, which is enough to survive a
+dropped connection. Each waiting seat runs a single clock set to whichever of the two
+comes first, restarted rather than stacked as that seat's connection goes and returns.
+
+When the clock runs out, the question is not simply skipped. If any human is connected,
+that seat's turn is played by the seat's own AI so the rest of the table can carry on. If
+nobody is connected, the game parks: it just waits, nothing is spent, and the question is
+still there when someone comes back.
+
+Only games with more than one human seat use these clocks; a solo player may think for as
+long as they like. This file holds the timing and nothing else. GameSession lends it the
+two things it cannot work out itself: who is connected, and how to hand a turn to an AI.
 """
 
 from __future__ import annotations
@@ -21,15 +26,11 @@ from Agents.schemas.human_player import HumanTurnRequest
 
 logger = logging.getLogger(__name__)
 
-# The thinking window: how long a MULTI-human game waits on a connected seat before the
-# turn is delegated to the seat's agent (one absent player must not hold the table
-# hostage). Solo games never arm it — the lone human may think forever, nobody is waiting.
+# How long a game with more than one human waits for a connected seat to answer before
+# the turn goes to that seat's AI. Solo games never use it: nobody else is waiting.
 AFK_TIMEOUT_SECONDS = 120.0
-# The absence grace: a parked seat with NO open stream gets this long to reconnect before
-# its clock fires — enough for a browser retry plus the heartbeat lag, short enough that one
-# closed tab does not cost the table two minutes on every one of that seat's turns. It never
-# extends the thinking deadline. Measured 2026-09-09: detection lag is 1–10 s, bounded by
-# the 15 s heartbeat — 30 s leaves ~10 s of margin.
+# How long a waiting seat with no connection open has to come back. Measured 2026-09-09:
+# a closed connection is noticed within 1-10 s, so 30 s still leaves room for a retry.
 ABSENCE_GRACE_SECONDS = 30.0
 
 
@@ -38,9 +39,11 @@ def _now() -> datetime:
 
 
 class SeatClocks:
-    """One game's stopwatches. ``pending`` is the session's live registry of parked
-    questions (shared by reference, never rebound); ``deadlines`` is the effective
-    deadline per seat, served to clients as their countdown."""
+    """One game's clocks, one for each seat that has been asked something.
+
+    ``pending`` is the session's own dictionary of unanswered questions, shared by
+    reference so both sides always see the same one. ``deadlines`` is the moment each
+    seat's clock runs out, which is also the countdown the players are shown."""
 
     def __init__(self, game_id: str, pending: dict[str, HumanTurnRequest], *,
                  enabled: bool,
@@ -60,7 +63,7 @@ class SeatClocks:
     # -- the clocks -----------------------------------------------------------------------
 
     def arm(self, request: HumanTurnRequest) -> None:
-        """A new question: the thinking deadline is absolute from the ask."""
+        """A new question was asked: the seat's 120 seconds start now and do not move."""
         if not self._enabled:
             return
         seat = request.player_id
@@ -68,12 +71,12 @@ class SeatClocks:
         self.reschedule(seat, request)
 
     def reschedule(self, seat: str, request: HumanTurnRequest) -> None:
-        """(Re)start the seat's one stopwatch at its EFFECTIVE deadline: the thinking
-        deadline, or the absence grace when the seat has no open stream — whichever is
-        earlier. Absence never extends the clock (back at 29 s means 91 s left). Called
-        on the ask, when the seat's stream drops, and when a stream returns (which lifts
-        a grace back to the thinking deadline). The served deadline is the effective
-        one, so the countdown the table sees is the truth."""
+        """Start, or restart, this seat's single clock at whichever comes first: the 120
+        seconds it was given to think, or 30 seconds from now when the seat has no
+        connection open. Being away can only shorten the wait, never lengthen it: a seat
+        that reconnects after 29 seconds still has 91 seconds to think. Called when the
+        question is asked, when the seat's connection drops, and when it comes back. The
+        deadline the players are shown is the one actually in use."""
         deadline = self._thinking[seat]
         if not self._seat_present(seat):
             deadline = min(deadline, _now() + timedelta(seconds=ABSENCE_GRACE_SECONDS))
@@ -89,19 +92,19 @@ class SeatClocks:
 
     async def _expire(self, seat: str, request: HumanTurnRequest,
                       deadline: datetime) -> None:
-        """The stopwatch: sleep to the deadline, then let the TABLE decide this question.
+        """Wait until the deadline, then decide what becomes of this question.
 
-        The expiry check is request IDENTITY, not seat membership: if the seat answered
-        at 119s and its next turn parked at 119.5s, the seat is pending again — but on a
-        different question, which has its own stopwatch. This one must die quietly.
-        No await sits between the check and the delegate, so a real answer racing the
-        expiry either lands first (identity check fails) or second (LookupError inside
-        submit_turn — the same bounce as a double-click).
+        What is checked is the question, not the seat. If the seat answered at 119 seconds
+        and was asked something new half a second later, it is waiting again, but on a
+        different question with a clock of its own, so this clock must stop quietly.
+        Nothing is awaited between that check and the handover, so an answer arriving at
+        the same moment either wins, in which case this clock finds the question gone, or
+        arrives second and is refused the way a double-click is.
 
-        The presence test runs over every human seat: someone connected → delegate this
-        one turn to the seat's agent; nobody → PARK. Parking is the absence of delegation
-        — the question keeps waiting exactly as a solo game does, the graph idles, no
-        tokens burn, and the first returning human stream re-arms the clocks."""
+        If any human seat is connected, this one turn is played by the seat's own AI. If
+        nobody is connected the game parks, which simply means nothing happens: the
+        question stays unanswered, the engine idles, no tokens are spent, and the first
+        player to reconnect starts the clocks again."""
         await asyncio.sleep(max(0.0, (deadline - _now()).total_seconds()))
         if self._pending.get(seat) is not request:
             return
@@ -126,7 +129,7 @@ class SeatClocks:
             stopwatch.cancel()
 
     def cancel_all(self) -> None:
-        """Stopwatches die with the game."""
+        """Stop every clock; the game is over."""
         for task in list(self._tasks.values()):
             task.cancel()
 
@@ -136,10 +139,12 @@ class SeatClocks:
     # -- presence transitions -------------------------------------------------------------
 
     def on_seat_returned(self, seat: str) -> None:
-        """A human seat's stream (re)connected. Lifts that seat's running absence grace
-        back to its thinking deadline, and un-parks a parked table: the returning seat's
-        own question gets a fresh thinking window (nobody waited during the park); every
-        other parked seat gets the grace, after which the presence test finds someone."""
+        """A human seat connected again. If that seat was running on the short absence
+        window, it goes back to its full thinking time, and if the game was parked the
+        returning seat's own question starts a fresh 120 seconds, since nobody was kept
+        waiting while it was parked. Every other seat still waiting has its clock started
+        again too, and when one of those runs out there is now someone connected, so that
+        turn goes to the seat's AI."""
         if not self._enabled or not self._pending:
             return
         for pending_seat, request in list(self._pending.items()):
@@ -151,8 +156,9 @@ class SeatClocks:
             self.reschedule(pending_seat, request)
 
     def on_seat_left(self, seat: str) -> None:
-        """The seat's last stream closed mid-question: its clock drops to the absence
-        grace — the tab may be retrying, or may be gone."""
+        """The seat's last connection closed while it still owed an answer, so its clock
+        drops to the 30-second absence window: the browser may be reconnecting, or the
+        player may be gone for good."""
         request = self._pending.get(seat)
         if request is not None and self.is_running(seat):
             self.reschedule(seat, request)

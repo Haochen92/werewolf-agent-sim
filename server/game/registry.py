@@ -1,23 +1,26 @@
-"""The middle lifecycle: every game this process knows, and how one moves between stages.
+"""The table of every game this process knows about, and the moves between stages.
 
     (nothing) ──open_room──▶ waiting ──start──▶ running ──▶ completed | dropped
     (nothing) ──start_instant──────────────────▶ running
     row ──revive──▶ waiting | running                          (boot, via housekeeping)
     running ──drop──▶ dropped                                  (sweep, via housekeeping)
 
-The process owns one registry (built in resources.py, alive as long as the process); each
-entry is one game at one stage — a GameLobby while waiting, a GameSession once running.
-Transitions that originate OUTSIDE a game live here, and this is the only code that puts
-an entry into the table or swaps one: the routes gather inputs and call one method each;
-housekeeping calls ``revive`` at boot and ``drop`` on the sweep. The two endings that
-originate INSIDE a game — its graph finishing (completed) and its task dying (dropped) —
-stay in GameSession, which reports them to the repository itself; the entry then serves
-history until the process ends.
+The process builds one registry at startup, in resources.py, and keeps it for as long as
+it runs. Each entry is one game at one stage, found by its game_id: a GameLobby while
+people are still joining, a GameSession once the game is being played.
 
-What this is not: it never looks inside a session (turns, viewers, clocks, pacing are the
-session's), never speaks HTTP (routes translate LookupError → 409 and PermissionError →
-403; the dependency layer owns the 404), and never touches events or checkpoints beyond
-what a transition must write.
+This is the only code that puts a game in the table or replaces one. A route collects what
+the request carries and calls a single method here, and housekeeping calls ``revive`` at
+boot and ``drop`` when the sweeper gives up on a game. The two endings a game reaches on
+its own, its engine run finishing and its task dying, are handled by GameSession, which
+records them itself; the entry then stays in the table so its history can still be read
+until the process stops.
+
+The registry never looks inside a running game (turns, viewers, clocks and pacing all
+belong to GameSession) and it does not know about HTTP. It raises LookupError when a game
+is in the wrong stage and PermissionError when a host key does not match; the routes in
+routes/rooms.py turn those into 409 and 403, and the providers in dependencies.py answer
+404 for an id nobody here knows.
 """
 
 from __future__ import annotations
@@ -43,7 +46,8 @@ _BYOK_EPITAPH = ("the game's API key did not survive the server restart "
 
 
 class GameRegistry:
-    """Every waiting room and running game, keyed by game_id, plus the transitions."""
+    """Every waiting room and running game in this process, found by game_id, together
+    with the methods that move a game from one stage to the next."""
 
     def __init__(self, repository: GameRepository, graph_runtime) -> None:
         self._repository = repository
@@ -85,8 +89,8 @@ class GameRegistry:
 
     async def open_room(self, *, api_key: str = "", model: str = "",
                         name: str = "") -> GameLobby:
-        """A lobby whose id stays stable when the game starts: the room and its eventual
-        running game share one registry/database identity for their full life."""
+        """Open a waiting room and write it down. Its id is the id the running game will
+        keep, so one identifier covers the room and the game it becomes."""
         room = GameLobby(api_key=api_key, model=model, name=name)
         self._entries[room.game_id] = room
         await self._repository.upsert_game(
@@ -115,9 +119,9 @@ class GameRegistry:
     # -- → running ------------------------------------------------------------------------
 
     async def start(self, game_id: str, host_key: str) -> GameSession:
-        """Replace the lobby with a running session under the SAME id. No await sits
-        between validating the lobby and the in-memory swap, so another /start or
-        /join cannot interleave with it."""
+        """Replace the waiting room with a running game under the same id. Only the host
+        may do this. Nothing is awaited between checking the room and swapping it out, so
+        a second start or a late join cannot slip in halfway through."""
         room = self._lobby(game_id)
         if host_key != room.host_key:
             raise PermissionError("only the host may start the game")
@@ -130,7 +134,8 @@ class GameRegistry:
 
     async def start_instant(self, run_config: RunConfig, *, api_key: str, model: str,
                             seat_tokens: list[str]) -> GameSession:
-        """Born running: the solo and LLM-only door. No waiting stage exists for it."""
+        """Start a game that never had a waiting room: the solo and all-AI door,
+        POST /games."""
         session = GameSession(
             run_config, api_key=api_key, model=model, seat_tokens=seat_tokens,
             graph=self._graph_runtime.graph, repository=self._repository)
@@ -139,8 +144,8 @@ class GameRegistry:
             seats=[{"name": "human", "token": token} for token in seat_tokens])
 
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
-        """The one 'now it is running' step both doors share: swap in the entry, write
-        the row, start the task."""
+        """The step both doors share once a game is about to run: put the session in the
+        table, write its row, and start its task."""
         self._entries[session.game_id] = session
         await self._repository.upsert_game(session.game_id, status="running", **row_fields)
         session.start()
@@ -149,8 +154,9 @@ class GameRegistry:
     # -- running → dropped, from outside --------------------------------------------------
 
     async def drop(self, game_id: str, reason: str) -> None:
-        """End a game nobody will finish. A session stays in the table as history with
-        the reason as its epitaph; a lobby simply disappears."""
+        """End a game nobody is going to finish. A running game stays in the table so its
+        history can still be read, with the reason stored alongside it, and a waiting room
+        simply disappears."""
         entry = self._entries.get(game_id)
         if isinstance(entry, GameSession):
             await entry.abandon(reason)
@@ -161,14 +167,15 @@ class GameRegistry:
     # -- row → entry (boot) ---------------------------------------------------------------
 
     async def revive(self, row: GameRow) -> Entry | None:
-        """Rebuild one entry from its persisted facts after a restart. Facts come from
-        three places, each authoritative for one thing: the game row (identity, seats,
-        host_key, status, byok), the events table (the wire log), and the LangGraph
-        checkpoint (where the game actually is, parked interrupts included).
+        """Rebuild one game from what was written down, after a restart. Three sources
+        are used, each the authority on one thing: the game row holds the identity, the
+        seats, the host key and the status; the events table holds everything the players
+        were sent; the engine checkpoint holds where the game actually is, including the
+        questions it was waiting on.
 
-        BYOK rows: the key was never stored, so the game cannot be resumed as funded —
-        a session revives dead with a clear error (its history still serves); a BYOK
-        waiting room is simply marked dropped."""
+        A game funded by a player's own key cannot come back, because the key itself was
+        never stored. Such a game is revived only far enough to serve its history, with an
+        error explaining why, and a waiting room in that state is simply marked dropped."""
         if row.status == WAITING:
             if row.byok:
                 await self._repository.upsert_game(
@@ -224,8 +231,8 @@ class GameRegistry:
                 asyncio.get_running_loop().create_future())
             session.clocks.arm(request)  # a no-op for solo tables
         if session.pending_requests:
-            # The retention clock survives the restart: a row parked for a day before
-            # the reboot is still a day old, not newborn (seat_continuity.md §7).
+            # How long the game has been waiting survives the restart: one parked for a
+            # day before the reboot is still a day old, not newly parked.
             session.parked_since = row.updated_at or datetime.now(timezone.utc)
         session.start_recovered(waiting_on_humans=bool(session.pending_requests))
         return session
@@ -233,8 +240,8 @@ class GameRegistry:
     # -- process end ----------------------------------------------------------------------
 
     async def shutdown(self) -> None:
-        """Cancel every running task; their checkpoints and event tails are recovered
-        on the next boot."""
+        """Cancel every running game's task. What each one had reached is already
+        written down, so the next boot picks them up again."""
         sessions = self.sessions()
         if sessions:
             logger.info("shutting down %d game session(s)", len(sessions))

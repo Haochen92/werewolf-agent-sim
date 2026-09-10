@@ -1,10 +1,12 @@
-"""The served-game model policy as code (product policy, not runtime mechanics).
+"""Which models a served game may be played on, and who pays for each of them.
 
-Only models that have carried real games are selectable — a model enters by surviving
-live games, not by having a factory branch. The first row is both the house default and
-the default for a bare BYOK key. GET /models serves this table; the routes' BYOK gate and
-GameSession's model override read it. Kept apart from the runtime so the HTTP layer can
-import a dict without dragging the graph machinery along.
+A model is listed here only once it has carried real games, so this is a record of what
+has actually worked rather than of everything the code could call. The first row is the
+default, both for games the server pays for and for a player who brings a key without
+naming a model. GET /models serves this table, routes/_shared.py checks a requested model
+against it, and game/runtime.py reads it to find a backup model. It is deliberately a
+plain table with no engine imports, so the HTTP layer can read it without loading the
+game machinery.
 """
 
 from __future__ import annotations

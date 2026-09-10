@@ -1,10 +1,10 @@
-"""Boot recovery: rebuild the registry from persisted facts after a restart.
+"""Filling the registry back up at boot from what the database remembers.
 
-The counterpart of "persistence writes facts down": at boot, every waiting/running row
-is handed to ``GameRegistry.revive``, which re-creates the living entry from the row,
-the event log and the checkpoint. Per-row failure policy: recovery of one game must
-never take the server down or block the others — a row that fails to revive is marked
-dropped with the reason and skipped.
+A restart empties the process, but every game is still written down. At startup each row
+still marked waiting or running is handed to ``GameRegistry.revive``, which rebuilds the
+game from that row, the stored events and the engine checkpoint. One broken game must
+never take the server down or hold up the others, so a row that cannot be rebuilt is
+marked dropped, with the reason, and skipped.
 """
 
 from __future__ import annotations
@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 async def recover_registry(registry: GameRegistry, repository: GameRepository) -> None:
-    """Fill the fresh registry from every waiting/running row. Called by the lifespan
-    after the graph runtime starts; a no-op when Postgres is unconfigured."""
+    """Fill a fresh registry from every waiting or running row. Called at startup once
+    the graph runtime is up, and does nothing when Postgres is not configured."""
     if not registry.durable:
         return
     rows = await repository.load_recoverable_games()
