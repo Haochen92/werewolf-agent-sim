@@ -428,3 +428,32 @@ This is organization, not a new API version: paths, methods, request/response DT
 framing and status codes are unchanged. It also makes the dependency direction easy to state in
 an interview: lifespan constructs resources once; FastAPI dependencies resolve them per request;
 routers translate HTTP; services/repositories do the work.
+
+## 10. Three nested lifecycles, and the registry that was missing (2026-09-10)
+
+Reviewing `runtime.py` after the holiday, the owner asked which module owned "a game's
+lifecycle" and found the honest answer was *none*. There are three nested lifecycles: the
+**process** (boot → serve → shutdown: `app.py`, `resources.py`), **one game** (waiting →
+running → completed | dropped: `game/lobby.py`, `game/runtime.py`), and the one in between —
+**every game the process knows, and how an id moves between stages.** That middle layer existed
+only as a bare dict on `AppResources` plus six places that mutated it: two route files (the
+three doors and join/lock/start — the "now it is running" block written twice), the session's
+own endings, recovery, and the sweeper.
+
+`game/registry.py` names it. `GameRegistry` owns the table and every transition that
+originates *outside* a game — `open_room`, `join`, `lock`, `start`, `start_instant`, `drop`,
+`revive` — and nothing else: it never looks inside a session, never speaks HTTP (routes map its
+`LookupError`/`PermissionError` to 409/403; the dependency layer keeps the 404), never touches
+events or checkpoints beyond what a transition must write. The two endings that originate
+*inside* a game (graph finished → completed, task died → dropped) stay in `GameSession`, because
+a session depending on the registry that created it would be a cycle. Dependency direction:
+routes and housekeeping → registry → lobby, runtime, repository; nothing below knows the
+registry exists.
+
+Considered and rejected on the way: forcing solo games through a room so there is one door
+(uniformity, not simplicity — the lobby's host key, lock and name would be created and
+discarded, role choice would become a conditional inside the one path, and the only UX-neutral
+version is an invisible room, i.e. the registry wearing a costume); and a `lifecycle/` package
+for recovery + sweeper (they are *process*-lifecycle jobs — triggered by boot and a timer, acting
+on every game — so they live in `housekeeping/` and call the registry). The package layout that
+fell out: root = process skeleton; `game/`, `storage/`, `housekeeping/` = the three domains.

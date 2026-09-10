@@ -13,14 +13,7 @@ from fastapi.responses import StreamingResponse
 
 from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
-from server.dependencies import (
-    Game,
-    GameRepositoryDep,
-    GamesRegistry,
-    GraphRuntimeDep,
-    Room,
-    SeatToken,
-)
+from server.dependencies import Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.game.runtime import GameSession, entitled
 from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
@@ -43,12 +36,10 @@ async def create_game(
     body: NewGame,
     games: GamesRegistry,
     response: Response,
-    repository: GameRepositoryDep,
-    graph_runtime: GraphRuntimeDep,
 ) -> GameCreated:
     check_model_access(body.api_key, body.model)
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
-    session = GameSession(
+    session = await games.start_instant(
         RunConfig(
             human_player=len(seat_tokens),
             human_role=body.human_role,
@@ -57,18 +48,7 @@ async def create_game(
         api_key=body.api_key,
         model=body.model,
         seat_tokens=seat_tokens,
-        graph=graph_runtime.graph,
-        repository=repository,
     )
-    games[session.game_id] = session
-    await repository.upsert_game(
-        session.game_id,
-        status="running",
-        model=body.model,
-        byok=bool(body.api_key),
-        seats=[{"name": "human", "token": token} for token in seat_tokens],
-    )
-    session.start()
     if seat_tokens:
         set_seat_cookie(response, session.game_id, seat_tokens[0])
     return GameCreated(

@@ -5,14 +5,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Response
 
 from server.config import server_settings
-from server.dependencies import (
-    GameRepositoryDep,
-    GamesRegistry,
-    GraphRuntimeDep,
-    Room,
-)
+from server.dependencies import GamesRegistry, Room
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
-from server.game.runtime import GameSession
 from server.schemas.requests import (
     GameCreated,
     JoinGame,
@@ -33,29 +27,13 @@ router = APIRouter(tags=["rooms"])
     response_model=RoomCreated,
     summary="Create a multiplayer waiting room (humans join via /join)",
 )
-async def create_room(
-    body: NewRoom,
-    games: GamesRegistry,
-    repository: GameRepositoryDep,
-) -> RoomCreated:
+async def create_room(body: NewRoom, games: GamesRegistry) -> RoomCreated:
     """Create a lobby whose identifier remains stable when the game starts.
 
-    Humans enter only through ``/join`` and roles remain random. The room and its
-    eventual running game share one registry/database identity for their full life.
+    Humans enter only through ``/join`` and roles remain random.
     """
     check_model_access(body.api_key, body.model)
-    room = GameLobby(api_key=body.api_key, model=body.model, name=body.name)
-    games[room.game_id] = room
-    await repository.upsert_game(
-        room.game_id,
-        status="waiting",
-        host_key=room.host_key,
-        model=body.model,
-        byok=bool(body.api_key),
-        seats=[],
-        room_name=room.name,
-        created_at=room.created_at,
-    )
+    room = await games.open_room(api_key=body.api_key, model=body.model, name=body.name)
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)
 
 
@@ -80,10 +58,8 @@ async def list_rooms(games: GamesRegistry) -> list[RoomSummary]:
     cutoff = server_settings.ROOM_LIST_TTL_SECONDS
     now = datetime.now(timezone.utc)
     rooms = [
-        game
-        for game in games.values()
-        if isinstance(game, GameLobby)
-        and (now - game.created_at).total_seconds() < cutoff
+        room for room in games.lobbies()
+        if (now - room.created_at).total_seconds() < cutoff
     ]
     return [
         _room_summary(room)
@@ -98,16 +74,16 @@ async def list_rooms(games: GamesRegistry) -> list[RoomSummary]:
 )
 async def lock_room(
     room: Room,
-    repository: GameRepositoryDep,
+    games: GamesRegistry,
     host_key: str = "",
     locked: bool = True,
 ) -> RoomSummary:
-    if not isinstance(room, GameLobby):
-        raise HTTPException(status_code=409, detail="game already started")
-    if host_key != room.host_key:
-        raise HTTPException(status_code=403, detail="only the host may lock the room")
-    room.locked = locked
-    await repository.upsert_game(room.game_id, locked=locked)
+    try:
+        room = await games.lock(room.game_id, host_key, locked)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     return _room_summary(room)
 
 
@@ -120,17 +96,12 @@ async def join_game(
     room: Room,
     body: JoinGame,
     response: Response,
-    repository: GameRepositoryDep,
+    games: GamesRegistry,
 ) -> SeatJoined:
-    if not isinstance(room, GameLobby):
-        raise HTTPException(status_code=409, detail="game already started")
     try:
-        position, token = room.join(body.name)
+        position, token = await games.join(room.game_id, body.name)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
-    await repository.upsert_game(
-        room.game_id, seats=[seat._asdict() for seat in room.seats]
-    )
     set_seat_cookie(response, room.game_id, token)
     return SeatJoined(position=position, token=token)
 
@@ -160,32 +131,13 @@ async def rejoin_game(
 async def start_game(
     room: Room,
     games: GamesRegistry,
-    repository: GameRepositoryDep,
-    graph_runtime: GraphRuntimeDep,
     host_key: str = "",
 ) -> GameCreated:
-    """Atomically replace the lobby with a running session under the same ID.
-
-    There is no await between validating the lobby and replacing the registry entry,
-    so another ``/start`` or ``/join`` cannot interleave with the in-memory swap.
-    """
-    if not isinstance(room, GameLobby):
-        raise HTTPException(status_code=409, detail="game already started")
-    if host_key != room.host_key:
-        raise HTTPException(status_code=403, detail="only the host may start the game")
-    session = GameSession(
-        room.run_config(),
-        api_key=room.api_key,
-        model=room.model,
-        seat_tokens=room.tokens,
-        graph=graph_runtime.graph,
-        repository=repository,
-    )
-    games[session.game_id] = session
-    await repository.upsert_game(
-        session.game_id,
-        status="running",
-        seats=[seat._asdict() for seat in room.seats],
-    )
-    session.start()
+    """Replace the lobby with a running session under the same ID (registry.start)."""
+    try:
+        session = await games.start(room.game_id, host_key)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     return GameCreated(game_id=session.game_id)

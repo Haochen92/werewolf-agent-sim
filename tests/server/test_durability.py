@@ -12,6 +12,7 @@ from types import SimpleNamespace
 
 from langgraph.types import Command
 
+from server.game.registry import GameRegistry
 from server.housekeeping import recovery
 from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
 from server.storage.game_repository import derive_completion_metadata
@@ -141,8 +142,8 @@ def _row(**over):
 async def _recover(monkeypatch, rows, graph):
     monkeypatch.setattr("server.game.runtime.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=rows)
-    games: dict = {}
-    await recovery.recover_registry(games, repository, graph)
+    games = GameRegistry(repository, SimpleNamespace(graph=graph))
+    await recovery.recover_registry(games, repository)
     return games, repository
 
 
@@ -154,7 +155,7 @@ async def test_waiting_room_revives_with_its_identity(monkeypatch):
                room_name="wolves den", locked=True, created_at=stamp)
     games, _ = await _recover(monkeypatch, [row], FakeDurableGraph(None))
 
-    lobby = games["g-1"]
+    lobby = games.get("g-1")
     assert (lobby.game_id, lobby.host_key) == ("g-1", "hk-9")
     assert lobby.players == ["hao"] and lobby.tokens == ["tok-1"]
     # The browser/lock facts survive too: a restart must not silently unlock a
@@ -172,7 +173,7 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
     from datetime import datetime, timezone
     stamp = datetime(2026, 8, 24, 3, 32, tzinfo=timezone.utc)
     games, _ = await _recover(monkeypatch, [_row(updated_at=stamp)], graph)
-    session = games["g-1"]
+    session = games.get("g-1")
     assert sorted(session.pending_requests) == ["player_3"]  # the returning-player view
     assert session.parked_since == stamp  # the retention clock survives the restart
     assert session.seat_for_token("tok-1") == "player_3"
@@ -186,7 +187,7 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
 async def test_byok_game_revives_dead_with_a_clear_epitaph(monkeypatch):
     games, repository = await _recover(monkeypatch, [_row(byok=True)],
                                        FakeDurableGraph(None))
-    session = games["g-1"]
+    session = games.get("g-1")
     assert "API key" in session.error and session._task is None
     assert ("g-1", {"status": DROPPED, "error": session.error}) in repository.upsert_calls
 
@@ -197,13 +198,13 @@ async def test_house_selected_model_survives_restart(monkeypatch):
     games, _ = await _recover(
         monkeypatch, [_row(model=model, byok=False)], FakeDurableGraph(state))
 
-    assert games["g-1"]._llm_override.model == model
+    assert games.get("g-1")._llm_override.model == model
 
 
 async def test_stale_running_row_of_a_finished_game_is_closed(monkeypatch):
     state = SimpleNamespace(next=(), tasks=[])
     games, repository = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))
-    assert games["g-1"]._task is None
+    assert games.get("g-1")._task is None
     assert repository.completions == [("g-1", 0, 1)]
 
 

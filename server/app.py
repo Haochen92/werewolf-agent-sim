@@ -23,7 +23,6 @@ from server.routes.games import router as games_router
 from server.routes.replays import router as replays_router
 from server.routes.rooms import router as rooms_router
 from server.routes.system import router as system_router
-from server.game.runtime import GameSession
 from server.housekeeping.sweeper import run_sweeper
 
 logger = logging.getLogger(__name__)
@@ -35,27 +34,13 @@ async def lifespan(app: FastAPI):
     before closing storage."""
     async with app_resources() as resources:
         app.state.resources = resources
-        await recover_registry(
-            resources.games,
-            resources.game_repository,
-            resources.graph_runtime.graph,
-        )
-        sweeper = asyncio.create_task(
-            run_sweeper(resources.games, resources.game_repository), name="park-sweeper")
+        await recover_registry(resources.games, resources.game_repository)
+        sweeper = asyncio.create_task(run_sweeper(resources.games), name="park-sweeper")
         try:
             yield
         finally:
             sweeper.cancel()
-            sessions = [
-                entry
-                for entry in resources.games.values()
-                if isinstance(entry, GameSession)
-            ]
-            if sessions:
-                logger.info("shutting down %d game session(s)", len(sessions))
-                await asyncio.gather(
-                    *(session.shutdown() for session in sessions)
-                )
+            await resources.games.shutdown()
 
 
 def _configure_logging() -> None:

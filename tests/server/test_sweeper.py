@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 from server.config import ServerSettings
 from server.game.lobby import GameLobby
+from server.game.registry import GameRegistry
 from server.housekeeping.sweeper import is_expired, sweep_parked_games
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import HangingGraph
@@ -67,13 +69,16 @@ async def test_a_watched_or_settled_game_is_never_expired(quiet_session):
 async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     expired = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=2))
     fresh = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=1))
-    games = {"old": expired, "new": fresh, "room": GameLobby(model="", name="x")}
     repo = Repo()
+    games = GameRegistry(repo, SimpleNamespace(graph=None))
+    for entry in (expired, fresh, GameLobby(model="", name="x")):
+        games.adopt(entry)
 
-    assert await sweep_parked_games(games, repo, SETTINGS) == ["old"]
+    assert await sweep_parked_games(games, SETTINGS) == [expired.game_id]
     assert expired.error.startswith("abandoned:") and expired._finished.is_set()
-    assert repo.upserts == [("old", {"status": "dropped", "error": expired.error})]
-    assert fresh.error is None and "old" in games  # the URL still answers, as dropped
+    assert repo.upserts == [(expired.game_id, {"status": "dropped", "error": expired.error})]
+    assert fresh.error is None
+    assert games.get(expired.game_id) is expired  # the URL still answers, as dropped
 
-    assert await sweep_parked_games(games, repo, SETTINGS) == []  # nothing left to do
+    assert await sweep_parked_games(games, SETTINGS) == []  # nothing left to do
     await fresh.shutdown()

@@ -14,8 +14,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from server.config import ServerSettings, server_settings
-from server.database_models.game import DROPPED
-from server.storage.game_repository import GameRepository
+from server.game.registry import GameRegistry
 from server.game.runtime import GameSession
 
 logger = logging.getLogger(__name__)
@@ -41,35 +40,33 @@ def is_expired(session: GameSession, settings: ServerSettings,
     return now - session.parked_since >= _shelf_life(session, settings)
 
 
-async def sweep_parked_games(games: dict, repository: GameRepository | None,
+async def sweep_parked_games(registry: GameRegistry,
                              settings: ServerSettings = server_settings,
                              now: datetime | None = None) -> list[str]:
     """One pass over the registry. Returns the game ids dropped."""
     dropped: list[str] = []
-    for game_id, entry in list(games.items()):
-        if not isinstance(entry, GameSession) or not is_expired(entry, settings, now):
+    for session in registry.sessions():
+        if not is_expired(session, settings, now):
             continue
-        idle = datetime.now(timezone.utc) - entry.parked_since  # type: ignore[operator]
+        idle = datetime.now(timezone.utc) - session.parked_since  # type: ignore[operator]
         reason = (f"abandoned: parked on a human turn with nobody connected for "
                   f"{int(idle.total_seconds() // 60)} min")
         try:
-            await entry.abandon(reason)
-            if repository is not None:
-                await repository.upsert_game(game_id, status=DROPPED, error=reason)
+            await registry.drop(session.game_id, reason)
         except Exception:  # one bad row must not stop the sweep
-            logger.exception("sweep: game %s could not be dropped", game_id)
+            logger.exception("sweep: game %s could not be dropped", session.game_id)
             continue
-        logger.info("sweep: game %s dropped (%s)", game_id, reason)
-        dropped.append(game_id)
+        logger.info("sweep: game %s dropped (%s)", session.game_id, reason)
+        dropped.append(session.game_id)
     return dropped
 
 
-async def run_sweeper(games: dict, repository: GameRepository | None,
+async def run_sweeper(registry: GameRegistry,
                       settings: ServerSettings = server_settings) -> None:
     """The lifespan's background loop; cancelled at shutdown."""
     while True:
         await asyncio.sleep(settings.SWEEP_INTERVAL_SECONDS)
         try:
-            await sweep_parked_games(games, repository, settings)
+            await sweep_parked_games(registry, settings)
         except Exception:
             logger.exception("sweep: pass failed")

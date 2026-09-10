@@ -15,14 +15,13 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
-from server.storage.game_repository import GameRepository
-from server.graph_runtime import GraphRuntime
 from server.game.lobby import GameLobby
-from server.storage.replay_service import ReplayService
-from server.resources import AppResources
+from server.game.registry import Entry, GameRegistry
 from server.game.runtime import GameSession
-
-Entry = GameSession | GameLobby
+from server.graph_runtime import GraphRuntime
+from server.resources import AppResources
+from server.storage.game_repository import GameRepository
+from server.storage.replay_service import ReplayService
 
 
 def get_resources(request: Request) -> AppResources:
@@ -33,17 +32,17 @@ def get_resources(request: Request) -> AppResources:
 Resources = Annotated[AppResources, Depends(get_resources)]
 
 
-def get_games(resources: Resources) -> dict[str, Entry]:
-    """The app's registry of every waiting room and running game, keyed by game_id.
+def get_games(resources: Resources) -> GameRegistry:
+    """The app's registry of every waiting room and running game (game/registry.py).
 
-    The dict belongs to ``AppResources``. It starts empty, is rehydrated from the
-    game repository, and is discarded after running tasks stop at shutdown. Inject
-    this (rather than the id-resolving providers below) when a route must ADD or
-    SWAP an entry: POST /games, POST /rooms, and /start's lobby/session swap."""
+    It belongs to ``AppResources``: empty at boot, rehydrated by recovery, its tasks
+    stopped at shutdown. Inject this (rather than the id-resolving providers below)
+    when a route performs a lifecycle TRANSITION: POST /games, POST /rooms, join,
+    lock, and /start."""
     return resources.games
 
 
-GamesRegistry = Annotated[dict[str, Entry], Depends(get_games)]
+GamesRegistry = Annotated[GameRegistry, Depends(get_games)]
 
 
 def get_game_repository(resources: Resources) -> GameRepository:
