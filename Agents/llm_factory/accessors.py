@@ -18,10 +18,10 @@ import os
 
 from .backends import GAME_LLM, create_chat_model
 
-DEFAULT_GAME_MODEL = "gemini-3.1-flash-lite"
+DEFAULT_GAME_MODEL = "gemini-3.5-flash-lite"
 # Different-backend rescue when a seat exhausts its structured-output retries (seen with
 # DeepSeek's unconstrained tool-calling): one shot on this model beats a random action.
-DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_GAME_FALLBACK_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_GAME_THINKING_LEVEL = "minimal"
 DEFAULT_SUMMARY_THINKING_LEVEL = "medium"
 DEFAULT_PRO_MODEL = "gemini-2.5-pro"

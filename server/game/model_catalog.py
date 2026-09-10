@@ -15,15 +15,14 @@ from typing import NamedTuple
 
 
 class GameModel(NamedTuple):
-    """One catalogue row.
+    """One row: a model, the model to fall back on, and how it is paid for.
 
-    ``rescue_model`` — the backup for a turn whose primary model exhausted its retries.
-    It must sit on the SAME credential path as the primary (house stays on the server
-    backend, BYOK stays on the player's key); ``None`` = no game-tested sibling exists,
-    so the typed technical-pass path absorbs the failure instead.
-    ``display_name`` — what the frontend's model menu shows (GET /models).
-    ``house_funded`` — may run without a player key, on the server's own backend
-    (Vertex in production): the house pays. Everything else requires BYOK.
+    ``rescue_model`` is what a turn switches to when the chosen model has failed too many
+    times in a row. It has to be reachable with the same credentials as the first one, so
+    a server-funded game stays on the server's own backend and a player-funded game stays
+    on that player's key. ``None`` means no tested alternative exists, and the turn is
+    passed instead. ``display_name`` is what the model menu shows. ``house_funded`` means
+    the server pays for it; any other model needs the player to bring their own key.
     """
 
     rescue_model: str | None
@@ -32,14 +31,18 @@ class GameModel(NamedTuple):
 
 
 SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
-    "gemini-3.1-flash-lite": GameModel("gemini-3.5-flash-lite",
-                                       "Gemini 3.1 Flash-Lite (default)", True),
+    # Default moved from 3.1 to 3.5 Flash-Lite on 2026-09-10 (owner preference). Note that
+    # 3.5 thinks by default and bills those reasoning tokens as output; 3.1 does not.
     "gemini-3.5-flash-lite": GameModel(
-        "gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite", True),
+        "gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite (default)", True),
+    "gemini-3.1-flash-lite": GameModel(
+        "gemini-3.5-flash-lite", "Gemini 3.1 Flash-Lite", True),
     "gemini-3.6-flash": GameModel(
         "gemini-3.5-flash-lite", "Gemini 3.6 Flash", True),
     "gemini-2.5-pro": GameModel("gemini-3.5-flash-lite", "Gemini 2.5 Pro"),
-    # DeepSeek official endpoint (CLI games incl. the HITL driver ran on it). No second
-    # DeepSeek model is game-tested, so no same-credential rescue exists.
-    "deepseek/deepseek-v4-pro": GameModel(None, "DeepSeek V4 Pro"),
+    "deepseek/deepseek-v4-pro": GameModel("deepseek/deepseek-v4-flash", "DeepSeek V4 Pro"),
+    "deepseek/deepseek-v4-flash": GameModel("deepseek/deepseek-v4-pro", "DeepSeek V4 Flash"),
+    # Probed 2026-09-10 (tests/live): drops required fields on roughly one wolf vote in three;
+    # the seat's retry plus this rescue absorb it. The other rows had no failures.
+    "deepseek/deepseek-flash": GameModel("deepseek/deepseek-v4-flash", "DeepSeek V4.1 Flash"),
 }

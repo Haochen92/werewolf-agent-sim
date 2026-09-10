@@ -82,7 +82,11 @@ def test_rescue_follows_the_registry_row():
         GameLLM(api_key="k", model=DEEPSEEK,
                 rescue_model=SUPPORTED_GAME_MODELS[DEEPSEEK].rescue_model),
         get_llm_game_fallback)
-    assert deepseek_rescue is None  # no tested same-credential rescue -> no rescue
+    # The two DeepSeek models share one key, so each rescues the other on that same key.
+    assert deepseek_rescue is not None
+    # The factory strips the "deepseek/" backend prefix before it reaches the client.
+    assert "deepseek/" + deepseek_rescue.model_name == SUPPORTED_GAME_MODELS[DEEPSEEK].rescue_model
+    assert deepseek_rescue.openai_api_key.get_secret_value() == "k"
 
 
 # ---- session: the selection is set task-locally, invisible outside -----------------------
@@ -106,7 +110,7 @@ async def test_session_sets_the_selection_inside_its_own_task_only(quiet_session
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
     assert graph.seen == GameLLM(api_key="sk-player-123", model=DEEPSEEK,
-                                 rescue_model=None)
+                                 rescue_model=SUPPORTED_GAME_MODELS[DEEPSEEK].rescue_model)
     assert GAME_LLM.get() == GameLLM()  # task-local: the caller's context is untouched
 
 
