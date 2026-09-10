@@ -4,7 +4,7 @@ from fastapi import HTTPException, Response
 
 from server.config import server_settings
 from server.dependencies import seat_cookie_name
-from server.runtime import SUPPORTED_GAME_MODELS
+from server.model_catalog import SUPPORTED_GAME_MODELS
 
 _SEAT_COOKIE_MAX_AGE = 24 * 3600  # comfortably outlives any in-memory game
 
@@ -43,5 +43,5 @@ def check_model_access(api_key: str, model: str) -> None:
                 f"{sorted(SUPPORTED_GAME_MODELS)}"
             ),
         )
-    if not api_key and not row.server_funded:
+    if not api_key and not row.house_funded:
         raise HTTPException(status_code=422, detail="model selection requires api_key")

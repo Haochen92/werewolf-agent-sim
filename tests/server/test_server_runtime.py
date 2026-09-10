@@ -18,7 +18,8 @@ import pytest
 from Agents.turn.human_turn import HumanTurnContractError
 from server import runtime as rt
 from server.routes.games import _sse, event_stream
-from server.runtime import PacingTracker, entitled
+from server.pacing import PacingTracker
+from server.runtime import entitled
 from server.schemas import events as ev
 from server.translate import Translator
 from tests.factories.builders import human_turn_request

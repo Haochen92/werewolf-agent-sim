@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 
 from server.lobby import MAX_HUMAN_SEATS
-from server.runtime import SUPPORTED_GAME_MODELS
+from server.model_catalog import SUPPORTED_GAME_MODELS
 from tests.fixtures.server import FakeGraph
 
 GEMINI = "gemini-3.1-flash-lite"
@@ -73,7 +73,7 @@ def test_house_models_are_selectable_without_a_key():
         "gemini-3.5-flash-lite",
         "gemini-3.6-flash",
     }
-    assert {model for model, row in SUPPORTED_GAME_MODELS.items() if row.server_funded} == expected
+    assert {model for model, row in SUPPORTED_GAME_MODELS.items() if row.house_funded} == expected
     for model in expected:
         check_model_access("", model)
 

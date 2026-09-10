@@ -15,7 +15,7 @@ import asyncio
 
 from Agents.llm_factory import GAME_LLM, GameLLM, get_llm_game_fallback
 from Agents.llm_factory.backends import create_chat_model
-from server.runtime import SUPPORTED_GAME_MODELS
+from server.model_catalog import SUPPORTED_GAME_MODELS
 
 GEMINI = "gemini-3.1-flash-lite"
 DEEPSEEK = "deepseek/deepseek-v4-pro"
@@ -72,15 +72,15 @@ def test_off_family_models_never_receive_the_game_key():
 def test_rescue_follows_the_registry_row():
     gemini_rescue = _with_override(
         GameLLM(api_key="k", model=GEMINI,
-                rescue_model=SUPPORTED_GAME_MODELS[GEMINI].rescue),
+                rescue_model=SUPPORTED_GAME_MODELS[GEMINI].rescue_model),
         get_llm_game_fallback)
     assert gemini_rescue is not None
-    assert gemini_rescue.model == SUPPORTED_GAME_MODELS[GEMINI].rescue
+    assert gemini_rescue.model == SUPPORTED_GAME_MODELS[GEMINI].rescue_model
     assert gemini_rescue.google_api_key.get_secret_value() == "k"  # same credential
 
     deepseek_rescue = _with_override(
         GameLLM(api_key="k", model=DEEPSEEK,
-                rescue_model=SUPPORTED_GAME_MODELS[DEEPSEEK].rescue),
+                rescue_model=SUPPORTED_GAME_MODELS[DEEPSEEK].rescue_model),
         get_llm_game_fallback)
     assert deepseek_rescue is None  # no tested same-credential rescue -> no rescue
 
@@ -117,7 +117,7 @@ async def test_bare_key_runs_the_default_registry_model(quiet_session):
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
     assert graph.seen.model == next(iter(SUPPORTED_GAME_MODELS))
-    assert graph.seen.rescue_model == SUPPORTED_GAME_MODELS[graph.seen.model].rescue
+    assert graph.seen.rescue_model == SUPPORTED_GAME_MODELS[graph.seen.model].rescue_model
 
 
 async def test_house_model_selection_uses_server_credentials(quiet_session):
@@ -128,7 +128,7 @@ async def test_house_model_selection_uses_server_credentials(quiet_session):
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
     assert graph.seen == GameLLM(
-        model=model, rescue_model=SUPPORTED_GAME_MODELS[model].rescue)
+        model=model, rescue_model=SUPPORTED_GAME_MODELS[model].rescue_model)
 
 
 # ---- failure: surfaced, but redacted ------------------------------------------------------
