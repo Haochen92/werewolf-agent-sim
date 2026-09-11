@@ -4,7 +4,7 @@ A model is listed here only once it has carried real games, so this is a record 
 has actually worked rather than of everything the code could call. The first row is the
 default, both for games the server pays for and for a player who brings a key without
 naming a model. GET /models serves this table, routes/_shared.py checks a requested model
-against it, and game/runtime.py reads it to find a backup model. It is deliberately a
+against it, and game/game_session.py reads it to find a backup model. It is deliberately a
 plain table with no engine imports, so the HTTP layer can read it without loading the
 game machinery.
 """

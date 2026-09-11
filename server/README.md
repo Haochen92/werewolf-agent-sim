@@ -10,7 +10,7 @@ pointer to each decision record. It does not repeat the decisions — follow the
 ```
 process    boot ───── serve ───────────────────────────── shutdown       app.py, resources.py
 registry      ids appear, move between stages, disappear                 game/registry.py
-one game         waiting ──▶ running ──▶ completed | dropped             game/lobby.py, game/runtime.py
+one game         waiting ──▶ running ──▶ completed | dropped             game/lobby.py, game/game_session.py
 ```
 
 The **root** holds what the process needs to exist. Each **package** holds one domain. The
@@ -31,7 +31,7 @@ registry is the layer in between: process-scoped, game-shaped.
 | `database_models/` | SQLModel mappings for `games` and `events` | design notes §8 |
 | `game/registry.py` | **the middle lifecycle**: the table of every game and every transition that originates outside a game | design notes §10 |
 | `game/lobby.py` | the waiting stage: seats, host key, lock, listing TTL | transport §6b, §6c |
-| `game/runtime.py` | the running stage: `GameSession` (task, log, viewers, human turns) and `entitled()` | transport §3, §6, §8; design notes §5 |
+| `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns) and `entitled()` | transport §3, §6, §8; design notes §5 |
 | `game/seat_clocks.py` | when an unanswered human turn is delegated or the table parks | `frontend/docs/seat_continuity.md` |
 | `game/pacing.py` | progress bars from public knowledge only | transport §9 |
 | `game/translate.py` | stream parts → tier-ready durable events, one instance per game | transport §5, §8; design notes §1–§3 |
@@ -51,7 +51,7 @@ Decision records live in `frontend/docs/`: `server_client_transport.md` (the wir
    paragraph: an event log the client folds, SSE plus POST, audience tiers, seat cookies.
 2. `schemas/events.py` — the vocabulary everything else speaks.
 3. `game/registry.py` — the state diagram in its docstring, then the transitions.
-4. `game/runtime.py` — `GameSession`'s field guide, then `_drive_graph`, `_on_part`, `submit_turn`.
+4. `game/game_session.py` — `GameSession`'s field guide, then `_drive_graph`, `_on_part`, `submit_turn`.
 5. `routes/games.py` `_sse` — how one viewer's stream is filtered and resumed.
 6. Then only what a task takes you to. Do not read `translate.py` cold; read it beside
    `tests/server/test_translator.py`, whose names are the spec.

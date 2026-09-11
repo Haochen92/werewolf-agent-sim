@@ -34,7 +34,7 @@ from Agents.schemas.human_player import HumanTurnRequest
 
 from server.database_models.game import DROPPED, WAITING, GameRow
 from server.game.lobby import GameLobby, HumanSeat
-from server.game.runtime import GameSession
+from server.game.game_session import GameSession
 from server.storage.game_repository import GameRepository
 
 logger = logging.getLogger(__name__)

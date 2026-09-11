@@ -15,7 +15,7 @@ from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
 from server.dependencies import Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
-from server.game.runtime import GameSession, entitled
+from server.game.game_session import GameSession, entitled
 from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
 
 from ._shared import check_model_access, set_seat_cookie

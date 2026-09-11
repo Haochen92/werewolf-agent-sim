@@ -1,4 +1,4 @@
-"""Per-game server runtime: run one game, turn its stream into events, deliver them to viewers.
+"""One running game: run it, turn its stream into events, deliver them to viewers.
 
 One GameSession per running game. The game runs as a background asyncio task on the server's
 event loop, consuming graph.astream(): between parts the task is just parked at its `async

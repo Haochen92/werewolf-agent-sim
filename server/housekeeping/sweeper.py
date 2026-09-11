@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 
 from server.config import ServerSettings, server_settings
 from server.game.registry import GameRegistry
-from server.game.runtime import GameSession
+from server.game.game_session import GameSession
 
 logger = logging.getLogger(__name__)
 

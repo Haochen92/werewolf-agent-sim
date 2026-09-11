@@ -3,7 +3,7 @@
 API-layer tests in the dota2pred sense — the app is real (factory, lifespan, registry,
 middleware), the game engine is not involved. Sessions are injected into
 app.state.resources.games pre-built (never started via POST /games, which would launch the real
-graph); the runtime machine itself is pinned in test_server_runtime.py.
+graph); the runtime machine itself is pinned in test_game_session.py.
 """
 from __future__ import annotations
 
@@ -127,7 +127,7 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     """The happy path end to end, with the real GameSession swapped for one on a
     FakeGraph (starting the real graph would call an LLM)."""
     import server.game.registry as registry_module
-    from server.game import runtime as rt
+    from server.game import game_session as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
@@ -289,7 +289,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
     """POST /games {human} gets a token + cookie exactly like a room joiner (one
     identity mechanism at both doors); an LLM-only game mints nothing."""
     import server.game.registry as registry_module
-    from server.game import runtime as rt
+    from server.game import game_session as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
@@ -318,7 +318,7 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
 def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
     """An empty room may start: the host runs an all-LLM exhibition game to watch."""
     import server.game.registry as registry_module
-    from server.game import runtime as rt
+    from server.game import game_session as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
@@ -338,7 +338,7 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
 def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     """The creator's key/model, given at create time, funds the started game."""
     import server.game.registry as registry_module
-    from server.game import runtime as rt
+    from server.game import game_session as rt
 
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     seen = {}

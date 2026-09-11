@@ -17,7 +17,7 @@ from fastapi import Depends, HTTPException, Request
 
 from server.game.lobby import GameLobby
 from server.game.registry import Entry, GameRegistry
-from server.game.runtime import GameSession
+from server.game.game_session import GameSession
 from server.graph_runtime import GraphRuntime
 from server.resources import AppResources
 from server.storage.game_repository import GameRepository

@@ -434,7 +434,7 @@ routers translate HTTP; services/repositories do the work.
 Reviewing `runtime.py` after the holiday, the owner asked which module owned "a game's
 lifecycle" and found the honest answer was *none*. There are three nested lifecycles: the
 **process** (boot → serve → shutdown: `app.py`, `resources.py`), **one game** (waiting →
-running → completed | dropped: `game/lobby.py`, `game/runtime.py`), and the one in between —
+running → completed | dropped: `game/lobby.py`, `game/game_session.py`), and the one in between —
 **every game the process knows, and how an id moves between stages.** That middle layer existed
 only as a bare dict on `AppResources` plus six places that mutated it: two route files (the
 three doors and join/lock/start — the "now it is running" block written twice), the session's

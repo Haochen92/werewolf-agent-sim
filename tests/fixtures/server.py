@@ -15,9 +15,9 @@ import pytest
 from starlette.testclient import TestClient
 
 from Agents.config import RunConfig
-from server.game import runtime as rt
+from server.game import game_session as rt
 from server.app import create_app
-from server.game.runtime import GameSession
+from server.game.game_session import GameSession
 
 
 class FakeGraph:

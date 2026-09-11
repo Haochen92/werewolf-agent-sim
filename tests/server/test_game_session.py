@@ -16,10 +16,10 @@ from types import SimpleNamespace
 import pytest
 
 from Agents.turn.human_turn import HumanTurnContractError
-from server.game import runtime as rt
+from server.game import game_session as rt
 from server.routes.games import _sse, event_stream
 from server.game.pacing import PacingTracker
-from server.game.runtime import entitled
+from server.game.game_session import entitled
 from server.schemas import events as ev
 from server.game.translate import Translator
 from tests.factories.builders import human_turn_request

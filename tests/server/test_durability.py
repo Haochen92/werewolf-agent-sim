@@ -140,7 +140,7 @@ def _row(**over):
 
 
 async def _recover(monkeypatch, rows, graph):
-    monkeypatch.setattr("server.game.runtime.seed_memory_from_config", lambda *a, **k: None)
+    monkeypatch.setattr("server.game.game_session.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=rows)
     games = GameRegistry(repository, SimpleNamespace(graph=graph))
     await recovery.recover_registry(games, repository)
