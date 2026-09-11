@@ -88,7 +88,9 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
   }, [status, setMySeat, syncPending]);
 
   useEffect(() => {
-    if (!enabled || !status || status.state === 'waiting') return;
+    // No stream for a waiting room (nothing to stream yet) or an archived game (the live
+    // object is gone; the row answered the poll and the page shows the ended card).
+    if (!enabled || !status || status.state === 'waiting' || status.archived) return;
 
     catchUpThrough.current = status.last_seq ?? 0;
     hydrate([], { gameId, mySeat: status.you ?? null });

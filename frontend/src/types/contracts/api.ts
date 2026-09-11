@@ -486,6 +486,17 @@ export interface components {
       };
       /** Error */
       error?: string | null;
+      /**
+       * Winner
+       * @description The winning faction, once the game is over and served from its archived row.
+       */
+      winner?: string | null;
+      /**
+       * Archived
+       * @description True when this snapshot came from the database row rather than a live game: the game has ended and left the live registry. There is no stream to open; a finished game has a replay under the same id.
+       * @default false
+       */
+      archived: boolean;
     };
     /**
      * GmMessage

@@ -37,6 +37,7 @@ import {
   WinnerChip,
   XrayToggle,
 } from '@/components/theater-parts';
+import { GameEndedCard } from '@/components/GameEndedCard';
 import theater from '@/components/Theater.module.css';
 
 export function GameClient({ gameId }: { gameId: string }) {
@@ -110,18 +111,18 @@ export function GameClient({ gameId }: { gameId: string }) {
     return (
       <div className={theater.shell}>
         <p role="alert" className={theater.meta}>
-          {missing ? 'This live game is no longer in the registry.' : statusError.message}
+          {missing ? 'No game has this id.' : statusError.message}
         </p>
         <p className={theater.meta}>
-          {missing ? (
-            <Link href={`/replays/${gameId}`}>Open its replay if it was archived →</Link>
-          ) : (
-            <Link href="/">Back to the start →</Link>
-          )}
+          <Link href="/">Back to the start →</Link>
         </p>
       </div>
     );
   }
+
+  // The game ended and left the live registry: the poll answered from the row and there
+  // is no stream. Finished games link to their replay; dropped ones say why.
+  if (status?.archived) return <GameEndedCard gameId={gameId} status={status} />;
 
   // D23: the game task died. The stream cannot tell us this — only the poll's error field
   // can, because heartbeats keep flowing and `state` stays "running".
