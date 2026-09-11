@@ -440,7 +440,7 @@ only as a bare dict on `AppResources` plus six places that mutated it: two route
 three doors and join/lock/start — the "now it is running" block written twice), the session's
 own endings, recovery, and the sweeper.
 
-`game/registry.py` names it. `LiveGameRegistry` owns the table and every transition that
+`game/live_game_registry.py` names it. `LiveGameRegistry` owns the table and every transition that
 originates *outside* a game — `open_room`, `join`, `lock`, `start`, `start_instant`, `drop`,
 `revive` — and nothing else: it never looks inside a session, never speaks HTTP (routes map its
 `LookupError`/`PermissionError` to 409/403; the dependency layer keeps the 404), never touches

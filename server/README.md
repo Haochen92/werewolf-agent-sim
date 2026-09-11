@@ -9,7 +9,7 @@ pointer to each decision record. It does not repeat the decisions — follow the
 
 ```
 process    boot ───── serve ───────────────────────────── shutdown       app.py, resources.py
-live registry ids appear, move between stages, leave once ended         game/registry.py
+live registry ids appear, move between stages, leave once ended         game/live_game_registry.py
 one game         waiting ──▶ running ──▶ completed | dropped             game/lobby.py, game/game_session.py
 ```
 
@@ -30,7 +30,7 @@ still move; an ended game is answered by its database row, and a finished one by
 | `routes/` | HTTP translation only: `system` (health, models), `games` (doors, status, turns, SSE), `rooms` (lobby), `replays` | transport §2, §7, §9 |
 | `schemas/` | the wire: `events` (the durable union + tiers), `requests` (bodies/DTOs), `replays` | transport §5, §10 |
 | `database_models/` | SQLModel mappings for `games` and `events` | design notes §8 |
-| `game/registry.py` | **the middle lifecycle**: `LiveGameRegistry`, the table of every game that can still move and every transition that originates outside a game | design notes §10, §11 |
+| `game/live_game_registry.py` | **the middle lifecycle**: `LiveGameRegistry`, the table of every game that can still move and every transition that originates outside a game | design notes §10, §11 |
 | `game/lobby.py` | the waiting stage: seats, host key, lock, listing TTL | transport §6b, §6c |
 | `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns) and `entitled()` | transport §3, §6, §8; design notes §5 |
 | `game/seat_clocks.py` | when an unanswered human turn is delegated or the table parks | `frontend/docs/seat_continuity.md` |
@@ -51,7 +51,7 @@ Decision records live in `frontend/docs/`: `server_client_transport.md` (the wir
 1. `frontend/docs/server_client_transport.md`, the appendix first — the mental model in one
    paragraph: an event log the client folds, SSE plus POST, audience tiers, seat cookies.
 2. `schemas/events.py` — the vocabulary everything else speaks.
-3. `game/registry.py` — the state diagram in its docstring, then the transitions.
+3. `game/live_game_registry.py` — the state diagram in its docstring, then the transitions.
 4. `game/game_session.py` — `GameSession`'s field guide, then `_drive_graph`, `_on_part`, `submit_turn`.
 5. `routes/games.py` `_sse` — how one viewer's stream is filtered and resumed.
 6. Then only what a task takes you to. Do not read `translate.py` cold; read it beside

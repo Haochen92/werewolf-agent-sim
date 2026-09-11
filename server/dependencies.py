@@ -17,7 +17,7 @@ from fastapi import Depends, HTTPException, Request
 
 from server.database_models.game import COMPLETED, ENDED_STATUSES, GameRow
 from server.game.lobby import GameLobby
-from server.game.registry import Entry, LiveGameRegistry
+from server.game.live_game_registry import Entry, LiveGameRegistry
 from server.game.game_session import GameSession
 from server.graph_runtime import GraphRuntime
 from server.resources import AppResources
@@ -34,7 +34,7 @@ Resources = Annotated[AppResources, Depends(get_resources)]
 
 
 def get_games(resources: Resources) -> LiveGameRegistry:
-    """The app's registry of every waiting room and running game (game/registry.py).
+    """The app's registry of every waiting room and running game (game/live_game_registry.py).
 
     It belongs to ``AppResources``: empty at boot, rehydrated by recovery, its tasks
     stopped at shutdown. Inject this (rather than the id-resolving providers below)

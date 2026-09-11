@@ -2,7 +2,7 @@
 
 POST /rooms creates one, players claim seats with POST /games/{id}/join, and the host
 starts play with POST /games/{id}/start. The game keeps the room's id: the registry in
-game/registry.py builds the running GameSession and puts it where the lobby was, so the
+game/live_game_registry.py builds the running GameSession and puts it where the lobby was, so the
 room link still works once the game has begun.
 
 Everyone in a room is dealt a random seat. Picking a role in a shared room cannot be

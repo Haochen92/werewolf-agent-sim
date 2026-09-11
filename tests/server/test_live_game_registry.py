@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from server.game.registry import LiveGameRegistry
+from server.game.live_game_registry import LiveGameRegistry
 from tests.fixtures.server import FakeGraph
 
 

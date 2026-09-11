@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 from server.config import ServerSettings
 from server.game.lobby import GameLobby
-from server.game.registry import LiveGameRegistry
+from server.game.live_game_registry import LiveGameRegistry
 from server.housekeeping.sweeper import is_expired, sweep_parked_games
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import HangingGraph

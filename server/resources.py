@@ -21,7 +21,7 @@ from typing import AsyncIterator
 
 from server.config import ServerSettings, server_settings
 from server.db import Database, database_resource
-from server.game.registry import LiveGameRegistry
+from server.game.live_game_registry import LiveGameRegistry
 from server.graph_runtime import GraphRuntime, graph_runtime_resource
 from server.storage.game_repository import GameRepository
 from server.storage.replay_service import ReplayService

@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 from langgraph.types import Command
 
-from server.game.registry import LiveGameRegistry
+from server.game.live_game_registry import LiveGameRegistry
 from server.housekeeping import recovery
 from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
 from server.storage.game_repository import derive_completion_metadata
@@ -185,7 +185,7 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
 
 
 async def test_byok_game_is_dropped_with_a_clear_epitaph_and_not_kept(monkeypatch):
-    from server.game.registry import _BYOK_EPITAPH
+    from server.game.live_game_registry import _BYOK_EPITAPH
 
     games, repository = await _recover(monkeypatch, [_row(byok=True)],
                                        FakeDurableGraph(None))

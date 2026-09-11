@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 
 from server.database_models.game import DROPPED
-from server.game.registry import LiveGameRegistry
+from server.game.live_game_registry import LiveGameRegistry
 from server.storage.game_repository import GameRepository
 
 logger = logging.getLogger(__name__)
