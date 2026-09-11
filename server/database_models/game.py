@@ -24,6 +24,8 @@ RUNNING: GameStatus = "running"
 COMPLETED: GameStatus = "completed"
 DROPPED: GameStatus = "dropped"
 RECOVERABLE_STATUSES: tuple[GameStatus, GameStatus] = (WAITING, RUNNING)
+# A game in one of these states has left the live registry; only its row answers for it.
+ENDED_STATUSES: tuple[GameStatus, GameStatus] = (COMPLETED, DROPPED)
 
 
 class GameRow(SQLModel, table=True):

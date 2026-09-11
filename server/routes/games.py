@@ -15,6 +15,7 @@ from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
 from server.dependencies import Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
+from server.database_models.game import COMPLETED, GameRow
 from server.game.game_session import GameSession, entitled
 from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
 
@@ -59,6 +60,8 @@ async def create_game(
 
 @router.get("/games/{game_id}", response_model=GameStatus, summary="Status snapshot")
 async def game_status(session: Room, token: SeatToken) -> GameStatus:
+    if isinstance(session, GameRow):
+        return _archived_status(session, token)
     if token and not session.owns(token):
         raise HTTPException(status_code=403, detail="unknown seat token")
     if isinstance(session, GameLobby):
@@ -84,6 +87,28 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
         last_seq=session.log[-1].seq if session.log else 0,
         alive_role_counts=session.public_alive_counts(),
         error=session.error,
+    )
+
+
+def _archived_status(row: GameRow, token: str) -> GameStatus:
+    """The snapshot of a game that has ended and left the live registry: the row says how
+    it ended. A stale seat cookie is not an error here; it just names the seat you held."""
+    tokens = [seat.get("token", "") for seat in row.seats]
+    you = None
+    if token and token in tokens:
+        i = tokens.index(token)
+        you = row.human_players[i] if i < len(row.human_players) else None
+    finished = row.status == COMPLETED
+    return GameStatus(
+        game_id=row.game_id,
+        state="finished" if finished else "dropped",
+        server_time=datetime.now(timezone.utc).isoformat(),
+        human_players=list(row.human_players),
+        you=you,
+        game_over=finished,
+        winner=row.winner,
+        error=row.error,
+        archived=True,
     )
 
 

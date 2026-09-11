@@ -194,6 +194,9 @@ class GameSession:
         self.error: str | None = None
         self._finished = asyncio.Event()
         self._task: asyncio.Task | None = None
+        # Set by the live registry. Called once, when the game has ended and its last
+        # viewer has gone, so the registry can forget this object; the row serves it on.
+        self.on_idle: Callable[[], None] | None = None
 
     # -- lifecycle ------------------------------------------------------------------------
 
@@ -292,6 +295,7 @@ class GameSession:
                     # No phase upsert here: cancellation must leave the durable row
                     # 'running' so the next boot's recovery picks the game up.
                     self._finished.set()
+                    self._maybe_idle()
                     if self.error is None:
                         logger.info("game %s: finished (game_over=%s, %d events)",
                                     self.game_id, self.game_over, len(self.log))
@@ -398,6 +402,7 @@ class GameSession:
         self.error = reason
         await self.shutdown()
         self._finished.set()  # a never-started shell has no task to settle it
+        self._maybe_idle()
 
     @property
     def turn_deadlines(self) -> dict[str, str]:
@@ -446,9 +451,26 @@ class GameSession:
         seat = resolve() if resolve is not None else ""
         if seat and not self.seat_present(seat):
             self.clocks.on_seat_left(seat)
+        self._maybe_idle()
 
     async def wait_finished(self) -> None:
         await self._finished.wait()
+
+    @property
+    def ended(self) -> bool:
+        """The game reached its end, its task died, or it was abandoned."""
+        return self._finished.is_set()
+
+    @property
+    def watched(self) -> bool:
+        """Whether any stream, seat or spectator, is open on this game right now."""
+        return bool(self._subscribers)
+
+    def _maybe_idle(self) -> None:
+        """Fire on_idle exactly once: the first moment the game is ended and unwatched."""
+        if self.ended and not self.watched and self.on_idle is not None:
+            hook, self.on_idle = self.on_idle, None
+            hook()
 
     # -- seat identity (the token minted at /join or the solo /games door) -----------------
 

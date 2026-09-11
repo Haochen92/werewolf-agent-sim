@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Response
 
 from server.config import server_settings
-from server.dependencies import GamesRegistry, Room
+from server.database_models.game import GameRow
+from server.dependencies import GamesRegistry, Room, ended_detail
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.schemas.requests import (
     GameCreated,
@@ -78,6 +79,7 @@ async def lock_room(
     host_key: str = "",
     locked: bool = True,
 ) -> RoomSummary:
+    _open(room)
     try:
         room = await games.lock(room.game_id, host_key, locked)
     except PermissionError as exc:
@@ -85,6 +87,12 @@ async def lock_room(
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     return _room_summary(room)
+
+
+def _open(room) -> None:
+    """Every door here acts on a game that has not ended; an archived row is 410."""
+    if isinstance(room, GameRow):
+        raise HTTPException(status_code=410, detail=ended_detail(room))
 
 
 @router.post(
@@ -98,6 +106,7 @@ async def join_game(
     response: Response,
     games: GamesRegistry,
 ) -> SeatJoined:
+    _open(room)
     try:
         token = await games.join(room.game_id, body.name)
     except LookupError as exc:
@@ -116,6 +125,7 @@ async def rejoin_game(
     body: RejoinGame,
     response: Response,
 ) -> SeatJoined:
+    _open(room)
     if not room.owns(body.token):
         raise HTTPException(status_code=403, detail="unknown seat token")
     set_seat_cookie(response, room.game_id, body.token)
@@ -133,6 +143,7 @@ async def start_game(
     host_key: str = "",
 ) -> GameCreated:
     """Replace the lobby with a running session under the same ID (registry.start)."""
+    _open(room)
     try:
         session = await games.start(room.game_id, host_key)
     except PermissionError as exc:

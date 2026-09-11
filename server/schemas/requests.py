@@ -134,8 +134,9 @@ class GameStatus(BaseModel):
 
     game_id: str
     state: str
-    """Lifecycle: "waiting" (lobby) | "running" | "finished" (game_over). A dead
-    task stays "running" with the error field set — error is orthogonal."""
+    """Lifecycle: "waiting" (lobby) | "running" | "finished" (game over) | "dropped"
+    (ended without finishing; ``error`` says why). A task that died while the game was
+    still live also reports "running" with ``error`` set until it leaves the registry."""
     server_time: str
     """ISO-8601 UTC wall clock sampled with this snapshot. The browser subtracts its
     own receipt-time clock so AFK deadlines remain honest on devices with clock skew."""
@@ -167,6 +168,12 @@ class GameStatus(BaseModel):
     (no timer) and whenever nobody owes input."""
     game_over: bool = False
     last_seq: int = 0
+    winner: str | None = None
+    """The winning faction, once the game is over and served from its archived row."""
+    archived: bool = False
+    """True when this snapshot came from the database row rather than a live game: the
+    game has ended and left the live registry. There is no stream to open; a finished
+    game has a replay under the same id."""
     """High-water mark of the durable log — a reconnect cursor for ?last_seq=."""
     alive_role_counts: dict[str, int] = Field(default_factory=dict)
     """Public census only: fixed cast minus announced deaths, never engine state."""

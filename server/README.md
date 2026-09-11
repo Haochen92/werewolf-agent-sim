@@ -9,12 +9,13 @@ pointer to each decision record. It does not repeat the decisions — follow the
 
 ```
 process    boot ───── serve ───────────────────────────── shutdown       app.py, resources.py
-registry      ids appear, move between stages, disappear                 game/registry.py
+live registry ids appear, move between stages, leave once ended         game/registry.py
 one game         waiting ──▶ running ──▶ completed | dropped             game/lobby.py, game/game_session.py
 ```
 
 The **root** holds what the process needs to exist. Each **package** holds one domain. The
-registry is the layer in between: process-scoped, game-shaped.
+registry is the layer in between: process-scoped, game-shaped. It holds only games that can
+still move; an ended game is answered by its database row, and a finished one by its replay.
 
 ## Layout
 
@@ -25,11 +26,11 @@ registry is the layer in between: process-scoped, game-shaped.
 | `db.py` | the SQLAlchemy engine for the server-owned tables | design notes §8 |
 | `graph_runtime.py` | the LangGraph checkpointer pool + compiled durable graph (db.py's twin) | design notes §5c mode 3 |
 | `resources.py` | builds the resource tree once, closes it in reverse | design notes §9 |
-| `dependencies.py` | request → resource providers; the one 404 | design notes §9 |
+| `dependencies.py` | request → resource providers; the fall-through from the live registry to the row for ended games; the one 404 | design notes §9, §11 |
 | `routes/` | HTTP translation only: `system` (health, models), `games` (doors, status, turns, SSE), `rooms` (lobby), `replays` | transport §2, §7, §9 |
 | `schemas/` | the wire: `events` (the durable union + tiers), `requests` (bodies/DTOs), `replays` | transport §5, §10 |
 | `database_models/` | SQLModel mappings for `games` and `events` | design notes §8 |
-| `game/registry.py` | **the middle lifecycle**: the table of every game and every transition that originates outside a game | design notes §10 |
+| `game/registry.py` | **the middle lifecycle**: `LiveGameRegistry`, the table of every game that can still move and every transition that originates outside a game | design notes §10, §11 |
 | `game/lobby.py` | the waiting stage: seats, host key, lock, listing TTL | transport §6b, §6c |
 | `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns) and `entitled()` | transport §3, §6, §8; design notes §5 |
 | `game/seat_clocks.py` | when an unanswered human turn is delegated or the table parks | `frontend/docs/seat_continuity.md` |

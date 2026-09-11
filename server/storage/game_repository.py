@@ -197,6 +197,14 @@ class GameRepository:
             )).scalars().all()
         return list(rows)
 
+    async def load_game(self, game_id: str) -> GameRow | None:
+        """Load one game's row, or None when the id is unknown or storage is off. The live
+        registry answers first; this is what serves a game after it has ended."""
+        if not self._database.configured:
+            return None
+        async with self._database.session() as session:
+            return await session.get(GameRow, game_id)
+
     async def load_events(self, game_id: str) -> list[ev.DurableEvent]:
         """Load and validate one game's durable events in sequence order.
 

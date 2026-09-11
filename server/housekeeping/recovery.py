@@ -1,7 +1,7 @@
 """Filling the registry back up at boot from what the database remembers.
 
 A restart empties the process, but every game is still written down. At startup each row
-still marked waiting or running is handed to ``GameRegistry.revive``, which rebuilds the
+still marked waiting or running is handed to ``LiveGameRegistry.revive``, which rebuilds the
 game from that row, the stored events and the engine checkpoint. One broken game must
 never take the server down or hold up the others, so a row that cannot be rebuilt is
 marked dropped, with the reason, and skipped.
@@ -12,13 +12,13 @@ from __future__ import annotations
 import logging
 
 from server.database_models.game import DROPPED
-from server.game.registry import GameRegistry
+from server.game.registry import LiveGameRegistry
 from server.storage.game_repository import GameRepository
 
 logger = logging.getLogger(__name__)
 
 
-async def recover_registry(registry: GameRegistry, repository: GameRepository) -> None:
+async def recover_registry(registry: LiveGameRegistry, repository: GameRepository) -> None:
     """Fill a fresh registry from every waiting or running row. Called at startup once
     the graph runtime is up, and does nothing when Postgres is not configured."""
     if not registry.durable:

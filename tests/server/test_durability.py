@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 from langgraph.types import Command
 
-from server.game.registry import GameRegistry
+from server.game.registry import LiveGameRegistry
 from server.housekeeping import recovery
 from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
 from server.storage.game_repository import derive_completion_metadata
@@ -142,7 +142,7 @@ def _row(**over):
 async def _recover(monkeypatch, rows, graph):
     monkeypatch.setattr("server.game.game_session.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=rows)
-    games = GameRegistry(repository, SimpleNamespace(graph=graph))
+    games = LiveGameRegistry(repository, SimpleNamespace(graph=graph))
     await recovery.recover_registry(games, repository)
     return games, repository
 
@@ -184,12 +184,15 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
     assert isinstance(resume, Command) and resume.resume["message"] == "back from the dead"
 
 
-async def test_byok_game_revives_dead_with_a_clear_epitaph(monkeypatch):
+async def test_byok_game_is_dropped_with_a_clear_epitaph_and_not_kept(monkeypatch):
+    from server.game.registry import _BYOK_EPITAPH
+
     games, repository = await _recover(monkeypatch, [_row(byok=True)],
                                        FakeDurableGraph(None))
-    session = games.get("g-1")
-    assert "API key" in session.error and session._task is None
-    assert ("g-1", {"status": DROPPED, "error": session.error}) in repository.upsert_calls
+    # Nothing can play it (the key was never stored), so it is not a live game: the row,
+    # marked dropped with the reason, is what answers for it from now on.
+    assert games.get("g-1") is None
+    assert ("g-1", {"status": DROPPED, "error": _BYOK_EPITAPH}) in repository.upsert_calls
 
 
 async def test_house_selected_model_survives_restart(monkeypatch):
@@ -201,10 +204,10 @@ async def test_house_selected_model_survives_restart(monkeypatch):
     assert games.get("g-1")._llm_override.model == model
 
 
-async def test_stale_running_row_of_a_finished_game_is_closed(monkeypatch):
+async def test_stale_running_row_of_a_finished_game_is_closed_and_not_kept(monkeypatch):
     state = SimpleNamespace(next=(), tasks=[])
     games, repository = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))
-    assert games.get("g-1")._task is None
+    assert games.get("g-1") is None  # completed games live in the archive, not the table
     assert repository.completions == [("g-1", 0, 1)]
 
 

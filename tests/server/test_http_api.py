@@ -104,7 +104,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
         "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
         "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
-        "error": None, "name": "", "locked": False,
+        "error": None, "name": "", "locked": False, "winner": None, "archived": False,
     }
 
 
@@ -411,3 +411,64 @@ def test_lock_bounces_joins_until_the_host_unlocks(api_client):
     api_client.post(f"/games/{game_id}/lock?host_key={host_key}&locked=false")
     assert api_client.post(f"/games/{game_id}/join",
                            json={"name": "ontime"}).status_code == 200
+
+
+# ---- ended games: the row answers once the live registry has let go --------------------
+
+def _archive(api_client, monkeypatch, row):
+    """Make the repository answer with this row for its id (storage is off in tests)."""
+    from server.database_models.game import GameRow
+
+    async def load_game(game_id):
+        return row if game_id == row.game_id else None
+
+    repository = api_client.app.state.resources.game_repository
+    monkeypatch.setattr(repository, "load_game", load_game)
+    assert isinstance(row, GameRow)
+
+
+def test_finished_game_answers_from_its_row_and_points_at_the_replay(api_client, monkeypatch):
+    from server.database_models.game import COMPLETED, GameRow
+
+    row = GameRow(game_id="done-1", status=COMPLETED, winner="village",
+                  seats=[{"name": "hao", "token": "tok-1"}], human_players=["player_3"])
+    _archive(api_client, monkeypatch, row)
+
+    body = api_client.get("/games/done-1").json()
+    assert (body["state"], body["archived"], body["game_over"]) == ("finished", True, True)
+    assert body["winner"] == "village" and body["you"] is None
+
+    # The seat cookie a player still holds names the seat they played, and never 403s.
+    api_client.cookies.set("seat_done-1", "tok-1")
+    assert api_client.get("/games/done-1").json()["you"] == "player_3"
+    api_client.cookies.set("seat_done-1", "stale")
+    assert api_client.get("/games/done-1").status_code == 200
+
+    # There is no live object, so every door that needs one says so, with the replay path.
+    for r in (api_client.get("/games/done-1/events"),
+              api_client.post("/games/done-1/turns", json={}),
+              api_client.post("/games/done-1/join", json={"name": "x"}),
+              api_client.post("/games/done-1/rejoin", json={"token": "tok-1"}),
+              api_client.post("/games/done-1/start")):
+        assert r.status_code == 410, r.text
+        assert "/replays/done-1" in r.json()["detail"]
+
+
+def test_dropped_game_answers_from_its_row_with_the_reason(api_client, monkeypatch):
+    from server.database_models.game import DROPPED, GameRow
+
+    _archive(api_client, monkeypatch,
+             GameRow(game_id="gone-1", status=DROPPED, error="abandoned: parked for 61 min"))
+    body = api_client.get("/games/gone-1").json()
+    assert (body["state"], body["archived"], body["game_over"]) == ("dropped", True, False)
+    assert body["error"].startswith("abandoned:")
+    r = api_client.get("/games/gone-1/events")
+    assert r.status_code == 410 and "abandoned" in r.json()["detail"]
+
+
+def test_a_row_still_marked_running_is_not_served_from_the_archive(api_client, monkeypatch):
+    # Only ended rows fall through; a live-status row missing from the table is unknown.
+    from server.database_models.game import RUNNING, GameRow
+
+    _archive(api_client, monkeypatch, GameRow(game_id="odd-1", status=RUNNING))
+    assert api_client.get("/games/odd-1").status_code == 404

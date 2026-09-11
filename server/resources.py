@@ -8,7 +8,7 @@ Ownership is visible in one place::
         ├── GameRepository(Database)
         ├── GraphRuntime(checkpoint DSN)
         ├── ReplayService(Database)
-        └── GameRegistry(GameRepository, GraphRuntime)
+        └── LiveGameRegistry(GameRepository, GraphRuntime)
 
 The lifespan creates this tree once and context-manager nesting closes it in reverse.
 """
@@ -21,7 +21,7 @@ from typing import AsyncIterator
 
 from server.config import ServerSettings, server_settings
 from server.db import Database, database_resource
-from server.game.registry import GameRegistry
+from server.game.registry import LiveGameRegistry
 from server.graph_runtime import GraphRuntime, graph_runtime_resource
 from server.storage.game_repository import GameRepository
 from server.storage.replay_service import ReplayService
@@ -35,7 +35,7 @@ class AppResources:
     game_repository: GameRepository
     graph_runtime: GraphRuntime
     replays: ReplayService
-    games: GameRegistry
+    games: LiveGameRegistry
 
 
 @asynccontextmanager
@@ -51,5 +51,5 @@ async def app_resources(settings: ServerSettings = server_settings
                 game_repository=repository,
                 graph_runtime=graph_runtime,
                 replays=ReplayService(database),
-                games=GameRegistry(repository, graph_runtime),
+                games=LiveGameRegistry(repository, graph_runtime),
             )

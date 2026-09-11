@@ -4,17 +4,24 @@
     (nothing) ──start_instant──────────────────▶ running
     row ──revive──▶ waiting | running                          (boot, via housekeeping)
     running ──drop──▶ dropped                                  (sweep, via housekeeping)
+    ended, last viewer gone ──▶ (forgotten; the database row answers for it from then on)
 
 The process builds one registry at startup, in resources.py, and keeps it for as long as
 it runs. Each entry is one game at one stage, found by its game_id: a GameLobby while
 people are still joining, a GameSession once the game is being played.
 
+The table holds only games that can still move: rooms that are waiting and games that are
+running, parked ones included. A game that has ended, by finishing, by its task dying, or
+by being dropped, leaves the table as soon as its last viewer disconnects; its row and its
+events were written down as it went, so its URL keeps answering from the database and a
+finished game has a replay under the same id. That is the promise the name makes, and the
+sweeper checks it on every pass in case a session's own hook never fired.
+
 This is the only code that puts a game in the table or replaces one. A route collects what
 the request carries and calls a single method here, and housekeeping calls ``revive`` at
 boot and ``drop`` when the sweeper gives up on a game. The two endings a game reaches on
 its own, its engine run finishing and its task dying, are handled by GameSession, which
-records them itself; the entry then stays in the table so its history can still be read
-until the process stops.
+records them itself and then tells the registry it is done through ``on_idle``.
 
 The registry never looks inside a running game (turns, viewers, clocks and pacing all
 belong to GameSession) and it does not know about HTTP. It raises LookupError when a game
@@ -45,7 +52,7 @@ _BYOK_EPITAPH = ("the game's API key did not survive the server restart "
                  "(keys are never stored) — start a new game")
 
 
-class GameRegistry:
+class LiveGameRegistry:
     """Every waiting room and running game in this process, found by game_id, together
     with the methods that move a game from one stage to the next."""
 
@@ -69,8 +76,26 @@ class GameRegistry:
         return [e for e in self._entries.values() if isinstance(e, GameSession)]
 
     def adopt(self, entry: Entry) -> None:
-        """Place a prepared entry under its own id (recovery, tests)."""
+        """Place a prepared entry under its own id (tests)."""
         self._entries[entry.game_id] = entry
+        if isinstance(entry, GameSession):
+            entry.on_idle = lambda: self._release(entry.game_id)
+
+    def _release(self, game_id: str) -> None:
+        """Forget an ended game. Its row and events are already written down, so the game
+        keeps answering its URL from the database; only the live object goes."""
+        entry = self._entries.get(game_id)
+        if isinstance(entry, GameSession) and entry.ended:
+            del self._entries[game_id]
+            logger.info("game %s: left the live registry", game_id)
+
+    def release_idle(self) -> list[str]:
+        """The sweeper's backstop: forget every ended game nobody is watching, in case a
+        session's own hook never fired. Returns the ids it forgot."""
+        idle = [s.game_id for s in self.sessions() if s.ended and not s.watched]
+        for game_id in idle:
+            self._release(game_id)
+        return idle
 
     @property
     def durable(self) -> bool:
@@ -146,6 +171,7 @@ class GameRegistry:
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the
         table, write its row, and start its task."""
+        session.on_idle = lambda: self._release(session.game_id)
         self._entries[session.game_id] = session
         await self._repository.upsert_game(session.game_id, status="running", **row_fields)
         session.start()
@@ -154,9 +180,9 @@ class GameRegistry:
     # -- running → dropped, from outside --------------------------------------------------
 
     async def drop(self, game_id: str, reason: str) -> None:
-        """End a game nobody is going to finish. A running game stays in the table so its
-        history can still be read, with the reason stored alongside it, and a waiting room
-        simply disappears."""
+        """End a game nobody is going to finish. The reason is stored on the row, which is
+        what answers for the game once it leaves the table: a waiting room goes at once, a
+        running game as soon as its last viewer disconnects."""
         entry = self._entries.get(game_id)
         if isinstance(entry, GameSession):
             await entry.abandon(reason)
@@ -174,8 +200,9 @@ class GameRegistry:
         questions it was waiting on.
 
         A game funded by a player's own key cannot come back, because the key itself was
-        never stored. Such a game is revived only far enough to serve its history, with an
-        error explaining why, and a waiting room in that state is simply marked dropped."""
+        never stored: its row is marked dropped with an error saying why, and nothing is
+        kept in memory. The same goes for a row still marked running whose engine had in
+        fact finished: it is completed and forgotten. Returns None in both cases."""
         if row.status == WAITING:
             if row.byok:
                 await self._repository.upsert_game(
@@ -204,21 +231,22 @@ class GameRegistry:
         session.game_over = any(e.type == "game_over" for e in session.log)
         session._persisted = len(session.log)
         session._persisted_humans = list(row.human_players)
+        session.on_idle = lambda: self._release(row.game_id)
         self._entries[row.game_id] = session
 
         if row.byok:
-            session.error = _BYOK_EPITAPH
-            session._finished.set()  # no task: history is served, play is over
             await self._repository.upsert_game(
                 row.game_id, status=DROPPED, error=_BYOK_EPITAPH)
-            return session
+            await session.abandon(_BYOK_EPITAPH)  # ended and unwatched: leaves at once
+            return None
 
         state = await graph.aget_state(session.config)
         if not state.next:  # the game actually finished; the row was a stale 'running'
-            session._finished.set()
             await self._repository.complete_game(
                 row.game_id, session.log, len(session.human_players))
-            return session
+            session._finished.set()
+            session._maybe_idle()
+            return None
 
         # Re-park every interrupt the checkpoint holds (the returning-player view),
         # then resume: parked games wait for /turns, mid-generation crashes continue.

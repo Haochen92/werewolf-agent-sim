@@ -15,7 +15,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from server.config import ServerSettings, server_settings
-from server.game.registry import GameRegistry
+from server.game.registry import LiveGameRegistry
 from server.game.game_session import GameSession
 
 logger = logging.getLogger(__name__)
@@ -41,10 +41,12 @@ def is_expired(session: GameSession, settings: ServerSettings,
     return now - session.parked_since >= _shelf_life(session, settings)
 
 
-async def sweep_parked_games(registry: GameRegistry,
+async def sweep_parked_games(registry: LiveGameRegistry,
                              settings: ServerSettings = server_settings,
                              now: datetime | None = None) -> list[str]:
-    """One pass over every running game. Returns the ids of the games it dropped."""
+    """One pass over every game in the table: forget the ended ones nobody is watching,
+    then drop the parked ones past their shelf life. Returns the ids it dropped."""
+    registry.release_idle()
     dropped: list[str] = []
     for session in registry.sessions():
         if not is_expired(session, settings, now):
@@ -62,7 +64,7 @@ async def sweep_parked_games(registry: GameRegistry,
     return dropped
 
 
-async def run_sweeper(registry: GameRegistry,
+async def run_sweeper(registry: LiveGameRegistry,
                       settings: ServerSettings = server_settings) -> None:
     """The background loop the app starts at boot and cancels at shutdown."""
     while True:

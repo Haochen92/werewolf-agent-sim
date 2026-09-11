@@ -15,8 +15,9 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 
+from server.database_models.game import COMPLETED, ENDED_STATUSES, GameRow
 from server.game.lobby import GameLobby
-from server.game.registry import Entry, GameRegistry
+from server.game.registry import Entry, LiveGameRegistry
 from server.game.game_session import GameSession
 from server.graph_runtime import GraphRuntime
 from server.resources import AppResources
@@ -32,7 +33,7 @@ def get_resources(request: Request) -> AppResources:
 Resources = Annotated[AppResources, Depends(get_resources)]
 
 
-def get_games(resources: Resources) -> GameRegistry:
+def get_games(resources: Resources) -> LiveGameRegistry:
     """The app's registry of every waiting room and running game (game/registry.py).
 
     It belongs to ``AppResources``: empty at boot, rehydrated by recovery, its tasks
@@ -42,7 +43,7 @@ def get_games(resources: Resources) -> GameRegistry:
     return resources.games
 
 
-GamesRegistry = Annotated[GameRegistry, Depends(get_games)]
+GamesRegistry = Annotated[LiveGameRegistry, Depends(get_games)]
 
 
 def get_game_repository(resources: Resources) -> GameRepository:
@@ -67,21 +68,39 @@ def get_replay_service(resources: Resources) -> ReplayService:
 ReplayServiceDep = Annotated[ReplayService, Depends(get_replay_service)]
 
 
-def get_room(game_id: str, games: GamesRegistry) -> Entry:
-    """Resolve the ``{game_id}`` path parameter to its registry entry, or 404."""
-    entry = games.get(game_id)
-    if entry is None:
-        raise HTTPException(status_code=404, detail="unknown game")
-    return entry
+async def get_room(game_id: str, resources: Resources) -> Entry | GameRow:
+    """Resolve the ``{game_id}`` path parameter. A waiting room or a running game comes
+    from the live registry. A game that has ended is no longer there, so its database
+    row answers instead: enough to say how it ended, and where its replay is. An id
+    neither knows is 404."""
+    entry = resources.games.get(game_id)
+    if entry is not None:
+        return entry
+    row = await resources.game_repository.load_game(game_id)
+    if row is not None and row.status in ENDED_STATUSES:
+        return row
+    raise HTTPException(status_code=404, detail="unknown game")
 
 
-def get_game(game_id: str, games: GamesRegistry) -> GameSession:
-    """Like get_room, but the caller needs a RUNNING game: a lobby is 409."""
-    entry = get_room(game_id, games)
-    if isinstance(entry, GameLobby):
+def ended_detail(row: GameRow) -> str:
+    """The one-line explanation an endpoint gives when asked to act on an ended game."""
+    if row.status == COMPLETED:
+        return f"this game has finished; its replay is at /replays/{row.game_id}"
+    return f"this game was dropped: {row.error or 'no reason recorded'}"
+
+
+Room = Annotated[Entry | GameRow, Depends(get_room)]
+
+
+def get_game(room: Room) -> GameSession:
+    """Like get_room, but the caller needs a RUNNING game: a lobby is 409 and an ended
+    game is 410."""
+    if isinstance(room, GameRow):
+        raise HTTPException(status_code=410, detail=ended_detail(room))
+    if isinstance(room, GameLobby):
         raise HTTPException(status_code=409,
                             detail="game not started yet (waiting room)")
-    return entry
+    return room
 
 
 def seat_cookie_name(game_id: str) -> str:
@@ -100,6 +119,5 @@ def get_seat_token(game_id: str, request: Request) -> str:
     return request.cookies.get(seat_cookie_name(game_id), "")
 
 
-Room = Annotated[Entry, Depends(get_room)]
 Game = Annotated[GameSession, Depends(get_game)]
 SeatToken = Annotated[str, Depends(get_seat_token)]
