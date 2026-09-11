@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The BYOK field, shared by `/play` and `/rooms/new` (build_plan P2 ruling).
+ * The BYOK field, rendered by GameSetupFields for both `/play` and `/rooms/new` (build_plan P2 ruling).
  *
  * Remembering is PURELY client-side and needs zero server support: the server never stores
  * keys — BYOK games even die on restart for exactly that reason — so the key's only wire

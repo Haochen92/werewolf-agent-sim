@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * D4 — create a room. Same card pattern as the solo door, minus the role picker: rooms deal
- * random seats by server ruling, so the concept is unrepresentable here rather than guarded.
+ * D4 — create a room. Same card pattern as the solo door: the room name, then the shared
+ * setup fields (model select, BYOK). No role picker: rooms deal random seats by server
+ * ruling, so the concept is unrepresentable here rather than guarded.
  *
  * On success the host_key is stashed before navigating. It is returned exactly once, it is
  * the only proof of hosting, and its single use is the start button.
@@ -10,11 +11,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createRoom, getModels } from '@/lib/api';
-import { queryKeys } from '@/lib/queryKeys';
+import { useMutation } from '@tanstack/react-query';
+import { createRoom } from '@/lib/api';
 import { hostKey } from '@/lib/storage';
-import { ByokField } from '@/components/ByokField';
+import { GameSetupFields } from '@/components/GameSetupFields';
 import classes from '@/components/Lobby.module.css';
 
 export function NewRoomClient() {
@@ -23,12 +23,6 @@ export function NewRoomClient() {
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  const { data: models } = useQuery({
-    queryKey: queryKeys.models(),
-    queryFn: getModels,
-    staleTime: Infinity,
-  });
 
   const create = useMutation({
     mutationFn: () => createRoom({ name: name.trim(), model, api_key: apiKey }),
@@ -65,26 +59,12 @@ export function NewRoomClient() {
           />
         </div>
 
-        <div className={classes.group}>
-          <label className={classes.label} htmlFor="room-model">
-            Model for the agents
-          </label>
-          <select
-            id="room-model"
-            className={classes.select}
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-          >
-            <option value="">House default</option>
-            {models?.models.map((row) => (
-              <option key={row.model} value={row.model}>
-                {row.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <ByokField value={apiKey} onChange={setApiKey} />
+        <GameSetupFields
+          model={model}
+          onModelChange={setModel}
+          apiKey={apiKey}
+          onApiKeyChange={setApiKey}
+        />
 
         <button
           type="button"

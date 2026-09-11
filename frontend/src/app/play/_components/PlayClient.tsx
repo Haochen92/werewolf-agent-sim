@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * D3 — the solo door. One centred card, three groups top-down: role picker, model select,
- * BYOK field. One primary button.
+ * D3 — the solo door. One centred card, three groups top-down: role picker, then the
+ * shared setup fields (model select, BYOK). One primary button.
  *
  * Solo games auto-start, so submitting redirects straight to `/games/[id]`, which opens in
  * `running` — the player's first screen is the role reveal (D8).
@@ -13,13 +13,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createGame, getModels } from '@/lib/api';
-import { queryKeys } from '@/lib/queryKeys';
+import { useMutation } from '@tanstack/react-query';
+import { createGame } from '@/lib/api';
 import { seatToken } from '@/lib/storage';
 import { humanise } from '@/lib/format';
 import { RoleIcon } from '@/components/RoleIcon';
-import { ByokField } from '@/components/ByokField';
+import { GameSetupFields } from '@/components/GameSetupFields';
 import classes from '@/components/Lobby.module.css';
 
 /** The castable roles. Fixed 9-player 3-faction casting is a server ruling, not a choice. */
@@ -31,12 +30,6 @@ export function PlayClient() {
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  const { data: models } = useQuery({
-    queryKey: queryKeys.models(),
-    queryFn: getModels,
-    staleTime: Infinity, // the menu is static for the process's lifetime
-  });
 
   const create = useMutation({
     mutationFn: () =>
@@ -90,27 +83,12 @@ export function PlayClient() {
           </div>
         </div>
 
-        <div className={classes.group}>
-          <label className={classes.label} htmlFor="model">
-            Model
-          </label>
-          <select
-            id="model"
-            className={classes.select}
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-          >
-            {/* First entry of the menu is the default for a bare key — say so plainly. */}
-            <option value="">House default</option>
-            {models?.models.map((row) => (
-              <option key={row.model} value={row.model}>
-                {row.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <ByokField value={apiKey} onChange={setApiKey} />
+        <GameSetupFields
+          model={model}
+          onModelChange={setModel}
+          apiKey={apiKey}
+          onApiKeyChange={setApiKey}
+        />
 
         <button
           type="button"
