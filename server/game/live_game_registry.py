@@ -69,9 +69,11 @@ class LiveGameRegistry:
     def __len__(self) -> int:
         return len(self._entries)
 
+    @property
     def lobbies(self) -> list[GameLobby]:
         return [e for e in self._entries.values() if isinstance(e, GameLobby)]
 
+    @property
     def sessions(self) -> list[GameSession]:
         return [e for e in self._entries.values() if isinstance(e, GameSession)]
 
@@ -92,7 +94,7 @@ class LiveGameRegistry:
     def release_idle(self) -> list[str]:
         """The sweeper's backstop: forget every ended game nobody is watching, in case a
         session's own hook never fired. Returns the ids it forgot."""
-        idle = [s.game_id for s in self.sessions() if s.ended and not s.watched]
+        idle = [s.game_id for s in self.sessions if s.ended and not s.watched]
         for game_id in idle:
             self._release(game_id)
         return idle
@@ -270,7 +272,7 @@ class LiveGameRegistry:
     async def shutdown(self) -> None:
         """Cancel every running game's task. What each one had reached is already
         written down, so the next boot picks them up again."""
-        sessions = self.sessions()
+        sessions = self.sessions
         if sessions:
             logger.info("shutting down %d game session(s)", len(sessions))
             await asyncio.gather(*(s.shutdown() for s in sessions))

@@ -85,7 +85,7 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
         deadlines=dict(session.turn_deadlines),
         game_over=session.game_over,
         last_seq=session.log[-1].seq if session.log else 0,
-        alive_role_counts=session.public_alive_counts(),
+        alive_role_counts=session.public_alive_counts,
         error=session.error,
     )
 

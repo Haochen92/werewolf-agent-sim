@@ -154,7 +154,7 @@ async def test_session_replays_the_fixture_end_to_end(quiet_session, fixture_par
     expected = Translator()
     n_expected = sum(len(expected.translate(p)) for p in fixture_parts)
     assert len(session.log) == n_expected
-    assert session.public_alive_counts(), "census must be derivable from the log"
+    assert session.public_alive_counts, "census must be derivable from the log"
 
 
 async def test_sse_replays_the_whole_log_after_game_over(quiet_session, fixture_parts):
@@ -574,9 +574,9 @@ def test_spectators_never_count_as_presence(quiet_session):
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     session.subscribe()             # a viewer with no resolver at all
     session.subscribe(lambda: "")   # a spectator (no seat token)
-    assert session.connected_seats() == set() and not session.humans_present()
+    assert session.connected_seats == set() and not session.humans_present
     session.subscribe(lambda: "p2")
-    assert session.connected_seats() == {"p2"} and session.seat_present("p2")
+    assert session.connected_seats == {"p2"} and session.seat_present("p2")
 
 
 async def test_sse_registers_the_seat_resolver_for_its_lifetime(quiet_session, monkeypatch):
@@ -586,9 +586,9 @@ async def test_sse_registers_the_seat_resolver_for_its_lifetime(quiet_session, m
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"])
     stream = _sse(session, lambda: "player_3", 0)
     assert (await stream.__anext__()).startswith(": keep-alive")
-    assert session.connected_seats() == {"player_3"}
+    assert session.connected_seats == {"player_3"}
     await stream.aclose()
-    assert session.connected_seats() == set()
+    assert session.connected_seats == set()
 
 
 async def test_shutdown_cancels_a_parked_game(quiet_session):

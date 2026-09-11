@@ -59,7 +59,7 @@ async def list_rooms(games: GamesRegistry) -> list[RoomSummary]:
     cutoff = server_settings.ROOM_LIST_TTL_SECONDS
     now = datetime.now(timezone.utc)
     rooms = [
-        room for room in games.lobbies()
+        room for room in games.lobbies
         if (now - room.created_at).total_seconds() < cutoff
     ]
     return [

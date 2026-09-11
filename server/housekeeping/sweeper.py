@@ -35,7 +35,7 @@ def is_expired(session: GameSession, settings: ServerSettings,
         return False
     if not session.pending_requests or session.parked_since is None:
         return False
-    if session.humans_present():
+    if session.humans_present:
         return False
     now = now or datetime.now(timezone.utc)
     return now - session.parked_since >= _shelf_life(session, settings)
@@ -48,7 +48,7 @@ async def sweep_parked_games(registry: LiveGameRegistry,
     then drop the parked ones past their shelf life. Returns the ids it dropped."""
     registry.release_idle()
     dropped: list[str] = []
-    for session in registry.sessions():
+    for session in registry.sessions:
         if not is_expired(session, settings, now):
             continue
         idle = datetime.now(timezone.utc) - session.parked_since  # type: ignore[operator]

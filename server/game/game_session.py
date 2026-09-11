@@ -181,7 +181,7 @@ class GameSession:
         # lends it presence and the delegate action. Multi-human tables only.
         self.clocks = SeatClocks(
             self.game_id, self.pending_requests, enabled=len(self._seat_tokens) > 1,
-            seat_present=self.seat_present, anyone_present=self.humans_present,
+            seat_present=self.seat_present, anyone_present=lambda: self.humans_present,
             delegate=lambda seat: self.submit_turn({"delegate": True}, seat=seat))
         # When the current batch of questions was asked; None while the graph runs. The
         # retention sweeper reads it: a parked game nobody is watching has a shelf life.
@@ -412,16 +412,18 @@ class GameSession:
 
     # -- presence (seat_continuity.md §3) --------------------------------------------------
 
+    @property
     def connected_seats(self) -> set[str]:
         """Human seats with at least one open stream RIGHT NOW. Spectators resolve to
         "" and never count; a snapshot, not a history of the window."""
         return {seat for resolve in self._subscribers.values() if (seat := resolve())}
 
     def seat_present(self, seat: str) -> bool:
-        return seat in self.connected_seats()
+        return seat in self.connected_seats
 
+    @property
     def humans_present(self) -> bool:
-        return bool(self.connected_seats())
+        return bool(self.connected_seats)
 
     # -- fan-out --------------------------------------------------------------------------
 
@@ -542,6 +544,7 @@ class GameSession:
 
     # -- census exposure (GET /games/{id}) ------------------------------------------------
 
+    @property
     def public_alive_counts(self) -> dict[str, int]:
         started = next((e for e in self.log if e.type == "game_started"), None)
         if started is None:
