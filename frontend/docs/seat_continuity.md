@@ -173,7 +173,9 @@ their checkpoints is a separate, later ruling.
 1. ~~The grace number~~ — measured and pinned at 30 s (§4).
 2. **Resume UX** (parked 2026-09-09): a "your seats" strip on the home page from the device's
    stored tokens; a copyable seat code on the role card for the cleared-everything case.
-   Today the only way back into a game is its URL.
+   Today the only way back into a game is its URL. (2026-09-11: an ended game's URL now
+   answers from its row — terminal state, epitaph, your seat, replay link — instead of
+   404ing after a restart; design notes §11. The strip has what it needs server-side.)
    Rule together with the **short join code** (deferred 2026-09-10): a 4–6 character room
    code minted at creation, shown on the lobby card beside the share link, typed on the
    rooms page — the "same table / voice call" door that neither the link nor the public

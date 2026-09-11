@@ -440,7 +440,7 @@ only as a bare dict on `AppResources` plus six places that mutated it: two route
 three doors and join/lock/start — the "now it is running" block written twice), the session's
 own endings, recovery, and the sweeper.
 
-`game/registry.py` names it. `GameRegistry` owns the table and every transition that
+`game/registry.py` names it. `LiveGameRegistry` owns the table and every transition that
 originates *outside* a game — `open_room`, `join`, `lock`, `start`, `start_instant`, `drop`,
 `revive` — and nothing else: it never looks inside a session, never speaks HTTP (routes map its
 `LookupError`/`PermissionError` to 409/403; the dependency layer keeps the 404), never touches
@@ -457,3 +457,39 @@ version is an invisible room, i.e. the registry wearing a costume); and a `lifec
 for recovery + sweeper (they are *process*-lifecycle jobs — triggered by boot and a timer, acting
 on every game — so they live in `housekeeping/` and call the registry). The package layout that
 fell out: root = process skeleton; `game/`, `storage/`, `housekeeping/` = the three domains.
+
+## 11. The registry holds only live games; the row answers for the rest (2026-09-11)
+
+Reading `registry.py` a day after it was written, the owner asked what the table's invariant
+was and found it had none worth naming: a session stayed in the table after its game finished,
+after its task died, and after the sweeper dropped it, until the process restarted. Nobody had
+decided that. The bare dict the registry replaced had never evicted anything, and naming the
+layer had not prompted anyone to ask whether it should. The consequence was two behaviours for
+one fact: a finished game was served from memory before a restart and from the archive after;
+a dropped game was served from memory before a restart and by nothing after (a 404).
+
+**The ruling.** The table holds exactly the games that can still move: waiting rooms, and
+running sessions including parked ones. A session leaves when it has ended (finished, task
+died, or dropped from outside) **and** its last viewer has disconnected — not at the instant of
+ending, because viewers are still receiving the last events. The session already observes both
+facts (`_finished`, `unsubscribe`), so it carries one hook, `on_idle`, which the registry sets
+at launch and revive and which fires exactly once. The sweeper calls `release_idle()` on every
+pass as a backstop. Recovery no longer builds a session it would immediately forget: a BYOK row
+is marked dropped and skipped, a stale-running row whose engine had finished is completed and
+skipped. The class is renamed `LiveGameRegistry` so the name states the invariant.
+
+**What answers the URL afterwards.** The dependency provider falls through: a live entry from
+the registry, else the database row if its status is completed or dropped, else 404. The status
+endpoint serves an archived row as a terminal snapshot (`archived: true`, `state` finished or
+dropped, `winner`, the epitaph in `error`, and `you` resolved from the seats column so a stale
+cookie names the seat you held instead of 403ing). Every endpoint that needs a live object
+(events, turns, join, lock, start, rejoin) answers 410 with a one-line reason that names the
+replay path for a finished game. No redirect and no id search: the replay shares the game's id,
+so the client builds the link itself, and the page shows an ended-game card rather than
+silently moving — someone who followed a link should see where they landed and why.
+
+**Rejected on the way:** evicting at the instant of ending (cuts off viewers mid-tail);
+keeping finished sessions as a read cache (the archive already is one); 404 for ended games
+(true before this ruling, and the reason the resume UX had a hole); an HTTP redirect from a
+JSON status endpoint. The resume UX (§9 of seat_continuity) now has the fall-through it needed.
+
