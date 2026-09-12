@@ -23,7 +23,7 @@ import { useGameSession } from '@/game/store';
 import { queryKeys } from '@/lib/queryKeys';
 import { rejoinGame } from '@/lib/api';
 import { ApiError } from '@/lib/request';
-import { seatToken } from '@/lib/storage';
+import { hostKey, seatToken } from '@/lib/storage';
 import { DayTranscript } from '@/components/DayTranscript';
 import { GhostBar, PacingStrip, ThinkingRow, TurnDock } from '@/components/TurnDock';
 import { ResolutionBeat, RoleChip, RoleReveal, WinnerTakeover } from '@/components/Beats';
@@ -108,10 +108,18 @@ export function GameClient({ gameId }: { gameId: string }) {
 
   if (statusError) {
     const missing = statusError instanceof ApiError && statusError.status === 404;
+    // Rooms live only in the server's memory, so a restart closes them. If this browser
+    // holds a host key or seat for the id, that is what happened; say so rather than
+    // "unknown".
+    const wasOurRoom = missing && Boolean(hostKey.get(gameId) || seatToken.get(gameId));
     return (
       <div className={theater.shell}>
         <p role="alert" className={theater.meta}>
-          {missing ? 'No game has this id.' : statusError.message}
+          {wasOurRoom
+            ? 'This room closed when the server restarted. Rooms are not saved; open a new one.'
+            : missing
+              ? 'No game has this id.'
+              : statusError.message}
         </p>
         <p className={theater.meta}>
           <Link href="/">Back to the start →</Link>
