@@ -31,7 +31,7 @@ def is_expired(session: GameSession, settings: ServerSettings,
                now: datetime | None = None) -> bool:
     """True when the game is waiting on a human, nobody is connected to watch it, and it
     has been in that state longer than its shelf life. The cheapest checks come first."""
-    if session.error is not None or session.game_over or session._finished.is_set():
+    if session.error is not None or session.game_over or session.ended:
         return False
     if not session.pending_requests or session.parked_since is None:
         return False

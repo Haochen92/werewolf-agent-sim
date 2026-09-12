@@ -62,7 +62,7 @@ async def test_release_idle_is_the_backstop_when_no_hook_fired(quiet_session):
     session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
     games._place(session)
     session.on_idle = None  # pretend the hook was never wired
-    session._finished.set()
+    session._end()
 
     assert games.release_idle() == [session.game_id]
     assert games.get(session.game_id) is None

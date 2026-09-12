@@ -386,7 +386,7 @@ async def test_parallel_interrupts_park_per_seat_and_resume_as_one_batch(quiet_s
     session.submit_turn({"target": "p9"}, seat="player_3")
     await asyncio.sleep(0.05)
     assert sorted(session.pending_requests) == ["player_5"]
-    assert not session._finished.is_set()
+    assert not session.ended
 
     # Last answer completes the batch: one id-addressed mapping resumes the graph.
     session.submit_turn({"target": "p9"}, seat="player_5")
@@ -489,7 +489,7 @@ async def test_afk_expiry_parks_when_nobody_is_connected(quiet_session, monkeypa
     assert sorted(session.pending_requests) == ["player_3"]  # still parked
     assert session.turn_deadlines == {} and session.clocks._tasks == {}
     assert len(session._graph.calls) == 1  # never resumed
-    assert not session._finished.is_set()
+    assert not session.ended
 
 
 async def test_connected_seat_keeps_the_full_thinking_window(quiet_session, monkeypatch):
@@ -598,7 +598,7 @@ async def test_shutdown_cancels_a_parked_game(quiet_session):
     session.start()
     await asyncio.sleep(0)  # let the task enter astream
     await asyncio.wait_for(session.shutdown(), timeout=5)
-    assert session._finished.is_set()
+    assert session.ended
 
 
 # ---- pacing: public denominator + padded completion -------------------------------------

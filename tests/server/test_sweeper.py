@@ -76,7 +76,7 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     repo.upserts.clear()  # only the sweep's own write is asserted below
 
     assert await sweep_parked_games(games, SETTINGS) == [expired.game_id]
-    assert expired.error.startswith("abandoned:") and expired._finished.is_set()
+    assert expired.error.startswith("abandoned:") and expired.ended
     assert repo.upserts == [(expired.game_id, {"status": "dropped", "error": expired.error})]
     assert fresh.error is None
     assert games.get(expired.game_id) is None  # ended and unwatched: the row answers now

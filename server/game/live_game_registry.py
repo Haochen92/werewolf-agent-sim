@@ -78,9 +78,10 @@ class LiveGameRegistry:
         return [e for e in self._entries.values() if isinstance(e, GameSession)]
 
     def _place(self, session: GameSession) -> None:
-        """File a session under its id and wire the hook that lets it leave when it ends.
-        The step every door shares; tests call it directly to seat a session without
-        starting it."""
+        """Store the session under its game id and give it the callback it will run once it
+        has ended and its last viewer has left, so the registry can forget it. The step
+        every door shares; tests call it directly to seat a session without starting it."""
+
         session.on_idle = lambda: self._release(session.game_id)
         self._entries[session.game_id] = session
 
@@ -245,8 +246,7 @@ class LiveGameRegistry:
         if not state.next:  # the game actually finished; the row was a stale 'running'
             await self._repository.complete_game(
                 row.game_id, session.log, len(session.human_players))
-            session._finished.set()
-            session._maybe_idle()
+            session._end()
             return None
 
         # Re-park every interrupt the checkpoint holds (the returning-player view),

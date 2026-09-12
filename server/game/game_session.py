@@ -294,8 +294,7 @@ class GameSession:
                 finally:
                     # No phase upsert here: cancellation must leave the durable row
                     # 'running' so the next boot's recovery picks the game up.
-                    self._finished.set()
-                    self._maybe_idle()
+                    self._end()
                     if self.error is None:
                         logger.info("game %s: finished (game_over=%s, %d events)",
                                     self.game_id, self.game_over, len(self.log))
@@ -401,8 +400,7 @@ class GameSession:
         reason becomes the epitaph viewers see; the caller flips the row to dropped."""
         self.error = reason
         await self.shutdown()
-        self._finished.set()  # a never-started shell has no task to settle it
-        self._maybe_idle()
+        self._end()  # a never-started shell has no task to settle it
 
     @property
     def turn_deadlines(self) -> dict[str, str]:
@@ -456,12 +454,20 @@ class GameSession:
         self._maybe_idle()
 
     async def wait_finished(self) -> None:
+        """Block until the game has ended, whichever way."""
         await self._finished.wait()
 
     @property
     def ended(self) -> bool:
-        """The game reached its end, its task died, or it was abandoned."""
+        """The game reached its end, its task died, or it was abandoned. Read-only: the
+        session ends itself through _end, and nothing outside sets it."""
         return self._finished.is_set()
+
+    def _end(self) -> None:
+        """Mark the game ended, wake anyone waiting on it, and let the registry know if
+        nobody is watching. The only place the ended flag is set."""
+        self._finished.set()
+        self._maybe_idle()
 
     @property
     def watched(self) -> bool:
