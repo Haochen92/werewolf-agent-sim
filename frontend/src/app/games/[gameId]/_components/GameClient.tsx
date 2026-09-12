@@ -38,6 +38,7 @@ import {
   XrayToggle,
 } from '@/components/theater-parts';
 import { GameEndedCard } from '@/components/GameEndedCard';
+import { KeyNeededCard } from '@/components/KeyNeededCard';
 import theater from '@/components/Theater.module.css';
 
 export function GameClient({ gameId }: { gameId: string }) {
@@ -131,6 +132,10 @@ export function GameClient({ gameId }: { gameId: string }) {
   // The game ended and left the live registry: the poll answered from the row and there
   // is no stream. Finished games link to their replay; dropped ones say why.
   if (status?.archived) return <GameEndedCard gameId={gameId} status={status} />;
+
+  // Live but idle: it ran on a player's key that a restart forgot. A seat holder can
+  // enter it again; everyone else sees why the game is paused.
+  if (status?.awaiting_key) return <KeyNeededCard gameId={gameId} status={status} />;
 
   // D23: the game task died. The stream cannot tell us this — only the poll's error field
   // can, because heartbeats keep flowing and `state` stays "running".

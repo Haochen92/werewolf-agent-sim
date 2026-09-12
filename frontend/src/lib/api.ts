@@ -69,6 +69,14 @@ export function rejoinGame(gameId: string, token: string): Promise<SeatJoined> {
   });
 }
 
+/** Resume a game that lost its key in a restart; any seat holder may. 422 = the provider refused it. */
+export function fundGame(gameId: string, apiKey: string): Promise<GameStatus> {
+  return request<GameStatus>(`/games/${encodeURIComponent(gameId)}/key`, {
+    method: 'POST',
+    body: { api_key: apiKey },
+  });
+}
+
 /** host_key rides as a QUERY parameter, not a body — the server's contract. */
 export function startGame(gameId: string, hostKey?: string | null): Promise<unknown> {
   const query = hostKey ? `?host_key=${encodeURIComponent(hostKey)}` : '';

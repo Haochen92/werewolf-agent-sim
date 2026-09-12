@@ -487,6 +487,12 @@ export interface components {
       /** Error */
       error?: string | null;
       /**
+       * Awaiting Key
+       * @description The game ran on a player's key and was rebuilt after a restart without it. It is live but idle until a seat holder supplies the key again (POST /games/{id}/key).
+       * @default false
+       */
+      awaiting_key: boolean;
+      /**
        * Winner
        * @description The winning faction, once the game is over and served from its archived row.
        */
