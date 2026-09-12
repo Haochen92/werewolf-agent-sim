@@ -22,6 +22,7 @@ export function NewRoomClient() {
   const [name, setName] = useState('');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [needsKey, setNeedsKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
@@ -64,13 +65,14 @@ export function NewRoomClient() {
           onModelChange={setModel}
           apiKey={apiKey}
           onApiKeyChange={setApiKey}
+          onNeedsKeyChange={setNeedsKey}
         />
 
         <button
           type="button"
           className={classes.primary}
           onClick={() => create.mutate()}
-          disabled={create.isPending}
+          disabled={create.isPending || (needsKey && !apiKey.trim())}
         >
           {create.isPending ? 'Opening…' : 'Open the room'}
         </button>

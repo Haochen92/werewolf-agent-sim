@@ -631,14 +631,41 @@ export interface components {
       label: string;
       /** Rescue Model */
       rescue_model: string | null;
+      /**
+       * House Funded
+       * @description The server can pay for this model. Whether it will right now is `house` on the menu; a player's own key runs any row regardless.
+       * @default false
+       */
+      house_funded: boolean;
+      /**
+       * Is Default
+       * @description The row a game runs on when the player picks none. A live setting, not a fixed position in the list.
+       * @default false
+       */
+      is_default: boolean;
+    };
+    /**
+     * HouseFunding
+     * @description The house's purse for today, as GET /models reports it to the client.
+     */
+    HouseFunding: {
+      /** Enabled */
+      enabled: boolean;
+      /** Games Per Day */
+      games_per_day: number;
+      /** Remaining */
+      remaining: number;
+      /** Reset At */
+      reset_at: string;
     };
     /**
      * ModelsMenu
-     * @description GET /models response. First entry = the default for a bare key.
+     * @description GET /models response: the menu, and what the house will pay for right now.
      */
     ModelsMenu: {
       /** Models */
       models: components['schemas']['ModelRow'][];
+      house: components['schemas']['HouseFunding'];
     };
     /**
      * NewGame

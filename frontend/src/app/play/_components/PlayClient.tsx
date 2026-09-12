@@ -29,6 +29,7 @@ export function PlayClient() {
   const [role, setRole] = useState<string | null>(null);
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [needsKey, setNeedsKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
@@ -88,13 +89,14 @@ export function PlayClient() {
           onModelChange={setModel}
           apiKey={apiKey}
           onApiKeyChange={setApiKey}
+          onNeedsKeyChange={setNeedsKey}
         />
 
         <button
           type="button"
           className={classes.primary}
           onClick={() => create.mutate()}
-          disabled={create.isPending}
+          disabled={create.isPending || (needsKey && !apiKey.trim())}
         >
           {create.isPending ? 'Dealing…' : 'Take your seat'}
         </button>
