@@ -112,7 +112,7 @@ class LiveGameRegistry:
             raise LookupError("game already started")
         return entry
 
-    # -- nothing → waiting ----------------------------------------------------------------
+    # -- open a room: (nothing) -> waiting ------------------------------------------------
 
     async def open_room(self, *, api_key: str = "", model: str = "",
                         name: str = "") -> GameLobby:
@@ -131,6 +131,8 @@ class LiveGameRegistry:
         return room.join(name)
 
     async def lock(self, game_id: str, host_key: str, locked: bool) -> GameLobby:
+        """Lock or unlock a room. A locked room turns new joins away but keeps the players
+        already in it. Only the host may do this."""
         room = self._require_lobby(game_id)
         if host_key != room.host_key:
             raise PermissionError("only the host may lock the room")
@@ -176,9 +178,9 @@ class LiveGameRegistry:
     # -- running → dropped, from outside --------------------------------------------------
 
     async def drop(self, game_id: str, reason: str) -> None:
-        """End a game nobody is going to finish. A running game gets the reason stored on
-        its row, which answers for it once its last viewer disconnects; a waiting room has
-        no row and simply disappears."""
+        """Drop a game nobody is going to finish. A waiting room is removed from the
+        registry; it has no row. A running game is stopped and its row marked dropped
+        with the reason; it leaves the registry when its last viewer disconnects."""
         entry = self._entries.get(game_id)
         if isinstance(entry, GameLobby):
             del self._entries[game_id]
