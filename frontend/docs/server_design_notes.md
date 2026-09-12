@@ -495,3 +495,34 @@ keeping finished sessions as a read cache (the archive already is one); 404 for 
 (true before this ruling, and the reason the resume UX had a hole); an HTTP redirect from a
 JSON status endpoint. The resume UX (§9 of seat_continuity) now has the fall-through it needed.
 
+## 12. A room is not yet a game: rooms are not persisted (2026-09-12)
+
+Reading `open_room` after §11, the owner asked whether a waiting room should be revived after
+a server crash at all, and compared it with real matchmaking systems (Garena, Steam, Discord),
+where a lobby is ephemeral: the server going away closes it, and someone opens a new one. The
+same reasons hold here. A lobby's substance is presence, and rooms have no stream, so a revived
+room is a ghost with seats reserved for people who may have left. Rooms are cheap to recreate;
+running games hold hours of engine state and paid model calls, which is what recovery exists
+for. And under §11's invariant a room whose players are gone is closer to a dropped game than to
+a live one. Rooms had ridden along on recovery because their rows were there, not because anyone
+argued for it.
+
+Then the follow-up: if a room is never revived, why persist it? Its row had one remaining
+reader, recovery. The browser lists from memory, status reads from memory, and the only
+post-restart value, a "room closed" message on the share link, the client can produce itself
+from the host key or seat token it already stashes per id.
+
+**The ruling.** A room is not yet a game, and the games table records games. `open_room`,
+`join`, `lock` and a lobby `drop` write nothing; the row is born in `_launch` at start, which
+now writes the full row for a room (model, key flag, name, seats) as the solo door always did.
+`revive` rebuilds running rows only (`RECOVERABLE_STATUSES = (RUNNING,)`) and returns None for
+anything else; the waiting branch is gone. The host key never reaches the database any more.
+On a 404 for an id this browser holds a host key or seat for, the page says the room closed
+with a restart and to open a new one. The two waiting rows left in production from before the
+ruling were marked dropped by hand with that reason.
+
+**Costs accepted:** a deploy closes rooms being filled at that moment (seconds to recreate);
+no record of rooms that never started (nobody had asked for one). **Side effect:** the parked
+waiting-room retention question (seat_continuity §9.4) mostly dissolves, since no room outlives
+an uptime.
+

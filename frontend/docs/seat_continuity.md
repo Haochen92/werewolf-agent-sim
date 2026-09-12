@@ -121,16 +121,18 @@ checkpointer and each durable event is appended to the event log as it is born. 
 registry is rebuilt from three separate authorities — the game row (identity, lifecycle,
 seats, room settings), the ordered event rows (the replay source and the translator's
 sequence shadow), the LangGraph checkpoint (executable state, pending tasks, interrupts).
-A game parked at a human question is re-parked at that question; waiting rooms come back
-with their name, lock and creation time. BYOK games are the exception: their key lives only
-in process memory, so recovery marks them dropped.
+A game parked at a human question is re-parked at that question. Waiting rooms do not come
+back: since 2026-09-12 a room lives only in process memory and has no row until its game
+starts, so a restart closes it, as a matchmaking lobby closes when its server goes away
+(design notes §12). BYOK games are the other exception: their key lives only in process
+memory, so recovery marks them dropped.
 
 This is why parking needs no machinery of its own: a parked game and a game that just
 survived a restart are the same state.
 
 ## 7. Retention — nothing waits forever
 
-Recovery revives every `waiting` and `running` row on each boot, so abandoned games would
+Recovery revives every `running` row on each boot, so abandoned games would
 otherwise accumulate (eleven did, in the first three weeks). A small idempotent sweeper
 marks them **`dropped`** — the existing status, reused rather than adding a fifth — with the
 reason in the row's error field:
@@ -139,7 +141,7 @@ reason in the row's error field:
 |---|---|
 | solo game parked on a human question, nobody connected | parked longer than **1 hour** |
 | multi-human game parked, nobody connected | parked longer than **1 day** |
-| waiting room | (open — the 2 h listing filter hides it; direct URL still resolves) |
+| waiting room | no row: it dies with the process; within one uptime the 2 h listing filter hides it and the direct URL still resolves |
 
 "Parked" is measured from the ask (`parked_since`, restored from the row's `updated_at`
 across a restart so a reboot does not make an old park newborn), and "nobody connected" is
@@ -184,7 +186,9 @@ their checkpoints is a separate, later ruling.
    the row for restart, recycled once the game ends), so they share a design session.
 3. **Identity mechanics** (parked 2026-09-09): cookie lifetime, the local-storage copy,
    cross-device — currently "same browser or nothing", by ruling.
-4. **Waiting-room retention** — no sweep yet.
+4. **Waiting-room retention** — mostly dissolved 2026-09-12: rooms are no longer persisted, so
+   none outlives a restart. Whether to forget a never-started room within one uptime is a
+   tidiness question (a few hundred bytes each), not a durability leak.
 5. **Stall watchdog** (fault mode 4) — a hang is still invisible; a "no part for N minutes"
    timeout would convert it into mode 2.
 6. **BYOK credential resubmission** after a restart — recorded, not built.
