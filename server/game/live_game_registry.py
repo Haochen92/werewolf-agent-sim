@@ -99,7 +99,10 @@ class LiveGameRegistry:
         """Whether games persist across restarts (a durable graph is configured)."""
         return self._graph_runtime.graph is not None
 
-    def _lobby(self, game_id: str) -> GameLobby:
+    def _require_lobby(self, game_id: str) -> GameLobby:
+        """Fetch the waiting room for join, lock and start, or say why there is none: the
+        id is unknown, or the game has already started. Raises LookupError either way,
+        which the routes turn into a 409."""
         entry = self._entries.get(game_id)
         if entry is None:
             raise LookupError("unknown game")
@@ -124,14 +127,14 @@ class LiveGameRegistry:
     async def join(self, game_id: str, name: str) -> str:
         """Claim a seat and return its secret token. LookupError when the room is
         locked, full, or already started."""
-        room = self._lobby(game_id)
+        room = self._require_lobby(game_id)
         token = room.join(name)
         await self._repository.upsert_game(
             game_id, seats=[seat._asdict() for seat in room.seats])
         return token
 
     async def lock(self, game_id: str, host_key: str, locked: bool) -> GameLobby:
-        room = self._lobby(game_id)
+        room = self._require_lobby(game_id)
         if host_key != room.host_key:
             raise PermissionError("only the host may lock the room")
         room.locked = locked
@@ -144,7 +147,7 @@ class LiveGameRegistry:
         """Replace the waiting room with a running game under the same id. Only the host
         may do this. Nothing is awaited between checking the room and swapping it out, so
         a second start or a late join cannot slip in halfway through."""
-        room = self._lobby(game_id)
+        room = self._require_lobby(game_id)
         if host_key != room.host_key:
             raise PermissionError("only the host may start the game")
         session = GameSession(
