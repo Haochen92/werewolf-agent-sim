@@ -147,20 +147,13 @@ async def _recover(monkeypatch, rows, graph):
     return games, repository
 
 
-async def test_waiting_room_revives_with_its_identity(monkeypatch):
-    from datetime import datetime, timezone
-
-    stamp = datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc)
-    row = _row(status=WAITING, host_key="hk-9",
-               room_name="wolves den", locked=True, created_at=stamp)
-    games, _ = await _recover(monkeypatch, [row], FakeDurableGraph(None))
-
-    lobby = games.get("g-1")
-    assert (lobby.game_id, lobby.host_key) == ("g-1", "hk-9")
-    assert lobby.players == ["hao"] and lobby.tokens == ["tok-1"]
-    # The browser/lock facts survive too: a restart must not silently unlock a
-    # room or reset its listing-TTL clock to boot time.
-    assert (lobby.name, lobby.locked, lobby.created_at) == ("wolves den", True, stamp)
+async def test_a_waiting_row_is_never_rebuilt(monkeypatch):
+    # Rooms live in memory only (ruled 2026-09-12): a restart closes them. A waiting row
+    # can only predate that ruling; it is left alone, neither revived nor rewritten.
+    row = _row(status=WAITING, host_key="hk-9", room_name="wolves den")
+    games, repository = await _recover(monkeypatch, [row], FakeDurableGraph(None))
+    assert games.get("g-1") is None and len(games) == 0
+    assert repository.upsert_calls == []
 
 
 async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatch):

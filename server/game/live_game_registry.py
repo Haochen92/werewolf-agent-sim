@@ -2,7 +2,7 @@
 
     (nothing) ──open_room──▶ waiting ──start──▶ running ──▶ completed | dropped
     (nothing) ──start_instant──────────────────▶ running
-    row ──revive──▶ waiting | running                          (boot, via housekeeping)
+    row ──revive──▶ running                                    (boot, via housekeeping)
     running ──drop──▶ dropped                                  (sweep, via housekeeping)
     ended, last viewer gone ──▶ (forgotten; the database row answers for it from then on)
 
@@ -11,7 +11,9 @@ it runs. Each entry is one game at one stage, found by its game_id: a GameLobby 
 people are still joining, a GameSession once the game is being played.
 
 The table holds only games that can still move: rooms that are waiting and games that are
-running, parked ones included. A game that has ended, by finishing, by its task dying, or
+running, parked ones included. A waiting room lives in memory only: its database row is
+born when the game starts, so a restart closes every room, the way a matchmaking lobby
+closes when its server goes away, and only running games are rebuilt at boot. A game that has ended, by finishing, by its task dying, or
 by being dropped, leaves the table as soon as its last viewer disconnects; its row and its
 events were written down as it went, so its URL keeps answering from the database and a
 finished game has a replay under the same id. That is the promise the name makes.
@@ -38,8 +40,8 @@ from datetime import datetime, timezone
 from Agents.config import RunConfig
 from Agents.schemas.human_player import HumanTurnRequest
 
-from server.database_models.game import DROPPED, WAITING, GameRow
-from server.game.lobby import GameLobby, HumanSeat
+from server.database_models.game import DROPPED, RUNNING, GameRow
+from server.game.lobby import GameLobby
 from server.game.game_session import GameSession
 from server.storage.game_repository import GameRepository
 
@@ -114,31 +116,25 @@ class LiveGameRegistry:
 
     async def open_room(self, *, api_key: str = "", model: str = "",
                         name: str = "") -> GameLobby:
-        """Open a waiting room and write it down. Its id is the id the running game will
-        keep, so one identifier covers the room and the game it becomes."""
+        """Open a waiting room: build it and register it in the table. Nothing is written
+        to the database until the game starts; a room that never starts leaves no trace.
+        Its id is the id the running game will keep, so one identifier covers the room
+        and the game it becomes."""
         room = GameLobby(api_key=api_key, model=model, name=name)
         self._entries[room.game_id] = room
-        await self._repository.upsert_game(
-            room.game_id, status=WAITING, host_key=room.host_key, model=model,
-            byok=bool(api_key), seats=[], room_name=room.name,
-            created_at=room.created_at)
         return room
 
     async def join(self, game_id: str, name: str) -> str:
         """Claim a seat and return its secret token. LookupError when the room is
         locked, full, or already started."""
         room = self._require_lobby(game_id)
-        token = room.join(name)
-        await self._repository.upsert_game(
-            game_id, seats=[seat._asdict() for seat in room.seats])
-        return token
+        return room.join(name)
 
     async def lock(self, game_id: str, host_key: str, locked: bool) -> GameLobby:
         room = self._require_lobby(game_id)
         if host_key != room.host_key:
             raise PermissionError("only the host may lock the room")
         room.locked = locked
-        await self._repository.upsert_game(game_id, locked=locked)
         return room
 
     # -- → running ------------------------------------------------------------------------
@@ -155,7 +151,8 @@ class LiveGameRegistry:
             seat_tokens=room.tokens, graph=self._graph_runtime.graph,
             repository=self._repository)
         return await self._launch(
-            session, seats=[seat._asdict() for seat in room.seats])
+            session, model=room.model, byok=bool(room.api_key), room_name=room.name,
+            seats=[seat._asdict() for seat in room.seats])
 
     async def start_instant(self, run_config: RunConfig, *, api_key: str, model: str,
                             seat_tokens: list[str]) -> GameSession:
@@ -170,7 +167,7 @@ class LiveGameRegistry:
 
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the
-        table, write its row, and start its task."""
+        table, write its row (the first write for this game), and start its task."""
         self._register(session)
         await self._repository.upsert_game(session.game_id, status="running", **row_fields)
         session.start()
@@ -179,43 +176,33 @@ class LiveGameRegistry:
     # -- running → dropped, from outside --------------------------------------------------
 
     async def drop(self, game_id: str, reason: str) -> None:
-        """End a game nobody is going to finish. The reason is stored on the row, which is
-        what answers for the game once it leaves the table: a waiting room goes at once, a
-        running game as soon as its last viewer disconnects."""
+        """End a game nobody is going to finish. A running game gets the reason stored on
+        its row, which answers for it once its last viewer disconnects; a waiting room has
+        no row and simply disappears."""
         entry = self._entries.get(game_id)
+        if isinstance(entry, GameLobby):
+            del self._entries[game_id]
+            return
         if isinstance(entry, GameSession):
             await entry.abandon(reason)
-        elif isinstance(entry, GameLobby):
-            del self._entries[game_id]
         await self._repository.upsert_game(game_id, status=DROPPED, error=reason)
 
     # -- row → entry (boot) ---------------------------------------------------------------
 
     async def revive(self, row: GameRow) -> Entry | None:
-        """Rebuild one game from what was written down, after a restart. Three sources
-        are used, each the authority on one thing: the game row holds the identity, the
-        seats, the host key and the status; the events table holds everything the players
-        were sent; the engine checkpoint holds where the game actually is, including the
-        questions it was waiting on.
+        """Rebuild one running game from what was written down, after a restart. Three
+        sources are used, each the authority on one thing: the game row holds the identity,
+        the seats and the status; the events table holds everything the players were sent;
+        the engine checkpoint holds where the game actually is, including the questions it
+        was waiting on. Only running rows are rebuilt: a waiting room has no row, so a
+        restart closes it.
 
         A game funded by a player's own key cannot come back, because the key itself was
         never stored: its row is marked dropped with an error saying why, and nothing is
         kept in memory. The same goes for a row still marked running whose engine had in
         fact finished: it is completed and forgotten. Returns None in both cases."""
-        if row.status == WAITING:
-            if row.byok:
-                await self._repository.upsert_game(
-                    row.game_id, status=DROPPED, error=_BYOK_EPITAPH)
-                return None
-            lobby = GameLobby(model=row.model, name=row.room_name)
-            lobby.game_id = row.game_id  # identity comes from the row, not fresh uuids
-            lobby.host_key = row.host_key
-            lobby.locked = row.locked
-            if row.created_at is not None:  # keep the original TTL clock, not boot time
-                lobby.created_at = row.created_at
-            lobby.seats = [HumanSeat(**s) for s in row.seats]
-            self._entries[row.game_id] = lobby
-            return lobby
+        if row.status != RUNNING:  # recovery selects running rows; anything else is inert
+            return None
 
         graph = self._graph_runtime.graph
         session = GameSession(

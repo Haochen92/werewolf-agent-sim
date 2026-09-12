@@ -73,7 +73,6 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     for session in (expired, fresh):
         games._register(session)
     await games.open_room(name="x")  # a waiting room must be left alone by the sweep
-    repo.upserts.clear()  # only the sweep's own write is asserted below
 
     assert await sweep_parked_games(games, SETTINGS) == [expired.game_id]
     assert expired.error.startswith("abandoned:") and expired.ended

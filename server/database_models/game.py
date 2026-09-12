@@ -23,7 +23,9 @@ WAITING: GameStatus = "waiting"
 RUNNING: GameStatus = "running"
 COMPLETED: GameStatus = "completed"
 DROPPED: GameStatus = "dropped"
-RECOVERABLE_STATUSES: tuple[GameStatus, GameStatus] = (WAITING, RUNNING)
+# Only running games are rebuilt at boot. Waiting rooms live in memory and have no row
+# (ruled 2026-09-12); a waiting row can only be a leftover from before that ruling.
+RECOVERABLE_STATUSES: tuple[GameStatus, ...] = (RUNNING,)
 # A game in one of these states has left the live registry; only its row answers for it.
 ENDED_STATUSES: tuple[GameStatus, GameStatus] = (COMPLETED, DROPPED)
 

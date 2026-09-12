@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 async def recover_registry(registry: LiveGameRegistry, repository: GameRepository) -> None:
-    """Fill a fresh registry from every waiting or running row. Called at startup once
+    """Fill a fresh registry from every running row. Called at startup once
     the graph runtime is up, and does nothing when Postgres is not configured."""
     if not registry.durable:
         return
