@@ -13,10 +13,12 @@ people are still joining, a GameSession once the game is being played.
 The table holds only games that can still move: rooms that are waiting and games that are
 running, parked ones included. A waiting room lives in memory only: its database row is
 born when the game starts, so a restart closes every room, the way a matchmaking lobby
-closes when its server goes away, and only running games are rebuilt at boot. A game that has ended, by finishing, by its task dying, or
-by being dropped, leaves the table as soon as its last viewer disconnects; its row and its
-events were written down as it went, so its URL keeps answering from the database and a
-finished game has a replay under the same id. That is the promise the name makes.
+closes when its server goes away, and only running games are rebuilt at boot.
+
+A game that has ended, by finishing, by its task dying, or by being dropped, leaves the
+table as soon as its last viewer disconnects. Its row and its events were written down as
+it went, so its URL keeps answering from the database, and a finished game has a replay
+under the same id. That is the promise the name makes.
 
 This is the only code that puts a game in the table or replaces one. A route collects what
 the request carries and calls a single method here, and housekeeping calls ``revive`` at
