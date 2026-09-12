@@ -44,9 +44,7 @@ def is_expired(session: GameSession, settings: ServerSettings,
 async def sweep_parked_games(registry: LiveGameRegistry,
                              settings: ServerSettings = server_settings,
                              now: datetime | None = None) -> list[str]:
-    """One pass over every game in the table: forget the ended ones nobody is watching,
-    then drop the parked ones past their shelf life. Returns the ids it dropped."""
-    registry.release_idle()
+    """One pass over every running game. Returns the ids of the games it dropped."""
     dropped: list[str] = []
     for session in registry.sessions:
         if not is_expired(session, settings, now):

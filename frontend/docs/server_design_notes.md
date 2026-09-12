@@ -473,8 +473,10 @@ running sessions including parked ones. A session leaves when it has ended (fini
 died, or dropped from outside) **and** its last viewer has disconnected — not at the instant of
 ending, because viewers are still receiving the last events. The session already observes both
 facts (`_finished`, `unsubscribe`), so it carries one hook, `on_idle`, which the registry sets
-at launch and revive and which fires exactly once. The sweeper calls `release_idle()` on every
-pass as a backstop. Recovery no longer builds a session it would immediately forget: a BYOK row
+at launch and revive and which fires exactly once. (A sweeper backstop, `release_idle`, was
+built and then removed on 2026-09-12: with one register step and one end step it could never
+find anything, and a silent repair would have hidden a broken invariant rather than reported
+it.) Recovery no longer builds a session it would immediately forget: a BYOK row
 is marked dropped and skipped, a stale-running row whose engine had finished is completed and
 skipped. The class is renamed `LiveGameRegistry` so the name states the invariant.
 

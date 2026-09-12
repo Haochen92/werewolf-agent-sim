@@ -52,18 +52,5 @@ async def test_a_live_game_is_never_released(quiet_session):
 
     q = session.subscribe()
     session.unsubscribe(q)  # viewers come and go while the game is live
-    assert games.release_idle() == []
     assert games.get(session.game_id) is session
     await session.shutdown()
-
-
-async def test_release_idle_is_the_backstop_when_no_hook_fired(quiet_session):
-    games = _registry()
-    session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
-    games._register(session)
-    session.on_idle = None  # pretend the hook was never wired
-    session._end()
-
-    assert games.release_idle() == [session.game_id]
-    assert games.get(session.game_id) is None
-    assert games.release_idle() == []  # nothing left to forget

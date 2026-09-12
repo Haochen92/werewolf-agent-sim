@@ -14,8 +14,7 @@ The table holds only games that can still move: rooms that are waiting and games
 running, parked ones included. A game that has ended, by finishing, by its task dying, or
 by being dropped, leaves the table as soon as its last viewer disconnects; its row and its
 events were written down as it went, so its URL keeps answering from the database and a
-finished game has a replay under the same id. That is the promise the name makes, and the
-sweeper checks it on every pass in case a session's own hook never fired.
+finished game has a replay under the same id. That is the promise the name makes.
 
 This is the only code that puts a game in the table or replaces one. A route collects what
 the request carries and calls a single method here, and housekeeping calls ``revive`` at
@@ -78,30 +77,22 @@ class LiveGameRegistry:
         return [e for e in self._entries.values() if isinstance(e, GameSession)]
 
     def _register(self, session: GameSession) -> None:
-        """Registers the game session keyed by its game_id.
+        """Register the game session keyed by its game_id.
         Attaches the callback _release to the session as its on_idle handler; the session
-        runs it once it has ended and no viewers are left, which removes the game from the
-        registry. The step every door shares; tests call it directly to seat a session
+        runs it once it has ended and no viewers are left.
+        The step every door shares; tests call it directly to seat a session
         without starting it."""
 
         session.on_idle = lambda: self._release(session.game_id)
         self._entries[session.game_id] = session
 
     def _release(self, game_id: str) -> None:
-        """Forget an ended game. Its row and events are already written down, so the game
-        keeps answering its URL from the database; only the live object goes."""
+        """Remove an ended game from the live registry. The game and associated events are
+        already persisted in the database."""
         entry = self._entries.get(game_id)
         if isinstance(entry, GameSession) and entry.ended:
             del self._entries[game_id]
             logger.info("game %s: left the live registry", game_id)
-
-    def release_idle(self) -> list[str]:
-        """The sweeper's backstop: forget every ended game nobody is watching, in case a
-        session's own hook never fired. Returns the ids it forgot."""
-        idle = [s.game_id for s in self.sessions if s.ended and not s.watched]
-        for game_id in idle:
-            self._release(game_id)
-        return idle
 
     @property
     def durable(self) -> bool:
