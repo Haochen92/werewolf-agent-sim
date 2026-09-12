@@ -125,7 +125,8 @@ A game parked at a human question is re-parked at that question. Waiting rooms d
 back: since 2026-09-12 a room lives only in process memory and has no row until its game
 starts, so a restart closes it, as a matchmaking lobby closes when its server goes away
 (design notes §12). BYOK games are the other exception: their key lives only in process
-memory, so recovery marks them dropped.
+memory, so recovery rebuilds them idle, waiting for a seat holder to enter the key again
+(design notes §13); until then the sweeper's shelf life runs as for a parked turn.
 
 This is why parking needs no machinery of its own: a parked game and a game that just
 survived a restart are the same state.
@@ -191,7 +192,8 @@ their checkpoints is a separate, later ruling.
    tidiness question (a few hundred bytes each), not a durability leak.
 5. **Stall watchdog** (fault mode 4) — a hang is still invisible; a "no part for N minutes"
    timeout would convert it into mode 2.
-6. **BYOK credential resubmission** after a restart — recorded, not built.
+6. ~~BYOK credential resubmission~~ — built 2026-09-12: a key-funded game waits after a
+   restart and any seat holder may resume it by entering the key (design notes §13).
 
 ## 10. Source records (dated originals)
 

@@ -526,3 +526,60 @@ no record of rooms that never started (nobody had asked for one). **Side effect:
 waiting-room retention question (seat_continuity §9.4) mostly dissolves, since no room outlives
 an uptime.
 
+## 13. Funding: the house's purse, a menu that says who pays, and resuming a key-funded game (2026-09-12)
+
+**The fact that forced it.** The Vertex credits behind house-funded games run out on
+2026-10-27. Sixteen of the seventeen games ever played on the live site were house-funded.
+Without a change, on that day every house-funded start would pass the gate, fail its first
+model call, and die into a dropped row, with no warning to the visitor. The demo needed a
+ceiling it cannot pass, and one that can be moved on the day rather than on the next deploy.
+
+**The owner's shape, as ruled.** Keep the house-funded option, but (1) cap it by games per
+day; (2) make the house's default model changeable without rebuilding the container; (3) label
+each row of the model menu with who pays, so a player sees before submitting whether their own
+key is needed; and (4) let a game that ran on a player's key be resumed after a restart by
+asking for the key again — supplied by any seat holder (funding is a favour, not a privilege),
+validated with the provider, then the game continues.
+
+**Built.**
+
+- *The purse* (`server/house.py`, `HousePolicy`). One object settles, for each new game, which
+  model it runs on ("" resolves to the house default) and who pays. A player key runs any row
+  and is never counted. A house-funded row is paid for only while the house is on and today's
+  cap is not spent; the count is the games table itself (`byok=false` rows created this UTC
+  day), so nothing extra is kept and two concurrent starts may exceed the cap by one, which is
+  accepted. The doors answer 422 (unknown model, or player-funded row without a key) or 402
+  with `Retry-After` (house off, or spent). A room is checked at creation, for the early
+  message, and again at start, the moment it costs anything.
+- *Live knobs.* `enabled`, `default_model`, `games_per_day` live in a new `settings` table
+  (alembic 0005) behind `PUT /admin/house`, guarded by `ADMIN_TOKEN` (404 when unset, so an
+  unconfigured deploy exposes nothing), cached ten seconds so a change lands without a restart.
+  Process defaults `HOUSE_*` apply when nothing is stored or storage is off; `enabled=false`
+  is the kill switch. The catalogue no longer hard-codes "(default)": which row is the default
+  is a setting, falling back to the first house-funded row. The engine's own constant no
+  longer matters for served games because the route always passes a resolved model.
+- *The menu says who pays.* `GET /models` gained `house_funded` and `is_default` per row and
+  a `house` block (enabled, remaining, reset_at). The client tags each row "house pays" or
+  "your key", preselects the default (the blank "House default" option is gone), and holds the
+  submit while a key-required row has no key. The status line under the select says what the
+  house will do right now.
+- *Resuming a key-funded game.* Instead of being marked dropped at boot, a BYOK running row is
+  rebuilt without a task, flagged `awaiting_key`, and kept in the live registry — it can still
+  move, given a key — with the sweeper's clock running from the row's last write. `POST
+  /games/{id}/key` takes a seat holder's key, tries it on the provider with one trivial call
+  (`game/key_check.py`; 422 with the provider's complaint, the game keeps waiting), then the
+  session takes the key and the game continues from its checkpoint through the same path
+  recovery uses (`_resume`, factored out of `revive`). The page shows a key-needed card: the
+  field for seat holders, an explanation for spectators.
+
+**Rejected on the way:** a per-game token budget (invasive; the daily cap suffices until
+proven otherwise); requiring the original host to resume a key-funded game (the host key is no
+longer stored, §12, and nobody but the typist pays); storing keys encrypted (breaks the "sent
+once, never stored" promise on the form); a rolling 24-hour window (a UTC day is explainable in
+one sentence and the reset time is on the wire).
+
+**Still open:** the default model is now a cost choice — 3.5 Flash-Lite thinks by default and
+costs about forty percent more per game than 3.1; with a tight cap that is the first knob to
+revisit. A room checked at start while the house is spent has no way to add a key at that
+moment; the host sees the 402 and must open a new room with a key.
+
