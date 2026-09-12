@@ -8,7 +8,10 @@ manual restart smoke, not here.
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
 from types import SimpleNamespace
+
+import pytest
 
 from langgraph.types import Command
 
@@ -139,10 +142,11 @@ def _row(**over):
     return GameRow(**base)
 
 
-async def _recover(monkeypatch, rows, graph):
+async def _recover(monkeypatch, rows, graph, check_key=None):
     monkeypatch.setattr("server.game.game_session.seed_memory_from_config", lambda *a, **k: None)
     repository = RecordingGameRepository(rows=rows)
-    games = LiveGameRegistry(repository, SimpleNamespace(graph=graph))
+    extra = {"check_key": check_key} if check_key is not None else {}
+    games = LiveGameRegistry(repository, SimpleNamespace(graph=graph), **extra)
     await recovery.recover_registry(games, repository)
     return games, repository
 
@@ -177,15 +181,45 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
     assert isinstance(resume, Command) and resume.resume["message"] == "back from the dead"
 
 
-async def test_byok_game_is_dropped_with_a_clear_epitaph_and_not_kept(monkeypatch):
-    from server.game.live_game_registry import _BYOK_EPITAPH
+async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_it(monkeypatch):
+    request = human_turn_request(player_id="player_3", phase="day_channel",
+                                 can_pass=True, valid_targets=[])
+    state = SimpleNamespace(next=("DAY_PHASE",), tasks=[SimpleNamespace(
+        interrupts=[SimpleNamespace(value=request.model_dump(), id="int-9")])])
+    graph = FakeDurableGraph(state)
+    probed = []
 
-    games, repository = await _recover(monkeypatch, [_row(byok=True)],
-                                       FakeDurableGraph(None))
-    # Nothing can play it (the key was never stored), so it is not a live game: the row,
-    # marked dropped with the reason, is what answers for it from now on.
-    assert games.get("g-1") is None
-    assert ("g-1", {"status": DROPPED, "error": _BYOK_EPITAPH}) in repository.upsert_calls
+    async def check_key(model, api_key):
+        probed.append((model, api_key))
+        if api_key == "sk-bad":
+            raise ValueError("the provider rejected this key: 401")
+
+    stamp = datetime(2026, 9, 11, 9, 0, tzinfo=timezone.utc)
+    games, repository = await _recover(
+        monkeypatch, [_row(byok=True, model="gemini-2.5-pro", updated_at=stamp)], graph,
+        check_key=check_key)
+
+    # Rebuilt, live, idle: no task, no question re-parked yet, the row left as it was.
+    session = games.get("g-1")
+    assert session.awaiting_key and session._task is None and not session.pending_requests
+    assert session.parked_since == stamp  # the sweeper's clock runs from the last write
+    assert repository.upsert_calls == []
+
+    # A bad key is refused by the provider probe and the game keeps waiting.
+    with pytest.raises(ValueError, match="rejected"):
+        await games.fund("g-1", "sk-bad")
+    assert session.awaiting_key and session._task is None
+
+    # A good key: the model is the row's, the question is re-parked, the task runs.
+    await games.fund("g-1", "sk-good")
+    assert probed == [("gemini-2.5-pro", "sk-bad"), ("gemini-2.5-pro", "sk-good")]
+    assert not session.awaiting_key
+    assert session._llm_override.api_key == "sk-good"
+    assert session._llm_override.model == "gemini-2.5-pro"
+    assert "player_3" in session.pending_requests and session._task is not None
+    with pytest.raises(LookupError):  # not waiting any more
+        await games.fund("g-1", "sk-again")
+    await session.shutdown()
 
 
 async def test_house_selected_model_survives_restart(monkeypatch):

@@ -156,6 +156,13 @@ class SeatJoined(BaseModel):
     the client's backup (localStorage) for POST /rejoin after cookie loss."""
 
 
+class FundGame(BaseModel):
+    """POST /games/{id}/key body: a seat holder's key to resume a game that lost its
+    funding in a restart. Tried on the provider before the game moves; never stored."""
+
+    api_key: str = Field(min_length=1)
+
+
 class RejoinGame(BaseModel):
     """POST /games/{id}/rejoin body: re-prove seat ownership after cookie loss
     (new device, cleared browsing data) with the stashed body-copy token."""
@@ -205,6 +212,9 @@ class GameStatus(BaseModel):
     (no timer) and whenever nobody owes input."""
     game_over: bool = False
     last_seq: int = 0
+    awaiting_key: bool = False
+    """The game ran on a player's key and was rebuilt after a restart without it. It is
+    live but idle until a seat holder supplies the key again (POST /games/{id}/key)."""
     winner: str | None = None
     """The winning faction, once the game is over and served from its archived row."""
     archived: bool = False

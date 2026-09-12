@@ -17,7 +17,7 @@ from server.dependencies import House, Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
 from server.game.game_session import GameSession, entitled
-from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
+from server.schemas.requests import FundGame, GameCreated, GameStatus, NewGame, TurnAccepted
 
 from ._shared import authorize_model, set_seat_cookie
 
@@ -81,6 +81,7 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
         server_time=datetime.now(timezone.utc).isoformat(),
         human_players=session.human_players,
         you=(session.seat_for_token(token) or None) if token else None,
+        awaiting_key=session.awaiting_key,
         pending_input=bool(session.pending_requests),
         pending_seats=sorted(session.pending_requests),
         deadlines=dict(session.turn_deadlines),
@@ -111,6 +112,27 @@ def _archived_status(row: GameRow, token: str) -> GameStatus:
         error=row.error,
         archived=True,
     )
+
+
+@router.post(
+    "/games/{game_id}/key",
+    response_model=GameStatus,
+    summary="Resume a key-funded game after a restart by supplying the key again",
+)
+async def fund_game(session: Game, body: FundGame, token: SeatToken,
+                    games: GamesRegistry) -> GameStatus:
+    """Any seat holder may fund the resume; spectators may not. The key is tried on the
+    provider first (422 with its complaint), then the game continues from its checkpoint.
+    409 when the game is not waiting for a key."""
+    if not token or not session.owns(token):
+        raise HTTPException(status_code=403, detail="only a seat holder may fund this game")
+    try:
+        await games.fund(session.game_id, body.api_key)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return await game_status(session, token)
 
 
 @router.post(

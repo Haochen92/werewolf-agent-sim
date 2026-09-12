@@ -43,6 +43,7 @@ from Agents.config import RunConfig
 from Agents.schemas.human_player import HumanTurnRequest
 
 from server.database_models.game import DROPPED, RUNNING, GameRow
+from server.game.key_check import check_key
 from server.game.lobby import GameLobby
 from server.game.game_session import GameSession
 from server.storage.game_repository import GameRepository
@@ -59,9 +60,11 @@ class LiveGameRegistry:
     """Every waiting room and running game in this process, found by game_id, together
     with the methods that move a game from one stage to the next."""
 
-    def __init__(self, repository: GameRepository, graph_runtime) -> None:
+    def __init__(self, repository: GameRepository, graph_runtime, *,
+                 check_key=check_key) -> None:
         self._repository = repository
         self._graph_runtime = graph_runtime  # .graph is None when Postgres is unconfigured
+        self._check_key = check_key  # the provider probe; tests hand in a fake
         self._entries: dict[str, Entry] = {}
 
     # -- lookup ---------------------------------------------------------------------------
@@ -201,10 +204,10 @@ class LiveGameRegistry:
         was waiting on. Only running rows are rebuilt: a waiting room has no row, so a
         restart closes it.
 
-        A game funded by a player's own key cannot come back, because the key itself was
-        never stored: its row is marked dropped with an error saying why, and nothing is
-        kept in memory. The same goes for a row still marked running whose engine had in
-        fact finished: it is completed and forgotten. Returns None in both cases."""
+        A game funded by a player's own key cannot resume by itself, because the key was
+        never stored: it is rebuilt without a task and waits for a seat holder to supply
+        the key again (``fund``). A row still marked running whose engine had in fact
+        finished is completed and forgotten; None is returned for it."""
         if row.status != RUNNING:  # recovery selects running rows; anything else is inert
             return None
 
@@ -224,15 +227,25 @@ class LiveGameRegistry:
         self._register(session)
 
         if row.byok:
-            await self._repository.upsert_game(
-                row.game_id, status=DROPPED, error=_BYOK_EPITAPH)
-            await session.abandon(_BYOK_EPITAPH)  # ended and unwatched: leaves at once
-            return None
+            # The key lives in a player's browser, not here. Wait for it; the sweeper's
+            # clock runs from the row's last write, as for a parked turn.
+            session.awaiting_key = True
+            session.parked_since = row.updated_at or datetime.now(timezone.utc)
+            logger.info("game %s: revived awaiting its player's key", row.game_id)
+            return session
 
+        return await self._resume(session, parked_since=row.updated_at)
+
+    async def _resume(self, session: GameSession, *,
+                      parked_since: datetime | None) -> GameSession | None:
+        """Continue a rebuilt game from its checkpoint: re-park every question it was
+        waiting on, then start its task. A game whose engine had already finished is
+        completed and forgotten instead (None)."""
+        graph = self._graph_runtime.graph
         state = await graph.aget_state(session.config)
         if not state.next:  # the game actually finished; the row was a stale 'running'
             await self._repository.complete_game(
-                row.game_id, session.log, len(session.human_players))
+                session.game_id, session.log, len(session.human_players))
             session._end()
             return None
 
@@ -249,9 +262,30 @@ class LiveGameRegistry:
         if session.pending_requests:
             # How long the game has been waiting survives the restart: one parked for a
             # day before the reboot is still a day old, not newly parked.
-            session.parked_since = row.updated_at or datetime.now(timezone.utc)
+            session.parked_since = parked_since or datetime.now(timezone.utc)
         session.start_recovered(waiting_on_humans=bool(session.pending_requests))
         return session
+
+    # -- awaiting a key → running ---------------------------------------------------------
+
+    async def fund(self, game_id: str, api_key: str) -> GameSession:
+        """Resume a game that has been waiting for its player's key since a restart. The
+        key is tried on the provider first: ValueError carries the provider's complaint
+        and the game keeps waiting. LookupError when the game is not waiting for a key."""
+        entry = self._entries.get(game_id)
+        if not isinstance(entry, GameSession) or not entry.awaiting_key:
+            raise LookupError("this game is not waiting for a key")
+        entry.awaiting_key = False  # claimed: a second funder meanwhile gets LookupError
+        try:
+            model = entry._llm_override.model if entry._llm_override else ""
+            await self._check_key(model, api_key)
+        except ValueError:
+            entry.awaiting_key = True
+            raise
+        entry.fund(api_key)
+        logger.info("game %s: funded again by a seat holder; resuming", game_id)
+        resumed = await self._resume(entry, parked_since=datetime.now(timezone.utc))
+        return resumed if resumed is not None else entry
 
     # -- process end ----------------------------------------------------------------------
 

@@ -82,3 +82,18 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
 
     assert await sweep_parked_games(games, SETTINGS) == []  # nothing left to do
     await fresh.shutdown()
+
+
+async def test_a_game_waiting_for_its_key_has_the_same_shelf_life(quiet_session):
+    from tests.fixtures.server import FakeGraph
+
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1"])
+    session.awaiting_key = True
+    session.parked_since = datetime.now(timezone.utc) - timedelta(hours=2)
+    assert is_expired(session, SETTINGS)  # solo: an hour is enough
+    q = session.subscribe(lambda: "player_3")
+    assert not is_expired(session, SETTINGS)  # its player is here, looking at the card
+    session.unsubscribe(q)
+    session.awaiting_key = False
+    assert not is_expired(session, SETTINGS)  # neither parked nor waiting: nothing to sweep
+

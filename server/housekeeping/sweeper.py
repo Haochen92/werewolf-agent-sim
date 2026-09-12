@@ -33,7 +33,9 @@ def is_expired(session: GameSession, settings: ServerSettings,
     has been in that state longer than its shelf life. The cheapest checks come first."""
     if session.error is not None or session.game_over or session.ended:
         return False
-    if not session.pending_requests or session.parked_since is None:
+    if session.parked_since is None:
+        return False
+    if not session.pending_requests and not session.awaiting_key:
         return False
     if session.humans_present:
         return False

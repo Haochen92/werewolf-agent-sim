@@ -186,6 +186,10 @@ class GameSession:
         # When the current batch of questions was asked; None while the graph runs. The
         # retention sweeper reads it: a parked game nobody is watching has a shelf life.
         self.parked_since: datetime | None = None
+        # A game that ran on a player's key, rebuilt after a restart: the key was never
+        # stored, so it waits here, no task running, until a seat holder supplies one
+        # again (LiveGameRegistry.fund). The sweeper treats the wait like a parked turn.
+        self.awaiting_key: bool = False
 
         # Delivery + lifecycle. Each viewer queue keeps its seat resolver (re-resolved per
         # check, never frozen at connect) — that is what makes presence answerable.
@@ -206,6 +210,16 @@ class GameSession:
         logger.info("game %s: task started (byok=%s, model=%s)",
                     self.game_id, bool(self._api_key),
                     self._llm_override.model if self._llm_override else "server-default")
+
+    def fund(self, api_key: str) -> None:
+        """Take a player's key for the model this game runs on. Only meaningful while
+        awaiting a key; the registry validates the key with the provider first."""
+        model = self._llm_override.model if self._llm_override else ""
+        row = SUPPORTED_GAME_MODELS.get(model)
+        self._api_key = api_key
+        self._llm_override = GameLLM(
+            api_key=api_key, model=model, rescue_model=row.rescue_model if row else None)
+        self.awaiting_key = False
 
     def start_recovered(self, *, waiting_on_humans: bool) -> None:
         """Resume a revived session (server restart). Parked-at-interrupt games wait

@@ -104,6 +104,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
         "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
         "error": None, "name": "", "locked": False, "winner": None, "archived": False,
+        "awaiting_key": False,
     }
 
 
@@ -471,3 +472,45 @@ def test_a_row_still_marked_running_is_not_served_from_the_archive(api_client, m
 
     _archive(api_client, monkeypatch, GameRow(game_id="odd-1", status=RUNNING))
     assert api_client.get("/games/odd-1").status_code == 404
+
+
+# ---- POST /games/{id}/key: a seat holder refunds a game that lost its key ----------------
+
+def test_a_seat_holder_may_fund_a_waiting_game_and_nobody_else(api_client, seated_session,
+                                                              monkeypatch):
+    session, seat_token = seated_session
+    games = api_client.app.state.resources.games
+    probed = []
+
+    async def check_key(model, api_key):
+        probed.append(api_key)
+        if api_key == "sk-bad":
+            raise ValueError("the provider rejected this key: 401")
+
+    async def resume(entry, *, parked_since):
+        return entry  # the checkpoint machinery is tested in test_durability
+
+    monkeypatch.setattr(games, "_check_key", check_key)
+    monkeypatch.setattr(games, "_resume", resume)
+
+    # Not waiting: 409, whoever asks.
+    r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-1"})
+    assert r.status_code == 409
+    session.awaiting_key = True
+    assert api_client.get(f"/games/{session.game_id}").json()["awaiting_key"] is True
+
+    # A spectator (no cookie) may not; a seat holder may.
+    api_client.cookies.clear()
+    assert api_client.post(f"/games/{session.game_id}/key",
+                           json={"api_key": "sk-1"}).status_code == 403
+    api_client.cookies.set(f"seat_{session.game_id}", seat_token)
+    r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-bad"})
+    assert r.status_code == 422 and "rejected" in r.json()["detail"]
+    assert session.awaiting_key  # still waiting after a refused key
+    r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-good"})
+    assert r.status_code == 200, r.text
+    assert r.json()["awaiting_key"] is False and not session.awaiting_key
+    assert probed == ["sk-bad", "sk-good"]
+    assert api_client.post(f"/games/{session.game_id}/key",
+                           json={"api_key": ""}).status_code == 422  # an empty key is no key
+
