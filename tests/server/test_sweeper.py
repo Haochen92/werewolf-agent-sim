@@ -71,7 +71,7 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     repo = Repo()
     games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
     for session in (expired, fresh):
-        games._place(session)
+        games._register(session)
     await games.open_room(name="x")  # a waiting room must be left alone by the sweep
     repo.upserts.clear()  # only the sweep's own write is asserted below
 

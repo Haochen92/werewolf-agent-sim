@@ -77,10 +77,12 @@ class LiveGameRegistry:
     def sessions(self) -> list[GameSession]:
         return [e for e in self._entries.values() if isinstance(e, GameSession)]
 
-    def _place(self, session: GameSession) -> None:
-        """Store the session under its game id and give it the callback it will run once it
-        has ended and its last viewer has left, so the registry can forget it. The step
-        every door shares; tests call it directly to seat a session without starting it."""
+    def _register(self, session: GameSession) -> None:
+        """Registers the game session keyed by its game_id.
+        Attaches the callback _release to the session as its on_idle handler; the session
+        runs it once it has ended and no viewers are left, which removes the game from the
+        registry. The step every door shares; tests call it directly to seat a session
+        without starting it."""
 
         session.on_idle = lambda: self._release(session.game_id)
         self._entries[session.game_id] = session
@@ -175,7 +177,7 @@ class LiveGameRegistry:
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the
         table, write its row, and start its task."""
-        self._place(session)
+        self._register(session)
         await self._repository.upsert_game(session.game_id, status="running", **row_fields)
         session.start()
         return session
@@ -234,7 +236,7 @@ class LiveGameRegistry:
         session.game_over = any(e.type == "game_over" for e in session.log)
         session._persisted = len(session.log)
         session._persisted_humans = list(row.human_players)
-        self._place(session)
+        self._register(session)
 
         if row.byok:
             await self._repository.upsert_game(

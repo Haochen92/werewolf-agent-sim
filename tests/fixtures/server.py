@@ -5,7 +5,7 @@
    Example: session = quiet_session(FakeGraph(parts))
 2. API-LAYER TESTS (routing, validation, serialization): use `api_client` — a
    TestClient over the real create_app() (real lifespan, real registry). Inject
-   prepared sessions via `api_client.app.state.resources.games._place(session)`; never POST
+   prepared sessions via `api_client.app.state.resources.games._register(session)`; never POST
    /games for a success path here — that would launch the real graph.
 """
 

@@ -25,7 +25,7 @@ def _registry():
 async def test_an_ended_game_nobody_watches_leaves_at_once(quiet_session):
     games = _registry()
     session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
-    games._place(session)
+    games._register(session)
 
     await session.abandon("test: over")
     assert games.get(session.game_id) is None
@@ -34,7 +34,7 @@ async def test_an_ended_game_nobody_watches_leaves_at_once(quiet_session):
 async def test_an_ended_game_stays_until_its_last_viewer_leaves(quiet_session):
     games = _registry()
     session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
-    games._place(session)
+    games._register(session)
     first, second = session.subscribe(), session.subscribe()
 
     await session.abandon("test: over")
@@ -48,7 +48,7 @@ async def test_an_ended_game_stays_until_its_last_viewer_leaves(quiet_session):
 async def test_a_live_game_is_never_released(quiet_session):
     games = _registry()
     session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
-    games._place(session)
+    games._register(session)
 
     q = session.subscribe()
     session.unsubscribe(q)  # viewers come and go while the game is live
@@ -60,7 +60,7 @@ async def test_a_live_game_is_never_released(quiet_session):
 async def test_release_idle_is_the_backstop_when_no_hook_fired(quiet_session):
     games = _registry()
     session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
-    games._place(session)
+    games._register(session)
     session.on_idle = None  # pretend the hook was never wired
     session._end()
 
