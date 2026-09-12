@@ -107,7 +107,7 @@ def test_replay_dto_drops_private_game_row_fields():
 def test_database_metadata_has_one_game_table_and_normalized_events():
     from sqlmodel import SQLModel
 
-    assert set(SQLModel.metadata.tables) == {"games", "events"}
+    assert set(SQLModel.metadata.tables) == {"games", "events", "settings"}
     assert "replays" not in SQLModel.metadata.tables
     event_fk = next(iter(SQLModel.metadata.tables["events"].foreign_keys))
     assert event_fk.target_fullname == "games.game_id"

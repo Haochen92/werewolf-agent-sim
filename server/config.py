@@ -59,6 +59,25 @@ class ServerSettings(BaseSettings):
     SWEEP_INTERVAL_SECONDS: int = 60
     """How often the retention sweeper looks for parked games past their shelf life."""
 
+    HOUSE_FUNDED_ENABLED: bool = True
+    """Whether the server pays for games on house-funded models at all. The kill switch:
+    off means every model needs the player's own key. Overridden live by the settings
+    table (PUT /admin/house); this is the value when nothing is stored."""
+
+    HOUSE_DEFAULT_MODEL: str = ""
+    """The model a game runs on when the player picks none. Must be a house-funded row of
+    the catalogue; empty means the first house-funded row. Overridden live by the settings
+    table."""
+
+    HOUSE_GAMES_PER_DAY: int = 10
+    """How many house-funded games the server will start per UTC day. Counted from the
+    games table (rows with byok=false, created today); a player bringing a key is never
+    counted. Overridden live by the settings table."""
+
+    ADMIN_TOKEN: str = ""
+    """The secret the /admin endpoints require in the X-Admin-Token header. Empty
+    disables them (they answer 404)."""
+
     LOG_LEVEL: str = "INFO"
     """Level for the server's own loggers (recovery, AFK clocks, sweep, stream open/close).
     Uvicorn configures only its own loggers; without this the app's INFO lines never

@@ -8,6 +8,8 @@ Ownership is visible in one place::
         ├── GameRepository(Database)
         ├── GraphRuntime(checkpoint DSN)
         ├── ReplayService(Database)
+        ├── SettingsRepository(Database)
+        ├── HousePolicy(SettingsRepository, GameRepository)
         └── LiveGameRegistry(GameRepository, GraphRuntime)
 
 The lifespan creates this tree once and context-manager nesting closes it in reverse.
@@ -23,8 +25,10 @@ from server.config import ServerSettings, server_settings
 from server.db import Database, database_resource
 from server.game.live_game_registry import LiveGameRegistry
 from server.graph_runtime import GraphRuntime, graph_runtime_resource
+from server.house import HousePolicy
 from server.storage.game_repository import GameRepository
 from server.storage.replay_service import ReplayService
+from server.storage.settings_repository import SettingsRepository
 
 
 @dataclass(slots=True)
@@ -35,6 +39,8 @@ class AppResources:
     game_repository: GameRepository
     graph_runtime: GraphRuntime
     replays: ReplayService
+    settings: SettingsRepository
+    house: HousePolicy
     games: LiveGameRegistry
 
 
@@ -46,10 +52,13 @@ async def app_resources(settings: ServerSettings = server_settings
     async with database_resource(database_url) as database:
         async with graph_runtime_resource(settings.WW_POSTGRES_DSN) as graph_runtime:
             repository = GameRepository(database)
+            settings_repository = SettingsRepository(database)
             yield AppResources(
                 database=database,
                 game_repository=repository,
                 graph_runtime=graph_runtime,
                 replays=ReplayService(database),
+                settings=settings_repository,
+                house=HousePolicy(settings_repository, repository, settings),
                 games=LiveGameRegistry(repository, graph_runtime),
             )

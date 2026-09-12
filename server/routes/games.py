@@ -13,13 +13,13 @@ from fastapi.responses import StreamingResponse
 
 from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
-from server.dependencies import Game, GamesRegistry, Room, SeatToken
+from server.dependencies import House, Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
 from server.game.game_session import GameSession, entitled
 from server.schemas.requests import GameCreated, GameStatus, NewGame, TurnAccepted
 
-from ._shared import check_model_access, set_seat_cookie
+from ._shared import authorize_model, set_seat_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +36,10 @@ router = APIRouter(tags=["games"])
 async def create_game(
     body: NewGame,
     games: GamesRegistry,
+    house: House,
     response: Response,
 ) -> GameCreated:
-    check_model_access(body.api_key, body.model)
+    model = await authorize_model(house, body.api_key, body.model)
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
     session = await games.start_instant(
         RunConfig(
@@ -47,7 +48,7 @@ async def create_game(
             memory_persistence={"dump_enabled": False},
         ),
         api_key=body.api_key,
-        model=body.model,
+        model=model,
         seat_tokens=seat_tokens,
     )
     if seat_tokens:

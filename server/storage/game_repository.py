@@ -8,6 +8,8 @@ remain loud so the caller can isolate a row that cannot be revived.
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import logging
 from typing import Any, Sequence
 
@@ -196,6 +198,17 @@ class GameRepository:
                 select(GameRow).where(GameRow.status.in_(RECOVERABLE_STATUSES))
             )).scalars().all()
         return list(rows)
+
+    async def count_house_games_since(self, since: datetime) -> int:
+        """How many house-funded games (no player key) have started since ``since``.
+        The daily cap is measured from the rows themselves; nothing else is kept."""
+        if not self._database.configured:
+            return 0
+        async with self._database.session() as session:
+            return (await session.execute(
+                select(func.count()).select_from(GameRow)
+                .where(GameRow.byok.is_(False), GameRow.created_at >= since)
+            )).scalar_one()
 
     async def load_game(self, game_id: str) -> GameRow | None:
         """Load one game's row, or None when the id is unknown or storage is off. The live

@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from server.config import server_settings
 from server.database_models.game import GameRow
-from server.dependencies import GamesRegistry, Room, ended_detail
+from server.dependencies import GamesRegistry, House, Room, ended_detail
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.schemas.requests import (
     GameCreated,
@@ -18,7 +18,7 @@ from server.schemas.requests import (
     SeatJoined,
 )
 
-from ._shared import check_model_access, set_seat_cookie
+from ._shared import authorize_model, set_seat_cookie
 
 router = APIRouter(tags=["rooms"])
 
@@ -28,13 +28,15 @@ router = APIRouter(tags=["rooms"])
     response_model=RoomCreated,
     summary="Create a multiplayer waiting room (humans join via /join)",
 )
-async def create_room(body: NewRoom, games: GamesRegistry) -> RoomCreated:
+async def create_room(body: NewRoom, games: GamesRegistry, house: House) -> RoomCreated:
     """Create a lobby whose identifier remains stable when the game starts.
 
-    Humans enter only through ``/join`` and roles remain random.
+    Humans enter only through ``/join`` and roles remain random. The model is resolved
+    and the house consulted here so the host learns early; the cap is checked again at
+    start, which is when the game actually costs anything.
     """
-    check_model_access(body.api_key, body.model)
-    room = await games.open_room(api_key=body.api_key, model=body.model, name=body.name)
+    model = await authorize_model(house, body.api_key, body.model)
+    room = await games.open_room(api_key=body.api_key, model=model, name=body.name)
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)
 
 
@@ -140,10 +142,13 @@ async def rejoin_game(
 async def start_game(
     room: Room,
     games: GamesRegistry,
+    house: House,
     host_key: str = "",
 ) -> GameCreated:
     """Replace the lobby with a running session under the same ID (registry.start)."""
     _open(room)
+    if isinstance(room, GameLobby):  # a started game falls through to the registry's 409
+        await authorize_model(house, room.api_key, room.model)  # the moment the house pays
     try:
         session = await games.start(room.game_id, host_key)
     except PermissionError as exc:

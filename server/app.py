@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from server.config import server_settings
 from server.housekeeping.recovery import recover_registry
 from server.resources import app_resources
+from server.routes.admin import router as admin_router
 from server.routes.games import router as games_router
 from server.routes.replays import router as replays_router
 from server.routes.rooms import router as rooms_router
@@ -71,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(games_router)
     app.include_router(rooms_router)
     app.include_router(replays_router)
+    app.include_router(admin_router)
     return app
 
 

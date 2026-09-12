@@ -1,12 +1,12 @@
 """Which models a served game may be played on, and who pays for each of them.
 
 A model is listed here only once it has carried real games, so this is a record of what
-has actually worked rather than of everything the code could call. The first row is the
-default, both for games the server pays for and for a player who brings a key without
-naming a model. GET /models serves this table, routes/_shared.py checks a requested model
-against it, and game/game_session.py reads it to find a backup model. It is deliberately a
-plain table with no engine imports, so the HTTP layer can read it without loading the
-game machinery.
+has actually worked rather than of everything the code could call. Which row is the
+default is not fixed here: it is a live setting owned by server/house.py, falling back to
+the first house-funded row. GET /models serves this table, house.py decides who pays for a
+choice from it, and game/game_session.py reads it to find a backup model. It is
+deliberately a plain table with no engine imports, so the HTTP layer can read it without
+loading the game machinery.
 """
 
 from __future__ import annotations
@@ -31,10 +31,11 @@ class GameModel(NamedTuple):
 
 
 SUPPORTED_GAME_MODELS: dict[str, GameModel] = {
-    # Default moved from 3.1 to 3.5 Flash-Lite on 2026-09-10 (owner preference). Note that
+    # 3.5 Flash-Lite is the fallback default: the first house-funded row (owner preference
+    # 2026-09-10; the live default is a setting, see server/house.py). Note that
     # 3.5 thinks by default and bills those reasoning tokens as output; 3.1 does not.
     "gemini-3.5-flash-lite": GameModel(
-        "gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite (default)", True),
+        "gemini-3.1-flash-lite", "Gemini 3.5 Flash-Lite", True),
     "gemini-3.1-flash-lite": GameModel(
         "gemini-3.5-flash-lite", "Gemini 3.1 Flash-Lite", True),
     "gemini-3.6-flash": GameModel(

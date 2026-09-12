@@ -17,6 +17,7 @@ from fastapi import Depends, HTTPException, Request
 
 from server.database_models.game import COMPLETED, ENDED_STATUSES, GameRow
 from server.game.lobby import GameLobby
+from server.house import HousePolicy
 from server.game.live_game_registry import Entry, LiveGameRegistry
 from server.game.game_session import GameSession
 from server.graph_runtime import GraphRuntime
@@ -66,6 +67,14 @@ def get_replay_service(resources: Resources) -> ReplayService:
 
 
 ReplayServiceDep = Annotated[ReplayService, Depends(get_replay_service)]
+
+
+def get_house(resources: Resources) -> HousePolicy:
+    """The house's purse: who pays for a new game and which model it runs on."""
+    return resources.house
+
+
+House = Annotated[HousePolicy, Depends(get_house)]
 
 
 async def get_room(game_id: str, resources: Resources) -> Entry | GameRow:

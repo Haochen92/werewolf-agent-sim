@@ -37,12 +37,49 @@ class ModelRow(BaseModel):
     rescue_model: str | None
     """Same-credential rescue model; None = no rescue (the typed technical-pass
     path still keeps the game moving)."""
+    house_funded: bool = False
+    """The server can pay for this model. Whether it will right now is ``house`` on the
+    menu; a player's own key runs any row regardless."""
+    is_default: bool = False
+    """The row a game runs on when the player picks none. A live setting, not a fixed
+    position in the list."""
+
+
+class HouseFunding(BaseModel):
+    """The house's purse for today, as GET /models reports it to the client."""
+
+    enabled: bool
+    """False means every model needs the player's key, whatever the row says."""
+    games_per_day: int
+    remaining: int
+    """House-funded games the server will still start today. 0 = bring a key."""
+    reset_at: str
+    """ISO-8601 UTC: when the daily count starts again."""
 
 
 class ModelsMenu(BaseModel):
-    """GET /models response. First entry = house default and bare-key default."""
+    """GET /models response: the menu, and what the house will pay for right now."""
 
     models: list[ModelRow]
+    house: HouseFunding
+
+
+class HouseView(HouseFunding):
+    """GET/PUT /admin/house response: the purse plus the knobs behind it."""
+
+    default_model: str
+    used_today: int
+
+
+class HouseUpdate(BaseModel):
+    """PUT /admin/house body: any subset of the knobs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool | None = None
+    default_model: str | None = None
+    """Must be a house-funded row of the catalogue."""
+    games_per_day: int | None = None
 
 
 class GameCreated(BaseModel):

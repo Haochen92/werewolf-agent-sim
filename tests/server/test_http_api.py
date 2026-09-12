@@ -65,17 +65,16 @@ def test_byok_only_model_selection_without_a_key_is_rejected_at_both_doors(api_c
         assert "requires api_key" in r.json()["detail"]
 
 
-def test_house_models_are_selectable_without_a_key():
-    from server.routes._shared import check_model_access
-
-    expected = {
-        "gemini-3.1-flash-lite",
-        "gemini-3.5-flash-lite",
-        "gemini-3.6-flash",
-    }
-    assert {model for model, row in SUPPORTED_GAME_MODELS.items() if row.house_funded} == expected
-    for model in expected:
-        check_model_access("", model)
+def test_the_menu_says_who_pays_and_which_row_is_default(api_client):
+    menu = api_client.get("/models").json()
+    by_model = {row["model"]: row for row in menu["models"]}
+    house = {m for m, row in by_model.items() if row["house_funded"]}
+    assert house == {"gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.6-flash"}
+    assert [m for m, row in by_model.items() if row["is_default"]] == ["gemini-3.5-flash-lite"]
+    # Storage is off in tests, so the purse is the process defaults: on, nothing used yet.
+    assert menu["house"]["enabled"] is True
+    assert menu["house"]["remaining"] == menu["house"]["games_per_day"] > 0
+    assert menu["house"]["reset_at"].endswith("+00:00")
 
 
 def test_untested_models_are_rejected(api_client):
