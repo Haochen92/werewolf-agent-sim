@@ -8,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 from server.config import ServerSettings
-from server.game.lobby import GameLobby
 from server.game.live_game_registry import LiveGameRegistry
 from server.housekeeping.sweeper import is_expired, sweep_parked_games
 from tests.factories.builders import human_turn_request
@@ -71,8 +70,10 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     fresh = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=1))
     repo = Repo()
     games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
-    for entry in (expired, fresh, GameLobby(model="", name="x")):
-        games.adopt(entry)
+    for session in (expired, fresh):
+        games._place(session)
+    await games.open_room(name="x")  # a waiting room must be left alone by the sweep
+    repo.upserts.clear()  # only the sweep's own write is asserted below
 
     assert await sweep_parked_games(games, SETTINGS) == [expired.game_id]
     assert expired.error.startswith("abandoned:") and expired._finished.is_set()

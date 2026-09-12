@@ -77,11 +77,12 @@ class LiveGameRegistry:
     def sessions(self) -> list[GameSession]:
         return [e for e in self._entries.values() if isinstance(e, GameSession)]
 
-    def adopt(self, entry: Entry) -> None:
-        """Place a prepared entry under its own id (tests)."""
-        self._entries[entry.game_id] = entry
-        if isinstance(entry, GameSession):
-            entry.on_idle = lambda: self._release(entry.game_id)
+    def _place(self, session: GameSession) -> None:
+        """File a session under its id and wire the hook that lets it leave when it ends.
+        The step every door shares; tests call it directly to seat a session without
+        starting it."""
+        session.on_idle = lambda: self._release(session.game_id)
+        self._entries[session.game_id] = session
 
     def _release(self, game_id: str) -> None:
         """Forget an ended game. Its row and events are already written down, so the game
@@ -173,8 +174,7 @@ class LiveGameRegistry:
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
         """The step both doors share once a game is about to run: put the session in the
         table, write its row, and start its task."""
-        session.on_idle = lambda: self._release(session.game_id)
-        self._entries[session.game_id] = session
+        self._place(session)
         await self._repository.upsert_game(session.game_id, status="running", **row_fields)
         session.start()
         return session
@@ -233,8 +233,7 @@ class LiveGameRegistry:
         session.game_over = any(e.type == "game_over" for e in session.log)
         session._persisted = len(session.log)
         session._persisted_humans = list(row.human_players)
-        session.on_idle = lambda: self._release(row.game_id)
-        self._entries[row.game_id] = session
+        self._place(session)
 
         if row.byok:
             await self._repository.upsert_game(

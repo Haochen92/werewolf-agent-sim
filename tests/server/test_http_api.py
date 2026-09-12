@@ -23,7 +23,7 @@ def seated_session(api_client, quiet_session):
     joiner is in mid-game. Returns (session, token)."""
     session = quiet_session(FakeGraph([]), seat_tokens=["tok-1"])
     session.human_players = ["player_3"]  # what INITIALIZE_GAME would set
-    api_client.app.state.resources.games.adopt(session)
+    api_client.app.state.resources.games._place(session)
     api_client.cookies.set(f"seat_{session.game_id}", "tok-1")
     return session, "tok-1"
 
@@ -96,7 +96,7 @@ def test_unknown_game_is_404_everywhere(api_client):
 
 def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     session = quiet_session(FakeGraph([]))  # built, deliberately never started
-    api_client.app.state.resources.games.adopt(session)
+    api_client.app.state.resources.games._place(session)
 
     body = api_client.get(f"/games/{session.game_id}").json()
     assert body.pop("server_time").endswith("+00:00")
