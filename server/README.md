@@ -33,7 +33,8 @@ still move; an ended game is answered by its database row, and a finished one by
 | `database_models/` | SQLModel mappings for `games`, `events` and `settings` | design notes §8, §13 |
 | `game/live_game_registry.py` | **the middle lifecycle**: `LiveGameRegistry`, the table of every game that can still move and every transition that originates outside a game | design notes §10, §11 |
 | `game/lobby.py` | the waiting stage: seats, host key, lock, listing TTL; memory only, no row until start, closes on restart | transport §6b, §6c; design notes §12 |
-| `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns) and `entitled()` | transport §3, §6, §8; design notes §5 |
+| `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns) | transport §3, §6, §8; design notes §5 |
+| `game/entitlement.py` | `entitled()`: may this viewer see this event, by tier and seat; observer tier unlocks at game over | transport §6, §8 |
 | `game/seat_clocks.py` | when an unanswered human turn is delegated or the table parks | `frontend/docs/seat_continuity.md` |
 | `game/pacing.py` | progress bars from public knowledge only | transport §9 |
 | `game/translate.py` | stream parts → tier-ready durable events, one instance per game | transport §5, §8; design notes §1–§3 |
