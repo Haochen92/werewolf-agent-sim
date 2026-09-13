@@ -126,6 +126,19 @@ def _seeded_translator() -> Translator:
     return t
 
 
+def test_every_real_part_re_delivered_as_cached_ships_nothing(replay):
+    """After a crash, tasks whose writes had landed come back tagged cached (LangGraph
+    re-applies them instead of re-running). Every family in a real game must vanish."""
+    translator, _ = replay
+    seq_before = translator.seq
+    for part in load_fixture_parts():
+        if part["type"] != "updates":
+            continue  # custom parts carry no metadata; turn_started re-fires by design
+        replayed = {**part, "data": {**part["data"], "__metadata__": {"cached": True}}}
+        assert translator.translate(replayed) == []
+    assert translator.seq == seq_before  # nothing was even numbered
+
+
 def test_cached_parts_are_dropped_whole():
     t = _seeded_translator()
     part = {"type": "updates", "ns": ["DAY_PHASE:abc"], "data": {

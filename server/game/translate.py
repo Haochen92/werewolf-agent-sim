@@ -22,6 +22,18 @@ The load-bearing rules, each verified against notebooks/fixtures/chunk_catalogue
   engine authors: node-internal ``get_stream_writer`` customs in a fan-out superstep
   re-fire on resume — emit them from routing edges (committed a superstep earlier), as
   ``turn_started`` already does.
+- **Crash between an event write and its checkpoint** (read against LangGraph 1.1.10,
+  2026-09-12): a task's part is emitted the moment the task ends, while the step's checkpoint
+  is written only after every task in the step has ended, in the background. So the events
+  table leads the checkpoint by up to one step. On the next boot the phase re-runs from its
+  last checkpoint, as after a human resume: what was committed comes back tagged
+  ``cached: True`` and is dropped whole here, for every event family; the step in progress
+  re-executes, and the vote cache, the buffers and the per-key guards above absorb that as
+  they do in-process. What none of them cover is a re-executed sequential node whose events
+  had already been written, which would ship twice. No blanket guard is added on purpose:
+  ``turn_started`` and ``input_request`` legitimately repeat within a day with identical
+  fields, so a content or (day, player) key would drop a real turn. Accepted: the window is
+  one database write wide and needs a hard crash.
 - **One authoritative scope per key**: every subgraph commit streams twice (fine-grained under
   its namespace, then the wrapper node's folded delta at root). Per-turn keys translate from
   the subgraph parts; the root wrapper re-emissions are ignored wholesale.
@@ -70,6 +82,21 @@ def _read_field(obj: Any, name: str, default: Any = None) -> Any:
     if isinstance(obj, Mapping):
         return obj.get(name, default)
     return getattr(obj, name, default)
+
+
+def scope_of(part: Mapping[str, Any]) -> str:
+    """Which graph a stream part came from: the phase subgraph's name (``DAY_PHASE``,
+    ``WOLF_NIGHT_PHASE``, ...) or ``root`` for the parent graph."""
+    ns = part.get("ns") or ()
+    return ns[0].split(":")[0] if ns else "root"
+
+
+def is_replayed(data: Any) -> bool:
+    """True for a part the engine is re-emitting rather than producing: LangGraph marks
+    it ``__metadata__: {cached: True}``. Its events and pacing ticks already went out."""
+    if not isinstance(data, Mapping):
+        return False
+    return bool(_read_field(_read_field(data, "__metadata__", {}) or {}, "cached"))
 
 
 # Human-turn `phase` -> wire action_kind (the two channel-named turns get UX names).
@@ -188,17 +215,21 @@ class Translator:
 
     # ---- entry point ------------------------------------------------------------------
 
-    def translate(self, part: Mapping[str, Any]) -> list[ev.DurableEvent]:
+    def translate(self, part: Mapping[str, Any], *,
+                  deadlines: Mapping[str, str] | None = None) -> list[ev.DurableEvent]:
+        """Turn one stream part into its wire events. ``deadlines`` is the session's
+        seat -> countdown map, so a turn prompt is born with its deadline; replays and
+        solo tables pass nothing and the field stays None."""
         data = part["data"]
         if part["type"] == "custom":
             return self._custom(data)
         if part["type"] != "updates":
             raise TranslationError(f"unexpected stream part type: {part['type']}")
-        if isinstance(data, Mapping) and _read_field(_read_field(data, "__metadata__", {}), "cached"):
-            return []  # replayed part: its events already shipped (spike verdict b)
+        if is_replayed(data):
+            return []  # its events already shipped (spike verdict b)
 
         ns = part.get("ns") or ()
-        scope = ns[0].split(":")[0] if ns else "root"
+        scope = scope_of(part)
 
         out: list[ev.DurableEvent] = []
         for node, delta in data.items():
@@ -208,7 +239,7 @@ class Translator:
                 # mirror is the authoritative copy — emitting both would ship every
                 # input_request to the wire twice under two seqs.
                 if not ns:
-                    out.extend(self._interrupt(delta))
+                    out.extend(self._interrupt(delta, deadlines or {}))
                 continue
             if node.startswith("__"):
                 continue
@@ -223,7 +254,7 @@ class Translator:
                                day=_read_field(payload, "day"), player=_read_field(payload, "player"))]
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
-    def _interrupt(self, interrupts) -> list[ev.DurableEvent]:
+    def _interrupt(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:
         out = []
         for item in interrupts:
             req = _read_field(item, "value", item)
@@ -231,12 +262,14 @@ class Translator:
             kind = _ACTION_KINDS.get(phase)
             if kind is None:
                 raise TranslationError(f"unknown human-turn phase: {phase!r}")
+            player = _read_field(req, "player_id")
             out.append(self._emit(
                 ev.InputRequest,
                 day=_read_field(req, "day"),
-                player=_read_field(req, "player_id"),
+                player=player,
                 action_kind=kind,
                 candidates=list(_read_field(req, "valid_targets", []) or []),
+                deadline=deadlines.get(player),
             ))
         return out
 
