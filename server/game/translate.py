@@ -1,67 +1,30 @@
-"""The translator: LangGraph v2 stream parts in, tier-ready durable wire events out.
+"""Turn the parts a running game streams out into the events the browser receives.
 
-One Translator instance per game. It consumes exactly what the production stream call yields —
-``graph.stream(..., stream_mode=["updates", "custom"], subgraphs=True, version="v2")`` — and
-emits ``server.schemas.events`` durable events with a per-game monotone ``seq``. The ephemeral
-pacing channel is NOT built here (it needs asyncio timers → server layer).
+The engine is a LangGraph graph. As it runs it streams one part per committed node, and
+each part is raw engine state: the keys that node just wrote, in the engine's own shapes.
+The Translator, one per game, turns each part into zero or more of the typed
+events in server.schemas.events and stamps each with the game's running ``seq``. It reads
+nothing else and emits nothing else. Who may see an event is decided at delivery, and the
+progress bars are built in game/pacing.py.
 
-The load-bearing rules, each verified against notebooks/fixtures/chunk_catalogue.jsonl:
+There is one handler per graph node, named ``_h_<node>`` and listed in the order the nodes
+run in a game. A handler reads that node's delta and returns the events it implies, then
+confirms that every key in the delta either became an event or is listed in _FOLDS as
+deliberately dropped. A key that is neither raises TranslationError, so a new state field
+can never go silently missing from the wire. The root wrapper nodes are skipped: their
+delta repeats what their subgraph already streamed.
 
-- **Abort-and-re-execute: pre-resume sibling parts are RETRACTED truth** (2-human smoke
-  tape, 2026-08-19). A human interrupt ABORTS its superstep: completed sibling tasks'
-  writes are DISCARDED by the engine and the tasks RE-EXECUTE on resume — fresh LLM
-  calls, possibly different outputs (the tape's day-3 vote: player_2 streamed player_9
-  pre-interrupt, the engine's GM recap shows its kept vote was player_5). Committed
-  EARLIER supersteps re-stream tagged ``__metadata__: {cached: True}`` and are dropped
-  whole. Consequences here: the buffered kinds apply LAST-write-wins per natural key
-  (one ballot per voter — the re-execution's ballot replaces the aborted one before the
-  tally flush); sequential discussion has no siblings to abort; wolf-chat lines dedupe
-  first-wins per (day, round, wolf) — KNOWN GAP: with a human wolf sharing a round, an
-  aborted sibling line ships and the re-generated text is dropped (fix = buffer rounds
-  to their commit, deferred until a human-wolf game is actually served). Corollary for
-  engine authors: node-internal ``get_stream_writer`` customs in a fan-out superstep
-  re-fire on resume — emit them from routing edges (committed a superstep earlier), as
-  ``turn_started`` already does.
-- **Crash between an event write and its checkpoint** (read against LangGraph 1.1.10,
-  2026-09-12): a task's part is emitted the moment the task ends, while the step's checkpoint
-  is written only after every task in the step has ended, in the background. So the events
-  table leads the checkpoint by up to one step. On the next boot the phase re-runs from its
-  last checkpoint, as after a human resume: what was committed comes back tagged
-  ``cached: True`` and is dropped whole here, for every event family; the step in progress
-  re-executes, and the vote cache, the buffers and the per-key guards above absorb that as
-  they do in-process. What none of them cover is a re-executed sequential node whose events
-  had already been written, which would ship twice. No blanket guard is added on purpose:
-  ``turn_started`` and ``input_request`` legitimately repeat within a day with identical
-  fields, so a content or (day, player) key would drop a real turn. Accepted: the window is
-  one database write wide and needs a hard crash.
-- **One authoritative scope per key**: every subgraph commit streams twice (fine-grained under
-  its namespace, then the wrapper node's folded delta at root). Per-turn keys translate from
-  the subgraph parts; the root wrapper re-emissions are ignored wholesale.
-- **Entitlement buffers**: day ballots and wolf kill votes are held until their tally commits
-  (COLLECT_VOTES / COLLECT_WOLF_VOTES) — blind voting for the interrupted human seat, full
-  reveal after (the spike proved sibling deltas surface mid-superstep, so the runtime does
-  NOT buffer for us).
-- **Shared kernel, no drift**: lynch_result and night_result are derived with the SAME rule
-  functions the engine nodes call (Agents.rules.resolution) and cross-checked against the
-  delta's own record (voted_player / dead_roster) — a mismatch raises instead of shipping a
-  wrong (or leaky) event.
-- **Exhaustiveness**: every (scope, node, key) must be consumed by a handler or listed in
-  _FOLDS. Anything else raises TranslationError — silence is never accidental.
-- **Handler = node, in game order**: each ``_h_<node>`` converts that node's delta into 0..N
-  events (initialize_game -> ~13; post_game_analysis -> 0), declared in the order the
-  derivation doc walks the graph. The buffers are the one deliberate break in locality:
-  ballot content arrives in one handler and ships from another.
-- **State = a part-driven shadow, never graph.get_state()**: translator fields mirror the few
-  parent-state keys the derivation needs (roles, current_day, targets, the vote buffers) plus
-  wire-only counters the engine rightly lacks (seq). Rebuilt purely from the parts, because
-  the checkpoint clock and the part clock disagree in both directions — mid-superstep, task
-  writes stream before any checkpoint holds them (the spike's wolf-vote finding); under
-  consumer lag, get_state() would answer from supersteps the client hasn't been shown yet
-  (cleared ballots, bumped day). Stream-only input is also what makes the fixture tests and
-  frontend mock data possible: no graph, no LLM, no checkpointer.
+The translator keeps a small copy of game state, rebuilt from the parts alone, and never
+asks the graph for it: the stream runs ahead of the checkpoint, and behind a slow viewer
+the graph would answer from steps the viewer has not been shown. Three things arrive on the
+stream more than once, and each is handled at its guard: a re-streamed committed step
+(tagged cached, dropped whole), an interrupt (streamed under the subgraph and again at the
+root; only the root copy ships), and the two votes (the game's only parallel steps, which
+re-run when a human answers; they are buffered until the tally, last write per voter wins).
 
-Not yet emitted (schema rows without a stream source, deferred): day_summary_structured (the
-structured summary never reaches state — summarizer returns prose only).
+The lynch and the night deaths are computed here with the engine's own rule functions and
+compared with what the node recorded; a mismatch raises rather than shipping a wrong event.
+Not yet emitted: day_summary_structured, whose structured form never reaches state.
 """
 
 from __future__ import annotations
@@ -149,27 +112,52 @@ _FOLDS: dict[tuple[str, str], set[str]] = {
 
 
 class Translator:
-    """Stateful per-game translator. Feed every stream part to translate(); collect events."""
+    """One game's translator. Feed every stream part to translate(); it returns the events.
+
+    Attributes, by job. Every one is set in __init__; this is the only place they are
+    explained.
+
+    Wire bookkeeping the engine has no reason to keep.
+      seq           the last seq handed out. Every event gets the next number.
+
+    Copies of engine state, captured from the parts because a single part does not carry
+    them.
+      current_day   bumped at ONE_MORE_DAY; the day stamped on events that carry none.
+      roles         seat -> role, from INITIALIZE_GAME. Names the holder of a night role.
+      wolves        the wolves still alive, kept current by the roster updates.
+      _targets      tonight's committed night targets by state key, cleared at
+                    ONE_MORE_DAY; the input to the night-death derivation.
+
+    Vote buffers, held until the tally node commits. Keyed by voter and last write wins, so
+    a ballot re-run after a human interrupt replaces the aborted one.
+      _day_ballots       voter -> votee for the day vote in progress.
+      _last_day_ballots  the ballots just flushed, kept until DAY_RESOLUTION recomputes
+                         the lynch from them.
+      _wolf_votes        wolf -> kill vote for the night in progress.
+
+    Ship-once guards for the kinds that ship as they arrive.
+      _seen_day_entries  (day, channel seq) of every speech or pass already shipped.
+      _seen_wolf_msgs    (day, round, wolf) of every wolf-chat line already shipped.
+      _strategies        the last note shipped per player; a note ships only when it
+                         changes.
+    """
 
     def __init__(self) -> None:
+        # Wire bookkeeping.
         self.seq = 0
+        # Copies of engine state.
         self.current_day = 1
-        # Captured at INITIALIZE_GAME; the context single parts don't carry.
         self.roles: dict[str, str] = {}
         self.wolves: list[str] = []
-        # Entitlement buffers (flushed at the respective tally commit). Keyed by actor,
-        # LAST write wins: an interrupt aborts the superstep and the engine re-executes
-        # the sibling tasks on resume, keeping only the re-run's writes — the buffer
-        # must converge to the same final ballot per voter (see the module docstring).
-        self._day_ballots: dict[str, str] = {}        # voter -> final votee
-        self._last_day_ballots: list[tuple[str, str]] = []
-        self._wolf_votes: dict[str, str] = {}         # wolf -> final kill vote
-        # Tonight's committed targets, tracked for the kernel-derived night_result.
         self._targets: dict[str, str | None] = {}
-        # Ship-once guards for kinds that emit immediately (abort-and-re-execute model).
-        self._seen_day_entries: set[tuple[int, int]] = set()      # (day, channel seq)
-        self._seen_wolf_msgs: set[tuple[int, int, str]] = set()   # (day, round, wolf)
-        self._strategies: dict[str, str] = {}  # last shipped note per player (overwrite)
+        # Vote buffers.
+        self._day_ballots: dict[str, str] = {}
+        self._last_day_ballots: list[tuple[str, str]] = []
+        self._wolf_votes: dict[str, str] = {}
+        # Ship-once guards.
+        self._seen_day_entries: set[tuple[int, int]] = set()
+        self._seen_wolf_msgs: set[tuple[int, int, str]] = set()
+        self._strategies: dict[str, str] = {}
 
     def hydrate(self, log: list) -> None:
         """Rebuild the shadow state from a durable event log (server-restart recovery).
@@ -226,7 +214,7 @@ class Translator:
         if part["type"] != "updates":
             raise TranslationError(f"unexpected stream part type: {part['type']}")
         if is_replayed(data):
-            return []  # its events already shipped (spike verdict b)
+            return []  # a re-streamed committed step: its events already shipped
 
         ns = part.get("ns") or ()
         scope = scope_of(part)
@@ -234,10 +222,9 @@ class Translator:
         out: list[ev.DurableEvent] = []
         for node, delta in data.items():
             if node == "__interrupt__":
-                # subgraphs=True streams every interrupt TWICE: once under the child
-                # namespace, once mirrored at the root (probe 2026-08-19). The root
-                # mirror is the authoritative copy — emitting both would ship every
-                # input_request to the wire twice under two seqs.
+                # Every interrupt streams twice (subgraph namespace, then the root
+                # mirror). Only the root copy ships, or each input_request would go
+                # out twice under two seqs.
                 if not ns:
                     out.extend(self._interrupt(delta, deadlines or {}))
                 continue
@@ -329,8 +316,8 @@ class Translator:
         return [self._emit(ev.PhaseChange, phase="day")]
 
     def _h_night_start(self, scope, node, delta):
-        # The night anchor node (added 2026-08-08): runs only when check_game_end_day routes
-        # past END_GAME, so emitting here can never ghost a night after a game-ending day.
+        # NIGHT_START runs only when the day did not end the game, so emitting here can
+        # never announce a night after a game-ending day.
         self._check_folds(scope, node, delta, consumed=set())
         return [self._emit(ev.PhaseChange, phase="night")]
 
@@ -350,7 +337,7 @@ class Translator:
         for entry in _read_field(delta, "day_channel", []) or []:
             day, cseq, player = _read_field(entry, "day"), _read_field(entry, "seq"), _read_field(entry, "player")
             if (day, cseq) in self._seen_day_entries:
-                continue  # replayed sibling entry (post-resume); its events already shipped
+                continue  # already shipped (a re-run or a restart replay)
             self._seen_day_entries.add((day, cseq))
             if _read_field(entry, "passed"):
                 out.append(self._emit(
@@ -485,7 +472,7 @@ class Translator:
             key = (_read_field(entry, "day"), _read_field(entry, "round"),
                    _read_field(entry, "wolf"))
             if key in self._seen_wolf_msgs:
-                continue  # replayed sibling wolf turn (post-resume)
+                continue  # already shipped (a re-run or a restart replay)
             self._seen_wolf_msgs.add(key)
             out.append(self._emit(
                 ev.WolfMessage, day=key[0], round=key[1],
@@ -496,8 +483,8 @@ class Translator:
         return out
 
     def _h_wolf_night_vote(self, scope, node, delta):
-        # Buffered: blind while voting, flushed with the tally (ruled R2; the spike proved
-        # the runtime streams sibling votes mid-superstep, so we must hold them).
+        # Buffered: blind while voting, flushed with the tally. The runtime streams each
+        # wolf's vote as it lands, so the holding has to happen here.
         for entry in _read_field(delta, "wolf_channel", []) or []:
             if _read_field(entry, "vote"):
                 # Last write wins per wolf (abort-and-re-execute, same as day ballots).
