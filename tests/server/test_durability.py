@@ -26,12 +26,12 @@ from tests.fixtures.server import FakeGraph
 # ---- translator hydration ------------------------------------------------------------------
 
 
-def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_parts):
+def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_chunks):
     """Round-trip: state rebuilt from EVENTS must match state built from PARTS —
     same roles, same continued seq, and (the load-bearing one) the same ship-once
     guards, or a post-restart resume would re-ship every delivered message."""
     lived = Translator()
-    log = [e for p in fixture_parts for e in lived.translate(p)]
+    log = [e for p in fixture_chunks for e in lived.translate(p)]
 
     revived = Translator()
     revived.hydrate(log)
@@ -49,10 +49,10 @@ def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_parts):
 # ---- the write path (runtime -> durable) -----------------------------------------------------
 
 
-async def test_run_persists_events_and_finalizes_one_game_row(quiet_session, fixture_parts):
+async def test_run_persists_events_and_finalizes_one_game_row(quiet_session, fixture_chunks):
     repository = RecordingGameRepository()
 
-    session = quiet_session(FakeGraph(fixture_parts), repository=repository)
+    session = quiet_session(FakeGraph(fixture_chunks), repository=repository)
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
 

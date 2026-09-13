@@ -1,8 +1,8 @@
-"""Turn the parts a running game streams out into the events the browser receives.
+"""Turn the chunks a running game streams out into the events the browser receives.
 
-The engine is a LangGraph graph. As it runs it streams one part per committed node, and
-each part is raw engine state: the keys that node just wrote, in the engine's own shapes.
-The Translator, one per game, turns each part into zero or more of the typed
+The engine is a LangGraph graph. As it runs it streams one chunk per committed node, never a
+fragment: each chunk is raw engine state, the keys that node just wrote, in the engine's
+own shapes. The Translator, one per game, turns each chunk into zero or more of the typed
 events in server.schemas.events and stamps each with the game's running ``seq``. It reads
 nothing else and emits nothing else. Who may see an event is decided at delivery, and the
 progress bars are built in game/pacing.py.
@@ -14,7 +14,7 @@ deliberately dropped. A key that is neither raises TranslationError, so a new st
 can never go silently missing from the wire. The root wrapper nodes are skipped: their
 delta repeats what their subgraph already streamed.
 
-The translator keeps a small copy of game state, rebuilt from the parts alone, and never
+The translator keeps a small copy of game state, rebuilt from the chunks alone, and never
 asks the graph for it: the stream runs ahead of the checkpoint, and behind a slow viewer
 the graph would answer from steps the viewer has not been shown. Three things arrive on the
 stream more than once, and each is handled at its guard: a re-streamed committed step
@@ -37,25 +37,25 @@ from server.schemas import events as ev
 
 
 class TranslationError(RuntimeError):
-    """A stream part the wire contract does not account for — fail loudly, never skip."""
+    """A stream chunk the wire contract does not account for — fail loudly, never skip."""
 
 
 def _read_field(obj: Any, name: str, default: Any = None) -> Any:
-    """Tolerant accessor: live parts carry Pydantic models, fixture replays carry dicts."""
+    """Tolerant accessor: live chunks carry Pydantic models, fixture replays carry dicts."""
     if isinstance(obj, Mapping):
         return obj.get(name, default)
     return getattr(obj, name, default)
 
 
-def scope_of(part: Mapping[str, Any]) -> str:
-    """Which graph a stream part came from: the phase subgraph's name (``DAY_PHASE``,
+def scope_of(chunk: Mapping[str, Any]) -> str:
+    """Which graph a stream chunk came from: the phase subgraph's name (``DAY_PHASE``,
     ``WOLF_NIGHT_PHASE``, ...) or ``root`` for the parent graph."""
-    ns = part.get("ns") or ()
+    ns = chunk.get("ns") or ()
     return ns[0].split(":")[0] if ns else "root"
 
 
 def is_replayed(data: Any) -> bool:
-    """True for a part the engine is re-emitting rather than producing: LangGraph marks
+    """True for a chunk the engine is re-emitting rather than producing: LangGraph marks
     it ``__metadata__: {cached: True}``. Its events and pacing ticks already went out."""
     if not isinstance(data, Mapping):
         return False
@@ -112,7 +112,7 @@ _FOLDS: dict[tuple[str, str], set[str]] = {
 
 
 class Translator:
-    """One game's translator. Feed every stream part to translate(); it returns the events.
+    """One game's translator. Feed every stream chunk to translate(); it returns the events.
 
     Attributes, by job. Every one is set in __init__; this is the only place they are
     explained.
@@ -120,7 +120,7 @@ class Translator:
     Wire bookkeeping the engine has no reason to keep.
       seq           the last seq handed out. Every event gets the next number.
 
-    Copies of engine state, captured from the parts because a single part does not carry
+    Copies of engine state, captured from the chunks because a single chunk does not carry
     them.
       current_day   bumped at ONE_MORE_DAY; the day stamped on events that carry none.
       roles         seat -> role, from INITIALIZE_GAME. Names the holder of a night role.
@@ -189,7 +189,7 @@ class Translator:
                 dead.update(d.player for d in e.deaths)
             elif e.type == "lynch_result" and e.player:
                 dead.add(e.player)
-        # wolves tracks SURVIVING wolves live (the parts update it); replay the deaths.
+        # wolves tracks SURVIVING wolves live (the chunks update it); replay the deaths.
         self.wolves = [w for w in self.wolves if w not in dead]
 
     # ---- context helpers --------------------------------------------------------------
@@ -203,21 +203,21 @@ class Translator:
 
     # ---- entry point ------------------------------------------------------------------
 
-    def translate(self, part: Mapping[str, Any], *,
+    def translate(self, chunk: Mapping[str, Any], *,
                   deadlines: Mapping[str, str] | None = None) -> list[ev.DurableEvent]:
-        """Turn one stream part into its wire events. ``deadlines`` is the session's
+        """Turn one stream chunk into its wire events. ``deadlines`` is the session's
         seat -> countdown map, so a turn prompt is born with its deadline; replays and
         solo tables pass nothing and the field stays None."""
-        data = part["data"]
-        if part["type"] == "custom":
+        data = chunk["data"]
+        if chunk["type"] == "custom":
             return self._custom(data)
-        if part["type"] != "updates":
-            raise TranslationError(f"unexpected stream part type: {part['type']}")
+        if chunk["type"] != "updates":
+            raise TranslationError(f"unexpected stream chunk type: {chunk['type']}")
         if is_replayed(data):
             return []  # a re-streamed committed step: its events already shipped
 
-        ns = part.get("ns") or ()
-        scope = scope_of(part)
+        ns = chunk.get("ns") or ()
+        scope = scope_of(chunk)
 
         out: list[ev.DurableEvent] = []
         for node, delta in data.items():
@@ -445,7 +445,7 @@ class Translator:
         out = []
         target = _read_field(delta, target_key)
         # The vigilante's no-shot sentinel: the wrapper node normalizes it to None before
-        # root state (Agents/graphs/parent.py) — the subgraph part carries it raw, so the
+        # root state (Agents/graphs/parent.py) — the subgraph chunk carries it raw, so the
         # translator applies the same normalization. No act -> no event, matching state.
         if target == "hold_fire":
             target = None
@@ -573,7 +573,7 @@ class Translator:
 
     def _strategy_updates(self, delta):
         # A strategy note is an overwrite, so idempotence is content equality: a replayed
-        # part re-delivers the identical note and ships nothing new.
+        # chunk re-delivers the identical note and ships nothing new.
         strategies = _read_field(delta, "agent_strategies", {}) or {}
         out = [self._emit(ev.StrategyUpdate, player=player, strategy=text)
                for player, text in strategies.items()

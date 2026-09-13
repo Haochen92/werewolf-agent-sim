@@ -1,7 +1,7 @@
 """server/translate.py — fixture replay + the paths a fixture without a human can't reach.
 
-The replay test drives the translator over every part of a REAL captured game
-(notebooks/fixtures/chunk_catalogue.jsonl, 307 parts, v2 envelope) and asserts the global
+The replay test drives the translator over every chunk of a REAL captured game
+(notebooks/fixtures/chunk_catalogue.jsonl, 307 chunks, v2 envelope) and asserts the global
 contract properties: nothing unhandled, seq strictly monotone, every event tier-registered,
 buffers empty at the end. The spot checks pin one real specimen per interesting row
 (voluntary pass, whiff note, investigation delivery). Unit tests cover interrupts, the
@@ -13,15 +13,15 @@ import pytest
 
 from server.schemas import events as ev
 from server.game.translate import TranslationError, Translator
-from tests.fixtures.stream import load_fixture_parts
+from tests.fixtures.stream import load_fixture_chunks
 
 
 @pytest.fixture(scope="module")
 def replay():
     translator = Translator()
     events = []
-    for part in load_fixture_parts():
-        events.extend(translator.translate(part))
+    for chunk in load_fixture_chunks():
+        events.extend(translator.translate(chunk))
     return translator, events
 
 
@@ -131,22 +131,22 @@ def test_every_real_part_re_delivered_as_cached_ships_nothing(replay):
     re-applies them instead of re-running). Every family in a real game must vanish."""
     translator, _ = replay
     seq_before = translator.seq
-    for part in load_fixture_parts():
-        if part["type"] != "updates":
-            continue  # custom parts carry no metadata; turn_started re-fires by design
-        replayed = {**part, "data": {**part["data"], "__metadata__": {"cached": True}}}
+    for chunk in load_fixture_chunks():
+        if chunk["type"] != "updates":
+            continue  # custom chunks carry no metadata; turn_started re-fires by design
+        replayed = {**chunk, "data": {**chunk["data"], "__metadata__": {"cached": True}}}
         assert translator.translate(replayed) == []
     assert translator.seq == seq_before  # nothing was even numbered
 
 
 def test_cached_parts_are_dropped_whole():
     t = _seeded_translator()
-    part = {"type": "updates", "ns": ["DAY_PHASE:abc"], "data": {
+    chunk = {"type": "updates", "ns": ["DAY_PHASE:abc"], "data": {
         "discuss": {"day_channel": [{"day": 1, "seq": 0, "player": "t0",
                                      "message": "hi", "passed": False}]},
         "__metadata__": {"cached": True},
     }}
-    assert t.translate(part) == []
+    assert t.translate(chunk) == []
 
 
 def test_night_start_anchors_the_night_marker():
@@ -159,11 +159,11 @@ def test_night_start_anchors_the_night_marker():
 
 def test_interrupt_becomes_input_request():
     t = _seeded_translator()
-    part = {"type": "updates", "ns": [], "data": {"__interrupt__": [
+    chunk = {"type": "updates", "ns": [], "data": {"__interrupt__": [
         {"value": {"player_id": "v", "phase": "vigilante_target", "day": 2,
                    "valid_targets": ["t0", "sk"]}}
     ]}}
-    (event,) = t.translate(part)
+    (event,) = t.translate(chunk)
     assert event.type == "input_request"
     assert event.action_kind == "vigilante_target"
     assert event.candidates == ["t0", "sk"]
@@ -185,7 +185,7 @@ def test_unaccounted_key_raises_not_skips():
 def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
     t = _seeded_translator()
     t._last_day_ballots = [("w0", "t0"), ("w1", "t0")]
-    part = {"type": "updates", "ns": [], "data": {"DAY_RESOLUTION": {
+    chunk = {"type": "updates", "ns": [], "data": {"DAY_RESOLUTION": {
         "voted_player": "h",  # node claims h, ballots say t0
         "no_lynch_streak": 0,
         "day_channel": [], "day_summaries": [],
@@ -193,13 +193,13 @@ def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
         "surviving_villagers": ["inv", "h", "sk", "v"],
     }}}
     with pytest.raises(TranslationError, match="kernel/delta mismatch"):
-        t.translate(part)
+        t.translate(chunk)
 
 
 def test_night_cross_check_raises_on_kernel_delta_mismatch():
     t = _seeded_translator()
     t._targets = {"wolves_kill_target": "t0"}
-    part = {"type": "updates", "ns": [], "data": {"NIGHT_RESOLUTION": {
+    chunk = {"type": "updates", "ns": [], "data": {"NIGHT_RESOLUTION": {
         "day_channel": [], "day_summaries": [],
         # Node recorded a different victim than the tracked targets resolve to.
         "dead_roster": [{"player": "h", "role": "healer", "day": 1, "phase": "night"}],
@@ -207,21 +207,21 @@ def test_night_cross_check_raises_on_kernel_delta_mismatch():
         "surviving_villagers": ["inv", "sk", "v", "t0"],
     }}}
     with pytest.raises(TranslationError, match="kernel/delta mismatch"):
-        t.translate(part)
+        t.translate(chunk)
 
 
 def test_silent_whiff_ships_nothing_public():
     # Wolves hit the SK: no deaths, no save, no public trace — absence is the design.
     t = _seeded_translator()
     t._targets = {"wolves_kill_target": "sk"}
-    part = {"type": "updates", "ns": [], "data": {"NIGHT_RESOLUTION": {
+    chunk = {"type": "updates", "ns": [], "data": {"NIGHT_RESOLUTION": {
         "day_channel": [{"day": 1, "seq": 0, "player": "game_master",
                          "message": "Night of day 1: No one died last night."}],
         "day_summaries": [],
         "wolf_channel": [{"day": 1, "round": 2, "wolf": "game_master",
                           "message": "your kill failed — immune", "vote": ""}],
     }}}
-    events = t.translate(part)
+    events = t.translate(chunk)
     (night,) = [e for e in events if e.type == "night_result"]
     assert night.deaths == [] and night.save is None
     # The GM whiff note rides the wolf channel — the wolves' only trace of the failure.
@@ -301,12 +301,12 @@ def test_reexecuted_wolf_kill_vote_overwrites():
 
 def test_reexecuted_discussion_entry_ships_once():
     t = _seeded_translator()
-    part = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
+    chunk = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "discuss": {"day_channel": [{"day": 1, "seq": 3, "player": "t0",
                                      "message": "inv is lying", "passed": False}]},
     }}
-    assert [e.type for e in t.translate(part)] == ["speech"]
-    assert t.translate(part) == []  # identical re-delivery
+    assert [e.type for e in t.translate(chunk)] == ["speech"]
+    assert t.translate(chunk) == []  # identical re-delivery
 
 
 def test_reexecuted_wolf_line_ships_once():

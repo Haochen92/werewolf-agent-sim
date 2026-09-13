@@ -1,11 +1,11 @@
 """One running game: run it, turn its stream into events, deliver them to viewers.
 
 One GameSession per running game. The game runs as a background asyncio task on the
-server's event loop, consuming graph.astream(): between parts the task is parked at its
+server's event loop, consuming graph.astream(): between chunks the task is parked at its
 `async for`, costing the loop nothing. The engine's nodes are synchronous, so LangGraph's
 async path runs them in worker threads, and their blocking LLM calls never stall the loop
 (verified on this LangGraph version: the loop stays responsive through a blocking node, and
-part semantics are identical to the sync stream()). Our own code stays on the loop: no
+chunk semantics are identical to the sync stream()). Our own code stays on the loop: no
 hand-rolled threads, no bridge.
 
 Which model runs, and on whose key, is a choice from SUPPORTED_GAME_MODELS
@@ -16,7 +16,7 @@ RunConfig, the event log, or disk. If the game dies mid-run the error surfaces w
 redacted. After a restart the key is gone, and the game waits for a seat holder to supply it
 again (see the live registry).
 
-Every part goes through the Translator; the resulting events are appended to the game's
+Every chunk goes through the Translator; the resulting events are appended to the game's
 in-memory log and pushed to each connected viewer's queue. When the game needs human
 action, the graph interrupts, and the session holds one empty slot per interrupted seat.
 POST /turns validates the submitted action (same rules as the CLI game) and fills that
@@ -104,7 +104,7 @@ class GameSession:
       That is a side effect of construction, not part of this object's state.
 
     What travels to the browsers.
-      translator    turns each engine part into zero or more typed events. Stateful:
+      translator    turns each engine chunk into zero or more typed events. Stateful:
                     it keeps its own view of roles and the running seq counter.
       log           every durable event, in seq order. A reconnecting viewer is caught
                     up from this list; the repository is fed its tail as it grows.
@@ -118,7 +118,7 @@ class GameSession:
 
     The human turn, where the game waits.
       human_players     which seats the engine dealt to humans, read from its first
-                        part. Served by GET /games so the client knows whose seats to
+                        chunk. Served by GET /games so the client knows whose seats to
                         draw.
       _seat_tokens      each joiner's secret, in join order. Join order is deal order,
                         so token i owns human_players[i]; seat_for_token() is the
@@ -303,7 +303,7 @@ class GameSession:
             flush()
 
     async def _drive_graph(self, graph_input: Any, waiting_on_humans: bool) -> None:
-        """The streaming loop. Run the engine until the game ends, handling each part as
+        """The streaming loop. Run the engine until the game ends, handling each chunk as
         it arrives. Each time the engine pauses for a human seat, the stream ends; wait
         for every parked seat's answer, then resume it with the batch. Returns only when
         the game is over, or a restart cancels the task, or the engine raises."""
@@ -313,15 +313,15 @@ class GameSession:
             graph_input = Command(resume=await self._collect_answers())
         while True:
             interrupted = False
-            async for part in self._graph.astream(
+            async for chunk in self._graph.astream(
                 graph_input, config=self.config, context=self._context,
                 stream_mode=["updates", "custom"], subgraphs=True, version="v2",
             ):
-                if self._on_part(part):
-                    # Sticky: the interrupt part is often NOT last (siblings keep
+                if self._on_chunk(chunk):
+                    # Sticky: the interrupt chunk is often NOT last (siblings keep
                     # streaming after it), so keep consuming and remember it.
                     interrupted = True
-                # Synchronous per part: a crash loses at most this part's events.
+                # Synchronous per chunk: a crash loses at most this chunk's events.
                 await self._persist_tail()
             if not interrupted:
                 break
@@ -348,41 +348,41 @@ class GameSession:
                 self.game_id, human_players=self.human_players)
             self._saved_humans = list(self.human_players)
 
-    def _on_part(self, part) -> bool:
-        """Handle one part from the engine's stream. Returns True when the part is an
+    def _on_chunk(self, chunk) -> bool:
+        """Handle one chunk from the engine's stream. Returns True when the chunk is an
         interrupt, which tells the streaming loop the engine is about to pause.
 
         Upon interrupt, the engine surfaces the same interrupt event twice, first in the
         subgraph, followed by the parent graph, because the stream reports nested graphs
         at every level. Only the parent graph's interrupt is parked for human input.
 
-        Translates the part into events the browser understands, appends them to the
+        Translates the chunk into events the browser understands, appends them to the
         event log, and sends them to every connected stream. Upon game over, allows all
         viewers access to all event types.
 
         Updates the progress bar.
 
-        A part marked cached is skipped: the engine already produced it once and this
+        A chunk marked cached is skipped: the engine already produced it once and this
         session handled it then.
         """
-        data = part.get("data") or {}
+        data = chunk.get("data") or {}
         if is_replayed(data):
             return False
 
-        interrupted = "__interrupt__" in data and not (part.get("ns") or ())
+        interrupted = "__interrupt__" in data and not (chunk.get("ns") or ())
         if interrupted:
             self.parked_since = datetime.now(timezone.utc)
             for item in data["__interrupt__"]:
                 self.park(HumanTurnRequest.model_validate(_read_field(item, "value")),
                           _read_field(item, "id", ""))
 
-        for event in self.translator.translate(part, deadlines=self.turn_deadlines):
+        for event in self.translator.translate(chunk, deadlines=self.turn_deadlines):
             self.log.append(event)
             if event.type == "game_over":
                 self.game_over = True
             self._deliver(event)
 
-        self._tracker.on_part(scope_of(part), data)
+        self._tracker.on_chunk(scope_of(chunk), data)
 
         if "INITIALIZE_GAME" in data:  # the deal: which seats went to humans
             self.human_players = list(

@@ -74,10 +74,10 @@ class PacingTracker:
         elif event.type == "vote_cast":
             self._finish_stage()  # result announced: the vote bar is over
 
-    # -- part-level ticks (via GameSession) -----------------------------------------------
+    # -- chunk-level ticks (via GameSession) -----------------------------------------------
 
-    def on_part(self, scope: str, nodes: Iterable[str]) -> None:
-        """Read the progress one stream part implies from the names of the nodes it
+    def on_chunk(self, scope: str, nodes: Iterable[str]) -> None:
+        """Read the progress one stream chunk implies from the names of the nodes it
         reports. A night branch's wrapper node finishing at the top level means that
         role is done for the night; a vote node finishing inside the day phase means
         one more ballot is in."""
