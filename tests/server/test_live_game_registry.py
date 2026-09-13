@@ -27,7 +27,7 @@ async def test_an_ended_game_nobody_watches_leaves_at_once(quiet_session):
     session = quiet_session(FakeGraph([]), seat_tokens=["tok"])
     games._register(session)
 
-    await session.abandon("test: over")
+    await session.drop("test: over")
     assert games.get(session.game_id) is None
 
 
@@ -37,7 +37,7 @@ async def test_an_ended_game_stays_until_its_last_viewer_leaves(quiet_session):
     games._register(session)
     first, second = session.subscribe(), session.subscribe()
 
-    await session.abandon("test: over")
+    await session.drop("test: over")
     assert games.get(session.game_id) is session  # two streams still open on it
     session.unsubscribe(first)
     assert games.get(session.game_id) is session  # one left
@@ -53,4 +53,4 @@ async def test_a_live_game_is_never_released(quiet_session):
     q = session.subscribe()
     session.unsubscribe(q)  # viewers come and go while the game is live
     assert games.get(session.game_id) is session
-    await session.shutdown()
+    await session.suspend()

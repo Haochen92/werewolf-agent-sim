@@ -491,7 +491,7 @@ def test_a_seat_holder_may_fund_a_waiting_game_and_nobody_else(api_client, seate
         return entry  # the checkpoint machinery is tested in test_durability
 
     monkeypatch.setattr(games, "_check_key", check_key)
-    monkeypatch.setattr(games, "_resume", resume)
+    monkeypatch.setattr(games, "_resume_from_checkpoint", resume)
 
     # Not waiting: 409, whoever asks.
     r = api_client.post(f"/games/{session.game_id}/key", json={"api_key": "sk-1"})

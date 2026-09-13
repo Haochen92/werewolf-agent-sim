@@ -16,14 +16,13 @@ surfaces redacted and the player restarts with a valid one.
 
 Every part goes through the Translator; the resulting events are appended to the game's
 in-memory log and pushed to each connected viewer's queue. When the game needs human
-action, the graph interrupts — one write-once Future per interrupted seat. POST /turns
-validates the submitted action (same rules as the CLI game) and fulfils that seat's
-promise; once every promise resolves, the batch resumes the graph.
+action, the graph interrupts, and the session holds one empty slot per interrupted seat.
+POST /turns validates the submitted action (same rules as the CLI game) and fills that
+seat's slot; once every slot is filled, the batch resumes the graph.
 
-Who may see an event is decided at delivery time, per viewer: `entitled()` checks the event's
-tier (public / wolves-only / one seat / observer) against the viewer's seat. At game_over
-everyone becomes an observer and the held-back events flush out (ruling R7 — game over flips
-permissions; it doesn't carry a reveal payload of its own).
+Who may see an event is decided at delivery time, per viewer, by the stream route using
+`entitlement.entitled()`; the session only fans every event into every viewer's queue. At
+game over everyone becomes an observer and the held-back events flush out.
 
 The PacingTracker (server/pacing.py) drives the "3/5 players done" progress bars — computed from public
 knowledge only, never from the real engine state, so the bar can't leak who acted (padded
@@ -53,32 +52,30 @@ from Agents.turn.human_turn import validate_human_response
 
 from server.storage.game_repository import GameRepository
 from server.game.model_catalog import SUPPORTED_GAME_MODELS
-from server.game.pacing import BRANCH_UNITS, PacingTracker
+from server.game.pacing import PacingTracker
 from server.schemas import events as ev
 from server.game.seat_clocks import SeatClocks
-from server.game.translate import Translator, _read_field
+from server.game.translate import Translator, _read_field, is_replayed, scope_of
 
 logger = logging.getLogger(__name__)
 
 
-def entitled(event: ev.DurableEvent, seat: str, roles: dict[str, str],
-             game_over: bool) -> bool:
-    """May this viewer receive this event LIVE? Spectators have seat ""; at game_over
-    everyone is an observer (the backlog flush relies on re-asking this per event)."""
-    if game_over:
-        return True
-    tier = ev.EVENT_TIERS[event.type]
-    if tier is ev.Tier.PUBLIC:
-        return True
-    if tier is ev.Tier.FACTION:
-        return bool(seat) and roles.get(seat) == "wolf"
-    if tier is ev.Tier.SEAT:
-        return bool(seat) and getattr(event, "player", None) == seat
-    return False  # OBSERVER: log-only until the unlock
-
-
 class GameSession:
-    """One running game: the stream-driving task + translator + log + subscriber fan-out.
+    """One running game: the task that drives the engine, the log of what it produced,
+    and the browsers watching it.
+
+    Two lifecycles live here, and they run independently of each other:
+
+    * The game's: one task, from start() to _end(). It runs whether or not anyone is
+      watching, pauses while a human seat owes an answer, and ends when the game is
+      over, abandoned, or crashed.
+    * The streams': one open event stream per browser tab, from subscribe() to
+      unsubscribe(). There are zero to many at once, they come and go at any point in
+      the game, and each is a queue that _deliver() feeds.
+
+    They meet in two places only: a seat holder's stream opening or closing tells the
+    AFK clocks whether that seat is present, and the last stream closing after the game
+    has ended fires on_idle so the registry can forget this object.
 
     Field guide, by job:
 
@@ -90,11 +87,14 @@ class GameSession:
       (seed_memory_from_config in __init__ is a pre-run SIDE EFFECT, not setup — it
       writes the process-global memory store the graph will read.)
 
-    BYOK billing — separate from RunConfig on purpose (fingerprints would persist a key):
+    Which model runs, and who pays — kept out of RunConfig on purpose, since RunConfig is
+    fingerprinted and a key must never be written down:
       _api_key       the player's key: session memory only, dies with the session;
                      also the string the error report scrubs.
-      _llm_override  the (key, model, registry rescue) triple set on the GAME_LLM
-                     ContextVar inside the game task; None = the server's env pays.
+      _llm_selection this game's model, its rescue model from the catalogue, and the key
+                     if a player paid. Set on the GAME_LLM ContextVar as the task's first
+                     act, so the model factory uses it instead of the environment.
+                     None = nothing was chosen; the environment decides (CLI, batch).
 
     The wire — what viewers consume:
       translator   the converter MACHINE: stream parts in, 0..N typed events out.
@@ -104,7 +104,7 @@ class GameSession:
       game_over    the permission flip (ruling R7): once True, entitled() treats
                    every viewer as an observer and the withheld backlog may flush.
 
-    The human seat (HITL):
+    The human turn, where the game waits:
       human_players    which seats the ENGINE dealt to humans (read from the
                        INITIALIZE_GAME part); served by GET /games so the client
                        knows whose seats to render.
@@ -112,43 +112,57 @@ class GameSession:
                        order, so token i owns human_players[i] — seat_for_token()
                        is the proof-of-identity lookup behind turns, private event
                        tiers, and the status "you" field.
-      pending_requests the parked interrupt payloads, keyed by seat — a dict because a
-                       parallel superstep (night fan-out, votes) can interrupt for
-                       several human seats at once; sequential phases just hold one
-                       entry. The full prompt-bearing request stays server-side; the
-                       wire carries only the slim input_request event.
+      pending_requests the questions the engine is waiting on, keyed by seat. A dict
+                       because a parallel step (night actions, votes) can ask several
+                       human seats at once; sequential phases hold one entry. It does
+                       two jobs: the keys say which seats still owe an answer (the
+                       status route, the sweeper and recovery read that), and each
+                       value holds that turn's rules, which the answer is checked
+                       against when it arrives. The full request never leaves the
+                       server; the wire carries only the slim input_request event.
       _pending_ids     seat -> LangGraph interrupt id, for the id-addressed batch
                        resume (multi-seat only; a lone answer resumes bare-value,
                        the path proven in live HITL games).
-      _promises        the hand-off: one write-once Future per parked seat (created
-                       at park time). submit_turn crosses the seat off pending and
-                       fulfils its promise; _collect_answers awaits them all
-                       (gather = the barrier) and resumes the graph with the batch
-                       in one Command. The future object is the wire between the
-                       HTTP world and the game task — always fulfil it in place,
-                       never replace the registry entry.
+      _pending_answers the hand-off between the HTTP world and the game task: one
+                       empty Future per parked seat, created at park time. submit_turn
+                       crosses the seat off pending and sets the answer on its Future;
+                       _collect_answers awaits them all (gather = the barrier) and
+                       resumes the graph with the batch in one Command. A Future takes
+                       one value only, and the task waits on the exact object created
+                       at park time — always set the answer in place, never replace
+                       the dict entry.
 
-    Delivery + lifecycle:
-      _subscribers  one queue per connected viewer; _deliver fans events into these.
-      _tracker      the PacingTracker (public-knowledge progress bars).
+    The game's lifecycle:
+      _task         the asyncio task running the game (created by start()).
+      _finished     awaitable "ended or died" signal, set by _end().
       error         the death report: a game task that dies lands its exception here
                     (key-redacted) instead of vanishing; GET /games serves it.
-      _finished     awaitable "ended or died" signal, set in _run's finally.
-      _task         the game's asyncio task handle (created by start()).
+      parked_since  when the current batch of questions was asked; None while the
+                    engine runs. The retention sweeper reads it.
+      awaiting_key  True for a key-funded game rebuilt after a restart, until a seat
+                    holder supplies the key again; no task runs during the wait.
+      clocks        the SeatClocks: per-seat AFK timers, told about presence by the
+                    streams and answered by the delegate action.
+      on_idle       set by the live registry; fired once, when the game has ended and
+                    its last viewer has gone.
+
+    The streams' lifecycle:
+      _subscribers  one queue per open event stream, with that connection's seat token
+                    ("" for a spectator); _deliver fans events into these.
+      _tracker      the PacingTracker (public-knowledge progress bars), published the
+                    same way.
     """
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
                  api_key: str = "", model: str = "",
                  seat_tokens: Sequence[str] = (), graph=None,
                  repository: GameRepository | None = None) -> None:
-        # A selected model runs task-locally on either the ephemeral BYOK credential or,
-        # for house-funded registry rows, the server's configured backend. No selection
-        # means the environment/default accessor path remains in charge.
+
         self._api_key = api_key
         if api_key and not model:
             model = next(iter(SUPPORTED_GAME_MODELS))  # a bare key runs the default model
         row = SUPPORTED_GAME_MODELS.get(model)
-        self._llm_override = GameLLM(
+        self._llm_selection = GameLLM(
             api_key=api_key, model=model,
             rescue_model=row.rescue_model if row else None,
         ) if api_key or model else None
@@ -163,20 +177,28 @@ class GameSession:
         self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
 
-        # The wire: converter machine, durable record, R7 permission flip.
+        # What travels to the browsers: the translator turns engine output into events,
+        # the log keeps every event in order, and game_over is the switch that lets
+        # every viewer see everything once the game has ended.
         self.translator = Translator()
         self.log: list[ev.DurableEvent] = []
         self.game_over = False
-        # Durable-plane cursors: how much of the log / seat knowledge is on disk.
-        self._persisted = 0
-        self._persisted_humans: list[str] = []
+
+        # Track how many events are persisted in the database so _persist_tail only
+        # writes events after that.
+        self._saved_event_count = 0
+        # Track human seats persisted in database
+        self._saved_humans: list[str] = []
 
         # The human seat (HITL).
         self._seat_tokens = list(seat_tokens)
         self.human_players: list[str] = []
+        # The question each seat still owes an answer to; a seat leaves when it answers.
         self.pending_requests: dict[str, HumanTurnRequest] = {}
+        # The engine's id for each parked question, so a batch of answers can be filed back.
         self._pending_ids: dict[str, str] = {}
-        self._promises: dict[str, asyncio.Future] = {}
+        # One slot per parked seat, empty until that seat answers; emptied as a batch.
+        self._pending_answers: dict[str, asyncio.Future] = {}
         # AFK (seat_continuity.md §4–§5): the stopwatches live in SeatClocks; the session
         # lends it presence and the delegate action. Multi-human tables only.
         self.clocks = SeatClocks(
@@ -188,13 +210,18 @@ class GameSession:
         self.parked_since: datetime | None = None
         # A game that ran on a player's key, rebuilt after a restart: the key was never
         # stored, so it waits here, no task running, until a seat holder supplies one
-        # again (LiveGameRegistry.fund). The sweeper treats the wait like a parked turn.
+        # again (LiveGameRegistry.resume_with_key). The sweeper treats the wait like a parked turn.
         self.awaiting_key: bool = False
 
-        # Delivery + lifecycle. Each viewer queue keeps its seat resolver (re-resolved per
-        # check, never frozen at connect) — that is what makes presence answerable.
-        self._subscribers: dict[asyncio.Queue, Callable[[], str]] = {}
+        # Delivery to the browsers. One queue per open event stream, keyed by the queue
+        # because that is the handle the route holds; the value is the connection's seat
+        # token, "" for a spectator. The token is mapped to a seat on every check rather
+        # than once at connect time, since seats are dealt after streams open.
+        self._subscribers: dict[asyncio.Queue, str] = {}
         self._tracker = PacingTracker(self.publish_pacing)
+
+        # The session's own lifecycle: the task running the game, the flag set when it
+        # ends, and the error it ended with, if any.
         self.error: str | None = None
         self._finished = asyncio.Event()
         self._task: asyncio.Task | None = None
@@ -202,54 +229,17 @@ class GameSession:
         # viewer has gone, so the registry can forget this object; the row serves it on.
         self.on_idle: Callable[[], None] | None = None
 
-    # -- lifecycle ------------------------------------------------------------------------
+    # -- the game's lifecycle: start, run, end ---------------------------------------------
 
     def start(self) -> None:
         self._task = asyncio.get_running_loop().create_task(
             self._run(fresh_game_state()), name=f"game-{self.game_id}")
         logger.info("game %s: task started (byok=%s, model=%s)",
-                    self.game_id, bool(self._api_key),
-                    self._llm_override.model if self._llm_override else "server-default")
+                    self.game_id, bool(self._api_key), self.model or "server-default")
 
-    def fund(self, api_key: str) -> None:
-        """Take a player's key for the model this game runs on. Only meaningful while
-        awaiting a key; the registry validates the key with the provider first."""
-        model = self._llm_override.model if self._llm_override else ""
-        row = SUPPORTED_GAME_MODELS.get(model)
-        self._api_key = api_key
-        self._llm_override = GameLLM(
-            api_key=api_key, model=model, rescue_model=row.rescue_model if row else None)
-        self.awaiting_key = False
-
-    def start_recovered(self, *, waiting_on_humans: bool) -> None:
-        """Resume a revived session (server restart). Parked-at-interrupt games wait
-        for /turns first — the caller re-parked pending_requests from the checkpoint —
-        while mid-generation crashes continue from the last committed superstep
-        (astream(None) on an existing thread). Probe-verified 2026-08-20: the resume
-        re-runs the interrupted phase (abort-and-re-execute across the grave)."""
-        self._task = asyncio.get_running_loop().create_task(
-            self._run(None, wait_answers_first=waiting_on_humans),
-            name=f"game-{self.game_id}")
-        logger.info("game %s: recovered (waiting_on_humans=%s, %d events rehydrated)",
-                    self.game_id, waiting_on_humans, len(self.log))
-
-    async def shutdown(self) -> None:
-        """Cancel the running game task (server shutdown). Cancellation lands at the
-        task's next await; a sync node already inside LangGraph's executor runs its
-        current step to completion in its worker thread. Its last committed checkpoint
-        and event tail are recovered on the next startup."""
-        self.clocks.cancel_all()
-        if self._task is not None and not self._task.done():
-            self._task.cancel()
-            try:
-                await self._task
-            except asyncio.CancelledError:
-                pass
-            logger.info("game %s: cancelled on server shutdown", self.game_id)
-
-    async def _run(self, graph_input: Any, wait_answers_first: bool = False) -> None:
-        if self._llm_override is not None:
-            GAME_LLM.set(self._llm_override)
+    async def _run(self, graph_input: Any, waiting_on_humans: bool = False) -> None:
+        if self._llm_selection is not None:
+            GAME_LLM.set(self._llm_selection)
         recovered = graph_input is None
         trace_input = {"game_id": self.game_id, "recovered": recovered}
         # Stable across process restarts: a recovered GameSession adds a new root segment to
@@ -270,14 +260,14 @@ class GameSession:
                     input=trace_input, output={"status": "running"},
                     metadata={
                         "game_id": self.game_id,
-                        "model": (self._llm_override.model if self._llm_override
+                        "model": (self._llm_selection.model if self._llm_selection
                                   else "server-default"),
                         "byok": bool(self._api_key),
                         "recovered": recovered,
                     },
                 )
                 try:
-                    await self._drive_graph(graph_input, wait_answers_first)
+                    await self._drive_graph(graph_input, waiting_on_humans)
                     final_output = {
                         "status": "success", "game_over": self.game_over,
                         "event_count": len(self.log),
@@ -308,16 +298,21 @@ class GameSession:
                 finally:
                     # No phase upsert here: cancellation must leave the durable row
                     # 'running' so the next boot's recovery picks the game up.
-                    self._end()
                     if self.error is None:
                         logger.info("game %s: finished (game_over=%s, %d events)",
                                     self.game_id, self.game_over, len(self.log))
         finally:
+            # Whatever way the task leaves, including a failure in the tracing setup
+            # above: mark the game ended, then push the buffered spans out.
+            self._end()
             flush()
 
-    async def _drive_graph(self, graph_input: Any, wait_answers_first: bool) -> None:
-        """Stream/resume the graph while _run owns the one game-level trace context."""
-        if wait_answers_first:
+    async def _drive_graph(self, graph_input: Any, waiting_on_humans: bool) -> None:
+        """The streaming loop. Run the engine until the game ends, handling each part as
+        it arrives. Each time the engine pauses for a human seat, the stream ends; wait
+        for every parked seat's answer, then resume it with the batch. Returns only when
+        the game is over, or a restart cancels the task, or the engine raises."""
+        if waiting_on_humans:
             # Recovered at an interrupt: the seats were re-parked from the checkpoint
             # before this task started; wait for their answers.
             graph_input = Command(resume=await self._collect_answers())
@@ -349,123 +344,77 @@ class GameSession:
         raise — durability failing must not cost the running game)."""
         if self._repository is None:
             return
-        if len(self.log) > self._persisted:
+        if len(self.log) > self._saved_event_count:
             await self._repository.record_events(
-                self.game_id, self.log[self._persisted:])
-            self._persisted = len(self.log)
-        if self.human_players != self._persisted_humans:
+                self.game_id, self.log[self._saved_event_count:])
+            self._saved_event_count = len(self.log)
+        if self.human_players != self._saved_humans:
             await self._repository.upsert_game(
                 self.game_id, human_players=self.human_players)
-            self._persisted_humans = list(self.human_players)
+            self._saved_humans = list(self.human_players)
 
     def _on_part(self, part) -> bool:
-        """Translate, record, publish. Returns True on an interrupt part."""
-        data = part.get("data") or {}
+        """Handle one part from the engine's stream. Returns True when the part is an
+        interrupt, which tells the streaming loop the engine is about to pause.
 
-        # Park BEFORE translating: the input_request events translated from this very
-        # part must carry their seats' AFK deadlines, so the timers are armed first.
-        # Root mirror only — subgraphs=True streams each interrupt twice (child ns +
-        # root), and parking the child copy could re-park a seat that answered in the
-        # gap. Falling back to the seat as the answer key covers items without ids.
+        Upon interrupt, the engine surfaces the same interrupt event twice, first in the
+        subgraph, followed by the parent graph, because the stream reports nested graphs
+        at every level. Only the parent graph's interrupt is parked for human input.
+
+        Translates the part into events the browser understands, appends them to the
+        event log, and sends them to every connected stream. Upon game over, allows all
+        viewers access to all event types.
+
+        Updates the progress bar.
+
+        A part marked cached is skipped: the engine already produced it once and this
+        session handled it then.
+        """
+        data = part.get("data") or {}
+        if is_replayed(data):
+            return False
+
         interrupted = "__interrupt__" in data and not (part.get("ns") or ())
         if interrupted:
             self.parked_since = datetime.now(timezone.utc)
-            # A parallel superstep can carry several interrupts (one per human seat).
             for item in data["__interrupt__"]:
-                request = HumanTurnRequest.model_validate(_read_field(item, "value"))
-                self.pending_requests[request.player_id] = request
-                self._pending_ids[request.player_id] = (
-                    _read_field(item, "id", "") or request.player_id)
-                self._promises[request.player_id] = asyncio.get_running_loop().create_future()
-                self.clocks.arm(request)
+                self.park(HumanTurnRequest.model_validate(_read_field(item, "value")),
+                          _read_field(item, "id", ""))
 
-        events = self.translator.translate(part)
-        for event in events:
-            if event.type == "input_request" and event.player in self.turn_deadlines:
-                # Events are frozen; the stamped copy (same seq) is what gets recorded.
-                event = event.model_copy(
-                    update={"deadline": self.turn_deadlines[event.player]})
+        for event in self.translator.translate(part, deadlines=self.turn_deadlines):
             self.log.append(event)
             if event.type == "game_over":
                 self.game_over = True
             self._deliver(event)
 
-        # Pacing ticks ride part identity: a root wrapper part = that night branch finished;
-        # a vote-node part = one ballot cast. (Both are otherwise ignored/buffered.)
-        # Cached parts are re-deliveries (post-resume replays / cache hits) — their events
-        # were dropped by the translator and their ticks must not double the bars.
-        if isinstance(data, dict) and _read_field(
-                _read_field(data, "__metadata__", {}) or {}, "cached"):
-            return interrupted
-        ns = part.get("ns") or ()
-        scope = ns[0].split(":")[0] if ns else "root"
-        for node in data:
-            if scope == "root" and node in BRANCH_UNITS:
-                self._tracker.on_branch_done(BRANCH_UNITS[node])
-            if node in ("vote", "vote_human") and scope == "DAY_PHASE":
-                self._tracker.on_ballot()
-            if node == "INITIALIZE_GAME":
-                self.human_players = list(
-                    _read_field(data[node], "human_players", ()) or ())
+        self._tracker.on_part(scope_of(part), data)
+
+        if "INITIALIZE_GAME" in data:  # the deal: which seats went to humans
+            self.human_players = list(
+                _read_field(data["INITIALIZE_GAME"], "human_players", ()) or ())
         return interrupted
 
-    async def abandon(self, reason: str) -> None:
-        """Retention (seat_continuity.md §7): stop a parked game nobody is watching. The
-        reason becomes the epitaph viewers see; the caller flips the row to dropped."""
+    async def drop(self, reason: str) -> None:
+        """Give this game up for good: stop it and record why. Retention calls this on a
+        parked game nobody is watching. The reason is what viewers see on the ended
+        card; the live registry marks the row dropped."""
         self.error = reason
-        await self.shutdown()
+        await self.suspend()
         self._end()  # a never-started shell has no task to settle it
 
-    @property
-    def turn_deadlines(self) -> dict[str, str]:
-        """Effective deadline per parked seat (ISO), served in status and stamped on
-        input_request — the client's countdown source."""
-        return self.clocks.deadlines
-
-    # -- presence (seat_continuity.md §3) --------------------------------------------------
-
-    @property
-    def connected_seats(self) -> set[str]:
-        """Human seats with at least one open stream RIGHT NOW. Spectators resolve to
-        "" and never count; a snapshot, not a history of the window."""
-        return {seat for resolve in self._subscribers.values() if (seat := resolve())}
-
-    def seat_present(self, seat: str) -> bool:
-        return seat in self.connected_seats
-
-    @property
-    def humans_present(self) -> bool:
-        return bool(self.connected_seats)
-
-    # -- fan-out --------------------------------------------------------------------------
-
-    def _deliver(self, event: ev.DurableEvent) -> None:
-        self._tracker.on_event(event)
-        for q in self._subscribers:
-            q.put_nowait(("game", event))
-
-    def publish_pacing(self, snapshot: ev.PhaseProgress) -> None:
-        for q in self._subscribers:
-            q.put_nowait(("pacing", snapshot))
-
-    def subscribe(self, viewer_seat: Callable[[], str] | None = None) -> asyncio.Queue:
-        """Register a viewer queue with its seat resolver. A human seat connecting is the
-        presence signal that lifts a grace or un-parks the table."""
-        q: asyncio.Queue = asyncio.Queue()
-        self._subscribers[q] = viewer_seat or (lambda: "")
-        seat = self._subscribers[q]()
-        if seat:
-            self.clocks.on_seat_returned(seat)
-        return q
-
-    def unsubscribe(self, q: asyncio.Queue) -> None:
-        """A stream closed. If that was the seat's last stream mid-question, its clock
-        drops to the absence grace — the tab may be retrying, or may be gone."""
-        resolve = self._subscribers.pop(q, None)
-        seat = resolve() if resolve is not None else ""
-        if seat and not self.seat_present(seat):
-            self.clocks.on_seat_left(seat)
-        self._maybe_idle()
+    async def suspend(self) -> None:
+        """Stop the task because the process is going down; the game is not over. Its row
+        stays running and the next boot rebuilds it from the last checkpoint and the
+        saved events. Cancellation lands at the task's next await; a sync node already
+        inside LangGraph's executor finishes its current step in its worker thread."""
+        self.clocks.cancel_all()
+        if self._task is not None and not self._task.done():
+            self._task.cancel()
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
+            logger.info("game %s: cancelled on server shutdown", self.game_id)
 
     async def wait_finished(self) -> None:
         """Block until the game has ended, whichever way."""
@@ -481,6 +430,147 @@ class GameSession:
         """Mark the game ended, wake anyone waiting on it, and let the registry know if
         nobody is watching. The only place the ended flag is set."""
         self._finished.set()
+        self._maybe_idle()
+
+    # -- the human turn, where the game waits (POST /turns) --------------------------------
+
+    def park(self, request: HumanTurnRequest, interrupt_id: str = "") -> None:
+        """Hold one question for a human seat until /turns answers it, and start the
+        seat's AFK clock. The question is kept so the answer can be checked against its
+        rules; the empty Future is what the game task waits on. The interrupt id is what
+        the engine wants the answer filed under; without one, the seat is used."""
+        seat = request.player_id
+        self.pending_requests[seat] = request
+        self._pending_ids[seat] = interrupt_id or seat
+        self._pending_answers[seat] = asyncio.get_running_loop().create_future()
+        self.clocks.arm(request)  # a no-op for solo tables
+
+    def submit_turn(self, body: dict, seat: str) -> None:
+        """Take one seat's answer and validate it against the question that seat was
+        asked (the same rules as the CLI game). Raises HumanTurnContractError on an
+        illegal move, LookupError when the seat owes nothing."""
+        if not self.pending_requests:
+            raise LookupError("no pending input_request for this game")
+        request = self.pending_requests.get(seat)
+        if request is None:
+            raise LookupError(f"no pending input_request for seat {seat!r}")
+        response = validate_human_response(request, body)
+        # Crosses the seat off so a duplicate response (second tab opened, restart lag)
+        # raises LookupError. The answer is set right after: nothing between can fail.
+        del self.pending_requests[seat]
+        self._pending_answers[seat].set_result(response.model_dump())
+        self.clocks.clear(seat)
+        logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
+                    self.game_id, seat, len(self.pending_requests))
+
+    async def _collect_answers(self) -> Any:
+        """Wait until every seat that was asked has answered, then return the answers in
+        the shape the engine resumes with. Seats that answered early cost nothing to
+        wait on; the last one to answer is what wakes this.
+
+        The engine wants a single answer as a bare value, and several answers as a
+        dict keyed by the interrupt id it gave each question, so it knows which answer
+        belongs to which seat."""
+        await asyncio.gather(*self._pending_answers.values())
+        self.parked_since = None
+        answers = {self._pending_ids.pop(seat): fut.result()
+                   for seat, fut in self._pending_answers.items()}
+        self._pending_answers = {}
+        if len(answers) == 1:
+            return next(iter(answers.values()))
+        return answers
+
+    @property
+    def turn_deadlines(self) -> dict[str, str]:
+        """Effective deadline per parked seat (ISO), served in status and stamped on
+        input_request — the client's countdown source."""
+        return self.clocks.deadlines
+
+    # -- after a restart: rebuilt by the live registry -------------------------------------
+
+    def reload_history(self, log: list[ev.DurableEvent], human_players: list[str]) -> None:
+        """Put back what the database holds for a game that had already started: the
+        events the players were sent, and which seats are human. The live registry reads
+        both from the events table and the game row and passes them in. Both count as
+        already saved, so the next save writes only what comes after."""
+        self.log = list(log)
+        self.translator.hydrate(self.log)
+        self.human_players = list(human_players)
+        self.game_over = any(e.type == "game_over" for e in self.log)
+        self._saved_event_count = len(self.log)
+        self._saved_humans = list(self.human_players)
+
+    def take_key(self, api_key: str) -> None:
+        """Take a player's key for the model this game runs on. Only meaningful while
+        awaiting a key; the registry validates the key with the provider first."""
+        row = SUPPORTED_GAME_MODELS.get(self.model)
+        self._api_key = api_key
+        self._llm_selection = GameLLM(
+            api_key=api_key, model=self.model, rescue_model=row.rescue_model if row else None)
+        self.awaiting_key = False
+
+    def resume_game(self, *, waiting_on_humans: bool) -> None:
+        """Start the task for a game rebuilt after a restart. The engine continues from
+        its last checkpoint, re-running the step that was cut off.
+
+        ``waiting_on_humans`` means the game was paused on a human's turn when the
+        process died. The live registry has already parked those questions again, so the
+        task waits for the answers first and only then resumes the engine."""
+        self._task = asyncio.get_running_loop().create_task(
+            self._run(None, waiting_on_humans=waiting_on_humans),
+            name=f"game-{self.game_id}")
+        logger.info("game %s: recovered (waiting_on_humans=%s, %d events rehydrated)",
+                    self.game_id, waiting_on_humans, len(self.log))
+
+    @property
+    def model(self) -> str:
+        """The model this game runs on; empty when the server default is in charge."""
+        return self._llm_selection.model if self._llm_selection else ""
+
+    # -- the streams' lifecycle: human player's presence -----------------------------------
+
+    @property
+    def connected_seats(self) -> set[str]:
+        """Human seats with at least one open stream RIGHT NOW. Spectators resolve to
+        "" and never count; a snapshot, not a history of the window."""
+        return {seat for token in self._subscribers.values()
+                if (seat := self.seat_of_viewer(token))}
+
+    def seat_present(self, seat: str) -> bool:
+        return seat in self.connected_seats
+
+    @property
+    def humans_present(self) -> bool:
+        return bool(self.connected_seats)
+
+    # -- the streams' lifecycle: open, deliver, close; _maybe_idle is where the two meet ---
+
+    def subscribe(self, token: str = "") -> asyncio.Queue:
+        """Open a stream: make its queue and file it with the connection's seat token,
+        "" for a spectator. A human seat connecting is the presence signal that lifts
+        a grace or un-parks the table."""
+        q: asyncio.Queue = asyncio.Queue()
+        self._subscribers[q] = token
+        seat = self.seat_of_viewer(token)
+        if seat:
+            self.clocks.on_seat_returned(seat)
+        return q
+
+    def _deliver(self, event: ev.DurableEvent) -> None:
+        self._tracker.on_event(event)
+        for q in self._subscribers:
+            q.put_nowait(("game", event))
+
+    def publish_pacing(self, snapshot: ev.PhaseProgress) -> None:
+        for q in self._subscribers:
+            q.put_nowait(("pacing", snapshot))
+
+    def unsubscribe(self, q: asyncio.Queue) -> None:
+        """A stream closed. If that was the seat's last stream mid-question, its clock
+        drops to the absence grace — the tab may be retrying, or may be gone."""
+        seat = self.seat_of_viewer(self._subscribers.pop(q, ""))
+        if seat and not self.seat_present(seat):
+            self.clocks.on_seat_left(seat)
         self._maybe_idle()
 
     @property
@@ -509,60 +599,17 @@ class GameSession:
             return None
         return self.human_players[i] if i < len(self.human_players) else ""
 
+    def seat_of_viewer(self, token: str) -> str:
+        """The seat behind one connection: its token's seat, or "" when there is no token
+        (a spectator), the token is unknown, or the seats are not dealt yet."""
+        return (self.seat_for_token(token) or "") if token else ""
+
     def owns(self, token: str) -> bool:
         """Whether this token belongs to one of the game's human seats. The same
         question GameLobby.owns answers, so status and rejoin serve both stages alike."""
         return token in self._seat_tokens
 
-    # -- the human turn (from POST /turns) ------------------------------------------------
-
-    def submit_turn(self, body: dict, seat: str = "") -> None:
-        """Validate against the seat's pending request (the CLI's HITL contract, reused)
-        and, once every interrupted seat has answered, resume the parked game task.
-        Raises HumanTurnContractError on a bad action, LookupError on a bad seat."""
-        if not self.pending_requests:
-            raise LookupError("no pending input_request for this game")
-        if not seat:
-            # A lone pending seat needs no addressing (the solo-game path).
-            if len(self.pending_requests) > 1:
-                raise LookupError(
-                    f"several seats owe input ({sorted(self.pending_requests)}); "
-                    "identify one with ?seat=")
-            seat = next(iter(self.pending_requests))
-        request = self.pending_requests.get(seat)
-        if request is None:
-            raise LookupError(f"no pending input_request for seat {seat!r}")
-        response = validate_human_response(request, body)
-        # Cross the seat off FIRST: a duplicate submission then bounces at the
-        # LookupError above and can never reach set_result (futures are write-once —
-        # a second set would raise InvalidStateError).
-        del self.pending_requests[seat]
-        self.clocks.clear(seat)
-        self._promises[seat].set_result(response.model_dump())
-        logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
-                    self.game_id, seat, len(self.pending_requests))
-
-    async def _collect_answers(self) -> Any:
-        """Await every seat's promise, then hand the batch to the graph.
-
-        gather is the barrier (eager answers are already-resolved futures and cost
-        nothing); each future then carries its own value, so the harvest is
-        self-describing — no ordering to trust. Iterating the live registry (no
-        snapshot) and wholesale reset are safe because no park can happen between
-        the stream settling and this return: submit_turn fulfils futures, it never
-        adds or removes registry entries."""
-        await asyncio.gather(*self._promises.values())
-        self.parked_since = None
-        answers = {self._pending_ids.pop(seat): fut.result()
-                   for seat, fut in self._promises.items()}
-        self._promises = {}
-        if len(answers) == 1:
-            # The bare-value resume — the single-interrupt path proven in live HITL
-            # games. The id-addressed mapping only engages for true parallel batches.
-            return next(iter(answers.values()))
-        return answers
-
-    # -- census exposure (GET /games/{id}) ------------------------------------------------
+    # -- census exposure (GET /games/{id}) -------------------------------------------------
 
     @property
     def public_alive_counts(self) -> dict[str, int]:

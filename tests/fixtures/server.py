@@ -67,9 +67,13 @@ def quiet_session(monkeypatch):
     """GameSession factory with the memory-seeding side effect silenced."""
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
 
-    def make(graph, api_key: str = "", model: str = "", **kw) -> GameSession:
-        return GameSession(RunConfig(memory_persistence={"dump_enabled": False}),
-                           api_key=api_key, model=model, graph=graph, **kw)
+    def make(graph, api_key: str = "", model: str = "",
+             human_players: list[str] | None = None, **kw) -> GameSession:
+        session = GameSession(RunConfig(memory_persistence={"dump_enabled": False}),
+                              api_key=api_key, model=model, graph=graph, **kw)
+        if human_players is not None:  # the seats the engine would deal, token i -> seat i
+            session.human_players = list(human_players)
+        return session
 
     return make
 

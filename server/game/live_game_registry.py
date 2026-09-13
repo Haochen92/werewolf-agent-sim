@@ -52,9 +52,6 @@ logger = logging.getLogger(__name__)
 
 Entry = GameSession | GameLobby
 
-_BYOK_EPITAPH = ("the game's API key did not survive the server restart "
-                 "(keys are never stored) — start a new game")
-
 
 class LiveGameRegistry:
     """Every waiting room and running game in this process, found by game_id, together
@@ -191,56 +188,51 @@ class LiveGameRegistry:
             del self._entries[game_id]
             return
         if isinstance(entry, GameSession):
-            await entry.abandon(reason)
+            await entry.drop(reason)
         await self._repository.upsert_game(game_id, status=DROPPED, error=reason)
 
-    # -- row → entry (boot) ---------------------------------------------------------------
+    # -- after a restart: rebuild each running row, resume it, or wait for its key ---------
 
     async def revive(self, row: GameRow) -> Entry | None:
-        """Rebuild one running game from what was written down, after a restart. Three
-        sources are used, each the authority on one thing: the game row holds the identity,
-        the seats and the status; the events table holds everything the players were sent;
-        the engine checkpoint holds where the game actually is, including the questions it
-        was waiting on. Only running rows are rebuilt: a waiting room has no row, so a
+        """Rebuild one game from its database row after a restart, and set it moving
+        again if it can be. Only running rows qualify; a waiting room has no row, so a
         restart closes it.
 
-        A game funded by a player's own key cannot resume by itself, because the key was
-        never stored: it is rebuilt without a task and waits for a seat holder to supply
-        the key again (``fund``). A row still marked running whose engine had in fact
-        finished is completed and forgotten; None is returned for it."""
+        The game object is put back together from the row (identity, seats, model) and
+        the events table (everything the players were sent). If the house paid for the
+        game it continues at once. If a player's key paid for it, the key was never
+        stored: the game is filed without a task and waits until a seat holder sends the
+        key again, through ``resume_with_key``. Returns None for a row whose game had in fact
+        already finished; that row is marked completed instead."""
         if row.status != RUNNING:  # recovery selects running rows; anything else is inert
             return None
 
-        graph = self._graph_runtime.graph
         session = GameSession(
             RunConfig(game_id=row.game_id, human_player=len(row.seats),
                       memory_persistence={"dump_enabled": False}),
-            model=row.model, graph=graph,
+            model=row.model, graph=self._graph_runtime.graph,
             seat_tokens=[s["token"] for s in row.seats],
             repository=self._repository)
-        session.log = await self._repository.load_events(row.game_id)
-        session.translator.hydrate(session.log)
-        session.human_players = list(row.human_players)
-        session.game_over = any(e.type == "game_over" for e in session.log)
-        session._persisted = len(session.log)
-        session._persisted_humans = list(row.human_players)
+        session.reload_history(await self._repository.load_events(row.game_id),
+                             row.human_players)
         self._register(session)
 
         if row.byok:
-            # The key lives in a player's browser, not here. Wait for it; the sweeper's
-            # clock runs from the row's last write, as for a parked turn.
+            # The sweeper's clock runs from the row's last write, as for a parked turn.
             session.awaiting_key = True
             session.parked_since = row.updated_at or datetime.now(timezone.utc)
             logger.info("game %s: revived awaiting its player's key", row.game_id)
             return session
+        return await self._resume_from_checkpoint(session, parked_since=row.updated_at)
 
-        return await self._resume(session, parked_since=row.updated_at)
-
-    async def _resume(self, session: GameSession, *,
-                      parked_since: datetime | None) -> GameSession | None:
-        """Continue a rebuilt game from its checkpoint: re-park every question it was
-        waiting on, then start its task. A game whose engine had already finished is
-        completed and forgotten instead (None)."""
+    async def _resume_from_checkpoint(
+            self, session: GameSession, *, parked_since: datetime | None) -> GameSession | None:
+        """Start a rebuilt game's task from where the engine checkpoint says it stopped.
+        Any question the engine was waiting on when the process died is parked again
+        first, so the returning player sees the same prompt. ``parked_since`` is when
+        that wait began, so a game parked for a day before the restart is still a day
+        old. If the checkpoint shows the game had already finished, the row is marked
+        completed and None is returned."""
         graph = self._graph_runtime.graph
         state = await graph.aget_state(session.config)
         if not state.next:  # the game actually finished; the row was a stale 'running'
@@ -249,45 +241,34 @@ class LiveGameRegistry:
             session._end()
             return None
 
-        # Re-park every interrupt the checkpoint holds (the returning-player view),
-        # then resume: parked games wait for /turns, mid-generation crashes continue.
         for item in (i for t in state.tasks for i in (t.interrupts or ())):
-            request = HumanTurnRequest.model_validate(item.value)
-            session.pending_requests[request.player_id] = request
-            session._pending_ids[request.player_id] = (
-                getattr(item, "id", "") or request.player_id)
-            session._promises[request.player_id] = (
-                asyncio.get_running_loop().create_future())
-            session.clocks.arm(request)  # a no-op for solo tables
+            session.park(HumanTurnRequest.model_validate(item.value), getattr(item, "id", ""))
         if session.pending_requests:
-            # How long the game has been waiting survives the restart: one parked for a
-            # day before the reboot is still a day old, not newly parked.
             session.parked_since = parked_since or datetime.now(timezone.utc)
-        session.start_recovered(waiting_on_humans=bool(session.pending_requests))
+        session.resume_game(waiting_on_humans=bool(session.pending_requests))
         return session
 
-    # -- awaiting a key → running ---------------------------------------------------------
-
-    async def fund(self, game_id: str, api_key: str) -> GameSession:
-        """Resume a game that has been waiting for its player's key since a restart. The
-        key is tried on the provider first: ValueError carries the provider's complaint
-        and the game keeps waiting. LookupError when the game is not waiting for a key."""
+    async def resume_with_key(self, game_id: str, api_key: str) -> GameSession:
+        """Take a seat holder's key for a game that has been waiting for one since a
+        restart, and set the game moving again. The key is tried on the provider first:
+        if the provider refuses it, ValueError carries the complaint and the game keeps
+        waiting. LookupError when the game is not waiting for a key."""
         entry = self._entries.get(game_id)
         if not isinstance(entry, GameSession) or not entry.awaiting_key:
             raise LookupError("this game is not waiting for a key")
         entry.awaiting_key = False  # claimed: a second funder meanwhile gets LookupError
         try:
-            model = entry._llm_override.model if entry._llm_override else ""
-            await self._check_key(model, api_key)
+            await self._check_key(entry.model, api_key)
         except ValueError:
             entry.awaiting_key = True
             raise
-        entry.fund(api_key)
+        entry.take_key(api_key)
         logger.info("game %s: funded again by a seat holder; resuming", game_id)
-        resumed = await self._resume(entry, parked_since=datetime.now(timezone.utc))
+        resumed = await self._resume_from_checkpoint(
+            entry, parked_since=datetime.now(timezone.utc))
         return resumed if resumed is not None else entry
 
-    # -- process end ----------------------------------------------------------------------
+    # -- process end: suspend every game so the next boot can rebuild it -------------------
 
     async def shutdown(self) -> None:
         """Cancel every running game's task. What each one had reached is already
@@ -295,4 +276,4 @@ class LiveGameRegistry:
         sessions = self.sessions
         if sessions:
             logger.info("shutting down %d game session(s)", len(sessions))
-            await asyncio.gather(*(s.shutdown() for s in sessions))
+            await asyncio.gather(*(s.suspend() for s in sessions))

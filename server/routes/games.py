@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timezone
-from typing import Annotated, AsyncIterator, Callable
+from typing import Annotated, AsyncIterator
 from uuid import uuid4
 
 from fastapi import APIRouter, Header, HTTPException, Response
@@ -16,7 +16,8 @@ from Agents.turn.human_turn import HumanTurnContractError
 from server.dependencies import House, Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
-from server.game.game_session import GameSession, entitled
+from server.game.entitlement import entitled
+from server.game.game_session import GameSession
 from server.schemas.requests import FundGame, GameCreated, GameStatus, NewGame, TurnAccepted
 
 from ._shared import authorize_model, set_seat_cookie
@@ -127,7 +128,7 @@ async def fund_game(session: Game, body: FundGame, token: SeatToken,
     if not token or not session.owns(token):
         raise HTTPException(status_code=403, detail="only a seat holder may fund this game")
     try:
-        await games.fund(session.game_id, body.api_key)
+        await games.resume_with_key(session.game_id, body.api_key)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:
@@ -184,11 +185,8 @@ async def event_stream(
         except ValueError:
             pass
 
-    def viewer_seat() -> str:
-        return (session.seat_for_token(token) or "") if token else ""
-
     return StreamingResponse(
-        _sse(session, viewer_seat, last_seq),
+        _sse(session, token, last_seq),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -203,7 +201,7 @@ def _frame(kind: str, event) -> str:
 
 async def _sse(
     session: GameSession,
-    viewer_seat: Callable[[], str],
+    token: str,
     last_seq: int,
 ) -> AsyncIterator[str]:
     """Subscribe before replaying the log, deduplicate overlap, then stream live.
@@ -217,7 +215,11 @@ async def _sse(
     not allowed to receive while the game was live. Heartbeats keep proxy connections
     alive; they do not impose a player turn timeout.
     """
-    q = session.subscribe(viewer_seat)  # the resolver doubles as the presence signal
+    q = session.subscribe(token)  # also the presence signal for a human seat
+
+    def viewer_seat() -> str:  # re-read per event: seats are dealt after streams open
+        return session.seat_of_viewer(token)
+
     sent: set[int] = set()
     logger.info(
         "game %s: viewer connected (seat=%r, cursor=%d)",

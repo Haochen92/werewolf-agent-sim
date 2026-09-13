@@ -39,21 +39,22 @@ async def test_solo_past_an_hour_is_expired_before_it_is_not(quiet_session):
     old = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=61))
     young = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=59))
     assert is_expired(old, SETTINGS) and not is_expired(young, SETTINGS)
-    await old.shutdown()
-    await young.shutdown()
+    await old.suspend()
+    await young.suspend()
 
 
 async def test_multi_uses_the_day_window(quiet_session):
     old = await _parked(quiet_session, seats=["t1", "t2"], idle=timedelta(hours=25))
     young = await _parked(quiet_session, seats=["t1", "t2"], idle=timedelta(hours=2))
     assert is_expired(old, SETTINGS) and not is_expired(young, SETTINGS)
-    await old.shutdown()
-    await young.shutdown()
+    await old.suspend()
+    await young.suspend()
 
 
 async def test_a_watched_or_settled_game_is_never_expired(quiet_session):
     watched = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=5))
-    watched.subscribe(lambda: "p1")
+    watched.human_players = ["p1"]
+    watched.subscribe("t1")
     assert not is_expired(watched, SETTINGS)
     running = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=5))
     running.pending_requests.clear()  # the graph is driving, not parked
@@ -62,7 +63,7 @@ async def test_a_watched_or_settled_game_is_never_expired(quiet_session):
     over.game_over = True
     assert not is_expired(over, SETTINGS)
     for s in (watched, running, over):
-        await s.shutdown()
+        await s.suspend()
 
 
 async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
@@ -81,17 +82,17 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     assert games.get(expired.game_id) is None  # ended and unwatched: the row answers now
 
     assert await sweep_parked_games(games, SETTINGS) == []  # nothing left to do
-    await fresh.shutdown()
+    await fresh.suspend()
 
 
 async def test_a_game_waiting_for_its_key_has_the_same_shelf_life(quiet_session):
     from tests.fixtures.server import FakeGraph
 
-    session = quiet_session(FakeGraph([]), seat_tokens=["t1"])
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["player_3"])
     session.awaiting_key = True
     session.parked_since = datetime.now(timezone.utc) - timedelta(hours=2)
     assert is_expired(session, SETTINGS)  # solo: an hour is enough
-    q = session.subscribe(lambda: "player_3")
+    q = session.subscribe("t1")
     assert not is_expired(session, SETTINGS)  # its player is here, looking at the card
     session.unsubscribe(q)
     session.awaiting_key = False

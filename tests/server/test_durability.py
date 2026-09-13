@@ -85,7 +85,7 @@ async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session)
     parked = quiet_session(HangingGraph(), repository=repository)
     parked.start()
     await asyncio.sleep(0.05)
-    await parked.shutdown()
+    await parked.suspend()
     assert all("status" not in fields for fields in repository.upserts)
 
 
@@ -207,19 +207,19 @@ async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_
 
     # A bad key is refused by the provider probe and the game keeps waiting.
     with pytest.raises(ValueError, match="rejected"):
-        await games.fund("g-1", "sk-bad")
+        await games.resume_with_key("g-1", "sk-bad")
     assert session.awaiting_key and session._task is None
 
     # A good key: the model is the row's, the question is re-parked, the task runs.
-    await games.fund("g-1", "sk-good")
+    await games.resume_with_key("g-1", "sk-good")
     assert probed == [("gemini-2.5-pro", "sk-bad"), ("gemini-2.5-pro", "sk-good")]
     assert not session.awaiting_key
-    assert session._llm_override.api_key == "sk-good"
-    assert session._llm_override.model == "gemini-2.5-pro"
+    assert session._llm_selection.api_key == "sk-good"
+    assert session._llm_selection.model == "gemini-2.5-pro"
     assert "player_3" in session.pending_requests and session._task is not None
     with pytest.raises(LookupError):  # not waiting any more
-        await games.fund("g-1", "sk-again")
-    await session.shutdown()
+        await games.resume_with_key("g-1", "sk-again")
+    await session.suspend()
 
 
 async def test_house_selected_model_survives_restart(monkeypatch):
@@ -228,7 +228,7 @@ async def test_house_selected_model_survives_restart(monkeypatch):
     games, _ = await _recover(
         monkeypatch, [_row(model=model, byok=False)], FakeDurableGraph(state))
 
-    assert games.get("g-1")._llm_override.model == model
+    assert games.get("g-1")._llm_selection.model == model
 
 
 async def test_stale_running_row_of_a_finished_game_is_closed_and_not_kept(monkeypatch):
