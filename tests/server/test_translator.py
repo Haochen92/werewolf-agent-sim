@@ -362,3 +362,22 @@ def test_live_shaped_chunk_translates_like_its_saved_form():
     assert [e.type for e in got] == ["pass_marker", "firing_reason", "input_request"]
     assert got == want
     assert got[0].pass_reason == "voluntary"
+
+
+# ---- exact output ----------------------------------------------------------------------
+
+def test_fixture_replay_matches_the_golden_event_for_event():
+    from tests.fixtures.translator_golden import GOLDEN_FIXTURE, events_of, load_golden
+    assert events_of(load_fixture_chunks()) == load_golden(GOLDEN_FIXTURE)
+
+
+def test_human_path_matches_the_golden_event_for_event():
+    from tests.fixtures.translator_golden import (
+        GOLDEN_HUMAN, events_of, human_path_chunks, load_golden)
+    got = events_of(human_path_chunks())
+    assert got == load_golden(GOLDEN_HUMAN)
+    # the paths the captured game cannot reach are all present
+    types = {e["type"] for e in got}
+    assert {"input_request", "vote_cast", "wolf_vote", "wolf_kill_decided", "night_result",
+            "investigation_result", "vigilante_confirmation", "bullets_remaining",
+            "roster_update", "pack_roster_update", "turn_started"} <= types
