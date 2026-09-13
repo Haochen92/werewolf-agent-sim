@@ -29,3 +29,5 @@ _The spine — a few-minute linear tour of the project, filled in as chapters la
    de-luck credit signal.
    _Proof → `../evidence/metrics/`, `../evidence/evaluation/metrics/report.md`._
 5. **Frontend** — _added after the build (replay + live spectator)._
+   _Server talking points, one page for interviews →_
+   [`server_talking_points.md`](server_talking_points.md)
