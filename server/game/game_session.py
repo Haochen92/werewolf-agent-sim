@@ -1,18 +1,20 @@
 """One running game: run it, turn its stream into events, deliver them to viewers.
 
-One GameSession per running game. The game runs as a background asyncio task on the server's
-event loop, consuming graph.astream(): between parts the task is just parked at its `async
-for`, costing the loop nothing. The engine's nodes are synchronous, so LangGraph's async path
-runs them in worker threads — their blocking LLM calls never stall the loop (verified on this
-langgraph version: loop stays responsive through a blocking node; part semantics identical to
-sync stream()). Our own code stays entirely on the loop: no hand-rolled threads, no bridge.
+One GameSession per running game. The game runs as a background asyncio task on the
+server's event loop, consuming graph.astream(): between parts the task is parked at its
+`async for`, costing the loop nothing. The engine's nodes are synchronous, so LangGraph's
+async path runs them in worker threads, and their blocking LLM calls never stall the loop
+(verified on this LangGraph version: the loop stays responsive through a blocking node, and
+part semantics are identical to the sync stream()). Our own code stays on the loop: no
+hand-rolled threads, no bridge.
 
-A model choice from SUPPORTED_GAME_MODELS (server/model_catalog.py: tested models only,
-each with its compatible rescue) rides a ContextVar set inside the game's task. House-funded rows use the server's
-configured backend; the others require a player API key (BYOK). LangGraph copies the task
-context into its worker threads, so a BYOK game's key is applied only to the chosen model's
-provider and never touches RunConfig, the event log, or disk; if it dies mid-game the error
-surfaces redacted and the player restarts with a valid one.
+Which model runs, and on whose key, is a choice from SUPPORTED_GAME_MODELS
+(game/model_catalog.py: tested models only, each with its compatible rescue). It rides a
+ContextVar set inside the game's task; LangGraph copies the task context into its worker
+threads, so a player's key reaches only the chosen model's provider and never touches
+RunConfig, the event log, or disk. If the game dies mid-run the error surfaces with the key
+redacted. After a restart the key is gone, and the game waits for a seat holder to supply it
+again (see the live registry).
 
 Every part goes through the Translator; the resulting events are appended to the game's
 in-memory log and pushed to each connected viewer's queue. When the game needs human
@@ -24,9 +26,9 @@ Who may see an event is decided at delivery time, per viewer, by the stream rout
 `entitlement.entitled()`; the session only fans every event into every viewer's queue. At
 game over everyone becomes an observer and the held-back events flush out.
 
-The PacingTracker (server/pacing.py) drives the "3/5 players done" progress bars — computed from public
-knowledge only, never from the real engine state, so the bar can't leak who acted (padded
-20-30s completions make a non-actor indistinguishable from a slow one).
+The PacingTracker (game/pacing.py) drives the "3/5 players done" progress bars, computed
+from public knowledge only, never from the real engine state, so the bar cannot leak who
+acted (padded 20-30 s completions make a non-actor indistinguishable from a slow one).
 """
 
 from __future__ import annotations
@@ -68,7 +70,7 @@ class GameSession:
 
     * The game's: one task, from start() to _end(). It runs whether or not anyone is
       watching, pauses while a human seat owes an answer, and ends when the game is
-      over, abandoned, or crashed.
+      over, dropped, or crashed.
     * The streams': one open event stream per browser tab, from subscribe() to
       unsubscribe(). There are zero to many at once, they come and go at any point in
       the game, and each is a queue that _deliver() feeds.
@@ -77,80 +79,94 @@ class GameSession:
     AFK clocks whether that seat is present, and the last stream closing after the game
     has ended fires on_idle so the registry can forget this object.
 
-    Field guide, by job:
+    Attributes, by job. Every one is set in __init__; this is the only place they are
+    explained.
 
-    Engine bootstrap — the arguments one graph run needs (same entry path as the CLI):
-      config        the LangGraph runnable config (thread id, checkpointer wiring).
+    Which model runs, and who pays. Kept out of RunConfig on purpose: RunConfig is
+    fingerprinted and recorded, and a key must never be written down.
+      _api_key        the player's key, if a player paid. Session memory only; also the
+                      string the error report scrubs.
+      _llm_selection  this game's model, its rescue model from the catalogue, and the key
+                      if any. A bare key with no model runs the catalogue's first row.
+                      Set on the GAME_LLM ContextVar as the task's first act, so the
+                      model factory uses it instead of the environment. None = nothing
+                      was chosen and the environment decides (CLI, batch).
+
+    Engine bootstrap: what one graph run needs, the same entry path as the CLI.
+      config        the LangGraph runnable config: thread id, checkpointer wiring.
       game_id       the game's identity, minted by RunConfig; also the URL key.
-      _graph        the compiled parent graph (tests inject a fake).
-      _context      runtime context handed to every node: metrics + eval-case sink.
-      (seed_memory_from_config in __init__ is a pre-run SIDE EFFECT, not setup — it
-      writes the process-global memory store the graph will read.)
+      _session_id   the tracing session id, so Langfuse groups this game's traces.
+      _graph        the compiled parent graph; tests inject a fake.
+      _repository   the database gateway; None means nothing is written down.
+      _context      runtime context handed to every node: metrics and the eval-case
+                    sink.
+      Building the config also seeds the process-wide memory store the graph reads.
+      That is a side effect of construction, not part of this object's state.
 
-    Which model runs, and who pays — kept out of RunConfig on purpose, since RunConfig is
-    fingerprinted and a key must never be written down:
-      _api_key       the player's key: session memory only, dies with the session;
-                     also the string the error report scrubs.
-      _llm_selection this game's model, its rescue model from the catalogue, and the key
-                     if a player paid. Set on the GAME_LLM ContextVar as the task's first
-                     act, so the model factory uses it instead of the environment.
-                     None = nothing was chosen; the environment decides (CLI, batch).
+    What travels to the browsers.
+      translator    turns each engine part into zero or more typed events. Stateful:
+                    it keeps its own view of roles and the running seq counter.
+      log           every durable event, in seq order. A reconnecting viewer is caught
+                    up from this list; the repository is fed its tail as it grows.
+      game_over     flips True on the game_over event. From then on the stream route
+                    treats every viewer as an observer and sends the held-back events.
 
-    The wire — what viewers consume:
-      translator   the converter MACHINE: stream parts in, 0..N typed events out.
-                   Stateful (its own shadow of game state + the global seq counter).
-      log          the RECORD: every durable event in seq order. Reconnect = replay
-                   this list; the injected repository persists each streamed tail.
-      game_over    the permission flip (ruling R7): once True, entitled() treats
-                   every viewer as an observer and the withheld backlog may flush.
+    Bookmarks for the write-through: how much of the above is already in the database,
+    so each save writes only what came after.
+      _saved_event_count  how many events from the front of the log are saved.
+      _saved_humans       the human seat list as last written to the game row.
 
-    The human turn, where the game waits:
-      human_players    which seats the ENGINE dealt to humans (read from the
-                       INITIALIZE_GAME part); served by GET /games so the client
-                       knows whose seats to render.
-      _seat_tokens     the per-joiner secrets, in join order. Join order IS deal
-                       order, so token i owns human_players[i] — seat_for_token()
-                       is the proof-of-identity lookup behind turns, private event
-                       tiers, and the status "you" field.
-      pending_requests the questions the engine is waiting on, keyed by seat. A dict
-                       because a parallel step (night actions, votes) can ask several
-                       human seats at once; sequential phases hold one entry. It does
-                       two jobs: the keys say which seats still owe an answer (the
-                       status route, the sweeper and recovery read that), and each
-                       value holds that turn's rules, which the answer is checked
-                       against when it arrives. The full request never leaves the
-                       server; the wire carries only the slim input_request event.
-      _pending_ids     seat -> LangGraph interrupt id, for the id-addressed batch
-                       resume (multi-seat only; a lone answer resumes bare-value,
-                       the path proven in live HITL games).
-      _pending_answers the hand-off between the HTTP world and the game task: one
-                       empty Future per parked seat, created at park time. submit_turn
-                       crosses the seat off pending and sets the answer on its Future;
-                       _collect_answers awaits them all (gather = the barrier) and
-                       resumes the graph with the batch in one Command. A Future takes
-                       one value only, and the task waits on the exact object created
-                       at park time — always set the answer in place, never replace
-                       the dict entry.
+    The human turn, where the game waits.
+      human_players     which seats the engine dealt to humans, read from its first
+                        part. Served by GET /games so the client knows whose seats to
+                        draw.
+      _seat_tokens      each joiner's secret, in join order. Join order is deal order,
+                        so token i owns human_players[i]; seat_for_token() is the
+                        proof of identity behind turns, private event tiers and the
+                        status "you" field.
+      pending_requests  the questions the engine is waiting on, keyed by seat. A dict
+                        because a parallel step (night actions, votes) can ask several
+                        human seats at once. Two jobs: the keys say which seats still
+                        owe an answer (the status route, the sweeper and recovery read
+                        that), and each value holds that turn's rules, which the
+                        answer is checked against. The full request never leaves the
+                        server; the wire carries only the slim input_request event.
+      _pending_ids      the engine's own id for each parked question, so a batch of
+                        answers can be filed back under the names the engine expects.
+      _pending_answers  one empty Future per parked seat, created at park time: the
+                        hand-off between the HTTP world and the game task. submit_turn
+                        sets the answer on it; _collect_answers waits for all of them
+                        and resumes the engine with the batch. A Future takes one
+                        value only, and the task waits on the exact object created at
+                        park time, so the answer is always set in place, never by
+                        replacing the entry.
+      clocks            the SeatClocks: one AFK timer per waiting seat. It shares the
+                        pending_requests dict, asks the session who is present, and
+                        answers an expired turn through submit_turn as a delegate.
+                        Multi-human tables only.
+      parked_since      when the current batch of questions was asked; None while the
+                        engine runs. The retention sweeper reads it.
+      awaiting_key      True for a key-funded game rebuilt after a restart, until a
+                        seat holder supplies the key again (the live registry's
+                        resume_with_key). No task runs during the wait; the sweeper
+                        treats it like a parked turn.
 
-    The game's lifecycle:
-      _task         the asyncio task running the game (created by start()).
-      _finished     awaitable "ended or died" signal, set by _end().
-      error         the death report: a game task that dies lands its exception here
-                    (key-redacted) instead of vanishing; GET /games serves it.
-      parked_since  when the current batch of questions was asked; None while the
-                    engine runs. The retention sweeper reads it.
-      awaiting_key  True for a key-funded game rebuilt after a restart, until a seat
-                    holder supplies the key again; no task runs during the wait.
-      clocks        the SeatClocks: per-seat AFK timers, told about presence by the
-                    streams and answered by the delegate action.
-      on_idle       set by the live registry; fired once, when the game has ended and
-                    its last viewer has gone.
+    The streams' lifecycle.
+      _subscribers  one queue per open event stream, keyed by the queue because that is
+                    the handle the route holds. The value is the connection's seat
+                    token, "" for a spectator, mapped to a seat on every check rather
+                    than once at connect time, since seats are dealt after streams open.
+      _tracker      the PacingTracker; its snapshots are pushed into the same queues.
 
-    The streams' lifecycle:
-      _subscribers  one queue per open event stream, with that connection's seat token
-                    ("" for a spectator); _deliver fans events into these.
-      _tracker      the PacingTracker (public-knowledge progress bars), published the
-                    same way.
+    The game's own lifecycle.
+      _task       the asyncio task running the game, created by start() or
+                  resume_game().
+      _finished   the "ended" flag, set by _end() on every way out; wait_finished()
+                  awaits it, ended reads it.
+      error       why the game died, with the key redacted, or the reason it was
+                  dropped. GET /games serves it as the ended card's text.
+      on_idle     set by the live registry. Fired once, when the game has ended and its
+                  last viewer has gone, so the registry can forget this object.
     """
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
@@ -158,16 +174,17 @@ class GameSession:
                  seat_tokens: Sequence[str] = (), graph=None,
                  repository: GameRepository | None = None) -> None:
 
+        # Which model runs, and who pays.
         self._api_key = api_key
         if api_key and not model:
-            model = next(iter(SUPPORTED_GAME_MODELS))  # a bare key runs the default model
+            model = next(iter(SUPPORTED_GAME_MODELS))
         row = SUPPORTED_GAME_MODELS.get(model)
         self._llm_selection = GameLLM(
             api_key=api_key, model=model,
             rescue_model=row.rescue_model if row else None,
         ) if api_key or model else None
 
-        # Engine bootstrap (+ the memory-seeding side effect).
+        # Engine bootstrap.
         run = normalize_run_config(run_config)
         seed_memory_from_config(run.memory_persistence, target_store=store)
         self.config = build_runnable_config(run)
@@ -177,56 +194,34 @@ class GameSession:
         self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
 
-        # What travels to the browsers: the translator turns engine output into events,
-        # the log keeps every event in order, and game_over is the switch that lets
-        # every viewer see everything once the game has ended.
+        # What travels to the browsers, and how much of it is already saved.
         self.translator = Translator()
         self.log: list[ev.DurableEvent] = []
         self.game_over = False
-
-        # Track how many events are persisted in the database so _persist_tail only
-        # writes events after that.
         self._saved_event_count = 0
-        # Track human seats persisted in database
         self._saved_humans: list[str] = []
 
-        # The human seat (HITL).
+        # The human turn.
         self._seat_tokens = list(seat_tokens)
         self.human_players: list[str] = []
-        # The question each seat still owes an answer to; a seat leaves when it answers.
         self.pending_requests: dict[str, HumanTurnRequest] = {}
-        # The engine's id for each parked question, so a batch of answers can be filed back.
         self._pending_ids: dict[str, str] = {}
-        # One slot per parked seat, empty until that seat answers; emptied as a batch.
         self._pending_answers: dict[str, asyncio.Future] = {}
-        # AFK (seat_continuity.md §4–§5): the stopwatches live in SeatClocks; the session
-        # lends it presence and the delegate action. Multi-human tables only.
         self.clocks = SeatClocks(
             self.game_id, self.pending_requests, enabled=len(self._seat_tokens) > 1,
             seat_present=self.seat_present, anyone_present=lambda: self.humans_present,
             delegate=lambda seat: self.submit_turn({"delegate": True}, seat=seat))
-        # When the current batch of questions was asked; None while the graph runs. The
-        # retention sweeper reads it: a parked game nobody is watching has a shelf life.
         self.parked_since: datetime | None = None
-        # A game that ran on a player's key, rebuilt after a restart: the key was never
-        # stored, so it waits here, no task running, until a seat holder supplies one
-        # again (LiveGameRegistry.resume_with_key). The sweeper treats the wait like a parked turn.
         self.awaiting_key: bool = False
 
-        # Delivery to the browsers. One queue per open event stream, keyed by the queue
-        # because that is the handle the route holds; the value is the connection's seat
-        # token, "" for a spectator. The token is mapped to a seat on every check rather
-        # than once at connect time, since seats are dealt after streams open.
+        # The streams' lifecycle.
         self._subscribers: dict[asyncio.Queue, str] = {}
         self._tracker = PacingTracker(self.publish_pacing)
 
-        # The session's own lifecycle: the task running the game, the flag set when it
-        # ends, and the error it ended with, if any.
-        self.error: str | None = None
-        self._finished = asyncio.Event()
+        # The game's own lifecycle.
         self._task: asyncio.Task | None = None
-        # Set by the live registry. Called once, when the game has ended and its last
-        # viewer has gone, so the registry can forget this object; the row serves it on.
+        self._finished = asyncio.Event()
+        self.error: str | None = None
         self.on_idle: Callable[[], None] | None = None
 
     # -- the game's lifecycle: start, run, end ---------------------------------------------
