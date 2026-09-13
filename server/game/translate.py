@@ -7,12 +7,12 @@ into zero or more of the typed events in server.schemas.events, and stamps each 
 game's running ``seq``. It reads nothing else and emits nothing else. Who may see an event
 is decided at delivery, and the progress bars are built in game/pacing.py.
 
-There is one handler per graph node, named ``_h_<node>`` and listed in the order the nodes
-run in a game. A handler reads that node's delta and returns the events it implies, then
-confirms that every key in the delta either became an event or is listed in _FOLDS as
-deliberately dropped. A key that is neither raises TranslationError, so a new state field
-can never go silently missing from the wire. The root wrapper nodes are skipped: their
-delta repeats what their subgraph already streamed.
+Every graph node is registered once, in the order the nodes run in a game, with the set of
+state fields it writes. A node with a handler turns its delta into events; a node without
+one writes nothing the browser needs. Either way, a delta key outside the registered set
+raises TranslationError, so a new state field can never go silently missing from the wire,
+and an unregistered node raises too. The root wrapper nodes (DAY_PHASE and the five night
+phases) are skipped: their delta repeats what their subgraph already streamed.
 
 The translator keeps a small copy of game state, rebuilt from the chunks alone, and never
 asks the graph for it: the stream runs ahead of the checkpoint, and behind a slow viewer
@@ -29,7 +29,7 @@ Not yet emitted: day_summary_structured, whose structured form never reaches sta
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
 from pydantic_core import to_jsonable_python
@@ -39,23 +39,65 @@ from server.schemas import events as ev
 
 
 class TranslationError(RuntimeError):
-    """A stream chunk the wire contract does not account for — fail loudly, never skip."""
+    """A stream chunk the wire contract does not account for. Fail loudly, never skip."""
 
 
-def scope_of(chunk: Mapping[str, Any]) -> str:
-    """Which graph a stream chunk came from: the phase subgraph's name (``DAY_PHASE``,
-    ``WOLF_NIGHT_PHASE``, ...) or ``root`` for the parent graph."""
+def get_source_graph(chunk: Mapping[str, Any]) -> str:
+    """The graph a chunk came from: a phase subgraph's name (``DAY_PHASE``,
+    ``WOLF_NIGHT_PHASE``, ...) or ``root`` for the parent graph. Read from the chunk's
+    namespace, which lists the path down to the subgraph as ``NODE:task-id`` entries."""
     ns = chunk.get("ns") or ()
     return ns[0].split(":")[0] if ns else "root"
 
 
-def is_replayed(data: Any) -> bool:
-    """True for a chunk the engine is re-emitting rather than producing: LangGraph marks
-    it ``__metadata__: {cached: True}``. Its events and pacing ticks already went out."""
+def is_cached(chunk: Mapping[str, Any]) -> bool:
+    """True for a chunk the engine is re-emitting from its cache rather than producing,
+    tagged ``__metadata__: {cached: True}``. Its events and pacing ticks already went out."""
+    data = chunk.get("data")
     if not isinstance(data, Mapping):
         return False
     return bool((data.get("__metadata__") or {}).get("cached"))
 
+
+# --- the node registry --------------------------------------------------------------------
+
+Handler = Callable[["Translator", Mapping[str, Any]], list[ev.DurableEvent]]
+
+# node name (lower-cased) -> (handler or None, the state fields the node may write;
+# None = unchecked)
+_NODES: dict[str, tuple[Handler | None, frozenset[str] | None]] = {}
+
+
+def _register(name: str, writes: Iterable[str] | None, handler: Handler | None) -> None:
+    key = name.lower()
+    if key in _NODES:
+        raise RuntimeError(f"node {name!r} registered twice")
+    _NODES[key] = (handler, None if writes is None else frozenset(writes))
+
+
+def node(name: str, *, writes: Iterable[str] | None = ()):
+    """Register the decorated method as the handler for graph node ``name``. ``writes`` is
+    every state field the node may commit, translated or not."""
+    def register(handler: Handler) -> Handler:
+        _register(name, writes, handler)
+        return handler
+    return register
+
+
+def silent_node(name: str, *, writes: Iterable[str] | None = ()) -> None:
+    """Register a graph node that produces no events. Its writes are still checked."""
+    _register(name, writes, None)
+
+
+# Parent-graph nodes that run a subgraph. Their root delta repeats the subgraph's chunks.
+_SUBGRAPH_NODES = {
+    "DAY_PHASE",
+    "WOLF_NIGHT_PHASE",
+    "HEALER_NIGHT_PHASE",
+    "INVESTIGATOR_NIGHT_PHASE",
+    "SERIAL_KILLER_NIGHT_PHASE",
+    "VIGILANTE_NIGHT_PHASE",
+}
 
 # Human-turn `phase` -> wire action_kind (the two channel-named turns get UX names).
 _ACTION_KINDS = {
@@ -69,41 +111,18 @@ _ACTION_KINDS = {
     "vigilante_target": "vigilante_target",
 }
 
-# Root-level wrapper nodes whose deltas are re-emissions of subgraph commits (ignored whole),
-# and the subgraph namespaces those commits authoritatively translate under.
-_WRAPPER_NODES = {
-    "DAY_PHASE",
-    "WOLF_NIGHT_PHASE",
-    "HEALER_NIGHT_PHASE",
-    "INVESTIGATOR_NIGHT_PHASE",
-    "SERIAL_KILLER_NIGHT_PHASE",
-    "VIGILANTE_NIGHT_PHASE",
-}
-# Explicitly-folded keys per (scope, node): committed state whose information content already
-# ships in another form (or is pure engine bookkeeping). See frontend/docs/event_derivation.md.
-_FOLDS: dict[tuple[str, str], set[str]] = {
-    ("root", "INITIALIZE_GAME"): {
-        "day_channel", "day_summaries", "wolf_channel", "day_votes",
-        "investigator_results", "surviving_wolves", "surviving_villagers",
-        "current_day", "human_players", "no_lynch_streak", "winner",
-        "human_player",  # pre-rename spelling: the frozen fixture tape predates multi-human
-    },
-    ("root", "DAY_RESOLUTION"): {
-        "day_summaries", "voted_player", "no_lynch_streak",
-        "healer_player", "investigator_player", "serial_killer_player", "vigilante_player",
-    },
-    ("root", "NIGHT_RESOLUTION"): {
-        "day_summaries",
-        "healer_player", "investigator_player", "serial_killer_player", "vigilante_player",
-    },
-    ("root", "ONE_MORE_DAY"): {
-        "day_votes", "voted_player", "wolves_kill_target", "healer_target",
-        "investigator_target", "serial_killer_target", "vigilante_target",
-    },
-    ("DAY_PHASE", "SCHEDULE"): set(),
-    ("WOLF_NIGHT_PHASE", "PREPARE_WOLF_NIGHT"): {"current_round"},
-    ("WOLF_NIGHT_PHASE", "START_WOLF_VOTE"): set(),
-}
+# The parent state's night-role bookkeeping, re-committed by the resolution nodes.
+_ROLE_HOLDERS = {"healer_player", "investigator_player", "serial_killer_player",
+                 "vigilante_player"}
+_SURVIVORS = {"surviving_wolves", "surviving_villagers"}
+
+
+def _first_time(seen: set, key) -> bool:
+    """Record ``key`` and say whether it was new. The ship-once guard."""
+    if key in seen:
+        return False
+    seen.add(key)
+    return True
 
 
 class Translator:
@@ -187,15 +206,6 @@ class Translator:
         # wolves tracks SURVIVING wolves live (the chunks update it); replay the deaths.
         self.wolves = [w for w in self.wolves if w not in dead]
 
-    # ---- context helpers --------------------------------------------------------------
-
-    def _role_holder(self, role: str) -> str | None:
-        return next((p for p, r in self.roles.items() if r == role), None)
-
-    def _emit(self, cls, *, day: int | None = None, **fields) -> ev.DurableEvent:
-        self.seq += 1
-        return cls(seq=self.seq, day=self.current_day if day is None else day, **fields)
-
     # ---- entry point ------------------------------------------------------------------
 
     def translate(self, chunk: Mapping[str, Any], *,
@@ -206,83 +216,112 @@ class Translator:
         # A live chunk carries engine objects (Pydantic models, LangGraph's Interrupt,
         # enums); the fixture carries their JSON. The handlers read the JSON shape.
         chunk = to_jsonable_python(chunk)
-        data = chunk["data"]
         if chunk["type"] == "custom":
-            return self._custom(data)
+            return self._turn_tick(chunk["data"])
         if chunk["type"] != "updates":
             raise TranslationError(f"unexpected stream chunk type: {chunk['type']}")
-        if is_replayed(data):
+        if is_cached(chunk):
             return []  # a re-streamed committed step: its events already shipped
 
-        ns = chunk.get("ns") or ()
-        scope = scope_of(chunk)
-
+        graph = get_source_graph(chunk)
         out: list[ev.DurableEvent] = []
-        for node, delta in data.items():
-            if node == "__interrupt__":
+        for name, delta in chunk["data"].items():
+            if name == "__interrupt__":
                 # Every interrupt streams twice (subgraph namespace, then the root
                 # mirror). Only the root copy ships, or each input_request would go
                 # out twice under two seqs.
-                if not ns:
-                    out.extend(self._interrupt(delta, deadlines or {}))
-                continue
-            if node.startswith("__"):
-                continue
-            out.extend(self._node(scope, node, delta or {}))
+                if graph == "root":
+                    out.extend(self._input_requests(delta, deadlines or {}))
+            elif name.startswith("__"):
+                continue  # engine metadata, never a node
+            elif graph == "root" and name in _SUBGRAPH_NODES:
+                continue  # already translated from the subgraph's own chunks
+            else:
+                out.extend(self._dispatch(name, delta or {}))
         return out
 
-    # ---- per-source translation -------------------------------------------------------
+    def _dispatch(self, name: str, delta: Mapping[str, Any]) -> list[ev.DurableEvent]:
+        try:
+            handler, writes = _NODES[name.lower()]
+        except KeyError:
+            raise TranslationError(f"unregistered graph node {name!r}") from None
+        unexpected = set(delta) - writes if writes is not None else set()
+        if unexpected:
+            raise TranslationError(
+                f"{name} committed unexpected keys {sorted(unexpected)}: add an event or "
+                "register the key as a write (frontend/docs/event_derivation.md)")
+        return handler(self, delta) if handler else []
 
-    def _custom(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
+    # ---- helpers ----------------------------------------------------------------------
+
+    def _emit(self, cls, *, day: int | None = None, **fields) -> ev.DurableEvent:
+        self.seq += 1
+        return cls(seq=self.seq, day=self.current_day if day is None else day, **fields)
+
+    def _role_holder(self, role: str) -> str | None:
+        return next((p for p, r in self.roles.items() if r == role), None)
+
+    def _turn_tick(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
+        # The one custom chunk: the engine's "X is thinking" tick, written from a routing
+        # edge so a re-run node cannot fire it twice.
         if payload.get("event") == "turn_started":
-            return [self._emit(ev.TurnStarted,
-                               day=payload["day"], player=payload["player"])]
+            return [self._emit(ev.TurnStarted, day=payload["day"], player=payload["player"])]
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
-    def _interrupt(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:
+    def _input_requests(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:
         out = []
         for item in interrupts:
             req = item["value"]
-            phase = req["phase"]
-            kind = _ACTION_KINDS.get(phase)
+            kind = _ACTION_KINDS.get(req["phase"])
             if kind is None:
-                raise TranslationError(f"unknown human-turn phase: {phase!r}")
+                raise TranslationError(f"unknown human-turn phase: {req['phase']!r}")
             player = req["player_id"]
             out.append(self._emit(
-                ev.InputRequest,
-                day=req["day"],
-                player=player,
-                action_kind=kind,
-                candidates=list(req.get("valid_targets", []) or []),
+                ev.InputRequest, day=req["day"], player=player, action_kind=kind,
+                candidates=list(req.get("valid_targets") or []),
                 deadline=deadlines.get(player),
             ))
         return out
 
-    def _node(self, scope: str, node: str, delta: Mapping[str, Any]) -> list[ev.DurableEvent]:
-        if scope == "root" and node in _WRAPPER_NODES:
-            return []  # re-emission of subgraph commits already translated at their own scope
-        handler = getattr(self, f"_h_{node.lower()}", None)
-        if handler is None:
-            if (scope, node) in _FOLDS:
-                self._check_folds(scope, node, delta, consumed=set())
-                return []
-            raise TranslationError(f"no handler or fold entry for ({scope}, {node})")
-        return handler(scope, node, delta)
+    def _gm_messages(self, delta):
+        return [self._emit(ev.GmMessage, day=e["day"], channel_seq=e["seq"], text=e["message"])
+                for e in delta.get("day_channel") or [] if e["player"] == "game_master"]
 
-    def _check_folds(self, scope: str, node: str, delta: Mapping[str, Any],
-                     consumed: set[str]) -> None:
-        folded = _FOLDS.get((scope, node), set())
-        unaccounted = set(delta) - consumed - folded
-        if unaccounted:
+    def _strategy_updates(self, delta):
+        # A strategy note is an overwrite, so a re-delivered identical note ships nothing.
+        strategies = delta.get("agent_strategies") or {}
+        out = [self._emit(ev.StrategyUpdate, player=player, strategy=text)
+               for player, text in strategies.items()
+               if self._strategies.get(player) != text]
+        self._strategies.update(strategies)
+        return out
+
+    def _roster_updates(self, delta):
+        wolves = delta.get("surviving_wolves")
+        villagers = delta.get("surviving_villagers")
+        if wolves is None and villagers is None:
+            return []  # no death: rosters unchanged, no event
+        if wolves is None or villagers is None:
             raise TranslationError(
-                f"({scope}, {node}) committed unaccounted keys {sorted(unaccounted)} — "
-                "add an event or an explicit fold (frontend/docs/event_derivation.md)"
-            )
+                "resolution committed only one survivor bucket; the engine always commits "
+                "both together, refusing to ship a partial roster")
+        self.wolves = list(wolves)
+        # The public roster is the union; the split by faction stays off the public tier.
+        return [
+            self._emit(ev.RosterUpdate, surviving_players=sorted([*villagers, *wolves])),
+            self._emit(ev.PackRosterUpdate, surviving_wolves=list(wolves)),
+        ]
 
-    # ---- handlers: lifecycle ----------------------------------------------------------
+    # ---- lifecycle --------------------------------------------------------------------
 
-    def _h_initialize_game(self, scope, node, delta):
-        self.roles = dict(delta.get("roles", {}))
+    @node("INITIALIZE_GAME", writes={
+        "roles", "vigilante_bullets", "current_day", "human_players", "winner",
+        "day_channel", "day_summaries", "wolf_channel", "day_votes", "investigator_results",
+        "no_lynch_streak", *_ROLE_HOLDERS, *_SURVIVORS,
+        "human_player",  # pre-rename spelling: the captured game predates multi-human
+    })
+    def _initialize_game(self, delta):
+        self.roles = dict(delta.get("roles") or {})
         self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
         self.current_day = delta.get("current_day", 1)
         bullets = delta.get("vigilante_bullets", 0)
@@ -290,8 +329,7 @@ class Translator:
         for role in self.roles.values():
             cast_counts[role] = cast_counts.get(role, 0) + 1
 
-        out = [self._emit(ev.GameStarted,
-                          seats=list(self.roles), cast_role_counts=cast_counts)]
+        out = [self._emit(ev.GameStarted, seats=list(self.roles), cast_role_counts=cast_counts)]
         for player, role in self.roles.items():
             out.append(self._emit(
                 ev.RoleAssigned, player=player, role=role,
@@ -300,43 +338,19 @@ class Translator:
             ))
         out.append(self._emit(ev.RolesAssigned, roles=dict(self.roles)))
         out.append(self._emit(ev.PhaseChange, phase="day"))
-        self._check_folds(scope, node, delta,
-                          consumed={"roles", "vigilante_bullets", "healer_player",
-                                    "investigator_player", "serial_killer_player",
-                                    "vigilante_player"})
         return out
 
-    def _h_one_more_day(self, scope, node, delta):
-        self.current_day = delta.get("current_day", self.current_day + 1)
-        self._targets = {}
-        self._wolf_votes.clear()
-        self._check_folds(scope, node, delta, consumed={"current_day"})
-        return [self._emit(ev.PhaseChange, phase="day")]
+    # ---- day --------------------------------------------------------------------------
 
-    def _h_night_start(self, scope, node, delta):
-        # NIGHT_START runs only when the day did not end the game, so emitting here can
-        # never announce a night after a game-ending day.
-        self._check_folds(scope, node, delta, consumed=set())
-        return [self._emit(ev.PhaseChange, phase="night")]
+    silent_node("SCHEDULE")
 
-    def _h_end_game(self, scope, node, delta):
-        out = self._gm_messages(delta)
-        out.append(self._emit(ev.GameOver, winner=delta.get("winner")))
-        self._check_folds(scope, node, delta, consumed={"day_channel", "winner"})
-        return out
-
-    def _h_post_game_analysis(self, scope, node, delta):
-        return []  # nothing on the wire: post-game memory work is not part of the game record
-
-    # ---- handlers: day ----------------------------------------------------------------
-
-    def _h_discuss(self, scope, node, delta):
+    @node("discuss", writes={"day_channel", "agent_strategies"})
+    def _discuss(self, delta):
         out = []
-        for entry in delta.get("day_channel", []) or []:
+        for entry in delta.get("day_channel") or []:
             day, cseq, player = entry["day"], entry["seq"], entry["player"]
-            if (day, cseq) in self._seen_day_entries:
+            if not _first_time(self._seen_day_entries, (day, cseq)):
                 continue  # already shipped (a re-run or a restart replay)
-            self._seen_day_entries.add((day, cseq))
             if entry.get("passed"):
                 out.append(self._emit(
                     ev.PassMarker, day=day, channel_seq=cseq, player=player,
@@ -351,99 +365,129 @@ class Translator:
             if firing is not None:
                 out.append(self._emit(
                     ev.FiringReasonAnnotation, day=day, about_channel_seq=cseq, player=player,
-                    tier=firing["tier"], owes=list(firing.get("owes", []) or []),
+                    tier=firing["tier"], owes=list(firing.get("owes") or []),
                 ))
-            targets = entry.get("addressed_targets", []) or []
+            targets = entry.get("addressed_targets") or []
             if targets:
                 out.append(self._emit(
                     ev.AddressedTargetsAnnotation, day=day, about_channel_seq=cseq,
                     player=player,
                     targets=[ev.WireAddressedTarget(
-                        target=t["target"],
-                        addressed_form=t["addressed_form"],
-                        stance=t["stance"],
-                    ) for t in targets],
+                        target=t["target"], addressed_form=t["addressed_form"],
+                        stance=t["stance"]) for t in targets],
                 ))
         out.extend(self._strategy_updates(delta))
-        self._check_folds(scope, node, delta, consumed={"day_channel", "agent_strategies"})
         return out
 
-    def _h_vote(self, scope, node, delta):
-        for ballot in delta.get("day_votes", []) or []:
+    @node("SUMMARIZE_DAY_DISCUSSION", writes={"day_summaries"})
+    def _summarize_day_discussion(self, delta):
+        return [self._emit(ev.DaySummary, day=s["day"], summary=s["summary"])
+                for s in delta.get("day_summaries") or []]
+
+    @node("START_VOTING")
+    def _start_voting(self, delta):
+        return [self._emit(ev.PhaseChange, phase="voting")]
+
+    @node("vote", writes={"day_votes", "agent_strategies"})
+    def _vote(self, delta):
+        for ballot in delta.get("day_votes") or []:
             # Last write wins: a human interrupt re-runs this step, and the engine keeps
             # the re-run's ballot, which may differ from the one streamed before.
             self._day_ballots[ballot["voter"]] = ballot["votee"]
-        out = self._strategy_updates(delta)
-        self._check_folds(scope, node, delta, consumed={"day_votes", "agent_strategies"})
-        return out
+        return self._strategy_updates(delta)
 
     # The human seat votes through the uncached twin node: same delta, same handling.
-    _h_vote_human = _h_vote
+    node("vote_human", writes={"day_votes", "agent_strategies"})(_vote)
 
-    def _h_start_voting(self, scope, node, delta):
-        self._check_folds(scope, node, delta, consumed=set())
-        return [self._emit(ev.PhaseChange, phase="voting")]
-
-    def _h_collect_votes(self, scope, node, delta):
+    @node("COLLECT_VOTES")
+    def _collect_votes(self, delta):
         # Content from the buffer, timing from node identity (its own delta is empty).
         out = [self._emit(ev.VoteCast, voter=voter, votee=votee)
                for voter, votee in self._day_ballots.items()]
         self._last_day_ballots = list(self._day_ballots.items())
         self._day_ballots.clear()
-        self._check_folds(scope, node, delta, consumed=set())
         return out
 
-    def _h_summarize_day_discussion(self, scope, node, delta):
-        out = [self._emit(ev.DaySummary, day=s["day"], summary=s["summary"])
-               for s in delta.get("day_summaries", []) or []]
-        self._check_folds(scope, node, delta, consumed={"day_summaries"})
-        return out
-
-    def _h_day_resolution(self, scope, node, delta):
+    @node("DAY_RESOLUTION", writes={
+        "day_channel", "dead_roster", "voted_player", "no_lynch_streak", "day_summaries",
+        *_SURVIVORS, *_ROLE_HOLDERS,
+    })
+    def _day_resolution(self, delta):
         out = self._gm_messages(delta)
         tally = tally_day_vote(votee for _, votee in self._last_day_ballots)
         voted = delta.get("voted_player")
         if tally.lynched != voted:
             raise TranslationError(
                 f"kernel/delta mismatch: tally lynched {tally.lynched!r} but the node "
-                f"committed voted_player={voted!r} — inputs drifted, refusing to ship"
-            )
+                f"committed voted_player={voted!r}; inputs drifted, refusing to ship")
+        # dead_roster: the lynch death record rides inside lynch_result (player + role).
         out.append(self._emit(
-            ev.LynchResult,
-            outcome=tally.outcome,
-            player=voted,
+            ev.LynchResult, outcome=tally.outcome, player=voted,
             role=self.roles.get(voted) if voted else None,
             vote_counts=tally.vote_counts,
             no_lynch_streak=delta.get("no_lynch_streak", 0),
         ))
         out.extend(self._roster_updates(delta))
-        # dead_roster: the lynch death record rides INSIDE lynch_result (player + role).
-        self._check_folds(scope, node, delta,
-                          consumed={"day_channel", "dead_roster",
-                                    "surviving_wolves", "surviving_villagers"})
         return out
 
-    # ---- handlers: night --------------------------------------------------------------
+    @node("NIGHT_START")
+    def _night_start(self, delta):
+        # NIGHT_START runs only when the day did not end the game, so emitting here can
+        # never announce a night after a game-ending day.
+        return [self._emit(ev.PhaseChange, phase="night")]
 
-    def _h_healer_act(self, scope, node, delta):
-        return self._night_act("healer", "healer_target", scope, node, delta)
+    # ---- night ------------------------------------------------------------------------
 
-    def _h_investigator_act(self, scope, node, delta):
-        return self._night_act("investigator", "investigator_target", scope, node, delta)
+    silent_node("PREPARE_WOLF_NIGHT", writes={"current_round"})
 
-    def _h_serial_killer_act(self, scope, node, delta):
-        return self._night_act("serial_killer", "serial_killer_target", scope, node, delta)
-
-    def _h_vigilante_act(self, scope, node, delta):
-        return self._night_act("vigilante", "vigilante_target", scope, node, delta)
-
-    def _night_act(self, role, target_key, scope, node, delta):
+    @node("WOLF_NIGHT_DISCUSS", writes={"wolf_channel", "agent_strategies"})
+    def _wolf_night_discuss(self, delta):
         out = []
+        for entry in delta.get("wolf_channel") or []:
+            if entry.get("passed"):
+                continue  # technical pass: hidden from the pack, no wire event defined
+            day, round_, wolf = entry["day"], entry["round"], entry["wolf"]
+            if not _first_time(self._seen_wolf_msgs, (day, round_, wolf)):
+                continue  # already shipped (a re-run or a restart replay)
+            out.append(self._emit(ev.WolfMessage, day=day, round=round_, wolf=wolf,
+                                  message=entry["message"]))
+        out.extend(self._strategy_updates(delta))
+        return out
+
+    silent_node("START_WOLF_VOTE")
+
+    @node("WOLF_NIGHT_VOTE", writes={"wolf_channel", "agent_strategies"})
+    def _wolf_night_vote(self, delta):
+        # Buffered: blind while voting, flushed with the tally. The runtime streams each
+        # wolf's vote as it lands, so the holding has to happen here.
+        for entry in delta.get("wolf_channel") or []:
+            if entry.get("vote"):
+                # Last write wins per wolf, as with day ballots.
+                self._wolf_votes[entry["wolf"]] = entry["vote"]
+        return self._strategy_updates(delta)
+
+    # A human wolf votes through the uncached twin node: same delta, same handling.
+    node("WOLF_NIGHT_VOTE_HUMAN", writes={"wolf_channel", "agent_strategies"})(_wolf_night_vote)
+
+    @node("COLLECT_WOLF_VOTES", writes={"wolves_kill_target"})
+    def _collect_wolf_votes(self, delta):
+        out = [self._emit(ev.WolfVote, wolf=wolf, votee=votee)
+               for wolf, votee in self._wolf_votes.items()]
+        self._wolf_votes.clear()
+        target = delta.get("wolves_kill_target")
+        if target is not None:
+            self._targets["wolves_kill_target"] = target
+            out.append(self._emit(ev.WolfKillDecided, target=target))
+        return out
+
+    def _night_act(self, role: str, delta):
+        target_key = f"{role}_target"
         target = delta.get(target_key)
         # The vigilante's no-shot sentinel. The wrapper node turns it into None before it
         # reaches root state; the subgraph chunk still carries it raw. No act, no event.
         if target == "hold_fire":
             target = None
+        out = []
         if target is not None:
             self._targets[target_key] = target
             out.append(self._emit(ev.NightAction,
@@ -454,50 +498,19 @@ class Translator:
             # a restart can rebuild the map from the log.
             out.extend(self._strategy_updates(
                 {"agent_strategies": {self._role_holder(role): strategy}}))
-        self._check_folds(scope, node, delta, consumed={target_key, "updated_strategy"})
         return out
 
-    def _h_wolf_night_discuss(self, scope, node, delta):
-        out = []
-        for entry in delta.get("wolf_channel", []) or []:
-            if entry.get("passed"):
-                continue  # technical pass: hidden from the pack, no wire event defined
-            day, round_, wolf = entry["day"], entry["round"], entry["wolf"]
-            if (day, round_, wolf) in self._seen_wolf_msgs:
-                continue  # already shipped (a re-run or a restart replay)
-            self._seen_wolf_msgs.add((day, round_, wolf))
-            out.append(self._emit(ev.WolfMessage, day=day, round=round_, wolf=wolf,
-                                  message=entry["message"]))
-        out.extend(self._strategy_updates(delta))
-        self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
-        return out
+    for _role in ("healer", "investigator", "serial_killer", "vigilante"):
+        node(f"{_role}_act", writes={f"{_role}_target", "updated_strategy"})(
+            lambda self, delta, role=_role: self._night_act(role, delta))
+    del _role
 
-    def _h_wolf_night_vote(self, scope, node, delta):
-        # Buffered: blind while voting, flushed with the tally. The runtime streams each
-        # wolf's vote as it lands, so the holding has to happen here.
-        for entry in delta.get("wolf_channel", []) or []:
-            if entry.get("vote"):
-                # Last write wins per wolf, as with day ballots.
-                self._wolf_votes[entry["wolf"]] = entry["vote"]
-        out = self._strategy_updates(delta)
-        self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
-        return out
-
-    # A human wolf votes through the uncached twin node (see the wolf graph wiring).
-    _h_wolf_night_vote_human = _h_wolf_night_vote
-
-    def _h_collect_wolf_votes(self, scope, node, delta):
-        out = [self._emit(ev.WolfVote, wolf=wolf, votee=votee)
-               for wolf, votee in self._wolf_votes.items()]
-        self._wolf_votes.clear()
-        target = delta.get("wolves_kill_target")
-        if target is not None:
-            self._targets["wolves_kill_target"] = target
-            out.append(self._emit(ev.WolfKillDecided, target=target))
-        self._check_folds(scope, node, delta, consumed={"wolves_kill_target"})
-        return out
-
-    def _h_night_resolution(self, scope, node, delta):
+    @node("NIGHT_RESOLUTION", writes={
+        "day_channel", "dead_roster", "wolf_channel", "investigator_results",
+        "vigilante_results", "vigilante_bullets", "day_summaries",
+        *_SURVIVORS, *_ROLE_HOLDERS,
+    })
+    def _night_resolution(self, delta):
         out = self._gm_messages(delta)
 
         # Compute the deaths with the engine's own rules, then compare with what the
@@ -507,84 +520,57 @@ class Translator:
                                   self._targets.get("vigilante_target"))
         verdicts = resolve_attacks(attacks, self._targets.get("healer_target"),
                                    self._role_holder("serial_killer"))
-        deaths = [ev.NightDeath(player=t, role=self.roles.get(t, ""),
-                                attacker_types=attacks[t])
+        deaths = [ev.NightDeath(player=t, role=self.roles.get(t, ""), attacker_types=attacks[t])
                   for t in sorted(attacks) if verdicts[t] == "killed"]
-        recorded = {d["player"] for d in delta.get("dead_roster", []) or []}
+        recorded = {d["player"] for d in delta.get("dead_roster") or []}
         if {d.player for d in deaths} != recorded:
             raise TranslationError(
                 f"kernel/delta mismatch: derived night deaths {[d.player for d in deaths]} "
-                f"but the node recorded {sorted(recorded)} — refusing to ship"
-            )
+                f"but the node recorded {sorted(recorded)}; refusing to ship")
         save = next((ev.NightSave(player=t, attacker_types=attacks[t])
                      for t in attacks if verdicts[t] == "saved"), None)
         out.append(self._emit(ev.NightResult, deaths=deaths, save=save))
 
         # The GM's whiff note to the pack arrives on the wolf channel.
-        for entry in delta.get("wolf_channel", []) or []:
-            out.append(self._emit(
-                ev.WolfMessage, day=entry["day"], round=entry["round"],
-                wolf=entry["wolf"], message=entry["message"],
-            ))
+        for entry in delta.get("wolf_channel") or []:
+            out.append(self._emit(ev.WolfMessage, day=entry["day"], round=entry["round"],
+                                  wolf=entry["wolf"], message=entry["message"]))
 
         # Seat events: the investigation (the node omits it when the investigator is
         # dead, so no event either), the vigilante's private confirmation, the bullets.
-        for result in delta.get("investigator_results", []) or []:
+        for result in delta.get("investigator_results") or []:
             out.append(self._emit(
                 ev.InvestigationResult, day=result["day"],
                 player=self._role_holder("investigator"),
-                target=result["player_investigated"],
-                role=result["role_revealed"],
+                target=result["player_investigated"], role=result["role_revealed"],
             ))
-        for _note in delta.get("vigilante_results", []) or []:
-            out.append(self._emit(
-                ev.VigilanteConfirmation, player=self._role_holder("vigilante"),
-                target=self._targets.get("vigilante_target"),
-            ))
+        for _note in delta.get("vigilante_results") or []:
+            out.append(self._emit(ev.VigilanteConfirmation, player=self._role_holder("vigilante"),
+                                  target=self._targets.get("vigilante_target")))
         if "vigilante_bullets" in delta:
-            out.append(self._emit(ev.BulletsRemaining,
-                                  player=self._role_holder("vigilante"),
-                                  count=delta.get("vigilante_bullets")))
+            out.append(self._emit(ev.BulletsRemaining, player=self._role_holder("vigilante"),
+                                  count=delta["vigilante_bullets"]))
 
         out.extend(self._roster_updates(delta))
-        self._check_folds(scope, node, delta, consumed={
-            "day_channel", "dead_roster", "wolf_channel", "investigator_results",
-            "vigilante_results", "vigilante_bullets",
-            "surviving_wolves", "surviving_villagers",
-        })
         return out
 
-    # ---- shared fragments -------------------------------------------------------------
+    @node("ONE_MORE_DAY", writes={
+        "current_day", "day_votes", "voted_player", "wolves_kill_target", "healer_target",
+        "investigator_target", "serial_killer_target", "vigilante_target",
+    })
+    def _one_more_day(self, delta):
+        self.current_day = delta.get("current_day", self.current_day + 1)
+        self._targets = {}
+        self._wolf_votes.clear()
+        return [self._emit(ev.PhaseChange, phase="day")]
 
-    def _gm_messages(self, delta):
-        return [self._emit(ev.GmMessage, day=e["day"], channel_seq=e["seq"],
-                           text=e["message"])
-                for e in delta.get("day_channel", []) or []
-                if e["player"] == "game_master"]
+    # ---- end --------------------------------------------------------------------------
 
-    def _strategy_updates(self, delta):
-        # A strategy note is an overwrite, so idempotence is content equality: a replayed
-        # chunk re-delivers the identical note and ships nothing new.
-        strategies = delta.get("agent_strategies", {}) or {}
-        out = [self._emit(ev.StrategyUpdate, player=player, strategy=text)
-               for player, text in strategies.items()
-               if self._strategies.get(player) != text]
-        self._strategies.update(strategies)
+    @node("END_GAME", writes={"day_channel", "winner"})
+    def _end_game(self, delta):
+        out = self._gm_messages(delta)
+        out.append(self._emit(ev.GameOver, winner=delta.get("winner")))
         return out
 
-    def _roster_updates(self, delta):
-        wolves = delta.get("surviving_wolves")
-        villagers = delta.get("surviving_villagers")
-        if wolves is None and villagers is None:
-            return []  # no-death resolution: rosters unchanged, no event
-        if wolves is None or villagers is None:
-            raise TranslationError(
-                "resolution committed only one survivor bucket — the engine always commits "
-                "both together; refusing to ship a partial roster"
-            )
-        self.wolves = list(wolves)
-        # The public roster is the union; the split by faction stays off the public tier.
-        return [
-            self._emit(ev.RosterUpdate, surviving_players=sorted([*villagers, *wolves])),
-            self._emit(ev.PackRosterUpdate, surviving_wolves=list(wolves)),
-        ]
+    # Post-game memory work is not part of the game record; whatever it writes is ignored.
+    silent_node("POST_GAME_ANALYSIS", writes=None)

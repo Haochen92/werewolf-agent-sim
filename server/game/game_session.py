@@ -58,7 +58,7 @@ from server.game.model_catalog import SUPPORTED_GAME_MODELS
 from server.game.pacing import PacingTracker
 from server.schemas import events as ev
 from server.game.seat_clocks import SeatClocks
-from server.game.translate import Translator, is_replayed, scope_of
+from server.game.translate import Translator, get_source_graph, is_cached
 
 logger = logging.getLogger(__name__)
 
@@ -368,7 +368,7 @@ class GameSession:
         """
         chunk = to_jsonable_python(chunk)  # engine objects -> the JSON shape the handlers read
         data = chunk.get("data") or {}
-        if is_replayed(data):
+        if is_cached(chunk):
             return False
 
         interrupted = "__interrupt__" in data and not (chunk.get("ns") or ())
@@ -383,7 +383,7 @@ class GameSession:
                 self.game_over = True
             self._deliver(event)
 
-        self._tracker.on_chunk(scope_of(chunk), data)
+        self._tracker.on_chunk(get_source_graph(chunk), data)
 
         if "INITIALIZE_GAME" in data:  # the deal: which seats went to humans
             self.human_players = list(data["INITIALIZE_GAME"].get("human_players") or [])

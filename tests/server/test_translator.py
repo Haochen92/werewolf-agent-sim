@@ -171,13 +171,13 @@ def test_interrupt_becomes_input_request():
 
 def test_unknown_node_raises_not_skips():
     t = _seeded_translator()
-    with pytest.raises(TranslationError, match="no handler or fold"):
+    with pytest.raises(TranslationError, match="unregistered graph node"):
         t.translate({"type": "updates", "ns": [], "data": {"BRAND_NEW_NODE": {"x": 1}}})
 
 
-def test_unaccounted_key_raises_not_skips():
+def test_unexpected_key_raises_not_skips():
     t = _seeded_translator()
-    with pytest.raises(TranslationError, match="unaccounted"):
+    with pytest.raises(TranslationError, match="unexpected keys"):
         t.translate({"type": "updates", "ns": ["WOLF_NIGHT_PHASE:x"],
                      "data": {"PREPARE_WOLF_NIGHT": {"current_round": 2, "new_key": 1}}})
 
