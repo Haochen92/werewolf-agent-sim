@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import random
+from collections.abc import Iterable
 from typing import Callable
 
 from server.schemas import events as ev
@@ -74,6 +75,17 @@ class PacingTracker:
             self._finish_stage()  # result announced: the vote bar is over
 
     # -- part-level ticks (via GameSession) -----------------------------------------------
+
+    def on_part(self, scope: str, nodes: Iterable[str]) -> None:
+        """Read the progress one stream part implies from the names of the nodes it
+        reports. A night branch's wrapper node finishing at the top level means that
+        role is done for the night; a vote node finishing inside the day phase means
+        one more ballot is in."""
+        for node in nodes:
+            if scope == "root" and node in BRANCH_UNITS:
+                self.on_branch_done(BRANCH_UNITS[node])
+            elif scope == "DAY_PHASE" and node in ("vote", "vote_human"):
+                self.on_ballot()
 
     def on_branch_done(self, unit: str) -> None:
         self._complete_unit(unit)
