@@ -330,3 +330,35 @@ def test_reexecuted_strategy_note_ships_once_but_changes_still_ship():
         "vote": {"day_votes": [], "agent_strategies": {"t0": "inv turned"}},
     }}
     assert [e.type for e in t.translate(changed)] == ["strategy_update"]
+
+
+# ---- live chunk shape ------------------------------------------------------------------
+
+def test_live_shaped_chunk_translates_like_its_saved_form():
+    """A live chunk carries Pydantic models, LangGraph's Interrupt dataclass and string
+    enums; the fixture carries the JSON they were saved as. Same events either way."""
+    from langgraph.types import Interrupt
+    from Agents.schemas.game_events import DayChannel, DiscussionPassReason, FiringReason
+    from tests.factories.builders import human_turn_request
+
+    entry = DayChannel(day=1, seq=2, player="t0", message="", passed=True,
+                       pass_reason=DiscussionPassReason.VOLUNTARY,
+                       firing_reason=FiringReason(tier="reactive", owes=["t1"]))
+    request = human_turn_request(player_id="t1", phase="day_channel",
+                                 valid_targets=[], surviving_players=["t1"])
+    live = [
+        {"type": "updates", "ns": ("DAY_PHASE:x",), "data": {"discuss": {"day_channel": (entry,)}}},
+        {"type": "updates", "ns": (), "data": {"__interrupt__": (Interrupt(value=request, id="i1"),)}},
+    ]
+    saved = [
+        {"type": "updates", "ns": ["DAY_PHASE:x"],
+         "data": {"discuss": {"day_channel": [entry.model_dump(mode="json")]}}},
+        {"type": "updates", "ns": [],
+         "data": {"__interrupt__": [{"value": request.model_dump(mode="json"), "id": "i1"}]}},
+    ]
+    a, b = Translator(), Translator()
+    got = [e for c in live for e in a.translate(c)]
+    want = [e for c in saved for e in b.translate(c)]
+    assert [e.type for e in got] == ["pass_marker", "firing_reason", "input_request"]
+    assert got == want
+    assert got[0].pass_reason == "voluntary"

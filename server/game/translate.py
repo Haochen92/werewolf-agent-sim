@@ -2,10 +2,10 @@
 
 The engine is a LangGraph graph. As it runs it streams one chunk per committed node, never a
 fragment: each chunk is raw engine state, the keys that node just wrote, in the engine's
-own shapes. The Translator, one per game, turns each chunk into zero or more of the typed
-events in server.schemas.events and stamps each with the game's running ``seq``. It reads
-nothing else and emits nothing else. Who may see an event is decided at delivery, and the
-progress bars are built in game/pacing.py.
+own shapes. The Translator, one per game, reduces each chunk to its JSON shape, turns it
+into zero or more of the typed events in server.schemas.events, and stamps each with the
+game's running ``seq``. It reads nothing else and emits nothing else. Who may see an event
+is decided at delivery, and the progress bars are built in game/pacing.py.
 
 There is one handler per graph node, named ``_h_<node>`` and listed in the order the nodes
 run in a game. A handler reads that node's delta and returns the events it implies, then
@@ -32,19 +32,14 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from pydantic_core import to_jsonable_python
+
 from Agents.rules.resolution import collect_attacks, resolve_attacks, tally_day_vote
 from server.schemas import events as ev
 
 
 class TranslationError(RuntimeError):
     """A stream chunk the wire contract does not account for — fail loudly, never skip."""
-
-
-def _read_field(obj: Any, name: str, default: Any = None) -> Any:
-    """Tolerant accessor: live chunks carry Pydantic models, fixture replays carry dicts."""
-    if isinstance(obj, Mapping):
-        return obj.get(name, default)
-    return getattr(obj, name, default)
 
 
 def scope_of(chunk: Mapping[str, Any]) -> str:
@@ -59,7 +54,7 @@ def is_replayed(data: Any) -> bool:
     it ``__metadata__: {cached: True}``. Its events and pacing ticks already went out."""
     if not isinstance(data, Mapping):
         return False
-    return bool(_read_field(_read_field(data, "__metadata__", {}) or {}, "cached"))
+    return bool((data.get("__metadata__") or {}).get("cached"))
 
 
 # Human-turn `phase` -> wire action_kind (the two channel-named turns get UX names).
@@ -205,9 +200,12 @@ class Translator:
 
     def translate(self, chunk: Mapping[str, Any], *,
                   deadlines: Mapping[str, str] | None = None) -> list[ev.DurableEvent]:
-        """Turn one stream chunk into its wire events. ``deadlines`` is the session's
-        seat -> countdown map, so a turn prompt is born with its deadline; replays and
-        solo tables pass nothing and the field stays None."""
+        """Turn one stream chunk, live or saved, into its wire events. ``deadlines`` is
+        the session's seat -> countdown map, so a turn prompt is born with its deadline;
+        replays and solo tables pass nothing and the field stays None."""
+        # A live chunk carries engine objects (Pydantic models, LangGraph's Interrupt,
+        # enums); the fixture carries their JSON. The handlers read the JSON shape.
+        chunk = to_jsonable_python(chunk)
         data = chunk["data"]
         if chunk["type"] == "custom":
             return self._custom(data)
@@ -236,26 +234,26 @@ class Translator:
     # ---- per-source translation -------------------------------------------------------
 
     def _custom(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
-        if _read_field(payload, "event") == "turn_started":
+        if payload.get("event") == "turn_started":
             return [self._emit(ev.TurnStarted,
-                               day=_read_field(payload, "day"), player=_read_field(payload, "player"))]
+                               day=payload["day"], player=payload["player"])]
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
     def _interrupt(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:
         out = []
         for item in interrupts:
-            req = _read_field(item, "value", item)
-            phase = _read_field(req, "phase")
+            req = item["value"]
+            phase = req["phase"]
             kind = _ACTION_KINDS.get(phase)
             if kind is None:
                 raise TranslationError(f"unknown human-turn phase: {phase!r}")
-            player = _read_field(req, "player_id")
+            player = req["player_id"]
             out.append(self._emit(
                 ev.InputRequest,
-                day=_read_field(req, "day"),
+                day=req["day"],
                 player=player,
                 action_kind=kind,
-                candidates=list(_read_field(req, "valid_targets", []) or []),
+                candidates=list(req.get("valid_targets", []) or []),
                 deadline=deadlines.get(player),
             ))
         return out
@@ -284,10 +282,10 @@ class Translator:
     # ---- handlers: lifecycle ----------------------------------------------------------
 
     def _h_initialize_game(self, scope, node, delta):
-        self.roles = dict(_read_field(delta, "roles", {}))
+        self.roles = dict(delta.get("roles", {}))
         self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
-        self.current_day = _read_field(delta, "current_day", 1)
-        bullets = _read_field(delta, "vigilante_bullets", 0)
+        self.current_day = delta.get("current_day", 1)
+        bullets = delta.get("vigilante_bullets", 0)
         cast_counts: dict[str, int] = {}
         for role in self.roles.values():
             cast_counts[role] = cast_counts.get(role, 0) + 1
@@ -309,7 +307,7 @@ class Translator:
         return out
 
     def _h_one_more_day(self, scope, node, delta):
-        self.current_day = _read_field(delta, "current_day", self.current_day + 1)
+        self.current_day = delta.get("current_day", self.current_day + 1)
         self._targets = {}
         self._wolf_votes.clear()
         self._check_folds(scope, node, delta, consumed={"current_day"})
@@ -323,47 +321,47 @@ class Translator:
 
     def _h_end_game(self, scope, node, delta):
         out = self._gm_messages(delta)
-        out.append(self._emit(ev.GameOver, winner=_read_field(delta, "winner")))
+        out.append(self._emit(ev.GameOver, winner=delta.get("winner")))
         self._check_folds(scope, node, delta, consumed={"day_channel", "winner"})
         return out
 
     def _h_post_game_analysis(self, scope, node, delta):
-        return []  # IGNORED on the wire (ruled); postgame memory work is not game record
+        return []  # nothing on the wire: post-game memory work is not part of the game record
 
     # ---- handlers: day ----------------------------------------------------------------
 
     def _h_discuss(self, scope, node, delta):
         out = []
-        for entry in _read_field(delta, "day_channel", []) or []:
-            day, cseq, player = _read_field(entry, "day"), _read_field(entry, "seq"), _read_field(entry, "player")
+        for entry in delta.get("day_channel", []) or []:
+            day, cseq, player = entry["day"], entry["seq"], entry["player"]
             if (day, cseq) in self._seen_day_entries:
                 continue  # already shipped (a re-run or a restart replay)
             self._seen_day_entries.add((day, cseq))
-            if _read_field(entry, "passed"):
+            if entry.get("passed"):
                 out.append(self._emit(
                     ev.PassMarker, day=day, channel_seq=cseq, player=player,
-                    pass_reason=_read_field(entry, "pass_reason"),
-                    gated=bool(_read_field(entry, "gated")),
-                    gated_candidate=_read_field(entry, "gated_candidate") or None,
+                    pass_reason=entry.get("pass_reason"),
+                    gated=bool(entry.get("gated")),
+                    gated_candidate=entry.get("gated_candidate") or None,
                 ))
             else:
                 out.append(self._emit(ev.Speech, day=day, channel_seq=cseq,
-                                      player=player, message=_read_field(entry, "message")))
-            firing = _read_field(entry, "firing_reason")
+                                      player=player, message=entry["message"]))
+            firing = entry.get("firing_reason")
             if firing is not None:
                 out.append(self._emit(
                     ev.FiringReasonAnnotation, day=day, about_channel_seq=cseq, player=player,
-                    tier=_read_field(firing, "tier"), owes=list(_read_field(firing, "owes", []) or []),
+                    tier=firing["tier"], owes=list(firing.get("owes", []) or []),
                 ))
-            targets = _read_field(entry, "addressed_targets", []) or []
+            targets = entry.get("addressed_targets", []) or []
             if targets:
                 out.append(self._emit(
                     ev.AddressedTargetsAnnotation, day=day, about_channel_seq=cseq,
                     player=player,
                     targets=[ev.WireAddressedTarget(
-                        target=_read_field(t, "target"),
-                        addressed_form=_read_field(t, "addressed_form"),
-                        stance=_read_field(t, "stance"),
+                        target=t["target"],
+                        addressed_form=t["addressed_form"],
+                        stance=t["stance"],
                     ) for t in targets],
                 ))
         out.extend(self._strategy_updates(delta))
@@ -371,17 +369,15 @@ class Translator:
         return out
 
     def _h_vote(self, scope, node, delta):
-        for ballot in _read_field(delta, "day_votes", []) or []:
-            # Last write wins: a ballot streamed before a human interrupt is retracted
-            # by the abort — the voter's re-executed ballot (possibly different!) is
-            # the one the engine keeps, so it must overwrite ours before the flush.
-            self._day_ballots[_read_field(ballot, "voter")] = _read_field(ballot, "votee")
+        for ballot in delta.get("day_votes", []) or []:
+            # Last write wins: a human interrupt re-runs this step, and the engine keeps
+            # the re-run's ballot, which may differ from the one streamed before.
+            self._day_ballots[ballot["voter"]] = ballot["votee"]
         out = self._strategy_updates(delta)
         self._check_folds(scope, node, delta, consumed={"day_votes", "agent_strategies"})
         return out
 
-    # The human seat votes through the uncached twin node (cache/interrupt split in the
-    # day graph) — same delta shape, same handling.
+    # The human seat votes through the uncached twin node: same delta, same handling.
     _h_vote_human = _h_vote
 
     def _h_start_voting(self, scope, node, delta):
@@ -398,15 +394,15 @@ class Translator:
         return out
 
     def _h_summarize_day_discussion(self, scope, node, delta):
-        out = [self._emit(ev.DaySummary, day=_read_field(s, "day"), summary=_read_field(s, "summary"))
-               for s in _read_field(delta, "day_summaries", []) or []]
+        out = [self._emit(ev.DaySummary, day=s["day"], summary=s["summary"])
+               for s in delta.get("day_summaries", []) or []]
         self._check_folds(scope, node, delta, consumed={"day_summaries"})
         return out
 
     def _h_day_resolution(self, scope, node, delta):
         out = self._gm_messages(delta)
         tally = tally_day_vote(votee for _, votee in self._last_day_ballots)
-        voted = _read_field(delta, "voted_player")
+        voted = delta.get("voted_player")
         if tally.lynched != voted:
             raise TranslationError(
                 f"kernel/delta mismatch: tally lynched {tally.lynched!r} but the node "
@@ -418,7 +414,7 @@ class Translator:
             player=voted,
             role=self.roles.get(voted) if voted else None,
             vote_counts=tally.vote_counts,
-            no_lynch_streak=_read_field(delta, "no_lynch_streak", 0),
+            no_lynch_streak=delta.get("no_lynch_streak", 0),
         ))
         out.extend(self._roster_updates(delta))
         # dead_roster: the lynch death record rides INSIDE lynch_result (player + role).
@@ -443,22 +439,19 @@ class Translator:
 
     def _night_act(self, role, target_key, scope, node, delta):
         out = []
-        target = _read_field(delta, target_key)
-        # The vigilante's no-shot sentinel: the wrapper node normalizes it to None before
-        # root state (Agents/graphs/parent.py) — the subgraph chunk carries it raw, so the
-        # translator applies the same normalization. No act -> no event, matching state.
+        target = delta.get(target_key)
+        # The vigilante's no-shot sentinel. The wrapper node turns it into None before it
+        # reaches root state; the subgraph chunk still carries it raw. No act, no event.
         if target == "hold_fire":
             target = None
         if target is not None:
             self._targets[target_key] = target
             out.append(self._emit(ev.NightAction,
                                   actor=self._role_holder(role), role=role, target=target))
-        strategy = _read_field(delta, "updated_strategy")
+        strategy = delta.get("updated_strategy")
         if strategy:
-            # Through the SAME guard as the day path (one rule: ship on content
-            # change, store what shipped) — emitting without storing left the
-            # guard's memory stale after night notes, and made the stored map
-            # unrecoverable from the wire log (restart hydration).
+            # Same guard as the day path: ship on change and remember what shipped, so
+            # a restart can rebuild the map from the log.
             out.extend(self._strategy_updates(
                 {"agent_strategies": {self._role_holder(role): strategy}}))
         self._check_folds(scope, node, delta, consumed={target_key, "updated_strategy"})
@@ -466,18 +459,15 @@ class Translator:
 
     def _h_wolf_night_discuss(self, scope, node, delta):
         out = []
-        for entry in _read_field(delta, "wolf_channel", []) or []:
-            if _read_field(entry, "passed"):
+        for entry in delta.get("wolf_channel", []) or []:
+            if entry.get("passed"):
                 continue  # technical pass: hidden from the pack, no wire event defined
-            key = (_read_field(entry, "day"), _read_field(entry, "round"),
-                   _read_field(entry, "wolf"))
-            if key in self._seen_wolf_msgs:
+            day, round_, wolf = entry["day"], entry["round"], entry["wolf"]
+            if (day, round_, wolf) in self._seen_wolf_msgs:
                 continue  # already shipped (a re-run or a restart replay)
-            self._seen_wolf_msgs.add(key)
-            out.append(self._emit(
-                ev.WolfMessage, day=key[0], round=key[1],
-                wolf=key[2], message=_read_field(entry, "message"),
-            ))
+            self._seen_wolf_msgs.add((day, round_, wolf))
+            out.append(self._emit(ev.WolfMessage, day=day, round=round_, wolf=wolf,
+                                  message=entry["message"]))
         out.extend(self._strategy_updates(delta))
         self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
         return out
@@ -485,10 +475,10 @@ class Translator:
     def _h_wolf_night_vote(self, scope, node, delta):
         # Buffered: blind while voting, flushed with the tally. The runtime streams each
         # wolf's vote as it lands, so the holding has to happen here.
-        for entry in _read_field(delta, "wolf_channel", []) or []:
-            if _read_field(entry, "vote"):
-                # Last write wins per wolf (abort-and-re-execute, same as day ballots).
-                self._wolf_votes[_read_field(entry, "wolf")] = _read_field(entry, "vote")
+        for entry in delta.get("wolf_channel", []) or []:
+            if entry.get("vote"):
+                # Last write wins per wolf, as with day ballots.
+                self._wolf_votes[entry["wolf"]] = entry["vote"]
         out = self._strategy_updates(delta)
         self._check_folds(scope, node, delta, consumed={"wolf_channel", "agent_strategies"})
         return out
@@ -500,7 +490,7 @@ class Translator:
         out = [self._emit(ev.WolfVote, wolf=wolf, votee=votee)
                for wolf, votee in self._wolf_votes.items()]
         self._wolf_votes.clear()
-        target = _read_field(delta, "wolves_kill_target")
+        target = delta.get("wolves_kill_target")
         if target is not None:
             self._targets["wolves_kill_target"] = target
             out.append(self._emit(ev.WolfKillDecided, target=target))
@@ -510,7 +500,8 @@ class Translator:
     def _h_night_resolution(self, scope, node, delta):
         out = self._gm_messages(delta)
 
-        # Derive the death atom with the SAME kernel the node used, then cross-check.
+        # Compute the deaths with the engine's own rules, then compare with what the
+        # node recorded.
         attacks = collect_attacks(self._targets.get("wolves_kill_target"),
                                   self._targets.get("serial_killer_target"),
                                   self._targets.get("vigilante_target"))
@@ -519,7 +510,7 @@ class Translator:
         deaths = [ev.NightDeath(player=t, role=self.roles.get(t, ""),
                                 attacker_types=attacks[t])
                   for t in sorted(attacks) if verdicts[t] == "killed"]
-        recorded = {_read_field(d, "player") for d in _read_field(delta, "dead_roster", []) or []}
+        recorded = {d["player"] for d in delta.get("dead_roster", []) or []}
         if {d.player for d in deaths} != recorded:
             raise TranslationError(
                 f"kernel/delta mismatch: derived night deaths {[d.player for d in deaths]} "
@@ -529,23 +520,23 @@ class Translator:
                      for t in attacks if verdicts[t] == "saved"), None)
         out.append(self._emit(ev.NightResult, deaths=deaths, save=save))
 
-        # Faction: the GM whiff note rides the wolf channel.
-        for entry in _read_field(delta, "wolf_channel", []) or []:
+        # The GM's whiff note to the pack arrives on the wolf channel.
+        for entry in delta.get("wolf_channel", []) or []:
             out.append(self._emit(
-                ev.WolfMessage, day=_read_field(entry, "day"), round=_read_field(entry, "round"),
-                wolf=_read_field(entry, "wolf"), message=_read_field(entry, "message"),
+                ev.WolfMessage, day=entry["day"], round=entry["round"],
+                wolf=entry["wolf"], message=entry["message"],
             ))
 
-        # Seats: investigation (survival-gated in the node — absent delta, absent event),
-        # the vigilante's private confirmation, and the bullet count.
-        for result in _read_field(delta, "investigator_results", []) or []:
+        # Seat events: the investigation (the node omits it when the investigator is
+        # dead, so no event either), the vigilante's private confirmation, the bullets.
+        for result in delta.get("investigator_results", []) or []:
             out.append(self._emit(
-                ev.InvestigationResult, day=_read_field(result, "day"),
+                ev.InvestigationResult, day=result["day"],
                 player=self._role_holder("investigator"),
-                target=_read_field(result, "player_investigated"),
-                role=_read_field(result, "role_revealed"),
+                target=result["player_investigated"],
+                role=result["role_revealed"],
             ))
-        for _note in _read_field(delta, "vigilante_results", []) or []:
+        for _note in delta.get("vigilante_results", []) or []:
             out.append(self._emit(
                 ev.VigilanteConfirmation, player=self._role_holder("vigilante"),
                 target=self._targets.get("vigilante_target"),
@@ -553,7 +544,7 @@ class Translator:
         if "vigilante_bullets" in delta:
             out.append(self._emit(ev.BulletsRemaining,
                                   player=self._role_holder("vigilante"),
-                                  count=_read_field(delta, "vigilante_bullets")))
+                                  count=delta.get("vigilante_bullets")))
 
         out.extend(self._roster_updates(delta))
         self._check_folds(scope, node, delta, consumed={
@@ -566,15 +557,15 @@ class Translator:
     # ---- shared fragments -------------------------------------------------------------
 
     def _gm_messages(self, delta):
-        return [self._emit(ev.GmMessage, day=_read_field(e, "day"), channel_seq=_read_field(e, "seq"),
-                           text=_read_field(e, "message"))
-                for e in _read_field(delta, "day_channel", []) or []
-                if _read_field(e, "player") == "game_master"]
+        return [self._emit(ev.GmMessage, day=e["day"], channel_seq=e["seq"],
+                           text=e["message"])
+                for e in delta.get("day_channel", []) or []
+                if e["player"] == "game_master"]
 
     def _strategy_updates(self, delta):
         # A strategy note is an overwrite, so idempotence is content equality: a replayed
         # chunk re-delivers the identical note and ships nothing new.
-        strategies = _read_field(delta, "agent_strategies", {}) or {}
+        strategies = delta.get("agent_strategies", {}) or {}
         out = [self._emit(ev.StrategyUpdate, player=player, strategy=text)
                for player, text in strategies.items()
                if self._strategies.get(player) != text]
@@ -582,8 +573,8 @@ class Translator:
         return out
 
     def _roster_updates(self, delta):
-        wolves = _read_field(delta, "surviving_wolves")
-        villagers = _read_field(delta, "surviving_villagers")
+        wolves = delta.get("surviving_wolves")
+        villagers = delta.get("surviving_villagers")
         if wolves is None and villagers is None:
             return []  # no-death resolution: rosters unchanged, no event
         if wolves is None or villagers is None:
@@ -592,7 +583,7 @@ class Translator:
                 "both together; refusing to ship a partial roster"
             )
         self.wolves = list(wolves)
-        # Union only: the wolf-partitioned lists merge before the public tier sees them.
+        # The public roster is the union; the split by faction stays off the public tier.
         return [
             self._emit(ev.RosterUpdate, surviving_players=sorted([*villagers, *wolves])),
             self._emit(ev.PackRosterUpdate, surviving_wolves=list(wolves)),

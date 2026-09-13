@@ -39,6 +39,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Sequence
 
 from langgraph.types import Command
+from pydantic_core import to_jsonable_python
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.llm_factory import GAME_LLM, GameLLM
@@ -57,7 +58,7 @@ from server.game.model_catalog import SUPPORTED_GAME_MODELS
 from server.game.pacing import PacingTracker
 from server.schemas import events as ev
 from server.game.seat_clocks import SeatClocks
-from server.game.translate import Translator, _read_field, is_replayed, scope_of
+from server.game.translate import Translator, is_replayed, scope_of
 
 logger = logging.getLogger(__name__)
 
@@ -365,6 +366,7 @@ class GameSession:
         A chunk marked cached is skipped: the engine already produced it once and this
         session handled it then.
         """
+        chunk = to_jsonable_python(chunk)  # engine objects -> the JSON shape the handlers read
         data = chunk.get("data") or {}
         if is_replayed(data):
             return False
@@ -373,8 +375,7 @@ class GameSession:
         if interrupted:
             self.parked_since = datetime.now(timezone.utc)
             for item in data["__interrupt__"]:
-                self.park(HumanTurnRequest.model_validate(_read_field(item, "value")),
-                          _read_field(item, "id", ""))
+                self.park(HumanTurnRequest.model_validate(item["value"]), item.get("id", ""))
 
         for event in self.translator.translate(chunk, deadlines=self.turn_deadlines):
             self.log.append(event)
@@ -385,8 +386,7 @@ class GameSession:
         self._tracker.on_chunk(scope_of(chunk), data)
 
         if "INITIALIZE_GAME" in data:  # the deal: which seats went to humans
-            self.human_players = list(
-                _read_field(data["INITIALIZE_GAME"], "human_players", ()) or ())
+            self.human_players = list(data["INITIALIZE_GAME"].get("human_players") or [])
         return interrupted
 
     async def drop(self, reason: str) -> None:
