@@ -179,8 +179,8 @@ undetected. (Terminology: these are the server's *failure modes*; the list as a 
    replay source and the translator's sequence/ship-once shadow; the LangGraph checkpoint
    restores executable graph state, pending tasks and interrupts. A running graph resumes
    from its last committed superstep while reconnecting browsers refold their entitled event
-   suffix. BYOK games remain the explicit exception: their key is process-memory-only, so
-   current recovery marks them dropped; credential resubmission is recorded but not built.
+   suffix. A BYOK game's key is process-memory-only, so it is rebuilt without a task and
+   waits for any seat holder to resubmit the key, then resumes the same way (§13, 2026-09-12).
 4. **A game hangs** (provider outage, stuck call — nothing fails, nothing moves) —
    **undetected.** No watchdog notices "no part produced for N minutes"; viewers see
    keep-alives and a frozen board. Missing piece: a stall timeout that converts a hang

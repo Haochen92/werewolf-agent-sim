@@ -53,15 +53,22 @@ def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn
 
 
 def validate_human_response(request: HumanTurnRequest, raw_response: Any) -> HumanTurnResponse:
-    """Validate a raw resume payload against the exact pending request. Pure — no side effects — so
-    the resume driver can call it to gate ``Command(resume=...)`` and the node can re-check defensively.
+    """Check a human's answer against the question they were asked, and return it typed.
+    Pure, no side effects: the server calls it before resuming the engine, and the node
+    re-checks defensively.
 
-    Discussion (day_channel): a pass needs ``can_pass``; otherwise a non-empty message is required and
-    no target may be set. Wolf-night talk (wolf_channel) is message-only: no pass, no target. Every
-    other phase (votes incl. wolf_vote, night actions): no pass, and the target must be one of the
-    request's ``valid_targets`` (which already includes the abstain / hold_fire sentinels).
-    A bare ``delegate`` is legal for EVERY phase — it hands the turn to the agent path, so the
-    phase rules apply to what the agent produces, not to this response."""
+    What counts as a legal answer depends on the request's phase:
+    - ``day_channel`` (discussion): a message, or a pass when the request allows one.
+      No target.
+    - ``wolf_channel`` (wolf night talk): a message. No pass, no target.
+    - every other phase (votes, wolf vote, night actions): a target from the request's
+      ``valid_targets``, which already lists the abstain / hold_fire choices. No pass.
+    - ``delegate`` alone is legal in every phase: it hands the turn to the seat's agent,
+      and the phase rules then apply to what the agent produces.
+
+    Raises HumanTurnContractError with a player-facing message when the answer breaks
+    those rules (the server serves it as 422), and pydantic's ValidationError when the
+    payload is not even the right shape."""
     response = HumanTurnResponse.model_validate(raw_response)
 
     if response.delegate:
