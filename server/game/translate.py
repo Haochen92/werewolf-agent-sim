@@ -12,7 +12,8 @@ state fields it writes. A node with a handler turns its delta into events; a nod
 one writes nothing the browser needs. Either way, a delta key outside the registered set
 raises TranslationError, so a new state field can never go silently missing from the wire,
 and an unregistered node raises too. The root wrapper nodes (DAY_PHASE and the five night
-phases) are skipped: their delta repeats what their subgraph already streamed.
+phases) are listed without a handler: their delta repeats what their subgraph already
+streamed.
 
 The translator keeps a small copy of game state, rebuilt from the chunks alone, and never
 asks the graph for it: the stream runs ahead of the checkpoint, and behind a slow viewer
@@ -88,16 +89,6 @@ def silent_node(name: str, *, writes: Iterable[str] | None = ()) -> None:
     """Register a graph node that produces no events. Its writes are still checked."""
     _register(name, writes, None)
 
-
-# Parent-graph nodes that run a subgraph. Their root delta repeats the subgraph's chunks.
-_SUBGRAPH_NODES = {
-    "DAY_PHASE",
-    "WOLF_NIGHT_PHASE",
-    "HEALER_NIGHT_PHASE",
-    "INVESTIGATOR_NIGHT_PHASE",
-    "SERIAL_KILLER_NIGHT_PHASE",
-    "VIGILANTE_NIGHT_PHASE",
-}
 
 # Human-turn `phase` -> wire action_kind (the two channel-named turns get UX names).
 _ACTION_KINDS = {
@@ -234,8 +225,6 @@ class Translator:
                     out.extend(self._input_requests(delta, deadlines or {}))
             elif name.startswith("__"):
                 continue  # engine metadata, never a node
-            elif graph == "root" and name in _SUBGRAPH_NODES:
-                continue  # already translated from the subgraph's own chunks
             else:
                 out.extend(self._dispatch(name, delta or {}))
         return out
@@ -408,6 +397,10 @@ class Translator:
         self._day_ballots.clear()
         return out
 
+    # The root wrapper's commit: the day subgraph's result, already translated above.
+    silent_node("DAY_PHASE", writes={
+        "day_channel", "day_summaries", "day_votes", "agent_strategies"})
+
     @node("DAY_RESOLUTION", writes={
         "day_channel", "dead_roster", "voted_player", "no_lynch_streak", "day_summaries",
         *_SURVIVORS, *_ROLE_HOLDERS,
@@ -500,9 +493,15 @@ class Translator:
                 {"agent_strategies": {self._role_holder(role): strategy}}))
         return out
 
+    silent_node("WOLF_NIGHT_PHASE", writes={
+        "wolf_channel", "wolves_kill_target", "agent_strategies"})
+
     for _role in ("healer", "investigator", "serial_killer", "vigilante"):
         node(f"{_role}_act", writes={f"{_role}_target", "updated_strategy"})(
             lambda self, delta, role=_role: self._night_act(role, delta))
+        # The root wrapper's commit: the target, and the strategy under the parent's key.
+        silent_node(f"{_role.upper()}_NIGHT_PHASE",
+                    writes={f"{_role}_target", "agent_strategies"})
     del _role
 
     @node("NIGHT_RESOLUTION", writes={
