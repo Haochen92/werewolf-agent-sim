@@ -1,6 +1,14 @@
 # Orchestrator_Graph — event derivation (final)
 
-**initialize_game**
+> The companion to `server/game/translate.py`: one section per graph node, in the order the
+> nodes run, titled with the node's registry name so a `@node("...")` in the code and its
+> section here share a string. Each table says what that node ships and to whom; IGNORED marks
+> a state field the node writes that the browser has no use for. This is prose and nothing
+> checks it against the code. The exact output on a recorded game is pinned by the goldens
+> in `tests/fixtures/translator_golden*.jsonl`; when the two disagree, the goldens are right
+> and this file gets corrected.
+
+**INITIALIZE_GAME**
 
 | Tier | Events |
 | --- | --- |
@@ -10,11 +18,11 @@
 | Observer | `roles_assigned {player: role}` — nobody receives it live; exists so the game_over backlog replay has survivor roles from minute zero |
 - `phase_change("day")` — marker table (node identity). `human_player` = no event (session handshake).
 
-**day_phase entry / SCHEDULE** — no-op anchors → IGNORED.
+**DAY_PHASE · SCHEDULE** — registered silent. SCHEDULE writes nothing; DAY_PHASE is the root wrapper whose commit repeats what the day subgraph already streamed (see Stream behaviours below).
 
-**route_speaker edge** — `turn_started {player, day}` via `get_stream_writer()` (edge emission — cannot double-fire on interrupt resume).
+**route_speaker edge** (a `custom` stream chunk, not a node) — `turn_started {player, day}` via `get_stream_writer()` (edge emission — cannot double-fire on interrupt resume).
 
-**discuss node**
+**discuss**
 
 | Tier | Events |
 | --- | --- |
@@ -28,23 +36,23 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `day_summary {day, summary}` — shown next morning: client render rule, **no buffer** (buffers gate entitlement; render timing gates pacing). RULED 2026-08-06: renders as a "Previously…" recap card at the TOP of day D+1's page (mirrors the LLM payload: full current day + summaries of prior days); the full transcript stays readable per day — the summary is a header, never a replacement |
+| Public | `day_summary {day, summary}` — shown next morning: client render rule, **no buffer** (buffers gate entitlement; render timing gates pacing). Renders as a "Previously…" recap card at the TOP of day D+1's page (mirrors the LLM payload: full current day + summaries of prior days); the full transcript stays readable per day — the summary is a header, never a replacement |
 | Observer | `day_summary_structured {day, data}` — `data` is the summarizer's structured output verbatim (PROVISIONAL `dict`; typed once the summarizer schema freezes). ⚠️ Currently never fires: no node streams this key — needs a node commit if wanted. |
 
 **START_VOTING** — public `phase_change` (self-disambiguating: anchored on the routed-to node).
 
-**vote node**
+**vote · vote_human**
 
 | Tier | Events |
 | --- | --- |
-| Ephemeral | `phase_progress {stage: "day_vote", done, total}` — anonymous voting-progress snapshot (RE-RULED 2026-08-05: replaces the durable `player_voted {voter}` indicator; progress ticks are replay noise, and the pattern unifies with night pacing. Denominator = surviving roster, public, no padding needed. Loss accepted: no per-player "waiting on X" checkmarks — reversible additively.) |
+| Ephemeral | `phase_progress {stage: "day_vote", done, total}` — anonymous voting-progress snapshot (replaces the durable `player_voted {voter}` indicator; progress ticks are replay noise, and the pattern unifies with night pacing. Denominator = surviving roster, public, no padding needed. Loss accepted: no per-player "waiting on X" checkmarks — reversible additively.) |
 | Seat | `input_request` (interrupt) |
 | Observer | `strategy_update` |
 - Ballots buffered server-side (entitlement deferral — wire is the boundary, not the render).
 
 **COLLECT_VOTES** — public `vote_cast {voter, votee, day}` batch. Content from the translator buffer, timing from node identity (its own delta is empty). Buffer-empty-at-day-end alarm.
 
-**day_resolution**
+**DAY_RESOLUTION**
 
 | Tier | Events |
 | --- | --- |
@@ -55,27 +63,25 @@
 | Public | `day_summary` — this node also appends the vote-result to `day_summaries`; same key → same event |
 - `voted_player` delta → IGNORED (inside `lynch_result`).
 
-**check_game_end_day edge → NIGHT_START node → route_night_actors edge** (RE-RULED 2026-08-08:
-owner added the NIGHT_START anchor, superseding the translator's lazy first-night-part inference).
-`check_game_end_day` is now binary (END_GAME | NIGHT_START); NIGHT_START is a no-op marker node
+**NIGHT_START** (between the `check_game_end_day` and `route_night_actors` edges) —
+`check_game_end_day` is binary (END_GAME | NIGHT_START); NIGHT_START is a no-op marker node
 (START_VOTING analog) anchoring public `phase_change("night")` — it runs only past the END_GAME
 check, so a game-ending day can never ghost a night marker. `route_night_actors` fans out the
 present night actors; the real actor list this router computes must **never** reach the wire —
-the pacing denominator comes from public knowledge only (see Ephemeral channel). ⚠️ The captured
-chunk-catalogue fixture predates NIGHT_START; re-capture at the next real-game run.
+the pacing denominator comes from public knowledge only (see Ephemeral channel).
 
-**healer_act · investigator_act · serial_killer_act · vigilante_act** — one pattern ×4 (structural clones)
+**healer_act · investigator_act · serial_killer_act · vigilante_act** — one pattern ×4 (structural clones). Their root wrappers `HEALER_NIGHT_PHASE` … `VIGILANTE_NIGHT_PHASE` are registered silent: each commit repeats the act's target and strategy.
 
 | Tier | Events |
 | --- | --- |
 | Public | — silence is the spec: no per-role markers, no engine-state progress |
 | Faction | — |
-| Seat | `input_request` (interrupt; human seat only) — ⚠️ fires inside a parallel superstep; resume semantics gated on the spike cell |
+| Seat | `input_request` (interrupt; human seat only) — fires inside the parallel night step; see Stream behaviours below |
 | Observer | `night_action {actor, role, target, day}` · `strategy_update` |
 - No seat ack for the target (ruled): the seat re-learns its act from dawn's `gm_message`; the live client echoes locally. Observer event is the only committed-target record.
 - `None` return = no events (engine fallback), same as discuss.
 
-**wolf subgraph** (PREPARE → DISCUSS loop → parallel VOTE → COLLECT)
+**PREPARE_WOLF_NIGHT · WOLF_NIGHT_DISCUSS · START_WOLF_VOTE · WOLF_NIGHT_VOTE · WOLF_NIGHT_VOTE_HUMAN · COLLECT_WOLF_VOTES** (the wolf subgraph: prepare → discuss loop → parallel vote → collect)
 
 | Tier | Events |
 | --- | --- |
@@ -86,9 +92,9 @@ chunk-catalogue fixture predates NIGHT_START; re-capture at the next real-game r
 | Seat | `input_request` (human wolf talk/vote — interrupt nested inside the outer parallel superstep) |
 | Observer | faction mirror + `strategy_update` |
 - Vote buffer rationale: live shipping leaks packmate votes to the interrupted human wolf (LLM wolves vote blind → unfair edge); tally-only gives the human LESS than the LLM seat (next-night `_wolf_payload` carries past votes → parity violation). Buffered release = blind voting + wire/state parity, full per-vote breakdown at round end. Same pattern as the day ballot buffer; same buffer-empty-at-dawn alarm.
-- `current_round` delta → IGNORED (loop control). prepare/fan_out/collect/check_night_end anchors → IGNORED.
+- `current_round` (written by PREPARE_WOLF_NIGHT) → IGNORED (loop control). START_WOLF_VOTE and the `WOLF_NIGHT_PHASE` root wrapper → registered silent.
 
-**night_resolution** (the barrier — fattest commit in the game: one delta, four audiences)
+**NIGHT_RESOLUTION** (the barrier — fattest commit in the game: one delta, four audiences)
 
 | Tier | Events |
 | --- | --- |
@@ -104,7 +110,7 @@ chunk-catalogue fixture predates NIGHT_START; re-capture at the next real-game r
 - `*_player` marker clears → IGNORED (fold doctrine: ship the client-facing form, fold the internal form — committed→shipped governs INFORMATION, not raw keys).
 - Metric append + langfuse span → diagnostic plane, never the wire.
 
-**one_more_day** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it). Also commits the new-day RESETS — `healer_target` / `investigator_target` / `serial_killer_target` / `vigilante_target` / `wolves_kill_target` / `day_votes` / `voted_player` all cleared → IGNORED (blank-slate bookkeeping, zero information; hole found by the 2026-08-06 chunk-catalogue exhaustiveness check).
+**ONE_MORE_DAY** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it). Also commits the new-day RESETS — `healer_target` / `investigator_target` / `serial_killer_target` / `vigilante_target` / `wolves_kill_target` / `day_votes` / `voted_player` all cleared → IGNORED (blank-slate bookkeeping, zero information).
 
 **END_GAME**
 
@@ -112,7 +118,23 @@ chunk-catalogue fixture predates NIGHT_START; re-capture at the next real-game r
 | --- | --- |
 | Public | `game_over {winner, day}` — thin: an entitlement flip, not a data package |
 - At game_over the client's tier becomes observer; the server streams the withheld O-tier backlog from the durable log (full X-ray replay: wolf channel, probes, strategies, `roles_assigned`). No reveal payload is duplicated into the event.
-- POST_GAME_ANALYSIS → IGNORED on the wire.
+- POST_GAME_ANALYSIS → registered silent with the key check off: its output is large and never shipped.
+
+## Stream behaviours the translator guards
+
+Four things about the engine's stream shape what the translator does, each handled at one
+guard. The stories behind them are in `server_encountered_challenges.md`.
+
+- **A committed step can stream again**, tagged `__metadata__: {cached: true}`, when a cached
+  node re-runs after a human answers. Dropped whole: its events already shipped. (§4)
+- **Every interrupt streams twice**, once under the subgraph's namespace and once mirrored at
+  the root. Only the root copy becomes an `input_request`. (§1)
+- **The two votes re-run when a human answers.** The AI ballots streamed before the pause are
+  provisional; the same voters stream again on resume. Ballots are buffered until the tally and
+  the last write per voter wins, so the batch converges on the set the engine kept. (§2, §3)
+- **A root wrapper's commit repeats its subgraph.** DAY_PHASE and the five night wrappers call
+  their subgraph as a function and commit its result; the subgraph's own chunks already carried
+  every field. The wrappers are registered silent so their keys are still checked.
 
 ## Ephemeral pacing channel (translator-derived, not node-anchored)
 
@@ -131,7 +153,7 @@ Day vote: START_VOTING starts it, denominator = surviving roster (public, unpadd
 | Value | Current frontend derivation |
 | --- | --- |
 | Vote tally | Count received `vote_cast.votee` values |
-| Who hasn't voted | NOT derivable live since the 2026-08-05 re-ruling (anonymous `phase_progress` replaced `player_voted`); post-batch, `surviving_players − vote_cast voters` |
+| Who hasn't voted | NOT derivable live (anonymous `phase_progress` replaced `player_voted`); post-batch, `surviving_players − vote_cast voters` |
 | Alive-role census | Initial public cast counts − publicly revealed deaths by role (`lynch_result` + `night_result`) |
 
 ## Derived (night)
@@ -169,3 +191,14 @@ Reconciliations where today's rulings met the existing day-side text — day pre
 
 One correction to the original text: `vote_cast.vote_target` → `vote_cast.votee` in Derived Votes
 (the field name ruled day-side).
+
+Rulings that used to be dated inline in the tables above (2026-09-14: dates moved here, section
+titles aligned to the translator's registry names, NIGHT_START fixture warning dropped since the
+2026-08-19 capture includes it):
+
+- 2026-08-05 — anonymous `phase_progress` replaces the durable `player_voted` indicator (vote node).
+- 2026-08-06 — `day_summary` renders as the "Previously…" card atop day D+1 (SUMMARIZE_DAY_DISCUSSION).
+- 2026-08-06 — ONE_MORE_DAY's new-day resets ruled IGNORED; hole found by the chunk-catalogue
+  exhaustiveness check.
+- 2026-08-08 — owner added the NIGHT_START anchor, superseding the translator's lazy
+  first-night-chunk inference.

@@ -1,19 +1,20 @@
 """Turn the chunks a running game streams out into the events the browser receives.
 
-The engine is a LangGraph graph. As it runs it streams one chunk per committed node, never a
-fragment: each chunk is raw engine state, the keys that node just wrote, in the engine's
-own shapes. The Translator, one per game, reduces each chunk to its JSON shape, turns it
-into zero or more of the typed events in server.schemas.events, and stamps each with the
-game's running ``seq``. It reads nothing else and emits nothing else. Who may see an event
+The engine is a LangGraph graph. As it runs it streams one chunk each time a node finishes,
+holding every state field that node wrote, in the engine's own shapes; nothing arrives
+mid-node, though a chunk can arrive before its step is final (the votes, below). The
+Translator, one per game, reduces each chunk to its JSON shape, turns it into zero or more
+of the typed events in server.schemas.events, and stamps each with the game's running
+``seq``. It reads nothing else and emits nothing else. Who may see an event
 is decided at delivery, and the progress bars are built in game/pacing.py.
 
-Every graph node is registered once, in the order the nodes run in a game, with the set of
+Every graph node has one entry below, in the order the nodes run in a game, listing the
 state fields it writes. A node with a handler turns its delta into events; a node without
-one writes nothing the browser needs. Either way, a delta key outside the registered set
-raises TranslationError, so a new state field can never go silently missing from the wire,
-and an unregistered node raises too. The root wrapper nodes (DAY_PHASE and the five night
-phases) are listed without a handler: their delta repeats what their subgraph already
-streamed.
+one writes nothing the browser needs. If the engine adds a node, or a field on a node,
+that has no entry here, the first chunk carrying it raises TranslationError naming it,
+so a new state field forces a decision: send it to the browser, or list it as
+server-only. The root wrapper nodes (DAY_PHASE and the five night phases) are listed
+without a handler: their delta repeats what their subgraph already streamed.
 
 The translator keeps a small copy of game state, rebuilt from the chunks alone, and never
 asks the graph for it: the stream runs ahead of the checkpoint, and behind a slow viewer
@@ -26,6 +27,10 @@ re-run when a human answers; they are buffered until the tally, last write per v
 The lynch and the night deaths are computed here with the engine's own rule functions and
 compared with what the node recorded; a mismatch raises rather than shipping a wrong event.
 Not yet emitted: day_summary_structured, whose structured form never reaches state.
+
+The node-by-node table of what ships, and to whom, is frontend/docs/event_derivation.md,
+titled with the same node names as the registry below. The exact output on a recorded game
+is pinned by the goldens in tests/fixtures; when the two disagree, the goldens are right.
 """
 
 from __future__ import annotations
