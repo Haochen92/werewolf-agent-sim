@@ -1,7 +1,23 @@
-"""The progress bars a viewer watches during the night and the day vote.
+"""The progress bars for the stages of the game a viewer may not watch.
 
-The file holds PacingTracker, which one running game keeps for the length of that game,
-and the small table naming the night phases whose completion the bars count.
+Some stages of the game have several players act in parallel, each unable to see the
+others' progress. A player who finishes their turn early has no idea how much longer to
+wait for the rest. The PacingTracker here draws a progress bar for such stages: it ticks
+when a player finishes and shows how many are still on their turn, "3 of 5 done", without
+revealing anything about what is being done. Today that is the night (secret actions,
+revealed at dawn) and the day vote (sealed ballots, revealed at the tally). A future
+stage where players act in parallel and out of each other's sight can use the same bar.
+
+The bar must not leak what the silence protects. Each leak has its own device:
+  - Which special roles are alive. The denominator is the public census, the fixed cast
+    minus announced deaths, never the engine's real actor list, which would show for
+    instance that the serial killer survived a silenced vigilante shot.
+  - Whether the vigilante has bullets left. A spent vigilante has no night phase and
+    would never finish, so a timer also finishes every night unit 20 to 30 seconds in,
+    and a padded finish looks like a slow real one. Real units finish by the same timer
+    too: the bar is a pace, not a report.
+  - The size of the pack. The wolves are one unit, however many there are.
+  - Who has voted. The vote bar is an anonymous count.
 """
 
 from __future__ import annotations
@@ -26,35 +42,50 @@ _PAD_SECONDS = (20.0, 30.0)
 
 
 class PacingTracker:
-    """Ephemeral phase_progress snapshots from PUBLIC knowledge only.
+    """One game's tracker, fed by the session for the length of the game.
 
-    The two bars exist because night and the day vote deliberately withhold their events
-    (secrecy tiers, blind voting) — a live viewer needs proof of motion without proof of
-    content. Denominators come from the publicly-derivable alive-role census (fixed cast
-    minus announced deaths), NEVER the real fan-out. Certain roles, such as vigilante, would
-    not have a night phase if their bullets are used up. Showing the real counter would
-    leak information to other roles, hence a pseudo role counter will represent them. 
-    Night units all complete on a minimal padded 20-30s so that pseudo counters will not complete
-    instantly, which is another role leak. 
-    Runs entirely on the event loop."""
+    Inputs, all from GameSession:
+      publish     the one thing the tracker can do: send a PhaseProgress frame to every
+                  viewer. A function, not the session object, so the tracker can reach
+                  nothing else and a test can pass a list's append. Frames are absolute
+                  done/total snapshots, never increments, on the separate pacing channel:
+                  not stored, not replayed.
+      on_event    every durable event as it is delivered. Five types matter: game_started
+                  sets the census; lynch_result and night_result lower it; phase_change
+                  opens the night or vote bar or clears one; night_result closes the
+                  night bar; vote_cast, which only ever arrives as the post-tally batch,
+                  closes the vote bar (the live ticks come from on_chunk).
+      on_chunk    the source graph and node names of every stream chunk. A night wrapper
+                  finishing at the root marks that unit done; a vote node finishing in
+                  the day phase adds one ballot.
+
+    Attributes, by job.
+      _public_alive   role -> alive count the audience can derive; the denominators.
+      _day            stamped on every frame; from the last phase_change.
+    One bar's worth of scratch, wiped together by _reset_stage():
+      _stage            "night" | "day_vote" | None (no bar showing).
+      _stage_total      the denominator.
+      _completed_units  night numerator; a set, so a double mark is a no-op.
+      _ballots          vote numerator; anonymous ticks, so a plain counter.
+      _padding_timers   the night timers, cancelled when a stage ends before they fire.
+    Everything runs on the event loop."""
 
     def __init__(self, publish: Callable[[ev.PhaseProgress], None]) -> None:
-        # The one capability the tracker gets: emit a snapshot (GameSession.publish_pacing).
-        # A callback, not the session object — the signature IS the coupling contract.
         self._publish = publish
-        # Game-lifetime facts.
-        self._public_alive: dict[str, int] = {}  # role -> alive count the AUDIENCE can derive
+        self._public_alive: dict[str, int] = {}
         self._day = 1
-        # Per-stage scratch: one bar's worth of state, wiped together by _reset_stage().
-        self._stage: str | None = None  # "night" | "day_vote" | None = no bar showing
+        self._stage: str | None = None
         self._stage_total = 0
-        self._completed_units: set[str] = set()  # night numerator; a set so double marks no-op
-        self._ballots = 0  # vote numerator; anonymous ticks, so a plain counter
+        self._completed_units: set[str] = set()
+        self._ballots = 0
         self._padding_timers: list[asyncio.TimerHandle] = []
 
     # -- public-event feed ----------------------------------------------------------------
 
     def on_event(self, event: ev.DurableEvent) -> None:
+        """Take one delivered event. Five types move the census or a bar (see the class
+        docstring); every other type is ignored. Publishes a frame when a bar opens or
+        closes."""
         if event.type == "game_started":
             self._public_alive = dict(event.cast_role_counts)
         elif event.type == "lynch_result" and event.role:
@@ -77,10 +108,9 @@ class PacingTracker:
     # -- chunk-level ticks (via GameSession) -----------------------------------------------
 
     def on_chunk(self, scope: str, nodes: Iterable[str]) -> None:
-        """Read the progress one stream chunk implies from the names of the nodes it
-        reports. A night branch's wrapper node finishing at the top level means that
-        role is done for the night; a vote node finishing inside the day phase means
-        one more ballot is in."""
+        """Take the source graph and node names of one stream chunk, contents unseen. A
+        night wrapper finishing at the root marks that unit done; a vote node finishing
+        inside the day phase adds one ballot. Anything else is ignored."""
         for node in nodes:
             if scope == "root" and node in BRANCH_UNITS:
                 self.on_branch_done(BRANCH_UNITS[node])
@@ -88,9 +118,13 @@ class PacingTracker:
                 self.on_ballot()
 
     def on_branch_done(self, unit: str) -> None:
+        """Mark a night unit ("wolves" or a special role) done. No-op outside the night
+        bar or if already marked."""
         self._complete_unit(unit)
 
     def on_ballot(self) -> None:
+        """Count one anonymous ballot, capped at the bar's total, and publish. No-op
+        outside the vote bar."""
         if self._stage == "day_vote":
             self._ballots = min(self._ballots + 1, self._stage_total)
             self._publish_snapshot(self._ballots)
@@ -98,6 +132,8 @@ class PacingTracker:
     # -- internals ------------------------------------------------------------------------
 
     def _start_night(self) -> None:
+        """Open the night bar: one unit per special role the census says is alive, plus
+        the pack if any wolf is. Publishes 0/total and arms a padding timer per unit."""
         self._reset_stage()
         units = [u for u in _SPECIAL_UNITS if self._public_alive.get(u, 0) > 0]
         if self._public_alive.get("wolf", 0) > 0:
@@ -113,20 +149,24 @@ class PacingTracker:
             )
 
     def _start_voting(self) -> None:
+        """Open the vote bar with every publicly alive player as its total. Publishes
+        0/total."""
         self._reset_stage()
         self._stage, self._stage_total, self._ballots = (
             "day_vote", sum(self._public_alive.values()), 0)
         self._publish_snapshot(0)
 
     def _complete_unit(self, unit: str) -> None:
-        """Idempotent: the real branch tick and the padding timer both land here."""
+        """Mark one night unit done and publish the new count. The real tick and the
+        padding timer both land here, so a second mark is a no-op."""
         if self._stage != "night" or unit in self._completed_units:
             return
         self._completed_units.add(unit)
         self._publish_snapshot(len(self._completed_units))
 
     def _publish_snapshot(self, done: int) -> None:
-        """Absolute done/total frames, never increments — a late joiner needs one full frame."""
+        """Send one absolute done/total frame for the current bar. Nothing is sent when
+        no bar is showing or its total is zero."""
         if self._stage is None or self._stage_total == 0:
             return
         self._publish(ev.PhaseProgress(
@@ -134,13 +174,15 @@ class PacingTracker:
         ))
 
     def _finish_stage(self) -> None:
-        """The stage's result went public: leave the bar complete, then reset."""
+        """Close the bar because its result went public: publish it full (night) or at
+        its count (vote), then clear the stage."""
         if self._stage is not None:
             self._publish_snapshot(
                 self._stage_total if self._stage == "night" else self._ballots)
         self._reset_stage()
 
     def _reset_stage(self) -> None:
+        """Clear the bar without publishing: cancel any padding timers, wipe the scratch."""
         for timer in self._padding_timers:
             timer.cancel()  # a dawn that beats the timers must not leave callbacks pending
         self._padding_timers.clear()
