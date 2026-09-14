@@ -3,10 +3,12 @@
 /**
  * The replay theater — the portfolio centerpiece (build_plan P1).
  *
- * The fold happens ONCE for the whole log; the scrubber selects a page out of the result
- * rather than re-folding to a position. That is what makes `?day=` cheap, and why the X-ray
- * is available from the first paint of a finished game instead of only after the scrubber
- * reaches `game_over`.
+ * Two ways to read a finished game. Opened cold, the whole log is folded once and the
+ * scrubber selects a page out of the result, so `?day=` is cheap and the X-ray is there
+ * from the first paint. Pressed play, the log is revealed beat by beat at reading pace and
+ * the fold runs on the visible prefix instead: the page follows the cursor's day, the
+ * scrubber jumps the cursor, and "show all" returns to the first mode. The player owns the
+ * cursor and the timer (useReplayPlayer); the beats are cut in game/replayPlayer.
  *
  * Nothing here gates on entitlement. The archive serves every tier for a finished game, so
  * the X-ray toggle is an ARRANGEMENT control — it decides what is shown at once, never what
@@ -21,6 +23,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { foldEvents } from '@/game/foldEvents';
 import { useNumberFilter } from '@/hooks/useFilterState';
+import { useReplayPlayer } from '@/hooks/useReplayPlayer';
+import { ReplayControls } from '@/components/ReplayControls';
 import { ghostGuesses } from '@/lib/storage';
 import { DayTranscript } from '@/components/DayTranscript';
 import { WinnerCard } from '@/components/transcript-parts';
@@ -37,6 +41,8 @@ import { describeCast, timeAgo } from '@/lib/format';
 import type { DurableGameEvent } from '@/types/contracts';
 import classes from '@/components/Theater.module.css';
 
+const EMPTY: DurableGameEvent[] = [];
+
 export function TheaterClient({ gameId }: { gameId: string }) {
   const [day, setDay] = useNumberFilter('day', 1);
   const [xray, setXray] = useState(false);
@@ -49,9 +55,14 @@ export function TheaterClient({ gameId }: { gameId: string }) {
     staleTime: Infinity, // a finished replay is immutable
   });
 
-  const view = useMemo(
-    () => (data ? foldEvents(data.events as DurableGameEvent[]) : null),
+  const events = useMemo(
+    () => (data ? (data.events as DurableGameEvent[]) : EMPTY),
     [data],
+  );
+  const player = useReplayPlayer(events);
+  const view = useMemo(
+    () => (data ? foldEvents(player.visibleEvents) : null),
+    [data, player.visibleEvents],
   );
 
   // localStorage is client-only; read it after mount so the markup matches on hydration.
@@ -69,7 +80,23 @@ export function TheaterClient({ gameId }: { gameId: string }) {
   if (!view || !data) return null;
 
   const days = Object.values(view.days).sort((a, b) => a.day - b.day);
-  const current = view.days[day] ?? days[0];
+  // While the player runs, the page is the cursor's day; the URL's day is for a cold open.
+  const shownDay = player.active && player.currentDay !== null ? player.currentDay : day;
+  const current = view.days[shownDay] ?? days[days.length - 1];
+  if (!current) {
+    // Play from start, before the first beat lands: nothing to fold yet.
+    return (
+      <div className={classes.shell}>
+        <header className={classes.header}>
+          <ReplayControls player={player} />
+        </header>
+      </div>
+    );
+  }
+  const selectDay = (target: number) => {
+    setDay(target);
+    if (player.active) player.jumpToDay(target);
+  };
   const previous = view.days[current.day - 1];
   const next = view.days[current.day + 1];
   const deadByNow = new Set(
@@ -105,7 +132,8 @@ export function TheaterClient({ gameId }: { gameId: string }) {
           <span>{describeCast(data.cast_role_counts)}</span>
           {data.finished_at ? <span>{timeAgo(data.finished_at)}</span> : null}
         </div>
-        <DayScrubber days={days} current={current.day} onSelect={setDay} />
+        <DayScrubber days={days} current={current.day} onSelect={selectDay} />
+        <ReplayControls player={player} />
       </header>
 
       <div className={classes.body}>
