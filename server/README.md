@@ -37,7 +37,7 @@ still move; an ended game is answered by its database row, and a finished one by
 | `game/entitlement.py` | `entitled()`: may this viewer see this event, by tier and seat; observer tier unlocks at game over | transport §6, §8 |
 | `game/seat_clocks.py` | when an unanswered human turn is delegated or the table parks | `frontend/docs/seat_continuity.md` |
 | `game/pacing.py` | progress bars from public knowledge only | transport §9 |
-| `game/translate.py` | stream parts → tier-ready durable events, one instance per game | transport §5, §8; design notes §1–§3 |
+| `game/translate.py` | stream chunks → tier-ready durable events, one instance per game; the per-node table is `frontend/docs/event_derivation.md` | transport §5, §8; design notes §1–§3 |
 | `game/model_catalog.py` | which models may be played, their rescue, whether the house *can* pay (whether it *will* is `house.py`) | design notes §13 |
 | `game/key_check.py` | one trivial provider call to try a player's key before a game resumes on it | design notes §13 |
 | `storage/game_repository.py` | write side + recovery reads of the game lifecycle | design notes §8 |
@@ -56,15 +56,34 @@ Decision records live in `frontend/docs/`: `server_client_transport.md` (the wir
    paragraph: an event log the client folds, SSE plus POST, audience tiers, seat cookies.
 2. `schemas/events.py` — the vocabulary everything else speaks.
 3. `game/live_game_registry.py` — the state diagram in its docstring, then the transitions.
-4. `game/game_session.py` — `GameSession`'s field guide, then `_drive_graph`, `_on_part`, `submit_turn`.
+4. `game/game_session.py` — `GameSession`'s field guide, then `_drive_graph`, `_on_chunk`, `submit_turn`.
 5. `routes/games.py` `_sse` — how one viewer's stream is filtered and resumed.
 6. Then only what a task takes you to. Do not read `translate.py` cold; read it beside
+   `frontend/docs/event_derivation.md` (what each node sends, and to whom) and
    `tests/server/test_translator.py`, whose names are the spec.
 
 ## Re-entering after months
 
 Read the decision record for the area, skim the test names in `tests/server/`, read the
 module docstring, open code only where the task lands. Never reread everything.
+
+## When the engine changes
+
+The server keeps its own copies of a few engine facts, on purpose: each copy records a
+decision the server made about that thing, so it cannot be imported. `tests/server/
+test_engine_sync.py` compares the Python copies with the engine and fails naming what is
+missing; the frontend copies it cannot see. Per kind of change:
+
+| You added | Update | Caught by |
+|---|---|---|
+| a state field on an existing node | that node's `writes` set in `translate.py`; a handler plus an event class in `schemas/events.py` if the browser needs it; the node's row in `event_derivation.md`; regenerate the goldens if output changed | `test_engine_sync` (field not listed); the goldens (output moved); else the first live game raises `TranslationError` |
+| a graph node | one `@node` / `silent_node` entry in `translate.py`, in game order; a section in `event_derivation.md`; `BRANCH_UNITS` in `pacing.py` if the night progress bar counts it | the first live game raises `TranslationError` (the sync test sees fields, not nodes) |
+| a night role | the role loop, the role-holder set and the ONE_MORE_DAY resets in `translate.py`; `_SPECIAL_UNITS` and `BRANCH_UNITS` in `pacing.py`; the `action_kind` literal in `schemas/events.py`; the night act section and census rules in `event_derivation.md`; the frontend files that name roles (`grep -rl healer frontend/src`) | `test_engine_sync` for the Python lists; nothing for the frontend |
+| a human-turn phase | `_ACTION_KINDS` in `translate.py` and the `action_kind` literal in `schemas/events.py` | the first such turn raises `TranslationError` |
+
+The goldens (`tests/fixtures/translator_golden*.jsonl`) are regenerated only for a
+deliberate wire change, with `poetry run python -m tests.fixtures.translator_golden`; the
+diff of the golden file is then the review of that change.
 
 ## Running it
 
