@@ -76,7 +76,11 @@ class ReplayService:
                     .order_by(EventRow.seq)
                 )
             ).scalars().all()
-        if len(event_rows) != row.n_events:
+        # Count and contiguity: seq runs from 1 with no gaps, so the last must equal
+        # the count. The write side checks the same at completion; this is the net
+        # for rows completed before it did, or touched since.
+        if len(event_rows) != row.n_events or (
+                event_rows and event_rows[-1].seq != row.n_events):
             raise IncompleteReplay(game_id)
         summary = ReplayBase.model_validate(row)
         return ReplayGame(

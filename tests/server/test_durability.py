@@ -18,7 +18,7 @@ from langgraph.types import Command
 from server.game.live_game_registry import LiveGameRegistry
 from server.housekeeping import recovery
 from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
-from server.storage.game_repository import derive_completion_metadata
+from server.storage.game_repository import derive_completion_metadata, event_log_shortfall
 from server.game.translate import Translator
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import FakeGraph
@@ -254,3 +254,14 @@ def test_completion_metadata_is_lifted_from_the_event_log():
         "cast_role_counts": {"wolf": 1, "villager": 1},
     }
     assert derive_completion_metadata(log[:-1]) is None
+
+
+def test_event_log_shortfall_names_a_short_or_holed_log():
+    assert event_log_shortfall(expected=3, stored=3, last_seq=3) is None
+    # A batch failed to write during play: fewer rows than the game produced.
+    assert event_log_shortfall(3, 2, 3) == "event log incomplete: 2 of 3 events stored, last seq 3"
+    # The hole a restart hides: the revived game's log was rebuilt from the rows, so the
+    # counts agree, but the seq numbers skip.
+    assert event_log_shortfall(2, 2, 3) == "event log incomplete: 2 of 2 events stored, last seq 3"
+    # Nothing stored at all (storage was off while the game ran, then turned on).
+    assert event_log_shortfall(3, 0, 0) == "event log incomplete: 0 of 3 events stored, last seq 0"

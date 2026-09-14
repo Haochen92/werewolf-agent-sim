@@ -14,7 +14,9 @@ import os
 import pytest
 from sqlmodel import select
 
-from server.database_models.game import COMPLETED, RUNNING, EventRow, GameRow
+from datetime import datetime, timezone
+
+from server.database_models.game import COMPLETED, DROPPED, RUNNING, EventRow, GameRow
 from server.db import Database
 from server.storage.game_repository import GameRepository
 from server.storage.replay_service import IncompleteReplay, ReplayNotFound, ReplayService
@@ -165,4 +167,24 @@ async def test_postgres_round_trip():
         )).scalars().all()
     assert row is not None and row.status == COMPLETED and row.winner == "wolves"
     assert len(event_rows) == 3
+
+    # A batch was lost during play: completion marks the game dropped, not completed.
+    await repository.upsert_game("itest-short", status=RUNNING)
+    await repository.record_events("itest-short", _log()[:2])
+    await repository.complete_game("itest-short", _log(), n_humans=0)
+    async with database.session() as sess:
+        short = await sess.get(GameRow, "itest-short")
+    assert short is not None and short.status == DROPPED
+    assert short.error == "event log incomplete: 2 of 3 events stored, last seq 2"
+    with pytest.raises(ReplayNotFound):
+        await replay_service.get_replay("itest-short")
+
+    # A row completed before the write-side check, with a hole: the read side refuses.
+    full = _log()
+    await repository.upsert_game(
+        "itest-holed", status=COMPLETED, finished_at=datetime.now(timezone.utc),
+        winner="wolves", days=3, n_events=2, n_humans=0, cast_role_counts={"wolf": 1})
+    await repository.record_events("itest-holed", [full[0], full[2]])
+    with pytest.raises(IncompleteReplay):
+        await replay_service.get_replay("itest-holed")
     await database.close()

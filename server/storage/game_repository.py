@@ -52,6 +52,22 @@ def derive_completion_metadata(log: Sequence[ev.DurableEvent]) -> dict | None:
     }
 
 
+def event_log_shortfall(expected: int, stored: int, last_seq: int) -> str | None:
+    """Say what is wrong with a stored event log, or None when nothing is.
+
+    ``expected`` is the length of the game's own log, ``stored`` the rows on disk and
+    ``last_seq`` the highest seq among them. Events are numbered from 1 with no gaps, so
+    a complete log has all three equal. A short count means a batch failed to write; a
+    matching count with a lower last seq cannot happen; a matching count with a higher
+    last seq means a hole that a restart has since hidden, since a revived game rebuilds
+    its log from the rows and so counts the hole as if it never existed.
+    """
+    if stored == expected and last_seq == expected:
+        return None
+    return (f"event log incomplete: {stored} of {expected} events stored, "
+            f"last seq {last_seq}")
+
+
 class GameRepository:
     """Read and write ``GameRow`` and ``EventRow`` through one shared database."""
 
@@ -146,8 +162,10 @@ class GameRepository:
             n_humans: Number of human-controlled seats in the game.
 
         Returns:
-            Nothing. An incomplete log marks the game ``dropped``; database
-            failures are logged and suppressed.
+            Nothing. A log with no clean ending, or one the table holds only part of
+            (event writes fail soft during play), marks the game ``dropped`` with the
+            reason instead, so it never enters the replay listing; database failures
+            are logged and suppressed.
         """
         if not self._database.configured:
             return
@@ -161,6 +179,16 @@ class GameRepository:
             )
             return
         try:
+            async with self._database.session() as session:
+                stored, last_seq = (await session.execute(
+                    select(func.count(), func.coalesce(func.max(EventRow.seq), 0))
+                    .where(EventRow.game_id == game_id)
+                )).one()
+            shortfall = event_log_shortfall(len(log), stored, last_seq)
+            if shortfall is not None:
+                logger.warning("game %s: %s; marking dropped", game_id, shortfall)
+                await self.upsert_game(game_id, status=DROPPED, error=shortfall)
+                return
             values = {
                 "status": COMPLETED,
                 "finished_at": func.now(),
