@@ -549,6 +549,30 @@ async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session
     assert session._pending_answers["p2"].result()["delegate"] is True
 
 
+async def test_a_long_park_gives_every_waiting_seat_a_fresh_window(quiet_session, monkeypatch):
+    """The park outlasted the thinking window (a table left over lunch). When one human
+    returns, the still-absent seat must get the grace, not an instant delegation off a
+    deadline that is hours in the past."""
+    from datetime import timedelta
+    monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+    monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"],
+                            human_players=["p1", "p2", "p3"])
+    _park(session, "p1")
+    _park(session, "p2")
+    await asyncio.sleep(0.2)
+    assert session.clocks._tasks == {}  # parked
+    session.clocks._thinking["p2"] = _now() - timedelta(hours=3)  # the park ran long
+
+    session.subscribe("t1")
+    assert _seconds_left(session, "p1") > 9
+    assert 0 < _seconds_left(session, "p2") <= 0.05  # the grace, not the past
+    assert sorted(session.pending_requests) == ["p1", "p2"]  # nothing delegated yet
+    await asyncio.sleep(0.2)
+    assert sorted(session.pending_requests) == ["p1"]
+    assert session._pending_answers["p2"].result()["delegate"] is True
+
+
 async def test_solo_games_ignore_presence(quiet_session, monkeypatch):
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["p1"])

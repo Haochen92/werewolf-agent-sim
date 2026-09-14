@@ -140,19 +140,20 @@ class SeatClocks:
 
     def on_seat_returned(self, seat: str) -> None:
         """A human seat connected again. If that seat was running on the short absence
-        window, it goes back to its full thinking time, and if the game was parked the
-        returning seat's own question starts a fresh 120 seconds, since nobody was kept
-        waiting while it was parked. Every other seat still waiting has its clock started
-        again too, and when one of those runs out there is now someone connected, so that
-        turn goes to the seat's AI."""
+        window, it goes back to its full thinking time. If the game was parked, every
+        seat still waiting gets a fresh 120 seconds, since nobody was kept waiting while
+        it was parked: the returning seat runs on the full window, the seats still absent
+        drop to the 30-second one, and when one of those runs out there is now someone
+        connected, so that turn goes to the seat's AI. Seats whose clocks were already
+        running are left alone."""
         if not self._enabled or not self._pending:
             return
         for pending_seat, request in list(self._pending.items()):
             running = self.is_running(pending_seat)
             if running and pending_seat != seat:
                 continue  # someone else's return does not touch a live clock
-            if not running and pending_seat == seat:
-                self._thinking[seat] = _now() + timedelta(seconds=AFK_TIMEOUT_SECONDS)
+            if not running:  # parked: the old deadline may be hours past
+                self._thinking[pending_seat] = _now() + timedelta(seconds=AFK_TIMEOUT_SECONDS)
             self.reschedule(pending_seat, request)
 
     def on_seat_left(self, seat: str) -> None:
