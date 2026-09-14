@@ -1,11 +1,12 @@
 """The timer job that gives up on games nobody ever came back to.
 
-A game left waiting on a human question with nobody connected costs nothing while it
-waits, but boot recovery would keep bringing it back forever. This is its shelf life:
-once a solo game has waited an hour, or a game with several humans a whole day, the
-sweeper marks it ``dropped`` and stores the reason, which is what someone opening the
-game later sees. Running the sweep again is harmless, and it never touches a game
-somebody is watching, one that is actually playing, or one that has already ended.
+A game left waiting on a human question, or waiting for its owner's API key after a
+restart, with no human seat connected costs nothing while it waits, but boot recovery
+would keep bringing it back forever. This is its shelf life: once a solo game has waited
+an hour, or a game with several humans a whole day, the sweeper marks it ``dropped`` and
+stores the reason, which is what someone opening the game later sees. Running the sweep
+again is harmless, and it never touches a game with a human seat connected (a spectator
+does not count), one that is actually playing, or one that has already ended.
 """
 
 from __future__ import annotations
@@ -22,6 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def _shelf_life(session: GameSession, settings: ServerSettings) -> timedelta:
+    """An hour for a solo table, a day for one with several humans, so a group is not
+    lost to one person's evening away. Both knobs are server settings."""
     multi = len(session._seat_tokens) > 1
     seconds = settings.MULTI_PARK_TTL_SECONDS if multi else settings.SOLO_PARK_TTL_SECONDS
     return timedelta(seconds=seconds)
