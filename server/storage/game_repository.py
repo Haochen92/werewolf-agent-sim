@@ -186,10 +186,11 @@ class GameRepository:
             logger.exception("game %s: completion persistence failed", game_id)
 
     async def load_recoverable_games(self) -> list[GameRow]:
-        """Load the waiting rooms and running games eligible for boot recovery.
+        """Load the games boot recovery must bring back: every row still ``running``.
+        Rooms have no row, and a ``waiting`` row from before that ruling is left alone.
 
         Returns:
-            Every ``GameRow`` whose status is ``waiting`` or ``running``.
+            Every ``GameRow`` whose status is in ``RECOVERABLE_STATUSES``.
 
         Raises:
             Exception: Propagates database failures so recovery can fail loudly.
