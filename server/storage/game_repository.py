@@ -21,7 +21,6 @@ from server.database_models.game import (
     COMPLETED,
     DROPPED,
     RECOVERABLE_STATUSES,
-    WAITING,
     EventRow,
     GameRow,
 )
@@ -68,6 +67,10 @@ class GameRepository:
     async def upsert_game(self, game_id: str, **fields: Any) -> None:
         """Insert a game or update only the supplied fields on its existing row.
 
+        The first write of a game must carry its ``status``: a row is born ``running``
+        at launch (rooms are memory-only and get no row), and there is no default to
+        fall back on. Later writes touch only the fields given.
+
         Args:
             game_id: Stable game identity and primary key.
             **fields: ``GameRow`` columns to insert or update.
@@ -79,9 +82,7 @@ class GameRepository:
         if not self._database.configured:
             return
         try:
-            stmt = insert(GameRow).values(
-                {"game_id": game_id, "status": WAITING, **fields}
-            )
+            stmt = insert(GameRow).values({"game_id": game_id, **fields})
             stmt = stmt.on_conflict_do_update(
                 index_elements=["game_id"],
                 set_={**fields, "updated_at": func.now()},

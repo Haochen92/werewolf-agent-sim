@@ -19,7 +19,7 @@ from sqlmodel import Field, SQLModel
 
 GameStatus = Literal["waiting", "running", "completed", "dropped"]
 
-WAITING: GameStatus = "waiting"
+WAITING: GameStatus = "waiting"  # legacy only: never written since rooms left the table
 RUNNING: GameStatus = "running"
 COMPLETED: GameStatus = "completed"
 DROPPED: GameStatus = "dropped"
@@ -49,10 +49,7 @@ class GameRow(SQLModel, table=True):
     )
 
     game_id: str = Field(sa_column=Column(Text, primary_key=True))
-    status: GameStatus = Field(
-        default=WAITING,
-        sa_column=Column(String, nullable=False),
-    )
+    status: GameStatus = Field(sa_column=Column(String, nullable=False))
 
     # Operational/recovery fields. They remain private because public DTOs never
     # expose them; the provider API key itself is never stored here.
