@@ -41,9 +41,23 @@ def _now() -> datetime:
 class SeatClocks:
     """One game's clocks, one for each seat that has been asked something.
 
-    ``pending`` is the session's own dictionary of unanswered questions, shared by
-    reference so both sides always see the same one. ``deadlines`` is the moment each
-    seat's clock runs out, which is also the countdown the players are shown."""
+    Lent by GameSession at construction:
+      pending         the session's own dictionary of unanswered questions, seat -> the
+                      question, shared by reference so both sides always see the same one.
+      enabled         False on a solo table, and then every method is a no-op.
+      seat_present    is this seat's browser connected right now?
+      anyone_present  is any human seat's browser connected right now?
+      delegate        hand this seat's current question to its own AI.
+
+    Kept here:
+      deadlines   seat -> the moment its clock runs out, as an ISO-8601 string. This is
+                  the countdown the players are shown, so it holds whichever of the two
+                  windows is in use and is removed while the table is parked.
+      _thinking   seat -> the end of its 120 seconds. Fixed when the question is asked,
+                  refreshed only when the table unparks; the absence window is always
+                  computed against it, never stored.
+      _tasks      seat -> the one asyncio task sleeping until its deadline. A seat is
+                  "running" while it has one; a restart cancels the old task first."""
 
     def __init__(self, game_id: str, pending: dict[str, HumanTurnRequest], *,
                  enabled: bool,
@@ -52,7 +66,7 @@ class SeatClocks:
                  delegate: Callable[[str], None]) -> None:
         self._game_id = game_id
         self._pending = pending
-        self._enabled = enabled  # multi-human tables only
+        self._enabled = enabled
         self._seat_present = seat_present
         self._anyone_present = anyone_present
         self._delegate = delegate
@@ -134,6 +148,8 @@ class SeatClocks:
             task.cancel()
 
     def is_running(self, seat: str) -> bool:
+        """True while this seat has a live clock; False once it expired, was cleared, or
+        the table parked."""
         return seat in self._tasks
 
     # -- presence transitions -------------------------------------------------------------
