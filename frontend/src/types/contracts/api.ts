@@ -29,9 +29,10 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * The BYOK selection menu (tested game models only)
-     * @description Tested game models, display labels, and their same-credential rescue models.
-     *     First entry = the default for a bare key.
+     * The served-game model menu (tested models only), and what the house will pay for
+     * @description Every tested model with its rescue, whether the house pays for it, and which one is
+     *     the default right now; plus the house's purse for today, so the client can say
+     *     "house pays, 3 left" or "your key needed" before the player submits.
      */
     get: operations['supported_models_models_get'];
     put?: never;
@@ -59,6 +60,86 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/games/{game_id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Status snapshot */
+    get: operations['game_status_games__game_id__get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/games/{game_id}/key': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Resume a key-funded game after a restart by supplying the key again
+     * @description Any seat holder may fund the resume; spectators may not. The key is tried on the
+     *     provider first (422 with its complaint), then the game continues from its checkpoint.
+     *     409 when the game is not waiting for a key.
+     */
+    post: operations['fund_game_games__game_id__key_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/games/{game_id}/turns': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Submit the human seat's action */
+    post: operations['submit_turn_games__game_id__turns_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/games/{game_id}/events': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * SSE event stream
+     * @description Stream entitled durable events plus public ephemeral pacing frames.
+     *
+     *     ``last_seq`` is the cursor frozen into the original URL. On automatic browser
+     *     reconnection, ``Last-Event-ID`` carries the live cursor and therefore wins when
+     *     valid. Pacing frames have no ID, so they never advance that durable cursor.
+     */
+    get: operations['event_stream_games__game_id__events_get'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/rooms': {
     parameters: {
       query?: never;
@@ -68,18 +149,17 @@ export interface paths {
     };
     /**
      * Browse waiting rooms (public)
-     * @description Waiting rooms only, newest first. Rooms older than ROOM_LIST_TTL_SECONDS are
-     *     hidden, not expired — durability revives abandoned rooms across restarts, so an
-     *     unfiltered list would fill with the undead; the direct room URL keeps working.
+     * @description Return non-stale waiting rooms newest first without expiring direct URLs.
      */
     get: operations['list_rooms_rooms_get'];
     put?: never;
     /**
      * Create a multiplayer waiting room (humans join via /join)
-     * @description The multiplayer door: no human/role fields exist in its contract — a room
-     *     seats humans only through POST /join and always deals random roles. All
-     *     per-id routes stay under /games/{id}: the /start swap keeps the id, so the
-     *     room URL is the game URL for its whole life.
+     * @description Create a lobby whose identifier remains stable when the game starts.
+     *
+     *     Humans enter only through ``/join`` and roles remain random. The model is resolved
+     *     and the house consulted here so the host learns early; the cap is checked again at
+     *     start, which is when the game actually costs anything.
      */
     post: operations['create_room_rooms_post'];
     delete?: never;
@@ -97,13 +177,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /**
-     * Lock or unlock a waiting room (host only)
-     * @description The host's door policy: locked bounces /join (409) without touching seated
-     *     players. Kicking a seated player is deliberately NOT offered (deferred ruling
-     *     2026-08-20): pre-start, lock covers the griefing case; post-start, the AFK
-     *     delegate already absorbs deserters.
-     */
+    /** Lock or unlock a waiting room (host only) */
     post: operations['lock_room_games__game_id__lock_post'];
     delete?: never;
     options?: never;
@@ -137,13 +211,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /**
-     * Restore a lost seat cookie from the token's body copy
-     * @description Cookie-loss recovery (new device, cleared browsing data): the stashed body-copy
-     *     token re-proves seat ownership and re-sets the cookie. Serves both registry phases
-     *     — `owns` lives on GameLobby and GameSession alike. A seat lost for good (both
-     *     copies gone) is an AFK seat: the game must not stall on it (slice 4's timer).
-     */
+    /** Restore a lost seat cookie from the token's body copy */
     post: operations['rejoin_game_games__game_id__rejoin_post'];
     delete?: never;
     options?: never;
@@ -162,75 +230,9 @@ export interface paths {
     put?: never;
     /**
      * Start the waiting room's game (host only)
-     * @description The registry swap: the GameLobby is replaced by a real GameSession under the
-     *     same game_id (the room URL survives). Check-then-swap is atomic — no await
-     *     between them, so a concurrent /start or /join cannot interleave.
+     * @description Replace the lobby with a running session under the same ID (registry.start).
      */
     post: operations['start_game_games__game_id__start_post'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/games/{game_id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Status snapshot */
-    get: operations['game_status_games__game_id__get'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/games/{game_id}/turns': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Submit the human seat's action */
-    post: operations['submit_turn_games__game_id__turns_post'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/games/{game_id}/events': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * SSE event stream
-     * @description Endpoint for the SSE connection — the response never ends; _sse yields frames
-     *     for the connection's lifetime.
-     *     token -> the seat cookie: proves which seat the viewer owns (private tiers);
-     *                     "" = spectator (public tier only), unknown token = 403.
-     *     last_seq: int -> the client's own cursor: the last event id it already has; frozen at
-     *                     connection time. First connection to game starts at 0.
-     *     Last-Event-ID header -> the living cursor (ruled 2026-08-18): the browser's auto-
-     *                     reconnect reuses the ORIGINAL url verbatim (query cursor = a fossil
-     *                     from construction) and carries its real position in this header.
-     *                     Header wins when present; only durable seqs ever land in it because
-     *                     pacing frames carry no id line.
-     */
-    get: operations['event_stream_games__game_id__events_get'];
-    put?: never;
-    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -264,6 +266,24 @@ export interface paths {
     /** One finished game's full event log */
     get: operations['get_replay_replays__game_id__get'];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/house': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The house's purse as of now */
+    get: operations['read_house_admin_house_get'];
+    /** Change the house's knobs, live */
+    put: operations['update_house_admin_house_put'];
     post?: never;
     delete?: never;
     options?: never;
@@ -376,6 +396,15 @@ export interface components {
       owes?: string[];
     };
     /**
+     * FundGame
+     * @description POST /games/{id}/key body: a seat holder's key to resume a game that lost its
+     *     funding in a restart. Tried on the provider before the game moves; never stored.
+     */
+    FundGame: {
+      /** Api Key */
+      api_key: string;
+    };
+    /**
      * GameCreated
      * @description POST /games and POST /games/{id}/start response.
      */
@@ -480,29 +509,24 @@ export interface components {
        * @default 0
        */
       last_seq: number;
+      /**
+       * Awaiting Key
+       * @default false
+       */
+      awaiting_key: boolean;
+      /** Winner */
+      winner?: string | null;
+      /**
+       * Archived
+       * @default false
+       */
+      archived: boolean;
       /** Alive Role Counts */
       alive_role_counts?: {
         [key: string]: number;
       };
       /** Error */
       error?: string | null;
-      /**
-       * Awaiting Key
-       * @description The game ran on a player's key and was rebuilt after a restart without it. It is live but idle until a seat holder supplies the key again (POST /games/{id}/key).
-       * @default false
-       */
-      awaiting_key: boolean;
-      /**
-       * Winner
-       * @description The winning faction, once the game is over and served from its archived row.
-       */
-      winner?: string | null;
-      /**
-       * Archived
-       * @description True when this snapshot came from the database row rather than a live game: the game has ended and left the live registry. There is no stream to open; a finished game has a replay under the same id.
-       * @default false
-       */
-      archived: boolean;
     };
     /**
      * GmMessage
@@ -527,6 +551,50 @@ export interface components {
     HTTPValidationError: {
       /** Detail */
       detail?: components['schemas']['ValidationError'][];
+    };
+    /**
+     * HouseFunding
+     * @description The house's purse for today, as GET /models reports it to the client.
+     */
+    HouseFunding: {
+      /** Enabled */
+      enabled: boolean;
+      /** Games Per Day */
+      games_per_day: number;
+      /** Remaining */
+      remaining: number;
+      /** Reset At */
+      reset_at: string;
+    };
+    /**
+     * HouseUpdate
+     * @description PUT /admin/house body: any subset of the knobs.
+     */
+    HouseUpdate: {
+      /** Enabled */
+      enabled?: boolean | null;
+      /** Default Model */
+      default_model?: string | null;
+      /** Games Per Day */
+      games_per_day?: number | null;
+    };
+    /**
+     * HouseView
+     * @description GET/PUT /admin/house response: the purse plus the knobs behind it.
+     */
+    HouseView: {
+      /** Enabled */
+      enabled: boolean;
+      /** Games Per Day */
+      games_per_day: number;
+      /** Remaining */
+      remaining: number;
+      /** Reset At */
+      reset_at: string;
+      /** Default Model */
+      default_model: string;
+      /** Used Today */
+      used_today: number;
     };
     /**
      * InputRequest
@@ -628,7 +696,7 @@ export interface components {
     };
     /**
      * ModelRow
-     * @description One entry of the GET /models BYOK menu.
+     * @description One entry of the GET /models served-game menu.
      */
     ModelRow: {
       /** Model */
@@ -639,30 +707,14 @@ export interface components {
       rescue_model: string | null;
       /**
        * House Funded
-       * @description The server can pay for this model. Whether it will right now is `house` on the menu; a player's own key runs any row regardless.
        * @default false
        */
       house_funded: boolean;
       /**
        * Is Default
-       * @description The row a game runs on when the player picks none. A live setting, not a fixed position in the list.
        * @default false
        */
       is_default: boolean;
-    };
-    /**
-     * HouseFunding
-     * @description The house's purse for today, as GET /models reports it to the client.
-     */
-    HouseFunding: {
-      /** Enabled */
-      enabled: boolean;
-      /** Games Per Day */
-      games_per_day: number;
-      /** Remaining */
-      remaining: number;
-      /** Reset At */
-      reset_at: string;
     };
     /**
      * ModelsMenu
@@ -852,7 +904,7 @@ export interface components {
     };
     /**
      * ReplayBase
-     * @description The metadata half — one row of GET /replays, and the columns both models share.
+     * @description One row returned by ``GET /replays``.
      */
     ReplayBase: {
       /** Game Id */
@@ -875,17 +927,11 @@ export interface components {
        * Model
        * @default
        */
-      model?: string;
+      model: string;
     };
     /**
      * ReplayGame
-     * @description GET /replays/{id}: the summary plus the full event log.
-     *
-     *     ``events`` is declared as the discriminated union (not ``list[dict]``, which the
-     *     table keeps for its JSONB column) so the 27-member event schema lands in
-     *     /openapi.json — the frontend's TS event types are generated from it (ruled
-     *     2026-08-20). Side effect: stored rows re-validate on the way out, so archive
-     *     drift fails loudly here instead of shipping mystery dicts.
+     * @description One complete replay with every stored event revalidated for the wire.
      */
     ReplayGame: {
       /** Game Id */
@@ -908,7 +954,7 @@ export interface components {
        * Model
        * @default
        */
-      model?: string;
+      model: string;
       /** Events */
       events: (
         | components['schemas']['GameStarted']
@@ -1310,6 +1356,144 @@ export interface operations {
       };
     };
   };
+  game_status_games__game_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameStatus'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  fund_game_games__game_id__key_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['FundGame'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['GameStatus'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  submit_turn_games__game_id__turns_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          [key: string]: unknown;
+        };
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TurnAccepted'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  event_stream_games__game_id__events_get: {
+    parameters: {
+      query?: {
+        last_seq?: number;
+      };
+      header?: {
+        'last-event-id'?: string | null;
+      };
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
   list_rooms_rooms_get: {
     parameters: {
       query?: never;
@@ -1500,109 +1684,6 @@ export interface operations {
       };
     };
   };
-  game_status_games__game_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        game_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['GameStatus'];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
-  submit_turn_games__game_id__turns_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        game_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': {
-          [key: string]: unknown;
-        };
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['TurnAccepted'];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
-  event_stream_games__game_id__events_get: {
-    parameters: {
-      query?: {
-        last_seq?: number;
-      };
-      header?: {
-        'last-event-id'?: string | null;
-      };
-      path: {
-        game_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HTTPValidationError'];
-        };
-      };
-    };
-  };
   list_replays_replays_get: {
     parameters: {
       query?: {
@@ -1653,6 +1734,72 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ReplayGame'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  read_house_admin_house_get: {
+    parameters: {
+      query?: never;
+      header?: {
+        'x-admin-token'?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HouseView'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  update_house_admin_house_put: {
+    parameters: {
+      query?: never;
+      header?: {
+        'x-admin-token'?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['HouseUpdate'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HouseView'];
         };
       };
       /** @description Validation Error */
