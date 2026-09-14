@@ -19,6 +19,9 @@ class ReplayBase(BaseModel):
     n_events: int
     n_humans: int
     cast_role_counts: dict[str, int]
+    model: str = ""
+    """The model id the game was played on, as the catalogue names it. Empty for games
+    recorded before the column existed."""
 
 
 class ReplayGame(ReplayBase):

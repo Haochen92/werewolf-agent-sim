@@ -86,6 +86,7 @@ def test_replay_dto_drops_private_game_row_fields():
         status=COMPLETED,
         host_key="private-host-key",
         seats=[{"name": "hao", "token": "private-seat-token"}],
+        model="gemini-2.5-pro",
         winner="wolves",
         days=3,
         n_events=3,
@@ -101,6 +102,7 @@ def test_replay_dto_drops_private_game_row_fields():
         "n_events": 3,
         "n_humans": 1,
         "cast_role_counts": {"wolf": 1},
+        "model": "gemini-2.5-pro",  # the one operational column a replay does show
     }
 
 

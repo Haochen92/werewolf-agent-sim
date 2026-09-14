@@ -871,6 +871,11 @@ export interface components {
       cast_role_counts: {
         [key: string]: number;
       };
+      /**
+       * Model
+       * @default
+       */
+      model?: string;
     };
     /**
      * ReplayGame
@@ -899,6 +904,11 @@ export interface components {
       cast_role_counts: {
         [key: string]: number;
       };
+      /**
+       * Model
+       * @default
+       */
+      model?: string;
       /** Events */
       events: (
         | components['schemas']['GameStarted']
