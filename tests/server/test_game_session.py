@@ -652,6 +652,20 @@ async def test_pacing_night_denominator_is_the_public_census():
     assert snapshots[-1].done == snapshots[-1].total
 
 
+async def test_a_viewer_joining_mid_stage_is_handed_the_bar_first(quiet_session):
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["p1"])
+    tracker = session._tracker
+    tracker.on_event(_ev(ev.GameStarted, seats=[], cast_role_counts={"wolf": 1, "healer": 1}))
+    tracker.on_event(_ev(ev.PhaseChange, phase="night"))
+    tracker.on_branch_done("healer")
+    q = session.subscribe()
+    kind, frame = q.get_nowait()
+    assert kind == "pacing" and (frame.stage, frame.done, frame.total) == ("night", 1, 2)
+
+    tracker.on_event(_ev(ev.NightResult, deaths=[], save=None))  # dawn: no bar showing
+    assert session.subscribe().empty()
+
+
 async def test_pacing_vote_stage_counts_ballots_against_survivors():
     snapshots = []
     tracker = PacingTracker(snapshots.append)

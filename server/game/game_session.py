@@ -546,6 +546,9 @@ class GameSession:
         a grace or un-parks the table."""
         q: asyncio.Queue = asyncio.Queue()
         self._subscribers[q] = token
+        frame = self._tracker.current_frame
+        if frame is not None:  # a bar is showing: the late joiner gets it before anything else
+            q.put_nowait(("pacing", frame))
         seat = self.seat_of_viewer(token)
         if seat:
             self.clocks.on_seat_returned(seat)

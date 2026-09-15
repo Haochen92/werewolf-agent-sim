@@ -68,6 +68,8 @@ class PacingTracker:
       _completed_units  night numerator; a set, so a double mark is a no-op.
       _ballots          vote numerator; anonymous ticks, so a plain counter.
       _padding_timers   the night timers, cancelled when a stage ends before they fire.
+      _last_frame       the frame most recently published, or None with no bar showing;
+                        what a viewer who connects mid-stage is handed first.
     Everything runs on the event loop."""
 
     def __init__(self, publish: Callable[[ev.PhaseProgress], None]) -> None:
@@ -79,6 +81,12 @@ class PacingTracker:
         self._completed_units: set[str] = set()
         self._ballots = 0
         self._padding_timers: list[asyncio.TimerHandle] = []
+        self._last_frame: ev.PhaseProgress | None = None
+
+    @property
+    def current_frame(self) -> ev.PhaseProgress | None:
+        """The bar as it stands, for a viewer joining mid-stage; None when none is showing."""
+        return self._last_frame
 
     # -- public-event feed ----------------------------------------------------------------
 
@@ -169,9 +177,10 @@ class PacingTracker:
         no bar is showing or its total is zero."""
         if self._stage is None or self._stage_total == 0:
             return
-        self._publish(ev.PhaseProgress(
-            day=self._day, stage=self._stage, done=done, total=self._stage_total
-        ))
+        frame = ev.PhaseProgress(
+            day=self._day, stage=self._stage, done=done, total=self._stage_total)
+        self._last_frame = frame
+        self._publish(frame)
 
     def _finish_stage(self) -> None:
         """Close the bar because its result went public: publish it full (night) or at
@@ -187,3 +196,4 @@ class PacingTracker:
             timer.cancel()  # a dawn that beats the timers must not leave callbacks pending
         self._padding_timers.clear()
         self._stage, self._stage_total, self._completed_units, self._ballots = None, 0, set(), 0
+        self._last_frame = None
