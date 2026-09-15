@@ -144,11 +144,15 @@ pacing pulse at the transcript tail; resolves into that player's speech bubble, 
 vanishes on the next event (a pass — invisible live by tier, an X-ray row in replay).
 Replay X-ray-off hides turn markers entirely.
 
-**D13 · Day summary (`day_summary`).** Per the wire docstring it renders *next morning*:
-a "Previous day" recap card at the top of each day page ≥2, GM-styled, collapsible —
-**expanded live** (it's the morning briefing after a night away), **collapsed in replay**
-(the reader just read the day). The O-tier `day_summary_structured` feeds the X-ray
-inspector only (accusations/claims lists), never the story surface.
+**D13 · Day summary (`day_summary` + `day_summary_structured`).** RULED 2026-09-15,
+superseding the "Previous day" recap card: the summary is **off the story surface**. It is
+what the agents carry into the next day — the one memory of day N every AI player reads —
+so it renders atop day N+1 **under the X-ray only**, as a collapsed "What the agents carry
+from day N" card. The O-tier structured form renders as sections (dynamics, then
+accusations as "accusers → target" with the summarizer's sentence on its own line and a
+"Defense:" line, then role claims, then blocs); the public flattened text is the fallback
+when the structured form is absent (summarizer failed, or a live viewer before R7). A human
+just lived through day N and the text is written for a context window, not a page.
 
 **D14 · Voting.** On `phase_change: voting`: a GM line calls the vote; the dock switches
 to the vote form (D17). While ballots are out, `phase_progress (day_vote)` drives a thin
@@ -220,7 +224,7 @@ ruling) and the transcript starts a night section:
 anatomy, "found dead" flavor) with the **attacker-type glyph** (wolf/SK/vigilante —
 `attacker_types` is public flavor; multiple attackers = stacked glyphs). `save` present →
 a GM line ("someone was attacked in the night — and survived"). Empty deaths → "a quiet
-night" GM line. Then D13's recap card, then the day's discussion begins.
+night" GM line. Then, X-ray on, D13's carried-summary card; then the day's discussion begins.
 
 ## 7. Endings and edges
 
@@ -277,8 +281,8 @@ timing = a later slice). Spectator link is offered at the lobby (D6) and on room
 | 10 | `addressed_targets` (O) | — | on: inspector tags per speech |
 | 11 | `strategy_update` (O) | — | on: inspector strategy timeline |
 | 12 | `input_request` (S) | dock form (D17) + ring (D18) | — (tier) |
-| 13 | `day_summary` (P) | next-morning recap, expanded (D13) | collapsed recap |
-| 14 | `day_summary_structured` (O) | — | on: inspector claim/accusation lists |
+| 13 | `day_summary` (P) | on: fallback text of the carried-summary card atop day+1 (D13) | same |
+| 14 | `day_summary_structured` (O) | — (tier) | on: carried-summary card atop day+1, as sections (D13) |
 | 15 | `vote_cast` (P) | vote block batch (D14) + matrix (D16) | same |
 | 16 | `gm_message` (P) | GM line (D11) | same |
 | 17 | `lynch_result` (P) | death banner / quiet line (D15) | same |
@@ -300,7 +304,7 @@ D6/D7 · running = §4–§7 · finished = D22. Orthogonal `error` = D23.
 ## 9. Component-inventory delta (extends ux_baseline §5 once ruled)
 
 New components this trace surfaces: `RoleRevealCard` (D8) + `RoleChip` (D9) ·
-`GmLine` (D11) · `ThinkingRow` (D12) · `RecapCard` (D13) · `DeathBanner` (D15/D20) ·
+`GmLine` (D11) · `ThinkingRow` (D12) · `CarriedSummaryCard` (D13) · `DeathBanner` (D15/D20) ·
 `NightCard` (D19) · `WolfChannelSection` (D19) · `PrivateResultCard` (D19) ·
 `PhaseProgressStrip` (D18) · `CountdownRing` (D18) · `GhostBar` (D21) ·
 `WinnerTakeover` (D22) · `TerminalErrorState` (D23). All presentational, fed `GameView`

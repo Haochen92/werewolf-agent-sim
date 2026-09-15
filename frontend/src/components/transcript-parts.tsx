@@ -15,6 +15,7 @@ import { SeatChip } from './SeatChip';
 import { humanise } from '@/lib/format';
 import type {
   Ballot,
+  CarriedSummary,
   DayVote,
   GmSlot,
   NightView,
@@ -186,25 +187,103 @@ export function PassRow({
   );
 }
 
-// --- D13 recap ---------------------------------------------------------------
+// --- D13 the carried summary -------------------------------------------------
 
 /**
- * The previous day's summary, shown next morning per the wire's own render rule. Collapsed
- * in replay (the reader just read that day); the live view opens it, since there it is a
- * genuine morning briefing after a night away.
+ * What the agents carry into this day: the previous day's summary, the one memory of that
+ * day every AI player reads next morning. X-ray only, never the story surface (ruled
+ * 2026-09-15): a human just lived through the day, and the flattened text is written for a
+ * context window. The typed form renders as sections; the text is the fallback for a day
+ * whose summarizer failed (the engine stored the raw channel) and for a live viewer before
+ * game over, when the typed form is still withheld.
  */
-export function RecapCard({
-  summary,
-  defaultOpen,
+export function CarriedSummaryCard({
+  day,
+  structured,
+  text,
 }: {
-  summary: string;
-  defaultOpen?: boolean;
+  day: number;
+  structured: CarriedSummary | null;
+  text: string | null;
 }) {
+  if (!structured && !text) return null;
   return (
-    <details className={classes.recap} open={defaultOpen}>
-      <summary className={classes.recapSummary}>Previous day</summary>
-      <div className={classes.recapBody}>{summary}</div>
+    <details className={classes.recap}>
+      <summary className={classes.recapSummary}>
+        What the agents carry from day {day}
+      </summary>
+      <div className={classes.recapBody}>
+        {structured ? (
+          <CarriedSummarySections summary={structured} />
+        ) : (
+          <div className={classes.recapText}>{text}</div>
+        )}
+      </div>
     </details>
+  );
+}
+
+function CarriedSummarySections({ summary }: { summary: CarriedSummary }) {
+  const { dynamics, accusations, roleClaims, blocs } = summary;
+  return (
+    <>
+      {[dynamics.landscape, dynamics.consensus, dynamics.drivers]
+        .filter(Boolean)
+        .map((line, i) => (
+          <p key={i}>{line}</p>
+        ))}
+      {accusations.length > 0 ? (
+        <>
+          <h4 className={classes.recapHeading}>Accusations</h4>
+          <ul className={classes.recapList}>
+            {accusations.map((a, i) => (
+              <li key={i}>
+                <span className={classes.recapParties}>
+                  {a.accusers.join(', ')} → {a.target}
+                </span>{' '}
+                {a.evidenceType ? (
+                  <span className={classes.recapEvidence}>
+                    ({a.evidenceType.replace(/_/g, ' ')})
+                  </span>
+                ) : null}
+                <div>{a.reasoning}</div>
+                {a.defense ? (
+                  <div className={classes.recapDefense}>Defense: {a.defense}</div>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {roleClaims.length > 0 ? (
+        <>
+          <h4 className={classes.recapHeading}>Role claims</h4>
+          <ul className={classes.recapList}>
+            {roleClaims.map((c, i) => (
+              <li key={i}>
+                <span className={classes.recapParties}>
+                  {c.player} claimed {c.claimedRole}
+                </span>{' '}
+                <span className={classes.recapEvidence}>({c.evidence})</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {blocs.length > 0 ? (
+        <>
+          <h4 className={classes.recapHeading}>Blocs</h4>
+          <ul className={classes.recapList}>
+            {blocs.map((b, i) => (
+              <li key={i}>
+                <span className={classes.recapParties}>{b.players.join(', ')}</span>
+                <div>{b.basis}</div>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+    </>
   );
 }
 

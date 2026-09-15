@@ -10,20 +10,21 @@
  *   the next day does not exist yet (or the game ends at night), the result remains at the
  *   bottom of day N so it cannot disappear. Once day N+1 arrives, the same structured
  *   result moves to its natural reading position as that day's opening fact.
- * - **`day_summary` is the one thing that DOES cross the boundary**, because the wire says
- *   so in its own docstring ("shown next morning"): day N's summary renders as the recap
- *   atop day N+1.
+ * - **Day N's summary renders atop day N+1, under the X-ray only.** It is what the agents
+ *   carry into that day, the one memory of day N they keep, so it belongs with the machine
+ *   view. It is not a recap for the reader (ruled 2026-09-15): a human just lived through
+ *   day N, and the text is written for a context window, not a page.
  */
 import { Fragment } from 'react';
 import type { DayView, PrivateResult } from '@/game/types';
 import {
+  CarriedSummaryCard,
   DawnResults,
   GmLine,
   MachineCard,
   NightCard,
   PassRow,
   PrivateResultCard,
-  RecapCard,
   SectionRule,
   SpeechBubble,
   VoteBlock,
@@ -33,7 +34,7 @@ import classes from './Transcript.module.css';
 
 export interface DayTranscriptProps {
   day: DayView;
-  /** Supplies the recap: day N's page opens with day N−1's summary. */
+  /** Supplies dawn and the carried summary: day N's page opens with what day N−1 left. */
   previousDay?: DayView;
   /** Lets the night section move a settled result forward instead of rendering it twice. */
   nextDay?: DayView;
@@ -41,8 +42,6 @@ export interface DayTranscriptProps {
   xray: boolean;
   mySeat?: string | null;
   deadSeats?: Set<string>;
-  /** Live view expands the recap (it is a real morning briefing); replay collapses it. */
-  expandRecap?: boolean;
   /** The live seat's own cards; replay exposes every seat's cards in the inspector instead. */
   privateResults?: PrivateResult[];
   /** Live faction/seat data is already entitled by the server and must not wait for X-ray. */
@@ -58,7 +57,6 @@ export function DayTranscript({
   xray,
   mySeat,
   deadSeats,
-  expandRecap = false,
   privateResults = [],
   showEntitledMachine = false,
   onInspect,
@@ -75,8 +73,12 @@ export function DayTranscript({
         </div>
       ) : null}
 
-      {previousDay?.summary ? (
-        <RecapCard summary={previousDay.summary} defaultOpen={expandRecap} />
+      {xray && previousDay ? (
+        <CarriedSummaryCard
+          day={previousDay.day}
+          structured={previousDay.summaryStructured}
+          text={previousDay.summary}
+        />
       ) : null}
 
       {visibleSlots.length === 0 ? (

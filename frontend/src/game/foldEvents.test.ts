@@ -5,8 +5,8 @@
  *
  * The fixture is a genuine served flash-lite game and covers 25 of the 27 durable event
  * types. The two it lacks cannot occur in it: `input_request` needs a human seat
- * (`n_humans: 0`) and `day_summary_structured` is never emitted by the engine at all. Both
- * are covered by synthetic cases at the bottom.
+ * (`n_humans: 0`) and `day_summary_structured` was not sent until 2026-09-15, after the
+ * seed was captured. Both are covered by synthetic cases at the bottom.
  *
  * Several assertions below encode facts about the wire that were VERIFIED against this data
  * rather than assumed — they are regression tests on the reducer AND a tripwire on the
@@ -461,15 +461,77 @@ describe('synthetic cases the fixture cannot contain', () => {
     });
   });
 
-  it('records day_summary_structured as dropped rather than swallowing it', () => {
-    const dropped = foldEvent(emptyGameView(), {
+  it('files day_summary_structured on its day in the typed shape, and counts it as O-tier arrival', () => {
+    const folded = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: {
+        accusations: [
+          {
+            accusers: ['player_1', 'player_3'],
+            target: 'player_4',
+            reasoning: 'player_1 and player_3 accuse player_4 of hypocrisy.',
+            evidence_type: 'voting_record',
+            defense: 'player_4 calls it self-preservation.',
+          },
+        ],
+        role_claims: [
+          { player: 'player_2', claimed_role: 'Investigator', evidence: 'unverified' },
+        ],
+        alliances: [
+          { players: ['player_1', 'player_3'], basis: 'Joint defense of their votes.' },
+        ],
+        village_dynamics: {
+          information_landscape: 'Information-rich.',
+          consensus: 'Split into camps.',
+          drivers: 'player_4 drives.',
+        },
+      },
+    } as unknown as DurableGameEvent);
+    expect(folded.droppedEventTypes).toEqual([]);
+    expect(folded.days[base.day].summaryStructured).toEqual({
+      accusations: [
+        {
+          accusers: ['player_1', 'player_3'],
+          target: 'player_4',
+          reasoning: 'player_1 and player_3 accuse player_4 of hypocrisy.',
+          evidenceType: 'voting_record',
+          defense: 'player_4 calls it self-preservation.',
+        },
+      ],
+      roleClaims: [
+        { player: 'player_2', claimedRole: 'Investigator', evidence: 'unverified' },
+      ],
+      blocs: [
+        { players: ['player_1', 'player_3'], basis: 'Joint defense of their votes.' },
+      ],
+      dynamics: {
+        landscape: 'Information-rich.',
+        consensus: 'Split into camps.',
+        drivers: 'player_4 drives.',
+      },
+    });
+    expect(folded.xray.available).toBe(true);
+  });
+
+  it('reads an empty or malformed structured summary as absent, never as a crash', () => {
+    const empty = foldEvent(emptyGameView(), {
       ...base,
       type: 'day_summary_structured',
       data: {},
     } as unknown as DurableGameEvent);
-    expect(dropped.droppedEventTypes).toEqual(['day_summary_structured']);
-    // It still counts as observer-tier arrival.
-    expect(dropped.xray.available).toBe(true);
+    expect(empty.days[base.day].summaryStructured).toBeNull();
+    const odd = foldEvent(emptyGameView(), {
+      ...base,
+      type: 'day_summary_structured',
+      data: { accusations: 'nope', village_dynamics: { consensus: 'Split.' } },
+    } as unknown as DurableGameEvent);
+    expect(odd.days[base.day].summaryStructured).toEqual({
+      accusations: [],
+      roleClaims: [],
+      blocs: [],
+      dynamics: { landscape: '', consensus: 'Split.', drivers: '' },
+    });
   });
 
   it('handles an unresolved turn_started followed by another', () => {

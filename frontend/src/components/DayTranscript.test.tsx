@@ -2,7 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
-import { foldEvents } from '@/game/foldEvents';
+import { emptyDay, foldEvents } from '@/game/foldEvents';
 import fixture from '@/game/__fixtures__/seed-chunk-catalogue.json';
 import { DayTranscript } from './DayTranscript';
 import { AgentInspector } from './theater-parts';
@@ -69,5 +69,67 @@ describe('entitled machine-world rendering', () => {
     expect(inspector).toContain('private results');
     expect(inspector).toContain('investigation');
     expect(inspector).toContain('player_1 is Vigilante');
+  });
+});
+
+describe('the carried summary (D13)', () => {
+  const day1 = {
+    ...emptyDay(1),
+    summary: 'Key accusations and defenses: None.',
+    summaryStructured: {
+      accusations: [
+        {
+          accusers: ['player_1', 'player_3'],
+          target: 'player_4',
+          reasoning: 'player_1 and player_3 accuse player_4 of hypocrisy.',
+          evidenceType: 'voting_record',
+          defense: 'player_4 calls it self-preservation.',
+        },
+      ],
+      roleClaims: [],
+      blocs: [
+        { players: ['player_1', 'player_3'], basis: 'Joint defense of their votes.' },
+      ],
+      dynamics: {
+        landscape: 'Information-rich.',
+        consensus: 'Split into camps.',
+        drivers: 'player_4 drives.',
+      },
+    },
+  };
+  const day2 = emptyDay(2);
+
+  it('stays off the story surface', () => {
+    const html = renderToStaticMarkup(
+      <DayTranscript day={day2} previousDay={day1} roles={{}} xray={false} />,
+    );
+    expect(html).not.toContain('carry from day 1');
+    expect(html).not.toContain('hypocrisy');
+    expect(html).not.toContain('Key accusations');
+  });
+
+  it('renders the typed form as sections under X-ray: the parties, then the sentence on its own', () => {
+    const html = renderToStaticMarkup(
+      <DayTranscript day={day2} previousDay={day1} roles={{}} xray={true} />,
+    );
+    expect(html).toContain('What the agents carry from day 1');
+    expect(html).toContain('Split into camps.');
+    expect(html).toContain('player_1, player_3 → player_4');
+    expect(html).toContain('accuse player_4 of hypocrisy.');
+    expect(html).toContain('Defense: player_4 calls it self-preservation.');
+    expect(html).toContain('Joint defense of their votes.');
+    expect(html).not.toContain('Key accusations');
+  });
+
+  it('falls back to the flattened text when the typed form has not arrived', () => {
+    const html = renderToStaticMarkup(
+      <DayTranscript
+        day={day2}
+        previousDay={{ ...day1, summaryStructured: null }}
+        roles={{}}
+        xray={true}
+      />,
+    );
+    expect(html).toContain('Key accusations and defenses: None.');
   });
 });

@@ -280,8 +280,6 @@ export function GameClient({ gameId }: { gameId: string }) {
               xray={xray}
               mySeat={view.me.seat}
               deadSeats={deadByNow}
-              // Live: the recap IS a morning briefing after a night away (D13).
-              expandRecap={!finished}
               privateResults={view.me.privateResults}
               showEntitledMachine={!finished}
               onInspect={xray ? setInspecting : undefined}

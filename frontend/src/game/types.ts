@@ -163,10 +163,46 @@ export interface DayView {
   turnMarkers: TurnMarker[];
   vote: DayVote;
   night: NightView | null;
-  /** Emitted at the end of this day; renders atop day+1 (D13). */
+  /** Emitted at the end of this day: the flattened text every agent reads next morning. */
   summary: string | null;
+  /**
+   * The same summary in the summarizer's typed form (observer tier). The X-ray renders it
+   * atop day+1 as what the agents carry into that day (D13); null until it arrives, and for
+   * a day whose summarizer failed.
+   */
+  summaryStructured: CarriedSummary | null;
   /** The phases this day actually entered, in order — the scrubber's steps. */
   phases: Phase[];
+}
+
+// --- the carried summary (day_summary_structured) ----------------------------
+
+/** One accusation as the summarizer recorded it. `reasoning` and `defense` are whole sentences. */
+export interface SummaryAccusation {
+  accusers: string[];
+  target: string;
+  reasoning: string;
+  evidenceType: string;
+  defense: string;
+}
+
+export interface SummaryRoleClaim {
+  player: string;
+  claimedRole: string;
+  evidence: string;
+}
+
+export interface SummaryBloc {
+  players: string[];
+  basis: string;
+}
+
+/** A day's summary in the summarizer's own shape: the only memory of that day the agents keep. */
+export interface CarriedSummary {
+  accusations: SummaryAccusation[];
+  roleClaims: SummaryRoleClaim[];
+  blocs: SummaryBloc[];
+  dynamics: { landscape: string; consensus: string; drivers: string };
 }
 
 // --- seat-private ----------------------------------------------------------
@@ -268,7 +304,7 @@ export interface GameView {
   xray: XrayView;
   /** Highest durable seq folded — the SSE resume cursor and the store's ordering guard. */
   lastSeq: number;
-  /** Events the reducer knowingly dropped (`day_summary_structured`), for the test to assert on. */
+  /** Event types the reducer did not recognise. None are expected; tests assert on it. */
   droppedEventTypes: string[];
 }
 

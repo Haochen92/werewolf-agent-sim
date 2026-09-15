@@ -299,7 +299,43 @@ details[open] > .recapSummary::before {
 
 .recapBody {
   padding-top: var(--space-2);
+}
+
+.recapBody p {
+  margin: 0 0 var(--space-2);
+}
+
+.recapText {
   white-space: pre-wrap;
+}
+
+.recapHeading {
+  margin: var(--space-3) 0 var(--space-1);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.recapList {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.recapParties {
+  font-weight: 600;
+}
+
+.recapEvidence {
+  color: var(--text-faint);
+  font-size: 0.85em;
+}
+
+.recapDefense {
+  color: var(--text-faint);
 }
 
 /* --- D19 night ------------------------------------------------------------ */

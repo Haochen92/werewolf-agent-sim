@@ -21,6 +21,7 @@
  */
 import type { DurableGameEvent } from '@/types/contracts';
 import type {
+  CarriedSummary,
   ChannelSlot,
   DayView,
   DeathCause,
@@ -50,6 +51,7 @@ export function emptyDay(day: number): DayView {
     },
     night: null,
     summary: null,
+    summaryStructured: null,
     phases: [],
   };
 }
@@ -159,6 +161,56 @@ function pushSlot(
   }));
 
   return resolves ? { ...next, thinking: null } : next;
+}
+
+/**
+ * The wire types the structured summary as a bare object (the summarizer's schema is not
+ * frozen into the contract yet), so it is read defensively: a missing or malformed section
+ * is empty, and a summary with nothing in it is null.
+ */
+function readCarriedSummary(data: Record<string, unknown>): CarriedSummary | null {
+  const text = (v: unknown) => (typeof v === 'string' ? v : '');
+  const names = (v: unknown) =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  const rows = (v: unknown): Record<string, unknown>[] =>
+    Array.isArray(v)
+      ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object')
+      : [];
+  const dyn =
+    data.village_dynamics && typeof data.village_dynamics === 'object'
+      ? (data.village_dynamics as Record<string, unknown>)
+      : {};
+  const carried: CarriedSummary = {
+    accusations: rows(data.accusations).map((a) => ({
+      accusers: names(a.accusers),
+      target: text(a.target),
+      reasoning: text(a.reasoning),
+      evidenceType: text(a.evidence_type),
+      defense: text(a.defense),
+    })),
+    roleClaims: rows(data.role_claims).map((c) => ({
+      player: text(c.player),
+      claimedRole: text(c.claimed_role),
+      evidence: text(c.evidence),
+    })),
+    blocs: rows(data.alliances).map((b) => ({
+      players: names(b.players),
+      basis: text(b.basis),
+    })),
+    dynamics: {
+      landscape: text(dyn.information_landscape),
+      consensus: text(dyn.consensus),
+      drivers: text(dyn.drivers),
+    },
+  };
+  const empty =
+    carried.accusations.length === 0 &&
+    carried.roleClaims.length === 0 &&
+    carried.blocs.length === 0 &&
+    !carried.dynamics.landscape &&
+    !carried.dynamics.consensus &&
+    !carried.dynamics.drivers;
+  return empty ? null : carried;
 }
 
 function recordDeaths(view: GameView, deaths: DeathRecord[]): GameView {
@@ -398,6 +450,11 @@ export function foldEvent(
       return withDay(next, event.day, (d) => ({ ...d, summary: event.summary }));
     }
 
+    case 'day_summary_structured': {
+      const carried = readCarriedSummary(event.data);
+      return withDay(next, event.day, (d) => ({ ...d, summaryStructured: carried }));
+    }
+
     case 'vote_cast': {
       return withDay(next, event.day, (d) => ({
         ...d,
@@ -562,9 +619,8 @@ export function foldEvent(
     }
 
     default: {
-      // `day_summary_structured` lands here by design: the schema exists but the engine
-      // never emits it (build_plan §4), confirmed by zero occurrences in the seed. Recorded
-      // rather than ignored so a wire surprise is visible instead of silent.
+      // Every durable type has a case above, so nothing should land here. An unknown type
+      // is recorded rather than ignored so a wire surprise is visible instead of silent.
       const unknown = event as { type: string };
       return next.droppedEventTypes.includes(unknown.type)
         ? next
