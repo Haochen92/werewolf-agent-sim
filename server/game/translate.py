@@ -21,14 +21,14 @@ asks the graph for it: the stream runs ahead of the checkpoint, and behind a slo
 the graph would answer from steps the viewer has not been shown. Three things arrive on the
 stream more than once, and each is handled at its guard: a re-streamed committed step
 (tagged cached, dropped whole), an interrupt (streamed under the subgraph and again at the
-root; only the root copy ships), and the two votes (the game's only parallel steps, which
+root; only the root copy is sent), and the two votes (the game's only parallel steps, which
 re-run when a human answers; they are buffered until the tally, last write per voter wins).
 
 The lynch and the night deaths are computed here with the engine's own rule functions and
-compared with what the node recorded; a mismatch raises rather than shipping a wrong event.
+compared with what the node recorded; a mismatch raises rather than sending a wrong event.
 Not yet emitted: day_summary_structured, whose structured form never reaches state.
 
-The node-by-node table of what ships, and to whom, is frontend/docs/event_derivation.md,
+The node-by-node table of what is sent, and to whom, is frontend/docs/event_derivation.md,
 titled with the same node names as the registry below. The exact output on a recorded game
 is pinned by the goldens in tests/fixtures; when the two disagree, the goldens are right.
 """
@@ -114,7 +114,7 @@ _SURVIVORS = {"surviving_wolves", "surviving_villagers"}
 
 
 def _first_time(seen: set, key) -> bool:
-    """Record ``key`` and say whether it was new. The ship-once guard."""
+    """Record ``key`` and say whether it was new. The send-once guard."""
     if key in seen:
         return False
     seen.add(key)
@@ -145,10 +145,10 @@ class Translator:
                          the lynch from them.
       _wolf_votes        wolf -> kill vote for the night in progress.
 
-    Ship-once guards for the kinds that ship as they arrive.
-      _seen_day_entries  (day, channel seq) of every speech or pass already shipped.
-      _seen_wolf_msgs    (day, round, wolf) of every wolf-chat line already shipped.
-      _strategies        the last note shipped per player; a note ships only when it
+    Send-once guards for the kinds that are sent as they arrive.
+      _seen_day_entries  (day, channel seq) of every speech or pass already sent.
+      _seen_wolf_msgs    (day, round, wolf) of every wolf-chat line already sent.
+      _strategies        the last note sent per player; a note is sent only when it
                          changes.
     """
 
@@ -173,14 +173,14 @@ class Translator:
         """Rebuild the shadow state from a durable event log (server-restart recovery).
 
         What rebuilds vs what deliberately stays empty:
-        - seq counter, current_day, roles/wolves, ship-once guards, strategy notes:
-          all derivable from shipped events — REBUILT (without the guards, the resume's
-          abort-and-re-execute re-run would re-ship every already-delivered message
+        - seq counter, current_day, roles/wolves, send-once guards, strategy notes:
+          all derivable from sent events — REBUILT (without the guards, the resume's
+          abort-and-re-execute re-run would re-send every already-delivered message
           under fresh seqs).
         - ballot buffers and tonight's targets: LEFT EMPTY on purpose — an in-flight
           round's buffers are provisional state that the resume re-run re-streams from
           scratch, which is exactly the in-process abort-and-re-execute behavior; a
-          committed round's ballots already shipped as tally events and never re-run.
+          committed round's ballots already sent as tally events and never re-run.
         """
         dead: set[str] = set()
         for e in log:
@@ -217,14 +217,14 @@ class Translator:
         if chunk["type"] != "updates":
             raise TranslationError(f"unexpected stream chunk type: {chunk['type']}")
         if is_cached(chunk):
-            return []  # a re-streamed committed step: its events already shipped
+            return []  # a re-streamed committed step: its events already sent
 
         graph = get_source_graph(chunk)
         out: list[ev.DurableEvent] = []
         for name, delta in chunk["data"].items():
             if name == "__interrupt__":
                 # Every interrupt streams twice (subgraph namespace, then the root
-                # mirror). Only the root copy ships, or each input_request would go
+                # mirror). Only the root copy is sent, or each input_request would go
                 # out twice under two seqs.
                 if graph == "root":
                     out.extend(self._input_requests(delta, deadlines or {}))
@@ -282,7 +282,7 @@ class Translator:
                 for e in delta.get("day_channel") or [] if e["player"] == "game_master"]
 
     def _strategy_updates(self, delta):
-        # A strategy note is an overwrite, so a re-delivered identical note ships nothing.
+        # A strategy note is an overwrite, so a re-delivered identical note sends nothing.
         strategies = delta.get("agent_strategies") or {}
         out = [self._emit(ev.StrategyUpdate, player=player, strategy=text)
                for player, text in strategies.items()
@@ -298,7 +298,7 @@ class Translator:
         if wolves is None or villagers is None:
             raise TranslationError(
                 "resolution committed only one survivor bucket; the engine always commits "
-                "both together, refusing to ship a partial roster")
+                "both together, refusing to send a partial roster")
         self.wolves = list(wolves)
         # The public roster is the union; the split by faction stays off the public tier.
         return [
@@ -344,7 +344,7 @@ class Translator:
         for entry in delta.get("day_channel") or []:
             day, cseq, player = entry["day"], entry["seq"], entry["player"]
             if not _first_time(self._seen_day_entries, (day, cseq)):
-                continue  # already shipped (a re-run or a restart replay)
+                continue  # already sent (a re-run or a restart replay)
             if entry.get("passed"):
                 out.append(self._emit(
                     ev.PassMarker, day=day, channel_seq=cseq, player=player,
@@ -417,7 +417,7 @@ class Translator:
         if tally.lynched != voted:
             raise TranslationError(
                 f"kernel/delta mismatch: tally lynched {tally.lynched!r} but the node "
-                f"committed voted_player={voted!r}; inputs drifted, refusing to ship")
+                f"committed voted_player={voted!r}; inputs drifted, refusing to send")
         # dead_roster: the lynch death record rides inside lynch_result (player + role).
         out.append(self._emit(
             ev.LynchResult, outcome=tally.outcome, player=voted,
@@ -446,7 +446,7 @@ class Translator:
                 continue  # technical pass: hidden from the pack, no wire event defined
             day, round_, wolf = entry["day"], entry["round"], entry["wolf"]
             if not _first_time(self._seen_wolf_msgs, (day, round_, wolf)):
-                continue  # already shipped (a re-run or a restart replay)
+                continue  # already sent (a re-run or a restart replay)
             out.append(self._emit(ev.WolfMessage, day=day, round=round_, wolf=wolf,
                                   message=entry["message"]))
         out.extend(self._strategy_updates(delta))
@@ -492,7 +492,7 @@ class Translator:
                                   actor=self._role_holder(role), role=role, target=target))
         strategy = delta.get("updated_strategy")
         if strategy:
-            # Same guard as the day path: ship on change and remember what shipped, so
+            # Same guard as the day path: send on change and remember what was sent, so
             # a restart can rebuild the map from the log.
             out.extend(self._strategy_updates(
                 {"agent_strategies": {self._role_holder(role): strategy}}))
@@ -530,7 +530,7 @@ class Translator:
         if {d.player for d in deaths} != recorded:
             raise TranslationError(
                 f"kernel/delta mismatch: derived night deaths {[d.player for d in deaths]} "
-                f"but the node recorded {sorted(recorded)}; refusing to ship")
+                f"but the node recorded {sorted(recorded)}; refusing to send")
         save = next((ev.NightSave(player=t, attacker_types=attacks[t])
                      for t in attacks if verdicts[t] == "saved"), None)
         out.append(self._emit(ev.NightResult, deaths=deaths, save=save))
