@@ -46,6 +46,9 @@ services:
     networks:
       - werewolf
       - shared-caddy-network
+      # The compose default network, where the Langfuse stack lives: lets the server
+      # reach it as http://langfuse-web:3000 for tracing. The other two stay as they were.
+      - default
 
   wolf-frontend:
     build:
