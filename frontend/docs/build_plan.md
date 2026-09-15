@@ -339,6 +339,15 @@ Three things the deploy surfaced that no amount of local testing would have:
 Caddy lives in `~/projects/caddy` (its own compose, owns `shared-caddy-network`, holds the
 Cloudflare origin certs) and fronts six other domains — validate before every reload.
 
+**Deploy record.** 2026-08-21 first deploy · 2026-08-24 rebuild at `8efbc32` · 2026-09-10
+server-only rebuild · **2026-09-15 both containers rebuilt at `db6628c`** (branch
+`feature-frontend-v1`, pushed): the site now matches the branch, so the D1–D24 ruling pass
+runs against current code. Rollback = the `:prev` image tags left on the host. Smoke: health,
+model menu with `needs_key`, replay list carrying `model`, one house-funded AI game
+streaming, the replay page chunk carrying the new player. Not set: `ADMIN_TOKEN` (the house
+runs on process defaults; set it before the demo URL goes into applications) and the
+Langfuse keys (production has never traced; the server logs the disabled-client warning at boot).
+
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
 powers both the replay archive and live-session durability) · landing page · README 60-s replay-theater GIF (survives credit expiry;
