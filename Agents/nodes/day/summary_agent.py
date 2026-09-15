@@ -60,13 +60,12 @@ def _serialize_day_summary(result: DaySummaryOutput) -> str:
     if result.accusations:
         acc_parts = []
         for a in result.accusations:
+            # The model writes reasoning and defense as full sentences with their own
+            # subjects, so the frame names the parties and lets the sentences speak.
             accusers = ", ".join(a.accusers)
-            entry = (
-                f"{accusers} accused {a.target} of {a.reasoning} "
-                f"(evidence type: {a.evidence_type})"
-            )
+            entry = f"{accusers} → {a.target}: {a.reasoning} (evidence type: {a.evidence_type})"
             if a.defense:
-                entry += f"; {a.target} defended by {a.defense}"
+                entry += f" Defense: {a.defense}"
             acc_parts.append(entry)
         parts.append("Key accusations and defenses: " + " | ".join(acc_parts))
     else:
