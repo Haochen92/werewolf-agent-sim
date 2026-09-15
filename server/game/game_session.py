@@ -96,7 +96,9 @@ class GameSession:
     Engine bootstrap: what one graph run needs, the same entry path as the CLI.
       config        the LangGraph runnable config: thread id, checkpointer wiring.
       game_id       the game's identity, minted by RunConfig; also the URL key.
-      _session_id   the tracing session id, so Langfuse groups this game's traces.
+      _session_id   the tracing session id: the game id unless the run config names one.
+                    Langfuse groups every trace of this game under it, so a game that
+                    resumed after a restart is found by its id as one session of two traces.
       _graph        the compiled parent graph; tests inject a fake.
       _repository   the database gateway; None means nothing is written down.
       _context      runtime context handed to every node: metrics and the eval-case
@@ -190,7 +192,7 @@ class GameSession:
         seed_memory_from_config(run.memory_persistence, target_store=store)
         self.config = build_runnable_config(run)
         self.game_id: str = self.config["configurable"]["game_id"]
-        self._session_id = run.session_id
+        self._session_id = run.session_id or self.game_id
         self._graph = graph if graph is not None else parent_graph_compiled
         self._repository = repository
         self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
@@ -238,19 +240,19 @@ class GameSession:
             GAME_LLM.set(self._llm_selection)
         recovered = graph_input is None
         trace_input = {"game_id": self.game_id, "recovered": recovered}
-        # Stable across process restarts: a recovered GameSession adds a new root segment to
-        # the SAME game trace rather than creating a second trace for the continuation.
-        trace_id = langfuse.create_trace_id(seed=f"werewolf-game:{self.game_id}")
+        # One trace per run of the task, grouped by the game id as the session. A game
+        # resumed after a restart is a second trace in the same session. (Seeding the trace
+        # id from the game id was tried and made the SDK treat this span as a child of a
+        # remote parent that does not exist, so the trace had no root and lost its name.)
         try:
             with langfuse.start_as_current_observation(
-                trace_context={"trace_id": trace_id}, as_type="span",
-                name="werewolf-game", input=trace_input,
+                as_type="span", name="werewolf-game", input=trace_input,
             ) as root:
                 # Pin LangGraph/LangChain observations to this root explicitly. The manual
                 # node spans inherit the active OTEL context; the callback also carries the
                 # IDs, so worker-thread context propagation is not a correctness dependency.
                 self.config["callbacks"] = [create_langfuse_handler(trace_context={
-                    "trace_id": trace_id, "parent_span_id": root.id})]
+                    "trace_id": root.trace_id, "parent_span_id": root.id})]
                 root.update_trace(
                     name="werewolf_game", session_id=self._session_id,
                     input=trace_input, output={"status": "running"},
@@ -271,8 +273,8 @@ class GameSession:
                     root.update(output=final_output)
                     root.update_trace(output=final_output)
                 except asyncio.CancelledError:
-                    # A restart is an interrupted trace segment, not a failed game. The
-                    # recovered process reattaches to trace_id and eventually writes success.
+                    # A restart is an interrupted trace, not a failed game. The recovered
+                    # process opens the next trace in the same session and writes success.
                     interrupted_output = {
                         "status": "interrupted", "event_count": len(self.log)}
                     root.update(output=interrupted_output)

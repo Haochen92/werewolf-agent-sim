@@ -43,7 +43,8 @@ class _TraceRoot:
         self.trace_updates.append(kwargs)
 
 
-async def test_server_session_owns_one_stable_game_trace(quiet_session, monkeypatch):
+async def test_server_session_opens_one_named_trace_in_the_games_session(
+        quiet_session, monkeypatch):
     captured = {}
     root = _TraceRoot()
 
@@ -52,12 +53,7 @@ async def test_server_session_owns_one_stable_game_trace(quiet_session, monkeypa
         captured["observation"] = kwargs
         yield root
 
-    def create_trace_id(*, seed):
-        captured["trace_seed"] = seed
-        return "stable-game-trace"
-
     monkeypatch.setattr(rt, "langfuse", SimpleNamespace(
-        create_trace_id=create_trace_id,
         start_as_current_observation=observation,
     ))
 
@@ -75,10 +71,12 @@ async def test_server_session_owns_one_stable_game_trace(quiet_session, monkeypa
     assert session.config["callbacks"] == ["game-handler"]
     assert captured["handler_context"] == {
         "trace_id": "stable-game-trace", "parent_span_id": "game-root-span"}
-    assert captured["trace_seed"] == f"werewolf-game:{session.game_id}"
-    assert captured["observation"]["trace_context"] == {
-        "trace_id": "stable-game-trace"}
+    # No explicit trace id: the SDK would treat the span as the child of a remote parent
+    # that never exists, and the trace would have no root and no name.
+    assert "trace_context" not in captured["observation"]
+    assert captured["observation"]["name"] == "werewolf-game"
     assert root.trace_updates[0]["name"] == "werewolf_game"
+    assert root.trace_updates[0]["session_id"] == session.game_id
     assert root.trace_updates[0]["metadata"]["game_id"] == session.game_id
     assert root.trace_updates[-1]["output"]["status"] == "success"
     assert captured["flushed"] is True
