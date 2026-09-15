@@ -8,6 +8,8 @@ the API. New request/response DTOs belong here, never in the contract module.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -177,10 +179,10 @@ class GameStatus(BaseModel):
     (game_id, state, players) and leaves the game fields at their defaults."""
 
     game_id: str
-    state: str
-    """Lifecycle: "waiting" (lobby) | "running" | "finished" (game over) | "dropped"
-    (ended without finishing; ``error`` says why). A task that died while the game was
-    still live also reports "running" with ``error`` set until it leaves the registry."""
+    state: Literal["waiting", "running", "finished", "dropped"]
+    """Lifecycle: "waiting" (lobby), "running", "finished" (game over), "dropped" (ended
+    without finishing; ``error`` says why). A task that died while the game was still
+    live also reports "running" with ``error`` set until it leaves the registry."""
     server_time: str
     """ISO-8601 UTC wall clock sampled with this snapshot. The browser subtracts its
     own receipt-time clock so AFK deadlines remain honest on devices with clock skew."""
@@ -203,6 +205,8 @@ class GameStatus(BaseModel):
     client learns which player it is. None for spectators, waiting rooms, and the
     moment before seats are dealt."""
     pending_input: bool = False
+    """Some seat owes input right now: the same fact as ``pending_seats`` being non-empty,
+    kept as a flag for clients that only need the yes/no."""
     pending_seats: list[str] = Field(default_factory=list)
     """Which seats owe input right now — several at once when a parallel superstep
     (night fan-out, votes) interrupts for more than one human."""
@@ -211,7 +215,9 @@ class GameStatus(BaseModel):
     delegated to its agent — the client's countdown source. Empty in solo games
     (no timer) and whenever nobody owes input."""
     game_over: bool = False
+    """The engine has declared a winner; the observer backlog is being or has been streamed."""
     last_seq: int = 0
+    """High-water mark of the durable log — a reconnect cursor for ?last_seq=."""
     awaiting_key: bool = False
     """The game ran on a player's key and was rebuilt after a restart without it. It is
     live but idle until a seat holder supplies the key again (POST /games/{id}/key)."""
@@ -221,7 +227,6 @@ class GameStatus(BaseModel):
     """True when this snapshot came from the database row rather than a live game: the
     game has ended and left the live registry. There is no stream to open; a finished
     game has a replay under the same id."""
-    """High-water mark of the durable log — a reconnect cursor for ?last_seq=."""
     alive_role_counts: dict[str, int] = Field(default_factory=dict)
     """Public census only: fixed cast minus announced deaths, never engine state."""
     error: str | None = None
