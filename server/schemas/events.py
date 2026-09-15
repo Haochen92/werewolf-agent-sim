@@ -23,6 +23,12 @@ from typing import Annotated, Literal, Union, get_args
 from pydantic import BaseModel, Field
 
 
+# Two vocabularies the engine owns and this module repeats on purpose (it must not import
+# Agents/): tests/server/test_engine_sync.py checks the copy of the roles against ROLE_SPECS.
+Role = Literal["villager", "wolf", "investigator", "healer", "serial_killer", "vigilante"]
+Winner = Literal["villagers", "wolves", "serial_killer"]
+
+
 class Tier(str, Enum):
     """LIVE routing audience. Everything lands in the durable log regardless; at game_over the
     client's entitlement flips to observer and the server streams the withheld backlog."""
@@ -69,7 +75,7 @@ class RoleAssigned(DurableEvent, frozen=True):
     type: Literal["role_assigned"] = "role_assigned"
     player: str
     """Recipient seat (the router key for every SEAT-tier event)."""
-    role: str
+    role: Role
     pack: list[str] | None = None
     """Fellow wolves — wolves only."""
     bullets: int | None = None
@@ -98,7 +104,7 @@ class GameOver(DurableEvent, frozen=True):
     the withheld observer-tier backlog from the durable log."""
 
     type: Literal["game_over"] = "game_over"
-    winner: Literal["villagers", "wolves", "serial_killer"]
+    winner: Winner
 
 
 # --- day: discussion ---------------------------------------------------------
@@ -230,7 +236,7 @@ class LynchResult(DurableEvent, frozen=True):
     type: Literal["lynch_result"] = "lynch_result"
     outcome: Literal["lynched", "tie", "abstain", "no_vote"]
     player: str | None = None
-    role: str | None = None
+    role: Role | None = None
     """Publicly revealed on death — both fields None unless outcome == "lynched"."""
     vote_counts: dict[str, int]
     no_lynch_streak: int
@@ -258,7 +264,7 @@ class NightAction(DurableEvent, frozen=True):
 
     type: Literal["night_action"] = "night_action"
     actor: str
-    role: str
+    role: Role
     target: str
 
 
@@ -290,7 +296,7 @@ class WolfKillDecided(DurableEvent, frozen=True):
 
 class NightDeath(BaseModel, frozen=True):
     player: str
-    role: str
+    role: Role
     """Publicly revealed on death."""
     attacker_types: list[Literal["wolves", "serial_killer", "vigilante"]]
     """Attacker TYPE is public flavor; attacker identity never is."""
@@ -317,7 +323,7 @@ class InvestigationResult(DurableEvent, frozen=True):
     player: str
     """Recipient seat (the investigator)."""
     target: str
-    role: str
+    role: Role
 
 
 class VigilanteConfirmation(DurableEvent, frozen=True):

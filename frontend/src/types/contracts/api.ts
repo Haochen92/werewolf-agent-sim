@@ -518,7 +518,7 @@ export interface components {
        */
       awaiting_key: boolean;
       /** Winner */
-      winner?: string | null;
+      winner?: ('villagers' | 'wolves' | 'serial_killer') | null;
       /**
        * Archived
        * @default false
@@ -652,8 +652,11 @@ export interface components {
       player: string;
       /** Target */
       target: string;
-      /** Role */
-      role: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
     };
     /**
      * JoinGame
@@ -689,7 +692,9 @@ export interface components {
       /** Player */
       player?: string | null;
       /** Role */
-      role?: string | null;
+      role?:
+        | ('villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante')
+        | null;
       /** Vote Counts */
       vote_counts: {
         [key: string]: number;
@@ -740,7 +745,9 @@ export interface components {
        */
       human: boolean;
       /** Human Role */
-      human_role?: string | null;
+      human_role?:
+        | ('villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante')
+        | null;
       /**
        * Api Key
        * @default
@@ -793,8 +800,11 @@ export interface components {
       type: 'night_action';
       /** Actor */
       actor: string;
-      /** Role */
-      role: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
       /** Target */
       target: string;
     };
@@ -802,8 +812,11 @@ export interface components {
     NightDeath: {
       /** Player */
       player: string;
-      /** Role */
-      role: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
       /** Attacker Types */
       attacker_types: ('wolves' | 'serial_killer' | 'vigilante')[];
     };
@@ -914,8 +927,11 @@ export interface components {
       game_id: string;
       /** Finished At */
       finished_at?: string | null;
-      /** Winner */
-      winner: string;
+      /**
+       * Winner
+       * @enum {string}
+       */
+      winner: 'villagers' | 'wolves' | 'serial_killer';
       /** Days */
       days: number;
       /** N Events */
@@ -941,8 +957,11 @@ export interface components {
       game_id: string;
       /** Finished At */
       finished_at?: string | null;
-      /** Winner */
-      winner: string;
+      /**
+       * Winner
+       * @enum {string}
+       */
+      winner: 'villagers' | 'wolves' | 'serial_killer';
       /** Days */
       days: number;
       /** N Events */
@@ -1005,8 +1024,11 @@ export interface components {
       type: 'role_assigned';
       /** Player */
       player: string;
-      /** Role */
-      role: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
       /** Pack */
       pack?: string[] | null;
       /** Bullets */

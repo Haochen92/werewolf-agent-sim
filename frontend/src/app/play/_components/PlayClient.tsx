@@ -19,14 +19,15 @@ import { seatToken } from '@/lib/storage';
 import { humanise } from '@/lib/format';
 import { RoleIcon } from '@/components/RoleIcon';
 import { GameSetupFields } from '@/components/GameSetupFields';
+import type { Role } from '@/types/contracts';
 import classes from '@/components/Lobby.module.css';
 
 /** The castable roles. Fixed 9-player 3-faction casting is a server ruling, not a choice. */
-const ROLES = ['villager', 'wolf', 'healer', 'investigator', 'vigilante', 'serial_killer'];
+const ROLES: Role[] = ['villager', 'wolf', 'healer', 'investigator', 'vigilante', 'serial_killer'];
 
 export function PlayClient() {
   const router = useRouter();
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [needsKey, setNeedsKey] = useState(false);

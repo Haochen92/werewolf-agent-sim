@@ -64,6 +64,7 @@ export type NightDeath = S['NightDeath'];
 export type NightSave = S['NightSave'];
 export type AddressedTarget = S['WireAddressedTarget'];
 export type Winner = GameOver['winner'];
+export type Role = RoleAssigned['role'];
 export type Phase = PhaseChange['phase'];
 export type ActionKind = InputRequest['action_kind'];
 export type PassReason = NonNullable<PassMarker['pass_reason']>;

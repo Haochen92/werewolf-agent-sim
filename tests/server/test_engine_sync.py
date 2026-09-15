@@ -85,6 +85,11 @@ def test_every_night_role_has_its_pacing_entries():
     assert pacing.BRANCH_UNITS == wrappers
 
 
+def test_the_wire_role_vocabulary_is_the_engine_role_set():
+    # events.py may not import Agents/, so it repeats the role names; this pins the copy.
+    assert set(typing.get_args(ev.Role)) == set(ROLE_SPECS)
+
+
 def test_every_night_role_has_its_human_turn_kind():
     kinds = set(typing.get_args(ev.InputRequest.model_fields["action_kind"].annotation))
     for role in _night_roles():

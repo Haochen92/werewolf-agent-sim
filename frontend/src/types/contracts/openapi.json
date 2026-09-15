@@ -1189,7 +1189,12 @@
           "winner": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "villagers",
+                  "wolves",
+                  "serial_killer"
+                ]
               },
               {
                 "type": "null"
@@ -1476,6 +1481,14 @@
           },
           "role": {
             "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
             "title": "Role"
           }
         },
@@ -1542,7 +1555,15 @@
           "role": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "villager",
+                  "wolf",
+                  "investigator",
+                  "healer",
+                  "serial_killer",
+                  "vigilante"
+                ]
               },
               {
                 "type": "null"
@@ -1645,7 +1666,15 @@
           "human_role": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "villager",
+                  "wolf",
+                  "investigator",
+                  "healer",
+                  "serial_killer",
+                  "vigilante"
+                ]
               },
               {
                 "type": "null"
@@ -1714,6 +1743,14 @@
           },
           "role": {
             "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
             "title": "Role"
           },
           "target": {
@@ -1740,6 +1777,14 @@
           },
           "role": {
             "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
             "title": "Role"
           },
           "attacker_types": {
@@ -2000,6 +2045,11 @@
           },
           "winner": {
             "type": "string",
+            "enum": [
+              "villagers",
+              "wolves",
+              "serial_killer"
+            ],
             "title": "Winner"
           },
           "days": {
@@ -2059,6 +2109,11 @@
           },
           "winner": {
             "type": "string",
+            "enum": [
+              "villagers",
+              "wolves",
+              "serial_killer"
+            ],
             "title": "Winner"
           },
           "days": {
@@ -2242,6 +2297,14 @@
           },
           "role": {
             "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
             "title": "Role"
           },
           "pack": {

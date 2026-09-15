@@ -12,13 +12,15 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from server.schemas.events import Role, Winner
+
 
 class NewGame(BaseModel):
     """POST /games body: the instant-start (solo / LLM-only) door. Multiplayer
     rooms are created at POST /rooms — a deliberately separate contract."""
 
     human: bool = False
-    human_role: str | None = None
+    human_role: Role | None = None
     """Role choice lives ONLY here: solo has no other players to leak it to.
     Rooms always deal random seats."""
     api_key: str = ""
@@ -221,7 +223,7 @@ class GameStatus(BaseModel):
     awaiting_key: bool = False
     """The game ran on a player's key and was rebuilt after a restart without it. It is
     live but idle until a seat holder supplies the key again (POST /games/{id}/key)."""
-    winner: str | None = None
+    winner: Winner | None = None
     """The winning faction, once the game is over and served from its archived row."""
     archived: bool = False
     """True when this snapshot came from the database row rather than a live game: the

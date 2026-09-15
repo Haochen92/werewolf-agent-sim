@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from server.schemas import events as ev
+from server.schemas.events import Winner
 
 
 class ReplayBase(BaseModel):
@@ -14,7 +15,7 @@ class ReplayBase(BaseModel):
 
     game_id: str
     finished_at: datetime | None = None
-    winner: str
+    winner: Winner
     days: int
     n_events: int
     n_humans: int

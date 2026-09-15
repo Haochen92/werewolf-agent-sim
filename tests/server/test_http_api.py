@@ -430,13 +430,13 @@ def _archive(api_client, monkeypatch, row):
 def test_finished_game_answers_from_its_row_and_points_at_the_replay(api_client, monkeypatch):
     from server.database_models.game import COMPLETED, GameRow
 
-    row = GameRow(game_id="done-1", status=COMPLETED, winner="village",
+    row = GameRow(game_id="done-1", status=COMPLETED, winner="villagers",
                   seats=[{"name": "hao", "token": "tok-1"}], human_players=["player_3"])
     _archive(api_client, monkeypatch, row)
 
     body = api_client.get("/games/done-1").json()
     assert (body["state"], body["archived"], body["game_over"]) == ("finished", True, True)
-    assert body["winner"] == "village" and body["you"] is None
+    assert body["winner"] == "villagers" and body["you"] is None
 
     # The seat cookie a player still holds names the seat they played, and never 403s.
     api_client.cookies.set("seat_done-1", "tok-1")
