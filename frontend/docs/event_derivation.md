@@ -60,8 +60,8 @@
 | Public | `lynch_result {outcome: lynched\|tie\|abstain\|no_vote, player?, role?, vote_counts, no_lynch_streak, day}` — the death atom (= the dead_roster delta) + the free-rider fields the node already computed |
 | Public | `roster_update {surviving_players}` — **union only**: translator merges the wolf-partitioned lists before the public tier |
 | Faction | `pack_roster_update {surviving_wolves}` |
-| Public | `day_summary` — this node also appends the vote-result to `day_summaries`; same key → same event |
 - `voted_player` delta → IGNORED (inside `lynch_result`).
+- `day_summaries` vote-result append → IGNORED: verbatim the node's own `gm_message`, and the client renders a day's summary from SUMMARIZE_DAY_DISCUSSION's event alone (ruled 2026-09-15; completion note 3).
 
 **NIGHT_START** (between the `check_game_end_day` and `route_night_actors` edges) —
 `check_game_end_day` is binary (END_GAME | NIGHT_START); NIGHT_START is a no-op marker node
@@ -184,10 +184,9 @@ Reconciliations where today's rulings met the existing day-side text — day pre
    don't have. Two parallel death atoms (`lynch_result` / `night_result`), same shape philosophy:
    the dead_roster delta + what the node already computed. The alive-role census derives from both.
 3. **`day_summaries` night append = IGNORED**, not a `day_summary` event. It's verbatim the same
-   text as this node's `gm_message` (the `voted_player` precedent). ⚠️ Review question for the
-   owner: day_resolution's own `day_summary` row ("same key → same event") sends text that is also
-   verbatim its `gm_message` — should it become IGNORED too, or is the summary-stream-completeness
-   argument (client renders summaries only from `day_summary` events) the reason to keep both?
+   text as this node's `gm_message` (the `voted_player` precedent). Resolved 2026-09-15: the
+   day_resolution append is IGNORED too. The registry handler never sent it, the goldens carry one
+   `day_summary` per day, and the client renders a day's summary from the summarize node's event alone.
 
 One correction to the original text: `vote_cast.vote_target` → `vote_cast.votee` in Derived Votes
 (the field name ruled day-side).
