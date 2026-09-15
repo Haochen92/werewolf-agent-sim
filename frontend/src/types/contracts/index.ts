@@ -88,8 +88,7 @@ export interface PhaseProgress {
 // --- live game / rooms (P2–P3 surfaces; typed now so the wire layer is complete) ---
 
 export type GameStatus = S['GameStatus'];
-/** `GameStatus.state` is a bare `str` server-side; these are its three registry values. */
-export type GameState = 'waiting' | 'running' | 'finished';
+export type GameState = GameStatus['state'];
 export type GameCreated = S['GameCreated'];
 export type SeatJoined = S['SeatJoined'];
 export type RoomSummary = S['RoomSummary'];

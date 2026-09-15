@@ -463,8 +463,11 @@ export interface components {
     GameStatus: {
       /** Game Id */
       game_id: string;
-      /** State */
-      state: string;
+      /**
+       * State
+       * @enum {string}
+       */
+      state: 'waiting' | 'running' | 'finished' | 'dropped';
       /** Server Time */
       server_time: string;
       /** Players */
