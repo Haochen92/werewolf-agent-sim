@@ -15,23 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from server.schemas.events import Role, Winner
 
 
-class NewSoloGame(BaseModel):
-    """POST /games body: the solo door. One person's table, started on the spot, with
-    them in a seat or only watching an all-AI game. Rooms, where several people share a
-    table, are the other door (POST /rooms) and a deliberately separate contract."""
-
-    human: bool = False
-    human_role: Role | None = None
-    """Role choice lives ONLY here: solo has no other players to leak it to.
-    Rooms always deal random seats."""
-    api_key: str = ""
-    """BYOK (optional): the player's own key funds this game's model calls.
-    Ephemeral pass-through — held in session memory for the run, never stored or
-    recorded; empty = the server's configured backend pays."""
-    model: str = ""
-    """Game model, from SUPPORTED_GAME_MODELS only (the tested list; GET /models).
-    House-funded rows may use the server backend; all other choices require api_key.
-    Empty = the default model."""
+# --- the menu: what the page fetches before any game exists ------------------------
 
 
 class ModelRow(BaseModel):
@@ -54,6 +38,7 @@ class ModelRow(BaseModel):
     rule the door applies, said in advance so the client can hold the submit."""
 
 
+
 class HouseFunding(BaseModel):
     """The house's purse for today, as GET /models reports it to the client."""
 
@@ -66,6 +51,7 @@ class HouseFunding(BaseModel):
     """ISO-8601 UTC: when the daily count starts again."""
 
 
+
 class ModelsMenu(BaseModel):
     """GET /models response: the menu, and what the house will pay for right now."""
 
@@ -73,22 +59,27 @@ class ModelsMenu(BaseModel):
     house: HouseFunding
 
 
-class HouseView(HouseFunding):
-    """GET/PUT /admin/house response: the purse plus the knobs behind it."""
-
-    default_model: str
-    used_today: int
+# --- the solo door: one person's table, started on the spot ------------------------
 
 
-class HouseUpdate(BaseModel):
-    """PUT /admin/house body: any subset of the knobs."""
+class NewSoloGame(BaseModel):
+    """POST /games body: the solo door. One person's table, started on the spot, with
+    them in a seat or only watching an all-AI game. Rooms, where several people share a
+    table, are the other door (POST /rooms) and a deliberately separate contract."""
 
-    model_config = ConfigDict(extra="forbid")
+    human: bool = False
+    human_role: Role | None = None
+    """Role choice lives ONLY here: solo has no other players to leak it to.
+    Rooms always deal random seats."""
+    api_key: str = ""
+    """BYOK (optional): the player's own key funds this game's model calls.
+    Ephemeral pass-through — held in session memory for the run, never stored or
+    recorded; empty = the server's configured backend pays."""
+    model: str = ""
+    """Game model, from SUPPORTED_GAME_MODELS only (the tested list; GET /models).
+    House-funded rows may use the server backend; all other choices require api_key.
+    Empty = the default model."""
 
-    enabled: bool | None = None
-    default_model: str | None = None
-    """Must be a house-funded row of the catalogue."""
-    games_per_day: int | None = None
 
 
 class GameCreated(BaseModel):
@@ -99,6 +90,9 @@ class GameCreated(BaseModel):
     """Solo door only: the body copy of the seat cookie set on this response (stash
     it client-side; POST /rejoin restores a lost cookie from it). None for LLM-only
     games and for /start — room seats received their tokens at /join."""
+
+
+# --- the room door: a shared table, seats claimed before the start -----------------
 
 
 class NewRoom(BaseModel):
@@ -120,6 +114,19 @@ class NewRoom(BaseModel):
     client-side. Capped server-side — it is the one free-text field strangers see."""
 
 
+
+class RoomCreated(BaseModel):
+    """POST /rooms response."""
+
+    game_id: str
+    """Also the room id: the registry swap at /start keeps it, so the room URL is
+    the game URL before and after."""
+    host_key: str
+    """The creator's credential for POST /start — returned exactly once, here
+    (never in status)."""
+
+
+
 class RoomSummary(BaseModel):
     """One row of GET /rooms: the public face of a waiting room. Also the POST /lock
     response (the host's fresh view after flipping the flag). Never any secret —
@@ -137,16 +144,6 @@ class RoomSummary(BaseModel):
     """ISO-8601 UTC creation time — the client's 'created N min ago' source."""
 
 
-class RoomCreated(BaseModel):
-    """POST /rooms response."""
-
-    game_id: str
-    """Also the room id: the registry swap at /start keeps it, so the room URL is
-    the game URL before and after."""
-    host_key: str
-    """The creator's credential for POST /start — returned exactly once, here
-    (never in status)."""
-
 
 class JoinGame(BaseModel):
     """POST /games/{id}/join body. No role field on purpose: rooms deal random
@@ -154,6 +151,7 @@ class JoinGame(BaseModel):
 
     name: str = "human"
     """Display name for the room roster (public to the room)."""
+
 
 
 class SeatJoined(BaseModel):
@@ -165,18 +163,15 @@ class SeatJoined(BaseModel):
     the client's backup (localStorage) for POST /rejoin after cookie loss."""
 
 
-class FundGame(BaseModel):
-    """POST /games/{id}/key body: a seat holder's key to resume a game that lost its
-    funding in a restart. Tried on the provider before the game moves; never stored."""
-
-    api_key: str = Field(min_length=1)
-
 
 class RejoinGame(BaseModel):
     """POST /games/{id}/rejoin body: re-prove seat ownership after cookie loss
     (new device, cleared browsing data) with the stashed body-copy token."""
 
     token: str
+
+
+# --- a running game: the poll-side snapshot, a turn, a key after a restart ---------
 
 
 class GameStatus(BaseModel):
@@ -240,7 +235,38 @@ class GameStatus(BaseModel):
     """The session's death report (key-redacted); None while healthy."""
 
 
+
 class TurnAccepted(BaseModel):
     """POST /games/{id}/turns response."""
 
     status: str = "accepted"
+
+
+
+class FundGame(BaseModel):
+    """POST /games/{id}/key body: a seat holder's key to resume a game that lost its
+    funding in a restart. Tried on the provider before the game moves; never stored."""
+
+    api_key: str = Field(min_length=1)
+
+
+# --- admin: the house's knobs -------------------------------------------------------
+
+
+class HouseView(HouseFunding):
+    """GET/PUT /admin/house response: the purse plus the knobs behind it."""
+
+    default_model: str
+    used_today: int
+
+
+
+class HouseUpdate(BaseModel):
+    """PUT /admin/house body: any subset of the knobs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool | None = None
+    default_model: str | None = None
+    """Must be a house-funded row of the catalogue."""
+    games_per_day: int | None = None
