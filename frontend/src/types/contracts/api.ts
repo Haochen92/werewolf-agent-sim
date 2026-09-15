@@ -739,32 +739,6 @@ export interface components {
       house: components['schemas']['HouseFunding'];
     };
     /**
-     * NewGame
-     * @description POST /games body: the instant-start (solo / LLM-only) door. Multiplayer
-     *     rooms are created at POST /rooms — a deliberately separate contract.
-     */
-    NewGame: {
-      /**
-       * Human
-       * @default false
-       */
-      human: boolean;
-      /** Human Role */
-      human_role?:
-        | ('villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante')
-        | null;
-      /**
-       * Api Key
-       * @default
-       */
-      api_key: string;
-      /**
-       * Model
-       * @default
-       */
-      model: string;
-    };
-    /**
      * NewRoom
      * @description POST /rooms body: the multiplayer door. No human/role fields ON PURPOSE —
      *     a room seats humans only via POST /join and always deals random roles, so the
@@ -787,6 +761,33 @@ export interface components {
        * @default
        */
       name: string;
+    };
+    /**
+     * NewSoloGame
+     * @description POST /games body: the solo door. One person's table, started on the spot, with
+     *     them in a seat or only watching an all-AI game. Rooms, where several people share a
+     *     table, are the other door (POST /rooms) and a deliberately separate contract.
+     */
+    NewSoloGame: {
+      /**
+       * Human
+       * @default false
+       */
+      human: boolean;
+      /** Human Role */
+      human_role?:
+        | ('villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante')
+        | null;
+      /**
+       * Api Key
+       * @default
+       */
+      api_key: string;
+      /**
+       * Model
+       * @default
+       */
+      model: string;
     };
     /**
      * NightAction
@@ -1362,7 +1363,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['NewGame'];
+        'application/json': components['schemas']['NewSoloGame'];
       };
     };
     responses: {

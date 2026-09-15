@@ -18,7 +18,7 @@ from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
-from server.schemas.requests import FundGame, GameCreated, GameStatus, NewGame, TurnAccepted
+from server.schemas.requests import FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted
 
 from ._shared import authorize_model, set_seat_cookie
 
@@ -35,7 +35,7 @@ router = APIRouter(tags=["games"])
     summary="Instant start: solo human (role choice) or LLM-only",
 )
 async def create_game(
-    body: NewGame,
+    body: NewSoloGame,
     games: GamesRegistry,
     house: House,
     response: Response,

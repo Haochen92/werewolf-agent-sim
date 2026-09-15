@@ -15,9 +15,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from server.schemas.events import Role, Winner
 
 
-class NewGame(BaseModel):
-    """POST /games body: the instant-start (solo / LLM-only) door. Multiplayer
-    rooms are created at POST /rooms — a deliberately separate contract."""
+class NewSoloGame(BaseModel):
+    """POST /games body: the solo door. One person's table, started on the spot, with
+    them in a seat or only watching an all-AI game. Rooms, where several people share a
+    table, are the other door (POST /rooms) and a deliberately separate contract."""
 
     human: bool = False
     human_role: Role | None = None

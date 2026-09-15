@@ -8,7 +8,7 @@ import type {
   GameCreated,
   GameStatus,
   ModelsMenu,
-  NewGame,
+  NewSoloGame,
   NewRoom,
   ReplayGame,
   ReplaySummary,
@@ -50,7 +50,7 @@ export function getModels(): Promise<ModelsMenu> {
 // --- games: create, join, rejoin, start, lock ------------------------------
 
 /** Solo / instant-start door. Returns the seat token ONCE — stash it immediately. */
-export function createGame(body: NewGame): Promise<GameCreated> {
+export function createGame(body: NewSoloGame): Promise<GameCreated> {
   return request<GameCreated>('/games', { method: 'POST', body });
 }
 

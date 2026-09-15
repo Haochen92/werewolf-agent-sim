@@ -61,7 +61,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewGame"
+                "$ref": "#/components/schemas/NewSoloGame"
               }
             }
           },
@@ -1661,7 +1661,31 @@
         "title": "ModelsMenu",
         "description": "GET /models response: the menu, and what the house will pay for right now."
       },
-      "NewGame": {
+      "NewRoom": {
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "title": "Api Key",
+            "default": ""
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Name",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "NewRoom",
+        "description": "POST /rooms body: the multiplayer door. No human/role fields ON PURPOSE \u2014\na room seats humans only via POST /join and always deals random roles, so the\nconcept is unrepresentable here instead of guarded; extra=\"forbid\" turns a\nclient sending instant-start fields into a clean 422."
+      },
+      "NewSoloGame": {
         "properties": {
           "human": {
             "type": "boolean",
@@ -1699,32 +1723,8 @@
           }
         },
         "type": "object",
-        "title": "NewGame",
-        "description": "POST /games body: the instant-start (solo / LLM-only) door. Multiplayer\nrooms are created at POST /rooms \u2014 a deliberately separate contract."
-      },
-      "NewRoom": {
-        "properties": {
-          "api_key": {
-            "type": "string",
-            "title": "Api Key",
-            "default": ""
-          },
-          "model": {
-            "type": "string",
-            "title": "Model",
-            "default": ""
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 40,
-            "title": "Name",
-            "default": ""
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "NewRoom",
-        "description": "POST /rooms body: the multiplayer door. No human/role fields ON PURPOSE \u2014\na room seats humans only via POST /join and always deals random roles, so the\nconcept is unrepresentable here instead of guarded; extra=\"forbid\" turns a\nclient sending instant-start fields into a clean 422."
+        "title": "NewSoloGame",
+        "description": "POST /games body: the solo door. One person's table, started on the spot, with\nthem in a seat or only watching an all-AI game. Rooms, where several people share a\ntable, are the other door (POST /rooms) and a deliberately separate contract."
       },
       "NightAction": {
         "properties": {
