@@ -248,11 +248,11 @@ class GameSession:
             with langfuse.start_as_current_observation(
                 as_type="span", name="werewolf-game", input=trace_input,
             ) as root:
-                # Pin LangGraph/LangChain observations to this root explicitly. The manual
-                # node spans inherit the active OTEL context; the callback also carries the
-                # IDs, so worker-thread context propagation is not a correctness dependency.
-                self.config["callbacks"] = [create_langfuse_handler(trace_context={
-                    "trace_id": root.trace_id, "parent_span_id": root.id})]
+                # The LangGraph callback nests under this root through the active context,
+                # like the CLI path. Handing it the ids explicitly instead makes the SDK mark
+                # the graph's own chain span as a trace root, and Langfuse then names the
+                # trace "LangGraph" and takes the chain's output as the trace's.
+                self.config["callbacks"] = [create_langfuse_handler()]
                 root.update_trace(
                     name="werewolf_game", session_id=self._session_id,
                     input=trace_input, output={"status": "running"},

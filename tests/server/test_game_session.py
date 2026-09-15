@@ -57,7 +57,7 @@ async def test_server_session_opens_one_named_trace_in_the_games_session(
         start_as_current_observation=observation,
     ))
 
-    def create_handler(*, trace_context):
+    def create_handler(*, trace_context=None):
         captured["handler_context"] = trace_context
         return "game-handler"
 
@@ -69,10 +69,10 @@ async def test_server_session_opens_one_named_trace_in_the_games_session(
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
     assert session.config["callbacks"] == ["game-handler"]
-    assert captured["handler_context"] == {
-        "trace_id": "stable-game-trace", "parent_span_id": "game-root-span"}
-    # No explicit trace id: the SDK would treat the span as the child of a remote parent
-    # that never exists, and the trace would have no root and no name.
+    # No explicit ids anywhere: a seeded trace id made the SDK hang the root under a remote
+    # parent that never exists, and ids handed to the handler made the graph's chain span a
+    # second root that Langfuse named the trace after. Both nest through the active context.
+    assert captured["handler_context"] is None
     assert "trace_context" not in captured["observation"]
     assert captured["observation"]["name"] == "werewolf-game"
     assert root.trace_updates[0]["name"] == "werewolf_game"
