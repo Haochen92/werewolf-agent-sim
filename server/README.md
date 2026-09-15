@@ -28,6 +28,7 @@ still move; an ended game is answered by its database row, and a finished one by
 | `graph_runtime.py` | the LangGraph checkpointer pool + compiled durable graph (db.py's twin) | design notes §5c mode 3 |
 | `resources.py` | builds the resource tree once, closes it in reverse | design notes §9 |
 | `dependencies.py` | request → resource providers; the fall-through from the live registry to the row for ended games; the one 404 | design notes §9, §11 |
+| `openapi.py` | the API contract as a document: `python -m server.openapi` prints it for the frontend's type generator; `test_openapi_snapshot` fails when the saved copy drifts | "When the engine changes" below |
 | `routes/` | HTTP translation only: `system` (health, models + the purse), `games` (doors, status, turns, SSE, key), `rooms` (lobby), `replays`, `admin` (the live knobs, behind `ADMIN_TOKEN`) | transport §2, §7, §9; design notes §13 |
 | `schemas/` | the wire: `events` (the durable union + tiers), `requests` (bodies/DTOs), `replays` | transport §5, §10 |
 | `database_models/` | SQLModel mappings for `games`, `events` and `settings` | design notes §8, §13 |
@@ -90,7 +91,7 @@ diff of the golden file is then the review of that change.
 
 ```
 poetry run uvicorn server.app:app --port 8001     # 8000 belongs to another project on this host
-poetry run pytest tests/server -q                 # ~140 tests, no network, no LLM
+poetry run pytest tests/server -q                 # ~170 tests, no network, no LLM
 poetry run alembic upgrade head                   # WW_POSTGRES_DSN from .env
 curl -H "X-Admin-Token: $ADMIN_TOKEN" -X PUT localhost:8001/admin/house \
      -H 'content-type: application/json' -d '{"games_per_day": 5}'   # live, no restart
