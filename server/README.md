@@ -80,6 +80,7 @@ missing; the frontend copies it cannot see. Per kind of change:
 | a graph node | one `@node` / `silent_node` entry in `translate.py`, in game order; a section in `event_derivation.md`; `BRANCH_UNITS` in `pacing.py` if the night progress bar counts it | the first live game raises `TranslationError` (the sync test sees fields, not nodes) |
 | a night role | the role loop, the role-holder set and the ONE_MORE_DAY resets in `translate.py`; `_SPECIAL_UNITS` and `BRANCH_UNITS` in `pacing.py`; the `action_kind` literal in `schemas/events.py`; the night act section and census rules in `event_derivation.md`; the frontend files that name roles (`grep -rl healer frontend/src`) | `test_engine_sync` for the Python lists; nothing for the frontend |
 | a human-turn phase | `_ACTION_KINDS` in `translate.py` and the `action_kind` literal in `schemas/events.py` | the first such turn raises `TranslationError` |
+| a route or a request/response DTO | `cd frontend && npm run generate-api-types`, then commit the saved OpenAPI document and the generated types together | `test_openapi_snapshot` (the saved document no longer matches the server) |
 
 The goldens (`tests/fixtures/translator_golden*.jsonl`) are regenerated only for a
 deliberate wire change, with `poetry run python -m tests.fixtures.translator_golden`; the

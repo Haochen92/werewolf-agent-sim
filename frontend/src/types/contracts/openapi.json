@@ -1,0 +1,2790 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "werewolf-agent-sim server",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Liveness probe",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/models": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "The served-game model menu (tested models only), and what the house will pay for",
+        "description": "Every tested model with its rescue, whether the house pays for it, and which one is\nthe default right now; plus the house's purse for today, so the client can say\n\"house pays, 3 left\" or \"your key needed\" before the player submits.",
+        "operationId": "supported_models_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsMenu"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "summary": "Instant start: solo human (role choice) or LLM-only",
+        "operationId": "create_game_games_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewGame"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}": {
+      "get": {
+        "tags": [
+          "games"
+        ],
+        "summary": "Status snapshot",
+        "operationId": "game_status_games__game_id__get",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/key": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "summary": "Resume a key-funded game after a restart by supplying the key again",
+        "description": "Any seat holder may fund the resume; spectators may not. The key is tried on the\nprovider first (422 with its complaint), then the game continues from its checkpoint.\n409 when the game is not waiting for a key.",
+        "operationId": "fund_game_games__game_id__key_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FundGame"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/turns": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "summary": "Submit the human seat's action",
+        "operationId": "submit_turn_games__game_id__turns_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/events": {
+      "get": {
+        "tags": [
+          "games"
+        ],
+        "summary": "SSE event stream",
+        "description": "Stream entitled durable events plus public ephemeral pacing frames.\n\n``last_seq`` is the cursor frozen into the original URL. On automatic browser\nreconnection, ``Last-Event-ID`` carries the live cursor and therefore wins when\nvalid. Pacing frames have no ID, so they never advance that durable cursor.",
+        "operationId": "event_stream_games__game_id__events_get",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          },
+          {
+            "name": "last_seq",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Last Seq"
+            }
+          },
+          {
+            "name": "last-event-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms": {
+      "get": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Browse waiting rooms (public)",
+        "description": "Return non-stale waiting rooms newest first without expiring direct URLs.",
+        "operationId": "list_rooms_rooms_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoomSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Rooms Rooms Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Create a multiplayer waiting room (humans join via /join)",
+        "description": "Create a lobby whose identifier remains stable when the game starts.\n\nHumans enter only through ``/join`` and roles remain random. The model is resolved\nand the house consulted here so the host learns early; the cap is checked again at\nstart, which is when the game actually costs anything.",
+        "operationId": "create_room_rooms_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRoom"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/lock": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Lock or unlock a waiting room (host only)",
+        "operationId": "lock_room_games__game_id__lock_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          },
+          {
+            "name": "host_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Host Key"
+            }
+          },
+          {
+            "name": "locked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Locked"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/join": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Claim a human seat in a waiting room",
+        "operationId": "join_game_games__game_id__join_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGame"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatJoined"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/rejoin": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Restore a lost seat cookie from the token's body copy",
+        "operationId": "rejoin_game_games__game_id__rejoin_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejoinGame"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeatJoined"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/start": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Start the waiting room's game (host only)",
+        "description": "Replace the lobby with a running session under the same ID (registry.start).",
+        "operationId": "start_game_games__game_id__start_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          },
+          {
+            "name": "host_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Host Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/replays": {
+      "get": {
+        "tags": [
+          "replays"
+        ],
+        "summary": "Browse finished games (newest first)",
+        "operationId": "list_replays_replays_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReplayBase"
+                  },
+                  "title": "Response List Replays Replays Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/replays/{game_id}": {
+      "get": {
+        "tags": [
+          "replays"
+        ],
+        "summary": "One finished game's full event log",
+        "operationId": "get_replay_replays__game_id__get",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplayGame"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/house": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "The house's purse as of now",
+        "operationId": "read_house_admin_house_get",
+        "parameters": [
+          {
+            "name": "x-admin-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Admin-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Change the house's knobs, live",
+        "operationId": "update_house_admin_house_put",
+        "parameters": [
+          {
+            "name": "x-admin-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Admin-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HouseUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HouseView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressedTargetsAnnotation": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "addressed_targets",
+            "title": "Type",
+            "default": "addressed_targets"
+          },
+          "about_channel_seq": {
+            "type": "integer",
+            "title": "About Channel Seq"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/WireAddressedTarget"
+            },
+            "type": "array",
+            "title": "Targets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "about_channel_seq",
+          "player",
+          "targets"
+        ],
+        "title": "AddressedTargetsAnnotation",
+        "description": "Structured who-this-addresses tags. Joins the speech via about_channel_seq."
+      },
+      "BulletsRemaining": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "bullets_remaining",
+            "title": "Type",
+            "default": "bullets_remaining"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "count"
+        ],
+        "title": "BulletsRemaining"
+      },
+      "DaySummary": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "day_summary",
+            "title": "Type",
+            "default": "day_summary"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "summary"
+        ],
+        "title": "DaySummary",
+        "description": "Shown next morning \u2014 client render rule, no buffer (buffers gate entitlement;\nrender timing gates pacing)."
+      },
+      "DaySummaryStructured": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "day_summary_structured",
+            "title": "Type",
+            "default": "day_summary_structured"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "data"
+        ],
+        "title": "DaySummaryStructured",
+        "description": "O-tier structured form of the summary (accusations / role claims / alliances)."
+      },
+      "FiringReasonAnnotation": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "firing_reason",
+            "title": "Type",
+            "default": "firing_reason"
+          },
+          "about_channel_seq": {
+            "type": "integer",
+            "title": "About Channel Seq"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "reactive",
+              "proactive"
+            ],
+            "title": "Tier"
+          },
+          "owes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Owes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "about_channel_seq",
+          "player",
+          "tier"
+        ],
+        "title": "FiringReasonAnnotation",
+        "description": "Scheduler trace for a turn: why it fired. Joins the speech/pass via about_channel_seq."
+      },
+      "FundGame": {
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Api Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "api_key"
+        ],
+        "title": "FundGame",
+        "description": "POST /games/{id}/key body: a seat holder's key to resume a game that lost its\nfunding in a restart. Tried on the provider before the game moves; never stored."
+      },
+      "GameCreated": {
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "title": "Game Id"
+          },
+          "seat_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_id"
+        ],
+        "title": "GameCreated",
+        "description": "POST /games and POST /games/{id}/start response."
+      },
+      "GameOver": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "game_over",
+            "title": "Type",
+            "default": "game_over"
+          },
+          "winner": {
+            "type": "string",
+            "enum": [
+              "villagers",
+              "wolves",
+              "serial_killer"
+            ],
+            "title": "Winner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "winner"
+        ],
+        "title": "GameOver",
+        "description": "Thin by ruling: an entitlement flip, not a data package \u2014 the server follows it with\nthe withheld observer-tier backlog from the durable log."
+      },
+      "GameStarted": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "game_started",
+            "title": "Type",
+            "default": "game_started"
+          },
+          "seats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seats"
+          },
+          "cast_role_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Cast Role Counts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "seats",
+          "cast_role_counts"
+        ],
+        "title": "GameStarted"
+      },
+      "GameStatus": {
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "title": "Game Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "running",
+              "finished",
+              "dropped"
+            ],
+            "title": "State"
+          },
+          "server_time": {
+            "type": "string",
+            "title": "Server Time"
+          },
+          "players": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Players"
+          },
+          "max_seats": {
+            "type": "integer",
+            "title": "Max Seats",
+            "default": 0
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked",
+            "default": false
+          },
+          "human_players": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Human Players"
+          },
+          "you": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "You"
+          },
+          "pending_input": {
+            "type": "boolean",
+            "title": "Pending Input",
+            "default": false
+          },
+          "pending_seats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pending Seats"
+          },
+          "deadlines": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Deadlines"
+          },
+          "game_over": {
+            "type": "boolean",
+            "title": "Game Over",
+            "default": false
+          },
+          "last_seq": {
+            "type": "integer",
+            "title": "Last Seq",
+            "default": 0
+          },
+          "awaiting_key": {
+            "type": "boolean",
+            "title": "Awaiting Key",
+            "default": false
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "default": false
+          },
+          "alive_role_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Alive Role Counts"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_id",
+          "state",
+          "server_time"
+        ],
+        "title": "GameStatus",
+        "description": "GET /games/{id} response: the poll-side snapshot (the stream carries the rest).\n\nOne shape for both registry phases \u2014 a lobby fills only the header trio\n(game_id, state, players) and leaves the game fields at their defaults."
+      },
+      "GmMessage": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "gm_message",
+            "title": "Type",
+            "default": "gm_message"
+          },
+          "channel_seq": {
+            "type": "integer",
+            "title": "Channel Seq"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "channel_seq",
+          "text"
+        ],
+        "title": "GmMessage",
+        "description": "Verbatim GM narration (record fidelity outranks derivability for authored text)."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HouseFunding": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "games_per_day": {
+            "type": "integer",
+            "title": "Games Per Day"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "reset_at": {
+            "type": "string",
+            "title": "Reset At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "games_per_day",
+          "remaining",
+          "reset_at"
+        ],
+        "title": "HouseFunding",
+        "description": "The house's purse for today, as GET /models reports it to the client."
+      },
+      "HouseUpdate": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "default_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Model"
+          },
+          "games_per_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Games Per Day"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "HouseUpdate",
+        "description": "PUT /admin/house body: any subset of the knobs."
+      },
+      "HouseView": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "games_per_day": {
+            "type": "integer",
+            "title": "Games Per Day"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "reset_at": {
+            "type": "string",
+            "title": "Reset At"
+          },
+          "default_model": {
+            "type": "string",
+            "title": "Default Model"
+          },
+          "used_today": {
+            "type": "integer",
+            "title": "Used Today"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "games_per_day",
+          "remaining",
+          "reset_at",
+          "default_model",
+          "used_today"
+        ],
+        "title": "HouseView",
+        "description": "GET/PUT /admin/house response: the purse plus the knobs behind it."
+      },
+      "InputRequest": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "input_request",
+            "title": "Type",
+            "default": "input_request"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "action_kind": {
+            "type": "string",
+            "enum": [
+              "discuss",
+              "vote",
+              "wolf_discuss",
+              "wolf_vote",
+              "healer_target",
+              "investigator_target",
+              "serial_killer_target",
+              "vigilante_target"
+            ],
+            "title": "Action Kind"
+          },
+          "candidates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "action_kind"
+        ],
+        "title": "InputRequest",
+        "description": "The human seat's turn prompt (interrupt surface). Night instances fire inside a\nparallel superstep \u2014 resume semantics gated on the spike verification."
+      },
+      "InvestigationResult": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "investigation_result",
+            "title": "Type",
+            "default": "investigation_result"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "target",
+          "role"
+        ],
+        "title": "InvestigationResult",
+        "description": "Survival-gated in the engine node: no committed delta -> this event never exists."
+      },
+      "JoinGame": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": "human"
+          }
+        },
+        "type": "object",
+        "title": "JoinGame",
+        "description": "POST /games/{id}/join body. No role field on purpose: rooms deal random\nseats (role choice is solo-only, on the instant-start path)."
+      },
+      "LynchResult": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "lynch_result",
+            "title": "Type",
+            "default": "lynch_result"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "lynched",
+              "tie",
+              "abstain",
+              "no_vote"
+            ],
+            "title": "Outcome"
+          },
+          "player": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "vote_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Vote Counts"
+          },
+          "no_lynch_streak": {
+            "type": "integer",
+            "title": "No Lynch Streak"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "outcome",
+          "vote_counts",
+          "no_lynch_streak"
+        ],
+        "title": "LynchResult",
+        "description": "The day death atom (= the dead_roster delta) + the free-rider fields the node computed."
+      },
+      "ModelRow": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "rescue_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rescue Model"
+          },
+          "house_funded": {
+            "type": "boolean",
+            "title": "House Funded",
+            "default": false
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "label",
+          "rescue_model"
+        ],
+        "title": "ModelRow",
+        "description": "One entry of the GET /models served-game menu."
+      },
+      "ModelsMenu": {
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelRow"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "house": {
+            "$ref": "#/components/schemas/HouseFunding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models",
+          "house"
+        ],
+        "title": "ModelsMenu",
+        "description": "GET /models response: the menu, and what the house will pay for right now."
+      },
+      "NewGame": {
+        "properties": {
+          "human": {
+            "type": "boolean",
+            "title": "Human",
+            "default": false
+          },
+          "human_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Human Role"
+          },
+          "api_key": {
+            "type": "string",
+            "title": "Api Key",
+            "default": ""
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "NewGame",
+        "description": "POST /games body: the instant-start (solo / LLM-only) door. Multiplayer\nrooms are created at POST /rooms \u2014 a deliberately separate contract."
+      },
+      "NewRoom": {
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "title": "Api Key",
+            "default": ""
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Name",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "NewRoom",
+        "description": "POST /rooms body: the multiplayer door. No human/role fields ON PURPOSE \u2014\na room seats humans only via POST /join and always deals random roles, so the\nconcept is unrepresentable here instead of guarded; extra=\"forbid\" turns a\nclient sending instant-start fields into a clean 422."
+      },
+      "NightAction": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "night_action",
+            "title": "Type",
+            "default": "night_action"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "actor",
+          "role",
+          "target"
+        ],
+        "title": "NightAction",
+        "description": "O-tier committed target of a single-target night actor. No seat ack by ruling \u2014\nthe seat re-learns its act from dawn's gm_message; the live client echoes locally."
+      },
+      "NightDeath": {
+        "properties": {
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "attacker_types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "wolves",
+                "serial_killer",
+                "vigilante"
+              ]
+            },
+            "type": "array",
+            "title": "Attacker Types"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player",
+          "role",
+          "attacker_types"
+        ],
+        "title": "NightDeath"
+      },
+      "NightResult": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "night_result",
+            "title": "Type",
+            "default": "night_result"
+          },
+          "deaths": {
+            "items": {
+              "$ref": "#/components/schemas/NightDeath"
+            },
+            "type": "array",
+            "title": "Deaths"
+          },
+          "save": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NightSave"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "deaths"
+        ],
+        "title": "NightResult",
+        "description": "The night death atom (= the dead_roster delta) + free-riders. Empty deaths = quiet\nnight. Silent whiffs (immune SK) appear NOWHERE here \u2014 absence is the design."
+      },
+      "NightSave": {
+        "properties": {
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "attacker_types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "wolves",
+                "serial_killer",
+                "vigilante"
+              ]
+            },
+            "type": "array",
+            "title": "Attacker Types"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player",
+          "attacker_types"
+        ],
+        "title": "NightSave"
+      },
+      "PackRosterUpdate": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "pack_roster_update",
+            "title": "Type",
+            "default": "pack_roster_update"
+          },
+          "surviving_wolves": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Surviving Wolves"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "surviving_wolves"
+        ],
+        "title": "PackRosterUpdate"
+      },
+      "PassMarker": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "pass_marker",
+            "title": "Type",
+            "default": "pass_marker"
+          },
+          "channel_seq": {
+            "type": "integer",
+            "title": "Channel Seq"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "pass_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "voluntary",
+                  "novelty_gated",
+                  "generation_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pass Reason"
+          },
+          "gated": {
+            "type": "boolean",
+            "title": "Gated",
+            "default": false
+          },
+          "gated_candidate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gated Candidate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "channel_seq",
+          "player"
+        ],
+        "title": "PassMarker",
+        "description": "A discussion turn that produced no speech \u2014 hidden from the table, observer-only."
+      },
+      "PhaseChange": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "phase_change",
+            "title": "Type",
+            "default": "phase_change"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "day",
+              "voting",
+              "night"
+            ],
+            "title": "Phase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "phase"
+        ],
+        "title": "PhaseChange",
+        "description": "Node-identity marker: anchored on initialize_game/one_more_day (day), START_VOTING\n(voting), and NIGHT_START (night)."
+      },
+      "RejoinGame": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "RejoinGame",
+        "description": "POST /games/{id}/rejoin body: re-prove seat ownership after cookie loss\n(new device, cleared browsing data) with the stashed body-copy token."
+      },
+      "ReplayBase": {
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "title": "Game Id"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "winner": {
+            "type": "string",
+            "title": "Winner"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "n_events": {
+            "type": "integer",
+            "title": "N Events"
+          },
+          "n_humans": {
+            "type": "integer",
+            "title": "N Humans"
+          },
+          "cast_role_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Cast Role Counts"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_id",
+          "winner",
+          "days",
+          "n_events",
+          "n_humans",
+          "cast_role_counts"
+        ],
+        "title": "ReplayBase",
+        "description": "One row returned by ``GET /replays``."
+      },
+      "ReplayGame": {
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "title": "Game Id"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "winner": {
+            "type": "string",
+            "title": "Winner"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "n_events": {
+            "type": "integer",
+            "title": "N Events"
+          },
+          "n_humans": {
+            "type": "integer",
+            "title": "N Humans"
+          },
+          "cast_role_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Cast Role Counts"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          },
+          "events": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/GameStarted"
+                },
+                {
+                  "$ref": "#/components/schemas/RoleAssigned"
+                },
+                {
+                  "$ref": "#/components/schemas/RolesAssigned"
+                },
+                {
+                  "$ref": "#/components/schemas/PhaseChange"
+                },
+                {
+                  "$ref": "#/components/schemas/GameOver"
+                },
+                {
+                  "$ref": "#/components/schemas/TurnStarted"
+                },
+                {
+                  "$ref": "#/components/schemas/Speech"
+                },
+                {
+                  "$ref": "#/components/schemas/PassMarker"
+                },
+                {
+                  "$ref": "#/components/schemas/FiringReasonAnnotation"
+                },
+                {
+                  "$ref": "#/components/schemas/AddressedTargetsAnnotation"
+                },
+                {
+                  "$ref": "#/components/schemas/StrategyUpdate"
+                },
+                {
+                  "$ref": "#/components/schemas/InputRequest"
+                },
+                {
+                  "$ref": "#/components/schemas/DaySummary"
+                },
+                {
+                  "$ref": "#/components/schemas/DaySummaryStructured"
+                },
+                {
+                  "$ref": "#/components/schemas/VoteCast"
+                },
+                {
+                  "$ref": "#/components/schemas/GmMessage"
+                },
+                {
+                  "$ref": "#/components/schemas/LynchResult"
+                },
+                {
+                  "$ref": "#/components/schemas/RosterUpdate"
+                },
+                {
+                  "$ref": "#/components/schemas/PackRosterUpdate"
+                },
+                {
+                  "$ref": "#/components/schemas/NightAction"
+                },
+                {
+                  "$ref": "#/components/schemas/WolfMessage"
+                },
+                {
+                  "$ref": "#/components/schemas/WolfVote"
+                },
+                {
+                  "$ref": "#/components/schemas/WolfKillDecided"
+                },
+                {
+                  "$ref": "#/components/schemas/NightResult"
+                },
+                {
+                  "$ref": "#/components/schemas/InvestigationResult"
+                },
+                {
+                  "$ref": "#/components/schemas/VigilanteConfirmation"
+                },
+                {
+                  "$ref": "#/components/schemas/BulletsRemaining"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "addressed_targets": "#/components/schemas/AddressedTargetsAnnotation",
+                  "bullets_remaining": "#/components/schemas/BulletsRemaining",
+                  "day_summary": "#/components/schemas/DaySummary",
+                  "day_summary_structured": "#/components/schemas/DaySummaryStructured",
+                  "firing_reason": "#/components/schemas/FiringReasonAnnotation",
+                  "game_over": "#/components/schemas/GameOver",
+                  "game_started": "#/components/schemas/GameStarted",
+                  "gm_message": "#/components/schemas/GmMessage",
+                  "input_request": "#/components/schemas/InputRequest",
+                  "investigation_result": "#/components/schemas/InvestigationResult",
+                  "lynch_result": "#/components/schemas/LynchResult",
+                  "night_action": "#/components/schemas/NightAction",
+                  "night_result": "#/components/schemas/NightResult",
+                  "pack_roster_update": "#/components/schemas/PackRosterUpdate",
+                  "pass_marker": "#/components/schemas/PassMarker",
+                  "phase_change": "#/components/schemas/PhaseChange",
+                  "role_assigned": "#/components/schemas/RoleAssigned",
+                  "roles_assigned": "#/components/schemas/RolesAssigned",
+                  "roster_update": "#/components/schemas/RosterUpdate",
+                  "speech": "#/components/schemas/Speech",
+                  "strategy_update": "#/components/schemas/StrategyUpdate",
+                  "turn_started": "#/components/schemas/TurnStarted",
+                  "vigilante_confirmation": "#/components/schemas/VigilanteConfirmation",
+                  "vote_cast": "#/components/schemas/VoteCast",
+                  "wolf_kill_decided": "#/components/schemas/WolfKillDecided",
+                  "wolf_message": "#/components/schemas/WolfMessage",
+                  "wolf_vote": "#/components/schemas/WolfVote"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_id",
+          "winner",
+          "days",
+          "n_events",
+          "n_humans",
+          "cast_role_counts",
+          "events"
+        ],
+        "title": "ReplayGame",
+        "description": "One complete replay with every stored event revalidated for the wire."
+      },
+      "RoleAssigned": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "role_assigned",
+            "title": "Type",
+            "default": "role_assigned"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "pack": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pack"
+          },
+          "bullets": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bullets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "role"
+        ],
+        "title": "RoleAssigned",
+        "description": "Seat-private deal: one per seat at game start."
+      },
+      "RolesAssigned": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "roles_assigned",
+            "title": "Type",
+            "default": "roles_assigned"
+          },
+          "roles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "roles"
+        ],
+        "title": "RolesAssigned",
+        "description": "O-tier full deal at game start: nobody receives it live; exists so the game_over\nbacklog replay has survivor roles from minute zero."
+      },
+      "RoomCreated": {
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "title": "Game Id"
+          },
+          "host_key": {
+            "type": "string",
+            "title": "Host Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_id",
+          "host_key"
+        ],
+        "title": "RoomCreated",
+        "description": "POST /rooms response."
+      },
+      "RoomSummary": {
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "title": "Game Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "players": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Players"
+          },
+          "max_seats": {
+            "type": "integer",
+            "title": "Max Seats"
+          },
+          "locked": {
+            "type": "boolean",
+            "title": "Locked"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "game_id",
+          "name",
+          "players",
+          "max_seats",
+          "locked",
+          "created_at"
+        ],
+        "title": "RoomSummary",
+        "description": "One row of GET /rooms: the public face of a waiting room. Also the POST /lock\nresponse (the host's fresh view after flipping the flag). Never any secret \u2014\nno host_key, no tokens."
+      },
+      "RosterUpdate": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "roster_update",
+            "title": "Type",
+            "default": "roster_update"
+          },
+          "surviving_players": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Surviving Players"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "surviving_players"
+        ],
+        "title": "RosterUpdate",
+        "description": "Union only: the translator merges the wolf-partitioned survivor lists before the\npublic tier ever sees them."
+      },
+      "SeatJoined": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "SeatJoined",
+        "description": "POST /games/{id}/join and POST /games/{id}/rejoin response."
+      },
+      "Speech": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "speech",
+            "title": "Type",
+            "default": "speech"
+          },
+          "channel_seq": {
+            "type": "integer",
+            "title": "Channel Seq"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "channel_seq",
+          "player",
+          "message"
+        ],
+        "title": "Speech"
+      },
+      "StrategyUpdate": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "strategy_update",
+            "title": "Type",
+            "default": "strategy_update"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "strategy": {
+            "type": "string",
+            "title": "Strategy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "strategy"
+        ],
+        "title": "StrategyUpdate"
+      },
+      "TurnAccepted": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "accepted"
+          }
+        },
+        "type": "object",
+        "title": "TurnAccepted",
+        "description": "POST /games/{id}/turns response."
+      },
+      "TurnStarted": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "turn_started",
+            "title": "Type",
+            "default": "turn_started"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player"
+        ],
+        "title": "TurnStarted",
+        "description": "Edge-emitted (route_speaker): who is about to speak. Not a promise of speech."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VigilanteConfirmation": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "vigilante_confirmation",
+            "title": "Type",
+            "default": "vigilante_confirmation"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "target"
+        ],
+        "title": "VigilanteConfirmation",
+        "description": "Private immune-whiff confirmation: the shot target is the serial killer."
+      },
+      "VoteCast": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "vote_cast",
+            "title": "Type",
+            "default": "vote_cast"
+          },
+          "voter": {
+            "type": "string",
+            "title": "Voter"
+          },
+          "votee": {
+            "type": "string",
+            "title": "Votee"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "voter",
+          "votee"
+        ],
+        "title": "VoteCast",
+        "description": "Ballot content, released as a batch at COLLECT_VOTES from the translator buffer."
+      },
+      "WireAddressedTarget": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "addressed_form": {
+            "type": "string",
+            "enum": [
+              "question",
+              "response",
+              "mention"
+            ],
+            "title": "Addressed Form"
+          },
+          "stance": {
+            "type": "string",
+            "enum": [
+              "accusation",
+              "defense",
+              "agreement",
+              "neutral"
+            ],
+            "title": "Stance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target",
+          "addressed_form",
+          "stance"
+        ],
+        "title": "WireAddressedTarget"
+      },
+      "WolfKillDecided": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "wolf_kill_decided",
+            "title": "Type",
+            "default": "wolf_kill_decided"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "target"
+        ],
+        "title": "WolfKillDecided",
+        "description": "The pack's plurality tally (random tiebreak) \u2014 the only way a wolf seat learns it\nbefore dawn."
+      },
+      "WolfMessage": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "wolf_message",
+            "title": "Type",
+            "default": "wolf_message"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "wolf": {
+            "type": "string",
+            "title": "Wolf"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "round",
+          "wolf",
+          "message"
+        ],
+        "title": "WolfMessage",
+        "description": "Wolf-channel talk. wolf == \"game_master\" for the server-authored SK-whiff note."
+      },
+      "WolfVote": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "wolf_vote",
+            "title": "Type",
+            "default": "wolf_vote"
+          },
+          "wolf": {
+            "type": "string",
+            "title": "Wolf"
+          },
+          "votee": {
+            "type": "string",
+            "title": "Votee"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "wolf",
+          "votee"
+        ],
+        "title": "WolfVote",
+        "description": "Binding kill vote \u2014 buffered by the translator until the tally (blind voting +\nwire/state parity), then flushed together with wolf_kill_decided."
+      }
+    }
+  }
+}

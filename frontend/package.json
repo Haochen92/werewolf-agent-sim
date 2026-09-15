@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate-api-types": "openapi-typescript http://localhost:8001/openapi.json -o src/types/contracts/api.ts && prettier --write src/types/contracts/api.ts"
+    "generate-api-types": "(cd .. && poetry run python -m server.openapi) > src/types/contracts/openapi.json && openapi-typescript src/types/contracts/openapi.json -o src/types/contracts/api.ts && prettier --write src/types/contracts/api.ts"
   },
   "dependencies": {
     "@mantine/core": "^8.3.1",
