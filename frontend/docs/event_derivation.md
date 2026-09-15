@@ -37,7 +37,7 @@
 | Tier | Events |
 | --- | --- |
 | Public | `day_summary {day, summary}` — shown next morning: client render rule, **no buffer** (buffers gate entitlement; render timing gates pacing). Renders as a "Previously…" recap card at the TOP of day D+1's page (mirrors the LLM payload: full current day + summaries of prior days); the full transcript stays readable per day — the summary is a header, never a replacement |
-| Observer | `day_summary_structured {day, data}` — `data` is the summarizer's structured output verbatim (PROVISIONAL `dict`; typed once the summarizer schema freezes). ⚠️ Currently never fires: no node streams this key — needs a node commit if wanted. |
+| Observer | `day_summary_structured {day, data}` — `data` is the summarizer's structured output verbatim (accusations / role_claims / alliances / village_dynamics; PROVISIONAL `dict`, typed once the summarizer schema freezes). Sent right after the day's `day_summary`, from the `structured` field the engine stores beside the text (2026-09-15); not sent when that field is empty, i.e. the summarizer failed and the raw channel was stored as the text. Meant for the X-ray ("what the agents carry into today"), never the story surface. |
 
 **START_VOTING** — public `phase_change` (self-disambiguating: anchored on the routed-to node).
 

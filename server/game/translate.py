@@ -26,7 +26,9 @@ re-run when a human answers; they are buffered until the tally, last write per v
 
 The lynch and the night deaths are computed here with the engine's own rule functions and
 compared with what the node recorded; a mismatch raises rather than sending a wrong event.
-Not yet emitted: day_summary_structured, whose structured form never reaches state.
+The day summary is sent twice from its node: the flattened text the agents read, and the
+summarizer's structured answer (accusations, claims, blocs, dynamics) for the observer
+tier, skipped only when the summarizer failed and the raw channel was stored instead.
 
 The node-by-node table of what is sent, and to whom, is frontend/docs/event_derivation.md,
 titled with the same node names as the registry below. The exact output on a recorded game
@@ -375,8 +377,16 @@ class Translator:
 
     @node("SUMMARIZE_DAY_DISCUSSION", writes={"day_summaries"})
     def _summarize_day_discussion(self, delta):
-        return [self._emit(ev.DaySummary, day=s["day"], summary=s["summary"])
-                for s in delta.get("day_summaries") or []]
+        # The summarizer stores its typed answer next to the flattened text the agents
+        # read. The structured copy is empty when the summarizer failed and the raw
+        # channel was stored instead, and then only the text is sent.
+        out = []
+        for s in delta.get("day_summaries") or []:
+            out.append(self._emit(ev.DaySummary, day=s["day"], summary=s["summary"]))
+            if s.get("structured"):
+                out.append(self._emit(
+                    ev.DaySummaryStructured, day=s["day"], data=s["structured"]))
+        return out
 
     @node("START_VOTING")
     def _start_voting(self, delta):
