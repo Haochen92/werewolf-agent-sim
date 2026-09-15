@@ -2,7 +2,7 @@
 
 > The companion to `server/game/translate.py`: one section per graph node, in the order the
 > nodes run, titled with the node's registry name so a `@node("...")` in the code and its
-> section here share a string. Each table says what that node ships and to whom; IGNORED marks
+> section here share a string. Each table says what that node sends and to whom; IGNORED marks
 > a state field the node writes that the browser has no use for. This is prose and nothing
 > checks it against the code. The exact output on a recorded game is pinned by the goldens
 > in `tests/fixtures/translator_golden*.jsonl`; when the two disagree, the goldens are right
@@ -86,12 +86,12 @@ the pacing denominator comes from public knowledge only (see Ephemeral channel).
 | Tier | Events |
 | --- | --- |
 | Public | — |
-| Faction | `wolf_message {wolf, message, day, round}` — sequential talk, ships live |
+| Faction | `wolf_message {wolf, message, day, round}` — sequential talk, sent live |
 | Faction | `wolf_vote {wolf, votee, day}` — **buffered** until the tally |
 | Faction | `wolf_kill_decided {target, day}` — the plurality tally + random tiebreak; flushes the vote buffer |
 | Seat | `input_request` (human wolf talk/vote — interrupt nested inside the outer parallel superstep) |
 | Observer | faction mirror + `strategy_update` |
-- Vote buffer rationale: live shipping leaks packmate votes to the interrupted human wolf (LLM wolves vote blind → unfair edge); tally-only gives the human LESS than the LLM seat (next-night `_wolf_payload` carries past votes → parity violation). Buffered release = blind voting + wire/state parity, full per-vote breakdown at round end. Same pattern as the day ballot buffer; same buffer-empty-at-dawn alarm.
+- Vote buffer rationale: sending live leaks packmate votes to the interrupted human wolf (LLM wolves vote blind → unfair edge); tally-only gives the human LESS than the LLM seat (next-night `_wolf_payload` carries past votes → parity violation). Buffered release = blind voting + wire/state parity, full per-vote breakdown at round end. Same pattern as the day ballot buffer; same buffer-empty-at-dawn alarm.
 - `current_round` (written by PREPARE_WOLF_NIGHT) → IGNORED (loop control). START_WOLF_VOTE and the `WOLF_NIGHT_PHASE` root wrapper → registered silent.
 
 **NIGHT_RESOLUTION** (the barrier — fattest commit in the game: one delta, four audiences)
@@ -104,10 +104,10 @@ the pacing denominator comes from public knowledge only (see Ephemeral channel).
 | Faction | `pack_roster_update {surviving_wolves}` · `wolf_message {wolf: "game_master", ...}` — the SK-whiff note: first server-authored *faction* narration |
 | Seat (investigator) | `investigation_result {target, role, day}` |
 | Seat (vigilante) | `vigilante_confirmation {target, day}` (immune-whiff SK confirmation) · `bullets_remaining {count}` |
-- The investigator survival gate lives in the NODE (no delta committed → no event exists) — the translator needs zero logic for it; committed→shipped does the right thing automatically.
-- Silent whiffs ship NOTHING publicly — absence is the design; the wire must not un-silence what the engine silences (see pacing denominator).
+- The investigator survival gate lives in the NODE (no delta committed → no event exists) — the translator needs zero logic for it; committed→sent does the right thing automatically.
+- Silent whiffs send NOTHING publicly — absence is the design; the wire must not un-silence what the engine silences (see pacing denominator).
 - `day_summaries` append → IGNORED (verbatim inside this node's `gm_message`; precedent: `voted_player` inside `lynch_result`).
-- `*_player` marker clears → IGNORED (fold doctrine: ship the client-facing form, fold the internal form — committed→shipped governs INFORMATION, not raw keys).
+- `*_player` marker clears → IGNORED (fold doctrine: send the client-facing form, fold the internal form — committed→sent governs INFORMATION, not raw keys).
 - Metric append + langfuse span → diagnostic plane, never the wire.
 
 **ONE_MORE_DAY** — `phase_change("day") {day}` (content-disambiguated, as day_resolution's night marker). `current_day` delta → IGNORED (inside it). Also commits the new-day RESETS — `healer_target` / `investigator_target` / `serial_killer_target` / `vigilante_target` / `wolves_kill_target` / `day_votes` / `voted_player` all cleared → IGNORED (blank-slate bookkeeping, zero information).
@@ -118,7 +118,7 @@ the pacing denominator comes from public knowledge only (see Ephemeral channel).
 | --- | --- |
 | Public | `game_over {winner, day}` — thin: an entitlement flip, not a data package |
 - At game_over the client's tier becomes observer; the server streams the withheld O-tier backlog from the durable log (full X-ray replay: wolf channel, probes, strategies, `roles_assigned`). No reveal payload is duplicated into the event.
-- POST_GAME_ANALYSIS → registered silent with the key check off: its output is large and never shipped.
+- POST_GAME_ANALYSIS → registered silent with the key check off: its output is large and never sent.
 
 ## Stream behaviours the translator guards
 
@@ -126,7 +126,7 @@ Four things about the engine's stream shape what the translator does, each handl
 guard. The stories behind them are in `server_encountered_challenges.md`.
 
 - **A committed step can stream again**, tagged `__metadata__: {cached: true}`, when a cached
-  node re-runs after a human answers. Dropped whole: its events already shipped. (§4)
+  node re-runs after a human answers. Dropped whole: its events already went out. (§4)
 - **Every interrupt streams twice**, once under the subgraph's namespace and once mirrored at
   the root. Only the root copy becomes an `input_request`. (§1)
 - **The two votes re-run when a human answers.** The AI ballots streamed before the pause are
@@ -175,9 +175,9 @@ Derived (night) table, and `roles_assigned` in initialize_game (game_over unlock
 
 Reconciliations where today's rulings met the existing day-side text — day precedent won twice:
 
-1. **Rosters ship** (`roster_update`/`pack_roster_update` at night_resolution). The draft's R6 note
-   had survivor lists folding as derived state, but the day table already ships the translator
-   union — and "ship the client-facing form" says the day table is right. Fold doctrine still
+1. **Rosters are sent** (`roster_update`/`pack_roster_update` at night_resolution). The draft's R6 note
+   had survivor lists folding as derived state, but the day table already sends the translator
+   union — and "send the client-facing form" says the day table is right. Fold doctrine still
    covers marker clears and `current_round`.
 2. **`night_result` instead of a shared `player_died`.** R4 wanted one death event for both phases,
    but `lynch_result` already exists as the day death atom with vote free-riders that night deaths
@@ -185,7 +185,7 @@ Reconciliations where today's rulings met the existing day-side text — day pre
    the dead_roster delta + what the node already computed. The alive-role census derives from both.
 3. **`day_summaries` night append = IGNORED**, not a `day_summary` event. It's verbatim the same
    text as this node's `gm_message` (the `voted_player` precedent). ⚠️ Review question for the
-   owner: day_resolution's own `day_summary` row ("same key → same event") ships text that is also
+   owner: day_resolution's own `day_summary` row ("same key → same event") sends text that is also
    verbatim its `gm_message` — should it become IGNORED too, or is the summary-stream-completeness
    argument (client renders summaries only from `day_summary` events) the reason to keep both?
 

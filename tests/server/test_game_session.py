@@ -335,7 +335,7 @@ async def test_interrupt_parks_validates_and_resumes(quiet_session):
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
     assert session.error is None
-    # The input_request event shipped to the log, seat-tiered to the human.
+    # The input_request event sent to the log, seat-tiered to the human.
     (request_event,) = [e for e in session.log if e.type == "input_request"]
     assert request_event.player == "player_3"
     assert request_event.action_kind == "discuss"
@@ -344,9 +344,9 @@ async def test_interrupt_parks_validates_and_resumes(quiet_session):
                                               "target": None, "delegate": False}
 
 
-async def test_child_namespace_interrupt_mirrors_park_and_ship_once(quiet_session):
+async def test_child_namespace_interrupt_mirrors_park_and_send_once(quiet_session):
     """subgraphs=True streams each interrupt twice — child ns first, root mirror after
-    (parallel-interrupt probe, 2026-08-19). Only the root copy parks the seat and ships
+    (parallel-interrupt probe, 2026-08-19). Only the root copy parks the seat and sends
     an input_request; the child copy is dropped, or every request doubles on the wire."""
     root = _interrupt_chunk()
     child = {**root, "ns": ["DAY_PHASE:abc123"]}

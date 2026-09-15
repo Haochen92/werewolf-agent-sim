@@ -5,7 +5,7 @@ The replay test drives the translator over every chunk of a REAL captured game
 contract properties: nothing unhandled, seq strictly monotone, every event tier-registered,
 buffers empty at the end. The spot checks pin one real specimen per interesting row
 (voluntary pass, whiff note, investigation delivery). Unit tests cover interrupts, the
-cached drop, and the two kernel cross-checks (which must RAISE, never mis-ship).
+cached drop, and the two kernel cross-checks (which must RAISE, never mis-send).
 """
 from __future__ import annotations
 
@@ -126,7 +126,7 @@ def _seeded_translator() -> Translator:
     return t
 
 
-def test_every_real_part_re_delivered_as_cached_ships_nothing(replay):
+def test_every_real_chunk_re_delivered_as_cached_sends_nothing(replay):
     """After a crash, tasks whose writes had landed come back tagged cached (LangGraph
     re-applies them instead of re-running). Every family in a real game must vanish."""
     translator, _ = replay
@@ -210,7 +210,7 @@ def test_night_cross_check_raises_on_kernel_delta_mismatch():
         t.translate(chunk)
 
 
-def test_silent_whiff_ships_nothing_public():
+def test_silent_whiff_sends_nothing_public():
     # Wolves hit the SK: no deaths, no save, no public trace — absence is the design.
     t = _seeded_translator()
     t._targets = {"wolves_kill_target": "sk"}
@@ -234,7 +234,7 @@ def test_silent_whiff_ships_nothing_public():
 # ---- abort-and-re-execute (2026-08-19): a human interrupt aborts its superstep; sibling
 # ---- tasks re-run on resume and ONLY the re-run's writes survive in the engine ----------
 
-def _vote_part(voter: str, votee: str) -> dict:
+def _vote_chunk(voter: str, votee: str) -> dict:
     return {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "vote": {"day_votes": [{"voter": voter, "votee": votee}]},
     }}
@@ -248,11 +248,11 @@ def test_reexecuted_ballots_overwrite_the_aborted_ones():
     t = _seeded_translator()
     # the aborted attempt (streamed live, then discarded by the engine)
     for voter, votee in [("w0", "t0"), ("w1", "inv"), ("v", "t0")]:
-        t.translate(_vote_part(voter, votee))
+        t.translate(_vote_chunk(voter, votee))
     # resume: everyone re-executes; w1 and v change their minds; humans vote fresh
     for voter, votee in [("w0", "t0"), ("w1", "t0"), ("v", "abstain"),
                          ("h", "t0"), ("inv", "abstain")]:
-        t.translate(_vote_part(voter, votee))
+        t.translate(_vote_chunk(voter, votee))
 
     casts = t.translate({"type": "updates", "ns": ["DAY_PHASE:x"],
                          "data": {"collect_votes": None}})
@@ -278,7 +278,7 @@ def test_identical_reexecution_does_not_double_count():
     for _ in range(2):  # original + identical re-execution
         for voter, votee in [("w0", "t0"), ("w1", "t0"),
                              ("inv", "abstain"), ("h", "abstain"), ("v", "abstain")]:
-            t.translate(_vote_part(voter, votee))
+            t.translate(_vote_chunk(voter, votee))
     casts = t.translate({"type": "updates", "ns": ["DAY_PHASE:x"],
                          "data": {"collect_votes": None}})
     assert len(casts) == 5
@@ -299,7 +299,7 @@ def test_reexecuted_wolf_kill_vote_overwrites():
     assert t._wolf_votes == {"w0": "inv"}
 
 
-def test_reexecuted_discussion_entry_ships_once():
+def test_reexecuted_discussion_entry_is_sent_once():
     t = _seeded_translator()
     chunk = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "discuss": {"day_channel": [{"day": 1, "seq": 3, "player": "t0",
@@ -309,7 +309,7 @@ def test_reexecuted_discussion_entry_ships_once():
     assert t.translate(chunk) == []  # identical re-delivery
 
 
-def test_reexecuted_wolf_line_ships_once():
+def test_reexecuted_wolf_line_is_sent_once():
     t = _seeded_translator()
     chat = {"type": "updates", "ns": ["WOLF_NIGHT_PHASE:x"], "data": {
         "wolf_night_discuss": {"wolf_channel": [
@@ -319,7 +319,7 @@ def test_reexecuted_wolf_line_ships_once():
     assert t.translate(chat) == []
 
 
-def test_reexecuted_strategy_note_ships_once_but_changes_still_ship():
+def test_reexecuted_strategy_note_is_sent_once_but_changes_still_are():
     t = _seeded_translator()
     note = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "vote": {"day_votes": [], "agent_strategies": {"t0": "trust inv"}},
