@@ -47,6 +47,10 @@ class ModelRow(BaseModel):
     is_default: bool = False
     """The row a game runs on when the player picks none. A live setting, not a fixed
     position in the list."""
+    needs_key: bool = True
+    """Starting a game on this row right now requires the player's own key: the row is
+    not house-funded, or the house is off, or today's house games are used up. The same
+    rule the door applies, said in advance so the client can hold the submit."""
 
 
 class HouseFunding(BaseModel):

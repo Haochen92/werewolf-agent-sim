@@ -723,6 +723,11 @@ export interface components {
        * @default false
        */
       is_default: boolean;
+      /**
+       * Needs Key
+       * @default true
+       */
+      needs_key: boolean;
     };
     /**
      * ModelsMenu

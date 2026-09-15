@@ -21,12 +21,11 @@ import type { ModelsMenu } from '@/types/contracts';
 import { ByokField } from '@/components/ByokField';
 import classes from '@/components/Lobby.module.css';
 
-/** Whether the chosen row needs the player's key right now. */
+/** Whether the chosen row needs the player's key right now. The server says; the door applies the same rule. */
 export function needsKey(menu: ModelsMenu | undefined, model: string): boolean {
   if (!menu) return false;
   const row = menu.models.find((r) => r.model === model) ?? menu.models.find((r) => r.is_default);
-  if (!row) return false;
-  return !row.house_funded || !menu.house.enabled || menu.house.remaining <= 0;
+  return row?.needs_key ?? false;
 }
 
 function houseLine(menu: ModelsMenu, model: string): string {

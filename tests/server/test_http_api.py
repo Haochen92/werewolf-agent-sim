@@ -73,6 +73,8 @@ def test_the_menu_says_who_pays_and_which_row_is_default(api_client):
     assert [m for m, row in by_model.items() if row["is_default"]] == ["gemini-3.5-flash-lite"]
     # Storage is off in tests, so the purse is the process defaults: on, nothing used yet.
     assert menu["house"]["enabled"] is True
+    # The house is open, so its rows need no key and every other row does.
+    assert {m for m, row in by_model.items() if not row["needs_key"]} == house
     assert menu["house"]["remaining"] == menu["house"]["games_per_day"] > 0
     assert menu["house"]["reset_at"].endswith("+00:00")
 

@@ -27,7 +27,9 @@ async def supported_models(house: House) -> ModelsMenu:
     return ModelsMenu(
         models=[
             ModelRow(model=model, label=row.display_name, rescue_model=row.rescue_model,
-                     house_funded=row.house_funded, is_default=(model == status.default_model))
+                     house_funded=row.house_funded, is_default=(model == status.default_model),
+                     needs_key=(not row.house_funded or not status.enabled
+                                or status.remaining <= 0))
             for model, row in SUPPORTED_GAME_MODELS.items()
         ],
         house=HouseFunding(enabled=status.enabled, games_per_day=status.games_per_day,

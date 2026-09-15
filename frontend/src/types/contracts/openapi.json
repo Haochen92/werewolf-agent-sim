@@ -1624,6 +1624,11 @@
             "type": "boolean",
             "title": "Is Default",
             "default": false
+          },
+          "needs_key": {
+            "type": "boolean",
+            "title": "Needs Key",
+            "default": true
           }
         },
         "type": "object",
