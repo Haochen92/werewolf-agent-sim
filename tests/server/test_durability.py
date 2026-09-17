@@ -231,6 +231,17 @@ async def test_house_selected_model_survives_restart(monkeypatch):
     assert games.get("g-1")._llm_selection.model == model
 
 
+async def test_memory_switch_survives_restart(monkeypatch):
+    # A game is rebuilt with the switch it was started with — a memory-on game must not
+    # quietly continue memory-off, and a memory-off game must not pick memory up.
+    state = SimpleNamespace(next=("resume",), tasks=[])
+    games, _ = await _recover(
+        monkeypatch, [_row(memory=True), _row(game_id="g-2")], FakeDurableGraph(state))
+
+    assert all(games.get("g-1").config["configurable"]["memory_config"].values())
+    assert not any(games.get("g-2").config["configurable"]["memory_config"].values())
+
+
 async def test_stale_running_row_of_a_finished_game_is_closed_and_not_kept(monkeypatch):
     state = SimpleNamespace(next=(), tasks=[])
     games, repository = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))

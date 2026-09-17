@@ -36,7 +36,8 @@ async def create_room(body: NewRoom, games: GamesRegistry, house: House) -> Room
     start, which is when the game actually costs anything.
     """
     model = await authorize_model(house, body.api_key, body.model)
-    room = await games.open_room(api_key=body.api_key, model=model, name=body.name)
+    room = await games.open_room(api_key=body.api_key, model=model, name=body.name,
+                                 memory=body.memory)
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)
 
 

@@ -79,6 +79,10 @@ class NewSoloGame(BaseModel):
     """Game model, from SUPPORTED_GAME_MODELS only (the tested list; GET /models).
     House-funded rows may use the server backend; all other choices require api_key.
     Empty = the default model."""
+    memory: bool = False
+    """AI memory (experimental): every AI seat consults lessons from past games before
+    each decision, and the replay shows which lessons it weighed. Off by default — a
+    memory-on game makes an extra model call per AI decision from day 2."""
 
 
 
@@ -109,6 +113,9 @@ class NewRoom(BaseModel):
     model: str = ""
     """Game model from SUPPORTED_GAME_MODELS. House-funded rows need no api_key;
     all other choices require one. Empty = default."""
+    memory: bool = False
+    """AI memory (experimental), chosen by the host for the whole table. Same semantics
+    as the solo door."""
     name: str = Field(default="", max_length=40)
     """Public room title shown in the GET /rooms browser; "" renders as unnamed
     client-side. Capped server-side — it is the one free-text field strangers see."""

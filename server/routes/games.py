@@ -11,13 +11,13 @@ from uuid import uuid4
 from fastapi import APIRouter, Header, HTTPException, Response
 from fastapi.responses import StreamingResponse
 
-from Agents.config import RunConfig
 from Agents.turn.human_turn import HumanTurnContractError
 from server.dependencies import House, Game, GamesRegistry, Room, SeatToken
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.database_models.game import COMPLETED, GameRow
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
+from server.game.run_config import game_run_config
 from server.schemas.requests import FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted
 
 from ._shared import authorize_model, set_seat_cookie
@@ -43,14 +43,12 @@ async def create_game(
     model = await authorize_model(house, body.api_key, body.model)
     seat_tokens = [str(uuid4())] if body.human or body.human_role is not None else []
     session = await games.start_instant(
-        RunConfig(
-            human_player=len(seat_tokens),
-            human_role=body.human_role,
-            memory_persistence={"dump_enabled": False},
-        ),
+        game_run_config(memory=body.memory, human_player=len(seat_tokens),
+                        human_role=body.human_role),
         api_key=body.api_key,
         model=model,
         seat_tokens=seat_tokens,
+        memory=body.memory,
     )
     if seat_tokens:
         set_seat_cookie(response, session.game_id, seat_tokens[0])

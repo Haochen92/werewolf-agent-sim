@@ -27,6 +27,12 @@ class ServerSettings(BaseSettings):
     one container; split into a dedicated var only the day the deploy splits DBs).
     Empty = archiving disabled (games still run; /replays answers 503)."""
 
+    WW_MEMORY_STORE_DIR: str = ""
+    """The folder of past-game lessons a memory-on game reads from (a frozen snapshot
+    under ``memory_stores/``, mounted read-only in the container). Empty = the engine's
+    own default store. Every game seeds from it at start, memory on or off; only a
+    memory-on game actually consults it."""
+
     SEAT_COOKIE_SECURE: bool = False
     """Send the seat cookie with the ``Secure`` flag (HTTPS-only). Off by default so
     plain-HTTP dev (localhost) keeps working; the production deploy behind Caddy/TLS

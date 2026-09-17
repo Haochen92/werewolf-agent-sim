@@ -757,6 +757,11 @@ export interface components {
        */
       model: string;
       /**
+       * Memory
+       * @default false
+       */
+      memory: boolean;
+      /**
        * Name
        * @default
        */
@@ -788,6 +793,11 @@ export interface components {
        * @default
        */
       model: string;
+      /**
+       * Memory
+       * @default false
+       */
+      memory: boolean;
     };
     /**
      * NightAction
@@ -953,6 +963,11 @@ export interface components {
        * @default
        */
       model: string;
+      /**
+       * Memory
+       * @default false
+       */
+      memory: boolean;
     };
     /**
      * ReplayGame
@@ -983,6 +998,11 @@ export interface components {
        * @default
        */
       model: string;
+      /**
+       * Memory
+       * @default false
+       */
+      memory: boolean;
       /** Events */
       events: (
         | components['schemas']['GameStarted']

@@ -1673,6 +1673,11 @@
             "title": "Model",
             "default": ""
           },
+          "memory": {
+            "type": "boolean",
+            "title": "Memory",
+            "default": false
+          },
           "name": {
             "type": "string",
             "maxLength": 40,
@@ -1720,6 +1725,11 @@
             "type": "string",
             "title": "Model",
             "default": ""
+          },
+          "memory": {
+            "type": "boolean",
+            "title": "Memory",
+            "default": false
           }
         },
         "type": "object",
@@ -2080,6 +2090,11 @@
             "type": "string",
             "title": "Model",
             "default": ""
+          },
+          "memory": {
+            "type": "boolean",
+            "title": "Memory",
+            "default": false
           }
         },
         "type": "object",
@@ -2144,6 +2159,11 @@
             "type": "string",
             "title": "Model",
             "default": ""
+          },
+          "memory": {
+            "type": "boolean",
+            "title": "Memory",
+            "default": false
           },
           "events": {
             "items": {

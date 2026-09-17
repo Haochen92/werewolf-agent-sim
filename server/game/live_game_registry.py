@@ -40,6 +40,7 @@ import logging
 from datetime import datetime, timezone
 
 from Agents.config import RunConfig
+from server.game.run_config import game_run_config
 from Agents.schemas.human_player import HumanTurnRequest
 
 from server.database_models.game import DROPPED, RUNNING, GameRow
@@ -117,12 +118,12 @@ class LiveGameRegistry:
     # -- open a room: (nothing) -> waiting ------------------------------------------------
 
     async def open_room(self, *, api_key: str = "", model: str = "",
-                        name: str = "") -> GameLobby:
+                        name: str = "", memory: bool = False) -> GameLobby:
         """Open a waiting room: build it and register it in the table. Nothing is written
         to the database until the game starts; a room that never starts leaves no trace.
         Its id is the id the running game will keep, so one identifier covers the room
         and the game it becomes."""
-        room = GameLobby(api_key=api_key, model=model, name=name)
+        room = GameLobby(api_key=api_key, model=model, name=name, memory=memory)
         self._entries[room.game_id] = room
         return room
 
@@ -156,17 +157,18 @@ class LiveGameRegistry:
             repository=self._repository)
         return await self._launch(
             session, model=room.model, byok=bool(room.api_key), room_name=room.name,
-            seats=[seat._asdict() for seat in room.seats])
+            memory=room.memory, seats=[seat._asdict() for seat in room.seats])
 
     async def start_instant(self, run_config: RunConfig, *, api_key: str, model: str,
-                            seat_tokens: list[str]) -> GameSession:
+                            seat_tokens: list[str], memory: bool = False) -> GameSession:
         """Start a game that never had a waiting room: the solo and all-AI door,
-        POST /games."""
+        POST /games. ``memory`` is recorded on the row so a restart rebuilds the same
+        game; the config itself already carries it."""
         session = GameSession(
             run_config, api_key=api_key, model=model, seat_tokens=seat_tokens,
             graph=self._graph_runtime.graph, repository=self._repository)
         return await self._launch(
-            session, model=model, byok=bool(api_key),
+            session, model=model, byok=bool(api_key), memory=memory,
             seats=[{"name": "human", "token": token} for token in seat_tokens])
 
     async def _launch(self, session: GameSession, **row_fields) -> GameSession:
@@ -198,8 +200,8 @@ class LiveGameRegistry:
         again if it can be. Only running rows qualify; a waiting room has no row, so a
         restart closes it.
 
-        The game object is put back together from the row (identity, seats, model) and
-        the events table (everything the players were sent). If the house paid for the
+        The game object is put back together from the row (identity, seats, model, the
+        memory switch) and the events table (everything the players were sent). If the house paid for the
         game it continues at once. If a player's key paid for it, the key was never
         stored: the game is filed without a task and waits until a seat holder sends the
         key again, through ``resume_with_key``. Returns None for a row whose game had in fact
@@ -208,8 +210,8 @@ class LiveGameRegistry:
             return None
 
         session = GameSession(
-            RunConfig(game_id=row.game_id, human_player=len(row.seats),
-                      memory_persistence={"dump_enabled": False}),
+            game_run_config(memory=row.memory, human_player=len(row.seats),
+                            game_id=row.game_id),
             model=row.model, graph=self._graph_runtime.graph,
             seat_tokens=[s["token"] for s in row.seats],
             repository=self._repository)

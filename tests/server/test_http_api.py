@@ -197,6 +197,16 @@ def test_room_contract_has_no_human_fields(api_client):
     assert api_client.post("/rooms", json={"human_role": "wolf"}).status_code == 422
 
 
+def test_the_host_chooses_memory_for_the_whole_room(api_client):
+    body = api_client.post("/rooms", json={"memory": True}).json()
+    room = api_client.app.state.resources.games.get(body["game_id"])
+    assert room.memory is True
+    assert all(room.run_config().memory_config.values())
+    # Off by default: a memory-on game costs an extra model call per AI decision.
+    body = api_client.post("/rooms", json={}).json()
+    assert api_client.app.state.resources.games.get(body["game_id"]).memory is False
+
+
 # ---- seat tokens: proof of ownership (slice 3) -------------------------------------------
 
 def test_join_sets_an_httponly_seat_cookie_matching_the_body_token(api_client):

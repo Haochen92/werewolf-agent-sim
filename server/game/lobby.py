@@ -24,6 +24,7 @@ from typing import NamedTuple
 from uuid import uuid4
 
 from Agents.config import RunConfig
+from server.game.run_config import game_run_config
 from Agents.config.game import GameConfig
 
 # Maximum number of human seats is equal to
@@ -52,9 +53,13 @@ class GameLobby:
             so holding the token is the only proof that a seat is yours.
     """
 
-    def __init__(self, *, api_key: str = "", model: str = "", name: str = "") -> None:
+    def __init__(self, *, api_key: str = "", model: str = "", name: str = "",
+                 memory: bool = False) -> None:
         self.game_id = str(uuid4())
         self.host_key = str(uuid4())
+        self.memory = memory
+        """Whether the AI seats will consult past-game lessons; the host's choice for
+        the whole table, fixed at creation."""
         # The creator's own API key, held until the game starts: whoever creates the room
         # pays for the models it runs on.
         self.api_key = api_key
@@ -104,9 +109,5 @@ class GameLobby:
         """Build the config the started game runs on. The room's own game_id is passed
         through so the room link still works after the swap (RunConfig only invents an id
         when it is given none). A role is never requested: rooms deal random seats."""
-        return RunConfig(
-            game_id=self.game_id,
-            human_player=len(self.seats),
-            # A game played over the server is never mined into the memory store.
-            memory_persistence={"dump_enabled": False},
-        )
+        return game_run_config(memory=self.memory, human_player=len(self.seats),
+                               game_id=self.game_id)
