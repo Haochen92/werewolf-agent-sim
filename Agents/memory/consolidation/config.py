@@ -18,6 +18,9 @@ class TickConfig:
     model: str = "gemini-3.1-flash-lite"        # synthesis model (validated ≈ pro on this task)
     dedup_model: str = "gemini-3.1-flash-lite"  # KEEP/DISCARD dedup passes (merge-free => flash-lite safe)
     obs_fold_dedup: bool = True                 # freeze-old obs dedup after the fold (off only in LLM-free tests)
+    credit: bool = True                         # False = a fold-only gen with no memory-on window to grade;
+                                                # the counters carry over untouched instead of being zeroed
+                                                # against an empty ledger (window semantics in credit_apply)
 
     # conversion channel (always applied; these bound WHEN it can prune, not WHETHER it runs)
     conversion_window_days: int = 2             # a night-d find must convert by day d+1..d+window

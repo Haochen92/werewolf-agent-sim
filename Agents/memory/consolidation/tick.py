@@ -85,11 +85,13 @@ def run_tick(on_dumps: str, off_dumps: str, game_store_dirs: list[str] | None = 
 
             # 3. fixed-rule credit + conversion against the OFF base stream
             sp_path = scratch / "strategy_points.json"
-            base_rates = compute_base_rates(off_dumps) if off_dumps else None
-            cstats = credit_apply(sp_path, on_dumps, base_rates=base_rates, off_window=off_dumps)
-            cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)
-            cvstats = conversion_apply(sp_path, on_dumps, off_window=off_dumps,
-                                       window_days=cfg.conversion_window_days)
+            cstats = cdist = cvstats = {"skipped": "credit=False"}
+            if cfg.credit:
+                base_rates = compute_base_rates(off_dumps) if off_dumps else None
+                cstats = credit_apply(sp_path, on_dumps, base_rates=base_rates, off_window=off_dumps)
+                cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)
+                cvstats = conversion_apply(sp_path, on_dumps, off_window=off_dumps,
+                                           window_days=cfg.conversion_window_days)
 
             # 4. consolidation store-ops (decay -> synth -> dedup -> prune)
             cons = consolidate(scratch, cfg, obs_gen_map=first_seen, current_gen=gen,

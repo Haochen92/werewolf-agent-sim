@@ -52,6 +52,10 @@ MEMORY_CONFIGS = {
     "investigator_only": role_config("investigator"),
     "town_only": role_config("villager", "healer", "investigator", "vigilante"),
     "specials_only": role_config("healer", "investigator"),
+    # Mining arm: retrieval off for everyone, extraction for wolf + serial_killer only. The two
+    # gates read the dict differently — retrieval treats an absent role as off, extraction treats
+    # it as on — so listing only the town roles (False) is what selects the evil cells.
+    "extract_evil_only": {r: False for r in ROLES if r not in ("wolf", "serial_killer")},
 }
 
 RERANKING_CONFIGS = {
