@@ -16,6 +16,7 @@ from typing import Literal
 from datetime import datetime
 
 from langchain_core.runnables import RunnableConfig
+from langgraph.config import get_stream_writer
 from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
@@ -434,6 +435,28 @@ def check_game_end_night(
 
 # --- Post-game memory pipeline -----------------------------------------------
 
+def _announce_memory_extracted(output, *, day: int) -> None:
+    """Stream what the finished game taught, for the replay's X-ray: the raw extraction,
+    before any dedup against the store (a served game never writes the store, so there is
+    no post-dedup form of it). A custom chunk, never graph state."""
+    observations = [
+        {"perspective": o.perspective, "action_phase": o.action_phase, "situation": o.situation,
+         "approach": getattr(o, "approach", ""), "outcome": getattr(o, "outcome", ""),
+         "net_verdict": getattr(o, "net_verdict", "")}
+        for o in output.observations
+    ]
+    strategy_points = [
+        {"perspective": s.perspective, "action_phase": s.action_phase, "situation": s.situation,
+         "action": s.action}
+        for s in output.strategy_points
+    ]
+    try:
+        get_stream_writer()({"event": "memory_extracted", "day": day,
+                             "observations": observations, "strategy_points": strategy_points})
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
+
+
 def post_game_analysis(
     state: OrchestratorGraph,
     config: RunnableConfig,
@@ -451,20 +474,20 @@ def post_game_analysis(
     if store is None:
         raise RuntimeError("Post-game analysis requires a LangGraph runtime store.")
 
-    # POISONING GUARD: a human-involved game is never mined — human play is out-of-distribution for
-    # the store (and the memory-config role filter below can't be trusted to exclude it: roles absent
-    # from the config dict default to True). Replayable, never extracted.
-    if state.get("human_players"):
-        logger.info("Human seat in game; skipping post-game extraction (poisoning guard).")
-        return {}
-
     memory_persistence_config = memory_persistence_config_from_runnable(config)
     extraction_config = memory_persistence_config.extraction
     persist = memory_persistence_config.dump_enabled
+    # POISONING GUARD: a human-involved game is never PERSISTED — human play is out-of-distribution
+    # for the store (and the memory-config role filter below can't be trusted to exclude it: roles
+    # absent from the config dict default to True). Extracting for display only (no dump) is fine:
+    # nothing reaches the store. Replayable, never mined.
+    if state.get("human_players") and persist:
+        logger.info("Human seat in game; skipping post-game extraction (poisoning guard).")
+        return {}
     # A no-dump run normally skips extraction entirely (the memories would be deduped
     # into the ephemeral runtime store and discarded — the LLM cost is pure waste).
-    # extract_without_dump overrides that: run + trace extraction (e.g. to measure the
-    # per-role fan-out + cache cost) but skip persistence below.
+    # extract_without_dump overrides that: run + trace extraction, and stream what the game
+    # taught (served games show it in the replay), but skip persistence below.
     if not persist and not extraction_config.extract_without_dump:
         logger.info("Memory dump disabled; skipping post-game extraction.")
         return {}
@@ -549,6 +572,8 @@ def post_game_analysis(
     if not result:
         logger.warning("No observations extracted from post-game analysis.")
         return {}
+
+    _announce_memory_extracted(result.output, day=state.get("current_day", 1))
 
     if not persist:
         logger.info(

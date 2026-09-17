@@ -75,7 +75,8 @@ class ExtractionConfig(BaseModel):
     extract_without_dump: bool = False
     # When dump is OFF, normally extraction is skipped (wasted cost). Set this to run +
     # trace extraction anyway WITHOUT persisting — for measuring per-role fan-out + cache
-    # cost on a throwaway game.
+    # cost on a throwaway game, and for a served memory-on game, whose replay shows what
+    # the game taught (the memory_extracted stream chunk) without ever writing the store.
 
 
 class MemoryPersistenceConfig(BaseModel):
