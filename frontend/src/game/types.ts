@@ -35,6 +35,7 @@ import type {
   MemoryExtracted,
   NightDeath,
   NightSave,
+  PlayerReads,
   PassReason,
   Phase,
   Winner,
@@ -267,6 +268,8 @@ export interface AgentXray {
    * each lesson. Memory-on games only, from day 2 (day 1 never retrieves).
    */
   consulted: MemoryConsulted[];
+  /** In emission order — the agent's per-player suspicions at each decision, memory on or off. */
+  reads: PlayerReads[];
 }
 
 export interface XrayView {

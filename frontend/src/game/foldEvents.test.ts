@@ -3,11 +3,12 @@
  * fetched verbatim from `GET /replays/{id}` (build_plan ruling 8: fixtures are real
  * archived-game JSON, not hand-written stubs).
  *
- * The fixture is a genuine served flash-lite game and covers 25 of the 29 durable event
- * types. The four it lacks cannot occur in it: `input_request` needs a human seat
+ * The fixture is a genuine served flash-lite game and covers 25 of the 30 durable event
+ * types. The five it lacks cannot occur in it: `input_request` needs a human seat
  * (`n_humans: 0`), `day_summary_structured` was not sent until 2026-09-15, after the
- * seed was captured, and `memory_consulted` / `memory_extracted` need a memory-on game
- * (2026-09-17). All are covered by synthetic cases at the bottom.
+ * seed was captured, `memory_consulted` / `memory_extracted` need a memory-on game and
+ * `player_reads` was not sent until 2026-09-17. All are covered by synthetic cases at the
+ * bottom.
  *
  * Several assertions below encode facts about the wire that were VERIFIED against this data
  * rather than assumed — they are regression tests on the reducer AND a tripwire on the
@@ -32,13 +33,14 @@ describe('the fixture itself', () => {
     expect(replay.n_humans).toBe(0);
   });
 
-  it('covers 25 of the 29 durable event types', () => {
+  it('covers 25 of the 30 durable event types', () => {
     const present = new Set(events.map((e) => e.type));
     expect(present.size).toBe(25);
     expect(present.has('input_request')).toBe(false);
     expect(present.has('day_summary_structured')).toBe(false);
     expect(present.has('memory_consulted')).toBe(false);
     expect(present.has('memory_extracted')).toBe(false);
+    expect(present.has('player_reads')).toBe(false);
   });
 
   it('carries observer-tier content — the X-ray half is exercised, not stubbed', () => {
@@ -592,12 +594,31 @@ describe('synthetic cases the fixture cannot contain', () => {
         },
       ],
     } as DurableGameEvent;
+    const reads = {
+      seq: 3,
+      day: 2,
+      type: 'player_reads',
+      player: 'a',
+      role: 'healer',
+      round: 0,
+      action_phase: 'day_vote',
+      reads: [
+        {
+          player: 'b',
+          suspected_role: 'wolf',
+          confidence: 'high',
+          why: 'pushed the lynch',
+        },
+      ],
+    } as DurableGameEvent;
     let v = emptyGameView();
     expect(v.xray.available).toBe(false);
     v = foldEvent(v, consulted);
     v = foldEvent(v, extracted);
-    expect(v.xray.available).toBe(true); // both are observer-tier
+    v = foldEvent(v, reads);
+    expect(v.xray.available).toBe(true); // all three are observer-tier
     expect(v.xray.agents.a.consulted).toEqual([consulted]);
+    expect(v.xray.agents.a.reads).toEqual([reads]);
     expect(v.xray.agents.a.strategy).toEqual([]); // the timeline is untouched
     expect(v.xray.extracted).toBe(extracted);
   });

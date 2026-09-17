@@ -42,6 +42,7 @@ export type AddressedTargets = EventOf<'addressed_targets'>;
 export type StrategyUpdate = EventOf<'strategy_update'>;
 export type MemoryConsulted = EventOf<'memory_consulted'>;
 export type MemoryExtracted = EventOf<'memory_extracted'>;
+export type PlayerReads = EventOf<'player_reads'>;
 export type InputRequest = EventOf<'input_request'>;
 export type DaySummary = EventOf<'day_summary'>;
 export type VoteCast = EventOf<'vote_cast'>;

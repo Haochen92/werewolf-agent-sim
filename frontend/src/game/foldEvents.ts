@@ -262,6 +262,7 @@ const OBSERVER_TIER_EVENTS = new Set([
   'strategy_update',
   'memory_consulted',
   'memory_extracted',
+  'player_reads',
   'night_action',
   'day_summary_structured',
 ]);
@@ -414,7 +415,11 @@ export function foldEvent(
     }
 
     case 'strategy_update': {
-      const agent = next.xray.agents[event.player] ?? { strategy: [], consulted: [] };
+      const agent = next.xray.agents[event.player] ?? {
+        strategy: [],
+        consulted: [],
+        reads: [],
+      };
       return {
         ...next,
         xray: {
@@ -434,7 +439,11 @@ export function foldEvent(
     }
 
     case 'memory_consulted': {
-      const agent = next.xray.agents[event.player] ?? { strategy: [], consulted: [] };
+      const agent = next.xray.agents[event.player] ?? {
+        strategy: [],
+        consulted: [],
+        reads: [],
+      };
       return {
         ...next,
         xray: {
@@ -442,6 +451,24 @@ export function foldEvent(
           agents: {
             ...next.xray.agents,
             [event.player]: { ...agent, consulted: [...agent.consulted, event] },
+          },
+        },
+      };
+    }
+
+    case 'player_reads': {
+      const agent = next.xray.agents[event.player] ?? {
+        strategy: [],
+        consulted: [],
+        reads: [],
+      };
+      return {
+        ...next,
+        xray: {
+          ...next.xray,
+          agents: {
+            ...next.xray.agents,
+            [event.player]: { ...agent, reads: [...agent.reads, event] },
           },
         },
       };

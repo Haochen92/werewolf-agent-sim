@@ -47,6 +47,7 @@ const MARKERS: ReadonlySet<string> = new Set([
   'turn_started',
   'input_request',
   'memory_consulted',
+  'player_reads', // suspicions precede the decision they shaped
 ]);
 
 /** Events that describe or settle the beat they follow, never a beat of their own. */

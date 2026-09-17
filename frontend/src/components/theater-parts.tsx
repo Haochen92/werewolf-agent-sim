@@ -262,6 +262,25 @@ export function AgentInspector({
         ))
       )}
 
+      {agent && agent.reads.length > 0 ? (
+        <>
+          <div className={classes.panelHead}>suspicions</div>
+          {agent.reads.map((r) => (
+            <div key={r.seq} className={classes.strategyEntry}>
+              <span className={classes.strategyDay}>
+                day {r.day} · {humanise(r.action_phase)}
+              </span>
+              {r.reads.map((read) => (
+                <div key={read.player}>
+                  {read.player}: <strong>{humanise(read.suspected_role)}</strong> (
+                  {read.confidence}) · {read.why}
+                </div>
+              ))}
+            </div>
+          ))}
+        </>
+      ) : null}
+
       {agent && agent.consulted.length > 0 ? (
         <>
           <div className={classes.panelHead}>lessons weighed</div>
