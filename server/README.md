@@ -97,6 +97,12 @@ curl -H "X-Admin-Token: $ADMIN_TOKEN" -X PUT localhost:8001/admin/house \
      -H 'content-type: application/json' -d '{"games_per_day": 5}'   # live, no restart
 ```
 
+`WW_MEMORY_STORE_DIR` names the folder of past-game lessons a memory-on game reads
+(a frozen snapshot under `memory_stores/`, e.g. `memory_stores/demo_snapshots/demo_gen1`;
+empty = the engine's default store). Build its embedding cache on the host before
+pointing the container at it — the mount is read-only, and without `indexed_cache.pkl`
+every start re-embeds the store.
+
 Production is `docker compose build wolf-server && docker compose up -d wolf-server`; the
 container logs at `LOG_LEVEL` (default INFO) show recovery, clocks, the sweep, and every
 stream open/close.

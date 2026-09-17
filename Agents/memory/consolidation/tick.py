@@ -122,22 +122,32 @@ def main() -> int:
     from dotenv import load_dotenv
     load_dotenv()
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--on-dumps", required=True,
+    ap.add_argument("--on-dumps", default="",
                     help="glob(s) of the window's memory-ON game-record JSONLs")
-    ap.add_argument("--off-dumps", required=True,
+    ap.add_argument("--off-dumps", default="",
                     help="glob(s) of the paired memory-OFF game-record JSONLs (the base stream)")
     ap.add_argument("--game-stores", default="",
                     help="glob of the window games' per-game extraction dump dirs (obs fold source)")
+    ap.add_argument("--no-credit", action="store_true",
+                    help="a fold-only generation: no memory-on window to grade, the counters "
+                         "carry over untouched (the dumps are then optional)")
+    ap.add_argument("--synth-every", type=int, default=None,
+                    help="override TickConfig.synth_every_k_gens (1 = synthesize this gen)")
     ap.add_argument("--snapshot-root", default=DEFAULT_SNAPSHOT_ROOT)
     ap.add_argument("--bootstrap-store", default=DEFAULT_BOOTSTRAP_STORE)
     ap.add_argument("--dsn", default=None, help="Postgres DSN (default: WW_POSTGRES_DSN)")
     args = ap.parse_args()
+    if not args.no_credit and not (args.on_dumps and args.off_dumps):
+        ap.error("--on-dumps and --off-dumps are required unless --no-credit")
+    cfg = TickConfig(credit=not args.no_credit)
+    if args.synth_every is not None:
+        cfg.synth_every_k_gens = args.synth_every
     import glob as _glob
     game_dirs = sorted(d for d in _glob.glob(args.game_stores) if Path(d).is_dir()) \
         if args.game_stores else []
     stats = run_tick(args.on_dumps, args.off_dumps, game_dirs,
                      snapshot_root=args.snapshot_root, bootstrap_store=args.bootstrap_store,
-                     dsn=args.dsn)
+                     cfg=cfg, dsn=args.dsn)
     print(json.dumps(stats, indent=2, default=str))
     return 0
 
