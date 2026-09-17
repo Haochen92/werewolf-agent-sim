@@ -39,8 +39,15 @@ export interface Beat {
   holdMs: number;
 }
 
-/** Announcements of what is about to happen. They wait for the beat they announce. */
-const MARKERS: ReadonlySet<string> = new Set(['turn_started', 'input_request']);
+/**
+ * Announcements of what is about to happen. They wait for the beat they announce. A memory
+ * consultation precedes the decision it informed, so it opens that decision's beat.
+ */
+const MARKERS: ReadonlySet<string> = new Set([
+  'turn_started',
+  'input_request',
+  'memory_consulted',
+]);
 
 /** Events that describe or settle the beat they follow, never a beat of their own. */
 const TRAILERS: ReadonlySet<string> = new Set([
@@ -49,6 +56,7 @@ const TRAILERS: ReadonlySet<string> = new Set([
   'firing_reason',
   'addressed_targets',
   'strategy_update',
+  'memory_extracted', // what the game taught rides on the end beat
   'roster_update',
   'pack_roster_update',
   'day_summary',
@@ -135,7 +143,8 @@ export function groupBeats(events: readonly DurableGameEvent[]): Beat[] {
 
   const close = (end: number) => {
     if (lead === null) {
-      if (end > start) beats.push({ start, end, day: events[start].day, kind: 'other', holdMs: 0 });
+      if (end > start)
+        beats.push({ start, end, day: events[start].day, kind: 'other', holdMs: 0 });
       return;
     }
     const members = events.slice(start, end);
@@ -154,7 +163,10 @@ export function groupBeats(events: readonly DurableGameEvent[]): Beat[] {
       }
       return;
     }
-    if (lead !== null && (isTrailer(event) || (BATCHES.has(event.type) && event.type === batchType))) {
+    if (
+      lead !== null &&
+      (isTrailer(event) || (BATCHES.has(event.type) && event.type === batchType))
+    ) {
       return; // joins the beat under construction
     }
     if (lead !== null) {

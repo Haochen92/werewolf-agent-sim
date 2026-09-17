@@ -22,11 +22,12 @@ export function NewRoomClient() {
   const [name, setName] = useState('');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [memory, setMemory] = useState(false);
   const [needsKey, setNeedsKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
-    mutationFn: () => createRoom({ name: name.trim(), model, api_key: apiKey }),
+    mutationFn: () => createRoom({ name: name.trim(), model, api_key: apiKey, memory }),
     onSuccess: (room) => {
       hostKey.set(room.game_id, room.host_key);
       router.push(`/games/${room.game_id}`);
@@ -65,6 +66,8 @@ export function NewRoomClient() {
           onModelChange={setModel}
           apiKey={apiKey}
           onApiKeyChange={setApiKey}
+          memory={memory}
+          onMemoryChange={setMemory}
           onNeedsKeyChange={setNeedsKey}
         />
 

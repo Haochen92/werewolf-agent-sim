@@ -31,6 +31,8 @@ import type {
   FiringReason,
   InputRequest,
   LynchOutcome,
+  MemoryConsulted,
+  MemoryExtracted,
   NightDeath,
   NightSave,
   PassReason,
@@ -260,6 +262,11 @@ export interface MeView {
 export interface AgentXray {
   /** In emission order — the strategy timeline. */
   strategy: { seq: number; day: number; text: string }[];
+  /**
+   * In emission order — what each decision weighed from past games and the verdict on
+   * each lesson. Memory-on games only, from day 2 (day 1 never retrieves).
+   */
+  consulted: MemoryConsulted[];
 }
 
 export interface XrayView {
@@ -274,6 +281,11 @@ export interface XrayView {
   agents: Record<string, AgentXray>;
   /** Seat-private results, filed by recipient so the finished-game inspector can show them. */
   privateResults: Record<string, PrivateResult[]>;
+  /**
+   * What the finished game taught, as extracted — raw, before any dedup against the
+   * store. Memory-on games only; arrives after game_over. Null until then.
+   */
+  extracted: MemoryExtracted | null;
 }
 
 // --- the view --------------------------------------------------------------

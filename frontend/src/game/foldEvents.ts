@@ -92,7 +92,7 @@ export function emptyGameView(options: FoldOptions = {}): GameView {
       privateResults: [],
       alive: true,
     },
-    xray: { available: false, roles: {}, agents: {}, privateResults: {} },
+    xray: { available: false, roles: {}, agents: {}, privateResults: {}, extracted: null },
     lastSeq: 0,
     droppedEventTypes: [],
   };
@@ -260,6 +260,8 @@ const OBSERVER_TIER_EVENTS = new Set([
   'firing_reason',
   'addressed_targets',
   'strategy_update',
+  'memory_consulted',
+  'memory_extracted',
   'night_action',
   'day_summary_structured',
 ]);
@@ -412,7 +414,7 @@ export function foldEvent(
     }
 
     case 'strategy_update': {
-      const agent = next.xray.agents[event.player] ?? { strategy: [] };
+      const agent = next.xray.agents[event.player] ?? { strategy: [], consulted: [] };
       return {
         ...next,
         xray: {
@@ -420,6 +422,7 @@ export function foldEvent(
           agents: {
             ...next.xray.agents,
             [event.player]: {
+              ...agent,
               strategy: [
                 ...agent.strategy,
                 { seq: event.seq, day: event.day, text: event.strategy },
@@ -428,6 +431,24 @@ export function foldEvent(
           },
         },
       };
+    }
+
+    case 'memory_consulted': {
+      const agent = next.xray.agents[event.player] ?? { strategy: [], consulted: [] };
+      return {
+        ...next,
+        xray: {
+          ...next.xray,
+          agents: {
+            ...next.xray.agents,
+            [event.player]: { ...agent, consulted: [...agent.consulted, event] },
+          },
+        },
+      };
+    }
+
+    case 'memory_extracted': {
+      return { ...next, xray: { ...next.xray, extracted: event } };
     }
 
     case 'input_request': {

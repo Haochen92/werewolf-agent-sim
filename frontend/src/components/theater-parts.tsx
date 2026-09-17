@@ -195,6 +195,12 @@ export function AgentInspector({
         .filter((action) => action.actor === seat),
     [view.days, seat],
   );
+  // What the finished game taught this seat's role: the lessons extracted for it.
+  const taught = useMemo(
+    () =>
+      (view.xray.extracted?.strategy_points ?? []).filter((s) => s.perspective === role),
+    [view.xray.extracted, role],
+  );
 
   return (
     <div className={classes.machinePanel}>
@@ -255,6 +261,57 @@ export function AgentInspector({
           </div>
         ))
       )}
+
+      {agent && agent.consulted.length > 0 ? (
+        <>
+          <div className={classes.panelHead}>lessons weighed</div>
+          {agent.consulted.map((c) => (
+            <div key={c.seq} className={classes.strategyEntry}>
+              <span className={classes.strategyDay}>
+                day {c.day} · {humanise(c.action_phase)}
+              </span>
+              {c.lessons.map((lesson) => {
+                const verdict = c.verdicts.find((v) => v.strategy_index === lesson.index);
+                return (
+                  <div key={lesson.index} style={{ marginBottom: 'var(--space-2)' }}>
+                    <strong>{verdict ? humanise(verdict.verdict) : 'no verdict'}</strong> ·{' '}
+                    {lesson.situation} → {lesson.action}
+                    {verdict?.why ? (
+                      <span className={classes.strategyDay}>{verdict.why}</span>
+                    ) : null}
+                  </div>
+                );
+              })}
+              {c.observations.map((obs) => {
+                const verdict = c.applicability.find((v) => v.memory_index === obs.index);
+                return (
+                  <div key={`o${obs.index}`} style={{ marginBottom: 'var(--space-2)' }}>
+                    <strong>{verdict ? humanise(verdict.verdict) : 'no verdict'}</strong> ·{' '}
+                    {obs.situation} → {obs.outcome}
+                    {verdict?.why ? (
+                      <span className={classes.strategyDay}>{verdict.why}</span>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </>
+      ) : null}
+
+      {taught.length > 0 ? (
+        <>
+          <div className={classes.panelHead}>
+            what this game taught the {humanise(role ?? '')}
+          </div>
+          {taught.map((entry, i) => (
+            <div key={i} className={classes.strategyEntry}>
+              <span className={classes.strategyDay}>{humanise(entry.action_phase)}</span>
+              {entry.situation} → {entry.action}
+            </div>
+          ))}
+        </>
+      ) : null}
     </div>
   );
 }

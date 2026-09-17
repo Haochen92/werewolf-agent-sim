@@ -24,7 +24,8 @@ import classes from '@/components/Lobby.module.css';
 /** Whether the chosen row needs the player's key right now. The server says; the door applies the same rule. */
 export function needsKey(menu: ModelsMenu | undefined, model: string): boolean {
   if (!menu) return false;
-  const row = menu.models.find((r) => r.model === model) ?? menu.models.find((r) => r.is_default);
+  const row =
+    menu.models.find((r) => r.model === model) ?? menu.models.find((r) => r.is_default);
   return row?.needs_key ?? false;
 }
 
@@ -35,7 +36,10 @@ function houseLine(menu: ModelsMenu, model: string): string {
   const { enabled, remaining, games_per_day, reset_at } = menu.house;
   if (!enabled) return 'House funding is switched off for now. Enter your key to play.';
   if (remaining <= 0) {
-    const at = new Date(reset_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const at = new Date(reset_at).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
     return `The house has funded its ${games_per_day} games for today (more at ${at}). Enter your key to play now.`;
   }
   return `The house pays for this model: ${remaining} of ${games_per_day} games left today. Your own key is optional.`;
@@ -47,12 +51,16 @@ export function GameSetupFields({
   apiKey,
   onApiKeyChange,
   onNeedsKeyChange,
+  memory,
+  onMemoryChange,
 }: {
   model: string;
   onModelChange: (model: string) => void;
   apiKey: string;
   onApiKeyChange: (key: string) => void;
   onNeedsKeyChange?: (needsKey: boolean) => void;
+  memory: boolean;
+  onMemoryChange: (memory: boolean) => void;
 }) {
   const { data: menu } = useQuery({
     queryKey: queryKeys.models(),
@@ -94,6 +102,22 @@ export function GameSetupFields({
           ))}
         </select>
         {menu ? <p className={classes.fine}>{houseLine(menu, model)}</p> : null}
+      </div>
+
+      <div className={classes.group}>
+        <label className={classes.checkRow}>
+          <input
+            type="checkbox"
+            checked={memory}
+            onChange={(e) => onMemoryChange(e.target.checked)}
+          />
+          AI memory (experimental)
+        </label>
+        <p className={classes.fine}>
+          The agents consult lessons from their past games before each decision, and the
+          replay shows which lessons they weighed. One extra model call per AI decision from
+          day 2.
+        </p>
       </div>
 
       <ByokField value={apiKey} onChange={onApiKeyChange} />

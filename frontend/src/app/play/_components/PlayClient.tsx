@@ -23,13 +23,21 @@ import type { Role } from '@/types/contracts';
 import classes from '@/components/Lobby.module.css';
 
 /** The castable roles. Fixed 9-player 3-faction casting is a server ruling, not a choice. */
-const ROLES: Role[] = ['villager', 'wolf', 'healer', 'investigator', 'vigilante', 'serial_killer'];
+const ROLES: Role[] = [
+  'villager',
+  'wolf',
+  'healer',
+  'investigator',
+  'vigilante',
+  'serial_killer',
+];
 
 export function PlayClient() {
   const router = useRouter();
   const [role, setRole] = useState<Role | null>(null);
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [memory, setMemory] = useState(false);
   const [needsKey, setNeedsKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +48,7 @@ export function PlayClient() {
         human_role: role,
         api_key: apiKey,
         model,
+        memory,
       }),
     onSuccess: (game) => {
       // The seat token comes back exactly once — stash it before navigating, or a cookie
@@ -90,6 +99,8 @@ export function PlayClient() {
           onModelChange={setModel}
           apiKey={apiKey}
           onApiKeyChange={setApiKey}
+          memory={memory}
+          onMemoryChange={setMemory}
           onNeedsKeyChange={setNeedsKey}
         />
 
