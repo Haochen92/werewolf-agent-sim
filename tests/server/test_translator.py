@@ -329,6 +329,16 @@ def test_reexecuted_memory_consultation_is_sent_once():
     assert [e.type for e in t.translate(_memory_consulted("t0", "healer", 3))] == ["memory_consulted"]
 
 
+def test_reexecuted_reads_are_sent_once():
+    from tests.fixtures.translator_golden import _player_reads
+
+    t = _seeded_translator()
+    chunk = _player_reads("t0", "villager", 2)
+    assert [e.type for e in t.translate(chunk)] == ["player_reads"]
+    assert t.translate(chunk) == []  # the node re-ran and streamed them again
+    assert [e.type for e in t.translate(_player_reads("t0", "villager", 2, "day_vote"))] == ["player_reads"]
+
+
 def test_reexecuted_memory_extraction_is_sent_once():
     from tests.fixtures.translator_golden import _memory_extracted
 

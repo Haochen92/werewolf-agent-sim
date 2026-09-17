@@ -170,6 +170,7 @@ class Translator:
         self._seen_day_entries: set[tuple[int, int]] = set()
         self._seen_wolf_msgs: set[tuple[int, int, str]] = set()
         self._seen_memory: set[tuple[str, int, int, str]] = set()
+        self._seen_reads: set[tuple[str, int, int, str]] = set()
         self._memory_extracted_sent = False
         self._strategies: dict[str, str] = {}
 
@@ -202,6 +203,8 @@ class Translator:
                 self._strategies[e.player] = e.strategy
             elif e.type == "memory_consulted":
                 self._seen_memory.add((e.player, e.day, e.round, e.action_phase))
+            elif e.type == "player_reads":
+                self._seen_reads.add((e.player, e.day, e.round, e.action_phase))
             elif e.type == "memory_extracted":
                 self._memory_extracted_sent = True
             elif e.type == "night_result":
@@ -266,10 +269,16 @@ class Translator:
 
     def _turn_tick(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
         # The custom chunks. "X is thinking" is written from a routing edge, so a re-run
-        # node cannot fire it twice. The two memory chunks are written from inside their
-        # nodes and CAN fire again on a re-run: sent once, like a re-run speech.
+        # node cannot fire it twice. The others are written from inside their nodes and
+        # CAN fire again on a re-run: sent once, like a re-run speech.
         if payload.get("event") == "turn_started":
             return [self._emit(ev.TurnStarted, day=payload["day"], player=payload["player"])]
+        if payload.get("event") == "player_reads":
+            key = (payload["player"], payload["day"], payload["round"], payload["action_phase"])
+            if not _first_time(self._seen_reads, key):
+                return []
+            fields = {k: payload[k] for k in ("player", "role", "round", "action_phase", "reads")}
+            return [self._emit(ev.PlayerReads, day=payload["day"], **fields)]
         if payload.get("event") == "memory_consulted":
             key = (payload["player"], payload["day"], payload["round"], payload["action_phase"])
             if not _first_time(self._seen_memory, key):

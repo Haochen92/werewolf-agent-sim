@@ -988,6 +988,40 @@ export interface components {
       phase: 'day' | 'voting' | 'night';
     };
     /**
+     * PlayerReads
+     * @description One AI seat's suspicions at one decision: who it reads as what, how sure, and why.
+     *     Every decision that produced reads, memory on or off. Streamed from inside the acting
+     *     node, so a re-run fires it again; the translator sends one per (player, day, round,
+     *     phase). Private by nature — observer tier.
+     */
+    PlayerReads: {
+      /** Seq */
+      seq: number;
+      /** Day */
+      day: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'player_reads';
+      /** Player */
+      player: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      /** Round */
+      round: number;
+      /**
+       * Action Phase
+       * @enum {string}
+       */
+      action_phase: 'day_discussion' | 'day_vote' | 'night_action';
+      /** Reads */
+      reads: components['schemas']['WireRead'][];
+    };
+    /**
      * RejoinGame
      * @description POST /games/{id}/rejoin body: re-prove seat ownership after cookie loss
      *     (new device, cleared browsing data) with the stashed body-copy token.
@@ -1080,6 +1114,7 @@ export interface components {
         | components['schemas']['StrategyUpdate']
         | components['schemas']['MemoryConsulted']
         | components['schemas']['MemoryExtracted']
+        | components['schemas']['PlayerReads']
         | components['schemas']['InputRequest']
         | components['schemas']['DaySummary']
         | components['schemas']['DaySummaryStructured']
@@ -1411,6 +1446,20 @@ export interface components {
        * @enum {string}
        */
       verdict: 'fully_applies' | 'partly_applies' | 'does_not_apply';
+      /** Why */
+      why: string;
+    };
+    /** WireRead */
+    WireRead: {
+      /** Player */
+      player: string;
+      /** Suspected Role */
+      suspected_role: string;
+      /**
+       * Confidence
+       * @enum {string}
+       */
+      confidence: 'low' | 'high';
       /** Why */
       why: string;
     };

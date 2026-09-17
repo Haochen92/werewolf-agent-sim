@@ -2157,6 +2157,72 @@
         "title": "PhaseChange",
         "description": "Node-identity marker: anchored on initialize_game/one_more_day (day), START_VOTING\n(voting), and NIGHT_START (night)."
       },
+      "PlayerReads": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "player_reads",
+            "title": "Type",
+            "default": "player_reads"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
+            "title": "Role"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "action_phase": {
+            "type": "string",
+            "enum": [
+              "day_discussion",
+              "day_vote",
+              "night_action"
+            ],
+            "title": "Action Phase"
+          },
+          "reads": {
+            "items": {
+              "$ref": "#/components/schemas/WireRead"
+            },
+            "type": "array",
+            "title": "Reads"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "role",
+          "round",
+          "action_phase",
+          "reads"
+        ],
+        "title": "PlayerReads",
+        "description": "One AI seat's suspicions at one decision: who it reads as what, how sure, and why.\nEvery decision that produced reads, memory on or off. Streamed from inside the acting\nnode, so a re-run fires it again; the translator sends one per (player, day, round,\nphase). Private by nature \u2014 observer tier."
+      },
       "RejoinGame": {
         "properties": {
           "token": {
@@ -2339,6 +2405,9 @@
                   "$ref": "#/components/schemas/MemoryExtracted"
                 },
                 {
+                  "$ref": "#/components/schemas/PlayerReads"
+                },
+                {
                   "$ref": "#/components/schemas/InputRequest"
                 },
                 {
@@ -2408,6 +2477,7 @@
                   "pack_roster_update": "#/components/schemas/PackRosterUpdate",
                   "pass_marker": "#/components/schemas/PassMarker",
                   "phase_change": "#/components/schemas/PhaseChange",
+                  "player_reads": "#/components/schemas/PlayerReads",
                   "role_assigned": "#/components/schemas/RoleAssigned",
                   "roles_assigned": "#/components/schemas/RolesAssigned",
                   "roster_update": "#/components/schemas/RosterUpdate",
@@ -3110,6 +3180,38 @@
           "why"
         ],
         "title": "WireObservationVerdict"
+      },
+      "WireRead": {
+        "properties": {
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "suspected_role": {
+            "type": "string",
+            "title": "Suspected Role"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "high"
+            ],
+            "title": "Confidence"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player",
+          "suspected_role",
+          "confidence",
+          "why"
+        ],
+        "title": "WireRead"
       },
       "WolfKillDecided": {
         "properties": {

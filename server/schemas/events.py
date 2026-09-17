@@ -215,6 +215,29 @@ class MemoryConsulted(DurableEvent, frozen=True):
     applicability: list[WireObservationVerdict]
 
 
+class WireRead(BaseModel, frozen=True):
+    player: str
+    """The player being read (never the reader)."""
+    suspected_role: str
+    """The reader's best guess, or "unclear"."""
+    confidence: Literal["low", "high"]
+    why: str
+
+
+class PlayerReads(DurableEvent, frozen=True):
+    """One AI seat's suspicions at one decision: who it reads as what, how sure, and why.
+    Every decision that produced reads, memory on or off. Streamed from inside the acting
+    node, so a re-run fires it again; the translator sends one per (player, day, round,
+    phase). Private by nature — observer tier."""
+
+    type: Literal["player_reads"] = "player_reads"
+    player: str
+    role: Role
+    round: int
+    action_phase: Literal["day_discussion", "day_vote", "night_action"]
+    reads: list[WireRead]
+
+
 class WireExtractedObservation(BaseModel, frozen=True):
     perspective: Role
     """The role the observation is a lesson for."""
@@ -447,6 +470,7 @@ DurableGameEvent = Annotated[
         StrategyUpdate,
         MemoryConsulted,
         MemoryExtracted,
+        PlayerReads,
         InputRequest,
         DaySummary,
         DaySummaryStructured,
@@ -483,6 +507,7 @@ EVENT_TIERS: dict[str, Tier] = {
     "strategy_update": Tier.OBSERVER,
     "memory_consulted": Tier.OBSERVER,
     "memory_extracted": Tier.OBSERVER,
+    "player_reads": Tier.OBSERVER,
     "input_request": Tier.SEAT,
     "day_summary": Tier.PUBLIC,
     "day_summary_structured": Tier.OBSERVER,

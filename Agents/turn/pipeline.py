@@ -99,6 +99,31 @@ def _announce_memory_consulted(
         pass
 
 
+def _announce_reads(
+    *,
+    player_id: str,
+    role: str,
+    day: int,
+    round_num: int,
+    action_phase: str,
+    effects,
+) -> None:
+    """Stream the agent's per-player suspicions for the replay's X-ray: who it reads as
+    what, how sure, and why. Every decision that produced reads, memory on or off. A custom
+    chunk, never graph state (the reads are kept out of state on purpose, like the
+    verdicts). A re-run node fires it again; the server's translator sends it once."""
+    if effects is None or not effects.reads:
+        return
+    try:
+        get_stream_writer()({
+            "event": "player_reads", "player": player_id, "role": role, "day": day,
+            "round": round_num, "action_phase": action_phase,
+            "reads": [r.model_dump(mode="json") for r in effects.reads],
+        })
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
+
+
 def run_memory_informed_action(
     payload: VillagerDayState | HealerDayState | WolfDayState | InvestigatorDayState,
     config: RunnableConfig,
@@ -263,6 +288,8 @@ def run_memory_informed_action(
             action_phase=action_phase, enriched_payload=enriched_payload,
             retrieval_meta=retrieval_meta, effects=effects,
         )
+        _announce_reads(player_id=player_id, role=role, day=day, round_num=round_num,
+                        action_phase=action_phase, effects=effects)
 
     return result
 
@@ -427,5 +454,7 @@ def run_memory_informed_night_action(
             action_phase=action_phase, enriched_payload=enriched_payload,
             retrieval_meta=retrieval_meta, effects=effects,
         )
+        _announce_reads(player_id=player_id, role=role, day=day, round_num=round_num,
+                        action_phase=action_phase, effects=effects)
 
     return result

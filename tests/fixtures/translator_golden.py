@@ -42,6 +42,14 @@ def _speech(day: int, seq: int, player: str, message: str) -> dict:
             "firing_reason": None, "gated": False, "gated_candidate": ""}
 
 
+def _player_reads(player: str, role: str, day: int, phase: str = "day_discussion") -> dict:
+    return {"type": "custom", "ns": ["DAY_PHASE:task"], "data": {
+        "event": "player_reads", "player": player, "role": role, "day": day, "round": 0,
+        "action_phase": phase,
+        "reads": [{"player": "player_4", "why": "passed on day 1 with nothing to say",
+                   "suspected_role": "wolf", "confidence": "low"}]}}
+
+
 def _memory_consulted(player: str, role: str, day: int) -> dict:
     return {"type": "custom", "ns": [f"{role.upper()}_NIGHT_PHASE:task"], "data": {
         "event": "memory_consulted", "player": player, "role": role, "day": day, "round": 0,
@@ -94,6 +102,10 @@ def human_path_chunks() -> list[dict]:
         _updates("discuss", {"day_channel": [{**_speech(1, 1, "player_4", ""), "passed": True,
                                               "pass_reason": "voluntary"}],
                              "agent_strategies": {"player_4": "lie low"}}, day),
+        # the vigilante's suspicions before it speaks; its node re-ran and streamed them
+        # again, which is sent once
+        _player_reads("player_1", "vigilante", 1),
+        _player_reads("player_1", "vigilante", 1),
         _updates("discuss", {"day_channel": [{**_speech(1, 2, "player_1", "player_4 is quiet."),
                                               "addressed_targets": [{"target": "player_4",
                                                                      "addressed_form": "mention",
