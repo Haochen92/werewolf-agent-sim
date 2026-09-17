@@ -22,6 +22,8 @@
 
 **route_speaker edge** (a `custom` stream chunk, not a node) — `turn_started {player, day}` via `get_stream_writer()` (edge emission — cannot double-fire on interrupt resume).
 
+**every AI decision, memory-on games only** (a `custom` chunk from inside the acting node, `Agents/turn/pipeline.py`) — observer `memory_consulted {player, role, day, round, action_phase, lessons[], verdicts[], observations[], applicability[]}`: the lessons/observations retrieved for the decision and the agent's verdict on each. Never graph state (the verdicts are kept out of state on purpose). Node emission, so a re-run (human answer, restart resume) fires it again — sent once per `(player, day, round, action_phase)`, the same guard as a re-run speech. Day 1 never retrieves, so it starts on day 2.
+
 **discuss**
 
 | Tier | Events |

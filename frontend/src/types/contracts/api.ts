@@ -703,6 +703,46 @@ export interface components {
       no_lynch_streak: number;
     };
     /**
+     * MemoryConsulted
+     * @description What one AI decision weighed from past games: the lessons and observations
+     *     retrieved for it, and the agent's verdict on each. Only memory-on games emit it, and
+     *     only from day 2 (day 1 never retrieves). Streamed from inside the acting node, so a
+     *     re-run fires it again; the translator sends one per (player, day, round, phase).
+     */
+    MemoryConsulted: {
+      /** Seq */
+      seq: number;
+      /** Day */
+      day: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'memory_consulted';
+      /** Player */
+      player: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: 'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      /** Round */
+      round: number;
+      /**
+       * Action Phase
+       * @enum {string}
+       */
+      action_phase: 'day_discussion' | 'day_vote' | 'night_action';
+      /** Lessons */
+      lessons: components['schemas']['WireLesson'][];
+      /** Verdicts */
+      verdicts: components['schemas']['WireLessonVerdict'][];
+      /** Observations */
+      observations: components['schemas']['WireObservation'][];
+      /** Applicability */
+      applicability: components['schemas']['WireObservationVerdict'][];
+    };
+    /**
      * ModelRow
      * @description One entry of the GET /models served-game menu.
      */
@@ -1016,6 +1056,7 @@ export interface components {
         | components['schemas']['FiringReasonAnnotation']
         | components['schemas']['AddressedTargetsAnnotation']
         | components['schemas']['StrategyUpdate']
+        | components['schemas']['MemoryConsulted']
         | components['schemas']['InputRequest']
         | components['schemas']['DaySummary']
         | components['schemas']['DaySummaryStructured']
@@ -1263,6 +1304,52 @@ export interface components {
        * @enum {string}
        */
       stance: 'accusation' | 'defense' | 'agreement' | 'neutral';
+    };
+    /** WireLesson */
+    WireLesson: {
+      /** Index */
+      index: number;
+      /** Key */
+      key: string;
+      /** Situation */
+      situation: string;
+      /** Action */
+      action: string;
+    };
+    /** WireLessonVerdict */
+    WireLessonVerdict: {
+      /** Strategy Index */
+      strategy_index: number;
+      /**
+       * Verdict
+       * @enum {string}
+       */
+      verdict: 'follow' | 'override' | 'not_relevant';
+      /** Why */
+      why: string;
+    };
+    /** WireObservation */
+    WireObservation: {
+      /** Index */
+      index: number;
+      /** Key */
+      key: string;
+      /** Situation */
+      situation: string;
+      /** Outcome */
+      outcome: string;
+    };
+    /** WireObservationVerdict */
+    WireObservationVerdict: {
+      /** Memory Index */
+      memory_index: number;
+      /**
+       * Verdict
+       * @enum {string}
+       */
+      verdict: 'fully_applies' | 'partly_applies' | 'does_not_apply';
+      /** Why */
+      why: string;
     };
     /**
      * WolfKillDecided

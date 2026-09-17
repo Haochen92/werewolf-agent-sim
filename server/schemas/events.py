@@ -170,6 +170,51 @@ class StrategyUpdate(DurableEvent, frozen=True):
     strategy: str
 
 
+class WireLesson(BaseModel, frozen=True):
+    index: int
+    """1-based position in the numbered list the agent saw; a verdict points at it."""
+    key: str
+    """The store record's key: the same lesson keeps its key across games."""
+    situation: str
+    action: str
+
+
+class WireLessonVerdict(BaseModel, frozen=True):
+    strategy_index: int
+    verdict: Literal["follow", "override", "not_relevant"]
+    why: str
+
+
+class WireObservation(BaseModel, frozen=True):
+    index: int
+    key: str
+    situation: str
+    outcome: str
+
+
+class WireObservationVerdict(BaseModel, frozen=True):
+    memory_index: int
+    verdict: Literal["fully_applies", "partly_applies", "does_not_apply"]
+    why: str
+
+
+class MemoryConsulted(DurableEvent, frozen=True):
+    """What one AI decision weighed from past games: the lessons and observations
+    retrieved for it, and the agent's verdict on each. Only memory-on games emit it, and
+    only from day 2 (day 1 never retrieves). Streamed from inside the acting node, so a
+    re-run fires it again; the translator sends one per (player, day, round, phase)."""
+
+    type: Literal["memory_consulted"] = "memory_consulted"
+    player: str
+    role: Role
+    round: int
+    action_phase: Literal["day_discussion", "day_vote", "night_action"]
+    lessons: list[WireLesson]
+    verdicts: list[WireLessonVerdict]
+    observations: list[WireObservation]
+    applicability: list[WireObservationVerdict]
+
+
 class InputRequest(DurableEvent, frozen=True):
     """The human seat's turn prompt (interrupt surface). Night instances fire inside a
     parallel superstep — resume semantics gated on the spike verification."""
@@ -372,6 +417,7 @@ DurableGameEvent = Annotated[
         FiringReasonAnnotation,
         AddressedTargetsAnnotation,
         StrategyUpdate,
+        MemoryConsulted,
         InputRequest,
         DaySummary,
         DaySummaryStructured,
@@ -406,6 +452,7 @@ EVENT_TIERS: dict[str, Tier] = {
     "firing_reason": Tier.OBSERVER,
     "addressed_targets": Tier.OBSERVER,
     "strategy_update": Tier.OBSERVER,
+    "memory_consulted": Tier.OBSERVER,
     "input_request": Tier.SEAT,
     "day_summary": Tier.PUBLIC,
     "day_summary_structured": Tier.OBSERVER,

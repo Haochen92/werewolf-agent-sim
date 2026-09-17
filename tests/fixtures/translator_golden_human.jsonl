@@ -44,22 +44,23 @@
 {"action_kind": "wolf_vote", "candidates": ["player_6"], "day": 1, "deadline": "2026-01-01T00:01:00Z", "player": "player_9", "seq": 44, "type": "input_request"}
 {"day": 1, "seq": 45, "type": "wolf_vote", "votee": "player_6", "wolf": "player_9"}
 {"day": 1, "seq": 46, "target": "player_6", "type": "wolf_kill_decided"}
-{"actor": "player_5", "day": 1, "role": "healer", "seq": 47, "target": "player_6", "type": "night_action"}
-{"day": 1, "player": "player_5", "seq": 48, "strategy": "guard the loud", "type": "strategy_update"}
-{"actor": "player_3", "day": 1, "role": "investigator", "seq": 49, "target": "player_9", "type": "night_action"}
-{"actor": "player_2", "day": 1, "role": "serial_killer", "seq": 50, "target": "player_7", "type": "night_action"}
-{"day": 1, "player": "player_2", "seq": 51, "strategy": "thin the herd", "type": "strategy_update"}
-{"actor": "player_1", "day": 1, "role": "vigilante", "seq": 52, "target": "player_8", "type": "night_action"}
-{"day": 1, "player": "player_1", "seq": 53, "strategy": "shoot", "type": "strategy_update"}
-{"channel_seq": 5, "day": 1, "seq": 54, "text": "Night of day 1: player_6 was saved; player_7 and player_8 died.", "type": "gm_message"}
-{"day": 1, "deaths": [{"attacker_types": ["serial_killer"], "player": "player_7", "role": "villager"}, {"attacker_types": ["vigilante"], "player": "player_8", "role": "villager"}], "save": {"attacker_types": ["wolves"], "player": "player_6"}, "seq": 55, "type": "night_result"}
-{"day": 1, "message": "Your target was saved.", "round": 3, "seq": 56, "type": "wolf_message", "wolf": "game_master"}
-{"day": 1, "player": "player_3", "role": "wolf", "seq": 57, "target": "player_9", "type": "investigation_result"}
-{"day": 1, "player": "player_1", "seq": 58, "target": "player_8", "type": "vigilante_confirmation"}
-{"count": 1, "day": 1, "player": "player_1", "seq": 59, "type": "bullets_remaining"}
-{"day": 1, "seq": 60, "surviving_players": ["player_1", "player_2", "player_3", "player_5", "player_6", "player_9"], "type": "roster_update"}
-{"day": 1, "seq": 61, "surviving_wolves": ["player_9"], "type": "pack_roster_update"}
-{"day": 2, "phase": "day", "seq": 62, "type": "phase_change"}
-{"channel_seq": 0, "day": 2, "message": "player_9 is a wolf.", "player": "player_3", "seq": 63, "type": "speech"}
-{"channel_seq": 1, "day": 2, "seq": 64, "text": "Game over! The villagers have won!", "type": "gm_message"}
-{"day": 2, "seq": 65, "type": "game_over", "winner": "villagers"}
+{"action_phase": "night_action", "applicability": [], "day": 1, "lessons": [{"action": "Protect the claimant, not the accuser.", "index": 1, "key": "sp-1", "situation": "When a claimed investigator is loud"}], "observations": [], "player": "player_5", "role": "healer", "round": 0, "seq": 47, "type": "memory_consulted", "verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "player_3 claimed today"}]}
+{"actor": "player_5", "day": 1, "role": "healer", "seq": 48, "target": "player_6", "type": "night_action"}
+{"day": 1, "player": "player_5", "seq": 49, "strategy": "guard the loud", "type": "strategy_update"}
+{"actor": "player_3", "day": 1, "role": "investigator", "seq": 50, "target": "player_9", "type": "night_action"}
+{"actor": "player_2", "day": 1, "role": "serial_killer", "seq": 51, "target": "player_7", "type": "night_action"}
+{"day": 1, "player": "player_2", "seq": 52, "strategy": "thin the herd", "type": "strategy_update"}
+{"actor": "player_1", "day": 1, "role": "vigilante", "seq": 53, "target": "player_8", "type": "night_action"}
+{"day": 1, "player": "player_1", "seq": 54, "strategy": "shoot", "type": "strategy_update"}
+{"channel_seq": 5, "day": 1, "seq": 55, "text": "Night of day 1: player_6 was saved; player_7 and player_8 died.", "type": "gm_message"}
+{"day": 1, "deaths": [{"attacker_types": ["serial_killer"], "player": "player_7", "role": "villager"}, {"attacker_types": ["vigilante"], "player": "player_8", "role": "villager"}], "save": {"attacker_types": ["wolves"], "player": "player_6"}, "seq": 56, "type": "night_result"}
+{"day": 1, "message": "Your target was saved.", "round": 3, "seq": 57, "type": "wolf_message", "wolf": "game_master"}
+{"day": 1, "player": "player_3", "role": "wolf", "seq": 58, "target": "player_9", "type": "investigation_result"}
+{"day": 1, "player": "player_1", "seq": 59, "target": "player_8", "type": "vigilante_confirmation"}
+{"count": 1, "day": 1, "player": "player_1", "seq": 60, "type": "bullets_remaining"}
+{"day": 1, "seq": 61, "surviving_players": ["player_1", "player_2", "player_3", "player_5", "player_6", "player_9"], "type": "roster_update"}
+{"day": 1, "seq": 62, "surviving_wolves": ["player_9"], "type": "pack_roster_update"}
+{"day": 2, "phase": "day", "seq": 63, "type": "phase_change"}
+{"channel_seq": 0, "day": 2, "message": "player_9 is a wolf.", "player": "player_3", "seq": 64, "type": "speech"}
+{"channel_seq": 1, "day": 2, "seq": 65, "text": "Game over! The villagers have won!", "type": "gm_message"}
+{"day": 2, "seq": 66, "type": "game_over", "winner": "villagers"}

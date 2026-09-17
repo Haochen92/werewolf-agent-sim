@@ -1594,6 +1594,96 @@
         "title": "LynchResult",
         "description": "The day death atom (= the dead_roster delta) + the free-rider fields the node computed."
       },
+      "MemoryConsulted": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "memory_consulted",
+            "title": "Type",
+            "default": "memory_consulted"
+          },
+          "player": {
+            "type": "string",
+            "title": "Player"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
+            "title": "Role"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "action_phase": {
+            "type": "string",
+            "enum": [
+              "day_discussion",
+              "day_vote",
+              "night_action"
+            ],
+            "title": "Action Phase"
+          },
+          "lessons": {
+            "items": {
+              "$ref": "#/components/schemas/WireLesson"
+            },
+            "type": "array",
+            "title": "Lessons"
+          },
+          "verdicts": {
+            "items": {
+              "$ref": "#/components/schemas/WireLessonVerdict"
+            },
+            "type": "array",
+            "title": "Verdicts"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/WireObservation"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "applicability": {
+            "items": {
+              "$ref": "#/components/schemas/WireObservationVerdict"
+            },
+            "type": "array",
+            "title": "Applicability"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "player",
+          "role",
+          "round",
+          "action_phase",
+          "lessons",
+          "verdicts",
+          "observations",
+          "applicability"
+        ],
+        "title": "MemoryConsulted",
+        "description": "What one AI decision weighed from past games: the lessons and observations\nretrieved for it, and the agent's verdict on each. Only memory-on games emit it, and\nonly from day 2 (day 1 never retrieves). Streamed from inside the acting node, so a\nre-run fires it again; the translator sends one per (player, day, round, phase)."
+      },
       "ModelRow": {
         "properties": {
           "model": {
@@ -2202,6 +2292,9 @@
                   "$ref": "#/components/schemas/StrategyUpdate"
                 },
                 {
+                  "$ref": "#/components/schemas/MemoryConsulted"
+                },
+                {
                   "$ref": "#/components/schemas/InputRequest"
                 },
                 {
@@ -2264,6 +2357,7 @@
                   "input_request": "#/components/schemas/InputRequest",
                   "investigation_result": "#/components/schemas/InvestigationResult",
                   "lynch_result": "#/components/schemas/LynchResult",
+                  "memory_consulted": "#/components/schemas/MemoryConsulted",
                   "night_action": "#/components/schemas/NightAction",
                   "night_result": "#/components/schemas/NightResult",
                   "pack_roster_update": "#/components/schemas/PackRosterUpdate",
@@ -2767,6 +2861,118 @@
           "stance"
         ],
         "title": "WireAddressedTarget"
+      },
+      "WireLesson": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "situation": {
+            "type": "string",
+            "title": "Situation"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "key",
+          "situation",
+          "action"
+        ],
+        "title": "WireLesson"
+      },
+      "WireLessonVerdict": {
+        "properties": {
+          "strategy_index": {
+            "type": "integer",
+            "title": "Strategy Index"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "follow",
+              "override",
+              "not_relevant"
+            ],
+            "title": "Verdict"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          }
+        },
+        "type": "object",
+        "required": [
+          "strategy_index",
+          "verdict",
+          "why"
+        ],
+        "title": "WireLessonVerdict"
+      },
+      "WireObservation": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "situation": {
+            "type": "string",
+            "title": "Situation"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "key",
+          "situation",
+          "outcome"
+        ],
+        "title": "WireObservation"
+      },
+      "WireObservationVerdict": {
+        "properties": {
+          "memory_index": {
+            "type": "integer",
+            "title": "Memory Index"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "fully_applies",
+              "partly_applies",
+              "does_not_apply"
+            ],
+            "title": "Verdict"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          }
+        },
+        "type": "object",
+        "required": [
+          "memory_index",
+          "verdict",
+          "why"
+        ],
+        "title": "WireObservationVerdict"
       },
       "WolfKillDecided": {
         "properties": {

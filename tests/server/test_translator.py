@@ -319,6 +319,16 @@ def test_reexecuted_wolf_line_is_sent_once():
     assert t.translate(chat) == []
 
 
+def test_reexecuted_memory_consultation_is_sent_once():
+    from tests.fixtures.translator_golden import _memory_consulted
+
+    t = _seeded_translator()
+    chunk = _memory_consulted("t0", "healer", 2)
+    assert [e.type for e in t.translate(chunk)] == ["memory_consulted"]
+    assert t.translate(chunk) == []  # the node re-ran and streamed it again
+    assert [e.type for e in t.translate(_memory_consulted("t0", "healer", 3))] == ["memory_consulted"]
+
+
 def test_reexecuted_strategy_note_is_sent_once_but_changes_still_are():
     t = _seeded_translator()
     note = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {

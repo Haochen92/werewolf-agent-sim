@@ -169,13 +169,15 @@ class Translator:
         # Ship-once guards.
         self._seen_day_entries: set[tuple[int, int]] = set()
         self._seen_wolf_msgs: set[tuple[int, int, str]] = set()
+        self._seen_memory: set[tuple[str, int, int, str]] = set()
         self._strategies: dict[str, str] = {}
 
     def hydrate(self, log: list) -> None:
         """Rebuild the shadow state from a durable event log (server-restart recovery).
 
         What rebuilds vs what deliberately stays empty:
-        - seq counter, current_day, roles/wolves, send-once guards, strategy notes:
+        - seq counter, current_day, roles/wolves, send-once guards (day entries, wolf
+          lines, memory consultations), strategy notes:
           all derivable from sent events — REBUILT (without the guards, the resume's
           abort-and-re-execute re-run would re-send every already-delivered message
           under fresh seqs).
@@ -197,6 +199,8 @@ class Translator:
                 self._seen_wolf_msgs.add((e.day, e.round, e.wolf))
             elif e.type == "strategy_update":
                 self._strategies[e.player] = e.strategy
+            elif e.type == "memory_consulted":
+                self._seen_memory.add((e.player, e.day, e.round, e.action_phase))
             elif e.type == "night_result":
                 dead.update(d.player for d in e.deaths)
             elif e.type == "lynch_result" and e.player:
@@ -258,10 +262,19 @@ class Translator:
         return next((p for p, r in self.roles.items() if r == role), None)
 
     def _turn_tick(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
-        # The one custom chunk: the engine's "X is thinking" tick, written from a routing
-        # edge so a re-run node cannot fire it twice.
+        # The custom chunks. "X is thinking" is written from a routing edge, so a re-run
+        # node cannot fire it twice. The memory consultation is written from inside the
+        # acting node and CAN fire again on a re-run: sent once, like a re-run speech.
         if payload.get("event") == "turn_started":
             return [self._emit(ev.TurnStarted, day=payload["day"], player=payload["player"])]
+        if payload.get("event") == "memory_consulted":
+            key = (payload["player"], payload["day"], payload["round"], payload["action_phase"])
+            if not _first_time(self._seen_memory, key):
+                return []
+            fields = {k: payload[k] for k in ("player", "role", "round", "action_phase",
+                                               "lessons", "verdicts", "observations",
+                                               "applicability")}
+            return [self._emit(ev.MemoryConsulted, day=payload["day"], **fields)]
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
     def _input_requests(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:

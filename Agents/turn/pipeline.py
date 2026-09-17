@@ -9,6 +9,7 @@ from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
+from langgraph.config import get_stream_writer
 from langgraph.runtime import Runtime
 from pydantic import BaseModel
 
@@ -55,6 +56,47 @@ from Agents.turn.adoption import process_strategy_adoption
 from Agents.turn.eval import build_eval_private_context
 
 logger = getLogger(__name__)
+
+
+def _announce_memory_consulted(
+    *,
+    player_id: str,
+    role: str,
+    day: int,
+    round_num: int,
+    action_phase: str,
+    enriched_payload: dict[str, Any],
+    retrieval_meta: dict[str, Any],
+    effects,
+) -> None:
+    """Stream what this decision weighed from past games, for the replay's X-ray: the
+    lessons and observations retrieved, and the agent's verdict on each. Fires only when
+    retrieval ran. A custom chunk, never graph state — the verdicts are kept out of state
+    on purpose (resolve._turn_effects). A re-run node fires it again; the server's
+    translator sends it once."""
+    if not retrieval_meta["memory_enabled"] or effects is None:
+        return
+    lessons = [
+        {"index": i, "key": sp.key, "situation": sp.strategy_point.situation,
+         "action": sp.strategy_point.action}
+        for i, sp in enumerate(enriched_payload.get("strategy_points") or [], 1)
+    ]
+    observations = [
+        {"index": i, "key": ob.key, "situation": ob.observation.situation,
+         "outcome": ob.observation.outcome}
+        for i, ob in enumerate(enriched_payload.get("retrieved_observations") or [], 1)
+    ]
+    try:
+        get_stream_writer()({
+            "event": "memory_consulted", "player": player_id, "role": role, "day": day,
+            "round": round_num, "action_phase": action_phase,
+            "lessons": lessons,
+            "verdicts": [v.model_dump(mode="json") for v in effects.strategy_verdicts],
+            "observations": observations,
+            "applicability": [v.model_dump(mode="json") for v in effects.memory_verdicts],
+        })
+    except RuntimeError:  # direct call outside a graph run (tests)
+        pass
 
 
 def run_memory_informed_action(
@@ -216,6 +258,11 @@ def run_memory_informed_action(
                 "adopted_count": len(adopted_store_keys),
             },
         )
+        _announce_memory_consulted(
+            player_id=player_id, role=role, day=day, round_num=round_num,
+            action_phase=action_phase, enriched_payload=enriched_payload,
+            retrieval_meta=retrieval_meta, effects=effects,
+        )
 
     return result
 
@@ -374,6 +421,11 @@ def run_memory_informed_night_action(
                 "round": eval_case.round,
                 "adopted_count": len(adopted_store_keys),
             },
+        )
+        _announce_memory_consulted(
+            player_id=player_id, role=role, day=day, round_num=round_num,
+            action_phase=action_phase, enriched_payload=enriched_payload,
+            retrieval_meta=retrieval_meta, effects=effects,
         )
 
     return result

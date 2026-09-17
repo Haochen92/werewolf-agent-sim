@@ -42,6 +42,16 @@ def _speech(day: int, seq: int, player: str, message: str) -> dict:
             "firing_reason": None, "gated": False, "gated_candidate": ""}
 
 
+def _memory_consulted(player: str, role: str, day: int) -> dict:
+    return {"type": "custom", "ns": [f"{role.upper()}_NIGHT_PHASE:task"], "data": {
+        "event": "memory_consulted", "player": player, "role": role, "day": day, "round": 0,
+        "action_phase": "night_action",
+        "lessons": [{"index": 1, "key": "sp-1", "situation": "When a claimed investigator is loud",
+                     "action": "Protect the claimant, not the accuser."}],
+        "verdicts": [{"strategy_index": 1, "verdict": "follow", "why": "player_3 claimed today"}],
+        "observations": [], "applicability": []}}
+
+
 def _interrupt(player: str, phase: str, day: int, targets: list[str]) -> dict:
     return {"value": {"player_id": player, "phase": phase, "day": day,
                       "valid_targets": targets, "surviving_players": targets,
@@ -145,6 +155,10 @@ def human_path_chunks() -> list[dict]:
         _updates("COLLECT_WOLF_VOTES", {"wolves_kill_target": "player_6"}, wolf),
         _updates("WOLF_NIGHT_PHASE", {"wolf_channel": [], "wolves_kill_target": "player_6",
                                       "agent_strategies": {}}),
+        # the healer weighed a lesson first (a memory-on game); its node re-ran and streamed
+        # the same consultation again, which is sent once
+        _memory_consulted("player_5", "healer", 1),
+        _memory_consulted("player_5", "healer", 1),
         _updates("healer_act", {"healer_target": "player_6", "updated_strategy": "guard the loud"},
                  "HEALER_NIGHT_PHASE"),
         _updates("HEALER_NIGHT_PHASE", {"healer_target": "player_6", "agent_strategies": {}}),
