@@ -1684,6 +1684,47 @@
         "title": "MemoryConsulted",
         "description": "What one AI decision weighed from past games: the lessons and observations\nretrieved for it, and the agent's verdict on each. Only memory-on games emit it, and\nonly from day 2 (day 1 never retrieves). Streamed from inside the acting node, so a\nre-run fires it again; the translator sends one per (player, day, round, phase)."
       },
+      "MemoryExtracted": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "type": {
+            "type": "string",
+            "const": "memory_extracted",
+            "title": "Type",
+            "default": "memory_extracted"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/WireExtractedObservation"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "strategy_points": {
+            "items": {
+              "$ref": "#/components/schemas/WireExtractedLesson"
+            },
+            "type": "array",
+            "title": "Strategy Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "day",
+          "observations",
+          "strategy_points"
+        ],
+        "title": "MemoryExtracted",
+        "description": "What the finished game taught: the observations and lessons extracted from it,\nraw (before any dedup against the store \u2014 a served game never writes the store).\nMemory-on games only; streamed from the post-game node, after game_over, so every\nviewer is already an observer when it arrives."
+      },
       "ModelRow": {
         "properties": {
           "model": {
@@ -2295,6 +2336,9 @@
                   "$ref": "#/components/schemas/MemoryConsulted"
                 },
                 {
+                  "$ref": "#/components/schemas/MemoryExtracted"
+                },
+                {
                   "$ref": "#/components/schemas/InputRequest"
                 },
                 {
@@ -2358,6 +2402,7 @@
                   "investigation_result": "#/components/schemas/InvestigationResult",
                   "lynch_result": "#/components/schemas/LynchResult",
                   "memory_consulted": "#/components/schemas/MemoryConsulted",
+                  "memory_extracted": "#/components/schemas/MemoryExtracted",
                   "night_action": "#/components/schemas/NightAction",
                   "night_result": "#/components/schemas/NightResult",
                   "pack_roster_update": "#/components/schemas/PackRosterUpdate",
@@ -2861,6 +2906,98 @@
           "stance"
         ],
         "title": "WireAddressedTarget"
+      },
+      "WireExtractedLesson": {
+        "properties": {
+          "perspective": {
+            "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
+            "title": "Perspective"
+          },
+          "action_phase": {
+            "type": "string",
+            "enum": [
+              "day_discussion",
+              "day_vote",
+              "night_action"
+            ],
+            "title": "Action Phase"
+          },
+          "situation": {
+            "type": "string",
+            "title": "Situation"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "perspective",
+          "action_phase",
+          "situation",
+          "action"
+        ],
+        "title": "WireExtractedLesson"
+      },
+      "WireExtractedObservation": {
+        "properties": {
+          "perspective": {
+            "type": "string",
+            "enum": [
+              "villager",
+              "wolf",
+              "investigator",
+              "healer",
+              "serial_killer",
+              "vigilante"
+            ],
+            "title": "Perspective"
+          },
+          "action_phase": {
+            "type": "string",
+            "enum": [
+              "day_discussion",
+              "day_vote",
+              "night_action"
+            ],
+            "title": "Action Phase"
+          },
+          "situation": {
+            "type": "string",
+            "title": "Situation"
+          },
+          "approach": {
+            "type": "string",
+            "title": "Approach"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          },
+          "net_verdict": {
+            "type": "string",
+            "title": "Net Verdict"
+          }
+        },
+        "type": "object",
+        "required": [
+          "perspective",
+          "action_phase",
+          "situation",
+          "approach",
+          "outcome",
+          "net_verdict"
+        ],
+        "title": "WireExtractedObservation"
       },
       "WireLesson": {
         "properties": {

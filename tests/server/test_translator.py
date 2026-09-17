@@ -329,6 +329,14 @@ def test_reexecuted_memory_consultation_is_sent_once():
     assert [e.type for e in t.translate(_memory_consulted("t0", "healer", 3))] == ["memory_consulted"]
 
 
+def test_reexecuted_memory_extraction_is_sent_once():
+    from tests.fixtures.translator_golden import _memory_extracted
+
+    t = _seeded_translator()
+    assert [e.type for e in t.translate(_memory_extracted(3))] == ["memory_extracted"]
+    assert t.translate(_memory_extracted(3)) == []  # the post-game node re-ran
+
+
 def test_reexecuted_strategy_note_is_sent_once_but_changes_still_are():
     t = _seeded_translator()
     note = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {

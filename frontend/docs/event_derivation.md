@@ -120,7 +120,7 @@ the pacing denominator comes from public knowledge only (see Ephemeral channel).
 | --- | --- |
 | Public | `game_over {winner, day}` — thin: an entitlement flip, not a data package |
 - At game_over the client's tier becomes observer; the server streams the withheld O-tier backlog from the durable log (full X-ray replay: wolf channel, probes, strategies, `roles_assigned`). No reveal payload is duplicated into the event.
-- POST_GAME_ANALYSIS → registered silent with the key check off: its output is large and never sent.
+- POST_GAME_ANALYSIS → registered silent with the key check off: its state output is large and never sent. In a memory-on game it streams one `custom` chunk from inside the node, observer `memory_extracted {observations[], strategy_points[], day}` — what the game taught, raw (a served game never writes the store, so there is no post-dedup form). Arrives after game_over, so every viewer is already an observer. Sent once per game (a re-run streams it again).
 
 ## Stream behaviours the translator guards
 

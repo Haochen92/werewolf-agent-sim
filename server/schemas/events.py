@@ -215,6 +215,34 @@ class MemoryConsulted(DurableEvent, frozen=True):
     applicability: list[WireObservationVerdict]
 
 
+class WireExtractedObservation(BaseModel, frozen=True):
+    perspective: Role
+    """The role the observation is a lesson for."""
+    action_phase: Literal["day_discussion", "day_vote", "night_action"]
+    situation: str
+    approach: str
+    outcome: str
+    net_verdict: str
+
+
+class WireExtractedLesson(BaseModel, frozen=True):
+    perspective: Role
+    action_phase: Literal["day_discussion", "day_vote", "night_action"]
+    situation: str
+    action: str
+
+
+class MemoryExtracted(DurableEvent, frozen=True):
+    """What the finished game taught: the observations and lessons extracted from it,
+    raw (before any dedup against the store — a served game never writes the store).
+    Memory-on games only; streamed from the post-game node, after game_over, so every
+    viewer is already an observer when it arrives."""
+
+    type: Literal["memory_extracted"] = "memory_extracted"
+    observations: list[WireExtractedObservation]
+    strategy_points: list[WireExtractedLesson]
+
+
 class InputRequest(DurableEvent, frozen=True):
     """The human seat's turn prompt (interrupt surface). Night instances fire inside a
     parallel superstep — resume semantics gated on the spike verification."""
@@ -418,6 +446,7 @@ DurableGameEvent = Annotated[
         AddressedTargetsAnnotation,
         StrategyUpdate,
         MemoryConsulted,
+        MemoryExtracted,
         InputRequest,
         DaySummary,
         DaySummaryStructured,
@@ -453,6 +482,7 @@ EVENT_TIERS: dict[str, Tier] = {
     "addressed_targets": Tier.OBSERVER,
     "strategy_update": Tier.OBSERVER,
     "memory_consulted": Tier.OBSERVER,
+    "memory_extracted": Tier.OBSERVER,
     "input_request": Tier.SEAT,
     "day_summary": Tier.PUBLIC,
     "day_summary_structured": Tier.OBSERVER,

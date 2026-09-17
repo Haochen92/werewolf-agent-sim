@@ -19,9 +19,10 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
     """Build the config a served game runs on.
 
     ``memory`` is the player's switch: on, every AI seat retrieves lessons from past
-    games before each decision; off, nobody does. Either way the game's own lessons are
-    never written back into the live store."""
-    persistence: dict = {"dump_enabled": False}
+    games before each decision, and at the end the game's own lessons are extracted for
+    the replay to show; off, neither happens. Either way those lessons are never written
+    back into the live store."""
+    persistence: dict = {"dump_enabled": False, "extraction": {"extract_without_dump": memory}}
     if server_settings.WW_MEMORY_STORE_DIR:
         persistence["seed_store_dir"] = server_settings.WW_MEMORY_STORE_DIR
     return RunConfig(

@@ -52,6 +52,19 @@ def _memory_consulted(player: str, role: str, day: int) -> dict:
         "observations": [], "applicability": []}}
 
 
+def _memory_extracted(day: int) -> dict:
+    return {"type": "custom", "ns": [], "data": {
+        "event": "memory_extracted", "day": day,
+        "observations": [{"perspective": "wolf", "action_phase": "day_discussion",
+                          "situation": "The investigator claimed on day 1 with a wolf result.",
+                          "approach": "The wolves stayed silent instead of counter-claiming.",
+                          "outcome": "The claim went unchallenged and the wolf was lynched.",
+                          "net_verdict": "negative"}],
+        "strategy_points": [{"perspective": "wolf", "action_phase": "day_discussion",
+                             "situation": "When an investigator claims a wolf result on you",
+                             "action": "Counter-claim at once; silence reads as guilt."}]}}
+
+
 def _interrupt(player: str, phase: str, day: int, targets: list[str]) -> dict:
     return {"value": {"player_id": player, "phase": phase, "day": day,
                       "valid_targets": targets, "surviving_players": targets,
@@ -204,6 +217,10 @@ def human_path_chunks() -> list[dict]:
                              "agent_strategies": {"player_3": "claim early"}}, day),
         _updates("END_GAME", {"winner": "villagers",
                               "day_channel": [_speech(2, 1, "game_master", "Game over! The villagers have won!")]}),
+        # what the game taught (a memory-on game), streamed from inside the post-game
+        # node; a re-run streams it again and it is sent once
+        _memory_extracted(2),
+        _memory_extracted(2),
         _updates("POST_GAME_ANALYSIS", None),
     ]
     return out

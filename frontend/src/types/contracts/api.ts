@@ -743,6 +743,28 @@ export interface components {
       applicability: components['schemas']['WireObservationVerdict'][];
     };
     /**
+     * MemoryExtracted
+     * @description What the finished game taught: the observations and lessons extracted from it,
+     *     raw (before any dedup against the store — a served game never writes the store).
+     *     Memory-on games only; streamed from the post-game node, after game_over, so every
+     *     viewer is already an observer when it arrives.
+     */
+    MemoryExtracted: {
+      /** Seq */
+      seq: number;
+      /** Day */
+      day: number;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'memory_extracted';
+      /** Observations */
+      observations: components['schemas']['WireExtractedObservation'][];
+      /** Strategy Points */
+      strategy_points: components['schemas']['WireExtractedLesson'][];
+    };
+    /**
      * ModelRow
      * @description One entry of the GET /models served-game menu.
      */
@@ -1057,6 +1079,7 @@ export interface components {
         | components['schemas']['AddressedTargetsAnnotation']
         | components['schemas']['StrategyUpdate']
         | components['schemas']['MemoryConsulted']
+        | components['schemas']['MemoryExtracted']
         | components['schemas']['InputRequest']
         | components['schemas']['DaySummary']
         | components['schemas']['DaySummaryStructured']
@@ -1304,6 +1327,46 @@ export interface components {
        * @enum {string}
        */
       stance: 'accusation' | 'defense' | 'agreement' | 'neutral';
+    };
+    /** WireExtractedLesson */
+    WireExtractedLesson: {
+      /**
+       * Perspective
+       * @enum {string}
+       */
+      perspective:
+        'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      /**
+       * Action Phase
+       * @enum {string}
+       */
+      action_phase: 'day_discussion' | 'day_vote' | 'night_action';
+      /** Situation */
+      situation: string;
+      /** Action */
+      action: string;
+    };
+    /** WireExtractedObservation */
+    WireExtractedObservation: {
+      /**
+       * Perspective
+       * @enum {string}
+       */
+      perspective:
+        'villager' | 'wolf' | 'investigator' | 'healer' | 'serial_killer' | 'vigilante';
+      /**
+       * Action Phase
+       * @enum {string}
+       */
+      action_phase: 'day_discussion' | 'day_vote' | 'night_action';
+      /** Situation */
+      situation: string;
+      /** Approach */
+      approach: string;
+      /** Outcome */
+      outcome: string;
+      /** Net Verdict */
+      net_verdict: string;
     };
     /** WireLesson */
     WireLesson: {

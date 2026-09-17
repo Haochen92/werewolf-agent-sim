@@ -64,3 +64,4 @@
 {"channel_seq": 0, "day": 2, "message": "player_9 is a wolf.", "player": "player_3", "seq": 64, "type": "speech"}
 {"channel_seq": 1, "day": 2, "seq": 65, "text": "Game over! The villagers have won!", "type": "gm_message"}
 {"day": 2, "seq": 66, "type": "game_over", "winner": "villagers"}
+{"day": 2, "observations": [{"action_phase": "day_discussion", "approach": "The wolves stayed silent instead of counter-claiming.", "net_verdict": "negative", "outcome": "The claim went unchallenged and the wolf was lynched.", "perspective": "wolf", "situation": "The investigator claimed on day 1 with a wolf result."}], "seq": 67, "strategy_points": [{"action": "Counter-claim at once; silence reads as guilt.", "action_phase": "day_discussion", "perspective": "wolf", "situation": "When an investigator claims a wolf result on you"}], "type": "memory_extracted"}

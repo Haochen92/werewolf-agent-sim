@@ -170,6 +170,7 @@ class Translator:
         self._seen_day_entries: set[tuple[int, int]] = set()
         self._seen_wolf_msgs: set[tuple[int, int, str]] = set()
         self._seen_memory: set[tuple[str, int, int, str]] = set()
+        self._memory_extracted_sent = False
         self._strategies: dict[str, str] = {}
 
     def hydrate(self, log: list) -> None:
@@ -201,6 +202,8 @@ class Translator:
                 self._strategies[e.player] = e.strategy
             elif e.type == "memory_consulted":
                 self._seen_memory.add((e.player, e.day, e.round, e.action_phase))
+            elif e.type == "memory_extracted":
+                self._memory_extracted_sent = True
             elif e.type == "night_result":
                 dead.update(d.player for d in e.deaths)
             elif e.type == "lynch_result" and e.player:
@@ -263,8 +266,8 @@ class Translator:
 
     def _turn_tick(self, payload: Mapping[str, Any]) -> list[ev.DurableEvent]:
         # The custom chunks. "X is thinking" is written from a routing edge, so a re-run
-        # node cannot fire it twice. The memory consultation is written from inside the
-        # acting node and CAN fire again on a re-run: sent once, like a re-run speech.
+        # node cannot fire it twice. The two memory chunks are written from inside their
+        # nodes and CAN fire again on a re-run: sent once, like a re-run speech.
         if payload.get("event") == "turn_started":
             return [self._emit(ev.TurnStarted, day=payload["day"], player=payload["player"])]
         if payload.get("event") == "memory_consulted":
@@ -275,6 +278,13 @@ class Translator:
                                                "lessons", "verdicts", "observations",
                                                "applicability")}
             return [self._emit(ev.MemoryConsulted, day=payload["day"], **fields)]
+        if payload.get("event") == "memory_extracted":
+            if self._memory_extracted_sent:
+                return []
+            self._memory_extracted_sent = True
+            return [self._emit(ev.MemoryExtracted, day=payload["day"],
+                               observations=payload["observations"],
+                               strategy_points=payload["strategy_points"])]
         raise TranslationError(f"unknown custom payload: {payload!r}")
 
     def _input_requests(self, interrupts, deadlines: Mapping[str, str]) -> list[ev.DurableEvent]:
