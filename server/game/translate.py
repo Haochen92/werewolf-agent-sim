@@ -20,9 +20,10 @@ The translator keeps a small copy of game state, rebuilt from the chunks alone, 
 asks the graph for it: the stream runs ahead of the checkpoint, and behind a slow viewer
 the graph would answer from steps the viewer has not been shown. Three things arrive on the
 stream more than once, and each is handled at its guard: a re-streamed committed step
-(tagged cached, dropped whole), an interrupt (streamed under the subgraph and again at the
-root; only the root copy is sent), and the two votes (the game's only parallel steps, which
-re-run when a human answers; they are buffered until the tally, last write per voter wins).
+(tagged cached, no new events; its ballots still refill recovery buffers), an interrupt
+(streamed under the subgraph and again at the root; only the root copy is sent), and the
+two votes (parallel steps which re-run when a human answers; buffered until the tally,
+last write per voter wins).
 
 The lynch and the night deaths are computed here with the engine's own rule functions and
 compared with what the node recorded; a mismatch raises rather than sending a wrong event.
@@ -183,15 +184,25 @@ class Translator:
           all derivable from sent events — REBUILT (without the guards, the resume's
           abort-and-re-execute re-run would re-send every already-delivered message
           under fresh seqs).
-        - ballot buffers and tonight's targets: LEFT EMPTY on purpose — an in-flight
-          round's buffers are provisional state that the resume re-run re-streams from
-          scratch, which is exactly the in-process abort-and-re-execute behavior; a
-          committed round's ballots already sent as tally events and never re-run.
+        - resolution inputs: REBUILT from today's vote_cast and this night's
+          night_action / wolf_kill_decided events. Their producing phase may already
+          be committed while the resolution that needs them has not run yet.
+        - in-flight ballot buffers: not public until collection, so absent from the
+          log. The resumed vote step refills them, including from cached chunks;
+          cached ballots produce no duplicate events.
         """
         dead: set[str] = set()
         for e in log:
             self.seq = max(self.seq, e.seq)
             self.current_day = max(self.current_day, e.day)
+            if e.type == "phase_change":
+                if e.phase == "day":
+                    self._targets.clear()
+                    self._last_day_ballots.clear()
+                elif e.phase == "voting":
+                    self._last_day_ballots.clear()
+                elif e.phase == "night":
+                    self._targets.clear()
             if e.type == "roles_assigned":
                 self.roles = dict(e.roles)
                 self.wolves = [p for p, r in self.roles.items() if r == "wolf"]
@@ -207,6 +218,12 @@ class Translator:
                 self._seen_reads.add((e.player, e.day, e.round, e.action_phase))
             elif e.type == "memory_extracted":
                 self._memory_extracted_sent = True
+            elif e.type == "vote_cast":
+                self._last_day_ballots.append((e.voter, e.votee))
+            elif e.type == "night_action":
+                self._targets[f"{e.role}_target"] = e.target
+            elif e.type == "wolf_kill_decided":
+                self._targets["wolves_kill_target"] = e.target
             elif e.type == "night_result":
                 dead.update(d.player for d in e.deaths)
             elif e.type == "lynch_result" and e.player:
@@ -229,7 +246,8 @@ class Translator:
         if chunk["type"] != "updates":
             raise TranslationError(f"unexpected stream chunk type: {chunk['type']}")
         if is_cached(chunk):
-            return []  # a re-streamed committed step: its events already sent
+            self.restore_cached_inputs(chunk)
+            return []  # bookkeeping only: this step's events have already been sent
 
         graph = get_source_graph(chunk)
         out: list[ev.DurableEvent] = []
@@ -245,6 +263,20 @@ class Translator:
             else:
                 out.extend(self._dispatch(name, delta or {}))
         return out
+
+    def restore_cached_inputs(self, chunk: Mapping[str, Any]) -> None:
+        """Refill an interrupted vote's buffers from cached results, without emitting.
+
+        AI siblings can have finished before a human interrupted the step. After a
+        restart their votes are absent from the log (the tally has not published them),
+        but LangGraph re-streams their cached results. Keep those ballots so collection
+        includes every voter. Last write wins, just as for a newly produced ballot.
+        """
+        for name, delta in chunk["data"].items():
+            if name.lower() in ("vote", "vote_human"):
+                self._buffer_day_votes(delta or {})
+            elif name.lower() in ("wolf_night_vote", "wolf_night_vote_human"):
+                self._buffer_wolf_votes(delta or {})
 
     def _dispatch(self, name: str, delta: Mapping[str, Any]) -> list[ev.DurableEvent]:
         try:
@@ -426,11 +458,14 @@ class Translator:
 
     @node("vote", writes={"day_votes", "agent_strategies"})
     def _vote(self, delta):
+        self._buffer_day_votes(delta)
+        return self._strategy_updates(delta)
+
+    def _buffer_day_votes(self, delta):
         for ballot in delta.get("day_votes") or []:
             # Last write wins: a human interrupt re-runs this step, and the engine keeps
             # the re-run's ballot, which may differ from the one streamed before.
             self._day_ballots[ballot["voter"]] = ballot["votee"]
-        return self._strategy_updates(delta)
 
     # The human seat votes through the uncached twin node: same delta, same handling.
     node("vote_human", writes={"day_votes", "agent_strategies"})(_vote)
@@ -500,11 +535,14 @@ class Translator:
     def _wolf_night_vote(self, delta):
         # Buffered: blind while voting, flushed with the tally. The runtime streams each
         # wolf's vote as it lands, so the holding has to happen here.
+        self._buffer_wolf_votes(delta)
+        return self._strategy_updates(delta)
+
+    def _buffer_wolf_votes(self, delta):
         for entry in delta.get("wolf_channel") or []:
             if entry.get("vote"):
                 # Last write wins per wolf, as with day ballots.
                 self._wolf_votes[entry["wolf"]] = entry["vote"]
-        return self._strategy_updates(delta)
 
     # A human wolf votes through the uncached twin node: same delta, same handling.
     node("WOLF_NIGHT_VOTE_HUMAN", writes={"wolf_channel", "agent_strategies"})(_wolf_night_vote)
@@ -607,6 +645,8 @@ class Translator:
     def _one_more_day(self, delta):
         self.current_day = delta.get("current_day", self.current_day + 1)
         self._targets = {}
+        self._day_ballots.clear()
+        self._last_day_ballots.clear()
         self._wolf_votes.clear()
         return [self._emit(ev.PhaseChange, phase="day")]
 

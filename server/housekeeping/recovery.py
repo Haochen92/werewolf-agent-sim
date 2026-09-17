@@ -1,7 +1,7 @@
 """Filling the registry back up at boot from what the database remembers.
 
 A restart empties the process, but every game is still written down. At startup each row
-still marked waiting or running is handed to ``LiveGameRegistry.revive``, which rebuilds the
+still marked running is handed to ``LiveGameRegistry.revive``, which rebuilds the
 game from that row, the stored events and the engine checkpoint. One broken game must
 never take the server down or hold up the others, so a row that cannot be rebuilt is
 marked dropped, with the reason, and skipped.
@@ -31,7 +31,7 @@ async def recover_registry(registry: LiveGameRegistry, repository: GameRepositor
                 revived += 1
         except Exception:
             logger.exception("game %s: recovery failed; marking dropped", row.game_id)
-            await repository.upsert_game(
+            await repository.update_game(
                 row.game_id, status=DROPPED, error="recovery failed on restart")
     if rows:
         logger.info("recovery: %d open row(s) processed, %d revived", len(rows), revived)

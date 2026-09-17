@@ -51,9 +51,9 @@ def _no_real_replay_db():
     hook — without this, tests would write real rows. Force the archive layer
     unconfigured everywhere; a test that wants a database opts in explicitly.
 
-    Deliberately NOT via the monkeypatch fixture: an autouse dependency on it changes
-    fixture teardown order so the api_client lifespan would exit while a test's own
-    GameSession patch is still applied (isinstance TypeError at shutdown)."""
+    Save and restore directly so this guard does not change the teardown order of a
+    test's own patches. Session replacements must remain classes: the registry checks
+    their type during normal release as well as shutdown."""
     from server.config import server_settings
 
     old = server_settings.WW_POSTGRES_DSN

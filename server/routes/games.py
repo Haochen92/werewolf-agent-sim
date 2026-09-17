@@ -74,16 +74,22 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
             name=session.name,
             locked=session.locked,
         )
+    you = (session.seat_for_token(token) or None) if token else None
+    # A pending night turn identifies a private actor just as surely as its prompt.
+    # Match the input_request audience: one's own seat until game over, then everyone.
+    pending = sorted(seat for seat in session.pending_requests
+                     if session.game_over or seat == you)
     return GameStatus(
         game_id=session.game_id,
         state="finished" if session.game_over else "running",
         server_time=datetime.now(timezone.utc).isoformat(),
         human_players=session.human_players,
-        you=(session.seat_for_token(token) or None) if token else None,
+        you=you,
         awaiting_key=session.awaiting_key,
-        pending_input=bool(session.pending_requests),
-        pending_seats=sorted(session.pending_requests),
-        deadlines=dict(session.turn_deadlines),
+        pending_input=bool(pending),
+        pending_seats=pending,
+        deadlines={seat: session.turn_deadlines[seat] for seat in pending
+                   if seat in session.turn_deadlines},
         game_over=session.game_over,
         last_seq=session.log[-1].seq if session.log else 0,
         alive_role_counts=session.public_alive_counts,

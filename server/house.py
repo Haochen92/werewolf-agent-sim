@@ -9,8 +9,10 @@ table itself: every started game has a row that says whether a player key paid f
 nothing extra is kept.
 
 Costs are the reason. The credits behind house funding are finite, so the demo needs a
-ceiling it cannot pass, and the ceiling must be movable on the day rather than on the
-next deploy. A player who brings their own key is never counted against it.
+daily limit, and the limit must be movable on the day rather than on the next deploy.
+This is a best-effort limit: checking the count and starting the game are separate, so
+concurrent starts can all take the last slot. Storage must be configured to count starts;
+with storage off the count stays zero. A player bringing a key is never counted against it.
 """
 
 from __future__ import annotations
@@ -136,7 +138,10 @@ class HousePolicy:
         resolved from "" to the house default. Raises LookupError for a model not on the
         menu, ModelNeedsKey when the row is player-funded and no key came, and HouseClosed
         when the row is house-funded but the house is off or has spent today's games. A
-        player who brings a key may run any row, and is never counted."""
+        player who brings a key may run any row, and is never counted.
+
+        This checks availability without reserving a slot. Concurrent starts can exceed
+        the daily limit; a hard ceiling would need an atomic reservation at launch."""
         status = await self.status()
         model = model or status.default_model
         row = SUPPORTED_GAME_MODELS.get(model)

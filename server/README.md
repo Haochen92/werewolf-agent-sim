@@ -51,6 +51,14 @@ Decision records live in `frontend/docs/`: `server_client_transport.md` (the wir
 `server_design_notes.md` (server rulings, dated), `seat_continuity.md` (absence and recovery),
 `server_encountered_challenges.md` (what broke, in plain language).
 
+The repository separates `create_game` (the first row) from `update_game` (existing rows).
+Event and seat saves report success: failed saves leave the session's bookmarks alone,
+so the next chunk retries, with one final attempt before completion. Persistent database
+failure still leaves the game playable but can prevent a complete replay. Recovery rebuilds
+resolution inputs from recorded votes and night actions; cached vote chunks refill any
+uncollected ballots without sending duplicate events. Status snapshots apply the same
+seat privacy as turn prompts, including the pending-input flag and countdowns.
+
 ## Reading order for a newcomer
 
 1. `frontend/docs/server_client_transport.md`, the appendix first — the mental model in one

@@ -49,8 +49,8 @@ class ServerSettings(BaseSettings):
     ROOM_LIST_TTL_SECONDS: int = 7200
     """How long a waiting room stays visible in GET /rooms (default 2h). A browse
     filter, not expiry: the direct room URL keeps working past the TTL. Needed
-    because durability revives waiting rooms across restarts — without a cutoff,
-    abandoned rooms would accumulate in the public list forever."""
+    to keep abandoned in-memory rooms out of the public list. A restart closes rooms;
+    only games that have started are recovered."""
 
     SOLO_PARK_TTL_SECONDS: int = 3600
     """A solo game parked on its human's question with nobody connected is swept to
@@ -76,9 +76,10 @@ class ServerSettings(BaseSettings):
     table."""
 
     HOUSE_GAMES_PER_DAY: int = 10
-    """How many house-funded games the server will start per UTC day. Counted from the
-    games table (rows with byok=false, created today); a player bringing a key is never
-    counted. Overridden live by the settings table."""
+    """Best-effort limit on house-funded starts per UTC day. Counted from the games
+    table (rows with byok=false, created today); concurrent starts can exceed it, and
+    storage must be configured to count them. A player bringing a key is never counted.
+    Overridden live by the settings table."""
 
     ADMIN_TOKEN: str = ""
     """The secret the /admin endpoints require in the X-Admin-Token header. Empty

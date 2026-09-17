@@ -214,15 +214,15 @@ class GameStatus(BaseModel):
     client learns which player it is. None for spectators, waiting rooms, and the
     moment before seats are dealt."""
     pending_input: bool = False
-    """Some seat owes input right now: the same fact as ``pending_seats`` being non-empty,
-    kept as a flag for clients that only need the yes/no."""
+    """A seat this viewer may see owes input: exactly ``pending_seats`` being non-empty.
+    False for live spectators; it must not reveal that a private night turn exists."""
     pending_seats: list[str] = Field(default_factory=list)
-    """Which seats owe input right now — several at once when a parallel superstep
-    (night fan-out, votes) interrupts for more than one human."""
+    """Pending seats visible to this viewer: only their own seat during play, empty
+    for spectators. At game over all seats become visible, as with the event stream."""
     deadlines: dict[str, str] = Field(default_factory=dict)
-    """Per-seat AFK deadlines (ISO-8601 UTC): when each pending seat's turn will be
-    delegated to its agent — the client's countdown source. Empty in solo games
-    (no timer) and whenever nobody owes input."""
+    """AFK deadlines (ISO-8601 UTC) for visible pending seats only: when each turn is
+    delegated to its agent. Empty for live spectators, solo games (no timer), and
+    whenever the viewer has no pending seat."""
     game_over: bool = False
     """The engine has declared a winner; the observer backlog is being or has been streamed."""
     last_seq: int = 0

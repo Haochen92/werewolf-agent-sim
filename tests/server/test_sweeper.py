@@ -19,10 +19,10 @@ SETTINGS = ServerSettings(_env_file=None, SOLO_PARK_TTL_SECONDS=3600,
 
 class Repo:
     def __init__(self):
-        self.upserts = []
+        self.updates = []
 
-    async def upsert_game(self, game_id, **fields):
-        self.upserts.append((game_id, fields))
+    async def update_game(self, game_id, **fields):
+        self.updates.append((game_id, fields))
 
 
 async def _parked(quiet_session, *, seats, idle: timedelta):
@@ -77,7 +77,7 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
 
     assert await sweep_parked_games(games, SETTINGS) == [expired.game_id]
     assert expired.error.startswith("abandoned:") and expired.ended
-    assert repo.upserts == [(expired.game_id, {"status": "dropped", "error": expired.error})]
+    assert repo.updates == [(expired.game_id, {"status": "dropped", "error": expired.error})]
     assert fresh.error is None
     assert games.get(expired.game_id) is None  # ended and unwatched: the row answers now
 

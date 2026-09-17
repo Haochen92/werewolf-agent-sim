@@ -11,7 +11,7 @@ import pytest
 
 from server.game.lobby import MAX_HUMAN_SEATS
 from server.game.model_catalog import SUPPORTED_GAME_MODELS
-from tests.fixtures.server import FakeGraph
+from tests.fixtures.server import FakeGraph, HangingGraph
 
 GEMINI = "gemini-3.1-flash-lite"
 
@@ -134,12 +134,13 @@ def test_lobby_lifecycle_create_join_start(api_client, monkeypatch):
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
-    def fake_session(run, **kw):
-        launched.append(run)
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(run)
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), **kw)
 
-    monkeypatch.setattr(registry_module, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     game_id, host_key = _make_room(api_client)
     assert host_key  # the create response is the ONLY carrier of the host credential
@@ -276,6 +277,36 @@ def test_status_resolves_you_from_the_cookie(api_client, seated_session):
     assert api_client.get(f"/games/{session.game_id}").json()["you"] is None
 
 
+@pytest.mark.parametrize("phase", ["day_votes", "healer_target"])
+def test_status_only_exposes_the_viewers_own_pending_turn(api_client, quiet_session, phase):
+    from tests.factories.builders import human_turn_request
+
+    session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"],
+                            human_players=["player_3", "player_5", "player_6"])
+    session.pending_requests.update({
+        seat: human_turn_request(player_id=seat, phase=phase)
+        for seat in ("player_3", "player_5")})
+    session.clocks.deadlines = {seat: "2026-09-17T12:00:00+00:00"
+                               for seat in session.pending_requests}
+    api_client.app.state.resources.games._register(session)
+    url = f"/games/{session.game_id}"
+    for token, visible in (("", []), ("t1", ["player_3"]), ("t2", ["player_5"]), ("t3", [])):
+        api_client.cookies.clear()
+        if token:
+            api_client.cookies.set(f"seat_{session.game_id}", token)
+        status = api_client.get(url).json()
+        assert status["pending_seats"] == visible
+        assert status["pending_input"] is bool(visible)
+        assert set(status["deadlines"]) == set(visible)
+
+    session.game_over = True  # the same observer unlock as the event stream
+    api_client.cookies.clear()
+    status = api_client.get(url).json()
+    assert status["pending_seats"] == ["player_3", "player_5"]
+    assert status["pending_input"] is True
+    assert set(status["deadlines"]) == {"player_3", "player_5"}
+
+
 def test_rejoin_restores_a_lost_cookie_in_both_phases(api_client, seated_session):
     # Waiting room: the stashed body-copy token re-proves the seat.
     game_id, _ = _make_room(api_client)
@@ -306,12 +337,13 @@ def test_solo_door_mints_the_same_seat_identity(api_client, monkeypatch):
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
-    def fake_session(run, **kw):
-        launched.append((run, kw))
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append((run, kw))
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), **kw)
 
-    monkeypatch.setattr(registry_module, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     r = api_client.post("/games", json={"human": True})
     body = r.json()
@@ -335,12 +367,13 @@ def test_start_without_joiners_runs_an_llm_only_game(api_client, monkeypatch):
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     launched = []
 
-    def fake_session(run, **kw):
-        launched.append(run)
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, **kw):
+            launched.append(run)
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), **kw)
 
-    monkeypatch.setattr(registry_module, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     game_id, host_key = _make_room(api_client)
     assert api_client.post(f"/games/{game_id}/start?host_key={host_key}").status_code == 200
@@ -355,12 +388,13 @@ def test_lobby_carries_byok_to_the_session(api_client, monkeypatch):
     monkeypatch.setattr(rt, "seed_memory_from_config", lambda *a, **k: None)
     seen = {}
 
-    def fake_session(run, *, api_key="", model="", **kw):
-        seen.update(api_key=api_key, model=model)
-        kw.pop("graph", None)  # routes pass the durable graph (None in tests)
-        return rt.GameSession(run, graph=FakeGraph([]), **kw)
+    class FakeSession(rt.GameSession):
+        def __init__(self, run, *, api_key="", model="", **kw):
+            seen.update(api_key=api_key, model=model)
+            kw.pop("graph", None)  # routes pass the durable graph (None in tests)
+            super().__init__(run, graph=HangingGraph(), api_key=api_key, model=model, **kw)
 
-    monkeypatch.setattr(registry_module, "GameSession", fake_session)
+    monkeypatch.setattr(registry_module, "GameSession", FakeSession)
 
     game_id, host_key = _make_room(api_client, api_key="sk-room", model=GEMINI)
     api_client.post(f"/games/{game_id}/start?host_key={host_key}")
@@ -525,4 +559,3 @@ def test_a_seat_holder_may_fund_a_waiting_game_and_nobody_else(api_client, seate
     assert probed == ["sk-bad", "sk-good"]
     assert api_client.post(f"/games/{session.game_id}/key",
                            json={"api_key": ""}).status_code == 422  # an empty key is no key
-

@@ -23,6 +23,7 @@ from server.database_models.game import (
     RECOVERABLE_STATUSES,
     EventRow,
     GameRow,
+    GameStatus,
 )
 from server.db import Database
 from server.schemas import events as ev
@@ -80,40 +81,53 @@ class GameRepository:
         """
         self._database = database
 
-    async def upsert_game(self, game_id: str, **fields: Any) -> None:
-        """Insert a game or update only the supplied fields on its existing row.
+    async def create_game(self, game_id: str, *, status: GameStatus, **fields: Any) -> bool:
+        """Write a game's first row, including its required status. Rooms have no row;
+        the registry calls this when play starts. Existing rows are never overwritten.
 
-        The first write of a game must carry its ``status``: a row is born ``running``
-        at launch (rooms are memory-only and get no row), and there is no default to
-        fall back on. Later writes touch only the fields given.
-
-        Args:
-            game_id: Stable game identity and primary key.
-            **fields: ``GameRow`` columns to insert or update.
-
-        Returns:
-            Nothing. An unconfigured database is a no-op; write failures are
-            logged and suppressed so persistence cannot stop a live game.
+        Returns True after a successful write, or when storage is disabled (a successful
+        no-op). False means a database failure, logged here without stopping live play.
         """
         if not self._database.configured:
-            return
+            return True
         try:
-            stmt = insert(GameRow).values({"game_id": game_id, **fields})
-            stmt = stmt.on_conflict_do_update(
-                index_elements=["game_id"],
-                set_={**fields, "updated_at": func.now()},
-            )
+            stmt = insert(GameRow).values(game_id=game_id, status=status, **fields)
             async with self._database.session() as session:
                 await session.execute(stmt)
                 await session.commit()
+            return True
         except Exception:
-            logger.exception("game %s: game-row upsert failed (game unaffected)", game_id)
+            logger.exception("game %s: game-row creation failed (game unaffected)", game_id)
+            return False
+
+    async def update_game(self, game_id: str, **fields: Any) -> bool:
+        """Change only the supplied fields on an existing game. A partial update must
+        not attempt an INSERT: PostgreSQL checks required columns before a conflict.
+
+        Returns True after commit, or when storage is disabled. A missing row or failed
+        write returns False, so callers keep unsaved state for the next attempt.
+        """
+        if not self._database.configured:
+            return True
+        try:
+            stmt = update(GameRow).where(GameRow.game_id == game_id).values(
+                {**fields, "updated_at": func.now()})
+            async with self._database.session() as session:
+                result = await session.execute(stmt)
+                if result.rowcount != 1:
+                    logger.warning("game %s: cannot update a missing game row", game_id)
+                    return False
+                await session.commit()
+            return True
+        except Exception:
+            logger.exception("game %s: game-row update failed (game unaffected)", game_id)
+            return False
 
     async def record_events(
         self,
         game_id: str,
         events: Sequence[ev.DurableEvent],
-    ) -> None:
+    ) -> bool:
         """Append durable events to one game's ordered event log.
 
         Args:
@@ -121,11 +135,12 @@ class GameRepository:
             events: Typed events to serialize into ``EventRow`` payloads.
 
         Returns:
-            Nothing. Existing ``(game_id, seq)`` rows are left unchanged;
-            write failures are logged and suppressed.
+            True after commit, or when storage is disabled or the batch is empty.
+            False on a logged write failure: the caller must keep the batch unsaved.
+            Existing ``(game_id, seq)`` rows are left unchanged, so retrying is safe.
         """
         if not self._database.configured or not events:
-            return
+            return True
         try:
             stmt = insert(EventRow).values([
                 {
@@ -143,10 +158,12 @@ class GameRepository:
                     )
                 )
                 await session.commit()
+            return True
         except Exception:
             logger.exception(
                 "game %s: event persistence failed (game unaffected)", game_id
             )
+            return False
 
     async def complete_game(
         self,
@@ -172,7 +189,7 @@ class GameRepository:
         metadata = derive_completion_metadata(log)
         if metadata is None:
             logger.warning("game %s: no clean ending; marking dropped", game_id)
-            await self.upsert_game(
+            await self.update_game(
                 game_id,
                 status=DROPPED,
                 error="finished without a complete replayable event log",
@@ -187,7 +204,7 @@ class GameRepository:
             shortfall = event_log_shortfall(len(log), stored, last_seq)
             if shortfall is not None:
                 logger.warning("game %s: %s; marking dropped", game_id, shortfall)
-                await self.upsert_game(game_id, status=DROPPED, error=shortfall)
+                await self.update_game(game_id, status=DROPPED, error=shortfall)
                 return
             values = {
                 "status": COMPLETED,
@@ -196,14 +213,8 @@ class GameRepository:
                 "error": None,
                 **metadata,
             }
-            stmt = insert(GameRow).values(game_id=game_id, **values)
-            stmt = stmt.on_conflict_do_update(
-                index_elements=["game_id"],
-                set_={**values, "updated_at": func.now()},
-            )
-            async with self._database.session() as session:
-                await session.execute(stmt)
-                await session.commit()
+            if not await self.update_game(game_id, **values):
+                return
             logger.info(
                 "game %s: completed (%d events, winner=%s)",
                 game_id,

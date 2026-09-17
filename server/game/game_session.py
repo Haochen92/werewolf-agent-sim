@@ -291,10 +291,10 @@ class GameSession:
                     root.update_trace(output=error_output)
                     logger.error("game %s: task died: %s", self.game_id, detail)
                     if self._repository is not None:
-                        await self._repository.upsert_game(
+                        await self._repository.update_game(
                             self.game_id, status="dropped", error=detail)
                 finally:
-                    # No phase upsert here: cancellation must leave the durable row
+                    # No phase update here: cancellation must leave the durable row
                     # 'running' so the next boot's recovery picks the game up.
                     if self.error is None:
                         logger.info("game %s: finished (game_over=%s, %d events)",
@@ -331,6 +331,9 @@ class GameSession:
             # Resume with user input, once every interrupted seat has answered.
             graph_input = Command(resume=await self._collect_answers())
         if self.game_over and self._repository is not None:
+            # The final chunk may have failed to save, with no next chunk to retry it.
+            # One last attempt is bounded; completion still checks for any shortfall.
+            await self._persist_tail()
             # Existing EventRows become the replay: completion only finalizes metadata
             # and lifecycle on their parent GameRow, never copies the log.
             await self._repository.complete_game(
@@ -338,18 +341,19 @@ class GameSession:
 
     async def _persist_tail(self) -> None:
         """Push the log's unpersisted suffix + newly-learned human seats to the
-        game repository (both helpers no-op when Postgres is unconfigured and never
-        raise — durability failing must not cost the running game)."""
+        game repository. Only committed writes advance the bookmarks; a failed save
+        is retried with the next chunk. Storage disabled counts as a successful no-op,
+        and write failures never stop the game."""
         if self._repository is None:
             return
         if len(self.log) > self._saved_event_count:
-            await self._repository.record_events(
-                self.game_id, self.log[self._saved_event_count:])
-            self._saved_event_count = len(self.log)
+            if await self._repository.record_events(
+                    self.game_id, self.log[self._saved_event_count:]):
+                self._saved_event_count = len(self.log)
         if self.human_players != self._saved_humans:
-            await self._repository.upsert_game(
-                self.game_id, human_players=self.human_players)
-            self._saved_humans = list(self.human_players)
+            if await self._repository.update_game(
+                    self.game_id, human_players=self.human_players):
+                self._saved_humans = list(self.human_players)
 
     def _on_chunk(self, chunk) -> bool:
         """Handle one chunk from the engine's stream. Returns True when the chunk is an
@@ -365,12 +369,13 @@ class GameSession:
 
         Updates the progress bar.
 
-        A chunk marked cached is skipped: the engine already produced it once and this
-        session handled it then.
+        A cached chunk emits nothing and adds no pacing tick. Its ballots still refill
+        the translator's buffers: a restart may have lost them before collection.
         """
         chunk = to_jsonable_python(chunk)  # engine objects -> the JSON shape the handlers read
         data = chunk.get("data") or {}
         if is_cached(chunk):
+            self.translator.restore_cached_inputs(chunk)
             return False
 
         interrupted = "__interrupt__" in data and not (chunk.get("ns") or ())

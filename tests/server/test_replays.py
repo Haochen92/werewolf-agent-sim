@@ -132,6 +132,29 @@ def test_event_union_reaches_openapi():
     assert len(items["oneOf"]) == n_members
 
 
+# ---- write acknowledgements ---------------------------------------------------------------
+
+
+async def test_disabled_storage_acknowledges_noop_writes():
+    repository = GameRepository(Database(""))
+    assert await repository.create_game("g", status=RUNNING)
+    assert await repository.update_game("g", human_players=["player_3"])
+    assert await repository.record_events("g", _log())
+
+
+async def test_storage_failure_does_not_acknowledge_writes(monkeypatch):
+    database = Database("postgresql+psycopg://unused")
+
+    def unavailable():
+        raise ConnectionError("test: database unavailable")
+
+    monkeypatch.setattr(database, "session", unavailable)
+    repository = GameRepository(database)
+    assert not await repository.create_game("g", status=RUNNING)
+    assert not await repository.update_game("g", human_players=["player_3"])
+    assert not await repository.record_events("g", _log())
+
+
 # ---- optional integration (explicit opt-in var; NEVER the live DSN) -------------------------
 
 
@@ -151,8 +174,17 @@ async def test_postgres_round_trip():
     async with database.engine.begin() as conn:  # test-only; prod uses alembic
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    await repository.upsert_game("itest-game", status=RUNNING)
-    await repository.record_events("itest-game", _log())
+    assert await repository.create_game(
+        "itest-game", status=RUNNING, model="test-model", seats=[{"token": "test-seat"}])
+    # A partial write must update the existing row without needing its required status.
+    assert await repository.update_game("itest-game", human_players=["player_3"])
+    row = await repository.load_game("itest-game")
+    assert row.status == RUNNING and row.human_players == ["player_3"]
+    assert row.model == "test-model" and row.seats == [{"token": "test-seat"}]
+    assert not await repository.update_game("missing-game", human_players=["player_3"])
+    assert await repository.load_game("missing-game") is None
+    assert await repository.record_events("itest-game", _log())
+    assert await repository.record_events("itest-game", _log())  # retry cannot duplicate rows
     await repository.complete_game("itest-game", _log(), n_humans=2)
     await repository.complete_game("itest-game", _log(), n_humans=2)  # idempotent
 
@@ -170,7 +202,7 @@ async def test_postgres_round_trip():
     assert len(event_rows) == 3
 
     # A batch was lost during play: completion marks the game dropped, not completed.
-    await repository.upsert_game("itest-short", status=RUNNING)
+    await repository.create_game("itest-short", status=RUNNING)
     await repository.record_events("itest-short", _log()[:2])
     await repository.complete_game("itest-short", _log(), n_humans=0)
     async with database.session() as sess:
@@ -182,7 +214,7 @@ async def test_postgres_round_trip():
 
     # A row completed before the write-side check, with a hole: the read side refuses.
     full = _log()
-    await repository.upsert_game(
+    await repository.create_game(
         "itest-holed", status=COMPLETED, finished_at=datetime.now(timezone.utc),
         winner="wolves", days=3, n_events=2, n_humans=0, cast_role_counts={"wolf": 1})
     await repository.record_events("itest-holed", [full[0], full[2]])

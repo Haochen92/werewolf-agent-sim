@@ -12,10 +12,10 @@ from tests.fixtures.server import FakeGraph
 
 class Repo:
     def __init__(self):
-        self.upserts = []
+        self.updates = []
 
-    async def upsert_game(self, game_id, **fields):
-        self.upserts.append((game_id, fields))
+    async def update_game(self, game_id, **fields):
+        self.updates.append((game_id, fields))
 
 
 def _registry():

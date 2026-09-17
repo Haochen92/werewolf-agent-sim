@@ -20,8 +20,10 @@ from server.housekeeping import recovery
 from server.database_models.game import DROPPED, RUNNING, WAITING, GameRow
 from server.storage.game_repository import derive_completion_metadata, event_log_shortfall
 from server.game.translate import Translator
+from server.schemas import events as ev
 from tests.factories.builders import human_turn_request
 from tests.fixtures.server import FakeGraph
+from tests.fixtures.translator_golden import _updates
 
 # ---- translator hydration ------------------------------------------------------------------
 
@@ -42,8 +44,67 @@ def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_chunks):
     assert revived._seen_day_entries == lived._seen_day_entries
     assert revived._seen_wolf_msgs == lived._seen_wolf_msgs
     assert revived._strategies == lived._strategies
-    # Provisional buffers deliberately stay empty: the resume re-run repopulates them.
+    assert revived._targets == lived._targets
+    assert revived._last_day_ballots == lived._last_day_ballots
+    # Uncollected ballots come back from the resumed step, including cached chunks.
     assert revived._day_ballots == {} and revived._wolf_votes == {}
+
+
+@pytest.mark.parametrize("resolution", ["DAY_RESOLUTION", "NIGHT_RESOLUTION"])
+def test_restart_before_every_resolution_matches_uninterrupted_play(fixture_chunks, resolution):
+    """The producing phase is committed; only its consumer runs after this restart."""
+    lived = Translator()
+    log = []
+    checked = 0
+    for chunk in fixture_chunks:
+        restored = None
+        if resolution in chunk.get("data", {}):
+            restored = Translator()
+            restored.hydrate(log)
+        expected = lived.translate(chunk)
+        if restored is not None:
+            assert restored.translate(chunk) == expected
+            checked += 1
+        log.extend(expected)
+    assert checked == 5  # Includes empty nights, saves, lynches and multi-day resets.
+
+
+@pytest.mark.parametrize("wolf", [False, True], ids=["day-vote", "wolf-vote"])
+async def test_recovered_cached_votes_wait_for_collection_and_include_every_voter(
+        quiet_session, fixture_chunks, wolf):
+    scope = "WOLF_NIGHT_PHASE" if wolf else "DAY_PHASE"
+    node = "WOLF_NIGHT_VOTE" if wolf else "vote"
+    human_node = "WOLF_NIGHT_VOTE_HUMAN" if wolf else "vote_human"
+    collector = "COLLECT_WOLF_VOTES" if wolf else "COLLECT_VOTES"
+    event_type = "wolf_vote" if wolf else "vote_cast"
+
+    def ballot(player, target):
+        return ({"wolf_channel": [{"wolf": player, "vote": target}]}
+                if wolf else {"day_votes": [{"voter": player, "votee": target}]})
+
+    before = quiet_session(FakeGraph([]))
+    before._on_chunk(fixture_chunks[0])
+    before._on_chunk(_updates("NIGHT_START" if wolf else "START_VOTING", {}))
+    ai_vote = ballot("player_4", "player_6")
+    before._on_chunk(_updates(node, ai_vote, scope))
+
+    restored = quiet_session(FakeGraph([]))
+    restored.reload_history(before.log, [])
+    original = list(restored.log)
+    # A cached AI sibling has no new event or pacing tick; it still has a ballot.
+    restored._on_chunk(_updates(node, ai_vote, scope, cached=True))
+    restored._on_chunk(_updates(node, ai_vote, scope, cached=True))  # duplicate is harmless
+    assert restored.log == original
+    restored._on_chunk(_updates(human_node, ballot("player_9", "player_6"), scope))
+    assert not any(e.type == event_type for e in restored.log)
+    restored._on_chunk(_updates(collector, {"wolves_kill_target": "player_6"}
+                               if wolf else {}, scope))
+    votes = [e for e in restored.log if e.type == event_type]
+    assert len(votes) == 2
+    assert {e.wolf if wolf else e.voter for e in votes} == {"player_4", "player_9"}
+    assert {e.votee for e in votes} == {"player_6"}
+    await before.suspend()
+    await restored.suspend()
 
 
 # ---- the write path (runtime -> durable) -----------------------------------------------------
@@ -59,7 +120,7 @@ async def test_run_persists_events_and_finalizes_one_game_row(quiet_session, fix
     assert [e.seq for e in repository.events] == [e.seq for e in session.log]
     assert repository.completions == [(session.game_id, len(session.log), 0)]
     # The fixture game is all-LLM: human_players never changes, so no seat upsert.
-    assert all("human_players" not in fields for fields in repository.upserts)
+    assert all("human_players" not in fields for fields in repository.updates)
 
 
 async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session):
@@ -73,20 +134,20 @@ async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session)
     session = quiet_session(ExplodingGraph(), repository=repository)
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
-    assert repository.upserts[-1]["status"] == DROPPED
-    assert "provider died" in repository.upserts[-1]["error"]
+    assert repository.updates[-1]["status"] == DROPPED
+    assert "provider died" in repository.updates[-1]["error"]
     assert repository.completions == []
 
     # Shutdown cancellation must leave the durable status untouched ('running'), so
     # the next boot recovers the game instead of burying it.
     from tests.fixtures.server import HangingGraph
 
-    repository.upserts.clear()
+    repository.updates.clear()
     parked = quiet_session(HangingGraph(), repository=repository)
     parked.start()
     await asyncio.sleep(0.05)
     await parked.suspend()
-    assert all("status" not in fields for fields in repository.upserts)
+    assert all("status" not in fields for fields in repository.updates)
 
 
 # ---- boot recovery ---------------------------------------------------------------------------
@@ -115,15 +176,17 @@ class RecordingGameRepository:
         self.rows = list(rows)
         self.events = []
         self.completions = []
-        self.upserts = []
-        self.upsert_calls = []
+        self.updates = []
+        self.update_calls = []
 
     async def record_events(self, game_id, events):
         self.events.extend(events)
+        return True
 
-    async def upsert_game(self, game_id, **fields):
-        self.upserts.append(fields)
-        self.upsert_calls.append((game_id, fields))
+    async def update_game(self, game_id, **fields):
+        self.updates.append(fields)
+        self.update_calls.append((game_id, fields))
+        return True
 
     async def complete_game(self, game_id, log, n_humans):
         self.completions.append((game_id, len(log), n_humans))
@@ -133,6 +196,58 @@ class RecordingGameRepository:
 
     async def load_events(self, game_id):
         return []
+
+
+async def test_failed_saves_retry_the_whole_unsaved_tail_and_human_assignment(quiet_session):
+    class FlakyRepository(RecordingGameRepository):
+        fail = True
+
+        async def record_events(self, game_id, events):
+            return False if self.fail else await super().record_events(game_id, events)
+
+        async def update_game(self, game_id, **fields):
+            return False if self.fail else await super().update_game(game_id, **fields)
+
+    repository = FlakyRepository()
+    session = quiet_session(FakeGraph([]), repository=repository, human_players=["player_3"])
+    session.log = [ev.PhaseChange(seq=1, day=1, phase="day")]
+    await session._persist_tail()
+    assert session._saved_event_count == 0 and session._saved_humans == []
+    repository.fail = False
+    session.log.append(ev.PhaseChange(seq=2, day=1, phase="voting"))
+    await session._persist_tail()
+    await session._persist_tail()  # a successful save is not sent again
+    assert repository.events == session.log
+    assert repository.updates == [{"human_players": ["player_3"]}]
+    assert session._saved_event_count == 2 and session._saved_humans == ["player_3"]
+
+
+@pytest.mark.parametrize("persistent_failure", [False, True])
+async def test_final_chunk_gets_one_bounded_retry_before_completion(
+        quiet_session, fixture_chunks, persistent_failure):
+    class FinalSaveFails(RecordingGameRepository):
+        attempts = 0
+
+        async def record_events(self, game_id, events):
+            if any(e.type == "game_over" for e in events):
+                self.attempts += 1
+                if self.attempts == 1 or persistent_failure:
+                    return False
+            return await super().record_events(game_id, events)
+
+        async def complete_game(self, game_id, log, n_humans):
+            assert self.attempts == 2
+            assert (self.events == log) is not persistent_failure
+            await super().complete_game(game_id, log, n_humans)
+
+    repository = FinalSaveFails()
+    # Stop at game over so there is truly no subsequent chunk to retry the failed save.
+    end = next(i for i, chunk in enumerate(fixture_chunks) if "END_GAME" in chunk["data"])
+    session = quiet_session(FakeGraph(fixture_chunks[:end + 1]), repository=repository)
+    session.start()
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None and session.game_over
+    assert len(repository.completions) == 1
 
 
 def _row(**over):
@@ -157,7 +272,41 @@ async def test_a_waiting_row_is_never_rebuilt(monkeypatch):
     row = _row(status=WAITING, host_key="hk-9", room_name="wolves den")
     games, repository = await _recover(monkeypatch, [row], FakeDurableGraph(None))
     assert games.get("g-1") is None and len(games) == 0
-    assert repository.upsert_calls == []
+    assert repository.update_calls == []
+
+
+@pytest.mark.parametrize("partial_park", [False, True], ids=["checkpoint-read", "second-prompt"])
+async def test_failed_recovery_removes_the_session_and_cancels_partial_clocks(
+        monkeypatch, partial_park):
+    from server.game.seat_clocks import SeatClocks
+
+    armed = []
+    original_arm = SeatClocks.arm
+
+    def arm(self, request):
+        original_arm(self, request)
+        armed.extend(self._tasks.values())
+
+    monkeypatch.setattr(SeatClocks, "arm", arm)
+    request = human_turn_request(player_id="player_3")
+    state = SimpleNamespace(next=("DAY_PHASE",), tasks=[SimpleNamespace(interrupts=[
+        SimpleNamespace(value=request.model_dump(), id="good"),
+        SimpleNamespace(value={"not": "a prompt"}, id="bad"),
+    ])])
+
+    class BrokenGraph(FakeDurableGraph):
+        async def aget_state(self, config):
+            if not partial_park:
+                raise RuntimeError("checkpoint read failed")
+            return self._state
+
+    row = _row(seats=[{"token": "t1"}, {"token": "t2"}])
+    games, repository = await _recover(monkeypatch, [row], BrokenGraph(state))
+    await asyncio.sleep(0)  # settle cancellation of any clock armed before the failure
+    assert games.get(row.game_id) is None
+    assert repository.updates[-1] == {"status": DROPPED, "error": "recovery failed on restart"}
+    assert bool(armed) is partial_park
+    assert all(task.cancelled() for task in armed)
 
 
 async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatch):
@@ -203,7 +352,7 @@ async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_
     session = games.get("g-1")
     assert session.awaiting_key and session._task is None and not session.pending_requests
     assert session.parked_since == stamp  # the sweeper's clock runs from the last write
-    assert repository.upsert_calls == []
+    assert repository.update_calls == []
 
     # A bad key is refused by the provider probe and the game keeps waiting.
     with pytest.raises(ValueError, match="rejected"):

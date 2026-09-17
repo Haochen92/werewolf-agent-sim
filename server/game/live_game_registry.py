@@ -175,7 +175,7 @@ class LiveGameRegistry:
         """The step both doors share once a game is about to run: put the session in the
         table, write its row (the first write for this game), and start its task."""
         self._register(session)
-        await self._repository.upsert_game(session.game_id, status="running", **row_fields)
+        await self._repository.create_game(session.game_id, status=RUNNING, **row_fields)
         session.start()
         return session
 
@@ -191,7 +191,7 @@ class LiveGameRegistry:
             return
         if isinstance(entry, GameSession):
             await entry.drop(reason)
-        await self._repository.upsert_game(game_id, status=DROPPED, error=reason)
+        await self._repository.update_game(game_id, status=DROPPED, error=reason)
 
     # -- after a restart: rebuild each running row, resume it, or wait for its key ---------
 
@@ -225,7 +225,14 @@ class LiveGameRegistry:
             session.parked_since = row.updated_at or datetime.now(timezone.utc)
             logger.info("game %s: revived awaiting its player's key", row.game_id)
             return session
-        return await self._resume_from_checkpoint(session, parked_since=row.updated_at)
+        try:
+            return await self._resume_from_checkpoint(session, parked_since=row.updated_at)
+        except Exception:
+            # Recovery marks the row dropped. First remove the half-built live session,
+            # or it would hide that row behind a running game with no task. drop also
+            # cancels any clocks armed before a later question failed validation.
+            await session.drop("recovery failed on restart")
+            raise
 
     async def _resume_from_checkpoint(
             self, session: GameSession, *, parked_since: datetime | None) -> GameSession | None:
