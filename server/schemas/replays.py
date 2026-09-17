@@ -23,6 +23,9 @@ class ReplayBase(BaseModel):
     model: str = ""
     """The model id the game was played on, as the catalogue names it. Empty for games
     recorded before the column existed."""
+    memory: bool = False
+    """Whether the AI seats consulted past-game lessons. False for games recorded
+    before the column existed (they all ran memory-off)."""
 
 
 class ReplayGame(ReplayBase):

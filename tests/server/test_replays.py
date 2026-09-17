@@ -104,7 +104,8 @@ def test_replay_dto_drops_private_game_row_fields():
         "n_events": 3,
         "n_humans": 1,
         "cast_role_counts": {"wolf": 1},
-        "model": "gemini-2.5-pro",  # the one operational column a replay does show
+        "model": "gemini-2.5-pro",  # the two operational columns a replay does show
+        "memory": False,
     }
 
 

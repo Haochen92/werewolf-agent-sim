@@ -56,6 +56,9 @@ class GameRow(SQLModel, table=True):
     host_key: str = ""
     model: str = ""
     byok: bool = False
+    memory: bool = False
+    """The AI-memory switch the game was started with. Read back by recovery so a
+    restart rebuilds the same game, and shown on the replay."""
     seats: list[dict] = Field(
         default_factory=list,
         sa_column=Column(
