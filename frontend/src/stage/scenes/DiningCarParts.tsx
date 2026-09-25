@@ -9,7 +9,7 @@
 import { motion } from 'motion/react';
 import type { Character, DayState } from '@/assets/manifest';
 import type { GameView, SpeechSlot, PassSlot } from '@/game/types';
-import { Layer, Paint } from '../Stage';
+import { Layer, Paint, PaintPicture } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { Apron, Trap } from '../instruments/Floor';
 import { SpeechBox } from '../instruments/SpeechBox';
@@ -53,7 +53,7 @@ export function CarPaint({
           animate={{ opacity: 0 }}
           transition={{ duration: 1.2 * k, delay: fadeDelay * k, ease: 'easeInOut' }}
         >
-          <Paint of={diningCar} opts={{ phase: from, hud, wallClock, side }} />
+          <PaintPicture of={diningCar} opts={{ phase: from, hud, wallClock, side }} />
         </motion.div>
       ) : null}
     </>

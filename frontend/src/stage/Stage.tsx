@@ -235,3 +235,41 @@ export function Paint<O extends { id: string }>({
     />
   );
 }
+
+/**
+ * The same paint as a picture, for a backdrop that fades out. A live filtered SVG fading on a
+ * GPU drops a black frame as Chrome gives it its own layer (seen on the vote's dusk-to-night,
+ * 2026-09-25; pinning the layer did not help), while an image made from the same SVG is
+ * rasterised once and fades as a bitmap. The generator's markup is the SVG followed by the dim
+ * overlay; the overlay stays live, the SVG becomes the image.
+ */
+export function PaintPicture<O extends { id: string }>({
+  of,
+  opts,
+}: {
+  of: (o: O) => string;
+  opts: Omit<O, 'id'>;
+}) {
+  const key = JSON.stringify(opts);
+  const { src, rest } = useMemo(() => {
+    // Ids inside an SVG image are its own document's, so a fixed one cannot collide.
+    const html = of({ ...JSON.parse(key), id: 'picture' } as O);
+    const end = html.indexOf('</svg>') + '</svg>'.length;
+    return {
+      src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(html.slice(0, end)),
+      rest: html.slice(end),
+    };
+  }, [of, key]);
+  return (
+    <div className="stage-paint">
+      {/* eslint-disable-next-line @next/next/no-img-element -- a data URL, never optimised */}
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+      />
+      <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: rest }} />
+    </div>
+  );
+}

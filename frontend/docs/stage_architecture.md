@@ -154,6 +154,15 @@ The stage does not use Mantine components; Mantine stays for the rooms, the land
   multiplies them: normal ×1, fast ×0.5, skip → `MotionConfig transition={{ duration: 0 }}`.
 - "Nothing moves to say chosen": selection is opacity/brightness, never transform.
 
+**GPU rules (ruled 2026-09-25, from an A/B on the owner's Chrome; headless never shows these):**
+- The world and the camera wrapper stay pinned to their own compositor layers
+  (`will-change: transform` in `Stage.module.css`). Without it the count's push-in drops frames.
+- A backdrop that fades out is a **picture**, never a live SVG: `PaintPicture` turns the
+  generator's SVG into an image and fades the bitmap. A live filtered SVG fading on a GPU drops
+  a whole black frame as Chrome gives it its own layer, and pinning that layer did not help.
+- A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
+  the trap once the table has gone in; the load is its own layer while it moves.
+
 ## 7. The workbench
 
 `app/workbench/[scene]/page.tsx` (one route). It reads the URL, folds the bundled fixture

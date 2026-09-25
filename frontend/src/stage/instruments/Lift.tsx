@@ -11,13 +11,19 @@
  * the card rides it bare, behind the stand's box. At rest the lift is simply up; a scene that
  * has sent it down leaves it out. Timings from the benches: the table up 1.4 s after 0.55 s,
  * down 1.5 s after 0.35 s (rev 64); the card up 1.3 s after 0.3 s (rev 65).
+ *
+ * A load with things standing on it (the table, with the jar and the plates) can also fade by
+ * how far down it is, so its props never hang over the hole once the table under them has
+ * gone (`fade`, lift-fade.ts). While it moves the load is its own compositor layer, so the
+ * browser slides the picture it already has instead of redrawing the table every frame.
  */
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useTransform } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useMotionScale } from '../motion';
 import { BOARD, BOARD2, K2 } from '../paint/materials';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
 import { trapGeometry } from './Floor';
+import { loadOpacity } from './lift-fade';
 
 export type LiftMove = 'rise' | 'sink';
 
@@ -32,6 +38,11 @@ export interface LiftProps {
   ease?: [number, number, number, number];
   /** Draw the platform under the load. */
   slab?: boolean;
+  /**
+   * Fade the load as it goes under, between two of its lines at rest, in world units: the one
+   * whose reaching the lip starts the fade, and the higher one whose reaching it ends the fade.
+   */
+  fade?: readonly [number, number];
   children?: ReactNode;
 }
 
@@ -86,6 +97,7 @@ export function Lift({
   duration,
   ease,
   slab = false,
+  fade,
   children,
 }: LiftProps) {
   const k = useMotionScale();
@@ -98,6 +110,10 @@ export function Lift({
     duration: (duration ?? tm?.duration ?? 0) * k,
     ease: ease ?? (tm ? [...tm.ease] : undefined),
   };
+  // the load's offset below its resting place, and the fade read off it
+  const y = useMotionValue(move === 'rise' ? travel : 0);
+  const [f0, f1] = fade ?? [0, 0];
+  const opacity = useTransform(y, (o) => loadOpacity(o, clipY, [f0, f1]));
   // the cut: a box from well above the frame down to the platform's foot; the world inside it
   // is put back at its own coordinates
   const above = STAGE_H;
@@ -120,6 +136,9 @@ export function Lift({
           top: above,
           width: STAGE_W,
           height: STAGE_H,
+          willChange: move ? 'transform' : undefined,
+          y,
+          ...(fade && { opacity }),
         }}
         initial={move === 'rise' ? { y: travel } : move === 'sink' ? { y: 0 } : false}
         animate={{ y: move === 'sink' ? travel : 0 }}

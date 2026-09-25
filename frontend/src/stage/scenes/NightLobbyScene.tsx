@@ -11,9 +11,11 @@
  * same room with a lamp lit in the wing on every seat that acts tonight; that is the
  * observer's knowledge, drawn from the roles it holds.
  *
- * Played forward, the old hour fades to night behind the shutter, the shutter gathers up
- * (only after a day with no vote: after a vote or a lynch it gathered already), and the chips
- * come down one after another.
+ * Played forward, the chips come down one after another. After a day with no vote the window
+ * goes from day to night first (the shutter stayed up all day, so it stays up). After a vote
+ * or a lynch there is nothing to change: both of those end on this very picture, night in the
+ * window and the shutter up, so the hub starts there rather than jumping back to dusk to fade
+ * again.
  */
 import type { GameView } from '@/game/types';
 import { Layer } from '../Stage';
@@ -102,7 +104,7 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
       <Layer name="paint">
         <CarPaint
           phase="night"
-          from={animate ? (voted ? 'dusk' : 'day') : null}
+          from={animate && !voted ? 'day' : null}
           hud={hud}
           wallClock={false}
           fadeDelay={0.1}
@@ -117,8 +119,8 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
             phase="night"
           />
         ) : null}
-        {/* after a day with no vote the shutter never came down: the hub gathers it up itself */}
-        <Shutter g={g} state="open" animate={animate && !voted} delay={0.2} />
+        {/* up: the day never brought it down, and a vote's or a lynch's night gathered it already */}
+        <Shutter g={g} state="open" />
       </Layer>
       <CarFloor g={g} />
 

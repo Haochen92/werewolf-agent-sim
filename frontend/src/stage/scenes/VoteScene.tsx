@@ -164,6 +164,9 @@ function VoteBeat({
   const winner = resolved && vote ? litPlates(vote) : null;
   const tableShown = !(id === 'vote.table-down' && !animate);
   const travel = v.holeBot - J.top + 0.03 * STAGE_H;
+  // going down, the table fades from when its cloth's hem meets the lip to when the back of
+  // its top does, so nothing on it is left standing over the hole once the table has gone in
+  const sinkFade = [v.topY + v.drop, v.topY - v.depth] as const;
 
   // the shot: wide while the ballots go in, pushed in for the count, back out if night follows
   const shot = countShot(v);
@@ -280,6 +283,7 @@ function VoteBeat({
             g={g}
             travel={travel}
             slab
+            fade={id === 'vote.table-down' ? sinkFade : undefined}
             move={
               animate && id === 'vote.opens'
                 ? 'rise'

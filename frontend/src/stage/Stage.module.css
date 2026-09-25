@@ -32,6 +32,9 @@
   height: 900px;
   transform: scale(var(--stage-scale));
   transform-origin: 0 0;
+  /* Keep the scaled stage on a stable compositor layer while descendants move and
+     crossfade. All scene lighting still blends inside this shared world. */
+  will-change: transform;
   /* the HUD's type and chip sizes, the benches' container units (1cqw = 16 units) */
   --said: 22.4px;
   --note: 18.4px;
@@ -47,6 +50,9 @@
   position: absolute;
   inset: 0;
   transform-origin: 0 0;
+  /* The wide shot resolves to transform:none. Retain its compositing/stacking
+     boundary there too, rather than rebuilding it at either end of a zoom. */
+  will-change: transform;
   pointer-events: none;
 }
 
