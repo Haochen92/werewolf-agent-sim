@@ -32,19 +32,42 @@
   background: var(--ink-700);
 }
 
-.cardTop {
+.chips {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
   flex-wrap: wrap;
+  margin-bottom: var(--space-2);
 }
 
-.days {
+.meta {
   font-family: var(--font-display), var(--mantine-font-family);
   font-size: 0.72rem;
   color: var(--text-dim);
   letter-spacing: 0.04em;
+}
+
+/* who won, in the winning side's colour */
+.winnerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: var(--hairline) solid currentColor;
+  border-radius: var(--radius);
+  padding: 1px var(--space-2);
+  font-family: var(--font-display), var(--mantine-font-family);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.villagers {
+  color: var(--faction-villagers);
+}
+.wolves {
+  color: var(--faction-wolves);
+}
+.serialKiller {
+  color: var(--faction-serial-killer);
 }
 
 .humans {
@@ -57,17 +80,18 @@
   letter-spacing: 0.06em;
 }
 
-.cast {
-  color: var(--text-faint);
-  font-size: 0.78rem;
-  line-height: 1.5;
-}
-
 .foot {
-  margin-top: var(--space-3);
+  margin-top: var(--space-4);
   display: flex;
   justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
   color: var(--text-faint);
   font-size: 0.7rem;
   font-family: var(--mantine-font-family-monospace);
+}
+
+/* The model id is the one field that differs card to card, so it carries the row. */
+.model {
+  color: var(--text-dim);
 }

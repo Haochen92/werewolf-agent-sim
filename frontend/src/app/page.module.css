@@ -79,6 +79,21 @@
   margin: 0;
 }
 
+/* The purse, on the door. Dim by default: "bring a key" is a condition, not a boast —
+   only the free case earns the amber. */
+.doorNote {
+  margin: var(--space-3) 0 0;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: var(--text-faint);
+  min-height: 1.4em;
+}
+
+.doorNoteFree {
+  color: var(--amber);
+}
+
 /* Doors with no backend behind them yet are shown as inert, not hidden: pretending the
    app has fewer doors than it does would be its own kind of lie. */
 .doorDisabled {
@@ -122,6 +137,18 @@
   border-top: var(--hairline) solid var(--ink-600);
   color: var(--text-faint);
   font-size: 0.78rem;
+}
+
+.footerLink {
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--amber-dim);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.footerLink:hover {
+  color: var(--amber);
 }
 
 .skeletonCard {

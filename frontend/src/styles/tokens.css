@@ -30,7 +30,7 @@
   /* --- ink on ink: text ------------------------------------------------- */
   --text: #e9dfd4; /* body — warm off-white, never pure #fff */
   --text-dim: #a4948a; /* secondary, GM narration */
-  --text-faint: #6d605a; /* metadata, timestamps, disabled */
+  --text-faint: #8a7d75; /* metadata, timestamps, disabled — 5.1:1 on ink-800, AA */
 
   /* --- the one accent: amber, as pooled lamplight ----------------------- */
   --amber: #e0a33f;

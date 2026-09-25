@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
+import { HouseDoorNote } from './_components/HouseDoorNote';
 import classes from './page.module.css';
 
 /**
@@ -9,7 +10,9 @@ import classes from './page.module.css';
  * replays sit right below as a rail that deep-links straight into the theater. No
  * screenshots or marketing sections: the replay rail IS the demo.
  *
- * All three doors are live as of the P2/P3 build.
+ * All three doors are live as of the P2/P3 build. The two playing doors carry the
+ * house's purse (HouseDoorNote): since the server gained a daily funding cap, whether a
+ * visitor needs their own API key is state, and the door is the honest place to say it.
  */
 export default function HomePage() {
   return (
@@ -38,12 +41,14 @@ export default function HomePage() {
           <p className={classes.doorBody}>
             Take a seat against eight agents. Pick a role or let the deal decide.
           </p>
+          <HouseDoorNote />
         </Link>
         <Link href="/rooms" className={classes.door}>
           <h2 className={classes.doorTitle}>Rooms</h2>
           <p className={classes.doorBody}>
             Play with other people. Open a table and share the link.
           </p>
+          <HouseDoorNote />
         </Link>
       </div>
 
@@ -59,7 +64,15 @@ export default function HomePage() {
 
       <footer className={classes.footer}>
         A research project on whether LLM agents can accumulate useful memory across games.
-        The replay theater is the instrument that made the behaviour legible.
+        The replay theater is the instrument that made the behaviour legible.{' '}
+        <a
+          className={classes.footerLink}
+          href="https://github.com/Haochen92/werewolf-agent-sim"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Source on GitHub →
+        </a>
       </footer>
     </main>
   );
