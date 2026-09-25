@@ -201,6 +201,22 @@ thin strip under the roster strip (mobile) / an inspector block (desktop): night
 village stirs… m of n"; day_vote — "votes are in: m of n". Monotonic-max applied in the
 store; the strip never moves backwards.
 
+**D25 · Notes → line: the draft helper (server built 2026-09-17; no UI yet — this is
+the spec for it).** The free-text dock (D17) grows a second way in: rough notes ("4 dodging,
+why abstain, agree with 8") that the seat's own agent phrases into one line in the player's
+voice. `POST /games/{gameId}/draft` `{notes}` (1–500 chars) → `{draft, drafts_left,
+deadline}`. Nothing enters the game: the draft lands in the message textarea, the player
+edits it or not, and the existing "Speak" path sends it via `/turns`. Render as: a notes
+field + a **"phrase it"** button labelled with `drafts_left` (server cap: **3 per turn**,
+reset each new question), disabled at 0; "redraft" = the same button again with the same or
+edited notes. Only for `discuss` and `wolf_discuss` — never show it on target picks. The
+wait for each draft is **credited back** to the seat's clock, so on return replace the ring's
+deadline (D18) with the response `deadline` (`null` in solo = no ring, as before). Errors:
+**409** = the turn is gone or no drafts left (detail text renders inline; re-sync via status);
+**503** "could not draft the line; type it instead" = model failure, keep the notes in the
+field. The player's role never reaches the prompt; the server builds it from the same
+`input_request` view the seat already has.
+
 **D19 · Night, by viewer.** On `phase_change: night` the page shifts blue-black (token
 ruling) and the transcript starts a night section:
 
@@ -299,7 +315,8 @@ timing = a later slice). Spectator link is offered at the lobby (D6) and on room
 | — | `phase_progress` (ephemeral) | pacing strips (D18) | absent by construction |
 
 `action_kind` coverage: all 8 in D17 (two shapes). `GameStatus.state` coverage: waiting =
-D6/D7 · running = §4–§7 · finished = D22. Orthogonal `error` = D23.
+D6/D7 · running = §4–§7 · finished = D22. Orthogonal `error` = D23. Non-event endpoints the
+dock calls: `POST /turns` (D17) · `POST /draft` (D25, UI not built).
 
 ## 9. Component-inventory delta (extends ux_baseline §5 once ruled)
 

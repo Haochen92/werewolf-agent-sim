@@ -134,6 +134,17 @@ class SeatClocks:
         except Exception:  # a failed default must be loud, never a vanished task error
             logger.exception("game %s: AFK delegation for %s failed", self._game_id, seat)
 
+    def extend(self, seat: str, seconds: float) -> None:
+        """Give a seat back time it spent waiting on the server, such as the drafting of
+        its line: the end of its 120 seconds moves later by exactly that long, never more,
+        and the clock restarts on the new deadline. Being away still shortens the wait as
+        usual. A no-op on a solo table and for a seat that owes nothing."""
+        request = self._pending.get(seat)
+        if not self._enabled or request is None or seat not in self._thinking:
+            return
+        self._thinking[seat] += timedelta(seconds=seconds)
+        self.reschedule(seat, request)
+
     def clear(self, seat: str) -> None:
         """The seat answered: its clock is over."""
         self.deadlines.pop(seat, None)

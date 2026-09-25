@@ -29,7 +29,7 @@ still move; an ended game is answered by its database row, and a finished one by
 | `resources.py` | builds the resource tree once, closes it in reverse | design notes §9 |
 | `dependencies.py` | request → resource providers; the fall-through from the live registry to the row for ended games; the one 404 | design notes §9, §11 |
 | `openapi.py` | the API contract as a document: `python -m server.openapi` prints it for the frontend's type generator; `test_openapi_snapshot` fails when the saved copy drifts | "When the engine changes" below |
-| `routes/` | HTTP translation only: `system` (health, models + the purse), `games` (doors, status, turns, SSE, key), `rooms` (lobby), `replays`, `admin` (the live knobs, behind `ADMIN_TOKEN`) | transport §2, §7, §9; design notes §13 |
+| `routes/` | HTTP translation only: `system` (health, models + the purse), `games` (doors, status, turns, draft-a-line, SSE, key), `rooms` (lobby), `replays`, `admin` (the live knobs, behind `ADMIN_TOKEN`) | transport §2, §7, §9; design notes §13; `frontend/docs/ux_journeys.md` D25 (draft) |
 | `schemas/` | the wire: `events` (the durable union + tiers), `requests` (bodies/DTOs), `replays` | transport §5, §10 |
 | `database_models/` | SQLModel mappings for `games`, `events` and `settings` | design notes §8, §13 |
 | `game/live_game_registry.py` | **the middle lifecycle**: `LiveGameRegistry`, the table of every game that can still move and every transition that originates outside a game | design notes §10, §11 |

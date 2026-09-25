@@ -18,7 +18,9 @@ from server.database_models.game import COMPLETED, GameRow
 from server.game.entitlement import entitled
 from server.game.game_session import GameSession
 from server.game.run_config import game_run_config
-from server.schemas.requests import FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted
+from server.schemas.requests import (
+    DraftRequest, DraftResponse, FundGame, GameCreated, GameStatus, NewSoloGame, TurnAccepted,
+)
 
 from ._shared import authorize_model, set_seat_cookie
 
@@ -146,6 +148,41 @@ async def fund_game(session: Game, body: FundGame, token: SeatToken,
     summary="Submit the human seat's action",
 )
 async def submit_turn(session: Game, body: dict, token: SeatToken) -> TurnAccepted:
+    seat = _proven_seat(session, token)
+    try:
+        session.submit_turn(body, seat=seat)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except HumanTurnContractError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return TurnAccepted()
+
+
+@router.post(
+    "/games/{game_id}/draft",
+    response_model=DraftResponse,
+    summary="Draft the seat's line from rough notes",
+)
+async def draft_turn(session: Game, body: DraftRequest, token: SeatToken) -> DraftResponse:
+    """The seat's agent phrases the notes into one line in the player's voice, for the
+    discussion turn the seat owes. Nothing enters the game: the player sends the line
+    with POST /turns, edited or not, or types their own. 409 when the seat owes no
+    discussion turn or has used this turn's drafts; 503 when the model could not answer."""
+    seat = _proven_seat(session, token)
+    try:
+        draft, drafts_left = await session.draft_line(seat, body.notes)
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503, detail="could not draft the line; type it instead") from exc
+    return DraftResponse(draft=draft, drafts_left=drafts_left,
+                         deadline=session.turn_deadlines.get(seat))
+
+
+def _proven_seat(session: GameSession, token: str) -> str:
+    """The seat this cookie proves, for the routes that act as a seat. 403 without a
+    cookie or with one the game does not know; 409 while seats are not dealt yet."""
     if not token:
         raise HTTPException(
             status_code=403,
@@ -159,13 +196,7 @@ async def submit_turn(session: Game, body: dict, token: SeatToken) -> TurnAccept
         raise HTTPException(status_code=403, detail="unknown seat token")
     if not seat:
         raise HTTPException(status_code=409, detail="seats not dealt yet")
-    try:
-        session.submit_turn(body, seat=seat)
-    except LookupError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
-    except HumanTurnContractError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return TurnAccepted()
+    return seat
 
 
 @router.get("/games/{game_id}/events", summary="SSE event stream")

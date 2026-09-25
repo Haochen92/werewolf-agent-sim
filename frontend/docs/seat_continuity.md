@@ -84,6 +84,12 @@ may wait forever. What it never asked was *why* the seat was silent. Now it does
   everyone who is.
 - **The wire carries the effective deadline** — the earlier of the two clocks — so the
   countdown the table sees is the truth. (`deadline` is a moment, not a duration.)
+- **Time spent waiting on the server is credited back** (2026-09-17, with the draft helper):
+  when a seat asks its agent to phrase its notes into a line, the end of its 120 s moves
+  later by exactly the time the model took, never more, and the absence rule still applies
+  on top. A cap of three drafts per question is what keeps a turn from stretching; the
+  credit alone would let a seat that keeps redrafting hold the table. The response carries
+  the moved deadline so the countdown stays honest.
 
 Two existing details keep the stopwatch honest and are unchanged: it is tied to the *exact
 question* it started for (answer at 119 s, get asked again at 119.5 s → the old clock dies

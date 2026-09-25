@@ -15,6 +15,13 @@ def test_the_switch_sets_every_role_at_once():
     assert off.human_player == 1 and off.human_role == "wolf"
 
 
+def test_a_served_game_retrieves_strategy_points_only():
+    # The town half of the store has no observations; both factions get the same kind of memory.
+    for memory in (True, False):
+        run = game_run_config(memory=memory, human_player=0)
+        assert run.retrieval_types_config == {"observations": False, "strategy_points": True}
+
+
 def test_a_served_game_never_dumps_and_seeds_from_the_named_store(monkeypatch):
     from server.config import server_settings
 

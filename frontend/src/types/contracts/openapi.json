@@ -240,6 +240,59 @@
         }
       }
     },
+    "/games/{game_id}/draft": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "summary": "Draft the seat's line from rough notes",
+        "description": "The seat's agent phrases the notes into one line in the player's voice, for the\ndiscussion turn the seat owes. Nothing enters the game: the player sends the line\nwith POST /turns, edited or not, or types their own. 409 when the seat owes no\ndiscussion turn or has used this turn's drafts; 503 when the model could not answer.",
+        "operationId": "draft_turn_games__game_id__draft_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/games/{game_id}/events": {
       "get": {
         "tags": [
@@ -925,6 +978,52 @@
         ],
         "title": "DaySummaryStructured",
         "description": "O-tier structured form of the summary (accusations / role claims / alliances)."
+      },
+      "DraftRequest": {
+        "properties": {
+          "notes": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "notes"
+        ],
+        "title": "DraftRequest",
+        "description": "POST /games/{id}/draft body: rough notes for the line the seat is about to say."
+      },
+      "DraftResponse": {
+        "properties": {
+          "draft": {
+            "type": "string",
+            "title": "Draft"
+          },
+          "drafts_left": {
+            "type": "integer",
+            "title": "Drafts Left"
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          }
+        },
+        "type": "object",
+        "required": [
+          "draft",
+          "drafts_left"
+        ],
+        "title": "DraftResponse",
+        "description": "POST /games/{id}/draft response: a line the player may send as-is, edit, or drop.\nNothing has entered the game; POST /turns still says it."
       },
       "FiringReasonAnnotation": {
         "properties": {

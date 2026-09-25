@@ -261,6 +261,53 @@ def test_turns_demand_a_proven_seat(api_client, seated_session):
     assert r.status_code == 403 and "unknown seat token" in r.json()["detail"]
 
 
+def test_draft_phrases_the_seats_notes_for_its_discussion_turn(api_client, seated_session,
+                                                                monkeypatch):
+    """The draft route needs a proven seat that owes a discussion turn; it returns a line
+    without entering the game, and counts the drafts a turn allows."""
+    from server.game import game_session as rt
+    from tests.factories.builders import human_turn_request
+
+    session, _ = seated_session
+    monkeypatch.setattr(rt, "draft_from_notes",
+                        lambda request, notes: f"{request.player_id} says: {notes}")
+    url = f"/games/{session.game_id}/draft"
+
+    r = api_client.post(url, json={"notes": "4 dodging"})
+    assert r.status_code == 409 and "no pending input_request" in r.json()["detail"]
+
+    session.pending_requests["player_3"] = human_turn_request(player_id="player_3")  # a vote
+    r = api_client.post(url, json={"notes": "4 dodging"})
+    assert r.status_code == 409 and "discussion turn" in r.json()["detail"]
+
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="day_channel", valid_targets=[])
+    r = api_client.post(url, json={"notes": "4 dodging"})
+    assert r.json() == {"draft": "player_3 says: 4 dodging", "drafts_left": 2,
+                        "deadline": None}  # solo: no clock, no countdown
+    assert session.pending_requests["player_3"].phase == "day_channel"  # still owed
+    assert api_client.post(url, json={"notes": ""}).status_code == 422
+
+    api_client.cookies.clear()
+    assert api_client.post(url, json={"notes": "4 dodging"}).status_code == 403
+
+
+def test_draft_failure_tells_the_player_to_type(api_client, seated_session, monkeypatch):
+    from server.game import game_session as rt
+    from tests.factories.builders import human_turn_request
+
+    session, _ = seated_session
+
+    def broken(request, notes):
+        raise RuntimeError("drafting failed: provider down")
+
+    monkeypatch.setattr(rt, "draft_from_notes", broken)
+    session.pending_requests["player_3"] = human_turn_request(
+        player_id="player_3", phase="day_channel", valid_targets=[])
+    r = api_client.post(f"/games/{session.game_id}/draft", json={"notes": "4 dodging"})
+    assert r.status_code == 503 and "type it instead" in r.json()["detail"]
+
+
 def test_events_and_status_reject_a_forged_cookie(api_client, seated_session):
     session, _ = seated_session
     api_client.cookies.set(f"seat_{session.game_id}", "forged")

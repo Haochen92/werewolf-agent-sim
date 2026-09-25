@@ -116,6 +116,29 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/games/{game_id}/draft': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Draft the seat's line from rough notes
+     * @description The seat's agent phrases the notes into one line in the player's voice, for the
+     *     discussion turn the seat owes. Nothing enters the game: the player sends the line
+     *     with POST /turns, edited or not, or types their own. 409 when the seat owes no
+     *     discussion turn or has used this turn's drafts; 503 when the model could not answer.
+     */
+    post: operations['draft_turn_games__game_id__draft_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/games/{game_id}/events': {
     parameters: {
       query?: never;
@@ -368,6 +391,27 @@ export interface components {
       data: {
         [key: string]: unknown;
       };
+    };
+    /**
+     * DraftRequest
+     * @description POST /games/{id}/draft body: rough notes for the line the seat is about to say.
+     */
+    DraftRequest: {
+      /** Notes */
+      notes: string;
+    };
+    /**
+     * DraftResponse
+     * @description POST /games/{id}/draft response: a line the player may send as-is, edit, or drop.
+     *     Nothing has entered the game; POST /turns still says it.
+     */
+    DraftResponse: {
+      /** Draft */
+      draft: string;
+      /** Drafts Left */
+      drafts_left: number;
+      /** Deadline */
+      deadline?: string | null;
     };
     /**
      * FiringReasonAnnotation
@@ -1696,6 +1740,41 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['TurnAccepted'];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  draft_turn_games__game_id__draft_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DraftRequest'];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DraftResponse'];
         };
       };
       /** @description Validation Error */

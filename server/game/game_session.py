@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Sequence
 
@@ -51,6 +52,7 @@ from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.human_player import HumanTurnRequest
 from Agents.state import fresh_game_state
 from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
+from Agents.turn.drafting_agent import draft_from_notes
 from Agents.turn.human_turn import validate_human_response
 
 from server.storage.game_repository import GameRepository
@@ -61,6 +63,11 @@ from server.game.seat_clocks import SeatClocks
 from server.game.translate import Translator, get_source_graph, is_cached
 
 logger = logging.getLogger(__name__)
+
+# How many times one question may be drafted from notes. The wait for each draft is
+# credited back to the seat's clock, so without a cap an unhappy drafter could keep the
+# table waiting for as long as they liked.
+DRAFTS_PER_TURN = 3
 
 
 class GameSession:
@@ -210,6 +217,7 @@ class GameSession:
         self.pending_requests: dict[str, HumanTurnRequest] = {}
         self._pending_ids: dict[str, str] = {}
         self._pending_answers: dict[str, asyncio.Future] = {}
+        self._drafts_used: dict[str, int] = {}
         self.clocks = SeatClocks(
             self.game_id, self.pending_requests, enabled=len(self._seat_tokens) > 1,
             seat_present=self.seat_present, anyone_present=lambda: self.humans_present,
@@ -444,6 +452,7 @@ class GameSession:
         seat = request.player_id
         self.pending_requests[seat] = request
         self._pending_ids[seat] = interrupt_id or seat
+        self._drafts_used.pop(seat, None)  # a new question, a fresh allowance
         self._pending_answers[seat] = asyncio.get_running_loop().create_future()
         self.clocks.arm(request)  # a no-op for solo tables
 
@@ -462,8 +471,37 @@ class GameSession:
         del self.pending_requests[seat]
         self._pending_answers[seat].set_result(response.model_dump())
         self.clocks.clear(seat)
+        self._drafts_used.pop(seat, None)
         logger.info("game %s: turn accepted for %s (%d seat(s) still owe input)",
                     self.game_id, seat, len(self.pending_requests))
+
+    async def draft_line(self, seat: str, notes: str) -> tuple[str, int]:
+        """Turn a seat's rough notes into a line it could send for the discussion turn it
+        owes, without sending anything. Returns the line and how many drafts the turn still
+        allows. The time the seat spent waiting on the model is credited back to its clock,
+        so drafting costs the player no thinking time, and the cap keeps a turn from
+        stretching. LookupError when the seat owes no discussion turn or has used its
+        drafts; RuntimeError when the model failed (the player can still type)."""
+        request = self.pending_requests.get(seat)
+        if request is None:
+            raise LookupError(f"no pending input_request for seat {seat!r}")
+        if request.phase not in ("day_channel", "wolf_channel"):
+            raise LookupError("only a discussion turn can be drafted")
+        used = self._drafts_used.get(seat, 0)
+        if used >= DRAFTS_PER_TURN:
+            raise LookupError("no drafts left this turn: send what you have")
+        started = time.monotonic()
+        line = await asyncio.to_thread(self._draft, request, notes)
+        self.clocks.extend(seat, time.monotonic() - started)
+        self._drafts_used[seat] = used + 1  # a failed draft is not charged
+        return line, DRAFTS_PER_TURN - used - 1
+
+    def _draft(self, request: HumanTurnRequest, notes: str) -> str:
+        # Runs in a worker thread. The game's model and key travel on the same context
+        # variable the game task uses; a request handler has none, so it is set here.
+        if self._llm_selection is not None:
+            GAME_LLM.set(self._llm_selection)
+        return draft_from_notes(request, notes)
 
     async def _collect_answers(self) -> Any:
         """Wait until every seat that was asked has answered, then return the answers in

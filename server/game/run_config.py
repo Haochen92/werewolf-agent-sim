@@ -21,7 +21,11 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
     ``memory`` is the player's switch: on, every AI seat retrieves lessons from past
     games before each decision, and at the end the game's own lessons are extracted for
     the replay to show; off, neither happens. Either way those lessons are never written
-    back into the live store."""
+    back into the live store.
+
+    A served game retrieves strategy points only: the town half of the store never had
+    observations, so retrieving them would give the two factions different memory, and
+    the strategy points are the lessons the replay shows being weighed."""
     persistence: dict = {"dump_enabled": False, "extraction": {"extract_without_dump": memory}}
     if server_settings.WW_MEMORY_STORE_DIR:
         persistence["seed_store_dir"] = server_settings.WW_MEMORY_STORE_DIR
@@ -30,5 +34,6 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
         human_player=human_player,
         human_role=human_role,
         memory_config={role: memory for role in roles},
+        retrieval_types_config={"observations": False, "strategy_points": True},
         memory_persistence=persistence,
     )

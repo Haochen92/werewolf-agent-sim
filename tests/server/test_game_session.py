@@ -421,6 +421,43 @@ async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch)
     assert session.turn_deadlines == {}
 
 
+async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkeypatch):
+    """A draft costs the player no thinking time (the wait is credited back to the clock),
+    and a turn allows only so many, so an unhappy drafter cannot stretch the table's wait."""
+    import time
+    from datetime import datetime, timedelta
+
+    monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
+
+    def slow_draft(request, notes):
+        time.sleep(0.05)
+        return f"{notes}, tidied"
+
+    monkeypatch.setattr(rt, "draft_from_notes", slow_draft)
+    session = quiet_session(FakeGraph([_interrupt_chunk()], []), seat_tokens=["t1", "t2"],
+                            human_players=["player_3", "player_5"])
+    session.subscribe("t1")
+    session.start()
+    while not session.pending_requests:
+        await asyncio.sleep(0.01)
+    before = datetime.fromisoformat(session.turn_deadlines["player_3"])
+
+    line, left = await session.draft_line("player_3", "4 dodging")
+    assert (line, left) == ("4 dodging, tidied", 2)
+    after = datetime.fromisoformat(session.turn_deadlines["player_3"])
+    assert after - before >= timedelta(seconds=0.05)  # the wait, credited back
+    assert sorted(session.pending_requests) == ["player_3"]  # nothing was sent
+
+    await session.draft_line("player_3", "again")
+    await session.draft_line("player_3", "and again")
+    with pytest.raises(LookupError, match="no drafts left"):
+        await session.draft_line("player_3", "one more")
+
+    session.submit_turn({"message": line}, seat="player_3")
+    await asyncio.wait_for(session.wait_finished(), timeout=10)
+    assert session.error is None
+
+
 async def test_afk_timer_never_arms_in_solo(quiet_session, monkeypatch):
     """One human seat = nobody is held hostage; the lone human may think forever."""
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 0.02)

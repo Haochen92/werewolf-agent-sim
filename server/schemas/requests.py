@@ -250,6 +250,29 @@ class TurnAccepted(BaseModel):
 
 
 
+class DraftRequest(BaseModel):
+    """POST /games/{id}/draft body: rough notes for the line the seat is about to say."""
+
+    notes: str = Field(min_length=1, max_length=500)
+    """Fragments in the player's own words — who, and what about. "@player_4" or "@4"
+    names a seat."""
+
+
+
+class DraftResponse(BaseModel):
+    """POST /games/{id}/draft response: a line the player may send as-is, edit, or drop.
+    Nothing has entered the game; POST /turns still says it."""
+
+    draft: str
+    drafts_left: int
+    """How many more drafts this turn allows. The wait for each is credited back to the
+    seat's clock, so the cap is what keeps a turn from stretching."""
+    deadline: str | None = None
+    """The seat's countdown after the wait was credited back (ISO-8601 UTC); None when
+    no clock runs (solo games)."""
+
+
+
 class FundGame(BaseModel):
     """POST /games/{id}/key body: a seat holder's key to resume a game that lost its
     funding in a restart. Tried on the provider before the game moves; never stored."""
