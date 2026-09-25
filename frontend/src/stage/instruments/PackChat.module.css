@@ -1,0 +1,132 @@
+/* The wolves' chat, as the pack bench (rev 71) draws it; its red edge marks it as the pack's. */
+.chat {
+  position: absolute;
+  right: 22.4px;
+  bottom: 14.4px;
+  width: 832px;
+  max-height: 176px;
+  overflow: auto;
+  box-sizing: border-box;
+  background: rgba(20, 14, 8, 0.86);
+  border: 1px solid rgba(255, 179, 92, 0.25);
+  border-left: 3.2px solid var(--wolf);
+  border-radius: 12.8px;
+  padding: 11.2px 14.4px;
+  color: var(--paper);
+  font-size: calc(var(--meta) * 1.05);
+  line-height: 1.35;
+  z-index: 2;
+}
+/* the header stays at the top while the talk scrolls under it */
+.head {
+  position: sticky;
+  top: -11.2px;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -11.2px;
+  padding: 11.2px 0 8px;
+  background: rgb(24, 17, 10);
+  color: var(--film-mut, #c9b79a);
+}
+.tag {
+  font-weight: 600;
+  color: var(--wolf);
+}
+.empty {
+  opacity: 0.7;
+  font-style: italic;
+  padding: 6.4px 0;
+}
+.msg {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9.6px;
+  padding: 6.4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.msg small {
+  display: block;
+  color: #c9b79a;
+  font-size: 0.85em;
+}
+.me > div {
+  color: #ffe3b0;
+}
+.gm {
+  grid-template-columns: 1fr;
+  background: rgba(227, 80, 63, 0.12);
+  border-radius: 8px;
+  padding: 8px 11.2px;
+}
+.chip {
+  display: inline-block;
+  width: calc(var(--chip) * 0.75);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  border-radius: 4.8px;
+  overflow: hidden;
+  line-height: 0;
+  vertical-align: middle;
+}
+.vline .chip {
+  width: calc(var(--chip) * 0.7);
+}
+.vline {
+  padding: 6.4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+}
+.vline small {
+  color: #c9b79a;
+}
+.dec {
+  color: #ffe3b0;
+  font-weight: 600;
+}
+
+/* your line to the pack, at the foot of the room on the left */
+.say {
+  position: absolute;
+  bottom: 35.2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9.6px;
+  align-items: center;
+  width: 528px;
+  z-index: 2;
+}
+.say input {
+  flex: 1;
+  min-width: 320px;
+  font: inherit;
+  font-size: calc(var(--said) * 1.05);
+  padding: 9.6px 14.4px;
+  border-radius: 9.6px;
+  border: 1px solid rgba(255, 179, 92, 0.4);
+  background: rgba(20, 14, 8, 0.9);
+  color: var(--paper);
+}
+.say button {
+  font: inherit;
+  font-size: calc(var(--said) * 1.1);
+  font-weight: 600;
+  padding: 9.6px 20.8px;
+  border-radius: 8px;
+  border: 2.9px solid #24180c;
+  background: linear-gradient(#e9c27a, #b8862f);
+  color: #2a1a08;
+  cursor: pointer;
+}
+.say button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.count {
+  width: 100%;
+  font-size: calc(var(--meta) * 0.95);
+  color: #e0a63a;
+}

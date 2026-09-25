@@ -1,0 +1,67 @@
+/* The top strip, as the benches draw it: the phase at the left, past the wing; the mode
+   buttons pinned at the right (Transcript always the far right). */
+.phase {
+  position: absolute;
+  top: 19.2px;
+  font-size: var(--said);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--bone);
+  text-shadow: 0 1px 3px #000;
+}
+.phase small {
+  display: block;
+  font-size: var(--meta);
+  font-weight: 400;
+  color: var(--bone2);
+}
+.modes {
+  position: absolute;
+  /* over the side slot's head (the drawer runs up under the strip), under the epilogue's sheet */
+  z-index: 4;
+  right: 12.8px;
+  top: 16px;
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  font: inherit;
+  font-size: var(--meta);
+  line-height: 1.5;
+  color: var(--bone);
+  background: rgba(14, 9, 6, 0.85);
+  border: 1px solid var(--cloak2);
+  border-radius: 9.6px;
+  padding: 7.2px 14.4px;
+  cursor: pointer;
+}
+.xr[aria-pressed='true'] {
+  background: var(--film-ink);
+  border-color: var(--film-ink);
+  color: var(--film);
+  box-shadow: 0 0 11.2px rgba(127, 220, 242, 0.5);
+}
+.tr[aria-pressed='true'] {
+  background: var(--bone);
+  color: var(--ink);
+  border-color: var(--bone);
+}
+
+/* the replay's way back to its list: over the wing, level with the mode buttons */
+.back {
+  position: absolute;
+  z-index: 4;
+  left: 9.6px;
+  top: 16px;
+  font-size: var(--meta);
+  line-height: 1.5;
+  color: var(--bone2);
+  text-decoration: none;
+  background: rgba(14, 9, 6, 0.85);
+  border: 1px solid var(--cloak2);
+  border-radius: 9.6px;
+  padding: 7.2px 9.6px;
+}
+.back:hover {
+  color: var(--bone);
+}

@@ -1,0 +1,158 @@
+/* The seated human's ballot, as bench 64 draws it (`.box.prompt.chiprow`, `.vchip`, `.plate2`),
+   with the chosen chip lit instead of raised: nothing moves to say chosen. */
+.box {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 1024px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
+  border: 1px solid var(--cloak2);
+  border-radius: 14.4px;
+  padding: 11.2px 19.2px;
+}
+.box header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 11.2px;
+  font-size: var(--meta);
+  color: var(--bone2);
+  margin-bottom: 4.8px;
+}
+.box header strong {
+  font-weight: 500;
+  color: var(--bone);
+  font-size: calc(var(--meta) * 1.15);
+}
+.count {
+  margin-left: auto;
+  color: var(--bone);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.row {
+  display: flex;
+  gap: 11.2px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 4.8px 0 8px;
+}
+.vchip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4px;
+  padding: 4px 4.8px;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    filter 0.2s;
+}
+.vchip b {
+  font-size: calc(var(--meta) * 0.95);
+  font-weight: 600;
+}
+.head {
+  display: block;
+  width: calc(var(--chip) * 1.55);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  box-shadow:
+    0 0 0 2.2px #efe4cb,
+    0 0 0 4.2px #24180c;
+  transition: box-shadow 0.2s;
+}
+/* chosen: an amber ring and the light; the rest dim */
+.on .head {
+  box-shadow:
+    0 0 0 2.9px #e0a63a,
+    0 0 0 5.1px #24180c,
+    0 0 16px 4px rgba(255, 179, 92, 0.55);
+}
+.on b {
+  color: #e0a63a;
+}
+.off {
+  opacity: 0.5;
+  filter: saturate(0.6);
+}
+.dish {
+  display: block;
+  width: calc(var(--chip) * 1.7);
+  height: calc(var(--chip) * 0.6);
+  margin-bottom: calc(var(--chip) * 0.45);
+  border-radius: 50%;
+  background: #f4ecd9;
+  box-shadow:
+    inset 0 0 0 2.2px #c9a25e,
+    0 0 0 2.2px #24180c;
+  transition: box-shadow 0.2s;
+}
+.on .dish {
+  box-shadow:
+    inset 0 0 0 2.2px #c9a25e,
+    0 0 0 2.9px #e0a63a,
+    0 0 16px 4px rgba(255, 179, 92, 0.55);
+}
+
+/* the brass plate that confirms, naming the vote */
+.plate button {
+  font: inherit;
+  font-size: calc(var(--said) * 1.15);
+  font-weight: 600;
+  padding: 8.8px 24px;
+  border-radius: 8px;
+  border: 2.9px solid #24180c;
+  background: linear-gradient(#e9c27a, #b8862f);
+  color: #2a1a08;
+  cursor: pointer;
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 8px 16px rgba(0, 0, 0, 0.5);
+}
+.plate button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* "Your ballot is in": me → my choice */
+.in {
+  flex: 0 1 auto;
+}
+.line {
+  display: flex;
+  align-items: center;
+  gap: 11.2px;
+  font-size: var(--said);
+  color: var(--bone);
+}
+.line .head {
+  width: calc(var(--chip) * 0.75);
+}
+.arr {
+  color: var(--bone2);
+}
+
+/* the count's line, large: "Seat 7 votes Seat 2" (bench `.box.big .ballotline`) */
+.big {
+  flex: 0 1 auto;
+  padding: 14.4px 25.6px;
+  border-radius: 17.6px;
+}
+.big .line {
+  font-size: calc(var(--said) * 1.55);
+  gap: 14.4px;
+}
+.big .line .head {
+  width: calc(var(--chip) * 1.15);
+  box-shadow: none;
+}

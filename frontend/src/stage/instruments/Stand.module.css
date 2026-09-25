@@ -1,0 +1,122 @@
+/* The stand, as the stage kit draws it (kits/stage-kit.js `stand()` and its CSS). Every size
+   is in puppet units (--u), so the stand grows and shrinks with the puppet box. */
+
+/* the dark below the rail, the whole width of the stage */
+.pit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: visible;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 10, 7, 0.3),
+    rgba(12, 10, 7, 0.62) 40%,
+    rgba(12, 10, 7, 0.82)
+  );
+}
+
+/* the box itself: a cloak-dark front with the rail cap across its top and a recessed panel */
+.box {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    var(--cloak0) 0 calc(39 * var(--u)),
+    var(--cloak1) calc(39 * var(--u))
+  );
+}
+.box::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: calc(-14 * var(--u));
+  right: calc(-14 * var(--u));
+  top: 0;
+  height: calc(30 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: linear-gradient(
+    180deg,
+    var(--bone3) 0 calc(3 * var(--u)),
+    #5c432a calc(3 * var(--u)),
+    var(--cloak2) calc(15 * var(--u)),
+    #42301e
+  );
+  box-shadow: 0 calc(4 * var(--u)) calc(8 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+.box::after {
+  content: '';
+  position: absolute;
+  left: calc(26 * var(--u));
+  right: calc(26 * var(--u));
+  top: calc(82 * var(--u));
+  height: calc(330 * var(--u));
+  border-radius: calc(6 * var(--u));
+  background: #1b120b;
+  border: calc(3 * var(--u)) solid var(--cloak2);
+  box-shadow: inset 0 calc(6 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+
+/* the two footlights: brass domes on the rail, glowing when the stand is lit */
+.foot {
+  position: absolute;
+  z-index: 2;
+  top: calc(-16 * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(20 * var(--u));
+  box-sizing: border-box;
+  border-radius: calc(20 * var(--u)) calc(20 * var(--u)) 0 0;
+  background: var(--bone3);
+  border: calc(3 * var(--u)) solid var(--ink);
+  border-bottom: 0;
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+}
+.foot.on {
+  background: var(--bone);
+  box-shadow: 0 calc(-4 * var(--u)) calc(22 * var(--u)) rgba(255, 179, 92, 0.55);
+}
+
+.plaque {
+  position: absolute;
+  left: 50%;
+  top: calc(3 * var(--u));
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--bone2);
+  color: var(--ink);
+  white-space: nowrap;
+  font-weight: 600;
+  min-height: calc(34 * var(--u));
+  box-sizing: border-box;
+  border: calc(2.5 * var(--u)) solid var(--ink);
+  border-radius: calc(5 * var(--u));
+  font-size: max(var(--meta), calc(17 * var(--u)));
+  padding: 0 calc(10 * var(--u));
+  box-shadow: 0 calc(3 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.4);
+}
+.tag {
+  font-weight: 500;
+  padding: 0 8px;
+  border-radius: 3.2px;
+  color: #fff;
+}
+.t-villagers {
+  background: var(--town);
+  color: var(--town-ink);
+}
+.t-wolves {
+  background: var(--wolf);
+}
+.t-serial_killer {
+  background: var(--sk);
+}
+/* said on the seat's own screen: its agent spoke, or it was voted out */
+.t-agent {
+  background: #8a2a24;
+}

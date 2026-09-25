@@ -1,0 +1,228 @@
+/* What the stage says in words when nobody is at the stand: the benches' `.box.glass.result.big`
+   in the same foot zone as the speech box, with the "your card" button beside it (rev 67, 75). */
+.zone {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.box {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: 1024px;
+  flex: 0 1 auto;
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
+  border: 1px solid var(--cloak2);
+  padding: 14.4px 25.6px;
+  border-radius: 17.6px;
+}
+.wide {
+  flex: 1 1 auto;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 11.2px;
+  font-size: var(--meta);
+  color: var(--bone2);
+  margin-bottom: 4.8px;
+}
+.head strong {
+  font-weight: 500;
+  color: var(--bone);
+  font-size: calc(var(--meta) * 1.5);
+}
+.body {
+  font-size: calc(var(--said) * 1.45);
+  line-height: 1.4;
+  color: var(--bone);
+}
+.chip {
+  width: calc(var(--chip) * 0.85);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+  display: inline-block;
+}
+.sigil {
+  display: inline-block;
+  width: calc(var(--chip) * 0.7);
+  height: calc(var(--chip) * 0.7);
+  color: var(--c, var(--bone));
+  stroke-width: 3;
+}
+/* the X-ray's words: "Only seat 4", in the film's aqua */
+.aqua {
+  color: var(--film-ink);
+  border: 1px solid currentColor;
+  border-radius: 16px;
+  padding: 0 9.6px;
+}
+.xr {
+  border-color: #2d5563;
+  box-shadow: inset 0 0 0 1px rgba(127, 220, 242, 0.15);
+}
+
+.c-villagers {
+  --c: var(--town);
+}
+.c-wolves {
+  --c: var(--wolf);
+}
+.c-serial_killer {
+  --c: var(--sk);
+}
+
+/* the cast counts: "3 villagers · 1 healer · …" with the sigils */
+.cast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14.4px;
+  margin-top: 4.8px;
+}
+.cast span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4.8px;
+  font-size: var(--said);
+  color: var(--bone);
+}
+.cast b {
+  font-weight: 600;
+}
+.cast svg {
+  width: 24px;
+  height: 24px;
+  color: var(--c);
+  stroke-width: 3;
+}
+
+/* the vigilante's caps: "Two caps in the popgun" and one red cap each */
+.caps {
+  display: flex;
+  gap: 4.8px;
+  align-items: center;
+  margin-top: 4.8px;
+  font-size: var(--said);
+  color: var(--bone);
+}
+.caps i {
+  width: 11.2px;
+  height: 20.8px;
+  border-radius: 2.4px 2.4px 5.6px 5.6px;
+  background: #e3503f;
+  border: 1px solid var(--ink);
+  display: inline-block;
+}
+
+/* your card at rest beside the box: the head-and-shoulders crop and "your card" */
+.card {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3.2px;
+  padding: 5.6px 5.6px 4.8px;
+  width: 118.4px;
+  box-sizing: border-box;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--bone3);
+  border-radius: 9.6px;
+  font: inherit;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1.9px #cbb992,
+    0 0 0 3.5px var(--rink, #24180c);
+}
+.card .av {
+  display: block;
+  aspect-ratio: 92 / 96;
+  border-radius: 5.6px;
+  overflow: hidden;
+  background: #e4d5b3;
+}
+.card .av svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.card em {
+  display: block;
+  text-align: center;
+  font-style: normal;
+  font-size: calc(var(--meta) * 0.85);
+  color: #6e4a2a;
+}
+/* out of the game: the card has gone to the wing */
+.card.gone {
+  opacity: 0.72;
+  filter: saturate(0.5);
+}
+.r-villagers {
+  --rink: var(--town-ink);
+}
+.r-wolves {
+  --rink: var(--wolf-ink);
+}
+.r-serial_killer {
+  --rink: var(--sk-ink);
+}
+
+/* the pack chat, opened at the deal for a wolf (a placeholder until the chat is built); the
+   speech box's size, not the result box's */
+.pack {
+  padding: 11.2px 19.2px;
+  border-radius: 14.4px;
+  border-color: #6a2a22;
+  box-shadow: inset 4px 0 0 var(--wolf);
+}
+.pk {
+  font-size: calc(var(--meta) * 0.8);
+  color: var(--wolf);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--wolf);
+  border-radius: 16px;
+  padding: 0 8px;
+}
+.pack .head strong {
+  font-size: calc(var(--meta) * 1.15);
+}
+.pack .body {
+  font-size: var(--said);
+  display: flex;
+  flex-direction: column;
+  gap: 5.6px;
+}
+.line {
+  display: flex;
+  gap: 9.6px;
+  align-items: baseline;
+}
+.line b {
+  font-weight: 500;
+  color: var(--bone2);
+  font-size: var(--meta);
+  white-space: nowrap;
+}
+.line .chip {
+  width: calc(var(--chip) * 0.6);
+  vertical-align: middle;
+}
+.input {
+  font: inherit;
+  font-size: var(--said);
+  color: var(--bone2);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--cloak2);
+  border-radius: 9.6px;
+  padding: 6.4px 11.2px;
+}

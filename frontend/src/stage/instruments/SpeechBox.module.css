@@ -1,0 +1,95 @@
+/* The speech box, as the benches draw it (rev 72 `.zone` and `.box.glass`). */
+
+/* the band along the foot of the stage the box is centred in, clear of the wing */
+.zone {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.box {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14.4px;
+  padding: 11.2px 19.2px;
+  overflow: hidden;
+  max-width: 1024px;
+  flex: 0 1 auto;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bot));
+  border: 1px solid var(--cloak2);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4.8px 11.2px;
+  font-size: var(--meta);
+  color: var(--bone2);
+  margin-bottom: 4.8px;
+}
+.head strong {
+  font-weight: 500;
+  color: var(--bone);
+  font-size: calc(var(--meta) * 1.15);
+}
+.chip {
+  width: calc(var(--chip) * 0.62);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  border-radius: 4.8px;
+  overflow: hidden;
+  line-height: 0;
+  display: inline-block;
+}
+.chip img {
+  border-radius: 50%;
+}
+.tag {
+  border: 1px solid currentColor;
+  border-radius: 16px;
+  padding: 0 9.6px;
+}
+.agent {
+  color: var(--amber);
+}
+
+.body {
+  font-size: var(--said);
+  line-height: 1.4;
+  color: var(--bone);
+}
+/* the X-ray's words in the box: aqua */
+.xr {
+  color: var(--film-ink);
+}
+.draft {
+  margin-top: 4.8px;
+  font-size: var(--note);
+  line-height: 1.4;
+  color: var(--film-ink);
+  font-style: italic;
+}
+
+/* the drawer open at full height: the box narrows under the puppet and a long line fades at
+   its foot, the full line being the drawer's newest entry (bench 74 `.box.faded`) */
+.faded .body {
+  max-height: calc(var(--said) * 1.4 * 3.4);
+  overflow: hidden;
+  /* in lines, not in percent, so a line of one or two rows is never faded */
+  mask-image: linear-gradient(
+    180deg,
+    #000 calc(var(--said) * 1.4 * 2),
+    transparent calc(var(--said) * 1.4 * 3.4)
+  );
+}
+.faded .head::after {
+  content: 'full line in the transcript';
+  margin-left: auto;
+  font-size: calc(var(--meta) * 0.8);
+  color: var(--bone3);
+}

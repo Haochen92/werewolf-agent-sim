@@ -1,0 +1,17 @@
+.pup {
+  position: absolute;
+}
+/* the felt figure's shadow on the wall behind it (the benches' .8cqw blur) */
+.sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 12.8px rgba(0, 0, 0, 0.45));
+}
+.numeral {
+  position: absolute;
+  overflow: visible;
+}
+.numeral text {
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}

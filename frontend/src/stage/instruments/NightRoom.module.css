@@ -1,0 +1,328 @@
+/* The night room's objects, as the shelf bench (rev 70) and the pack bench (rev 71) draw them.
+   Every size is in units (1cqw on the benches = 16 units here). */
+
+/* ---- the plush dolls on their hooks ---- */
+.plush {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+  filter: drop-shadow(0 6.4px 9.6px rgba(0, 0, 0, 0.5));
+}
+button.plush {
+  cursor: pointer;
+}
+button.plush:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+.plush img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.numeral {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+}
+.numeral text {
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}
+
+/* ---- the tooth: one pack vote landing on a doll ---- */
+.tooth {
+  position: absolute;
+  left: 0;
+  top: -4%;
+  width: 100%;
+  height: 60%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ---- the kit on the shelf ---- */
+.kit {
+  position: absolute;
+  filter: drop-shadow(0 6.4px 9.6px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+.kit img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* under the kit, on the shelf's edge: the vigilante's caps left (centred on the kit) */
+.kitNote {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* the act on the chosen doll, on its shoulder, clear of the face (a zero box: the mark centres on it) */
+.actMark {
+  position: absolute;
+  left: 70%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ---- the carriage clock ---- */
+.clock {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.flap {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-weight: 600;
+}
+
+/* ---- the framed card at the shelf's left end ---- */
+.framed {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: #4a2c18;
+  border-radius: 6.4px;
+  box-shadow:
+    0 0 0 4px #2a1a0c,
+    0 0 0 7.2px #c9a25e,
+    0 0 0 9.6px #24180c,
+    0 8px 19.2px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  color: var(--ink);
+  text-align: center;
+}
+.framed:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 12px;
+}
+.framedIn {
+  position: absolute;
+  inset: 5.6px;
+  background: var(--paper);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9.6px 9.6px 6.4px;
+  box-shadow: inset 0 0 0 calc(3 * var(--u)) #cbb992;
+  overflow: hidden;
+}
+.framedIn::before,
+.framedIn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(9 * var(--u));
+  background: var(--rc);
+}
+.framedIn::before {
+  top: 0;
+}
+.framedIn::after {
+  bottom: 0;
+}
+.framedHead {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  font-size: calc(26 * var(--u));
+  line-height: 1;
+  margin: calc(10 * var(--u)) 0 calc(4 * var(--u));
+}
+.framedHead svg,
+.cardHead svg {
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  color: var(--rc);
+  stroke-width: 3;
+}
+.framedFig,
+.cardFig {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 58%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rc);
+}
+.framedFig svg,
+.cardFig svg {
+  width: 100%;
+  height: 100%;
+}
+.framedLine {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(13.5 * var(--u));
+  line-height: 1.3;
+  margin: calc(4 * var(--u)) 0 calc(10 * var(--u));
+  color: #3a2a1a;
+}
+.framed em {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -25.6px;
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-style: normal;
+  font-size: calc(var(--meta) * 0.95);
+  color: var(--paper);
+  opacity: 0.75;
+}
+.villagers {
+  --rc: var(--town);
+}
+.wolves {
+  --rc: var(--wolf);
+}
+.serial_killer {
+  --rc: var(--sk);
+}
+
+/* ---- the full card, opened over the room ---- */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 5, 2, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+.card {
+  position: relative;
+  width: 416px;
+  height: 608px;
+  background: var(--paper);
+  border: calc(3 * var(--u)) solid var(--ink);
+  border-radius: calc(10 * var(--u));
+  color: var(--ink);
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  overflow: hidden;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 calc(4 * var(--u)) #cbb992;
+}
+.card::before,
+.card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(12 * var(--u));
+  background: var(--rc);
+}
+.card::before {
+  top: 0;
+}
+.card::after {
+  bottom: 0;
+}
+.cardIn {
+  position: absolute;
+  inset: calc(20 * var(--u)) calc(16 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  font-size: calc(36 * var(--u));
+  line-height: 1;
+  margin: calc(4 * var(--u)) 0 calc(8 * var(--u));
+}
+.cardHead svg {
+  width: calc(32 * var(--u));
+  height: calc(32 * var(--u));
+}
+.cardFig {
+  width: 72%;
+  min-height: 34%;
+}
+.cardLine {
+  font-size: calc(19 * var(--u));
+  font-style: italic;
+  line-height: 1.25;
+  margin: calc(8 * var(--u)) 0 calc(4 * var(--u));
+  white-space: pre-line;
+}
+.cardNight {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(15 * var(--u));
+  line-height: 1.35;
+  margin: calc(8 * var(--u)) 0 0;
+  color: #3a2a1a;
+}
+.cardNight b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.cardFoot {
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  font-size: calc(15 * var(--u));
+  color: #6e4a2a;
+  margin-top: auto;
+}
+
+/* ---- the plate: the act's name, and the confirm (bench 70 `.hud .plate`) ---- */
+.plate {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 11.2px;
+  align-items: center;
+  z-index: 2;
+}
+.plate.left {
+  transform: none;
+  bottom: 41.6px;
+}
+.plate button {
+  font: inherit;
+  font-size: calc(var(--said) * 1.3);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 12px 28.8px;
+  border-radius: 8px;
+  border: 2.9px solid #24180c;
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
+  box-shadow:
+    0 4px 0 #5a3a12,
+    0 8px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.plate button.pri {
+  background: linear-gradient(#e9c27a, #b8862f);
+  color: #2a1a08;
+}
+.plate button:disabled {
+  cursor: default;
+}
+.plate button.pri:disabled {
+  opacity: 0.5;
+}

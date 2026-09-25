@@ -1,0 +1,175 @@
+/* The seat wing down the left edge, as the benches draw it (rev 72, rev 75). */
+.wing {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6.4px;
+  padding: 9.6px;
+  box-sizing: border-box;
+  background: var(--cloak0);
+  border-right: 1px solid var(--cloak2);
+  overflow: hidden;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 1.6px;
+  border: 1px solid transparent;
+  transition:
+    opacity 0.3s,
+    background-color 0.3s,
+    border-color 0.3s;
+}
+/* lit: the seat on the stand now. Light, never movement. */
+.lit {
+  border-color: var(--bone);
+  background: var(--cloak1);
+}
+.dim {
+  opacity: 0.45;
+}
+
+.face {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--chip);
+  aspect-ratio: 1;
+  border-radius: 6.4px;
+  overflow: hidden;
+  border: 1px solid var(--cloak2);
+  background: #17130e;
+  line-height: 0;
+}
+.face img {
+  border-radius: 4px;
+}
+.num {
+  position: absolute;
+  z-index: 1;
+  left: 4px;
+  top: 3.2px;
+  line-height: 1;
+  font-size: calc(var(--meta) * 0.9);
+  font-weight: 600;
+  color: var(--bone);
+  text-shadow:
+    0 0 2px #000,
+    0 0 2px #000;
+}
+.you::after {
+  content: 'you';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  line-height: 1.3;
+  background: var(--bone);
+  color: var(--ink);
+  font-size: calc(var(--meta) * 0.75);
+  padding: 0 4.8px;
+  border-top-left-radius: 4.8px;
+}
+
+/* a dead seat is its role's sigil on paper, in the faction's ink */
+.dead .face {
+  aspect-ratio: 28 / 36;
+  background: var(--paper);
+  border-color: var(--bone3);
+  display: grid;
+  place-items: center;
+}
+.dead .num {
+  color: var(--ink);
+  text-shadow: none;
+}
+.sigil {
+  width: 60%;
+  height: 60%;
+  color: var(--c, var(--ink));
+  stroke-width: 3.2;
+}
+
+/* the X-ray's truth on a living seat: a faction strip along the foot and a sigil badge */
+.strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5.6px;
+  background: var(--c);
+}
+.badge {
+  position: absolute;
+  z-index: 1;
+  right: 1.9px;
+  top: 1.9px;
+  width: calc(var(--chip) * 0.36);
+  height: calc(var(--chip) * 0.36);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--c);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--bone3);
+  line-height: 0;
+}
+.badge svg {
+  width: 78%;
+  height: 78%;
+  stroke-width: 3.4;
+}
+
+.c-villagers {
+  --c: var(--town);
+}
+.c-wolves {
+  --c: var(--wolf);
+}
+.c-serial_killer {
+  --c: var(--sk);
+}
+
+/* a packmate, as a wolf sees it (bench rev 75 `.seat.pack`) */
+.pack .face {
+  border-color: var(--wolf);
+  box-shadow:
+    0 0 0 1px var(--wolf),
+    0 0 9.6px rgba(227, 80, 63, 0.5);
+}
+/* the X-ray night's lamp on a seat that acts tonight (bench rev 67 `.seat .lamp`) */
+.lamp {
+  position: absolute;
+  z-index: 1;
+  right: 2.4px;
+  bottom: 2.4px;
+  width: 11.2px;
+  height: 11.2px;
+  border-radius: 50%;
+  background: var(--warm, #ffb35c);
+  box-shadow: 0 0 9.6px var(--warm, #ffb35c);
+}
+/* the X-ray's reads: a blue edge on each seat the speaker has a read on, brighter when sure;
+   tapping one opens the read card beside it (bench 74 `.seat.read`) */
+.read {
+  cursor: pointer;
+}
+.read .face {
+  border-color: var(--film-ink);
+  box-shadow:
+    0 0 0 1px var(--film-ink),
+    0 0 9.6px rgba(127, 220, 242, 0.45);
+}
+.read.sure .face {
+  box-shadow:
+    0 0 0 2.88px var(--film-ink),
+    0 0 12.8px rgba(127, 220, 242, 0.6);
+}
+.read.open {
+  background: var(--cloak1);
+  border-color: var(--film-ink);
+}

@@ -1,0 +1,127 @@
+/* The speaking turn's box, as bench 72 draws it (`.say2`: the amber-edged dark box, the red
+   count, the textarea, Say it in gold and Pass in walnut), in stage units (1cqw = 16). The
+   notes row, the drafts left and "Let my agent speak" are ours (beat sheet §12, "As built"). */
+.dock {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 1024px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11.2px 14.4px;
+  border-radius: 12.8px;
+  background: rgba(20, 14, 8, 0.86);
+  border: 1px solid rgba(255, 179, 92, 0.3);
+  color: var(--paper);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4.8px 11.2px;
+}
+.head strong {
+  font-weight: 500;
+  font-size: calc(var(--said) * 1.05);
+}
+.head span {
+  font-size: calc(var(--meta) * 1.05);
+  color: #c9b79a;
+}
+.head .count {
+  margin-left: auto;
+  color: #e3503f;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  font: inherit;
+  font-size: calc(var(--said) * 1.02);
+  line-height: 1.35;
+  min-height: 64px;
+  height: 64px;
+  resize: none;
+  padding: 8px 11.2px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 179, 92, 0.35);
+  background: rgba(10, 7, 4, 0.7);
+  color: var(--paper);
+}
+.line::placeholder,
+.notes input::placeholder {
+  color: #8d7c62;
+}
+
+/* one row under the box: Say it, Pass, then the draft helper (the notes, the button, how many
+   drafts are left) and the hand-over at the far right */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 9.6px;
+}
+.row button {
+  font: inherit;
+  font-size: calc(var(--said) * 1.05);
+  font-weight: 600;
+  padding: 5.6px 20.8px;
+  border-radius: 8px;
+  border: 2.6px solid #24180c;
+  background: linear-gradient(#5a4632, #3a2a1a);
+  color: var(--paper);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.row .pri {
+  background: linear-gradient(#e9c27a, #b8862f);
+  color: #2a1a08;
+}
+.row button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.notes {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 9.6px;
+}
+.notes input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--meta);
+  padding: 6.4px 11.2px;
+  border-radius: 8px;
+  border: 1px solid var(--cloak2);
+  background: rgba(10, 7, 4, 0.55);
+  color: var(--paper);
+}
+.notes button {
+  font-size: var(--meta);
+  padding: 5.6px 12.8px;
+  border-width: 1.6px;
+}
+.left {
+  font-size: calc(var(--meta) * 0.85);
+  color: #c9b79a;
+  white-space: nowrap;
+}
+.row .agent {
+  font-size: var(--meta);
+  font-weight: 500;
+  padding: 5.6px 12.8px;
+  background: transparent;
+  border: 1px solid var(--cloak2);
+  color: var(--bone2);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--meta);
+  color: #f08a78;
+}
