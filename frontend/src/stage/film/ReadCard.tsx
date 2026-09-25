@@ -1,0 +1,81 @@
+'use client';
+
+/**
+ * The read card: what the seat at the stand made of one other seat when it spoke, opened by
+ * tapping that seat's tile on the wing (handoff §2 "The film"). Reads are not in the film;
+ * they sit on the wing as blue edges, and this card is the one close look at one of them:
+ * the guess, how sure, why, and, since the X-ray holds the truth, how near it came:
+ * ● the role itself, ◐ the right side, ○ no read or wrong.
+ *
+ * It sits beside its seat, docked at the wing's edge. Tapping the seat again closes it.
+ */
+import type { Character } from '@/assets/manifest';
+import { ChipSprite } from '../cast/ChipSprite';
+import { Sigil } from '../instruments/Sigil';
+import { ROLE_NAME, factionOf, seatNumber, seatify } from '../roles';
+import { MARK, readMark, type SeatRead } from './film-model';
+import styles from './ReadCard.module.css';
+
+/** The card's height as drawn, near enough to keep it on the stage at the bottom seats. */
+const CARD_H = 250;
+
+export function ReadCard({
+  seat,
+  character,
+  read,
+  truth,
+  left,
+  top,
+}: {
+  seat: string;
+  character: Character | undefined;
+  read: SeatRead;
+  /** The seat's real role, which the X-ray holds; null if this viewer does not. */
+  truth: string | null;
+  /** Where the card docks, in units: the wing's edge, level with the seat. */
+  left: number;
+  top: number;
+}) {
+  const guess = read.suspected_role;
+  const sure = read.confidence === 'high';
+  const f = factionOf(truth);
+  return (
+    <div
+      className={styles.card}
+      style={{ left, top: Math.max(8, Math.min(top, 900 - CARD_H)) }}
+      data-read-card={seat}
+      role="dialog"
+      aria-label={`The speaker's read of seat ${seatNumber(seat)}`}
+    >
+      <header>
+        <span className={styles.chip}>
+          {character ? <ChipSprite character={character} /> : null}
+        </span>
+        <strong>Seat {seatNumber(seat)}</strong>
+        <span>the speaker’s read</span>
+      </header>
+      <div className={styles.guess}>
+        <b className={sure ? styles.sure : undefined}>
+          {guess === 'unclear' ? 'unclear' : (ROLE_NAME[guess] ?? guess).toLowerCase()}
+        </b>
+        <span>{sure ? 'sure' : 'not sure'}</span>
+      </div>
+      <p>{seatify(read.why)}</p>
+      {truth ? (
+        <footer>
+          Truth:
+          <span className={`${styles.truth} ${f ? styles[`c-${f}`] : ''}`}>
+            <Sigil role={truth} />
+            {(ROLE_NAME[truth] ?? truth).toLowerCase()}
+          </span>
+          <span
+            className={`${styles.mk} ${styles[`m-${readMark(guess, truth)}`] ?? ''}`}
+            title={readMark(guess, truth)}
+          >
+            {MARK[readMark(guess, truth)]}
+          </span>
+        </footer>
+      ) : null}
+    </div>
+  );
+}

@@ -1,0 +1,390 @@
+/* The transcript drawer, as bench 74 draws it (`.drawer`, `.tl`, `.pill`, `.daytabs`), its
+   container units turned into stage units (1cqw = 16 units). Full height under the top strip
+   (its buttons sit over the drawer's head); stopped at the rail on the seated human's turn. */
+.drawer {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-top: 73.6px;
+  background: linear-gradient(180deg, rgba(18, 13, 7, 0.97), rgba(12, 9, 6, 0.985));
+  border-left: 1px solid var(--cloak2);
+  box-shadow: -9.6px 0 25.6px rgba(0, 0, 0, 0.5);
+  color: var(--bone);
+}
+.drawer > header {
+  flex: 0 0 auto;
+  padding: 9.6px 19.2px 11.2px;
+  border-bottom: 1px solid var(--cloak2);
+  display: flex;
+  flex-direction: column;
+  gap: 8.8px;
+}
+.ttl {
+  display: flex;
+  align-items: baseline;
+  gap: 9.6px;
+  font-size: calc(var(--said) * 1.15);
+  font-weight: 500;
+}
+.ttl small {
+  color: var(--bone2);
+  font-size: var(--meta);
+  font-weight: 400;
+}
+
+/* the filters at the head: the seats as their chips, and Show */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7.2px 19.2px;
+  align-items: center;
+}
+.fg {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.fg > span {
+  font-size: calc(var(--meta) * 0.95);
+  color: var(--bone2);
+  margin-right: 4.8px;
+}
+.pill {
+  font: inherit;
+  font-size: calc(var(--meta) * 1.1);
+  line-height: 1.4;
+  min-height: 36.8px;
+  box-sizing: border-box;
+  color: var(--bone);
+  background: rgba(14, 9, 6, 0.6);
+  border: 1px solid var(--cloak2);
+  border-radius: 19.2px;
+  padding: 2.4px 14.4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6.4px;
+}
+.pill[aria-pressed='true'] {
+  background: var(--bone);
+  color: var(--ink);
+  border-color: var(--bone);
+}
+.seatp {
+  padding: 1.6px;
+  width: calc(var(--chip) * 0.72);
+  height: calc(var(--chip) * 0.72);
+  min-height: 0;
+  border-radius: 50%;
+  justify-content: center;
+  overflow: hidden;
+}
+.seatp img {
+  border-radius: 50%;
+}
+.seatp[aria-pressed='true'] {
+  box-shadow: 0 0 0 2.88px var(--bone);
+}
+.seatp.dead {
+  opacity: 0.45;
+}
+.show {
+  padding-left: 9.6px;
+}
+.show i {
+  width: 17.6px;
+  height: 17.6px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid var(--bone3);
+  display: inline-grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 14.4px;
+  line-height: 1;
+}
+.show[aria-pressed='true'] {
+  background: rgba(239, 228, 203, 0.1);
+  border-color: var(--bone2);
+  color: var(--bone);
+}
+.show[aria-pressed='true'] i {
+  background: var(--bone);
+  border-color: var(--bone);
+  color: var(--ink);
+}
+.show.private[aria-pressed='true'] i {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+.show.xray[aria-pressed='true'] i {
+  background: var(--film-ink);
+  border-color: var(--film-ink);
+  color: var(--film);
+}
+.show[aria-pressed='false'] {
+  color: var(--bone3);
+}
+
+/* the days as tabs along the foot */
+.daytabs {
+  flex: 0 0 auto;
+  display: flex;
+  border-top: 1px solid var(--cloak2);
+  background: rgba(12, 9, 6, 0.95);
+}
+.daytabs button {
+  flex: 1;
+  font: inherit;
+  font-size: calc(var(--said) * 0.95);
+  color: var(--bone2);
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--cloak2);
+  padding: 8.8px 0;
+  cursor: pointer;
+}
+.daytabs button:last-child {
+  border-right: 0;
+}
+.daytabs button[aria-pressed='true'] {
+  color: var(--ink);
+  background: var(--bone);
+  font-weight: 600;
+}
+
+/* the lines */
+.lines {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+  padding: 6.4px 17.6px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6px;
+}
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 9.6px;
+  margin: 12.8px 0 4.8px;
+  font-size: var(--meta);
+  color: var(--bone3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.rule i {
+  flex: 1;
+  height: 1px;
+  background: var(--cloak2);
+}
+.tl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 11.2px;
+  align-items: start;
+  padding: 8px 7.2px;
+  border-radius: 8px;
+  font-size: calc(var(--said) * 0.95);
+  line-height: 1.42;
+  color: var(--bone);
+}
+.hchip {
+  display: inline-block;
+  width: calc(var(--chip) * 0.72);
+  aspect-ratio: 1;
+  margin-top: 1.6px;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+}
+.hchip img {
+  border-radius: 50%;
+}
+.hchip.blank {
+  visibility: hidden;
+}
+.hchip.sm {
+  width: calc(var(--chip) * 0.45);
+  vertical-align: middle;
+  margin: 0 1.6px;
+}
+.who {
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--bone2);
+  font-weight: 500;
+  display: flex;
+  gap: 6.4px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.who i {
+  font-style: normal;
+  color: var(--film-ink);
+  font-weight: 400;
+}
+.rt {
+  color: var(--film-ink);
+  font-weight: 400;
+}
+.c-villagers {
+  --c: var(--town);
+}
+.c-wolves {
+  --c: var(--wolf);
+}
+.c-serial_killer {
+  --c: var(--sk);
+}
+.rt.c-villagers,
+.rt.c-wolves,
+.rt.c-serial_killer {
+  color: var(--c);
+}
+.txt {
+  grid-column: 2;
+}
+/* the beat on stage: lit with the amber edge */
+.now {
+  background: rgba(224, 166, 58, 0.12);
+  box-shadow: inset 4px 0 0 var(--amber);
+}
+/* the game master and the table: no seat, italic */
+.sys {
+  grid-template-columns: 1fr;
+  color: var(--bone2);
+}
+.sys .txt {
+  grid-column: 1;
+  font-style: italic;
+}
+.sg {
+  display: inline-block;
+  width: 22.4px;
+  height: 22.4px;
+  vertical-align: -4.8px;
+  margin: 0 2.4px;
+  color: var(--c);
+}
+.sg svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 3;
+}
+.gm .txt::before {
+  content: 'Game master';
+  display: block;
+  font-style: normal;
+  font-size: calc(var(--meta) * 0.8);
+  color: var(--bone3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+/* the vote: one line per day, the pairs as chips, abstain as the empty ring */
+.pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5.6px 11.2px;
+  margin-top: 2.4px;
+  font-style: normal;
+}
+.pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.2px;
+  font-size: var(--meta);
+  color: var(--bone2);
+}
+.pair .hchip {
+  width: calc(var(--chip) * 0.45);
+  margin: 0;
+}
+.ab {
+  width: calc(var(--chip) * 0.45);
+  height: calc(var(--chip) * 0.45);
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1px dashed var(--bone3);
+  display: inline-block;
+}
+/* only you: a dashed line in your own transcript, never a role */
+.only {
+  border: 1px dashed var(--amber);
+  background: rgba(224, 166, 58, 0.05);
+  margin: 4px 0;
+}
+.oy {
+  font-size: calc(var(--meta) * 0.8);
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--amber);
+  border-radius: 16px;
+  padding: 0 7.2px;
+}
+.only.theirs {
+  border-color: #2d5563;
+  background: rgba(127, 220, 242, 0.04);
+}
+.only.theirs .oy {
+  color: var(--film-ink);
+  border-color: var(--film-ink);
+}
+/* the pack's chat, faction tier: the red edge */
+.pack {
+  box-shadow: inset 4px 0 0 var(--wolf);
+  background: rgba(227, 80, 63, 0.05);
+}
+.pk {
+  font-size: calc(var(--meta) * 0.8);
+  color: var(--wolf);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+/* what the X-ray adds: aqua, the film's ink on the drawer's glass */
+.xr {
+  color: var(--film-text);
+}
+.xr .who {
+  color: var(--film-mut);
+}
+.draft {
+  display: block;
+  margin-top: 3.2px;
+  padding-left: 9.6px;
+  border-left: 2px solid #2d5563;
+  color: var(--film-mut);
+  font-style: italic;
+}
+.brief {
+  cursor: pointer;
+}
+.brief .txt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+.brief.open .txt {
+  display: block;
+}
+.open-tag {
+  margin-left: auto;
+  font-size: calc(var(--meta) * 0.8);
+  border: 1px solid #2d5563;
+  border-radius: 16px;
+  padding: 0 7.2px;
+  color: var(--film-mut);
+}
+.empty {
+  padding: 19.2px 8px;
+  color: var(--bone3);
+  font-size: var(--meta);
+  text-align: center;
+}

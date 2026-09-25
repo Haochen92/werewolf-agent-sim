@@ -1,0 +1,104 @@
+/* The read card beside its seat on the wing (bench 74 `.readcard`, the locked card of rev 52):
+   a small film print with the speaker's guess, how sure, why, and the truth. */
+.card {
+  position: absolute;
+  z-index: 7;
+  box-sizing: border-box;
+  width: 304px;
+  padding: 12.8px 16px;
+  border-radius: 4.8px;
+  background: var(--film);
+  border: 4px solid var(--film-border);
+  box-shadow: 6.4px 8px 0 rgba(5, 12, 16, 0.5);
+  color: var(--film-text);
+  font-size: var(--meta);
+  rotate: -0.8deg;
+}
+.card header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6.4px;
+  border-bottom: 1px solid var(--film-line);
+}
+.card header strong {
+  color: var(--film-main);
+  font-weight: 500;
+}
+.card header span:last-child {
+  color: var(--film-ink);
+}
+.chip {
+  display: inline-block;
+  width: calc(var(--chip) * 0.6);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  line-height: 0;
+}
+.chip img {
+  border-radius: 50%;
+}
+.guess {
+  display: flex;
+  align-items: baseline;
+  gap: 9.6px;
+  margin: 8px 0 3.2px;
+  font-size: calc(var(--said) * 1.1);
+}
+.guess b {
+  font-weight: 500;
+  color: var(--film-main);
+}
+.guess b.sure {
+  color: var(--sure);
+  text-shadow: 0 0 8px rgba(127, 220, 242, 0.5);
+}
+.guess span {
+  color: var(--film-mut);
+  font-size: var(--meta);
+}
+.card p {
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+.card footer {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  padding-top: 6.4px;
+  border-top: 1px solid var(--film-line);
+  color: var(--film-mut);
+}
+.truth {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--c);
+}
+.truth svg {
+  width: 20.8px;
+  height: 20.8px;
+  stroke-width: 3;
+}
+.mk {
+  margin-left: auto;
+  font-size: calc(var(--said) * 1.1);
+  color: var(--film-mut);
+}
+/* the role itself in the film's ink, the side in the slip's paper (as in "who had them right") */
+.m-role {
+  color: var(--film-ink);
+}
+.m-side {
+  color: var(--slip);
+}
+.c-villagers {
+  --c: var(--town);
+}
+.c-wolves {
+  --c: var(--wolf);
+}
+.c-serial_killer {
+  --c: var(--sk);
+}
