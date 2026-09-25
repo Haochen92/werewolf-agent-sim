@@ -163,6 +163,22 @@ The stage does not use Mantine components; Mantine stays for the rooms, the land
 - A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
   the trap once the table has gone in; the load is its own layer while it moves.
 
+**If a beat "looks glitched" again** (frames overlapping, a black flash for a few ms, a stutter
+while the motion itself completes): it is almost certainly the compositor, not React. Check in
+this order before touching the choreography.
+1. Confirm zero DOM churn during the beat (React DevTools profiler, or a MutationObserver
+   count). If nothing re-renders, stop looking at the code and look at layers.
+2. Headless Chromium will not reproduce it, and CDP screencast frame sheets miss one-frame
+   flashes. The only instrument is the owner's Chrome on a production build.
+3. A/B by subtraction: `next build` copies with ONE thing removed each, on separate ports
+   (3004+, never 3000), owner reports which port is clean. Two rounds found both causes above.
+4. If nothing isolates, simplify in this order, stopping at the first that fixes it: pin the
+   moving layers → rasterise the fading backdrop → drop the `mix-blend-mode` on the light layer
+   for that beat → don't move the camera during the change → sequence the moves instead of
+   overlapping them → cover the change with a shutter or a cut.
+The vote's `table-down` (beat 3) and `dusk→night` (beat 14) on 2026-09-25 are the reference
+cases; `PaintPicture`'s docstring in `Stage.tsx` tells the second one.
+
 ## 7. The workbench
 
 `app/workbench/[scene]/page.tsx` (one route). It reads the URL, folds the bundled fixture
