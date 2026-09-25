@@ -1,0 +1,12 @@
+/* The X-ray night's words: the pack's chat held above the replay's transport band. The band
+   covers the room, so it lets clicks through to the wing; only the chat takes them. */
+.chatBand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+}
+.chatBand > * {
+  pointer-events: auto;
+}
