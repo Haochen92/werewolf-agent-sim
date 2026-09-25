@@ -1,0 +1,28 @@
+.main {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.stageArea {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* what the stage says for a scene that is not built, or has no beats for this viewer */
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+  background: #0c0a07;
+  color: var(--bone2);
+  font-size: 28px;
+}
+.placeholder small {
+  font-size: 18px;
+  color: var(--bone3);
+}
