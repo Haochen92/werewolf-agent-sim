@@ -11,3 +11,7 @@ out/
 
 npm-debug.log*
 .DS_Store
+
+# The design archive (54 MB of benches with inlined sprites + PNG masters); the build uses
+# the WebP under src/assets/sprites instead.
+claude_artifacts/

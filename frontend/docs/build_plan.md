@@ -88,12 +88,13 @@ frontend/
     │   └── games/[gameId]/{page.tsx, _components/}     # ONE route, three states (§5)
     ├── assets/                             # imported art: portraits/ glyphs/ backgrounds/
     │   └── manifest.ts                     # the ONE import site → typed handles (no paths in components)
-    ├── components/                         # cross-route: table view, transcript, xray, forms
+    ├── components/                         # cross-route: seat chip, replay card, lobby cards, forms
+    ├── stage/                              # the theatre, replay and live (stage_architecture.md §8)
     ├── game/                               # THE core: reducer + store (pure TS, vitest home)
     │   ├── foldEvents.ts                   # (GameView, DurableGameEvent) → GameView
     │   ├── types.ts                        # GameView + derived shapes (types/domain material)
     │   └── store.ts                        # zustand session store (§4)
-    ├── hooks/                              # useGameStream, useCountdown, useFilterState, …
+    ├── hooks/                              # useGameStream (+ catch-up-boundary), useCountdown
     ├── lib/
     │   ├── config.ts                       # API_BASE_URL — the ONE definition
     │   ├── request.ts                      # request<T>(): error discrimination (§6)
@@ -255,6 +256,13 @@ the client never re-routes across the transition.
 `candidates`; `{delegate: true}` legal everywhere (the AFK button). 422 message renders as-is;
 409 = someone (or the AFK timer) already answered — clear the form and re-sync via status.
 
+**Drafting a line from notes** (server landed 2026-09-17, UI pending — spec in ux_journeys D25):
+`POST /games/{gameId}/draft` `{notes}` → `{draft, drafts_left, deadline}` for `discuss` /
+`wolf_discuss` turns only. A read-only helper: the draft goes into the textarea and is sent
+through `/turns` like any typed line. Three drafts per turn, server-enforced; the wait is
+credited back to the seat's clock and the returned `deadline` is the new countdown. 409 =
+no turn / no drafts left; 503 = model failure, "type it instead".
+
 ## 6. Server tweaks shipping with P0 (ruling 5) — ⭐BOTH LANDED 2026-08-21
 
 1. ✅ `server/schemas/replays.py`: `ReplayGame.events: list[DurableGameEvent]` (the table's JSONB
@@ -347,6 +355,23 @@ model menu with `needs_key`, replay list carrying `model`, one house-funded AI g
 streaming, the replay page chunk carrying the new player. Not set: `ADMIN_TOKEN` (the house
 runs on process defaults; set it before the demo URL goes into applications) and the
 Langfuse keys (production has never traced; the server logs the disabled-client warning at boot).
+· **2026-09-17 both containers rebuilt at `223fc9b`** (the AI-memory switch + the three X-ray
+events; built from a clean detached worktree so uncommitted work stayed out). Order that
+mattered: `alembic upgrade head` (0006, `games.memory`) ran first, from inside the NEW server
+image on the `werewolf` network — the host cannot resolve the DSN's `ww-postgres` name, and
+the old image lacks the migration file. Then `.env.production` gained
+`WW_MEMORY_STORE_DIR=/app/memory_stores/demo_snapshots/demo_gen1` (absolute: the server's cwd
+is `/app`; the snapshot's `indexed_cache.pkl` was built on the host first, the mount is ro).
+Pre-flight in the slim image before the switch: the memory-on import closure resolves and the
+snapshot loads from cache with no embedding call (the Dockerfile's "memory back on" warning did
+not bite — nothing on the retrieval path imports the filtered ML stack). Smoke: as before, plus
+the OpenAPI carries `memory` on both doors and the three event types, and one house-funded
+memory-on game (`9369a5c1`, wolves, 407 events: 53 `memory_consulted`, 52 `player_reads`, one
+`memory_extracted` with 51 observations; the store loaded from cache, 723 vectors; the observer
+backlog flushed over the public stream at game over). Same day, server-only rebuild: served
+games retrieve **strategy points only** (`run_config.py`, owner's ruling — the town half of the
+store never had observations, so both factions now get the same kind of memory). That one change
+is applied on top of `223fc9b` in the image; commit pending.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
@@ -376,6 +401,7 @@ server — schedule as its own slice when the memory-showcase mode is taken up.
 | Vote matrix / mention graph (§7) | ✅ derivable | `vote_cast` + `addressed_targets` (observer) |
 | Dramatic irony live (§2 T1) | ❌ by design | roles are observer-tier until game_over; replay-only |
 | Memory X-ray / said-vs-thought (§2 T1) | ⚠️ partial | live is memory-OFF (research closure); wire x-ray = scheduler/roles/strategy/gated passes; deep memory inspector = static eval-case export, later |
+| Draft a line from notes (ux_journeys D25) | ✅ server (2026-09-17), ❌ UI | `POST /games/{id}/draft`; 3 per turn, clock credited; discussion turns only |
 | Ghost guesses (§9), daily puzzle (§7), MVP score (§6.4), accounts (§6.1) | ❌ none | localStorage ghost v1 now; rest = "later" list |
 | Session durability | ✅ full (2026-08-20, normalized 2026-08-22) | Postgres checkpointer + unified games/events tables + boot recovery; a server restart re-parks pending turns and games resume (restart smoke passed). Completed `GameRow`s and their existing `EventRow`s are the replay—there is no copied replay blob. BYOK games are the one exception: the key dies with the process, so they become dropped with a clear `GameStatus.error`. Unset `WW_POSTGRES_DSN` degrades gracefully to RAM-only. |
 

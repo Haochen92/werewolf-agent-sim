@@ -4,6 +4,10 @@ out/
 next-env.d.ts
 *.tsbuildinfo
 
+# Playwright's run output (the goldens live in e2e/__screenshots__ and are committed)
+test-results/
+playwright-report/
+
 # The real local env, copied from .env.local.dev — never committed.
 .env.local
 .env*.local
@@ -16,3 +20,8 @@ next-env.d.ts
 
 .DS_Store
 npm-debug.log*
+
+# Design bundle archive (2026-09-25): 54 MB of self-contained benches with inlined sprites plus
+# the PNG masters. Also on claude.ai (links in docs/design_2026-09-25/HANDOFF.md §10). The
+# curated part lives in docs/design_2026-09-25/; the shipped sprites are WebP in src/assets.
+claude_artifacts/
