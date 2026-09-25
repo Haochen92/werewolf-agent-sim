@@ -42,6 +42,12 @@ interface SessionState {
    * makes a refreshed mid-game session silent.
    */
   liveSeqs: Set<number>;
+  /**
+   * The newest seq that arrived as catch-up at the log's end (not a late insert like the
+   * backlog after game over). After a reconnect this is where the missed events end, so the
+   * stage lands on them still instead of playing them; 0 until anything has.
+   */
+  caughtUpTo: number;
   pacing: Record<string, PacingBar>;
   connection: ConnectionState;
 
@@ -113,6 +119,7 @@ const initial = {
   view: emptyGameView(),
   events: [] as DurableGameEvent[],
   liveSeqs: new Set<number>(),
+  caughtUpTo: 0,
   pacing: {} as Record<string, PacingBar>,
   connection: 'idle' as ConnectionState,
 };
@@ -130,6 +137,7 @@ export const useGameSession = create<SessionState>((set, get) => ({
       // Deliberately NOT merged with any existing liveSeqs: a hydrate re-folds from
       // scratch, so every seq in the new view is history by definition.
       liveSeqs: new Set(),
+      caughtUpTo: 0,
       // Pacing is ephemeral and belongs to one connection. A re-hydrate/rejoin/new game
       // must not inherit a completed strip from the previous stream.
       pacing: {},
@@ -139,7 +147,9 @@ export const useGameSession = create<SessionState>((set, get) => ({
   applyCatchUp: (event) => {
     const { view, events } = get();
     const next = appendDurable(view, events, event);
-    if (next) set(next); // liveSeqs untouched: this event is history that arrived late.
+    if (!next) return;
+    // liveSeqs untouched: this event is history that arrived late.
+    set(event.seq > view.lastSeq ? { ...next, caughtUpTo: event.seq } : next);
   },
 
   applyLive: (event) => {
@@ -220,7 +230,14 @@ export const useGameSession = create<SessionState>((set, get) => ({
     set({ view: foldEvents(events, { mySeat: seat }) });
   },
 
-  reset: () => set({ ...initial, view: emptyGameView(), liveSeqs: new Set(), pacing: {} }),
+  reset: () =>
+    set({
+      ...initial,
+      view: emptyGameView(),
+      liveSeqs: new Set(),
+      caughtUpTo: 0,
+      pacing: {},
+    }),
 
   isLive: (seq) => get().liveSeqs.has(seq),
 }));

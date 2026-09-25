@@ -15,14 +15,16 @@
  * entire history arrives through the same socket as the future. Everything at or below the
  * snapshot's `last_seq` is folded as HISTORY; only what is above it counts as news and can
  * fire a beat. Without that split, every refresh would replay the role reveal and the
- * game-over takeover for events that happened an hour ago (ux_journeys §0, D23).
+ * game-over takeover for events that happened an hour ago (ux_journeys §0, D23). A reconnect
+ * moves the boundary on to what it caught up on (catch-up-boundary.ts).
  */
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiUrl } from '@/lib/config';
 import { getGameStatus } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useGameSession } from '@/game/store';
+import { catchUpBoundary } from './catch-up-boundary';
 import { recordServerClock } from './useCountdown';
 import type {
   DurableGameEvent,
@@ -49,9 +51,6 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
   const syncPending = useGameSession((s) => s.syncPending);
   const setConnection = useGameSession((s) => s.setConnection);
   const setMySeat = useGameSession((s) => s.setMySeat);
-
-  // Frozen at connect time; every seq at or below it is history, not news.
-  const catchUpThrough = useRef<number>(0);
 
   const {
     data: status,
@@ -93,7 +92,8 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     if (!enabled || !status || status.state === 'waiting' || status.archived) return;
     if (status.awaiting_key) return; // idle until a seat holder funds it; the poll will say
 
-    catchUpThrough.current = status.last_seq ?? 0;
+    // Frozen at connect time; every seq at or below it is history, not news (until a reconnect).
+    const boundary = catchUpBoundary(status.last_seq ?? 0);
     hydrate([], { gameId, mySeat: status.you ?? null });
     setConnection('connecting');
 
@@ -104,14 +104,22 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
       withCredentials: true,
     });
 
-    source.addEventListener('open', () => setConnection('open'));
+    source.addEventListener('open', () => {
+      setConnection('open');
+      // back after a drop: ask how far the log has got; up to there is catch-up, not news
+      if (boundary.resuming())
+        getGameStatus(gameId).then(
+          (fresh) => boundary.resumed(fresh.last_seq ?? 0),
+          () => boundary.resumed(useGameSession.getState().view.lastSeq),
+        );
+    });
 
     source.addEventListener('game', (message) => {
       try {
         const event = JSON.parse(
           (message as MessageEvent<string>).data,
         ) as DurableGameEvent;
-        if (event.seq <= catchUpThrough.current) applyCatchUp(event);
+        if (boundary.isHistory(event.seq)) applyCatchUp(event);
         else applyLive(event);
       } catch {
         // A frame we cannot parse is a wire problem, not a render problem. Dropping it
@@ -128,6 +136,8 @@ export function useGameStream(gameId: string, enabled = true): GameStream {
     });
 
     source.addEventListener('error', () => {
+      // the browser is reopening the stream: what it resends until the fresh status is catch-up
+      if (source.readyState === EventSource.CONNECTING) boundary.dropped();
       // A backgrounded tab gets throttled and drops the connection; that is the browser
       // doing its job, not a fault, and surfacing it would cry wolf on every tab switch.
       if (typeof document !== 'undefined' && document.hidden) return;

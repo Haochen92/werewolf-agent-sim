@@ -1,0 +1,393 @@
+'use client';
+
+/**
+ * The live theatre: a game being played, on the stage, as it happens (beat sheet §12, handoff
+ * §6). This is the one place the live stage's state lives: which beat is on the stage, what
+ * the right side holds, the drawer's filters and the film's tab, and the seated human's open
+ * turn (the line being written, the drafts, what was sent). Everything below it is drawn from
+ * props; the game itself comes from the session store, which the stream fills.
+ *
+ * There is no transport. Beats play as events arrive: each new beat animates in and holds for
+ * its time, a queue of them drains at fast speed, and history (a refresh, the page opened
+ * mid-game, what a reconnect caught up on) lands still on the latest beat without playing
+ * anything; only a new game's deal, which is always over before the page connects, plays from
+ * its first beat. The rules are in live-state.ts; this file runs the timer and talks to the
+ * server.
+ *
+ * The seated human's turn never waits for the stage: the clock runs on the request's real
+ * deadline from the moment it arrives, and the stage hurries to the prompt. Answers go out
+ * from whichever scene took them (the dock, the ballot, the shelf room, the pack's chat) to
+ * one place here, which picks the right body for the request and says what the server said.
+ * A turn that runs out is answered by the seat's agent; that seat's own screen is told so
+ * when its line arrives.
+ *
+ * After `game_over` every viewer holds the whole log, so the X-ray is on for everyone: the
+ * wing takes the truth, the film opens, and the ending plays to its curtain, whose way out
+ * goes to the replay or back to the lobby.
+ */
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useGameSession, type PacingBar } from '@/game/store';
+import { serverNow, useCountdown } from '@/hooks/useCountdown';
+import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
+import { queryKeys } from '@/lib/queryKeys';
+import { ApiError } from '@/lib/request';
+import { seatToken } from '@/lib/storage';
+import type { GameStatus } from '@/types/contracts';
+import { castForGame } from '../cast/castForGame';
+import { beatsFor } from '../beats/beatsFor';
+import type { SceneBeat } from '../beats/types';
+import { useDrawerFilters } from '../drawer/use-drawer-filters';
+import { StageMotion } from '../motion';
+import { SCENES } from '../scenes';
+import type { DockInput, Presentation, SlotInput, TurnInput } from '../scenes/types';
+import { Layer, Stage } from '../Stage';
+import { createFoldCache } from './fold-cache';
+import {
+  historyEnd as historyEndOf,
+  historyLanding,
+  initialLiveState,
+  initialTurnState,
+  liveReducer,
+  payloadFor,
+  requestBefore,
+  requestIsActive,
+  turnClock,
+  turnReducer,
+  type Answer,
+  type LiveCtx,
+} from './live-state';
+import { holdFor } from './transport';
+import styles from './LiveTheatre.module.css';
+
+export interface LiveTheatreProps {
+  /** The full uuid: the cast is drawn from it. */
+  gameId: string;
+  /** The status poll's latest answer: whose turns are pending, and up to where it saw. */
+  status: GameStatus | undefined;
+}
+
+/** The drawer is open by default on a screen with room for it (as the replay's). */
+function defaultSlot(): Presentation['slot'] {
+  if (typeof window === 'undefined') return null;
+  return window.matchMedia('(max-height: 540px)').matches ? null : 'drawer';
+}
+
+/** The live count for a beat's pill: the ballots in (the vote), the acts in (the night). */
+function progressFor(
+  beat: SceneBeat,
+  pacing: Record<string, PacingBar>,
+): TurnInput['progress'] {
+  const stage =
+    beat.scene === 'vote' ? 'day_vote' : beat.scene === 'night' ? 'night' : null;
+  const bar = stage ? pacing[`${beat.day}:${stage}`] : undefined;
+  return bar ? { n: bar.done, total: bar.total } : undefined;
+}
+
+/** A 403 means the seat cookie was lost: win it back with the stored token, then try once more. */
+async function asSeat<T>(gameId: string, call: () => Promise<T>): Promise<T> {
+  try {
+    return await call();
+  } catch (err) {
+    if (!(err instanceof ApiError) || !err.isSeatLost) throw err;
+    const token = seatToken.get(gameId);
+    if (!token) throw err;
+    try {
+      await rejoinGame(gameId, token);
+    } catch (rejoinError) {
+      seatToken.clear(gameId);
+      throw rejoinError;
+    }
+    return call();
+  }
+}
+
+const failure = (err: unknown) => ({
+  status: err instanceof ApiError ? err.status : 0,
+  message: err instanceof Error ? err.message : 'Something went wrong. Try again.',
+});
+
+export function LiveTheatre({ gameId, status }: LiveTheatreProps) {
+  const queryClient = useQueryClient();
+  const events = useGameSession((s) => s.events);
+  const view = useGameSession((s) => s.view);
+  const liveSeqs = useGameSession((s) => s.liveSeqs);
+  const caughtUpTo = useGameSession((s) => s.caughtUpTo);
+  const pacing = useGameSession((s) => s.pacing);
+  const connection = useGameSession((s) => s.connection);
+  const clearPending = useGameSession((s) => s.clearPending);
+
+  const me = view.me.seat;
+  // after game over the whole log is everyone's: every viewer is an observer
+  const xray = view.winner !== null;
+  const cast = useMemo(() => castForGame(gameId), [gameId]);
+  const beats = useMemo(
+    () => beatsFor(events, { xray, me, live: true }),
+    [events, xray, me],
+  );
+  const historyEnd = useMemo(
+    () => historyEndOf(events, liveSeqs, caughtUpTo),
+    [events, liveSeqs, caughtUpTo],
+  );
+  // how far the log had got when the page connected: the history is all in once it gets there
+  const [connectedAt] = useState(() => status?.last_seq ?? 0);
+  const landing = useMemo(
+    () => historyLanding(events, historyEnd, connectedAt),
+    [events, historyEnd, connectedAt],
+  );
+  const folds = useMemo(() => createFoldCache(events, { mySeat: me }), [events, me]);
+
+  // --- the seated human's turn ---------------------------------------------------
+  const pending = view.me.pending;
+  const [turn, turnDispatch] = useReducer(turnReducer, initialTurnState);
+  const pendingSeq = pending?.seq ?? null;
+  useEffect(() => {
+    if (pendingSeq !== null) turnDispatch({ type: 'open', seq: pendingSeq });
+  }, [pendingSeq]);
+
+  // when each request arrived live, in server time: the clock's whole runs from there
+  const arrivals = useRef(new Map<number, number>());
+  const [arrivedAt, setArrivedAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (pendingSeq === null) return;
+    if (liveSeqs.has(pendingSeq) && !arrivals.current.has(pendingSeq))
+      arrivals.current.set(pendingSeq, serverNow());
+    setArrivedAt(arrivals.current.get(pendingSeq) ?? null);
+  }, [pendingSeq, liveSeqs]);
+
+  const mine = turn.seq !== null && turn.seq === pendingSeq;
+  // a draft credits its wait back to the clock: its deadline is the newer one
+  const deadline =
+    mine && turn.deadline !== undefined ? turn.deadline : (pending?.deadline ?? null);
+  const countdown = useCountdown(deadline);
+  const active = requestIsActive(pending, me, status) && view.me.alive && !xray;
+  const open = active && mine && !turn.answered && !countdown.expired;
+  useEffect(() => {
+    // run out with no answer from here: the seat's agent answers it
+    if (active && mine && countdown.expired && pendingSeq !== null)
+      turnDispatch({ type: 'expired', seq: pendingSeq });
+  }, [active, mine, countdown.expired, pendingSeq]);
+
+  const refresh = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) }),
+    [queryClient, gameId],
+  );
+
+  const send = useCallback(
+    async (payload: TurnPayload, seq: number) => {
+      const delegated = 'delegate' in payload;
+      turnDispatch({ type: 'sending', seq });
+      try {
+        await asSeat(gameId, () => submitTurn(gameId, payload));
+        turnDispatch({ type: 'sent', seq, delegated });
+        clearPending();
+      } catch (err) {
+        const f = failure(err);
+        turnDispatch({ type: 'send-failed', seq, ...f });
+        // already answered (by the agent on the deadline, or a second press): let it go
+        if (f.status === 409) clearPending();
+      } finally {
+        refresh();
+      }
+    },
+    [gameId, clearPending, refresh],
+  );
+
+  const answer = useCallback(
+    (a: Answer) => {
+      if (!pending || !mine || turn.answered || turn.sending) return;
+      const payload = payloadFor(pending, a);
+      if (payload) void send(payload, pending.seq);
+    },
+    [pending, mine, turn.answered, turn.sending, send],
+  );
+  const onSay = useCallback((text: string) => answer({ say: text }), [answer]);
+  const onAct = useCallback((target: string | null) => answer({ act: target }), [answer]);
+  const onDelegate = useCallback(() => answer({ delegate: true }), [answer]);
+
+  const onDraft = useCallback(
+    async (notes: string) => {
+      if (pendingSeq === null || !notes.trim()) return;
+      const seq = pendingSeq;
+      turnDispatch({ type: 'drafting', seq });
+      try {
+        const r = await asSeat(gameId, () => draftLine(gameId, notes.trim()));
+        turnDispatch({
+          type: 'drafted',
+          seq,
+          draft: r.draft,
+          draftsLeft: r.drafts_left,
+          deadline: r.deadline ?? null,
+        });
+      } catch (err) {
+        const f = failure(err);
+        turnDispatch({ type: 'draft-failed', seq, ...f });
+        if (f.status === 409) refresh();
+      }
+    },
+    [gameId, pendingSeq, refresh],
+  );
+
+  // --- the stage -----------------------------------------------------------------
+  const rolesLanded = Object.keys(view.xray.roles).length > 0;
+  const openPrompt = open ? pendingSeq : null;
+  const ctx = useMemo(
+    (): LiveCtx => ({ me, rolesLanded, openPrompt }),
+    [me, rolesLanded, openPrompt],
+  );
+  const ctxRef = useRef(ctx);
+  useEffect(() => {
+    ctxRef.current = ctx;
+  }, [ctx]);
+
+  const [state, dispatch] = useReducer(liveReducer, undefined, () =>
+    initialLiveState(defaultSlot()),
+  );
+  // every change to the log, or to what the stage may be waiting for, is a new cut
+  useEffect(() => {
+    dispatch({ type: 'recut', beats, historyEnd, landing, ctx });
+  }, [beats, historyEnd, landing, ctx]);
+
+  const index = state.cursor.index;
+  const beat: SceneBeat | undefined = state.beats[index];
+  const holdMs = beat && state.holding ? holdFor(beat, state.speed) : null;
+  useEffect(() => {
+    if (holdMs === null) return;
+    const step = state.step;
+    const t = setTimeout(
+      () => dispatch({ type: 'held', step, ctx: ctxRef.current }),
+      holdMs,
+    );
+    return () => clearTimeout(t);
+  }, [state.step, holdMs]);
+
+  // the side slot's state that outlives a beat; the game's end turns the drawer's X-ray lines on
+  const drawer = useDrawerFilters();
+  const [filmTab, setFilmTab] = useState('note');
+  const { xrayOn } = drawer;
+  useEffect(() => {
+    if (xray) xrayOn();
+  }, [xray, xrayOn]);
+  const ahead = useMemo(
+    () => (xray ? folds.at(events.length) : null),
+    [xray, folds, events.length],
+  );
+  const slotInput = useMemo(
+    (): SlotInput => ({
+      filters: drawer.filters,
+      onFilters: drawer.setFilters,
+      filmTab,
+      onFilmTab: setFilmTab,
+      ahead,
+      onTranscript: () => dispatch({ type: 'transcript' }),
+      onXray: () => dispatch({ type: 'xray', xray }),
+    }),
+    [drawer.filters, drawer.setFilters, filmTab, ahead, xray],
+  );
+
+  const presentation = useMemo(
+    (): Presentation => ({
+      xray,
+      slot: state.slot,
+      motion: state.speed,
+      hud: 'live',
+      cast,
+      animate: state.cursor.animate,
+    }),
+    [xray, state.slot, state.speed, cast, state.cursor.animate],
+  );
+
+  const sceneView = useMemo(() => (beat ? folds.at(beat.end) : null), [folds, beat]);
+  const clock = open && pending ? turnClock(deadline, arrivedAt, serverNow()) : null;
+  const dock: DockInput | undefined =
+    beat?.id === 'day.your-turn'
+      ? {
+          text: turn.text,
+          onText: (text) => turnDispatch({ type: 'text', text }),
+          notes: turn.notes,
+          onNotes: (notes) => turnDispatch({ type: 'notes', notes }),
+          onDraft,
+          draftsLeft: turn.draftsLeft,
+          drafting: turn.drafting,
+          sending: turn.sending,
+          error: turn.error,
+          onDelegate,
+          closed: !(open && beat.seq === pendingSeq),
+        }
+      : undefined;
+  const agentSpoke =
+    beat?.id === 'day.speech' && beat.subject === me && me !== null
+      ? turn.byAgent.includes(requestBefore(events, beat.seq, me) ?? -1)
+      : false;
+  const turnInput: TurnInput | undefined = beat
+    ? {
+        clock: beat.liveOnly && beat.seq === pendingSeq ? clock : null,
+        progress: progressFor(beat, pacing),
+        agentSpoke,
+        dock,
+      }
+    : undefined;
+
+  const Scene = beat ? SCENES[beat.scene] : null;
+  // a prompt that is not the day's dock (the ballot, a night act, the pack): the agent can take it
+  const handOver = open && beat?.liveOnly && beat.id !== 'day.your-turn';
+  return (
+    <div
+      className={styles.theatre}
+      data-beat-index={index}
+      data-beat={beat?.id}
+      data-holding={state.holding}
+      data-open-prompt={openPrompt ?? undefined}
+    >
+      <Stage fit="contain">
+        {beat && sceneView && Scene ? (
+          <StageMotion speed={state.speed}>
+            <Scene
+              view={sceneView}
+              beat={beat}
+              me={me}
+              presentation={presentation}
+              slot={slotInput}
+              turn={turnInput}
+              onAct={onAct}
+              onSay={onSay}
+              wayOut={{ replay: `/replays/${gameId}`, lobby: '/rooms' }}
+            />
+          </StageMotion>
+        ) : null}
+        <Layer name="hud">
+          {!beat ? <p className={styles.waiting}>The table is being seated…</p> : null}
+          {beat?.id === 'over.epilogue' ? (
+            <button
+              type="button"
+              className={styles.onward}
+              onClick={() => dispatch({ type: 'dismiss', ctx: ctxRef.current })}
+            >
+              Close the sheet
+            </button>
+          ) : null}
+          {handOver ? (
+            <button
+              type="button"
+              className={styles.handOver}
+              onClick={onDelegate}
+              disabled={turn.sending}
+            >
+              Let my agent play this turn
+            </button>
+          ) : null}
+          {handOver && turn.error ? (
+            <p className={styles.error} role="alert">
+              {turn.error}
+            </p>
+          ) : null}
+          {connection === 'reconnecting' ? (
+            <p className={styles.connection} data-connection>
+              Reconnecting…
+            </p>
+          ) : null}
+        </Layer>
+      </Stage>
+    </div>
+  );
+}

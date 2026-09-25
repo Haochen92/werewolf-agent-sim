@@ -1,0 +1,172 @@
+/* The replay's transport band, as bench 73 draws it (`.transport`, `.seek`), in stage units:
+   the buttons 46.4 × 40 (2.9cqw × 2.5cqw), 9.6 off the foot, the seek bar 6.4 tall on the
+   cloak with the amber fill. The caption, the chapter marks, the speed and the X-ray pill are
+   ours (beat sheet §11, "As built"). */
+.band {
+  position: absolute;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 12.8px;
+  padding-bottom: 9.6px;
+  padding-top: 9.6px;
+  box-sizing: border-box;
+  font-size: 14.4px;
+  line-height: 1.2;
+  color: var(--bone);
+  /* the band itself never catches a click meant for the stage; its controls do */
+  pointer-events: none !important;
+}
+.band > * {
+  pointer-events: auto;
+}
+
+.buttons {
+  display: flex;
+  gap: 6.4px;
+  flex: 0 0 auto;
+}
+.buttons button,
+.speed button {
+  appearance: none;
+  font: inherit;
+  color: var(--bone);
+  background: rgba(14, 9, 6, 0.92);
+  border: 1px solid var(--cloak2);
+  cursor: pointer;
+}
+.buttons button {
+  width: 46.4px;
+  height: 40px;
+  border-radius: 11.2px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.buttons svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.buttons button[aria-pressed='true'] {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+.buttons button:hover,
+.speed button:hover {
+  border-color: var(--bone3);
+}
+.band button:focus-visible {
+  outline: 2px solid var(--film-ink);
+  outline-offset: 2px;
+}
+
+/* where we are: the beat's name over the bar, the count at its right */
+.where {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4.8px;
+}
+.caption {
+  display: flex;
+  gap: 12.8px;
+  align-items: baseline;
+  text-shadow: 0 1px 3px #000;
+}
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.count {
+  flex: 0 0 auto;
+  color: var(--bone2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the click target is taller than the bar it draws */
+.seek {
+  height: 17.6px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.track {
+  position: relative;
+  width: 100%;
+  height: 6.4px;
+  border-radius: 4.8px;
+  background: var(--cloak1);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.track i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--amber);
+  border-radius: 4.8px;
+}
+/* a chapter's mark: a tick across the bar */
+.track b {
+  position: absolute;
+  top: -3.2px;
+  width: 3.2px;
+  height: 12.8px;
+  margin-left: -1.6px;
+  border-radius: 1.6px;
+  background: var(--bone3);
+}
+.track b.passed {
+  background: var(--bone);
+}
+
+.speed {
+  display: flex;
+  flex: 0 0 auto;
+}
+.speed button {
+  height: 40px;
+  padding: 0 11.2px;
+  border-radius: 0;
+  margin-left: -1px;
+  color: var(--bone2);
+}
+.speed button:first-child {
+  border-radius: 11.2px 0 0 11.2px;
+  margin-left: 0;
+}
+.speed button:last-child {
+  border-radius: 0 11.2px 11.2px 0;
+}
+.speed button[aria-pressed='true'] {
+  background: var(--bone);
+  border-color: var(--bone);
+  color: var(--ink);
+  position: relative;
+}
+
+/* the X-ray's state (the strip's button switches it; this only says it) */
+.xray {
+  flex: 0 0 auto;
+  height: 40px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: 0 12.8px;
+  border-radius: 11.2px;
+  border: 1px solid var(--cloak2);
+  background: rgba(14, 9, 6, 0.92);
+  color: var(--bone3);
+  white-space: nowrap;
+}
+.xray.on {
+  border-color: var(--film-ink);
+  color: var(--film-ink);
+  box-shadow: 0 0 11.2px rgba(127, 220, 242, 0.35);
+}

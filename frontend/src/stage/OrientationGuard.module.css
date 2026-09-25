@@ -1,0 +1,55 @@
+/* The "turn your phone" card: shown over the whole page while the viewport is upright. */
+.turn {
+  display: none;
+}
+@media (orientation: portrait) {
+  .turn {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 12px;
+    padding: 24px;
+    text-align: center;
+    background: #0c0a07;
+    color: #efe4cb;
+    font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+  }
+}
+.turn svg {
+  width: 72px;
+  height: 72px;
+  fill: none;
+  stroke: #e0a63a;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: tilt 2.4s ease-in-out infinite;
+}
+.turn strong {
+  font-size: 22px;
+  font-weight: 500;
+}
+.turn span {
+  max-width: 28ch;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #cdbb93;
+}
+@keyframes tilt {
+  0%,
+  30% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn svg {
+    animation: none;
+  }
+}

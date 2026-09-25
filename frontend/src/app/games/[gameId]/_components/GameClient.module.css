@@ -1,0 +1,20 @@
+/* The live game fills the window: the stage letterboxes inside on black. */
+.page {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+/* the wait, and what went wrong */
+.shell {
+  min-height: 100vh;
+  padding: var(--space-4, 16px);
+}
+.meta {
+  color: var(--text-faint);
+  font-size: 0.9rem;
+  padding: var(--space-4, 16px);
+}
+.meta a {
+  color: inherit;
+}

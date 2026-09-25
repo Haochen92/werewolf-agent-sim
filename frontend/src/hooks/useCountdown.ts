@@ -21,6 +21,11 @@ export function recordServerClock(serverIso: string | undefined | null): void {
   if (!Number.isNaN(server)) clockOffset = server - Date.now();
 }
 
+/** The server's wall clock as this browser best knows it, in ms. */
+export function serverNow(): number {
+  return Date.now() + clockOffset;
+}
+
 export interface Countdown {
   /** Whole seconds left, floored at 0. Null when there is no deadline. */
   secondsLeft: number | null;

@@ -58,6 +58,22 @@ describe('reconnect safety', () => {
     expect(useGameSession.getState().events).toHaveLength(56);
   });
 
+  it('remembers where a reconnect’s catch-up ends, but not a late insert behind the head', () => {
+    const store = useGameSession.getState();
+    for (const e of events.filter((x) => x.seq <= 50)) store.applyCatchUp(e);
+    expect(useGameSession.getState().caughtUpTo).toBe(50);
+    store.applyLive(events.find((e) => e.seq === 51)!);
+    // the connection drops; what was missed comes back as catch-up at the log's end
+    for (const e of events.filter((x) => x.seq > 51 && x.seq <= 60)) store.applyCatchUp(e);
+    expect(useGameSession.getState().caughtUpTo).toBe(60);
+    expect(useGameSession.getState().isLive(60)).toBe(false);
+    // an older seq inserted behind the head (the backlog after game over) moves nothing
+    const inserted = events.filter((x) => x.seq > 60 && x.seq <= 70);
+    store.applyLive(inserted.at(-1)!);
+    store.applyCatchUp(inserted[0]);
+    expect(useGameSession.getState().caughtUpTo).toBe(60);
+  });
+
   it('absorbs the exact R7 order: game_over first, then unseen lower-seq backlog', () => {
     const publicTypes = new Set([
       'game_started',

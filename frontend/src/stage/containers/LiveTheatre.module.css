@@ -1,0 +1,76 @@
+/* The live theatre fills whatever the page gives it; the stage letterboxes inside on black. */
+.theatre {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+/* What the theatre itself says over the stage, in stage units: before the first beat, the
+   epilogue's way on, the hand-over on a prompt, a dropped connection. */
+.waiting {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 420px;
+  margin: 0;
+  text-align: center;
+  font-size: var(--said);
+  color: var(--bone2);
+}
+
+.onward,
+.handOver {
+  position: absolute;
+  z-index: 6;
+  font: inherit;
+  font-size: var(--meta);
+  line-height: 1.5;
+  color: var(--bone);
+  background: rgba(14, 9, 6, 0.92);
+  border: 1px solid var(--cloak2);
+  border-radius: 9.6px;
+  padding: 7.2px 16px;
+  cursor: pointer;
+}
+/* the epilogue's sheet covers the stage: its way on sits at the foot, right */
+.onward {
+  right: 22.4px;
+  bottom: 19.2px;
+}
+/* a prompt's hand-over: centred under the top strip, clear of the rooms' own controls */
+.handOver {
+  left: 50%;
+  top: 19.2px;
+  transform: translateX(-50%);
+  color: var(--bone2);
+}
+.handOver:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.error {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 64px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 4.8px 12.8px;
+  border-radius: 8px;
+  background: rgba(14, 9, 6, 0.92);
+  font-size: var(--meta);
+  color: #f08a78;
+}
+
+.connection {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 96px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: calc(var(--meta) * 0.9);
+  color: var(--bone3);
+}

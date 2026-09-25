@@ -59,9 +59,9 @@ export type InvestigationResult = EventOf<'investigation_result'>;
 export type VigilanteConfirmation = EventOf<'vigilante_confirmation'>;
 export type BulletsRemaining = EventOf<'bullets_remaining'>;
 
-// `day_summary_structured` is deliberately NOT aliased. The schema exists but the engine
-// never emits it (build_plan §4: "schema-only, provisional — do not build on it"), and the
-// 593-event seed confirms zero occurrences. The reducer drops it.
+// `day_summary_structured` is deliberately NOT aliased: its `data` is a bare object the
+// summarizer owns, read defensively by the reducer. (It was schema-only when this façade
+// was written; games since 2026-09 emit one per day — four in the 9369a5c1 fixture.)
 
 export type NightDeath = S['NightDeath'];
 export type NightSave = S['NightSave'];
@@ -102,5 +102,6 @@ export type NewRoom = S['NewRoom'];
 export type JoinGame = S['JoinGame'];
 export type RejoinGame = S['RejoinGame'];
 export type TurnAccepted = S['TurnAccepted'];
+export type DraftResponse = S['DraftResponse'];
 export type ModelsMenu = S['ModelsMenu'];
 export type ModelRow = S['ModelRow'];

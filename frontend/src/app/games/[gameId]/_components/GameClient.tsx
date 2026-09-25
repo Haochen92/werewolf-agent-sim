@@ -4,62 +4,38 @@
  * `/games/[gameId]` — ONE route, three states (build_plan §5).
  *
  *   waiting  → the lobby card
- *   running  → the live table: the SAME transcript components the replay theater uses,
- *              fed by the SSE store instead of a fetched log, plus the turn dock
- *   finished → the theater, X-ray unlocked
+ *   running  → the live theatre: the SAME stage and scenes the replay uses, fed by the SSE
+ *              store instead of a fetched log, with the seated human's turns on it
+ *   finished → the same theatre, played on to its curtain with the X-ray on for everyone
  *
  * The client never re-routes across those transitions; the page morphs, mirroring the
  * server's own registry swap where a room URL becomes a game URL.
  *
- * Beats fire on LIVE arrival only. Every takeover below is gated on `isLive(seq)` from the
- * store, which is false for anything folded during catch-up — so a refresh mid-game lands
- * silently on the newest day instead of replaying an hour of drama (ux_journeys §0, D23).
+ * Beats fire on LIVE arrival only: the theatre plays what arrives while the page watches and
+ * lands still on whatever the log already held, so a refresh mid-game lands silently on the
+ * latest beat instead of replaying an hour of drama (ux_journeys §0, D23).
+ *
+ * The room is landscape only (stage_architecture.md, ruling 3): upright, a card asks the
+ * viewer to turn the phone. The waiting lobby stays an ordinary responsive page.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGameStream } from '@/hooks/useGameStream';
-import { useGameSession } from '@/game/store';
 import { queryKeys } from '@/lib/queryKeys';
 import { rejoinGame } from '@/lib/api';
 import { ApiError } from '@/lib/request';
 import { hostKey, seatToken } from '@/lib/storage';
-import { DayTranscript } from '@/components/DayTranscript';
-import { GhostBar, PacingStrip, ThinkingRow, TurnDock } from '@/components/TurnDock';
-import { ResolutionBeat, RoleChip, RoleReveal, WinnerTakeover } from '@/components/Beats';
-import { nextLiveResolution, resolutionAnnouncement } from '@/game/resolutionBeat';
 import { LobbyCard, TerminalError } from '@/components/LobbyCard';
-import {
-  AgentInspector,
-  DayScrubber,
-  RosterRail,
-  VoteMatrix,
-  WinnerChip,
-  XrayToggle,
-} from '@/components/theater-parts';
 import { GameEndedCard } from '@/components/GameEndedCard';
 import { KeyNeededCard } from '@/components/KeyNeededCard';
-import theater from '@/components/Theater.module.css';
+import { OrientationGuard } from '@/stage/OrientationGuard';
+import { LiveTheatre } from '@/stage/containers/LiveTheatre';
+import classes from './GameClient.module.css';
 
 export function GameClient({ gameId }: { gameId: string }) {
   const queryClient = useQueryClient();
   const { status, state, error, statusError, isPending } = useGameStream(gameId);
-
-  const view = useGameSession((s) => s.view);
-  const isLive = useGameSession((s) => s.isLive);
-  const connection = useGameSession((s) => s.connection);
-  const pacing = useGameSession((s) => s.pacing);
-  const events = useGameSession((s) => s.events);
-  const liveSeqs = useGameSession((s) => s.liveSeqs);
-  const clearPending = useGameSession((s) => s.clearPending);
-
-  const [xray, setXray] = useState(false);
-  const [inspecting, setInspecting] = useState<string | null>(null);
-  const [revealSeen, setRevealSeen] = useState(false);
-  const [overSeen, setOverSeen] = useState(false);
-  const [reopenRole, setReopenRole] = useState(false);
-  const [seenResolutionSeqs, setSeenResolutionSeqs] = useState<Set<number>>(new Set());
-  const [day, setDay] = useState<number | null>(null);
 
   /**
    * Seat recovery (D23). The trigger is NOT a failed request: a lost cookie does not make
@@ -74,7 +50,6 @@ export function GameClient({ gameId }: { gameId: string }) {
   useEffect(() => {
     setRejoinTried(false);
     setRejoining(false);
-    setSeenResolutionSeqs(new Set());
   }, [gameId]);
 
   useEffect(() => {
@@ -96,14 +71,9 @@ export function GameClient({ gameId }: { gameId: string }) {
       .finally(() => setRejoining(false));
   }, [gameId, status, statusError, rejoinTried, queryClient]);
 
-  const days = useMemo(
-    () => Object.values(view.days).sort((a, b) => a.day - b.day),
-    [view.days],
-  );
-
   if (isPending || rejoining) {
     return (
-      <p className={theater.meta}>{rejoining ? 'Reclaiming your seat…' : 'Joining…'}</p>
+      <p className={classes.meta}>{rejoining ? 'Reclaiming your seat…' : 'Joining…'}</p>
     );
   }
 
@@ -114,15 +84,15 @@ export function GameClient({ gameId }: { gameId: string }) {
     // "unknown".
     const wasOurRoom = missing && Boolean(hostKey.get(gameId) || seatToken.get(gameId));
     return (
-      <div className={theater.shell}>
-        <p role="alert" className={theater.meta}>
+      <div className={classes.shell}>
+        <p role="alert" className={classes.meta}>
           {wasOurRoom
             ? 'This room closed when the server restarted. Rooms are not saved; open a new one.'
             : missing
               ? 'No game has this id.'
               : statusError.message}
         </p>
-        <p className={theater.meta}>
+        <p className={classes.meta}>
           <Link href="/">Back to the start →</Link>
         </p>
       </div>
@@ -143,191 +113,11 @@ export function GameClient({ gameId }: { gameId: string }) {
 
   if (state === 'waiting' && status) return <LobbyCard gameId={gameId} status={status} />;
 
-  const current = day !== null ? view.days[day] : days[days.length - 1];
-  const previous = current ? view.days[current.day - 1] : undefined;
-  const next = current ? view.days[current.day + 1] : undefined;
-  const deadByNow = new Set(
-    view.dead
-      .filter((death) => death.day <= (current?.day ?? view.day))
-      .map((d) => d.player),
-  );
-  const finished = state === 'finished' || view.winner !== null;
-
-  // The two takeovers: rendered only if their event arrived LIVE and has not been dismissed.
-  // "We have a role now" is also true after a refresh, so the question is whether the seq
-  // that carried it arrived LIVE. The store is the only thing that knows.
-  const showReveal =
-    !revealSeen &&
-    view.me.role !== null &&
-    view.me.seat !== null &&
-    view.me.roleSeq !== null &&
-    isLive(view.me.roleSeq);
-  const showWinner =
-    !overSeen && view.winner !== null && view.winnerSeq !== null && isLive(view.winnerSeq);
-  // Keep the final verdict queued behind the winner takeover. React can receive the
-  // resolution and game_over in one render batch; suppressing beats after `finished`
-  // would otherwise make the last death the one result a live viewer never sees.
-  const pendingResolution = nextLiveResolution(events, liveSeqs, seenResolutionSeqs);
-
-  const activeStage =
-    view.phase === 'night' ? 'night' : view.phase === 'voting' ? 'day_vote' : null;
-  const activePacing = activeStage
-    ? pacing[`${current?.day ?? view.day}:${activeStage}`]
-    : undefined;
-  const myTurnIsActive = Boolean(
-    view.me.pending &&
-    view.me.seat &&
-    ((status?.pending_seats ?? []).includes(view.me.seat) ||
-      view.me.pending.seq > (status?.last_seq ?? 0)),
-  );
-
   return (
-    <div className={theater.shell}>
-      {showReveal && view.me.role && view.me.seat ? (
-        <RoleReveal
-          seat={view.me.seat}
-          card={view.me.role}
-          onDismiss={() => setRevealSeen(true)}
-        />
-      ) : null}
-
-      {reopenRole && view.me.role && view.me.seat ? (
-        <RoleReveal
-          seat={view.me.seat}
-          card={view.me.role}
-          onDismiss={() => setReopenRole(false)}
-        />
-      ) : null}
-
-      {showWinner && view.winner ? (
-        <WinnerTakeover
-          winner={view.winner}
-          onDismiss={() => {
-            setOverSeen(true);
-            // The reveal is the point: land them in the X-ray they were just promised.
-            setXray(true);
-            setDay(days[0]?.day ?? null);
-          }}
-        />
-      ) : null}
-
-      {pendingResolution ? (
-        <ResolutionBeat
-          resolution={pendingResolution}
-          announcement={resolutionAnnouncement(pendingResolution, events)}
-          onDismiss={() =>
-            setSeenResolutionSeqs((seen) => new Set(seen).add(pendingResolution.seq))
-          }
-        />
-      ) : null}
-
-      <header className={theater.header}>
-        <div className={theater.headerTop}>
-          <Link href="/" className={theater.back}>
-            ← home
-          </Link>
-          <h1 className={theater.title}>{current ? `Day ${current.day}` : 'The table'}</h1>
-          {view.winner ? <WinnerChip winner={view.winner} /> : null}
-          {view.me.role ? (
-            <RoleChip card={view.me.role} onOpen={() => setReopenRole(true)} />
-          ) : null}
-          <span className={theater.spacer} />
-          {!view.me.seat && !finished ? (
-            <span className={theater.hint}>watching live</span>
-          ) : null}
-          {view.xray.available ? (
-            <XrayToggle
-              on={xray}
-              available
-              showHint={!xray}
-              onToggle={() => setXray((v) => !v)}
-            />
-          ) : null}
-        </div>
-
-        {connection === 'reconnecting' ? (
-          <div className={theater.meta}>reconnecting…</div>
-        ) : null}
-
-        {/* The scrubber unlocks only once the game is over — mid-game there is nothing to
-            scrub to but the present, and offering it would imply otherwise. */}
-        {finished && days.length > 1 ? (
-          <DayScrubber
-            days={days}
-            current={current?.day ?? days[0].day}
-            onSelect={setDay}
-          />
-        ) : null}
-      </header>
-
-      <div className={theater.body}>
-        <aside className={theater.rail}>
-          <RosterRail
-            view={view}
-            xray={xray}
-            upToDay={current?.day ?? 99}
-            onInspect={xray ? setInspecting : undefined}
-          />
-        </aside>
-
-        <div className={theater.center}>
-          {current ? (
-            <DayTranscript
-              day={current}
-              previousDay={previous}
-              nextDay={next}
-              roles={view.xray.roles}
-              xray={xray}
-              mySeat={view.me.seat}
-              deadSeats={deadByNow}
-              privateResults={view.me.privateResults}
-              showEntitledMachine={!finished}
-              onInspect={xray ? setInspecting : undefined}
-            />
-          ) : (
-            <p className={theater.meta}>Waiting for the table to wake…</p>
-          )}
-
-          {/* D12: only meaningful live, and only at the tail. */}
-          {!finished && view.thinking ? (
-            <ThinkingRow player={view.thinking.player} />
-          ) : null}
-        </div>
-
-        <aside className={theater.inspector}>
-          {inspecting ? (
-            <AgentInspector
-              seat={inspecting}
-              view={view}
-              onClose={() => setInspecting(null)}
-            />
-          ) : null}
-          {current ? <VoteMatrix view={view} day={current} /> : null}
-        </aside>
-      </div>
-
-      {activePacing && !finished ? (
-        <PacingStrip
-          stage={activePacing.stage}
-          done={activePacing.done}
-          total={activePacing.total}
-        />
-      ) : null}
-
-      {/* The dock, the ghost bar, or nothing at all for a spectator. */}
-      {view.me.pending && myTurnIsActive && view.me.alive && !finished ? (
-        <TurnDock
-          gameId={gameId}
-          pending={view.me.pending}
-          seats={view.seats}
-          onSubmitted={() => {
-            clearPending();
-            queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) });
-          }}
-        />
-      ) : view.me.seat && !view.me.alive ? (
-        <GhostBar />
-      ) : null}
-    </div>
+    <OrientationGuard>
+      <main className={classes.page}>
+        <LiveTheatre gameId={gameId} status={status} />
+      </main>
+    </OrientationGuard>
   );
 }
