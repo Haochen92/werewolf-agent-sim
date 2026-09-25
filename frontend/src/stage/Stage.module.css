@@ -1,0 +1,67 @@
+/* The 16:9 box. Its width comes from the parent; its height from the aspect ratio. */
+.box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0c0a07;
+  color: var(--bone);
+  /* 0 until the box has been measured: nothing shows at the wrong size, even for a frame */
+  --stage-scale: 0;
+}
+
+/* fit: 'contain' — the box sits in a wrapper that fills the parent and takes whichever of
+   the parent's width or height binds first */
+.fit {
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+.fit > .box {
+  width: min(100cqw, 100cqh * 16 / 9);
+}
+
+/* The world: 1600x900 px, scaled once. Inside it, every px is a unit. */
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 900px;
+  transform: scale(var(--stage-scale));
+  transform-origin: 0 0;
+  /* the HUD's type and chip sizes, the benches' container units (1cqw = 16 units) */
+  --said: 22.4px;
+  --note: 18.4px;
+  --meta: 16px;
+  --chip: 60.8px;
+  --gap: 12.8px;
+  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
+}
+
+/* The camera: every layer but the HUD, scaled together about the world's top-left (the
+   scale-about-a-point is written as a translate plus this). */
+.camera {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* Each layer fills the world. Layers stack by document order and deliberately create no
+   stacking context of their own, so the light's blend modes reach the paint beneath. */
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* A layer never catches clicks itself (it covers the whole stage); what is in it can. */
+.layer > * {
+  pointer-events: auto;
+}
+.layer[data-layer='paint'] > *,
+.layer[data-layer='light'] > * {
+  pointer-events: none;
+}

@@ -1,0 +1,63 @@
+/*
+ * Global rules for the markup the paint generators emit. Generators build strings, so they
+ * cannot use CSS-module class names; the few classes they write (sk-*) are defined here.
+ * From the design kit's install() CSS (kits/stage-kit.js). The kit's stand rules (.sk-stand,
+ * .sk-wbox, .sk-fl, .sk-plaque) are not here: the stand is an instrument and brings its own.
+ */
+
+/* a paint layer's markup fills the 1600x900 world */
+.stage-paint {
+  position: absolute;
+  inset: 0;
+}
+.stage-paint > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* the backdrop's idle life: the wall clock sways on its string, the lantern flickers,
+   the country scrolls past the window and the snow falls. Still for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .sk-hang {
+    animation: sk-sway 7s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: 50% -60%;
+  }
+  .sk-flk {
+    animation: sk-flk 0.45s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+  .sk-scrl {
+    animation: sk-scrl 5s linear infinite;
+  }
+  .sk-snw {
+    animation: sk-snw 7s linear infinite;
+  }
+}
+@keyframes sk-sway {
+  from {
+    transform: rotate(-1.1deg);
+  }
+  to {
+    transform: rotate(1.1deg);
+  }
+}
+@keyframes sk-flk {
+  to {
+    transform: scale(0.88, 1.1) rotate(-3deg);
+  }
+}
+@keyframes sk-scrl {
+  to {
+    transform: translateX(calc(-1 * var(--p)));
+  }
+}
+@keyframes sk-snw {
+  to {
+    transform: translateY(var(--sh));
+  }
+}

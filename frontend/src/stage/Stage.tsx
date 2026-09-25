@@ -1,0 +1,237 @@
+'use client';
+
+/**
+ * The stage box: a 16:9 frame holding a 1600×900 world, and the seven layers every scene
+ * is built from.
+ *
+ * Everything on the stage is placed in units of that 1600×900 world (see units.ts). The box
+ * measures how wide it is actually drawn, and scales the whole world by that one factor,
+ * written to `--stage-scale`. So a child positioned at `left: 844px` inside the world is at
+ * unit 844 on every screen, and the drawer, the wing and the text shrink with the picture.
+ *
+ * Why a ResizeObserver rather than pure CSS: CSS cannot yet divide a width by a width to get
+ * a plain number, which is what a scale needs. The observer writes the factor straight onto
+ * the element (no React re-render), and it runs before the first paint, so nothing shows at
+ * the wrong size; until it runs the scale is 0 and the box is just its dark ground.
+ *
+ * Why one scaled world rather than one scale per layer: a transform walls off blending.
+ * The light layer's glows use `mix-blend-mode: screen` over the paint below; if each layer
+ * had its own transform, each would blend only with itself and the glows would go flat.
+ *
+ * The camera: every layer but the HUD sits in one more box that can scale about a point, so
+ * the vote's count can push in on the table and the lynch pull back from it, while the wing,
+ * the strip and the words stay put. One box for all of them, for the same blending reason.
+ */
+import { animate, useMotionValue, motion } from 'motion/react';
+import {
+  createContext,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { createPortal } from 'react-dom';
+import { STAGE_W } from './units';
+import { vars } from './paint/materials';
+import styles from './Stage.module.css';
+import './stage.css';
+
+/** The layers, bottom to top (stage_architecture.md §3). */
+export const LAYERS = [
+  'paint',
+  'floor',
+  'figures',
+  'stand',
+  'instruments',
+  'light',
+  'hud',
+] as const;
+export type LayerName = (typeof LAYERS)[number];
+
+/** Where the camera looks: `scale` about the world point (x, y), which stays where it is. */
+export interface StageCamera {
+  scale: number;
+  x: number;
+  y: number;
+}
+
+/** A camera move: to `to`, from `from` if given (else from wherever it is), in seconds. */
+export interface CameraShot {
+  to: StageCamera;
+  from?: StageCamera | null;
+  duration?: number;
+  delay?: number;
+  ease?: [number, number, number, number];
+}
+
+export type StageProps = Partial<Record<LayerName, ReactNode>> & {
+  /** 'width' (default): fill the parent's width. 'contain': fit inside the parent's box. */
+  fit?: 'width' | 'contain';
+  className?: string;
+  /** Where the camera rests when no scene has moved it (default: the whole stage, unscaled). */
+  camera?: StageCamera;
+  /** A scene (or anything else) that puts its parts into the layers with `<Layer>`. */
+  children?: ReactNode;
+};
+
+const MATERIAL_VARS = vars();
+const WIDE: StageCamera = { scale: 1, x: 0, y: 0 };
+
+type LayerNodes = Partial<Record<LayerName, HTMLDivElement>>;
+const LayerContext = createContext<LayerNodes | null>(null);
+const CameraContext = createContext<((shot: CameraShot | null) => void) | null>(null);
+
+export function Stage({
+  fit = 'width',
+  className,
+  camera,
+  children,
+  ...layers
+}: StageProps) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
+  // so the filled layers are drawn before the first paint.
+  const [nodes, setNodes] = useState<LayerNodes>({});
+  const refs = useMemo(
+    () =>
+      Object.fromEntries(
+        LAYERS.map((name) => [
+          name,
+          (el: HTMLDivElement | null) => {
+            if (el) setNodes((n) => (n[name] === el ? n : { ...n, [name]: el }));
+          },
+        ]),
+      ) as Record<LayerName, (el: HTMLDivElement | null) => void>,
+    [],
+  );
+
+  useLayoutEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const set = (w: number) => el.style.setProperty('--stage-scale', String(w / STAGE_W));
+    set(el.getBoundingClientRect().width);
+    const ro = new ResizeObserver(([entry]) => set(entry.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // The camera: a scene's shot wins over the container's resting camera. Scaling by k about
+  // (x, y) is a translate of (x, y)·(1 − k) plus the scale, so all three move in step.
+  const [shot, setShot] = useState<CameraShot | null>(null);
+  const cx = useMotionValue(0),
+    cy = useMotionValue(0),
+    ck = useMotionValue(1);
+  const shotKey = JSON.stringify(shot ?? camera ?? null);
+  useLayoutEffect(() => {
+    const s: CameraShot = shot ?? { to: camera ?? WIDE };
+    const place = (c: StageCamera) => [c.x * (1 - c.scale), c.y * (1 - c.scale), c.scale];
+    if (s.from) {
+      const [x, y, k] = place(s.from);
+      cx.set(x);
+      cy.set(y);
+      ck.set(k);
+    }
+    const [x, y, k] = place(s.to);
+    const t = {
+      duration: s.duration ?? 0,
+      delay: s.delay ?? 0,
+      ease: s.ease ?? [0.4, 0.2, 0.3, 1],
+    };
+    const runs = [animate(cx, x, t), animate(cy, y, t), animate(ck, k, t)];
+    return () => runs.forEach((r) => r.stop());
+    // the shot's JSON is its identity: a new-but-equal object does not restart the move
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shotKey]);
+
+  const layerDiv = (name: LayerName) => (
+    <div key={name} ref={refs[name]} className={styles.layer} data-layer={name}>
+      {layers[name]}
+    </div>
+  );
+  const box = (
+    <div
+      ref={boxRef}
+      className={fit === 'width' && className ? `${styles.box} ${className}` : styles.box}
+      style={MATERIAL_VARS}
+    >
+      <div className={styles.world}>
+        <motion.div className={styles.camera} style={{ x: cx, y: cy, scale: ck }}>
+          {LAYERS.filter((name) => name !== 'hud').map(layerDiv)}
+        </motion.div>
+        {layerDiv('hud')}
+        <LayerContext.Provider value={nodes}>
+          <CameraContext.Provider value={setShot}>{children}</CameraContext.Provider>
+        </LayerContext.Provider>
+      </div>
+    </div>
+  );
+  if (fit === 'width') return box;
+  return <div className={className ? `${styles.fit} ${className}` : styles.fit}>{box}</div>;
+}
+
+/**
+ * Puts its children into one of the stage's layers. A scene is one component, but its parts
+ * belong at different depths (the puppet under the stand, the light over both, the wing on
+ * top); the layers have to stay sibling divs in one order for the light's blending to reach
+ * the paint, so each part is carried to its layer rather than nested. The container owns the
+ * `<Stage>`, the scene inside it only says which layer each part goes in.
+ */
+export function Layer({ name, children }: { name: LayerName; children?: ReactNode }) {
+  const node = useContext(LayerContext)?.[name];
+  return node ? createPortal(children, node) : null;
+}
+
+/**
+ * Moves the stage's camera while it is mounted (the vote's push-in, the lynch's pull-back);
+ * when the scene goes, the camera goes back to the stage's resting shot at once. Durations are
+ * as given: the scene scales them by the motion speed, since the stage sits outside it.
+ */
+export function Camera({ to, from, duration, delay, ease }: CameraShot) {
+  const set = useContext(CameraContext);
+  const key = JSON.stringify({ to, from, duration, delay, ease });
+  useLayoutEffect(() => {
+    if (!set) return;
+    set(JSON.parse(key) as CameraShot);
+    return () => set(null);
+  }, [set, key]);
+  return null;
+}
+
+/**
+ * A unique id prefix for one paint drawing. React's `useId` contains characters that SVG
+ * `url(#…)` references choke on, so they are dropped.
+ */
+export function usePaintId(): string {
+  return 'p' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+}
+
+/**
+ * One paint generator's output, drawn once and kept until its options change. `of` is a
+ * generator from `src/stage/paint/`; `opts` its options minus `id`, which comes from
+ * `useId()` so two stages on one page never share a gradient or a mask.
+ */
+export function Paint<O extends { id: string }>({
+  of,
+  opts,
+}: {
+  of: (o: O) => string;
+  opts: Omit<O, 'id'>;
+}) {
+  const id = usePaintId();
+  // The options are plain data; their JSON is the memo key, so a new-but-equal object is free.
+  const key = JSON.stringify(opts);
+  const html = useMemo(() => of({ ...JSON.parse(key), id } as O), [of, key, id]);
+  // The kit's scatter hash (draw.ts `rnd`) magnifies the last bit of Math.sin, which differs
+  // between Node and the browser, so a few coordinates differ by ~1e-10 after hydration. That
+  // is invisible, and the hash has to stay the kit's to draw the kit's picture.
+  return (
+    <div
+      className="stage-paint"
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
