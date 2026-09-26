@@ -28,6 +28,28 @@ from the files as of `13eb753` + working tree. "Ours" = a name that exists today
 | footer "[N] games archived" (l.1413) | | | a total: `GET /replays` returns a bare `list[ReplayBase]` (`S/routes/replays.py:16`) with no count |
 | "[your name]", "[year]" | | static | |
 
+**As built (2026-09-26, step 6).** `/` is `app/(site)/page.tsx` over `_components/landing/`. Hero: the mockup's
+kicker, headline and lede, then the old landing's research line kept verbatim, two `HangTag`s from a rail (`SeatTags`:
+"Play solo" → `/play`, "Open a table" → `/rooms/new`, its foot "N tables boarding" = `listRooms()` rows `rowFace` calls
+joinable) and `HouseDoorNote` under them (B13). The carriage (`FeaturedReplay`, `data-frame="carriage"`, B17): walnut
+from `SPRITES.wood`, roof, brass rule, rivets, bogies and rails; under the roof a "Now showing" marquee whose tiles are
+the game's model label, memory, humans, days, winner and date. Inside it is `ReplayTheatre` with `mini` (F7): the game is
+`SITE.featuredReplay`, or on a 404 the newest from `listReplaysWithTotal({limit: 1})`; the window is
+`lib/featured-window.ts` (day 3's `vote.opens` through its `lynch.card-to-wing`, found by id and day: 48..66 on the
+fixture; else the first vote through its lynch or `vote.table-down`; else beats 0..30). It autoplays at `fast` while on
+screen and at least 700px wide; below that, with reduced motion, or with `?still=1`, it rests on the first beat, and
+under 700px a "Watch the replay" button sits over it. The caption under the frame links the whole game ("Day 3 of game
+9369A5C · watch it whole →"). "What's under the table" (`UnderTable`, bench 77: notes, reads, gate; plates become tabs
+under 640px of bench) is fixed to game 9369a5c1: its words and counts were re-checked against the fixture
+(`under-table.ts` names the seqs). "Who's at the table": `RoleHand` (six sigils pick one card that turns to its briefing;
+`CARD_TEXT` gained the kit's `day` and `win`) beside `GameLoop` (the four steps, walking while on screen), then "Take a
+seat" with the tags again; "Latest games" is `ReplayListClient limit={6}` and "All replays →". The footer's
+"N games archived" is live (`GamesArchived`, the one-row page's `X-Total-Count`); `site.ts` lost `gamesArchived`. Left
+out: the mockup's own footer block ("Built in the open", its lede and the API-key line: the site footer stands, and the
+research line moved to the hero), the pictures in "How a game goes" (the mockup draws four scenes with its own kit; no
+second engine), the mockup's "whole game" mode inside the carriage (the caption links the real replay instead), the
+sideways swipes on the role and workshop cards (tabs and the sigil row do the same), and the drape.
+
 ### A2. Replays (Notes l.317: "Wire fields this page reads (GET /replays)")
 
 | Field / query | Ours | Derivable | Missing (schema) |

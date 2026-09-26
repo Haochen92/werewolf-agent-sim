@@ -31,12 +31,10 @@ export const SITE = {
   ] as { label: string; href: string | null }[],
 
   /**
-   * "[N] games archived" in the footer. `GET /replays` has no total yet (review §A1, server
-   * track §F8); until it does, this static count is shown when set, and the phrase is left out
-   * when it is null.
+   * The game the landing's carriage plays (review §F7), day 3's vote in the public cut. If the
+   * archive no longer has it, the landing plays the newest game instead.
    */
-  // TODO(owner): replace with the server's total once `GET /replays` returns one
-  gamesArchived: null as number | null,
+  featuredReplay: '9369a5c1-3c28-42ce-86a1-9d594dfa4804',
 
   // TODO(owner): the year the footer prints
   year: 2026,

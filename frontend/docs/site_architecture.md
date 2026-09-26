@@ -53,15 +53,15 @@ own part (`'Rooms'`). `/` gets the default, `Carriage Nine`.
 | Component | What it is |
 |---|---|
 | `TopNav` | The brand (the wolf's crescent on a paper disc, then the product name) and Play · Rooms · Replays. The current page's link carries `aria-current`. |
-| `SiteFooter` | The GitHub link with its icon, the other links, and the credit line. |
+| `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to three variants: `ghost` (the default), `primary` (amber) and `brass` (a scene control on the page side; inside the stage box, use `ActPlate`). Polymorphic. |
 | `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
 | `Flapword` | Split-flap tiles for one word, with `tone` `hot` or `dim`. |
 | `Icon` / `IconSprite` | One `<symbol>` sprite, rendered once by the site layout. It holds `i-*` (the mockups' icons plus `i-lock-open`, `i-ticket` and `i-github`) and `sg-*`, whose paths are the stage's `Sigil`. |
 
-The facts the chrome shows (name, author, GitHub, nav, footer links, games count, year) live in
-`src/lib/site.ts`, with TODOs for the owner. Characters and chips come from `src/assets/manifest.ts`
+The facts the chrome shows (name, author, GitHub, nav, footer links, year, and the landing's featured
+replay) live in `src/lib/site.ts`, with TODOs for the owner. Characters and chips come from `src/assets/manifest.ts`
 and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 
 ## Tests

@@ -7,6 +7,9 @@
  *
  * The X-ray is the one control that changes which beats exist (beat sheet §11), so the reducer
  * is made for a game's two beat lists and carries the cursor from one to the other.
+ *
+ * A preview (the landing's mini replay) is the same reducer with a `loop` window: the play runs
+ * round the window instead of stopping, so there is no second player to keep in step.
  */
 import type { SceneBeat } from '@/stage/beats/types';
 import type { MotionSpeed, Presentation } from '@/stage/scenes/types';
@@ -28,6 +31,11 @@ export interface ReplayState {
   speed: MotionSpeed;
   xray: boolean;
   slot: Presentation['slot'];
+  /**
+   * A preview's window (the landing's mini replay): playing runs `from`..`to` and goes round
+   * again, and a beat that waits for the viewer is played past. Null for the whole log.
+   */
+  loop: { from: number; to: number } | null;
 }
 
 export type ReplayAction =
@@ -49,11 +57,59 @@ export interface ReplayBeats {
 }
 
 export function initialReplayState(slot: Presentation['slot'] = null): ReplayState {
-  return { cursor: still(0), playing: false, speed: 'normal', xray: false, slot };
+  return {
+    cursor: still(0),
+    playing: false,
+    speed: 'normal',
+    xray: false,
+    slot,
+    loop: null,
+  };
+}
+
+/**
+ * A preview that plays one window of the public cut on a loop: no X-ray, no slot, the cursor
+ * resting on `from`. The window is clamped to the list, so a short game still has one.
+ */
+export function initialLoopState(
+  beats: readonly SceneBeat[],
+  window: { from: number; to: number },
+  opts: { playing: boolean; speed: MotionSpeed },
+): ReplayState {
+  const last = Math.max(0, beats.length - 1);
+  const to = Math.min(Math.max(0, window.to), last);
+  const from = Math.min(Math.max(0, window.from), to);
+  return {
+    cursor: still(from),
+    playing: opts.playing,
+    speed: opts.speed,
+    xray: false,
+    slot: null,
+    loop: { from, to },
+  };
+}
+
+/**
+ * Inside a loop window: past `to` the cursor goes back to `from`, still, and a beat that would
+ * wait for the viewer is stepped past, so the loop never stops by itself. The guard stops the
+ * play if every beat in the window waits (nothing would ever move).
+ */
+function looped(state: ReplayState, beats: readonly SceneBeat[]): ReplayState {
+  const { from, to } = state.loop!;
+  let cursor = state.cursor;
+  for (let guard = 0; guard <= to - from + 1; guard++) {
+    if (cursor.index < from || cursor.index > to) cursor = still(from);
+    const beat = beats[cursor.index];
+    if (!state.playing || !beat || holdFor(beat, state.speed) !== null)
+      return { ...state, cursor };
+    cursor = cursor.index >= to ? still(from) : stepForward(cursor, beats);
+  }
+  return { ...state, cursor, playing: false };
 }
 
 /** A beat that waits for the viewer (or the last beat) stops the play where it lands. */
 function landed(state: ReplayState, beats: readonly SceneBeat[]): ReplayState {
+  if (state.loop) return looped(state, beats);
   const beat = beats[state.cursor.index];
   const last = state.cursor.index >= beats.length - 1;
   if (!state.playing || !beat) return state;
@@ -75,9 +131,13 @@ export function replayReducer(all: ReplayBeats) {
         return { ...state, cursor: jumpChapter(state.cursor, beats, action.dir) };
       case 'tick':
         if (!state.playing) return state;
+        // a loop's last beat has held: round to the window's first, which arrives still
+        if (state.loop && state.cursor.index >= state.loop.to)
+          return landed({ ...state, cursor: still(state.loop.from) }, beats);
         return landed({ ...state, cursor: stepForward(state.cursor, beats) }, beats);
       case 'play': {
         if (beats.length === 0) return state;
+        if (state.loop) return landed({ ...state, playing: true }, beats);
         // at the end, play again from the top; on a beat that waits, playing moves on from it
         if (state.cursor.index >= beats.length - 1)
           return { ...state, playing: true, cursor: still(0) };

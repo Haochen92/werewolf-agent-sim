@@ -14,6 +14,10 @@
  * curtain) stops the play there, and so does the end of the log. While a pointer or a finger
  * rests on a speech the hold pauses, and the clock picks up where it left off, so a long line
  * can be read to the end.
+ *
+ * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer, with
+ * no HUD, no side slot, no transport, no X-ray and no keys, playing one window of the public cut
+ * round and round (`loop` in replay-state.ts). The frame around it is the caller's.
  */
 import {
   useCallback,
@@ -24,23 +28,32 @@ import {
   useState,
   type PointerEvent,
 } from 'react';
+import { useReducedMotion } from 'motion/react';
 import { castForGame } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
-import type { Presentation, SlotInput } from '../scenes/types';
+import type { MotionSpeed, Presentation, SlotInput } from '../scenes/types';
 import { atRail, slotOf } from '../slot';
 import { Stage } from '../Stage';
 import { SCENES } from '../scenes';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import { createFoldCache } from './fold-cache';
-import { initialReplayState, replayReducer, type ReplayState } from './replay-state';
+import {
+  initialLoopState,
+  initialReplayState,
+  replayReducer,
+  type ReplayState,
+} from './replay-state';
 import { holdFor, transportLabel } from './transport';
 import { TransportBand } from './TransportBand';
 import styles from './ReplayTheatre.module.css';
 
 export interface ReplayTheatreProps {
   game: Pick<ReplayGame, 'game_id' | 'events'>;
+  /** A preview: no HUD, no slot, no band, no X-ray; plays `from`..`to` (indices into the
+   *  public cut) on a loop when `autoplay`, else rests on `from`. The frame is the caller's. */
+  mini?: { from: number; to: number; autoplay: boolean; speed?: MotionSpeed };
 }
 
 /** The replay has no seated human: the viewer is a spectator, or an observer with the X-ray. */
@@ -77,7 +90,7 @@ function useHold(key: string, ms: number | null, running: boolean, done: () => v
 const isSpeech = (el: EventTarget | null) =>
   el instanceof Element && el.closest('[data-speech]') !== null;
 
-export function ReplayTheatre({ game }: ReplayTheatreProps) {
+export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
   const events = game.events as readonly DurableGameEvent[];
   const cast = useMemo(() => castForGame(game.game_id), [game.game_id]);
   const all = useMemo(
@@ -88,9 +101,22 @@ export function ReplayTheatre({ game }: ReplayTheatreProps) {
     [events],
   );
   const reduce = useMemo(() => replayReducer(all), [all]);
+  // a viewer who asked for less motion gets the preview at rest
+  const stillPlease = useReducedMotion() === true;
+  const autoplay = !!mini?.autoplay && !stillPlease;
   const [state, dispatch] = useReducer(reduce, undefined, () =>
-    initialReplayState(defaultSlot()),
+    mini
+      ? initialLoopState(all.public, mini, {
+          playing: autoplay,
+          speed: mini.speed ?? 'fast',
+        })
+      : initialReplayState(defaultSlot()),
   );
+  // the preview's caller turns the play on and off (scrolled away, a phone held upright)
+  const isMini = !!mini;
+  useEffect(() => {
+    if (isMini) dispatch({ type: autoplay ? 'play' : 'pause' });
+  }, [isMini, autoplay]);
   const folds = useMemo(() => createFoldCache(events, { mySeat: ME }), [events]);
   const ahead = useMemo(() => folds.at(events.length), [folds, events.length]);
 
@@ -126,7 +152,12 @@ export function ReplayTheatre({ game }: ReplayTheatreProps) {
   const [held, setHeld] = useState(false);
   const tick = useCallback(() => dispatch({ type: 'tick' }), []);
   const hold = beat ? holdFor(beat, state.speed) : null;
-  useHold(`${state.xray}:${index}:${state.speed}`, hold, state.playing && !held, tick);
+  useHold(
+    `${state.xray}:${index}:${state.speed}`,
+    hold,
+    state.playing && (isMini || !held),
+    tick,
+  );
   const onPointerOver = (e: PointerEvent) => setHeld(isSpeech(e.target));
   const onPointerOut = (e: PointerEvent) => setHeld(isSpeech(e.relatedTarget));
   // a beat change can take the speech out from under a resting pointer
@@ -135,8 +166,9 @@ export function ReplayTheatre({ game }: ReplayTheatreProps) {
     setHeld(root.current?.querySelector('[data-speech]:hover') != null);
   }, [index, state.xray]);
 
-  // the keys: arrows step, space plays or pauses, the brackets jump chapters
+  // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's)
   useEffect(() => {
+    if (isMini) return;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName) || t.isContentEditable)) return;
@@ -168,18 +200,18 @@ export function ReplayTheatre({ game }: ReplayTheatreProps) {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, []);
+  }, [isMini]);
 
   const presentation = useMemo(
     (): Presentation => ({
       xray: state.xray,
       slot: state.slot,
       motion: state.speed,
-      hud: 'replay',
+      hud: isMini ? 'none' : 'replay',
       cast,
       animate: state.cursor.animate,
     }),
-    [state.xray, state.slot, state.speed, cast, state.cursor.animate],
+    [state.xray, state.slot, state.speed, isMini, cast, state.cursor.animate],
   );
 
   const Scene = beat ? SCENES[beat.scene] : null;
@@ -193,8 +225,9 @@ export function ReplayTheatre({ game }: ReplayTheatreProps) {
       data-beat-index={index}
       data-beat={beat?.id}
       data-playing={state.playing}
-      onPointerOver={onPointerOver}
-      onPointerOut={onPointerOut}
+      data-mini={isMini || undefined}
+      onPointerOver={isMini ? undefined : onPointerOver}
+      onPointerOut={isMini ? undefined : onPointerOut}
     >
       <Stage fit="contain">
         {beat && view && Scene ? (
@@ -208,21 +241,23 @@ export function ReplayTheatre({ game }: ReplayTheatreProps) {
             />
           </StageMotion>
         ) : null}
-        <TransportBand
-          hud="replay"
-          beats={beats}
-          index={index}
-          playing={state.playing}
-          speed={state.speed}
-          xray={state.xray}
-          label={transportLabel(beats, index)}
-          besideDrawer={besideDrawer}
-          onChapter={(dir) => dispatch({ type: 'chapter', dir })}
-          onStep={(dir) => dispatch({ type: 'step', dir })}
-          onTogglePlay={() => dispatch({ type: 'toggle-play' })}
-          onSeek={(i) => dispatch({ type: 'seek', index: i })}
-          onSpeed={(speed) => dispatch({ type: 'speed', speed })}
-        />
+        {isMini ? null : (
+          <TransportBand
+            hud="replay"
+            beats={beats}
+            index={index}
+            playing={state.playing}
+            speed={state.speed}
+            xray={state.xray}
+            label={transportLabel(beats, index)}
+            besideDrawer={besideDrawer}
+            onChapter={(dir) => dispatch({ type: 'chapter', dir })}
+            onStep={(dir) => dispatch({ type: 'step', dir })}
+            onTogglePlay={() => dispatch({ type: 'toggle-play' })}
+            onSeek={(i) => dispatch({ type: 'seek', index: i })}
+            onSpeed={(speed) => dispatch({ type: 'speed', speed })}
+          />
+        )}
       </Stage>
     </div>
   );

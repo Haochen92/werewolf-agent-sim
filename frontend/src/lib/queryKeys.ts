@@ -11,6 +11,8 @@ export const queryKeys = {
     /** The archive's one fetch: the rows plus the total from the header. */
     archive: (limit: number) => ['replays', 'archive', limit] as const,
     detail: (gameId: string) => ['replays', 'detail', gameId] as const,
+    /** The archive's total alone (the footer's count): a one-row page, for its header. */
+    total: () => ['replays', 'total'] as const,
   },
   games: {
     all: ['games'] as const,

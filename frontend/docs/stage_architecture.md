@@ -259,6 +259,11 @@ Scenes take `{ view, beat, me, presentation }` and nothing else. Containers own 
 stream, the transport and the queue. `src/game/` (fold, store, types) is unchanged except where
 the beat sheet needs a field the view lacks.
 
+`ReplayTheatre` also has a preview mode, `mini: { from, to, autoplay, speed? }` (the landing's carriage, review
+2026-09-26 §F7): `hud: 'none'` (no wing, and `TopStrip` draws nothing), no slot, no transport, no X-ray, no keys, no
+hover pause; the same reducer plays `from`..`to` of the public cut round and round (`loop` in `replay-state.ts`, which
+plays past a beat that waits) at `fast` by default, and a reduced-motion viewer gets it at rest. The frame is the caller's.
+
 ## 9. Where this build departs from the handoff
 
 Verified against the server before ruling; the handoff's bundled schema is byte-identical to

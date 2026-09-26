@@ -2,78 +2,97 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
-import classes from './page.module.css';
+import { SeatTags } from './_components/landing/SeatTags';
+import { FeaturedReplay } from './_components/landing/FeaturedReplay';
+import { UnderTable } from './_components/landing/UnderTable';
+import { RoleHand } from './_components/landing/RoleHand';
+import { GameLoop } from './_components/landing/GameLoop';
+import classes from './_components/landing/Landing.module.css';
+import pageClasses from './page.module.css';
 
 /**
- * Landing (D1). A recruiter with zero context must reach the X-ray in two clicks, so
- * "watch a replay" is visually primary — it needs no key and no waiting — and the latest
- * replays sit right below as a rail that deep-links straight into the theater. No
- * screenshots or marketing sections: the replay rail IS the demo.
+ * The landing (landing mockup, review §A1, rulings §F7): the hero with its two hung tags, a
+ * game from the archive playing in the carriage, what the agents do under the table, the roles
+ * and how a game goes, then the latest games. A recruiter with no context sees the product
+ * working before reading a word, and reaches a whole replay in one click from the carriage.
  *
- * All three doors are live as of the P2/P3 build. The two playing doors carry the
- * house's purse (HouseDoorNote): since the server gained a daily funding cap, whether a
- * visitor needs their own API key is state, and the door is the honest place to say it.
+ * The two playing doors carry the house's purse (HouseDoorNote): whether a visitor needs their
+ * own API key is live state, and the door is the honest place to say it.
  */
 export default function HomePage() {
   return (
-    <main className={classes.page}>
-      <section className={classes.hero}>
-        <h1 className={classes.heroTitle}>
-          Watch AIs deceive each other — and see exactly why.
-        </h1>
-        <p className={classes.heroLead}>
-          Nine LLM agents play werewolf: they scheme, lie, build cases and vote each other
-          out. When a game ends, the X-ray opens every agent’s private reasoning — including
-          the lines a novelty gate stopped them from saying.
+    <main className={classes.landing}>
+      <header className={classes.hero}>
+        <p className={classes.kicker}>
+          <b>Nine agents.</b> One table. Every private thought recorded.
         </p>
+        <h1 className={classes.headline}>
+          <span>Watch AIs</span>
+          <span>lie to each other</span>
+        </h1>
+        <p className={classes.lede}>
+          Language-model agents play werewolf against each other. When a game ends, the
+          X-ray opens every agent&rsquo;s private reasoning, next to what it actually said.
+        </p>
+        <p className={classes.research}>
+          A research project on whether LLM agents can accumulate useful memory across
+          games. The replay theater is the instrument that made the behaviour legible.
+        </p>
+        <SeatTags />
+        <HouseDoorNote />
+      </header>
+
+      <section className={classes.first} aria-label="A game from the archive, playing">
+        <Suspense fallback={null}>
+          <FeaturedReplay />
+        </Suspense>
       </section>
 
-      <div className={classes.doors}>
-        <Link href="/replays" className={`${classes.door} ${classes.doorPrimary}`}>
-          <h2 className={classes.doorTitle}>Watch a replay</h2>
-          <p className={classes.doorBody}>
-            A finished game, start to finish, with the X-ray. No sign-up, no API key,
-            nothing to wait for.
+      <section className={classes.section} aria-labelledby="under-head">
+        <div className={classes.secHead}>
+          <h2 id="under-head">What&rsquo;s under the table</h2>
+          <p>
+            Three things every agent does that the table never sees, all from game 9369A5C,
+            the one playing above.
           </p>
-        </Link>
-        <Link href="/play" className={classes.door}>
-          <h2 className={classes.doorTitle}>Quick game</h2>
-          <p className={classes.doorBody}>
-            Take a seat against eight agents. Pick a role or let the deal decide.
-          </p>
-          <HouseDoorNote />
-        </Link>
-        <Link href="/rooms" className={classes.door}>
-          <h2 className={classes.doorTitle}>Rooms</h2>
-          <p className={classes.doorBody}>
-            Play with other people. Open a table and share the link.
-          </p>
-          <HouseDoorNote />
-        </Link>
-      </div>
+        </div>
+        <UnderTable />
+      </section>
 
-      <div className={classes.sectionHead}>
-        <h2 className={classes.sectionTitle}>Latest games</h2>
-        <Link href="/replays" className={classes.sectionLink}>
-          all replays →
-        </Link>
-      </div>
-      <Suspense fallback={<div className={classes.skeletonCard} />}>
-        <ReplayListClient limit={6} />
-      </Suspense>
+      <section className={classes.section} aria-labelledby="table-head">
+        <div className={classes.secHead}>
+          <h2 id="table-head">Who&rsquo;s at the table</h2>
+          <p>
+            Nine seats, three sides. Every seat is dealt a secret role; its card is the
+            briefing its agent is given, down to how its side wins.
+          </p>
+        </div>
+        <div className={classes.tableGrid}>
+          <RoleHand />
+          <GameLoop />
+        </div>
+        <div className={classes.again}>
+          <h3>Take a seat</h3>
+          <p>Play one seat against eight agents, or fill a room with friends.</p>
+          <SeatTags />
+        </div>
+      </section>
 
-      <footer className={classes.footer}>
-        A research project on whether LLM agents can accumulate useful memory across games.
-        The replay theater is the instrument that made the behaviour legible.{' '}
-        <a
-          className={classes.footerLink}
-          href="https://github.com/Haochen92/werewolf-agent-sim"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Source on GitHub →
-        </a>
-      </footer>
+      <section className={classes.section} aria-labelledby="latest-head">
+        <div className={classes.secHead}>
+          <h2 id="latest-head">Latest games</h2>
+          <p>
+            Every finished game is archived with its full event log, and can be replayed
+            with the X-ray.
+          </p>
+        </div>
+        <Suspense fallback={<div className={pageClasses.skeletonCard} />}>
+          <ReplayListClient limit={6} />
+        </Suspense>
+        <Link href="/replays" className={classes.allGames}>
+          All replays &rarr;
+        </Link>
+      </section>
     </main>
   );
 }

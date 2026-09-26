@@ -492,3 +492,119 @@ for (const [name, viewport] of [
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
   });
 }
+
+/**
+ * The landing (`/`) over mocked `GET /replays/{featured}` (the bundled fixture), `GET /replays`
+ * (the latest games and the archive's total), `GET /rooms` (two tables boarding) and
+ * `GET /models`. The carriage is the replay theatre in its mini mode: the stage without its
+ * HUD, playing day 3's vote on a loop; on an upright phone it rests with a way into the replay.
+ */
+const FIXTURE_BODY = readFileSync(
+  join(__dirname, '../src/stage/fixtures/replay-9369a5c1.json'),
+);
+const TWO_ROOMS = [
+  ROOMS[0],
+  { ...ROOMS[0], game_id: FULL.replace(/3$/, '4'), name: 'Late car' },
+];
+
+async function openLanding(page: Page, query = '') {
+  await page.route(
+    (url) => url.pathname.endsWith('/replays'),
+    api(REPLAYS.slice(0, 3), { 'X-Total-Count': '212' }),
+  );
+  await page.route(`**/replays/${GAME}*`, async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: {
+        'access-control-allow-origin': req.headers()['origin'] ?? '*',
+        'access-control-allow-credentials': 'true',
+      },
+      body: FIXTURE_BODY,
+    });
+  });
+  await page.route('**/rooms', api(TWO_ROOMS));
+  await page.route('**/models', api(MODELS));
+  await page.goto(`/${query}`, { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-frame="carriage"] [data-mini]')).toBeAttached();
+}
+
+const carriage = (page: Page) => page.locator('[data-frame="carriage"]');
+const mini = (page: Page) => carriage(page).locator('[data-mini]');
+
+test('landing: the carriage plays day 3 of the featured game, with no HUD', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openLanding(page);
+
+  // the stage is drawn in the frame, without its wing, strip, slot or transport
+  await expect(carriage(page).locator('[data-layer="paint"]').first()).toBeAttached();
+  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(0);
+  await expect(carriage(page).getByRole('button', { name: 'X-ray' })).toHaveCount(0);
+  await expect(carriage(page).locator('[data-transport]')).toHaveCount(0);
+  await expect(carriage(page).locator('[data-drawer]')).toHaveCount(0);
+
+  // it starts on day 3's vote and plays (the window is 48..66 of the public cut)
+  await carriage(page).scrollIntoViewIfNeeded();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'true');
+  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '48', { timeout: 6000 });
+  const at = Number(await mini(page).getAttribute('data-beat-index'));
+  expect(at).toBeGreaterThan(48);
+  expect(at).toBeLessThanOrEqual(66);
+
+  // the caption names the game and goes to it whole
+  const caption = page.getByRole('link', {
+    name: /Day 3 of game 9369A5C · watch it whole/,
+  });
+  await expect(caption).toHaveAttribute('href', `/replays/${GAME}`);
+  // the marquee's tiles say the game's facts, the model by its display name
+  await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
+  await expect(carriage(page)).toContainText('Wolves won');
+  // on a wide screen the phone's poster button is not shown
+  await expect(carriage(page).getByRole('link', { name: 'Watch the replay' })).toBeHidden();
+
+  // the doors, the rooms boarding, the latest games and the archive's count in the footer
+  await expect(page.getByRole('link', { name: /Play solo/ }).first()).toHaveAttribute(
+    'href',
+    '/play',
+  );
+  const party = page.getByRole('link', { name: /Play with others/ }).first();
+  await expect(party).toHaveAttribute('href', '/rooms');
+  await expect(party).toContainText('2 tables boarding');
+  await expect(page.locator('[data-game]')).toHaveCount(3);
+  await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
+});
+
+test('landing: on an upright phone the carriage rests, with a way into the replay', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openLanding(page);
+  await carriage(page).scrollIntoViewIfNeeded();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'false');
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  const watch = carriage(page).getByRole('link', { name: 'Watch the replay' });
+  await expect(watch).toBeVisible();
+  await expect(watch).toHaveAttribute('href', `/replays/${GAME}`);
+  await expect(page.getByText('Day 3 of game 9369A5C · watch it whole →')).toBeVisible();
+});
+
+for (const [name, viewport] of [
+  ['landing-1440', { width: 1440, height: 900 }],
+  ['landing-390', { width: 390, height: 844 }],
+] as const) {
+  test(`landing: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    // at rest on the window's first beat: reduced motion stops the play, and so does ?still=1
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openLanding(page, '?still=1');
+    await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+    await expect(page.locator('[data-game]')).toHaveCount(3);
+    await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+  });
+}

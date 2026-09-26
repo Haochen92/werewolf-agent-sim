@@ -40,6 +40,8 @@ export function TopStrip({
   onTranscript,
   back,
 }: TopStripProps) {
+  // no HUD (a preview, like the landing's): no strip, and no buttons that would go nowhere
+  if (hud === 'none') return null;
   const g = geometry(hud);
   return (
     <>

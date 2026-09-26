@@ -4,7 +4,12 @@ import fixture from '@/stage/fixtures/replay-9369a5c1.json';
 import { foldEvents } from '@/game/foldEvents';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import { createFoldCache } from './fold-cache';
-import { initialReplayState, replayReducer, type ReplayState } from './replay-state';
+import {
+  initialLoopState,
+  initialReplayState,
+  replayReducer,
+  type ReplayState,
+} from './replay-state';
 import { still } from './transport';
 
 const events = fixture.events as unknown as DurableGameEvent[];
@@ -107,3 +112,107 @@ describe('the replay reducer', () => {
     expect(reduce(at(0), { type: 'seek', index: 32 }).cursor).toEqual(still(32));
   });
 });
+
+describe('the loop window (a preview)', () => {
+  const opens = beats.public.findIndex((b) => b.id === 'vote.opens' && b.day === 3);
+  const wing = beats.public.findIndex((b) => b.id === 'lynch.card-to-wing' && b.day === 3);
+  const loop = (index: number, rest: Partial<ReplayState> = {}): ReplayState => ({
+    ...initialLoopState(
+      beats.public,
+      { from: opens, to: wing },
+      {
+        playing: true,
+        speed: 'fast',
+      },
+    ),
+    cursor: still(index),
+    ...rest,
+  });
+
+  it('starts still on the window’s first beat, public, with no slot', () => {
+    const s = initialLoopState(
+      beats.public,
+      { from: opens, to: wing },
+      {
+        playing: false,
+        speed: 'fast',
+      },
+    );
+    expect(s.cursor).toEqual(still(opens));
+    expect([s.playing, s.speed, s.xray, s.slot]).toEqual([false, 'fast', false, null]);
+    expect(s.loop).toEqual({ from: opens, to: wing });
+  });
+
+  it('clamps a window that runs past the list', () => {
+    const last = beats.public.length - 1;
+    const s = initialLoopState(
+      beats.public,
+      { from: last + 5, to: last + 40 },
+      {
+        playing: true,
+        speed: 'fast',
+      },
+    );
+    expect(s.loop).toEqual({ from: last, to: last });
+    expect(s.cursor).toEqual(still(last));
+  });
+
+  it('plays forward moving inside the window', () => {
+    expect(reduce(loop(opens), { type: 'tick' }).cursor).toEqual({
+      index: opens + 1,
+      animate: true,
+    });
+  });
+
+  it('goes round from the last beat to the first, still, and keeps playing', () => {
+    const s = reduce(loop(wing), { type: 'tick' });
+    expect(s.cursor).toEqual(still(opens));
+    expect(s.playing).toBe(true);
+  });
+
+  it('plays past a beat that waits for the viewer instead of stopping', () => {
+    // the public cut's two waits are its last two beats: the epilogue and the curtain
+    const waits = beats.public.findIndex((b) => b.holdMs === 0);
+    const last = beats.public.length - 1;
+    expect([waits, beats.public[last].holdMs]).toEqual([last - 1, 0]);
+    const before = waits - 1;
+    // both waits are played past, and the window goes round to its first beat, still
+    const s = reduce(loop(before, { loop: { from: before, to: last } }), { type: 'tick' });
+    expect(s.cursor).toEqual(still(before));
+    expect(s.playing).toBe(true);
+    // short of the waits it plays forward as ever, moving
+    const t = reduce(loop(before - 1, { loop: { from: before - 1, to: last } }), {
+      type: 'tick',
+    });
+    expect(t.cursor).toEqual({ index: before, animate: true });
+  });
+
+  it('stops only when nothing in the window would ever move', () => {
+    const last = beats.public.length - 1;
+    const s = reduce(
+      loop(last - 1, { loop: { from: last - 1, to: last }, playing: false }),
+      { type: 'play' },
+    );
+    expect(s.playing).toBe(false);
+  });
+
+  it('play and pause leave the cursor in the window; play from outside it starts over', () => {
+    const paused = reduce(loop(opens + 3), { type: 'pause' });
+    expect([paused.playing, paused.cursor.index]).toEqual([false, opens + 3]);
+    const again = reduce(paused, { type: 'play' });
+    expect([again.playing, again.cursor.index]).toEqual([true, opens + 3]);
+    const outside = reduce(loop(2, { playing: false }), { type: 'play' });
+    expect(outside.cursor).toEqual(still(opens));
+  });
+
+  it('the whole-log replay never loops: its state has no window', () => {
+    expect(initialReplayState().loop).toBeNull();
+    const last = beats.public.length - 1;
+    const end = reduce(at0(last - 1), { type: 'tick' });
+    expect([end.cursor.index, end.playing]).toEqual([last, false]);
+  });
+});
+
+function at0(index: number): ReplayState {
+  return { ...initialReplayState(), cursor: still(index), playing: true };
+}

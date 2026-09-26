@@ -1,0 +1,200 @@
+/* The landing (landing mockup): the hero and its hung tags, the sections' rhythm, the roles'
+   grid and "How a game goes", the latest games' way into the archive. The carriage is
+   Carriage.module.css; "What's under the table" is UnderTable.module.css. */
+
+.landing {
+  /* the carriage's rails and the hero's glow reach past the column; nothing scrolls sideways */
+  overflow-x: clip;
+  padding-bottom: 8px;
+}
+
+/* ---------- the hero ---------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding: 64px 0 0;
+  text-align: center;
+}
+/* candle glow behind the tags */
+.hero::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -120px;
+  z-index: -1;
+  width: 900px;
+  max-width: 100%;
+  height: 420px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 60%,
+    rgba(224, 166, 58, 0.22),
+    rgba(224, 166, 58, 0.06) 45%,
+    transparent 70%
+  );
+}
+.kicker {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.kicker b {
+  color: var(--town);
+  font-weight: 600;
+}
+.headline {
+  max-width: 14ch;
+  margin: 0 auto 26px;
+  font-weight: 800;
+  font-size: clamp(46px, 8.2vw, 98px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  color: var(--text);
+}
+.headline span {
+  display: block;
+}
+.lede {
+  max-width: 52ch;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 19px;
+  line-height: 1.5;
+}
+.research {
+  max-width: 60ch;
+  margin: 14px auto 0;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+/* the doors, hung from a rail on a wide screen, flat and stacked on a phone */
+.seatRail {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 22px;
+  margin-top: 40px;
+  padding-top: 32px;
+}
+.rail {
+  position: absolute;
+  left: 50%;
+  top: 22px;
+  width: min(560px, 84%);
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 235, 200, 0.22) 18%,
+    rgba(255, 235, 200, 0.22) 82%,
+    transparent
+  );
+}
+
+/* ---------- the sections: one gap between them, two sizes ---------- */
+.first {
+  padding-top: 22px;
+}
+.section {
+  padding-top: 120px;
+}
+.secHead {
+  max-width: 60ch;
+  margin-bottom: 28px;
+}
+.secHead h2 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.secHead p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* ---------- who's at the table: the roles, and how a game goes ---------- */
+.tableGrid {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 28px 44px;
+  align-items: start;
+}
+.again {
+  margin-top: 96px;
+  text-align: center;
+}
+.again h3 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.again > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15.5px;
+}
+.again .seatRail {
+  margin-top: 18px;
+}
+
+/* ---------- latest games ---------- */
+.allGames {
+  display: inline-block;
+  margin-top: 22px;
+  font-size: 15px;
+  color: var(--town);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.allGames:hover {
+  color: var(--amber-hi);
+}
+
+@media (max-width: 860px) {
+  .tableGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .hero {
+    padding-top: 40px;
+  }
+  .lede {
+    font-size: 17px;
+  }
+  .seatRail {
+    gap: 18px;
+    margin-top: 32px;
+    padding-top: 0;
+  }
+  .rail {
+    display: none;
+  }
+  .section {
+    padding-top: 72px;
+  }
+  .secHead h2 {
+    font-size: 28px;
+  }
+  .secHead p {
+    font-size: 16px;
+  }
+  .again {
+    margin-top: 64px;
+  }
+}

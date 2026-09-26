@@ -1,0 +1,282 @@
+/* The carriage (landing mockup, `.tframe[data-frame="carriage"]`, chosen in landing v5): the
+   dining car's own walnut and brass around the stage, so it reads as the stage's frame rather
+   than a new object. A low felt roof whose underside is the marquee, the brass rule and rivets,
+   the bogies and the rails. `--wood` is the stage's walnut, set by the component. */
+
+.figure {
+  margin: 0;
+}
+
+.carriage {
+  position: relative;
+  margin: 66px 0 56px;
+  padding: 0 26px 30px;
+  border-radius: 0 0 12px 12px;
+  background:
+    linear-gradient(180deg, rgba(22, 14, 8, 0.48), rgba(14, 9, 5, 0.7)),
+    var(--wood, none) 0 0 / 520px auto,
+    #3a2415;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 -24px 40px rgba(0, 0, 0, 0.35),
+    0 34px 60px -30px rgba(0, 0, 0, 0.95);
+}
+/* the brass rule inside the walnut, open at the top where the roof sits */
+.carriage::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  top: 0;
+  bottom: 11px;
+  pointer-events: none;
+  border: 2px solid rgba(176, 138, 74, 0.75);
+  border-top: 0;
+  border-radius: 0 0 7px 7px;
+}
+/* the rivets along the sill */
+.carriage::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 15px;
+  height: 8px;
+  pointer-events: none;
+  background: radial-gradient(circle, #e6c98e 0 1.8px, #7d5f2e 2.4px, transparent 3px) 0
+    50% / 30px 8px repeat-x;
+  opacity: 0.8;
+}
+
+.roof {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: -24px;
+  height: 26px;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: linear-gradient(180deg, #2a2019, #1b130b);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 170, 0.07);
+  pointer-events: none;
+}
+.roof::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  background: rgba(176, 138, 74, 0.7);
+}
+
+/* the marquee: the "now showing" board under the eaves, one dark piece with the roof */
+.marquee {
+  position: relative;
+  padding: 17px 18px 15px;
+  background: linear-gradient(180deg, #1b130b, #0e0905);
+  border-bottom: 1px solid #4d3824;
+  box-shadow:
+    inset 0 0 0 3px #0c0805,
+    inset 0 0 0 4px rgba(176, 138, 74, 0.5);
+}
+.bulbs {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 6px;
+  height: 6px;
+  pointer-events: none;
+  background: radial-gradient(
+      circle,
+      #ffe2a0 0 1.7px,
+      rgba(255, 190, 90, 0.35) 2.6px,
+      transparent 3.4px
+    )
+    0 0 / 15px 6px repeat-x;
+}
+.bulbsLow {
+  top: auto;
+  bottom: 4px;
+}
+.mqRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.nowShowing {
+  font: 600 11px/1 var(--font-sans);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(224, 166, 58, 0.65);
+}
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tile {
+  padding: 5px 8px 4px;
+  border-radius: 2px;
+  background: var(--bone);
+  color: var(--ink);
+  font: 600 11.5px/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* the stage's window: 16:9, the theatre fills it exactly (no bars, no bleed shown) */
+.screen {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0c0a07;
+  border-left: 1px solid rgba(176, 138, 74, 0.45);
+  border-right: 1px solid rgba(176, 138, 74, 0.45);
+  border-bottom: 1px solid #4d3824;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+}
+.screen > [data-beat-index] {
+  position: absolute;
+  inset: 0;
+}
+.wait {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 16px;
+  color: var(--muted);
+  font-size: 15px;
+  text-align: center;
+}
+
+/* an upright phone: the stage rests as a poster, and the way in sits over it */
+.poster {
+  display: none;
+}
+@media (max-width: 699.98px) {
+  .poster {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0.55), transparent 70%);
+  }
+}
+
+/* under the car: the bogies and the rails */
+.chassis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -56px;
+  height: 60px;
+  pointer-events: none;
+}
+.bogie {
+  position: absolute;
+  bottom: 14px;
+  width: 150px;
+  height: 46px;
+  opacity: 0.9;
+}
+.bogieL {
+  left: 9%;
+}
+.bogieR {
+  right: 9%;
+}
+.rails {
+  position: absolute;
+  bottom: 0;
+  left: -60px;
+  right: -60px;
+  height: 16px;
+  opacity: 0.7;
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0 3px,
+      #6b5a48 3px 6px,
+      #2a2019 6px 7px,
+      transparent 7px
+    ),
+    repeating-linear-gradient(90deg, #1e1712 0 14px, transparent 14px 34px);
+  background-size:
+    100% 100%,
+    100% 9px;
+  background-position:
+    0 0,
+    0 7px;
+  background-repeat: no-repeat, repeat-x;
+}
+
+.caption {
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+}
+.caption a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--town) 42%, transparent);
+  padding-bottom: 2px;
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+.caption a:hover {
+  color: var(--town);
+  border-color: var(--town);
+}
+
+@media (max-width: 700px) {
+  .carriage {
+    padding: 0 9px 22px;
+    margin: 38px -10px 46px;
+  }
+  .carriage::before {
+    left: 4px;
+    right: 4px;
+    bottom: 5px;
+    border-width: 1.5px;
+  }
+  .carriage::after {
+    left: 12px;
+    right: 12px;
+    bottom: 7px;
+    background-size: 22px 8px;
+  }
+  .roof {
+    top: -16px;
+    height: 18px;
+    left: -4px;
+    right: -4px;
+  }
+  .marquee {
+    padding: 14px 12px 12px;
+  }
+  .chassis {
+    bottom: -46px;
+  }
+  .bogie {
+    width: 96px;
+    height: 30px;
+  }
+  .rails {
+    left: -16px;
+    right: -16px;
+  }
+  .caption {
+    font-size: 14px;
+  }
+}
