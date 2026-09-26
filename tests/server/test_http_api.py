@@ -102,7 +102,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     body = api_client.get(f"/games/{session.game_id}").json()
     assert body.pop("server_time").endswith("+00:00")
     assert body == {
-        "game_id": session.game_id, "state": "running", "players": [], "max_seats": 0,
+        "game_id": session.game_id, "state": "running", "players": [], "host": None, "max_seats": 0,
         "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
         "error": None, "name": "", "locked": False, "winner": None, "archived": False,
@@ -464,9 +464,14 @@ def test_room_browser_lists_waiting_rooms_newest_first(api_client, seated_sessio
                for row in rows)
     assert "host_key" not in r.text and "token" not in r.text  # public face only
 
+    assert all(row["host"] is None for row in rows)  # nobody seated yet
+
     api_client.post(f"/games/{a}/join", json={"name": "hao"})
+    api_client.post(f"/games/{a}/join", json={"name": "mira"})
     listed = {row["game_id"]: row for row in api_client.get("/rooms").json()}
-    assert listed[a]["players"] == ["hao"]
+    assert listed[a]["players"] == ["hao", "mira"]
+    assert listed[a]["host"] == "hao"  # the first seat stands in for the creator
+    assert api_client.get(f"/games/{a}").json()["host"] == "hao"
 
 
 def test_room_name_is_capped(api_client):

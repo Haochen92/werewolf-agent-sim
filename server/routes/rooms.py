@@ -46,6 +46,7 @@ def _room_summary(room: GameLobby) -> RoomSummary:
         game_id=room.game_id,
         name=room.name,
         players=list(room.players),
+        host=room.host,
         max_seats=MAX_HUMAN_SEATS,
         locked=room.locked,
         created_at=room.created_at.isoformat(),

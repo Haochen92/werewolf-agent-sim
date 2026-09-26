@@ -64,6 +64,31 @@ def test_replay_router_translates_service_errors(api_client):
     assert response.json()["detail"] == "incomplete replay event log"
 
 
+def test_replay_list_carries_the_ending_phase_and_the_total(api_client):
+    """The body stays a plain list (one page); the total across every page rides in the
+    X-Total-Count header, which the CORS setup lets a browser on the frontend read."""
+    from server.config import server_settings
+
+    page = [ReplayBase(game_id="g2", winner="wolves", days=5, ended_phase="night",
+                       n_events=9, n_humans=1, cast_role_counts={"wolf": 1})]
+
+    class TwoPageArchive:
+        async def list_replays(self, *, limit: int, offset: int):
+            assert (limit, offset) == (1, 1)
+            return page
+
+        async def count_replays(self):
+            return 2
+
+    api_client.app.state.resources.replays = TwoPageArchive()
+    origin = server_settings.cors_allowed_origins[0]
+    response = api_client.get("/replays?limit=1&offset=1", headers={"Origin": origin})
+    assert response.status_code == 200
+    assert [row["ended_phase"] for row in response.json()] == ["night"]
+    assert response.headers["x-total-count"] == "2"
+    assert "x-total-count" in response.headers["access-control-expose-headers"].lower()
+
+
 # ---- the wire model: typed events (ruled 2026-08-20, the frontend codegen contract) --------
 
 
@@ -101,6 +126,7 @@ def test_replay_dto_drops_private_game_row_fields():
         "finished_at": None,
         "winner": "wolves",
         "days": 3,
+        "ended_phase": None,
         "n_events": 3,
         "n_humans": 1,
         "cast_role_counts": {"wolf": 1},
@@ -191,6 +217,7 @@ async def test_postgres_round_trip():
     summary = await replay_service.list_replays(limit=50, offset=0)
     game = await replay_service.get_replay("itest-game")
     assert any(item.game_id == "itest-game" for item in summary)
+    assert await replay_service.count_replays() >= 1
     assert game.winner == "wolves" and len(game.events) == 3
 
     async with database.session() as sess:

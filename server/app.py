@@ -21,7 +21,7 @@ from server.housekeeping.recovery import recover_registry
 from server.resources import app_resources
 from server.routes.admin import router as admin_router
 from server.routes.games import router as games_router
-from server.routes.replays import router as replays_router
+from server.routes.replays import TOTAL_COUNT_HEADER, router as replays_router
 from server.routes.rooms import router as rooms_router
 from server.routes.system import router as system_router
 from server.housekeeping.sweeper import run_sweeper
@@ -67,6 +67,7 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=[TOTAL_COUNT_HEADER],  # the replay list's total, read by the page
     )
     app.include_router(system_router)
     app.include_router(games_router)

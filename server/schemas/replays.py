@@ -1,6 +1,7 @@
 """DTOs returned by the public replay API."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -17,6 +18,9 @@ class ReplayBase(BaseModel):
     finished_at: datetime | None = None
     winner: Winner
     days: int
+    ended_phase: Literal["day", "voting", "night"] | None = None
+    """The part of the day the game ended in: read with ``days``, "night" means the game
+    ended on night ``days``. None for a game with no phase change on record."""
     n_events: int
     n_humans: int
     cast_role_counts: dict[str, int]

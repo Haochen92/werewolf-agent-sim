@@ -143,6 +143,9 @@ class RoomSummary(BaseModel):
     name: str
     players: list[str]
     """Display names in join order (the roster is public — see server/lobby.py)."""
+    host: str | None = None
+    """The name shown as the room's host: whoever took the first seat (normally the
+    person who created the room). None while nobody has joined."""
     max_seats: int
     locked: bool
     """Locked rooms still list (the client renders them unjoinable) — vanishing
@@ -198,6 +201,9 @@ class GameStatus(BaseModel):
     players: list[str] = Field(default_factory=list)
     """The lobby roster (display names). Empty once running: engine seats
     replace the roster at start."""
+    host: str | None = None
+    """Waiting rooms only: the name shown as the room's host, whoever took the first
+    seat (normally the room's creator). None while nobody has joined, and once running."""
     max_seats: int = 0
     """Human-seat capacity of a waiting room — the client's "room full" signal
     (len(players) == max_seats). 0 once running; the server 409 stays the

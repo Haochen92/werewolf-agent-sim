@@ -82,6 +82,15 @@ class GameLobby:
         return [s.name for s in self.seats]
 
     @property
+    def host(self) -> str | None:
+        """The name shown as the room's host: whoever took the first seat, or None while
+        the room is empty. The room never learns who created it (creating hands back a
+        host key, not a name), and the creator normally takes the first seat straight
+        after, so the first seat stands in for them. If someone else joins first, their
+        name is shown instead."""
+        return self.seats[0].name if self.seats else None
+
+    @property
     def tokens(self) -> list[str]:
         """Seat tokens in the order people joined. The engine deals its human seats in
         that same order, so the first token belongs to the first human player."""

@@ -269,7 +269,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Browse finished games (newest first) */
+    /**
+     * Browse finished games (newest first)
+     * @description One page of finished games. The body stays a plain list; the total number of
+     *     finished games, for a footer like "212 games", rides in the X-Total-Count header.
+     */
     get: operations['list_replays_replays_get'];
     put?: never;
     post?: never;
@@ -516,6 +520,8 @@ export interface components {
       server_time: string;
       /** Players */
       players?: string[];
+      /** Host */
+      host?: string | null;
       /**
        * Max Seats
        * @default 0
@@ -1090,6 +1096,8 @@ export interface components {
       winner: 'villagers' | 'wolves' | 'serial_killer';
       /** Days */
       days: number;
+      /** Ended Phase */
+      ended_phase?: ('day' | 'voting' | 'night') | null;
       /** N Events */
       n_events: number;
       /** N Humans */
@@ -1125,6 +1133,8 @@ export interface components {
       winner: 'villagers' | 'wolves' | 'serial_killer';
       /** Days */
       days: number;
+      /** Ended Phase */
+      ended_phase?: ('day' | 'voting' | 'night') | null;
       /** N Events */
       n_events: number;
       /** N Humans */
@@ -1246,6 +1256,8 @@ export interface components {
       name: string;
       /** Players */
       players: string[];
+      /** Host */
+      host?: string | null;
       /** Max Seats */
       max_seats: number;
       /** Locked */
@@ -2028,6 +2040,8 @@ export interface operations {
       /** @description Successful Response */
       200: {
         headers: {
+          /** @description How many finished games there are in all, across every page. */
+          'X-Total-Count'?: number;
           [name: string]: unknown;
         };
         content: {

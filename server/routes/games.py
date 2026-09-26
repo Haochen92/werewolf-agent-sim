@@ -72,6 +72,7 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
             state="waiting",
             server_time=datetime.now(timezone.utc).isoformat(),
             players=list(session.players),
+            host=session.host,
             max_seats=MAX_HUMAN_SEATS,
             name=session.name,
             locked=session.locked,

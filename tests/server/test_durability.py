@@ -404,16 +404,21 @@ def test_completion_metadata_is_lifted_from_the_event_log():
     log = [
         ev.GameStarted(seq=1, day=1, seats=["p1", "p2"],
                        cast_role_counts={"wolf": 1, "villager": 1}),
-        ev.GmMessage(seq=2, day=2, channel_seq=0, text="dawn"),
-        ev.GameOver(seq=3, day=3, winner="wolves"),
+        ev.PhaseChange(seq=2, day=2, phase="day"),
+        ev.GmMessage(seq=3, day=2, channel_seq=0, text="dawn"),
+        ev.PhaseChange(seq=4, day=3, phase="night"),
+        ev.GameOver(seq=5, day=3, winner="wolves"),
     ]
     assert derive_completion_metadata(log) == {
         "winner": "wolves",
         "days": 3,
-        "n_events": 3,
+        "ended_phase": "night",  # the last phase change before the end
+        "n_events": 5,
         "cast_role_counts": {"wolf": 1, "villager": 1},
     }
     assert derive_completion_metadata(log[:-1]) is None
+    # A log with no phase change still completes; it just cannot say when it ended.
+    assert derive_completion_metadata([log[0], log[-1]])["ended_phase"] is None
 
 
 def test_event_log_shortfall_names_a_short_or_holed_log():

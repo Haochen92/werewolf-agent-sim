@@ -99,6 +99,10 @@ class GameRow(SQLModel, table=True):
     )
     winner: str | None = None
     days: int | None = None
+    ended_phase: str | None = None
+    """The part of the day the game ended in ("day", "voting" or "night"): the phase of
+    the last phase change before the game ended. Written when the game completes, so the
+    replay list can say "ended on night 5" without reading any events."""
     n_events: int | None = None
     n_humans: int | None = None
     cast_role_counts: dict[str, int] | None = Field(

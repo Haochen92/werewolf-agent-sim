@@ -38,16 +38,20 @@ def derive_completion_metadata(log: Sequence[ev.DurableEvent]) -> dict | None:
         log: The game's authoritative events in sequence order.
 
     Returns:
-        Winner, day count, event count, and cast counts, or ``None`` when the
-        log lacks either ``game_started`` or ``game_over``.
+        Winner, day count, the phase the game ended in, event count, and cast
+        counts, or ``None`` when the log lacks either ``game_started`` or
+        ``game_over``. The ending phase is None for a log with no phase change.
     """
     started = next((event for event in log if event.type == "game_started"), None)
     over = next((event for event in log if event.type == "game_over"), None)
     if started is None or over is None:
         return None
+    last_phase = next(
+        (event for event in reversed(log) if event.type == "phase_change"), None)
     return {
         "winner": over.winner,
         "days": max(event.day for event in log),
+        "ended_phase": last_phase.phase if last_phase is not None else None,
         "n_events": len(log),
         "cast_role_counts": dict(started.cast_role_counts),
     }

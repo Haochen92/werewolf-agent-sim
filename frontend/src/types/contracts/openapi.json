@@ -651,6 +651,7 @@
           "replays"
         ],
         "summary": "Browse finished games (newest first)",
+        "description": "One page of finished games. The body stays a plain list; the total number of\nfinished games, for a footer like \"212 games\", rides in the X-Total-Count header.",
         "operationId": "list_replays_replays_get",
         "parameters": [
           {
@@ -685,6 +686,14 @@
                     "$ref": "#/components/schemas/ReplayBase"
                   },
                   "title": "Response List Replays Replays Get"
+                }
+              }
+            },
+            "headers": {
+              "X-Total-Count": {
+                "description": "How many finished games there are in all, across every page.",
+                "schema": {
+                  "type": "integer"
                 }
               }
             }
@@ -1217,6 +1226,17 @@
             },
             "type": "array",
             "title": "Players"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
           },
           "max_seats": {
             "type": "integer",
@@ -2367,6 +2387,22 @@
             "type": "integer",
             "title": "Days"
           },
+          "ended_phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "voting",
+                  "night"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Phase"
+          },
           "n_events": {
             "type": "integer",
             "title": "N Events"
@@ -2435,6 +2471,22 @@
           "days": {
             "type": "integer",
             "title": "Days"
+          },
+          "ended_phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "voting",
+                  "night"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Phase"
           },
           "n_events": {
             "type": "integer",
@@ -2744,6 +2796,17 @@
             },
             "type": "array",
             "title": "Players"
+          },
+          "host": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host"
           },
           "max_seats": {
             "type": "integer",
