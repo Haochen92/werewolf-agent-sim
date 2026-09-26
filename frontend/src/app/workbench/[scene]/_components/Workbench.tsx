@@ -23,10 +23,13 @@ import {
 import { anchorLine, workbenchFrame } from '@/stage/workbench/frame';
 import { SCENE_IDS, SCENES, isSceneId } from '@/stage/workbench/registry';
 import {
+  parseFrame,
   parseQuery,
   parseViewer,
   viewerParam,
   writeQuery,
+  type DeviceFrame,
+  type FramePreset,
   type WorkbenchQuery,
 } from '@/stage/workbench/url';
 import { PaintBench, PaintControls } from './PaintBench';
@@ -45,6 +48,33 @@ const VIEWERS = [
 const logAct = (target: string | null) =>
   console.info('[workbench] act →', target ?? 'no one');
 const logSay = (text: string) => console.info('[workbench] say →', text);
+
+/** The strip's frame buttons: fill, then the presets under a short name (a WxH is URL-only). */
+const FRAMES: { value: 'fill' | FramePreset; label: string }[] = [
+  { value: 'fill', label: 'fill' },
+  { value: 'iphone14', label: 'iPhone 14' },
+  { value: 'iphone15max', label: '15 Max' },
+  { value: 'pixel8', label: 'Pixel 8' },
+];
+
+/**
+ * The stage in a box of a phone's landscape size, mounted with the same `fit` as the real
+ * routes, so it letterboxes as it would on the device. A phone's CSS px is drawn about 30%
+ * smaller than a desktop's, which the caption says once.
+ */
+function PhoneFrame({ frame, children }: { frame: DeviceFrame; children: ReactNode }) {
+  const size = `${frame.w}×${frame.h} css px`;
+  return (
+    <div className={styles.frameArea}>
+      <div className={styles.frame} style={{ width: frame.w, height: frame.h }} data-frame>
+        {children}
+      </div>
+      <p className={styles.frameCaption}>
+        {frame.name ? `${frame.name} · ${size}` : size} · in the hand ≈ 0.7× this
+      </p>
+    </div>
+  );
+}
 
 function Placeholder({ title, detail }: { title: string; detail?: string }) {
   return (
@@ -215,6 +245,15 @@ export function Workbench({ scene }: { scene: string }) {
       </>
     );
   }
+  const frameControl = (
+    <Seg<string>
+      label="frame"
+      options={FRAMES}
+      // a WxH frame presses none of them
+      value={q.frame?.id ?? 'fill'}
+      onChange={(v) => go({ frame: parseFrame(v) })}
+    />
+  );
 
   return (
     <main className={styles.main}>
@@ -222,11 +261,18 @@ export function Workbench({ scene }: { scene: string }) {
         <ControlStrip>
           {scenePicker}
           {controls}
+          {frameControl}
           <UrlReadout url={`${pathname}?${params.toString().replace(/%3A/g, ':')}`} />
         </ControlStrip>
       ) : null}
       <div className={styles.stageArea}>
-        <Stage fit="contain">{stage}</Stage>
+        {q.frame ? (
+          <PhoneFrame frame={q.frame}>
+            <Stage fit="contain">{stage}</Stage>
+          </PhoneFrame>
+        ) : (
+          <Stage fit="contain">{stage}</Stage>
+        )}
       </div>
     </main>
   );

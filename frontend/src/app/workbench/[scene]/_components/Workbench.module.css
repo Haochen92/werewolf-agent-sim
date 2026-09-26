@@ -26,3 +26,36 @@
   font-size: 18px;
   color: var(--bone3);
 }
+/* frame=<phone>: the stage in a box of the phone's landscape size, centred, with its caption */
+.frameArea {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: #17130e;
+}
+.frame {
+  flex: none;
+  /* centred while it fits; scrolls from its top edge when it does not */
+  margin-top: auto;
+  /* the size is the screen's; the border sits outside it */
+  box-sizing: content-box;
+  border: 2px solid #4d3824;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 6px #0c0a07;
+}
+.frameCaption {
+  margin: 0 0 auto;
+  color: #a8977a;
+  font:
+    12px/1.4 ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+}

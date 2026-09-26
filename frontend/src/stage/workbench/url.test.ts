@@ -49,6 +49,42 @@ describe('the workbench URL', () => {
     expect(parse('live=0')).toEqual(DEFAULT_QUERY);
   });
 
+  it('reads a phone frame, a preset by its key or a free WxH, and writes it only when set', () => {
+    expect(parse('frame=iphone14').frame).toEqual({
+      id: 'iphone14',
+      name: 'iPhone 14',
+      w: 844,
+      h: 390,
+    });
+    expect(parse('frame=iphone15max').frame).toMatchObject({ w: 932, h: 430 });
+    expect(parse('frame=pixel8').frame).toMatchObject({ name: 'Pixel 8', w: 915, h: 412 });
+    expect(parse('frame=1000x500').frame).toEqual({ id: '1000x500', w: 1000, h: 500 });
+    expect(parse('frame=0800X0400').frame).toEqual({ id: '800x400', w: 800, h: 400 });
+    for (const q of [
+      { ...DEFAULT_QUERY, frame: parse('frame=iphone15max').frame },
+      { ...DEFAULT_QUERY, beat: 4, live: true, frame: parse('frame=1000x500').frame },
+    ])
+      expect(parse(writeQuery(q))).toEqual(q);
+    expect(
+      writeQuery({ ...DEFAULT_QUERY, live: true, frame: parse('frame=pixel8').frame }),
+    ).toBe(
+      'beat=0&viewer=spect&motion=normal&slot=none&hud=live&animate=0&live=1&frame=pixel8',
+    );
+    for (const bad of [
+      'fill',
+      '',
+      'iphone',
+      '0x400',
+      '800x0',
+      '-800x400',
+      '800x',
+      '8.5x4',
+      'x',
+    ])
+      expect(parse(`frame=${bad}`)).toEqual(DEFAULT_QUERY);
+    expect(writeQuery(parse('frame=fill'))).not.toContain('frame');
+  });
+
   it('keeps keys it does not own', () => {
     const rest = new URLSearchParams('strip=0&beat=5&phase=night');
     expect(writeQuery(DEFAULT_QUERY, rest)).toBe(

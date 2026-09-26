@@ -12,6 +12,10 @@
  * stage write `slot` and `viewer=xray` here, as the replay's own container would hold them.
  * `live=1`, written only when on, cuts the beats as a game in play would (the thinking seat
  * at the stand between turns), for any viewer; without it the beats are the replay's.
+ * `frame=iphone14|iphone15max|pixel8|WxH`, written only when set (`fill`, the default, fills
+ * the window), draws the stage in a box of a landscape phone's size in CSS px, to judge the
+ * stage at phone scale on a desktop screen. A preset carries the device's name; `WxH`
+ * (`frame=1000x500`) is two positive integers and carries none.
  */
 import type { MotionSpeed } from '../scenes/types';
 import type { Hud } from '../units';
@@ -27,7 +31,27 @@ export interface WorkbenchQuery {
   animate: boolean;
   /** Cut the beats as a live game would; absent = the replay's cut. */
   live?: boolean;
+  /** Draw the stage in a phone-sized box; absent = fill the window. */
+  frame?: DeviceFrame;
 }
+
+/** A landscape screen's size in CSS px, to draw the stage at. */
+export interface DeviceFrame {
+  /** The URL's spelling: a preset's key, or `WxH`. */
+  id: string;
+  w: number;
+  h: number;
+  /** The device's name, for a preset; a free-form `WxH` has none. */
+  name?: string;
+}
+
+/** The phones the game is mostly played on, held sideways (CSS px, landscape). */
+export const FRAME_PRESETS = {
+  iphone14: { name: 'iPhone 14', w: 844, h: 390 },
+  iphone15max: { name: 'iPhone 15 Pro Max', w: 932, h: 430 },
+  pixel8: { name: 'Pixel 8', w: 915, h: 412 },
+} as const;
+export type FramePreset = keyof typeof FRAME_PRESETS;
 
 export const DEFAULT_QUERY: WorkbenchQuery = {
   beat: 0,
@@ -47,6 +71,7 @@ export const QUERY_KEYS = [
   'hud',
   'animate',
   'live',
+  'frame',
 ] as const;
 
 const pick = <T extends string>(v: string | null, all: readonly T[], dflt: T): T =>
@@ -63,6 +88,16 @@ export function viewerParam(v: Viewer): string {
   return v.kind === 'seat' ? `seat:${v.seat}` : v.kind;
 }
 
+/** A preset's key or `WxH`; anything else (`fill` included) is no frame. */
+export function parseFrame(v: string | null): DeviceFrame | undefined {
+  if (v && Object.hasOwn(FRAME_PRESETS, v))
+    return { id: v, ...FRAME_PRESETS[v as FramePreset] };
+  const m = v?.match(/^(\d+)x(\d+)$/i);
+  const w = Number(m?.[1]),
+    h = Number(m?.[2]);
+  return m && w > 0 && h > 0 ? { id: `${w}x${h}`, w, h } : undefined;
+}
+
 export function parseQuery(params: URLSearchParams): WorkbenchQuery {
   const beat = Number(params.get('beat'));
   const motionRaw = params.get('motion');
@@ -72,6 +107,7 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
       : motionRaw === '0'
         ? 'skip'
         : pick<MotionSpeed>(motionRaw, ['normal', 'fast', 'skip'], DEFAULT_QUERY.motion);
+  const frame = parseFrame(params.get('frame'));
   return {
     beat: Number.isInteger(beat) && beat >= 0 ? beat : DEFAULT_QUERY.beat,
     viewer: parseViewer(params.get('viewer')),
@@ -80,12 +116,14 @@ export function parseQuery(params: URLSearchParams): WorkbenchQuery {
     hud: pick<Hud>(params.get('hud'), ['live', 'replay', 'none'], DEFAULT_QUERY.hud),
     animate: params.get('animate') === '1',
     ...(params.get('live') === '1' ? { live: true } : {}),
+    ...(frame ? { frame } : {}),
   };
 }
 
 /**
- * The query string for `q`: the six keys in canonical form, then any other keys `rest`
- * carries (the paint bench's options, `strip=0`), untouched and in their own order.
+ * The query string for `q`: the six keys in canonical form (then `live` and `frame`, when
+ * set), then any other keys `rest` carries (the paint bench's options, `strip=0`), untouched
+ * and in their own order.
  */
 export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   const out = new URLSearchParams();
@@ -96,6 +134,7 @@ export function writeQuery(q: WorkbenchQuery, rest?: URLSearchParams): string {
   out.set('hud', q.hud);
   out.set('animate', q.animate ? '1' : '0');
   if (q.live) out.set('live', '1');
+  if (q.frame) out.set('frame', q.frame.id);
   rest?.forEach((v, k) => {
     if (!(QUERY_KEYS as readonly string[]).includes(k)) out.append(k, v);
   });
