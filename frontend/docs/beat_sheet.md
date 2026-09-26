@@ -369,7 +369,10 @@ holds). No scrubbing over seconds; `seq` is the only clock. **Arrive still, play
 renders the beat at rest; playing forward animates.
 
 **The drawer** (H§2): the public record for everyone (speeches; GM lines verbatim with the sigils
-of the lynch/night atoms lent to them; the votes as one line per day at the count; the ending); a
+of the lynch/night atoms lent to them; the votes as one line per day, landing with the result
+(held back through the count, since `vote_cast` is a batch and the stage reveals it a chip at a
+time; ruled 2026-09-26); the game master's vote line, which names the lynched seat's role, held
+back on a lynch day until `lynch.truth` for the same reason; the ending); a
 seated human's private results as dashed "Only you" lines; a wolf's pack chat with the red edge;
 X-ray on adds, in aqua: roles after names, passes with reason and draft, the night acts, the pack's
 talk, everyone's private lines as "Only seat 4", the day's brief in its Morning (clamped, opens on

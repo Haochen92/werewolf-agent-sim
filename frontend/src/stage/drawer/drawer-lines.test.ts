@@ -89,7 +89,7 @@ describe('the drawer: which lines a viewer holds', () => {
     });
   });
 
-  it('writes the vote as one line per day at the count, the pairs as chips', () => {
+  it('writes the vote as one line per day, the pairs as chips', () => {
     const lines = drawerLines(whole, { me: null, xray: false });
     const d2 = byKey(lines, 'votes-2');
     const d3 = byKey(lines, 'votes-3');
@@ -169,7 +169,7 @@ describe('the drawer: the lit line', () => {
     ({ id, day, seq }) as Pick<SceneBeat, 'id' | 'day' | 'seq'>;
 
   it('lights the line the beat is about', () => {
-    expect(litKey(lines, beat('vote.chip-counted', 3, 242))).toBe('votes-3');
+    expect(litKey(lines, beat('vote.chip-counted', 3, 242))).toBeNull();
     expect(litKey(lines, beat('lynch.card-up', 4, 384))).toBe('gm-383');
     expect(litKey(lines, beat('vote.result', 2, 119))).toBe('gm-118');
     expect(litKey(lines, beat('morning.chip-fell', 2, 156))).toBe('gm-155');
@@ -263,5 +263,45 @@ describe('the drawer at an X-ray night’s spoke', () => {
     );
     expect(night1(mark.beat, mark.view)).toContain('kill-1');
     expect(night1(mark.beat, mark.view)).toContain('pack-50');
+  });
+});
+
+describe('the drawer: the votes line waits for the count', () => {
+  it('holds the pairs back while the chips are being counted', () => {
+    const counting = at('vote.count-begins', (b) => b.day === 3);
+    const lines = drawerLines(counting.view, { me: null, xray: false, beat: counting.beat });
+    expect(byKey(lines, 'votes-3')).toBeUndefined();
+    expect(litKey(lines, counting.beat)).toBeNull();
+    const chip = at('vote.chip-counted', (b) => b.day === 3 && b.ordinal === 3);
+    expect(
+      byKey(drawerLines(chip.view, { me: null, xray: false, beat: chip.beat }), 'votes-3'),
+    ).toBeUndefined();
+  });
+
+  it('lands with the result, and stays for the days after', () => {
+    const result = at('vote.result', (b) => b.day === 3);
+    const lines = drawerLines(result.view, { me: null, xray: false, beat: result.beat });
+    expect(byKey(lines, 'votes-3')).toBeDefined();
+    const later = at('vote.count-begins', (b) => b.day === 4);
+    expect(
+      byKey(drawerLines(later.view, { me: null, xray: false, beat: later.beat }), 'votes-3'),
+    ).toBeDefined();
+  });
+});
+
+describe('the drawer: the game master’s vote line waits for the card', () => {
+  it('holds a lynch’s line back until the truth, but a no-lynch day gets it with the result', () => {
+    const named = at('lynch.named', (b) => b.day === 3);
+    const held = drawerLines(named.view, { me: null, xray: false, beat: named.beat });
+    expect(byKey(held, 'votes-3')).toBeDefined();
+    expect(byKey(held, 'gm-249')).toBeUndefined();
+    expect(litKey(held, named.beat)).toBe('votes-3');
+    const truth = at('lynch.truth', (b) => b.day === 3);
+    const told = drawerLines(truth.view, { me: null, xray: false, beat: truth.beat });
+    expect(byKey(told, 'gm-249')).toBeDefined();
+    expect(litKey(told, truth.beat)).toBe('gm-249');
+    const abstained = at('vote.result', (b) => b.day === 2);
+    const lines = drawerLines(abstained.view, { me: null, xray: false, beat: abstained.beat });
+    expect(byKey(lines, 'gm-118')).toBeDefined();
   });
 });

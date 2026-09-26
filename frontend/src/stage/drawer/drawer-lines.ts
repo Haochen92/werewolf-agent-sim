@@ -120,6 +120,26 @@ export const WINNER_TEXT: Record<string, string> = {
 };
 
 const GAME_OVER = /^\s*game over/i;
+/** The vote's beats from the ballots dropping to the last chip: the votes line waits. */
+const COUNT_BEATS: ReadonlySet<string> = new Set([
+  'vote.ballots-drop',
+  'vote.closes',
+  'vote.count-begins',
+  'vote.chip-counted',
+]);
+/**
+ * The beats between the result and the card being read: the game master's vote line names the
+ * lynched seat's role, which the stage tells only at `lynch.truth`, so on a day with a lynch
+ * the line waits for that (same ruling as the votes line).
+ */
+const UNTIL_TRUTH: ReadonlySet<string> = new Set([
+  'vote.result',
+  'vote.table-down',
+  'lynch.stand-returns',
+  'lynch.named',
+  'lynch.drop',
+  'lynch.card-up',
+]);
 
 export interface LineOptions {
   me: string | null;
@@ -194,6 +214,8 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
       } else {
         const about =
           s === overGm ? 'over' : s === dawn ? 'dawn' : s === vote ? 'vote' : null;
+        if (about === 'vote' && lynch && o.beat?.day === d.day && UNTIL_TRUTH.has(o.beat.id))
+          continue;
         const roles =
           about === 'vote'
             ? lynch?.role
@@ -249,8 +271,12 @@ export function drawerLines(view: GameView, o: LineOptions): DrawerLine[] {
       }
     }
 
+    // The votes are a batch in the log, so the view holds every pair from the moment the
+    // ballots drop; the stage reveals them one chip at a time. Held back through the count so
+    // the drawer does not tell the result first (owner, 2026-09-26): the line lands with it.
     const ballots = d.vote.ballots;
-    if (ballots.length)
+    const counting = o.beat?.day === d.day && COUNT_BEATS.has(o.beat.id);
+    if (ballots.length && !counting)
       push(ballots[0].seq, {
         kind: 'votes',
         key: `votes-${d.day}`,
@@ -533,6 +559,14 @@ export function litKey(
   lines: readonly DrawerLine[],
   beat: Pick<SceneBeat, 'id' | 'day' | 'seq'>,
 ): string | null {
+  if (COUNT_BEATS.has(beat.id)) return null; // the votes line is held back until the result
+  // a lynch's game-master line is held back until the card is read: light the votes meanwhile
+  if (
+    UNTIL_TRUTH.has(beat.id) &&
+    !lines.some((l) => l.kind === 'gm' && l.about === 'vote' && l.day === beat.day) &&
+    lines.some((l) => l.kind === 'votes' && l.day === beat.day)
+  )
+    return `votes-${beat.day}`;
   const direct = lines.find(
     (l) => l.kind !== 'rule' && (l.seq === beat.seq || l.covers?.includes(beat.seq)),
   );
@@ -543,11 +577,6 @@ export function litKey(
         l.kind === 'gm' && l.about === about && (about === 'over' || l.day === beat.day),
     )?.key ?? null;
   switch (beat.id) {
-    case 'vote.ballots-drop':
-    case 'vote.closes':
-    case 'vote.count-begins':
-    case 'vote.chip-counted':
-      return `votes-${beat.day}`;
     case 'vote.result':
     case 'vote.table-down':
     case 'lynch.stand-returns':
