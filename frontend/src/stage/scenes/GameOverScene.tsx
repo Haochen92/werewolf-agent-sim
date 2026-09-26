@@ -283,7 +283,7 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
           unlocked={truthOut && hud === 'live'}
         />
         {step !== 5 ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)}>
+          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             {myRole ? <CardButton role={myRole} gone={myDead} /> : null}
             {step === 0 ? (
               <Notice

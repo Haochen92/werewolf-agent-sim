@@ -35,6 +35,8 @@ export interface LightOpts {
   /** Extra glows and specials for this beat. */
   glows?: Glow[];
   specials?: Special[];
+  /** Units the darkness carries on past each side of the world, over the bleed (default 0). */
+  bleed?: number;
 }
 
 /* darkness outside the pool; the room's glows and the specials left open */
@@ -44,7 +46,9 @@ export function light(o: LightOpts): string {
     W = STAGE_W,
     H = STAGE_H,
     p = g.pwid,
-    dark = (o.dark == null ? 50 : o.dark) / 100;
+    dark = (o.dark == null ? 50 : o.dark) / 100,
+    b = o.bleed ?? 0,
+    bx = b ? ` x="${-b}"` : '';
   const sc = o.scene ?? { glows: [], specials: [] };
   const e =
     o.pool ||
@@ -55,7 +59,7 @@ export function light(o: LightOpts): string {
     glows = sc.glows.concat(o.glows || []),
     specials = sc.specials.concat(o.specials || []);
   const svg =
-    `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%"><defs><filter id="${P}lbl" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${blur.toFixed(0)}"/></filter><mask id="${P}lmask" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="#fff"/><ellipse cx="${e.x.toFixed(0)}" cy="${e.y.toFixed(0)}" rx="${e.rx.toFixed(0)}" ry="${e.ry.toFixed(0)}" fill="#000" filter="url(#${P}lbl)"/>` +
+    `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%${b ? ';overflow:visible' : ''}"><defs><filter id="${P}lbl" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${blur.toFixed(0)}"/></filter><mask id="${P}lmask" maskUnits="userSpaceOnUse" x="${-b}" y="0" width="${W + 2 * b}" height="${H}"><rect${bx} width="${W + 2 * b}" height="${H}" fill="#fff"/><ellipse cx="${e.x.toFixed(0)}" cy="${e.y.toFixed(0)}" rx="${e.rx.toFixed(0)}" ry="${e.ry.toFixed(0)}" fill="#000" filter="url(#${P}lbl)"/>` +
     glows
       .map(
         ([x, y, r, a]) =>
@@ -68,7 +72,7 @@ export function light(o: LightOpts): string {
           `<rect x="${(x - rx).toFixed(0)}" y="${y0}" width="${(2 * rx).toFixed(0)}" height="${(y1 - y0 + rx * 0.6).toFixed(0)}" rx="${rx.toFixed(0)}" fill="#000" opacity="${a}" filter="url(#${P}lbl)"/>`,
       )
       .join('') +
-    `</mask></defs><rect width="${W}" height="${H}" fill="#0c0a07" opacity="${dark}" mask="url(#${P}lmask)"/></svg>`;
+    `</mask></defs><rect${bx} width="${W + 2 * b}" height="${H}" fill="#0c0a07" opacity="${dark}" mask="url(#${P}lmask)"/></svg>`;
   const glow = `<div style="position:absolute;inset:0;mix-blend-mode:screen;background:radial-gradient(ellipse ${(e.rx * 0.9).toFixed(0)}px ${(e.ry * 0.9).toFixed(0)}px at ${e.x.toFixed(0)}px ${e.y.toFixed(0)}px, rgba(255,179,92,.16), rgba(255,179,92,0) 70%)"></div>`;
   return svg + glow;
 }

@@ -12,7 +12,11 @@
   padding-bottom: 9.6px;
   padding-top: 9.6px;
   box-sizing: border-box;
-  font-size: 14.4px;
+  /* the band's height is the stage's geometry; its controls grow with the labels
+     (--legible-ui): taller buttons sit on the band's foot and rise into the gap under the
+     speech box, never into it */
+  --k: var(--legible-ui);
+  font-size: calc(var(--meta) * 0.9);
   line-height: 1.2;
   color: var(--bone);
   /* the band itself never catches a click meant for the stage; its controls do */
@@ -26,6 +30,7 @@
   display: flex;
   gap: 6.4px;
   flex: 0 0 auto;
+  align-self: flex-end;
 }
 .buttons button,
 .speed button {
@@ -37,16 +42,16 @@
   cursor: pointer;
 }
 .buttons button {
-  width: 46.4px;
-  height: 40px;
+  width: calc(46.4px * var(--k));
+  height: calc(40px * var(--k));
   border-radius: 11.2px;
   display: grid;
   place-items: center;
   padding: 0;
 }
 .buttons svg {
-  width: 16px;
-  height: 16px;
+  width: calc(16px * var(--k));
+  height: calc(16px * var(--k));
   fill: currentColor;
 }
 .buttons button[aria-pressed='true'] {
@@ -129,10 +134,11 @@
 .speed {
   display: flex;
   flex: 0 0 auto;
+  align-self: flex-end;
 }
 .speed button {
-  height: 40px;
-  padding: 0 11.2px;
+  height: calc(40px * var(--k));
+  padding: 0 calc(11.2px * var(--k));
   border-radius: 0;
   margin-left: -1px;
   color: var(--bone2);
@@ -154,11 +160,12 @@
 /* the X-ray's state (the strip's button switches it; this only says it) */
 .xray {
   flex: 0 0 auto;
-  height: 40px;
+  align-self: flex-end;
+  height: calc(40px * var(--k));
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  padding: 0 12.8px;
+  padding: 0 calc(12.8px * var(--k));
   border-radius: 11.2px;
   border: 1px solid var(--cloak2);
   background: rgba(14, 9, 6, 0.92);

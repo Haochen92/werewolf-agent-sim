@@ -54,6 +54,26 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 
 - Landscape-only makes the phone a smaller scale, not a relayout. Beat timings, sprite placement
   and the HUD geometry are viewport-independent by construction.
+- **The bleed (ruled 2026-09-25).** A phone is ~19.5:9 and most laptops wider than 16:9, so a
+  16:9 box alone leaves black bars at the sides. The world stays 1600×900 and nothing that
+  matters is placed outside it, but the picture continues past its edges: the stage's outer box
+  fills the viewport, the world sits centred in it, and each scene draws a fixed 300 units of
+  **bleed** either side (`BLEED` in `units.ts`; a 21:9 screen shows 250, and the camera never
+  pulls back past 1), clipped by the outer box (so nothing depends on the viewport's width
+  and nothing redraws on resize). What bleeds: the room's paint (wall, floor, phase colour) at
+  the sides where the room touches the world's edge; a HUD panel's own ground where the panel
+  touches the edge (the wing on the left, the drawer or film on the right, the top strip's
+  band). The bleed darkens towards the screen's edge, as a theatre does, so it reads as the
+  house's dark rather than as more room. The light layer's glows may spill into it; figures,
+  instruments and words never go there. Above 21:9 the bars return. Bars above and below on a
+  4:3 tablet stay for now.
+- **Legibility (ruled 2026-09-25, two tiers 09-26).** Phones are the main screen (scale ~0.43).
+  `--legible` (`Stage.module.css`: 0.75 / scale, clamped 1–1.8) grows the words people read
+  (`--said`, `--note`: ~17 css px); `--legible-ui` (the same, capped 1.3) grows `--meta`, headings
+  and buttons (~9–10 px, ~22 px tall). Both are 1 at full size (pixel-identical there); neither
+  touches the geometry, `--chip`, `--gap` or the painted props. Below scale 0.75 (the same point
+  the type starts growing) the box has `data-small`: the drawer's head loses its title (seats and
+  Show still wrap, so both toggles stay in reach); the ballot's chips stay on one row.
 - The HUD geometry the benches compute with `StageKit.geometry(W, H, …)` is **frozen once** into
   constants (`src/stage/units.ts`: rail, puppet box, wing, side slot, top strip, for `hud: live |
   replay | none`). The port's first job is to evaluate it at 1600×900 and commit the numbers.
@@ -186,14 +206,20 @@ cases; `PaintPicture`'s docstring in `Stage.tsx` tells the second one.
 file), picks the beat, and renders the scene through exactly the component the real pages use.
 
 ```
-/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast|skip&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1]
+/workbench/vote?beat=5&viewer=spect|seat:player_7|xray&motion=normal|fast|skip&slot=none|drawer|film&hud=live|replay|none&animate=0|1[&live=1][&frame=iphone14|iphone15max|pixel8|WxH]
 ```
 
 `live=1` (written only when on) cuts the beats as a game in play would, for any viewer: the day's
 `day.turn-thinking` beats appear between the turns.
 
-- The control strip (viewer, beat stepper, motion, slot, X-ray, fixture) writes the URL; the URL
-  is the whole state, so any view can be named in text and reproduced.
+`frame=iphone14|iphone15max|pixel8|WxH` (written only when set; `fill`, the default, fills the
+window) draws the stage in a box of that phone's landscape size in CSS px (844×390, 932×430,
+915×412, or e.g. `1000x500`), mounted `fit="contain"` as the real routes do, to judge phone scale
+on a desktop; a phone's CSS px is ~0.7× a desktop's in the hand. The workbench's drawer is the
+URL's `slot` (closed by default), never the real routes' ≤540 px-tall-window default.
+
+- The control strip (viewer, beat stepper, motion, slot, X-ray, fixture, frame) writes the URL;
+  the URL is the whole state, so any view can be named in text and reproduced.
 - The registry (`src/stage/workbench/registry.ts`) lists each scene with the beats the sheet
   gives it, so the stepper's range and the caption ("A chip is counted · `vote_cast` seq 244 ·
   everyone") come from the same table as the real player.
@@ -210,8 +236,10 @@ src/stage/
 ├── units.ts                 # 1600×900, the frozen HUD geometry, scale helpers
 ├── Stage.tsx                # the box, the layers, --stage-scale, the paint memo
 ├── paint/                   # string generators: diningCar, shelfRoom, station, window,
-│                            #   shutter, drape, light — (phase, units) → svg string
+│                            #   shutter, drape, light — (phase, units) → svg string;
+│                            #   bleed.ts: the room's two strips past the world's sides (§3)
 ├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, WallClock, Shutter,
+│                            #   Bleed (the bleed's paint, under a room's own),
 │                            #   RoleCard, CardBack, SmallCard, Chip, String, WingTile, Wing,
 │                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate, ...
 ├── cast/                    # Puppet, Plush, Kit (sprite + numeral overlay), castForGame

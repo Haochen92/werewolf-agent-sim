@@ -5,6 +5,7 @@
   position: absolute;
   z-index: 3;
   top: 0;
+  height: var(--drawer-h);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -13,6 +14,19 @@
   border-left: 1px solid var(--cloak2);
   box-shadow: -9.6px 0 25.6px rgba(0, 0, 0, 0.5);
   color: var(--bone);
+}
+/* the drawer's ground carried on past the stage's right edge, into the house's dark (the bleed) */
+.drawer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: var(--bleed);
+  background:
+    linear-gradient(90deg, transparent, #0c0a07 var(--bleed-dark)),
+    linear-gradient(180deg, rgba(18, 13, 7, 0.97), rgba(12, 9, 6, 0.985));
+  pointer-events: none;
 }
 .drawer > header {
   flex: 0 0 auto;
@@ -26,7 +40,8 @@
   display: flex;
   align-items: baseline;
   gap: 9.6px;
-  font-size: calc(var(--said) * 1.15);
+  /* a heading: the second tier (--legible-ui), not the words' */
+  font-size: calc(22.4px * 1.15 * var(--legible-ui));
   font-weight: 500;
 }
 .ttl small {
@@ -56,13 +71,13 @@
   font: inherit;
   font-size: calc(var(--meta) * 1.1);
   line-height: 1.4;
-  min-height: 36.8px;
+  min-height: calc(36.8px * var(--legible-ui));
   box-sizing: border-box;
   color: var(--bone);
   background: rgba(14, 9, 6, 0.6);
   border: 1px solid var(--cloak2);
   border-radius: 19.2px;
-  padding: 2.4px 14.4px;
+  padding: calc(2.4px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -95,15 +110,15 @@
   padding-left: 9.6px;
 }
 .show i {
-  width: 17.6px;
-  height: 17.6px;
+  width: calc(17.6px * var(--legible-ui));
+  height: calc(17.6px * var(--legible-ui));
   box-sizing: border-box;
   border-radius: 4px;
   border: 1px solid var(--bone3);
   display: inline-grid;
   place-items: center;
   font-style: normal;
-  font-size: 14.4px;
+  font-size: calc(var(--meta) * 0.9);
   line-height: 1;
 }
 .show[aria-pressed='true'] {
@@ -128,23 +143,38 @@
 .show[aria-pressed='false'] {
   color: var(--bone3);
 }
+/* on a phone (Stage.tsx `data-small`) the head loses its title, so the lines keep the height;
+   the seats and Show still wrap into two short rows (a sideways-scrolling row hid the Show
+   toggles past the drawer's edge, owner 2026-09-26) */
+[data-small] .ttl {
+  display: none;
+}
+/* on a phone the car's prompts stop short of the slot, so the drawer runs full height there
+   (slot.ts `railHolds`: the own room and the pack keep the rail) */
+[data-small] .drawer[data-rail='soft'] {
+  height: 900px;
+}
 
 /* the days as tabs along the foot */
 .daytabs {
   flex: 0 0 auto;
   display: flex;
+  /* on a phone the tabs' type is larger: many days scroll sideways, a tab never breaks */
+  overflow-x: auto;
+  scrollbar-width: none;
   border-top: 1px solid var(--cloak2);
   background: rgba(12, 9, 6, 0.95);
 }
 .daytabs button {
   flex: 1;
   font: inherit;
-  font-size: calc(var(--said) * 0.95);
+  font-size: calc(22.4px * 0.95 * var(--legible-ui));
   color: var(--bone2);
   background: transparent;
   border: 0;
   border-right: 1px solid var(--cloak2);
-  padding: 8.8px 0;
+  padding: calc(8.8px * var(--legible-ui)) 0;
+  white-space: nowrap;
   cursor: pointer;
 }
 .daytabs button:last-child {
@@ -265,9 +295,9 @@
 }
 .sg {
   display: inline-block;
-  width: 22.4px;
-  height: 22.4px;
-  vertical-align: -4.8px;
+  width: calc(22.4px * var(--legible));
+  height: calc(22.4px * var(--legible));
+  vertical-align: calc(-4.8px * var(--legible));
   margin: 0 2.4px;
   color: var(--c);
 }

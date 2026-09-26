@@ -12,6 +12,7 @@
  * the line in once the puppet has taken the stand; at rest it is simply there.
  */
 import { motion } from 'motion/react';
+import type { CSSProperties } from 'react';
 import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
@@ -38,6 +39,12 @@ export interface SpeechBoxProps {
    * and a long line fades at its foot, because the full line is the drawer's newest entry.
    */
   side?: boolean;
+  /**
+   * The side slot holds something that stops at the rail (the film): on a phone, where the
+   * words are larger and the box rises past the rail, it moves in under the puppet too (see
+   * `--grown`), without the fade; at full size it keeps the band.
+   */
+  aside?: boolean;
 }
 
 const PASS_REASON: Record<string, string> = {
@@ -56,15 +63,24 @@ export function SpeechBox({
   arrive,
   thinking = false,
   side = false,
+  aside = false,
 }: SpeechBoxProps) {
   const k = useMotionScale();
   const g = geometry(hud, side);
   const inset = 22.4;
   const right = side ? STAGE_W - g.wingN - g.room + inset : inset;
+  const s = geometry(hud, true);
   return (
     <div
       className={styles.zone}
-      style={{ left: g.wingN + inset, right, bottom: HUD_CHROME.band[hud] + 19.2 }}
+      style={
+        {
+          left: g.wingN + inset,
+          bottom: HUD_CHROME.band[hud] + 19.2,
+          '--right': `${right}px`,
+          '--aside': aside ? `${STAGE_W - s.wingN - s.room + inset}px` : undefined,
+        } as CSSProperties
+      }
     >
       {/* data-speech: the replay holds the beat while a pointer rests on the line */}
       <motion.div

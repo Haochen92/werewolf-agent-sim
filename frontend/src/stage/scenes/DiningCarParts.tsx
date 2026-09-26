@@ -11,6 +11,7 @@ import type { Character, DayState } from '@/assets/manifest';
 import type { GameView, SpeechSlot, PassSlot } from '@/game/types';
 import { Layer, Paint, PaintPicture } from '../Stage';
 import { Puppet } from '../cast/Puppet';
+import { Bleed } from '../instruments/Bleed';
 import { Apron, Trap } from '../instruments/Floor';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
@@ -22,9 +23,12 @@ import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
 import type { Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
-import { STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
+import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 
-/** The car at an hour; played from another hour, the old paint fades off over the new. */
+/**
+ * The car at an hour; played from another hour, the old paint fades off over the new. Under
+ * both, the bleed past the stage's sides, on the new hour at once.
+ */
 export function CarPaint({
   phase,
   from,
@@ -45,6 +49,7 @@ export function CarPaint({
   const k = useMotionScale();
   return (
     <>
+      <Bleed room="car" phase={phase} hud={hud} />
       <Paint of={diningCar} opts={{ phase, hud, wallClock, side }} />
       {from && from !== phase ? (
         <motion.div
@@ -93,6 +98,7 @@ export function HouseLights({
           dark,
           specials: [...specials, ...quiet],
           scene: { glows: plan.glows, specials: plan.specials },
+          bleed: BLEED,
         }}
       />
     </>
@@ -136,7 +142,7 @@ export function TableWing({
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   return (
     <>
-      {hud === 'replay' ? <Paint of={drape} opts={{}} /> : null}
+      {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
       <Wing width={width}>
         {view.seats.map((seat, i) => {
           const d = opts.untold?.has(seat) ? undefined : deadBySeat.get(seat);
@@ -185,6 +191,7 @@ export function StandReturns({
   animate,
   delay,
   narrow = false,
+  aside = false,
 }: {
   g: StageGeometry;
   view: GameView;
@@ -196,6 +203,8 @@ export function StandReturns({
   delay: number;
   /** The drawer is open at full height: the box narrows under the puppet. */
   narrow?: boolean;
+  /** The side slot is open: on a phone the box stops short of it (SpeechBox's `aside`). */
+  aside?: boolean;
 }) {
   const k = useMotionScale();
   const slot = view.days[day]?.slots.find((s) => s.kind !== 'gm') as
@@ -244,6 +253,7 @@ export function StandReturns({
             line={slot.kind === 'speech' ? slot.message : null}
             arrive={animate}
             side={narrow}
+            aside={aside}
           />
         </Layer>
       ) : null}

@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { Hud } from '../units';
+import { BLEED, STAGE_W, type Hud } from '../units';
+import { bleed } from './bleed';
 import { diningCar, diningCarPlan } from './dining-car';
 import { drape } from './drape';
 import { light } from './light';
@@ -73,6 +74,25 @@ const CASES: [string, (id: string) => string][] = [
     ),
   ),
   ['drape', () => drape()],
+  ['drape bleed', (id: string) => drape({ id, bleed: BLEED })],
+  ...PHASES_IN_ORDER.flatMap((phase) =>
+    HUDS.map(
+      (hud) =>
+        [
+          `bleed car ${phase} ${hud}`,
+          (id: string) => bleed({ id, room: 'car', phase, hud }),
+        ] as [string, (id: string) => string],
+    ),
+  ),
+  ...HUDS.map(
+    (hud) =>
+      [`bleed shelf ${hud}`, (id: string) => bleed({ id, room: 'shelf', hud })] as [
+        string,
+        (id: string) => string,
+      ],
+  ),
+  ['light bleed', (id: string) => light({ id, bleed: BLEED })],
+  ['shelfLight bleed', (id: string) => shelfLight({ id, chosen: 2, bleed: BLEED })],
 ];
 
 describe.each(CASES)('%s', (_label, draw) => {
@@ -126,4 +146,41 @@ describe('fidelity to kits/stage-kit.js', () => {
             Kit.light(g, sc, { id: 'k', dark: 70 }),
           );
         });
+});
+
+/* The bleed: two strips past the world's sides, darkening outwards to the house's dark. */
+describe('bleed', () => {
+  const car = bleed({ id: 'stA', room: 'car', phase: 'night', hud: 'live' });
+  const shelf = bleed({ id: 'stA', room: 'shelf', hud: 'live' });
+
+  it('draws both strips, outside the world and nowhere in it', () => {
+    for (const html of [car, shelf]) {
+      expect(html).toContain(`<rect x="${-BLEED}" y="0" width="${BLEED}"`);
+      expect(html).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
+    }
+  });
+
+  it('darkens to the house’s dark, from the room’s own edge value', () => {
+    for (const html of [car, shelf]) {
+      expect(html).toMatch(
+        /<linearGradient id="stA-bdark"[^>]*gradientUnits="userSpaceOnUse"/,
+      );
+      expect(html).toContain('stop-color="#0c0a07" stop-opacity="1"');
+      expect(html).toContain('fill="url(#stA-bdark)"');
+    }
+    // the car fades its own ends to near-black, so its strips start there; the shelf does not
+    expect(car).toContain('stop-opacity="0.95"');
+    expect(shelf).toContain('stop-opacity="0"');
+  });
+
+  it('takes the hour’s tint on the car, none by day', () => {
+    expect(car).toContain('mix-blend-mode:multiply');
+    expect(bleed({ id: 'stA', room: 'car', phase: 'day' })).not.toContain('mix-blend-mode');
+  });
+
+  it('leaves the light and the drape as they were without it', () => {
+    expect(light({ id: 'k', bleed: 0 })).toBe(light({ id: 'k' }));
+    expect(drape({ id: 'k' })).toBe(drape());
+    expect(shelfLight({ id: 'k', bleed: 0 })).toBe(shelfLight({ id: 'k' }));
+  });
 });

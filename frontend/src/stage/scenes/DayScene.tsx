@@ -28,6 +28,7 @@ import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { turnReads } from '../film/film-model';
+import { Bleed } from '../instruments/Bleed';
 import { flapText } from '../instruments/CarriageClock';
 import { Apron, Trap } from '../instruments/Floor';
 import { CardButton, NoticeZone } from '../instruments/Notice';
@@ -44,7 +45,7 @@ import { light } from '../paint/light';
 import { shutter } from '../paint/window';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
-import { STAGE_H, geometry } from '../units';
+import { BLEED, STAGE_H, geometry } from '../units';
 import type { SceneProps } from './types';
 
 /** How long the arriving puppet stands thinking before it speaks, after the rise (seconds). */
@@ -143,6 +144,7 @@ function DayTurn({
   return (
     <>
       <Layer name="paint">
+        <Bleed room="car" phase="day" hud={hud} />
         <Paint of={diningCar} opts={{ phase: 'day', hud, side, wallClock: !mine }} />
         {mine && clock ? (
           <WallClock
@@ -192,12 +194,17 @@ function DayTurn({
       <Layer name="light">
         <Paint
           of={light}
-          opts={{ hud, side, scene: { glows: plan.glows, specials: plan.specials } }}
+          opts={{
+            hud,
+            side,
+            scene: { glows: plan.glows, specials: plan.specials },
+            bleed: BLEED,
+          }}
         />
       </Layer>
 
       <Layer name="hud">
-        {hud === 'replay' ? <Paint of={drape} opts={{}} /> : null}
+        {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
         <Wing width={g.wingN}>
           {view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
@@ -244,7 +251,7 @@ function DayTurn({
           />
         ) : null}
         {dock ? (
-          <NoticeZone hud={hud}>
+          <NoticeZone hud={hud} aside={side}>
             {view.me.role ? <CardButton role={view.me.role.role} /> : null}
             <TurnDock
               dock={dock}
@@ -275,6 +282,7 @@ function DayTurn({
             arrive={animate}
             thinking={mine || waiting || !settled}
             side={bandNarrows(presentation, beat)}
+            aside={side}
           />
         ) : null}
       </Layer>

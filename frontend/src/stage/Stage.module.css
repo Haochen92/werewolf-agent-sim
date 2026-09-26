@@ -19,8 +19,21 @@
   display: grid;
   place-items: center;
 }
-.fit > .box {
+/* The house: the box's height, as wide as the parent up to 21:9, clipping. The world draws
+   past its own edges into it (the bleed, stage_architecture.md §3); beyond 21:9 the parent's
+   bars return. Its cq units are the .fit's, so the box inside sizes exactly as before. */
+.house {
+  position: relative;
+  width: min(100cqw, 100cqh * 21 / 9);
+  height: min(100cqh, 100cqw * 9 / 16);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #0c0a07;
+}
+.house > .box {
   width: min(100cqw, 100cqh * 16 / 9);
+  overflow: visible;
 }
 
 /* The world: 1600x900 px, scaled once. Inside it, every px is a unit. */
@@ -35,12 +48,25 @@
   /* Keep the scaled stage on a stable compositor layer while descendants move and
      crossfade. All scene lighting still blends inside this shared world. */
   will-change: transform;
+  /* how much the words people read grow when the stage is drawn small (a phone): 1 at
+     full size, up to 1.8 (stage_architecture.md §3 "Legibility"); the guard keeps the scale's
+     0 before the first measure from dividing by zero */
+  --legible: clamp(1, calc(0.75 / max(var(--stage-scale, 1), 0.01)), 1.8);
+  /* the second tier: labels, captions, headings and buttons grow less than the words people
+     read (--said, --note), so on a phone the text grows and the chrome around it stays slim */
+  --legible-ui: min(var(--legible), 1.3);
+  /* 0 at full size, 1 once the type has grown: what a box does only on a phone */
+  --grown: clamp(0, calc((var(--legible) - 1) * 1000), 1);
   /* the HUD's type and chip sizes, the benches' container units (1cqw = 16 units) */
-  --said: 22.4px;
-  --note: 18.4px;
-  --meta: 16px;
+  --said: calc(22.4px * var(--legible));
+  --note: calc(18.4px * var(--legible));
+  --meta: calc(16px * var(--legible-ui));
   --chip: 60.8px;
   --gap: 12.8px;
+  /* the bleed past each side, and where it reaches the house's dark: keep equal to units.ts
+     BLEED and BLEED_DARK (the paint strips read those; the wing and drawer read these) */
+  --bleed: 300px;
+  --bleed-dark: 250px;
   font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
 }
 

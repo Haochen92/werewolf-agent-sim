@@ -17,9 +17,12 @@ import styles from './Wing.module.css';
 export function Wing({ width, children }: { width: number; children: ReactNode }) {
   if (width <= 0) return null;
   return (
-    <div className={styles.wing} style={{ width } as CSSProperties}>
-      {children}
-    </div>
+    <>
+      <div className={styles.bleed} aria-hidden="true" />
+      <div className={styles.wing} style={{ width } as CSSProperties}>
+        {children}
+      </div>
+    </>
   );
 }
 

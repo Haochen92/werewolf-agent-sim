@@ -14,7 +14,14 @@
  * foot; the seats as their chips at the head (the dead dimmed, still selectable, since their
  * lines are history); and Show, one toggle per tier this viewer has.
  */
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import type { Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import type { SceneBeat } from '../beats/types';
@@ -58,6 +65,8 @@ export interface DrawerProps {
   onFilters?: (next: DrawerFilters) => void;
   /** The seated human is answering a prompt: stop at the rail. */
   rail?: boolean;
+  /** The rail stop holds on a phone too (their own room); else the drawer runs full there. */
+  railHolds?: boolean;
   /** Played forward: scroll to the new line smoothly; at rest it is simply there. */
   animate?: boolean;
 }
@@ -72,6 +81,7 @@ export function Drawer({
   filters,
   onFilters,
   rail = false,
+  railHolds = false,
   animate = false,
 }: DrawerProps) {
   const g = geometry(hud, true);
@@ -120,12 +130,15 @@ export function Drawer({
   return (
     <aside
       className={styles.drawer}
-      style={{
-        left: STAGE_W - g.slotW,
-        width: g.slotW,
-        height: rail ? g.railY : STAGE_H,
-      }}
+      style={
+        {
+          left: STAGE_W - g.slotW,
+          width: g.slotW,
+          '--drawer-h': `${rail ? g.railY : STAGE_H}px`,
+        } as CSSProperties
+      }
       data-drawer={rail ? 'rail' : 'full'}
+      data-rail={rail ? (railHolds ? 'holds' : 'soft') : undefined}
       aria-label="Transcript"
     >
       <header>

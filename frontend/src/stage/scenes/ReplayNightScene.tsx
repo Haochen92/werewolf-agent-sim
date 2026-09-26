@@ -291,7 +291,7 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
         />
         <CountPill hud={hud} label="Acted" n={acted} total={total} side={side} />
         {cur && cur.actor !== 'pack' ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)}>
+          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             <Notice
               chip={cast[seatNumber(cur.actor) - 1]}
               title={actorWord}

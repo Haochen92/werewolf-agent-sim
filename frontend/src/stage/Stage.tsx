@@ -21,6 +21,10 @@
  * The camera: every layer but the HUD sits in one more box that can scale about a point, so
  * the vote's count can push in on the table and the lynch pull back from it, while the wing,
  * the strip and the words stay put. One box for all of them, for the same blending reason.
+ *
+ * The bleed: mounted `fit="contain"`, the box sits in a wider "house" that clips in its place,
+ * so a scene's paint and the HUD's panels can carry on a fixed 600 units past the world's
+ * sides where a wide screen shows them (see `Bleed`). Nothing that matters is placed there.
  */
 import { animate, useMotionValue, motion } from 'motion/react';
 import {
@@ -68,7 +72,10 @@ export interface CameraShot {
 }
 
 export type StageProps = Partial<Record<LayerName, ReactNode>> & {
-  /** 'width' (default): fill the parent's width. 'contain': fit inside the parent's box. */
+  /**
+   * 'width' (default): fill the parent's width. 'contain': fit inside the parent's box, the
+   * picture bleeding past the world's sides into the rest of it, up to 21:9 (§3 "The bleed").
+   */
   fit?: 'width' | 'contain';
   className?: string;
   /** Where the camera rests when no scene has moved it (default: the whole stage, unscaled). */
@@ -111,7 +118,12 @@ export function Stage({
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
-    const set = (w: number) => el.style.setProperty('--stage-scale', String(w / STAGE_W));
+    const set = (w: number) => {
+      el.style.setProperty('--stage-scale', String(w / STAGE_W));
+      // a phone: the HUD's boxes that have to fold (the drawer's head, the ballot's row) do.
+      // The same 0.75 as `--legible` in Stage.module.css: once the type has grown, they fold.
+      el.toggleAttribute('data-small', w / STAGE_W < 0.75);
+    };
     set(el.getBoundingClientRect().width);
     const ro = new ResizeObserver(([entry]) => set(entry.contentRect.width));
     ro.observe(el);
@@ -169,7 +181,11 @@ export function Stage({
     </div>
   );
   if (fit === 'width') return box;
-  return <div className={className ? `${styles.fit} ${className}` : styles.fit}>{box}</div>;
+  return (
+    <div className={className ? `${styles.fit} ${className}` : styles.fit}>
+      <div className={styles.house}>{box}</div>
+    </div>
+  );
 }
 
 /**

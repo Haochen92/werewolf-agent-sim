@@ -97,6 +97,31 @@
     0 0 0 2.2px #24180c;
   transition: box-shadow 0.2s;
 }
+/* on a phone (Stage.tsx `data-small`) the row never wraps: beside the side slot the chips
+   and the plate shrink alike to fit, their labels on one line */
+[data-small] .row {
+  flex-wrap: nowrap;
+}
+[data-small] .row .vchip {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: calc(var(--chip) * 1.55 + 9.6px);
+}
+[data-small] .row .vchip:has(> .dish) {
+  flex-grow: 1.1;
+  max-width: calc(var(--chip) * 1.7 + 9.6px);
+}
+[data-small] .row .head {
+  width: 100%;
+  max-width: calc(var(--chip) * 1.55);
+}
+[data-small] .row .dish {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1.7 / 0.6;
+  /* a percentage margin is of the width, so the plate stays level with the heads */
+  margin-bottom: calc(100% * 0.45 / 1.7);
+}
 .on .dish {
   box-shadow:
     inset 0 0 0 2.2px #c9a25e,
@@ -107,9 +132,9 @@
 /* the brass plate that confirms, naming the vote */
 .plate button {
   font: inherit;
-  font-size: calc(var(--said) * 1.15);
+  font-size: calc(22.4px * 1.15 * var(--legible-ui));
   font-weight: 600;
-  padding: 8.8px 24px;
+  padding: calc(8.8px * var(--legible-ui)) calc(24px * var(--legible-ui));
   border-radius: 8px;
   border: 2.9px solid #24180c;
   background: linear-gradient(#e9c27a, #b8862f);
@@ -132,7 +157,7 @@
   display: flex;
   align-items: center;
   gap: 11.2px;
-  font-size: var(--said);
+  font-size: calc(22.4px * var(--legible-ui));
   color: var(--bone);
 }
 .line .head {
@@ -149,7 +174,7 @@
   border-radius: 17.6px;
 }
 .big .line {
-  font-size: calc(var(--said) * 1.55);
+  font-size: calc(22.4px * 1.55 * var(--legible-ui));
   gap: 14.4px;
 }
 .big .line .head {

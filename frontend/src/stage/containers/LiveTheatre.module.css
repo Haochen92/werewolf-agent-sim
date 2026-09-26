@@ -30,7 +30,7 @@
   background: rgba(14, 9, 6, 0.92);
   border: 1px solid var(--cloak2);
   border-radius: 9.6px;
-  padding: 7.2px 16px;
+  padding: calc(7.2px * var(--legible-ui)) calc(16px * var(--legible-ui));
   cursor: pointer;
 }
 /* the epilogue's sheet covers the stage: its way on sits at the foot, right */

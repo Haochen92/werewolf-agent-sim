@@ -378,6 +378,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           animate={animate}
           delay={2.6}
           narrow={bandNarrows(presentation, beat)}
+          aside={side}
         />
       ) : null}
 
@@ -411,7 +412,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
           {...stripButtons(presentation, slotInput)}
         />
         {!dayBegins ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)}>
+          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
             {myCard ? <CardButton role={myCard} /> : null}
             <MorningWords
               id={id}

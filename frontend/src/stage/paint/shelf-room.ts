@@ -79,17 +79,22 @@ export function shelfPlan(o: { hud?: Hud; hooks?: number; side?: boolean } = {})
 
 /* the wall: panels, cornice, a dado, the floor at the bottom */
 function wall(wingN: number): string {
-  const W = STAGE_W,
-    H = STAGE_H,
+  return panelling(wingN, STAGE_W, 7);
+}
+
+/**
+ * The room's panelled wall from x0 to W, in n panels: the cornice, the dado, the floor at the
+ * bottom. The bleed (bleed.ts) draws the same wall on past the room's sides.
+ */
+export function panelling(x0: number, W: number, n: number, pw = (W - x0) / n): string {
+  const H = STAGE_H,
     s = 1,
-    x0 = wingN,
     room = W - x0,
     corn = 0.06 * H,
     dado = 0.84 * H,
     floorY = 0.92 * H;
   let d = `<rect x="${x0}" y="0" width="${room}" height="${H}" fill="#3a2212"/>`;
-  const pw = room / 7;
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < n; i++) {
     const px = x0 + i * pw;
     d += `<rect x="${px + 8 * s}" y="${corn + 14 * s}" width="${pw - 16 * s}" height="${dado - corn - 28 * s}" fill="none" stroke="#6a4a2a" stroke-width="${2 * s}"/><rect x="${px + 14 * s}" y="${corn + 20 * s}" width="${pw - 28 * s}" height="${dado - corn - 40 * s}" fill="${WALLO}" opacity=".35"/>`;
   }
@@ -155,6 +160,8 @@ export interface ShelfLightOpts {
   side?: boolean;
   /** The chosen doll's hook index; omitted, the room below is evenly lit. */
   chosen?: number;
+  /** Units the light's darkness carries on past each side of the world (default 0). */
+  bleed?: number;
 }
 
 /**
@@ -164,6 +171,8 @@ export interface ShelfLightOpts {
  */
 export function shelfLight(o: ShelfLightOpts): string {
   const hud = o.hud ?? 'live',
+    bleed = o.bleed ?? 0,
+    sides = bleed ? ` -${bleed}px` : ' 0',
     H = STAGE_H,
     S = shelfPlan(o),
     { cx, room, cut } = S;
@@ -177,6 +186,7 @@ export function shelfLight(o: ShelfLightOpts): string {
     pool: { x: cx, y: S.top - 0.16 * H, rx: room * 0.55, ry: 0.34 * H },
     specials,
     dark: 22,
+    bleed,
   });
   let below: string;
   const h = o.chosen == null ? undefined : S.hooks[o.chosen];
@@ -188,6 +198,7 @@ export function shelfLight(o: ShelfLightOpts): string {
       pool: { x: h.x, y: h.end + dw * 0.75, rx: dw * 0.62, ry: dw * 1.0 },
       specials: [[h.x, cut, h.end + dw * 1.3, dw * 0.55, 1]],
       dark: 84,
+      bleed,
     });
   } else
     below = light({
@@ -195,6 +206,7 @@ export function shelfLight(o: ShelfLightOpts): string {
       hud,
       pool: { x: cx, y: 0.62 * H, rx: room * 0.5, ry: 0.3 * H },
       dark: 50,
+      bleed,
     });
-  return `<div style="position:absolute;inset:0;clip-path:inset(${cut.toFixed(0)}px 0 0 0)">${below}</div><div style="position:absolute;inset:0;clip-path:inset(0 0 ${(H - cut).toFixed(0)}px 0)">${above}</div>`;
+  return `<div style="position:absolute;inset:0;clip-path:inset(${cut.toFixed(0)}px${sides} 0${sides})">${below}</div><div style="position:absolute;inset:0;clip-path:inset(0${sides} ${(H - cut).toFixed(0)}px${sides})">${above}</div>`;
 }

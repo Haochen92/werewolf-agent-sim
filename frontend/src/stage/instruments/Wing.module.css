@@ -14,6 +14,16 @@
   border-right: 1px solid var(--cloak2);
   overflow: hidden;
 }
+/* the wing's ground carried on past the stage's left edge, into the house's dark (the bleed) */
+.bleed {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--bleed));
+  width: var(--bleed);
+  background: linear-gradient(to left, var(--cloak0), #0c0a07 var(--bleed-dark));
+  pointer-events: none !important;
+}
 
 .tile {
   display: flex;
@@ -35,11 +45,13 @@
   opacity: 0.45;
 }
 
+/* a card's proportion alive or dead, so the column never reshuffles when a seat dies and the
+   wing's height is used (owner, 2026-09-25; the benches drew the live face square) */
 .face {
   position: relative;
   flex: 0 0 auto;
   width: var(--chip);
-  aspect-ratio: 1;
+  aspect-ratio: 28 / 36;
   border-radius: 6.4px;
   overflow: hidden;
   border: 1px solid var(--cloak2);
@@ -77,7 +89,6 @@
 
 /* a dead seat is its role's sigil on paper, in the faction's ink */
 .dead .face {
-  aspect-ratio: 28 / 36;
   background: var(--paper);
   border-color: var(--bone3);
   display: grid;

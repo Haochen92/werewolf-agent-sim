@@ -7,7 +7,8 @@
 .veil {
   position: absolute;
   z-index: 4;
-  inset: 0;
+  /* over the bleed past the sides too */
+  inset: 0 calc(-1 * var(--bleed));
   background: rgba(5, 4, 3, 0.55);
   pointer-events: none;
 }
@@ -17,7 +18,7 @@
   z-index: 5;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: calc(240px * var(--legible-ui)) 1fr;
   grid-template-rows: auto 1fr auto;
   gap: 0 19.2px;
   padding: 16px 20.8px;
@@ -54,7 +55,7 @@
 .head strong {
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
   font-weight: 400;
-  font-size: calc(var(--said) * 1.5);
+  font-size: calc(22.4px * 1.5 * var(--legible-ui));
   color: var(--film-ink);
   text-shadow: 0 0 9.6px rgba(127, 220, 242, 0.5);
 }
@@ -91,7 +92,7 @@
   background: transparent;
   border: 1px solid var(--film-line);
   border-radius: 8px;
-  padding: 6.4px 9.6px;
+  padding: calc(6.4px * var(--legible-ui)) calc(9.6px * var(--legible-ui));
   cursor: pointer;
   opacity: 0.7;
 }
@@ -103,8 +104,8 @@
 }
 .tab .sigil {
   grid-row: 1 / 3;
-  width: 33.6px;
-  height: 33.6px;
+  width: calc(33.6px * var(--legible-ui));
+  height: calc(33.6px * var(--legible-ui));
   color: var(--c);
   stroke-width: 3;
 }
@@ -178,8 +179,8 @@
   margin-top: 0;
 }
 .phase svg {
-  width: 20.8px;
-  height: 20.8px;
+  width: calc(20.8px * var(--legible-ui));
+  height: calc(20.8px * var(--legible-ui));
   stroke: currentColor;
   fill: none;
   stroke-width: 1.8;
@@ -212,8 +213,8 @@
   align-items: start;
 }
 .chev {
-  width: 20.8px;
-  height: 20.8px;
+  width: calc(20.8px * var(--legible-ui));
+  height: calc(20.8px * var(--legible-ui));
   margin-top: 2.4px;
   color: var(--film-ink);
   transition: transform 0.2s;

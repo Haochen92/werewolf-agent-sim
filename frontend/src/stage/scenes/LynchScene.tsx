@@ -274,7 +274,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
           sub={`${night ? 'Night falls' : 'The lynch'} · ${beat.label}`}
           {...stripButtons(presentation, slotInput)}
         />
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)}>
+        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myCard ? <CardButton role={myCard} gone={mine && step >= 2} /> : null}
           {step < 2 ? (
             <Notice

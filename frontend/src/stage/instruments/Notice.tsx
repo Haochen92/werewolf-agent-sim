@@ -10,7 +10,7 @@
  * aloud. `arrive` fades the box in when a beat plays forward; at rest it is simply there.
  */
 import { motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
@@ -25,20 +25,35 @@ import styles from './Notice.module.css';
 export function NoticeZone({
   hud,
   side = false,
+  aside = false,
   children,
 }: {
   hud: Hud;
   /** The side slot is open: the zone stops short of it. */
   side?: boolean;
+  /**
+   * The side slot holds something that stops at the rail (the film, or the drawer on a
+   * prompt): on a phone, where the box's words are larger and it rises past the rail, the zone
+   * stops short of it too (see `--grown`); at full size it keeps the band.
+   */
+  aside?: boolean;
   children: ReactNode;
 }) {
   const g = geometry(hud, side);
   const inset = 22.4;
   const right = side ? 1600 - g.wingN - g.room + inset : inset;
+  const s = geometry(hud, true);
   return (
     <div
       className={styles.zone}
-      style={{ left: g.wingN + inset, right, bottom: HUD_CHROME.band[hud] + 19.2 }}
+      style={
+        {
+          left: g.wingN + inset,
+          bottom: HUD_CHROME.band[hud] + 19.2,
+          '--right': `${right}px`,
+          '--aside': aside ? `${1600 - s.wingN - s.room + inset}px` : undefined,
+        } as CSSProperties
+      }
     >
       {children}
     </div>

@@ -13,7 +13,8 @@
   border-radius: 12.8px;
   padding: 11.2px 14.4px;
   color: var(--paper);
-  font-size: calc(var(--meta) * 1.05);
+  /* the talk is read: the first tier (--legible); its header is a label (--meta) */
+  font-size: calc(16px * 1.05 * var(--legible));
   line-height: 1.35;
   z-index: 2;
 }
@@ -29,6 +30,7 @@
   padding: 11.2px 0 8px;
   background: rgb(24, 17, 10);
   color: var(--film-mut, #c9b79a);
+  font-size: calc(var(--meta) * 1.05);
 }
 .tag {
   font-weight: 600;
@@ -104,7 +106,7 @@
   min-width: 320px;
   font: inherit;
   font-size: calc(var(--said) * 1.05);
-  padding: 9.6px 14.4px;
+  padding: calc(9.6px * var(--legible)) calc(14.4px * var(--legible));
   border-radius: 9.6px;
   border: 1px solid rgba(255, 179, 92, 0.4);
   background: rgba(20, 14, 8, 0.9);
@@ -112,9 +114,9 @@
 }
 .say button {
   font: inherit;
-  font-size: calc(var(--said) * 1.1);
+  font-size: calc(22.4px * 1.1 * var(--legible-ui));
   font-weight: 600;
-  padding: 9.6px 20.8px;
+  padding: calc(9.6px * var(--legible-ui)) calc(20.8px * var(--legible-ui));
   border-radius: 8px;
   border: 2.9px solid #24180c;
   background: linear-gradient(#e9c27a, #b8862f);

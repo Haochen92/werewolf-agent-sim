@@ -361,7 +361,7 @@ function VoteBeat({
             side={side}
           />
         ) : null}
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)}>
+        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myCard ? (
             <CardButton
               role={myCard}

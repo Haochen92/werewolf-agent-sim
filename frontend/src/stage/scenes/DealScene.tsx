@@ -230,6 +230,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
           animate={animate}
           delay={2.6}
           narrow={bandNarrows(presentation, beat)}
+          aside={side}
         />
       ) : null}
 
@@ -262,7 +263,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
           sub={`${day ? 'Discussion' : 'The deal'} · ${beat.label}`}
           {...stripButtons(presentation, slotInput)}
         />
-        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)}>
+        <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
           {myRole && at('deal.your-card') && !day ? <CardButton role={myRole} /> : null}
           <DealWords
             id={id}

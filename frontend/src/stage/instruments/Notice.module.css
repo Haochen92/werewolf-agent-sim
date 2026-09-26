@@ -2,6 +2,8 @@
    in the same foot zone as the speech box, with the "your card" button beside it (rev 67, 75). */
 .zone {
   position: absolute;
+  /* --aside on a phone only (NoticeZone's `aside`) */
+  right: calc(var(--right) + (var(--aside, var(--right)) - var(--right)) * var(--grown));
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -98,8 +100,8 @@
   font-weight: 600;
 }
 .cast svg {
-  width: 24px;
-  height: 24px;
+  width: calc(24px * var(--legible));
+  height: calc(24px * var(--legible));
   color: var(--c);
   stroke-width: 3;
 }
@@ -114,8 +116,8 @@
   color: var(--bone);
 }
 .caps i {
-  width: 11.2px;
-  height: 20.8px;
+  width: calc(11.2px * var(--legible));
+  height: calc(20.8px * var(--legible));
   border-radius: 2.4px 2.4px 5.6px 5.6px;
   background: #e3503f;
   border: 1px solid var(--ink);
@@ -224,5 +226,5 @@
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--cloak2);
   border-radius: 9.6px;
-  padding: 6.4px 11.2px;
+  padding: calc(6.4px * var(--legible)) calc(11.2px * var(--legible));
 }

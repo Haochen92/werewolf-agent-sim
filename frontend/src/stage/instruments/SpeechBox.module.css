@@ -3,6 +3,8 @@
 /* the band along the foot of the stage the box is centred in, clear of the wing */
 .zone {
   position: absolute;
+  /* --aside on a phone only (SpeechBox's `aside`) */
+  right: calc(var(--right) + (var(--aside, var(--right)) - var(--right)) * var(--grown));
   display: flex;
   align-items: flex-end;
   justify-content: center;

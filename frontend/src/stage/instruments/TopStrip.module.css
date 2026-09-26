@@ -3,9 +3,11 @@
 .phase {
   position: absolute;
   top: 19.2px;
-  font-size: var(--said);
+  /* a heading (--legible-ui), on tighter lines on a phone, so it stays clear of the room's
+     objects below */
+  font-size: calc(22.4px * var(--legible-ui));
   font-weight: 500;
-  line-height: 1.5;
+  line-height: calc(1.5 - (var(--legible) - 1) * 0.45);
   color: var(--bone);
   text-shadow: 0 1px 3px #000;
 }
@@ -32,7 +34,8 @@
   background: rgba(14, 9, 6, 0.85);
   border: 1px solid var(--cloak2);
   border-radius: 9.6px;
-  padding: 7.2px 14.4px;
+  /* grows with the labels, so the tap target does too (--legible-ui, Stage.module.css) */
+  padding: calc(7.2px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
 }
 .xr[aria-pressed='true'] {
@@ -60,7 +63,11 @@
   background: rgba(14, 9, 6, 0.85);
   border: 1px solid var(--cloak2);
   border-radius: 9.6px;
-  padding: 7.2px 9.6px;
+  padding: calc(7.2px * var(--legible-ui)) calc(9.6px * var(--legible-ui));
+}
+/* the back link outgrows the wing on a phone: the title steps right by as much */
+.back + .phase {
+  margin-left: calc((var(--legible-ui) - 1) * 75.2px);
 }
 .back:hover {
   color: var(--bone);

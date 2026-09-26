@@ -24,7 +24,7 @@
 }
 .head strong {
   font-weight: 500;
-  font-size: calc(var(--said) * 1.05);
+  font-size: calc(22.4px * 1.05 * var(--legible-ui));
 }
 .head span {
   font-size: calc(var(--meta) * 1.05);
@@ -41,8 +41,8 @@
   font: inherit;
   font-size: calc(var(--said) * 1.02);
   line-height: 1.35;
-  min-height: 64px;
-  height: 64px;
+  min-height: calc(64px * var(--legible));
+  height: calc(64px * var(--legible));
   resize: none;
   padding: 8px 11.2px;
   border-radius: 8px;
@@ -59,14 +59,15 @@
    drafts are left) and the hand-over at the far right */
 .row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 9.6px;
 }
 .row button {
   font: inherit;
-  font-size: calc(var(--said) * 1.05);
+  font-size: calc(22.4px * 1.05 * var(--legible-ui));
   font-weight: 600;
-  padding: 5.6px 20.8px;
+  padding: calc(5.6px * var(--legible-ui)) calc(20.8px * var(--legible-ui));
   border-radius: 8px;
   border: 2.6px solid #24180c;
   background: linear-gradient(#5a4632, #3a2a1a);
@@ -95,7 +96,7 @@
   min-width: 0;
   font: inherit;
   font-size: var(--meta);
-  padding: 6.4px 11.2px;
+  padding: calc(6.4px * var(--legible-ui)) calc(11.2px * var(--legible-ui));
   border-radius: 8px;
   border: 1px solid var(--cloak2);
   background: rgba(10, 7, 4, 0.55);
@@ -103,7 +104,7 @@
 }
 .notes button {
   font-size: var(--meta);
-  padding: 5.6px 12.8px;
+  padding: calc(5.6px * var(--legible-ui)) calc(12.8px * var(--legible-ui));
   border-width: 1.6px;
 }
 .left {
@@ -114,7 +115,7 @@
 .row .agent {
   font-size: var(--meta);
   font-weight: 500;
-  padding: 5.6px 12.8px;
+  padding: calc(5.6px * var(--legible-ui)) calc(12.8px * var(--legible-ui));
   background: transparent;
   border: 1px solid var(--cloak2);
   color: var(--bone2);

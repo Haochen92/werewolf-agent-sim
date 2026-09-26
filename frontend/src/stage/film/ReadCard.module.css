@@ -4,7 +4,10 @@
   position: absolute;
   z-index: 7;
   box-sizing: border-box;
-  width: 304px;
+  width: calc(304px * var(--legible-ui));
+  /* the seat's level, held on the stage at the card's height as drawn: near enough 250 units at
+     full size, grown with the type on a phone */
+  top: max(8px, min(var(--top), calc(900px - 250px * var(--legible-ui))));
   padding: 12.8px 16px;
   border-radius: 4.8px;
   background: var(--film);
@@ -44,7 +47,7 @@
   align-items: baseline;
   gap: 9.6px;
   margin: 8px 0 3.2px;
-  font-size: calc(var(--said) * 1.1);
+  font-size: calc(22.4px * 1.1 * var(--legible-ui));
 }
 .guess b {
   font-weight: 500;
@@ -77,13 +80,13 @@
   color: var(--c);
 }
 .truth svg {
-  width: 20.8px;
-  height: 20.8px;
+  width: calc(20.8px * var(--legible-ui));
+  height: calc(20.8px * var(--legible-ui));
   stroke-width: 3;
 }
 .mk {
   margin-left: auto;
-  font-size: calc(var(--said) * 1.1);
+  font-size: calc(22.4px * 1.1 * var(--legible-ui));
   color: var(--film-mut);
 }
 /* the role itself in the film's ink, the side in the slip's paper (as in "who had them right") */

@@ -16,6 +16,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { SPRITES } from '@/assets/manifest';
 import { Layer, Paint } from '../Stage';
+import { Bleed } from '../instruments/Bleed';
 import { CarriageClock } from '../instruments/CarriageClock';
 import { CardOverlay, FramedCard } from '../instruments/FramedCard';
 import { Kit } from '../instruments/Kit';
@@ -26,7 +27,7 @@ import { useMotionScale } from '../motion';
 import { shelfLight, shelfPlan, shelfRoom } from '../paint/shelf-room';
 import { seatNumber } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
-import { STAGE_H, geometry } from '../units';
+import { BLEED, STAGE_H, geometry } from '../units';
 import type { SceneProps, TurnInput } from './types';
 import styles from '../instruments/NightRoom.module.css';
 
@@ -96,6 +97,7 @@ export function NightRoom({
   return (
     <>
       <Layer name="paint">
+        <Bleed room="shelf" hud={hud} />
         <Paint of={shelfRoom} opts={{ hud, hooks: n, side, wood: SPRITES.wood.src }} />
       </Layer>
 
@@ -165,6 +167,7 @@ export function NightRoom({
                 hooks: n,
                 side,
                 chosen: chosenIndex < 0 ? undefined : chosenIndex,
+                bleed: BLEED,
               }}
             />
           </motion.div>

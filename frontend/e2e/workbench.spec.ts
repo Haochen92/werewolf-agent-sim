@@ -160,7 +160,7 @@ for (const [name, path, ready] of ENDING) {
  */
 const SLOT: [name: string, path: string, ready: string, click?: string][] = [
   ['slot-day-speech-drawer', 'day?beat=12&hud=replay&slot=drawer', '[data-line="say-200"]'],
-  ['slot-vote-line-drawer', 'vote?beat=22&slot=drawer', '[data-line="votes-3"]'],
+  ['slot-vote-line-drawer', 'vote?beat=26&slot=drawer', '[data-line="votes-3"]'],
   ['slot-ballot-drawer-rail', 'vote?beat=40&slot=drawer', '[data-drawer="rail"]'],
   [
     'slot-day-speech-film',
@@ -213,4 +213,78 @@ test('the stage’s Transcript and X-ray buttons write the slot into the URL', a
   await expect(page).toHaveURL(/viewer=xray&motion=normal&slot=film/);
   await xray.click();
   await expect(page).toHaveURL(/viewer=spect&motion=normal&slot=none/);
+});
+
+/**
+ * `frame=iphone15max`: the stage in a 932×430 box, letterboxed as on the phone held sideways
+ * (430 × 16/9 ≈ 764 wide), with the drawer closed as the phone opens it.
+ */
+test('the phone frame draws the stage at the phone’s size', async ({ page }) => {
+  await page.goto('/workbench/vote?beat=32&viewer=seat:player_7&frame=iphone15max', {
+    waitUntil: 'networkidle',
+  });
+  // the stage box: the world's parent, the HUD layer's grandparent
+  const box = await page.locator('[data-layer="hud"]').locator('xpath=../..').boundingBox();
+  expect(Math.abs((box?.width ?? 0) - 764)).toBeLessThanOrEqual(2);
+  expect(Math.abs((box?.height ?? 0) - 430)).toBeLessThanOrEqual(2);
+  await expect(page.locator('[data-drawer]')).toHaveCount(0);
+  await expect(page.getByText('iPhone 15 Pro Max · 932×430 css px')).toBeVisible();
+});
+
+/**
+ * The bleed (stage_architecture.md §3): on a phone held sideways (19.5:9) the picture carries
+ * on past the 16:9 world's sides instead of leaving bars. The count's push-in in the car, with
+ * the lantern's wall continuing on the right; the night lobby with the wing on the left.
+ */
+const FRAMES: [name: string, path: string][] = [
+  ['frame-iphone14-vote', 'vote?beat=32&viewer=seat:player_7&frame=iphone14'],
+  ['frame-iphone14-night', 'night?beat=0&viewer=seat:player_7&frame=iphone14'],
+];
+
+for (const [name, path] of FRAMES) {
+  test(`bleed: ${name}`, async ({ page }) => {
+    await page.goto(`/workbench/${path}&animate=0&strip=0`, { waitUntil: 'networkidle' });
+    await expect(page.locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+    await settle(page);
+    await expect(page.locator('[data-frame]')).toHaveScreenshot(`${name}.png`);
+  });
+}
+
+/**
+ * Legibility (stage_architecture.md §3): drawn at a phone's scale (~0.43 on an iPhone 14), the
+ * HUD grows in two tiers: labels and buttons by `--legible-ui` (capped at 1.3), so a top-strip
+ * button still reads and taps; the words people read by `--legible`, so a speech reads at a
+ * phone's body size. Sizes are as drawn on the screen: the computed size times the stage's scale.
+ */
+test('the phone frame: the top strip’s buttons are drawn large enough to read and tap', async ({
+  page,
+}) => {
+  await page.goto('/workbench/vote?beat=32&viewer=seat:player_7&frame=iphone14&strip=0', {
+    waitUntil: 'networkidle',
+  });
+  const button = page
+    .locator('[data-layer="hud"]')
+    .getByRole('button', { name: 'Transcript' });
+  const drawn = await button.evaluate((el: HTMLElement) => {
+    const scale = el.getBoundingClientRect().width / el.offsetWidth;
+    return {
+      font: parseFloat(getComputedStyle(el).fontSize) * scale,
+      height: el.getBoundingClientRect().height,
+    };
+  });
+  expect(drawn.font).toBeGreaterThanOrEqual(9);
+  expect(drawn.height).toBeGreaterThanOrEqual(22);
+});
+
+test('the phone frame: a speech is drawn at a phone’s body size', async ({ page }) => {
+  await page.goto('/workbench/day?beat=31&viewer=seat:player_7&frame=iphone14&strip=0', {
+    waitUntil: 'networkidle',
+  });
+  // the speech box's line: the div after its head
+  const body = page.locator('[data-speech] > header + div');
+  const font = await body.evaluate((el: HTMLElement) => {
+    const scale = el.getBoundingClientRect().width / el.offsetWidth;
+    return parseFloat(getComputedStyle(el).fontSize) * scale;
+  });
+  expect(font).toBeGreaterThanOrEqual(16);
 });

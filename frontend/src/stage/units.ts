@@ -15,6 +15,16 @@ import type { CSSProperties } from 'react';
 
 export const STAGE_W = 1600;
 export const STAGE_H = 900;
+/**
+ * How far the picture carries on past each side of the world, in units, for a screen wider
+ * than 16:9 (stage_architecture.md §3 "The bleed"). Fixed: nothing redraws on resize. A 21:9
+ * screen, where the bars return, shows 250 of it, and the camera never pulls back past 1, so
+ * 300 is never exhausted; wider strips made headless Chromium rasterise the world's layer a
+ * few levels differently (found at 600, 2026-09-25).
+ */
+export const BLEED = 300;
+/** How far out the bleed reaches the house's full dark: the whole of what a 21:9 screen shows. */
+export const BLEED_DARK = 250;
 
 export type Hud = 'none' | 'live' | 'replay';
 

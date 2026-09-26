@@ -9,12 +9,12 @@
 .result {
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
   font-weight: 400;
-  font-size: calc(var(--said) * 1.6);
+  font-size: calc(22.4px * 1.6 * var(--legible-ui));
   line-height: 1.1;
   color: var(--c, var(--bone));
 }
 .you {
-  font-size: var(--said);
+  font-size: calc(22.4px * var(--legible-ui));
   font-weight: 400;
   color: var(--bone);
 }
@@ -59,7 +59,7 @@
   background: rgba(14, 9, 6, 0.85);
   border: 1px solid var(--cloak2);
   border-radius: 9.6px;
-  padding: 7.2px 14.4px;
+  padding: calc(7.2px * var(--legible-ui)) calc(14.4px * var(--legible-ui));
   cursor: pointer;
 }
 .sub {

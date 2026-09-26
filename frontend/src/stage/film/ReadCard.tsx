@@ -9,15 +9,13 @@
  *
  * It sits beside its seat, docked at the wing's edge. Tapping the seat again closes it.
  */
+import type { CSSProperties } from 'react';
 import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Sigil } from '../instruments/Sigil';
 import { ROLE_NAME, factionOf, seatNumber, seatify } from '../roles';
 import { MARK, readMark, type SeatRead } from './film-model';
 import styles from './ReadCard.module.css';
-
-/** The card's height as drawn, near enough to keep it on the stage at the bottom seats. */
-const CARD_H = 250;
 
 export function ReadCard({
   seat,
@@ -32,7 +30,10 @@ export function ReadCard({
   read: SeatRead;
   /** The seat's real role, which the X-ray holds; null if this viewer does not. */
   truth: string | null;
-  /** Where the card docks, in units: the wing's edge, level with the seat. */
+  /**
+   * Where the card docks, in units: the wing's edge, level with the seat. The stylesheet keeps
+   * it on the stage at the bottom seats, at its height as drawn (which grows on a phone).
+   */
   left: number;
   top: number;
 }) {
@@ -42,7 +43,7 @@ export function ReadCard({
   return (
     <div
       className={styles.card}
-      style={{ left, top: Math.max(8, Math.min(top, 900 - CARD_H)) }}
+      style={{ left, '--top': `${top}px` } as CSSProperties}
       data-read-card={seat}
       role="dialog"
       aria-label={`The speaker's read of seat ${seatNumber(seat)}`}

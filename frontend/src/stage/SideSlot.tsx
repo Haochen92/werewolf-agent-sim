@@ -15,7 +15,7 @@ import { Drawer } from './drawer/Drawer';
 import { useDrawerFilters } from './drawer/use-drawer-filters';
 import { Film } from './film/Film';
 import type { SceneProps } from './scenes/types';
-import { atRail, slotOf } from './slot';
+import { atRail, railHolds, slotOf } from './slot';
 
 export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
   const own = useDrawerFilters();
@@ -37,6 +37,7 @@ export function SideSlot({ view, beat, me, presentation, slot }: SceneProps) {
           filters={slot?.filters ?? own.filters}
           onFilters={slot?.onFilters ?? own.setFilters}
           rail={atRail(beat)}
+          railHolds={railHolds(beat)}
           animate={animate}
         />
       ) : (
