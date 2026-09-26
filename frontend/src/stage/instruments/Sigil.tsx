@@ -8,7 +8,8 @@
  */
 import type { SVGProps } from 'react';
 
-const PATHS: Record<string, React.ReactNode> = {
+/** The sigils' paths by role; also drawn into the site's icon sprite (components/site/IconSprite). */
+export const PATHS: Record<string, React.ReactNode> = {
   villager: <path d="M6 20 L20 8 L34 20 M10 18 V32 H30 V18 M17 32 V24 H23 V32" />,
   healer: <path d="M16 7 H24 V16 H33 V24 H24 V33 H16 V24 H7 V16 H16 Z" />,
   investigator: (

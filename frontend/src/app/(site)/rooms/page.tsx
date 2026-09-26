@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { RoomsClient } from './_components/RoomsClient';
-import classes from '@/app/page.module.css';
+import classes from '@/app/(site)/page.module.css';
 
-export const metadata = { title: 'Rooms — Werewolf' };
+export const metadata = { title: 'Rooms' };
 
 export default function RoomsPage() {
   return (

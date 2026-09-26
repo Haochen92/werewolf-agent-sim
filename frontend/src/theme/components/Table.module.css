@@ -1,0 +1,21 @@
+/* The archive's list view (replays mockup): quiet rows, walnut header, bone text. */
+.table {
+  font-size: 14.5px;
+}
+
+.th {
+  font-weight: 500;
+  color: var(--bone3);
+  font-size: 13px;
+  background: #120d08;
+  border-bottom: 1px solid var(--cloak2);
+}
+
+.td {
+  border-bottom: 1px solid #231a11;
+  white-space: nowrap;
+}
+
+.tr:hover > .td {
+  background: #140f0a;
+}

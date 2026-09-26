@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { GameClient } from './_components/GameClient';
 
-export const metadata = { title: 'Table — Werewolf' };
+export const metadata = { title: 'Table' };
 
 /**
  * ONE route, three states. Dynamic and client-rendered below this boundary: the live game

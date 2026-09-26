@@ -1,0 +1,5 @@
+/* Titles: the mockups' tight tracking at weight 800. */
+.root {
+  letter-spacing: -0.03em;
+  color: var(--text);
+}

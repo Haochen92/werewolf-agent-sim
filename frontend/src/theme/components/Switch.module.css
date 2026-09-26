@@ -1,0 +1,31 @@
+/*
+ * The mockups' switch: a walnut track that turns brass, a bone thumb that turns amber. The
+ * selectors go through `.root` to outrank Mantine's own `[data-mantine-color-scheme] .track`.
+ */
+.root .input + .track {
+  background-color: #2a1f14;
+  border: 1px solid var(--cloak2);
+  cursor: pointer;
+}
+
+.root .input:checked + .track {
+  background-color: #6b4d1c;
+  border-color: var(--brass);
+}
+
+.root .thumb {
+  --switch-thumb-bg: var(--bone3);
+  border: 0;
+}
+
+.root .input:checked + * > .thumb {
+  --switch-thumb-bg: var(--amber);
+}
+
+.label {
+  font-weight: 500;
+}
+
+.description {
+  color: var(--bone3);
+}

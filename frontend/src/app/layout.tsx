@@ -1,27 +1,13 @@
 import type { Metadata } from 'next';
-import { Silkscreen } from 'next/font/google';
+import '@mantine/core/styles.css';
+import '@/styles/tokens.css';
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import { siteFonts } from '@/theme/fonts';
 import { Providers } from './Providers';
 
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
-import '@/styles/tokens.css';
-
-/**
- * The pixel display face — titles and chrome only (ux_baseline §1). Silkscreen over the
- * blockier Press Start 2P: at heading sizes it stays legible, which matters because these
- * are navigational labels, not decoration. `display: 'swap'` with the sans stack behind it
- * means a font failure degrades to sans instead of blocking the render.
- */
-const display = Silkscreen({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-});
-
+// Every route's title reads "Carriage Nine · <page>"; a page sets only its own part.
 export const metadata: Metadata = {
-  title: 'Werewolf — agent sim',
+  title: { default: 'Carriage Nine', template: 'Carriage Nine · %s' },
   description: 'Watch AI agents deceive each other — and see exactly why.',
 };
 
@@ -31,12 +17,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // client correct it after hydration. This app has no light theme — the tokens are a
     // dark two-world palette — so that default is a visible white flash on every first
     // paint. Overriding the attribute here (and forcing the scheme in the provider) means
-    // the very first byte is already dark.
+    // the very first byte is already dark. The site's font variables sit on <html> so that
+    // Mantine's portals (modals, notifications), which mount outside any page, get them too.
     <html
       lang="en"
       {...mantineHtmlProps}
       data-mantine-color-scheme="dark"
-      className={display.variable}
+      className={siteFonts}
     >
       <head>
         <ColorSchemeScript forceColorScheme="dark" />

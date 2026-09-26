@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getModels } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import type { ModelsMenu } from '@/types/contracts';
-import classes from '@/app/page.module.css';
+import classes from '@/app/(site)/page.module.css';
 
 function houseNote(menu: ModelsMenu): { text: string; free: boolean } | null {
   // The door promises nothing about a model the visitor has not chosen yet, so it speaks

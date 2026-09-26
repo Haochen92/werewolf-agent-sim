@@ -11,7 +11,7 @@
 }
 
 .heroTitle {
-  font-family: var(--font-display), var(--mantine-font-family);
+  font-family: var(--font-sans);
   font-size: 1.5rem;
   line-height: 1.4;
   letter-spacing: 0.02em;
@@ -66,7 +66,7 @@
 }
 
 .doorTitle {
-  font-family: var(--font-display), var(--mantine-font-family);
+  font-family: var(--font-sans);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
   color: var(--amber);
@@ -109,7 +109,7 @@
 }
 
 .sectionTitle {
-  font-family: var(--font-display), var(--mantine-font-family);
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   letter-spacing: 0.05em;
   color: var(--text);

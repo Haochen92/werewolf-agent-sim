@@ -160,6 +160,7 @@ The design's materials (`StageKit.vars()`: walnut, brass, felt, paper, the facti
 CSS custom properties on the stage box, alongside the existing [tokens.css](../src/styles/tokens.css).
 Fonts as the benches use them (`IM Fell English` on paper, the sans on dark), via `next/font`.
 The stage does not use Mantine components; Mantine stays for the rooms, the landing and forms.
+The site around the stage (Mantine chrome, the token bridge where the theatre's values win, the site's fonts, the `(site)` route group) is in [site_architecture.md](site_architecture.md).
 
 ## 6. Motion
 

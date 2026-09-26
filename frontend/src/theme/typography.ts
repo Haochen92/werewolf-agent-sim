@@ -1,32 +1,29 @@
 /**
- * Typography slice.
+ * Typography slice, from the landing mockup: Outfit for everything on dark (titles at 800 with
+ * tight tracking), IM Fell English for what is printed on paper (the `Paper` and `HangTag`
+ * components set it themselves). The faces are loaded in `theme/fonts.ts`; the stacks carry a
+ * fallback so a failed load degrades to a plain sans, never to the browser's serif.
  *
- * The non-negotiable from ux_baseline §1: ALL dialogue and UI text stays on the clean sans
- * stack. Pixel display type is for page titles and chrome ONLY, and monospace is reserved
- * exclusively for machine-world panes. Both contrasts collapse the moment either leaks into
- * body text, and this is a reading app before it is an atmospheric one — so GM narration,
- * which is tempting to make "special", stays body text.
- *
- * `--font-display` is wired to a real pixel face in `app/layout.tsx` via `next/font`, with
- * the sans stack behind it: if the face ever fails to load, chrome degrades to sans rather
- * than to a fallback that misrenders at display sizes.
+ * Monospace stays for machine text only (ids, keys).
  */
 import { createTheme } from '@mantine/core';
-
-const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+import { FONT_SANS } from './tokens';
 
 export const typographyTheme = createTheme({
-  fontFamily: SANS,
+  fontFamily: FONT_SANS,
   fontFamilyMonospace:
     'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+  fontSizes: { xs: '13px', sm: '14px', md: '16px', lg: '17px', xl: '19px' },
+  lineHeights: { xs: '1.35', sm: '1.45', md: '1.5', lg: '1.55', xl: '1.6' },
   headings: {
-    // Headings are chrome — they take the display face through the CSS variable.
-    fontFamily: `var(--font-display), ${SANS}`,
+    fontFamily: FONT_SANS,
+    fontWeight: '800',
     sizes: {
-      h1: { fontSize: '1.6rem', lineHeight: '1.3' },
-      h2: { fontSize: '1.2rem', lineHeight: '1.35' },
-      h3: { fontSize: '1rem', lineHeight: '1.4' },
+      // the page title (`.ttl`): clamp(34px, 5vw, 50px) in the mockups
+      h1: { fontSize: 'clamp(34px, 5vw, 50px)', lineHeight: '1.02' },
+      // section heads (`.sec-head h2`; the footer's sign-off is 30px)
+      h2: { fontSize: '34px', lineHeight: '1.1' },
+      h3: { fontSize: '20px', lineHeight: '1.3', fontWeight: '600' },
     },
   },
-  lineHeights: { xs: '1.4', sm: '1.5', md: '1.65', lg: '1.7', xl: '1.75' },
 });

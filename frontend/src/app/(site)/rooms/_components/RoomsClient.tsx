@@ -18,7 +18,7 @@ import { seatToken } from '@/lib/storage';
 import { timeAgo } from '@/lib/format';
 import type { RoomSummary } from '@/types/contracts';
 import classes from '@/components/Lobby.module.css';
-import page from '@/app/page.module.css';
+import page from '@/app/(site)/page.module.css';
 
 export function RoomsClient() {
   const { data, isPending, error } = useQuery({

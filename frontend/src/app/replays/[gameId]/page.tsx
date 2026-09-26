@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { TheaterClient } from './_components/TheaterClient';
 
-export const metadata = { title: 'Replay — Werewolf' };
+export const metadata = { title: 'Replay' };
 
 // Dynamic segment, rendered on demand; everything below this boundary is client-side —
 // the theater is interaction-bound (scrubber, X-ray) and the skeleton IS the first paint

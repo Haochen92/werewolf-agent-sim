@@ -1,0 +1,41 @@
+/* Split-flap tiles (the mockups' `.flap`). */
+.word {
+  display: inline-flex;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.flap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.2em;
+  height: 1.75em;
+  padding: 0 0.14em;
+  margin-right: 2px;
+  border-radius: 3px;
+  background: linear-gradient(#211a12 0 48%, #070504 48% 52%, #18120c 52%);
+  box-shadow: inset 0 0 0 1px #33271a;
+  color: var(--bone);
+}
+
+.space {
+  display: inline-block;
+  min-width: 0.45em;
+}
+
+.hot .flap {
+  color: var(--amber);
+}
+
+.dim .flap {
+  color: var(--bone3);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

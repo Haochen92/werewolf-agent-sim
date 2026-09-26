@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { ReplayListClient } from './_components/ReplayListClient';
-import classes from '@/app/page.module.css';
+import classes from '@/app/(site)/page.module.css';
 
-export const metadata = { title: 'Replays — Werewolf' };
+export const metadata = { title: 'Replays' };
 
 export default function ReplaysPage() {
   return (

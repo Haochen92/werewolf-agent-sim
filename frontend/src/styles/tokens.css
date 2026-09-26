@@ -1,22 +1,68 @@
 /**
- * Design tokens — hi-bit pixel × séance noir (ux_baseline §1).
+ * Site tokens (Carriage Nine), as CSS custom properties for CSS modules.
  *
- * The visual thesis of the project is a TWO-WORLD contrast, and these variables are where
- * it is spelled out. Everything else in the app refers to them; no component invents a
- * colour.
+ * The first block is the site's palette, from the landing mockup, and mirrors
+ * `src/theme/tokens.ts` one for one (`tokens.test.ts` holds the two together). Site-only roles
+ * keep the landing's names; materials shared with the theatre (`--ink`, `--bone*`, `--paper`,
+ * the faction colours) carry the THEATRE's values from `stage/paint/materials.ts`, because the
+ * theatre wins wherever the two share a name. The stage sets the same names on its own box, so
+ * inside the stage these are never read.
  *
- * - Story world (table, transcript, lobby): deep warm ink, one amber accent standing in
- *   for pooled candlelight. Warm, not Mantine's default blue-grey — the tavern has to feel
- *   like a room with a lamp in it.
- * - Machine world (X-ray panes, inspector, vote matrix): colder, flatter, thin-bordered,
- *   monospace, cyan. Flipping into an agent's mind must feel like switching instruments.
- * - Night: a blue-black wash over the story world. Cheap, werewolf-native, and the single
- *   most atmospheric thing tokens alone can do.
- *
- * Choices left unpinned by the spec were taken toward the quiet end, per the build brief:
- * low-chroma surfaces, one accent, hard 2px corners (soft radii read modern and fight the
- * pixel register), and hairline borders rather than shadows.
+ * The second block is the August palette ("hi-bit pixel × séance noir", ux_baseline §1), kept
+ * only for the pages not yet rebuilt from the mockups (review §B3: it goes when its consumers
+ * go). New code uses the first block.
  */
+
+:root {
+  /* --- site: the landing mockup's roles --------------------------------- */
+  --bg: #0c0a07;
+  --panel: #17130e;
+  --panel-2: #211b14;
+  --line: rgba(255, 235, 200, 0.08);
+  --text: #f1e8d6;
+  --muted: #a3947c;
+  --paper-dk: #cbb992;
+  --ink2: #5e4a33;
+  --brass: #c9a25e;
+  --red: #c8392b;
+  --amber-hi: #f0b94a; /* the amber pill's hover */
+  --r-s: 12px;
+  --r-m: 20px;
+  --r-l: 28px;
+  --shadow: 0 24px 44px -22px rgba(0, 0, 0, 0.9);
+  --site-max: 1160px;
+  --gutter: 28px;
+
+  /* --- shared with the theatre: its names, its values -------------------- */
+  --ink: #24180c;
+  --bone: #efe4cb;
+  --bone2: #cdbb93;
+  --bone3: #8d7a55;
+  --cloak1: #241910;
+  --cloak2: #4d3824;
+  --paper: #ecdfc3;
+  --amber: #e0a63a;
+  --town: #e0a63a;
+  --wolf: #e3503f;
+  --sk: #9d7cff;
+  --town-ink: #4a2e0a;
+  --wolf-ink: #4a120c;
+  --sk-ink: #241548;
+  --film: #0b191f;
+  --sure: #7fdcf2;
+
+  /* --- type (the --font-site-* variables come from theme/fonts.ts) ------- */
+  --font-sans: var(--font-site-sans, Outfit), 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: var(--font-site-serif, 'IM Fell English'), Georgia, serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Legacy: the August palette, for the pages not yet rebuilt.
+ *
+ * - Story world (table, transcript, lobby): deep warm ink, one amber accent.
+ * - Machine world (X-ray panes, inspector): colder, flatter, monospace, cyan.
+ * - Night: a blue-black wash over the story world.
+ * ───────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* --- story world: warm ink surfaces ----------------------------------- */
@@ -28,12 +74,10 @@
   --ink-500: #3a2f29; /* hairline dividers */
 
   /* --- ink on ink: text ------------------------------------------------- */
-  --text: #e9dfd4; /* body — warm off-white, never pure #fff */
   --text-dim: #a4948a; /* secondary, GM narration */
   --text-faint: #8a7d75; /* metadata, timestamps, disabled — 5.1:1 on ink-800, AA */
 
   /* --- the one accent: amber, as pooled lamplight ----------------------- */
-  --amber: #e0a33f;
   --amber-bright: #f5bf62; /* hover / focus only */
   --amber-dim: #8a6526; /* borders, underlines */
   --amber-wash: rgba(224, 163, 63, 0.09); /* own-message tint, selected rows */
@@ -95,7 +139,7 @@
 
 html,
 body {
-  background: var(--ink-900);
+  background: var(--bg);
   color: var(--text);
 }
 

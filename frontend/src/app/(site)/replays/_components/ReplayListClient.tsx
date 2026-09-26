@@ -5,7 +5,7 @@ import { listReplays } from '@/lib/api';
 import { ApiError } from '@/lib/request';
 import { queryKeys } from '@/lib/queryKeys';
 import { ReplayGrid } from '@/components/ReplayCard';
-import pageClasses from '@/app/page.module.css';
+import pageClasses from '@/app/(site)/page.module.css';
 
 /**
  * The replay browser. `limit` exists so the landing page can reuse this exact component for

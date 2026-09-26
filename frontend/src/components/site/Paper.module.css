@@ -1,0 +1,12 @@
+/* Paper (the mockups' `.paper`): anything inside the fiction. */
+.paper {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%),
+    radial-gradient(ellipse at 92% 94%, rgba(120, 90, 50, 0.2), transparent 50%);
+  box-shadow: 0 16px 30px -14px rgba(0, 0, 0, 0.95);
+}

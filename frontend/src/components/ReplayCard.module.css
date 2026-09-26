@@ -41,7 +41,7 @@
 }
 
 .meta {
-  font-family: var(--font-display), var(--mantine-font-family);
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   color: var(--text-dim);
   letter-spacing: 0.04em;
@@ -55,7 +55,7 @@
   border: var(--hairline) solid currentColor;
   border-radius: var(--radius);
   padding: 1px var(--space-2);
-  font-family: var(--font-display), var(--mantine-font-family);
+  font-family: var(--font-sans);
   font-size: 0.68rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
