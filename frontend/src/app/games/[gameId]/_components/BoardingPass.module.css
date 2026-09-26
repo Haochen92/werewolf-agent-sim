@@ -1,0 +1,79 @@
+/* The boarding pass: one paper card, centred, upright-friendly (the only such step in a room). */
+.wrap {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse 70% 38% at 50% 0, rgba(224, 166, 58, 0.07), transparent 70%),
+    var(--bg, #0c0a07);
+}
+
+.pass {
+  width: min(100%, 460px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 24px 22px;
+  border-radius: 12px;
+}
+
+.kind {
+  font-style: italic;
+  color: #5e4a33;
+}
+
+.title {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(26px, 7vw, 34px);
+  line-height: 1.05;
+}
+
+.sub {
+  margin: 0 0 4px;
+  color: #5e4a33;
+}
+
+.label {
+  font-family: inherit;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.input {
+  font-family: inherit;
+  font-size: 20px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid #8a7250;
+  border-radius: 0;
+  padding-left: 2px;
+}
+.input:focus {
+  border-bottom-color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.error {
+  margin: 0;
+  color: #9a2a1c;
+  font-family: var(--font-sans, system-ui);
+  font-size: 14px;
+}
+
+.fine {
+  margin: 4px 0 0;
+  color: #5e4a33;
+  font-family: var(--font-sans, system-ui);
+  font-size: 13px;
+  line-height: 1.4;
+}

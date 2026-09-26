@@ -7,6 +7,7 @@ import { LynchScene } from '../scenes/LynchScene';
 import { MorningScene } from '../scenes/MorningScene';
 import { NightLobbyScene } from '../scenes/NightLobbyScene';
 import { ReplayNightScene } from '../scenes/ReplayNightScene';
+import { StationScene } from '../scenes/StationScene';
 import { VoteScene } from '../scenes/VoteScene';
 import { anchorLine, workbenchFrame } from './frame';
 import { SCENE_IDS, SCENES, isSceneId } from './registry';
@@ -38,6 +39,48 @@ describe('the scene registry', () => {
 
   it('mounts the ending', () => {
     expect(SCENES.over).toBe(GameOverScene);
+  });
+
+  it('mounts the platform first, before the deal', () => {
+    expect(SCENES.station).toBe(StationScene);
+    expect(SCENE_IDS[0]).toBe('station');
+  });
+});
+
+describe('the platform on the workbench', () => {
+  const at = (beat: number) => workbenchFrame('station', { ...DEFAULT_QUERY, beat });
+
+  it('steps through its rooms: host, locked guest, watcher, departing, empty', () => {
+    const f = at(0);
+    expect(f.beats.map((b) => b.id)).toEqual([
+      'station.waiting',
+      'station.locked',
+      'station.waiting',
+      'station.departing',
+      'station.waiting',
+    ]);
+    expect(f.beats.every((b) => b.scene === 'station' && b.liveOnly)).toBe(true);
+    expect(f.situation?.label).toBe('the host, 3 aboard');
+    expect(f.room).toMatchObject({ isHost: true, aboard: ['mira', 'kei', 'sol'], you: 0 });
+    expect(f.room?.minAboard).toBe(1);
+    expect(f.room?.link).toMatch(/\/games\/9369a5c1-/);
+    expect(at(1).room).toMatchObject({ locked: true, isHost: false, seated: true });
+    expect(at(1).room?.aboard).toHaveLength(5);
+    expect(at(2).room).toMatchObject({ seated: false, you: null });
+    expect(at(2).room?.aboard).toHaveLength(9);
+    expect(at(3).beat?.id).toBe('station.departing');
+    expect(at(4).room?.aboard).toEqual([]);
+  });
+
+  it('has nobody seated, an empty view, and ignores the viewer control', () => {
+    const f = workbenchFrame('station', {
+      ...DEFAULT_QUERY,
+      viewer: { kind: 'seat', seat: 'player_1' },
+    });
+    expect(f.me).toBeNull();
+    expect(f.view?.lastSeq).toBe(0);
+    expect(f.presentation.xray).toBe(false);
+    expect(at(99).index).toBe(4);
   });
 });
 

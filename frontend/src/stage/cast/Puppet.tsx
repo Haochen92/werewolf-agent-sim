@@ -23,8 +23,8 @@ import styles from './Puppet.module.css';
 export interface PuppetProps {
   g: StageGeometry;
   character: Character;
-  /** The numeral on the belly, 1–9. */
-  seat: number;
+  /** The numeral on the belly, 1–9; null before seats are dealt (the waiting room): no numeral. */
+  seat: number | null;
   state: DayState;
   /** Offset from the stand's centre line, and a scale, for two or three at the stand. */
   dx?: number;
@@ -106,26 +106,28 @@ export function Puppet({
         draggable={false}
         className={styles.sprite}
       />
-      <svg
-        className={styles.numeral}
-        viewBox="0 0 100 100"
-        style={{ left: '38%', top: `${ntop}%`, width: '24%', height: `${nh}%` }}
-        aria-hidden="true"
-      >
-        <circle cx="50" cy="50" r="46" fill="#efe4cb" stroke="#24180c" strokeWidth="5" />
-        <circle
-          cx="50"
-          cy="50"
-          r="36"
-          fill="none"
-          stroke="#8d7a55"
-          strokeWidth="3"
-          strokeDasharray="6 5"
-        />
-        <text x="50" y="68" textAnchor="middle" fontSize="54" fill="#24180c">
-          {seat}
-        </text>
-      </svg>
+      {seat === null ? null : (
+        <svg
+          className={styles.numeral}
+          viewBox="0 0 100 100"
+          style={{ left: '38%', top: `${ntop}%`, width: '24%', height: `${nh}%` }}
+          aria-hidden="true"
+        >
+          <circle cx="50" cy="50" r="46" fill="#efe4cb" stroke="#24180c" strokeWidth="5" />
+          <circle
+            cx="50"
+            cy="50"
+            r="36"
+            fill="none"
+            stroke="#8d7a55"
+            strokeWidth="3"
+            strokeDasharray="6 5"
+          />
+          <text x="50" y="68" textAnchor="middle" fontSize="54" fill="#24180c">
+            {seat}
+          </text>
+        </svg>
+      )}
     </motion.div>
   );
 }

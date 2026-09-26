@@ -6,13 +6,17 @@
  * the prompt that seat would have been sent into the view: its candidates are the living
  * seats but the seat itself (and, for a wolf, but the pack), exactly as the server builds
  * them. Everything else on stage is the fixture's own truth at that moment.
+ *
+ * The waiting room (the platform) has no log at all: a room is only the status poll's roster,
+ * so its situations are the room itself (`RoomSituation`), drawn over an empty view.
  */
 import { foldEvents } from '@/game/foldEvents';
 import type { GameView } from '@/game/types';
 import type { ActionKind, DurableGameEvent } from '@/types/contracts';
 import { BEAT_LABELS, type BeatId, type SceneBeat, type SceneId } from '../beats/types';
 import { seatify } from '../roles';
-import type { TurnInput } from '../scenes/types';
+import { MIN_ABOARD, stationBeat, type StationBeatId } from '../scenes/station';
+import type { RoomInput, TurnInput } from '../scenes/types';
 
 export interface Situation {
   /** What the stepper calls it: "healer, night 2". */
@@ -35,14 +39,36 @@ export interface Situation {
   left?: number | null;
 }
 
+/**
+ * A waiting room, for the platform: which of its beats, and the room as the status poll and this
+ * device would give it (the invite link and the minimum aboard are the workbench's own).
+ */
+export interface RoomSituation {
+  label: string;
+  beat: StationBeatId;
+  room: Omit<RoomInput, 'minAboard' | 'link'>;
+}
+
+export type AnySituation = Situation | RoomSituation;
+
+export function isRoomSituation(s: AnySituation): s is RoomSituation {
+  return 'room' in s;
+}
+
+/** The invite the workbench's rooms show: the fixture game's own address. */
+const ROOM_LINK = 'https://wolf.liuhaochen.com/games/9369a5c1-3c28-42ce-86a1-9d594dfa4804';
+
 /** The two minutes every human prompt gets (ux_journeys: the one timeout rule). */
 export const TURN_MS = 120_000;
 
 export interface SyntheticFrame {
   beat: SceneBeat;
   view: GameView;
-  me: string;
+  /** The seated human; null on the platform (nobody has a seat before the deal). */
+  me: string | null;
   turn: TurnInput;
+  /** The waiting room, for the platform's situations. */
+  room?: RoomInput;
 }
 
 function beatFor(kind: ActionKind | null): BeatId {
@@ -66,10 +92,22 @@ export function candidatesFor(
   return view.alive.filter((s) => s !== me && !pack.includes(s));
 }
 
+/** A waiting room on the platform: no log, so an empty view under the room. */
+export function synthesiseRoom(s: RoomSituation): SyntheticFrame {
+  return {
+    beat: stationBeat(s.beat),
+    view: foldEvents([]),
+    me: null,
+    turn: {},
+    room: { ...s.room, minAboard: MIN_ABOARD, link: ROOM_LINK },
+  };
+}
+
 export function synthesise(
-  s: Situation,
+  s: AnySituation,
   events: readonly DurableGameEvent[],
 ): SyntheticFrame {
+  if (isRoomSituation(s)) return synthesiseRoom(s);
   const phase = s.actionKind === 'vote' ? 'voting' : 'night';
   const nightStart = events.find(
     (e) => e.type === 'phase_change' && e.phase === phase && e.day === s.day,
@@ -136,7 +174,7 @@ export function synthesise(
 
 /** Every situation of a scene, synthesised. */
 export function synthesiseAll(
-  situations: readonly Situation[],
+  situations: readonly AnySituation[],
   events: readonly DurableGameEvent[],
 ): SyntheticFrame[] {
   return situations.map((s) => synthesise(s, events));

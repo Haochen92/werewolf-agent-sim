@@ -160,6 +160,22 @@ Mantine `Alert` on the stub. Left out, with no placeholder: the puppet rail and 
 | Lock / Depart | `lockRoom()`, `startGame(hostKey)` | | |
 | Leave (guest), remove a passenger (host tag) | | | leave and kick routes (`S/routes/rooms.py` has create/list/lock/join/rejoin/start only) |
 
+As built 2026-09-26 (step D5): `stage/scenes/StationScene.tsx` + `paint/station.ts` + the seven
+station WebPs (`SPRITES.station.*`), mounted by `GameClient` in the waiting state inside the same
+`OrientationGuard` and `LiveTheatre` as the game; beats `station.waiting` / `.locked` /
+`.departing` (beat_sheet §1a); the ledge is walnut with a paper notice ("3 of 9 aboard · waiting
+for the host") and, for the host, `ActPlate` (new `inline` prop) with Depart and Lock/Unlock;
+Invite (the link, Copy) and Ticket (places, the 2:00 clock, host, open/locked) are the hung tags
+and their paper panels; the boarding pass is `BoardingPass.tsx`, a page before the guard. The
+states map: `state=waiting|departing` → the beats, `role=host|guest` → `RoomInput.isHost/seated`,
+`locked` → `station.locked`, `pop=inv|tk` → the tags' panels, `sheet=pass` → the boarding pass
+page. Depart → the train leaves → a curtain → deal beat 0, one stage (no remount). Derived, not on
+the wire: "you" (the name this device boarded with, in memory: a reload forgets it, the waiting
+status has no `you`); the host's name is `GameStatus.host`. Skipped for want of wire: the code,
+puppet choice / Change puppet (the platform wears `castForGame` by join order, which the dealt
+seats do not keep), Leave, remove a passenger, Change the terms, the Ticket's model / memory /
+funded-by lines. The mockup's `pop=tag` and `passmode=change` have no counterpart.
+
 ## B. Conflicts with the rulings and the built code
 
 | # | Conflict | Evidence | Verdict to rule on |

@@ -195,6 +195,7 @@ export function Workbench({ scene }: { scene: string }) {
         me={frame.me}
         presentation={frame.presentation}
         turn={frame.turn}
+        room={frame.room}
         slot={slotInput}
         onAct={logAct}
         onSay={logSay}

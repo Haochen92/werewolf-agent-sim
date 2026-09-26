@@ -3,7 +3,7 @@
 /**
  * `/games/[gameId]` — ONE route, three states (build_plan §5).
  *
- *   waiting  → the lobby card
+ *   waiting  → the waiting room: the platform, a scene on the same stage the game plays on
  *   running  → the live theatre: the SAME stage and scenes the replay uses, fed by the SSE
  *              store instead of a fetched log, with the seated human's turns on it
  *   finished → the same theatre, played on to its curtain with the X-ray on for everyone
@@ -15,8 +15,12 @@
  * lands still on whatever the log already held, so a refresh mid-game lands silently on the
  * latest beat instead of replaying an hour of drama (ux_journeys §0, D23).
  *
- * The room is landscape only (stage_architecture.md, ruling 3): upright, a card asks the
- * viewer to turn the phone. The waiting lobby stays an ordinary responsive page.
+ * The room is landscape only (stage_architecture.md, ruling 3; review 2026-09-26 F1): upright, a
+ * card asks the viewer to turn the phone. The waiting room is the stage too: the platform
+ * (`StationScene`), mounted in the same guard and the same `LiveTheatre` as the game, so when
+ * the host departs the train pulls out and the deal begins on the one stage, nothing
+ * remounted. The one step allowed upright is the boarding pass (the name a newcomer boards
+ * with), a page before the guard; a full or locked room, or "Just watch", skips it.
  */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -26,16 +30,21 @@ import { queryKeys } from '@/lib/queryKeys';
 import { rejoinGame } from '@/lib/api';
 import { ApiError } from '@/lib/request';
 import { hostKey, seatToken } from '@/lib/storage';
-import { LobbyCard, TerminalError } from '@/components/LobbyCard';
 import { GameEndedCard } from '@/components/GameEndedCard';
 import { KeyNeededCard } from '@/components/KeyNeededCard';
+import { TerminalError } from '@/components/TerminalError';
 import { OrientationGuard } from '@/stage/OrientationGuard';
 import { LiveTheatre } from '@/stage/containers/LiveTheatre';
+import { BoardingPass } from './BoardingPass';
 import classes from './GameClient.module.css';
+import { useRoom } from './useRoom';
 
 export function GameClient({ gameId }: { gameId: string }) {
   const queryClient = useQueryClient();
   const { status, state, error, statusError, isPending } = useGameStream(gameId);
+  const { room, departed, onRoomAct, boarded } = useRoom(gameId, status);
+  // "Just watch" on the boarding pass: the platform without a seat
+  const [watching, setWatching] = useState(false);
 
   /**
    * Seat recovery (D23). The trigger is NOT a failed request: a lost cookie does not make
@@ -53,7 +62,9 @@ export function GameClient({ gameId }: { gameId: string }) {
   }, [gameId]);
 
   useEffect(() => {
-    const seatMissing = Boolean(status && !status.you);
+    // A waiting room never names `you` (seats are dealt at the start), so "nobody" is not a
+    // lost seat there: the token alone boards you, and rejoining would only blank the platform.
+    const seatMissing = Boolean(status && !status.you && status.state !== 'waiting');
     const seatRejected = statusError instanceof ApiError && statusError.isSeatLost;
     if (rejoinTried || (!seatMissing && !seatRejected)) return;
     const token = seatToken.get(gameId);
@@ -111,12 +122,28 @@ export function GameClient({ gameId }: { gameId: string }) {
   // can, because heartbeats keep flowing and `state` stays "running".
   if (error) return <TerminalError message={error} byok={status?.name?.includes('byok')} />;
 
-  if (state === 'waiting' && status) return <LobbyCard gameId={gameId} status={status} />;
+  // a newcomer to an open room with a place left gives their name first (upright is fine)
+  const open = room && !room.locked && room.aboard.length < room.places;
+  if (state === 'waiting' && status && room && !room.seated && open && !watching)
+    return (
+      <BoardingPass
+        gameId={gameId}
+        status={status}
+        onBoarded={boarded}
+        onWatch={() => setWatching(true)}
+      />
+    );
 
   return (
     <OrientationGuard>
       <main className={classes.page}>
-        <LiveTheatre gameId={gameId} status={status} />
+        <LiveTheatre
+          gameId={gameId}
+          status={status}
+          room={room}
+          departed={departed}
+          onRoomAct={onRoomAct}
+        />
       </main>
     </OrientationGuard>
   );

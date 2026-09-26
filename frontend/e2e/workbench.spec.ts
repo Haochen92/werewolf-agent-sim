@@ -63,6 +63,26 @@ for (const [name, path] of FLIES) {
   });
 }
 
+/**
+ * The platform (the waiting room) at rest, from its synthetic rooms (`?beat=N` indexes the
+ * station's situations in registry.ts): the host with three aboard, a guest in a locked room
+ * of five, and someone watching a full room. Ready when every person on the platform is drawn.
+ */
+const STATION: [name: string, path: string, aboard: number][] = [
+  ['station-host-3', 'station?beat=0', 3],
+  ['station-guest-locked', 'station?beat=1', 5],
+  ['station-spectator-full', 'station?beat=2', 9],
+];
+
+for (const [name, path, aboard] of STATION) {
+  test(`platform: ${name}`, async ({ page }) => {
+    await page.goto(`/workbench/${path}&animate=0&strip=0`, { waitUntil: 'networkidle' });
+    await expect(page.locator('[data-aboard] img')).toHaveCount(aboard);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`);
+  });
+}
+
 test('the control strip writes the URL', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto('/workbench/day?beat=3', { waitUntil: 'networkidle' });

@@ -45,7 +45,7 @@ The first scene of a match. Nothing on the wire narrates it; every line is the c
 | 6 | `deal.day-begins` | `phase_change: day` (seq 12) | P | cards and chips go up, the paint goes to day, the stand returns with the first speaker. **Chapter mark: Day 1** | — | 3.0 |
 
 Without X-ray the replay sees the backs. The boarding variant (the train at a station) is not a
-deal beat; it is the rooms' waiting lobby.
+deal beat; it is the waiting room before it, §1a.
 
 As built 2026-09-25 (no bench gives them; change here first): top strip "Before day 1 · The deal
 · <label>"; "Nine at the table"; chips lower 0.1 s + 0.07 s each, cards 0.2 s + 0.08 s each; your
@@ -55,6 +55,41 @@ if it ever does). The packmate's hung chip takes the red edge, as its wing tile 
 amber; the handoff's red won, 2026-09-25). Beside an open side slot the chip row and the cards
 under it keep inside the room, 32 units in from the wing and from the room's right edge (the
 X-ray night's spokes hang the same row, so they narrow too).
+
+## 1a. The platform — the waiting room · review 2026-09-26 §A5, F1 · live only
+
+A room before its game: `/games/[id]` while the status says `waiting`, on the same stage the game
+plays on (landscape, under the orientation guard), so Depart hands straight to §1 row 1. A room has
+no event log: every beat is keyed on the status poll (3 s while waiting) or on this device (the
+host key, the seat token). Nobody has a seat yet: the i-th person to board stands at the i-th
+place and wears `castForGame(gameId)[i]`, with no numeral; seats are dealt at the start and the
+empty places go to agents. Never in the replay or the workbench fixture (the workbench draws it from
+synthetic rooms, `SYNTHETIC.station`).
+
+| # | Beat | Anchor | Sees | Stage | Slot | Hold |
+|---|---|---|---|---|---|---|
+| 1 | `station.waiting` | status `waiting`, not `locked` | P | the platform at night: the train at the platform with the dining car's window over the nine places; each person aboard on the platform under their place (their name on a paper tag at their feet and on a brass plate under the window; "you", "host" on the tag); open places a dashed amber mark and an "open" plate; their chips on the wing; the station sign with the room's name and "hosted by …"; the Invite and Ticket tags hung from the canopy; the ledge: "3 of 9 aboard · waiting for the host" (the host: "· ready when you are", with the Lock and Depart plates) | — (no drawer, no film) | until the room changes |
+| 2 | `station.locked` | status `waiting`, `locked` | P | as 1, with the brass "Locked" plate under the sign; the ledge's line leads "Locked: nobody new can board."; the host's plate reads Unlock | — | until the room changes |
+| 3 | `station.departing` | the host's Depart went through (`POST /start`), or the status left `waiting` | P | the ledge reads "All aboard"; the people step off the platform into their places in the window; the blinds unroll on the agents' places with their shadows on them, the plates turn to "agent"; the tags draw up into the canopy; the ledge sinks; the train pulls out to the right; then a curtain falls on the empty platform ("The deal begins in the dining car") and lifts on §1 row 1 | — | 7.0 s, then the curtain 1.2 s down and 1.0 s up |
+
+As built 2026-09-26 (the mockup `claude_artifacts/design/pages/waiting-room.html` gives the
+picture and the departure's order; the timings are the build's, change here first). A person who
+joins while the page watches rises onto the platform (the puppet's rise, 0.8 s) and their tag fades
+in after 0.6 s; what was there when the page opened is simply there. The departure: the people sink
+off the platform in 0.45 s and appear in the window (fade and rise, 0.8 s after 0.3 s); the agents'
+blinds unroll 0.9 s each from 0.5 s, 0.16 s apart, their shadows 0.6 s from 1.2 s; the tags draw up
+0.9 s; the ledge sinks 1.0 s and the train pulls out 4.6 s, both from 2.4 s (the train on the
+mockup's ease-in, clipped at the world's edges). A viewer who asked for reduced motion gets a
+0.6 s departure. The hand-off (`LiveTheatre`): the game's events are held back from the stage until
+the curtain is down, then the deal plays from its first beat at normal speed whether it arrived as
+history or as news (`live-state.ts`, `dealEnd`), and the curtain lifts off it; one `<Stage>`
+throughout. The snow falls for as long as the room waits (still at `skip` and for reduced motion).
+Depart needs one person aboard ("Nobody is aboard yet: Depart needs one person on the platform.");
+the server sets no minimum, this is the client's rule from the old lobby card. A newcomer to an open
+room with a place left gets the boarding pass first (a page, upright allowed: name, "Step onto the
+platform", "Just watch"); a full or locked room, or a device holding a seat, goes straight to the
+platform. Not built (no wire for it): the room's code, puppet choice and "Change puppet", Leave,
+removing a passenger, the Ticket's model, memory and "who pays" lines, "Change the terms".
 
 ## 2. Day discussion — H§4.1 · benches 62, 72
 

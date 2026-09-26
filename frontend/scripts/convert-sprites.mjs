@@ -7,7 +7,8 @@
  * plush, kits and wood are painted, where quality 85 is indistinguishable and far smaller.
  * Nothing is resized: sharpness comes from the master, never from upscaling.
  *
- * Run from frontend/: `node scripts/convert-sprites.mjs`
+ * Run from frontend/: `node scripts/convert-sprites.mjs` (or `… station` for one group only, so
+ * the other groups' files are not re-encoded)
  */
 import { mkdir, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -39,8 +40,10 @@ const rows = [];
 let before = 0;
 let after = 0;
 
+const only = process.argv[2];
 for (const src of await listMasters(SRC)) {
   const rel = path.relative(SRC, src);
+  if (only && rel.split(path.sep)[0] !== only) continue;
   const dest = path.join(OUT, rel.replace(/\.(png|jpe?g)$/i, '.webp'));
   await mkdir(path.dirname(dest), { recursive: true });
   const info = await sharp(src).webp(optionsFor(rel)).toFile(dest);

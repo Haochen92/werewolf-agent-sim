@@ -13,7 +13,10 @@ handoff disagree, this file wins (§9 lists every such point).
    (§7). Storybook is deferred; if it is ever added it is for leaf components only.
 2. **`motion`** (framer-motion's successor) for choreography (§6).
 3. **Landscape only** for the stage and for everything inside a game room (`/games/[id]`,
-   `/replays/[id]`). The landing, the replay list and the lobby/rooms stay responsive. This
+   `/replays/[id]`). The landing, the replay list and the lobby/rooms stay responsive. Amended
+   2026-09-26 (review F1): the waiting room inside `/games/[id]` is a stage scene too, landscape
+   only; its boarding pass (the name step) is the one upright page there; the lobby (`/rooms`)
+   stays responsive. This
    supersedes `ux_baseline.md`'s "mobile-first, one column" for those two routes.
 4. **A fixed 1600×900 logical stage** (§3): the one number everything scales from.
 5. **The design bundle is split.** Curated: `docs/design_2026-09-25/` (handoff, kits, sprite
@@ -114,6 +117,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/plush/<character>.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp
+  src/assets/sprites/station/{sky,fringe,floor,post,lamp,train,blind}.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
@@ -128,6 +132,18 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   `CHARACTERS` keeps the kit's order because the shuffle depends on it.
 - The bundle manifest's `plush_scale` per character is not yet in `manifest.ts`; add it when the
   shelf room is built (step 5).
+- The station (the waiting room's platform, review 2026-09-26 §A5) has no masters in the bundle:
+  its pictures exist only inlined in `claude_artifacts/design/pages/waiting-room.html`.
+  `scripts/extract-station-sprites.mjs` pulls each out once, by the CSS rule that uses it, into
+  the archive as a PNG master (`claude_artifacts/design/sprites/station/`), and
+  `node scripts/convert-sprites.mjs station` makes the WebP (quality 85), exported as
+  `SPRITES.station.*`. The mapping (2026-09-26): `.sky` → `sky` (2508×627, the painted country),
+  `.fringe` → `fringe` (1528×715, the canopy's felt scallops), `.floor .tile` → `floor`
+  (768×768, the paving), `.post` → `post` (489×1024), `.lamp` → `lamp` (569×1008, the lantern),
+  `.cars` → `train` (5990×700, the dining car between two carriages; its window geometry is
+  `TRAIN_PX` in `paint/station.ts`), `.place .blind` → `blind` (512×732). Not extracted: `.ch` and
+  `.fg` (the stage's own sprites replace them) and `.ledge` (a 512 px copy of `wood/walnut.webp`,
+  mean difference 2.5/255). 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
 - Sharpness: the 600 px day cuts are right at 1× and slightly soft at 2× for the puppet at the
   stand. If the ~900 px cuts still exist in the chat, re-export them as the masters. **Never
   upscale.** No sprite atlases: HTTP/2 makes 44 small files cheap and an atlas adds tooling.
@@ -238,7 +254,8 @@ src/stage/
 ├── Stage.tsx                # the box, the layers, --stage-scale, the paint memo
 ├── paint/                   # string generators: diningCar, shelfRoom, station, window,
 │                            #   shutter, drape, light — (phase, units) → svg string;
-│                            #   bleed.ts: the room's two strips past the world's sides (§3)
+│                            #   bleed.ts: the room's two strips past the world's sides (§3);
+│                            #   station.ts: the platform (stationBack/Front, stationPlan)
 ├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, WallClock, Shutter,
 │                            #   Bleed (the bleed's paint, under a room's own),
 │                            #   RoleCard, CardBack, SmallCard, Chip, String, WingTile, Wing,
@@ -246,16 +263,24 @@ src/stage/
 ├── cast/                    # Puppet, Plush, Kit (sprite + numeral overlay), castForGame
 ├── film/                    # Film (side slot), Note, Lessons, ReadCard, Brief, Ledger (epilogue)
 ├── drawer/                  # Transcript drawer: lines by kind, day tabs, seat chips, Show toggles
-├── scenes/                  # DealScene DayScene VoteScene LynchScene NightLobbyScene
-│                            #   ShelfRoomScene PackScene MorningScene ReplayNightScene GameOverScene
+├── scenes/                  # StationScene (the waiting room; station.ts its rules) DealScene
+│                            #   DayScene VoteScene LynchScene NightLobbyScene ShelfRoomScene
+│                            #   PackScene MorningScene ReplayNightScene GameOverScene
 ├── beats/                   # beatsFor(events, {xray}) → SceneBeat[]; types; fixture goldens
-├── containers/              # ReplayTheatre (transport, chapters, slot) · LiveTheatre (queue, dock)
+├── containers/              # ReplayTheatre (transport, chapters, slot) · LiveTheatre (queue, dock,
+│                            #   the platform and its hand-off to the deal)
 └── workbench/               # registry, ControlStrip, fixture loader
 app/workbench/[scene]/       # the route
 e2e/                         # Playwright
 ```
 
-Scenes take `{ view, beat, me, presentation }` and nothing else. Containers own the store, the
+The page side of the waiting room lives with its route: `app/games/[gameId]/_components/`
+`useRoom.ts` (the status poll's room as `RoomInput`, Lock and Depart with the host key) and
+`BoardingPass.tsx` (the name step, the one upright page). `components/LobbyCard.tsx` is gone
+(2026-09-26); its `TerminalError` moved to `components/TerminalError.tsx`.
+
+Scenes take `{ view, beat, me, presentation }` and nothing else (the platform also takes `room`,
+the waiting room from the status poll: `RoomInput` in `scenes/types.ts`). Containers own the store, the
 stream, the transport and the queue. `src/game/` (fold, store, types) is unchanged except where
 the beat sheet needs a field the view lacks.
 

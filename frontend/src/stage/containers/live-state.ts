@@ -10,7 +10,8 @@
  *   beat. Nothing plays; a refresh mid-game is silent. So is what a reconnect catches up on.
  * - Except the deal: a new game's first connection finds the deal already dealt (it happens
  *   before the page connects), so while the history holds no turn yet it plays from the first
- *   beat at normal speed, instead of landing on "the day begins".
+ *   beat at normal speed, instead of landing on "the day begins". A deal that arrives as news
+ *   (the page watched the waiting room depart) keeps the same pace.
  * - News plays. Each new beat animates in and holds for its time, then the next one plays; when
  *   more than one is waiting they go at fast speed (live-queue.ts decides which and how fast).
  * - A beat that waits for someone holds the stage until the wait is over: a prompt until it is
@@ -127,6 +128,13 @@ export function historyLanding(
   return allIn ? 'deal' : 'pending';
 }
 
+/** Where the deal's beats end in the log (0 with none yet). */
+function dealBeatsEnd(beats: readonly SceneBeat[]): number {
+  let end = 0;
+  for (const b of beats) if (b.scene === 'deal') end = Math.max(end, b.end);
+  return end;
+}
+
 function sameBeat(a: SceneBeat | undefined, b: SceneBeat | undefined): boolean {
   return (
     !!a &&
@@ -207,7 +215,9 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
         beats,
         cursor: carried.cursor,
         holding: carried.same ? state.holding : false,
-        dealEnd: landing === 'deal' ? action.historyEnd : 0,
+        // the deal plays at its own pace whether it came as history or, after the waiting
+        // room's departure, as news: through its last beat
+        dealEnd: landing === 'deal' ? Math.max(action.historyEnd, dealBeatsEnd(beats)) : 0,
       };
       // the epilogue lands after the curtain is up (memory is extracted after game over): play it
       const at = next.cursor.index;

@@ -4,7 +4,8 @@
  * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. The vigilante's
  * plate has a second button, "Hold fire", because not shooting is an act too.
  *
- * In the pack's room the plate sits at the left, because the wolves' chat has the right.
+ * In the pack's room the plate sits at the left, because the wolves' chat has the right. On the
+ * waiting room's ledge it is `inline`, in the ledge's row beside its notice ("Depart", "Lock").
  */
 import styles from './NightRoom.module.css';
 
@@ -18,12 +19,22 @@ export interface ActPlateProps {
   secondary?: { label: string; onClick?: () => void; disabled?: boolean };
   /** Centred on the stage (the shelf room), or at the room's left edge in units (the pack). */
   left?: number;
+  /** Placed by its parent's layout instead (the waiting room's ledge). */
+  inline?: boolean;
 }
 
-export function ActPlate({ label, onConfirm, disabled, secondary, left }: ActPlateProps) {
+export function ActPlate({
+  label,
+  onConfirm,
+  disabled,
+  secondary,
+  left,
+  inline,
+}: ActPlateProps) {
+  const place = inline ? styles.inline : left == null ? '' : styles.left;
   return (
     <div
-      className={left == null ? styles.plate : `${styles.plate} ${styles.left}`}
+      className={place ? `${styles.plate} ${place}` : styles.plate}
       style={left == null ? undefined : { left }}
       data-plate={label}
     >

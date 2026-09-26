@@ -46,7 +46,8 @@ export interface SceneProps {
   /**
    * The seated human's answer to a prompt (a night act, the pack's vote): the chosen seat, or
    * null for an act that chooses no one (the vigilante's "Hold fire"). The scene only reports
-   * it; the live container sends it to the server, the workbench logs it.
+   * it; the live container sends it to the server, the workbench logs it. The waiting room's
+   * host reports its plates here too, as a `RoomAct` (`lock`, `unlock`, `depart`).
    */
   onAct?: (target: string | null) => void;
   /** The seated human's line (the pack's chat): reported the same way as `onAct`. */
@@ -55,6 +56,8 @@ export interface SceneProps {
   turn?: TurnInput;
   /** What the container holds for the side slot and its two buttons; see `SlotInput`. */
   slot?: SlotInput;
+  /** The waiting room, for the platform (`station.*` beats) only; see `RoomInput`. */
+  room?: RoomInput;
   /**
    * Live, at the curtain: where "Watch the replay" and "Back to the lobby" go. Without it the
    * two buttons are drawn but go nowhere (the workbench).
@@ -142,4 +145,48 @@ export interface DockInput {
   onDelegate?: () => void;
   /** The turn is no longer this seat's to answer: sent, or run out. */
   closed?: boolean;
+}
+
+/** What the waiting room's host can press on the ledge; reported through `SceneProps.onAct`. */
+export type RoomAct = 'lock' | 'unlock' | 'depart';
+
+/**
+ * The waiting room before the game, for the platform (`StationScene`). A room has no event log:
+ * all of this is the status poll's (`GET /games/{id}` in the `waiting` state) plus what this
+ * device holds (the host key, the seat token, the name it boarded with). The container that
+ * polls builds it; the scene only draws it and reports the host's presses.
+ */
+export interface RoomInput {
+  /** The room's name, on the station sign; "" = unnamed. */
+  name: string;
+  /**
+   * The names aboard, in the order they joined (the server's public roster). Nobody has a seat
+   * yet: seats and roles are dealt when the game starts, the empty places going to agents.
+   */
+  aboard: readonly string[];
+  /** How many can board (the server's `max_seats`). */
+  places: number;
+  /** The name shown as the host (the server's: whoever boarded first), or null while nobody has. */
+  host: string | null;
+  /** Locked: the server admits nobody new, invite link included. */
+  locked: boolean;
+  /** This device holds the room's host key: the Lock and Depart plates are its. */
+  isHost: boolean;
+  /** This device holds a seat token for the room (it boarded). */
+  seated: boolean;
+  /** This viewer's index in `aboard`, when the device knows which name it boarded as. */
+  you: number | null;
+  /** The fewest aboard that Depart needs (see `MIN_ABOARD` in scenes/station.ts). */
+  minAboard: number;
+  /** The address that brings someone to this room, for the invite. */
+  link: string;
+  /** A press on its way to the server. */
+  busy?: RoomAct | null;
+  /** What the server said when a press failed, as it said it. */
+  error?: string | null;
+  /**
+   * The hand-off to the deal (`LiveTheatre`): `closing`, the curtain falls over the empty
+   * platform; `opening`, only the curtain is left, lifting off the deal's first beat below.
+   */
+  curtain?: 'closing' | 'opening' | null;
 }

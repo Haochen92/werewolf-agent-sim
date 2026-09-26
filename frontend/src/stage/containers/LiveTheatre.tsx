@@ -24,6 +24,14 @@
  * After `game_over` every viewer holds the whole log, so the X-ray is on for everyone: the
  * wing takes the truth, the film opens, and the ending plays to its curtain, whose way out
  * goes to the replay or back to the lobby.
+ *
+ * Before the game, the same stage holds the waiting room: the platform (`StationScene`), drawn
+ * from the room the page hands in (`room`), with the host's Lock and Depart going back out
+ * through `onRoomAct`. When the host departs (or the status says the game has begun, for
+ * everyone else) the train pulls out, a curtain falls on the empty platform, and it lifts on
+ * the deal's first beat: one `<Stage>` throughout, so nothing remounts and nothing flashes.
+ * Until the curtain is down the game's events are held back from the stage, so the deal
+ * starts from its first beat behind it (beat sheet §1a).
  */
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
@@ -33,14 +41,24 @@ import { draftLine, rejoinGame, submitTurn, type TurnPayload } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { seatToken } from '@/lib/storage';
-import type { GameStatus } from '@/types/contracts';
+import { foldEvents } from '@/game/foldEvents';
+import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { castForGame } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
 import { SCENES } from '../scenes';
-import type { DockInput, Presentation, SlotInput, TurnInput } from '../scenes/types';
+import { StationScene } from '../scenes/StationScene';
+import { CURTAIN, DEPART, stationBeat, stationBeatId } from '../scenes/station';
+import type {
+  DockInput,
+  Presentation,
+  RoomAct,
+  RoomInput,
+  SlotInput,
+  TurnInput,
+} from '../scenes/types';
 import { Layer, Stage } from '../Stage';
 import { createFoldCache } from './fold-cache';
 import {
@@ -65,6 +83,30 @@ export interface LiveTheatreProps {
   gameId: string;
   /** The status poll's latest answer: whose turns are pending, and up to where it saw. */
   status: GameStatus | undefined;
+  /** The waiting room, while the status says `waiting`: the stage shows the platform. */
+  room?: RoomInput;
+  /** The host's Depart went through: the train leaves before the status has caught up. */
+  departed?: boolean;
+  /** The host's presses on the platform's ledge. */
+  onRoomAct?: (act: RoomAct) => void;
+}
+
+/**
+ * Where the waiting room is in its hand-off to the game: not on the stage (`off`, a page opened
+ * on a game already under way, or once the deal has taken over), waiting, the train leaving,
+ * the curtain falling on the empty platform, and the curtain lifting off the deal.
+ */
+type Platform = 'off' | 'waiting' | 'departing' | 'closing' | 'opening';
+
+const NO_EVENTS: readonly DurableGameEvent[] = [];
+const EMPTY_VIEW = foldEvents([]);
+
+/** The departure's length: the whole of it, or a moment for a viewer who asked for less motion. */
+function departMs(): number {
+  const reduce =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  return reduce ? 600 : DEPART.total * 1000;
 }
 
 /** The drawer is open by default on a screen with room for it (as the replay's). */
@@ -107,15 +149,55 @@ const failure = (err: unknown) => ({
   message: err instanceof Error ? err.message : 'Something went wrong. Try again.',
 });
 
-export function LiveTheatre({ gameId, status }: LiveTheatreProps) {
+export function LiveTheatre({
+  gameId,
+  status,
+  room,
+  departed = false,
+  onRoomAct,
+}: LiveTheatreProps) {
   const queryClient = useQueryClient();
-  const events = useGameSession((s) => s.events);
+  const storeGame = useGameSession((s) => s.gameId);
+  const storeEvents = useGameSession((s) => s.events);
   const view = useGameSession((s) => s.view);
   const liveSeqs = useGameSession((s) => s.liveSeqs);
   const caughtUpTo = useGameSession((s) => s.caughtUpTo);
   const pacing = useGameSession((s) => s.pacing);
   const connection = useGameSession((s) => s.connection);
   const clearPending = useGameSession((s) => s.clearPending);
+
+  // --- the waiting room, and its hand-off to the deal -------------------------------
+  const [platform, setPlatform] = useState<Platform>(() => (room ? 'waiting' : 'off'));
+  const [curtainDown, setCurtainDown] = useState(false);
+  // the room as it last was: the train leaves with the people who were aboard
+  const [heldRoom, setHeldRoom] = useState(room);
+  useEffect(() => {
+    if (room) setHeldRoom(room);
+  }, [room]);
+  // what the platform first showed lands still; after that, what changes on it moves
+  const [platformSeen, setPlatformSeen] = useState(false);
+  useEffect(() => {
+    if (platform !== 'off') setPlatformSeen(true);
+  }, [platform]);
+  const begun = status !== undefined && status.state !== 'waiting';
+  useEffect(() => {
+    if (platform === 'waiting' && (departed || begun)) setPlatform('departing');
+  }, [platform, departed, begun]);
+  useEffect(() => {
+    const after = (ms: number, then: () => void) => {
+      const t = setTimeout(then, ms);
+      return () => clearTimeout(t);
+    };
+    if (platform === 'departing') return after(departMs(), () => setPlatform('closing'));
+    if (platform === 'closing')
+      return after(CURTAIN.close * 1000, () => setCurtainDown(true));
+    if (platform === 'opening') return after(CURTAIN.open * 1000, () => setPlatform('off'));
+  }, [platform]);
+  // the game reaches the stage once the curtain is down on the platform, so the deal starts
+  // from its first beat behind it; a stale log from another game never reaches it
+  const fed =
+    platform === 'off' || platform === 'opening' || (platform === 'closing' && curtainDown);
+  const events = fed && storeGame === gameId ? storeEvents : NO_EVENTS;
 
   const me = view.me.seat;
   // after game over the whole log is everyone's: every viewer is an observer
@@ -129,10 +211,15 @@ export function LiveTheatre({ gameId, status }: LiveTheatreProps) {
     () => historyEndOf(events, liveSeqs, caughtUpTo),
     [events, liveSeqs, caughtUpTo],
   );
-  // how far the log had got when the page connected: the history is all in once it gets there
-  const [connectedAt] = useState(() => status?.last_seq ?? 0);
+  // how far the log had got when the page connected (for a waiting room: when the game began,
+  // which is when the stream opened): the history is all in once it gets there
+  const [connectedAt, setConnectedAt] = useState<number | null>(() =>
+    begun ? (status?.last_seq ?? 0) : null,
+  );
+  if (connectedAt === null && begun) setConnectedAt(status?.last_seq ?? 0);
   const landing = useMemo(
-    () => historyLanding(events, historyEnd, connectedAt),
+    () =>
+      connectedAt === null ? 'pending' : historyLanding(events, historyEnd, connectedAt),
     [events, historyEnd, connectedAt],
   );
   const folds = useMemo(() => createFoldCache(events, { mySeat: me }), [events, me]);
@@ -328,19 +415,54 @@ export function LiveTheatre({ gameId, status }: LiveTheatreProps) {
       }
     : undefined;
 
+  // the curtain is down and the deal's first beat is on the stage under it: lift it
+  useEffect(() => {
+    if (platform === 'closing' && curtainDown && beat) setPlatform('opening');
+  }, [platform, curtainDown, beat]);
+
   const Scene = beat ? SCENES[beat.scene] : null;
+  const platformOn = platform !== 'off' && heldRoom !== undefined;
+  const liveOn = platform === 'off' || platform === 'opening';
+  const stationId = stationBeatId(heldRoom ?? { locked: false }, platform !== 'waiting');
+  const stationPresentation: Presentation = {
+    xray: false,
+    slot: null,
+    motion: 'normal',
+    hud: 'live',
+    cast,
+    animate: platformSeen,
+  };
   // a prompt that is not the day's dock (the ballot, a night act, the pack): the agent can take it
   const handOver = open && beat?.liveOnly && beat.id !== 'day.your-turn';
   return (
     <div
       className={styles.theatre}
       data-beat-index={index}
-      data-beat={beat?.id}
+      data-beat={liveOn ? beat?.id : stationId}
+      data-platform={platform}
       data-holding={state.holding}
       data-open-prompt={openPrompt ?? undefined}
     >
       <Stage fit="contain">
-        {beat && sceneView && Scene ? (
+        {platformOn ? (
+          <StationScene
+            view={EMPTY_VIEW}
+            beat={stationBeat(stationId)}
+            me={null}
+            presentation={stationPresentation}
+            room={{
+              ...heldRoom,
+              curtain:
+                platform === 'closing'
+                  ? 'closing'
+                  : platform === 'opening'
+                    ? 'opening'
+                    : null,
+            }}
+            onAct={(act) => onRoomAct?.(act as RoomAct)}
+          />
+        ) : null}
+        {liveOn && beat && sceneView && Scene ? (
           <StageMotion speed={state.speed}>
             <Scene
               view={sceneView}
@@ -356,7 +478,9 @@ export function LiveTheatre({ gameId, status }: LiveTheatreProps) {
           </StageMotion>
         ) : null}
         <Layer name="hud">
-          {!beat ? <p className={styles.waiting}>The table is being seated…</p> : null}
+          {!beat && !platformOn ? (
+            <p className={styles.waiting}>The table is being seated…</p>
+          ) : null}
           {beat?.id === 'over.epilogue' ? (
             <button
               type="button"

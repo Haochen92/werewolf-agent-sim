@@ -14,10 +14,12 @@ import { NightLobbyScene } from './NightLobbyScene';
 import { PackScene } from './PackScene';
 import { ReplayNightScene } from './ReplayNightScene';
 import { ShelfRoomScene } from './ShelfRoomScene';
+import { StationScene } from './StationScene';
 import { VoteScene } from './VoteScene';
 import type { SceneProps } from './types';
 
 export const SCENES: Record<SceneId, ComponentType<SceneProps> | null> = {
+  station: StationScene,
   deal: DealScene,
   day: DayScene,
   vote: VoteScene,

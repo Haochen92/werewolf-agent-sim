@@ -8,6 +8,7 @@ import { drape } from './drape';
 import { light } from './light';
 import { PHASES_IN_ORDER } from './materials';
 import { shelfLight, shelfRoom } from './shelf-room';
+import { stationBack, stationFront, stationPlan } from './station';
 import { shutter } from './window';
 
 const HUDS: Hud[] = ['none', 'live', 'replay'];
@@ -91,6 +92,31 @@ const CASES: [string, (id: string) => string][] = [
         (id: string) => string,
       ],
   ),
+  ...HUDS.flatMap((hud) => [
+    [`bleed station ${hud}`, (id: string) => bleed({ id, room: 'station', hud })] as [
+      string,
+      (id: string) => string,
+    ],
+    [`stationBack ${hud}`, (id: string) => stationBack({ id, hud, sky: '/sky.webp' })] as [
+      string,
+      (id: string) => string,
+    ],
+    [
+      `stationFront ${hud}`,
+      (id: string) =>
+        stationFront({
+          id,
+          hud,
+          post: '/post.webp',
+          lamp: '/lamp.webp',
+          fringe: '/f.webp',
+        }),
+    ] as [string, (id: string) => string],
+    [`stationFront ${hud} flat`, (id: string) => stationFront({ id, hud })] as [
+      string,
+      (id: string) => string,
+    ],
+  ]),
   ['light bleed', (id: string) => light({ id, bleed: BLEED })],
   ['shelfLight bleed', (id: string) => shelfLight({ id, chosen: 2, bleed: BLEED })],
 ];
@@ -182,5 +208,50 @@ describe('bleed', () => {
     expect(light({ id: 'k', bleed: 0 })).toBe(light({ id: 'k' }));
     expect(drape({ id: 'k' })).toBe(drape());
     expect(shelfLight({ id: 'k', bleed: 0 })).toBe(shelfLight({ id: 'k' }));
+  });
+});
+
+/* The station: the platform the waiting room stands on, and its bleed. */
+describe('station', () => {
+  it('centres the dining car’s window on the room right of the wing, nine places in it', () => {
+    for (const hud of HUDS) {
+      const S = stationPlan(hud);
+      expect(S.glass.x + S.glass.w / 2).toBeCloseTo(S.cx, 6);
+      expect(S.places).toHaveLength(9);
+      expect(S.places[0] - S.pitch / 2).toBeCloseTo(S.glass.x, 6);
+      expect(S.places[8] + S.pitch / 2).toBeCloseTo(S.glass.x + S.glass.w, 6);
+    }
+    expect(stationPlan('none').cx).toBe(800);
+    expect(stationPlan('live').cx).toBe(844);
+  });
+
+  it('pulls the whole train out past the world’s right edge', () => {
+    const S = stationPlan('live');
+    expect(S.train.x + S.pull).toBeGreaterThan(STAGE_W);
+  });
+
+  it('draws the pictures it is given, and none without them', () => {
+    expect(stationBack({ id: 'k', sky: '/sky.webp' })).toContain('href="/sky.webp"');
+    expect(stationBack({ id: 'k' })).not.toContain('<image');
+    const front = stationFront({
+      id: 'k',
+      post: '/p.webp',
+      lamp: '/l.webp',
+      fringe: '/f.webp',
+    });
+    // two posts (one mirrored), two lanterns, the fringe's tile
+    expect(front.match(/href="\/p\.webp"/g)).toHaveLength(2);
+    expect(front).toContain('scale(-1 1)');
+    expect(front.match(/href="\/l\.webp"/g)).toHaveLength(2);
+    expect(front).toContain('href="/f.webp"');
+    expect(stationFront({ id: 'k' })).not.toContain('<image');
+  });
+
+  it('carries the platform into the bleed from its own darkened sides', () => {
+    const html = bleed({ id: 'stA', room: 'station' });
+    expect(html).toContain(`<rect x="${-BLEED}" y="0" width="${BLEED}"`);
+    expect(html).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
+    expect(html).toContain('stop-opacity="0.85"');
+    expect(stationFront({ id: 'k' })).toContain('stop-opacity=".85"');
   });
 });

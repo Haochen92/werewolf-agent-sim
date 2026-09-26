@@ -11,6 +11,7 @@
 export type Tier = 'public' | 'seat' | 'faction' | 'xray';
 
 export type SceneId =
+  | 'station'
   | 'deal'
   | 'day'
   | 'vote'
@@ -32,6 +33,11 @@ export interface Chapter {
 
 /** The beat ids, with the line the transport shows for each. Ids are `scene.beat`. */
 export const BEAT_LABELS = {
+  // the waiting room, before the game: live only, from the status poll (no event anchors them)
+  'station.waiting': 'Waiting on the platform',
+  'station.locked': 'The room is locked',
+  'station.departing': 'All aboard',
+
   'deal.table-seated': 'The table is seated',
   'deal.cards-dealt': 'The cards are dealt',
   'deal.your-card': 'Your card',

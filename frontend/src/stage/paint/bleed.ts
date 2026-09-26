@@ -8,29 +8,30 @@
  * Each strip starts as dark as the room is at its own edge, so the seam never shows: the
  * dining car fades its wall and apron into the dark at both ends (the kit's `qfade`, the
  * Apron's fade), so its strips start there and are near-black; the shelf room runs its
- * panelling at full strength to the edge, so its strips start at full strength.
+ * panelling at full strength to the edge, so its strips start at full strength; the station
+ * darkens its own sides (station.ts, `stationFront`), so its strips start near that dark.
  *
  * The car's back flat is re-drawn here from its materials, not by calling the car: the car is
  * held byte-for-byte to the design kit (paint.test.ts), so it cannot be split into parts.
  */
 import { BLEED, BLEED_DARK, STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import { K2 } from './draw';
-import { BOARD, BOARD2, CAR, ROOMLIGHT, type Phase } from './materials';
+import { BOARD, BOARD2, CAR, ROOMLIGHT, STATION, type Phase } from './materials';
 import { panelling } from './shelf-room';
 import { carLines } from './window';
 
 export interface BleedOpts {
   /** Prefix for every id this drawing makes, so two stages can share a page. */
   id: string;
-  /** Which room carries on: the dining car, or the night's shelf room. */
-  room: 'car' | 'shelf';
+  /** Which room carries on: the dining car, the night's shelf room, or the waiting room's platform. */
+  room: 'car' | 'shelf' | 'station';
   /** The car's hour: its tint falls on the strips as it falls on the walls. */
   phase?: Phase;
   hud?: Hud;
 }
 
 /** How dark each room already is at the world's edge, where its strips start. */
-const EDGE: Record<BleedOpts['room'], number> = { car: 0.95, shelf: 0 };
+const EDGE: Record<BleedOpts['room'], number> = { car: 0.95, shelf: 0, station: 0.85 };
 
 /* the car's back flat, apron and floor between x0 and x1, on the car's panel lines */
 function car(x0: number, x1: number, phase: Phase, hud: Hud): string {
@@ -56,6 +57,21 @@ function car(x0: number, x1: number, phase: Phase, hud: Hud): string {
   return d;
 }
 
+/* the platform between x0 and x1: the sky, the track bed, the paving and its edge, the canopy */
+function station(x0: number, x1: number): string {
+  const H = STAGE_H,
+    w = x1 - x0,
+    floorY = 0.66 * H,
+    canopyH = 0.046 * H;
+  return (
+    `<rect x="${x0}" y="0" width="${w}" height="${0.45 * H}" fill="${STATION.sky}"/>` +
+    `<rect x="${x0}" y="${0.45 * H}" width="${w}" height="${floorY - 0.45 * H}" fill="#0b0a09"/>` +
+    `<rect x="${x0}" y="${floorY}" width="${w}" height="${H - floorY}" fill="${STATION.floor}"/>` +
+    `<rect x="${x0}" y="${floorY}" width="${w}" height="${0.034 * H}" fill="${STATION.edgeMid}"/>` +
+    `<rect x="${x0}" y="0" width="${w}" height="${canopyH}" fill="${STATION.canopyBot}"/>`
+  );
+}
+
 /** Both strips, as SVG markup in the world's own coordinates (drawn past its viewBox). */
 export function bleed(o: BleedOpts): string {
   const W = STAGE_W,
@@ -67,6 +83,7 @@ export function bleed(o: BleedOpts): string {
   let d = '';
   if (o.room === 'car')
     d = car(-b, 0, o.phase ?? 'day', hud) + car(W, W + b, o.phase ?? 'day', hud);
+  else if (o.room === 'station') d = station(-b, 0) + station(W, W + b);
   else {
     // the shelf room's panels, in step with the room's seven between the wing and the edge
     const x0 = geometry(hud).wingN,

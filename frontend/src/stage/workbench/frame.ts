@@ -9,10 +9,10 @@ import type { GameView } from '@/game/types';
 import type { DurableGameEvent } from '@/types/contracts';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat, SceneId } from '../beats/types';
-import type { Presentation, TurnInput } from '../scenes/types';
+import type { Presentation, RoomInput, TurnInput } from '../scenes/types';
 import { FIXTURE_CAST, FIXTURE_EVENTS } from './fixture';
 import { SYNTHETIC, SYNTHETIC_AFTER, sceneBeats } from './registry';
-import { synthesiseAll, type Situation } from './synthetic';
+import { synthesiseAll, type AnySituation } from './synthetic';
 import type { WorkbenchQuery } from './url';
 
 export interface WorkbenchFrame {
@@ -24,8 +24,10 @@ export interface WorkbenchFrame {
   me: string | null;
   presentation: Presentation;
   /** A live-only scene: the situation this frame was drawn from, and its prompt's live side. */
-  situation?: Situation;
+  situation?: AnySituation;
   turn?: TurnInput;
+  /** The platform's waiting room. */
+  room?: RoomInput;
   /**
    * The whole log folded, for the film: a turn's note lands just after the turn's own beat
    * (see `SlotInput.ahead`). A replay has the whole log, so the workbench hands it all over.
@@ -92,7 +94,7 @@ export function anchorLine(b: SceneBeat): string {
  * `before` are the fixture's own beats that come first in the stepper, if any.
  */
 function syntheticFrame(
-  situations: readonly Situation[],
+  situations: readonly AnySituation[],
   q: WorkbenchQuery,
   events: readonly DurableGameEvent[],
   cast: readonly Character[],
@@ -117,5 +119,6 @@ function syntheticFrame(
     },
     situation: situations[index],
     turn: f?.turn,
+    room: f?.room,
   };
 }

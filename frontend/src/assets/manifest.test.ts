@@ -38,6 +38,13 @@ describe('sprite manifest', () => {
     hasSize(SPRITES.wood);
   });
 
+  it('has the station’s pictures', () => {
+    expect(Object.keys(SPRITES.station).sort()).toEqual(
+      ['blind', 'floor', 'fringe', 'lamp', 'post', 'sky', 'train'].sort(),
+    );
+    for (const img of Object.values(SPRITES.station)) hasSize(img);
+  });
+
   it('has a body measure for every character that fills the height', () => {
     expect(Object.keys(BODY).sort()).toEqual([...CHARACTERS].sort());
     for (const character of CHARACTERS) {

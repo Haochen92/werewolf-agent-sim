@@ -233,6 +233,36 @@ describe('the live stage: the deal on first connection, and a reconnect', () => 
     expect(s.beat.id).toBe('day.turn-thinking');
   });
 
+  it('a deal that arrives as news, after the waiting room departs, keeps its pace', () => {
+    // the page watched the platform: the stream opened with nothing in the log yet
+    const s = new Session();
+    s.connectedAt = 0;
+    s.arrive(deal, true);
+    expect(s.beat.id).toBe('deal.table-seated');
+    // the day's first turn follows while the deal plays
+    s.arrive(
+      MINE.filter((e) => e.seq > 12 && e.seq <= 13),
+      true,
+    );
+    const seen: string[] = [];
+    while (s.beat.id.startsWith('deal.')) {
+      expect(s.state.speed).toBe('normal');
+      seen.push(s.beat.id);
+      s.held();
+    }
+    expect(seen).toEqual([
+      'deal.table-seated',
+      'deal.cards-dealt',
+      'deal.your-card',
+      'deal.day-begins',
+    ]);
+    expect(s.beat.id).toBe('day.turn-thinking');
+    // without the deal's rule (no connection reported), news that queued drains fast
+    const q = new Session().arrive(deal, true);
+    q.held();
+    expect(q.state.speed).toBe('fast');
+  });
+
   it('a history that holds a turn lands still, as before', () => {
     expect(historyLanding(upTo(13), upTo(13).length, 13)).toBe('still');
     const s = new Session();

@@ -204,6 +204,74 @@ test('live: a new game’s first connection plays the deal from its first beat',
   await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.your-card');
 });
 
+test('live: the waiting room’s platform departs into the deal on the same stage', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.clock.install({ time: T0 });
+  // a guest who boarded earlier: this device holds the seat's token (the cookie is the mock's)
+  await page.addInitScript((game) => localStorage.setItem(`seat_${game}`, 'tok-7'), GAME);
+  await page.route(`**/games/${GAME}/rejoin`, (route) =>
+    route.request().method() === 'OPTIONS'
+      ? route.fulfill({ status: 204, headers: cors(route.request()) })
+      : route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          headers: cors(route.request()),
+          body: JSON.stringify({ token: 'tok-7' }),
+        }),
+  );
+  const mock: Mock = {
+    status: status(0, {
+      state: 'waiting',
+      players: ['mira', 'kei', 'sol'],
+      host: 'mira',
+      name: 'Night shift',
+      locked: false,
+      human_players: [],
+      you: null,
+    }),
+    stream: [],
+  };
+  await mockApi(page, mock);
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  // the platform, with the three aboard standing on it, and no page-side lobby card
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'waiting');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'station.waiting');
+  await expect(page.locator('[data-aboard] img')).toHaveCount(3);
+  await expect(page.locator('[data-ledge]')).toContainText(
+    '3 of 9 aboard · waiting for the host',
+  );
+  const stage = await page.locator('[data-layer="paint"]').elementHandle();
+
+  // the host departs: the next poll finds the game running, its deal already in the log
+  mock.status = status(12);
+  mock.stream = upTo(12);
+  await page.clock.runFor(3100);
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'departing');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'station.departing');
+  await page.clock.runFor(7100); // the people board, the train pulls out
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'closing');
+  await page.clock.runFor(1300); // the curtain is down: the game reaches the stage behind it
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'opening');
+  await page.clock.runFor(1100); // the curtain lifts off the deal
+  await expect(theatre(page)).toHaveAttribute('data-platform', 'off');
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'deal.table-seated');
+
+  // one stage throughout: the layer the platform was painted in is the deal's
+  expect(await stage!.evaluate((el) => el.isConnected)).toBe(true);
+  expect(
+    await page
+      .locator('[data-layer="paint"]')
+      .evaluate((el, before) => el === before, stage),
+  ).toBe(true);
+  await expect(page.locator('[data-aboard] img')).toHaveCount(0);
+  await expect(page.locator('[data-boarding-pass]')).toHaveCount(0);
+  await expect(page.getByText('Waiting for the host to start…')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Start game' })).toHaveCount(0);
+});
+
 test('live: seat 7’s turn to speak, the dock at the foot', async ({ page }) => {
   await page.clock.install({ time: T0 });
   await mockApi(page, {

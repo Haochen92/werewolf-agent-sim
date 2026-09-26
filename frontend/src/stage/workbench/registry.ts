@@ -6,7 +6,7 @@
  */
 import type { SceneBeat, SceneId } from '../beats/types';
 import { SCENES } from '../scenes';
-import type { Situation } from './synthetic';
+import type { RoomSituation, Situation } from './synthetic';
 
 export { SCENES };
 
@@ -22,13 +22,93 @@ export function sceneBeats(beats: readonly SceneBeat[], scene: SceneId): SceneBe
   return beats.filter((b) => b.scene === scene);
 }
 
+/** The situations a scene's stepper can hold: the platform's are rooms, every other a moment of the fixture. */
+type Situations = {
+  [K in SceneId]?: K extends 'station' ? readonly RoomSituation[] : readonly Situation[];
+};
+
+/** The platform's people: the host boards first, the rest in the order they joined. */
+const ABOARD = ['mira', 'kei', 'sol', 'ada', 'bo', 'ines', 'tomas', 'yuki', 'noor'];
+
 /**
- * Scenes whose beats exist only in a live game (a prompt to a seated human), so the fixture
- * never yields them: the workbench draws each from a situation instead (see synthetic.ts),
- * and its stepper steps through these in place of the fixture's beats (or, for the scenes in
- * `SYNTHETIC_AFTER`, after them).
+ * Scenes whose beats exist only in a live game (a prompt to a seated human, or the waiting
+ * room before the game), so the fixture never yields them: the workbench draws each from a
+ * situation instead (see synthetic.ts), and its stepper steps through these in place of the
+ * fixture's beats (or, for the scenes in `SYNTHETIC_AFTER`, after them).
  */
-export const SYNTHETIC: Partial<Record<SceneId, readonly Situation[]>> = {
+export const SYNTHETIC: Situations = {
+  station: [
+    {
+      label: 'the host, 3 aboard',
+      beat: 'station.waiting',
+      room: {
+        name: 'Night shift',
+        aboard: ABOARD.slice(0, 3),
+        places: 9,
+        host: 'mira',
+        locked: false,
+        isHost: true,
+        seated: true,
+        you: 0,
+      },
+    },
+    {
+      label: 'a guest, 5 aboard, locked',
+      beat: 'station.locked',
+      room: {
+        name: 'Night shift',
+        aboard: ABOARD.slice(0, 5),
+        places: 9,
+        host: 'mira',
+        locked: true,
+        isHost: false,
+        seated: true,
+        you: 2,
+      },
+    },
+    {
+      label: 'watching, all 9 aboard',
+      beat: 'station.waiting',
+      room: {
+        name: 'Night shift',
+        aboard: ABOARD,
+        places: 9,
+        host: 'mira',
+        locked: false,
+        isHost: false,
+        seated: false,
+        you: null,
+      },
+    },
+    {
+      label: 'departing, 3 aboard',
+      beat: 'station.departing',
+      room: {
+        name: 'Night shift',
+        aboard: ABOARD.slice(0, 3),
+        places: 9,
+        host: 'mira',
+        locked: false,
+        isHost: true,
+        seated: true,
+        you: 0,
+      },
+    },
+    {
+      label: 'the host, nobody aboard yet',
+      beat: 'station.waiting',
+      room: {
+        name: 'Night shift',
+        aboard: [],
+        places: 9,
+        host: null,
+        locked: false,
+        isHost: true,
+        seated: false,
+        you: null,
+      },
+    },
+  ],
   vote: [
     { label: 'your ballot, day 3', me: 'player_7', day: 3, actionKind: 'vote' },
     {

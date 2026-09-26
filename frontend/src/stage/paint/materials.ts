@@ -180,6 +180,27 @@ export const CAR = {
   brass: '#b08a4a',
 };
 /** The stage floor's boards, and the one ink every outline is drawn in. */
+/**
+ * The station platform's paint (the waiting room, review 2026-09-26 §A5), from the waiting-room
+ * mockup's CSS: a winter night under a canopy, a cold stone platform with a snowy edge, the
+ * track bed, and the lamps' warm pools.
+ */
+export const STATION = {
+  sky: '#1c2550',
+  canopyTop: '#1b1714',
+  canopyBot: '#2c2621',
+  floor: '#3b4046',
+  edgeTop: '#e9e2cf',
+  edgeMid: '#b9b09a',
+  edgeBot: '#8e8674',
+  snow: '#f4f6f5',
+  railTop: '#6d6a66',
+  railBot: '#2a2826',
+  railFar: '#3b3936',
+  moon: '#f1ecd8',
+  lamp: 'rgb(255,196,110)',
+} as const;
+
 export const BOARD = '#5a3f26';
 export const BOARD2 = '#4a3320';
 export const K2 = '#24180c';

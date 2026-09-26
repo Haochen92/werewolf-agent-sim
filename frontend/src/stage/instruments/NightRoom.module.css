@@ -303,6 +303,10 @@ button.plush:focus-visible {
   transform: none;
   bottom: 41.6px;
 }
+.plate.inline {
+  position: static;
+  transform: none;
+}
 .plate button {
   font: inherit;
   font-size: calc(22.4px * 1.3 * var(--legible-ui));

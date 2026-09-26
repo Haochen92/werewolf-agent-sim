@@ -1,0 +1,493 @@
+/* The platform (the waiting room), from the waiting-room mockup (review 2026-09-26 §A5). Every
+   size is in units of the 1600x900 world (1cqw = 16 units, 1cqh = 9 units in the mockup's terms). */
+
+.fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- the train: one picture, pinned to its own layer so the pull-out is a compositor slide ---- */
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 900px;
+  overflow: hidden;
+}
+.train {
+  position: absolute;
+  will-change: transform;
+}
+.glass {
+  position: absolute;
+  border-radius: 22.4px;
+  overflow: hidden;
+}
+.inWindow {
+  position: absolute;
+}
+.blind {
+  position: absolute;
+  filter: drop-shadow(0 2.7px 3.6px rgba(0, 0, 0, 0.4));
+}
+/* the agent's shadow cast on the blind */
+.shadow {
+  position: absolute;
+  mix-blend-mode: multiply;
+}
+.shadow img {
+  filter: brightness(0) blur(2.2px);
+}
+.plates {
+  position: absolute;
+  height: 18px;
+}
+.plate,
+.plateOpen,
+.plateAgent {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 0.3px 8px 1.3px;
+  border-radius: 3.2px;
+  white-space: nowrap;
+  font-size: calc(13.8px * var(--legible-ui));
+  line-height: 1.25;
+}
+.plate {
+  background: linear-gradient(#ecc877, #a8803a);
+  color: #2a1a08;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  box-shadow: 0 2.4px 4.8px rgba(0, 0, 0, 0.5);
+}
+.plateOpen,
+.plateAgent {
+  background: rgba(14, 9, 6, 0.8);
+}
+.plateOpen {
+  color: var(--amber);
+  box-shadow: inset 0 0 0 1px var(--amber);
+}
+.plateAgent {
+  color: var(--bone2);
+  box-shadow: inset 0 0 0 1px #4a3a26;
+}
+
+/* ---- the paving: the stone tile laid in perspective under the platform's edge ---- */
+.paving {
+  position: absolute;
+  left: 0;
+  width: 1600px;
+  overflow: hidden;
+  background: #3b4046;
+}
+.tile {
+  position: absolute;
+  left: -640px;
+  right: -640px;
+  top: 0;
+  height: 150%;
+  background-size: 240px;
+  filter: brightness(0.78) saturate(0.8) contrast(1.05);
+  transform: perspective(1120px) rotateX(58deg);
+  transform-origin: 50% 0;
+}
+
+/* ---- the platform's marks: where each person stands; a dashed amber ring for an open place ---- */
+.mark,
+.markOpen {
+  position: absolute;
+  width: 99.2px;
+  height: 24px;
+  border-radius: 50%;
+}
+.mark {
+  background: rgba(20, 22, 28, 0.35);
+  box-shadow: inset 0 0 0 1.9px rgba(239, 228, 203, 0.45);
+}
+.markOpen {
+  background: rgba(224, 166, 58, 0.12);
+  border: 2.9px dashed var(--amber);
+}
+
+/* the people: rising from below the platform's line, as a puppet rises into the stand */
+.clip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  overflow: hidden;
+  pointer-events: none !important;
+}
+
+/* the name tag at each person's feet */
+.tag {
+  position: absolute;
+  padding: 1.9px 8.8px 2.6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-size: calc(13.8px * var(--legible-ui));
+  line-height: 1.15;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3.2px 8px rgba(0, 0, 0, 0.5);
+}
+.tag i {
+  font-size: 0.85em;
+  color: #5e4a33;
+}
+
+/* ---- the station sign: the room's name, and the brass Locked plate under it ---- */
+.sign {
+  position: absolute;
+  top: 50.4px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+.chains {
+  display: flex;
+  gap: 192px;
+}
+.chains i {
+  width: 2.9px;
+  height: 19.2px;
+  background: #8a6a34;
+}
+.board {
+  padding: 7.2px 32px 8.8px;
+  border-radius: 6.4px;
+  background: var(--paper);
+  color: var(--ink);
+  text-align: center;
+  box-shadow:
+    inset 0 0 0 4px #3a2a18,
+    inset 0 0 0 7.2px #c9a25e,
+    0 9.6px 19.2px rgba(0, 0, 0, 0.6);
+}
+.board b {
+  display: block;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-weight: 400;
+  font-size: calc(30.4px * var(--legible-ui));
+  line-height: 1;
+}
+.board small {
+  display: block;
+  margin-top: 3.2px;
+  font-size: calc(13.8px * var(--legible-ui));
+  color: #5e4a33;
+}
+.lockPlate {
+  display: flex;
+  align-items: center;
+  gap: 4.8px;
+  margin-top: 4.8px;
+  padding: 1.6px 9.6px;
+  border-radius: 4.8px;
+  background: linear-gradient(#ecc877, #a8803a);
+  color: #2a1a08;
+  font-size: calc(13.8px * var(--legible-ui));
+  font-weight: 500;
+  box-shadow: 0 3.2px 6.4px rgba(0, 0, 0, 0.5);
+}
+.lockPlate svg {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+
+/* ---- the snow: CSS-only, a transform on each flake; still for reduced motion and at skip ---- */
+.snow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.snow i {
+  position: absolute;
+  top: -18px;
+  border-radius: 50%;
+  background: #f4f6ff;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  to {
+    transform: translate(var(--dx), 936px);
+  }
+}
+.still i {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snow i {
+    animation: none;
+  }
+}
+
+/* ---- the wing: an open place's tile ---- */
+.openFace {
+  background: rgba(224, 166, 58, 0.06);
+  border: 1.6px dashed rgba(224, 166, 58, 0.55);
+}
+
+/* ---- the hang tags: paper tags on strings from the canopy, Invite and Ticket ---- */
+.hang {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+}
+.hangButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+}
+.string {
+  width: 2.6px;
+  height: 48.6px;
+  background: linear-gradient(#8a6a34, #c9a25e);
+}
+.hangFace {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4px;
+  width: 160px;
+  padding: 32px 9.6px 14.4px;
+  border-radius: 5.6px 5.6px 8px 8px;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  background: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%);
+  box-shadow: 0 16px 30px -14px rgba(0, 0, 0, 0.95);
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 0;
+  clip-path: polygon(22% 0, 78% 0, 100% 16%, 100% 100%, 0 100%, 0 16%);
+  transition: filter 0.2s;
+}
+.hangButton:hover .hangFace,
+.hangButton:focus-visible .hangFace {
+  filter: brightness(1.08) drop-shadow(0 0 12.8px rgba(255, 200, 120, 0.55));
+}
+.hangButton[aria-expanded='true'] .hangFace {
+  filter: drop-shadow(0 0 14.4px rgba(224, 166, 58, 0.95));
+}
+.hangButton:focus-visible {
+  outline: none;
+}
+.hangButton:focus-visible .hangFace {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+.eye {
+  position: absolute;
+  top: 8.8px;
+  left: 50%;
+  width: 17.6px;
+  height: 17.6px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #1a120b;
+  box-shadow: 0 0 0 2.9px #b8893a;
+}
+.hangFace svg {
+  width: 38.4px;
+  height: 38.4px;
+  fill: none;
+  stroke: #5e4a33;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hangFace b {
+  font-weight: 400;
+  font-size: calc(30.4px * var(--legible-ui));
+  line-height: 1;
+}
+.hangFace small {
+  font-size: calc(12.8px * var(--legible-ui));
+  font-style: italic;
+  color: #5e4a33;
+}
+
+/* ---- the panels the tags open, on paper beneath them ---- */
+.panel {
+  position: absolute;
+  top: 225px;
+  width: 400px;
+  z-index: 3;
+  padding: 17.6px 19.2px 19.2px;
+  border-radius: 16px;
+  color: var(--ink);
+  background: radial-gradient(130% 100% at 25% 15%, #f4e9d0, #e8d8b6 62%, #dcc9a2);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  font-size: var(--meta);
+}
+.panel h3 {
+  margin: 0 0 9.6px;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-weight: 400;
+  font-size: calc(var(--meta) * 1.5);
+}
+.panel p {
+  margin: 0;
+  color: #5e4a33;
+  font-size: calc(var(--meta) * 0.9);
+  line-height: 1.4;
+}
+.linkRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 11.2px;
+}
+.linkRow output {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px 11.2px;
+  border-radius: 9.6px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(36, 24, 12, 0.3);
+  font-size: calc(var(--meta) * 0.9);
+}
+.linkRow button {
+  font: inherit;
+  font-weight: 600;
+  padding: calc(8px * var(--legible-ui)) calc(16px * var(--legible-ui));
+  border: 0;
+  border-radius: 999px;
+  background: var(--town);
+  color: #1c1200;
+  cursor: pointer;
+}
+.ticket {
+  right: 25.6px;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+}
+.ticketKind {
+  font-style: italic;
+  color: #5e4a33;
+}
+.ticket h3 {
+  margin: 1.6px 0 9.6px;
+  font-size: calc(var(--meta) * 1.6);
+}
+.ticket dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+.ticket dt {
+  color: #5e4a33;
+}
+.ticket dd {
+  margin: 0;
+  text-align: right;
+}
+
+/* ---- the ledge: the station master's walnut ledge along the foot, a notice and the plates ---- */
+.ledge {
+  position: absolute;
+  bottom: 0;
+  z-index: 2;
+  /* its own width, not what is left right of its centre line */
+  width: max-content;
+  max-width: 1380px;
+  display: flex;
+  align-items: center;
+  gap: 17.6px;
+  padding: 10px 22.4px 11.7px;
+  border-radius: 19.2px 19.2px 0 0;
+  white-space: nowrap;
+  background-size: 256px;
+  box-shadow:
+    inset 0 4px 0 #c9a25e,
+    inset 0 6.3px 0 rgba(0, 0, 0, 0.35),
+    inset 0 -9px 12.6px rgba(0, 0, 0, 0.45),
+    0 -9px 21.6px rgba(0, 0, 0, 0.55);
+}
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 14.4px;
+  padding: 9.6px 20.8px 9.6px 12.8px;
+  border-radius: 4.8px;
+  transform: rotate(-0.6deg);
+  color: var(--ink);
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  background: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%);
+  box-shadow: 0 2.7px 7.2px rgba(0, 0, 0, 0.45);
+  white-space: normal;
+  max-width: 760px;
+}
+.notice b {
+  display: block;
+  font-weight: 400;
+  font-size: calc(24.8px * var(--legible-ui));
+  line-height: 1.1;
+}
+.notice em {
+  display: block;
+  font-size: calc(16.8px * var(--legible-ui));
+  color: #5e4a33;
+}
+.notice em.error {
+  color: #9a2a1c;
+  font-style: normal;
+}
+.noticeChip {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e9dcc0;
+  box-shadow:
+    0 0 0 2.4px #efe4cb,
+    0 0 0 4.8px #3a2a18;
+}
+
+/* ---- the curtain between the platform and the deal: a plain dark sheet, over everything ---- */
+.curtain {
+  position: absolute;
+  left: calc(-1 * var(--bleed));
+  right: calc(-1 * var(--bleed));
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: #07060a;
+  pointer-events: none !important;
+}
+.curtain p {
+  margin: 0;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  font-style: italic;
+  font-size: calc(35.2px * var(--legible-ui));
+  color: var(--bone2);
+}
