@@ -69,6 +69,27 @@ replaces `ReplayCard`, which is deleted, and the landing's latest-games rail use
 | watchers allowed | | | `NewRoom.watchers_allowed` + enforcement (the stream and `GET /games/{id}` are public today) |
 | "manifest name once" | | device-local name key (not in `lib/storage.ts` yet) | |
 
+**As built (2026-09-26, step 4).** `/rooms` is the lobby: an ordinary responsive page with no `OrientationGuard`.
+It holds the head ("The departures hall"), `DeparturesBoard` and two hung doors under it: "Open a table" (`/rooms/new`)
+and "Play solo" (`/play`). The board reads `listRooms()` through TanStack Query and refetches every 10 s, as
+`RoomsClient` did. Its plate says "Departures" beside a Boarding count; Boarding is the only list. Field mapping,
+one row per `RoomSummary`: `locked` and `players.length >= max_seats` give the status tiles (`Flapword`: BOARDING
+amber, LOCKED or FULL dimmed; locked wins, because the server checks the lock first). `name` gives the title ("Unnamed
+table" when blank), with `i-lock` when locked. `host` gives "hosted by …" ("—" while the room is empty). `created_at`
+gives "opened … ago". `players` and `max_seats` give nine pips (a paper chip with the initial for each person
+aboard, a dashed ring for each open place) and "3 of 9 aboard, 6 places open". `boarding.ts` (with vitest) holds
+that logic. Board opens a strip under the row with "Your name on the manifest" and Join. The join is the old flow
+unchanged: `joinGame(id, name.trim() || 'human')`, `seatToken.set`, then `/games/[id]`. Join is busy while it posts,
+and a refusal shows the server's words in a themed `Alert` in the strip. A locked or full row keeps its place, with
+the button off and the reason beside it ("Locked — ask the host to unlock it.", "Full — every place at this table is
+taken."). The old "Watch instead" link to `/games/[id]` stays with that reason and with a refusal. Board states:
+skeleton rows while loading, an `Alert` with "Try again" when the list cannot be read, "NO DEPARTURES" with Open a
+table and Play solo when it is empty, and a footer line that says so when a background refresh fails. `RoomsClient`
+is deleted. `components/Lobby.module.css` stays, because `LobbyCard`, `KeyNeededCard`, `ByokField` and
+`GameEndedCard` still use it. Left out, with no placeholder: the Under way tab, codes and the code ticket, watchers,
+the model and memory terms (`RoomSummary` carries neither), the turn clock, puppet pips (§F5), and the mockup's
+search and "Hide full rooms" filters.
+
 ### A4. Ticket office (Notes: "Wire fields this page sends and reads")
 
 | Field | Ours | Derivable | Missing (schema) |

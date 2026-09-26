@@ -331,3 +331,164 @@ for (const [name, path, viewport] of [
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
   });
 }
+
+/**
+ * The departures board (`/rooms`) over a mocked `GET /rooms`: one room boarding, one locked and
+ * one full. The clock is pinned so "opened … ago" is the same on every run. Board opens the
+ * strip; Join posts the name and goes to the room with the seat token kept on this device.
+ */
+const NOW = new Date('2026-09-26T12:00:00Z');
+const BOARDING = 'a1b2c3d4-0000-4000-8000-000000000001';
+const LOCKED = 'a1b2c3d4-0000-4000-8000-000000000002';
+const FULL = 'a1b2c3d4-0000-4000-8000-000000000003';
+const ROOMS = [
+  {
+    game_id: BOARDING,
+    name: 'Night shift',
+    players: ['mira', 'sol', 'ana'],
+    host: 'mira',
+    max_seats: 9,
+    locked: false,
+    created_at: '2026-09-26T11:56:00Z',
+  },
+  {
+    game_id: LOCKED,
+    name: 'Seminar room B',
+    players: ['prof_lee', 'kei'],
+    host: 'prof_lee',
+    max_seats: 9,
+    locked: true,
+    created_at: '2026-09-26T11:48:00Z',
+  },
+  {
+    game_id: FULL,
+    name: 'Full cast',
+    players: ['june', 'oskar', 'tomas', 'ana', 'ivy', 'bo', 'cy', 'dee', 'eli'],
+    host: 'june',
+    max_seats: 9,
+    locked: false,
+    created_at: '2026-09-26T11:20:00Z',
+  },
+];
+
+async function openBoard(page: Page, rooms: unknown[] = ROOMS) {
+  await page.clock.setFixedTime(NOW);
+  await page.route('**/rooms', api(rooms));
+  await page.goto('/rooms', { waitUntil: 'networkidle' });
+  await expect(page.getByRole('heading', { name: 'The departures hall' })).toBeVisible();
+}
+
+/** `POST /games/{id}/join` answered with `status` and `body`, preflight included. */
+async function mockJoin(page: Page, status: number, body: unknown) {
+  const sent: { url: string; body: unknown }[] = [];
+  await page.route('**/games/*/join', async (route) => {
+    const req = route.request();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    sent.push({ url: req.url(), body: req.postDataJSON() });
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify(body),
+    });
+  });
+  return sent;
+}
+
+test('rooms: the board says boarding, locked and full, and why', async ({ page }) => {
+  await openBoard(page);
+  await expect(page.locator('[data-room]')).toHaveCount(3);
+
+  const boarding = page.locator(`[data-room="${BOARDING}"]`);
+  await expect(boarding).toHaveAttribute('data-state', 'boarding');
+  await expect(boarding).toContainText('BOARDING');
+  await expect(boarding).toContainText('Night shift');
+  await expect(boarding).toContainText('hosted by mira');
+  await expect(boarding).toContainText('opened 4 minutes ago');
+  await expect(boarding).toContainText('3 of 9 aboard, 6 places open');
+  await expect(boarding.getByRole('button', { name: 'Board' })).toBeEnabled();
+
+  const locked = page.locator(`[data-room="${LOCKED}"]`);
+  await expect(locked).toContainText('LOCKED');
+  await expect(locked.getByRole('img', { name: 'Locked' })).toBeVisible();
+  const lockedButton = locked.getByRole('button', { name: 'Locked' });
+  await expect(lockedButton).toBeDisabled();
+  await expect(lockedButton).toHaveAccessibleDescription(
+    /Locked — ask the host to unlock it\./,
+  );
+
+  const full = page.locator(`[data-room="${FULL}"]`);
+  await expect(full).toContainText('FULL');
+  await expect(full).toContainText('9 of 9 aboard');
+  const fullButton = full.getByRole('button', { name: 'Full' });
+  await expect(fullButton).toBeDisabled();
+  await expect(fullButton).toHaveAccessibleDescription(
+    /every place at this table is taken/,
+  );
+
+  await expect(page.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
+    'href',
+    '/rooms/new',
+  );
+});
+
+test('rooms: Join posts the name and goes to the room', async ({ page }) => {
+  const sent = await mockJoin(page, 200, { token: 'seat-tok-1' });
+  await openBoard(page);
+
+  const row = page.locator(`[data-room="${BOARDING}"]`);
+  await row.getByRole('button', { name: 'Board' }).click();
+  await row.getByLabel('Your name on the manifest').fill('sol');
+  await row.getByRole('button', { name: 'Join' }).click();
+
+  await page.waitForURL(`**/games/${BOARDING}`);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].url).toMatch(new RegExp(`/games/${BOARDING}/join$`));
+  expect(sent[0].body).toEqual({ name: 'sol' });
+  expect(await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING)).toBe(
+    'seat-tok-1',
+  );
+});
+
+test('rooms: a refused join says the server’s words in the row', async ({ page }) => {
+  await mockJoin(page, 409, { detail: 'room is locked — ask the host to unlock it' });
+  await openBoard(page);
+
+  const row = page.locator(`[data-room="${BOARDING}"]`);
+  await row.getByRole('button', { name: 'Board' }).click();
+  await row.getByRole('button', { name: 'Join' }).click();
+  await expect(row.getByRole('alert')).toContainText(
+    'room is locked — ask the host to unlock it',
+  );
+  await expect(page).toHaveURL(/\/rooms$/);
+});
+
+test('rooms: an empty board offers to open a table', async ({ page }) => {
+  await openBoard(page, []);
+  await expect(page.getByText('NO DEPARTURES')).toBeVisible();
+  await expect(page.getByText('No tables open right now.', { exact: false })).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Departures' })
+      .getByRole('link', { name: 'Open a table' }),
+  ).toHaveAttribute('href', '/rooms/new');
+});
+
+for (const [name, viewport] of [
+  ['rooms-1440', { width: 1440, height: 900 }],
+  ['rooms-390', { width: 390, height: 844 }],
+] as const) {
+  test(`rooms: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await openBoard(page);
+    await expect(page.locator('[data-room]')).toHaveCount(3);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+  });
+}

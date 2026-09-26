@@ -1,0 +1,362 @@
+/*
+ * The departures hall (rooms mockup): the head, the board (a walnut case, a brass plate and a
+ * black face with split-flap rows) and the two hung doors under it. Below 760px the column
+ * heads go and each row stacks: status and button on top, then the room, then who is aboard.
+ */
+
+.hall {
+  padding: 18px 0 0;
+  background: radial-gradient(
+    ellipse 70% 38% at 50% 0,
+    rgba(224, 166, 58, 0.07),
+    transparent 70%
+  );
+}
+
+.head {
+  margin: 0 0 30px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: clamp(34px, 5vw, 50px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--text);
+}
+
+.lede {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 58ch;
+  margin: 10px 0 0;
+}
+
+/* ---------- the board ---------- */
+
+.board {
+  --wood: none;
+  border-radius: 16px;
+  padding: 14px;
+  background:
+    linear-gradient(rgba(40, 24, 12, 0.35), rgba(20, 12, 6, 0.55)),
+    var(--wood) 0 0 / 300px,
+    #2a1a0e;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 220, 160, 0.12),
+    0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.bezel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 6px 6px 14px;
+}
+
+.plate {
+  margin: 0;
+  padding: 6px 18px 7px;
+  border-radius: 6px;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1;
+  color: #2a1a08;
+  background: linear-gradient(#e6c47a, #b8893a 55%, #9c7128);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 0 #4a3210,
+    0 0 0 1px #5e421a;
+}
+
+/* the mockup's selected Boarding tab, as a label: Boarding is the only list */
+.count {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(255, 220, 160, 0.1);
+  color: var(--bone);
+}
+
+.n {
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.face {
+  border-radius: 10px;
+  background: #0d0906;
+  box-shadow:
+    inset 0 2px 14px rgba(0, 0, 0, 0.9),
+    0 0 0 2px #6e5226,
+    0 0 0 3px #2a1c0c;
+  overflow: hidden;
+}
+
+.colhead,
+.row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 236px 150px;
+  gap: 18px;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.colhead {
+  min-height: 38px;
+  color: var(--bone3);
+  font-size: 12.5px;
+  border-bottom: 1px solid #2a1f14;
+  background: #120d08;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  min-height: 86px;
+  border-top: 1px solid #1f1710;
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.row:hover {
+  background: #140f0a;
+}
+
+.flap {
+  font-size: 13px;
+  color: var(--bone2);
+}
+
+.rm {
+  min-width: 0;
+  padding-block: 14px;
+}
+
+.nm {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+.nm svg {
+  color: var(--brass);
+}
+
+.sub {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  color: var(--bone3);
+  font-size: 13.5px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.reason {
+  margin: 6px 0 0;
+  color: var(--bone2);
+  font-size: 13.5px;
+}
+
+.watch {
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.pips {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.aboard,
+.open {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* a person aboard: a paper chip with their initial (puppets come later, review §F5) */
+.aboard {
+  display: grid;
+  place-items: center;
+  background: #efe4cb;
+  color: var(--ink);
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    0 0 0 1.5px #efe4cb,
+    0 0 0 2.5px #3a2a18;
+}
+
+.open {
+  border: 1.6px dashed var(--amber);
+  background: rgba(224, 166, 58, 0.1);
+}
+
+.cap {
+  font-size: 13px;
+  color: var(--bone2);
+  margin-top: 6px;
+}
+
+.act {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.act > * {
+  min-width: 112px;
+}
+
+/* the boarding strip: under the room, the name for the manifest and Join */
+.pass {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 0 18px;
+}
+
+.passName {
+  flex: 1 1 220px;
+  max-width: 320px;
+}
+
+.passAlert {
+  flex: 1 1 100%;
+}
+
+/* ---------- empty, failed, footer ---------- */
+
+.empty {
+  padding: 56px 30px 60px;
+  text-align: center;
+}
+
+.emptyFlap {
+  font-size: 20px;
+}
+
+.empty p {
+  color: var(--bone2);
+  max-width: 44ch;
+  margin: 18px auto 22px;
+}
+
+.emptyDoors {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px 20px;
+}
+
+.failed > :first-child {
+  align-self: stretch;
+}
+
+.bfoot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 8px 2px;
+  color: var(--bone3);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+/* ---------- the doors ---------- */
+
+.doors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 48px;
+  padding-top: 14px;
+}
+
+/* ---------- phone ---------- */
+
+@media (max-width: 760px) {
+  .board {
+    padding: 8px;
+  }
+  .bezel {
+    gap: 10px;
+  }
+  .plate {
+    font-size: 21px;
+  }
+  .colhead {
+    display: none;
+  }
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'st act'
+      'rm rm'
+      'seats seats'
+      'pass pass';
+    gap: 8px 12px;
+    padding: 14px 14px 16px;
+  }
+  .st {
+    grid-area: st;
+  }
+  .rm {
+    grid-area: rm;
+    padding-block: 0;
+  }
+  .seats {
+    grid-area: seats;
+  }
+  .act {
+    grid-area: act;
+  }
+  .act > * {
+    min-width: 0;
+  }
+  .pass {
+    grid-area: pass;
+    padding: 4px 0 0;
+  }
+  .passName {
+    max-width: none;
+  }
+  .doors {
+    gap: 24px;
+  }
+}
