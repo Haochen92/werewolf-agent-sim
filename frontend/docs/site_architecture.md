@@ -36,7 +36,7 @@ own part (`'Rooms'`). `/` gets the default, `Carriage Nine`.
   `xs` 8px, `sm`/`md`/`lg` = `--r-s`/`--r-m`/`--r-l`, and `xl` = the pill. The page is always dark
   (`forceColorScheme="dark"` plus `data-mantine-color-scheme="dark"` on `<html>`).
 - Themed components (`theme/components/*.module.css`): Button, Input/TextInput/Select, Switch,
-  Tabs (pills), Modal, Notification, Table and Title. Anything else renders as stock Mantine over
+  Tabs (pills), Modal, Notification, Table, Title and Alert. Anything else renders as stock Mantine over
   the warm scale.
 
 ## Fonts

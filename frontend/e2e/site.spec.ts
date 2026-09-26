@@ -9,7 +9,7 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 
 const GITHUB = 'https://github.com/Haochen92/werewolf-agent-sim';
 
-for (const path of ['/', '/replays', '/rooms', '/play']) {
+for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new']) {
   test(`site shell: ${path}`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveTitle(/^Carriage Nine/);
@@ -218,5 +218,116 @@ for (const [name, viewport] of [
     await openArchive(page);
     await settle(page);
     await expect(page).toHaveScreenshot(`${name}.png`);
+  });
+}
+
+/**
+ * The ticket office (`/play`, `/rooms/new`) over a mocked `GET /models`. Whether the key field
+ * shows is the house's call: a purse that covers the default model folds it away, a spent purse
+ * (the server flips `needs_key`) opens it and holds the ticket until a key is typed.
+ */
+const menuWithPurse = (remaining: number) => ({
+  models: MODELS.models.map((row) => ({
+    ...row,
+    needs_key: remaining <= 0,
+  })),
+  house: { enabled: true, games_per_day: 20, remaining, reset_at: '2026-09-27T00:00:00Z' },
+});
+
+async function openTicket(page: Page, path: string, remaining: number) {
+  await page.route('**/models', api(menuWithPurse(remaining)));
+  await page.goto(path, { waitUntil: 'networkidle' });
+  await expect(page.getByRole('heading', { name: 'The ticket office' })).toBeVisible();
+  // the default model is preselected: its display name in the select, the raw id underneath
+  await expect(page.getByLabel('Model', { exact: true })).toHaveValue(
+    'Gemini 3.5 Flash-Lite',
+  );
+  await expect(page.getByRole('code')).toHaveText('gemini-3.5-flash-lite');
+}
+
+test('ticket: the house pays, so /play asks for no key', async ({ page }) => {
+  await openTicket(page, '/play', 3);
+  await expect(
+    page.getByText('The house pays for this model: 3 of 20 games left today.'),
+  ).toBeVisible();
+  await expect(page.getByLabel('Your key')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Use my own key instead' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'Agents’ memory' })).not.toBeChecked();
+
+  // the role cards: one chosen at a time, and the stub says which
+  await page.getByRole('button', { name: 'Wolf' }).click();
+  await expect(page.getByRole('button', { name: 'Wolf' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByText('Wolf, chosen')).toBeVisible();
+});
+
+test('ticket: a spent purse opens the key field and holds the ticket', async ({ page }) => {
+  let posted = false;
+  await page.route('**/games', async (route) => {
+    posted = true;
+    await route.abort();
+  });
+  await openTicket(page, '/play', 0);
+  await expect(page.getByText(/The house has funded its 20 games for today/)).toBeVisible();
+  const key = page.getByLabel('Your key');
+  await expect(key).toBeVisible();
+
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect(page.getByText('Paste an API key: the house is not paying')).toBeVisible();
+  await expect(key).toBeFocused();
+  expect(posted).toBe(false);
+});
+
+test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
+  const ROOM = 'b7d1c0de-0000-4000-8000-00000000abcd';
+  let sent: Record<string, unknown> | null = null;
+  await page.route('**/rooms', async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    sent = req.postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify({ game_id: ROOM, host_key: 'hk-1' }),
+    });
+  });
+  await openTicket(page, '/rooms/new', 3);
+
+  await page.getByLabel('Room name').fill('Night shift');
+  await expect(page.getByText('Night shift', { exact: true })).toBeVisible(); // the stub
+  await page.getByRole('button', { name: 'Open the room' }).click();
+
+  await page.waitForURL(`**/games/${ROOM}`);
+  expect(sent).toEqual({
+    name: 'Night shift',
+    model: 'gemini-3.5-flash-lite',
+    api_key: '',
+    memory: false,
+  });
+  expect(await page.evaluate((id) => localStorage.getItem(`host_${id}`), ROOM)).toBe(
+    'hk-1',
+  );
+});
+
+for (const [name, path, viewport] of [
+  ['play-1440', '/play', { width: 1440, height: 900 }],
+  ['play-390', '/play', { width: 390, height: 844 }],
+  ['rooms-new-1440', '/rooms/new', { width: 1440, height: 900 }],
+] as const) {
+  test(`ticket: ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await openTicket(page, path, 3);
+    await settle(page);
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
   });
 }

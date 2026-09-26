@@ -4,6 +4,7 @@
  * mockups use are themed; anything else renders as stock Mantine over the warm `dark` scale.
  */
 import {
+  Alert,
   Button,
   Chip,
   Input,
@@ -18,6 +19,7 @@ import {
   Title,
   createTheme,
 } from '@mantine/core';
+import alertClasses from './components/Alert.module.css';
 import buttonClasses from './components/Button.module.css';
 import chipClasses from './components/Chip.module.css';
 import inputClasses from './components/Input.module.css';
@@ -62,5 +64,9 @@ export const componentsTheme = createTheme({
       classNames: tableClasses,
     }),
     Title: Title.extend({ classNames: titleClasses }),
+    Alert: Alert.extend({
+      defaultProps: { radius: 'xs', variant: 'light', color: 'wolf' },
+      classNames: alertClasses,
+    }),
   },
 });

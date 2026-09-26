@@ -85,6 +85,25 @@ replaces `ReplayCard`, which is deleted, and the landing's latest-games rail use
 | party: `watchers_allowed` | | | `NewRoom.watchers_allowed` |
 | replay: role chosen vs dealt | | | `ReplayBase`/`game_started` flag; `human_role` is not persisted anywhere on the replay |
 
+**As built (2026-09-26, step 3).** Both pages mount one `TicketOffice` (`app/(site)/_components/ticket/`) with
+`kind: 'solo' | 'room'`: `/play` is solo, `/rooms/new` is the room. The two hung tags are links between the two pages,
+and the current one is ringed (`HangTag current`). The submit flows are the old clients' flows. Solo calls `createGame`,
+keeps `seat_token` in `seatToken` and goes to `/games/[id]`. Room calls `createRoom`, keeps `host_key` in `hostKey` and
+goes to `/games/[id]`. `PlayClient`, `NewRoomClient` and `GameSetupFields` are deleted. Field mapping: the role cards →
+`NewSoloGame.human_role` (`null` = the face-down "dealt at random" card; each face is `roleFigure` + `Sigil` +
+`CARD_TEXT.night` in the note). Room name → `NewRoom.name` (max 40, "Unnamed table" when blank). The memory Switch →
+`memory`, off by default, with neutral copy. The model Select → `model` (the `getModels()` label, with the raw id
+underneath and in each option). The key → `api_key`. `house.ts` (`needsKey`, `houseLine`, moved from `GameSetupFields`
+with their copy unchanged, now with vitest) decides the key row. While the house covers the model, the row shows the
+house line and hides the field behind "Use my own key instead". Otherwise the field is open, and a submit without a key
+is held with a field error. The mockup's always-required key is not used. A key remembered on this device opens the field
+(`useRememberedKey`, now shared with `ByokField`). The key copy says a key is lost only on a server restart, after which
+the game waits for a player to enter one (B14). The room's "The room" row replaces the lock radio with the server's
+meaning (B11, §F6): the room opens unlocked, can be locked from the room, and a locked room admits nobody, link or not.
+A lock at creation would lock the host out too, since the host joins after creating. Server refusals show in a themed
+Mantine `Alert` on the stub. Left out, with no placeholder: the puppet rail and the stub's puppet (§F5), the turn clock
+(§F8), watchers (§F8), and the seat name (neither request has one; the host names themselves in the room, as before).
+
 ### A5. Waiting room (Notes are design-only; fields read from the markup, l.328–377)
 
 | Field | Ours (`GameStatus`) | Derivable | Missing (schema) |

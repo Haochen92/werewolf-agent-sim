@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * The BYOK field, rendered by GameSetupFields for both `/play` and `/rooms/new` (build_plan P2 ruling).
+ * The BYOK field on the restart card (`KeyNeededCard`). The ticket office (`/play`, `/rooms/new`)
+ * draws its own key row over the same behaviour, `useRememberedKey`.
  *
  * Remembering is PURELY client-side and needs zero server support: the server never stores
  * keys — BYOK games even die on restart for exactly that reason — so the key's only wire
@@ -11,8 +12,7 @@
  * All of that is said in the UI, not just implemented. A key input that does not explain
  * itself is a key input people rightly refuse to use.
  */
-import { useEffect, useState } from 'react';
-import { byokKey } from '@/lib/storage';
+import { useRememberedKey } from '@/hooks/useRememberedKey';
 import classes from './Lobby.module.css';
 
 export function ByokField({
@@ -22,27 +22,7 @@ export function ByokField({
   value: string;
   onChange: (key: string) => void;
 }) {
-  const [remember, setRemember] = useState(false);
-  const [loadedFromStorage, setLoadedFromStorage] = useState(false);
-
-  // localStorage is client-only: read after mount so server and client markup agree.
-  useEffect(() => {
-    const saved = byokKey.get();
-    if (saved) {
-      onChange(saved);
-      setRemember(true);
-      setLoadedFromStorage(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const update = (next: string) => {
-    onChange(next);
-    setLoadedFromStorage(false);
-    if (remember && next) byokKey.set(next);
-  };
-
-  const masked = loadedFromStorage && value.length > 8;
+  const key = useRememberedKey(value, onChange);
 
   return (
     <div className={classes.group}>
@@ -53,25 +33,16 @@ export function ByokField({
         <input
           id="byok"
           className={classes.textInput}
-          type={masked ? 'text' : 'password'}
-          value={masked ? `${value.slice(0, 4)}••••••••${value.slice(-4)}` : value}
-          onChange={(e) => update(e.target.value)}
-          onFocus={() => setLoadedFromStorage(false)}
+          type={key.masked ? 'text' : 'password'}
+          value={key.shown}
+          onChange={(e) => key.update(e.target.value)}
+          onFocus={key.unmask}
           placeholder="leave empty to use the house default"
           autoComplete="off"
           spellCheck={false}
         />
-        {loadedFromStorage ? (
-          <button
-            type="button"
-            className={classes.secondary}
-            onClick={() => {
-              byokKey.clear();
-              onChange('');
-              setRemember(false);
-              setLoadedFromStorage(false);
-            }}
-          >
+        {key.loadedFromStorage ? (
+          <button type="button" className={classes.secondary} onClick={key.clearSaved}>
             clear saved key
           </button>
         ) : null}
@@ -80,12 +51,8 @@ export function ByokField({
       <label className={classes.checkRow}>
         <input
           type="checkbox"
-          checked={remember}
-          onChange={(e) => {
-            setRemember(e.target.checked);
-            if (e.target.checked && value) byokKey.set(value);
-            else byokKey.clear();
-          }}
+          checked={key.remember}
+          onChange={(e) => key.setRemember(e.target.checked)}
         />
         Remember on this device
       </label>

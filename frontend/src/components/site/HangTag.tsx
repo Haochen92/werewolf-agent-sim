@@ -1,7 +1,8 @@
 /**
  * The hung paper tag (the mockups' `.hang`): a luggage tag on a string, a punched hole, a
  * printed kicker, title and line, and a rule with a footer. Used as a door (a link) on the
- * landing and rooms pages, and as a choice (a pressed button) on the ticket office.
+ * landing and rooms pages, and as a choice (a pressed button). A door to the page you are on
+ * takes `current`, and is ringed like a chosen tag (the ticket office's two kinds).
  *
  * Tags tilt alternately while hung; below 700px they hang flat, full width, string hidden.
  */
@@ -22,8 +23,8 @@ interface HangTagBase {
 
 type HangTagProps = HangTagBase &
   (
-    | { href: string; onClick?: never; pressed?: never }
-    | { href?: never; onClick: () => void; pressed?: boolean }
+    | { href: string; current?: boolean; onClick?: never; pressed?: never }
+    | { href?: never; current?: never; onClick: () => void; pressed?: boolean }
   );
 
 export function HangTag({
@@ -57,7 +58,11 @@ export function HangTag({
 
   if (action.href !== undefined) {
     return (
-      <Link href={action.href} className={cls}>
+      <Link
+        href={action.href}
+        className={cls}
+        aria-current={action.current ? 'page' : undefined}
+      >
         {face}
       </Link>
     );

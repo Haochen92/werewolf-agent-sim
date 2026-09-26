@@ -1,0 +1,672 @@
+/*
+ * The ticket office (ticket-office mockup): the grille and the lamp over the counter, the title
+ * beside the two hung tags, then the ticket: a paper form with its fields ruled in dotted lines
+ * on the left and the stub, torn along a dashed line, on the right. Below 980px the stub drops
+ * under the fields; below 700px the tags hang flat (HangTag's own rule).
+ *
+ * The inputs are Mantine's, re-dressed for paper: an ink underline instead of a walnut box. The
+ * selectors go through `.ticket` to outrank the site theme's dark input (`theme/components`).
+ */
+
+.office {
+  position: relative;
+  padding-bottom: 8px;
+  background: radial-gradient(
+    ellipse 70% 38% at 50% 0,
+    rgba(224, 166, 58, 0.07),
+    transparent 70%
+  );
+}
+
+.grille {
+  height: 74px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 22px,
+    rgba(201, 162, 94, 0.55) 22px 25px
+  );
+  border-bottom: 6px solid #8a6a34;
+  -webkit-mask: linear-gradient(#000 40%, transparent);
+  mask: linear-gradient(#000 40%, transparent);
+}
+
+.lamp {
+  position: absolute;
+  right: 4px;
+  top: 20px;
+  width: 120px;
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(255, 190, 100, 0.35));
+  pointer-events: none;
+}
+
+.intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin: 10px 0 34px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 800;
+  font-size: clamp(34px, 5vw, 50px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  margin: 10px 0 0;
+  max-width: 58ch;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.kinds {
+  display: flex;
+  gap: 22px;
+  padding-top: 14px;
+}
+
+/* the door to the other kind of ticket: dimmed like an unchosen tag, lit on hover */
+.otherDoor {
+  filter: brightness(0.55) saturate(0.8);
+}
+.otherDoor:hover,
+.otherDoor:focus-visible {
+  filter: brightness(0.85) saturate(0.95);
+}
+
+/* ---------- the ticket ---------- */
+
+.ticket {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  position: relative;
+  border-radius: 14px;
+}
+
+.body {
+  min-width: 0;
+  padding: 30px 40px 34px;
+}
+
+.heading {
+  margin: 0 0 4px;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.ticketLede {
+  margin: 0 0 18px;
+  color: var(--ink2);
+  font-size: 17px;
+}
+
+.fld {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  padding: 18px 0;
+  border-top: 1.5px dotted rgba(36, 24, 12, 0.3);
+}
+
+.lab {
+  padding-top: 4px;
+  font-size: 19px;
+}
+
+.lab small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink2);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.wide {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.wide .lab {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-top: 0;
+}
+
+.wide .lab small {
+  display: inline;
+  margin: 0;
+}
+
+.ctl {
+  min-width: 0;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+
+.note {
+  max-width: 64ch;
+  margin: 8px 0 0;
+  color: var(--ink2);
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+/* ---------- inputs on paper ---------- */
+
+.lineRoot {
+  width: min(100%, 420px);
+}
+
+.ticket .line {
+  --input-bg: transparent;
+  --input-bd: #8a7250;
+  --input-bd-focus: var(--ink);
+  --input-color: var(--ink);
+  --input-placeholder-color: rgba(36, 24, 12, 0.42);
+  --input-section-color: var(--ink);
+  --input-disabled-bg: transparent;
+  --input-disabled-color: var(--ink2);
+  height: auto;
+  min-height: 44px;
+  padding: 4px 2px 6px;
+  border: 0;
+  border-bottom: 1.5px solid var(--input-bd);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 22px;
+}
+
+.ticket .line:focus {
+  border-bottom-color: var(--input-bd-focus);
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.ticket .line[data-error] {
+  --input-bd: #7a2a1c;
+  --input-bd-focus: #7a2a1c;
+  color: var(--ink);
+}
+
+.ticket .selectInput {
+  padding-right: 30px;
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.ticket .keyInput {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.lineSection {
+  color: var(--ink);
+}
+
+.lineError {
+  margin-top: 6px;
+  color: #7a2a1c;
+  font-size: 14px;
+  font-family: var(--font-sans);
+}
+
+.rawId {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.optionMeta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.optionMeta code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* the switch on paper: an ink-ringed track that fills amber, an ink thumb */
+.ticket .paperSwitch .track {
+  background-color: rgba(36, 24, 12, 0.16);
+  border: 1.5px solid var(--ink);
+}
+
+.ticket .paperSwitch input:checked + .track {
+  background-color: #c8922e;
+  border-color: var(--ink);
+}
+
+.ticket .paperSwitch .thumb {
+  --switch-thumb-bg: var(--ink);
+  background-color: var(--ink);
+  border: 0;
+}
+
+.ticket .paperSwitch input:checked + * > .thumb {
+  --switch-thumb-bg: var(--ink);
+  background-color: var(--ink);
+}
+
+.ticket .switchLabel {
+  color: var(--ink);
+  font-size: 15.5px;
+  font-weight: 500;
+}
+
+.textButton {
+  display: inline-block;
+  min-height: 36px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #7a4f10;
+  font: inherit;
+  font-size: 14.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.textButton:hover {
+  color: var(--ink);
+}
+
+/* ---------- the key row ---------- */
+
+.house {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  max-width: 64ch;
+  margin: 2px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.house svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.house[data-pays='house'] {
+  color: #4a2e0a;
+}
+
+.house[data-pays='key'] {
+  color: #7a2a1c;
+}
+
+.keyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 18px;
+  margin: 8px 0 12px;
+}
+
+/* ---------- the room's rows ---------- */
+
+.nameInput {
+  font-size: 22px;
+}
+
+.seats {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.seats i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px #a88445;
+}
+
+.seats i[data-first] {
+  background: #3a2a18;
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    0 0 0 2px var(--bone);
+}
+
+.seats + .note {
+  margin-top: 0;
+}
+
+.lockLine {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 2px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.lockLine svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+/* ---------- role cards (RoleCards) ---------- */
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card {
+  --rc: #cbb992;
+  position: relative;
+  flex: 0 0 auto;
+  width: 96px;
+  height: 136px;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: #f3e9d2;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  cursor: pointer;
+  opacity: 0.5;
+  filter: saturate(0.55);
+  transition:
+    opacity 0.2s,
+    filter 0.2s,
+    box-shadow 0.2s;
+}
+
+.card::before,
+.card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--rc);
+}
+.card::before {
+  top: 0;
+}
+.card::after {
+  bottom: 0;
+}
+
+.card[data-faction='villagers'] {
+  --rc: var(--town);
+}
+.card[data-faction='wolves'] {
+  --rc: var(--wolf);
+}
+.card[data-faction='serial_killer'] {
+  --rc: var(--sk);
+}
+
+.card:hover {
+  opacity: 0.8;
+  filter: saturate(0.85);
+}
+
+.card[aria-pressed='true'] {
+  opacity: 1;
+  filter: none;
+  box-shadow:
+    0 0 0 3px var(--amber),
+    0 8px 20px rgba(60, 35, 5, 0.35);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+
+.cardIn {
+  position: absolute;
+  inset: 10px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.cardSigil {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  color: var(--rc);
+}
+
+.cardFig {
+  flex: 1;
+  min-height: 0;
+  width: 82%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.cardFig svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cardBack .cardIn {
+  justify-content: center;
+  gap: 6px;
+}
+
+.backArt {
+  width: 70%;
+}
+
+.backArt svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.backWords {
+  font-size: 14px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.roleNote {
+  max-width: 68ch;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.roleNote b {
+  font-weight: 600;
+}
+
+/* ---------- the stub ---------- */
+
+.stub {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 30px 30px;
+  border-left: 2.5px dashed rgba(36, 24, 12, 0.38);
+  border-radius: 0 14px 14px 0;
+  background: rgba(80, 55, 20, 0.07);
+}
+
+/* the notches where the stub tears off */
+.stub::before,
+.stub::after {
+  content: '';
+  position: absolute;
+  left: -14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.stub::before {
+  top: -13px;
+}
+.stub::after {
+  bottom: -13px;
+}
+
+.punch {
+  position: absolute;
+  right: 26px;
+  top: 28px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.8);
+}
+
+.stubKicker {
+  color: var(--ink2);
+  font-size: 16px;
+  font-style: italic;
+}
+
+.stubTitle {
+  margin: 2px 0 14px;
+  padding-right: 24px;
+  font-size: 34px;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 0;
+  font-size: 17px;
+}
+
+.terms dt {
+  color: var(--ink2);
+}
+
+.terms dd {
+  margin: 0;
+  text-align: right;
+}
+
+.go {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.go button[type='submit'] {
+  min-height: 54px;
+  font-size: 17px;
+}
+
+.alert {
+  margin-bottom: 14px;
+}
+
+.fine {
+  margin: 12px 0 0;
+  color: var(--ink2);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+/* ---------- narrow ---------- */
+
+@media (max-width: 980px) {
+  .ticket {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .body {
+    padding: 24px 18px;
+  }
+  .fld {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .stub {
+    border-left: 0;
+    border-top: 2.5px dashed rgba(36, 24, 12, 0.38);
+    border-radius: 0 0 14px 14px;
+    padding: 24px 18px 26px;
+  }
+  .stub::before,
+  .stub::after {
+    display: none;
+  }
+  .punch {
+    right: 18px;
+    top: 24px;
+  }
+  .kinds {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 700px) {
+  .grille {
+    height: 48px;
+  }
+  .lamp {
+    top: 6px;
+    width: 72px;
+  }
+  .kinds {
+    width: 100%;
+    flex-direction: column;
+  }
+  .card {
+    width: 88px;
+    height: 126px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

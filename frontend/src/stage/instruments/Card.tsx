@@ -20,37 +20,12 @@ import type { CSSProperties } from 'react';
 import { factionOf } from '../roles';
 import { CARD_TEXT } from '../card-text';
 import { roleFigure } from '../paint/role-kit';
+import { BackArt } from './CardBackArt';
 import { Flip } from './Flip';
 import { Sigil } from './Sigil';
 import styles from './Card.module.css';
 
 const cardVars = (w: number) => ({ '--u': `${w / 340}px` }) as CSSProperties;
-
-/** The back's art: the stitched ring and the star, in paper and ink. */
-function BackArt() {
-  return (
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="50" cy="50" r="40" fill="none" stroke="#cbb992" strokeWidth="2" />
-      <circle
-        cx="50"
-        cy="50"
-        r="33"
-        fill="none"
-        stroke="#8d7a55"
-        strokeWidth="1.6"
-        strokeDasharray="3 3"
-      />
-      <path
-        d="M50 22 L56 44 L78 50 L56 56 L50 78 L44 56 L22 50 L44 44Z"
-        fill="#cbb992"
-        stroke="#24180c"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <circle cx="50" cy="50" r="5" fill="#efe4cb" stroke="#24180c" strokeWidth="1.2" />
-    </svg>
-  );
-}
 
 export function CardBack({ w, big }: { w: number; big?: boolean }) {
   return (

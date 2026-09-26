@@ -105,11 +105,12 @@
   opacity: 0.72;
 }
 
-/* as a choice: the unchosen tag dims, the chosen one is ringed in amber */
+/* as a choice: the unchosen tag dims, the chosen one (or the current page's door) is ringed in amber */
 .hang[aria-pressed='false'] {
   filter: brightness(0.55) saturate(0.8);
 }
-.hang[aria-pressed='true'] .face {
+.hang[aria-pressed='true'] .face,
+.hang[aria-current='page'] .face {
   box-shadow:
     0 0 0 2px var(--town),
     0 16px 24px -14px rgba(0, 0, 0, 0.95);

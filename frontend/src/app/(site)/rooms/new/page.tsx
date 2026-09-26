@@ -1,12 +1,8 @@
-import { Suspense } from 'react';
-import { NewRoomClient } from './_components/NewRoomClient';
+import { TicketOffice } from '../../_components/ticket/TicketOffice';
 
 export const metadata = { title: 'Open a room' };
 
+/** The room ticket: a room others join (ticket-office mockup, review §A4). */
 export default function NewRoomPage() {
-  return (
-    <Suspense fallback={null}>
-      <NewRoomClient />
-    </Suspense>
-  );
+  return <TicketOffice kind="room" />;
 }
