@@ -5,9 +5,11 @@
  */
 import {
   Button,
+  Chip,
   Input,
   Modal,
   Notification,
+  SegmentedControl,
   Select,
   Switch,
   Table,
@@ -17,8 +19,10 @@ import {
   createTheme,
 } from '@mantine/core';
 import buttonClasses from './components/Button.module.css';
+import chipClasses from './components/Chip.module.css';
 import inputClasses from './components/Input.module.css';
 import overlayClasses from './components/Overlay.module.css';
+import segmentedClasses from './components/SegmentedControl.module.css';
 import switchClasses from './components/Switch.module.css';
 import tableClasses from './components/Table.module.css';
 import tabsClasses from './components/Tabs.module.css';
@@ -37,6 +41,15 @@ export const componentsTheme = createTheme({
       classNames: inputClasses,
     }),
     Select: Select.extend({ defaultProps: { radius: 'xs' }, classNames: inputClasses }),
+    SegmentedControl: SegmentedControl.extend({
+      defaultProps: { radius: 'xs' },
+      classNames: segmentedClasses,
+    }),
+    // the filter pills carry no check mark: the lit pill is the state
+    Chip: Chip.extend({
+      defaultProps: { variant: 'outline', icon: null },
+      classNames: chipClasses,
+    }),
     Switch: Switch.extend({ defaultProps: { radius: 'xl' }, classNames: switchClasses }),
     Tabs: Tabs.extend({ defaultProps: { variant: 'pills' }, classNames: tabsClasses }),
     Modal: Modal.extend({ defaultProps: { radius: 'sm' }, classNames: overlayClasses }),

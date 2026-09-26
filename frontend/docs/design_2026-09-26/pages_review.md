@@ -39,6 +39,20 @@ from the files as of `13eb753` + working tree. "Ours" = a name that exists today
 | `limit`/`cursor` | `limit`/`offset` | | cursor (offset is enough) |
 | total, distinct models | | distinct models from the fetched rows | `total` (response envelope or header) |
 
+**As built (2026-09-26, step 2).** `/replays` is `ArchiveClient`. It makes one fetch, `listReplaysWithTotal({limit: 500})`,
+which returns the rows plus `X-Total-Count`, and runs every filter and the sort in the browser (`lib/replay-filters.ts`).
+Field mapping: `winner` sets the slate's colour (`--town/--wolf/--sk`), its inks (`--*-ink`) and the `Sigil` watermark.
+`game_id` gives the record (the first 7 characters), the link to `/replays/[id]` and the nine chips (`castForGame` on the
+full id). `days` and `ended_phase` give "Days" and "Ended" ("Night 4", "Day 3 vote"; "Unrecorded" when null). `model`
+shows its `getModels()` label with the raw id and the `finished_at` date underneath ("Unrecorded" when `""`).
+`n_humans` and `memory` are the stamps. `seatToken.all()` gives a "You played" stamp and the "Played on this device"
+filter. The rail has search by id, played on this device, won by, **ended in** (not in the mock), memory, at the table,
+model and the From/To dates. It folds behind a "Filters" bar below 900px. The toolbar has the count, removable chips for
+active filters, sort, and cards/list. "Show more games" pages 12 at a time on the client. `Slate` (`components/site`)
+replaces `ReplayCard`, which is deleted, and the landing's latest-games rail uses it too. Left out: search by seat name
+(there are no names on `ReplayBase`) and the footer's "[N] games archived" (`site.ts` has only a static
+`gamesArchived`, with no slot a page can fill).
+
 ### A3. Rooms (Notes: "Needs from the server")
 
 | Field | Ours (`RoomSummary`, `S/schemas/requests.py`) | Derivable | Missing (schema) |

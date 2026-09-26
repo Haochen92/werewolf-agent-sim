@@ -1,0 +1,393 @@
+/*
+ * The archive page (replays mockup): the head, the filter rail beside the results, the toolbar,
+ * the slates or the table, and the empty states. Breakpoints are the mockup's container widths
+ * read against the viewport: one slate across below 1060px, the rail above the results below
+ * 900px, phone spacing below 620px.
+ */
+
+.archive {
+  padding: 18px 0 0;
+  background: radial-gradient(
+    ellipse 70% 38% at 50% 0,
+    rgba(224, 166, 58, 0.07),
+    transparent 70%
+  );
+}
+
+.head {
+  margin: 0 0 30px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: clamp(34px, 5vw, 50px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--text);
+}
+
+.lede {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 58ch;
+  margin: 10px 0 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.results {
+  min-width: 0;
+}
+
+/* ---------- the filter rail ---------- */
+
+.rail {
+  position: sticky;
+  top: 24px;
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  background: linear-gradient(180deg, rgba(33, 27, 20, 0.94), rgba(14, 9, 6, 0.94));
+  border: 1px solid var(--cloak2);
+  color-scheme: dark;
+}
+
+.railHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 10px;
+}
+
+.railTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.railToggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.railCount {
+  background: var(--amber);
+  color: var(--ink);
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+}
+
+.clearAll {
+  border: 0;
+  background: none;
+  color: var(--amber);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+  padding: 6px 0;
+}
+
+.fs {
+  border: 0;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid #2a1f14;
+  min-width: 0;
+}
+
+.fs[data-first] {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  color: var(--bone2);
+  float: left;
+  width: 100%;
+}
+
+.legend + * {
+  clear: both;
+}
+
+.fchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fchipSigil {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}
+
+.dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ---------- the toolbar ---------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.count {
+  font-size: 15px;
+  color: var(--bone2);
+}
+
+.count b {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+.active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.activeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--brass);
+  background: #2a1f14;
+  color: var(--bone);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.activeChip svg {
+  color: var(--bone2);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--bone2);
+}
+
+.viewToggle {
+  flex: 0 0 auto;
+}
+
+.viewToggle label {
+  width: 40px;
+  min-height: 36px;
+  padding: 0;
+}
+
+.instruct {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: -6px 0 18px;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+
+.instructIcon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex: 0 0 20px;
+  border: 1.4px solid color-mix(in srgb, var(--town) 55%, transparent);
+}
+
+.instructIcon svg {
+  width: 7px;
+  height: 7px;
+  fill: var(--town);
+  margin-left: 1.5px;
+  display: block;
+}
+
+/* ---------- results ---------- */
+
+.skeleton {
+  border-radius: var(--r-m);
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.empty {
+  padding: 60px 20px;
+  text-align: center;
+  border: 1.5px dashed var(--cloak2);
+  border-radius: 14px;
+}
+
+.emptyTitle {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--text);
+}
+
+.emptyText {
+  color: var(--bone2);
+  margin: 0 auto 18px;
+  max-width: 44ch;
+}
+
+/* ---------- list view ---------- */
+
+.tablewrap {
+  border-radius: 12px;
+  border: 1px solid var(--cloak2);
+}
+
+.won {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.won svg {
+  width: 20px;
+  height: 20px;
+}
+
+.gameId {
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--bone3);
+  font-style: italic;
+}
+
+.here,
+.memOn {
+  font-size: 12.5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.here {
+  margin-left: 8px;
+  background: #3a2a18;
+  color: #f3dfae;
+}
+
+.memOn {
+  background: var(--film);
+  color: var(--sure);
+  box-shadow: inset 0 0 0 1px rgba(127, 220, 242, 0.4);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- widths ---------- */
+
+@media (max-width: 1060px) {
+  .results .games {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .rail {
+    position: static;
+    padding: 8px 16px;
+  }
+  .railHead {
+    margin: 0;
+  }
+  .railTitle {
+    display: none;
+  }
+  .railToggle {
+    display: inline-flex;
+  }
+  .rail:not([data-open]) .railBody {
+    display: none;
+  }
+  .rail[data-open] .railBody {
+    padding-bottom: 8px;
+  }
+  .rail[data-open] .railHead {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 620px) {
+  .archive {
+    padding-top: 8px;
+  }
+  .title {
+    font-size: 34px;
+  }
+  .lede {
+    font-size: 16px;
+  }
+  .bar {
+    gap: 10px;
+  }
+  .spacer {
+    display: none;
+  }
+  .viewToggle {
+    margin-left: auto;
+  }
+  .count {
+    flex: 1 0 100%;
+  }
+}

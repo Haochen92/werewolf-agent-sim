@@ -65,6 +65,17 @@ export interface RequestOptions {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return (await requestWithHeaders<T>(path, options)).body;
+}
+
+/**
+ * `request<T>()` plus the response's headers, for the one endpoint that says something outside
+ * its body (`GET /replays` puts the archive's total in `X-Total-Count`).
+ */
+export async function requestWithHeaders<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<{ body: T; headers: Headers }> {
   const { method = 'GET', body, signal } = options;
 
   const response = await fetch(apiUrl(path), {
@@ -86,6 +97,6 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     throw new ApiError(response.status, messageFromBody(parsed, response.status));
   }
 
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  if (response.status === 204) return { body: undefined as T, headers: response.headers };
+  return { body: (await response.json()) as T, headers: response.headers };
 }

@@ -1,0 +1,40 @@
+/*
+ * The replays mockup's filter chips (`.fchip`): dark pills on a cloak line that light up with a
+ * brass edge when chosen. There is no check mark (`icon={null}`); the pill's own light is the
+ * state. Selectors go through `.root` to outrank Mantine's dark-scheme rules.
+ */
+.root .label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  line-height: 1;
+  padding-inline: 12px;
+  border: 1px solid var(--cloak2);
+  background-color: #120d08;
+  color: var(--bone2);
+  font-size: 14px;
+}
+
+/* Mantine wraps the children in a span: a sigil and its words sit centred on one line */
+.root .label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.root .label:hover {
+  background-color: #1a130c;
+}
+
+.root .label[data-checked],
+.root .label[data-checked]:hover {
+  background-color: #2a1f14;
+  border-color: var(--brass);
+  color: var(--bone);
+}
+
+.root .input:focus-visible + .label {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}

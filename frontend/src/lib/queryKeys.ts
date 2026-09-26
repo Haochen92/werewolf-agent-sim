@@ -8,6 +8,8 @@ export const queryKeys = {
     all: ['replays'] as const,
     list: (params: { limit?: number; offset?: number } = {}) =>
       ['replays', 'list', params.limit ?? null, params.offset ?? null] as const,
+    /** The archive's one fetch: the rows plus the total from the header. */
+    archive: (limit: number) => ['replays', 'archive', limit] as const,
     detail: (gameId: string) => ['replays', 'detail', gameId] as const,
   },
   games: {

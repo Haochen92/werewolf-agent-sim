@@ -47,3 +47,41 @@ function pluralise(role: string): string {
   if (word.endsWith('f')) return `${word.slice(0, -1)}ves`; // wolf → wolves
   return `${word}s`;
 }
+
+// spelled out rather than Intl's en-GB, whose September is "Sep" or "Sept" by ICU version
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+/** "17 Sep 2026" from an ISO timestamp, read in UTC so every viewer sees the same day. */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return '';
+  return `${then.getUTCDate()} ${MONTHS[then.getUTCMonth()]} ${then.getUTCFullYear()}`;
+}
+
+/**
+ * The phase a finished game ended in, with its day: "Night 4", "Day 3", or "Day 5 vote" for a
+ * game the lynch ended. Null when the archive did not record it (games before the column).
+ */
+export function endedLabel(
+  phase: 'day' | 'voting' | 'night' | null | undefined,
+  day: number,
+): string | null {
+  if (phase === 'night') return `Night ${day}`;
+  if (phase === 'day') return `Day ${day}`;
+  if (phase === 'voting') return `Day ${day} vote`;
+  return null;
+}

@@ -2,7 +2,7 @@
  * Typed endpoint functions. Thin by design — the only thing they add over `request<T>()` is
  * that every URL string in the app is written exactly once, here.
  */
-import { request } from './request';
+import { request, requestWithHeaders } from './request';
 import type {
   ActionKind,
   DraftResponse,
@@ -24,12 +24,31 @@ export interface ReplayListParams {
   offset?: number;
 }
 
-export function listReplays(params: ReplayListParams = {}): Promise<ReplaySummary[]> {
+function replaysPath(params: ReplayListParams): string {
   const query = new URLSearchParams();
   if (params.limit !== undefined) query.set('limit', String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
   const suffix = query.toString();
-  return request<ReplaySummary[]>(`/replays${suffix ? `?${suffix}` : ''}`);
+  return `/replays${suffix ? `?${suffix}` : ''}`;
+}
+
+export function listReplays(params: ReplayListParams = {}): Promise<ReplaySummary[]> {
+  return request<ReplaySummary[]>(replaysPath(params));
+}
+
+export interface ReplayPage {
+  replays: ReplaySummary[];
+  /** Finished games in all, across every page (`X-Total-Count`); the page's length if absent. */
+  total: number;
+}
+
+/** `listReplays` plus the archive's total, which rides in a header rather than the body. */
+export async function listReplaysWithTotal(
+  params: ReplayListParams = {},
+): Promise<ReplayPage> {
+  const { body, headers } = await requestWithHeaders<ReplaySummary[]>(replaysPath(params));
+  const total = Number.parseInt(headers.get('X-Total-Count') ?? '', 10);
+  return { replays: body, total: Number.isFinite(total) ? total : body.length };
 }
 
 export function getReplay(gameId: string): Promise<ReplayGame> {

@@ -4,14 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { listReplays } from '@/lib/api';
 import { ApiError } from '@/lib/request';
 import { queryKeys } from '@/lib/queryKeys';
-import { ReplayGrid } from '@/components/ReplayCard';
+import { Slate, SlateGrid } from '@/components/site';
+import { useModelLabels } from '@/hooks/useModelLabels';
+import { usePlayedHere } from '@/hooks/usePlayedHere';
 import pageClasses from '@/app/(site)/page.module.css';
 
 /**
- * The replay browser. `limit` exists so the landing page can reuse this exact component for
- * its rail of latest replays (D1) rather than growing a second, drifting copy.
+ * The landing's rail of latest games (D1), as slates. The archive itself (`/replays`) is
+ * `ArchiveClient`; this stays the small, unfiltered cut for the landing until its own rebuild.
  */
 export function ReplayListClient({ limit }: { limit?: number }) {
+  const modelName = useModelLabels();
+  const mine = usePlayedHere();
   const { data, isPending, error } = useQuery({
     queryKey: queryKeys.replays.list({ limit }),
     queryFn: () => listReplays(limit === undefined ? {} : { limit }),
@@ -44,5 +48,16 @@ export function ReplayListClient({ limit }: { limit?: number }) {
     return <p className={pageClasses.note}>No games have been archived yet.</p>;
   }
 
-  return <ReplayGrid replays={data} />;
+  return (
+    <SlateGrid>
+      {data.map((r) => (
+        <Slate
+          key={r.game_id}
+          replay={r}
+          modelLabel={r.model ? modelName(r.model) : undefined}
+          mine={mine.has(r.game_id)}
+        />
+      ))}
+    </SlateGrid>
+  );
 }

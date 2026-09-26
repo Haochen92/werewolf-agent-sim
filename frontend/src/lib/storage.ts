@@ -47,6 +47,21 @@ export const seatToken = {
   get: (gameId: string) => read(KEYS.seat(gameId)),
   set: (gameId: string, token: string) => write(KEYS.seat(gameId), token),
   clear: (gameId: string) => remove(KEYS.seat(gameId)),
+  /** Every game this browser holds a seat in: the archive's "played on this device". */
+  all: (): string[] => {
+    if (typeof window === 'undefined') return [];
+    const prefix = KEYS.seat('');
+    try {
+      const ids: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key?.startsWith(prefix)) ids.push(key.slice(prefix.length));
+      }
+      return ids;
+    } catch {
+      return [];
+    }
+  },
 };
 
 /** Room creator's host_key — returned only once by POST /rooms; used only by /start. */

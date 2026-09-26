@@ -117,6 +117,23 @@ export function IconSprite() {
       <symbol id="i-github" viewBox="0 0 24 24">
         <path fill="currentColor" d={GITHUB} />
       </symbol>
+      {/* the slate's printed-ink wobble (Slate.module.css); seeded, so every render is the same */}
+      <filter id="inkwobble" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.9"
+          numOctaves="2"
+          seed="7"
+          result="n"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="n"
+          scale="1.6"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
       {SIGIL_ROLES.map((role) => (
         <symbol key={role} id={`sg-${role}`} viewBox="0 0 40 40">
           <g
