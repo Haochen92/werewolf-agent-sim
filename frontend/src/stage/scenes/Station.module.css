@@ -124,8 +124,22 @@
   pointer-events: none !important;
 }
 
-/* the name tag at each person's feet */
+/*
+ * The phone floor: `--legible-ui` stops at 1.3, which leaves the platform's small words ~8 css px
+ * on a phone. Each piece below (a name tag, the sign, a hang tag, the ledge, a panel) takes a `--k`
+ * that brings its smallest words to 12 css px on the device and grows the whole piece by it, box
+ * and words together; `--k` is 1 at full size, so the desktop is unchanged.
+ */
+
+/* the name tag at each person's feet; never wider than its place */
 .tag {
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 13.8 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 0;
+  max-width: calc(116px / var(--k));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
   position: absolute;
   padding: 1.9px 8.8px 2.6px;
   border-radius: 4px;
@@ -141,9 +155,17 @@
   font-size: 0.85em;
   color: #5e4a33;
 }
+/* on a phone the grown tag keeps to its place: "you" and "host" go under the name */
+:global([data-small]) .tag i {
+  display: block;
+  line-height: 1;
+}
 
 /* ---- the station sign: the room's name, and the brass Locked plate under it ---- */
 .sign {
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 13.8 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 0;
   position: absolute;
   top: 50.4px;
   transform: translateX(-50%);
@@ -247,6 +269,10 @@
   z-index: 2;
 }
 .hangButton {
+  /* from the phone's subtitle size (17.6, below), so the tag grows ~1.2x rather than ~1.7x */
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 17.6 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -326,9 +352,15 @@
   font-style: italic;
   color: #5e4a33;
 }
+:global([data-small]) .hangFace small {
+  font-size: calc(17.6px * var(--legible-ui));
+}
 
 /* ---- the panels the tags open, on paper beneath them ---- */
 .panel {
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 14.4 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 0 0;
   position: absolute;
   top: 225px;
   width: 400px;
@@ -381,6 +413,7 @@
   cursor: pointer;
 }
 .ticket {
+  transform-origin: 100% 0;
   right: 25.6px;
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
 }
@@ -408,6 +441,10 @@
 
 /* ---- the ledge: the station master's walnut ledge along the foot, a notice and the plates ---- */
 .ledge {
+  /* from the phone's notice size (20.8, below): the ledge grows ~1.07x and clears the name tags */
+  --k: max(1, calc(12 / (var(--stage-scale, 1) * 20.8 * var(--legible-ui))));
+  scale: var(--k);
+  transform-origin: 50% 100%;
   position: absolute;
   bottom: 0;
   z-index: 2;
@@ -444,6 +481,10 @@
   white-space: normal;
   max-width: 760px;
 }
+/* on a phone the grown words need the width: one line, so the ledge stays short of the name tags */
+:global([data-small]) .notice {
+  max-width: 1080px;
+}
 .notice b {
   display: block;
   font-weight: 400;
@@ -454,6 +495,9 @@
   display: block;
   font-size: calc(16.8px * var(--legible-ui));
   color: #5e4a33;
+}
+:global([data-small]) .notice em {
+  font-size: calc(20.8px * var(--legible-ui));
 }
 .notice em.error {
   color: #9a2a1c;

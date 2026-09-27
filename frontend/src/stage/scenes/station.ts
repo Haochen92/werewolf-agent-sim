@@ -81,7 +81,9 @@ export function ledgeLine(
   const n = room.aboard.length;
   const open = Math.max(room.places - n, 0);
   const head = `${n} of ${room.places} aboard · ${room.isHost ? 'ready when you are' : 'waiting for the host'}`;
-  const lock = room.locked ? 'Locked: nobody new can board. ' : '';
+  // short enough for one line on a phone: the sign's plate says what locked means, and the
+  // name tag and the wing say which one is you
+  const lock = room.locked ? 'Locked. ' : '';
   let sub: string;
   if (room.isHost) {
     sub =
@@ -90,8 +92,7 @@ export function ledgeLine(
         ? 'Every place has a person in it.'
         : `Depart now and agents take the ${open === 1 ? 'empty place' : `${open} empty places`}.`);
   } else if (room.seated) {
-    const name = room.you === null ? null : room.aboard[room.you];
-    sub = `${name ? `You are aboard as ${name}.` : 'You are aboard.'} Seats and roles are dealt when the train departs.`;
+    sub = 'Seats and roles are dealt when the train departs.';
   } else {
     sub =
       open === 0

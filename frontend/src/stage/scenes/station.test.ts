@@ -65,9 +65,8 @@ describe('the ledge’s notice', () => {
   it('tells a guest how many are aboard and who they wait for', () => {
     expect(ledgeLine(room({ seated: true, you: 2 }))).toEqual({
       head: '3 of 9 aboard · waiting for the host',
-      sub: 'You are aboard as sol. Seats and roles are dealt when the train departs.',
+      sub: 'Seats and roles are dealt when the train departs.',
     });
-    expect(ledgeLine(room({ seated: true })).sub).toMatch(/^You are aboard\. /);
   });
 
   it('tells the host what Depart does, or why it cannot yet', () => {
@@ -99,9 +98,7 @@ describe('the ledge’s notice', () => {
       head: '9 of 9 aboard · waiting for the host',
       sub: 'Every place is taken; you are watching.',
     });
-    expect(ledgeLine(room({ locked: true })).sub).toMatch(
-      /^Locked: nobody new can board\. /,
-    );
+    expect(ledgeLine(room({ locked: true })).sub).toMatch(/^Locked\. /);
   });
 
   it('says all aboard once the train is leaving', () => {

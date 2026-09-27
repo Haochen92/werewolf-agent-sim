@@ -253,8 +253,14 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             data-tag={i}
           >
             {name}
-            {i === you ? <i> you</i> : null}
-            {name === room.host && i === 0 ? <i> host</i> : null}
+            {i === you || (name === room.host && i === 0) ? (
+              <i>
+                {' '}
+                {[i === you && 'you', name === room.host && i === 0 && 'host']
+                  .filter(Boolean)
+                  .join(' · ')}
+              </i>
+            ) : null}
           </motion.span>
         ))}
         <div className={styles.sign} style={{ left: S.cx }}>
