@@ -23,7 +23,6 @@ const OUT = path.join(root, 'claude_artifacts/design/sprites/station');
 /** The mockup's CSS rule whose first `url(data:…)` is the picture, and the master's name. */
 const PICTURES = [
   ['.sky{', 'sky'],
-  ['.fringe{', 'fringe'],
   ['.floor .tile{', 'floor'],
   ['.post{', 'post'],
   ['.lamp{', 'lamp'],

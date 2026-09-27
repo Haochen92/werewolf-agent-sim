@@ -182,18 +182,25 @@ export const CAR = {
 /** The stage floor's boards, and the one ink every outline is drawn in. */
 /**
  * The station platform's paint (the waiting room, review 2026-09-26 §A5), from the waiting-room
- * mockup's CSS: a winter night under a canopy, a cold stone platform with a snowy edge, the
- * track bed, and the lamps' warm pools.
+ * mockup's CSS: a winter night under a walnut beam, a cold stone platform whose edge holds a
+ * drift of snow, the track bed, and the lamps' warm pools.
  */
 export const STATION = {
   sky: '#1c2550',
-  canopyTop: '#1b1714',
-  canopyBot: '#2c2621',
+  /** The beam: flat walnut (the bleed, or no picture), the shade over the wood, its brass trim, the snow on it. */
+  beam: '#2b190e',
+  beamShadeTop: 'rgb(30,16,8)',
+  beamShadeBot: 'rgb(12,6,3)',
+  trim: '#c9a25e',
+  lipTop: '#f3f5f4',
+  lipBot: '#dfe4e6',
   floor: '#3b4046',
-  edgeTop: '#e9e2cf',
-  edgeMid: '#b9b09a',
-  edgeBot: '#8e8674',
-  snow: '#f4f6f5',
+  /** The edge: flat stone (the bleed, or no picture), the tint over it, its light from above, the drift. */
+  edge: '#8d9198',
+  edgeTintTop: 'rgb(150,155,162)',
+  edgeTintBot: 'rgb(40,42,48)',
+  edgeLight: 'rgb(235,238,242)',
+  drift: 'rgb(245,247,250)',
   railTop: '#6d6a66',
   railBot: '#2a2826',
   railFar: '#3b3936',

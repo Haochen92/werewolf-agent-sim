@@ -35,7 +35,6 @@ import { BODY, SPRITES } from '@/assets/manifest';
 import { Layer, Paint } from '../Stage';
 import { ChipSprite } from '../cast/ChipSprite';
 import { Puppet } from '../cast/Puppet';
-import { ActPlate } from '../instruments/ActPlate';
 import { Bleed } from '../instruments/Bleed';
 import { Wing } from '../instruments/Wing';
 import wingStyles from '../instruments/Wing.module.css';
@@ -201,7 +200,8 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             hud,
             post: SPRITES.station.post.src,
             lamp: SPRITES.station.lamp.src,
-            fringe: SPRITES.station.fringe.src,
+            wood: SPRITES.wood.src,
+            stone: SPRITES.station.floor.src,
           }}
         />
       </Layer>
@@ -337,24 +337,32 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             </span>
           </div>
           {room.isHost && !departing ? (
-            <ActPlate
-              inline
-              label={room.busy === 'depart' ? 'Departing…' : 'Depart'}
-              disabled={!canDepart(room)}
-              onConfirm={() => onAct?.('depart')}
-              secondary={{
-                label:
-                  room.busy === 'lock'
-                    ? 'Locking…'
-                    : room.busy === 'unlock'
-                      ? 'Unlocking…'
-                      : room.locked
-                        ? 'Unlock'
-                        : 'Lock',
-                disabled: Boolean(room.busy),
-                onClick: () => onAct?.(room.locked ? 'unlock' : 'lock'),
-              }}
-            />
+            <>
+              <button
+                type="button"
+                className={`${styles.brass} ${styles.brassSmall}`}
+                aria-pressed={room.locked}
+                disabled={Boolean(room.busy)}
+                onClick={() => onAct?.(room.locked ? 'unlock' : 'lock')}
+              >
+                {room.locked ? <LockIcon /> : <OpenLockIcon />}
+                {room.busy === 'lock'
+                  ? 'Locking…'
+                  : room.busy === 'unlock'
+                    ? 'Unlocking…'
+                    : room.locked
+                      ? 'Unlock'
+                      : 'Lock'}
+              </button>
+              <button
+                type="button"
+                className={`${styles.brass} ${styles.brassBig}`}
+                disabled={!canDepart(room)}
+                onClick={() => onAct?.('depart')}
+              >
+                {room.busy === 'depart' ? 'Departing…' : 'Depart'}
+              </button>
+            </>
           ) : null}
         </motion.div>
       </Layer>
@@ -621,6 +629,15 @@ function LockIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M8 11 V8 a4 4 0 0 1 8 0 V11" />
+    </svg>
+  );
+}
+
+function OpenLockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11 V8 a4 4 0 0 1 7.6-1.7" />
     </svg>
   );
 }

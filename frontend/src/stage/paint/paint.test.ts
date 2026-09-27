@@ -109,7 +109,8 @@ const CASES: [string, (id: string) => string][] = [
           hud,
           post: '/post.webp',
           lamp: '/lamp.webp',
-          fringe: '/f.webp',
+          wood: '/wood.webp',
+          stone: '/stone.webp',
         }),
     ] as [string, (id: string) => string],
     [`stationFront ${hud} flat`, (id: string) => stationFront({ id, hud })] as [
@@ -237,13 +238,15 @@ describe('station', () => {
       id: 'k',
       post: '/p.webp',
       lamp: '/l.webp',
-      fringe: '/f.webp',
+      wood: '/w.webp',
+      stone: '/s.webp',
     });
-    // two posts (one mirrored), two lanterns, the fringe's tile
+    // two posts (one mirrored), two lanterns, the beam's walnut and the edge's stone
     expect(front.match(/href="\/p\.webp"/g)).toHaveLength(2);
     expect(front).toContain('scale(-1 1)');
     expect(front.match(/href="\/l\.webp"/g)).toHaveLength(2);
-    expect(front).toContain('href="/f.webp"');
+    expect(front).toContain('href="/w.webp"');
+    expect(front).toContain('href="/s.webp"');
     expect(stationFront({ id: 'k' })).not.toContain('<image');
   });
 

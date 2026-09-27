@@ -471,6 +471,94 @@
     0 0 0 4.8px #3a2a18;
 }
 
+/* the ledge's two brass rivets, at its top corners */
+.ledge::before,
+.ledge::after {
+  content: '';
+  position: absolute;
+  top: 9.9px;
+  width: 11.2px;
+  height: 11.2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6dc96, #9c7430);
+}
+.ledge::before {
+  left: 9.6px;
+}
+.ledge::after {
+  right: 9.6px;
+}
+
+/* the host's brass plates on the ledge (the mockup's `.brass`): a rivet in each corner, engraved */
+.brass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #2a1a08;
+  font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
+  background:
+    radial-gradient(circle at 10% 18%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 18%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 10% 82%, #7a5a26 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 82%, #7a5a26 3.5px, transparent 4.2px),
+    linear-gradient(#f2d185, #c99a44 48%, #9c7430);
+  box-shadow:
+    inset 0 2.4px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -3.2px 0 rgba(0, 0, 0, 0.25),
+    0 2.7px 0 #4a3210,
+    0 5.4px 10.8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1.2px 0 rgba(255, 236, 190, 0.6);
+}
+.brass:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+.brass:active:not(:disabled) {
+  box-shadow:
+    inset 0 2.4px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1.6px 0 rgba(0, 0, 0, 0.2),
+    0 0.9px 0 #4a3210,
+    0 2.7px 5.4px rgba(0, 0, 0, 0.5);
+}
+.brass:disabled {
+  cursor: default;
+  filter: saturate(0.55) brightness(0.8);
+}
+.brass:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+/* locked: the plate sits deeper, a darker brass */
+.brass[aria-pressed='true'] {
+  background:
+    radial-gradient(circle at 10% 18%, #5e431a 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 18%, #5e431a 3.5px, transparent 4.2px),
+    radial-gradient(circle at 10% 82%, #5e431a 3.5px, transparent 4.2px),
+    radial-gradient(circle at 90% 82%, #5e431a 3.5px, transparent 4.2px),
+    linear-gradient(#d9b060, #a8803a 48%, #7a5a26);
+}
+.brass svg {
+  width: 1.2em;
+  height: 1.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+.brassBig {
+  min-height: 50.4px;
+  padding: 0 calc(41.6px * var(--legible-ui));
+  font-size: calc(33.6px * var(--legible-ui));
+}
+.brassSmall {
+  min-height: 39.6px;
+  padding: 0 calc(20.8px * var(--legible-ui));
+  font-size: calc(20.8px * var(--legible-ui));
+}
+
 /* ---- the curtain between the platform and the deal: a plain dark sheet, over everything ---- */
 .curtain {
   position: absolute;

@@ -100,7 +100,6 @@ import clockKit from './sprites/kits/clock.webp';
 import lampKit from './sprites/kits/lamp.webp';
 import walnut from './sprites/wood/walnut.webp';
 import stationSky from './sprites/station/sky.webp';
-import stationFringe from './sprites/station/fringe.webp';
 import stationFloor from './sprites/station/floor.webp';
 import stationPost from './sprites/station/post.webp';
 import stationLamp from './sprites/station/lamp.webp';
@@ -194,7 +193,7 @@ export type KitName =
  * waiting-room mockup (scripts/extract-station-sprites.mjs; no masters exist in the bundle).
  */
 export type StationPicture =
-  'sky' | 'fringe' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
+  'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
 
 export const SPRITES: {
   day: Record<Character, Record<DayState | 'chip', StaticImageData>>;
@@ -308,7 +307,6 @@ export const SPRITES: {
   wood: walnut,
   station: {
     sky: stationSky,
-    fringe: stationFringe,
     floor: stationFloor,
     post: stationPost,
     lamp: stationLamp,

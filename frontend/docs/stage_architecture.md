@@ -117,7 +117,7 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/plush/<character>.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp
-  src/assets/sprites/station/{sky,fringe,floor,post,lamp,train,blind}.webp
+  src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
@@ -138,12 +138,13 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   the archive as a PNG master (`claude_artifacts/design/sprites/station/`), and
   `node scripts/convert-sprites.mjs station` makes the WebP (quality 85), exported as
   `SPRITES.station.*`. The mapping (2026-09-26): `.sky` → `sky` (2508×627, the painted country),
-  `.fringe` → `fringe` (1528×715, the canopy's felt scallops), `.floor .tile` → `floor`
-  (768×768, the paving), `.post` → `post` (489×1024), `.lamp` → `lamp` (569×1008, the lantern),
+  `.floor .tile` → `floor` (768×768, the paving, and since 2026-09-27 the platform's edge too), `.post` → `post` (489×1024), `.lamp` → `lamp` (569×1008, the lantern),
   `.cars` → `train` (5990×700, the dining car between two carriages; its window geometry is
   `TRAIN_PX` in `paint/station.ts`), `.place .blind` → `blind` (512×732). Not extracted: `.ch` and
   `.fg` (the stage's own sprites replace them) and `.ledge` (a 512 px copy of `wood/walnut.webp`,
-  mean difference 2.5/255). 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
+  mean difference 2.5/255; the 2026-09-27 mockup's `.beam` is the same wood). The canopy's felt
+  `fringe` was dropped that day: the mockup's top became a walnut beam with a brass trim, and
+  its edge the paving's stone under a drift of snow. 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
 - Sharpness: the 600 px day cuts are right at 1× and slightly soft at 2× for the puppet at the
   stand. If the ~900 px cuts still exist in the chat, re-export them as the masters. **Never
   upscale.** No sprite atlases: HTTP/2 makes 44 small files cheap and an atlas adds tooling.

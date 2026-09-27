@@ -5,14 +5,15 @@
  * A winter night under the station's canopy. At the back, the painted country (a raster) with
  * the moon over it and the track bed below; on the track, the train (the dining car in the
  * middle, its one long window holding the nine places, a carriage either side); in front, the
- * cold stone platform with its snowy edge, two iron lamp posts with their lanterns hung out
- * over the platform, and the canopy's felt fringe along the top. The people waiting stand on
+ * cold stone platform, its edge the same stone under a soft drift of snow, two iron lamp posts
+ * with their lanterns hung out over the platform, and a walnut beam with a brass trim along the
+ * top, snow lying on it. The people waiting stand on
  * the platform, one under each place in the window, so the row on the platform mirrors the
  * row in the car.
  *
  * Two drawings, because the train and the platform's paving (both rasters, placed by the
  * scene) sit between them: `stationBack` (sky, moon, track) and `stationFront` (the edge, the
- * lamps' pools, the cold over everything behind the posts, the posts, the lamps, the canopy).
+ * lamps' pools, the cold over everything behind the posts, the posts, the lamps, the beam).
  * `stationPlan` says where everything is, for the scene's rasters and instruments.
  *
  * Ported from the waiting-room mockup (`claude_artifacts/design/pages/waiting-room.html`),
@@ -43,7 +44,6 @@ const SNOW_Y = 144;
 /** The post and lamp pictures' proportions (width / height). */
 const POST_ASPECT = 489 / 1024;
 const LAMP_ASPECT = 569 / 1008;
-const FRINGE_ASPECT = 1528 / 715;
 
 /** A box in units. */
 export interface Box {
@@ -66,7 +66,7 @@ export interface StationPlan {
   places: number[];
   /** The top of the brass plates under the window. */
   plateY: number;
-  /** The platform's top (its snowy edge), and the edge's depth. */
+  /** The platform's top (its stone edge), and the edge's depth. */
   floorY: number;
   edgeH: number;
   /** Where the people waiting stand, and how tall a body is there. */
@@ -119,7 +119,7 @@ export function stationPlan(hud: Hud = 'live'): StationPlan {
     places: Array.from({ length: 9 }, (_, i) => wl + (i + 0.5) * pitch),
     plateY: glass.y + glass.h + 4.5,
     floorY: 0.66 * STAGE_H,
-    edgeH: 0.034 * STAGE_H,
+    edgeH: 0.038 * STAGE_H,
     feetY: 0.775 * STAGE_H,
     bodyH: 0.2 * STAGE_H,
     posts,
@@ -137,10 +137,12 @@ export interface StationOpts {
   hud?: Hud;
   /** The painted country behind the track (`SPRITES.station.sky.src`); without it, flat sky. */
   sky?: string;
-  /** The lamp post, the lantern and the canopy's fringe; without them, none are drawn. */
+  /** The lamp post and the lantern; without them, neither is drawn. */
   post?: string;
   lamp?: string;
-  fringe?: string;
+  /** The beam's walnut (`SPRITES.wood.src`) and the edge's stone (`SPRITES.station.floor.src`); without them, flat. */
+  wood?: string;
+  stone?: string;
 }
 
 const f = (n: number) => n.toFixed(1);
@@ -172,9 +174,9 @@ export function stationBack(o: StationOpts): string {
 }
 
 /**
- * The front: the platform's snowy edge, the lamps' warm pools on the paving, the night's cold
- * over everything behind the posts, a darkening at the world's sides (where the bleed takes
- * over), the two posts and their lanterns, and the canopy with its felt fringe along the top.
+ * The front: the platform's stone edge and the drift on it, the lamps' warm pools on the paving,
+ * the night's cold over everything behind the posts, a darkening at the world's sides (where the
+ * bleed takes over), the two posts and their lanterns, and the walnut beam along the top.
  */
 export function stationFront(o: StationOpts): string {
   const W = STAGE_W,
@@ -183,30 +185,35 @@ export function stationFront(o: StationOpts): string {
     S = stationPlan(o.hud),
     y = S.floorY,
     eh = S.edgeH,
-    // the snow along the edge: a bump every 1.6cqw, their tops standing proud of the stone
-    bump = 25.6,
-    canopyH = 0.046 * H,
-    fringeY = 0.034 * H,
-    fringeH = 0.086 * H,
-    fringeW = fringeH * FRINGE_ASPECT;
+    // the stone tiles at 9cqw on the edge, the walnut at 14cqw on the beam (both square)
+    stoneW = 144,
+    woodW = 224,
+    beamH = 0.052 * H,
+    trim = 4.05;
   let d = `<defs>`;
-  d += `<linearGradient id="${P}edge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.edgeTop}"/><stop offset=".7" stop-color="${STATION.edgeMid}"/><stop offset="1" stop-color="${STATION.edgeBot}"/></linearGradient>`;
-  d += `<linearGradient id="${P}shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".4"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>`;
-  d += `<pattern id="${P}snow" patternUnits="userSpaceOnUse" x="0" y="${f(y - 4.5)}" width="${bump}" height="10.8"><circle cx="${bump / 2}" cy="10.8" r="9.2" fill="${STATION.snow}"/></pattern>`;
+  if (o.stone)
+    d += `<pattern id="${P}stone" patternUnits="userSpaceOnUse" x="0" y="${f(y)}" width="${stoneW}" height="${stoneW}"><image href="${o.stone}" width="${stoneW}" height="${stoneW}" preserveAspectRatio="none"/></pattern>`;
+  d += `<linearGradient id="${P}edgeTint" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.edgeTintTop}" stop-opacity=".25"/><stop offset="1" stop-color="${STATION.edgeTintBot}" stop-opacity=".45"/></linearGradient>`;
+  d += `<linearGradient id="${P}edgeLight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.edgeLight}" stop-opacity=".9"/><stop offset=".45" stop-color="${STATION.edgeLight}" stop-opacity="0"/></linearGradient>`;
+  d += `<linearGradient id="${P}drift" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.drift}" stop-opacity="0"/><stop offset="1" stop-color="${STATION.drift}" stop-opacity=".85"/></linearGradient>`;
+  d += `<linearGradient id="${P}shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>`;
   d += `<radialGradient id="${P}pool" cx=".5" cy=".3" r=".5" gradientTransform="translate(0 .3) scale(1 .9) translate(0 -.3)"><stop offset="0" stop-color="${STATION.lamp}" stop-opacity=".2"/><stop offset=".7" stop-color="${STATION.lamp}" stop-opacity="0"/></radialGradient>`;
   d += `<linearGradient id="${P}cold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(20,30,60)" stop-opacity=".1"/><stop offset="1" stop-color="rgb(10,15,35)" stop-opacity=".26"/></linearGradient>`;
   d += `<linearGradient id="${P}sides" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c0a07" stop-opacity=".85"/><stop offset=".1" stop-color="#0c0a07" stop-opacity="0"/><stop offset=".9" stop-color="#0c0a07" stop-opacity="0"/><stop offset="1" stop-color="#0c0a07" stop-opacity=".85"/></linearGradient>`;
-  d += `<linearGradient id="${P}canopy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.canopyTop}"/><stop offset="1" stop-color="${STATION.canopyBot}"/></linearGradient>`;
+  if (o.wood)
+    d += `<pattern id="${P}wood" patternUnits="userSpaceOnUse" x="0" y="0" width="${woodW}" height="${woodW}"><image href="${o.wood}" width="${woodW}" height="${woodW}" preserveAspectRatio="none"/></pattern>`;
+  d += `<linearGradient id="${P}beamShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.beamShadeTop}" stop-opacity=".25"/><stop offset="1" stop-color="${STATION.beamShadeBot}" stop-opacity=".55"/></linearGradient>`;
+  d += `<linearGradient id="${P}lip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${STATION.lipTop}"/><stop offset="1" stop-color="${STATION.lipBot}"/></linearGradient>`;
   d += `<filter id="${P}postsh" x="-20%" y="-5%" width="140%" height="110%"><feDropShadow dx="6.4" dy="0" stdDeviation="4.8" flood-color="#000" flood-opacity=".45"/></filter>`;
   d += `<filter id="${P}glow" x="-150%" y="-80%" width="400%" height="260%"><feDropShadow dx="0" dy="0" stdDeviation="19.2" flood-color="${STATION.lamp}" flood-opacity=".55"/></filter>`;
-  d += `<filter id="${P}fringesh" x="0" y="-10%" width="100%" height="140%"><feDropShadow dx="0" dy="5.4" stdDeviation="3.6" flood-color="#000" flood-opacity=".45"/></filter>`;
-  if (o.fringe)
-    d += `<pattern id="${P}fringe" patternUnits="userSpaceOnUse" x="0" y="${f(fringeY)}" width="${f(fringeW)}" height="${f(fringeH)}"><image href="${o.fringe}" width="${f(fringeW)}" height="${f(fringeH)}" preserveAspectRatio="none"/></pattern>`;
   d += `</defs>`;
-  // the edge, its shadow on the paving, and the snow standing on it
+  // the edge: its shadow on the paving, the stone lit from above, its dark foot, the drift on it
   d += `<rect x="0" y="${f(y + eh)}" width="${W}" height="12" fill="url(#${P}shade)"/>`;
-  d += `<rect x="0" y="${f(y)}" width="${W}" height="${f(eh)}" fill="url(#${P}edge)"/>`;
-  d += `<rect x="0" y="${f(y - 4.5)}" width="${W}" height="10.8" fill="url(#${P}snow)"/>`;
+  d += `<rect x="0" y="${f(y)}" width="${W}" height="${f(eh)}" fill="${o.stone ? `url(#${P}stone)` : STATION.edge}"/>`;
+  d += `<rect x="0" y="${f(y)}" width="${W}" height="${f(eh)}" fill="url(#${P}edgeTint)"/>`;
+  d += `<rect x="0" y="${f(y)}" width="${W}" height="${f(eh)}" fill="url(#${P}edgeLight)"/>`;
+  d += `<rect x="0" y="${f(y + eh - 2.7)}" width="${W}" height="2.7" fill="#000" opacity=".35"/>`;
+  d += `<rect x="0" y="${f(y - 5.4)}" width="${W}" height="9.9" fill="url(#${P}drift)"/>`;
   // each lantern's pool on the paving below it
   for (const lx of S.lamps)
     d += `<rect x="${f(lx - 240)}" y="${f(y)}" width="480" height="234" fill="url(#${P}pool)"/>`;
@@ -225,8 +232,13 @@ export function stationFront(o: StationOpts): string {
       const { top, h, w } = S.lamp;
       d += `<image href="${o.lamp}" x="${f(lx - w / 2)}" y="${f(top)}" width="${f(w)}" height="${f(h)}" preserveAspectRatio="none" filter="url(#${P}glow)"/>`;
     }
-  d += `<rect x="0" y="0" width="${W}" height="${f(canopyH)}" fill="url(#${P}canopy)"/>`;
-  if (o.fringe)
-    d += `<rect x="0" y="${f(fringeY)}" width="${W}" height="${f(fringeH)}" fill="url(#${P}fringe)" filter="url(#${P}fringesh)"/>`;
+  // the beam: its shadow on the scene, the walnut darkened, a dark line over the brass trim at
+  // its foot, and the snow on top, thinning towards the ends
+  d += `<rect x="0" y="${f(beamH)}" width="${W}" height="18" fill="url(#${P}shade)"/>`;
+  d += `<rect x="0" y="0" width="${W}" height="${f(beamH)}" fill="${o.wood ? `url(#${P}wood)` : STATION.beam}"/>`;
+  d += `<rect x="0" y="0" width="${W}" height="${f(beamH)}" fill="url(#${P}beamShade)"/>`;
+  d += `<rect x="0" y="${f(beamH - 6.3)}" width="${W}" height="6.3" fill="#000" opacity=".35"/>`;
+  d += `<rect x="0" y="${f(beamH - trim)}" width="${W}" height="${trim}" fill="${STATION.trim}"/>`;
+  d += `<path d="M0,0 H${W} V0.1 A${0.4 * W},8.1 0 0 1 ${0.6 * W},8.1 H${0.4 * W} A${0.4 * W},8.1 0 0 1 0,0.1Z" fill="url(#${P}lip)" opacity=".9"/>`;
   return svg(d);
 }

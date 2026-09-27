@@ -57,18 +57,19 @@ function car(x0: number, x1: number, phase: Phase, hud: Hud): string {
   return d;
 }
 
-/* the platform between x0 and x1: the sky, the track bed, the paving and its edge, the canopy */
+/* the platform between x0 and x1: the sky, the track bed, the paving and its edge, the beam */
 function station(x0: number, x1: number): string {
   const H = STAGE_H,
     w = x1 - x0,
     floorY = 0.66 * H,
-    canopyH = 0.046 * H;
+    beamH = 0.052 * H;
   return (
     `<rect x="${x0}" y="0" width="${w}" height="${0.45 * H}" fill="${STATION.sky}"/>` +
     `<rect x="${x0}" y="${0.45 * H}" width="${w}" height="${floorY - 0.45 * H}" fill="#0b0a09"/>` +
     `<rect x="${x0}" y="${floorY}" width="${w}" height="${H - floorY}" fill="${STATION.floor}"/>` +
-    `<rect x="${x0}" y="${floorY}" width="${w}" height="${0.034 * H}" fill="${STATION.edgeMid}"/>` +
-    `<rect x="${x0}" y="0" width="${w}" height="${canopyH}" fill="${STATION.canopyBot}"/>`
+    `<rect x="${x0}" y="${floorY}" width="${w}" height="${0.038 * H}" fill="${STATION.edge}"/>` +
+    `<rect x="${x0}" y="0" width="${w}" height="${beamH}" fill="${STATION.beam}"/>` +
+    `<rect x="${x0}" y="${beamH - 4.05}" width="${w}" height="4.05" fill="${STATION.trim}"/>`
   );
 }
 
