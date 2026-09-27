@@ -462,6 +462,7 @@ test('rooms: a refused join says the server’s words in the row', async ({ page
 
   const row = page.locator(`[data-room="${BOARDING}"]`);
   await row.getByRole('button', { name: 'Board' }).click();
+  await row.getByLabel('Your name on the manifest').fill('sol'); // Join stays off without a name
   await row.getByRole('button', { name: 'Join' }).click();
   await expect(row.getByRole('alert')).toContainText(
     'room is locked — ask the host to unlock it',
