@@ -494,7 +494,7 @@
           "rooms"
         ],
         "summary": "Claim a human seat in a waiting room",
-        "description": "A browser already aboard (its seat cookie rides this request) gets its own seat\nback; everyone else gets a new one.",
+        "description": "A browser already aboard (its seat cookie rides this request) gets its own seat\nback; everyone else gets a new one. The creator boards with the room's host key, which\nmarks their seat as the host's.",
         "operationId": "join_game_games__game_id__join_post",
         "parameters": [
           {
@@ -504,6 +504,16 @@
             "schema": {
               "type": "string",
               "title": "Game Id"
+            }
+          },
+          {
+            "name": "host_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Host Key"
             }
           }
         ],
@@ -527,6 +537,88 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/leave": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Give up your seat in a waiting room",
+        "description": "The seat cookie says whose seat; the place opens again and the cookie goes. 409\nfor the host (who closes the room instead) or once the game has started; 403 without\na seat here.",
+        "operationId": "leave_room_games__game_id__leave_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/games/{game_id}/close": {
+      "post": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Close a waiting room for everyone (host only)",
+        "description": "The room goes; its URL answers 410 with the reason from then on.",
+        "operationId": "close_room_games__game_id__close_post",
+        "parameters": [
+          {
+            "name": "game_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Game Id"
+            }
+          },
+          {
+            "name": "host_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Host Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",

@@ -71,10 +71,12 @@ class GameLobby:
         """Set by the host through POST /games/{id}/lock. A locked room turns new joins
         away but keeps the players who are already in it."""
         self.created_at = datetime.now(timezone.utc)
-        """When the room was opened. GET /rooms stops listing rooms older than the
-        browsing window (two hours by default, see ROOM_LIST_TTL_SECONDS);
-        the room's own URL keeps working."""
+        """When the room was opened. A room that has not departed within two hours (see
+        ROOM_LIST_TTL_SECONDS) leaves the GET /rooms list and is closed by the sweeper."""
         self.seats: list[HumanSeat] = []
+        self.host_seat: str | None = None
+        """The token of the seat the creator took: the join that presented the host key.
+        None until the creator boards."""
 
     @property
     def players(self) -> list[str]:
@@ -83,12 +85,10 @@ class GameLobby:
 
     @property
     def host(self) -> str | None:
-        """The name shown as the room's host: whoever took the first seat, or None while
-        the room is empty. The room never learns who created it (creating hands back a
-        host key, not a name), and the creator normally takes the first seat straight
-        after, so the first seat stands in for them. If someone else joins first, their
-        name is shown instead."""
-        return self.seats[0].name if self.seats else None
+        """The name shown as the room's host: the name on the creator's seat, or None
+        until the creator boards. Creating a room hands back a host key, not a name; the
+        creator's join presents that key, which is how the room knows which seat is theirs."""
+        return next((s.name for s in self.seats if s.token == self.host_seat), None)
 
     @property
     def tokens(self) -> list[str]:
@@ -96,17 +96,25 @@ class GameLobby:
         that same order, so the first token belongs to the first human player."""
         return [s.token for s in self.seats]
 
-    def join(self, name: str, held: str = "") -> str:
+    def join(self, name: str, held: str = "", host_key: str = "") -> str:
         """Claim a human seat and return its freshly minted secret token. The token is
         the only proof that a browser owns this seat; nothing else identifies a player.
         Raises LookupError when the room is locked or full; the route turns that into a 409.
 
         ``held`` is the seat token the asker already carries, if any. A browser that is
         already aboard gets its own seat back rather than a second one: a second seat
-        would replace its cookie, and the first seat would be left with nobody to play it."""
-        if held and self.owns(held):
-            return held
-        if self.locked:
+        would replace its cookie, and the first seat would be left with nobody to play it.
+
+        ``host_key``, when it is this room's, marks the seat as the creator's (the name
+        shown as host), and lets the creator board their own locked room."""
+        is_host = bool(host_key) and host_key == self.host_key
+        token = held if held and self.owns(held) else self._new_seat(name, is_host)
+        if is_host:
+            self.host_seat = token
+        return token
+
+    def _new_seat(self, name: str, is_host: bool) -> str:
+        if self.locked and not is_host:
             raise LookupError("room is locked — ask the host to unlock it")
         if len(self.seats) >= MAX_HUMAN_SEATS:
             raise LookupError(
@@ -119,6 +127,16 @@ class GameLobby:
     def owns(self, token: str) -> bool:
         """Whether this token belongs to one of the room's seats."""
         return any(seat.token == token for seat in self.seats)
+
+    def leave(self, token: str) -> None:
+        """Give up a seat: the name leaves the roster and the place opens again. The
+        creator cannot leave (a room without its host can never depart); they close the
+        room instead, which PermissionError says. LookupError when the token holds no seat."""
+        if not self.owns(token):
+            raise LookupError("you hold no seat in this room")
+        if token == self.host_seat:
+            raise PermissionError("the host closes the room instead of leaving it")
+        self.seats = [seat for seat in self.seats if seat.token != token]
 
     def place_of(self, token: str) -> int | None:
         """Where this token's seat stands on the roster (0 = the first to join), or None

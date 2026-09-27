@@ -30,6 +30,17 @@ def set_seat_cookie(response: Response, game_id: str, token: str) -> None:
     )
 
 
+def clear_seat_cookie(response: Response, game_id: str) -> None:
+    """Remove the seat credential set by ``set_seat_cookie`` (same name and path)."""
+    response.delete_cookie(
+        key=seat_cookie_name(game_id),
+        path=f"{server_settings.seat_cookie_path_prefix}/games/{game_id}",
+        httponly=True,
+        samesite="lax",
+        secure=server_settings.SEAT_COOKIE_SECURE,
+    )
+
+
 async def authorize_model(house: HousePolicy, api_key: str, model: str) -> str:
     """Resolve the model a new game runs on and settle who pays, or answer why not: 422
     for a model not on the menu or a player-funded row without a key, 402 when the house

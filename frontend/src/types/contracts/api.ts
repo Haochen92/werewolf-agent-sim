@@ -220,9 +220,52 @@ export interface paths {
     /**
      * Claim a human seat in a waiting room
      * @description A browser already aboard (its seat cookie rides this request) gets its own seat
-     *     back; everyone else gets a new one.
+     *     back; everyone else gets a new one. The creator boards with the room's host key, which
+     *     marks their seat as the host's.
      */
     post: operations['join_game_games__game_id__join_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/games/{game_id}/leave': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Give up your seat in a waiting room
+     * @description The seat cookie says whose seat; the place opens again and the cookie goes. 409
+     *     for the host (who closes the room instead) or once the game has started; 403 without
+     *     a seat here.
+     */
+    post: operations['leave_room_games__game_id__leave_post'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/games/{game_id}/close': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Close a waiting room for everyone (host only)
+     * @description The room goes; its URL answers 410 with the reason from then on.
+     */
+    post: operations['close_room_games__game_id__close_post'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1930,7 +1973,9 @@ export interface operations {
   };
   join_game_games__game_id__join_post: {
     parameters: {
-      query?: never;
+      query?: {
+        host_key?: string;
+      };
       header?: never;
       path: {
         game_id: string;
@@ -1951,6 +1996,66 @@ export interface operations {
         content: {
           'application/json': components['schemas']['SeatJoined'];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  leave_room_games__game_id__leave_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['HTTPValidationError'];
+        };
+      };
+    };
+  };
+  close_room_games__game_id__close_post: {
+    parameters: {
+      query?: {
+        host_key?: string;
+      };
+      header?: never;
+      path: {
+        game_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {

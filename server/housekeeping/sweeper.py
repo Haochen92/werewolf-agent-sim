@@ -7,6 +7,9 @@ an hour, or a game with several humans a whole day, the sweeper marks it ``dropp
 stores the reason, which is what someone opening the game later sees. Running the sweep
 again is harmless, and it never touches a game with a human seat connected (a spectator
 does not count), one that is actually playing, or one that has already ended.
+
+Waiting rooms have a shelf life too: a room nobody departed within ROOM_LIST_TTL_SECONDS
+is closed on the same pass (``LiveGameRegistry.expire_rooms``).
 """
 
 from __future__ import annotations
@@ -69,10 +72,12 @@ async def sweep_parked_games(registry: LiveGameRegistry,
 
 async def run_sweeper(registry: LiveGameRegistry,
                       settings: ServerSettings = server_settings) -> None:
-    """The background loop the app starts at boot and cancels at shutdown."""
+    """The background loop the app starts at boot and cancels at shutdown. Each pass also
+    closes the waiting rooms nobody departed within their shelf life."""
     while True:
         await asyncio.sleep(settings.SWEEP_INTERVAL_SECONDS)
         try:
             await sweep_parked_games(registry, settings)
+            registry.expire_rooms(settings.ROOM_LIST_TTL_SECONDS)
         except Exception:
             logger.exception("sweep: pass failed")

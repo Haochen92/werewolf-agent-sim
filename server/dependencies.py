@@ -85,6 +85,9 @@ async def get_room(game_id: str, resources: Resources) -> Entry | GameRow:
     entry = resources.games.get(game_id)
     if entry is not None:
         return entry
+    closed = resources.games.closed_reason(game_id)
+    if closed is not None:  # a room closed before it departed has no row to answer
+        raise HTTPException(status_code=410, detail=closed)
     row = await resources.game_repository.load_game(game_id)
     if row is not None and row.status in ENDED_STATUSES:
         return row

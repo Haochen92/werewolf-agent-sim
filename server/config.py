@@ -47,10 +47,10 @@ class ServerSettings(BaseSettings):
     """
 
     ROOM_LIST_TTL_SECONDS: int = 7200
-    """How long a waiting room stays visible in GET /rooms (default 2h). A browse
-    filter, not expiry: the direct room URL keeps working past the TTL. Needed
-    to keep abandoned in-memory rooms out of the public list. A restart closes rooms;
-    only games that have started are recovered."""
+    """How long a waiting room may wait without departing (default 2h). Past it the
+    room leaves GET /rooms at once, and the sweeper's next pass closes it (its URL then
+    answers 410 with the reason), so abandoned rooms do not sit in memory. A restart also
+    closes rooms; only games that have started are recovered."""
 
     SOLO_PARK_TTL_SECONDS: int = 3600
     """A solo game parked on its human's question with nobody connected is swept to

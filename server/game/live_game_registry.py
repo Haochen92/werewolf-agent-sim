@@ -1,6 +1,7 @@
 """The table of every game this process knows about, and the moves between stages.
 
     (nothing) ──open_room──▶ waiting ──start──▶ running ──▶ completed | dropped
+                             waiting ──close──▶ (closed: by the host, or by the sweeper)
     (nothing) ──start_instant──────────────────▶ running
     row ──revive──▶ running                                    (boot, via housekeeping)
     running ──drop──▶ dropped                                  (sweep, via housekeeping)
@@ -64,11 +65,19 @@ class LiveGameRegistry:
         self._graph_runtime = graph_runtime  # .graph is None when Postgres is unconfigured
         self._check_key = check_key  # the provider probe; tests hand in a fake
         self._entries: dict[str, Entry] = {}
+        self._closed: dict[str, str] = {}
+        """Rooms closed before they departed, and why, so their URL says so (410) rather
+        than "unknown game". A room has no database row, so this note is all that is left;
+        it lives as long as the process, like the room did."""
 
     # -- lookup ---------------------------------------------------------------------------
 
     def get(self, game_id: str) -> Entry | None:
         return self._entries.get(game_id)
+
+    def closed_reason(self, game_id: str) -> str | None:
+        """Why the room with this id closed before it departed; None if it did not."""
+        return self._closed.get(game_id)
 
     def __len__(self) -> int:
         return len(self._entries)
@@ -127,12 +136,40 @@ class LiveGameRegistry:
         self._entries[room.game_id] = room
         return room
 
-    async def join(self, game_id: str, name: str, held: str = "") -> str:
+    async def join(self, game_id: str, name: str, held: str = "", host_key: str = "") -> str:
         """Claim a seat and return its secret token; a browser already holding a seat
-        (``held``) gets that one back. LookupError when the room is locked, full, or
-        already started."""
+        (``held``) gets that one back, and the room's host key marks the creator's seat.
+        LookupError when the room is locked, full, or already started."""
         room = self._require_lobby(game_id)
-        return room.join(name, held)
+        return room.join(name, held, host_key)
+
+    async def leave(self, game_id: str, token: str) -> None:
+        """Give up a seat in a waiting room. LookupError when the room has started or the
+        token holds no seat; PermissionError for the host, who closes the room instead."""
+        self._require_lobby(game_id).leave(token)
+
+    async def close(self, game_id: str, host_key: str) -> None:
+        """Close a waiting room for everyone. Only the host may."""
+        room = self._require_lobby(game_id)
+        if host_key != room.host_key:
+            raise PermissionError("only the host may close the room")
+        self._close(game_id, "the host closed this room before it departed")
+
+    def expire_rooms(self, max_age_seconds: int, now: datetime | None = None) -> list[str]:
+        """Close every room that has waited longer than ``max_age_seconds`` without
+        departing (the sweeper's job). Returns their ids."""
+        now = now or datetime.now(timezone.utc)
+        hours = max_age_seconds / 3600
+        stale = [room.game_id for room in self.lobbies
+                 if (now - room.created_at).total_seconds() >= max_age_seconds]
+        for game_id in stale:
+            self._close(game_id, f"this room closed: nobody departed within {hours:g} hours")
+        return stale
+
+    def _close(self, game_id: str, reason: str) -> None:
+        del self._entries[game_id]
+        self._closed[game_id] = reason
+        logger.info("room %s: closed (%s)", game_id, reason)
 
     async def lock(self, game_id: str, host_key: str, locked: bool) -> GameLobby:
         """Lock or unlock a room. A locked room turns new joins away but keeps the players

@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+import unicodedata
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from server.schemas.events import Role, Winner
 
@@ -160,7 +162,34 @@ class JoinGame(BaseModel):
     seats (role choice is solo-only, on the instant-start path)."""
 
     name: str = "human"
-    """Display name for the room roster (public to the room)."""
+    """Display name for the room roster (public to the room). Spaces are trimmed and
+    collapsed; at most ``MAX_PLAYER_NAME`` characters, of letters in any script, digits,
+    spaces, hyphens, apostrophes and dots, so it fits a name tag and prints in any font."""
+
+    @field_validator("name")
+    @classmethod
+    def _a_printable_name(cls, value: str) -> str:
+        name = " ".join(value.split())
+        if not name:
+            raise ValueError("a name is needed")
+        if len(name) > MAX_PLAYER_NAME:
+            raise ValueError(f"a name has at most {MAX_PLAYER_NAME} characters")
+        bad = sorted({ch for ch in name if not _name_char(ch)})
+        if bad:
+            raise ValueError("a name uses letters, digits, spaces and - ' . only "
+                             f"(not {' '.join(bad)})")
+        return name
+
+
+MAX_PLAYER_NAME = 12
+"""The longest name a player boards with: what a platform name tag holds at full size."""
+
+_NAME_MARKS = set(" -'.’")
+
+
+def _name_char(ch: str) -> bool:
+    """Letters (any script, with their accents), digits, and a few name marks."""
+    return ch in _NAME_MARKS or unicodedata.category(ch)[0] in "LMN"
 
 
 

@@ -18,7 +18,7 @@ from server.schemas.requests import (
     SeatJoined,
 )
 
-from ._shared import authorize_model, set_seat_cookie
+from ._shared import authorize_model, clear_seat_cookie, set_seat_cookie
 
 router = APIRouter(tags=["rooms"])
 
@@ -110,16 +110,55 @@ async def join_game(
     response: Response,
     games: GamesRegistry,
     held: SeatToken,
+    host_key: str = "",
 ) -> SeatJoined:
     """A browser already aboard (its seat cookie rides this request) gets its own seat
-    back; everyone else gets a new one."""
+    back; everyone else gets a new one. The creator boards with the room's host key, which
+    marks their seat as the host's."""
     _open(room)
     try:
-        token = await games.join(room.game_id, body.name, held)
+        token = await games.join(room.game_id, body.name, held, host_key)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     set_seat_cookie(response, room.game_id, token)
     return SeatJoined(token=token)
+
+
+@router.post(
+    "/games/{game_id}/leave",
+    status_code=204,
+    summary="Give up your seat in a waiting room",
+)
+async def leave_room(room: Room, response: Response, games: GamesRegistry,
+                     token: SeatToken) -> None:
+    """The seat cookie says whose seat; the place opens again and the cookie goes. 409
+    for the host (who closes the room instead) or once the game has started; 403 without
+    a seat here."""
+    _open(room)
+    try:
+        await games.leave(room.game_id, token)
+    except PermissionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except LookupError as exc:
+        status = 403 if isinstance(room, GameLobby) else 409
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
+    clear_seat_cookie(response, room.game_id)
+
+
+@router.post(
+    "/games/{game_id}/close",
+    status_code=204,
+    summary="Close a waiting room for everyone (host only)",
+)
+async def close_room(room: Room, games: GamesRegistry, host_key: str = "") -> None:
+    """The room goes; its URL answers 410 with the reason from then on."""
+    _open(room)
+    try:
+        await games.close(room.game_id, host_key)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.post(

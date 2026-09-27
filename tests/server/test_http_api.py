@@ -254,6 +254,21 @@ def test_a_waiting_room_tells_you_where_you_stand_on_the_roster(api_client):
     assert api_client.get(f"/games/{game_id}").json()["you_aboard"] is None
 
 
+def test_a_name_is_short_printable_and_tidied(api_client):
+    game_id, _ = _make_room(api_client)
+    join = lambda name: api_client.post(f"/games/{game_id}/join", json={"name": name})
+
+    for bad in ["", "   ", "a" * 13, "hao🐺", "<b>hao</b>", "hao\u200bchen"]:
+        api_client.cookies.clear()
+        assert join(bad).status_code == 422, bad
+    for good in ["Liu Haochen", "刘浩晨", "Zoë", "O'Brien", "J.-P. 2", "a" * 12]:
+        api_client.cookies.clear()
+        assert join(good).status_code == 200, good
+    api_client.cookies.clear()
+    join("  kei   mori ")
+    assert api_client.get(f"/games/{game_id}").json()["players"][-1] == "kei mori"
+
+
 def test_seat_cookie_secure_flag_is_an_env_knob(api_client, monkeypatch):
     from server.config import server_settings
 
@@ -503,8 +518,64 @@ def test_room_browser_lists_waiting_rooms_newest_first(api_client, seated_sessio
     api_client.post(f"/games/{a}/join", json={"name": "mira"})
     listed = {row["game_id"]: row for row in api_client.get("/rooms").json()}
     assert listed[a]["players"] == ["hao", "mira"]
-    assert listed[a]["host"] == "hao"  # the first seat stands in for the creator
-    assert api_client.get(f"/games/{a}").json()["host"] == "hao"
+    assert listed[a]["host"] is None  # neither boarded with the host key
+
+
+def test_the_host_is_the_seat_that_boarded_with_the_host_key(api_client):
+    game_id, host_key = _make_room(api_client)
+    api_client.post(f"/games/{game_id}/join", json={"name": "mira"})  # a guest boards first
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join?host_key={host_key}", json={"name": "hao"})
+    status = api_client.get(f"/games/{game_id}").json()
+    assert status["players"] == ["mira", "hao"] and status["host"] == "hao"
+
+    # the creator may board their own locked room; nobody else may
+    locked, key = _make_room(api_client)
+    api_client.post(f"/games/{locked}/lock?host_key={key}&locked=true")
+    api_client.cookies.clear()
+    assert api_client.post(f"/games/{locked}/join", json={"name": "x"}).status_code == 409
+    assert api_client.post(f"/games/{locked}/join?host_key={key}",
+                           json={"name": "hao"}).status_code == 200
+
+
+def test_a_guest_leaves_and_the_place_opens_again(api_client):
+    game_id, host_key = _make_room(api_client)
+    api_client.post(f"/games/{game_id}/join?host_key={host_key}", json={"name": "hao"})
+    assert api_client.post(f"/games/{game_id}/leave").status_code == 409  # the host closes
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join", json={"name": "mira"})
+
+    r = api_client.post(f"/games/{game_id}/leave")
+    assert r.status_code == 204
+    assert f"seat_{game_id}" in r.headers["set-cookie"]  # the cookie is cleared
+    assert api_client.get(f"/games/{game_id}").json()["players"] == ["hao"]
+    # gone now: leaving again, or with no seat at all, is refused
+    assert api_client.post(f"/games/{game_id}/leave").status_code == 403
+
+
+def test_the_host_closes_the_room_and_its_url_says_so(api_client):
+    game_id, host_key = _make_room(api_client)
+    assert api_client.post(f"/games/{game_id}/close?host_key=wrong").status_code == 403
+    assert api_client.post(f"/games/{game_id}/close?host_key={host_key}").status_code == 204
+
+    r = api_client.get(f"/games/{game_id}")
+    assert r.status_code == 410 and "host closed" in r.json()["detail"]
+    assert game_id not in [row["game_id"] for row in api_client.get("/rooms").json()]
+    assert api_client.post(f"/games/{game_id}/join", json={"name": "x"}).status_code == 410
+
+
+def test_a_room_nobody_departed_is_closed_after_its_shelf_life(api_client):
+    from datetime import datetime, timedelta, timezone
+
+    games = api_client.app.state.resources.games
+    old, _ = _make_room(api_client)
+    fresh, _ = _make_room(api_client)
+    games.get(old).created_at -= timedelta(hours=3)
+
+    assert games.expire_rooms(7200, datetime.now(timezone.utc)) == [old]
+    assert games.get(fresh) is not None
+    r = api_client.get(f"/games/{old}")
+    assert r.status_code == 410 and "within 2 hours" in r.json()["detail"]
 
 
 def test_room_name_is_capped(api_client):
