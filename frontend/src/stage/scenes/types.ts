@@ -153,7 +153,7 @@ export type RoomAct = 'lock' | 'unlock' | 'depart';
 /**
  * The waiting room before the game, for the platform (`StationScene`). A room has no event log:
  * all of this is the status poll's (`GET /games/{id}` in the `waiting` state) plus what this
- * device holds (the host key, the seat token, the name it boarded with). The container that
+ * device holds (the host key, the seat token). The container that
  * polls builds it; the scene only draws it and reports the host's presses.
  */
 export interface RoomInput {
@@ -174,7 +174,7 @@ export interface RoomInput {
   isHost: boolean;
   /** This device holds a seat token for the room (it boarded). */
   seated: boolean;
-  /** This viewer's index in `aboard`, when the device knows which name it boarded as. */
+  /** This viewer's index in `aboard`, as the server places their seat cookie; null without a seat. */
   you: number | null;
   /** The fewest aboard that Depart needs (see `MIN_ABOARD` in scenes/station.ts). */
   minAboard: number;

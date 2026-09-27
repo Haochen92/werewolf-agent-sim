@@ -468,6 +468,52 @@ failed tokens are cleared. Waiting lobbies no longer open an events endpoint tha
   Alpine's clean `npm ci` dependencies with host artifacts. The new ignore file excludes all
   three classes while keeping the explicit production build arg as the API authority.
 
+### 3.13 🔴 Coming back to your own room made you a second passenger
+
+*(Added 2026-09-27, found by the owner while clicking through the new pages.)*
+
+**What happened.** The owner opened a room, boarded it, pressed back to the room list and
+pressed Board on the same room. The room asked for a name again and put a second passenger on
+the manifest. The owner's first seat, the one shown as the host, now belonged to nobody. Back
+on the platform, the owner was not marked as "you" at all.
+
+**Why it happened.** Three gaps, each harmless alone:
+
+- **The room list never checked this device.** Its Board button did not look at the seat
+  token and host key this browser already keeps for the room, so it offered every room as a
+  fresh join.
+- **The server minted a seat for every join.** A second join from a browser already aboard
+  got a new seat, and its cookie replaced the first one's. The first seat stayed on the
+  manifest with nobody holding it; once the game started, the stand-in agent would have played
+  it.
+- **The platform recognised you by name, from page memory.** "You" was the name typed on the
+  boarding pass, kept only while the page stayed open and matched against the roster by name.
+  Leaving the page or reloading lost it, and two passengers with the same name could not be
+  told apart. The server knew which seat was yours (the cookie), but the waiting-room status
+  never said so.
+
+**What it would have cost.** Any player who left the page and came back through the room list
+would have split into two passengers, with the first one's seat abandoned. The host would have
+seen the room "hosted by" a name that was no longer them.
+
+**Settled.** Fixed where each gap was:
+
+- `POST /games/{id}/join` hands back the seat the browser already holds when its cookie rides
+  the request (`GameLobby.join(name, held)`), so joining twice is harmless from any door.
+- The waiting-room status carries `you_aboard`, the viewer's place on the roster, from the
+  seat cookie (`GameLobby.place_of`). `useRoom` marks "you" from it; the name matching is gone.
+- The room list shows **Return to your seat** (or **Return to your room**, for a host who has
+  not boarded) instead of Board on any room this device is in, full or locked alike.
+
+Verified by server tests (joining twice returns the same token; two players both named "hao"
+each get their own place; a spectator gets none) and in the running app: board, leave, come
+back through the room list → the row says Return to your seat, the roster still holds one
+name, and the platform marks "hao · you · host" with Depart and Lock.
+
+**Still open.** The host shown is still "whoever boarded first", not the room's creator: the
+room never learns who created it, only that someone holds the host key. It is only wrong when
+someone else boards before the creator does.
+
 ---
 
 ## 4. Design decisions and where the specs collided

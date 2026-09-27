@@ -27,8 +27,8 @@ export function BoardingPass({
 }: {
   gameId: string;
   status: GameStatus;
-  /** Joined, as this name. */
-  onBoarded: (name: string) => void;
+  /** Joined: this device now holds a seat. */
+  onBoarded: () => void;
   onWatch: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -38,10 +38,10 @@ export function BoardingPass({
 
   const join = useMutation({
     mutationFn: (as: string) => joinGame(gameId, as),
-    onSuccess: (seat, as) => {
+    onSuccess: (seat) => {
       // The token comes back exactly once; stash it as the cookie's backup immediately.
       seatToken.set(gameId, seat.token);
-      onBoarded(as);
+      onBoarded();
       void queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) });
     },
   });

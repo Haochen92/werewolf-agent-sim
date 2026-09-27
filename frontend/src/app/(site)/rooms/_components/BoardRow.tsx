@@ -8,6 +8,10 @@
  * goes to the room (`/games/[id]`). A locked or full room keeps its row, with the button off and
  * the reason next to it. When the server refuses a join (the room filled or locked while the
  * strip was open, or the game started), its words show in the strip.
+ *
+ * A room this device is already in (it holds the seat token, or the host key of the room it
+ * opened) offers the way back instead of Board, full or locked alike: boarding again would
+ * only put a second name on the manifest.
  */
 import { useId, useState, type FormEvent } from 'react';
 import Link from 'next/link';
@@ -15,7 +19,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { Alert, TextInput } from '@mantine/core';
 import { joinGame } from '@/lib/api';
-import { seatToken } from '@/lib/storage';
+import { hostKey, seatToken } from '@/lib/storage';
 import { timeAgo } from '@/lib/format';
 import { Button, Flapword, Icon } from '@/components/site';
 import type { RoomSummary } from '@/types/contracts';
@@ -29,6 +33,9 @@ export function BoardRow({ room }: { room: RoomSummary }) {
   const [name, setName] = useState('');
   const face = rowFace(room);
   const opened = timeAgo(room.created_at);
+  // rows render only after the client fetch, so reading this device's storage here is safe
+  const seated = Boolean(seatToken.get(room.game_id));
+  const mine = seated || Boolean(hostKey.get(room.game_id));
 
   const join = useMutation({
     mutationFn: () => joinGame(room.game_id, name.trim() || 'human'),
@@ -69,7 +76,7 @@ export function BoardRow({ room }: { room: RoomSummary }) {
           <span>hosted by {hostName(room)}</span>
           {opened ? <span>opened {opened}</span> : null}
         </div>
-        {face.reason ? (
+        {face.reason && !mine ? (
           <p className={classes.reason} id={`${ids}-why`}>
             {face.reason} {watch}
           </p>
@@ -93,7 +100,11 @@ export function BoardRow({ room }: { room: RoomSummary }) {
       </div>
 
       <div className={classes.act}>
-        {face.joinable ? (
+        {mine ? (
+          <Button component={Link} href={`/games/${room.game_id}`} variant="primary" size="sm">
+            {seated ? 'Return to your seat' : 'Return to your room'}
+          </Button>
+        ) : face.joinable ? (
           <Button
             variant={open ? 'ghost' : 'primary'}
             size="sm"
@@ -115,7 +126,7 @@ export function BoardRow({ room }: { room: RoomSummary }) {
         )}
       </div>
 
-      {open && (face.joinable || join.error) ? (
+      {open && !mine && (face.joinable || join.error) ? (
         <form
           id={`${ids}-pass`}
           className={classes.pass}
