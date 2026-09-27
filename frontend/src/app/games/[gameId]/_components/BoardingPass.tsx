@@ -15,6 +15,7 @@ import { TextInput } from '@mantine/core';
 import { Button, Paper } from '@/components/site';
 import { joinGame } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { MAX_NAME, nameProblem, tidyName } from '@/lib/names';
 import { hostKey, seatToken } from '@/lib/storage';
 import type { GameStatus } from '@/types/contracts';
 import classes from './BoardingPass.module.css';
@@ -47,9 +48,11 @@ export function BoardingPass({
     },
   });
 
+  // said once something is typed; an empty box only keeps the button off
+  const problem = nameProblem(name);
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!join.isPending) join.mutate(name.trim() || 'human');
+    if (!join.isPending && !problem) join.mutate(tidyName(name));
   };
 
   return (
@@ -65,12 +68,19 @@ export function BoardingPass({
           placeholder="your name"
           value={name}
           onChange={(e) => setName(e.currentTarget.value)}
-          maxLength={24}
+          maxLength={MAX_NAME}
           autoComplete="nickname"
+          description={`${[...tidyName(name)].length} of ${MAX_NAME}`}
+          error={name.trim() ? problem : null}
           classNames={{ label: classes.label, input: classes.input }}
         />
         <div className={classes.actions}>
-          <Button type="submit" variant="brass" loading={join.isPending}>
+          <Button
+            type="submit"
+            variant="brass"
+            loading={join.isPending}
+            disabled={Boolean(problem)}
+          >
             Step onto the platform
           </Button>
           <Button type="button" variant="ghost" onClick={onWatch}>

@@ -113,6 +113,9 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
 
   const { head, sub } = ledgeLine(room, departing);
   const you = room.you !== null && room.you < n ? room.you : null;
+  // the server names the host (the seat that boarded with the host key), not a place: the first
+  // tag with that name wears the crown
+  const hostAt = room.host === null ? -1 : room.aboard.slice(0, n).indexOf(room.host);
 
   return (
     <>
@@ -253,15 +256,11 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
             transition={T(0.3, departing ? 0 : 0.6)}
             data-tag={i}
           >
-            {name}
-            {i === you || (name === room.host && i === 0) ? (
-              <i>
-                {' '}
-                {[i === you && 'you', name === room.host && i === 0 && 'host']
-                  .filter(Boolean)
-                  .join(' · ')}
-              </i>
-            ) : null}
+            {i === hostAt ? <Crown /> : null}
+            <span className={styles.tagName}>
+              {name}
+              {i === you ? <i> you</i> : null}
+            </span>
           </motion.span>
         ))}
         <div className={styles.sign} style={{ left: S.cx }}>
@@ -684,6 +683,18 @@ function ClosePlate({
     >
       {busy ? 'Closing…' : asking ? 'Close for everyone?' : 'Close room'}
     </button>
+  );
+}
+
+/** The host's mark: a small brass crown sitting on their name tag. */
+function Crown() {
+  return (
+    <svg className={styles.crown} viewBox="0 0 22 15" role="img" aria-label="host">
+      <path d="M2 13 L1 4 L6.5 8 L11 1.5 L15.5 8 L21 4 L20 13 Z" />
+      <circle cx="1" cy="3.4" r="1.4" />
+      <circle cx="11" cy="1.4" r="1.4" />
+      <circle cx="21" cy="3.4" r="1.4" />
+    </svg>
   );
 }
 

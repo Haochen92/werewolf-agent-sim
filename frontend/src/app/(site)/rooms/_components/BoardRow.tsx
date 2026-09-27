@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { Alert, TextInput } from '@mantine/core';
 import { joinGame } from '@/lib/api';
+import { MAX_NAME, nameProblem, tidyName } from '@/lib/names';
 import { hostKey, seatToken } from '@/lib/storage';
 import { timeAgo } from '@/lib/format';
 import { Button, Flapword, Icon } from '@/components/site';
@@ -38,16 +39,17 @@ export function BoardRow({ room }: { room: RoomSummary }) {
   const mine = seated || Boolean(hostKey.get(room.game_id));
 
   const join = useMutation({
-    mutationFn: () => joinGame(room.game_id, name.trim() || 'human'),
+    mutationFn: () => joinGame(room.game_id, tidyName(name)),
     onSuccess: (seat) => {
       seatToken.set(room.game_id, seat.token);
       router.push(`/games/${room.game_id}`);
     },
   });
 
+  const problem = nameProblem(name);
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!join.isPending && face.joinable) join.mutate();
+    if (!join.isPending && face.joinable && !problem) join.mutate();
   };
 
   const watch = (
@@ -101,7 +103,12 @@ export function BoardRow({ room }: { room: RoomSummary }) {
 
       <div className={classes.act}>
         {mine ? (
-          <Button component={Link} href={`/games/${room.game_id}`} variant="primary" size="sm">
+          <Button
+            component={Link}
+            href={`/games/${room.game_id}`}
+            variant="primary"
+            size="sm"
+          >
             {seated ? 'Return to your seat' : 'Return to your room'}
           </Button>
         ) : face.joinable ? (
@@ -138,8 +145,10 @@ export function BoardRow({ room }: { room: RoomSummary }) {
             placeholder="your name"
             value={name}
             onChange={(e) => setName(e.currentTarget.value)}
-            maxLength={24}
+            maxLength={MAX_NAME}
             autoComplete="nickname"
+            description={`${[...tidyName(name)].length} of ${MAX_NAME}`}
+            error={name.trim() ? problem : null}
             autoFocus
             disabled={join.isPending}
             className={classes.passName}
@@ -149,7 +158,7 @@ export function BoardRow({ room }: { room: RoomSummary }) {
             variant="primary"
             size="sm"
             loading={join.isPending}
-            disabled={!face.joinable}
+            disabled={!face.joinable || Boolean(problem)}
           >
             Join
           </Button>
