@@ -1,6 +1,6 @@
 /*
- * The ticket office (ticket-office mockup): the grille and the lamp over the counter, the title
- * beside the two hung tags, then the ticket: a paper form with its fields ruled in dotted lines
+ * The ticket office (ticket-office mockup): the title beside the two tags, hung from a hairline
+ * rail as the landing's are (the mockup's grille and lamp are gone, 2026-09-27), then the ticket: a paper form with its fields ruled in dotted lines
  * on the left and the stub, torn along a dashed line, on the right. Below 980px the stub drops
  * under the fields; below 700px the tags hang flat (HangTag's own rule).
  *
@@ -10,34 +10,12 @@
 
 .office {
   position: relative;
-  padding-bottom: 8px;
+  padding: 18px 0 8px;
   background: radial-gradient(
     ellipse 70% 38% at 50% 0,
     rgba(224, 166, 58, 0.07),
     transparent 70%
   );
-}
-
-.grille {
-  height: 74px;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 22px,
-    rgba(201, 162, 94, 0.55) 22px 25px
-  );
-  border-bottom: 6px solid #8a6a34;
-  -webkit-mask: linear-gradient(#000 40%, transparent);
-  mask: linear-gradient(#000 40%, transparent);
-}
-
-.lamp {
-  position: absolute;
-  right: 4px;
-  top: 20px;
-  width: 120px;
-  height: auto;
-  filter: drop-shadow(0 0 30px rgba(255, 190, 100, 0.35));
-  pointer-events: none;
 }
 
 .intro {
@@ -66,9 +44,25 @@
 }
 
 .kinds {
+  position: relative;
   display: flex;
   gap: 22px;
-  padding-top: 14px;
+  padding-top: 32px;
+}
+/* the hairline the tags hang from (the landing's `.rail`) */
+.rail {
+  position: absolute;
+  left: -24px;
+  right: -24px;
+  top: 22px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 235, 200, 0.22) 18%,
+    rgba(255, 235, 200, 0.22) 82%,
+    transparent
+  );
 }
 
 /* the door to the other kind of ticket: dimmed like an unchosen tag, lit on hover */
@@ -648,14 +642,11 @@
 }
 
 @media (max-width: 700px) {
-  .grille {
-    height: 48px;
-  }
-  .lamp {
-    top: 6px;
-    width: 72px;
+  .rail {
+    display: none;
   }
   .kinds {
+    padding-top: 0;
     width: 100%;
     flex-direction: column;
   }

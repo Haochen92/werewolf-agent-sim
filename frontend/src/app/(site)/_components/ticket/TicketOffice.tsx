@@ -22,14 +22,12 @@
  * admits nobody, the host included, so the host locks it from the room once everyone is in).
  */
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, Select, Switch, TextInput } from '@mantine/core';
 import { createGame, createRoom, getModels } from '@/lib/api';
 import { hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
-import { SPRITES } from '@/assets/manifest';
 import { Button, HangTag, Icon, Paper } from '@/components/site';
 import { CARD_TEXT } from '@/stage/card-text';
 import type { Role } from '@/types/contracts';
@@ -134,15 +132,13 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   return (
     <main className={classes.office}>
-      <div className={classes.grille} aria-hidden="true" />
-      <Image src={SPRITES.kits.lamp} alt="" className={classes.lamp} width={120} />
-
       <div className={classes.intro}>
         <div>
           <h1 className={classes.title}>The ticket office</h1>
           <p className={classes.lede}>Choose a ticket, fill it in, and punch it.</p>
         </div>
         <nav className={classes.kinds} aria-label="Kind of game">
+          <span className={classes.rail} aria-hidden="true" />
           <HangTag
             href="/play"
             current={kind === 'solo'}
