@@ -13,7 +13,6 @@
  * rooms open, and the rows; each row carries its own boarding, joining and refused states.
  */
 import type { CSSProperties } from 'react';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Skeleton } from '@mantine/core';
 import { listRooms } from '@/lib/api';
@@ -83,14 +82,6 @@ export function DeparturesBoard() {
           No tables open right now. Open one and send the link to your friends, or play a
           solo game while you wait.
         </p>
-        <div className={classes.emptyDoors}>
-          <Button component={Link} href="/rooms/new" variant="primary">
-            Open a table
-          </Button>
-          <Button component={Link} href="/play">
-            Play solo
-          </Button>
-        </div>
       </div>
     );
   } else {

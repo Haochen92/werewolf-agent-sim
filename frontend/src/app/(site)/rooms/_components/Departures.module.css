@@ -1,6 +1,7 @@
 /*
- * The departures hall (rooms mockup): the head, the board (a walnut case, a brass plate and a
- * black face with split-flap rows) and the two hung doors under it. Below 960px the column
+ * The departures hall (rooms mockup): the head (the title beside two doors hung from a hairline,
+ * as on the ticket office) and the board (a walnut case in the landing's low light, a brass plate
+ * and a black face with split-flap rows). Below 960px the column
  * heads go and each row stacks: status and button on top, then the room, then who is aboard.
  */
 
@@ -14,6 +15,11 @@
 }
 
 .head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
   margin: 0 0 30px;
 }
 
@@ -29,7 +35,7 @@
 .lede {
   color: var(--muted);
   font-size: 17px;
-  max-width: 58ch;
+  max-width: 44ch; /* leaves the doors room beside the title */
   margin: 10px 0 0;
 }
 
@@ -39,13 +45,24 @@
   --wood: none;
   border-radius: 16px;
   padding: 14px;
+  /* the landing's "under the table" wood (UnderTable.module.css): darkened and desaturated
+     toward the page, the grain only near the centre */
   background:
-    linear-gradient(rgba(40, 24, 12, 0.35), rgba(20, 12, 6, 0.55)),
-    var(--wood) 0 0 / 300px,
+    radial-gradient(
+      ellipse 75% 70% at 50% 42%,
+      transparent 0,
+      rgba(10, 7, 4, 0.55) 65%,
+      rgba(8, 5, 3, 0.92) 100%
+    ),
+    linear-gradient(rgba(26, 20, 15, 0.58), rgba(26, 20, 15, 0.58)),
+    linear-gradient(rgba(70, 60, 52, 0.35), rgba(70, 60, 52, 0.35)),
+    var(--wood) 0 0 / 560px auto,
     #2a1a0e;
+  background-blend-mode: normal, normal, saturation, normal, normal;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 220, 160, 0.12),
-    0 30px 60px rgba(0, 0, 0, 0.6);
+    inset 0 2px 0 rgba(255, 220, 170, 0.1),
+    inset 0 -10px 24px rgba(0, 0, 0, 0.5),
+    0 24px 50px -20px rgba(0, 0, 0, 0.9);
 }
 
 .bezel {
@@ -267,13 +284,6 @@
   margin: 18px auto 22px;
 }
 
-.emptyDoors {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
 .failed {
   display: flex;
   flex-direction: column;
@@ -298,14 +308,26 @@
 
 /* ---------- the doors ---------- */
 
+/* the two doors beside the title, hung from the landing's hairline */
 .doors {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 40px;
-  margin-top: 48px;
-  padding-top: 14px;
+  gap: 22px;
+  padding-top: 32px;
+}
+.rail {
+  position: absolute;
+  left: -24px;
+  right: -24px;
+  top: 22px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 235, 200, 0.22) 18%,
+    rgba(255, 235, 200, 0.22) 82%,
+    transparent
+  );
 }
 
 /* ---------- phone and narrow tablet (the four columns need ~870px of board) ---------- */
@@ -357,6 +379,23 @@
     max-width: none;
   }
   .doors {
-    gap: 24px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}
+
+/* a phone: the doors hang flat (HangTag's own rule), one under the other, without the rail */
+@media (max-width: 700px) {
+  .rail {
+    display: none;
+  }
+  .doors {
+    width: 100%;
+    flex-direction: column;
+    padding-top: 0;
+  }
+  /* thirteen tiles fit the board's face */
+  .emptyFlap {
+    font-size: 15px;
   }
 }

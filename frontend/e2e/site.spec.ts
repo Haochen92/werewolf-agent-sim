@@ -470,15 +470,25 @@ test('rooms: a refused join says the server’s words in the row', async ({ page
   await expect(page).toHaveURL(/\/rooms$/);
 });
 
-test('rooms: an empty board offers to open a table', async ({ page }) => {
+test('rooms: an empty board says so, and the doors beside the title stay', async ({
+  page,
+}) => {
   await openBoard(page, []);
   await expect(page.getByText('NO DEPARTURES')).toBeVisible();
   await expect(page.getByText('No tables open right now.', { exact: false })).toBeVisible();
+  // the board no longer repeats the doors: they hang beside the title, rooms or not
   await expect(
-    page
-      .getByRole('region', { name: 'Departures' })
-      .getByRole('link', { name: 'Open a table' }),
-  ).toHaveAttribute('href', '/rooms/new');
+    page.getByRole('region', { name: 'Departures' }).getByRole('link'),
+  ).toHaveCount(0);
+  const doors = page.getByRole('navigation', { name: 'Other ways aboard' });
+  await expect(doors.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
+    'href',
+    '/rooms/new',
+  );
+  await expect(doors.getByRole('link', { name: /Play solo/ })).toHaveAttribute(
+    'href',
+    '/play',
+  );
 });
 
 for (const [name, viewport] of [
