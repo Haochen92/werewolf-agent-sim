@@ -103,7 +103,7 @@ def test_status_snapshot_of_a_fresh_session(api_client, quiet_session):
     assert body.pop("server_time").endswith("+00:00")
     assert body == {
         "game_id": session.game_id, "state": "running", "players": [], "host": None, "max_seats": 0,
-        "human_players": [], "you": None, "pending_input": False, "pending_seats": [],
+        "human_players": [], "you": None, "you_aboard": None, "pending_input": False, "pending_seats": [],
         "deadlines": {}, "game_over": False, "last_seq": 0, "alive_role_counts": {},
         "error": None, "name": "", "locked": False, "winner": None, "archived": False,
         "awaiting_key": False,
@@ -177,8 +177,10 @@ def test_lobby_seat_cap(api_client):
     game_id, _ = _make_room(api_client)
 
     for i in range(MAX_HUMAN_SEATS):
+        api_client.cookies.clear()  # each joiner is a browser of its own
         assert api_client.post(f"/games/{game_id}/join",
                                json={"name": f"p{i}"}).status_code == 200
+    api_client.cookies.clear()
     r = api_client.post(f"/games/{game_id}/join", json={"name": "late"})
     assert r.status_code == 409 and "seats are taken" in r.json()["detail"]
 
@@ -220,6 +222,36 @@ def test_join_sets_an_httponly_seat_cookie_matching_the_body_token(api_client):
     assert "HttpOnly" in set_cookie          # out of page JavaScript's reach
     assert f"Path=/games/{game_id}" in set_cookie  # rides only this game's requests
     assert "SameSite=lax" in set_cookie
+
+
+def test_joining_again_hands_back_the_seat_you_already_hold(api_client):
+    game_id, _ = _make_room(api_client)
+    first = api_client.post(f"/games/{game_id}/join", json={"name": "hao"}).json()["token"]
+
+    # The same browser boards again (the lobby's Board, the invite link): same seat.
+    again = api_client.post(f"/games/{game_id}/join", json={"name": "hao 2"}).json()["token"]
+    assert again == first
+    assert api_client.get(f"/games/{game_id}").json()["players"] == ["hao"]
+
+    # A different browser (no cookie) still gets a seat of its own.
+    api_client.cookies.clear()
+    other = api_client.post(f"/games/{game_id}/join", json={"name": "mira"}).json()["token"]
+    assert other != first
+
+
+def test_a_waiting_room_tells_you_where_you_stand_on_the_roster(api_client):
+    game_id, _ = _make_room(api_client)
+    api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    assert api_client.get(f"/games/{game_id}").json()["you_aboard"] == 0
+
+    # Same name, different browser: the place, not the name, tells them apart.
+    api_client.cookies.clear()
+    api_client.post(f"/games/{game_id}/join", json={"name": "hao"})
+    status = api_client.get(f"/games/{game_id}").json()
+    assert status["players"] == ["hao", "hao"] and status["you_aboard"] == 1
+
+    api_client.cookies.clear()  # a spectator stands nowhere
+    assert api_client.get(f"/games/{game_id}").json()["you_aboard"] is None
 
 
 def test_seat_cookie_secure_flag_is_an_env_knob(api_client, monkeypatch):
@@ -467,6 +499,7 @@ def test_room_browser_lists_waiting_rooms_newest_first(api_client, seated_sessio
     assert all(row["host"] is None for row in rows)  # nobody seated yet
 
     api_client.post(f"/games/{a}/join", json={"name": "hao"})
+    api_client.cookies.clear()  # mira boards from her own browser
     api_client.post(f"/games/{a}/join", json={"name": "mira"})
     listed = {row["game_id"]: row for row in api_client.get("/rooms").json()}
     assert listed[a]["players"] == ["hao", "mira"]

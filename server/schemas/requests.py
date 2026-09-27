@@ -219,6 +219,11 @@ class GameStatus(BaseModel):
     """The requester's OWN engine seat, resolved from their seat cookie — how the
     client learns which player it is. None for spectators, waiting rooms, and the
     moment before seats are dealt."""
+    you_aboard: int | None = None
+    """Waiting rooms only: where the requester's own seat stands in ``players`` (0 = the
+    first to join), from their seat cookie. None for someone without a seat, and once
+    running (``you`` takes over then). Names can repeat, so this, not the name, is how a
+    browser finds itself on the roster."""
     pending_input: bool = False
     """A seat this viewer may see owes input: exactly ``pending_seats`` being non-empty.
     False for live spectators; it must not reveal that a private night turn exists."""

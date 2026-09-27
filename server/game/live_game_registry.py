@@ -127,11 +127,12 @@ class LiveGameRegistry:
         self._entries[room.game_id] = room
         return room
 
-    async def join(self, game_id: str, name: str) -> str:
-        """Claim a seat and return its secret token. LookupError when the room is
-        locked, full, or already started."""
+    async def join(self, game_id: str, name: str, held: str = "") -> str:
+        """Claim a seat and return its secret token; a browser already holding a seat
+        (``held``) gets that one back. LookupError when the room is locked, full, or
+        already started."""
         room = self._require_lobby(game_id)
-        return room.join(name)
+        return room.join(name, held)
 
     async def lock(self, game_id: str, host_key: str, locked: bool) -> GameLobby:
         """Lock or unlock a room. A locked room turns new joins away but keeps the players

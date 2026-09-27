@@ -494,6 +494,7 @@
           "rooms"
         ],
         "summary": "Claim a human seat in a waiting room",
+        "description": "A browser already aboard (its seat cookie rides this request) gets its own seat\nback; everyone else gets a new one.",
         "operationId": "join_game_games__game_id__join_post",
         "parameters": [
           {
@@ -1270,6 +1271,17 @@
               }
             ],
             "title": "You"
+          },
+          "you_aboard": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "You Aboard"
           },
           "pending_input": {
             "type": "boolean",

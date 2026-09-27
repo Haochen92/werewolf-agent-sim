@@ -217,7 +217,11 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Claim a human seat in a waiting room */
+    /**
+     * Claim a human seat in a waiting room
+     * @description A browser already aboard (its seat cookie rides this request) gets its own seat
+     *     back; everyone else gets a new one.
+     */
     post: operations['join_game_games__game_id__join_post'];
     delete?: never;
     options?: never;
@@ -541,6 +545,8 @@ export interface components {
       human_players?: string[];
       /** You */
       you?: string | null;
+      /** You Aboard */
+      you_aboard?: number | null;
       /**
        * Pending Input
        * @default false

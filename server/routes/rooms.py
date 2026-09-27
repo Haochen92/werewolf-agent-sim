@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from server.config import server_settings
 from server.database_models.game import GameRow
-from server.dependencies import GamesRegistry, House, Room, ended_detail
+from server.dependencies import GamesRegistry, House, Room, SeatToken, ended_detail
 from server.game.lobby import MAX_HUMAN_SEATS, GameLobby
 from server.schemas.requests import (
     GameCreated,
@@ -109,10 +109,13 @@ async def join_game(
     body: JoinGame,
     response: Response,
     games: GamesRegistry,
+    held: SeatToken,
 ) -> SeatJoined:
+    """A browser already aboard (its seat cookie rides this request) gets its own seat
+    back; everyone else gets a new one."""
     _open(room)
     try:
-        token = await games.join(room.game_id, body.name)
+        token = await games.join(room.game_id, body.name, held)
     except LookupError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     set_seat_cookie(response, room.game_id, token)

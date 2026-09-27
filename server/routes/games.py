@@ -76,6 +76,7 @@ async def game_status(session: Room, token: SeatToken) -> GameStatus:
             max_seats=MAX_HUMAN_SEATS,
             name=session.name,
             locked=session.locked,
+            you_aboard=session.place_of(token) if token else None,
         )
     you = (session.seat_for_token(token) or None) if token else None
     # A pending night turn identifies a private actor just as surely as its prompt.

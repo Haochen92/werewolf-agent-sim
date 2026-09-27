@@ -96,10 +96,16 @@ class GameLobby:
         that same order, so the first token belongs to the first human player."""
         return [s.token for s in self.seats]
 
-    def join(self, name: str) -> str:
+    def join(self, name: str, held: str = "") -> str:
         """Claim a human seat and return its freshly minted secret token. The token is
         the only proof that a browser owns this seat; nothing else identifies a player.
-        Raises LookupError when the room is locked or full; the route turns that into a 409."""
+        Raises LookupError when the room is locked or full; the route turns that into a 409.
+
+        ``held`` is the seat token the asker already carries, if any. A browser that is
+        already aboard gets its own seat back rather than a second one: a second seat
+        would replace its cookie, and the first seat would be left with nobody to play it."""
+        if held and self.owns(held):
+            return held
         if self.locked:
             raise LookupError("room is locked — ask the host to unlock it")
         if len(self.seats) >= MAX_HUMAN_SEATS:
@@ -113,6 +119,12 @@ class GameLobby:
     def owns(self, token: str) -> bool:
         """Whether this token belongs to one of the room's seats."""
         return any(seat.token == token for seat in self.seats)
+
+    def place_of(self, token: str) -> int | None:
+        """Where this token's seat stands on the roster (0 = the first to join), or None
+        if the token holds no seat here. Names can repeat, so this is how a browser finds
+        itself on the roster."""
+        return next((i for i, seat in enumerate(self.seats) if seat.token == token), None)
 
     def run_config(self) -> RunConfig:
         """Build the config the started game runs on. The room's own game_id is passed
