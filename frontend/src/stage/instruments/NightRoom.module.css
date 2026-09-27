@@ -20,6 +20,8 @@ button.plush:focus-visible {
 }
 .plush img {
   display: block;
+  /* over the cast shadow (Plush.tsx), which is positioned */
+  position: relative;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -47,8 +49,20 @@ button.plush:focus-visible {
 /* ---- the kit on the shelf ---- */
 .kit {
   position: absolute;
-  filter: drop-shadow(0 6.4px 9.6px rgba(0, 0, 0, 0.45));
+  /* its shadow on the wall behind, down and to the right as the room's others fall (still, small) */
+  filter: drop-shadow(6px 5px 7px rgba(12, 7, 4, 0.5));
   pointer-events: none;
+}
+/* where the card and the kit meet the shelf's top: a soft dark ellipse, a touch right */
+.contact {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(12, 7, 4, 0.62),
+    rgba(12, 7, 4, 0.3) 55%,
+    rgba(12, 7, 4, 0)
+  );
 }
 .kit img {
   display: block;
@@ -64,28 +78,15 @@ button.plush:focus-visible {
   pointer-events: none;
 }
 
-/* the act on the chosen doll, on its shoulder, clear of the face (a zero box: the mark centres on it) */
-.actMark {
+/* the pin in the chosen doll: a zero box at its chest, under the collar, right of the numeral */
+.pin {
   position: absolute;
-  left: 70%;
-  top: 50%;
+  left: 74%;
+  top: 60%;
   width: 0;
   height: 0;
-  pointer-events: none;
-}
-
-/* ---- the carriage clock ---- */
-.clock {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   overflow: visible;
   pointer-events: none;
-}
-.flap {
-  font-family: var(--font-stage-sans, Outfit), system-ui, sans-serif;
-  font-weight: 600;
 }
 
 /* ---- the framed card at the shelf's left end ---- */
@@ -100,7 +101,7 @@ button.plush:focus-visible {
     0 0 0 4px #2a1a0c,
     0 0 0 7.2px #c9a25e,
     0 0 0 9.6px #24180c,
-    0 8px 19.2px rgba(0, 0, 0, 0.6);
+    7px 8px 16px rgba(12, 7, 4, 0.6);
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
   color: var(--ink);
   text-align: center;
@@ -332,4 +333,42 @@ button.plush:focus-visible {
 }
 .plate button.pri:disabled {
   opacity: 0.5;
+}
+/* the countdown on the plate (the room has no clock): the day dock's figures, red at the end */
+.plate .count {
+  font-size: calc(22.4px * 1.05 * var(--legible-ui));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  opacity: 0.85;
+  padding: calc(6.4px * var(--legible-ui)) calc(11.2px * var(--legible-ui));
+  border-radius: 8px;
+  background: rgba(12, 8, 5, 0.78);
+  border: 1px solid rgba(255, 179, 92, 0.22);
+}
+.plate .count[data-urgent] {
+  color: #e3503f;
+  opacity: 1;
+}
+/* the time left as a bar along the plate's top edge, eased over the live clock's 250 ms tick */
+.plate .bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-11.2px * var(--legible-ui));
+  height: 3.2px;
+  border-radius: 1.6px;
+  background: rgba(239, 228, 203, 0.14);
+  overflow: hidden;
+  pointer-events: none;
+}
+.plate .bar i {
+  position: absolute;
+  inset: 0;
+  background: #c9a25e;
+  transform-origin: left center;
+  transition: transform 0.25s linear;
+}
+.plate .bar[data-urgent] i {
+  background: #e3503f;
 }

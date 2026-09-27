@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The stage box: a 16:9 frame holding a 1600×900 world, and the seven layers every scene
+ * The stage box: a 16:9 frame holding a 1600×900 world, and the nine layers every scene
  * is built from.
  *
  * Everything on the stage is placed in units of that 1600×900 world (see units.ts). The box
@@ -30,11 +30,13 @@ import { animate, useMotionValue, motion } from 'motion/react';
 import {
   createContext,
   useContext,
+  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -43,17 +45,26 @@ import { vars } from './paint/materials';
 import styles from './Stage.module.css';
 import './stage.css';
 
-/** The layers, bottom to top (stage_architecture.md §3). */
+/**
+ * The layers, bottom to top (stage_architecture.md §3). `haze` and `grade` are the atmosphere's
+ * (Atmosphere.tsx): the haze pushes the room's paint back behind what stands in front of it;
+ * the grade (the key light's falloff, the vignette, the grain) is the camera's own, so it sits
+ * outside the camera's box with the HUD, under it.
+ */
 export const LAYERS = [
   'paint',
+  'haze',
   'floor',
   'figures',
   'stand',
   'instruments',
   'light',
+  'grade',
   'hud',
 ] as const;
 export type LayerName = (typeof LAYERS)[number];
+/** The layers the camera does not move. */
+const FIXED: readonly LayerName[] = ['grade', 'hud'];
 
 /** Where the camera looks: `scale` about the world point (x, y), which stays where it is. */
 export interface StageCamera {
@@ -171,9 +182,9 @@ export function Stage({
     >
       <div className={styles.world}>
         <motion.div className={styles.camera} style={{ x: cx, y: cy, scale: ck }}>
-          {LAYERS.filter((name) => name !== 'hud').map(layerDiv)}
+          {LAYERS.filter((name) => !FIXED.includes(name)).map(layerDiv)}
         </motion.div>
-        {layerDiv('hud')}
+        {FIXED.map(layerDiv)}
         <LayerContext.Provider value={nodes}>
           <CameraContext.Provider value={setShot}>{children}</CameraContext.Provider>
         </LayerContext.Provider>
@@ -252,12 +263,63 @@ export function Paint<O extends { id: string }>({
   );
 }
 
+/*
+ * The pictures a paint refers to (its textures), kept as data URIs: an SVG drawn as an image
+ * cannot load files, so PaintPicture writes them into its SVG. Fetched once per URL, from the
+ * browser's cache when the live paint has already shown them.
+ */
+const inlined = new Map<string, string>();
+const loading = new Set<string>();
+const listeners = new Set<() => void>();
+const subscribe = (f: () => void) => {
+  listeners.add(f);
+  return () => listeners.delete(f);
+};
+
+/** Start turning these pictures into data URIs, so a later PaintPicture has them at once. */
+export function preloadPictures(urls: readonly string[]) {
+  for (const url of urls) {
+    if (inlined.has(url) || loading.has(url)) continue;
+    loading.add(url);
+    fetch(url)
+      .then((r) => r.blob())
+      .then(
+        (b) =>
+          new Promise<string>((ok, fail) => {
+            const fr = new FileReader();
+            fr.onload = () => ok(fr.result as string);
+            fr.onerror = fail;
+            fr.readAsDataURL(b);
+          }),
+      )
+      .then((data) => {
+        inlined.set(url, data);
+        listeners.forEach((f) => f());
+      })
+      .catch(() => {})
+      .finally(() => loading.delete(url));
+  }
+}
+
+/** Every picture a paint's markup points at by URL (not its own `#id`s, not data URIs). */
+const hrefsOf = (svg: string) => [
+  ...new Set(
+    [...svg.matchAll(/\shref="([^"#][^"]*)"/g)]
+      .map((m) => m[1])
+      .filter((u) => !u.startsWith('data:')),
+  ),
+];
+
 /**
  * The same paint as a picture, for a backdrop that fades out. A live filtered SVG fading on a
  * GPU drops a black frame as Chrome gives it its own layer (seen on the vote's dusk-to-night,
  * 2026-09-25; pinning the layer did not help), while an image made from the same SVG is
  * rasterised once and fades as a bitmap. The generator's markup is the SVG followed by the dim
  * overlay; the overlay stays live, the SVG becomes the image.
+ *
+ * The SVG's own pictures (the walls' and the floor's textures) go into the image as data URIs,
+ * the same bytes the live paint shows, so the picture matches it. Until they are ready (a fade
+ * on the page's very first frame) the fading copy is the live SVG instead.
  */
 export function PaintPicture<O extends { id: string }>({
   of,
@@ -267,24 +329,43 @@ export function PaintPicture<O extends { id: string }>({
   opts: Omit<O, 'id'>;
 }) {
   const key = JSON.stringify(opts);
-  const { src, rest } = useMemo(() => {
+  const { svg, rest, hrefs } = useMemo(() => {
     // Ids inside an SVG image are its own document's, so a fixed one cannot collide.
     const html = of({ ...JSON.parse(key), id: 'picture' } as O);
-    const end = html.indexOf('</svg>') + '</svg>'.length;
-    return {
-      src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(html.slice(0, end)),
-      rest: html.slice(end),
-    };
+    // the last closing tag: the walls' veneer patterns hold small svg elements of their own
+    const end = html.lastIndexOf('</svg>') + '</svg>'.length;
+    const svg = html.slice(0, end);
+    return { svg, rest: html.slice(end), hrefs: hrefsOf(svg) };
   }, [of, key]);
+  useEffect(() => preloadPictures(hrefs), [hrefs]);
+  const ready = useSyncExternalStore(
+    subscribe,
+    () => hrefs.every((u) => inlined.has(u)),
+    () => hrefs.length === 0,
+  );
+  const src = useMemo(() => {
+    if (!ready) return null;
+    let s = svg;
+    for (const u of hrefs) s = s.split(`href="${u}"`).join(`href="${inlined.get(u)}"`);
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+  }, [ready, svg, hrefs]);
   return (
     <div className="stage-paint">
-      {/* eslint-disable-next-line @next/next/no-img-element -- a data URL, never optimised */}
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-      />
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- a data URL, never optimised
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        />
+      ) : (
+        <div
+          className="stage-paint"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      )}
       <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: rest }} />
     </div>
   );

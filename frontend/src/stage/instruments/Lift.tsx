@@ -18,9 +18,11 @@
  * browser slides the picture it already has instead of redrawing the table every frame.
  */
 import { motion, useMotionValue, useTransform } from 'motion/react';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { useMotionScale } from '../motion';
-import { BOARD, BOARD2, K2 } from '../paint/materials';
+import { BOARD2, K2 } from '../paint/materials';
+import { boards } from '../paint/texture';
+import { WOOD } from '../textures';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
 import { trapGeometry } from './Floor';
 import { loadOpacity } from './lift-fade';
@@ -59,6 +61,8 @@ function Slab({ g }: { g: StageGeometry }) {
     w = t.trapW - 2 * rim,
     top = t.holeTop + rim,
     h = t.holeBot - rim - top;
+  // the floor's boards, two planks meeting on the drawn seam
+  const tex = 'sl' + useId().replace(/[^A-Za-z0-9_-]/g, '');
   return (
     <svg
       viewBox={`0 0 ${STAGE_W} ${STAGE_H}`}
@@ -71,9 +75,10 @@ function Slab({ g }: { g: StageGeometry }) {
       }}
       aria-hidden="true"
     >
+      <defs dangerouslySetInnerHTML={{ __html: boards(tex, WOOD.boards, top, h / 2) }} />
       <path
         d={`M${x},${top} h${w} v${h} h${-w}Z`}
-        fill={BOARD}
+        fill={`url(#${tex})`}
         stroke={K2}
         strokeWidth={2}
         strokeLinejoin="round"

@@ -16,6 +16,7 @@ import { motion } from 'motion/react';
 import { usePaintId } from '../Stage';
 import { useMotionScale } from '../motion';
 import { shutterGeometry, shutterParts, type ShutterState } from '../paint/window';
+import { WOOD } from '../textures';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
 
 export interface ShutterProps {
@@ -31,7 +32,7 @@ export interface ShutterProps {
 export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
   const k = useMotionScale();
   const id = usePaintId();
-  const { clip, panel, stack, pelmet, cid } = shutterParts(g, id);
+  const { clip, panel, stack, pelmet, cid } = shutterParts(g, id, WOOD.walnut);
   const up = -(shutterGeometry(g).f.h + 12);
   const closed = state === 'closed';
   const d = delay ?? (closed ? 0.35 : 1.4);

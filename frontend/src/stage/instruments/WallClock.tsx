@@ -1,23 +1,35 @@
 'use client';
 
 /**
- * The wall clock in the dining car, hung on its string at the left: brass, a paper face,
- * two hands. It carries the time the scene needs said. At night it starts at midnight and
- * its hands move on toward dawn as acts come in; on a seat's turn it can carry a red ring
- * for the seconds left.
+ * The wall clock in the dining car, hung on its cord at the left: the owner's painted brass
+ * case and face (SPRITES.props.wallClock, no hands), with two hands drawn over it. It carries
+ * the time the scene needs said: the hour's own time by default (CarPaint hangs it so), and
+ * at night it starts at midnight and its hands move on toward dawn as acts come in; on a
+ * seat's turn it can carry a red ring for the seconds left.
  *
- * The dining car's paint draws a clock that only keeps the phase's hour; a scene that needs
- * the hands to move turns that one off (`wallClock: false`) and hangs this in its place, at
- * the paint's own position (`diningCarPlan().clock`). The drawing is the kit's
- * (`wallClock`, `clockAt`); the moving hands and the ring are bench 67's `clockFace`.
+ * It hangs where the car's plan says (`diningCarPlan().clock`): the picture is sized so its
+ * ring of twelve dots sits where the kit's dots were (0.66 r), so the face is the kit's face
+ * (0.8 r) and the hands (bench 67's `clockFace`) turn about its centre.
  *
- * The room's night tint falls on the brass and the string, as it does on the paint's clock;
- * the face stays pale, lit by its special, so the hands read.
+ * The room's tint falls on the case and the chain, as it did on the kit's clock (the brass);
+ * the face stays pale, lit by its special, so the hands read. It sways on its cord with the
+ * shadow it throws on the wall (the rooms' atmosphere).
  */
-import { motion } from 'motion/react';
+import { motion, type Transition } from 'motion/react';
+import { useId } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import { useMotionScale } from '../motion';
-import { CAR, K2, ROOMLIGHT, type Phase } from '../paint/materials';
+import { K2, ROOMLIGHT, type Phase } from '../paint/materials';
 import { STAGE_H, STAGE_W } from '../units';
+
+/**
+ * The picture (wall-clock.webp, 422×608) in its own pixels: the face's centre, the radius of its
+ * ring of dots and of its cream face, and the top of the chain, where the cord ties on.
+ */
+const CLOCK_PX = { cx: 210.53, cy: 385.78, dots: 134.34, face: 160, top: 4.5 };
+
+/** Its shadow on the wall, thrown by the key light: how far it falls and how dark. */
+const SHADOW = { dx: 18, dy: 15, a: 0.46 };
 
 export interface WallClockProps {
   /** Centre and radius, from the dining car's plan. */
@@ -32,6 +44,9 @@ export interface WallClockProps {
   ring?: number | null;
   /** The hour's paint, for the room's tint on the brass. */
   phase: Phase;
+  /** Played: the hour the room was at before; its tint fades off the brass with the car's. */
+  tintFrom?: Phase | null;
+  fade?: Transition;
 }
 
 const angle = (t: number) => ({
@@ -82,10 +97,12 @@ export function WallClock({
   from = null,
   ring = null,
   phase,
+  tintFrom = null,
+  fade,
 }: WallClockProps) {
   const k = useMotionScale();
-  const H = STAGE_H,
-    R = r * 0.8;
+  const id = 'wc' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const R = r * 0.8;
   // played, the hands turn forward by the time that passed, never back the short way
   const was = from === null ? null : angle(from);
   const to = was
@@ -94,19 +111,30 @@ export function WallClock({
         minute: was.minute + (time - (from ?? time)) * 360,
       }
     : angle(time);
-  const tint = ROOMLIGHT[phase];
-  const dots = Array.from({ length: 12 }, (_, i) => {
-    const a = (i / 12) * Math.PI * 2;
-    return (
-      <circle
-        key={i}
-        cx={x + Math.cos(a) * r * 0.66}
-        cy={y + Math.sin(a) * r * 0.66}
-        r={i % 3 ? 1.4 : 2.4}
-        fill={K2}
+  // the picture, sized so its dots lie at 0.66 r: kp units a pixel
+  const img = SPRITES.props.wallClock,
+    kp = (0.66 * r) / CLOCK_PX.dots,
+    ix = x - CLOCK_PX.cx * kp,
+    iy = y - CLOCK_PX.cy * kp,
+    iw = img.width * kp,
+    ih = img.height * kp;
+  // the baked shadow: the silhouette 128 px tall with a 12 px margin (manifest.ts)
+  const sh = SPRITES.shadow.wall.clock,
+    su = ih / 128;
+  const tintRect = (p: Phase) =>
+    ROOMLIGHT[p].tint ? (
+      <rect
+        x={ix}
+        y={iy}
+        width={iw}
+        height={ih}
+        fill={ROOMLIGHT[p].tint ?? undefined}
+        opacity={ROOMLIGHT[p].a}
+        mask={`url(#${id}m)`}
+        clipPath={`url(#${id}c)`}
       />
-    );
-  });
+    ) : null;
+  const old = tintFrom && tintFrom !== phase ? tintRect(tintFrom) : null;
   const ringPath = (() => {
     if (ring == null) return null;
     const f = Math.max(0, Math.min(1, ring)),
@@ -136,12 +164,40 @@ export function WallClock({
       }}
       aria-hidden="true"
     >
-      <g className="sk-hang" style={{ filter: 'drop-shadow(8px 7px 5px rgba(0,0,0,.37))' }}>
+      <defs>
+        {/* the picture's own shape, and everything but its face: where the room's tint falls */}
+        <mask
+          id={`${id}m`}
+          maskUnits="userSpaceOnUse"
+          x={ix}
+          y={iy}
+          width={iw}
+          height={ih}
+          style={{ maskType: 'alpha' }}
+        >
+          <image href={img.src} x={ix} y={iy} width={iw} height={ih} />
+        </mask>
+        <clipPath id={`${id}c`}>
+          <path
+            clipRule="evenodd"
+            d={`M${ix},${iy} h${iw} v${ih} h${-iw}Z M${x - CLOCK_PX.face * kp},${y} a${CLOCK_PX.face * kp},${CLOCK_PX.face * kp} 0 1 0 ${2 * CLOCK_PX.face * kp},0 a${CLOCK_PX.face * kp},${CLOCK_PX.face * kp} 0 1 0 ${-2 * CLOCK_PX.face * kp},0Z`}
+          />
+        </clipPath>
+      </defs>
+      <g className="sk-hang">
+        <image
+          href={sh.src}
+          x={ix + (iw - sh.width * su) / 2 + SHADOW.dx}
+          y={iy - 12 * su + SHADOW.dy}
+          width={sh.width * su}
+          height={sh.height * su}
+          opacity={SHADOW.a}
+        />
         <line
           x1={x}
           y1={0}
           x2={x}
-          y2={y - r - 0.03 * H}
+          y2={iy + CLOCK_PX.top * kp}
           stroke={K2}
           strokeOpacity={0.8}
           strokeWidth={3}
@@ -150,49 +206,17 @@ export function WallClock({
           x1={x}
           y1={0}
           x2={x}
-          y2={y - r - 0.03 * H}
+          y2={iy + CLOCK_PX.top * kp}
           stroke="#d9c9a0"
           strokeWidth={1.4}
         />
-        <circle
-          cx={x}
-          cy={y - r - 0.018 * H}
-          r={8}
-          fill="none"
-          stroke={CAR.brass}
-          strokeWidth={3}
-        />
-        <rect
-          x={x - 5}
-          y={y - r - 0.01 * H}
-          width={10}
-          height={0.012 * H}
-          fill={CAR.brass}
-          stroke={K2}
-          strokeWidth={1.2}
-        />
-        <circle cx={x} cy={y} r={r} fill={CAR.brass} stroke={K2} strokeWidth={2.4} />
-        {tint.tint ? (
-          <circle
-            cx={x}
-            cy={y}
-            r={r + 1.2}
-            fill={tint.tint}
-            opacity={tint.a}
-            style={{ mixBlendMode: 'multiply' }}
-          />
+        <image href={img.src} x={ix} y={iy} width={iw} height={ih} />
+        {tintRect(phase)}
+        {old ? (
+          <motion.g initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={fade}>
+            {old}
+          </motion.g>
         ) : null}
-        <circle cx={x} cy={y} r={R} fill="#ecdfc3" stroke={K2} strokeWidth={2} />
-        <circle
-          cx={x}
-          cy={y}
-          r={R * 0.8}
-          fill="none"
-          stroke={K2}
-          strokeWidth={1}
-          strokeDasharray={`1.2 ${R * 0.8 * 0.5236 - 1.2}`}
-        />
-        {dots}
         {ringPath}
         <Hand
           x={x}

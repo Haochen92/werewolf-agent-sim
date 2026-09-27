@@ -47,12 +47,12 @@ export function atRail(beat: Pick<SceneBeat, 'id' | 'scene'>): boolean {
 
 /**
  * Where the rail stop holds even on a phone. On a phone the car's prompts (the ballot, the
- * dock) already stop short of the slot, so the drawer may run full height there (owner,
- * 2026-09-26: it should fill the side); the own room's plate and the pack's chat still span
- * the band, so those keep the drawer at the rail.
+ * dock) and the own room's plate (centred in the room left of the slot) stop short of it, so
+ * the drawer may run full height there (owner, 2026-09-26: it should fill the side); the
+ * pack's chat still spans the band's right, under the slot, so the pack keeps the rail.
  */
 export function railHolds(beat: Pick<SceneBeat, 'scene'>): boolean {
-  return beat.scene === 'room' || beat.scene === 'pack';
+  return beat.scene === 'pack';
 }
 
 /** The box at the foot narrows to the room: only a full-height drawer takes the band's right. */

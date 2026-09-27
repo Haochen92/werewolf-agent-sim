@@ -18,6 +18,7 @@
 import { useState, type ReactNode } from 'react';
 import type { NightView } from '@/game/types';
 import { SideSlot } from '../SideSlot';
+import { countText } from '../countdown';
 import { ActPlate } from '../instruments/ActPlate';
 import { PackChat, type PackEntry } from '../instruments/PackChat';
 import { Tooth } from '../instruments/Tooth';
@@ -133,12 +134,12 @@ function Pack(props: SceneProps) {
       alone={alone}
       dolls={dolls}
       lit={lit}
+      pin={lit}
       onChoose={
         voting && !mine ? (seat) => setChosen((c) => (c === seat ? null : seat)) : undefined
       }
       marks={marks}
       pack={pack}
-      clock={voting || talking ? turn?.clock : null}
       cardOpen={cardOpen}
       onCard={setCardOpen}
     >
@@ -157,7 +158,9 @@ function Pack(props: SceneProps) {
                   draft: turn?.draft ?? '',
                   onSay,
                   left: g.wingN + 22.4,
-                  note: turn?.clock ? 'the clock has your two minutes' : undefined,
+                  note: turn?.clock
+                    ? `${countText(turn.clock.remainingMs)} to say it`
+                    : undefined,
                 }
               : undefined
           }
@@ -173,6 +176,7 @@ function Pack(props: SceneProps) {
                 ? `${verb} seat ${seatNumber(chosen)}`
                 : 'Choose a seat to kill'
           }
+          clock={mine ? null : turn?.clock}
           disabled={!chosen || !!mine}
           onConfirm={() => {
             if (!chosen || mine) return;

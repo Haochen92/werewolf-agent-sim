@@ -1,0 +1,65 @@
+/* the glass: everything inside is clipped to its rounded rect, so the frame's brass surrounds it */
+.glass {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.far {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* the near row: wider than the glass by one picture, so sliding one picture left loops without a seam */
+.near {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  will-change: transform;
+}
+
+/* the glass itself: the car's 10% veil, a soft sheen from the top left, a dark edge and a little depth */
+.pane {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      128deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.06) 20%,
+      rgba(255, 255, 255, 0) 40%
+    ),
+    rgba(12, 10, 7, 0.1);
+  box-shadow:
+    inset 0 0 0 1.5px #2a180c,
+    inset 0 0 18px rgba(0, 0, 0, 0.4);
+}
+
+/* only transform moves; still for reduced motion, as the rest of the backdrop's idle life (stage.css) */
+@media (prefers-reduced-motion: no-preference) {
+  .near {
+    animation-name: scroll;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+}
+@keyframes scroll {
+  to {
+    transform: translateX(calc(-1 * var(--tile)));
+  }
+}

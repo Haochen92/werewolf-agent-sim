@@ -63,19 +63,39 @@ export function voteGeometry(g: StageGeometry): VoteGeometry {
   };
 }
 
-/** The jar's outline and its lid, upright on the table. */
+/**
+ * The painted glass and lid (SPRITES.props), in their files' pixels: the file's size and the
+ * painted thing's box inside it. The glass's lines are fractions of its height above its foot.
+ */
+export const GLASS_PX = { W: 988, H: 1446, x: 8, y: 8, w: 972, h: 1430 } as const;
+/** The lid's skirt is 1030 px wide; the string ties round the ring's top bar, 38 px down. */
+export const LID_PX = {
+  W: 1154,
+  H: 827,
+  x: 8,
+  y: 8,
+  w: 1138,
+  h: 811,
+  skirt: 1030,
+  tie: 38,
+} as const;
+
+/** The jar and its lid, upright on the table, where the glass picture has them. */
 export function jarGeometry(v: VoteGeometry) {
   const { cx, base, g } = v,
     h = 0.56 * g.ph,
-    w = 0.42 * g.pwid;
-  const wN = w * 0.66,
-    yS = base - h * 0.6,
-    yN = base - h * 0.82,
-    yR = base - h * 0.93,
-    rb = w * 0.14;
-  const lh = h * 0.11,
-    lw = wN * 1.12,
-    ly = yR - lh * 0.72;
+    w = (h * GLASS_PX.w) / GLASS_PX.h;
+  // measured on the picture: the lip's width, its foot, the mouth, the neck's foot, the inner floor
+  const wN = w * 0.705,
+    yL = base - h * 0.907,
+    yR = base - h * 0.968,
+    yN = base - h * 0.824,
+    floor = base - h * 0.15;
+  // the lid's skirt as wide as the lip it screws over, its foot on the lip's foot
+  const ks = wN / LID_PX.skirt,
+    lw = LID_PX.w * ks,
+    lh = LID_PX.h * ks,
+    ly = yL - lh;
   // the tipped pose: turned on its side about the base's centre, a little smaller for being
   // upstage, set down at the back rail to the right
   const sc = 0.62,
@@ -95,16 +115,16 @@ export function jarGeometry(v: VoteGeometry) {
     h,
     w,
     wN,
-    yS,
     yN,
     yR,
-    rb,
-    /** The lid: a brass band, a dome and a knob; where its string ties on. */
-    lid: { lh, lw, ly, knob: ly - h * 0.105 - 7, cx, cy: ly + lh / 2 },
+    /** Where the chips in the jar lie: on the thick glass bottom. */
+    floor,
+    /** The lid picture's box, its scale (units a pixel), and where its string ties on. */
+    lid: { lh, lw, ly, ks, knob: ly + LID_PX.tie * ks, cx, cy: ly + lh / 2 },
     /** Lifted off and tilted, hung on its string. */
     lidUp: { x: 0.07 * g.pwid, y: -0.11 * g.ph, rot: -16 },
-    /** The top of the lifted lid, where the light's special stops. */
-    top: ly - h * 0.12,
+    /** The top of the lid's ring, where the light's special stops. */
+    top: ly,
     tip: { ox: cx, oy: base, dx, dy, ang, sc },
     /** The tipped jar's mouth, where a counted chip leaves it. */
     mouth: { x: cx + dx + m * sn * sc, y: base + dy - m * cs * sc },
@@ -114,8 +134,9 @@ export function jarGeometry(v: VoteGeometry) {
 /** Chips in a pile, per = 4 to a layer, each layer a little higher and staggered. */
 export function pileSpots(v: VoteGeometry, n: number): [number, number][] {
   const J = jarGeometry(v),
-    base = v.base - J.rb * 0.3,
-    halfW = J.w / 2 - 3,
+    base = J.floor,
+    // inside the glass's walls
+    halfW = J.w * 0.44,
     { r } = v,
     per = 4;
   const out: [number, number][] = [];

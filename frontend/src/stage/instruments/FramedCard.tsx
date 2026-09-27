@@ -16,6 +16,9 @@ import { factionOf } from '../roles';
 import { Sigil } from './Sigil';
 import styles from './NightRoom.module.css';
 
+/** The frame's outermost ring, drawn past its box (NightRoom.module.css `.framed`). */
+const FRAME_RING = 9.6;
+
 export interface FramedCardProps {
   role: string;
   /** The frame's centre x and the shelf's top face it stands on, in units. */
@@ -35,38 +38,46 @@ export function FramedCard({ role, x, foot, height, u, alone, onOpen }: FramedCa
   if (!text) return null;
   const w = height * 0.72;
   const faction = factionOf(role) ?? 'villagers';
+  // the frame's outer ring (9.6 units past the box) is what stands on the shelf
+  const top = foot - FRAME_RING - height;
   return (
-    <button
-      type="button"
-      className={`${styles.framed} ${styles[faction]}`}
-      data-card={role}
-      aria-label={`Your card: ${text.name}. Tap to read`}
-      onClick={onOpen}
-      style={
-        {
-          left: x - w / 2,
-          top: foot - height,
-          width: w,
-          height,
-          '--u': `${u}px`,
-        } as CSSProperties
-      }
-    >
-      <span className={styles.framedIn}>
-        <span className={styles.framedHead}>
-          <span>{text.name}</span>
-          <Sigil role={role} />
+    <>
+      <div
+        className={styles.contact}
+        style={{ left: x - w * 0.55 + 7, top: foot - 8, width: w * 1.1, height: 16 }}
+      />
+      <button
+        type="button"
+        className={`${styles.framed} ${styles[faction]}`}
+        data-card={role}
+        aria-label={`Your card: ${text.name}. Tap to read`}
+        onClick={onOpen}
+        style={
+          {
+            left: x - w / 2,
+            top,
+            width: w,
+            height,
+            '--u': `${u}px`,
+          } as CSSProperties
+        }
+      >
+        <span className={styles.framedIn}>
+          <span className={styles.framedHead}>
+            <span>{text.name}</span>
+            <Sigil role={role} />
+          </span>
+          <span
+            className={styles.framedFig}
+            dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
+          />
+          <span className={styles.framedLine}>
+            {alone && text.nightAlone ? text.nightAlone : text.night}
+          </span>
         </span>
-        <span
-          className={styles.framedFig}
-          dangerouslySetInnerHTML={{ __html: roleFigure(role) }}
-        />
-        <span className={styles.framedLine}>
-          {alone && text.nightAlone ? text.nightAlone : text.night}
-        </span>
-      </span>
-      <em>tap to read</em>
-    </button>
+        <em>tap to read</em>
+      </button>
+    </>
   );
 }
 

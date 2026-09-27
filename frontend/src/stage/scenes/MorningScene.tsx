@@ -22,6 +22,7 @@
  */
 import type { AttackerType } from '@/types/contracts';
 import type { GameView, NightView } from '@/game/types';
+import { Atmosphere } from '../Atmosphere';
 import type { SceneBeat } from '../beats/types';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
@@ -347,6 +348,7 @@ function MorningBeat({ view, beat, me, presentation, slot: slotInput }: ScenePro
 
   return (
     <>
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint
           phase={phase}

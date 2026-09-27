@@ -6,10 +6,11 @@
  * plush dolls. Only the seats the server offered hang there (`pending.candidates` is the
  * only source of legal targets; the room never works out who may be chosen).
  *
- * - `room.opens`: the room, evenly lit; the clock runs on the request's time; the plate asks.
- * - choosing (tap a doll): the room below the shelf dims, one light finds the doll, the act's
- *   mark lands on it (plaster, lens, bullet, knife) and the plate names the act ("Protect
- *   seat 1"). The vigilante's plate also has "Hold fire"; the caps left sit under the popgun.
+ * - `room.opens`: the room dark but for the candle's pool on the dolls; the plate asks, and
+ *   carries the countdown on the request's time.
+ * - choosing (tap a doll): the room below the shelf goes darker, one light finds the doll, a
+ *   pin goes into it and the plate names the act ("Protect seat 1"). Tapping it again draws
+ *   the pin out. The vigilante's plate also has "Hold fire"; the caps left sit under the popgun.
  * - confirming (tap the plate): the act goes out through `onAct`; the container takes the
  *   seat back to the lobby.
  * - the card (tap the frame): the full card over the room; a tap closes it.
@@ -19,12 +20,12 @@
 import { useState } from 'react';
 import type { ActionKind } from '@/types/contracts';
 import { SideSlot } from '../SideSlot';
-import { ActMark, type ActKind } from '../instruments/ActMark';
 import { ActPlate } from '../instruments/ActPlate';
 import { Caps } from '../instruments/Notice';
-import styles from '../instruments/NightRoom.module.css';
 import { StageMotion } from '../motion';
 import { seatNumber } from '../roles';
+import { sideOpen } from '../slot';
+import { geometry } from '../units';
 import { NightRoom } from './NightRoom';
 import type { SceneProps } from './types';
 
@@ -50,14 +51,6 @@ export function plateLabel(kind: ActionKind | undefined, chosen: string | null):
     return verb === 'Choose' ? 'Choose a seat' : `Choose a seat to ${verb.toLowerCase()}`;
   return `${verb} seat ${seatNumber(chosen)}`;
 }
-
-/** The mark the act leaves on the chosen doll: the morning's marks, by role. */
-const ACT_MARK: Partial<Record<string, ActKind>> = {
-  healer: 'plaster',
-  investigator: 'lens',
-  vigilante: 'bullet',
-  serial_killer: 'knife',
-};
 
 export function ShelfRoomScene(props: SceneProps) {
   const t = props.turn;
@@ -85,7 +78,6 @@ function ShelfRoom(props: SceneProps) {
   const [cardOpen, setCardOpen] = useState(!!turn?.cardOpen);
   const [sent, setSent] = useState(false);
 
-  const mark = ACT_MARK[role];
   const bullets = role === 'vigilante' ? (view.me.role?.bullets ?? null) : null;
 
   const act = (target: string | null) => {
@@ -100,33 +92,18 @@ function ShelfRoom(props: SceneProps) {
       role={role}
       dolls={dolls}
       lit={chosen}
+      pin={chosen}
       onChoose={sent ? undefined : (seat) => setChosen((c) => (c === seat ? null : seat))}
-      marks={
-        chosen && mark
-          ? {
-              [chosen]: (
-                <span className={styles.actMark}>
-                  {/* a seeded choice is at rest; a tapped one pops in */}
-                  <ActMark
-                    kind={mark}
-                    x={0}
-                    y={0}
-                    k={26}
-                    arrive={chosen === turn?.chosen ? false : 0}
-                  />
-                </span>
-              ),
-            }
-          : undefined
-      }
       kitNote={bullets !== null ? <Caps n={bullets} /> : undefined}
-      clock={turn?.clock}
       cardOpen={cardOpen}
       onCard={setCardOpen}
     >
       {pending ? (
         <ActPlate
           label={plateLabel(kind, chosen)}
+          // centred in the room, left of an open side slot, so the drawer can run full height
+          centre={geometry(props.presentation.hud, sideOpen(props.presentation)).cx}
+          clock={sent ? null : turn?.clock}
           disabled={!chosen || sent}
           onConfirm={() => act(chosen)}
           secondary={

@@ -22,6 +22,7 @@
  * chip while the lamp goes out.
  */
 import { useEffect, useState } from 'react';
+import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
@@ -169,6 +170,7 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
 
   return (
     <>
+      <Atmosphere room="car" phase="night" hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint phase="night" hud={hud} wallClock={false} side={side} />
         {plan.clock ? (
@@ -192,6 +194,8 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
             <Puppet
               key={seat}
               g={g}
+              shadow
+              glass
               character={cast[n - 1]}
               seat={n}
               state="base"
@@ -206,6 +210,7 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
           return (
             <Chip
               key={seat}
+              glass={g}
               x={rowX(row, i, alive.length)}
               y={row.rowY}
               r={row.cr}

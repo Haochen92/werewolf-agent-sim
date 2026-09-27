@@ -8,32 +8,25 @@
  * not the glass, a warm glow per lit source) follows the hour too.
  *
  * Ported from the design kit's `scene()` (kits/stage-kit.js, VERSION 2026-09-23) so that it
- * draws exactly what the kit draws; a test holds the two byte-for-byte equal. The only
- * change is that the wall clock can be left out, for when the WallClock instrument (which
- * carries the turn's red ring and the night's progress) hangs in its place.
+ * draws exactly what the kit draws; a test holds the two byte-for-byte equal. Two changes: the
+ * glass is a plain fill of the hour's sky, with no vector country, because the felt pictures
+ * (FeltWindow) lie over it; and the wall clock and the lantern are not drawn, because they are
+ * painted pictures now (WallClock, WallLamp) hung where the plan says. Their specials, the
+ * lantern's halo and pool and the room's glows are still the car's. Given `wood`, the walls
+ * and the floor are painted material rather than flat (paint/texture.ts), in the same shapes.
  */
 import { geometry, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
-import {
-  beam,
-  cutout,
-  flameAt,
-  inkP,
-  K2,
-  twine,
-  type Glow,
-  type Rect,
-  type Special,
-} from './draw';
+import { beam, cutout, K2, type Glow, type Rect, type Special } from './draw';
 import {
   BOARD,
   BOARD2,
   CAR,
-  CLOCK,
   PHASES,
   ROOMLIGHT,
   type Phase,
   type PhasePaint,
 } from './materials';
+import { boards, DARKER, veneer, walnutAcross, walnutImage, type Wood } from './texture';
 import { carLines, windowFrame, windowRect } from './window';
 
 export interface DiningCarOpts {
@@ -47,8 +40,8 @@ export interface DiningCarOpts {
   dark?: number;
   /** A flat veil over the whole backdrop, 0–100. */
   dim?: number;
-  /** Draw the kit's wall clock (default). Off when the WallClock instrument hangs there instead. */
-  wallClock?: boolean;
+  /** The walls' walnut and the floor's boards; without them the car is flat, as the kit draws it. */
+  wood?: Wood;
 }
 
 /** Where things are in the car, for the layers above it (the light, the floor, the instruments). */
@@ -63,6 +56,8 @@ export interface DiningCarPlan {
   window: Rect;
   /** The wall clock's centre and radius, where the WallClock instrument hangs. */
   clock: { x: number; y: number; r: number } | null;
+  /** The lantern's glass box and its bracket's wall plate, where WallLamp hangs the picture. */
+  lamp: ReturnType<typeof lanternBox> | null;
 }
 
 interface Ctx {
@@ -95,73 +90,51 @@ interface Part {
   wins: Rect[];
 }
 
-function clockAt(
-  ctx: Ctx,
-  x: number,
-  y: number,
-  r: number,
-  s: number,
-  face = '#ecdfc3',
-): string {
-  const [hh, mm] = CLOCK[ctx.phase],
-    ha = ((hh % 12) / 12) * 2 * Math.PI - Math.PI / 2,
-    ma = ((mm % 60) / 60) * 2 * Math.PI - Math.PI / 2;
-  return (
-    `<circle cx="${x}" cy="${y}" r="${r}" fill="${face}" stroke="${K2}" stroke-width="${2 * s}"/><circle cx="${x}" cy="${y}" r="${r * 0.8}" fill="none" stroke="${K2}" stroke-width="${s}" stroke-dasharray="${1.2 * s} ${r * 0.8 * 0.5236 - 1.2 * s}"/>` +
-    `<path d="M${x},${y} l${Math.cos(ha) * r * 0.5},${Math.sin(ha) * r * 0.5} M${x},${y} l${Math.cos(ma) * r * 0.72},${Math.sin(ma) * r * 0.72}" stroke="${K2}" stroke-width="${2.2 * s}" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="${1.8 * s}" fill="${K2}"/>`
-  );
-}
-
 function carWindow(ctx: Ctx, sh: Shape, c: PhasePaint, rect: Rect): Part {
   const { s, W } = sh,
     [wx, wy, ww, wh] = rect;
-  const d = windowFrame(ctx.P, ctx.phase, c, rect, s);
+  const d = windowFrame(c, rect, s);
   sh.winL = wx - 0.02 * W;
   sh.winR = wx + ww + 0.02 * W;
   ctx.special(wx + ww / 2, wy + wh, ww * 0.55, 0.45);
   return { d: cutout(ctx.P, s, d, 1), emit: '', glows: [], wins: [rect] };
 }
 
-/* the right piece: an iron carriage lantern, six-sided, peaked roof and finial, on a scrolled bracket from a round plate */
-function lantern(ctx: Ctx, sh: Shape, c: PhasePaint, slot: [number, number]): Part {
-  const { s, H, W } = sh,
+/* where the lantern hangs in its slot: its centre, its glass box, its bracket's plate */
+function lanternBox(sh: Pick<Shape, 'H' | 'W'>, slot: [number, number]) {
+  const { H, W } = sh,
     x = (slot[0] + slot[1]) / 2,
     y = 0.3 * H,
-    iron = '#1c1a18',
+    bw = 0.042 * W,
+    bh = 0.075 * H;
+  return {
+    x,
+    y,
+    bw,
+    bh,
+    bx: x - bw / 2,
+    by: y - bh * 0.5,
+    px: x - 0.032 * W,
+    py: y + 0.1 * H,
+  };
+}
+
+/* the right piece: the lantern (a picture, WallLamp) — its special, its halo and, lit, its pool on the floor */
+function lantern(ctx: Ctx, sh: Shape, c: PhasePaint, slot: [number, number]): Part {
+  const { H, W } = sh,
+    { x, y, bw, bh, by } = lanternBox(sh, slot),
     glows: Glow[] = [];
-  let d = '',
-    emit = '';
-  const px = x - 0.032 * W,
-    py = y + 0.1 * H;
-  d += `<circle cx="${px}" cy="${py}" r="${12 * s}" fill="${iron}" stroke="${K2}" stroke-width="${1.6 * s}"/><circle cx="${px}" cy="${py}" r="${5 * s}" fill="#3a3a3a"/><path d="M${px},${py} h${0.02 * W} q${0.02 * W},0 ${0.025 * W},${-0.04 * H} V${y + 0.03 * H}" fill="none" stroke="${iron}" stroke-width="${5 * s}" stroke-linecap="round"/><path d="M${px + 0.02 * W},${py} q${0.012 * W},${-0.01 * H} ${0.01 * W},${-0.03 * H}" fill="none" stroke="${iron}" stroke-width="${3 * s}" stroke-linecap="round"/>`;
-  const bw = 0.042 * W,
-    bh = 0.075 * H,
-    bx = x - bw / 2,
-    by = y - bh * 0.5;
-  d += `<rect x="${bx - 6 * s}" y="${by + bh}" width="${bw + 12 * s}" height="${8 * s}" rx="${2 * s}" fill="${iron}" stroke="${K2}" stroke-width="${1.6 * s}"/>`;
-  const glass = c.lit ? '#ffd27a' : '#f1e6c8',
-    gop = c.lit ? 0.95 : 0.55;
-  d += `<path d="M${bx - 8 * s},${by + 6 * s} L${bx},${by} V${by + bh} L${bx - 8 * s},${by + bh - 4 * s}Z" fill="${glass}" fill-opacity="${gop * 0.7}" stroke="${iron}" stroke-width="${2.2 * s}"/><path d="M${bx + bw + 8 * s},${by + 6 * s} L${bx + bw},${by} V${by + bh} L${bx + bw + 8 * s},${by + bh - 4 * s}Z" fill="${glass}" fill-opacity="${gop * 0.7}" stroke="${iron}" stroke-width="${2.2 * s}"/>`;
-  d += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="${glass}" fill-opacity="${gop}" stroke="${iron}" stroke-width="${2.4 * s}"/><path d="M${bx + bw / 2},${by} V${by + bh}" stroke="${iron}" stroke-width="${1.6 * s}" stroke-opacity=".6"/>`;
-  d +=
-    inkP(
-      `M${bx - 12 * s},${by} L${x},${by - bh * 0.45} L${bx + bw + 12 * s},${by}Z`,
-      iron,
-      2 * s,
-    ) +
-    `<rect x="${x - 3 * s}" y="${by - bh * 0.62}" width="${6 * s}" height="${bh * 0.2}" fill="${iron}"/><circle cx="${x}" cy="${by - bh * 0.66}" r="${4 * s}" fill="${iron}" stroke="${K2}" stroke-width="${1.2 * s}"/>`;
+  let emit = '';
   ctx.special(x, by + bh, 0.055 * W, 0.85);
   const hid = ctx.P + 'lh' + Math.round(x),
     halo = c.lit ? 0.34 : 0.1,
     rr = c.lit ? 0.26 * H : 0.09 * H;
   emit += `<defs><radialGradient id="${hid}" cx="${x}" cy="${y}" r="${rr.toFixed(0)}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd27a" stop-opacity="${halo}"/><stop offset=".35" stop-color="#ffb35c" stop-opacity="${(halo * 0.5).toFixed(2)}"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient></defs><circle cx="${x}" cy="${y}" r="${rr.toFixed(0)}" fill="url(#${hid})"/>`;
   if (c.lit) {
-    emit +=
-      `<path d="M${x - bw * 0.7},${by + bh} L${x - 0.11 * W},${sh.floorY} H${x + 0.11 * W} L${x + bw * 0.7},${by + bh}Z" fill="#ffb35c" opacity=".09"/>` +
-      flameAt(x, y + 0.005 * H, 1.2 * s);
+    emit += `<path d="M${x - bw * 0.7},${by + bh} L${x - 0.11 * W},${sh.floorY} H${x + 0.11 * W} L${x + bw * 0.7},${by + bh}Z" fill="#ffb35c" opacity=".09"/>`;
     glows.push([x, y, 0.3 * H, '#ffb35c']);
   } else glows.push([x, y, 0.06 * H, '#ffb35c']);
-  return { d: cutout(ctx.P, s, d, 1), emit, glows, wins: [] };
+  return { d: '', emit, glows, wins: [] };
 }
 
 function wallClockAt(sh: Shape, slot: [number, number]) {
@@ -170,30 +143,6 @@ function wallClockAt(sh: Shape, slot: [number, number]) {
     y = 0.3 * H,
     r = Math.min(0.085 * H, (slot[1] - slot[0]) * 0.48);
   return { x, y, r };
-}
-
-/* the left piece: a wall clock hung by its ring on a long string from above, keeping the phase's time */
-function wallClock(ctx: Ctx, sh: Shape, slot: [number, number]): Part {
-  const { s, H } = sh,
-    { x, y, r } = wallClockAt(sh, slot);
-  let d = '';
-  ctx.special(x, y + r, r * 1.35);
-  d +=
-    twine(x, 0, x, y - r - 0.03 * H, s) +
-    `<circle cx="${x}" cy="${y - r - 0.018 * H}" r="${8 * s}" fill="none" stroke="${CAR.brass}" stroke-width="${3 * s}"/><rect x="${x - 5 * s}" y="${y - r - 0.01 * H}" width="${10 * s}" height="${0.012 * H}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${1.2 * s}"/>`;
-  d +=
-    `<circle cx="${x}" cy="${y}" r="${r}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${2.4 * s}"/>` +
-    clockAt(ctx, x, y, r * 0.8, s);
-  for (let k = 0; k < 12; k++) {
-    const a = (k / 12) * Math.PI * 2;
-    d += `<circle cx="${(x + Math.cos(a) * r * 0.66).toFixed(1)}" cy="${(y + Math.sin(a) * r * 0.66).toFixed(1)}" r="${(k % 3 ? 1.4 : 2.4) * s}" fill="${K2}"/>`;
-  }
-  return {
-    d: `<g class="sk-hang">${cutout(ctx.P, s, d, 1)}</g>`,
-    emit: '',
-    glows: [],
-    wins: [],
-  };
 }
 
 function roomLight(
@@ -242,19 +191,30 @@ function build(o: DiningCarOpts): { html: string; plan: DiningCarPlan } {
   let d = `<defs><filter id="${P}shadf" x="-10%" y="-10%" width="120%" height="120%"><feFlood flood-color="#000" flood-opacity=".5"/><feComposite in2="SourceAlpha" operator="in"/><feGaussianBlur stdDeviation="${(5 * s).toFixed(1)}"/></filter>
       <filter id="${P}grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".55"/></feComponentTransfer></filter>
       <linearGradient id="${P}qfade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c0a07" stop-opacity=".95"/><stop offset=".12" stop-color="#0c0a07" stop-opacity="0"/><stop offset=".88" stop-color="#0c0a07" stop-opacity="0"/><stop offset="1" stop-color="#0c0a07" stop-opacity=".95"/></linearGradient></defs>`;
+  // the textures: veneered panels between the panel lines, the dado's grain across, the boards' seams on the floor's
+  const tex = o.wood
+    ? {
+        wall: `url(#${P}wal)`,
+        dado: `url(#${P}wald)`,
+        dadoVeil: `<rect x="0" y="${dado}" width="${W}" height="${floorY - dado}" fill="#000" opacity="${DARKER['#3a2212']}"/>`,
+        board: `url(#${P}brd)`,
+      }
+    : null;
+  if (o.wood)
+    d += `<defs>${walnutImage(P + 'wimg', o.wood.walnut)}${veneer(P + 'wal', P + 'wimg', 0, 0.08 * W)}${walnutAcross(P + 'wald', P + 'wimg')}${boards(P + 'brd', o.wood.boards, floorY, floorH / 2)}</defs>`;
   d += `<rect width="${W}" height="${H}" fill="#0c0a07"/>`;
   // the back flat: walnut, its panel lines, the dado and its brass rail; hazed toward one value, its ends fading into the dark
-  d += `<rect x="0" y="0" width="${W}" height="${floorY}" fill="${CAR.wall}"/>`;
+  d += `<rect x="0" y="0" width="${W}" height="${floorY}" fill="${tex?.wall ?? CAR.wall}"/>`;
   for (let px = 0; px < W; px += 0.08 * W)
     d += `<path d="M${px.toFixed(0)},0 V${dado}" stroke="${CAR.wallDark}" stroke-width="${4 * s}"/>`;
-  d += `<rect x="0" y="${dado}" width="${W}" height="${floorY - dado}" fill="${CAR.dado}"/><rect x="0" y="${dado - 4 * s}" width="${W}" height="${8 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${1.4 * s}"/>`;
+  d += `<rect x="0" y="${dado}" width="${W}" height="${floorY - dado}" fill="${tex?.dado ?? CAR.dado}"/>${tex?.dadoVeil ?? ''}<rect x="0" y="${dado - 4 * s}" width="${W}" height="${8 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${1.4 * s}"/>`;
   d += `<rect x="0" y="0" width="${W}" height="${floorY}" fill="${CAR.wallDark}" opacity=".38"/><rect x="0" y="0" width="${W}" height="${floorY}" fill="url(#${P}qfade)"/>`;
   // the stage floor: boards with one seam, and the trapdoor under the puppet (a seam and a hinge line; its front edge hidden by the stand)
-  d += `<rect x="0" y="${floorY}" width="${W}" height="${floorH}" fill="${BOARD}"/><path d="M0,${(floorY + floorH / 2).toFixed(0)} H${W}" stroke="${BOARD2}" stroke-width="${1.6 * s}" opacity=".7"/><rect x="0" y="${floorY}" width="${W}" height="${floorH}" fill="url(#${P}qfade)"/>`;
+  d += `<rect x="0" y="${floorY}" width="${W}" height="${floorH}" fill="${tex?.board ?? BOARD}"/><path d="M0,${(floorY + floorH / 2).toFixed(0)} H${W}" stroke="${BOARD2}" stroke-width="${1.6 * s}" opacity=".7"/><rect x="0" y="${floorY}" width="${W}" height="${floorH}" fill="url(#${P}qfade)"/>`;
   const tw = pw * 0.9,
     tx = cx - tw / 2,
     ty = floorY + floorH * 0.3;
-  d += `<rect x="${tx}" y="${ty}" width="${tw}" height="${B - ty}" fill="${BOARD}" stroke="#2a1a0c" stroke-width="${2.4 * s}"/><path d="M${tx + 10 * s},${ty + 6 * s} H${tx + tw - 10 * s}" stroke="#2a1a0c" stroke-width="${2 * s}"/>`;
+  d += `<rect x="${tx}" y="${ty}" width="${tw}" height="${B - ty}" fill="${tex?.board ?? BOARD}" stroke="#2a1a0c" stroke-width="${2.4 * s}"/><path d="M${tx + 10 * s},${ty + 6 * s} H${tx + tw - 10 * s}" stroke="#2a1a0c" stroke-width="${2 * s}"/>`;
   const sh: Shape = { W, H, s, B, cx, pw, x0: 0, x1: W, dado, floorY, floorH };
   const edge = 0.03 * W,
     slotL: [number, number] = [edge, cx - pw * 0.55 - 0.02 * W],
@@ -265,12 +225,12 @@ function build(o: DiningCarOpts): { html: string; plan: DiningCarPlan } {
   slotR[0] = Math.max(slotR[0], sh.winR!);
   let clock: DiningCarPlan['clock'] = null;
   if (slotL[1] - slotL[0] > 0.06 * W) {
+    // the clock is a picture (WallClock); its special still marks the spot it hangs in
     clock = wallClockAt(sh, slotL);
-    // without the kit's clock, its special still marks the spot the instrument hangs in
-    if (o.wallClock === false) ctx.special(clock.x, clock.y + clock.r, clock.r * 1.35);
-    else parts.push(wallClock(ctx, sh, slotL));
+    ctx.special(clock.x, clock.y + clock.r, clock.r * 1.35);
   }
-  if (slotR[1] - slotR[0] > 0.06 * W) parts.push(lantern(ctx, sh, c, slotR));
+  const lamp = slotR[1] - slotR[0] > 0.06 * W ? lanternBox(sh, slotR) : null;
+  if (lamp) parts.push(lantern(ctx, sh, c, slotR));
   const wins: Rect[] = [],
     glows: Glow[] = [];
   let emit = '';
@@ -292,6 +252,7 @@ function build(o: DiningCarOpts): { html: string; plan: DiningCarPlan } {
       slots: { L: slotL, R: slotR },
       window: parts[0].wins[0],
       clock,
+      lamp,
     },
   };
 }

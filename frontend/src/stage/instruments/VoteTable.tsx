@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * The vote's table: what the lift brings up through the trap. A walnut top (the generated wood
- * tile, laid on in perspective), a white cloth hanging from its front edge with a lace hem,
- * turned walnut legs; on it the glass jar. For the count the jar is tipped over at the back
+ * The vote's table: what the lift brings up through the trap. A painted walnut table with a
+ * linen cloth hanging from its front edge, a lace hem and turned legs; on it the glass jar. For the count the jar is tipped over at the back
  * rail and a row of plates stands along the front edge, one per seat that got a vote and an
  * upturned saucer at the right for abstain, each with a place card on the cloth below it (the
  * candidate's head, the seat, the running number). The counted chips stack on the plates face
@@ -13,18 +12,17 @@
  * chose what beyond what the count has already put on the table. Drawn after the vote bench
  * (rev 64 `tableSVG`, `plateSVG`, `cardSVG`, `arcChip`).
  */
-import type { CSSProperties, ReactNode } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import type { Ballot } from '@/game/types';
-import { stitch } from '../paint/draw';
 import { K2 } from '../paint/materials';
 import { seatNumber } from '../roles';
 import { STAGE_H, STAGE_W } from '../units';
-import { homography, type Pt } from './homography';
-import { Jar, JarLid, type LidState } from './Jar';
+import { Jar, JarLid, JarShadow, type LidState } from './Jar';
 import { Tween, about, lerp } from './Tween';
 import { ChipBack, ChipFace, FlatChip } from './VoteChip';
 import {
+  TOWER_CAP,
   TOWER_STEP,
   jarGeometry,
   placeCardBox,
@@ -41,119 +39,82 @@ const svgFill: CSSProperties = {
   height: '100%',
   overflow: 'visible',
 };
-const WAL = '#4a2c18';
 
-/** The stage units the wood's true depth is laid out in before the perspective squashes it. */
-const WOOD_DEPTH = 320;
-const WOOD_TILE = 440;
+/**
+ * The table picture (SPRITES.props.voteTable) in its file's pixels: its top's back and front
+ * lines, the front corners, and the depth of cloth the vector `drop` stands for.
+ */
+const TABLE_PX = {
+  W: 1536,
+  H: 295,
+  back: 9,
+  front: 88,
+  left: 21,
+  right: 1518.5,
+  drop: 138,
+};
 
-/** A leg: walnut, turned, from y0 down to y1. */
-function Leg({ x, y0, y1, w }: { x: number; y0: number; y1: number; w: number }) {
-  const h = y1 - y0;
+/**
+ * The painted table in two strips that meet at the top's front line: the top stretched to
+ * the vote's own depth, so the plates and the jar stand where they did; the cloth and legs
+ * below it scaled to `drop`, so the place cards hang on the cloth.
+ */
+function TablePicture({ v }: { v: VoteGeometry }) {
+  const { cx, topY, depth, tw, drop } = v,
+    P = TABLE_PX;
+  const s = tw / (P.right - P.left),
+    sT = depth / (P.front - P.back),
+    sF = drop / P.drop;
+  const strip = (top: number, height: number, sy: number, y0: number): CSSProperties => ({
+    position: 'absolute',
+    left: cx - ((P.left + P.right) / 2) * s,
+    top,
+    width: P.W * s,
+    height,
+    backgroundImage: `url(${SPRITES.props.voteTable.src})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: `${P.W * s}px ${P.H * sy}px`,
+    backgroundPosition: `0 ${-y0 * sy}px`,
+  });
   return (
-    <path
-      d={`M${x - w / 2},${y0} h${w} l${-w * 0.12},${h * 0.28} q${w * 0.3},${h * 0.08} 0,${h * 0.16} L${x + w * 0.2},${y1} h${-w * 0.4} L${x - w * 0.38},${y0 + h * 0.44} q${-w * 0.3},${-h * 0.08} 0,${-h * 0.16}Z`}
-      fill={WAL}
-      stroke={K2}
-      strokeWidth={1.8}
-      strokeLinejoin="round"
-    />
+    <div aria-hidden="true">
+      <div style={strip(topY, (P.H - P.front) * sF, sF, P.front)} />
+      {/* a unit past the line, over the cloth's strip, so no seam shows between them */}
+      <div style={strip(topY - P.front * sT, P.front * sT + 1, sT, 0)} />
+    </div>
   );
 }
 
-/** The walnut top: the tile's planks run along the table, narrowing toward the back. */
-function WoodTop({ v }: { v: VoteGeometry }) {
-  const { cx, topY, depth, tw, bw } = v;
-  // the box's width runs from the back edge to the front, its height from left to right
-  const to: [Pt, Pt, Pt, Pt] = [
-    [cx - bw / 2, topY - depth],
-    [cx - tw / 2, topY],
-    [cx + tw / 2, topY],
-    [cx + bw / 2, topY - depth],
-  ];
+/**
+ * A soft shadow's fill (the rooms' atmosphere): dark at the middle, gone at the rim, so a plain
+ * ellipse reads as a shadow without a blur.
+ */
+export function SoftShadow({ id, a = 0.5 }: { id: string; a?: number }) {
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: WOOD_DEPTH,
-        height: tw,
-        transformOrigin: '0 0',
-        transform: homography(WOOD_DEPTH, tw, to),
-        backgroundImage: `linear-gradient(90deg, rgba(12,8,4,.45), rgba(12,8,4,0) 70%), url(${SPRITES.wood.src})`,
-        backgroundSize: `100% 100%, ${WOOD_TILE}px ${WOOD_TILE}px`,
-      }}
-    />
+    <radialGradient id={id}>
+      <stop offset="0" stopColor="#0c0704" stopOpacity={a} />
+      <stop offset=".55" stopColor="#0c0704" stopOpacity={a * 0.6} />
+      <stop offset="1" stopColor="#0c0704" stopOpacity={0} />
+    </radialGradient>
   );
 }
 
-/** Everything behind the top: the shadow on the lift, the back legs. */
-function TableBack({ v }: { v: VoteGeometry }) {
-  const { cx, topY, depth, tw, bw, footY, g, slabTop, floorH } = v,
-    legW = 0.032 * g.pwid;
+/** Behind the table: its soft shadow on the lift, to the right with the key light. */
+function TableBack({ v, shade }: { v: VoteGeometry; shade: string }) {
+  const { cx, tw, footY, floorH } = v;
   return (
     <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
+      <defs>
+        <SoftShadow id={shade} a={0.62} />
+      </defs>
       <ellipse
-        cx={cx}
-        cy={footY}
-        rx={tw * 0.52}
-        ry={floorH * 0.3}
-        fill="#000"
-        opacity={0.3}
+        cx={cx + tw * 0.035}
+        cy={footY + floorH * 0.06}
+        rx={tw * 0.58}
+        ry={floorH * 0.5}
+        fill={`url(#${shade})`}
       />
-      <Leg x={cx - bw * 0.44} y0={topY - depth} y1={slabTop + 0.02 * STAGE_H} w={legW} />
-      <Leg x={cx + bw * 0.44} y0={topY - depth} y1={slabTop + 0.02 * STAGE_H} w={legW} />
     </svg>
-  );
-}
-
-/** In front of the top: its edge, the cloth and its hem, the front legs. */
-function TableFront({ v }: { v: VoteGeometry }) {
-  const { cx, topY, depth, tw, bw, drop, footY, g } = v,
-    legW = 0.032 * g.pwid;
-  const n = Math.max(8, Math.round(tw / (0.075 * g.pwid))),
-    sw = tw / n;
-  let hem = '';
-  for (let i = 0; i < n; i++) hem += ` q${-sw / 2},${0.22 * drop} ${-sw},0`;
-  return (
-    <>
-      <path
-        d={`M${cx - tw / 2},${topY} L${cx - bw / 2},${topY - depth} H${cx + bw / 2} L${cx + tw / 2},${topY}Z`}
-        fill="none"
-        stroke={K2}
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <path
-        d={`M${cx - tw / 2},${topY} H${cx + tw / 2} V${topY + drop}${hem} Z`}
-        fill="#e3d5b4"
-        stroke={K2}
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <rect
-        x={cx - tw / 2}
-        y={topY}
-        width={tw}
-        height={drop * 0.14}
-        fill="#000"
-        opacity={0.08}
-      />
-      <g
-        dangerouslySetInnerHTML={{
-          __html: stitch(
-            `M${cx - tw / 2 + 6},${topY + drop * 0.8} H${cx + tw / 2 - 6}`,
-            '#b4a07c',
-            1.3,
-            0.9,
-          ),
-        }}
-      />
-      <Leg x={cx - tw * 0.44} y0={topY + drop} y1={footY} w={legW} />
-      <Leg x={cx + tw * 0.44} y0={topY + drop} y1={footY} w={legW} />
-    </>
   );
 }
 
@@ -170,10 +131,22 @@ export interface PlateProps {
   /** Played: the top chip lands this beat; the light comes up. */
   landing?: boolean;
   lighting?: boolean;
+  /** The soft shadow's fill (VoteTable's `SoftShadow`), for the plate's and its towers' shadows. */
+  shade: string;
 }
 
 /** A plate on the table's top, or the upturned saucer for abstain, with its chips in towers. */
-export function Plate({ v, p, voters, cast, me, lit, landing, lighting }: PlateProps) {
+export function Plate({
+  v,
+  p,
+  voters,
+  cast,
+  me,
+  lit,
+  landing,
+  lighting,
+  shade,
+}: PlateProps) {
   const face = (seat: string) => ({
     seat: seatNumber(seat),
     character: cast[seatNumber(seat) - 1],
@@ -199,12 +172,11 @@ export function Plate({ v, p, voters, cast, me, lit, landing, lighting }: PlateP
         glow
       )}
       <ellipse
-        cx={p.x}
-        cy={p.y + p.ry * 0.25}
-        rx={p.rx}
-        ry={p.ry}
-        fill="#000"
-        opacity={0.22}
+        cx={p.x + p.rx * 0.1}
+        cy={p.y + p.ry * 0.45}
+        rx={p.rx * 1.14}
+        ry={p.ry * 1.5}
+        fill={`url(#${shade})`}
       />
       {p.c === 'abstain' ? (
         <>
@@ -255,6 +227,36 @@ export function Plate({ v, p, voters, cast, me, lit, landing, lighting }: PlateP
           />
         </>
       )}
+      {voters.map((voter, i) => {
+        if (i % TOWER_CAP) return null;
+        // each tower's shadow on the plate, longer for a taller tower
+        const [x, y, rr] = stackPos(v, p, i),
+          levels = Math.min(TOWER_CAP, voters.length - i);
+        const s = (
+          <ellipse
+            key={`s${voter}`}
+            cx={x + rr * (0.35 + 0.06 * levels)}
+            cy={y + rr * TOWER_STEP + rr * 0.12}
+            rx={rr * (1.12 + 0.08 * levels)}
+            ry={rr * 0.52}
+            fill={`url(#${shade})`}
+          />
+        );
+        return landing && i === voters.length - 1 ? (
+          <Tween
+            key={`s${voter}`}
+            play
+            delay={0.84}
+            duration={0.15}
+            ease="easeOut"
+            opacity={(q) => q}
+          >
+            {s}
+          </Tween>
+        ) : (
+          s
+        );
+      })}
       {voters.map((voter, i) => {
         const [x, y, rr] = stackPos(v, p, i);
         const chip = (
@@ -494,6 +496,9 @@ export function VoteTable({
   play = {},
 }: VoteTableProps) {
   const J = jarGeometry(v);
+  // the rooms' atmosphere: soft shadows under the table, the jar, the plates and the towers
+  const ids = 'vt' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const shade = ids + 's';
   const ps = tipped ? plateSpots(v, candidates, counts) : [];
   const onPlate: Record<string, string[]> = {};
   order.slice(0, counted).forEach((b) => (onPlate[b.votee] ??= []).push(b.voter));
@@ -517,6 +522,7 @@ export function VoteTable({
           lit={lit}
           landing={hit}
           lighting={play.lighting}
+          shade={shade}
         />
         <PlaceCard
           v={v}
@@ -572,10 +578,13 @@ export function VoteTable({
 
   return (
     <div style={{ position: 'absolute', inset: 0 }} data-vote-table="">
-      <TableBack v={v} />
-      <WoodTop v={v} />
+      <TableBack v={v} shade={ids + 'b'} />
+      <TablePicture v={v} />
       <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={svgFill} aria-hidden="true">
-        <TableFront v={v} />
+        <defs>
+          <SoftShadow id={shade} />
+        </defs>
+        <JarShadow v={v} tipped={tipped} tipping={play.tipping} shade={shade} />
         <Jar
           v={v}
           n={tipped ? ballotsIn - counted : ballotsIn}

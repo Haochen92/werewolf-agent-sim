@@ -10,11 +10,16 @@
  * stand up either side of the hole) or shuts (the standing leaves fold down, then the flat
  * ones lay back over the hole), at the vote bench's timings (rev 64 `.leaf-*`). The numbers
  * are the deal bench's (rev 75, `VG`, `apronSVG`, `trapSVG`).
+ *
+ * The boards are the floor's texture (paint/texture.ts), its seams laid on the drawn ones: the
+ * apron's every 0.05 of the stage's height, each leaf's two planks either side of its seam.
  */
 import { useId, type ReactNode } from 'react';
 import { Tween, about } from './Tween';
-import { BOARD, BOARD2, K2 } from '../paint/materials';
+import { BOARD2, K2 } from '../paint/materials';
+import { boards } from '../paint/texture';
 import { carLines } from '../paint/window';
+import { WOOD } from '../textures';
 import { STAGE_H, STAGE_W, type StageGeometry } from '../units';
 
 /** The trap's geometry, in units: a tenth wider than the vote's table, centred on the stand. */
@@ -61,6 +66,11 @@ export function Apron({ g }: { g: StageGeometry }) {
   const rect = { x: 0, y: B - 2, width: W, height: H - B + 2 };
   return (
     <svg {...svgProps} aria-hidden="true">
+      <defs
+        dangerouslySetInnerHTML={{
+          __html: boards(fade + 'b', WOOD.boards, B + 0.045 * H, 0.05 * H),
+        }}
+      />
       <defs>
         <linearGradient id={fade} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#0c0a07" stopOpacity=".95" />
@@ -69,7 +79,7 @@ export function Apron({ g }: { g: StageGeometry }) {
           <stop offset="1" stopColor="#0c0a07" stopOpacity=".95" />
         </linearGradient>
       </defs>
-      <rect {...rect} fill={BOARD} />
+      <rect {...rect} fill={`url(#${fade}b)`} />
       {seams.map((y) => (
         <path
           key={y}
@@ -102,6 +112,13 @@ export function Trap({
 }) {
   const t = trapGeometry(g),
     h = t.holeBot - t.holeTop;
+  // the leaves' boards: two planks each, meeting on the drawn seam
+  const tex = 'tr' + useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const defs = (
+    <defs
+      dangerouslySetInnerHTML={{ __html: boards(tex, WOOD.boards, t.holeTop, h / 2) }}
+    />
+  );
   const ink = { stroke: K2, strokeLinejoin: 'round', strokeLinecap: 'round' } as const;
   // a flat leaf folds about the trap's outer edge; a standing leaf rises from the hole's foot
   const flatMove = (x: number, node: ReactNode) =>
@@ -154,7 +171,7 @@ export function Trap({
       <g key={x}>
         <path
           d={`M${x},${t.holeTop} h${w} v${h} h${-w}Z`}
-          fill={BOARD}
+          fill={`url(#${tex})`}
           strokeWidth={2}
           {...ink}
         />
@@ -175,12 +192,14 @@ export function Trap({
   if (state === 'closed' && !animate) {
     return (
       <svg {...svgProps} aria-hidden="true">
+        {defs}
         {flat}
       </svg>
     );
   }
   return (
     <svg {...svgProps} aria-hidden="true">
+      {defs}
       <rect x={t.x0} y={t.holeTop} width={t.trapW} height={h} fill="#050403" />
       <rect
         x={t.x0}

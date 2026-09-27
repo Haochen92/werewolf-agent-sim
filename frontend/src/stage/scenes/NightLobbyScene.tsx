@@ -18,6 +18,7 @@
  * again.
  */
 import type { GameView } from '@/game/types';
+import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Chip } from '../instruments/Chip';
@@ -101,6 +102,7 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
 
   return (
     <>
+      <Atmosphere room="car" phase="night" hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint
           phase="night"
@@ -130,6 +132,7 @@ function LobbyBeat({ view, beat, me, presentation, slot: slotInput, turn }: Scen
           return (
             <Chip
               key={seat}
+              glass={g}
               x={rowX(row, i, alive.length)}
               y={row.rowY}
               r={row.cr}

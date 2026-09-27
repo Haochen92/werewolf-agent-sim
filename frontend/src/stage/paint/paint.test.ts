@@ -1,17 +1,19 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BLEED, STAGE_W, type Hud } from '../units';
+import { BLEED, geometry, STAGE_W, type Hud } from '../units';
 import { bleed } from './bleed';
 import { diningCar, diningCarPlan } from './dining-car';
 import { drape } from './drape';
 import { light } from './light';
 import { PHASES_IN_ORDER } from './materials';
-import { shelfLight, shelfRoom } from './shelf-room';
+import { shelfChoice, shelfLight, shelfPlan, shelfRoom } from './shelf-room';
 import { stationBack, stationFront, stationPlan } from './station';
-import { shutter } from './window';
+import { boards, DARKER, veneer, walnutAcross, walnutImage } from './texture';
+import { carLines, shutter } from './window';
 
 const HUDS: Hud[] = ['none', 'live', 'replay'];
+const WOOD = { walnut: '/walnut.webp', boards: '/boards.webp' };
 
 const idsOf = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
 const refsOf = (html: string) => [...html.matchAll(/url\(#([^)]+)\)/g)].map((m) => m[1]);
@@ -20,16 +22,21 @@ const refsOf = (html: string) => [...html.matchAll(/url\(#([^)]+)\)/g)].map((m) 
 const CASES: [string, (id: string) => string][] = [
   ...PHASES_IN_ORDER.flatMap((phase) =>
     HUDS.flatMap((hud) =>
-      [false, true].flatMap((side) =>
-        [true, false].map(
-          (wallClock) =>
-            [
-              `diningCar ${phase} ${hud}${side ? ' side' : ''}${wallClock ? '' : ' no-clock'}`,
-              (id: string) => diningCar({ id, phase, hud, side, wallClock }),
-            ] as [string, (id: string) => string],
-        ),
+      [false, true].map(
+        (side) =>
+          [
+            `diningCar ${phase} ${hud}${side ? ' side' : ''}`,
+            (id: string) => diningCar({ id, phase, hud, side }),
+          ] as [string, (id: string) => string],
       ),
     ),
+  ),
+  ...HUDS.map(
+    (hud) =>
+      [
+        `diningCar night ${hud} wood`,
+        (id: string) => diningCar({ id, phase: 'night', hud, wood: WOOD }),
+      ] as [string, (id: string) => string],
   ),
   ...HUDS.flatMap((hud) =>
     (['open', 'closed'] as const).map(
@@ -40,23 +47,30 @@ const CASES: [string, (id: string) => string][] = [
         ],
     ),
   ),
+  ...(['open', 'closed'] as const).map(
+    (state) =>
+      [
+        `shutter ${state} walnut`,
+        (id: string) => shutter({ id, state, walnut: '/walnut.webp' }),
+      ] as [string, (id: string) => string],
+  ),
   ...HUDS.flatMap((hud) => [
     [`shelfRoom ${hud}`, (id: string) => shelfRoom({ id, hud })] as [
       string,
       (id: string) => string,
     ],
+    [`shelfRoom ${hud} wood`, (id: string) => shelfRoom({ id, hud, wood: WOOD })] as [
+      string,
+      (id: string) => string,
+    ],
+    [`shelfLight ${hud}`, (id: string) => shelfLight({ id, hud, body: 150 })] as [
+      string,
+      (id: string) => string,
+    ],
     [
-      `shelfRoom ${hud} wood`,
-      (id: string) => shelfRoom({ id, hud, wood: '/walnut.webp' }),
+      `shelfLight ${hud} flame`,
+      (id: string) => shelfLight({ id, hud, body: 150, flame: { x: 1300, y: 250 } }),
     ] as [string, (id: string) => string],
-    [`shelfLight ${hud}`, (id: string) => shelfLight({ id, hud })] as [
-      string,
-      (id: string) => string,
-    ],
-    [`shelfLight ${hud} chosen`, (id: string) => shelfLight({ id, hud, chosen: 3 })] as [
-      string,
-      (id: string) => string,
-    ],
   ]),
   ...PHASES_IN_ORDER.flatMap((phase) =>
     (['over', 'stand'] as const).map(
@@ -76,6 +90,11 @@ const CASES: [string, (id: string) => string][] = [
   ),
   ['drape', () => drape()],
   ['drape bleed', (id: string) => drape({ id, bleed: BLEED })],
+  ['drape velvet', (id: string) => drape({ id, velvet: '/velvet.webp' })],
+  [
+    'drape bleed velvet',
+    (id: string) => drape({ id, bleed: BLEED, velvet: '/velvet.webp' }),
+  ],
   ...PHASES_IN_ORDER.flatMap((phase) =>
     HUDS.map(
       (hud) =>
@@ -91,6 +110,13 @@ const CASES: [string, (id: string) => string][] = [
         string,
         (id: string) => string,
       ],
+  ),
+  ...(['car', 'shelf'] as const).map(
+    (room) =>
+      [
+        `bleed ${room} wood`,
+        (id: string) => bleed({ id, room, phase: 'dusk', wood: WOOD }),
+      ] as [string, (id: string) => string],
   ),
   ...HUDS.flatMap((hud) => [
     [`bleed station ${hud}`, (id: string) => bleed({ id, room: 'station', hud })] as [
@@ -119,7 +145,7 @@ const CASES: [string, (id: string) => string][] = [
     ],
   ]),
   ['light bleed', (id: string) => light({ id, bleed: BLEED })],
-  ['shelfLight bleed', (id: string) => shelfLight({ id, chosen: 2, bleed: BLEED })],
+  ['shelfLight bleed', (id: string) => shelfLight({ id, body: 150, bleed: BLEED })],
 ];
 
 describe.each(CASES)('%s', (_label, draw) => {
@@ -153,8 +179,36 @@ describe('fidelity to kits/stage-kit.js', () => {
     ),
     'utf8',
   );
+  // The window's departure: the kit's vector country behind the glass is gone (the felt pictures
+  // lie over it), so its glass becomes a plain fill of the hour's top sky colour.
+  const country =
+    'winSky(ctx, c, wx, wy, ww, wh, s, { orb: true, r: rr }) + `<g clip-path="url(#${ctx.P}ws${Math.round(wx)}c)">${snowfall(wx, wy, ww, wh, s)}</g>`';
+  const glass =
+    '`<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="${rr}" fill="${c.skyTop}"/>`';
+  // The wall clock and the lantern's departure (2026-09-27): both are painted pictures now
+  // (WallClock, WallLamp), so the kit's vector pieces draw nothing; their specials, the lantern's
+  // halo and pool and the room's glows stay the car's. Only the lit lantern's flame goes too.
+  const pieces: [string, string][] = [
+    [
+      'return { d: cutout(ctx.P, s, d, 1), emit, glows, wins: [] };',
+      'return { d: "", emit, glows, wins: [] };',
+    ],
+    [' + flameAt(x, y + 0.005 * H, 1.2 * s);', ';'],
+    [
+      'return { d: `<g class="sk-hang">${cutout(ctx.P, s, d, 1)}</g>`, emit: "", glows: [], wins: [] };',
+      'return { d: "", emit: "", glows: [], wins: [] };',
+    ],
+  ];
+  it('finds the kit’s country to swap for the glass, and its clock and lantern', () => {
+    expect(src.split(country)).toHaveLength(2);
+    for (const [from] of pieces) expect(src.split(from)).toHaveLength(2);
+  });
   // The kit is a plain script that declares one global; evaluate it and take that global.
-  const Kit = new Function(`${src}; return StageKit;`)();
+  const swapped = pieces.reduce(
+    (s, [from, to]) => s.replace(from, to),
+    src.replace(country, glass),
+  );
+  const Kit = new Function(`${swapped}; return StageKit;`)();
 
   for (const hud of HUDS)
     for (const side of [false, true])
@@ -171,6 +225,54 @@ describe('fidelity to kits/stage-kit.js', () => {
           );
           expect(light({ id: 'k', hud, side, scene: plan, dark: 70 })).toBe(
             Kit.light(g, sc, { id: 'k', dark: 70 }),
+          );
+        });
+
+  // The textures' departure (2026-09-27): given `wood`, the kit's flat walnut, dado and boards
+  // are filled with the texture patterns instead (defined after the kit's first defs), the dado
+  // under a black veil to its darker value. Nothing else changes.
+  const textured = (html: string, hud: Hud) => {
+    const { floorY, floorH, dado } = carLines(geometry(hud));
+    const P = 'k-';
+    const one = (h: string, from: string, to: string) => {
+      expect(h.split(from)).toHaveLength(2);
+      return h.replace(from, to);
+    };
+    const defs = `<defs>${walnutImage(P + 'wimg', WOOD.walnut)}${veneer(P + 'wal', P + 'wimg', 0, 128)}${walnutAcross(P + 'wald', P + 'wimg')}${boards(P + 'brd', WOOD.boards, floorY, floorH / 2)}</defs>`;
+    let h = one(
+      html,
+      '</defs><rect width="1600" height="900" fill="#0c0a07"/>',
+      `</defs>${defs}<rect width="1600" height="900" fill="#0c0a07"/>`,
+    );
+    h = one(
+      h,
+      `height="${floorY}" fill="#4a2c18"/>`,
+      `height="${floorY}" fill="url(#${P}wal)"/>`,
+    );
+    const dadoRect = `<rect x="0" y="${dado}" width="1600" height="${floorY - dado}"`;
+    h = one(
+      h,
+      `${dadoRect} fill="#3a2212"/>`,
+      `${dadoRect} fill="url(#${P}wald)"/>${dadoRect} fill="#000" opacity="${DARKER['#3a2212']}"/>`,
+    );
+    h = one(
+      h,
+      `height="${floorH}" fill="#5a3f26"/>`,
+      `height="${floorH}" fill="url(#${P}brd)"/>`,
+    );
+    return one(
+      h,
+      `fill="#5a3f26" stroke="#2a1a0c"`,
+      `fill="url(#${P}brd)" stroke="#2a1a0c"`,
+    );
+  };
+  for (const hud of HUDS)
+    for (const side of [false, true])
+      for (const phase of PHASES_IN_ORDER)
+        it(`diningCar with wood is scene() with its textures at ${phase}, hud ${hud}${side ? ', side' : ''}`, () => {
+          const sc = Kit.scene(Kit.geometry(1600, 900, { hud, side }), phase, { id: 'k' });
+          expect(diningCar({ id: 'k', phase, hud, side, wood: WOOD })).toBe(
+            textured(sc.html, hud),
           );
         });
 });
@@ -208,7 +310,43 @@ describe('bleed', () => {
   it('leaves the light and the drape as they were without it', () => {
     expect(light({ id: 'k', bleed: 0 })).toBe(light({ id: 'k' }));
     expect(drape({ id: 'k' })).toBe(drape());
-    expect(shelfLight({ id: 'k', bleed: 0 })).toBe(shelfLight({ id: 'k' }));
+    expect(shelfLight({ id: 'k', body: 150, bleed: 0 })).toBe(
+      shelfLight({ id: 'k', body: 150 }),
+    );
+    expect(shelfChoice({ body: 150, chosen: 2, bleed: 0 })).toBe(
+      shelfChoice({ body: 150, chosen: 2 }),
+    );
+  });
+});
+
+/* The seat's own room at night: two things on the shelf, dolls on twine, a candle's light. */
+describe('the shelf room', () => {
+  it('stands the card and the kit on the shelf’s top face, a quarter in from each end', () => {
+    for (const hud of HUDS)
+      for (const side of [false, true]) {
+        const S = shelfPlan({ hud, side });
+        expect(S.foot).toBeGreaterThan(S.top - S.depth);
+        expect(S.foot).toBeLessThan(S.top);
+        expect(S.cardX - S.x0).toBeCloseTo(S.x1 - S.kitX, 6);
+      }
+  });
+
+  it('hangs the dolls on dark twine from plain nails: nothing brass or pale under the shelf', () => {
+    const html = shelfRoom({ id: 'k', hooks: 8 });
+    expect(html).not.toContain('#d9c9a0');
+    expect(html.match(/<circle [^>]*fill="#120b07"/g)).toHaveLength(8);
+  });
+
+  it('lights with gradients alone: no filter and no blend mode', () => {
+    const lit = shelfLight({ id: 'k', body: 150 }) + shelfChoice({ body: 150, chosen: 2 });
+    expect(lit).not.toContain('filter');
+    expect(lit).not.toContain('mix-blend-mode');
+  });
+
+  it('darkens only below the shelf for a choice, and nothing for a nail that is not there', () => {
+    const S = shelfPlan();
+    expect(shelfChoice({ body: 150, chosen: 2 })).toContain(`top:${S.cut.toFixed(0)}px`);
+    expect(shelfChoice({ body: 150, chosen: 99 })).toBe('');
   });
 });
 

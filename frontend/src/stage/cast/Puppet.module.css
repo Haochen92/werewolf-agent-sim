@@ -8,6 +8,10 @@
   height: 100%;
   filter: drop-shadow(0 8px 12.8px rgba(0, 0, 0, 0.45));
 }
+/* with the rooms' key light (the atmosphere), its contact shadow falls to the lower right too */
+.keyLit {
+  filter: drop-shadow(5px 8px 12.8px rgba(0, 0, 0, 0.45));
+}
 .numeral {
   position: absolute;
   overflow: visible;

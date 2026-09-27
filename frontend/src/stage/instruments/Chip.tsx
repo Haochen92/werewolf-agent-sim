@@ -18,6 +18,8 @@
  */
 import { useId } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
+import { offGlass } from '../cast/CastShadow';
+import type { StageGeometry } from '../units';
 import { MATERIALS } from '../paint/materials';
 import { factionOf, type Faction } from '../roles';
 import { Flip } from './Flip';
@@ -49,6 +51,8 @@ export interface ChipProps {
   /** When a fallen chip drops (seconds). */
   fallDelay?: number;
   turnDelay?: number;
+  /** The car's window is uncovered behind (the room's geometry): the shadow keeps off its glass. */
+  glass?: StageGeometry | null;
 }
 
 const FACE = '#efe4cb',
@@ -146,6 +150,29 @@ function SigilFace({ r, role }: { r: number; role: string }) {
   );
 }
 
+/**
+ * The chip's shadow on the wall behind it, thrown down and to the right by the rooms' key
+ * light: a soft disc, drawn behind the face in its own box so it hangs and falls with it.
+ */
+function CastShadow({ r }: { r: number }) {
+  const R = r * 1.3;
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        left: r * 1.34 - R,
+        top: 4 + r * 1.28 - R,
+        width: 2 * R,
+        height: 2 * R,
+        background:
+          'radial-gradient(circle closest-side, rgba(12,7,4,.48) 58%, rgba(12,7,4,0))',
+        pointerEvents: 'none',
+      }}
+    />
+  );
+}
+
 const svgBox = (r: number) =>
   ({
     position: 'absolute',
@@ -198,6 +225,7 @@ export function Chip({
   delay,
   fallDelay = 0,
   turnDelay = 0,
+  glass = null,
 }: ChipProps) {
   const face = <Face r={r} seat={seat} character={character} you={you} />;
   const shown = sigil ? (
@@ -223,19 +251,35 @@ export function Chip({
     </svg>
   ) : null;
   const top = tieY(y, r);
+  const hang = {
+    x,
+    y: top,
+    w: 2 * r,
+    h: 2 * r + 4,
+    move: state === 'fallen' ? ('fall' as const) : move,
+    delay: state === 'fallen' ? fallDelay : delay,
+  };
   return (
-    <StringDrop
-      x={x}
-      y={top}
-      w={2 * r}
-      h={2 * r + 4}
-      loop
-      move={state === 'fallen' ? 'fall' : move}
-      delay={state === 'fallen' ? fallDelay : delay}
-    >
-      {shown}
-      {ring}
-      {state === 'saved' ? <Ribbon r={r} /> : null}
-    </StringDrop>
+    <>
+      {/* the shadow hangs in step with the chip, inside a still box that cuts the glass out */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          clipPath: glass ? offGlass(glass) : undefined,
+        }}
+      >
+        <StringDrop {...hang} bare>
+          <CastShadow r={r} />
+        </StringDrop>
+      </div>
+      <StringDrop {...hang} loop>
+        {shown}
+        {ring}
+        {state === 'saved' ? <Ribbon r={r} /> : null}
+      </StringDrop>
+    </>
   );
 }

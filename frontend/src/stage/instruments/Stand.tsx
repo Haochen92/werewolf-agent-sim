@@ -1,13 +1,15 @@
 /**
  * The stand: the puppet booth's front, below the rail, that the speaking puppet stands in.
- * A dark box with a rail cap, a recessed panel and two footlights, the plaque on its rail
- * naming the seat. It is drawn over the puppet's feet (the stand layer is above the figures),
- * which is what makes a glove puppet read as standing in a booth.
+ * A painted walnut sideboard front (a brass gallery on its rounded rail, marquetry corners, a
+ * flame-figured panel), two footlights, the plaque on its rail naming the seat. It is drawn over the puppet's feet (the stand layer
+ * is above the figures), which is what makes a glove puppet read as standing in a booth.
  *
- * The box is 605 puppet units wide, centred on the puppet (units.ts `standBox`). Ported from
- * the stage kit's `stand()` (kits/stage-kit.js), whose CSS came with it.
+ * The box is 605 puppet units wide, centred on the puppet (units.ts `standBox`); the picture
+ * stretches to it as a 9-slice (Stand.module.css). Laid out after the stage kit's `stand()`
+ * (kits/stage-kit.js).
  */
 import type { CSSProperties, ReactNode } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import { standBox, type StageGeometry } from '../units';
 import type { Faction } from '../roles';
 import styles from './Stand.module.css';
@@ -29,8 +31,17 @@ export function Stand({ g, lit = true, widen = 1, children }: StandProps) {
     <div className={styles.pit} style={{ top: g.railY }}>
       <div
         className={styles.box}
-        style={{ left: g.cx - w / 2, width: w, '--u': `${g.u}px` } as CSSProperties}
+        style={
+          {
+            left: g.cx - w / 2,
+            width: w,
+            '--u': `${g.u}px`,
+            '--front': `url(${SPRITES.props.stand.src})`,
+          } as CSSProperties
+        }
       >
+        {/* the rooms' key light: the box's shadow on the boards behind it and to its right */}
+        <i className={styles.cast} aria-hidden="true" />
         {[-130, 90].map((dx) => (
           <i
             key={dx}

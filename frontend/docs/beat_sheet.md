@@ -212,27 +212,49 @@ hub gathers the shutter up itself (0.2 s in).
 
 ## 6. Night, the acting seat — H§4.6 · bench 70
 
-The shelf room: no avatar, no window, no lamp; bare panelling. The shelf: the framed role card
-(left; tap → the full card centred as an overlay), the carriage clock (centre), the role's kit
-(right). Below: eight brass hooks, one plush doll per living seat other than mine.
+The shelf room: no avatar, no window, no lamp; bare panelling, dark but for a candle. The shelf:
+the framed role card (left; tap → the full card centred as an overlay) and the role's kit
+(right). Below: one plush doll per living seat other than mine, each on dark twine from a nail.
+No clock: the countdown is on the plate.
 
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
-| 1 | `room.opens` | `input_request` for me, kind `healer_target` · `investigator_target` · `vigilante_target` · `serial_killer_target` | S | the shelf room; the clock's red arc from `deadline`; dolls for `candidates` only (the server's list is the only source of legal targets) | D: the drawer stops at the rail | until answered / deadline |
-| 2 | `room.choose` | tap a doll | S | the room below the shelf dims, one light finds the chosen doll, the shelf stays lit; the plate names the act ("Protect seat 1", "Check seat 4", "Shoot seat 2", "Kill seat 5"); the vigilante also has **Hold fire** | — | — |
+| 1 | `room.opens` | `input_request` for me, kind `healer_target` · `investigator_target` · `vigilante_target` · `serial_killer_target` | S | the shelf room in the candle's light; the plate's countdown from `deadline`; dolls for `candidates` only (the server's list is the only source of legal targets) | D: the drawer stops at the rail (on a phone it runs full height) | until answered / deadline |
+| 2 | `room.choose` | tap a doll | S | the room below the shelf goes darker, one light finds the chosen doll and a pin goes into it; the plate names the act ("Protect seat 1", "Check seat 4", "Shoot seat 2", "Kill seat 5"); the vigilante also has **Hold fire** | — | — |
 | 3 | `room.confirm` | tap the plate → POST | S | → `night.your-act-in` | — | — |
 | 4 | `room.card` | tap the framed card | S | the full role card centred over the room; tap to close | — | — |
 
 Motion for this room, as built 2026-09-25 (no bench gives them; change here first): the light
 finding the doll crossfades in 0.6 s; dolls arrive 0.6 s each, 0.08 s apart; tapping the chosen
 doll again un-chooses it. The plate reads "Choose a seat to protect" until one is chosen, then
-"Protect seat 1" (Check · Shoot · Kill likewise). The clock's counter reads `m:ss` rounded up and
-`-:--` with no deadline; the arc is `remaining / 120 s`. Dolls hang by `PLUSH_SCALE` so every
-crown meets its string at one height (head-to-toe = 0.85 of the picture). The chosen doll wears
-the act's `ActMark` (plaster · lens · bullet · knife, the morning's marks), half-size 26 units,
-on its shoulder (70% across, halfway down, clear of the face); a tapped choice pops it in, a
-seeded one is at rest. The vigilante's caps sit under the popgun on the shelf's edge: "Two caps
-in the popgun" with a red cap each (the deal's words), from `bullets`.
+"Protect seat 1" (Check · Shoot · Kill likewise). Dolls hang by `PLUSH_SCALE` so every
+crown meets its string at one height (head-to-toe = 0.85 of the picture). The vigilante's caps
+sit under the popgun on the shelf's edge: "Two caps in the popgun" with a red cap each (the
+deal's words), from `bullets`.
+
+Cute voodoo, as built 2026-09-27 (owner-ruled; change here first). **No clock in the room:** the
+plate carries the countdown, `m:ss` rounded up in a small dark box before the act (the day
+dock's figures), and a 3.2-unit bar along the plate's top edge draining `remaining / whole`
+(eased over the live clock's 250 ms tick), brass, both red (`#e3503f`) from 10 s; no deadline
+(solo, the workbench's no-deadline case) shows neither; a sent act drops them. **Candle light:**
+the room is dark (warm black at 0.72 over the room, the key light off); one warm pool falls on the
+dolls' row and the shelf's front edge, leaning 18% towards the candle; the card and the kit keep a
+soft light (0.82, 0.7) so they read. The candle is the kit's own flame where its picture has one
+(the healer's candle, the investigator's oil lamp: a halo round it); otherwise one out of sight at
+the shelf's right end (a faint warmth, no object). Still gradients, no filter, no blend mode.
+**Chosen:** below the shelf a further 0.7 of dark with a hole round the chosen doll (a touch of
+warmth in it), crossfading 0.6 s; the chosen doll wears a **pin**: a steel shaft 0.38 of the doll's
+width, 52° up to the right from its chest (74% across, 60% down, right of the numeral), a round
+head in the card's colour (town amber, wolf red, killer violet) with a glint, and a small dent
+where it enters; tapped, it pushes in along its line (0.32 s after 0.1 s), un-chosen it draws back
+out (0.25 s); a seeded choice is at rest. It replaces the act's `ActMark` on the doll (the plate
+names the act). **The hang:** plain dark nails just under the shelf and brown-black twine to each
+crown (a hair of highlight), iron brackets, no brass under the shelf. **The shelf:** the card and
+the kit only, a quarter in from each end, standing on the top face (0.35 of its depth behind the
+front edge; the card by its frame's outer ring) with a soft contact shadow a touch to the right;
+the kit's wall shadow falls down-right. **The plate** centres in the room right of the wing (left
+of an open side slot), so on a phone the drawer runs full height here (`railHolds` is the pack's
+only).
 
 ## 7. Night, the pack — H§4.7 · bench 71
 
@@ -242,7 +264,7 @@ Seats the pack can choose exclude wolves (`candidates`). The wing marks pack sea
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
 | 1 | `pack.wakes` | `phase_change: night` while I am a wolf | F | the shelf room with the wolves' kit; the chat empty or holding the deal's line | D: the pack chat (red edge) | — |
-| 2 | `pack.your-line` | `input_request` `wolf_discuss` for me | F | round 1 or 2 is mine: a line and **Say it** (Draft from notes applies here too) | D: stops at the rail | until answered / deadline |
+| 2 | `pack.your-line` | `input_request` `wolf_discuss` for me | F | round 1 or 2 is mine: a line and **Say it** (Draft from notes applies here too); the time left under it ("1:14 to say it") | D: stops at the rail | until answered / deadline |
 | 3 | `pack.line` | `wolf_message` (first: 33, 122, 271) | F (X in the replay) | the chat keeps the order, the packmate's chip on their lines | D: the line in the pack chat | speech |
 | 4 | `pack.vote` | `input_request` `wolf_vote` for me | F | the plate is live at once; the packmate's tooth lands on their doll when their `wolf_vote` arrives (faction tier, live); mine on confirm | — | until answered / deadline |
 | 5 | `pack.decided` | `wolf_kill_decided` (56, 154, 264, 395) | F | the kill decided when the second tooth lands | D: "the kill decided" line in the chat | 2.0 |
@@ -259,7 +281,9 @@ the decided line "The pack chooses seat N · both teeth"; the lone wolf's header
 now". Timings: a tooth drops in 0.45 s after 0.3 s; a chat line fades in 0.5 s. The chat keeps a
 sticky header and scrolls to its newest entry. The wing's red edge marks the packmate (not my
 own tile, which has the "you" rim), in both night rooms. Not yet built: "Draft from notes" in the
-pack's input.
+pack's input. As built 2026-09-27: the room is §6's candle-lit one (the wolves' kit has no flame,
+so the candle is out of sight at the shelf's end); the lit doll (my choice, then the kill decided)
+wears the pin in the pack's red beside the teeth; the vote's plate carries the countdown.
 
 ## 8. The morning — H§4.8 · bench 67
 
@@ -431,7 +455,9 @@ Nothing sits beside the epilogue: the ledger is the film at full stage.
 **The drawer:** 635 units wide (`slotW`), the whole height (its head 73.6 below the top, the top
 strip's buttons over it), z under the strip's buttons and the epilogue's veil. It stops at the
 rail on the prompts (`day.your-turn`, `vote.your-ballot`) and for the whole of the night rooms
-(`room`, `pack`), whose chat and plate keep the band. The lit line scrolls to 0.6 of the list's
+(`room`, `pack`), whose chat and plate keep the band. On a phone (`data-small`) it runs full
+height beside the car's prompts and the own room's plate, which stop short of it; only the
+pack's chat, which spans the band's right, keeps it at the rail (`railHolds`, 2026-09-27). The lit line scrolls to 0.6 of the list's
 height (bench 74); with no line of its own the drawer shows its end. Wording: a pass reads the
 box's accepted reasons ("held back: nothing new to say"; bench 74 wrote "held back by the novelty
 gate"); the vote "The table votes, 7 ballots at the count"; acts "Seat 4 checks seat 1" (the

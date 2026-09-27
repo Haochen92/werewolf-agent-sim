@@ -13,11 +13,14 @@
  *
  * The car's back flat is re-drawn here from its materials, not by calling the car: the car is
  * held byte-for-byte to the design kit (paint.test.ts), so it cannot be split into parts.
+ * Given `wood`, the strips take the rooms' textures, laid on the same world grid as the rooms'
+ * own (paint/texture.ts), so the grain runs on across the seam.
  */
 import { BLEED, BLEED_DARK, STAGE_H, STAGE_W, geometry, type Hud } from '../units';
 import { K2 } from './draw';
 import { BOARD, BOARD2, CAR, ROOMLIGHT, STATION, type Phase } from './materials';
-import { panelling } from './shelf-room';
+import { panelling, shelfTextures } from './shelf-room';
+import { boards, DARKER, veneer, walnutAcross, walnutImage, type Wood } from './texture';
 import { carLines } from './window';
 
 export interface BleedOpts {
@@ -28,27 +31,38 @@ export interface BleedOpts {
   /** The car's hour: its tint falls on the strips as it falls on the walls. */
   phase?: Phase;
   hud?: Hud;
+  /** The rooms' walnut and boards (the car and the shelf room); without them, flat. */
+  wood?: Wood;
 }
 
 /** How dark each room already is at the world's edge, where its strips start. */
 const EDGE: Record<BleedOpts['room'], number> = { car: 0.95, shelf: 0, station: 0.85 };
 
-/* the car's back flat, apron and floor between x0 and x1, on the car's panel lines */
-function car(x0: number, x1: number, phase: Phase, hud: Hud): string {
+/* the car's textures, as the car (dining-car.ts) and the Floor instrument lay them */
+function carTextures(P: string, wood: Wood, hud: Hud): string {
+  const { floorY, floorH, B } = carLines(geometry(hud));
+  return `<defs>${walnutImage(P + 'wimg', wood.walnut)}${veneer(P + 'wal', P + 'wimg', 0, 0.08 * STAGE_W)}${walnutAcross(P + 'wald', P + 'wimg')}${boards(P + 'brd', wood.boards, floorY, floorH / 2)}${boards(P + 'apr', wood.boards, B + 0.045 * STAGE_H, 0.05 * STAGE_H)}</defs>`;
+}
+
+/* the car's back flat, apron and floor between x0 and x1, on the car's panel lines; P names its textures */
+function car(x0: number, x1: number, phase: Phase, hud: Hud, P: string | null): string {
   const W = STAGE_W,
     H = STAGE_H,
     s = 1,
     w = x1 - x0,
     { floorY, floorH, dado, B } = carLines(geometry(hud)),
     step = 0.08 * W;
-  let d = `<rect x="${x0}" y="0" width="${w}" height="${floorY}" fill="${CAR.wall}"/>`;
+  let d = `<rect x="${x0}" y="0" width="${w}" height="${floorY}" fill="${P ? `url(#${P}wal)` : CAR.wall}"/>`;
   for (let px = Math.ceil(x0 / step) * step; px < x1; px += step)
     d += `<path d="M${px.toFixed(0)},0 V${dado}" stroke="${CAR.wallDark}" stroke-width="${4 * s}"/>`;
-  d += `<rect x="${x0}" y="${dado}" width="${w}" height="${floorY - dado}" fill="${CAR.dado}"/><rect x="${x0}" y="${dado - 4 * s}" width="${w}" height="${8 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${1.4 * s}"/>`;
+  d += `<rect x="${x0}" y="${dado}" width="${w}" height="${floorY - dado}" fill="${P ? `url(#${P}wald)` : CAR.dado}"/>`;
+  if (P)
+    d += `<rect x="${x0}" y="${dado}" width="${w}" height="${floorY - dado}" fill="#000" opacity="${DARKER['#3a2212']}"/>`;
+  d += `<rect x="${x0}" y="${dado - 4 * s}" width="${w}" height="${8 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${1.4 * s}"/>`;
   d += `<rect x="${x0}" y="0" width="${w}" height="${floorY}" fill="${CAR.wallDark}" opacity=".38"/>`;
-  d += `<rect x="${x0}" y="${floorY}" width="${w}" height="${floorH}" fill="${BOARD}"/><path d="M${x0},${(floorY + floorH / 2).toFixed(0)} H${x1}" stroke="${BOARD2}" stroke-width="${1.6 * s}" opacity=".7"/>`;
+  d += `<rect x="${x0}" y="${floorY}" width="${w}" height="${floorH}" fill="${P ? `url(#${P}brd)` : BOARD}"/><path d="M${x0},${(floorY + floorH / 2).toFixed(0)} H${x1}" stroke="${BOARD2}" stroke-width="${1.6 * s}" opacity=".7"/>`;
   // the apron below the rail, as the Floor instrument draws it
-  d += `<rect x="${x0}" y="${B - 2}" width="${w}" height="${H - B + 2}" fill="${BOARD}"/>`;
+  d += `<rect x="${x0}" y="${B - 2}" width="${w}" height="${H - B + 2}" fill="${P ? `url(#${P}apr)` : BOARD}"/>`;
   for (let y = B + 0.045 * H; y < H; y += 0.05 * H)
     d += `<path d="M${x0},${y.toFixed(0)} H${x1}" stroke="${BOARD2}" stroke-width="1.6" opacity="0.7"/>`;
   const Lt = ROOMLIGHT[phase];
@@ -82,15 +96,19 @@ export function bleed(o: BleedOpts): string {
     P = o.id + '-',
     e = EDGE[o.room];
   let d = '';
-  if (o.room === 'car')
-    d = car(-b, 0, o.phase ?? 'day', hud) + car(W, W + b, o.phase ?? 'day', hud);
-  else if (o.room === 'station') d = station(-b, 0) + station(W, W + b);
+  if (o.room === 'car') {
+    const T = o.wood ? P : null;
+    if (o.wood) d += carTextures(P, o.wood, hud);
+    d += car(-b, 0, o.phase ?? 'day', hud, T) + car(W, W + b, o.phase ?? 'day', hud, T);
+  } else if (o.room === 'station') d = station(-b, 0) + station(W, W + b);
   else {
     // the shelf room's panels, in step with the room's seven between the wing and the edge
     const x0 = geometry(hud).wingN,
       pw = (W - x0) / 7,
-      n = Math.ceil(b / pw);
-    d = panelling(x0 - n * pw, x0, n, pw) + panelling(W, W + n * pw, n, pw);
+      n = Math.ceil(b / pw),
+      T = o.wood ? P : undefined;
+    if (o.wood) d += shelfTextures(P, o.wood, x0, pw);
+    d += panelling(x0 - n * pw, x0, n, pw, T) + panelling(W, W + n * pw, n, pw, T);
   }
   // the darkening: from the room's own edge value at the seam to the house's dark
   const at = (x: number) => ((x + b) / (W + 2 * b)).toFixed(4);

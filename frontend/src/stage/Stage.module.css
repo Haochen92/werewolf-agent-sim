@@ -94,6 +94,8 @@
   pointer-events: auto;
 }
 .layer[data-layer='paint'] > *,
-.layer[data-layer='light'] > * {
+.layer[data-layer='haze'] > *,
+.layer[data-layer='light'] > *,
+.layer[data-layer='grade'] > * {
   pointer-events: none;
 }

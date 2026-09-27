@@ -23,13 +23,15 @@
 import { useEffect, useState } from 'react';
 import type { DayState } from '@/assets/manifest';
 import type { PassSlot, SpeechSlot } from '@/game/types';
-import { Layer, Paint } from '../Stage';
+import { Atmosphere } from '../Atmosphere';
+import { Layer, Paint, preloadPictures } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
 import { ReadCard } from '../film/ReadCard';
 import { turnReads } from '../film/film-model';
 import { Bleed } from '../instruments/Bleed';
-import { flapText } from '../instruments/CarriageClock';
+import { countText } from '../countdown';
+import { FeltWindow } from '../instruments/FeltWindow';
 import { Apron, Trap } from '../instruments/Floor';
 import { CardButton, NoticeZone } from '../instruments/Notice';
 import { SpeechBox } from '../instruments/SpeechBox';
@@ -37,6 +39,7 @@ import { Plaque, Stand } from '../instruments/Stand';
 import { TopStrip } from '../instruments/TopStrip';
 import { TurnDock } from '../instruments/TurnDock';
 import { WallClock } from '../instruments/WallClock';
+import { WallLamp } from '../instruments/WallLamp';
 import { Wing, WingTile } from '../instruments/Wing';
 import { StageMotion, useMotionScale } from '../motion';
 import { diningCar, diningCarPlan } from '../paint/dining-car';
@@ -45,6 +48,7 @@ import { light } from '../paint/light';
 import { shutter } from '../paint/window';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
 import { bandNarrows, sideOpen, stripButtons } from '../slot';
+import { VELVET, WOOD } from '../textures';
 import { BLEED, STAGE_H, geometry } from '../units';
 import type { SceneProps } from './types';
 
@@ -94,6 +98,8 @@ function DayTurn({
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const plan = diningCarPlan({ phase: 'day', hud, side });
+  // the vote's dusk fades the day off as a picture, which carries the textures inside it
+  useEffect(() => preloadPictures([WOOD.walnut, WOOD.boards]), []);
   // beside the side slot the paint has no wall for its clock (the window runs to the wing), so
   // on my turn the clock and its ring hang in the gap between the wing and the puppet
   const clock =
@@ -108,6 +114,8 @@ function DayTurn({
 
   // my own turn: the beat is mine (`seat`), with no line yet
   const mine = beat.id === 'day.your-turn';
+  // the clock hangs where the car's plan says, or on my turn beside the side slot too
+  const hung = mine ? clock : plan.clock;
   const speaker = beat.subject ?? (mine ? (beat.seat ?? null) : null);
   const slot = (view.days[beat.day]?.slots ?? []).find((s) => s.seq === beat.seq) as
     SpeechSlot | PassSlot | undefined;
@@ -143,20 +151,21 @@ function DayTurn({
 
   return (
     <>
+      <Atmosphere room="car" phase="day" hud={hud} side={side} />
       <Layer name="paint">
         <Bleed room="car" phase="day" hud={hud} />
-        <Paint of={diningCar} opts={{ phase: 'day', hud, side, wallClock: !mine }} />
-        {mine && clock ? (
+        <Paint of={diningCar} opts={{ phase: 'day', hud, side, wood: WOOD }} />
+        <FeltWindow phase="day" hud={hud} side={side} />
+        {hung ? (
           <WallClock
-            x={clock.x}
-            y={clock.y}
-            r={clock.r}
+            {...hung}
             time={DAY_HOUR}
-            ring={turn?.clock ? turn.clock.remainingMs / turn.clock.totalMs : null}
+            ring={mine && turn?.clock ? turn.clock.remainingMs / turn.clock.totalMs : null}
             phase="day"
           />
         ) : null}
-        <Paint of={shutter} opts={{ hud, side, state: 'open' }} />
+        {plan.lamp ? <WallLamp x={plan.lamp.x} y={plan.lamp.y} phase="day" /> : null}
+        <Paint of={shutter} opts={{ hud, side, state: 'open', walnut: WOOD.walnut }} />
       </Layer>
 
       <Layer name="floor">
@@ -168,6 +177,8 @@ function DayTurn({
         {character ? (
           <Puppet
             g={g}
+            shadow
+            glass
             character={character}
             seat={n}
             state={state}
@@ -204,7 +215,9 @@ function DayTurn({
       </Layer>
 
       <Layer name="hud">
-        {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
+        {hud === 'replay' ? (
+          <Paint of={drape} opts={{ bleed: BLEED, velvet: VELVET }} />
+        ) : null}
         <Wing width={g.wingN}>
           {view.seats.map((seat, i) => {
             const d = deadBySeat.get(seat);
@@ -255,7 +268,7 @@ function DayTurn({
             {view.me.role ? <CardButton role={view.me.role.role} /> : null}
             <TurnDock
               dock={dock}
-              left={turn?.clock ? flapText(turn.clock.remainingMs) : null}
+              left={turn?.clock ? countText(turn.clock.remainingMs) : null}
               onSay={onSay}
               onPass={() => onAct?.(null)}
               arrive={animate}

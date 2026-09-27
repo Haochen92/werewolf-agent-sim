@@ -149,8 +149,8 @@
 [data-small] .ttl {
   display: none;
 }
-/* on a phone the car's prompts stop short of the slot, so the drawer runs full height there
-   (slot.ts `railHolds`: the own room and the pack keep the rail) */
+/* on a phone the car's prompts and the own room's plate stop short of the slot, so the drawer
+   runs full height there (slot.ts `railHolds`: the pack's chat keeps the rail) */
 [data-small] .drawer[data-rail='soft'] {
   height: 900px;
 }

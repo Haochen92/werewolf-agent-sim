@@ -16,46 +16,46 @@
   );
 }
 
-/* the box itself: a cloak-dark front with the rail cap across its top and a recessed panel */
+/* the box itself: it places the footlights and the plaque; the picture below is its front */
 .box {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: linear-gradient(
-    180deg,
-    var(--cloak0) 0 calc(39 * var(--u)),
-    var(--cloak1) calc(39 * var(--u))
-  );
 }
+/* the painted front (props/stand-front.webp) as a 9-slice: the gallery, the rail, the marquetry
+   corners and the bottom rail keep their size, the flame panel and the plain border stretch; a
+   pixel is 0.407682u (605u over the body's 1484 px); the rail's top is on the box's top */
 .box::before {
   content: '';
   position: absolute;
   z-index: 1;
-  left: calc(-14 * var(--u));
-  right: calc(-14 * var(--u));
-  top: 0;
-  height: calc(30 * var(--u));
-  border-radius: calc(4 * var(--u));
-  background: linear-gradient(
-    180deg,
-    var(--bone3) 0 calc(3 * var(--u)),
-    #5c432a calc(3 * var(--u)),
-    var(--cloak2) calc(15 * var(--u)),
-    #42301e
-  );
-  box-shadow: 0 calc(4 * var(--u)) calc(8 * var(--u)) rgba(0, 0, 0, 0.45);
+  left: calc(-8.561 * var(--u));
+  right: calc(-8.154 * var(--u));
+  top: calc(-11.823 * var(--u));
+  bottom: calc(-1.631 * var(--u));
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: calc(71.752 * var(--u)) calc(85.613 * var(--u)) calc(52.591 * var(--u))
+    calc(85.613 * var(--u));
+  border-image: var(--front) 176 210 129 210 fill stretch;
 }
-.box::after {
-  content: '';
+
+/* the key light's shadow (the rooms' atmosphere): off the box's right side, over the boards
+   behind it and down its flank, under the painted front */
+.cast {
   position: absolute;
-  left: calc(26 * var(--u));
-  right: calc(26 * var(--u));
-  top: calc(82 * var(--u));
-  height: calc(330 * var(--u));
-  border-radius: calc(6 * var(--u));
-  background: #1b120b;
-  border: calc(3 * var(--u)) solid var(--cloak2);
-  box-shadow: inset 0 calc(6 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.45);
+  left: calc(100% - 60 * var(--u));
+  top: calc(-70 * var(--u));
+  width: calc(220 * var(--u));
+  height: calc(300 * var(--u));
+  /* closest-side keeps the ellipse inside the box, so no edge of it shows */
+  background: radial-gradient(
+    closest-side at 45% 40%,
+    rgba(12, 7, 4, 0.55),
+    rgba(12, 7, 4, 0.25) 55%,
+    rgba(12, 7, 4, 0)
+  );
+  pointer-events: none;
 }
 
 /* the two footlights: brass domes on the rail, glowing when the stand is lit */

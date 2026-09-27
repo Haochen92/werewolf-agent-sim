@@ -1,0 +1,51 @@
+/* The atmosphere (Atmosphere.tsx). Both parts cover the world and the bleed past its sides, so
+   no seam shows at the world's edge; positions are world units plus var(--bleed). */
+
+.key,
+.veil,
+.grade {
+  position: absolute;
+  top: 0;
+  left: calc(-1 * var(--bleed));
+  width: calc(1600px + 2 * var(--bleed));
+  height: 900px;
+  pointer-events: none;
+}
+/* the key light on the wall: a warm lift from the upper left, fading well before the far side */
+.key {
+  background: radial-gradient(
+    ellipse 1000px 760px at calc(var(--bleed) + 300px) 90px,
+    rgba(255, 206, 140, 0.16) 0%,
+    rgba(255, 196, 128, 0.07) 45%,
+    rgba(255, 196, 128, 0) 100%
+  );
+}
+
+/* the shelf room's veil: the seat's own small room, its wall near, so set back less than the car */
+.veil {
+  background: linear-gradient(180deg, rgba(30, 19, 11, 0.14), rgba(30, 19, 11, 0.07));
+}
+
+/* the grade: the key light's falloff to the lower right, then the vignette round the edges */
+.grade {
+  background:
+    radial-gradient(
+      ellipse calc(0.76 * var(--room)) 640px at calc(var(--bleed) + var(--cx)) 440px,
+      rgba(8, 6, 4, 0) 70%,
+      rgba(8, 6, 4, 0.18) 100%
+    ),
+    radial-gradient(
+      ellipse 1700px 1000px at calc(var(--bleed) + 380px) 60px,
+      rgba(10, 7, 4, 0) 55%,
+      rgba(10, 7, 4, 0.07) 80%,
+      rgba(10, 7, 4, 0.14) 100%
+    );
+}
+/* the grain: a still tile of noise, a grain to 1.5 units, never moving */
+.grade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grain) 0 0 / 240px 240px repeat;
+  opacity: 0.16;
+}

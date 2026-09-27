@@ -10,15 +10,17 @@
  *                   &drape=0|1&hud=none|live|replay&guides=0|1&chosen=0..7&strip=0
  */
 import { Layer, Paint } from '@/stage/Stage';
+import { FeltWindow } from '@/stage/instruments/FeltWindow';
 import { diningCar, diningCarPlan } from '@/stage/paint/dining-car';
 import { drape } from '@/stage/paint/drape';
 import { light } from '@/stage/paint/light';
 import { PHASES_IN_ORDER, type Phase } from '@/stage/paint/materials';
-import { shelfLight, shelfRoom } from '@/stage/paint/shelf-room';
+import { DOLL_BODY_PER_WIDTH } from '@/stage/instruments/Plush';
+import { shelfChoice, shelfLight, shelfPlan, shelfRoom } from '@/stage/paint/shelf-room';
 import { shutter, type ShutterState } from '@/stage/paint/window';
 import { geometry, HUD_CHROME, sideSlot, STAGE_W, type Hud } from '@/stage/units';
 import { Seg } from '@/stage/workbench/ControlStrip';
-import { SPRITES } from '@/assets/manifest';
+import { VELVET, WOOD } from '@/stage/textures';
 
 const pick = <T extends string>(v: string | null, all: readonly T[], dflt: T): T =>
   all.includes(v as T) ? (v as T) : dflt;
@@ -75,11 +77,15 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
       <Layer name="paint">
         {o.room === 'car' ? (
           <>
-            <Paint of={diningCar} opts={{ phase: o.phase, hud: o.hud }} />
-            <Paint of={shutter} opts={{ hud: o.hud, state: o.shutter }} />
+            <Paint of={diningCar} opts={{ phase: o.phase, hud: o.hud, wood: WOOD }} />
+            <FeltWindow phase={o.phase} hud={o.hud} />
+            <Paint
+              of={shutter}
+              opts={{ hud: o.hud, state: o.shutter, walnut: WOOD.walnut }}
+            />
           </>
         ) : (
-          <Paint of={shelfRoom} opts={{ hud: o.hud, wood: SPRITES.wood.src }} />
+          <Paint of={shelfRoom} opts={{ hud: o.hud, wood: WOOD }} />
         )}
       </Layer>
       <Layer name="light">
@@ -93,13 +99,29 @@ export function PaintBench({ params }: { params: URLSearchParams }) {
             }}
           />
         ) : (
-          <Paint of={shelfLight} opts={{ hud: o.hud, chosen: o.chosen }} />
+          <ShelfLight hud={o.hud} chosen={o.chosen} />
         )}
       </Layer>
       <Layer name="hud">
-        {o.drape ? <Paint of={drape} opts={{}} /> : null}
+        {o.drape ? <Paint of={drape} opts={{ velvet: VELVET }} /> : null}
         {o.guides ? <Guides hud={o.hud} /> : null}
       </Layer>
+    </>
+  );
+}
+
+/** The shelf room's candle light, and a chosen doll's over it (the dolls' default eight). */
+function ShelfLight({ hud, chosen }: { hud: Hud; chosen?: number }) {
+  const body = shelfPlan({ hud }).dollW * DOLL_BODY_PER_WIDTH;
+  return (
+    <>
+      <Paint of={shelfLight} opts={{ hud, body }} />
+      {chosen == null ? null : (
+        <div
+          style={{ position: 'absolute', inset: 0 }}
+          dangerouslySetInnerHTML={{ __html: shelfChoice({ hud, body, chosen }) }}
+        />
+      )}
     </>
   );
 }

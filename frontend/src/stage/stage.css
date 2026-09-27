@@ -18,8 +18,9 @@
   overflow: visible;
 }
 
-/* the backdrop's idle life: the wall clock sways on its string, the lantern flickers,
-   the country scrolls past the window and the snow falls. Still for reduced motion. */
+/* the backdrop's idle life: the wall clock sways on its string, the lantern flickers and
+   the snow falls past the window (its felt country scrolls in FeltWindow.module.css).
+   Still for reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
   .sk-hang {
     animation: sk-sway 7s ease-in-out infinite alternate;
@@ -30,9 +31,6 @@
     animation: sk-flk 0.45s ease-in-out infinite alternate;
     transform-box: fill-box;
     transform-origin: 50% 100%;
-  }
-  .sk-scrl {
-    animation: sk-scrl 5s linear infinite;
   }
   .sk-snw {
     animation: sk-snw 7s linear infinite;
@@ -49,11 +47,6 @@
 @keyframes sk-flk {
   to {
     transform: scale(0.88, 1.1) rotate(-3deg);
-  }
-}
-@keyframes sk-scrl {
-  to {
-    transform: translateX(calc(-1 * var(--p)));
   }
 }
 @keyframes sk-snw {

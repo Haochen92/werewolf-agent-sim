@@ -7,11 +7,15 @@
  * the day begins. Each scene says what is different about it and leaves the rest to these.
  */
 import { motion } from 'motion/react';
+import { useEffect } from 'react';
 import type { Character, DayState } from '@/assets/manifest';
 import type { GameView, SpeechSlot, PassSlot } from '@/game/types';
-import { Layer, Paint, PaintPicture } from '../Stage';
+import { Layer, Paint, PaintPicture, preloadPictures } from '../Stage';
 import { Puppet } from '../cast/Puppet';
 import { Bleed } from '../instruments/Bleed';
+import { FeltWindow } from '../instruments/FeltWindow';
+import { WallClock } from '../instruments/WallClock';
+import { WallLamp } from '../instruments/WallLamp';
 import { Apron, Trap } from '../instruments/Floor';
 import { SpeechBox } from '../instruments/SpeechBox';
 import { Plaque, Stand } from '../instruments/Stand';
@@ -21,13 +25,20 @@ import { beam, type Special } from '../paint/draw';
 import { diningCar, diningCarPlan } from '../paint/dining-car';
 import { drape } from '../paint/drape';
 import { light, type Pool } from '../paint/light';
-import type { Phase } from '../paint/materials';
+import { CLOCK, type Phase } from '../paint/materials';
 import { ROLE_NAME, factionOf, seatNumber } from '../roles';
+import { VELVET, WOOD } from '../textures';
 import { BLEED, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
+
+/** The time the wall clock keeps at an hour, in hours past midnight (materials.ts `CLOCK`). */
+const hourOf = (p: Phase) => CLOCK[p][0] + CLOCK[p][1] / 60;
 
 /**
  * The car at an hour; played from another hour, the old paint fades off over the new. Under
- * both, the bleed past the stage's sides, on the new hour at once.
+ * both, the bleed past the stage's sides, on the new hour at once. Over them, the painted wall
+ * clock (its hands on the hour's time, sweeping on from the last) and the wall lamp, lit or not.
+ * The walls and floor wear their textures; the fading picture carries them inside it
+ * (PaintPicture), so they are made ready for it as soon as the car is up.
  */
 export function CarPaint({
   phase,
@@ -47,19 +58,39 @@ export function CarPaint({
   side?: boolean;
 }) {
   const k = useMotionScale();
+  const fade = { duration: 1.2 * k, delay: fadeDelay * k, ease: 'easeInOut' } as const;
+  const plan = diningCarPlan({ phase, hud, side });
+  const was = from && from !== phase ? from : null;
+  // the hands only ever go forward: from an hour later on the dial, round past twelve
+  const wasTime = was ? hourOf(was) - (hourOf(was) > hourOf(phase) ? 12 : 0) : null;
+  useEffect(() => preloadPictures([WOOD.walnut, WOOD.boards]), []);
   return (
     <>
       <Bleed room="car" phase={phase} hud={hud} />
-      <Paint of={diningCar} opts={{ phase, hud, wallClock, side }} />
+      <Paint of={diningCar} opts={{ phase, hud, side, wood: WOOD }} />
       {from && from !== phase ? (
         <motion.div
           style={{ position: 'absolute', inset: 0 }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 0 }}
-          transition={{ duration: 1.2 * k, delay: fadeDelay * k, ease: 'easeInOut' }}
+          transition={fade}
         >
-          <PaintPicture of={diningCar} opts={{ phase: from, hud, wallClock, side }} />
+          <PaintPicture of={diningCar} opts={{ phase: from, hud, side, wood: WOOD }} />
         </motion.div>
+      ) : null}
+      <FeltWindow phase={phase} from={from} fade={fade} hud={hud} side={side} />
+      {wallClock && plan.clock ? (
+        <WallClock
+          {...plan.clock}
+          time={hourOf(phase)}
+          from={wasTime}
+          phase={phase}
+          tintFrom={was}
+          fade={fade}
+        />
+      ) : null}
+      {plan.lamp ? (
+        <WallLamp x={plan.lamp.x} y={plan.lamp.y} phase={phase} from={was} fade={fade} />
       ) : null}
     </>
   );
@@ -142,7 +173,9 @@ export function TableWing({
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   return (
     <>
-      {hud === 'replay' ? <Paint of={drape} opts={{ bleed: BLEED }} /> : null}
+      {hud === 'replay' ? (
+        <Paint of={drape} opts={{ bleed: BLEED, velvet: VELVET }} />
+      ) : null}
       <Wing width={width}>
         {view.seats.map((seat, i) => {
           const d = opts.untold?.has(seat) ? undefined : deadBySeat.get(seat);
@@ -224,6 +257,8 @@ export function StandReturns({
         {character ? (
           <Puppet
             g={g}
+            shadow
+            glass
             character={character}
             seat={n}
             state={state}

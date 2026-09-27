@@ -25,6 +25,7 @@ import { motion } from 'motion/react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { GameView } from '@/game/types';
+import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { ChipSprite } from '../cast/ChipSprite';
@@ -147,6 +148,7 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
 
   return (
     <>
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint
           phase={phase}
@@ -199,6 +201,8 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
                 >
                   <Puppet
                     g={g}
+                    shadow
+                    glass
                     character={cast[n - 1]}
                     seat={n}
                     state="base"

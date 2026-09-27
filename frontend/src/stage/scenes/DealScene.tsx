@@ -17,6 +17,7 @@
  * Nothing on the wire narrates the deal; every line on this stage is the client's. Played
  * forward, each beat moves from the one before it; arrived at, it is all simply there.
  */
+import { Atmosphere } from '../Atmosphere';
 import type { SceneBeat } from '../beats/types';
 import { Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
@@ -119,6 +120,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
 
   return (
     <>
+      <Atmosphere room="car" phase={phase} hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint
           phase={phase}
@@ -137,6 +139,7 @@ function DealBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps)
               return (
                 <Chip
                   key={seat}
+                  glass={g}
                   x={rowX(row, i, seats.length)}
                   y={row.rowY}
                   r={row.cr}

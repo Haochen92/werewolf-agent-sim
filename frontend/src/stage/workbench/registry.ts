@@ -176,6 +176,14 @@ export const SYNTHETIC: Situations = {
       actionKind: 'healer_target',
       left: null,
     },
+    {
+      label: 'healer, night 2, seat 1 chosen, 7 seconds left',
+      me: 'player_9',
+      day: 2,
+      actionKind: 'healer_target',
+      chosen: 'player_1',
+      left: 7,
+    },
   ],
   pack: [
     { label: 'wolf, round 1 to open', me: 'player_3', day: 1, actionKind: 'wolf_discuss' },

@@ -88,16 +88,51 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 **Layers** inside the box, bottom to top (each a positioned `div` filling the box):
 
 1. `paint` — the backdrop (dining car / shelf room / station; the phase paint; the window)
-2. `floor` — apron, trap, lift
-3. `figures` — puppets, plush, chips on strings, cards on strings
-4. `stand` — the stand, plaque, footlights
-5. `instruments` — table, jar, plates, verdict board, act marks, the shelf's objects
-6. `light` — the pool, specials, glows, the "chosen" lighting
-7. `hud` — top strip, wing, side slot (drawer or film), the dock
+2. `haze` — the atmosphere's back half: the key light on the wall, the wall pieces' shadows, the veil
+3. `floor` — apron, trap, lift
+4. `figures` — puppets, plush, chips on strings, cards on strings
+5. `stand` — the stand, plaque, footlights
+6. `instruments` — table, jar, plates, verdict board, act marks, the shelf's objects
+7. `light` — the pool, specials, glows, the "chosen" lighting
+8. `grade` — the atmosphere's front half: the key light's falloff, the vignette, the grain
+9. `hud` — top strip, wing, side slot (drawer or film), the dock
 
 The HUD is inside the box (it is part of the 1600×900 geometry), so the drawer's width and the
 wing's tiles scale with everything else. A modal overlay (the full card, the epilogue's sheet, the
-portrait interstitial) sits above the box in normal page flow.
+portrait interstitial) sits above the box in normal page flow. `grade` and `hud` sit outside the
+camera's box: a push-in moves the room under the grade, as under a lens.
+
+**Atmosphere (2026-09-27, the polish pass's first step).** One warm key light from the upper left
+(the puppets' own), carried over the whole room so the painted props and the flat vector pieces
+sit in one lit, filmed set. `Atmosphere.tsx`, one per scene (the car's and the rooms'; the
+platform has none), fills two layers:
+- `haze` (over the paint, under everything that stands in front of it): the key light's warm lift
+  on the upper-left wall (`KEY` in `paint/atmosphere.ts`: day 1, dusk and dawn 0.8, night 0.3,
+  so the night stays lamp-led); in the car, `carHaze`: the soft shadow the window's frame and
+  pelmet throw down-right onto the wall (masked by the window, so it never lies on it; the clock
+  and the lamp throw their own, below), then a warm dark veil over the whole back (0.15 at the ceiling to 0.07 at
+  the floor) that sets the wall, window, clock and lamp back behind the stand, the table and the
+  figures, left open round a lit lamp; in the shelf room a lighter plain veil and no key light
+  (its candle leads: `shelfLight`, beat sheet §6, 2026-09-27).
+- `grade` (over the light, under the HUD, outside the camera): the key light's falloff (0 to
+  0.14 towards the lower right), a vignette on the puppet's room (0 to 0.18 at the corners) and a
+  still film grain (`SPRITES.grain`, a 160 px noise tile at 1.5 units a grain, 0.16).
+- Contact and cast shadows, all down-right: each puppet and doll throws a baked silhouette on the
+  wall (`cast/CastShadow.tsx`; `SPRITES.shadow`, 55 WebPs, ~98 KB; a puppet's falls 0.09 × 0.05
+  of its height at 0.5, a doll's 0.05 × 0.035 at 0.38), a chip on its string a soft disc, the
+  lynch's card a soft box, the wall clock (swaying with it) and the wall lamp their baked
+  silhouettes (`SPRITES.shadow.wall`, 18×15 at 0.46 and 26×22 at 0.5). No shadow lies on the window's glass (a view through glass
+  takes none): where the shutter is open behind them, the puppets' and the chips' shadows move in
+  a still box clipped to everything but the glass (`offGlass` in `cast/CastShadow.tsx`), in step
+  with their figure; the stand throws a soft pool off its right side; on the vote's table,
+  soft gradient ellipses under the table (the lift shadow, retuned), the jar (tipped with it),
+  each plate and each tower of chips.
+- GPU (§6): nothing moves or fades; normal alpha only, no blend mode and no CSS filter. The one
+  SVG blur is `carHaze`'s, static like the car's own cut-outs. Baked shadows ride inside their
+  figure's box, so they rise and fall with it and nothing is blurred live. The pass adds five
+  static composited layers (the grade and the haze, promoted for overlapping the window's idle
+  animations) and no extra churn while a beat plays (measured 2026-09-27).
+- Ruled 2026-09-27: kept, and unconditional (the workbench's `light=off` compare switch is gone).
 
 ## 4. Assets
 
@@ -116,14 +151,22 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/day/<character>/{base,talking,thinking,out,chip}.webp
   src/assets/sprites/plush/<character>.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
-  src/assets/sprites/wood/walnut.webp
+  src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
+  src/assets/sprites/textures/{walnut,boards,velvet}.webp
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
+  src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
+  src/assets/sprites/props/{jar-glass,jar-lid,stand-front,vote-table}.webp
+  src/assets/sprites/props/{wall-clock,wall-lamp-unlit,wall-lamp-lit}.webp
+  src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
+  src/assets/sprites/shadow/plush/<character>.webp
+  src/assets/sprites/shadow/{wall-clock,wall-lamp}.webp
+  src/assets/sprites/atmosphere/grain.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
   static imports through `next/image`, content-hashed URLs, inferred dimensions). The manifest
   exports typed handles — `SPRITES.day[character][state]`, `SPRITES.plush[character]`,
-  `SPRITES.kits[name]`, `SPRITES.wood` — and `BODY: Record<Character, { top: number; body:
+  `SPRITES.kits[name]`, `SPRITES.wood`, `SPRITES.textures[name]` — and `BODY: Record<Character, { top: number; body:
   number }>`, the head-to-toe measure the cast module scales from, transcribed from
   `docs/design_2026-09-25/sprites-manifest.json` into TypeScript (no JSON at runtime).
 - `castForGame(gameId)` (from `kits/puppet-kit.js`) lives in `src/stage/cast/castForGame.ts`
@@ -145,6 +188,133 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   mean difference 2.5/255; the 2026-09-27 mockup's `.beam` is the same wood). The canopy's felt
   `fringe` was dropped that day: the mockup's top became a walnut beam with a brass trim, and
   its edge the paving's stone under a drift of snow. 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
+- The dining car's window (ruled 2026-09-27): the country behind the glass is painted felt, a
+  pair per hour, `SPRITES.window[hour].{far,near}`, drawn by `instruments/FeltWindow.tsx` over the
+  car's paint, inside the glass: `far` (sky, peaks, hills) stands still and covers the glass;
+  `near` (pines, fence, pole, with alpha) fills the bottom 52% and loops left one tile width,
+  crossfading with the car at an hour change. The vector paint draws only the frame and a flat
+  sky fill under it. Masters: `claude_artifacts/design/rasters/window-<hour>-{far,near}.png`
+  (1536×1024, gitignored). Recipe (ImageMagick, quality 82): `far` crop `1536x576+0+280`; `near`
+  first shifted down to register with day's (night 27 px, dusk 10 px: `-background none -gravity
+  north -splice 0xN +gravity`), then crop `1536x520+0+440`; night's `near` also `-modulate 65,55`
+  so the row is the darkest thing outside.
+- The painted props (ruled 2026-09-27, the polish pass): the jar's glass and lid, the stand's front
+  and the vote's table are the owner's rasters, `SPRITES.props.{jarGlass,jarLid,stand,voteTable}`,
+  replacing their vector bodies (plates, cards, chips, strings, footlights and plaque stay vector).
+  Masters: `claude_artifacts/design/rasters/{jar-glass,jar-lid,stand-front,vote-table}.png`.
+  Recipe (ImageMagick): crop to the alpha>3% box plus a margin, `-background black -alpha
+  background` (zeroes the masters' garbage RGB under alpha 0; the lossy WebP puts don't-care RGB
+  back near edges, which the browser's premultiplied alpha discards), `-quality 85 -define
+  webp:alpha-quality=100 -define webp:method=6`. Crops: glass `988x1446+18+46`, lid
+  `1154x827+50+216`, stand `1510x387+13+347`, table `1536x295+0+352`.
+  - **Jar** (`Jar.tsx`, `jarGeometry`): the glass is an SVG `<image>` over its chips, so they take
+    its mist; its box is the vector jar's height with the picture's own width (w/h 0.68). Lines
+    measured on the picture, as fractions of h above the foot: mouth 0.968 (`yR`), lip's foot
+    0.907, neck's foot 0.824 (`yN`), inner floor 0.15 (`floor`, where the pile lies). The lid's
+    skirt is as wide as the lip, its foot on the lip's foot; the string ties round the ring.
+  - **Stand** (`Stand.module.css`, replaced 2026-09-27): a walnut Pullman sideboard front, a brass
+    gallery on its rounded rail, marquetry only in a border band and corner fans, a flame-figured
+    panel. Master `stand-front.png` (the first one, a baize front, is kept as
+    `stand-front-classroom.png`). Crop `1525x429+6+310`. Drawn with `border-image` as a 9-slice,
+    insets 176 210 129 210 px (top right bottom left): the gallery, the rail, the fans and the inlay
+    squares nearest them, and the bottom rail keep their painted size; the flame panel, the plain
+    band and the stiles stretch (to any `widen` too). The box is ~2.5:1 and the picture 3.6:1, so the
+    middle rows stretch 2.6× (3.4× under the replay's HUD): the side bands' inlay stringing between
+    the corner slices (crop px 54–68 and 1456–1470, rows 176–298) was made one colour per column at
+    conversion (`\( +clone -crop 15x123+54+176 +repage -scale 15x1! -scale 15x123! \) -geometry
+    +54+176 -composite`, and at +1456) so it stretches without showing it; the middle square of
+    each strip went with it. A pixel is 0.407682 puppet units (605 over the body's 1484 px, the
+    stiles' outer edges); the rail's top (px 339) is on the box's top, so the gallery stands ~9
+    units above the rail, over the puppet's waist. Darkened at conversion (`-channel RGB -evaluate
+    multiply 0.55`, re-judged for this picture and kept): its panel averages a little below the
+    car's wall and the puppet stays the brightest thing. 75 KB.
+  - **Table** (`VoteTable.tsx` `TablePicture`): two strips of one picture meeting at the top's
+    front line (px 88): the top (back line px 9, front corners x 21 and 1518.5) stretched to the
+    vote's `depth`, so plates and jar stand where they did; the cloth and legs scaled so 138 px is
+    `drop`, so the place cards hang on the cloth. The master's legs reached below the lift's cut;
+    they were shortened at conversion to squat turned feet: below row 596 the wood is cleared
+    (`-channel A -fx "j>=628||(j>=596&&(lightness<0.45||max(max(r,g),b)-min(min(r,g),b)>0.3))?0:u"`)
+    and the legs' lower bulb and foot (rows 662–719) laid under it at row 581.
+- The wall clock and the wall lamp (2026-09-27): the owner's paintings replace the kit's vector
+  clock and lantern, `SPRITES.props.{wallClock,wallLampUnlit,wallLampLit}`. Masters:
+  `claude_artifacts/design/rasters/{wall-clock,wall-lamp-unlit,wall-lamp-lit}.png`. Recipe: crop
+  to the alpha box plus a margin (clock `844x1216+206+6`; both lamps one frame, `986x1526+25+0`),
+  `-resize 50%` (they hang ~230 units tall), then the props' `-alpha background` and quality
+  85. The unlit lamp's frosted panes were first darkened and cooled a little (a feathered box
+  over the glass, master px 395–955 × 725–1270, its pale grey pixels ×0.82 towards blue-grey) so
+  the glass is not the brightest spot on the wall by day.
+  - **Clock** (`WallClock.tsx`): a picture with no hands, hung at the plan's clock and sized so
+    its twelve dots (file px, centre 210.53, 385.78, radius 134.34) lie at the kit's 0.66 r; the
+    face is then the kit's 0.8 r and the hands, the red ring and the pivot, still code, turn
+    about its centre. The cord ties to the chain's top (file px 4.5). The room's tint (a masked
+    overlay, the face left out) falls on the brass and fades with the car's at an hour change;
+    CarPaint hangs it with the hour's time (`CLOCK`), the hands sweeping forward from the last.
+  - **Lamp** (`WallLamp.tsx`): its glass (file px 187.5–462.5 × 365–632.5) centred on the kit's
+    lantern glass and 78 units tall. Unlit or lit by the hour's `lit`; where the lit changes, the
+    old picture fades off over the new with the car's fade (an image's opacity). The room's
+    tint is a still overlay in its shape (lit, 0.6 of it and none on the glass). Its special,
+    halo, pool and glow stay the car's code, round the same centre.
+  - The car's paint no longer draws either; the kit-fidelity test swaps them out of the kit
+    (`paint.test.ts`, with the lit lantern's flame), as it does the window's country.
+- The room's surfaces (2026-09-27): the flat vector walls, floor and valance are filled with
+  seamless textures, `SPRITES.textures.{walnut,boards,velvet}`, as SVG patterns
+  (`paint/texture.ts`). The shapes stay the paint's vector (they move with the side slot, the
+  bleed and the hours); the texture only fills them, anchored to the world's units, so it runs on
+  unbroken into the bleed. Each tile is tinted at conversion so its average is the flat colour it
+  replaces: the room keeps its value and hue, and each hour's `ROOMLIGHT` tint (a multiply inside
+  the car's SVG) still falls on it. A darker flat of the same wood is the tile under a black veil
+  (`DARKER`: 0.22 for `#3a2212`, 0.41 for `#2c1a0e`). Masters:
+  `claude_artifacts/design/rasters/texture-{wall-walnut,floor-boards,valance-velvet}.png` (1254²,
+  seamless). Every resize is `-virtual-pixel tile -distort Resize` so the tile stays seamless.
+  - **Walnut** (`walnut.webp`, 640², 53 KB, 400 units a repeat): resized, each channel multiplied
+    to the car's wall `#4a2c18` (R 0.7897, G 0.8913, B 0.9436), then its contrast about that
+    average raised 1.7× (`\( +clone -scale 1x1! -scale 640x640! \) -compose Mathematics -define
+    compose:args=0,-0.7,1.7,0 -composite`) so the grain still reads under the car's veils;
+    quality 85. Used on: the car's back wall (a veneer window per panel between the panel lines,
+    five different ones before the pattern repeats, `veneer`), its dado (grain across, veiled to
+    `#3a2212`), the shelf room's panels (veiled to `#3a2212`), cornice and the shelf's face
+    (grain along the board: the new walnut replaced the old `wood/walnut.webp` tile there), the
+    shutter's stiles, louvres (veiled), slats (the walnut under their highlight at 0.6) and
+    pelmet, and the bleed's strips of the car and the shelf room. The panel lines, dado, brass
+    rail and mouldings stay vector on top.
+  - **Boards** (`boards.webp`, 512², 64 KB): the master's eight planks were first rolled so a seam
+    sits on row 0 (`-roll +0-91`) and evened out to 157 px each (each plank cropped between its
+    seams, rows 0 158 318 478 641 796 959 1125 1254, resized to 0 157 314 470 627 784 941 1097
+    1254 and appended), so the seams fall on a regular beat and can be laid on the drawn ones;
+    then resized and multiplied to `BOARD` `#5a3f26` (R 1.2441, G 1.4580, B 1.4971). Laid at a
+    plank's width per eighth of the tile, stretched to twice its width along the grain (`boards`):
+    the car's floor strip and its trap (29 units a plank, a seam on the drawn one), the apron (45,
+    on its drawn seams), the trap's two leaves and the lift's slab (half the leaf each), the
+    shelf room's floor (36), and the bleed's.
+  - **Velvet** (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
+    as light and shade, times the valance's `#4a1418` (`-channel R -separate -evaluate multiply
+    1.1102`, then `-compose multiply` with `rgb(148,40,48)`), so it has the valance's colour
+    exactly and its folds and pile. The replay's valance and its bleed; the gold hem, the border
+    and its scallops stay vector.
+  - **The method: the pattern is inside the paint's SVG**, not a DOM layer under it. The car's
+    hour tint is a multiply and its glows a screen inside its SVG; they have to reach the texture,
+    and a layer under a transparent wall would take them as flat colour instead. The paints take
+    the textures' URLs (`wood`, `walnut`, `velvet` options; without them they draw the kit's flat
+    colours, byte for byte). The one catch is the fading car: an SVG drawn as an image cannot load
+    files. `PaintPicture` (Stage.tsx) therefore writes each picture its SVG points at into it as a
+    data URI, the same bytes the live paint shows, fetched once (from the browser's cache) and
+    kept; the car scenes warm that cache when they mount (`preloadPictures`), and until it is
+    ready (a change on a page's very first frame) the fading copy is the live SVG. So nothing is
+    added to the JS or the HTML; a fading car's data URL is ~177 KB, built once per fade.
+    Checked 2026-09-27: the picture, forced back to full opacity after the vote's dusk→night and
+    the morning's change, matches the live paint of its hour (mean difference under 2.5/255, the
+    image's own resampling of the boards' fine grain).
+  - Kit fidelity: `paint.test.ts` holds the textured car to the kit's `scene()` with its
+    documented swaps (the pattern defs after the kit's first defs; the wall, dado, floor strip and
+    trap fills; the dado's veil), as it does the window, clock and lantern.
+- The atmosphere's pictures (2026-09-27, §3 "Atmosphere"), made from the shipped WebPs, not
+  masters. Shadows, per day figure and state, per plush doll, and for the wall clock and the
+  (unlit) lamp: `convert <sprite> -alpha extract
+  -resize x128 -bordercolor black -border 12 -blur 0x3 -background '#0c0704' -alpha shape
+  -quality 80 -define webp:alpha-quality=70 -define webp:method=6` (`CastShadow` reads the 128
+  and the 12). Grain: a 160 px `+noise Gaussian` tile on gray50 (`-seed 7`), each pixel white or
+  black by its side of the middle, alpha its distance from it (×0.5 white, ×0.9 black, so it
+  does not grey the dark), lossless.
 - Sharpness: the 600 px day cuts are right at 1× and slightly soft at 2× for the puppet at the
   stand. If the ~900 px cuts still exist in the chat, re-export them as the masters. **Never
   upscale.** No sprite atlases: HTTP/2 makes 44 small files cheap and an atlas adds tooling.
@@ -156,14 +326,14 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 
 Two kinds, by whether they carry state:
 
-- **Paint** — the dining car's panels, window, lantern, the shelf and brackets, the drape, the
+- **Paint** — the dining car's panels, window frame, the shelf and brackets, the drape, the
   shutter's geometry, the station cloth. Pure functions of `(phase, units)`, no state, no
   children, no event handlers. **Ported as string generators** (the kits' style, typed) under
   `src/stage/paint/`, rendered by one memoised `<Paint html={…} />` per layer via
   `dangerouslySetInnerHTML`. Porting these to JSX buys nothing. Every `<filter>`, `<mask>`,
   `<linearGradient>` id is prefixed with `useId()` from the caller so two stages can share a page
   (the kits' `opts.id` rule).
-- **Instruments** — stand and plaque, trap and lift, the clock (dial, hand, arc, counter),
+- **Instruments** — stand and plaque (the stand's front a raster, §4), trap and lift, the clock (dial, hand, arc, counter),
   cards (back, small, full, the framed card), chips and their strings, wing tiles, the shutter's
   motion, the verdict board, act marks, sigils, the jar/table/plates, film rows, the drawer.
   **JSX components with props**, because they carry state, need keys, and animate in and out.
@@ -198,6 +368,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - A backdrop that fades out is a **picture**, never a live SVG: `PaintPicture` turns the
   generator's SVG into an image and fades the bitmap. A live filtered SVG fading on a GPU drops
   a whole black frame as Chrome gives it its own layer, and pinning that layer did not help.
+  The paint's textures go into the image as data URIs, so it matches the live paint (§4).
 - A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
   the trap once the table has gone in; the load is its own layer while it moves.
 
@@ -253,15 +424,30 @@ URL's `slot` (closed by default), never the real routes' ≤540 px-tall-window d
 src/stage/
 ├── units.ts                 # 1600×900, the frozen HUD geometry, scale helpers
 ├── Stage.tsx                # the box, the layers, --stage-scale, the paint memo
+├── Atmosphere.tsx           # the key light, haze, shadows, vignette and grain (§3 "Atmosphere")
+├── countdown.ts             # a prompt's `m:ss` and the share left (the dock, the ballot, the plate)
+├── textures.ts              # the room's surface pictures by URL (WOOD, VELVET), for the paints
 ├── paint/                   # string generators: diningCar, shelfRoom, station, window,
 │                            #   shutter, drape, light — (phase, units) → svg string;
+│                            #   texture.ts: the surfaces' SVG patterns (veneer, boards, velvet);
 │                            #   bleed.ts: the room's two strips past the world's sides (§3);
-│                            #   station.ts: the platform (stationBack/Front, stationPlan)
-├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, WallClock, Shutter,
+│                            #   station.ts: the platform (stationBack/Front, stationPlan);
+│                            #   atmosphere.ts: the key light by hour, the car's haze;
+│                            #   shelf-room.ts: the seat's room, its candle light (shelfLight)
+│                            #   and a choice's darkness (shelfChoice), gradients only
+├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, WallClock, WallLamp, Shutter,
 │                            #   Bleed (the bleed's paint, under a room's own),
+│                            #   FeltWindow (the felt country behind the car's glass),
 │                            #   RoleCard, CardBack, SmallCard, Chip, String, WingTile, Wing,
-│                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate, ...
-├── cast/                    # Puppet, Plush, Kit (sprite + numeral overlay), castForGame
+│                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate,
+│                            #   ActPlate (the night room's plate, with its countdown: the room
+│                            #   has no clock since 2026-09-27; CarriageClock is gone), Pin (the
+│                            #   pin in the chosen doll), ...
+│                            #   (the jar's glass and lid, the stand's front, the table, the
+│                            #   wall clock and the wall lamp are painted rasters,
+│                            #   SPRITES.props: §4)
+├── cast/                    # Puppet, Plush, Kit (sprite + numeral overlay), castForGame,
+│                            #   CastShadow (a figure's baked shadow on the wall)
 ├── film/                    # Film (side slot), Note, Lessons, ReadCard, Brief, Ledger (epilogue)
 ├── drawer/                  # Transcript drawer: lines by kind, day tabs, seat chips, Show toggles
 ├── scenes/                  # StationScene (the waiting room; station.ts its rules) DealScene

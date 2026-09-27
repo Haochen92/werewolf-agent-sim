@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { PLUSH_SCALE, SPRITES, type Character } from '@/assets/manifest';
+import { CastShadow } from '../cast/CastShadow';
 import { useMotionScale } from '../motion';
 import styles from './NightRoom.module.css';
 
@@ -35,6 +36,9 @@ export function plushBox(character: Character, x: number, hangY: number, body: n
     w = (h * img.width) / img.height;
   return { left: x - w / 2, top: hangY + body - h, w, h, aspect: img.width / img.height };
 }
+
+/** The cast shadow on the wall (CastShadow): short, the wall close behind the hooks. */
+const CAST = { dx: 0.05, dy: 0.035, opacity: 0.38 };
 
 export interface PlushProps {
   character: Character;
@@ -90,6 +94,7 @@ export function Plush({
       animate={look}
       transition={{ duration: 0.6 * k, delay: (arrive || 0) * k }}
     >
+      <CastShadow src={SPRITES.shadow.plush[character]} w={box.w} h={box.h} {...CAST} />
       <Image src={SPRITES.plush[character]} alt="" unoptimized draggable={false} />
       <svg
         className={styles.numeral}

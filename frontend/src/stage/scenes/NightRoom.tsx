@@ -3,32 +3,34 @@
 /**
  * The acting seat's room at night, as both night rooms share it (handoff §2, beat sheet §6
  * and §7): bare walnut panelling, the shelf across the upper half with your framed card at
- * the left, the carriage clock at the centre and your role's kit at the right, and below it
- * one plush doll per seat you may choose, each on its hook. There is no avatar of you: you
- * are the one sitting in the chair.
+ * the left and your role's kit at the right, and below it one plush doll per seat you may
+ * choose, each hung on dark twine from a nail. There is no avatar of you: you are the one
+ * sitting in the chair. The turn's countdown is on the plate, not in the room.
  *
- * Choosing is light. Before a choice the room is evenly lit; once a doll is chosen the room
- * below the shelf dims and one light finds that doll, while the shelf stays lit. Nothing
- * moves to say "chosen". The shelf room and the pack's room differ only in what sits over
- * this (the plate, the chat, the teeth), so they pass that in.
+ * It is dark but for a candle (the kit's own, or one at the shelf's end): its warm pool falls
+ * on the dolls. Choosing is light and a pin. Once a doll is chosen the room below the shelf
+ * goes darker, one light finds that doll, and a pin in the acting side's colour goes into it.
+ * The shelf room and the pack's room differ only in what sits over this (the plate, the chat,
+ * the teeth), so they pass that in.
  */
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
-import { SPRITES } from '@/assets/manifest';
+import { Atmosphere } from '../Atmosphere';
 import { Layer, Paint } from '../Stage';
 import { Bleed } from '../instruments/Bleed';
-import { CarriageClock } from '../instruments/CarriageClock';
 import { CardOverlay, FramedCard } from '../instruments/FramedCard';
-import { Kit } from '../instruments/Kit';
+import { Kit, kitFlame } from '../instruments/Kit';
+import { Pin } from '../instruments/Pin';
 import { DOLL_BODY_PER_WIDTH, Plush } from '../instruments/Plush';
 import { TopStrip } from '../instruments/TopStrip';
 import { Wing, WingTile } from '../instruments/Wing';
 import { useMotionScale } from '../motion';
-import { shelfLight, shelfPlan, shelfRoom } from '../paint/shelf-room';
+import { shelfChoice, shelfLight, shelfPlan, shelfRoom } from '../paint/shelf-room';
 import { seatNumber } from '../roles';
 import { sideOpen, stripButtons } from '../slot';
-import { BLEED, STAGE_H, geometry } from '../units';
-import type { SceneProps, TurnInput } from './types';
+import { WOOD } from '../textures';
+import { BLEED, geometry } from '../units';
+import type { SceneProps } from './types';
 import styles from '../instruments/NightRoom.module.css';
 
 /** The light finding a chosen doll, and the room dimming around it (seconds). */
@@ -46,8 +48,10 @@ export interface NightRoomProps extends Pick<
   alone?: boolean;
   /** The seats hung on the hooks, in seat order. */
   dolls: readonly string[];
-  /** The doll the light finds; null = the room evenly lit. */
+  /** The doll the light finds; null = only the candle's pool. */
   lit: string | null;
+  /** The doll with the pin in it (the choice); null = none. */
+  pin?: string | null;
   /** Tapping a doll; without it the dolls are only shown. */
   onChoose?: (seat: string) => void;
   /** Marks drawn over a doll (the teeth), by seat. */
@@ -56,7 +60,6 @@ export interface NightRoomProps extends Pick<
   pack?: readonly string[];
   /** Under the kit on the shelf's edge: the vigilante's caps left. */
   kitNote?: ReactNode;
-  clock?: TurnInput['clock'];
   cardOpen: boolean;
   onCard: (open: boolean) => void;
   /** The plate, the chat: whatever the room adds at its foot. */
@@ -73,18 +76,18 @@ export function NightRoom({
   alone,
   dolls,
   lit,
+  pin = null,
   onChoose,
   marks,
   pack = [],
   kitNote,
-  clock,
   cardOpen,
   onCard,
   children,
 }: NightRoomProps) {
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
-  // the side slot open: the shelf and its hooks keep to the room left of it
+  // the side slot open: the shelf and its nails keep to the room left of it
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
   const n = Math.max(1, dolls.length);
@@ -93,12 +96,14 @@ export function NightRoom({
   const chosenIndex = lit ? dolls.indexOf(lit) : -1;
   const deadBySeat = new Map(view.dead.map((d) => [d.player, d]));
   const myRole = view.me.role?.role ?? role;
+  const flame = kitFlame(role, plan.kitX, plan.foot, plan.kitH);
 
   return (
     <>
+      <Atmosphere room="shelf" phase="night" hud={hud} side={side} />
       <Layer name="paint">
         <Bleed room="shelf" hud={hud} />
-        <Paint of={shelfRoom} opts={{ hud, hooks: n, side, wood: SPRITES.wood.src }} />
+        <Paint of={shelfRoom} opts={{ hud, hooks: n, side, wood: WOOD }} />
       </Layer>
 
       <Layer name="figures">
@@ -120,6 +125,10 @@ export function NightRoom({
               arrive={animate ? 0.1 + i * DOLL_STAGGER : false}
             >
               {marks?.[seat]}
+              {/* starts still: only a pin put in or drawn out in the room plays */}
+              <AnimatePresence initial={false}>
+                {pin === seat ? <Pin key="pin" role={role} w={plan.dollW} /> : null}
+              </AnimatePresence>
             </Plush>
           );
         })}
@@ -130,47 +139,43 @@ export function NightRoom({
           role={role}
           x={plan.cardX}
           foot={plan.foot}
-          height={0.31 * STAGE_H}
+          height={plan.cardH}
           u={g.u * 0.95}
           alone={alone}
           onOpen={() => onCard(true)}
         />
-        <CarriageClock
-          x={plan.clockX}
-          foot={plan.foot}
-          height={0.27 * STAGE_H}
-          remainingMs={clock?.remainingMs ?? null}
-          totalMs={clock?.totalMs ?? null}
-        />
-        <Kit role={role} x={plan.kitX} foot={plan.foot} height={0.19 * STAGE_H} />
+        <Kit role={role} x={plan.kitX} foot={plan.foot} height={plan.kitH} />
         {kitNote ? (
-          <div className={styles.kitNote} style={{ left: plan.kitX, top: plan.foot + 8 }}>
+          <div className={styles.kitNote} style={{ left: plan.kitX, top: plan.top + 6 }}>
             {kitNote}
           </div>
         ) : null}
       </Layer>
 
       <Layer name="light">
+        {/* the candle's room stays still; only the choice's darkness fades in and out over it */}
+        <Paint of={shelfLight} opts={{ hud, hooks: n, side, body, flame, bleed: BLEED }} />
         <AnimatePresence initial={false}>
-          <motion.div
-            key={chosenIndex}
-            style={{ position: 'absolute', inset: 0 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: LIGHT_FADE * k }}
-          >
-            <Paint
-              of={shelfLight}
-              opts={{
-                hud,
-                hooks: n,
-                side,
-                chosen: chosenIndex < 0 ? undefined : chosenIndex,
-                bleed: BLEED,
+          {chosenIndex < 0 ? null : (
+            <motion.div
+              key={chosenIndex}
+              style={{ position: 'absolute', inset: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: LIGHT_FADE * k }}
+              dangerouslySetInnerHTML={{
+                __html: shelfChoice({
+                  hud,
+                  hooks: n,
+                  side,
+                  body,
+                  chosen: chosenIndex,
+                  bleed: BLEED,
+                }),
               }}
             />
-          </motion.div>
+          )}
         </AnimatePresence>
       </Layer>
 

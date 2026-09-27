@@ -18,6 +18,7 @@ import { motion } from 'motion/react';
 import { BODY, SPRITES, type Character, type DayState } from '@/assets/manifest';
 import type { StageGeometry } from '../units';
 import { useMotionScale } from '../motion';
+import { CastShadow, offGlass } from './CastShadow';
 import styles from './Puppet.module.css';
 
 export interface PuppetProps {
@@ -33,6 +34,10 @@ export interface PuppetProps {
   arrive?: number | false;
   /** Called once the rise has finished. */
   onArrived?: () => void;
+  /** Cast the key light's shadow on the wall behind (the rooms' atmosphere; not the platform). */
+  shadow?: boolean;
+  /** The car's window is uncovered behind: the shadow falls on the wall round it, never the glass. */
+  glass?: boolean;
 }
 
 /** The rise, from the deal bench (rev 75): 0.8 s on the kit's ease. */
@@ -46,6 +51,9 @@ const RISE = { duration: 0.8, ease: [0.3, 0.8, 0.4, 1] as const };
  */
 const HEADROOM = 60;
 const SINK = 100;
+
+/** The cast shadow (CastShadow): thrown further than a doll's, the wall being well behind the stand. */
+const CAST = { dx: 0.09, dy: 0.05, opacity: 0.5 };
 
 /** Where the figure's box sits, in units, for a character in a state. */
 export function puppetBox(
@@ -82,6 +90,8 @@ export function Puppet({
   scale = 1,
   arrive = false,
   onArrived,
+  shadow = false,
+  glass = false,
 }: PuppetProps) {
   const k = useMotionScale();
   const box = puppetBox(g, character, state, dx, scale);
@@ -89,45 +99,79 @@ export function Puppet({
   // the numeral's disc: 24% of the figure's width, centred, 62% of the way down the body
   const nh = 24 * box.aspect;
   const ntop = b.top * 100 + b.body * 100 * 0.62 - nh / 2;
+  const place = { left: box.left, top: box.top, width: box.w, height: box.h };
+  const rise = {
+    initial: arrive === false ? (false as const) : { y: '100%' },
+    animate: { y: 0 },
+    transition: { ...RISE, duration: RISE.duration * k, delay: (arrive || 0) * k },
+  };
   return (
-    <motion.div
-      className={styles.pup}
-      style={{ left: box.left, top: box.top, width: box.w, height: box.h }}
-      initial={arrive === false ? false : { y: '100%' }}
-      animate={{ y: 0 }}
-      transition={{ ...RISE, duration: RISE.duration * k, delay: (arrive || 0) * k }}
-      onAnimationComplete={onArrived}
-    >
-      <Image
-        src={SPRITES.day[character][state]}
-        alt=""
-        unoptimized
-        priority
-        draggable={false}
-        className={styles.sprite}
-      />
-      {seat === null ? null : (
-        <svg
-          className={styles.numeral}
-          viewBox="0 0 100 100"
-          style={{ left: '38%', top: `${ntop}%`, width: '24%', height: `${nh}%` }}
+    <>
+      {shadow ? (
+        // the shadow rises in step with the figure, inside a still box that cuts the glass out
+        <div
           aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            clipPath: glass ? offGlass(g) : undefined,
+          }}
         >
-          <circle cx="50" cy="50" r="46" fill="#efe4cb" stroke="#24180c" strokeWidth="5" />
-          <circle
-            cx="50"
-            cy="50"
-            r="36"
-            fill="none"
-            stroke="#8d7a55"
-            strokeWidth="3"
-            strokeDasharray="6 5"
-          />
-          <text x="50" y="68" textAnchor="middle" fontSize="54" fill="#24180c">
-            {seat}
-          </text>
-        </svg>
-      )}
-    </motion.div>
+          <motion.div className={styles.pup} style={place} {...rise}>
+            <CastShadow
+              src={SPRITES.shadow.day[character][state]}
+              w={box.w}
+              h={box.h}
+              {...CAST}
+            />
+          </motion.div>
+        </div>
+      ) : null}
+      <motion.div
+        className={styles.pup}
+        style={place}
+        {...rise}
+        onAnimationComplete={onArrived}
+      >
+        <Image
+          src={SPRITES.day[character][state]}
+          alt=""
+          unoptimized
+          priority
+          draggable={false}
+          className={shadow ? `${styles.sprite} ${styles.keyLit}` : styles.sprite}
+        />
+        {seat === null ? null : (
+          <svg
+            className={styles.numeral}
+            viewBox="0 0 100 100"
+            style={{ left: '38%', top: `${ntop}%`, width: '24%', height: `${nh}%` }}
+            aria-hidden="true"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="46"
+              fill="#efe4cb"
+              stroke="#24180c"
+              strokeWidth="5"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="36"
+              fill="none"
+              stroke="#8d7a55"
+              strokeWidth="3"
+              strokeDasharray="6 5"
+            />
+            <text x="50" y="68" textAnchor="middle" fontSize="54" fill="#24180c">
+              {seat}
+            </text>
+          </svg>
+        )}
+      </motion.div>
+    </>
   );
 }

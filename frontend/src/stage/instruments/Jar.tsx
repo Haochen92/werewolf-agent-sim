@@ -9,15 +9,22 @@
  *
  * The lid is its own piece: it comes down on its string as the table arrives and lifts off
  * (`up`), goes back on when voting closes (`down`), and flies out of the frame when the count
- * begins (`gone`). Drawn after the vote bench (rev 64 `jar`, `lidGroup`, `pileSVG`).
+ * begins (`gone`). The glass and the lid are painted pictures (SPRITES.props); the chips are
+ * drawn under the glass. Drawn after the vote bench (rev 64 `jar`, `lidGroup`, `pileSVG`).
  */
 import type { ReactNode } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import { rnd } from '../paint/draw';
-import { CAR, K2 } from '../paint/materials';
 import { STAGE_H } from '../units';
 import { Tween, about, lerp } from './Tween';
 import { ChipBack, ChipFace, FlatChip, type ChipFaceProps } from './VoteChip';
-import { jarGeometry, pileSpots, type VoteGeometry } from './vote-geometry';
+import {
+  GLASS_PX,
+  LID_PX,
+  jarGeometry,
+  pileSpots,
+  type VoteGeometry,
+} from './vote-geometry';
 
 type Face = Omit<ChipFaceProps, 'x' | 'y' | 'r' | 'sw'>;
 
@@ -36,21 +43,13 @@ export interface JarProps {
   fallDelay?: number;
 }
 
-/** The glass's outline, as one path. */
-function bodyPath(v: VoteGeometry) {
-  const { cx, base } = v,
-    J = jarGeometry(v),
-    { w, wN, yS, yN, yR, rb } = J;
-  return `M${cx - w / 2},${base - rb} Q${cx - w / 2},${base} ${cx - w / 2 + rb},${base} H${cx + w / 2 - rb} Q${cx + w / 2},${base} ${cx + w / 2},${base - rb} V${yS} C${cx + w / 2},${yS - (yS - yN) * 0.7} ${cx + wN / 2},${yN + (yS - yN) * 0.35} ${cx + wN / 2},${yN} V${yR} H${cx - wN / 2} V${yN} C${cx - wN / 2},${yN + (yS - yN) * 0.35} ${cx - w / 2},${yS - (yS - yN) * 0.7} ${cx - w / 2},${yS}Z`;
-}
-
 /** Where the chips lie once the jar is on its side, in the jar's own (upright) drawing. */
 function lyingSpots(v: VoteGeometry, n: number): [number, number][] {
   const J = jarGeometry(v),
     { r } = v;
   return Array.from({ length: n }, (_, i) => [
     v.cx + (i % 2 ? 0.6 : -0.6) * r + (rnd(i, 601) - 0.5) * r * 0.5,
-    Math.min(J.yR + r * 1.1 + Math.floor(i / 2) * r * 1.25, v.base - r * 1.1),
+    Math.min(J.yR + r * 1.1 + Math.floor(i / 2) * r * 1.25, J.floor - r * 1.1),
   ]);
 }
 
@@ -68,8 +67,7 @@ export function Jar({
 }: JarProps) {
   const J = jarGeometry(v),
     { cx, base, r } = v,
-    { w, h, wN, yR, rb } = J,
-    d = bodyPath(v);
+    { w, h, yR } = J;
   const order = new Map((falling ?? []).map((i, k) => [i, k]));
   const at = (i: number) => fallDelay + (order.get(i) ?? 0) * 0.09;
 
@@ -95,46 +93,18 @@ export function Jar({
   });
   const lying = lyingSpots(v, n).map(([x, y], i) => <ChipBack key={i} x={x} y={y} r={r} />);
 
+  // the painted glass over its chips, so they take its mist and highlights
+  const k = h / GLASS_PX.h;
   const glass = (pile: ReactNode) => (
     <g>
-      <path d={d} fill="#1b2a2c" fillOpacity={0.38} />
-      <ellipse
-        cx={cx}
-        cy={yR}
-        rx={wN / 2}
-        ry={wN * 0.13}
-        fill="#0c0a07"
-        fillOpacity={0.35}
-        stroke={K2}
-        strokeWidth={1.4}
-      />
       {pile}
-      <path d={d} fill="#d6ecec" fillOpacity={0.13} stroke={K2} strokeWidth={2.2} />
-      <path
-        d={`M${cx - w * 0.36},${base - h * 0.1} V${J.yS + h * 0.02}`}
-        stroke="#fff"
-        strokeOpacity={0.55}
-        strokeWidth={5}
-        strokeLinecap="round"
-      />
-      <path
-        d={`M${cx + w * 0.34},${base - h * 0.14} V${base - h * 0.3}`}
-        stroke="#fff"
-        strokeOpacity={0.38}
-        strokeWidth={3}
-        strokeLinecap="round"
-      />
-      <path
-        d={`M${cx - w / 2 + rb},${base - 3} H${cx + w / 2 - rb}`}
-        stroke="#fff"
-        strokeOpacity={0.3}
-        strokeWidth={3}
-      />
-      <path
-        d={`M${cx - wN / 2},${yR} a${wN / 2},${wN * 0.13} 0 0 0 ${wN},0`}
-        fill="none"
-        stroke={K2}
-        strokeWidth={1.6}
+      <image
+        href={SPRITES.props.jarGlass.src}
+        x={cx - w / 2 - GLASS_PX.x * k}
+        y={base - h - GLASS_PX.y * k}
+        width={GLASS_PX.W * k}
+        height={GLASS_PX.H * k}
+        preserveAspectRatio="none"
       />
     </g>
   );
@@ -191,6 +161,64 @@ export function Jar({
   );
 }
 
+/**
+ * The jar's shadow on the table (the rooms' atmosphere), to the right of its foot, lighter than
+ * a solid thing's for the glass. Tipped, it lies along the jar at the back rail; played, the
+ * one fades into the other as the jar goes over.
+ */
+export function JarShadow({
+  v,
+  tipped,
+  tipping = false,
+  shade,
+}: {
+  v: VoteGeometry;
+  tipped: boolean;
+  tipping?: boolean;
+  /** The soft shadow's fill (VoteTable's `SoftShadow`). */
+  shade: string;
+}) {
+  const J = jarGeometry(v),
+    { cx, base } = v,
+    T = J.tip;
+  const up = (
+    <ellipse
+      cx={cx + J.w * 0.16}
+      cy={base - v.depth * 0.02}
+      rx={J.w * 0.64}
+      ry={v.depth * 0.26}
+      fill={`url(#${shade})`}
+      opacity={0.7}
+    />
+  );
+  // lying: its length along the rail, its near side on the table's back line
+  const len = J.h * T.sc,
+    x = cx + T.dx + len * 0.06,
+    y = v.topY - v.depth * 1.05 + J.w * T.sc * 0.02;
+  const down = (
+    <ellipse
+      cx={x}
+      cy={y}
+      rx={len * 0.56}
+      ry={v.depth * 0.22}
+      fill={`url(#${shade})`}
+      opacity={0.7}
+    />
+  );
+  if (!tipped) return up;
+  if (!tipping) return down;
+  return (
+    <>
+      <Tween play delay={1.1} duration={0.5} ease="linear" opacity={(p) => 1 - p}>
+        {up}
+      </Tween>
+      <Tween play delay={1.3} duration={0.5} ease="linear" opacity={(p) => p}>
+        {down}
+      </Tween>
+    </>
+  );
+}
+
 export type LidState = 'up' | 'down' | 'gone';
 
 export interface JarLidProps {
@@ -205,11 +233,10 @@ export interface JarLidProps {
 
 const LID_EASE = [0.3, 0.8, 0.4, 1] as [number, number, number, number];
 
-/** The brass lid on its string: a band with two ridges, a low dome, a knob. */
+/** The brass lid on its string, tied round the ring on its top. */
 export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps) {
   const J = jarGeometry(v),
-    { lh, lw, ly, knob, cx, cy } = J.lid,
-    h = J.h;
+    { lw, ly, ks, knob, cx, cy } = J.lid;
   const pose = (s: LidState) =>
     s === 'up'
       ? J.lidUp
@@ -224,7 +251,6 @@ export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps)
       dy: lerp(a.y, b.y, p),
       rot: lerp(a.rot, b.rot, p),
     });
-  const brass = CAR.brass;
   const string = (
     <g>
       <line
@@ -255,51 +281,13 @@ export function JarLid({ v, state, from, delay, arriving = false }: JarLidProps)
       ) : (
         string
       )}
-      <rect
-        x={cx - lw / 2}
-        y={ly}
-        width={lw}
-        height={lh}
-        rx={3}
-        fill={brass}
-        stroke={K2}
-        strokeWidth={2}
-      />
-      <path
-        d={`M${cx - lw / 2 + 3},${ly + lh * 0.38} H${cx + lw / 2 - 3} M${cx - lw / 2 + 3},${ly + lh * 0.7} H${cx + lw / 2 - 3}`}
-        stroke="#7a5a2a"
-        strokeWidth={1.2}
-      />
-      <path
-        d={`M${cx - lw / 2 + 2},${ly} C${cx - lw * 0.4},${ly - h * 0.1} ${cx + lw * 0.4},${ly - h * 0.1} ${cx + lw / 2 - 2},${ly}Z`}
-        fill="#c9a25e"
-        stroke={K2}
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-      />
-      <path
-        d={`M${cx - lw * 0.28},${ly - h * 0.035} Q${cx - lw * 0.1},${ly - h * 0.07} ${cx + lw * 0.05},${ly - h * 0.072}`}
-        fill="none"
-        stroke="#f1dca6"
-        strokeWidth={2.4}
-        strokeLinecap="round"
-      />
-      <rect
-        x={cx - 4}
-        y={ly - h * 0.1}
-        width={8}
-        height={h * 0.035}
-        fill={brass}
-        stroke={K2}
-        strokeWidth={1.2}
-      />
-      <circle
-        cx={cx}
-        cy={ly - h * 0.105}
-        r={7}
-        fill={brass}
-        stroke={K2}
-        strokeWidth={1.6}
+      <image
+        href={SPRITES.props.jarLid.src}
+        x={cx - lw / 2 - LID_PX.x * ks}
+        y={ly - LID_PX.y * ks}
+        width={LID_PX.W * ks}
+        height={LID_PX.H * ks}
+        preserveAspectRatio="none"
       />
     </g>
   );

@@ -18,11 +18,12 @@
  */
 import { useState } from 'react';
 import type { GameView } from '@/game/types';
+import { Atmosphere } from '../Atmosphere';
 import { Camera, Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet, puppetBox } from '../cast/Puppet';
 import { BallotLine, BallotRow } from '../instruments/BallotRow';
-import { flapText } from '../instruments/CarriageClock';
+import { countText } from '../countdown';
 import { CountPill } from '../instruments/CountPill';
 import { Apron, Trap } from '../instruments/Floor';
 import { Lift } from '../instruments/Lift';
@@ -211,6 +212,7 @@ function VoteBeat({
   return (
     <>
       {camera ? <Camera {...camera} /> : null}
+      <Atmosphere room="car" phase={nightFalls ? 'night' : 'dusk'} hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint
           phase={nightFalls ? 'night' : 'dusk'}
@@ -259,7 +261,7 @@ function VoteBeat({
               }}
               transition={{ duration: 0.45 * k, ease: 'easeIn' }}
             >
-              <Puppet g={g} character={leavingChar} seat={ln} state="base" />
+              <Puppet g={g} shadow character={leavingChar} seat={ln} state="base" />
             </motion.div>
           </Layer>
           <Layer name="stand">
@@ -377,7 +379,7 @@ function VoteBeat({
               onConfirm={confirm}
               sent={sent}
               me={me}
-              left={turn?.clock ? flapText(turn.clock.remainingMs) : null}
+              left={turn?.clock ? countText(turn.clock.remainingMs) : null}
               arrive={animate}
             />
           ) : null}

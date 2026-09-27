@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { geometry } from '../units';
 import { homography, project, type Pt } from './homography';
-import { countShot, plateSpots, stackPos, voteGeometry } from './vote-geometry';
+import {
+  GLASS_PX,
+  countShot,
+  jarGeometry,
+  pileSpots,
+  plateSpots,
+  stackPos,
+  voteGeometry,
+} from './vote-geometry';
 
 describe('the wood’s homography', () => {
   const quad: [Pt, Pt, Pt, Pt] = [
@@ -48,6 +56,23 @@ describe('the vote’s geometry', () => {
     expect(x3).toBe(x0);
     expect(x4).toBeGreaterThan(x0);
     expect(y4).toBeGreaterThan(y3);
+  });
+
+  it('sizes the jar to its picture and seats the lid on the lip', () => {
+    const J = jarGeometry(v);
+    expect(J.w / J.h).toBeCloseTo(GLASS_PX.w / GLASS_PX.h, 9);
+    // the lid's foot on the lip's foot, its collar a little wider than the lip
+    expect(J.lid.ly + J.lid.lh).toBeCloseTo(v.base - J.h * 0.907, 6);
+    expect(J.lid.lw / J.wN).toBeGreaterThan(1);
+    expect(J.lid.lw / J.wN).toBeLessThan(1.15);
+  });
+
+  it('piles the chips on the glass bottom, inside the walls', () => {
+    const J = jarGeometry(v);
+    for (const [x, y] of pileSpots(v, 9)) {
+      expect(y).toBeLessThan(J.floor);
+      expect(Math.abs(x - v.cx) + v.r).toBeLessThanOrEqual(J.w / 2);
+    }
   });
 
   it('pushes in by 1.32 about a point above the table', () => {

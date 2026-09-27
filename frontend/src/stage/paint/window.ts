@@ -1,20 +1,22 @@
 /**
- * The dining car's window: the brass frame, the country rolling past behind the glass at
- * the hour's paint, and the louvred shutter that covers it.
+ * The dining car's window: the brass frame around the glass, and the louvred shutter that
+ * covers it. The country behind the glass is not drawn here: it is felt pictures, one set per
+ * hour, laid over the glass by the FeltWindow instrument.
  *
  * The window is its own module because two things draw it. The dining car paints the frame
- * and the country as part of the wall. The shutter is painted separately, on top of the
+ * and the glass as part of the wall. The shutter is painted separately, on top of the
  * car, because it sits in front of the room's own tint (in the benches it is a prop over
  * the backdrop, so the night's blue wash never falls on it) and because it is the one part
  * of the window that later moves: the shutter's motion will be an instrument that reuses
  * the geometry here. At rest it is either gathered up under its pelmet or down over the glass.
  *
- * Sources: the frame and the country from the design kit (kits/stage-kit.js); the shutter
+ * Sources: the frame from the design kit (kits/stage-kit.js); the shutter
  * from the cover bench (revision 66), as the game-over bench (revision 73) draws it.
  */
 import { geometry, STAGE_H, STAGE_W, type Hud, type StageGeometry } from '../units';
 import { brass, inkP, K2, rnd, type Rect } from './draw';
-import { CAR, type Phase, type PhasePaint } from './materials';
+import { CAR, type PhasePaint } from './materials';
+import { DARKER, walnutAcross, walnutImage } from './texture';
 
 /** The dining car's horizontal lines, shared by the car and its window. */
 export function carLines(g: StageGeometry) {
@@ -40,67 +42,6 @@ export function windowRect(g: StageGeometry): Rect {
   return [wx, wy, ww, wh];
 }
 
-interface SkyOpts {
-  orb?: boolean;
-  r?: number;
-}
-
-/** The phase's sky cloth, seen through glass. P is the caller's id prefix. */
-export function winSky(
-  P: string,
-  phase: Phase,
-  c: PhasePaint,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  s: number,
-  opt: SkyOpts = {},
-): string {
-  const id = P + 'ws' + Math.round(x);
-  let d = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.skyTop}"/><stop offset=".55" stop-color="${c.skyMid}"/><stop offset=".85" stop-color="${c.band}"/><stop offset="1" stop-color="${c.edge}"/></linearGradient>
-      <clipPath id="${id}c"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${opt.r || 0}"/></clipPath></defs><g clip-path="url(#${id}c)"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#${id})"/>`;
-  if (phase === 'night')
-    for (let i = 0; i < 26; i++)
-      d += `<circle cx="${(x + rnd(i, 121) * w).toFixed(0)}" cy="${(y + rnd(i, 122) * h * 0.6).toFixed(0)}" r="${((0.6 + rnd(i, 123)) * s).toFixed(1)}" fill="${c.orb}" fill-opacity=".7"/>`;
-  if (opt.orb && !c.orbAt.startsWith('lo'))
-    d +=
-      phase === 'night'
-        ? `<path d="M${x + w * 0.8},${y + h * 0.12} a${22 * s},${22 * s} 0 1 0 ${14 * s},${36 * s} a${17 * s},${17 * s} 0 1 1 ${-14 * s},${-36 * s}Z" fill="${c.orb}" stroke="${K2}" stroke-width="${2 * s}"/>`
-        : `<circle cx="${x + w * 0.8}" cy="${y + h * 0.2}" r="${18 * s}" fill="${c.orb}" stroke="${K2}" stroke-width="${2 * s}"/>`;
-  const hill = (y0: number, a: number, col: string, ph: number) => {
-    let p = `M${x},${y0}`;
-    for (let t = 0; t <= w + 30; t += 30)
-      p += ` L${x + t},${(y0 - a * Math.abs(Math.sin((t + ph) / (90 * s)))).toFixed(0)}`;
-    return `<path d="${p} L${x + w},${y + h} L${x},${y + h}Z" fill="${col}"/>`;
-  };
-  d +=
-    hill(y + h * 0.7, h * 0.12, c.far, 40) +
-    hill(y + h * 0.7, h * 0.03, c.halo, 40).replace('fill="', 'fill-opacity=".45" fill="') +
-    hill(y + h * 0.82, h * 0.06, c.far2, 300);
-  {
-    // the tree line scrolls one period and repeats, so the country rolls past without a seam
-    const P2 = 120 * s;
-    let row = '';
-    for (let t = -P2; t < w + 2 * P2; t += P2 / 3) {
-      const k = Math.round((t / P2) * 3),
-        ht = (36 + rnd(k, 131) * 30) * s;
-      row += `<path d="M${(x + t).toFixed(0)},${y + h * 0.9} l${10 * s},${-ht} l${10 * s},${ht}Z" fill="${c.tree}"/>`;
-    }
-    d += `<g class="sk-scrl" style="--p:${P2.toFixed(1)}px">${row}</g>`;
-    for (let t = 0; t < w; t += 160 * s)
-      d += `<rect x="${x + t + 40 * s}" y="${y + h * 0.55}" width="${3 * s}" height="${h * 0.4}" fill="${c.roof}"/>`;
-  }
-  d +=
-    `<rect x="${x}" y="${y + h * 0.9}" width="${w}" height="${h * 0.1}" fill="${c.halo}" fill-opacity=".6"/>` +
-    Array.from(
-      { length: 30 },
-      (_, i) =>
-        `<circle cx="${(x + rnd(i, 141) * w).toFixed(0)}" cy="${(y + rnd(i, 142) * h).toFixed(0)}" r="${((1 + rnd(i, 143)) * s).toFixed(1)}" fill="#fff" fill-opacity=".75"/>`,
-    ).join('');
-  return d + `</g>`;
-}
-
 /** Snow falling past the glass: two copies stacked so the loop has no seam. */
 export const snowfall = (x: number, y: number, w: number, h: number, s: number): string => {
   let f = '';
@@ -109,20 +50,14 @@ export const snowfall = (x: number, y: number, w: number, h: number, s: number):
   return `<g class="sk-snw" style="--sh:${h.toFixed(0)}px">${f}<g transform="translate(0,${-Number(h.toFixed(0))})">${f}</g></g>`;
 };
 
-/* the window behind the puppet: brass, rounded corners, the blind rolled at the top, frost, the country rolling past */
-export function windowFrame(
-  P: string,
-  phase: Phase,
-  c: PhasePaint,
-  rect: Rect,
-  s: number,
-): string {
+/* the window behind the puppet: brass, rounded corners, the blind rolled at the top, frost on the glass */
+export function windowFrame(c: PhasePaint, rect: Rect, s: number): string {
   const [wx, wy, ww, wh] = rect,
     rr = 0.04 * STAGE_H;
   let d =
     `<rect x="${wx - 10 * s}" y="${wy - 10 * s}" width="${ww + 20 * s}" height="${wh + 20 * s}" rx="${rr + 8 * s}" fill="${CAR.brass}" stroke="${K2}" stroke-width="${2.2 * s}"/>` +
-    winSky(P, phase, c, wx, wy, ww, wh, s, { orb: true, r: rr }) +
-    `<g clip-path="url(#${P}ws${Math.round(wx)}c)">${snowfall(wx, wy, ww, wh, s)}</g>`;
+    // the glass: the felt country (FeltWindow) lies over it; the hour's sky shows until it loads
+    `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="${rr}" fill="${c.skyTop}"/>`;
   d += `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="${rr}" fill="none" stroke="#2a180c" stroke-width="${3 * s}"/>`;
   for (const [kx, ky, dx, dy] of [
     [wx, wy, 1, 1],
@@ -149,6 +84,8 @@ export interface ShutterOpts {
   hud?: Hud;
   side?: boolean;
   state: ShutterState;
+  /** The walnut tile's URL: the shutter is the walls' wood, its grain along the slats. */
+  walnut?: string;
 }
 
 /** The shutter's pieces in units: the frame it covers, the pelmet above it, one section's height. */
@@ -169,18 +106,37 @@ export function shutterGeometry(g: StageGeometry, s = 1) {
  * The shutter's pieces as markup, for the paint above and for the Shutter instrument that
  * moves them: the clip that hides the panel under the pelmet (id `<id>-shc`), the three-section
  * panel down over the frame, the folded stack edge-on under the pelmet, and the pelmet itself.
+ * Given `walnut`, the wood is textured (the clip then also carries its pattern, `<id>-shx`).
  */
-export function shutterParts(g: StageGeometry, id: string) {
+export function shutterParts(g: StageGeometry, id: string, walnut?: string) {
   const s = 1,
     { f, pel, section: h3 } = shutterGeometry(g, s),
-    cid = id + '-shc';
+    cid = id + '-shc',
+    T = walnut ? id + '-shx' : null;
+  // a walnut piece: flat, or the texture under a veil to the flat's value and then the ink
+  const wood = (d: string, flat: string, w: number) =>
+    T
+      ? `<path d="${d}" fill="url(#${T})"/>${flat in DARKER ? `<path d="${d}" fill="#000" opacity="${DARKER[flat as keyof typeof DARKER]}"/>` : ''}${inkP(d, 'none', w)}`
+      : inkP(d, flat, w);
   const louvre = (y: number, h: number, hinge: boolean) => {
     // a section of the shutter: stiles, slats, a hinge rail at the bottom
+    const ix = f.x + 7 * s,
+      iy = y + 5 * s,
+      iw = f.w - 14 * s,
+      ih = h - 10 * s;
     let q =
-      inkP(`M${f.x},${y} h${f.w} v${h} h${-f.w}Z`, WAL, 2.2 * s) +
-      `<rect x="${f.x + 7 * s}" y="${y + 5 * s}" width="${f.w - 14 * s}" height="${h - 10 * s}" fill="#2c1a0e" stroke="${K2}" stroke-width="${1.2 * s}"/>`;
-    for (let yy = y + 9 * s; yy < y + h - 6 * s; yy += 8 * s)
-      q += `<path d="M${f.x + 9 * s},${yy.toFixed(1)} H${f.x + f.w - 9 * s}" stroke="${WALHI}" stroke-width="${2.2 * s}"/><path d="M${f.x + 9 * s},${(yy + 2.6 * s).toFixed(1)} H${f.x + f.w - 9 * s}" stroke="#1b0f07" stroke-width="${1.4 * s}"/>`;
+      wood(`M${f.x},${y} h${f.w} v${h} h${-f.w}Z`, WAL, 2.2 * s) +
+      (T
+        ? `<rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="url(#${T})"/><rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="#000" opacity="${DARKER['#2c1a0e']}"/><rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="none" stroke="${K2}" stroke-width="${1.2 * s}"/>`
+        : `<rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="#2c1a0e" stroke="${K2}" stroke-width="${1.2 * s}"/>`);
+    for (let yy = y + 9 * s; yy < y + h - 6 * s; yy += 8 * s) {
+      const slat = `<path d="M${f.x + 9 * s},${yy.toFixed(1)} H${f.x + f.w - 9 * s}"`;
+      // textured, the slat's lit edge is the walnut under its highlight, so the grain shows along it
+      q += T
+        ? `${slat} stroke="url(#${T})" stroke-width="${2.2 * s}"/>${slat} stroke="${WALHI}" stroke-opacity=".6" stroke-width="${2.2 * s}"/>`
+        : `${slat} stroke="${WALHI}" stroke-width="${2.2 * s}"/>`;
+      q += `<path d="M${f.x + 9 * s},${(yy + 2.6 * s).toFixed(1)} H${f.x + f.w - 9 * s}" stroke="#1b0f07" stroke-width="${1.4 * s}"/>`;
+    }
     if (hinge)
       for (const hx of [f.x + f.w * 0.08, f.x + f.w * 0.5, f.x + f.w * 0.92])
         q += `<rect x="${hx - 5 * s}" y="${y + h - 3 * s}" width="${10 * s}" height="${6 * s}" rx="${1.5 * s}" fill="${brass}" stroke="${K2}" stroke-width="${s}"/>`;
@@ -194,14 +150,18 @@ export function shutterParts(g: StageGeometry, id: string) {
   // the folded sections, edge on
   let stack = '';
   for (let i = 0; i < 3; i++)
-    stack += inkP(
+    stack += wood(
       `M${f.x + 2 * s * i},${pel.y + pel.h - 2 * s + i * 7 * s} h${f.w - 4 * s * i} v${7 * s} h${-(f.w - 4 * s * i)}Z`,
       i % 2 ? WAL : WAL2,
       1.6 * s,
     );
-  const clip = `<clipPath id="${cid}"><rect x="${pel.x}" y="${pel.y + pel.h - 2 * s}" width="${pel.w}" height="${f.h + 40 * s}"/></clipPath>`;
+  const clip =
+    `<clipPath id="${cid}"><rect x="${pel.x}" y="${pel.y + pel.h - 2 * s}" width="${pel.w}" height="${f.h + 40 * s}"/></clipPath>` +
+    (walnut && T
+      ? `<defs>${walnutImage(id + '-shw', walnut)}${walnutAcross(T, id + '-shw')}</defs>`
+      : '');
   const pelmet =
-    inkP(`M${pel.x},${pel.y} h${pel.w} v${pel.h} h${-pel.w}Z`, WAL2, 2.2 * s) +
+    wood(`M${pel.x},${pel.y} h${pel.w} v${pel.h} h${-pel.w}Z`, WAL2, 2.2 * s) +
     `<path d="M${pel.x + 4 * s},${pel.y + 6 * s} H${pel.x + pel.w - 4 * s}" stroke="${WALHI}" stroke-width="${2 * s}"/><path d="M${pel.x + 4 * s},${pel.y + pel.h - 6 * s} H${pel.x + pel.w - 4 * s}" stroke="#1b0f07" stroke-width="${2 * s}"/><rect x="${pel.x}" y="${pel.y + pel.h}" width="${pel.w}" height="${5 * s}" fill="#000" opacity=".3"/>`;
   return { clip, panel, stack, pelmet, cid };
 }
@@ -214,7 +174,7 @@ export function shutterParts(g: StageGeometry, id: string) {
  */
 export function shutter(o: ShutterOpts): string {
   const g = geometry(o.hud ?? 'live', o.side ?? false),
-    { clip, panel, stack, pelmet, cid } = shutterParts(g, o.id);
+    { clip, panel, stack, pelmet, cid } = shutterParts(g, o.id, o.walnut);
   // the panel (clipped below the pelmet, so it comes from under it and goes back under it), then the stack, then the pelmet on top
   const d =
     clip +

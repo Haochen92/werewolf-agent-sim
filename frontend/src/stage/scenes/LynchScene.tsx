@@ -16,6 +16,7 @@
  */
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { Atmosphere } from '../Atmosphere';
 import { Camera, Layer } from '../Stage';
 import { SideSlot } from '../SideSlot';
 import { Puppet } from '../cast/Puppet';
@@ -145,6 +146,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
           ease={[0.4, 0.2, 0.3, 1]}
         />
       ) : null}
+      <Atmosphere room="car" phase={night ? 'night' : 'dusk'} hud={hud} side={side} />
       <Layer name="paint">
         <CarPaint
           phase={night ? 'night' : 'dusk'}
@@ -170,6 +172,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
         {character && step === 0 ? (
           <Puppet
             g={g}
+            shadow
             character={character}
             seat={n}
             state="base"
@@ -183,7 +186,7 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
             animate={{ y: '115%' }}
             transition={{ duration: 0.5 * k, delay: 0.35 * k, ease: [0.55, 0, 0.95, 0.55] }}
           >
-            <Puppet g={g} character={character} seat={n} state="out" />
+            <Puppet g={g} shadow character={character} seat={n} state="out" />
           </motion.div>
         ) : null}
         {role && (id === 'lynch.card-up' || id === 'lynch.truth') ? (
@@ -194,6 +197,18 @@ function LynchBeat({ view, beat, me, presentation, slot: slotInput }: SceneProps
             delay={0.3}
             duration={1.3}
           >
+            {/* the key light's shadow of the card on the wall behind it, down and to the right */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: card.x,
+                top: card.top,
+                width: card.w,
+                height: card.h,
+                boxShadow: `${card.h * 0.07}px ${card.h * 0.045}px ${card.h * 0.06}px rgba(12,7,4,.5)`,
+              }}
+            />
             <div
               style={{
                 position: 'absolute',
