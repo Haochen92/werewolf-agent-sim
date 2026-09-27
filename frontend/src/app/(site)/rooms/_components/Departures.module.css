@@ -1,6 +1,6 @@
 /*
  * The departures hall (rooms mockup): the head, the board (a walnut case, a brass plate and a
- * black face with split-flap rows) and the two hung doors under it. Below 760px the column
+ * black face with split-flap rows) and the two hung doors under it. Below 960px the column
  * heads go and each row stacks: status and button on top, then the room, then who is aboard.
  */
 
@@ -104,7 +104,7 @@
 .colhead,
 .row {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) 236px 150px;
+  grid-template-columns: 150px minmax(0, 1fr) 236px 190px; /* the last fits "Return to your seat" */
   gap: 18px;
   align-items: center;
   padding: 0 20px;
@@ -308,9 +308,9 @@
   padding-top: 14px;
 }
 
-/* ---------- phone ---------- */
+/* ---------- phone and narrow tablet (the four columns need ~870px of board) ---------- */
 
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .board {
     padding: 8px;
   }

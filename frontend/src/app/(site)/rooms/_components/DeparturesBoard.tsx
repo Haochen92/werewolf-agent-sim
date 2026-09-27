@@ -30,6 +30,7 @@ export function DeparturesBoard() {
     queryKey: queryKeys.rooms.list(),
     queryFn: listRooms,
     refetchInterval: REFRESH_MS, // rooms fill up while you look at them
+    staleTime: 0, // coming back (e.g. from a room you just opened) asks again at once
   });
   const rows = rooms.data;
 
