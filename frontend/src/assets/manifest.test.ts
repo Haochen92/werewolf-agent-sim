@@ -38,6 +38,11 @@ describe('sprite manifest', () => {
     hasSize(SPRITES.wood);
   });
 
+  it('has the room’s surface textures', () => {
+    expect(Object.keys(SPRITES.textures).sort()).toEqual(['boards', 'velvet', 'walnut']);
+    for (const img of Object.values(SPRITES.textures)) hasSize(img);
+  });
+
   it('has the station’s pictures', () => {
     expect(Object.keys(SPRITES.station).sort()).toEqual(
       ['blind', 'floor', 'lamp', 'post', 'sky', 'train'].sort(),
