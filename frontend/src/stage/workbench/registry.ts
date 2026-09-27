@@ -108,6 +108,20 @@ export const SYNTHETIC: Situations = {
         you: null,
       },
     },
+    {
+      label: 'a guest, 4 aboard',
+      beat: 'station.waiting',
+      room: {
+        name: 'Night shift',
+        aboard: ABOARD.slice(0, 4),
+        places: 9,
+        host: 'mira',
+        locked: false,
+        isHost: false,
+        seated: true,
+        you: 3,
+      },
+    },
   ],
   vote: [
     { label: 'your ballot, day 3', me: 'player_7', day: 3, actionKind: 'vote' },

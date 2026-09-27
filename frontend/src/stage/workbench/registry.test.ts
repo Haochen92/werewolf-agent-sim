@@ -50,13 +50,14 @@ describe('the scene registry', () => {
 describe('the platform on the workbench', () => {
   const at = (beat: number) => workbenchFrame('station', { ...DEFAULT_QUERY, beat });
 
-  it('steps through its rooms: host, locked guest, watcher, departing, empty', () => {
+  it('steps through its rooms: host, locked guest, watcher, departing, empty, guest', () => {
     const f = at(0);
     expect(f.beats.map((b) => b.id)).toEqual([
       'station.waiting',
       'station.locked',
       'station.waiting',
       'station.departing',
+      'station.waiting',
       'station.waiting',
     ]);
     expect(f.beats.every((b) => b.scene === 'station' && b.liveOnly)).toBe(true);
@@ -70,6 +71,12 @@ describe('the platform on the workbench', () => {
     expect(at(2).room?.aboard).toHaveLength(9);
     expect(at(3).beat?.id).toBe('station.departing');
     expect(at(4).room?.aboard).toEqual([]);
+    expect(at(5).room).toMatchObject({
+      locked: false,
+      isHost: false,
+      seated: true,
+      you: 3,
+    });
   });
 
   it('has nobody seated, an empty view, and ignores the viewer control', () => {
@@ -80,7 +87,7 @@ describe('the platform on the workbench', () => {
     expect(f.me).toBeNull();
     expect(f.view?.lastSeq).toBe(0);
     expect(f.presentation.xray).toBe(false);
-    expect(at(99).index).toBe(4);
+    expect(at(99).index).toBe(5);
   });
 });
 

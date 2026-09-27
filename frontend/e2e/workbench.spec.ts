@@ -66,12 +66,14 @@ for (const [name, path] of FLIES) {
 /**
  * The platform (the waiting room) at rest, from its synthetic rooms (`?beat=N` indexes the
  * station's situations in registry.ts): the host with three aboard, a guest in a locked room
- * of five, and someone watching a full room. Ready when every person on the platform is drawn.
+ * of five, someone watching a full room, and a guest in an open room of four. Ready when every
+ * person on the platform is drawn.
  */
 const STATION: [name: string, path: string, aboard: number][] = [
   ['station-host-3', 'station?beat=0', 3],
   ['station-guest-locked', 'station?beat=1', 5],
   ['station-spectator-full', 'station?beat=2', 9],
+  ['station-guest-4', 'station?beat=5', 4],
 ];
 
 for (const [name, path, aboard] of STATION) {
