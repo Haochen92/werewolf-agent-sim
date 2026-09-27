@@ -1,18 +1,21 @@
 'use client';
 
 /**
- * The waiting room as the platform draws it (`RoomInput`), and the host's two presses on it.
+ * The waiting room as the platform draws it (`RoomInput`), and the presses on its ledge.
  * A room has no event stream: everything here is the status poll's `waiting` answer (the
  * roster, the lock, the host's name, and where this viewer stands on the roster) plus what this
- * device holds (the host key, a seat token). Lock and Depart go to the server from here, with
- * the host key; the scene only reports them.
+ * device holds (the host key, a seat token). Lock, Close and Depart go to the server from here,
+ * with the host key; the scene only reports them.
  *
  * Depart spends the host key (it has exactly one use), so once it has gone through the room
- * says `departed` and the train leaves at once, without waiting for the next poll.
+ * says `departed` and the train leaves at once, without waiting for the next poll. Close and
+ * Leave end this device's part in the room: its host key and seat token go, and the page goes
+ * back to the room list. A watcher's Leave only goes back.
  */
 import { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { lockRoom, startGame } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { closeRoom, leaveRoom, lockRoom, startGame } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { hostKey, seatToken } from '@/lib/storage';
 import { MIN_ABOARD } from '@/stage/scenes/station';
@@ -31,6 +34,7 @@ export interface Room {
 
 export function useRoom(gameId: string, status: GameStatus | undefined): Room {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [busy, setBusy] = useState<RoomAct | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [departed, setDeparted] = useState(false);
@@ -43,7 +47,39 @@ export function useRoom(gameId: string, status: GameStatus | undefined): Room {
 
   const onRoomAct = useCallback(
     (act: RoomAct) => {
-      if (busy || !key) return;
+      if (busy) return;
+      // leaving needs no key: a watcher just goes, a guest gives up the seat first
+      if (act === 'leave') {
+        const seat = Boolean(seatToken.get(gameId));
+        setBusy(act);
+        setError(null);
+        (seat ? leaveRoom(gameId) : Promise.resolve())
+          .then(() => {
+            seatToken.clear(gameId);
+            router.push('/rooms');
+          })
+          .catch((err: unknown) => {
+            setError(err instanceof Error ? err.message : 'Could not leave.');
+            setBusy(null);
+          });
+        return;
+      }
+      if (!key) return;
+      if (act === 'close') {
+        setBusy(act);
+        setError(null);
+        closeRoom(gameId, key)
+          .then(() => {
+            hostKey.clear(gameId);
+            seatToken.clear(gameId);
+            router.push('/rooms');
+          })
+          .catch((err: unknown) => {
+            setError(err instanceof Error ? err.message : 'Could not close the room.');
+            setBusy(null);
+          });
+        return;
+      }
       setBusy(act);
       setError(null);
       const call =
@@ -65,7 +101,7 @@ export function useRoom(gameId: string, status: GameStatus | undefined): Room {
           void queryClient.invalidateQueries({ queryKey: queryKeys.games.status(gameId) });
         });
     },
-    [busy, key, gameId, queryClient],
+    [busy, key, gameId, queryClient, router],
   );
 
   const room = useMemo((): RoomInput | undefined => {

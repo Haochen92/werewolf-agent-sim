@@ -259,5 +259,11 @@ Server track (parallel, main loop): `ReplayBase.ended_phase` + a total; `RoomSum
 8. **Server track now:** `ended_phase` + a total on the replay list; the host's name on a room row.
    Everything else the mockups want from the wire is derived or skipped (codes, watchers, under-way
    list, leave/kick/terms, per-game clock).
+   **Amended 2026-09-27 (owner):** leave and close are in. A guest's ledge has **Leave**
+   (`POST /games/{id}/leave`: the place opens again); the host's has **Close room**, two presses
+   (`POST /games/{id}/close`: the room's URL answers 410 with the reason); a room nobody departed
+   within `ROOM_LIST_TTL_SECONDS` is closed by the sweeper. The host is the seat that boarded with
+   the host key (no longer "whoever boarded first"), and cannot leave, only close. Kick and terms
+   stay skipped.
 9. **Footer:** name "Liu Haochen", GitHub `https://github.com/Haochen92/werewolf-agent-sim`; other
    links live in one `site.ts` config with TODOs the owner fills.

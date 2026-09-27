@@ -15,7 +15,7 @@ import { TextInput } from '@mantine/core';
 import { Button, Paper } from '@/components/site';
 import { joinGame } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import { seatToken } from '@/lib/storage';
+import { hostKey, seatToken } from '@/lib/storage';
 import type { GameStatus } from '@/types/contracts';
 import classes from './BoardingPass.module.css';
 
@@ -37,7 +37,8 @@ export function BoardingPass({
   const places = status.max_seats || 9;
 
   const join = useMutation({
-    mutationFn: (as: string) => joinGame(gameId, as),
+    // the creator boards with the host key, so the room knows which seat is its host's
+    mutationFn: (as: string) => joinGame(gameId, as, hostKey.get(gameId)),
     onSuccess: (seat) => {
       // The token comes back exactly once; stash it as the cookie's backup immediately.
       seatToken.set(gameId, seat.token);

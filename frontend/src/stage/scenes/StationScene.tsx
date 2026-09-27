@@ -10,7 +10,8 @@
  *
  * - `station.waiting`: the room filling. Each person who joins rises onto the platform as the
  *   status poll brings their name; their chip takes a tile on the wing. The ledge at the foot
- *   says how many are aboard and, for the host, carries the brass plates: Lock and Depart.
+ *   says how many are aboard and carries the brass plates: the host's Lock, Close and Depart,
+ *   everyone else's Leave.
  * - `station.locked`: the same, with the brass "Locked" plate under the station's sign.
  * - `station.departing`: Depart was pressed (or the game has begun). The people step off the
  *   platform into their places in the window, the blinds come down on the agents' places with
@@ -360,6 +361,11 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
                       ? 'Unlock'
                       : 'Lock'}
               </button>
+              <ClosePlate
+                busy={room.busy === 'close'}
+                disabled={Boolean(room.busy)}
+                onClose={() => onAct?.('close')}
+              />
               <button
                 type="button"
                 className={`${styles.brass} ${styles.brassBig}`}
@@ -369,6 +375,15 @@ function Station({ beat, presentation, room, onAct }: SceneProps) {
                 {room.busy === 'depart' ? 'Departing…' : 'Depart'}
               </button>
             </>
+          ) : !departing ? (
+            <button
+              type="button"
+              className={`${styles.brass} ${styles.brassSmall}`}
+              disabled={Boolean(room.busy)}
+              onClick={() => onAct?.('leave')}
+            >
+              {room.busy === 'leave' ? 'Leaving…' : 'Leave'}
+            </button>
           ) : null}
         </motion.div>
       </Layer>
@@ -636,6 +651,39 @@ function LockIcon() {
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M8 11 V8 a4 4 0 0 1 8 0 V11" />
     </svg>
+  );
+}
+
+/**
+ * The host's Close: it ends the room for everyone, so it takes two presses. The first turns
+ * the plate into the question; the second, within a few seconds, closes. Left alone, the
+ * plate turns back.
+ */
+function ClosePlate({
+  busy,
+  disabled,
+  onClose,
+}: {
+  busy: boolean;
+  disabled: boolean;
+  onClose: () => void;
+}) {
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!asking) return;
+    const t = setTimeout(() => setAsking(false), 4000);
+    return () => clearTimeout(t);
+  }, [asking]);
+  return (
+    <button
+      type="button"
+      className={`${styles.brass} ${styles.brassSmall}`}
+      data-asking={asking || undefined}
+      disabled={disabled}
+      onClick={() => (asking ? onClose() : setAsking(true))}
+    >
+      {busy ? 'Closing…' : asking ? 'Close for everyone?' : 'Close room'}
+    </button>
   );
 }
 

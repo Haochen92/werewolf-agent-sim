@@ -47,7 +47,7 @@ export interface SceneProps {
    * The seated human's answer to a prompt (a night act, the pack's vote): the chosen seat, or
    * null for an act that chooses no one (the vigilante's "Hold fire"). The scene only reports
    * it; the live container sends it to the server, the workbench logs it. The waiting room's
-   * host reports its plates here too, as a `RoomAct` (`lock`, `unlock`, `depart`).
+   * room reports its plates here too, as a `RoomAct` (`lock`, `unlock`, `close`, `depart`, `leave`).
    */
   onAct?: (target: string | null) => void;
   /** The seated human's line (the pack's chat): reported the same way as `onAct`. */
@@ -147,8 +147,11 @@ export interface DockInput {
   closed?: boolean;
 }
 
-/** What the waiting room's host can press on the ledge; reported through `SceneProps.onAct`. */
-export type RoomAct = 'lock' | 'unlock' | 'depart';
+/**
+ * What can be pressed on the waiting room's ledge, reported through `SceneProps.onAct`: the
+ * host's lock, close and depart, and everyone else's leave.
+ */
+export type RoomAct = 'lock' | 'unlock' | 'close' | 'depart' | 'leave';
 
 /**
  * The waiting room before the game, for the platform (`StationScene`). A room has no event log:

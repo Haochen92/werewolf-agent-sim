@@ -74,10 +74,29 @@ export function createGame(body: NewSoloGame): Promise<GameCreated> {
   return request<GameCreated>('/games', { method: 'POST', body });
 }
 
-export function joinGame(gameId: string, name: string): Promise<SeatJoined> {
-  return request<SeatJoined>(`/games/${encodeURIComponent(gameId)}/join`, {
+/** The room's creator passes its host key, which marks their seat as the host's. */
+export function joinGame(
+  gameId: string,
+  name: string,
+  hostKey?: string | null,
+): Promise<SeatJoined> {
+  const query = hostKey ? `?host_key=${encodeURIComponent(hostKey)}` : '';
+  return request<SeatJoined>(`/games/${encodeURIComponent(gameId)}/join${query}`, {
     method: 'POST',
     body: { name },
+  });
+}
+
+/** Give up this device's seat in a waiting room (the seat cookie says which). The host closes instead. */
+export function leaveRoom(gameId: string): Promise<void> {
+  return request<void>(`/games/${encodeURIComponent(gameId)}/leave`, { method: 'POST' });
+}
+
+/** Close a waiting room for everyone; its URL answers 410 from then on. Host only. */
+export function closeRoom(gameId: string, hostKey: string): Promise<void> {
+  const query = `?host_key=${encodeURIComponent(hostKey)}`;
+  return request<void>(`/games/${encodeURIComponent(gameId)}/close${query}`, {
+    method: 'POST',
   });
 }
 

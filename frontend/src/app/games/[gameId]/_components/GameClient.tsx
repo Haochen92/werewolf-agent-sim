@@ -88,6 +88,22 @@ export function GameClient({ gameId }: { gameId: string }) {
     );
   }
 
+  // The room closed before it departed (its host closed it, or nobody departed in time): the
+  // server says why, and the way on is another room.
+  if (statusError instanceof ApiError && statusError.status === 410) {
+    const why = statusError.message;
+    return (
+      <div className={classes.shell}>
+        <p role="alert" className={classes.meta}>
+          {why.charAt(0).toUpperCase() + why.slice(1)}.
+        </p>
+        <p className={classes.meta}>
+          <Link href="/rooms">Find another room →</Link>
+        </p>
+      </div>
+    );
+  }
+
   if (statusError) {
     const missing = statusError instanceof ApiError && statusError.status === 404;
     // Rooms live only in the server's memory, so a restart closes them. If this browser
