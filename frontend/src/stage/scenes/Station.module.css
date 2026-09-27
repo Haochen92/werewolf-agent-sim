@@ -147,7 +147,6 @@
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
   font-size: calc(13.8px * var(--legible-ui));
   line-height: 1.15;
-  background: var(--paper);
   color: var(--ink);
   box-shadow: 0 3.2px 8px rgba(0, 0, 0, 0.5);
 }
@@ -186,7 +185,6 @@
 .board {
   padding: 7.2px 32px 8.8px;
   border-radius: 6.4px;
-  background: var(--paper);
   color: var(--ink);
   text-align: center;
   box-shadow:
@@ -298,10 +296,6 @@
   padding: 32px 9.6px 14.4px;
   border-radius: 5.6px 5.6px 8px 8px;
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
-  background: var(--paper);
-  background-image:
-    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%);
   box-shadow: 0 16px 30px -14px rgba(0, 0, 0, 0.95);
   transform: rotate(var(--tilt, 0deg));
   transform-origin: 50% 0;
@@ -473,10 +467,6 @@
   transform: rotate(-0.6deg);
   color: var(--ink);
   font-family: var(--font-stage-serif, 'IM Fell English'), Georgia, serif;
-  background: var(--paper);
-  background-image:
-    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%);
   box-shadow: 0 2.7px 7.2px rgba(0, 0, 0, 0.45);
   white-space: normal;
   max-width: 760px;
@@ -631,4 +621,33 @@
   font-style: italic;
   font-size: calc(35.2px * var(--legible-ui));
   color: var(--bone2);
+}
+
+/*
+ * The paper everything on the platform is printed on: the site's paper (components/site/Paper,
+ * the mockups' `.paper`), so a tag on the stage matches a card on the landing. The grain is
+ * 1 screen px every 3, whatever the stage's size: its units are divided by the stage's scale
+ * and by the piece's own `--k` (see the phone floor above). The Invite panel keeps its own
+ * lighter paper, as the mockup has it.
+ */
+.hangFace,
+.notice,
+.board,
+.tag,
+.ticket {
+  --grain: calc(1px / (var(--stage-scale, 1) * var(--k, 1)));
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(60, 40, 20, 0.045) 0 var(--grain),
+      transparent var(--grain) calc(var(--grain) * 3)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(60, 40, 20, 0.045) 0 var(--grain),
+      transparent var(--grain) calc(var(--grain) * 3)
+    ),
+    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%),
+    radial-gradient(ellipse at 92% 94%, rgba(120, 90, 50, 0.2), transparent 50%);
 }
