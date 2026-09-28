@@ -19,16 +19,28 @@
   white-space: nowrap;
 }
 
-/* the wolf's sigil on a paper disc; the crescent is inked in a darker red than --wolf */
+/* the mark, with its X-ray laid over it and shown while the brand is pointed at */
 .mark {
   display: grid;
-  place-items: center;
+  flex: none;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: var(--bone);
-  color: #b3392b;
-  box-shadow: inset 0 0 0 1.5px var(--paper-dk);
+}
+.mark > img {
+  grid-area: 1 / 1;
+}
+.mark > .xray {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.brand:hover .xray,
+.brand:focus-visible .xray {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mark > .xray {
+    transition: none;
+  }
 }
 
 .links {

@@ -5,7 +5,7 @@
  */
 
 export const SITE = {
-  // TODO(owner): tentative (review §F2); the logo mark follows the name
+  // the mark (a keyhole 9, `scripts/brand-mark.mjs`) is drawn for this name
   name: 'Carriage Nine',
   author: 'Liu Haochen',
   github: 'https://github.com/Haochen92/werewolf-agent-sim',
