@@ -36,7 +36,8 @@ export interface SpeechBoxProps {
   thinking?: boolean;
   /**
    * The transcript drawer is open at full height: the box moves in under the puppet, narrower,
-   * and a long line fades at its foot, because the full line is the drawer's newest entry.
+   * and a long line stops at three whole rows (an ellipsis, no fade), because the full line is
+   * the drawer's newest entry.
    */
   side?: boolean;
   /**

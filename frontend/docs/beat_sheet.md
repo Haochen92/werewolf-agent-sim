@@ -510,8 +510,8 @@ brief sits after the morning's private results and shows from its own carried-su
 game-master line stands for `game_over` (the Game over rule goes before it); a separate "The
 wolves have won." line only when no such line exists. The seat filter is one seat at a time (a
 second tap clears it), as bench 74. **The box beside the drawer:** narrows to the room, holds at
-most 3.4 lines and fades from the second line (in lines, not percent, so a short line never
-fades), header "full line in the transcript". Under the film the box keeps the whole band (bench
+most 3 whole lines, the last ending in an ellipsis, every line at full contrast (ruled
+2026-09-28: the fade from the second line dimmed the words), header "full line in the transcript". Under the film the box keeps the whole band (bench
 74; benches 67 and 73 had narrowed it). **The film:** the `sideSlot` rectangle, turned −1.2°.
 A turn: tabs Note, L1–L3 (an override's tab in the slip's paper with the dot); the Note tab's
 foot "Note, seq 203, written after the turn; 3 lessons weighed at seq 174, carried over from its
