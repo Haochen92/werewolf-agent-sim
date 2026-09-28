@@ -471,10 +471,14 @@ the waiting room from the status poll: `RoomInput` in `scenes/types.ts`). Contai
 stream, the transport and the queue. `src/game/` (fold, store, types) is unchanged except where
 the beat sheet needs a field the view lacks.
 
-`ReplayTheatre` also has a preview mode, `mini: { from, to, autoplay, speed? }` (the landing's carriage, review
-2026-09-26 §F7): `hud: 'none'` (no wing, and `TopStrip` draws nothing), no slot, no transport, no X-ray, no keys, no
-hover pause; the same reducer plays `from`..`to` of the public cut round and round (`loop` in `replay-state.ts`, which
-plays past a beat that waits) at `fast` by default, and a reduced-motion viewer gets it at rest. The frame is the caller's.
+`ReplayTheatre` also has a preview mode, `mini: { from, to, autoplay, speed?, controls?, under?, underEl? }` (the
+landing's carriage, review 2026-09-26 §F7, amended 2026-09-27): the same reducer plays `from`..`to` of the public cut
+round and round (`loop` in `replay-state.ts`, which plays past a beat that waits) at `fast` by default, and a
+reduced-motion viewer gets it at rest. No keys (the page keeps its arrows and space) and no way back to `/replays`. Its
+controls: none by default (`hud: 'none'`); `'stage'`, the replay's own HUD, slot and band, the band showing the window
+only; or `'under'`, nothing on the stage and the state (`MiniUnder`) handed to `under`, which the caller portals into
+`underEl` (the landing's phone pane). The loop's presses stay in the window, and the X-ray carries the window across to
+its own list by the window's two end beats. The frame is the caller's.
 
 ## 9. Where this build departs from the handoff
 

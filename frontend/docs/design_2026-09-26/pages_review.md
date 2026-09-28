@@ -39,11 +39,12 @@ the game's model label, memory, humans, days, winner and date. Inside it is `Rep
 fixture; else the first vote through its lynch or `vote.table-down`; else beats 0..30). It autoplays at `fast` while on
 screen and at least 700px wide; below that, with reduced motion, or with `?still=1`, it rests on the first beat, and
 under 700px a "Watch the replay" button sits over it. The caption under the frame links the whole game ("Day 3 of game
-9369A5C · watch it whole →"). "What's under the table" (`UnderTable`, bench 77: notes, reads, gate; plates become tabs
+9369A5C · watch it whole →"). *(The play, the poster and the caption were replaced on 2026-09-27: see ruling F7's
+amendment.)* "What's under the table" (`UnderTable`, bench 77: notes, reads, gate; plates become tabs
 under 640px of bench) is fixed to game 9369a5c1: its words and counts were re-checked against the fixture
 (`under-table.ts` names the seqs). "Who's at the table": `RoleHand` (six sigils pick one card that turns to its briefing;
 `CARD_TEXT` gained the kit's `day` and `win`) beside `GameLoop` (the four steps, walking while on screen), then "Take a
-seat" with the tags again; "Latest games" is `ReplayListClient limit={6}` and "All replays →". The footer's
+seat" with the tags again (as ticket stubs since 2026-09-27, owner: the full tags a screen apart read as a duplicate); "Latest games" is `ReplayListClient limit={6}` and "All replays →". The footer's
 "N games archived" is live (`GamesArchived`, the one-row page's `X-Total-Count`); `site.ts` lost `gamesArchived`. Left
 out: the mockup's own footer block ("Built in the open", its lede and the API-key line: the site footer stands, and the
 research line moved to the hero), the pictures in "How a game goes" (the mockup draws four scenes with its own kit; no
@@ -244,6 +245,12 @@ Server track (parallel, main loop): `ReplayBase.ended_phase` + a total; `RoomSum
    page step. Brief item 6 dropped. Terminology: the **lobby** is the list of rooms (`/rooms`,
    responsive); the **waiting room** is inside a room before the start (landscape).
 2. **Name: "Carriage Nine"** (tentative; the logo mark follows it, generated later).
+   *Amended 2026-09-28 (owner):* kept, with the nine as the carriage's number, not the table's
+   size (the table will not always seat nine). The mark is a brass escutcheon whose keyhole is
+   a 9, the night and its moon seen through it, drawn by `scripts/brand-mark.mjs` at three
+   levels of detail (≥48px, the nav's 24–40px, the favicon's 16–20px) and an X-ray state (the
+   keyhole cut through to the film's cyan grid) that the nav shows while the brand is pointed
+   at. It replaces the wolf's crescent on a paper disc.
 3. **Mantine stays** and is the site chrome's component library (the owner's stack across projects):
    the site pages use Mantine components themed from the landing's tokens; the theatre stays CSS
    modules and never imports Mantine. The Silkscreen pixel face goes (the August art ruling is
@@ -256,6 +263,16 @@ Server track (parallel, main loop): `ReplayBase.ended_phase` + a total; `RoomSum
    **Memory** defaults off, neutral copy. **Replay filters** run in the browser over one fetch.
 7. **Landing mini replay** = the same `ReplayTheatre`, `hud: 'none'`, a featured window, autoplay,
    in the carriage frame; on an upright phone a poster still with a play link. No second engine.
+   **Amended 2026-09-27 (owner):** the carriage has the replay's controls, as the mockup's featured
+   mode did (the E8 question never asked about them). At 700px and up, the strip's X-ray and
+   Transcript, the side slot and the band sit on the stage, the band over the window only. On an
+   upright phone they sit under the stage at reading size (`CarriageUnder`): a bar, a Transcript /
+   X-ray switch, and one pane. The transcript takes its lines from `drawerLines`, so nothing arrives
+   earlier than in the drawer; the X-ray pane is the stage's own `Film`, drawn by a small stage
+   cropped to the film. The poster is gone. The marquee names the window ("Day 3 of game 9369A5C")
+   and carries **Watch the whole game** → `/replays/{id}` (no whole-game mode on the landing). Its
+   facts are small brass plates, not cream tiles; below 960px the date goes, and a phone shows only
+   the first two (model, memory). The button is a ruled amber sign button, not the page's filled pill.
 8. **Server track now:** `ended_phase` + a total on the replay list; the host's name on a room row.
    Everything else the mockups want from the wire is derived or skipped (codes, watchers, under-way
    list, leave/kick/terms, per-game clock).
@@ -267,3 +284,11 @@ Server track (parallel, main loop): `ReplayBase.ended_phase` + a total; `RoomSum
    stay skipped.
 9. **Footer:** name "Liu Haochen", GitHub `https://github.com/Haochen92/werewolf-agent-sim`; other
    links live in one `site.ts` config with TODOs the owner fills.
+   **Amended 2026-09-27 (owner):** the footer is one row under one rule: the plain credit line
+   ("Built by Liu Haochen · N games archived · 2026") at the left, the links (GitHub, for now) at
+   the right; stacked on a phone. A brass maker's plate for the credit was tried and dropped. The landing ends on the
+   mockup's closing block, cut down: "Built in the open, and still being built.", one sentence (the
+   research line stays the hero's), and the API key line, checked against `game_session.py` (the key
+   is session memory only, scrubbed from error reports, never in `RunConfig` or the archive). The
+   latest games are four (two on a phone, where the slates stack), not six; "Take a seat" ends on
+   ticket stubs rather than a second pair of hang tags.

@@ -514,6 +514,22 @@ name, and the platform marks "hao · you · host" with Depart and Lock.
 room never learns who created it, only that someone holds the host key. It is only wrong when
 someone else boards before the creator does.
 
+### 3.14 🟡 On a phone the carriage lost its walnut sides
+
+*(Added 2026-09-27, found by the owner: "a floating head on top of the screen".)*
+
+**What happened.** On the landing at phone width, the carriage's roof and marquee sat on a bare
+stage, with no wood or brass rule down its sides, so the marquee read as a separate sign.
+
+**Why it happened.** Two rules, each right alone. The landing's `main` clips anything past its
+column (`overflow-x: clip`), so the carriage's rails cannot scroll the page sideways. The
+carriage, on phones, pulled itself 10px past the column on each side (`margin: 0 -10px`) to win
+back stage width. Its sides were 9px of walnut, so all of them fell outside the clip. Pixel
+samples at 390px showed page colour right up to the stage's edge.
+
+**Settled.** On phones the carriage stays inside the column, with 12px sides. The marquee's facts
+went into one sideways row, so the head is no longer half the stage's height.
+
 ---
 
 ## 4. Design decisions and where the specs collided
