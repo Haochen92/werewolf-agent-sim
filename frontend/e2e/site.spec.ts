@@ -661,6 +661,8 @@ for (const [name, viewport] of [
     await expect(page.locator('[data-game]')).toHaveCount(3);
     await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
     await settle(page);
-    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+    // the whole landing is over 5,000px tall: two captures in a row, which the check needs to
+    // call a page settled, take longer than the default five seconds on the dev server
+    await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
   });
 }
