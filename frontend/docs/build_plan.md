@@ -371,7 +371,15 @@ memory-on game (`9369a5c1`, wolves, 407 events: 53 `memory_consulted`, 52 `playe
 backlog flushed over the public stream at game over). Same day, server-only rebuild: served
 games retrieve **strategy points only** (`run_config.py`, owner's ruling — the town half of the
 store never had observations, so both factions now get the same kind of memory). That one change
-is applied on top of `223fc9b` in the image; commit pending.
+is applied on top of `223fc9b` in the image; commit pending (landed later in `c8a41e6`).
+· **2026-09-28 both containers rebuilt at `447d8d4`** (the Playhouse redesign: the stage and its
+scenes, the five site pages, the waiting room, the painted set and the atmosphere pass; built with
+`docker build` from a clean detached worktree, then `compose up -d --no-build`). No migration step:
+the shared `ww-postgres` was already at `0007` (applied 2026-09-26 for the local server; the old
+image ran on it unharmed, the migration only adds a column). Rollback = the `:prev` tags (the
+2026-09-17 images). Smoke: every site route and `/api` health, replays (with `X-Total-Count`),
+rooms, models; a live replay rendered in headless Chromium loading the painted window, textures
+and lantern.
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
