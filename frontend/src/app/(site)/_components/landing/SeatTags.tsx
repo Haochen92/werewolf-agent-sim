@@ -6,7 +6,12 @@
  * many tables are boarding right now, from `GET /rooms` (a room that is neither locked nor
  * full); until the server answers, or if it cannot, it says nothing rather than a number it
  * would have to guess.
+ *
+ * `stubs` is the same two doors as ticket stubs, the torn-off end of each tag: the "Take a seat"
+ * reminder after the roles, a third the size, so it reads as the page's close rather than a
+ * second copy of the hero.
  */
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { HangTag } from '@/components/site';
 import { listRooms } from '@/lib/api';
@@ -19,7 +24,7 @@ function boardingLine(n: number): string {
   return n === 1 ? '1 table boarding' : `${n} tables boarding`;
 }
 
-export function SeatTags() {
+export function SeatTags({ stubs = false }: { stubs?: boolean }) {
   const rooms = useQuery({
     queryKey: queryKeys.rooms.list(),
     queryFn: listRooms,
@@ -27,6 +32,27 @@ export function SeatTags() {
     retry: false,
   });
   const boarding = rooms.data?.filter((r) => rowFace(r).joinable).length;
+
+  if (stubs)
+    return (
+      <nav className={classes.stubs} aria-label="Take a seat">
+        <Link href="/play" className={classes.stub}>
+          <span className={classes.stubKicker}>Admit one</span>
+          <span className={classes.stubTitle}>Play solo</span>
+          <span className={classes.stubGo} aria-hidden="true">
+            &rarr;
+          </span>
+        </Link>
+        <Link href="/rooms" className={classes.stub}>
+          <span className={classes.stubKicker}>Admit a party</span>
+          <span className={classes.stubTitle}>Play with others</span>
+          <span className={classes.stubGo}>
+            {boarding === undefined ? null : <small>{boardingLine(boarding)}</small>}
+            <span aria-hidden="true">&rarr;</span>
+          </span>
+        </Link>
+      </nav>
+    );
 
   return (
     <div className={classes.seatRail}>

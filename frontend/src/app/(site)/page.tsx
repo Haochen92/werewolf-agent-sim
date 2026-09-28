@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import { Icon } from '@/components/site';
 import { ReplayListClient } from './replays/_components/ReplayListClient';
 import { HouseDoorNote } from './_components/HouseDoorNote';
 import { SeatTags } from './_components/landing/SeatTags';
@@ -13,7 +14,8 @@ import pageClasses from './page.module.css';
 /**
  * The landing (landing mockup, review §A1, rulings §F7): the hero with its two hung tags, a
  * game from the archive playing in the carriage, what the agents do under the table, the roles
- * and how a game goes, then the latest games. A recruiter with no context sees the product
+ * and how a game goes, the latest games, and a closing word on the project and the visitor's
+ * API key. A recruiter with no context sees the product
  * working before reading a word, and reaches a whole replay in one click from the carriage.
  *
  * The two playing doors carry the house's purse (HouseDoorNote): whether a visitor needs their
@@ -74,7 +76,7 @@ export default function HomePage() {
         <div className={classes.again}>
           <h3>Take a seat</h3>
           <p>Play one seat against eight agents, or fill a room with friends.</p>
-          <SeatTags />
+          <SeatTags stubs />
         </div>
       </section>
 
@@ -86,12 +88,31 @@ export default function HomePage() {
             with the X-ray.
           </p>
         </div>
-        <Suspense fallback={<div className={pageClasses.skeletonCard} />}>
-          <ReplayListClient limit={6} />
-        </Suspense>
+        {/* two rows of two; one column of two where the grid goes single file */}
+        <div className={classes.latest}>
+          <Suspense fallback={<div className={pageClasses.skeletonCard} />}>
+            <ReplayListClient limit={4} />
+          </Suspense>
+        </div>
         <Link href="/replays" className={classes.allGames}>
           All replays &rarr;
         </Link>
+      </section>
+
+      {/* the page's ending (the mockup's closing block): the research line itself is the hero's */}
+      <section className={classes.closing} aria-labelledby="closing-head">
+        <h2 id="closing-head">Built in the open, and still being built.</h2>
+        <p>
+          Models, rules and prompts change as the work continues, and the archive keeps
+          every game.
+        </p>
+        <p className={classes.keyline}>
+          <Icon name="i-lock" size={17} />
+          <span>
+            <b>Your API key is never stored.</b> A game holds your key in memory for that
+            game only; it is never written to the archive or the database.
+          </span>
+        </p>
       </section>
     </main>
   );

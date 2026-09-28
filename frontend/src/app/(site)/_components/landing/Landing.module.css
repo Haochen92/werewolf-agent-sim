@@ -124,6 +124,52 @@
   line-height: 1.5;
 }
 
+/* ---------- the ending: what the project is, and the visitor's key ---------- */
+.closing {
+  margin-top: 120px;
+  text-align: center;
+}
+.closing h2 {
+  max-width: 36ch;
+  margin: 0 auto 12px;
+  text-wrap: balance;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+  color: var(--text);
+}
+.closing > p {
+  max-width: 56ch;
+  text-wrap: balance;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 16.5px;
+  line-height: 1.5;
+}
+.closing .keyline {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  max-width: 62ch;
+  margin-top: 26px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 235, 200, 0.02);
+  text-align: left;
+  font-size: 14.5px;
+}
+.keyline svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--town);
+}
+.keyline b {
+  color: var(--text);
+  font-weight: 500;
+}
+
 /* ---------- who's at the table: the roles, and how a game goes ---------- */
 .tableGrid {
   display: grid;
@@ -147,11 +193,81 @@
   color: var(--muted);
   font-size: 15.5px;
 }
-.again .seatRail {
-  margin-top: 18px;
+
+/* the "Take a seat" doors as ticket stubs: the tags' paper, torn off along a perforated left
+   edge, a kicker and a title and the way in; one row, stacked on a phone */
+.stubs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 22px;
+}
+.stub {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 18px;
+  width: 280px;
+  padding: 11px 18px 12px 24px;
+  border-radius: 0 4px 4px 0;
+  text-align: left;
+  text-decoration: none;
+  color: var(--town-ink);
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(60, 40, 20, 0.045) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 10% 8%, rgba(255, 255, 255, 0.35), transparent 46%),
+    radial-gradient(ellipse at 92% 94%, rgba(120, 90, 50, 0.2), transparent 50%);
+  font-family: var(--font-serif);
+  /* the perforation: a column of bites out of the left edge, where it tore from the tag */
+  mask: radial-gradient(circle 2.6px at 0 50%, transparent 96%, #000) 0 0 / 100% 9px
+    repeat-y;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.6));
+  transition: transform 0.2s ease;
+}
+.stub:hover {
+  transform: translateY(-2px);
+}
+.stub:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+.stubKicker {
+  grid-column: 1;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.stubTitle {
+  grid-column: 1;
+  margin-top: 2px;
+  font-size: 19px;
+  line-height: 1.1;
+}
+.stubGo {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 17px;
+}
+.stubGo small {
+  font-size: 12.5px;
+  font-style: italic;
+  opacity: 0.72;
 }
 
 /* ---------- latest games ---------- */
+/* the slate grid's own breakpoint: below it the slates stack, and two are enough */
+@media (max-width: 820px) {
+  .latest [data-game]:nth-child(n + 3) {
+    display: none;
+  }
+}
 .allGames {
   display: inline-block;
   margin-top: 22px;
@@ -188,6 +304,12 @@
   .section {
     padding-top: 72px;
   }
+  .closing {
+    margin-top: 80px;
+  }
+  .closing h2 {
+    font-size: 25px;
+  }
   .secHead h2 {
     font-size: 28px;
   }
@@ -196,5 +318,14 @@
   }
   .again {
     margin-top: 64px;
+  }
+  .stubs {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .stub {
+    width: 100%;
+    max-width: 330px;
   }
 }
