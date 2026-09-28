@@ -12,6 +12,7 @@
  */
 import { useId } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
+import { headRect } from '../cast/ChipSprite';
 import { stitch } from '../paint/draw';
 import { K2 } from '../paint/materials';
 
@@ -90,8 +91,7 @@ export function ChipFace({ x, y, r, seat, character, you, sw = 1 }: ChipFaceProp
       </g>
     );
   }
-  const head = r * 1.72,
-    bx = x + r * 0.7,
+  const bx = x + r * 0.7,
     by = y + r * 0.68,
     br = Math.max(4, r * 0.36);
   return (
@@ -103,12 +103,8 @@ export function ChipFace({ x, y, r, seat, character, you, sw = 1 }: ChipFaceProp
       <g clipPath={`url(#${clip})`}>
         <rect x={x - r} y={y - r} width={2 * r} height={2 * r} fill="#e4d5b3" />
         <image
-          href={SPRITES.day[character].chip.src}
-          x={x - head / 2}
-          y={y - head / 2}
-          width={head}
-          height={head}
-          preserveAspectRatio="xMidYMid slice"
+          href={SPRITES.day[character].head.src}
+          {...headRect(character, x, y, r * 1.68)}
         />
       </g>
       <circle cx={bx} cy={by} r={br} fill={K2} stroke={CHIP.face} strokeWidth={1.2 * sw} />

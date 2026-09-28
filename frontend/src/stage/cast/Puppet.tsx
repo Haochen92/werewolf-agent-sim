@@ -96,8 +96,10 @@ export function Puppet({
   const k = useMotionScale();
   const box = puppetBox(g, character, state, dx, scale);
   const b = BODY[character];
-  // the numeral's disc: 24% of the figure's width, centred, 62% of the way down the body
-  const nh = 24 * box.aspect;
+  // the numeral's disc: a fifth of the body's height (not the canvas's width, which a wide pose
+  // sets), on the face's centre line, 62% of the way down the body
+  const nh = 20 * b.body,
+    nw = nh / box.aspect;
   const ntop = b.top * 100 + b.body * 100 * 0.62 - nh / 2;
   const place = { left: box.left, top: box.top, width: box.w, height: box.h };
   const rise = {
@@ -146,7 +148,12 @@ export function Puppet({
           <svg
             className={styles.numeral}
             viewBox="0 0 100 100"
-            style={{ left: '38%', top: `${ntop}%`, width: '24%', height: `${nh}%` }}
+            style={{
+              left: `${50 - nw / 2}%`,
+              top: `${ntop}%`,
+              width: `${nw}%`,
+              height: `${nh}%`,
+            }}
             aria-hidden="true"
           >
             <circle

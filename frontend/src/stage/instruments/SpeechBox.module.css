@@ -43,13 +43,10 @@
   width: calc(var(--chip) * 0.62);
   aspect-ratio: 1;
   flex: 0 0 auto;
-  border-radius: 4.8px;
+  border-radius: 50%;
   overflow: hidden;
   line-height: 0;
   display: inline-block;
-}
-.chip img {
-  border-radius: 50%;
 }
 .tag {
   border: 1px solid currentColor;

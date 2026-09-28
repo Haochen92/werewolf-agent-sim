@@ -120,10 +120,16 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
 
   // the figures at the stand, and the stand widened for two
   const seats = cur?.seats ?? [];
-  const set = standSet(seats.length);
+  const instrumentK = 0.14 * g.pwid;
+  // two at the stand (the pack) keep the wolf kit its own place on the rail, clear of both
+  const set = standSet(
+    seats.map((s) => cast[seatNumber(s) - 1]),
+    g,
+    false,
+    instrumentK * 2.6,
+  );
   const stand = standBox(g);
   const rising = animate && spoke?.step === 0;
-  const instrumentK = 0.14 * g.pwid;
 
   const byChip = new Map<string, RowMark[]>();
   for (const m of marks) byChip.set(m.seat, [...(byChip.get(m.seat) ?? []), m]);
@@ -133,7 +139,10 @@ function NightSpoke({ view, beat, me, presentation, slot: slotInput }: SceneProp
   const target = markStep ? (cur?.target ?? null) : null;
   // the instrument on the rail, with a patch of light on it so it reads in the dark
   const tool = {
-    x: g.cx + (stand.w / 2) * set.widen * 0.72,
+    x:
+      set.beside === undefined
+        ? g.cx + (stand.w / 2) * set.widen * 0.72
+        : g.cx + set.beside * g.pwid,
     y: g.railY - instrumentK * 0.5,
   };
   const toolLight: Special[] = cur

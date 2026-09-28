@@ -58,9 +58,6 @@
   background: #17130e;
   line-height: 0;
 }
-.face img {
-  border-radius: 4px;
-}
 .num {
   position: absolute;
   z-index: 1;

@@ -39,9 +39,6 @@
   overflow: hidden;
   line-height: 0;
 }
-.chip img {
-  border-radius: 50%;
-}
 .guess {
   display: flex;
   align-items: baseline;

@@ -97,9 +97,6 @@
   justify-content: center;
   overflow: hidden;
 }
-.seatp img {
-  border-radius: 50%;
-}
 .seatp[aria-pressed='true'] {
   box-shadow: 0 0 0 2.88px var(--bone);
 }
@@ -232,9 +229,6 @@
   border-radius: 50%;
   overflow: hidden;
   line-height: 0;
-}
-.hchip img {
-  border-radius: 50%;
 }
 .hchip.blank {
   visibility: hidden;

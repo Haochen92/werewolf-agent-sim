@@ -104,7 +104,11 @@ function OverBeat({ view, beat, me, presentation, slot: slotInput, wayOut }: Sce
   const onStand = step >= 3;
   const truthOut = step >= 4;
   const winners = winnersOf(view);
-  const set = standSet(winners.length, side);
+  const set = standSet(
+    winners.map((w) => cast[seatNumber(w) - 1]),
+    g,
+    side,
+  );
   const H = STAGE_H;
 
   const fade = (on: boolean, delay: number, duration = 0.5) => ({

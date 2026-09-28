@@ -118,7 +118,7 @@ platform has none), fills two layers:
   0.14 towards the lower right), a vignette on the puppet's room (0 to 0.18 at the corners) and a
   still film grain (`SPRITES.grain`, a 160 px noise tile at 1.5 units a grain, 0.16).
 - Contact and cast shadows, all down-right: each puppet and doll throws a baked silhouette on the
-  wall (`cast/CastShadow.tsx`; `SPRITES.shadow`, 55 WebPs, ~98 KB; a puppet's falls 0.09 × 0.05
+  wall (`cast/CastShadow.tsx`; `SPRITES.shadow`, 57 WebPs, ~95 KB; a puppet's falls 0.09 × 0.05
   of its height at 0.5, a doll's 0.05 × 0.035 at 0.38), a chip on its string a soft disc, the
   lynch's card a soft box, the wall clock (swaying with it) and the wall lamp their baked
   silhouettes (`SPRITES.shadow.wall`, 18×15 at 0.46 and 26×22 at 0.5). No shadow lies on the window's glass (a view through glass
@@ -142,13 +142,12 @@ anything that shows state is drawn over the sprite in vector, never baked in.
 ### Rasters
 
 - Format: **WebP with alpha**, converted from the PNG masters with `sharp` (already a Next
-  dependency). Day figures (paletted flat colour): `nearLossless`. Plush, kits, wood: quality 85.
-  Measured (2026-09-25, `scripts/convert-sprites.mjs`): 9.2 MB → 3.7 MB; plush and kits shrank
-  5–7×, the paletted day figures only ~13% (2.5 MB is their floor; lossless and lossy both come
-  out larger).
+  dependency). Plush, kits, wood: quality 85. Measured (2026-09-25,
+  `scripts/convert-sprites.mjs`): 9.2 MB → 3.7 MB; plush and kits shrank 5–7×. The cast (the day
+  figures and their heads) has its own recipe since 2026-09-28 ("The cast", below).
 - Location and names, mirroring the bundle:
   ```
-  src/assets/sprites/day/<character>/{base,talking,thinking,out,chip}.webp
+  src/assets/sprites/day/<character>/{base,talking,thinking,out,head}.webp
   src/assets/sprites/plush/<character>.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
@@ -167,8 +166,8 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   static imports through `next/image`, content-hashed URLs, inferred dimensions). The manifest
   exports typed handles — `SPRITES.day[character][state]`, `SPRITES.plush[character]`,
   `SPRITES.kits[name]`, `SPRITES.wood`, `SPRITES.textures[name]` — and `BODY: Record<Character, { top: number; body:
-  number }>`, the head-to-toe measure the cast module scales from, transcribed from
-  `docs/design_2026-09-25/sprites-manifest.json` into TypeScript (no JSON at runtime).
+  number }>`, the head-to-toe measure the cast module scales from, and `HEAD_FRAME`, how each head
+  portrait sits in a round window (both measured from the cast, "The cast" below; no JSON at runtime).
 - `castForGame(gameId)` (from `kits/puppet-kit.js`) lives in `src/stage/cast/castForGame.ts`
   unchanged: `Character[]`, index 0 = `player_1`. It hashes the **full uuid** (the benches pass
   `9369a5c1-3c28-42ce-86a1-9d594dfa4804`; the 8-char prefix gives a different cast), and
@@ -315,12 +314,52 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   and the 12). Grain: a 160 px `+noise Gaussian` tile on gray50 (`-seed 7`), each pixel white or
   black by its side of the middle, alpha its distance from it (×0.5 white, ×0.9 black, so it
   does not grey the dark), lossless.
-- Sharpness: the 600 px day cuts are right at 1× and slightly soft at 2× for the puppet at the
-  stand. If the ~900 px cuts still exist in the chat, re-export them as the masters. **Never
-  upscale.** No sprite atlases: HTTP/2 makes 44 small files cheap and an atlas adds tooling.
-- Preload the game's nine characters (four states + chip) at the deal; `next/image` `priority`
+- **The cast** (2026-09-28): the owner's costumed 1920s-train cast replaced the bundle's figures,
+  same eleven characters, ids and poses. Masters: `claude_artifacts/design/rasters/cast/<id>/
+  {base,talking,thinking,out,head}.png` (poses 1024×1536, heads 1254×1254; `shade` is the red
+  songbird). Converted with Pillow (premultiplied Lanczos, WebP quality 82, method 6):
+  - Cleaning: the masters' body alpha is 253, not opaque, so alpha is scaled by 255/253; alpha
+    under 3 (a faint dark fringe) is cleared and RGB under alpha 0 zeroed. No halo shows on dark,
+    so no threshold or contraction beyond that.
+  - Registration: a few poses had drifted off their base in the masters (up to 32 px and 6% in
+    scale: cat talking and thinking, badger talking, hare thinking, owl all three, the polar bear
+    talking and thinking). Each was fitted to its base by the alpha overlap below the crown (a
+    scale about the base's feet, then a shift) before cropping, so switching states never jumps.
+  - One canvas per character, shared by its four poses: the union of their alpha boxes (the
+    thinking bubble included), 6 px of air at the top, the feet on the bottom edge, and
+    symmetric about the face's centre line (read by eye off the base), so the puppet box centres
+    the face and the numeral sits on it. Scaled so the body (crown to toe) is **1000 px**: the
+    puppet's body is ~629 units, so that is ~1.6 device px a unit, 2× on a ~1440-wide laptop
+    (scale ~0.85) and more than a phone's (scale ~0.43 at 3×) needs. Canvases 826–923 wide,
+    1103–1303 tall. 44 poses, 6.2 MB (the bundle's 600 px set was 2.5 MB).
+  - `BODY` is measured on the base: `top` is the crown of the skull under any hat (ears, the
+    hare's ear, the onion's curl, the three-eyes' antenna and the bubble rise above), the feet
+    the canvas's foot. Being on the shared canvas, it serves all four states. The thinking pose's
+    bubble raises the canvas top, so `puppetBox`'s HEADROOM/SINK rule sinks (and, the tall
+    ones, shrinks) every state alike: alone at the stand (live) all but the polar bear sink the
+    full 100 units and the body stands 556–629 units (the hare's ear and the cat's high bubble
+    make them the smallest); two or three at the stand barely sink and never shrink.
+  - `REACH` (per character, from the widest pose: how far it reaches either side of the centre
+    line, in body heights) spaces two or three at the stand (`standSet`): neighbours' reaches
+    just meet, the box widens to 1/0.92 of the row, and if that would pass the room (40 units of
+    air a side) all shrink together. The replay's night keeps the pack's wolf kit its own place
+    on the rail right of the pair (`aside`).
+  - The numeral is a fifth of the body's height on the canvas's centre line (it was 24% of the
+    image's width, which a wide pose would set).
+  - Heads: the head portrait at **384 px** (29 KB each, 321 KB), sharp at 2× for the wing's tile
+    and the place cards and ~1.6× for the morning's featured chip, the largest (~240 units). It
+    replaced the chip cropped from the base (`chip.webp`, gone). `ChipSprite` (HTML: sized from
+    the parent's height, so a tall wing tile shows the circle's framing cut at the sides) and
+    `headRect` (the SVG chips: hung, ballot, place card) draw it through `HEAD_FRAME`: the
+    portrait at `s` times the window's diameter, moved `x`, `y` diameters, judged by eye at 44 px
+    so every face reads at one size. `s / 2 + y ≥ 0.5` keeps the portrait's cut collar out of
+    the circle. The hare is tighter and lower (its upright ear runs off), the polar bear smaller
+    (its ears stay in), the onion's curl and the three-eyes' antenna run off the top.
+  - `scripts/convert-sprites.mjs` skips the old `day` masters so it can never overwrite the cast.
+- **Never upscale.** No sprite atlases: HTTP/2 makes many small files cheap and an atlas adds
+  tooling.
+- Preload the game's nine characters (four states + head) at the deal; `next/image` `priority`
   on the first scene's figures.
-- Known defect: the shade's base cut has a baked "3"; regenerate.
 
 ### Vector
 
@@ -447,7 +486,8 @@ src/stage/
 │                            #   wall clock and the wall lamp are painted rasters,
 │                            #   SPRITES.props: §4)
 ├── cast/                    # Puppet, Plush, Kit (sprite + numeral overlay), castForGame,
-│                            #   CastShadow (a figure's baked shadow on the wall)
+│                            #   CastShadow (a figure's baked shadow on the wall),
+│                            #   ChipSprite + headRect (the head portrait, framed by HEAD_FRAME)
 ├── film/                    # Film (side slot), Note, Lessons, ReadCard, Brief, Ledger (epilogue)
 ├── drawer/                  # Transcript drawer: lines by kind, day tabs, seat chips, Show toggles
 ├── scenes/                  # StationScene (the waiting room; station.ts its rules) DealScene

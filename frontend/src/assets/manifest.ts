@@ -28,57 +28,57 @@ import owlBase from './sprites/day/owl/base.webp';
 import owlTalking from './sprites/day/owl/talking.webp';
 import owlThinking from './sprites/day/owl/thinking.webp';
 import owlOut from './sprites/day/owl/out.webp';
-import owlChip from './sprites/day/owl/chip.webp';
+import owlHead from './sprites/day/owl/head.webp';
 import hareBase from './sprites/day/hare/base.webp';
 import hareTalking from './sprites/day/hare/talking.webp';
 import hareThinking from './sprites/day/hare/thinking.webp';
 import hareOut from './sprites/day/hare/out.webp';
-import hareChip from './sprites/day/hare/chip.webp';
+import hareHead from './sprites/day/hare/head.webp';
 import catBase from './sprites/day/cat/base.webp';
 import catTalking from './sprites/day/cat/talking.webp';
 import catThinking from './sprites/day/cat/thinking.webp';
 import catOut from './sprites/day/cat/out.webp';
-import catChip from './sprites/day/cat/chip.webp';
+import catHead from './sprites/day/cat/head.webp';
 import badgerBase from './sprites/day/badger/base.webp';
 import badgerTalking from './sprites/day/badger/talking.webp';
 import badgerThinking from './sprites/day/badger/thinking.webp';
 import badgerOut from './sprites/day/badger/out.webp';
-import badgerChip from './sprites/day/badger/chip.webp';
+import badgerHead from './sprites/day/badger/head.webp';
 import cyclopsBase from './sprites/day/cyclops/base.webp';
 import cyclopsTalking from './sprites/day/cyclops/talking.webp';
 import cyclopsThinking from './sprites/day/cyclops/thinking.webp';
 import cyclopsOut from './sprites/day/cyclops/out.webp';
-import cyclopsChip from './sprites/day/cyclops/chip.webp';
+import cyclopsHead from './sprites/day/cyclops/head.webp';
 import threeEyesBase from './sprites/day/threeEyes/base.webp';
 import threeEyesTalking from './sprites/day/threeEyes/talking.webp';
 import threeEyesThinking from './sprites/day/threeEyes/thinking.webp';
 import threeEyesOut from './sprites/day/threeEyes/out.webp';
-import threeEyesChip from './sprites/day/threeEyes/chip.webp';
+import threeEyesHead from './sprites/day/threeEyes/head.webp';
 import dragonBase from './sprites/day/dragon/base.webp';
 import dragonTalking from './sprites/day/dragon/talking.webp';
 import dragonThinking from './sprites/day/dragon/thinking.webp';
 import dragonOut from './sprites/day/dragon/out.webp';
-import dragonChip from './sprites/day/dragon/chip.webp';
+import dragonHead from './sprites/day/dragon/head.webp';
 import onionBase from './sprites/day/onion/base.webp';
 import onionTalking from './sprites/day/onion/talking.webp';
 import onionThinking from './sprites/day/onion/thinking.webp';
 import onionOut from './sprites/day/onion/out.webp';
-import onionChip from './sprites/day/onion/chip.webp';
+import onionHead from './sprites/day/onion/head.webp';
 import whaleBase from './sprites/day/whale/base.webp';
 import whaleTalking from './sprites/day/whale/talking.webp';
 import whaleThinking from './sprites/day/whale/thinking.webp';
 import whaleOut from './sprites/day/whale/out.webp';
-import whaleChip from './sprites/day/whale/chip.webp';
+import whaleHead from './sprites/day/whale/head.webp';
 import polarBearBase from './sprites/day/polarBear/base.webp';
 import polarBearTalking from './sprites/day/polarBear/talking.webp';
 import polarBearThinking from './sprites/day/polarBear/thinking.webp';
 import polarBearOut from './sprites/day/polarBear/out.webp';
-import polarBearChip from './sprites/day/polarBear/chip.webp';
+import polarBearHead from './sprites/day/polarBear/head.webp';
 import shadeBase from './sprites/day/shade/base.webp';
 import shadeTalking from './sprites/day/shade/talking.webp';
 import shadeThinking from './sprites/day/shade/thinking.webp';
 import shadeOut from './sprites/day/shade/out.webp';
-import shadeChip from './sprites/day/shade/chip.webp';
+import shadeHead from './sprites/day/shade/head.webp';
 import owlPlush from './sprites/plush/owl.webp';
 import harePlush from './sprites/plush/hare.webp';
 import catPlush from './sprites/plush/cat.webp';
@@ -268,8 +268,7 @@ export type KitName =
  * The waiting room's pictures (the platform, the train, its lamps), extracted once from the
  * waiting-room mockup (scripts/extract-station-sprites.mjs; no masters exist in the bundle).
  */
-export type StationPicture =
-  'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
+export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
 
 /**
  * The country behind the dining car's window (FeltWindow): per hour, the far sky and hills, and
@@ -305,7 +304,7 @@ export type PropPicture =
 export type TexturePicture = 'walnut' | 'boards' | 'velvet';
 
 export const SPRITES: {
-  day: Record<Character, Record<DayState | 'chip', StaticImageData>>;
+  day: Record<Character, Record<DayState | 'head', StaticImageData>>;
   plush: Record<Character, StaticImageData>;
   kits: Record<KitName, StaticImageData>;
   wood: StaticImageData;
@@ -326,77 +325,77 @@ export const SPRITES: {
       talking: owlTalking,
       thinking: owlThinking,
       out: owlOut,
-      chip: owlChip,
+      head: owlHead,
     },
     hare: {
       base: hareBase,
       talking: hareTalking,
       thinking: hareThinking,
       out: hareOut,
-      chip: hareChip,
+      head: hareHead,
     },
     cat: {
       base: catBase,
       talking: catTalking,
       thinking: catThinking,
       out: catOut,
-      chip: catChip,
+      head: catHead,
     },
     badger: {
       base: badgerBase,
       talking: badgerTalking,
       thinking: badgerThinking,
       out: badgerOut,
-      chip: badgerChip,
+      head: badgerHead,
     },
     cyclops: {
       base: cyclopsBase,
       talking: cyclopsTalking,
       thinking: cyclopsThinking,
       out: cyclopsOut,
-      chip: cyclopsChip,
+      head: cyclopsHead,
     },
     threeEyes: {
       base: threeEyesBase,
       talking: threeEyesTalking,
       thinking: threeEyesThinking,
       out: threeEyesOut,
-      chip: threeEyesChip,
+      head: threeEyesHead,
     },
     dragon: {
       base: dragonBase,
       talking: dragonTalking,
       thinking: dragonThinking,
       out: dragonOut,
-      chip: dragonChip,
+      head: dragonHead,
     },
     onion: {
       base: onionBase,
       talking: onionTalking,
       thinking: onionThinking,
       out: onionOut,
-      chip: onionChip,
+      head: onionHead,
     },
     whale: {
       base: whaleBase,
       talking: whaleTalking,
       thinking: whaleThinking,
       out: whaleOut,
-      chip: whaleChip,
+      head: whaleHead,
     },
     polarBear: {
       base: polarBearBase,
       talking: polarBearTalking,
       thinking: polarBearThinking,
       out: polarBearOut,
-      chip: polarBearChip,
+      head: polarBearHead,
     },
     shade: {
       base: shadeBase,
       talking: shadeTalking,
       thinking: shadeThinking,
       out: shadeOut,
-      chip: shadeChip,
+      head: shadeHead,
     },
   },
   plush: {
@@ -536,21 +535,63 @@ export const SPRITES: {
 
 /**
  * Where each day figure's head starts and how tall the figure is, as fractions of the image
- * height, so puppets of different builds stand at one height on the stage. Copied from the
- * bundle's sprites-manifest.json; re-copy it if the masters are re-exported.
+ * height, so puppets of different builds stand at one height on the stage. Measured on the base
+ * pose: `top` is the crown of the skull (under any hat; ears, antenna, curl and the thinking
+ * bubble rise above it), the feet are the canvas's foot. Every pose shares its base's canvas, so
+ * one measure serves all four. Re-measure if the masters are re-exported (stage_architecture §4).
  */
 export const BODY: Record<Character, { top: number; body: number }> = {
-  owl: { top: 0.07, body: 0.93 },
-  hare: { top: 0.086, body: 0.914 },
-  cat: { top: 0.058, body: 0.942 },
-  badger: { top: 0.15, body: 0.85 },
-  cyclops: { top: 0.103, body: 0.897 },
-  threeEyes: { top: 0.276, body: 0.724 },
-  dragon: { top: 0.087, body: 0.913 },
-  onion: { top: 0.131, body: 0.869 },
-  whale: { top: 0.104, body: 0.896 },
-  polarBear: { top: 0.051, body: 0.949 },
-  shade: { top: 0.147, body: 0.853 },
+  owl: { top: 0.149, body: 0.851 },
+  hare: { top: 0.232, body: 0.768 },
+  cat: { top: 0.222, body: 0.778 },
+  badger: { top: 0.165, body: 0.835 },
+  cyclops: { top: 0.162, body: 0.838 },
+  threeEyes: { top: 0.179, body: 0.821 },
+  dragon: { top: 0.181, body: 0.819 },
+  onion: { top: 0.186, body: 0.814 },
+  whale: { top: 0.139, body: 0.861 },
+  polarBear: { top: 0.093, body: 0.907 },
+  shade: { top: 0.186, body: 0.814 },
+};
+
+/**
+ * How far each figure reaches either side of its canvas's centre line (its widest pose, props and
+ * arms included), as fractions of its body height: two or three at the stand are spaced so their
+ * reaches just meet (standSet). Measured with BODY; re-measure with it.
+ */
+export const REACH: Record<Character, { left: number; right: number }> = {
+  owl: { left: 0.435, right: 0.402 },
+  hare: { left: 0.418, right: 0.42 },
+  cat: { left: 0.443, right: 0.434 },
+  badger: { left: 0.455, right: 0.417 },
+  cyclops: { left: 0.419, right: 0.402 },
+  threeEyes: { left: 0.399, right: 0.405 },
+  dragon: { left: 0.432, right: 0.42 },
+  onion: { left: 0.411, right: 0.374 },
+  whale: { left: 0.434, right: 0.411 },
+  polarBear: { left: 0.369, right: 0.413 },
+  shade: { left: 0.429, right: 0.428 },
+};
+
+/**
+ * How each head portrait sits in a round window so every face reads at one size: drawn `s` times
+ * the window's diameter, its centre moved by `x`, `y` diameters. `s / 2 + y` stays at least 0.5,
+ * so the portrait's cut collar never shows inside the circle. Judged by eye at 44 px.
+ */
+export const HEAD_FRAME: Record<Character, { s: number; x: number; y: number }> = {
+  owl: { s: 1.15, x: 0, y: -0.05 },
+  // tighter and lower on the face; the upright ear runs off
+  hare: { s: 1.55, x: -0.02, y: -0.19 },
+  cat: { s: 1.3, x: 0, y: -0.08 },
+  badger: { s: 1.3, x: 0, y: -0.08 },
+  cyclops: { s: 1.3, x: 0, y: -0.1 },
+  threeEyes: { s: 1.35, x: 0, y: -0.15 },
+  dragon: { s: 1.35, x: 0, y: -0.12 },
+  onion: { s: 1.45, x: 0, y: -0.22 },
+  whale: { s: 1.3, x: 0, y: -0.1 },
+  // drawn smaller so the ears stay in
+  polarBear: { s: 1.0, x: 0, y: 0 },
+  shade: { s: 1.35, x: -0.01, y: -0.16 },
 };
 
 /**

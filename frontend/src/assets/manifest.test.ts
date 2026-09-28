@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BODY, CHARACTERS, SPRITES } from './manifest';
+import { BODY, CHARACTERS, HEAD_FRAME, SPRITES } from './manifest';
 
-const DAY_STATES = ['base', 'talking', 'thinking', 'out', 'chip'] as const;
+const DAY_STATES = ['base', 'talking', 'thinking', 'out', 'head'] as const;
 const KITS = [
   'healer',
   'investigator',
@@ -22,7 +22,7 @@ describe('sprite manifest', () => {
     expect(new Set(CHARACTERS).size).toBe(11);
   });
 
-  it('has every day state and chip for every character', () => {
+  it('has every day state and head for every character', () => {
     expect(Object.keys(SPRITES.day).sort()).toEqual([...CHARACTERS].sort());
     for (const character of CHARACTERS) {
       expect(Object.keys(SPRITES.day[character]).sort()).toEqual([...DAY_STATES].sort());
@@ -57,6 +57,14 @@ describe('sprite manifest', () => {
       expect(top).toBeGreaterThan(0);
       expect(top).toBeLessThan(1);
       expect(top + body).toBeCloseTo(1, 3);
+    }
+  });
+
+  it('frames every head so its cut collar stays out of the circle', () => {
+    expect(Object.keys(HEAD_FRAME).sort()).toEqual([...CHARACTERS].sort());
+    for (const character of CHARACTERS) {
+      const { s, y } = HEAD_FRAME[character];
+      expect(s / 2 + y).toBeGreaterThanOrEqual(0.5);
     }
   });
 });

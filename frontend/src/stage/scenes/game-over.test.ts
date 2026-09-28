@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { CHARACTERS, REACH, type Character } from '@/assets/manifest';
 import { foldEvents } from '@/game/foldEvents';
 import type { GameView } from '@/game/types';
+import { geometry, standBox } from '../units';
 import { FIXTURE_EVENTS } from '../workbench/fixture';
 import { endedAt, fateOf, lastStanding, standSet, winnersOf } from './game-over';
 
@@ -50,21 +52,57 @@ describe('the ending, from the fixture (the wolves win at the morning of day 4)'
 });
 
 describe('the stand for the winners', () => {
-  it('sizes one, two and three figures at 1, 0.78 and 0.6, the box ×1, ×1.36, ×1.6', () => {
-    expect(standSet(1)).toEqual({ scale: 1, offsets: [0], widen: 1 });
-    const two = standSet(2);
-    expect([two.scale, two.widen]).toEqual([0.78, 1.36]);
-    expect(two.offsets).toEqual([-0.25, 0.25]);
-    const three = standSet(3);
-    expect([three.scale, three.widen]).toEqual([0.6, 1.6]);
-    expect(three.offsets.map((x) => Math.round(x * 100) / 100)).toEqual([-0.52, 0, 0.52]);
+  const g = geometry('live'),
+    body = g.ph * 0.98;
+  // the gap between neighbours' widest reaches, in units (0 = they just meet)
+  const gaps = (cast: Character[], set: ReturnType<typeof standSet>) =>
+    cast.slice(1).map((c, i) => {
+      const between = (set.offsets[i + 1] - set.offsets[i]) * g.pwid;
+      return between - (REACH[cast[i]].right + REACH[c].left) * body * set.scale;
+    });
+
+  it('stands one alone at full size on the plain box', () => {
+    expect(standSet(['owl'], g)).toEqual({ scale: 1, offsets: [0], widen: 1 });
+    expect(standSet(['owl'], g, true).scale).toBe(0.84);
   });
 
-  it('sets it all at 0.84 beside the open film', () => {
-    expect(standSet(1, true)).toEqual({ scale: 0.84, offsets: [0], widen: 1 });
-    const three = standSet(3, true);
-    expect([three.scale, three.widen].map((x) => Math.round(x * 1000) / 1000)).toEqual([
-      0.504, 1.344,
-    ]);
+  it('spaces two and three so their widest reaches just meet, wide or narrow', () => {
+    for (const cast of [
+      ['polarBear', 'dragon'],
+      ['onion', 'threeEyes'],
+      ['cat', 'badger', 'shade'],
+      ['hare', 'onion', 'owl'],
+    ] as Character[][]) {
+      const set = standSet(cast, g);
+      for (const gap of gaps(cast, set)) expect(gap).toBeCloseTo(0, 6);
+      // centred on the stand, and held inside its widened box
+      const reach = (REACH[cast[0]].left + REACH[cast.at(-1)!].right) * body * set.scale;
+      const outer = (set.offsets.at(-1)! - set.offsets[0]) * g.pwid + reach;
+      expect(outer).toBeLessThanOrEqual(standBox(g).w * set.widen + 1e-6);
+    }
+    const wide = standSet(['badger', 'cat'], g),
+      narrow = standSet(['onion', 'threeEyes'], g);
+    expect(wide.offsets[1] - wide.offsets[0]).toBeGreaterThan(
+      narrow.offsets[1] - narrow.offsets[0],
+    );
+  });
+
+  it('keeps an instrument its own place on the rail right of the figures', () => {
+    const cast: Character[] = ['owl', 'cyclops'],
+      set = standSet(cast, g, false, 110);
+    const right = set.offsets[1] * g.pwid + REACH.cyclops.right * body * set.scale;
+    expect(set.beside! * g.pwid - 55).toBeCloseTo(right, 6);
+    expect(standSet(['owl'], g, false, 110).beside).toBeUndefined();
+  });
+
+  it('shrinks them together rather than let the stand outgrow the room beside the slot', () => {
+    const side = geometry('live', true);
+    for (const n of [2, 3]) {
+      for (const cast of [CHARACTERS.slice(0, n), CHARACTERS.slice(-n)] as Character[][]) {
+        const set = standSet(cast, side, true);
+        expect(standBox(side).w * set.widen).toBeLessThanOrEqual(side.room - 80 + 1e-6);
+        expect(set.scale).toBeLessThanOrEqual(n === 2 ? 0.78 * 0.84 : 0.6 * 0.84);
+      }
+    }
   });
 });

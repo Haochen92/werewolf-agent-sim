@@ -6,9 +6,11 @@
  * `game_over` itself says only who won. Everything else the ending shows (the survivors, the
  * roles, the fates) is what the log already held, so it is worked out here rather than sent.
  */
+import { REACH, type Character } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import type { Phase } from '../paint/materials';
 import { factionOf, seatNumber, type Faction } from '../roles';
+import { standBox, type StageGeometry } from '../units';
 
 export type EndedAt = 'morning' | 'lynch';
 
@@ -66,27 +68,49 @@ export interface StandSet {
   offsets: number[];
   /** How much wider the stand's box is than a single speaker's. */
   widen: number;
+  /** The centre of the place kept on the rail right of two or more (`aside`), as `offsets`. */
+  beside?: number;
 }
 
+/** The share of the widened stand the figures may span, and the room kept either side of it. */
+const FILL = 0.92,
+  AIR = 40;
+
 /**
- * The stand for n figures side by side (bench 73): one at full size, two at 0.78, three at
- * 0.6, the box widened ×1.36 and ×1.6 to hold them; all of it at 0.84 when the side slot is
- * open, so three still fit the narrower room. More than three is not a case the game produces
- * (a side wins with at most three standing); they would be squeezed at the three's size.
+ * The stand for one, two or three figures side by side (bench 73): one at full size, two at 0.78,
+ * three at 0.6, all of it at 0.84 when the side slot is open. Neighbours stand so their widest
+ * reaches (REACH) just meet, and the box widens to hold them; if that box would not fit the room,
+ * every figure shrinks together until it does. `aside` (units) keeps a place on the rail right of
+ * two or more for an instrument (the replay's night). More than three is not a case the game makes.
  */
-export function standSet(n: number, side = false): StandSet {
-  const kk = side ? 0.84 : 1;
-  const scale = (n <= 1 ? 1 : n === 2 ? 0.78 : 0.6) * kk;
-  const spread = (n <= 1 ? 0 : n === 2 ? 0.5 : 0.52) * kk;
-  const widen = n <= 1 ? 1 : (n === 2 ? 1.36 : 1.6) * kk;
-  const k = n > 3 ? 3 / n : 1;
+export function standSet(
+  cast: readonly Character[],
+  g: StageGeometry,
+  side = false,
+  aside = 0,
+): StandSet {
+  const n = cast.length;
+  const standW = standBox(g).w;
+  let scale = (n <= 1 ? 1 : n === 2 ? 0.78 : n === 3 ? 0.6 : 1.8 / n) * (side ? 0.84 : 1);
+  if (n <= 1) return { scale, offsets: [0], widen: 1 };
+  // the group's span in body heights, and each centre's place along it
+  const at: number[] = [];
+  let run = 0;
+  cast.forEach((c, i) => {
+    run += i === 0 ? REACH[c].left : REACH[cast[i - 1]].right + REACH[c].left;
+    at.push(run);
+  });
+  const span = run + REACH[cast[n - 1]].right;
+  const body = g.ph * 0.98;
+  const room = (g.room - 2 * AIR) * FILL;
+  if (span * body * scale + aside > room) scale = (room - aside) / (span * body);
+  const unit = body * scale,
+    total = span * unit + aside;
   return {
-    scale: scale * (n > 3 ? k : 1),
-    offsets: Array.from(
-      { length: Math.max(1, n) },
-      (_, i) => (i - (n - 1) / 2) * spread * k,
-    ),
-    widen,
+    scale,
+    offsets: at.map((x) => (x * unit - total / 2) / g.pwid),
+    widen: Math.max(1, total / (standW * FILL)),
+    ...(aside ? { beside: (total / 2 - aside / 2) / g.pwid } : {}),
   };
 }
 

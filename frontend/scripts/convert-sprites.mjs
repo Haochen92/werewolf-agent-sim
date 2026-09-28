@@ -43,6 +43,9 @@ let after = 0;
 const only = process.argv[2];
 for (const src of await listMasters(SRC)) {
   const rel = path.relative(SRC, src);
+  // the cast is no longer made here: its masters are rasters/cast (stage_architecture §4 "The
+  // cast"), and these old day masters would overwrite it
+  if (rel.split(path.sep)[0] === 'day') continue;
   if (only && rel.split(path.sep)[0] !== only) continue;
   const dest = path.join(OUT, rel.replace(/\.(png|jpe?g)$/i, '.webp'));
   await mkdir(path.dirname(dest), { recursive: true });

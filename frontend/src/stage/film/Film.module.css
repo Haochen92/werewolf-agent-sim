@@ -265,9 +265,6 @@
   vertical-align: middle;
   flex: 0 0 auto;
 }
-.chip img {
-  border-radius: 50%;
-}
 .chip.sm {
   width: calc(var(--chip) * 0.4);
 }

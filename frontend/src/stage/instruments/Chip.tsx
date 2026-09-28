@@ -19,6 +19,7 @@
 import { useId } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
 import { offGlass } from '../cast/CastShadow';
+import { headRect } from '../cast/ChipSprite';
 import type { StageGeometry } from '../units';
 import { MATERIALS } from '../paint/materials';
 import { factionOf, type Faction } from '../roles';
@@ -82,7 +83,6 @@ function Face({
   const bx = cx + r * 0.7,
     by = cy + r * 0.68,
     br = Math.max(4, r * 0.36);
-  const head = r * 1.72;
   return (
     <svg style={svgBox(r)} aria-hidden="true">
       <circle
@@ -99,12 +99,8 @@ function Face({
       <g clipPath={`url(#${clip})`}>
         <rect x={cx - r} y={cy - r} width={2 * r} height={2 * r} fill="#e4d5b3" />
         <image
-          href={SPRITES.day[character].chip.src}
-          x={cx - head / 2}
-          y={cy - head / 2}
-          width={head}
-          height={head}
-          preserveAspectRatio="xMidYMid slice"
+          href={SPRITES.day[character].head.src}
+          {...headRect(character, cx, cy, r * 1.68)}
         />
       </g>
       <circle cx={bx} cy={by} r={br} fill={INK} stroke={FACE} strokeWidth={1.2} />
