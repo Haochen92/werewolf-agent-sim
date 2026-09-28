@@ -15,9 +15,12 @@
  * rests on a speech the hold pauses, and the clock picks up where it left off, so a long line
  * can be read to the end.
  *
- * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer, with
- * no HUD, no side slot, no transport, no X-ray and no keys, playing one window of the public cut
- * round and round (`loop` in replay-state.ts). The frame around it is the caller's.
+ * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
+ * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
+ * page around it keeps its arrows and space). Its controls are the caller's choice: none; the
+ * replay's own on the stage (the strip's X-ray and Transcript, the side slot, the band over the
+ * window); or, where the stage is too small to read (an upright phone), none on the stage and
+ * the state handed to `under`, which the caller draws below it. The frame is the caller's.
  */
 import {
   useCallback,
@@ -27,12 +30,17 @@ import {
   useRef,
   useState,
   type PointerEvent,
+  type ReactNode,
 } from 'react';
 import { useReducedMotion } from 'motion/react';
+import { createPortal } from 'react-dom';
+import type { Character } from '@/assets/manifest';
+import type { GameView } from '@/game/types';
 import { castForGame } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { StageMotion } from '../motion';
+import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed, Presentation, SlotInput } from '../scenes/types';
 import { atRail, slotOf } from '../slot';
 import { Stage } from '../Stage';
@@ -51,9 +59,42 @@ import styles from './ReplayTheatre.module.css';
 
 export interface ReplayTheatreProps {
   game: Pick<ReplayGame, 'game_id' | 'events'>;
-  /** A preview: no HUD, no slot, no band, no X-ray; plays `from`..`to` (indices into the
-   *  public cut) on a loop when `autoplay`, else rests on `from`. The frame is the caller's. */
-  mini?: { from: number; to: number; autoplay: boolean; speed?: MotionSpeed };
+  /** A preview: plays `from`..`to` (indices into the public cut) on a loop when `autoplay`,
+   *  else rests on `from`. The frame is the caller's. */
+  mini?: {
+    from: number;
+    to: number;
+    autoplay: boolean;
+    speed?: MotionSpeed;
+    /** 'stage': the replay's own controls on the stage, over the window. 'under': none on
+     *  the stage; `under` draws them into `underEl`. Absent: no controls at all. */
+    controls?: 'stage' | 'under';
+    under?: (u: MiniUnder) => ReactNode;
+    underEl?: HTMLElement | null;
+  };
+}
+
+/** What a preview's controls below the stage draw from, and what their presses do. */
+export interface MiniUnder {
+  view: GameView;
+  beat: SceneBeat;
+  /** The view a little past the beat (the note a turn writes just after it), for the film. */
+  ahead: GameView | null;
+  cast: readonly Character[];
+  /** The window's beats, and the cursor's place among them. */
+  beats: readonly SceneBeat[];
+  index: number;
+  label: string;
+  playing: boolean;
+  xray: boolean;
+  /** Which the pane holds: the film only with the X-ray on, else the transcript. */
+  pane: 'transcript' | 'film';
+  filmTab: string;
+  onFilmTab: (tab: string) => void;
+  onTogglePlay: () => void;
+  onSeek: (index: number) => void;
+  onTranscript: () => void;
+  onXray: () => void;
 }
 
 /** The replay has no seated human: the viewer is a spectator, or an observer with the X-ray. */
@@ -114,9 +155,16 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
   );
   // the preview's caller turns the play on and off (scrolled away, a phone held upright)
   const isMini = !!mini;
+  const controls = mini ? (mini.controls ?? null) : 'stage';
+  // a viewer who paused a preview keeps it paused when it scrolls away and back
+  const paused = useRef(false);
   useEffect(() => {
-    if (isMini) dispatch({ type: autoplay ? 'play' : 'pause' });
+    if (isMini) dispatch({ type: autoplay && !paused.current ? 'play' : 'pause' });
   }, [isMini, autoplay]);
+  const togglePlay = useCallback(() => {
+    paused.current = state.playing;
+    dispatch({ type: 'toggle-play' });
+  }, [state.playing]);
   const folds = useMemo(() => createFoldCache(events, { mySeat: ME }), [events]);
   const ahead = useMemo(() => folds.at(events.length), [folds, events.length]);
 
@@ -143,9 +191,10 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onXray,
-      back: '/replays',
+      // a preview's way to the whole game is the caller's
+      back: isMini ? undefined : '/replays',
     }),
-    [drawer.filters, drawer.setFilters, filmTab, ahead, onXray],
+    [drawer.filters, drawer.setFilters, filmTab, ahead, onXray, isMini],
   );
 
   // playing: the beat's hold, paused while the speech is held
@@ -155,7 +204,7 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
   useHold(
     `${state.xray}:${index}:${state.speed}`,
     hold,
-    state.playing && (isMini || !held),
+    state.playing && (controls !== 'stage' || !held),
     tick,
   );
   const onPointerOver = (e: PointerEvent) => setHeld(isSpeech(e.target));
@@ -202,17 +251,22 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
     };
   }, [isMini]);
 
+  // with the controls under the stage, the slot's choice is the pane's, not the stage's
   const presentation = useMemo(
     (): Presentation => ({
       xray: state.xray,
-      slot: state.slot,
+      slot: controls === 'stage' ? state.slot : null,
       motion: state.speed,
-      hud: isMini ? 'none' : 'replay',
+      hud: controls === 'stage' ? 'replay' : 'none',
       cast,
       animate: state.cursor.animate,
     }),
-    [state.xray, state.slot, state.speed, isMini, cast, state.cursor.animate],
+    [state.xray, state.slot, state.speed, controls, cast, state.cursor.animate],
   );
+
+  // a preview's band and pane see only its window
+  const from = state.loop?.from ?? 0;
+  const shown = state.loop ? beats.slice(from, state.loop.to + 1) : beats;
 
   const Scene = beat ? SCENES[beat.scene] : null;
   // the drawer runs to the foot of the stage (not on a prompt, not beside the epilogue)
@@ -226,8 +280,8 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
       data-beat={beat?.id}
       data-playing={state.playing}
       data-mini={isMini || undefined}
-      onPointerOver={isMini ? undefined : onPointerOver}
-      onPointerOut={isMini ? undefined : onPointerOut}
+      onPointerOver={controls === 'stage' ? onPointerOver : undefined}
+      onPointerOut={controls === 'stage' ? onPointerOut : undefined}
     >
       <Stage fit="contain">
         {beat && view && Scene ? (
@@ -241,11 +295,11 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
             />
           </StageMotion>
         ) : null}
-        {isMini ? null : (
+        {controls === 'stage' ? (
           <TransportBand
             hud="replay"
-            beats={beats}
-            index={index}
+            beats={shown}
+            index={index - from}
             playing={state.playing}
             speed={state.speed}
             xray={state.xray}
@@ -253,12 +307,35 @@ export function ReplayTheatre({ game, mini }: ReplayTheatreProps) {
             besideDrawer={besideDrawer}
             onChapter={(dir) => dispatch({ type: 'chapter', dir })}
             onStep={(dir) => dispatch({ type: 'step', dir })}
-            onTogglePlay={() => dispatch({ type: 'toggle-play' })}
-            onSeek={(i) => dispatch({ type: 'seek', index: i })}
+            onTogglePlay={togglePlay}
+            onSeek={(i) => dispatch({ type: 'seek', index: from + i })}
             onSpeed={(speed) => dispatch({ type: 'speed', speed })}
           />
-        )}
+        ) : null}
       </Stage>
+      {controls === 'under' && mini?.under && mini.underEl && beat && view
+        ? createPortal(
+            mini.under({
+              view,
+              beat,
+              ahead,
+              cast,
+              beats: shown,
+              index: index - from,
+              label: transportLabel(beats, index),
+              playing: state.playing,
+              xray: state.xray,
+              pane: slotOf(state) === 'film' ? 'film' : 'transcript',
+              filmTab,
+              onFilmTab: setFilmTab,
+              onTogglePlay: togglePlay,
+              onSeek: (i) => dispatch({ type: 'seek', index: from + i }),
+              onTranscript: () => dispatch({ type: 'transcript' }),
+              onXray,
+            }),
+            mini.underEl,
+          )
+        : null}
     </div>
   );
 }
