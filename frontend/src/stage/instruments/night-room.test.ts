@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { countLeft, countText, URGENT_MS } from '../countdown';
-import { plateLabel } from '../scenes/ShelfRoomScene';
+import { LONE_WOLF_SEALED, plateLabel, sealedLabel } from '../scenes/ShelfRoomScene';
 import { packEntries } from '../scenes/PackScene';
 import type { NightView } from '@/game/types';
 
@@ -31,6 +31,22 @@ describe('the plate', () => {
     expect(plateLabel('investigator_target', 'player_4')).toBe('Check seat 4');
     expect(plateLabel('vigilante_target', 'player_2')).toBe('Shoot seat 2');
     expect(plateLabel('serial_killer_target', 'player_5')).toBe('Kill seat 5');
+  });
+});
+
+describe('the sealed plate', () => {
+  it('says what was done tonight, one line per act', () => {
+    expect(sealedLabel('healer_target', 'player_3')).toBe('Seat 3 is protected tonight');
+    expect(sealedLabel('investigator_target', 'player_3')).toBe('You check seat 3 tonight');
+    expect(sealedLabel('vigilante_target', 'player_3')).toBe('You shoot seat 3 tonight');
+    expect(sealedLabel('vigilante_target', null)).toBe('You hold fire tonight');
+    expect(sealedLabel('serial_killer_target', 'player_3')).toBe(
+      'Seat 3 is marked tonight',
+    );
+    expect(sealedLabel('wolf_vote', 'player_4')).toBe('You vote seat 4 tonight');
+    expect(LONE_WOLF_SEALED(4)).toBe('Seat 4 is your kill tonight');
+    // a remount that lost the seat still says the act is in
+    expect(sealedLabel('healer_target', undefined)).toBe('Your act is in');
   });
 });
 

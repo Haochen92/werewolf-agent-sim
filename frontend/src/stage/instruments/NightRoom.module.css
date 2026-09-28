@@ -372,3 +372,46 @@ button.plush:focus-visible {
 .plate .bar[data-urgent] i {
   background: #e3503f;
 }
+/* a quiet line over the plate: the choice can still change, or why the last press failed */
+.plate .note {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin: 0 0 calc(19.2px * var(--legible-ui));
+  white-space: nowrap;
+  font-size: calc(var(--meta) * 1.1);
+  color: var(--paper);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.plate .noteError {
+  color: #f08a7a;
+  opacity: 1;
+}
+/* the act is in: a sealed label, not a button (nothing left to press) */
+.plate .sealed {
+  display: flex;
+  align-items: center;
+  gap: calc(11.2px * var(--legible-ui));
+  margin: 0;
+  font-size: calc(22.4px * 1.15 * var(--legible-ui));
+  font-weight: 500;
+  white-space: nowrap;
+  padding: calc(10.4px * var(--legible-ui)) calc(24px * var(--legible-ui));
+  border-radius: 8px;
+  border: 1.6px solid rgba(201, 162, 94, 0.7);
+  background: rgba(16, 10, 6, 0.88);
+  color: #efd9a8;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+/* the seal: a wax drop in the acting side's colour */
+.plate .sealed i {
+  flex: none;
+  width: 0.62em;
+  height: 0.62em;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1.6px rgba(20, 12, 6, 0.9);
+}

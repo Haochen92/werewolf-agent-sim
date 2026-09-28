@@ -20,12 +20,20 @@ import type { NightView } from '@/game/types';
 import { SideSlot } from '../SideSlot';
 import { countText } from '../countdown';
 import { ActPlate } from '../instruments/ActPlate';
+import { pinColour } from '../instruments/Pin';
 import { PackChat, type PackEntry } from '../instruments/PackChat';
 import { Tooth } from '../instruments/Tooth';
 import { StageMotion } from '../motion';
 import { seatNumber } from '../roles';
 import { geometry } from '../units';
 import { NightRoom } from './NightRoom';
+import {
+  AGENT_SEALED,
+  CHANGE_NOTE,
+  LONE_WOLF_SEALED,
+  NightCount,
+  sealedLabel,
+} from './ShelfRoomScene';
 import type { SceneProps } from './types';
 
 /** How long after arriving a tooth that came with the beat lands (seconds). */
@@ -91,7 +99,14 @@ function Pack(props: SceneProps) {
   const [chosen, setChosen] = useState<string | null>(
     voting && turn?.chosen && dolls.includes(turn.chosen) ? turn.chosen : null,
   );
-  const [mine, setMine] = useState<string | null>(null);
+  // my vote as sent from here (the server takes one: a sent vote cannot be changed)
+  const [sentVote, setSentVote] = useState<string | null>(
+    voting && turn?.sent === 'you' ? (turn.chosen ?? null) : null,
+  );
+  // a failed send reopens the plate; a vote the agent (or another tab) gave seals it
+  const failed = !!turn?.sendError && !turn.sent;
+  const elsewhere = voting && (turn?.sent === 'agent' || turn?.sent === 'closed');
+  const mine = failed ? null : sentVote;
   const [cardOpen, setCardOpen] = useState(!!turn?.cardOpen);
 
   const votes = night?.wolfVotes ?? [];
@@ -135,8 +150,11 @@ function Pack(props: SceneProps) {
       dolls={dolls}
       lit={lit}
       pin={lit}
+      pinHome={!!mine || !!decided}
       onChoose={
-        voting && !mine ? (seat) => setChosen((c) => (c === seat ? null : seat)) : undefined
+        voting && !mine && !elsewhere
+          ? (seat) => setChosen((c) => (c === seat ? null : seat))
+          : undefined
       }
       marks={marks}
       pack={pack}
@@ -166,6 +184,10 @@ function Pack(props: SceneProps) {
           }
         />
       ) : null}
+      {/* once the vote is in, the lobby's count: the others acting, until the morning */}
+      {mine || elsewhere || decided || votes.some((v) => v.wolf === me) ? (
+        <NightCount {...props} />
+      ) : null}
       {voting ? (
         <ActPlate
           left={g.wingN + 22.4}
@@ -176,13 +198,27 @@ function Pack(props: SceneProps) {
                 ? `${verb} seat ${seatNumber(chosen)}`
                 : 'Choose a seat to kill'
           }
-          clock={mine ? null : turn?.clock}
+          clock={mine || elsewhere ? null : turn?.clock}
           disabled={!chosen || !!mine}
           onConfirm={() => {
-            if (!chosen || mine) return;
-            setMine(chosen);
+            if (!chosen || mine || elsewhere) return;
+            setSentVote(chosen);
             onAct?.(chosen);
           }}
+          note={chosen ? CHANGE_NOTE : undefined}
+          error={failed ? turn?.sendError : null}
+          sealed={
+            mine || elsewhere
+              ? {
+                  label: mine
+                    ? alone
+                      ? LONE_WOLF_SEALED(seatNumber(mine))
+                      : sealedLabel('wolf_vote', mine)
+                    : AGENT_SEALED,
+                  colour: pinColour('wolf'),
+                }
+              : null
+          }
         />
       ) : null}
     </NightRoom>

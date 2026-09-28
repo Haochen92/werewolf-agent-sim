@@ -104,6 +104,14 @@ export interface TurnInput {
   chosen?: string | null;
   /** The role card opened over the room. */
   cardOpen?: boolean;
+  /**
+   * A night act or pack vote is in (the server takes one answer and refuses a second): sent
+   * from here ('you'), taken by the seat's agent ('agent'), or refused as already answered
+   * ('closed'). Unset: not sent, or the send failed and may be tried again.
+   */
+  sent?: 'you' | 'agent' | 'closed' | null;
+  /** Why the last send failed, in the words to show under the plate. */
+  sendError?: string | null;
   /** A line already written in the pack's chat box. */
   draft?: string;
   /**

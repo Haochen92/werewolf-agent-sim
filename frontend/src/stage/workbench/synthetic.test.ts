@@ -107,7 +107,7 @@ describe('synthetic night situations', () => {
     expect(f.turn?.chosen).toBe('player_1');
     const clamped = workbenchFrame('pack', { ...DEFAULT_QUERY, beat: 99 });
     expect(clamped.index).toBe(pack.length - 1);
-    expect(clamped.beat?.id).toBe('pack.decided');
+    expect(clamped.beat?.id).toBe('pack.vote');
   });
 });
 

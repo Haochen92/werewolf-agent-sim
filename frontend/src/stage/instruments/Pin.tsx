@@ -7,16 +7,18 @@
  * so the doll itself stays exactly as drawn.
  *
  * A tapped choice pushes it in along its own line; a choice the room arrives at is simply
- * there. Un-choosing draws it back out. Its parent (NightRoom) keeps it in an AnimatePresence
- * that starts still, so only a change made in the room plays.
+ * there. Un-choosing draws it back out. Once the act is sent it goes fully `home`, a short
+ * last push. Its parent (NightRoom) keeps it in an AnimatePresence that starts still, so only
+ * a change made in the room plays. Past where it enters, the shaft is hidden: it is in the felt.
  */
+import { useId } from 'react';
 import { motion } from 'motion/react';
 import { factionOf } from '../roles';
 import { useMotionScale } from '../motion';
 import { K2 } from '../paint/materials';
 import styles from './NightRoom.module.css';
 
-/** The card's colours (tokens.css), by side. */
+/** The card's colours (tokens.css), by side: the pin's head and the sealed plate's seal. */
 const HEAD = {
   villagers: 'var(--town)',
   wolves: 'var(--wolf)',
@@ -26,23 +28,33 @@ const HEAD = {
 /** The pin's line, up and to the right from where it enters (degrees above the horizontal). */
 const ANGLE = 52;
 
+/** The acting side's colour, for a role. */
+export function pinColour(role: string): string {
+  return HEAD[factionOf(role) ?? 'villagers'];
+}
+
 export interface PinProps {
   /** The acting role: the head's colour. */
   role: string;
   /** The doll's width in units: the pin is sized to it. */
   w: number;
+  /** The act is sent: pushed fully home. */
+  home?: boolean;
 }
 
-export function Pin({ role, w }: PinProps) {
+export function Pin({ role, w, home = false }: PinProps) {
   const k = useMotionScale();
+  const clip = 'pin' + useId().replace(/[^A-Za-z0-9_-]/g, '');
   const a = (ANGLE * Math.PI) / 180,
     L = 0.38 * w,
     r = 0.075 * w,
     hx = Math.cos(a) * L,
     hy = -Math.sin(a) * L,
     // the push: it starts this far back along its own line
-    back = 0.16 * w;
-  const head = HEAD[factionOf(role) ?? 'villagers'];
+    back = 0.16 * w,
+    // the last push once the act is sent
+    deep = 0.08 * w;
+  const head = pinColour(role);
   const box = L + r * 2;
   return (
     <span className={styles.pin} data-pin={role}>
@@ -58,47 +70,70 @@ export function Pin({ role, w }: PinProps) {
           overflow: 'visible',
         }}
       >
+        <defs>
+          {/* the side of the entry the pin shows on; past it the shaft is inside the doll */}
+          <clipPath id={clip}>
+            <rect
+              x={0}
+              y={-box}
+              width={box * 3}
+              height={box * 2}
+              transform={`rotate(${-ANGLE})`}
+            />
+          </clipPath>
+        </defs>
         {/* where it went in: a small dent in the felt */}
         <ellipse cx={0} cy={0} rx={r * 0.5} ry={r * 0.32} fill="#1a100a" opacity={0.45} />
-        <motion.g
-          initial={{ x: Math.cos(a) * back, y: -Math.sin(a) * back, opacity: 0 }}
-          animate={{ x: 0, y: 0, opacity: 1 }}
-          exit={{ x: Math.cos(a) * back * 0.7, y: -Math.sin(a) * back * 0.7, opacity: 0 }}
-          transition={{
-            duration: 0.32 * k,
-            delay: 0.1 * k,
-            ease: [0.3, 0.7, 0.4, 1],
-            opacity: { duration: 0.1 * k, delay: 0.1 * k },
-          }}
-        >
-          <path
-            d={`M0,0 L${hx},${hy}`}
-            stroke={K2}
-            strokeWidth={r * 0.55}
-            strokeLinecap="round"
-          />
-          <path
-            d={`M0,0 L${hx},${hy}`}
-            stroke="#cfc8ba"
-            strokeWidth={r * 0.28}
-            strokeLinecap="round"
-          />
-          <circle
-            cx={hx}
-            cy={hy}
-            r={r}
-            style={{ fill: head }}
-            stroke={K2}
-            strokeWidth={r * 0.28}
-          />
-          <circle
-            cx={hx - r * 0.32}
-            cy={hy - r * 0.34}
-            r={r * 0.3}
-            fill="#fff"
-            opacity={0.7}
-          />
-        </motion.g>
+        <g clipPath={`url(#${clip})`}>
+          <motion.g
+            data-home={home || undefined}
+            initial={{ x: Math.cos(a) * back, y: -Math.sin(a) * back, opacity: 0 }}
+            animate={
+              home
+                ? { x: -Math.cos(a) * deep, y: Math.sin(a) * deep, opacity: 1 }
+                : { x: 0, y: 0, opacity: 1 }
+            }
+            exit={{ x: Math.cos(a) * back * 0.7, y: -Math.sin(a) * back * 0.7, opacity: 0 }}
+            transition={
+              home
+                ? { duration: 0.2 * k, delay: 0.05 * k, ease: [0.5, 0, 0.2, 1] }
+                : {
+                    duration: 0.32 * k,
+                    delay: 0.1 * k,
+                    ease: [0.3, 0.7, 0.4, 1],
+                    opacity: { duration: 0.1 * k, delay: 0.1 * k },
+                  }
+            }
+          >
+            <path
+              d={`M0,0 L${hx},${hy}`}
+              stroke={K2}
+              strokeWidth={r * 0.55}
+              strokeLinecap="round"
+            />
+            <path
+              d={`M0,0 L${hx},${hy}`}
+              stroke="#cfc8ba"
+              strokeWidth={r * 0.28}
+              strokeLinecap="round"
+            />
+            <circle
+              cx={hx}
+              cy={hy}
+              r={r}
+              style={{ fill: head }}
+              stroke={K2}
+              strokeWidth={r * 0.28}
+            />
+            <circle
+              cx={hx - r * 0.32}
+              cy={hy - r * 0.34}
+              r={r * 0.3}
+              fill="#fff"
+              opacity={0.7}
+            />
+          </motion.g>
+        </g>
       </svg>
     </span>
   );

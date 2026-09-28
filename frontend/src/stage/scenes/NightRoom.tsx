@@ -52,6 +52,8 @@ export interface NightRoomProps extends Pick<
   lit: string | null;
   /** The doll with the pin in it (the choice); null = none. */
   pin?: string | null;
+  /** The act is sent: the pin goes fully home. */
+  pinHome?: boolean;
   /** Tapping a doll; without it the dolls are only shown. */
   onChoose?: (seat: string) => void;
   /** Marks drawn over a doll (the teeth), by seat. */
@@ -77,6 +79,7 @@ export function NightRoom({
   dolls,
   lit,
   pin = null,
+  pinHome = false,
   onChoose,
   marks,
   pack = [],
@@ -127,7 +130,9 @@ export function NightRoom({
               {marks?.[seat]}
               {/* starts still: only a pin put in or drawn out in the room plays */}
               <AnimatePresence initial={false}>
-                {pin === seat ? <Pin key="pin" role={role} w={plan.dollW} /> : null}
+                {pin === seat ? (
+                  <Pin key="pin" role={role} w={plan.dollW} home={pinHome} />
+                ) : null}
               </AnimatePresence>
             </Plush>
           );

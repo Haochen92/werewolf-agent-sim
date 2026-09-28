@@ -15,6 +15,7 @@ import type { GameView } from '@/game/types';
 import type { ActionKind, DurableGameEvent } from '@/types/contracts';
 import { BEAT_LABELS, type BeatId, type SceneBeat, type SceneId } from '../beats/types';
 import { seatify } from '../roles';
+import { nightUnits } from '../scenes/NightLobbyScene';
 import { MIN_ABOARD, stationBeat, type StationBeatId } from '../scenes/station';
 import type { RoomInput, TurnInput } from '../scenes/types';
 
@@ -37,6 +38,12 @@ export interface Situation {
   card?: boolean;
   /** Seconds left of the two minutes (default 74, bench 70's "1:14"); null = no deadline. */
   left?: number | null;
+  /** The act is in (the chosen doll, or none: the vigilante held fire). */
+  sent?: boolean;
+  /** The send failed with these words. */
+  sendError?: string;
+  /** How many have acted tonight (the live count, `phase_progress`); the pill shows once sent. */
+  acted?: number;
 }
 
 /**
@@ -168,6 +175,9 @@ export function synthesise(
       chosen: s.chosen ?? null,
       cardOpen: !!s.card,
       draft,
+      sent: s.sent ? 'you' : null,
+      progress: s.acted === undefined ? undefined : { n: s.acted, total: nightUnits(view) },
+      sendError: s.sendError ?? null,
     },
   };
 }

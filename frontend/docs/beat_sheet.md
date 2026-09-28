@@ -220,8 +220,8 @@ No clock: the countdown is on the plate.
 | # | Beat | Anchor | Sees | Stage | Slot | Hold |
 |---|---|---|---|---|---|---|
 | 1 | `room.opens` | `input_request` for me, kind `healer_target` · `investigator_target` · `vigilante_target` · `serial_killer_target` | S | the shelf room in the candle's light; the plate's countdown from `deadline`; dolls for `candidates` only (the server's list is the only source of legal targets) | D: the drawer stops at the rail (on a phone it runs full height) | until answered / deadline |
-| 2 | `room.choose` | tap a doll | S | the room below the shelf goes darker, one light finds the chosen doll and a pin goes into it; the plate names the act ("Protect seat 1", "Check seat 4", "Shoot seat 2", "Kill seat 5"); the vigilante also has **Hold fire** | — | — |
-| 3 | `room.confirm` | tap the plate → POST | S | → `night.your-act-in` | — | — |
+| 2 | `room.choose` | tap a doll | S | the room below the shelf goes darker, one light finds the chosen doll and a pin goes into it; the plate names the act ("Protect seat 1", "Check seat 4", "Shoot seat 2", "Kill seat 5") with "tap another doll to change" over it; the vigilante also has **Hold fire** | — | — |
+| 3 | `room.confirm` | tap the plate → POST (the commit: the server takes one answer and 409s a second) | S | the pin goes fully home; the plate seals into a label ("Seat 1 is protected tonight" · "You check seat 1 tonight" · "You shoot seat 1 tonight" · "You hold fire tonight" · "Seat 1 is marked tonight"), no countdown; a failed send reopens the plate with its words. `night.your-act-in` is not built: the sealed room holds until the next beat the seat sees | — | — |
 | 4 | `room.card` | tap the framed card | S | the full role card centred over the room; tap to close | — | — |
 
 Motion for this room, as built 2026-09-25 (no bench gives them; change here first): the light
@@ -254,7 +254,19 @@ the kit only, a quarter in from each end, standing on the top face (0.35 of its 
 front edge; the card by its frame's outer ring) with a soft contact shadow a touch to the right;
 the kit's wall shadow falls down-right. **The plate** centres in the room right of the wing (left
 of an open side slot), so on a phone the drawer runs full height here (`railHolds` is the pack's
-only).
+only). **The commit** (2026-09-28): the plate is the commit, because the server takes one answer
+per seat. Chosen and not sent: the gold button, and a quiet line over it, "tap another doll to
+change" (`--meta` × 1.1). Sent: the pin's last push (0.08 of the doll's width along its line,
+0.2 s; still on arrive and seek), the chosen doll stays lit, and the plate becomes a sealed label,
+not a button: a dark plate with a brass edge, a wax dot in the side's colour and the act in one
+line (`ACT_SEALED` beside `ACT_VERB`); the countdown goes. The container's send state reaches the
+scene as `turn.sent` / `turn.sendError` (`actSent`): sealed while sending and once in; a 422 or a
+dropped connection ("Could not reach the table. Try again.") reopens the plate with the words over
+it; a 409 or the agent's answer seals it as "Your seat's agent acted for you". **The count once sealed**
+(2026-09-28): with the plate sealed (and in the pack once my vote is in, or the kill is decided)
+the room shows the night lobby's pill, "Acted n of N" at the top centre (`CountPill`, `side` as
+the lobby's), from the same census (`nightUnits`) and the same live `phase_progress` count, ticking
+up as the others act until the morning; hidden before, when the plate's countdown is the focus.
 
 ## 7. Night, the pack — H§4.7 · bench 71
 
@@ -284,6 +296,9 @@ own tile, which has the "you" rim), in both night rooms. Not yet built: "Draft f
 pack's input. As built 2026-09-27: the room is §6's candle-lit one (the wolves' kit has no flame,
 so the candle is out of sight at the shelf's end); the lit doll (my choice, then the kill decided)
 wears the pin in the pack's red beside the teeth; the vote's plate carries the countdown.
+The vote's plate commits as the room's does (a `wolf_vote` is one answer too; the server takes
+no revision): "tap another doll to change" until pressed, then sealed "You vote seat 4 tonight"
+(the lone wolf: "Seat 4 is your kill tonight") with my tooth down and the pin home.
 
 ## 8. The morning — H§4.8 · bench 67
 

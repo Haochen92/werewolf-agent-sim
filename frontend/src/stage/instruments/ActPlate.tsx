@@ -10,6 +10,11 @@
  * On a turn with a deadline the plate carries the countdown (the room has no clock): the time
  * left in digits before the act, and a thin bar along the plate's top edge that drains, red in
  * the last ten seconds. The bar eases between the container's ticks; arrived at, it is still.
+ *
+ * Pressing it is the commit: the server takes one answer per seat and refuses a second. So
+ * once a doll is chosen a quiet line over it says the choice can still change, and once the
+ * act is in the plate is `sealed`: a label saying what was done, with nothing left to press.
+ * A send that failed says why in that line, and the plate can be pressed again.
  */
 import { countLeft, countText, URGENT_MS } from '../countdown';
 import styles from './NightRoom.module.css';
@@ -30,6 +35,12 @@ export interface ActPlateProps {
   clock?: { remainingMs: number; totalMs: number } | null;
   /** Placed by its parent's layout instead (the waiting room's ledge). */
   inline?: boolean;
+  /** A quiet line over the plate ("tap another doll to change"). */
+  note?: string;
+  /** What went wrong with the last press, over the plate in place of the note. */
+  error?: string | null;
+  /** The act is in: the plate is this label, sealed in the acting side's colour. */
+  sealed?: { label: string; colour: string } | null;
 }
 
 export function ActPlate({
@@ -41,17 +52,46 @@ export function ActPlate({
   centre,
   clock,
   inline,
+  note,
+  error,
+  sealed,
 }: ActPlateProps) {
   const place = inline ? styles.inline : left == null ? '' : styles.left;
   const f = countLeft(clock);
   const urgent = clock != null && f !== null && clock.remainingMs <= URGENT_MS;
   const x = left ?? centre;
+  if (sealed)
+    return (
+      <div
+        className={place ? `${styles.plate} ${place}` : styles.plate}
+        style={x == null ? undefined : { left: x }}
+        data-plate={sealed.label}
+        data-sealed
+      >
+        {error ? (
+          <p className={`${styles.note} ${styles.noteError}`} role="alert">
+            {error}
+          </p>
+        ) : null}
+        <p className={styles.sealed} role="status">
+          <i style={{ background: sealed.colour }} aria-hidden="true" />
+          {sealed.label}
+        </p>
+      </div>
+    );
   return (
     <div
       className={place ? `${styles.plate} ${place}` : styles.plate}
       style={x == null ? undefined : { left: x }}
       data-plate={label}
     >
+      {error ? (
+        <p className={`${styles.note} ${styles.noteError}`} role="alert">
+          {error}
+        </p>
+      ) : note ? (
+        <p className={styles.note}>{note}</p>
+      ) : null}
       {clock && f !== null ? (
         <>
           <span

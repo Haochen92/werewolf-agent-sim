@@ -62,6 +62,7 @@ import type {
 import { Layer, Stage } from '../Stage';
 import { createFoldCache } from './fold-cache';
 import {
+  actSent,
   historyEnd as historyEndOf,
   historyLanding,
   initialLiveState,
@@ -120,8 +121,9 @@ function progressFor(
   beat: SceneBeat,
   pacing: Record<string, PacingBar>,
 ): TurnInput['progress'] {
-  const stage =
-    beat.scene === 'vote' ? 'day_vote' : beat.scene === 'night' ? 'night' : null;
+  // the night's count also reaches the seat's own room and the pack's, once their act is in
+  const night = beat.scene === 'night' || beat.scene === 'room' || beat.scene === 'pack';
+  const stage = beat.scene === 'vote' ? 'day_vote' : night ? 'night' : null;
   const bar = stage ? pacing[`${beat.day}:${stage}`] : undefined;
   return bar ? { n: bar.done, total: bar.total } : undefined;
 }
@@ -146,7 +148,8 @@ async function asSeat<T>(gameId: string, call: () => Promise<T>): Promise<T> {
 
 const failure = (err: unknown) => ({
   status: err instanceof ApiError ? err.status : 0,
-  message: err instanceof Error ? err.message : 'Something went wrong. Try again.',
+  // the server's own words for a refusal; a dropped connection gets plain ones
+  message: err instanceof ApiError ? err.message : 'Could not reach the table. Try again.',
 });
 
 export function LiveTheatre({
@@ -409,6 +412,8 @@ export function LiveTheatre({
   const turnInput: TurnInput | undefined = beat
     ? {
         clock: beat.liveOnly && beat.seq === pendingSeq ? clock : null,
+        // the night room's plate seals once its act is in, and reopens if the send failed
+        ...(beat.liveOnly && beat.seq === turn.seq ? actSent(turn) : {}),
         progress: progressFor(beat, pacing),
         agentSpoke,
         dock,

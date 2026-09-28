@@ -369,6 +369,22 @@ export function turnReducer(state: TurnState, action: TurnAction): TurnState {
   }
 }
 
+/**
+ * Where a night act or pack vote stands, for the plate: in (from here, or the seat's agent),
+ * refused as already answered (409), or open with the last send's failure to show.
+ */
+export function actSent(t: TurnState): {
+  sent: 'you' | 'agent' | 'closed' | null;
+  sendError: string | null;
+} {
+  if (t.sending) return { sent: 'you', sendError: null };
+  if (t.answered)
+    return t.error
+      ? { sent: 'closed', sendError: t.error }
+      : { sent: t.byAgent.includes(t.seq ?? -1) ? 'agent' : 'you', sendError: null };
+  return { sent: null, sendError: t.error };
+}
+
 // --- answering -------------------------------------------------------------------
 
 /** What a scene reports: a line, a seat (null = the act that names no one), or the agent. */
