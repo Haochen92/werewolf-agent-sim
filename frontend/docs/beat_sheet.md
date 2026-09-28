@@ -16,9 +16,10 @@ everyone after `game_over`). A beat marked S or F is also in the X-ray replay, s
 "Only seat n". *Stage*: what changes on the stage. *Slot*: what the drawer (D) or film (F) does;
 "—" = nothing new. *Hold*: the replay's wait at normal speed. *Bench*: the revision that drew it.
 
-**Holds** (H§5): shutter 3.0 s · a chip 2.0 s · a card read 2.6 s · the verdict 3.2 s · the vote's
-opening move 2.8 s · a plain held beat 2.0 s · **speech** = words ÷ 4 per second, floor 4 s, cap
-15 s, held while the pointer or a touch is on the speech; wolf messages the same. Live has no
+**Holds** (H§5): shutter 3.0 s · a chip 2.0 s · a card read 2.6 s · your own card at the deal
+6.0 s · your pack at the deal 4.0 s (ruled 2026-09-28) · the verdict 3.2 s · the vote's opening
+move 2.8 s · a plain held beat 2.0 s · **speech** = words ÷ 3 per second (ruled 2026-09-28, was
+4), floor 4 s, cap 15 s, held while the pointer or a touch is on the speech; wolf messages the same. Live has no
 holds: beats animate as events arrive (§12).
 
 **Live vs replay.** Live plays every beat its tier receives, in arrival order, with the queue
@@ -39,8 +40,8 @@ The first scene of a match. Nothing on the wire narrates it; every line is the c
 |---|---|---|---|---|---|---|
 | 1 | `deal.table-seated` | `game_started` (seq 1) | P | dining car at dawn, shutter up, room empty; nine chips come down from the flies in seat order as the seated table | D: nothing (no wire line) | 3.0 |
 | 2 | `deal.cards-dealt` | `game_started.cast_role_counts` | P | nine face-down cards come down on the same strings, one under each chip; the plate reads the cast counts | — | 3.0 |
-| 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action; the vigilante counts two caps; the card button appears | D: dashed "Only you" line | 2.6 |
-| 4 | `deal.your-pack` | my `role_assigned.pack` | F | the packmate's chip takes the red edge, its small card turns to the wolf; the pack chat opens with the client's game-master line and stays open for the night | D: the pack chat's opening line | 2.6 |
+| 3 | `deal.your-card` | my `role_assigned` (seq 2–10) | S | my card comes down large, centred, on its own string, and turns face up; the box: who I am, my night action; the vigilante counts two caps; the card button appears | D: dashed "Only you" line | 6.0 |
+| 4 | `deal.your-pack` | my `role_assigned.pack` | F | the packmate's chip takes the red edge, its small card turns to the wolf; the pack chat opens with the client's game-master line and stays open for the night | D: the pack chat's opening line | 4.0 |
 | 5 | `deal.face-up` | `roles_assigned` (seq 11) | X | all nine small cards turn at once; the wing takes its strips and badges | F: the deal listed | 2.6 |
 | 6 | `deal.day-begins` | `phase_change: day` (seq 12) | P | cards and chips go up, the paint goes to day, the stand returns with the first speaker. **Chapter mark: Day 1** | — | 3.0 |
 
@@ -573,8 +574,13 @@ Live has no transport. Beats animate as events arrive.
 - **The dock and the clock never wait for the stage.** When `input_request` arrives for me, the
   dock opens at once and the countdown runs on real time from `deadline`; beats queued between the
   stage and the request drain at fast speed so the stage catches up to the turn beat.
-- Anything queued more than one beat behind the stream drains at fast speed (the count and the
-  morning can fall behind; the live ballot drop cannot, it is paced by `phase_progress`).
+- A backlog of three or more beats behind the stream drains at fast speed; one or two queued
+  beats play at normal speed (ruled 2026-09-28, was "more than one"; the count and the morning can
+  fall behind; the live ballot drop cannot, it is paced by `phase_progress`).
+- **The deal always plays at normal speed (ruled 2026-09-28).** The game start lands as one burst
+  (`game_started`, `role_assigned`, the day's `phase_change`), so every `deal.` beat keeps normal
+  speed however much is queued behind it, and even with my prompt waiting (the dock still opens
+  at once; the deal beat on stage is not cut short).
 - On reconnect, history renders still at the latest state; the backlog is not played.
 - **The deal on first connection (ruled 2026-09-25):** a solo game starts before its page connects,
   so the deal is history by the time the seated human arrives. Exception to "arrive still": when
@@ -627,8 +633,8 @@ with the wall clock at 6·n/N hours. **The curtain:** "Watch the replay" → `/r
 to the lobby" → `/rooms` (links). The drawer opens by default as the replay's. "Reconnecting…"
 under the strip while the stream reconnects. **The deal on first connection:** a new game's
 deal is over before the page connects, so while the history holds no `turn_started` it plays from
-beat 0 at normal speed (the deal's beats keep normal speed even with news queued behind them,
-unless my prompt is waiting); the history counts as all in once news has come after it or it
+beat 0 at normal speed (the deal's beats keep normal speed even with news queued behind them or
+my prompt waiting, as news does too); the history counts as all in once news has come after it or it
 reaches the status's `last_seq` at connect, and until then the stage waits on "The table is being
 seated…" rather than land. **The reconnect boundary:** from the moment the stream drops until a
 fresh `GET /games/{id}` after it reopens, every event is catch-up, and after it anything up to

@@ -22,13 +22,15 @@ const HOLD = {
   shutter: 3000,
   chip: 2000,
   card: 2600,
+  yourCard: 6000,
+  yourPack: 4000,
   verdict: 3200,
   open: 2800,
   held: 2000,
   lid: 1500,
   pass: 4000,
 } as const;
-const WORDS_PER_SECOND = 4;
+const WORDS_PER_SECOND = 3;
 const SPEECH_FLOOR_MS = 4000;
 const SPEECH_CAP_MS = 15000;
 
@@ -36,7 +38,7 @@ function speechHold(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.min(
     SPEECH_CAP_MS,
-    Math.max(SPEECH_FLOOR_MS, (words / WORDS_PER_SECOND) * 1000),
+    Math.max(SPEECH_FLOOR_MS, Math.round((words / WORDS_PER_SECOND) * 1000)),
   );
 }
 
@@ -178,7 +180,7 @@ export function beatsFor(
           sees: 'seat',
           seat: e.player,
           subject: e.player,
-          holdMs: HOLD.card,
+          holdMs: HOLD.yourCard,
         });
         if (e.pack) {
           push({
@@ -188,7 +190,7 @@ export function beatsFor(
             end: next,
             sees: 'faction',
             seat: e.player,
-            holdMs: HOLD.card,
+            holdMs: HOLD.yourPack,
           });
         }
         break;

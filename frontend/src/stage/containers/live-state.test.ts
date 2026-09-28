@@ -174,14 +174,18 @@ describe('the live stage: history and news', () => {
       true,
     );
     expect(s.state.cursor.index).toBe(0);
-    // the hold runs out: the next beat plays, fast, because several are queued
+    // the hold runs out: the next beat plays; still the deal, so at normal speed
     s.held();
     expect(s.state.cursor).toEqual({ index: 1, animate: true });
-    expect(s.state.speed).toBe('fast');
+    expect(s.state.speed).toBe('normal');
     // a stale timer (an older step) does nothing
     const before = s.state;
     s.state = liveReducer(s.state, { type: 'held', step: s.state.step - 1, ctx: s.ctx });
     expect(s.state).toBe(before);
+    // past the deal, a backlog of three or more drains fast
+    while (s.beat.id.startsWith('deal.')) s.held();
+    expect(s.state.beats.length - 1 - s.state.cursor.index).toBeGreaterThanOrEqual(2);
+    expect(s.state.speed).toBe('fast');
     // drain to the end: the last queued beat plays at normal speed
     while (s.state.cursor.index < s.state.beats.length - 1) s.held();
     expect(s.state.speed).toBe('normal');
@@ -258,10 +262,10 @@ describe('the live stage: the deal on first connection, and a reconnect', () => 
       'deal.day-begins',
     ]);
     expect(s.beat.id).toBe('day.turn-thinking');
-    // without the deal's rule (no connection reported), news that queued drains fast
+    // without the deal's rule (no connection reported), the deal still keeps its pace
     const q = new Session().arrive(deal, true);
     q.held();
-    expect(q.state.speed).toBe('fast');
+    expect(q.state.speed).toBe('normal');
   });
 
   it('a history that holds a turn lands still, as before', () => {

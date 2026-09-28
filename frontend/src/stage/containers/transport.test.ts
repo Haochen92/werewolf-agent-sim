@@ -78,11 +78,30 @@ describe('the live queue', () => {
   const live = beatsFor(events, { xray: false, me: 'player_7', live: true });
   const ctx = { me: 'player_7', rolesLanded: false };
 
-  it('plays one queued beat at normal speed and a backlog at fast', () => {
+  it('plays one or two queued beats at normal speed and a backlog of three at fast', () => {
     const last = live.length - 1;
     expect(nextLiveStep(live, last - 1, ctx)).toEqual({ index: last, speed: 'normal' });
+    expect(nextLiveStep(live, last - 2, ctx)).toEqual({ index: last - 1, speed: 'normal' });
+    expect(nextLiveStep(live, last - 3, ctx)).toEqual({ index: last - 2, speed: 'fast' });
     expect(nextLiveStep(live, last - 5, ctx)).toEqual({ index: last - 4, speed: 'fast' });
     expect(nextLiveStep(live, last, ctx)).toBeNull();
+  });
+
+  it('plays the deal at normal speed even behind a backlog or a pending prompt', () => {
+    const card = live.findIndex((b) => b.id === 'deal.your-card');
+    expect(card).toBeGreaterThan(0);
+    expect(live.length - 1 - (card - 1)).toBeGreaterThanOrEqual(3);
+    expect(nextLiveStep(live, card - 1, ctx)).toEqual({ index: card, speed: 'normal' });
+    const prompt = {
+      ...live[card],
+      id: 'day.your-turn' as const,
+      liveOnly: true,
+      sees: 'seat' as const,
+      seat: 'player_7',
+      holdMs: 0,
+    };
+    const staged = [...live.slice(0, card + 2), prompt, ...live.slice(card + 2)];
+    expect(nextLiveStep(staged, card - 1, ctx)).toEqual({ index: card, speed: 'normal' });
   });
 
   it('holds the winners’ stand until the roles have landed', () => {

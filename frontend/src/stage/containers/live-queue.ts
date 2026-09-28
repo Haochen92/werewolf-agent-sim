@@ -3,15 +3,20 @@
  * play as events arrive, and the only question is how fast to play the ones the stage has not
  * shown yet. The rules, in order:
  *
+ * - The deal always plays at normal speed. The game start lands as one burst, and the deal is
+ *   the viewer's first look at their card, so it is never hurried.
  * - The dock never waits for the stage. If a prompt for the seated human is in the queue, the
  *   beats before it drain at fast speed so the stage catches up to the turn.
- * - Anything queued more than one beat behind the stream drains at fast speed; a single queued
- *   beat plays at normal speed.
+ * - A backlog of three or more beats drains at fast speed; one or two queued beats play at
+ *   normal speed.
  * - The winners' stand needs the roles, which arrive in the backlog after `game_over`, so that
  *   beat waits until they have landed. The verdict covers the wait.
  * - A catch-up (refresh, reconnect) shows the latest beat still and plays nothing.
  */
 import type { SceneBeat } from '@/stage/beats/types';
+
+/** Queued beats at which the backlog drains at fast speed. */
+const FAST_BACKLOG = 3;
 
 export interface LiveStep {
   index: number;
@@ -43,7 +48,9 @@ export function nextLiveStep(
     (b, i) => i > shown && b.liveOnly === true && b.seat === ctx.me,
   );
   const behind = beats.length - 1 - shown;
-  const fast = (prompt !== -1 && prompt > next) || behind > 1;
+  const fast =
+    !beat.id.startsWith('deal.') &&
+    ((prompt !== -1 && prompt > next) || behind >= FAST_BACKLOG);
   return { index: next, speed: fast ? 'fast' : 'normal' };
 }
 

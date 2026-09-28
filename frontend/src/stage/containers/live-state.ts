@@ -13,11 +13,13 @@
  *   beat at normal speed, instead of landing on "the day begins". A deal that arrives as news
  *   (the page watched the waiting room depart) keeps the same pace.
  * - News plays. Each new beat animates in and holds for its time, then the next one plays; when
- *   more than one is waiting they go at fast speed (live-queue.ts decides which and how fast).
+ *   three or more are waiting they go at fast speed (live-queue.ts decides which and how fast).
+ *   The deal always plays at normal speed.
  * - A beat that waits for someone holds the stage until the wait is over: a prompt until it is
  *   answered (or gone), the epilogue until its sheet is closed, the curtain for good.
  * - The dock never waits for the stage. When the seated human's prompt is open further down the
- *   queue, the beat on the stage is cut short once and the rest drain fast up to it.
+ *   queue, the beat on the stage is cut short once (unless it is the deal) and the rest drain
+ *   fast up to it.
  * - The winners' stand waits for the roles, which arrive just after `game_over`.
  *
  * The beat list is cut again every time the log grows (and when `game_over` turns the X-ray
@@ -192,10 +194,15 @@ function play(state: LiveState, index: number, speed: 'normal' | 'fast'): LiveSt
 /** Move on if the beat on the stage has had its moment and nothing it waits for is pending. */
 function advance(state: LiveState, ctx: LiveCtx): LiveState {
   // the dock never waits for the stage: cut the beat on the stage short, once per prompt
-  if (state.holding && promptAhead(state, ctx) && state.hurried !== ctx.openPrompt)
+  const current = state.beats[state.cursor.index];
+  if (
+    state.holding &&
+    promptAhead(state, ctx) &&
+    state.hurried !== ctx.openPrompt &&
+    !current?.id.startsWith('deal.')
+  )
     state = { ...state, holding: false, hurried: ctx.openPrompt };
   if (state.holding) return state;
-  const current = state.beats[state.cursor.index];
   if (current && waitsHere(current, ctx)) return state;
   const next = nextLiveStep(state.beats, state.cursor.index, ctx);
   if (!next) return state;

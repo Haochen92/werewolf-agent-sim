@@ -36,13 +36,13 @@
  35  morning.chip-fell        d2 seq156 end156  public →player_4  2000ms
  36  morning.card-down        d2 seq156 end156  public →player_4  2600ms
  37  morning.day-begins       d3 seq159 end159  public  3000ms  [day 3]
- 38  day.speech               d3 seq163 end163  public →player_2  11250ms
- 39  day.speech               d3 seq169 end169  public →player_1  12750ms
- 40  day.speech               d3 seq176 end176  public →player_8  6250ms
+ 38  day.speech               d3 seq163 end163  public →player_2  15000ms
+ 39  day.speech               d3 seq169 end169  public →player_1  15000ms
+ 40  day.speech               d3 seq176 end176  public →player_8  8333ms
  41  day.pass                 d3 seq180 end185  public →player_7  4000ms
  42  day.pass                 d3 seq186 end191  public →player_9  4000ms
- 43  day.speech               d3 seq195 end195  public →player_5  11750ms
- 44  day.speech               d3 seq200 end200  public →player_8  6750ms
+ 43  day.speech               d3 seq195 end195  public →player_5  15000ms
+ 44  day.speech               d3 seq200 end200  public →player_8  9000ms
  45  day.pass                 d3 seq204 end209  public →player_6  4000ms
  46  day.pass                 d3 seq210 end213  public →player_2  4000ms
  47  day.pass                 d3 seq214 end219  public →player_1  4000ms
@@ -71,22 +71,22 @@
  70  morning.chip-fell        d3 seq270 end270  public →player_5  2000ms
  71  morning.card-down        d3 seq270 end270  public →player_5  2600ms
  72  morning.day-begins       d4 seq274 end274  public  3000ms  [day 4]
- 73  day.speech               d4 seq278 end278  public →player_7  5250ms
- 74  day.speech               d4 seq284 end284  public →player_2  8500ms
- 75  day.speech               d4 seq291 end291  public →player_8  11000ms
- 76  day.speech               d4 seq296 end296  public →player_2  9750ms
- 77  day.speech               d4 seq303 end303  public →player_1  9250ms
- 78  day.speech               d4 seq310 end310  public →player_9  11000ms
- 79  day.speech               d4 seq315 end315  public →player_7  14750ms
- 80  day.speech               d4 seq320 end320  public →player_9  9250ms
- 81  day.speech               d4 seq325 end325  public →player_7  7250ms
- 82  day.speech               d4 seq329 end329  public →player_9  8000ms
- 83  day.speech               d4 seq333 end333  public →player_8  14750ms
- 84  day.speech               d4 seq337 end337  public →player_2  12250ms
+ 73  day.speech               d4 seq278 end278  public →player_7  7000ms
+ 74  day.speech               d4 seq284 end284  public →player_2  11333ms
+ 75  day.speech               d4 seq291 end291  public →player_8  14667ms
+ 76  day.speech               d4 seq296 end296  public →player_2  13000ms
+ 77  day.speech               d4 seq303 end303  public →player_1  12333ms
+ 78  day.speech               d4 seq310 end310  public →player_9  14667ms
+ 79  day.speech               d4 seq315 end315  public →player_7  15000ms
+ 80  day.speech               d4 seq320 end320  public →player_9  12333ms
+ 81  day.speech               d4 seq325 end325  public →player_7  9667ms
+ 82  day.speech               d4 seq329 end329  public →player_9  10667ms
+ 83  day.speech               d4 seq333 end333  public →player_8  15000ms
+ 84  day.speech               d4 seq337 end337  public →player_2  15000ms
  85  day.pass                 d4 seq341 end344  public →player_1  4000ms
- 86  day.speech               d4 seq346 end346  public →player_7  9500ms
- 87  day.speech               d4 seq351 end351  public →player_2  11250ms
- 88  day.speech               d4 seq356 end356  public →player_7  9000ms
+ 86  day.speech               d4 seq346 end346  public →player_7  12667ms
+ 87  day.speech               d4 seq351 end351  public →player_2  15000ms
+ 88  day.speech               d4 seq356 end356  public →player_7  12000ms
  89  vote.opens               d4 seq362 end362  public  2800ms  [vote 4]
  90  vote.ballots-drop        d4 seq378 end382  public  2000ms
  91  vote.closes              d4 seq378 end382  public  1500ms

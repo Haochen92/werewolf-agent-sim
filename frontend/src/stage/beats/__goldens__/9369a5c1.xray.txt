@@ -9,10 +9,10 @@
   8  rnight.spoke             d1 seq 36 end 57  xray →player_1 spoke player_4 r0 1/1  2000ms
   9  rnight.spoke             d1 seq 39 end 57  xray →player_1 spoke player_2 r1 1/1  2000ms
  10  rnight.spoke             d1 seq 44 end 57  xray →player_1 spoke player_9 r2 1/1  2000ms
- 11  rnight.spoke             d1 seq 33 end 57  xray →pack spoke pack r3 1/5  7000ms
- 12  rnight.spoke             d1 seq 46 end 57  xray →pack spoke pack r3 2/5  7250ms
- 13  rnight.spoke             d1 seq 48 end 57  xray →pack spoke pack r3 3/5  7000ms
- 14  rnight.spoke             d1 seq 50 end 57  xray →pack spoke pack r3 4/5  5250ms
+ 11  rnight.spoke             d1 seq 33 end 57  xray →pack spoke pack r3 1/5  9333ms
+ 12  rnight.spoke             d1 seq 46 end 57  xray →pack spoke pack r3 2/5  9667ms
+ 13  rnight.spoke             d1 seq 48 end 57  xray →pack spoke pack r3 3/5  9333ms
+ 14  rnight.spoke             d1 seq 50 end 57  xray →pack spoke pack r3 4/5  7000ms
  15  rnight.spoke             d1 seq 56 end 57  xray →player_1 spoke pack r3 5/5  2000ms
  16  rnight.whole             d1 seq 58 end 57  xray  3000ms
  17  morning.shutter-down     d1 seq 58 end 58  public  3000ms  [morning 1]
@@ -43,10 +43,10 @@
  42  rnight.spoke             d2 seq126 end155  xray →player_2 spoke player_4 r0 1/1  2000ms
  43  rnight.spoke             d2 seq130 end155  xray →player_1 spoke player_9 r1 1/1  2000ms
  44  rnight.spoke             d2 seq137 end155  xray →player_3 spoke player_2 r2 1/1  2000ms
- 45  rnight.spoke             d2 seq122 end155  xray →pack spoke pack r3 1/5  9000ms
- 46  rnight.spoke             d2 seq140 end155  xray →pack spoke pack r3 2/5  7750ms
- 47  rnight.spoke             d2 seq143 end155  xray →pack spoke pack r3 3/5  5500ms
- 48  rnight.spoke             d2 seq146 end155  xray →pack spoke pack r3 4/5  5000ms
+ 45  rnight.spoke             d2 seq122 end155  xray →pack spoke pack r3 1/5  12000ms
+ 46  rnight.spoke             d2 seq140 end155  xray →pack spoke pack r3 2/5  10333ms
+ 47  rnight.spoke             d2 seq143 end155  xray →pack spoke pack r3 3/5  7333ms
+ 48  rnight.spoke             d2 seq146 end155  xray →pack spoke pack r3 4/5  6667ms
  49  rnight.spoke             d2 seq154 end155  xray →player_4 spoke pack r3 5/5  2000ms
  50  rnight.whole             d2 seq156 end155  xray  3000ms
  51  morning.shutter-down     d2 seq156 end156  public  3000ms  [morning 2]
@@ -58,13 +58,13 @@
  57  morning.card-down        d2 seq156 end156  public →player_4  2600ms
  58  morning.carried-summary  d2 seq 80 end158  xray  3200ms
  59  morning.day-begins       d3 seq159 end159  public  3000ms  [day 3]
- 60  day.speech               d3 seq163 end163  public →player_2  11250ms
- 61  day.speech               d3 seq169 end169  public →player_1  12750ms
- 62  day.speech               d3 seq176 end176  public →player_8  6250ms
+ 60  day.speech               d3 seq163 end163  public →player_2  15000ms
+ 61  day.speech               d3 seq169 end169  public →player_1  15000ms
+ 62  day.speech               d3 seq176 end176  public →player_8  8333ms
  63  day.pass                 d3 seq183 end183  xray →player_7  4000ms
  64  day.pass                 d3 seq189 end189  xray →player_9  4000ms
- 65  day.speech               d3 seq195 end195  public →player_5  11750ms
- 66  day.speech               d3 seq200 end200  public →player_8  6750ms
+ 65  day.speech               d3 seq195 end195  public →player_5  15000ms
+ 66  day.speech               d3 seq200 end200  public →player_8  9000ms
  67  day.pass                 d3 seq207 end207  xray →player_6  4000ms
  68  day.pass                 d3 seq211 end211  xray →player_2  4000ms
  69  day.pass                 d3 seq215 end215  xray →player_1  4000ms
@@ -99,22 +99,22 @@
  98  morning.only-you         d3 seq271 end271  faction  2600ms
  99  morning.carried-summary  d3 seq219 end273  xray  3200ms
 100  morning.day-begins       d4 seq274 end274  public  3000ms  [day 4]
-101  day.speech               d4 seq278 end278  public →player_7  5250ms
-102  day.speech               d4 seq284 end284  public →player_2  8500ms
-103  day.speech               d4 seq291 end291  public →player_8  11000ms
-104  day.speech               d4 seq296 end296  public →player_2  9750ms
-105  day.speech               d4 seq303 end303  public →player_1  9250ms
-106  day.speech               d4 seq310 end310  public →player_9  11000ms
-107  day.speech               d4 seq315 end315  public →player_7  14750ms
-108  day.speech               d4 seq320 end320  public →player_9  9250ms
-109  day.speech               d4 seq325 end325  public →player_7  7250ms
-110  day.speech               d4 seq329 end329  public →player_9  8000ms
-111  day.speech               d4 seq333 end333  public →player_8  14750ms
-112  day.speech               d4 seq337 end337  public →player_2  12250ms
+101  day.speech               d4 seq278 end278  public →player_7  7000ms
+102  day.speech               d4 seq284 end284  public →player_2  11333ms
+103  day.speech               d4 seq291 end291  public →player_8  14667ms
+104  day.speech               d4 seq296 end296  public →player_2  13000ms
+105  day.speech               d4 seq303 end303  public →player_1  12333ms
+106  day.speech               d4 seq310 end310  public →player_9  14667ms
+107  day.speech               d4 seq315 end315  public →player_7  15000ms
+108  day.speech               d4 seq320 end320  public →player_9  12333ms
+109  day.speech               d4 seq325 end325  public →player_7  9667ms
+110  day.speech               d4 seq329 end329  public →player_9  10667ms
+111  day.speech               d4 seq333 end333  public →player_8  15000ms
+112  day.speech               d4 seq337 end337  public →player_2  15000ms
 113  day.pass                 d4 seq342 end342  xray →player_1  4000ms
-114  day.speech               d4 seq346 end346  public →player_7  9500ms
-115  day.speech               d4 seq351 end351  public →player_2  11250ms
-116  day.speech               d4 seq356 end356  public →player_7  9000ms
+114  day.speech               d4 seq346 end346  public →player_7  12667ms
+115  day.speech               d4 seq351 end351  public →player_2  15000ms
+116  day.speech               d4 seq356 end356  public →player_7  12000ms
 117  vote.opens               d4 seq362 end362  public  2800ms  [vote 4]
 118  vote.ballots-drop        d4 seq378 end382  public  2000ms
 119  vote.closes              d4 seq378 end382  public  1500ms
