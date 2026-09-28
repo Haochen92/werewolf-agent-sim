@@ -69,21 +69,23 @@
   background: rgba(176, 138, 74, 0.7);
 }
 
-/* the marquee: the "now showing" board under the eaves, one dark piece with the roof */
+/* the marquee: the "now showing" board under the eaves, one dark piece with the roof. Its brass
+   hairline is the stage's own side line carried up and round, so sign and stage read as one
+   framed window; a second, fainter line inside it holds the bulbs. */
 .marquee {
   position: relative;
-  padding: 17px 18px 15px;
+  padding: 24px 26px 22px;
   background: linear-gradient(180deg, #1b130b, #0e0905);
-  border-bottom: 1px solid #4d3824;
   box-shadow:
-    inset 0 0 0 3px #0c0805,
-    inset 0 0 0 4px rgba(176, 138, 74, 0.5);
+    inset 0 0 0 1px rgba(176, 138, 74, 0.45),
+    inset 0 0 0 5px #0c0805,
+    inset 0 0 0 6px rgba(176, 138, 74, 0.18);
 }
 .bulbs {
   position: absolute;
-  left: 14px;
-  right: 14px;
-  top: 6px;
+  left: 16px;
+  right: 16px;
+  top: 9px;
   height: 6px;
   pointer-events: none;
   background: radial-gradient(
@@ -96,40 +98,94 @@
 }
 .bulbsLow {
   top: auto;
-  bottom: 4px;
+  bottom: 9px;
 }
-.mqRow {
-  display: flex;
+/* the label over the title, the plates under it; the way to the whole game in a column of its
+   own at the right, level with the title */
+.mqBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 14px;
+  column-gap: 24px;
 }
 .nowShowing {
+  grid-column: 1;
   font: 600 11px/1 var(--font-sans);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--amber);
   text-shadow: 0 0 8px rgba(224, 166, 58, 0.65);
 }
+.mqTitle {
+  grid-column: 1;
+  margin-top: 7px;
+  font: 700 20px/1.15 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f6ecd6;
+  text-shadow: 0 0 12px rgba(255, 220, 160, 0.25);
+}
+/* a lit sign's button: amber letters on the board, ruled in amber, not the page's filled pill */
+.mqAct {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(224, 166, 58, 0.6);
+  border-radius: 6px;
+  background: rgba(224, 166, 58, 0.07);
+  color: var(--amber);
+  font: 600 14px/1 var(--font-sans);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease;
+}
+.mqAct:hover {
+  background: rgba(224, 166, 58, 0.16);
+  border-color: var(--amber);
+  color: #f0b94a;
+}
+.mqAct:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+.short {
+  display: none;
+}
+/* the facts as small brass plates, the platform's ledge brass a shade older: the marquee is a
+   fitting of the car, like the Departures plate, not something handed to you (that is paper) */
 .tiles {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
+  gap: 8px;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
 }
 .tile {
-  padding: 5px 8px 4px;
-  border-radius: 2px;
-  background: var(--bone);
-  color: var(--ink);
-  font: 600 11.5px/1 var(--font-sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  flex: none;
+  padding: 5px 11px 6px;
+  border-radius: 4px;
+  background: linear-gradient(#dcb86a, #ad8540 50%, #86632b);
+  color: #2a1a08;
+  font: 400 15px/1 var(--font-serif);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.45);
   box-shadow:
-    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
-    0 1px 0 rgba(0, 0, 0, 0.6);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 0 rgba(0, 0, 0, 0.22),
+    0 1.5px 0 #4a3210,
+    0 3px 6px rgba(0, 0, 0, 0.45);
 }
 
 /* the stage's window: 16:9, the theatre fills it exactly (no bars, no bleed shown) */
@@ -138,9 +194,8 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #0c0a07;
-  border-left: 1px solid rgba(176, 138, 74, 0.45);
-  border-right: 1px solid rgba(176, 138, 74, 0.45);
-  border-bottom: 1px solid #4d3824;
+  border: 1px solid rgba(176, 138, 74, 0.45);
+  border-top: 0;
   box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
 }
 .screen > [data-beat-index] {
@@ -157,20 +212,6 @@
   color: var(--muted);
   font-size: 15px;
   text-align: center;
-}
-
-/* an upright phone: the stage rests as a poster, and the way in sits over it */
-.poster {
-  display: none;
-}
-@media (max-width: 699.98px) {
-  .poster {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background: radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0.55), transparent 70%);
-  }
 }
 
 /* under the car: the bogies and the rails */
@@ -220,35 +261,67 @@
   background-repeat: no-repeat, repeat-x;
 }
 
-.caption {
-  margin: 0;
-  text-align: center;
-  font-size: 15px;
-}
-.caption a {
-  color: var(--muted);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--town) 42%, transparent);
-  padding-bottom: 2px;
-  transition:
-    color 0.16s ease,
-    border-color 0.16s ease;
-}
-.caption a:hover {
-  color: var(--town);
-  border-color: var(--town);
+/* a narrow screen short of a phone: the date's plate would sit on a line of its own */
+@media (max-width: 960px) {
+  .tile:nth-child(n + 6) {
+    display: none;
+  }
 }
 
 @media (max-width: 700px) {
+  /* inside the column: the landing clips at its edge (so the rails never scroll it sideways),
+     and a carriage reaching past it lost its walnut sides there */
   .carriage {
-    padding: 0 9px 22px;
-    margin: 38px -10px 46px;
+    padding: 0 12px 22px;
+    margin: 38px 0 46px;
   }
   .carriage::before {
-    left: 4px;
-    right: 4px;
+    left: 5px;
+    right: 5px;
     bottom: 5px;
     border-width: 1.5px;
+  }
+  /* the label with the way in beside it, the title the whole width under them, two plates
+     under that (the model and the memory; the rest are on the replay's own page) */
+  .mqBody {
+    column-gap: 12px;
+  }
+  .nowShowing {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+  .mqTitle {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mqAct {
+    grid-row: 1;
+    align-self: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 11px;
+    font-size: 12.5px;
+  }
+  .long {
+    display: none;
+  }
+  .short {
+    display: inline;
+  }
+  .tiles {
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .tile {
+    padding: 4px 9px 5px;
+    font-size: 14px;
+  }
+  .tile:nth-child(n + 3) {
+    display: none;
   }
   .carriage::after {
     left: 12px;
@@ -259,11 +332,20 @@
   .roof {
     top: -16px;
     height: 18px;
-    left: -4px;
-    right: -4px;
+    left: 0;
+    right: 0;
   }
   .marquee {
-    padding: 14px 12px 12px;
+    padding: 20px 14px 19px;
+  }
+  .bulbs {
+    left: 10px;
+    right: 10px;
+    top: 7px;
+  }
+  .bulbsLow {
+    top: auto;
+    bottom: 7px;
   }
   .chassis {
     bottom: -46px;
@@ -275,8 +357,5 @@
   .rails {
     left: -16px;
     right: -16px;
-  }
-  .caption {
-    font-size: 14px;
   }
 }

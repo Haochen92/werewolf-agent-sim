@@ -507,8 +507,8 @@ for (const [name, viewport] of [
 /**
  * The landing (`/`) over mocked `GET /replays/{featured}` (the bundled fixture), `GET /replays`
  * (the latest games and the archive's total), `GET /rooms` (two tables boarding) and
- * `GET /models`. The carriage is the replay theatre in its mini mode: the stage without its
- * HUD, playing day 3's vote on a loop; on an upright phone it rests with a way into the replay.
+ * `GET /models`. The carriage is the replay theatre in its mini mode, playing day 3's vote on
+ * a loop with the replay's own controls; on an upright phone they sit under the stage.
  */
 const FIXTURE_BODY = readFileSync(
   join(__dirname, '../src/stage/fixtures/replay-9369a5c1.json'),
@@ -545,18 +545,19 @@ async function openLanding(page: Page, query = '') {
 const carriage = (page: Page) => page.locator('[data-frame="carriage"]');
 const mini = (page: Page) => carriage(page).locator('[data-mini]');
 
-test('landing: the carriage plays day 3 of the featured game, with no HUD', async ({
+test('landing: the carriage plays day 3 of the featured game, with the replay’s controls', async ({
   page,
 }) => {
+  test.slow(); // it presses through the band, and each press redraws the stage
   await page.setViewportSize({ width: 1440, height: 900 });
   await openLanding(page);
 
-  // the stage is drawn in the frame, without its wing, strip, slot or transport
+  // the stage is drawn in the frame with its wing, strip and band
   await expect(carriage(page).locator('[data-layer="paint"]').first()).toBeAttached();
-  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(0);
-  await expect(carriage(page).getByRole('button', { name: 'X-ray' })).toHaveCount(0);
-  await expect(carriage(page).locator('[data-transport]')).toHaveCount(0);
-  await expect(carriage(page).locator('[data-drawer]')).toHaveCount(0);
+  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(9);
+  await expect(carriage(page).locator('[data-transport]')).toBeVisible();
+  // no way back to the replay list from inside the landing: the marquee links the game
+  await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
   // it starts on day 3's vote and plays (the window is 48..66 of the public cut)
   await carriage(page).scrollIntoViewIfNeeded();
@@ -566,16 +567,34 @@ test('landing: the carriage plays day 3 of the featured game, with no HUD', asyn
   expect(at).toBeGreaterThan(48);
   expect(at).toBeLessThanOrEqual(66);
 
-  // the caption names the game and goes to it whole
-  const caption = page.getByRole('link', {
-    name: /Day 3 of game 9369A5C · watch it whole/,
-  });
-  await expect(caption).toHaveAttribute('href', `/replays/${GAME}`);
-  // the marquee's tiles say the game's facts, the model by its display name
+  // the band sees the window only, and its buttons stay in it
+  const band = carriage(page).locator('[data-transport]');
+  await band.getByRole('button', { name: 'Pause' }).click();
+  await expect(mini(page)).toHaveAttribute('data-playing', 'false');
+  await expect(band.getByRole('slider', { name: 'Seek' })).toHaveAttribute(
+    'aria-valuemax',
+    '19',
+  );
+  await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+  await band.getByRole('button', { name: 'Back a beat' }).click();
+  await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
+
+  // the X-ray brings its film beside the stage, the drawer the transcript
+  await carriage(page).getByRole('button', { name: 'X-ray', exact: true }).click();
+  await expect(
+    carriage(page).getByRole('complementary', { name: 'X-ray film' }),
+  ).toBeVisible();
+  await carriage(page).getByRole('button', { name: 'Transcript' }).click();
+  await expect(carriage(page).locator('[data-drawer]')).toBeVisible();
+
+  // the marquee names the game, goes to it whole, and says its facts
+  await expect(carriage(page)).toContainText('Day 3 of game 9369A5C');
+  await expect(
+    carriage(page).getByRole('link', { name: 'Watch the whole game' }),
+  ).toHaveAttribute('href', `/replays/${GAME}`);
   await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
   await expect(carriage(page)).toContainText('Wolves won');
-  // on a wide screen the phone's poster button is not shown
-  await expect(carriage(page).getByRole('link', { name: 'Watch the replay' })).toBeHidden();
 
   // the doors, the rooms boarding, the latest games and the archive's count in the footer
   await expect(page.getByRole('link', { name: /Play solo/ }).first()).toHaveAttribute(
@@ -589,18 +608,44 @@ test('landing: the carriage plays day 3 of the featured game, with no HUD', asyn
   await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
 });
 
-test('landing: on an upright phone the carriage rests, with a way into the replay', async ({
+test('landing: on an upright phone the controls sit under the stage, at reading size', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openLanding(page);
   await carriage(page).scrollIntoViewIfNeeded();
+  // nothing on the stage itself: its words would be a quarter size
+  await expect(carriage(page).locator('[data-transport]')).toHaveCount(0);
+  await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(0);
+  await expect(mini(page)).toHaveAttribute('data-playing', 'true');
+
+  // the bar: pause, and a pip per beat of the window
+  await carriage(page).getByRole('button', { name: 'Pause' }).click();
   await expect(mini(page)).toHaveAttribute('data-playing', 'false');
+  const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
+  await expect(pips).toHaveCount(19);
+  await pips.nth(0).click();
   await expect(mini(page)).toHaveAttribute('data-beat-index', '48');
-  const watch = carriage(page).getByRole('link', { name: 'Watch the replay' });
-  await expect(watch).toBeVisible();
-  await expect(watch).toHaveAttribute('href', `/replays/${GAME}`);
-  await expect(page.getByText('Day 3 of game 9369A5C · watch it whole →')).toBeVisible();
+
+  // the transcript is the drawer's own lines: the day's talk, the vote's line not yet
+  const lines = carriage(page).getByLabel('Transcript', { exact: true });
+  await expect(lines).toContainText('Seat 8');
+  await expect(lines).not.toContainText('The table votes');
+  // and the vote's line arrives with the result
+  await pips.nth(18).click();
+  await expect(lines).toContainText('The table votes');
+
+  // the X-ray swaps the pane for the stage's own film
+  await carriage(page).getByRole('button', { name: 'X-ray', exact: true }).click();
+  await expect(
+    carriage(page).getByRole('complementary', { name: 'X-ray film' }),
+  ).toBeVisible();
+  await expect(carriage(page).getByRole('link', { name: 'Whole game' })).toHaveAttribute(
+    'href',
+    `/replays/${GAME}`,
+  );
+  // nothing reaches past the phone's edge
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
 
 for (const [name, viewport] of [

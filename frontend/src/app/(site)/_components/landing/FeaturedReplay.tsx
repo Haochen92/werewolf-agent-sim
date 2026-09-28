@@ -2,24 +2,33 @@
 
 /**
  * The carriage on the landing (review §F7, B17): a game from the archive playing in the dining
- * car's own walnut and brass, under a marquee that says what is showing. It is the replay
- * theatre itself in its mini mode (no HUD, no slot, no transport), playing one window of the
- * public cut round and round: day 3's vote through the lynched seat's card going to the wing
- * (`featuredWindow`). No second engine.
+ * car's own walnut and brass, under a marquee that says what is showing and links the whole
+ * game. It is the replay theatre itself in its mini mode, playing one window round and round:
+ * day 3's vote through the lynched seat's card going to the wing (`featuredWindow`). No
+ * second engine.
+ *
+ * The controls are the replay's own (owner, 2026-09-27; the mockup's featured mode): on a
+ * screen at least 700px wide the strip's X-ray and Transcript, the side slot and the band sit
+ * on the stage, the band over the window only; on an upright phone, where the stage is a
+ * quarter of its size, they sit under it at reading size (`CarriageUnder`).
  *
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
- * instead, with its own window. It plays only while it is on screen and the window is at
- * least 700px wide. On an upright phone (the stage would be a quarter of its size) it rests on
- * the window's first beat as a poster, with a way into the whole replay; so does it for a
- * viewer who asked for reduced motion, and with `?still=1` (the goldens).
+ * instead, with its own window. It plays while it is on screen; it rests on the window's first
+ * beat for a viewer who asked for reduced motion, and with `?still=1` (the goldens).
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { SPRITES } from '@/assets/manifest';
-import { Button } from '@/components/site';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
 import { featuredWindow } from '@/lib/featured-window';
@@ -28,10 +37,11 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
 import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
-import { ReplayTheatre } from '@/stage/containers/ReplayTheatre';
+import { ReplayTheatre, type MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
 import type { DurableGameEvent, ReplayGame, Winner } from '@/types/contracts';
 import classes from './Carriage.module.css';
+import { CarriageUnder } from './CarriageUnder';
 
 const WON: Record<Winner, string> = {
   villagers: 'Villagers won',
@@ -39,7 +49,7 @@ const WON: Record<Winner, string> = {
   serial_killer: 'Serial killer won',
 };
 
-/** The marquee's tiles: the game's facts, as the archive's slates say them. */
+/** The marquee's tiles: the game's facts, as the archive's slates say them. A phone shows the first two. */
 function tilesOf(game: ReplayGame, modelName: (id: string) => string): string[] {
   const humans = game.n_humans;
   return [
@@ -137,6 +147,8 @@ export function FeaturedReplay() {
   const modelName = useModelLabels();
   const wide = useMediaQuery('(min-width: 700px)');
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
+  const [underEl, setUnderEl] = useState<HTMLDivElement | null>(null);
+  const under = useCallback((u: MiniUnder) => <CarriageUnder {...u} />, []);
 
   const events = game?.events as readonly DurableGameEvent[] | undefined;
   const cut = useMemo(
@@ -150,7 +162,7 @@ export function FeaturedReplay() {
   const what = cut?.day != null ? `Day ${cut.day}` : 'The opening';
 
   return (
-    <figure className={classes.figure}>
+    <figure className={classes.figure} aria-label="A game from the archive, playing">
       <div
         className={classes.carriage}
         data-frame="carriage"
@@ -159,16 +171,26 @@ export function FeaturedReplay() {
         <span className={classes.roof} aria-hidden="true" />
         <div className={classes.marquee}>
           <span className={classes.bulbs} aria-hidden="true" />
-          <div className={classes.mqRow}>
+          <div className={classes.mqBody}>
             <span className={classes.nowShowing}>Now showing</span>
             {game ? (
-              <ul className={classes.tiles} aria-label="About this game">
-                {tilesOf(game, modelName).map((t) => (
-                  <li key={t} className={classes.tile}>
-                    {t}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <span className={classes.mqTitle}>
+                  {what} of game {record}
+                </span>
+                <Link href={href} className={classes.mqAct}>
+                  <span className={classes.long}>Watch the whole game</span>
+                  <span className={classes.short}>Whole game</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </Link>
+                <ul className={classes.tiles} aria-label="About this game">
+                  {tilesOf(game, modelName).map((t) => (
+                    <li key={t} className={classes.tile}>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </>
             ) : null}
           </div>
           <span className={`${classes.bulbs} ${classes.bulbsLow}`} aria-hidden="true" />
@@ -181,7 +203,10 @@ export function FeaturedReplay() {
               mini={{
                 from: cut.from,
                 to: cut.to,
-                autoplay: wide && onScreen && !still,
+                autoplay: onScreen && !still,
+                controls: wide ? 'stage' : 'under',
+                under,
+                underEl,
               }}
             />
           ) : (
@@ -189,27 +214,14 @@ export function FeaturedReplay() {
               {failed ? 'The archive is resting; the replays are a click away.' : ' '}
             </p>
           )}
-          {game ? (
-            <div className={classes.poster}>
-              <Button component={Link} href={href} variant="primary" size="md">
-                Watch the replay
-              </Button>
-            </div>
-          ) : null}
         </div>
+        {wide ? null : <div ref={setUnderEl} className={stageFonts} />}
         <span className={classes.chassis} aria-hidden="true">
           <Bogie className={`${classes.bogie} ${classes.bogieL}`} />
           <Bogie className={`${classes.bogie} ${classes.bogieR}`} />
           <span className={classes.rails} />
         </span>
       </div>
-      {game ? (
-        <figcaption className={classes.caption}>
-          <Link href={href}>
-            {what} of game {record} &middot; watch it whole &rarr;
-          </Link>
-        </figcaption>
-      ) : null}
     </figure>
   );
 }
